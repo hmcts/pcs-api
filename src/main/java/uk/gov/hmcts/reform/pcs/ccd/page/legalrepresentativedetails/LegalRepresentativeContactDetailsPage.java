@@ -58,7 +58,7 @@ public class LegalRepresentativeContactDetailsPage implements CcdPageConfigurati
                         has been scheduled or when a document is ready to view.
                     </p>
                     <p class="govuk-body-m govuk-!-margin-bottom-1 govuk-!-font-weight-bold">
-                        Your My HMCTS registered email address is:
+                        Your registered email address is:
                     </p>
                     <p class="govuk-body-m govuk-!-margin-bottom-2">
                        ${originalEmailAddress}
@@ -81,7 +81,7 @@ public class LegalRepresentativeContactDetailsPage implements CcdPageConfigurati
                     """, ORG_ADDRESS_FOUND)
             .label("contactPreferences-address-registered", """
                     <h3 class="govuk-heading-m govuk-!-margin-bottom-1">
-                        Your My HMCTS registered address is:
+                        Your registered address is:
                     </h3>
                     <p class="govuk-body-s govuk-!-margin-top-1">
                         ${formattedContactAddress}

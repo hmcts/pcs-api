@@ -12,10 +12,13 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeOrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.LegalRepresentativeOrganisationRepository;
+import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.Optional;
+
+import static uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter.BR_DELIMITER;
 
 @Service
 @Slf4j
@@ -25,6 +28,7 @@ public class LegalRepresentativePageService {
     private final LegalRepresentativeOrganisationRepository legalRepresentativeOrganisationRepository;
     private final AddressMapper addressMapper;
     private final SecurityContextService securityContextService;
+    private final AddressFormatter addressFormatter;
 
     @Transactional
     public void save(String organisationId, long caseReference, LegalRepresentativeDetails legalRepresentativeDetails) {
@@ -46,7 +50,7 @@ public class LegalRepresentativePageService {
 
         if (legalRepresentativeDetails.getDifferentPostalAddress() != null
             && legalRepresentativeDetails.getDifferentPostalAddress().equals(VerticalYesNo.YES)) {
-            legalRepresentativeOrganisationEntity.setAddress(mapAddress(legalRepresentativeDetails
+            legalRepresentativeOrganisationEntity.setAddress(mapAddressUkToAddressEntity(legalRepresentativeDetails
                                                                 .getUpdatedCorrespondenceAddress()));
         }
 
@@ -69,8 +73,52 @@ public class LegalRepresentativePageService {
         legalRepresentativeOrganisationRepository.save(legalRepresentativeOrganisationEntity);
     }
 
-    private AddressEntity mapAddress(AddressUK address) {
+    public LegalRepresentativeDetails retrieveLegalRepresentativeDetails(String organisationId,
+                                                                         long caseReference,
+                                                                         LegalRepresentativeDetails details) {
+        Optional<LegalRepresentativeOrganisationEntity> legalRepOrganisation = legalRepresentativeOrganisationRepository
+            .findByOrganisationIdAndCaseReference(organisationId, caseReference);
+
+        LegalRepresentativeOrganisationEntity legalRepresentativeOrganisation = legalRepOrganisation
+            .orElseGet(() -> LegalRepresentativeOrganisationEntity.builder().build());
+
+        if (details == null) {
+            details = LegalRepresentativeDetails.builder().build();
+        }
+
+        if (legalRepresentativeOrganisation.getEmail() != null) {
+            details.setOriginalEmailAddress(legalRepresentativeOrganisation.getEmail());
+        } else {
+            String userEmail = securityContextService.getCurrentUserDetails().getSub();
+            details.setOriginalEmailAddress(userEmail);
+        }
+
+        details
+            .setLegalRepresentativeOrganisationAddress(mapAddressEntityToAddressUk(legalRepresentativeOrganisation.getAddress()));
+
+        details
+            .setFormattedContactAddress(formatContactAddress(details.getLegalRepresentativeOrganisationAddress()));
+
+        if (details.getLegalRepresentativeOrganisationAddress() != null) {
+            details.setOrganisationAddressFound(YesOrNo.YES);
+        } else {
+            details.setOrganisationAddressFound(YesOrNo.NO);
+        }
+        return details;
+    }
+
+    private AddressEntity mapAddressUkToAddressEntity(AddressUK address) {
         return address != null
             ? addressMapper.toAddressEntityAndNormalise(address) : null;
+    }
+
+    private String formatContactAddress(AddressUK address) {
+        return address != null
+            ? addressFormatter.formatMediumAddress(address, BR_DELIMITER) : null;
+    }
+
+    private AddressUK mapAddressEntityToAddressUk(AddressEntity address) {
+        return address != null
+            ? addressMapper.toAddressUK(address) : null;
     }
 }

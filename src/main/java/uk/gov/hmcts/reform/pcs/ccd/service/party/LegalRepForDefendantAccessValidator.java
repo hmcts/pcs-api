@@ -17,19 +17,16 @@ import java.util.UUID;
 @AllArgsConstructor
 public class LegalRepForDefendantAccessValidator {
 
-    private final OrganisationDetailsService organisationDetailsService;
     private final DefendantPartyExtractor defendantPartyExtractor;
 
-    public List<PartyEntity> validateAndGetDefendants(PcsCaseEntity caseEntity, UUID authenticatedUserId) {
+    public List<PartyEntity> validateAndGetDefendants(PcsCaseEntity caseEntity, String organisationId) {
         long caseReference = caseEntity.getCaseReference();
         List<PartyEntity> defendants = defendantPartyExtractor.extractDefendants(caseEntity, caseReference);
-        String organisationId = organisationDetailsService.getOrganisationIdentifier(authenticatedUserId.toString());
-        return findMatchingLinkedDefendants(defendants, authenticatedUserId, organisationId, caseReference);
+        return findMatchingLinkedDefendants(defendants, organisationId, caseReference);
     }
 
     private List<PartyEntity> findMatchingLinkedDefendants(
         List<PartyEntity> defendants,
-        UUID authenticatedUserId,
         String organisationId,
         long caseReference
     ) {
@@ -50,7 +47,7 @@ public class LegalRepForDefendantAccessValidator {
         if (linkedDefendants.isEmpty()) {
             log.error(
                 "Access denied: User {} is not linked as a defendant on case {}",
-                authenticatedUserId,
+                organisationId,
                 caseReference
             );
             throw new CaseAccessException("User is not linked as a defendant solicitor on this case");
@@ -58,6 +55,7 @@ public class LegalRepForDefendantAccessValidator {
         }
         return linkedDefendants;
     }
+
 
     private boolean isOrganisationMatch(
                                               String linkedOrganisationId,

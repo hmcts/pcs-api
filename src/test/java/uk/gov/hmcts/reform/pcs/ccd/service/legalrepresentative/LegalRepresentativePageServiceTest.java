@@ -13,7 +13,9 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeOrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.LegalRepresentativeOrganisationRepository;
+import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
+import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.List;
@@ -24,9 +26,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter.BR_DELIMITER;
 
 @ExtendWith(MockitoExtension.class)
 class LegalRepresentativePageServiceTest {
@@ -42,6 +46,9 @@ class LegalRepresentativePageServiceTest {
 
     @Mock
     private SecurityContextService securityContextService;
+
+    @Mock
+    private AddressFormatter addressFormatter;
 
     @Test
     void save_WithDifferentPostalAddress() {
@@ -340,6 +347,183 @@ class LegalRepresentativePageServiceTest {
         // then
         assertEquals(YesOrNo.YES, legalRepresentativeOrganisationEntity.getHasAmendedContactDetails());
         verify(securityContextService, never()).getCurrentUserId();
+    }
+
+    @Test
+    void retrieveLegalRepresentativeDetails_WithExistingEmail_UsesEntityEmail() {
+        // given
+        String organisationId = "org";
+        long caseReference = 1L;
+        String email = "email1";
+
+        AddressEntity addressEntity = AddressEntity.builder()
+            .build();
+
+        LegalRepresentativeOrganisationEntity legalRepresentativeOrganisation = LegalRepresentativeOrganisationEntity
+            .builder()
+            .email(email)
+            .address(addressEntity)
+            .build();
+        AddressUK addressUK = AddressUK.builder().build();
+        LegalRepresentativeDetails legalRepresentativeDetails = LegalRepresentativeDetails.builder()
+            .legalRepresentativeOrganisationAddress(addressUK)
+            .build();
+
+        when(legalRepresentativeOrganisationRepository
+                 .findByOrganisationIdAndCaseReference(organisationId, caseReference))
+            .thenReturn(Optional.of(legalRepresentativeOrganisation));
+
+        when(addressMapper.toAddressUK(addressEntity)).thenReturn(addressUK);
+
+        // when
+        LegalRepresentativeDetails actual = legalRepresentativePageService.retrieveLegalRepresentativeDetails(
+            organisationId, caseReference,
+            legalRepresentativeDetails
+        );
+
+        // then
+        assertEquals(email, actual.getOriginalEmailAddress());
+        verify(securityContextService, never()).getCurrentUserDetails();
+        verify(addressFormatter).formatMediumAddress(addressUK, BR_DELIMITER);
+    }
+
+    @Test
+    void retrieveLegalRepresentativeDetails_WithNoExistingEmail_UsesUserEmail() {
+        // given
+        String organisationId = "org";
+        long caseReference = 1L;
+        String email = "email1";
+
+        AddressEntity addressEntity = AddressEntity.builder()
+            .build();
+
+        LegalRepresentativeOrganisationEntity legalRepresentativeOrganisation = LegalRepresentativeOrganisationEntity
+            .builder()
+            .address(addressEntity)
+            .build();
+        AddressUK addressUK = AddressUK.builder().build();
+        LegalRepresentativeDetails legalRepresentativeDetails = LegalRepresentativeDetails.builder()
+            .legalRepresentativeOrganisationAddress(addressUK)
+            .build();
+
+        when(legalRepresentativeOrganisationRepository
+                 .findByOrganisationIdAndCaseReference(organisationId, caseReference))
+            .thenReturn(Optional.of(legalRepresentativeOrganisation));
+
+        UserInfo userInfo = UserInfo.builder().sub(email).build();
+        when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
+        when(addressMapper.toAddressUK(addressEntity)).thenReturn(addressUK);
+
+        // when
+        LegalRepresentativeDetails actual = legalRepresentativePageService.retrieveLegalRepresentativeDetails(
+            organisationId, caseReference,
+            legalRepresentativeDetails
+        );
+
+        // then
+        assertEquals(email, actual.getOriginalEmailAddress());
+        verify(addressFormatter).formatMediumAddress(addressUK, BR_DELIMITER);
+    }
+
+    @Test
+    void retrieveLegalRepresentativeDetails_WithExistingAddress_SetsAddressFoundToYes() {
+        // given
+        String organisationId = "org";
+        long caseReference = 1L;
+
+        AddressEntity addressEntity = AddressEntity.builder()
+            .build();
+
+        LegalRepresentativeOrganisationEntity legalRepresentativeOrganisation = LegalRepresentativeOrganisationEntity
+            .builder()
+            .email("email")
+            .address(addressEntity)
+            .build();
+        AddressUK addressUK = AddressUK.builder().build();
+        LegalRepresentativeDetails legalRepresentativeDetails = LegalRepresentativeDetails.builder()
+            .legalRepresentativeOrganisationAddress(addressUK)
+            .build();
+
+        when(legalRepresentativeOrganisationRepository
+                 .findByOrganisationIdAndCaseReference(organisationId, caseReference))
+            .thenReturn(Optional.of(legalRepresentativeOrganisation));
+
+        when(addressMapper.toAddressUK(addressEntity)).thenReturn(addressUK);
+
+        // when
+        LegalRepresentativeDetails actual = legalRepresentativePageService.retrieveLegalRepresentativeDetails(
+            organisationId, caseReference,
+            legalRepresentativeDetails
+        );
+
+        // then
+        assertEquals(YesOrNo.YES, actual.getOrganisationAddressFound());
+        verify(securityContextService, never()).getCurrentUserDetails();
+        verify(addressFormatter).formatMediumAddress(addressUK, BR_DELIMITER);
+    }
+
+
+    @Test
+    void retrieveLegalRepresentativeDetails_WithNoExistingAddress_SetsAddressFoundToNo() {
+        // given
+        String organisationId = "org";
+        long caseReference = 1L;
+
+        LegalRepresentativeOrganisationEntity legalRepresentativeOrganisation = LegalRepresentativeOrganisationEntity
+            .builder()
+            .email("email")
+            .build();
+        AddressUK addressUK = AddressUK.builder().build();
+        LegalRepresentativeDetails legalRepresentativeDetails = LegalRepresentativeDetails.builder()
+            .legalRepresentativeOrganisationAddress(addressUK)
+            .build();
+
+        when(legalRepresentativeOrganisationRepository
+                 .findByOrganisationIdAndCaseReference(organisationId, caseReference))
+            .thenReturn(Optional.of(legalRepresentativeOrganisation));
+
+        // when
+        LegalRepresentativeDetails actual = legalRepresentativePageService.retrieveLegalRepresentativeDetails(
+            organisationId, caseReference,
+            legalRepresentativeDetails
+        );
+
+        // then
+        assertEquals(YesOrNo.NO, actual.getOrganisationAddressFound());
+        verify(securityContextService, never()).getCurrentUserDetails();
+        verify(addressFormatter, never()).formatMediumAddress(any(AddressUK.class), eq(BR_DELIMITER));
+        verify(addressMapper, never()).toAddressUK(any(AddressEntity.class));
+    }
+
+    @Test
+    void retrieveLegalRepresentativeDetails_WithNoLegalRepDetails_CreatesNew() {
+        // given
+        String organisationId = "org";
+        long caseReference = 1L;
+
+        AddressEntity addressEntity = AddressEntity.builder()
+            .build();
+
+        LegalRepresentativeOrganisationEntity legalRepresentativeOrganisation = LegalRepresentativeOrganisationEntity
+            .builder()
+            .email("email")
+            .address(addressEntity)
+            .build();
+
+        when(legalRepresentativeOrganisationRepository
+                 .findByOrganisationIdAndCaseReference(organisationId, caseReference))
+            .thenReturn(Optional.of(legalRepresentativeOrganisation));
+
+        // when
+        LegalRepresentativeDetails actual = legalRepresentativePageService.retrieveLegalRepresentativeDetails(
+            organisationId, caseReference,
+            null
+        );
+
+        // then
+        assertEquals(YesOrNo.NO, actual.getOrganisationAddressFound());
+        verify(securityContextService, never()).getCurrentUserDetails();
+        verify(addressFormatter, never()).formatMediumAddress(any(AddressUK.class), eq(BR_DELIMITER));
     }
 
 }

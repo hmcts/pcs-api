@@ -293,6 +293,7 @@ class DraftCaseDataServiceTest {
         DraftCaseDataEntity draftCaseDataEntity = mock(DraftCaseDataEntity.class);
         PCSCase expectedUnsubmittedCaseData = mock(PCSCase.class);
         UUID partyId = UUID.randomUUID();
+        UUID organisationId = UUID.randomUUID();
 
         when(draftCaseDataRepository.findByCaseReferenceAndEventIdAndIdamUserIdAndPartyId(CASE_REFERENCE, eventId,
                                                                                           USER_ID, partyId))
@@ -301,7 +302,7 @@ class DraftCaseDataServiceTest {
         when(objectMapper.readValue(unsubmittedCaseDataJson, PCSCase.class)).thenReturn(expectedUnsubmittedCaseData);
 
         // When
-        Optional<PCSCase> unsubmittedCaseData = underTest.getUnsubmittedCaseData(CASE_REFERENCE, eventId, partyId);
+        Optional<PCSCase> unsubmittedCaseData = underTest.getUnsubmittedCaseData(CASE_REFERENCE, eventId, partyId, organisationId);
 
         // Then
         assertThat(unsubmittedCaseData).contains(expectedUnsubmittedCaseData);
@@ -312,13 +313,13 @@ class DraftCaseDataServiceTest {
     void shouldReturnEmptyWhenNoUnsubmittedCaseDataForPartyId() {
         // Given
         UUID partyId = UUID.randomUUID();
-
+        UUID organisationId = UUID.randomUUID();
         when(draftCaseDataRepository.findByCaseReferenceAndEventIdAndIdamUserIdAndPartyId(CASE_REFERENCE, eventId,
                                                                                 USER_ID, partyId))
             .thenReturn(Optional.empty());
 
         // When
-        Optional<PCSCase> unsubmittedCaseData = underTest.getUnsubmittedCaseData(CASE_REFERENCE, eventId, partyId);
+        Optional<PCSCase> unsubmittedCaseData = underTest.getUnsubmittedCaseData(CASE_REFERENCE, eventId, partyId, organisationId);
 
         // Then
         assertThat(unsubmittedCaseData).isEmpty();
@@ -329,12 +330,13 @@ class DraftCaseDataServiceTest {
     void shouldReturnWhetherUnsubmittedCaseDataExistsForPartyId(boolean repositoryDataExists) {
         // Given
         UUID partyId = UUID.randomUUID();
+        UUID organisationId = UUID.randomUUID();
         when(draftCaseDataRepository.existsByCaseReferenceAndEventIdAndIdamUserIdAndPartyId(CASE_REFERENCE, eventId,
                                                                                             USER_ID, partyId))
             .thenReturn(repositoryDataExists);
 
         // When
-        boolean hasUnsubmittedCaseData = underTest.hasUnsubmittedCaseData(CASE_REFERENCE, eventId, partyId);
+        boolean hasUnsubmittedCaseData = underTest.hasUnsubmittedCaseData(CASE_REFERENCE, eventId, partyId, organisationId);
 
         // Then
         assertThat(hasUnsubmittedCaseData).isEqualTo(repositoryDataExists);
@@ -346,6 +348,7 @@ class DraftCaseDataServiceTest {
         String caseDataJson = "case data json";
         PCSCase caseData = mock(PCSCase.class);
         UUID partyId = UUID.randomUUID();
+        UUID organisationId = UUID.randomUUID();
         when(objectMapper.writeValueAsString(caseData)).thenReturn(caseDataJson);
         when(draftCaseDataRepository.findByCaseReferenceAndEventIdAndIdamUserIdAndPartyId(CASE_REFERENCE, eventId,
                                                                                           USER_ID, partyId))
@@ -354,7 +357,7 @@ class DraftCaseDataServiceTest {
             .thenAnswer(invocation -> invocation.getArgument(0));
 
         // When
-        underTest.patchUnsubmittedEventData(CASE_REFERENCE, caseData, eventId, partyId);
+        underTest.patchUnsubmittedEventData(CASE_REFERENCE, caseData, eventId, partyId, organisationId);
 
         // Then
         verify(draftCaseDataRepository).save(unsubmittedCaseDataEntityCaptor.capture());
@@ -373,7 +376,7 @@ class DraftCaseDataServiceTest {
         String newCaseDataJson = "new case data json";
         String mergedCaseDataJson = "merged case data JSON";
         UUID partyId = UUID.randomUUID();
-
+        UUID organisationId = UUID.randomUUID();
         PCSCase newCaseData = mock(PCSCase.class);
         when(objectMapper.writeValueAsString(newCaseData)).thenReturn(newCaseDataJson);
 
@@ -389,7 +392,7 @@ class DraftCaseDataServiceTest {
             .thenAnswer(invocation -> invocation.getArgument(0));
 
         // When
-        underTest.patchUnsubmittedEventData(CASE_REFERENCE, newCaseData, eventId, partyId);
+        underTest.patchUnsubmittedEventData(CASE_REFERENCE, newCaseData, eventId, partyId, organisationId);
 
         // Then
         verify(draftCaseDataRepository).save(unsubmittedCaseDataEntityCaptor.capture());
@@ -406,9 +409,9 @@ class DraftCaseDataServiceTest {
         JsonProcessingException jsonProcessingException = mock(JsonProcessingException.class);
         when(objectMapper.writeValueAsString(caseData)).thenThrow(jsonProcessingException);
         UUID partyId = UUID.randomUUID();
-
+        UUID organisationId = UUID.randomUUID();
         // Then
-        assertThatThrownBy(() -> underTest.patchUnsubmittedEventData(CASE_REFERENCE, caseData, eventId, partyId))
+        assertThatThrownBy(() -> underTest.patchUnsubmittedEventData(CASE_REFERENCE, caseData, eventId, partyId, organisationId))
             .isInstanceOf(UnsubmittedDataException.class)
             .hasMessage("Failed to save answers")
             .hasCause(jsonProcessingException);
@@ -420,7 +423,7 @@ class DraftCaseDataServiceTest {
         String existingJson = "existing json";
         UUID partyId = UUID.randomUUID();
         UUID userId = USER_ID;
-
+        UUID organisationId = UUID.randomUUID();
         DraftCaseDataEntity draftCaseDataEntity = mock(DraftCaseDataEntity.class);
 
         when(draftCaseDataEntity.getCaseData()).thenReturn(existingJson);
@@ -433,7 +436,7 @@ class DraftCaseDataServiceTest {
             .thenReturn(Optional.of(draftCaseDataEntity));
         String patchJson = "patch json";
         // When
-        underTest.patchUnsubmittedCaseData(CASE_REFERENCE, eventId, patchJson, partyId);
+        underTest.patchUnsubmittedCaseData(CASE_REFERENCE, eventId, patchJson, partyId, organisationId);
 
         // Then
         verify(draftCaseDataEntity).getCaseData();
@@ -446,7 +449,7 @@ class DraftCaseDataServiceTest {
         // Given
         PCSCase caseData = mock(PCSCase.class);
         UUID partyId = UUID.randomUUID();
-
+        UUID organisationId = UUID.randomUUID();
         when(objectMapper.writeValueAsString(caseData)).thenReturn("case data json");
 
         when(draftCaseDataRepository.findByCaseReferenceAndEventIdAndIdamUserIdAndPartyId(CASE_REFERENCE, eventId,
@@ -454,7 +457,7 @@ class DraftCaseDataServiceTest {
             .thenReturn(Optional.empty());
 
         // When / Then
-        assertThatThrownBy(() -> underTest.saveUnsubmittedEventData(CASE_REFERENCE, caseData, eventId, partyId))
+        assertThatThrownBy(() -> underTest.saveUnsubmittedEventData(CASE_REFERENCE, caseData, eventId, partyId, organisationId))
             .isInstanceOf(UnsubmittedDataException.class)
             .hasMessageContaining("No draft found");
 
@@ -467,6 +470,7 @@ class DraftCaseDataServiceTest {
         // Given
         String newCaseDataJson = "new case data json";
         UUID partyId = UUID.randomUUID();
+        UUID organisationId = UUID.randomUUID();
 
         PCSCase newCaseData = mock(PCSCase.class);
 
@@ -482,7 +486,7 @@ class DraftCaseDataServiceTest {
             .thenAnswer(invocation -> invocation.getArgument(0));
 
         // When
-        underTest.saveUnsubmittedEventData(CASE_REFERENCE, newCaseData, eventId, partyId);
+        underTest.saveUnsubmittedEventData(CASE_REFERENCE, newCaseData, eventId, partyId, organisationId);
 
         // Then
         verify(draftCaseDataRepository).save(unsubmittedCaseDataEntityCaptor.capture());

@@ -20,14 +20,13 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 public class SelectedPartyRetriever {
     private final ClientContextRetriever clientContextRetriever;
     private final LegalRepForDefendantAccessValidator legalRepForDefendantAccessValidator;
-    private final SecurityContextService securityContextService;
     private final PcsCaseService pcsCaseService;
 
-    public Optional<UUID> getSelectedPartyId(long caseReference) {
+    public Optional<UUID> getSelectedPartyId(long caseReference, String organisationId) {
         PcsCaseEntity caseEntity = pcsCaseService.loadCase(caseReference);
         List<PartyEntity> partyEntities = legalRepForDefendantAccessValidator.validateAndGetDefendants(
             caseEntity,
-            securityContextService.getCurrentUserId()
+            organisationId
         );
         return partyEntities.size() == 1
             ? Optional.of(UUID.fromString(partyEntities.getFirst().getId().toString())) : getRequiredPartyId();

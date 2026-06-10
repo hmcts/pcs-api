@@ -1,6 +1,6 @@
 create TABLE legal_representative_org (
   id uuid primary key,
-  organisation_id varchar(80) UNIQUE,
+  organisation_id varchar(80),
   case_id UUID NOT NULL REFERENCES public.pcs_case (id),
   organisation_name varchar(120),
   email varchar(120),

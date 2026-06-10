@@ -11,8 +11,10 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
+import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.utils.LegalRepresentativeRetriever;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.util.SelectedPartyRetriever;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationDetailsService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.List;
@@ -29,6 +31,8 @@ public class RespondToPossessionDraftSavePage implements CcdPageConfiguration {
     private final DraftCaseDataService draftCaseDataService;
     private final SecurityContextService securityContextService;
     private final SelectedPartyRetriever selectedPartyRetriever;
+    private final OrganisationDetailsService organisationDetailsService;
+    private final LegalRepresentativeRetriever legalRepresentativeRetriever;
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -57,16 +61,27 @@ public class RespondToPossessionDraftSavePage implements CcdPageConfiguration {
             if (securityContextService.getCurrentUserDetails().getRoles().contains(UserRole.CITIZEN.getRole())) {
                 draftCaseDataService.saveUnsubmittedEventData(caseRef, partialUpdate, respondPossessionClaim);
             } else {
-                Optional<UUID> selectedPartyId = selectedPartyRetriever.getSelectedPartyId(caseRef);
+                String organisationId = organisationDetailsService
+                    .getOrganisationIdentifier(securityContextService.getCurrentUserId().toString());
+
+                Optional<UUID> selectedPartyId = selectedPartyRetriever.getSelectedPartyId(caseRef, organisationId);
                 if (selectedPartyId.isEmpty()) {
                     return error(List.of("No selected responding party id for respond to claim"));
                 }
                 UUID representedPartyId = selectedPartyId.get();
+
+
+                UUID legalRepOrganisationIdForUser = legalRepresentativeRetriever.getLegalRepOrganisationIdForUser(
+                    caseRef,
+                    organisationId
+                );
+
                 draftCaseDataService.saveUnsubmittedEventData(
                     caseRef,
                     partialUpdate,
                     respondPossessionClaim,
-                    representedPartyId
+                    representedPartyId,
+                    legalRepOrganisationIdForUser
                 );
             }
             return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
@@ -84,5 +99,4 @@ public class RespondToPossessionDraftSavePage implements CcdPageConfiguration {
             .errors(errorMessages)
             .build();
     }
-
 }

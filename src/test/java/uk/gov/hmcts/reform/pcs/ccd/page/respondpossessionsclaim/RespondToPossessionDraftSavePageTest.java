@@ -25,11 +25,13 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaim
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.ReasonableAdjustments;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.RecurrenceFrequency;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.RespondToClaimSection;
+import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.utils.LegalRepresentativeRetriever;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 import uk.gov.hmcts.reform.pcs.ccd.page.respondpossessionclaim.page.RespondToPossessionDraftSavePage;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.util.SelectedPartyRetriever;
 import uk.gov.hmcts.reform.pcs.idam.UserInfo;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationDetailsService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.math.BigDecimal;
@@ -59,6 +61,10 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
     private UserInfo userInfo;
     @Mock
     private SelectedPartyRetriever selectedPartyRetriever;
+    @Mock
+    private OrganisationDetailsService organisationDetailsService;
+    @Mock
+    private LegalRepresentativeRetriever legalRepresentativeRetriever;
     @Captor
     private ArgumentCaptor<PCSCase> pcsCaseCaptor;
 
@@ -69,7 +75,9 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
         setPageUnderTest(new RespondToPossessionDraftSavePage(
             draftCaseDataService,
             securityContextService,
-            selectedPartyRetriever
+            selectedPartyRetriever,
+            organisationDetailsService,
+            legalRepresentativeRetriever
 
         ));
     }
@@ -479,15 +487,22 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
         PCSCase caseData = buildCaseData(PossessionClaimResponse.builder()
                                              .defendantContactDetails(contactDetails)
                                              .build());
-
-        when(selectedPartyRetriever.getSelectedPartyId(TEST_CASE_REFERENCE))
+        UUID userId = UUID.randomUUID();
+        String organisationId = "org";
+        UUID legalRepresentativeOrg = UUID.randomUUID();
+        when(securityContextService.getCurrentUserId()).thenReturn(userId);
+        when(organisationDetailsService.getOrganisationIdentifier(userId.toString())).thenReturn(organisationId);
+        when(selectedPartyRetriever.getSelectedPartyId(TEST_CASE_REFERENCE, organisationId))
             .thenReturn(Optional.of(representedPartyId));
+        when(legalRepresentativeRetriever.getLegalRepOrganisationIdForUser(TEST_CASE_REFERENCE, organisationId))
+            .thenReturn(legalRepresentativeOrg);
 
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
         assertThat(response.getErrors()).isNull();
         verify(draftCaseDataService).saveUnsubmittedEventData(
-            eq(TEST_CASE_REFERENCE), pcsCaseCaptor.capture(), eq(respondPossessionClaim), eq(representedPartyId)
+            eq(TEST_CASE_REFERENCE), pcsCaseCaptor.capture(), eq(respondPossessionClaim), eq(representedPartyId),
+            eq(legalRepresentativeOrg)
         );
     }
 

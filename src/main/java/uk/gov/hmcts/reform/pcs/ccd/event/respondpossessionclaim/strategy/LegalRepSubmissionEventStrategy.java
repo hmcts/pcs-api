@@ -9,11 +9,15 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeOrganisationEntity;
+import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.utils.LegalRepresentativeRetriever;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.ClaimResponseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.DefendantResponseService;
 import uk.gov.hmcts.reform.pcs.ccd.util.SelectedPartyRetriever;
 import uk.gov.hmcts.reform.pcs.exception.DraftNotFoundException;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationDetailsService;
+import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.List;
 import java.util.Optional;
@@ -30,6 +34,9 @@ public class LegalRepSubmissionEventStrategy implements RespondPossessionClaimSu
     private final DefendantResponseService defendantResponseService;
     private final SelectedPartyRetriever selectedPartyRetriever;
     private final SubmitResponseFactory submitResponseFactory;
+    private final LegalRepresentativeRetriever legalRepresentativeRetriever;
+    private final OrganisationDetailsService organisationDetailsService;
+    private final SecurityContextService securityContextService;
 
     @Override
     public boolean supports(List<String> roles) {
@@ -44,8 +51,17 @@ public class LegalRepSubmissionEventStrategy implements RespondPossessionClaimSu
             .getCurrentRepresentedPartyId(eventPayload.caseData())
             .orElseThrow(() -> new IllegalStateException("No selected responding party id for respond to claim"));
 
+        String organisationId = organisationDetailsService
+            .getOrganisationIdentifier(securityContextService.getCurrentUserId().toString());
+
+        UUID legalRepOrganisationIdForUser = legalRepresentativeRetriever.getLegalRepOrganisationIdForUser(
+            caseReference,
+            organisationId
+        );
+
         PCSCase draftData = draftCaseDataService
-            .getUnsubmittedCaseData(caseReference, respondPossessionClaim, representedPartyId)
+            .getUnsubmittedCaseData(caseReference, respondPossessionClaim, representedPartyId,
+                                    legalRepOrganisationIdForUser)
             .orElseThrow(() -> new DraftNotFoundException(caseReference, respondPossessionClaim));
 
         PossessionClaimResponse responseDraftData = draftData.getPossessionClaimResponse();
