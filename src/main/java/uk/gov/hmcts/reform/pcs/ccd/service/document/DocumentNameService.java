@@ -28,15 +28,8 @@ public class DocumentNameService {
         // Example label: General Application (GA2) - Defendant 1.pdf
         String partyLabel = getPartyLabel(mainClaim, applicantPartyId);
         String filename = "%s GA%d".formatted(baseName, genAppEntity.getRank());
-        if (partyLabel != null) {
-            filename += " - " + partyLabel;
-        }
 
-        if (!extension.isBlank()) {
-            filename += "." + extension;
-        }
-
-        return filename;
+        return buildFilename(filename, extension, partyLabel);
     }
 
     public String appendDefendantPostfix(String originalFilename,
@@ -50,16 +43,18 @@ public class DocumentNameService {
         String baseName = FilenameUtils.getBaseName(originalFilename);
         String extension = FilenameUtils.getExtension(originalFilename);
 
-        String filename = baseName;
         String partyLabel = getPartyLabel(mainClaim, defendantPartyId);
+
+        return buildFilename(baseName, extension, partyLabel);
+    }
+
+    private static String buildFilename(String filename, String extension, String partyLabel) {
         if (partyLabel != null) {
             filename += " - " + partyLabel;
         }
-
         if (!extension.isBlank()) {
             filename += "." + extension;
         }
-
         return filename;
     }
 

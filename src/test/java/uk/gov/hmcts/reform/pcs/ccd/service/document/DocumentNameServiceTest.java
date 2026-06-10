@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.document;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -9,12 +10,14 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
+import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.params.provider.Arguments.argumentSet;
 
 class DocumentNameServiceTest {
@@ -123,6 +126,23 @@ class DocumentNameServiceTest {
             argumentSet("with extension, other party type",
                         PartyRole.UNDERLESSEE_OR_MORTGAGEE, "sample.pdf", "sample.pdf")
         );
+    }
+
+    @Test
+    void shouldThrowPartyNotFoundExceptionWhenPartyNotInClaimForGenApp() {
+        ClaimEntity mainClaim = ClaimEntity.builder().claimParties(List.of()).build();
+        GenAppEntity genAppEntity = GenAppEntity.builder().rank(1).build();
+
+        assertThatThrownBy(() -> underTest.appendGenAppPostfix("file.pdf", genAppEntity, mainClaim, UUID.randomUUID()))
+            .isInstanceOf(PartyNotFoundException.class);
+    }
+
+    @Test
+    void shouldThrowPartyNotFoundExceptionWhenPartyNotInClaimForDefendantPostfix() {
+        ClaimEntity mainClaim = ClaimEntity.builder().claimParties(List.of()).build();
+
+        assertThatThrownBy(() -> underTest.appendDefendantPostfix("file.pdf", mainClaim, UUID.randomUUID()))
+            .isInstanceOf(PartyNotFoundException.class);
     }
 
 }
