@@ -50,7 +50,7 @@ const runGlobalSearchScenarios = () => {
     await performValidation('mainHeader', globalSearch.mainHeader);
   });
 
-  test('Valid case reference using Mortage and Landlord Possession Claim Service', async () => {
+  test('Valid case reference using Mortgage and Landlord Possession Claim Service', async () => {
     await performAction('accessingTheSearch');
     await performAction('searchByCaseReference', process.env.CASE_NUMBER);
     await performAction('validateResults');
@@ -112,6 +112,7 @@ const runGlobalSearchScenarios = () => {
   { roleName: 'Judge User', account: user.judge }
 ].forEach(({ roleName, account }) => {
   test.describe(`[Common Component Global Search - ${roleName}] @CC @globalSearch @nightly @PR`, () => {
+  test.describe(`[Global Search - ${roleName} - @nightly @CC @caseFlags]`, () => {
     test.beforeEach(async ({ page, context }) => {
       await setupGlobalSearchUser(page, context, account);
     });
