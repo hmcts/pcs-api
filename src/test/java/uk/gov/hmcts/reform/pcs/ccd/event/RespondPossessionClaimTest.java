@@ -18,6 +18,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.StartEventHandler;
 import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.SubmitEventHandler;
 import uk.gov.hmcts.reform.pcs.ccd.page.respondpossessionclaim.page.RespondToPossessionDraftSavePage;
@@ -130,6 +131,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
             .build();
 
         PartyEntity matchingDefendant = PartyEntity.builder()
+            .id(UUID.randomUUID())
             .idamId(defendantUserId)
             .firstName("John")
             .lastName("Doe")
@@ -269,10 +271,13 @@ class RespondPossessionClaimTest extends BaseEventTest {
 
     @Test
     void shouldNotSaveDraftWhenPossessionClaimResponseIsNull() {
+        DefendantResponseEntity defendantResponse = new DefendantResponseEntity();
+        defendantResponse.setParty(new PartyEntity());
+        defendantResponse.setPcsCase(new PcsCaseEntity());
+
         PCSCase caseData = PCSCase.builder()
             .possessionClaimResponse(null)
             .build();
-
 
         callSubmitHandler(caseData);
 
@@ -479,6 +484,10 @@ class RespondPossessionClaimTest extends BaseEventTest {
             .thenReturn(true); // Draft already exists - should NOT seed
         when(draftCaseDataService.getUnsubmittedCaseData(TEST_CASE_REFERENCE, EventId.respondPossessionClaim))
             .thenReturn(Optional.of(draftData)); // Return saved draft data
+        when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+        when(accessValidator.validateAndGetDefendant(pcsCaseEntity, defendantUserId)).thenReturn(matchingDefendant);
+        when(responseMapper.buildPartyFromEntity(eq(matchingDefendant), any(PCSCase.class)))
+            .thenReturn(Party.builder().build());
 
         PCSCase caseData = PCSCase.builder().build();
 

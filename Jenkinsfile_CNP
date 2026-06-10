@@ -53,7 +53,6 @@ withPipeline(type, product, component) {
     setPreviewEnvVars()
     if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "pr-values:ccd").size() > 0) {
       env.CCD_ENABLED = "true"
-      env.CASE_TYPE_SUFFIX="${CHANGE_ID}"
       enableHighLevelDataSetup()
     } else {
       env.CCD_ENABLED = "false"
@@ -66,6 +65,9 @@ withPipeline(type, product, component) {
     }
     else if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "enable_e2e_makeAClaim_test").size() > 0) {
       env.E2E_SUITE = "makeAClaim"
+    }
+    else if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "enable_e2e_CC_test").size() > 0) {
+      env.E2E_SUITE = "commonComponent"
     }
   }
 
@@ -125,6 +127,12 @@ withPipeline(type, product, component) {
       env.DATA_STORE_URL_BASE="http://ccd-data-store-api-ithc.service.core-compute-ithc.internal"
     }
     generateDefinitions(builder)
+  }
+
+  before('smoketest:preview') {
+    if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "pr-values:ccd").size() > 0) {
+      sh "./bin/trigger-global-search-index.sh"
+    }
   }
 
   before('smoketest:aat') {

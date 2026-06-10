@@ -10,6 +10,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -17,9 +18,12 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.HelpWithFeesEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentCallbackHandlerType;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
 
 import java.math.BigDecimal;
@@ -41,7 +45,7 @@ public class FeePaymentEntity {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @ManyToOne(fetch = LAZY)
+    @OneToOne(fetch = LAZY)
     @JoinColumn(name = "claim_id", nullable = false)
     @JsonBackReference
     private ClaimEntity claim;
@@ -58,6 +62,7 @@ public class FeePaymentEntity {
     // Service Request Reference from the createRequest
     private String requestReference;
 
+    // This is the same as what the user sees - we receive it in the callback so behaves like a correlation id
     private String externalReference;
 
     private BigDecimal amount;
@@ -68,5 +73,12 @@ public class FeePaymentEntity {
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "hwf_id")
     private HelpWithFeesEntity helpWithFees;
+
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private PaymentCallbackHandlerType paymentCallbackHandlerType;
+
+    @JdbcTypeCode(SqlTypes.JSON)
+    private String taskData;
 
 }

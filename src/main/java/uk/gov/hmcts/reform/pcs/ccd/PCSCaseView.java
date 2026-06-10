@@ -6,7 +6,6 @@ import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.CaseView;
 import uk.gov.hmcts.ccd.sdk.CaseViewRequest;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
-import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.SearchCriteria;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
@@ -17,31 +16,33 @@ import uk.gov.hmcts.reform.pcs.ccd.enforcementorder.EnforcementOrderMediator;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseTitleService;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
 import uk.gov.hmcts.reform.pcs.ccd.view.AlternativesToPossessionView;
 import uk.gov.hmcts.reform.pcs.ccd.view.AsbProhibitedConductView;
+import uk.gov.hmcts.reform.pcs.ccd.view.CaseFlagsView;
+import uk.gov.hmcts.reform.pcs.ccd.view.CaseLinkView;
+import uk.gov.hmcts.reform.pcs.ccd.view.CaseNoteView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseTabView;
 import uk.gov.hmcts.reform.pcs.ccd.view.ClaimGroundsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.ClaimView;
-import uk.gov.hmcts.reform.pcs.ccd.view.HousingActWalesView;
+import uk.gov.hmcts.reform.pcs.ccd.view.DocumentsView;
+import uk.gov.hmcts.reform.pcs.ccd.view.GenAppsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.NoticeOfPossessionView;
+import uk.gov.hmcts.reform.pcs.ccd.view.PartiesView;
 import uk.gov.hmcts.reform.pcs.ccd.view.RentArrearsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.RentDetailsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.StatementOfTruthView;
 import uk.gov.hmcts.reform.pcs.ccd.view.TenancyLicenceView;
-import uk.gov.hmcts.reform.pcs.ccd.view.CaseLinkView;
 import uk.gov.hmcts.reform.pcs.ccd.view.globalsearch.CaseFieldsView;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
+import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -62,11 +63,11 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
     private final DraftCaseDataService draftCaseDataService;
     private final CaseTitleService caseTitleService;
     private final ClaimView claimView;
+    private final DocumentsView documentsView;
     private final TenancyLicenceView tenancyLicenceView;
     private final ClaimGroundsView claimGroundsView;
     private final RentDetailsView rentDetailsView;
     private final AlternativesToPossessionView alternativesToPossessionView;
-    private final HousingActWalesView housingActWalesView;
     private final AsbProhibitedConductView asbProhibitedConductView;
     private final RentArrearsView rentArrearsView;
     private final NoticeOfPossessionView noticeOfPossessionView;
@@ -74,7 +75,12 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
     private final CaseFieldsView caseFieldsView;
     private final CaseLinkView caseLinkView;
     private final EnforcementOrderMediator enforcementOrderMediator;
+    private final CaseNoteView caseNoteView;
     private final CaseTabView caseTabView;
+    private final PartiesView partiesView;
+    private final GenAppsView genAppsView;
+    private final CaseFlagsView flagsView;
+
 
     /**
      * Invoked by CCD to load PCS cases by reference.
@@ -86,6 +92,17 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         State state = request.state();
         PCSCase pcsCase = getSubmittedCase(caseReference);
         boolean hasUnsubmittedCaseData = caseHasUnsubmittedData(caseReference, state);
+
+        if (hasUnsubmittedCaseData) {
+            draftCaseDataService
+                .getUnsubmittedCaseData(caseReference, resumePossessionClaim)
+                .ifPresentOrElse(
+                    draft -> caseTabView.setDraftCaseTabFields(pcsCase, draft),
+                    () -> caseTabView.setCaseTabFields(pcsCase)
+                );
+        } else {
+            caseTabView.setCaseTabFields(pcsCase);
+        }
 
         setMarkdownFields(pcsCase, hasUnsubmittedCaseData);
         enforcementOrderMediator.handleEnforcementRequirements(caseReference, pcsCase);
@@ -101,67 +118,48 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
     private boolean caseHasUnsubmittedData(long caseReference, State state) {
         if (State.AWAITING_SUBMISSION_TO_HMCTS == state) {
             return draftCaseDataService.hasUnsubmittedCaseData(caseReference, resumePossessionClaim);
-        } else {
-            return false;
         }
+
+        return false;
     }
 
     private PCSCase getSubmittedCase(long caseReference) {
         PcsCaseEntity pcsCaseEntity = loadCaseData(caseReference);
 
-        Map<PartyRole, List<ListValue<Party>>> partyMap = getPartyMap(pcsCaseEntity);
-
         PCSCase pcsCase = PCSCase.builder()
             .propertyAddress(convertAddress(pcsCaseEntity.getPropertyAddress()))
             .legislativeCountry(pcsCaseEntity.getLegislativeCountry())
             .caseManagementLocationNumber(pcsCaseEntity.getCaseManagementLocation())
-            .allClaimants(partyMap.get(PartyRole.CLAIMANT))
-            .allDefendants(partyMap.get(PartyRole.DEFENDANT))
-            .allUnderlesseeOrMortgagees(partyMap.get(PartyRole.UNDERLESSEE_OR_MORTGAGEE))
-            .allDocuments(mapAndWrapDocuments(pcsCaseEntity))
+            .dateSubmitted(getClaimSubmittedDate(pcsCaseEntity))
             .build();
 
         setDerivedProperties(pcsCase, pcsCaseEntity);
 
+        partiesView.setCaseFields(pcsCase, pcsCaseEntity);
         claimView.setCaseFields(pcsCase, pcsCaseEntity);
+        documentsView.setCaseFields(pcsCase, pcsCaseEntity);
         tenancyLicenceView.setCaseFields(pcsCase, pcsCaseEntity);
         claimGroundsView.setCaseFields(pcsCase, pcsCaseEntity);
         rentDetailsView.setCaseFields(pcsCase, pcsCaseEntity);
         alternativesToPossessionView.setCaseFields(pcsCase, pcsCaseEntity);
-        housingActWalesView.setCaseFields(pcsCase, pcsCaseEntity);
         asbProhibitedConductView.setCaseFields(pcsCase, pcsCaseEntity);
 
         rentArrearsView.setCaseFields(pcsCase, pcsCaseEntity);
         noticeOfPossessionView.setCaseFields(pcsCase, pcsCaseEntity);
         statementOfTruthView.setCaseFields(pcsCase, pcsCaseEntity);
+        genAppsView.setCaseFields(pcsCase, pcsCaseEntity);
         caseLinkView.setCaseFields(pcsCase, pcsCaseEntity);
-        caseTabView.setCaseTabFields(pcsCase);
+        caseNoteView.setCaseFields(pcsCase, pcsCaseEntity);
+        flagsView.setCaseFields(pcsCase, pcsCaseEntity);
 
         return pcsCase;
     }
 
-    private Map<PartyRole, List<ListValue<Party>>> getPartyMap(PcsCaseEntity pcsCaseEntity) {
-        List<ClaimEntity> claims = pcsCaseEntity.getClaims();
-
-        if (claims.isEmpty()) {
-            return Map.of();
-        }
-
-        ClaimEntity mainClaim = claims.getFirst();
-        return mainClaim.getClaimParties().stream()
-            .collect(Collectors.groupingBy(
-                ClaimPartyEntity::getRole,
-                Collectors.mapping(this::getPartyListValue, Collectors.toList())
-            ));
-    }
-
-    private ListValue<Party> getPartyListValue(ClaimPartyEntity claimPartyEntity) {
-        Party party = modelMapper.map(claimPartyEntity.getParty(), Party.class);
-
-        return ListValue.<Party>builder()
-            .id(claimPartyEntity.getId().getPartyId().toString())
-            .value(party)
-            .build();
+    private LocalDateTime getClaimSubmittedDate(PcsCaseEntity pcsCaseEntity) {
+        return pcsCaseEntity.getClaims().stream()
+            .findFirst()
+            .map(ClaimEntity::getClaimSubmittedDate)
+            .orElse(null);
     }
 
     private void setDerivedProperties(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
@@ -242,22 +240,4 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
             .collect(Collectors.collectingAndThen(Collectors.toList(), ListValueUtils::wrapListItems));
     }
 
-    private List<ListValue<Document>> mapAndWrapDocuments(PcsCaseEntity pcsCaseEntity) {
-
-        if (pcsCaseEntity.getDocuments().isEmpty()) {
-            return List.of();
-        }
-
-        return pcsCaseEntity.getDocuments().stream()
-            .map(entity -> ListValue.<Document>builder()
-                .id(entity.getId().toString())
-                .value(Document.builder()
-                           .filename(entity.getFileName())
-                           .url(entity.getUrl())
-                           .binaryUrl(entity.getBinaryUrl())
-                           .categoryId(entity.getCategoryId())
-                           .build())
-                .build())
-            .collect(Collectors.toList());
-    }
 }

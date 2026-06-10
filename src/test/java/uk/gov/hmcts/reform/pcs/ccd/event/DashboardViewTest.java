@@ -15,10 +15,17 @@ import uk.gov.hmcts.reform.pcs.ccd.event.dashboard.StartDashboardViewHandler;
 import uk.gov.hmcts.reform.pcs.ccd.event.dashboard.SubmitDashboardViewHandler;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.DashboardJourneyService;
+import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.ApplicationsTaskGroupEvaluator;
 import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.ClaimTaskGroupEvaluator;
+import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
+import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.DocumentsTaskGroupEvaluator;
 import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.HearingsTaskGroupEvaluator;
 import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.NoticesTaskGroupEvaluator;
+import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.ResponseTaskGroupEvaluator;
+import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.LegalRepresentativeRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.DefendantAccessValidator;
+import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.DefendantResponseService;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
@@ -42,14 +49,31 @@ class DashboardViewTest extends BaseEventTest {
     @Mock
     private SecurityContextService securityContextService;
 
+    @Mock
+    private LegalRepresentativeRepository legalRepresentativeRepository;
+
     private DashboardJourneyService dashboardJourneyService;
+
+    @Mock
+    private DraftCaseDataService draftCaseDataService;
+
+    @Mock
+    private DefendantResponseService defendantResponseService;
+
+    private GenAppVisibilityService genAppVisibilityService;
 
     @BeforeEach
     void setUp() {
+        genAppVisibilityService = new GenAppVisibilityService(legalRepresentativeRepository);
         dashboardJourneyService = new DashboardJourneyService(
+            draftCaseDataService,
+            defendantResponseService,
             List.of(
                 new ClaimTaskGroupEvaluator(),
+                new DocumentsTaskGroupEvaluator(),
                 new HearingsTaskGroupEvaluator(),
+                new ApplicationsTaskGroupEvaluator(securityContextService, genAppVisibilityService),
+                new ResponseTaskGroupEvaluator(),
                 new NoticesTaskGroupEvaluator()
             )
         );
@@ -75,6 +99,11 @@ class DashboardViewTest extends BaseEventTest {
         when(accessValidator.validateAndGetDefendant(caseEntity, defendantUserId))
             .thenReturn(PartyEntity.builder().idamId(defendantUserId).build());
 
+        when(draftCaseDataService.hasMeaningfulRespondDraft(TEST_CASE_REFERENCE, EventId.respondPossessionClaim))
+            .thenReturn(false);
+        when(defendantResponseService.hasSubmittedResponse(TEST_CASE_REFERENCE))
+            .thenReturn(false);
+
         PCSCase result = callStartHandler(caseData);
 
         assertThat(result.getDashboardData()).isNotNull();
@@ -82,7 +111,10 @@ class DashboardViewTest extends BaseEventTest {
         assertThat(result.getDashboardData().getPropertyAddress()).isEqualTo(propertyAddress);
         assertThat(ListValueUtils.unwrapListItems(result.getDashboardData().getNotifications()))
             .extracting(n -> n.getTemplateId())
-            .containsExactly("Defendant.CaseIssued", "Defendant.ResponseToClaim");
+            .containsExactly(
+                "Defendant.NoHearingArranged",
+                "Defendant.ResponseNotStarted"
+            );
         verify(pcsCaseService).loadCase(TEST_CASE_REFERENCE);
         verify(accessValidator).validateAndGetDefendant(eq(caseEntity), eq(defendantUserId));
     }

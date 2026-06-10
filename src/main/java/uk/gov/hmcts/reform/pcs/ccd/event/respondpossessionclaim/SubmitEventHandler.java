@@ -19,7 +19,7 @@ import java.util.List;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.respondPossessionClaim;
 
-@Component
+@Component("respondToClaimSubmitEventHandler")
 @Slf4j
 @RequiredArgsConstructor
 public class SubmitEventHandler implements Submit<PCSCase, State> {
@@ -59,7 +59,6 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
 
         //delete draft as it's no longer needed
         draftCaseDataService.deleteUnsubmittedCaseData(caseReference, respondPossessionClaim);
-
         log.info("Successfully saved defendant response for case: {}", caseReference);
         return success();
     }

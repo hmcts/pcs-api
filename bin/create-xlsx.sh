@@ -8,6 +8,9 @@ if [ -z "$env" ]; then
   echo "No environment specified, defaulting to the local naming convention."
 fi
 
+# Authenticate with Azure Container Registry
+env AZURE_CONFIG_DIR=/opt/jenkins/.azure-nonprod az acr login --name hmctsprod --subscription DCD-CNP-PROD
+
 for case_dir in "$run_dir"/build/definitions/*/; do
   case_type=$(basename "$case_dir")
 
@@ -23,7 +26,7 @@ for case_dir in "$run_dir"/build/definitions/*/; do
 docker run --rm --name "json2xlsx" \
   -v "$run_dir/build/definitions/${case_type}:/tmp/ccd-input" \
   -v "$run_dir/build/definitions:/tmp/ccd-output" \
-  hmctspublic.azurecr.io/ccd/definition-processor:latest \
+  hmctsprod.azurecr.io/ccd/definition-processor:latest \
   json2xlsx -D /tmp/ccd-input -o /tmp/ccd-output/"${ccd_definition_file}"
 
 done

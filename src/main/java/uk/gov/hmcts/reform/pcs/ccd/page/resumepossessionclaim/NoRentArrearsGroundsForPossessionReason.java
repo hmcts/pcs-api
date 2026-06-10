@@ -8,11 +8,12 @@ import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredAdditionalOtherGround;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredDiscretionaryGround;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredMandatoryGround;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.domain.model.NoRentArrearsReasonForGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.NoRentArrearsGroundsReasons;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
@@ -26,6 +27,7 @@ public class NoRentArrearsGroundsForPossessionReason implements CcdPageConfigura
 
     private static final String MANDATORY_GROUNDS = "noRentArrears_MandatoryGrounds";
     private static final String DISCRETIONARY_GROUNDS = "noRentArrears_DiscretionaryGrounds";
+    private static final String ADDITIONAL_OTHER_GROUND = "noRentArrears_OtherGround";
 
     private final TextAreaValidationService textAreaValidationService;
 
@@ -39,7 +41,7 @@ public class NoRentArrearsGroundsForPossessionReason implements CcdPageConfigura
                                + " AND noRentArrears_ShowGroundReasonPage=\"Yes\""
                                + " AND legislativeCountry=\"England\"")
             .label("noRentArrearsOptions-lineSeparator", "---")
-            .complex(PCSCase::getNoRentArrearsReasonForGrounds)
+            .complex(PCSCase::getNoRentArrearsGroundsReasons)
             // Ground 1
             .label(
                 "ownerOccupier-label",
@@ -50,7 +52,7 @@ public class NoRentArrearsGroundsForPossessionReason implements CcdPageConfigura
                 ShowConditions.fieldContains(MANDATORY_GROUNDS, AssuredMandatoryGround.OWNER_OCCUPIER_GROUND1)
             )
             .mandatory(
-                NoRentArrearsReasonForGrounds::getOwnerOccupier,
+                NoRentArrearsGroundsReasons::getOwnerOccupier,
                 ShowConditions.fieldContains(MANDATORY_GROUNDS, AssuredMandatoryGround.OWNER_OCCUPIER_GROUND1)
             )
             // Ground 2
@@ -63,7 +65,7 @@ public class NoRentArrearsGroundsForPossessionReason implements CcdPageConfigura
                 ShowConditions.fieldContains(MANDATORY_GROUNDS, AssuredMandatoryGround.REPOSSESSION_GROUND2)
             )
             .mandatory(
-                NoRentArrearsReasonForGrounds::getRepossessionByLender,
+                NoRentArrearsGroundsReasons::getRepossessionByLender,
                 ShowConditions.fieldContains(MANDATORY_GROUNDS, AssuredMandatoryGround.REPOSSESSION_GROUND2)
             )
             // Ground 3
@@ -76,7 +78,7 @@ public class NoRentArrearsGroundsForPossessionReason implements CcdPageConfigura
                 ShowConditions.fieldContains(MANDATORY_GROUNDS, AssuredMandatoryGround.HOLIDAY_LET_GROUND3)
             )
             .mandatory(
-                NoRentArrearsReasonForGrounds::getHolidayLet,
+                NoRentArrearsGroundsReasons::getHolidayLet,
                 ShowConditions.fieldContains(MANDATORY_GROUNDS, AssuredMandatoryGround.HOLIDAY_LET_GROUND3)
             )
             // Ground 4
@@ -89,7 +91,7 @@ public class NoRentArrearsGroundsForPossessionReason implements CcdPageConfigura
                 ShowConditions.fieldContains(MANDATORY_GROUNDS, AssuredMandatoryGround.STUDENT_LET_GROUND4)
             )
             .mandatory(
-                NoRentArrearsReasonForGrounds::getStudentLet,
+                NoRentArrearsGroundsReasons::getStudentLet,
                 ShowConditions.fieldContains(MANDATORY_GROUNDS, AssuredMandatoryGround.STUDENT_LET_GROUND4)
             )
             // Ground 5
@@ -102,7 +104,7 @@ public class NoRentArrearsGroundsForPossessionReason implements CcdPageConfigura
                 ShowConditions.fieldContains(MANDATORY_GROUNDS, AssuredMandatoryGround.MINISTER_RELIGION_GROUND5)
             )
             .mandatory(
-                NoRentArrearsReasonForGrounds::getMinisterOfReligion,
+                NoRentArrearsGroundsReasons::getMinisterOfReligion,
                 ShowConditions.fieldContains(MANDATORY_GROUNDS, AssuredMandatoryGround.MINISTER_RELIGION_GROUND5)
             )
             // Ground 6
@@ -115,7 +117,7 @@ public class NoRentArrearsGroundsForPossessionReason implements CcdPageConfigura
                 ShowConditions.fieldContains(MANDATORY_GROUNDS, AssuredMandatoryGround.REDEVELOPMENT_GROUND6)
             )
             .mandatory(
-                NoRentArrearsReasonForGrounds::getRedevelopment,
+                NoRentArrearsGroundsReasons::getRedevelopment,
                 ShowConditions.fieldContains(MANDATORY_GROUNDS, AssuredMandatoryGround.REDEVELOPMENT_GROUND6)
             )
             // Ground 7
@@ -128,7 +130,7 @@ public class NoRentArrearsGroundsForPossessionReason implements CcdPageConfigura
                 ShowConditions.fieldContains(MANDATORY_GROUNDS, AssuredMandatoryGround.DEATH_OF_TENANT_GROUND7)
             )
             .mandatory(
-                NoRentArrearsReasonForGrounds::getDeathOfTenant,
+                NoRentArrearsGroundsReasons::getDeathOfTenant,
                 ShowConditions.fieldContains(MANDATORY_GROUNDS, AssuredMandatoryGround.DEATH_OF_TENANT_GROUND7)
             )
             // Ground 7A
@@ -141,7 +143,7 @@ public class NoRentArrearsGroundsForPossessionReason implements CcdPageConfigura
                 ShowConditions.fieldContains(MANDATORY_GROUNDS, AssuredMandatoryGround.ANTISOCIAL_BEHAVIOUR_GROUND7A)
             )
             .mandatory(
-                NoRentArrearsReasonForGrounds::getAntisocialBehaviour,
+                NoRentArrearsGroundsReasons::getAntisocialBehaviour,
                 ShowConditions.fieldContains(MANDATORY_GROUNDS, AssuredMandatoryGround.ANTISOCIAL_BEHAVIOUR_GROUND7A)
             )
             // Ground 7B
@@ -154,7 +156,7 @@ public class NoRentArrearsGroundsForPossessionReason implements CcdPageConfigura
                 ShowConditions.fieldContains(MANDATORY_GROUNDS, AssuredMandatoryGround.NO_RIGHT_TO_RENT_GROUND7B)
             )
             .mandatory(
-                NoRentArrearsReasonForGrounds::getNoRightToRent,
+                NoRentArrearsGroundsReasons::getNoRightToRent,
                 ShowConditions.fieldContains(MANDATORY_GROUNDS, AssuredMandatoryGround.NO_RIGHT_TO_RENT_GROUND7B)
             )
             // Ground 9
@@ -168,7 +170,7 @@ public class NoRentArrearsGroundsForPossessionReason implements CcdPageConfigura
                     .fieldContains(DISCRETIONARY_GROUNDS, AssuredDiscretionaryGround.ALTERNATIVE_ACCOMMODATION_GROUND9)
             )
             .mandatory(
-                NoRentArrearsReasonForGrounds::getSuitableAlternativeAccomodation,
+                NoRentArrearsGroundsReasons::getSuitableAlternativeAccomodation,
                 ShowConditions
                     .fieldContains(DISCRETIONARY_GROUNDS, AssuredDiscretionaryGround.ALTERNATIVE_ACCOMMODATION_GROUND9)
             )
@@ -182,7 +184,7 @@ public class NoRentArrearsGroundsForPossessionReason implements CcdPageConfigura
                 ShowConditions.fieldContains(DISCRETIONARY_GROUNDS, AssuredDiscretionaryGround.BREACH_TENANCY_GROUND12)
             )
             .mandatory(
-                NoRentArrearsReasonForGrounds::getBreachOfTenancyConditions,
+                NoRentArrearsGroundsReasons::getBreachOfTenancyConditions,
                 ShowConditions.fieldContains(DISCRETIONARY_GROUNDS, AssuredDiscretionaryGround.BREACH_TENANCY_GROUND12)
             )
             // Ground 13
@@ -196,7 +198,7 @@ public class NoRentArrearsGroundsForPossessionReason implements CcdPageConfigura
                     .fieldContains(DISCRETIONARY_GROUNDS, AssuredDiscretionaryGround.DETERIORATION_PROPERTY_GROUND13)
             )
             .mandatory(
-                NoRentArrearsReasonForGrounds::getPropertyDeterioration,
+                NoRentArrearsGroundsReasons::getPropertyDeterioration,
                 ShowConditions
                     .fieldContains(DISCRETIONARY_GROUNDS, AssuredDiscretionaryGround.DETERIORATION_PROPERTY_GROUND13)
             )
@@ -212,7 +214,7 @@ public class NoRentArrearsGroundsForPossessionReason implements CcdPageConfigura
                     .fieldContains(DISCRETIONARY_GROUNDS, AssuredDiscretionaryGround.NUISANCE_ANNOYANCE_GROUND14)
             )
             .mandatory(
-                NoRentArrearsReasonForGrounds::getNuisanceOrIllegalUse,
+                NoRentArrearsGroundsReasons::getNuisanceOrIllegalUse,
                 ShowConditions
                     .fieldContains(DISCRETIONARY_GROUNDS, AssuredDiscretionaryGround.NUISANCE_ANNOYANCE_GROUND14)
             )
@@ -227,7 +229,7 @@ public class NoRentArrearsGroundsForPossessionReason implements CcdPageConfigura
                     .fieldContains(DISCRETIONARY_GROUNDS, AssuredDiscretionaryGround.DOMESTIC_VIOLENCE_GROUND14A)
             )
             .mandatory(
-                NoRentArrearsReasonForGrounds::getDomesticViolence,
+                NoRentArrearsGroundsReasons::getDomesticViolence,
                 ShowConditions
                     .fieldContains(DISCRETIONARY_GROUNDS, AssuredDiscretionaryGround.DOMESTIC_VIOLENCE_GROUND14A)
             )
@@ -241,7 +243,7 @@ public class NoRentArrearsGroundsForPossessionReason implements CcdPageConfigura
                 ShowConditions.fieldContains(DISCRETIONARY_GROUNDS, AssuredDiscretionaryGround.OFFENCE_RIOT_GROUND14ZA)
             )
             .mandatory(
-                NoRentArrearsReasonForGrounds::getOffenceDuringRiot,
+                NoRentArrearsGroundsReasons::getOffenceDuringRiot,
                 ShowConditions.fieldContains(DISCRETIONARY_GROUNDS, AssuredDiscretionaryGround.OFFENCE_RIOT_GROUND14ZA)
             )
             // Ground 15
@@ -255,7 +257,7 @@ public class NoRentArrearsGroundsForPossessionReason implements CcdPageConfigura
                     .fieldContains(DISCRETIONARY_GROUNDS, AssuredDiscretionaryGround.DETERIORATION_FURNITURE_GROUND15)
             )
             .mandatory(
-                NoRentArrearsReasonForGrounds::getFurnitureDeterioration,
+                NoRentArrearsGroundsReasons::getFurnitureDeterioration,
                 ShowConditions
                     .fieldContains(DISCRETIONARY_GROUNDS, AssuredDiscretionaryGround.DETERIORATION_FURNITURE_GROUND15)
             )
@@ -270,7 +272,7 @@ public class NoRentArrearsGroundsForPossessionReason implements CcdPageConfigura
                     .fieldContains(DISCRETIONARY_GROUNDS, AssuredDiscretionaryGround.EMPLOYEE_LANDLORD_GROUND16)
             )
             .mandatory(
-                NoRentArrearsReasonForGrounds::getLandlordEmployee,
+                NoRentArrearsGroundsReasons::getLandlordEmployee,
                 ShowConditions
                     .fieldContains(DISCRETIONARY_GROUNDS, AssuredDiscretionaryGround.EMPLOYEE_LANDLORD_GROUND16)
             )
@@ -284,8 +286,22 @@ public class NoRentArrearsGroundsForPossessionReason implements CcdPageConfigura
                 ShowConditions.fieldContains(DISCRETIONARY_GROUNDS, AssuredDiscretionaryGround.FALSE_STATEMENT_GROUND17)
             )
             .mandatory(
-                NoRentArrearsReasonForGrounds::getFalseStatement,
+                NoRentArrearsGroundsReasons::getFalseStatement,
                 ShowConditions.fieldContains(DISCRETIONARY_GROUNDS, AssuredDiscretionaryGround.FALSE_STATEMENT_GROUND17)
+            )
+            .label(
+                "otherGround-label",
+                """
+                    <h2 class="govuk-heading-l">Other grounds</h2>
+                    <h3 class="govuk-heading-m">Why are you making a claim for possession under this ground?</h3>
+                    """,
+                ShowConditions
+                        .fieldContains(ADDITIONAL_OTHER_GROUND, AssuredAdditionalOtherGround.OTHER)
+            )
+            .mandatory(
+                NoRentArrearsGroundsReasons::getOtherGround,
+                ShowConditions
+                    .fieldContains(ADDITIONAL_OTHER_GROUND, AssuredAdditionalOtherGround.OTHER)
             )
             .done()
             .label("noRentArrearsGroundsForPossessionReason-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
@@ -298,99 +314,104 @@ public class NoRentArrearsGroundsForPossessionReason implements CcdPageConfigura
         // Validate all text area fields for character limit
         List<String> validationErrors = new ArrayList<>();
 
-        NoRentArrearsReasonForGrounds noRentArrearsReasonForGrounds = caseData.getNoRentArrearsReasonForGrounds();
-        if (noRentArrearsReasonForGrounds != null) {
+        NoRentArrearsGroundsReasons noRentArrearsGroundsReasons = caseData.getNoRentArrearsGroundsReasons();
+        if (noRentArrearsGroundsReasons != null) {
             validationErrors.addAll(textAreaValidationService.validateMultipleTextAreas(
                 // Mandatory grounds
                 TextAreaValidationService.FieldValidation.of(
-                    noRentArrearsReasonForGrounds.getOwnerOccupier(),
+                    noRentArrearsGroundsReasons.getOwnerOccupier(),
                     AssuredMandatoryGround.OWNER_OCCUPIER_GROUND1.getLabel(),
                     TextAreaValidationService.MEDIUM_TEXT_LIMIT
                 ),
                 TextAreaValidationService.FieldValidation.of(
-                    noRentArrearsReasonForGrounds.getRepossessionByLender(),
+                    noRentArrearsGroundsReasons.getRepossessionByLender(),
                     AssuredMandatoryGround.REPOSSESSION_GROUND2.getLabel(),
                     TextAreaValidationService.MEDIUM_TEXT_LIMIT
                 ),
                 TextAreaValidationService.FieldValidation.of(
-                    noRentArrearsReasonForGrounds.getHolidayLet(),
+                    noRentArrearsGroundsReasons.getHolidayLet(),
                     AssuredMandatoryGround.HOLIDAY_LET_GROUND3.getLabel(),
                     TextAreaValidationService.MEDIUM_TEXT_LIMIT
                 ),
                 TextAreaValidationService.FieldValidation.of(
-                    noRentArrearsReasonForGrounds.getStudentLet(),
+                    noRentArrearsGroundsReasons.getStudentLet(),
                     AssuredMandatoryGround.STUDENT_LET_GROUND4.getLabel(),
                     TextAreaValidationService.MEDIUM_TEXT_LIMIT
                 ),
                 TextAreaValidationService.FieldValidation.of(
-                    noRentArrearsReasonForGrounds.getMinisterOfReligion(),
+                    noRentArrearsGroundsReasons.getMinisterOfReligion(),
                     AssuredMandatoryGround.MINISTER_RELIGION_GROUND5.getLabel(),
                     TextAreaValidationService.MEDIUM_TEXT_LIMIT
                 ),
                 TextAreaValidationService.FieldValidation.of(
-                    noRentArrearsReasonForGrounds.getRedevelopment(),
+                    noRentArrearsGroundsReasons.getRedevelopment(),
                     AssuredMandatoryGround.REDEVELOPMENT_GROUND6.getLabel(),
                     TextAreaValidationService.MEDIUM_TEXT_LIMIT
                 ),
                 TextAreaValidationService.FieldValidation.of(
-                    noRentArrearsReasonForGrounds.getDeathOfTenant(),
+                    noRentArrearsGroundsReasons.getDeathOfTenant(),
                     AssuredMandatoryGround.DEATH_OF_TENANT_GROUND7.getLabel(),
                     TextAreaValidationService.MEDIUM_TEXT_LIMIT
                 ),
                 TextAreaValidationService.FieldValidation.of(
-                    noRentArrearsReasonForGrounds.getAntisocialBehaviour(),
+                    noRentArrearsGroundsReasons.getAntisocialBehaviour(),
                     AssuredMandatoryGround.ANTISOCIAL_BEHAVIOUR_GROUND7A.getLabel(),
                     TextAreaValidationService.MEDIUM_TEXT_LIMIT
                 ),
                 TextAreaValidationService.FieldValidation.of(
-                    noRentArrearsReasonForGrounds.getNoRightToRent(),
+                    noRentArrearsGroundsReasons.getNoRightToRent(),
                     AssuredMandatoryGround.NO_RIGHT_TO_RENT_GROUND7B.getLabel(),
                     TextAreaValidationService.MEDIUM_TEXT_LIMIT
                 ),
                 // Discretionary grounds
                 TextAreaValidationService.FieldValidation.of(
-                    noRentArrearsReasonForGrounds.getSuitableAlternativeAccomodation(),
+                    noRentArrearsGroundsReasons.getSuitableAlternativeAccomodation(),
                     AssuredDiscretionaryGround.ALTERNATIVE_ACCOMMODATION_GROUND9.getLabel(),
                     TextAreaValidationService.MEDIUM_TEXT_LIMIT
                 ),
                 TextAreaValidationService.FieldValidation.of(
-                    noRentArrearsReasonForGrounds.getBreachOfTenancyConditions(),
+                    noRentArrearsGroundsReasons.getBreachOfTenancyConditions(),
                     AssuredDiscretionaryGround.BREACH_TENANCY_GROUND12.getLabel(),
                     TextAreaValidationService.MEDIUM_TEXT_LIMIT
                 ),
                 TextAreaValidationService.FieldValidation.of(
-                    noRentArrearsReasonForGrounds.getPropertyDeterioration(),
+                    noRentArrearsGroundsReasons.getPropertyDeterioration(),
                     AssuredDiscretionaryGround.DETERIORATION_PROPERTY_GROUND13.getLabel(),
                     TextAreaValidationService.MEDIUM_TEXT_LIMIT
                 ),
                 TextAreaValidationService.FieldValidation.of(
-                    noRentArrearsReasonForGrounds.getNuisanceOrIllegalUse(),
+                    noRentArrearsGroundsReasons.getNuisanceOrIllegalUse(),
                     AssuredDiscretionaryGround.NUISANCE_ANNOYANCE_GROUND14.getLabel(),
                     TextAreaValidationService.MEDIUM_TEXT_LIMIT
                 ),
                 TextAreaValidationService.FieldValidation.of(
-                    noRentArrearsReasonForGrounds.getDomesticViolence(),
+                    noRentArrearsGroundsReasons.getDomesticViolence(),
                     AssuredDiscretionaryGround.DOMESTIC_VIOLENCE_GROUND14A.getLabel(),
                     TextAreaValidationService.MEDIUM_TEXT_LIMIT
                 ),
                 TextAreaValidationService.FieldValidation.of(
-                    noRentArrearsReasonForGrounds.getOffenceDuringRiot(),
+                    noRentArrearsGroundsReasons.getOffenceDuringRiot(),
                     AssuredDiscretionaryGround.OFFENCE_RIOT_GROUND14ZA.getLabel(),
                     TextAreaValidationService.MEDIUM_TEXT_LIMIT
                 ),
                 TextAreaValidationService.FieldValidation.of(
-                    noRentArrearsReasonForGrounds.getFurnitureDeterioration(),
+                    noRentArrearsGroundsReasons.getFurnitureDeterioration(),
                     AssuredDiscretionaryGround.DETERIORATION_FURNITURE_GROUND15.getLabel(),
                     TextAreaValidationService.MEDIUM_TEXT_LIMIT
                 ),
                 TextAreaValidationService.FieldValidation.of(
-                    noRentArrearsReasonForGrounds.getLandlordEmployee(),
+                    noRentArrearsGroundsReasons.getLandlordEmployee(),
                     AssuredDiscretionaryGround.EMPLOYEE_LANDLORD_GROUND16.getLabel(),
                     TextAreaValidationService.MEDIUM_TEXT_LIMIT
                 ),
                 TextAreaValidationService.FieldValidation.of(
-                    noRentArrearsReasonForGrounds.getFalseStatement(),
+                    noRentArrearsGroundsReasons.getFalseStatement(),
                     AssuredDiscretionaryGround.FALSE_STATEMENT_GROUND17.getLabel(),
+                    TextAreaValidationService.MEDIUM_TEXT_LIMIT
+                ),
+                TextAreaValidationService.FieldValidation.of(
+                    noRentArrearsGroundsReasons.getOtherGround(),
+                    AssuredAdditionalOtherGround.OTHER.getLabel(),
                     TextAreaValidationService.MEDIUM_TEXT_LIMIT
                 )
             ));

@@ -27,19 +27,16 @@ import java.util.List;
 public class DefendantResponses {
 
     @CCD
-    private YesNoNotSure tenancyTypeCorrect;
+    private YesNoNotSure tenancyTypeConfirmation;
 
     @CCD
     private String tenancyType;
 
     @CCD
-    private YesNoNotSure tenancyStartDateCorrect;
+    private YesNoNotSure tenancyStartDateConfirmation;
 
     @CCD
     private LocalDate tenancyStartDate;
-
-    @CCD
-    private YesNoNotSure tenancyStartDateConfirmation;
 
     @CCD
     private YesNoNotSure rentArrearsAmountConfirmation;
@@ -119,6 +116,16 @@ public class DefendantResponses {
 
     @CCD(max = 6400)
     private String otherConsiderationsDetails;
+    
     @CCD
     private VerticalYesNo makeCounterClaim;
+
+    @CCD
+    private VerticalYesNo counterClaimWantToUploadFiles;
+    @CCD(
+        access = {CitizenAccess.class},
+        typeOverride = FieldType.MultiSelectList,
+        typeParameterOverride = "RespondToClaimSection"
+    )
+    private List<RespondToClaimSection> completedSections;
 }

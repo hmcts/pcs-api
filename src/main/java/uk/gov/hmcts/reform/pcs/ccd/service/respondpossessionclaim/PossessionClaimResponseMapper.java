@@ -38,6 +38,7 @@ public class PossessionClaimResponseMapper {
      */
     public PossessionClaimResponse mapFrom(PCSCase pcsCase, PartyEntity matchedDefendant) {
         DefendantContactDetails contactDetails = buildContactDetails(pcsCase, matchedDefendant);
+        String currentDefendantPartyId = matchedDefendant.getId() != null ? matchedDefendant.getId().toString() : null;
 
         Party claimantEnteredDetails = buildPartyFromEntity(matchedDefendant, pcsCase);
 
@@ -48,6 +49,7 @@ public class PossessionClaimResponseMapper {
             .claimantOrganisations(claimantOrgs)
             .defendantContactDetails(contactDetails)
             .claimantEnteredDefendantDetails(claimantEnteredDetails)
+            .currentDefendantPartyId(currentDefendantPartyId)
             .build();
     }
 
@@ -59,7 +61,17 @@ public class PossessionClaimResponseMapper {
      * @return DefendantContactDetails with initialized party details
      */
     private DefendantContactDetails buildContactDetails(PCSCase pcsCase, PartyEntity matchedDefendant) {
-        Party defendantParty = buildPartyFromEntity(matchedDefendant, pcsCase);
+        AddressUK contactAddress = resolveAddress(matchedDefendant, pcsCase);
+
+        Party defendantParty = Party.builder()
+            .firstName(matchedDefendant.getFirstName())
+            .lastName(matchedDefendant.getLastName())
+            .emailAddress(matchedDefendant.getEmailAddress())
+            .address(contactAddress)
+            .phoneNumber(matchedDefendant.getPhoneNumber())
+            .phoneNumberProvided(matchedDefendant.getPhoneNumberProvided())
+            .dateOfBirth(matchedDefendant.getDateOfBirth())
+            .build();
 
         return DefendantContactDetails.builder()
             .party(defendantParty)

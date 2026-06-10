@@ -5,14 +5,18 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
+import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
+import uk.gov.hmcts.reform.pcs.ccd.domain.UploadedDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+
+import java.util.List;
 
 @Builder
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class CitizenGenAppRequest {
+public class CitizenGenAppRequest implements GenAppRequest {
 
     private GenAppType applicationType;
 
@@ -35,6 +39,10 @@ public class CitizenGenAppRequest {
     @CCD(max = 6800)
     private String whatOrderWanted;
 
+    private VerticalYesNo hasSupportingDocuments;
+
+    private List<ListValue<UploadedDocument>> uploadedDocuments;
+
     private LanguageUsed languageUsed;
 
     private VerticalYesNo sotAccepted;
@@ -44,5 +52,11 @@ public class CitizenGenAppRequest {
 
     @CCD(max = 60)
     private String clientReference;
+
+    @CCD(max = 100)
+    protected String sotFirmName;
+
+    @CCD(max = 100)
+    protected String sotPositionHeld;
 
 }

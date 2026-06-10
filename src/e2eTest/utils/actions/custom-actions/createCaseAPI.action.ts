@@ -1,9 +1,12 @@
 import Axios from 'axios';
 import { actionData, actionRecord, IAction } from '@utils/interfaces';
 import { Page } from '@playwright/test';
-import { createCaseApiData, createCaseEventTokenApiData, submitCaseApiData, submitCaseEventTokenApiData, caseUserRoleDeletionApiData, enforceOrderEventTokenApiData, enforceWarrantApiData } from '@data/api-data';
+import { createCaseApiData, createCaseEventTokenApiData, submitCaseApiData, submitCaseEventTokenApiData, caseUserRoleDeletionApiData, enforceOrderEventTokenApiData, enforceWarrantApiData, getCaseApiData } from '@data/api-data';
 import { user } from '@data/user-data';
 import { caseNumber } from './createCase.action';
+import { performAction } from '@utils/controller';
+import { fetchCurrentUserTokenApiData } from '@data/api-data/fetchCurrentUser.api.data';
+import { formatDateTimeBST } from '@utils/common/string.utils';
 
 export let caseInfo: { id: string; fid: string; state: string } = { id: '', fid: '', state: '' };
 
@@ -14,6 +17,8 @@ export class CreateCaseAPIAction implements IAction {
       ['submitCaseAPI', () => this.submitCaseAPI(fieldName)],
       ['deleteCaseRole', () => this.deleteCaseRole(fieldName)],
       ['enforceCaseAPI', () => this.enforceCaseAPI(fieldName)],
+      ['fetchCurrentUserAPI', () => this.fetchCurrentUserAPI()],
+      ['getCaseAPI', () => this.getCaseAPI(fieldName)],
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -57,9 +62,10 @@ export class CreateCaseAPIAction implements IAction {
 
   private async submitCaseAPI(caseData: actionData): Promise<void> {
     const submitCaseApi = Axios.create(submitCaseEventTokenApiData.submitCaseEventTokenApiInstance());
+    let submitCasePayloadData;
     try {
       process.env.SUBMIT_EVENT_TOKEN = (await submitCaseApi.get(submitCaseEventTokenApiData.submitCaseEventTokenApiEndPoint())).data.token;
-      const submitCasePayloadData = typeof caseData === "object" && "data" in caseData ? caseData.data : caseData;
+      submitCasePayloadData = typeof caseData === "object" && "data" in caseData ? caseData.data : caseData;
       const submitResponse = await submitCaseApi.post(submitCaseApiData.submitCaseApiEndPoint(), {
         data: submitCasePayloadData,
         event: { id: submitCaseApiData.submitCaseEventName },
@@ -72,8 +78,8 @@ export class CreateCaseAPIAction implements IAction {
       const status = error?.response?.status;
       const responseBody = error?.response?.data;
       if (status === 404) {
-        console.error(submitCaseApiData.submitCasePayload);
-        throw new Error(`Submission failed: endpoint not found (404).please check the payload above \n ${error}`);
+        console.error(submitCasePayloadData);
+        throw new Error(`Submission failed: endpoint not found (404).please check the payload below \n ${error}`);
       }
       console.error("=== ERROR RESPONSE ===");
       console.error("HTTP Status:", status);
@@ -163,5 +169,90 @@ export class CreateCaseAPIAction implements IAction {
         console.warn(`Case user removal failed with status ${status}. ${errorMessage}`);
       }
     }
+  }
+
+  private async getCaseAPI(getDetails: actionData): Promise<void> {
+    const getCaseApi = Axios.create(createCaseEventTokenApiData.createCaseEventTokenApiInstance());
+
+    //process.env.CREATE_EVENT_TOKEN = (await getCaseApi.get(createCaseEventTokenApiData.createCaseEventTokenApiEndPoint)).data.token;
+    try {
+      const createResponse = await getCaseApi.get(getCaseApiData.getCaseApiEndPoint());
+      if (typeof getDetails === 'string' && getDetails === 'Claim Submission Time') {
+        process.env.Submission_TIME = formatDateTimeBST(createResponse.data.last_state_modified_on);
+        console.log(`\n✅ The claim was submitted on "${process.env.Submission_TIME}"`)
+      } else {
+        await this.generateSolicitorAccessToken();
+        const allDefendants = createResponse.data.data.allDefendants;
+        const defendantIds = allDefendants.map((d: any) => d.id);
+        if (defendantIds.length === 0) throw new Error(`No Defendants ID retrieved and the status is ${createResponse.status}`);
+
+        for (const defendantId of defendantIds) {
+          process.env.Defendant_ID = defendantId;
+
+          await performAction('linkSolicitorAPI');
+        }
+        console.log(`\n✅ GET DEFENDANT ID SUCCESSFUL : STATUS ${createResponse.status}`);
+      }    
+
+    } catch (error: any) {
+      const status = error?.response?.status;
+      const responseBody = error?.response?.data;
+
+      console.error("=== ERROR RESPONSE ===");
+      console.error("HTTP Status:", status);
+      console.error("Exception:", responseBody?.exception);
+      console.error("Error:", responseBody?.error);
+      console.error("Message:", responseBody?.message);
+      console.error("Path:", responseBody?.path);
+      console.error("Timestamp:", responseBody?.timestamp);
+      console.error("Full response body:", JSON.stringify(responseBody, null, 2));
+
+      if (!status) {
+        throw new Error('Defendant id not retrieved: no response from server.');
+      }
+      throw new Error(`Retrieving defendant id  failed with status ${status}.Response received is ${responseBody?.message}}`);
+    }
+
+  }
+
+  private async generateSolicitorAccessToken(): Promise<void> {
+    const { IdamUtils } = await import('@hmcts/playwright-common');
+    process.env.SOLICITOR_ACCESS_TOKEN = await new IdamUtils().generateIdamToken({
+      username: user.defendantSolicitor.email,
+      password: user.defendantSolicitor.password,
+      grantType: 'password',
+      clientId: 'pcs-api',
+      clientSecret: process.env.PCS_API_IDAM_SECRET as string,
+      scope: 'profile openid roles',
+    });
+  }
+
+  private async fetchCurrentUserAPI(): Promise<void> {
+    const fetchUserCaseApi = Axios.create(fetchCurrentUserTokenApiData.fetchCurrentUserTokenApiInstance());
+
+    try {
+      const userResponse = await fetchUserCaseApi.get(fetchCurrentUserTokenApiData.fetchCurrentUserApiEndPoint());
+      process.env.Display_NAME = await userResponse.data.displayName;
+      console.log(`\n✅ FETCH CURRENT USER:`);
+      console.log(`Successfully fetched Current User: ${process.env.Display_NAME}`);
+    } catch (error: any) {
+      const status = error?.response?.status;
+      const responseBody = error?.response?.data;
+
+      console.error("=== ERROR RESPONSE ===");
+      console.error("HTTP Status:", status);
+      console.error("Exception:", responseBody?.exception);
+      console.error("Error:", responseBody?.error);
+      console.error("Message:", responseBody?.message);
+      console.error("Path:", responseBody?.path);
+      console.error("Timestamp:", responseBody?.timestamp);
+      console.error("Full response body:", JSON.stringify(responseBody, null, 2));
+
+      if (!status) {
+        throw new Error('Current user not fetched: no response from server.');
+      }
+      throw new Error(`Fetching current user failed with status ${status}.Response received is ${responseBody?.message}}`);
+    }
+
   }
 }
