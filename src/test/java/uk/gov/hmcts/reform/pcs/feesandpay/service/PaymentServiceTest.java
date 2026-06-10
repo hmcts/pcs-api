@@ -197,18 +197,19 @@ class PaymentServiceTest {
     @DisplayName("Process payment request tests")
     class ProcessPaymentRequestTests {
 
-        @Test
-        void shouldProcessPaymentResponse() {
+        @ParameterizedTest
+        @EnumSource(PaymentStatus.class)
+        void shouldProcessPaymentResponse(PaymentStatus status) {
             // Given
             String requestReference = UUID.randomUUID().toString();
             String paymentReference = UUID.randomUUID().toString();
             Payment payment = Payment.builder().paymentReference(paymentReference).build();
             PaymentStatusCallback paymentStatusCallback = PaymentStatusCallback.builder()
-                .serviceRequestReference(requestReference).serviceRequestStatus(PaymentStatus.PAID.getValue())
+                .serviceRequestReference(requestReference).serviceRequestStatus(status.getValue())
                 .payment(payment).build();
 
             FeePaymentEntity feePaymentEntity = FeePaymentEntity.builder()
-                .paymentStatus(PaymentStatus.PAID)
+                .paymentStatus(status)
                 .requestReference(requestReference)
                 .externalReference(paymentReference)
                 .paymentCallbackHandlerType(CLAIM)
@@ -229,7 +230,7 @@ class PaymentServiceTest {
             FeePaymentEntity paymentEntity = feePaymentCaptor.getValue();
 
             assertThat(paymentEntity.getRequestReference()).isEqualTo(requestReference);
-            assertThat(paymentEntity.getPaymentStatus()).isEqualTo(PaymentStatus.PAID);
+            assertThat(paymentEntity.getPaymentStatus()).isEqualTo(status);
             assertThat(paymentEntity.getExternalReference()).isEqualTo(paymentReference);
         }
 
