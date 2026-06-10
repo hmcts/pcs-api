@@ -1105,4 +1105,60 @@ class DocumentServiceTest {
         assertThat(entities.getFirst().getFileName()).isEqualTo("file1.pdf");
     }
 
+    private static Stream<Arguments> additionalDocumentTypeScenarios() {
+        return Stream.of(
+            Arguments.of(
+                AdditionalDocumentType.WITNESS_STATEMENT,
+                DocumentType.WITNESS_STATEMENT
+            ),
+            Arguments.of(
+                AdditionalDocumentType.RENT_STATEMENT,
+                DocumentType.RENT_STATEMENT
+            ),
+            Arguments.of(
+                AdditionalDocumentType.TENANCY_AGREEMENT,
+                DocumentType.TENANCY_AGREEMENT
+            ),
+            Arguments.of(
+                AdditionalDocumentType.CERTIFICATE_OF_SERVICE,
+                DocumentType.CERTIFICATE_OF_SERVICE
+            ),
+            Arguments.of(
+                AdditionalDocumentType.CORRESPONDENCE_FROM_DEFENDANT,
+                DocumentType.CORRESPONDENCE_FROM_DEFENDANT
+            ),
+            Arguments.of(
+                AdditionalDocumentType.CORRESPONDENCE_FROM_CLAIMANT,
+                DocumentType.CORRESPONDENCE_FROM_CLAIMANT
+            ),
+            Arguments.of(
+                AdditionalDocumentType.POSSESSION_NOTICE,
+                DocumentType.POSSESSION_NOTICE
+            ),
+            Arguments.of(
+                AdditionalDocumentType.NOTICE_FOR_SERVICE_OUT_OF_JURISDICTION,
+                DocumentType.NOTICE_FOR_SERVICE_OUT_OF_JURISDICTION
+            ),
+            Arguments.of(
+                AdditionalDocumentType.PHOTOGRAPHIC_EVIDENCE,
+                DocumentType.PHOTOGRAPHIC_EVIDENCE
+            ),
+            Arguments.of(
+                AdditionalDocumentType.INSPECTION_OR_REPORT,
+                DocumentType.INSPECTION_OR_REPORT
+            ),
+            Arguments.of(
+                AdditionalDocumentType.CERTIFICATE_OF_SUITABILITY_AS_LF,
+                DocumentType.CERTIFICATE_OF_SUITABILITY_AS_LF
+            ),
+            Arguments.of(
+                AdditionalDocumentType.LEGAL_AID_CERTIFICATE,
+                DocumentType.LEGAL_AID_CERTIFICATE
+            ),
+            Arguments.of(
+                AdditionalDocumentType.OTHER,
+                DocumentType.OTHER
+            )
+        );
+    }
 }
