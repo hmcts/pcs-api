@@ -6,8 +6,9 @@ export const home =
     createCaseTab: 'Create case',
     findCaseTab: 'Find case',
     caseParties: 'Case Parties',
+    globalSearchTab: 'Search',
     caseNotes: 'Notes',
     caseSummary: 'Summary',
     caseDetails: 'Case Details',
     signOutButton: 'Sign out'
-  }
+  };
