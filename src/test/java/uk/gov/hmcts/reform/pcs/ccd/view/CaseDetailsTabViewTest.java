@@ -440,7 +440,7 @@ class CaseDetailsTabViewTest {
         CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase);
 
         // Then
-        assertThat(caseDetailsTab.getMortgageDetails()).isNull();
+        assertThat(caseDetailsTab.getMortgageDetails()).isEmpty();
         assertThat(caseDetailsTab.getMortgageOneDetails().getNameKnown()).isEqualTo("Yes");
         assertThat(caseDetailsTab.getMortgageOneDetails().getName())
             .isEqualTo("underlessee name");
@@ -1061,7 +1061,7 @@ class CaseDetailsTabViewTest {
         assertThat(caseDetailsTab.getActionsTakenDetails().getPreactionProtocolFollowed()).isEqualTo("No");
         assertThat(caseDetailsTab.getActionsTakenDetails().getMediationAttempted()).isEqualTo("Yes");
         assertThat(caseDetailsTab.getActionsTakenDetails().getSettlementAttempted()).isEqualTo("Yes");
-        assertThat(caseDetailsTab.getMortgageDetails()).isNull();
+        assertThat(caseDetailsTab.getMortgageDetails()).isEmpty();
         assertThat(caseDetailsTab.getMortgageOneDetails().getNameKnown()).isEqualTo("Yes");
         assertThat(caseDetailsTab.getMortgageOneDetails().getName()).isEqualTo("underlessee name");
         assertThat(caseDetailsTab.getMortgageOneDetails().getAddressKnown()).isEqualTo("Yes");
