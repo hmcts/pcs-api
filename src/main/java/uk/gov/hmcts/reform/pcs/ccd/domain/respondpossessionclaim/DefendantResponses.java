@@ -119,9 +119,12 @@ public class DefendantResponses {
 
     @CCD(max = 6400)
     private String otherConsiderationsDetails;
+    
     @CCD
     private VerticalYesNo makeCounterClaim;
 
+    @CCD
+    private VerticalYesNo counterClaimWantToUploadFiles;
     @CCD(
         access = {CitizenAccess.class},
         typeOverride = FieldType.MultiSelectList,
