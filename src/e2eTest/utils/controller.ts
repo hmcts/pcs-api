@@ -173,4 +173,3 @@ function readValuesFromInputObjects(obj: object): string {
   });
   return `${formattedPairs.join(', ')}`;
 }
-

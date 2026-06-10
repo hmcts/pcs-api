@@ -90,6 +90,31 @@ class PaymentNotificationServiceTest {
     }
 
     @Test
+    void shouldNotSendNotificationWhenFeePaymentHasNoParty() {
+        UUID counterClaimId = UUID.randomUUID();
+
+        CounterClaimEntity counterClaim = mock(CounterClaimEntity.class);
+        PartyEntity defendant = mock(PartyEntity.class);
+
+        PcsCaseEntity pcsCase = mock(PcsCaseEntity.class);
+
+        FeePaymentEntity feePayment = mock(FeePaymentEntity.class);
+        when(feePayment.getParty()).thenReturn(null);
+
+        ClaimEntity claim = mock(ClaimEntity.class);
+        when(claim.getFeePayment()).thenReturn(feePayment);
+
+        when(counterClaimRepository.findById(counterClaimId)).thenReturn(Optional.of(counterClaim));
+        when(counterClaim.getParty()).thenReturn(defendant);
+        when(counterClaim.getPcsCase()).thenReturn(pcsCase);
+        when(pcsCase.getClaims()).thenReturn(List.of(claim));
+
+        underTest.sendCounterClaimPaymentSuccessNotification(counterClaimId);
+
+        verifyNoInteractions(notificationService);
+    }
+
+    @Test
     void shouldNotSendNotificationWhenNoFeePaymentFoundForCounterclaim() {
         UUID counterClaimId = UUID.randomUUID();
 
