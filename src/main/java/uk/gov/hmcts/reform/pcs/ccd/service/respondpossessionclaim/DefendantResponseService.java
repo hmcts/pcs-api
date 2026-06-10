@@ -163,6 +163,7 @@ public class DefendantResponseService {
             .disputeClaim(responses.getDisputeClaim())
             .disputeClaimDetails(responses.getDisputeClaimDetails())
             .makeCounterClaim(responses.getMakeCounterClaim())
+            .counterClaimWantToUploadFiles(responses.getCounterClaimWantToUploadFiles())
             .tenancyStartDateConfirmation(responses.getTenancyStartDateConfirmation())
             .tenancyTypeConfirmation(responses.getTenancyTypeConfirmation())
             .landlordLicensed(responses.getLandlordLicensed())

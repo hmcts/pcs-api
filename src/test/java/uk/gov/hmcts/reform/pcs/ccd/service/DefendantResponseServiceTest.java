@@ -1070,4 +1070,40 @@ class DefendantResponseServiceTest {
             Arguments.of((VerticalYesNo) null)
         );
     }
+
+    @ParameterizedTest(name = "counterClaimWantToUploadFiles={0}")
+    @MethodSource("counterClaimWantToUploadFilesPersistenceScenarios")
+    void shouldPersistCounterClaimWantToUploadFiles(VerticalYesNo counterClaimWantToUploadFiles) {
+        // Given
+        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
+        when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
+            CASE_REFERENCE, USER_ID)).thenReturn(false);
+        stubPartyLookup();
+        stubClaimLookup();
+
+        DefendantResponses responses = DefendantResponses.builder()
+            .counterClaimWantToUploadFiles(counterClaimWantToUploadFiles)
+            .build();
+
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .defendantResponses(responses)
+            .build();
+
+        // When
+        underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse);
+
+        // Then
+        verify(defendantResponseRepository).save(responseCaptor.capture());
+        DefendantResponseEntity savedResponse = responseCaptor.getValue();
+
+        assertThat(savedResponse.getCounterClaimWantToUploadFiles()).isEqualTo(counterClaimWantToUploadFiles);
+    }
+
+    private static Stream<Arguments> counterClaimWantToUploadFilesPersistenceScenarios() {
+        return Stream.of(
+            Arguments.of(VerticalYesNo.YES),
+            Arguments.of(VerticalYesNo.NO),
+            Arguments.of((VerticalYesNo) null)
+        );
+    }
 }
