@@ -120,6 +120,9 @@ public class DefendantResponses {
     @CCD
     private VerticalYesNo makeCounterClaim;
 
+    @CCD
+    private VerticalYesNo counterClaimWantToUploadFiles;
+
     @CCD(max = 100)
     private String statementOfTruthCompletedBy;
 }

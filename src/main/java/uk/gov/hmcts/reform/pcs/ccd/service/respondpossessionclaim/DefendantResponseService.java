@@ -262,7 +262,7 @@ public class DefendantResponseService {
         );
     }
 
-    private void saveCounterClaim(DefendantResponses responses, PartyEntity partyRef, ClaimEntity claimRef) {
+    private CounterClaimEntity saveCounterClaim(DefendantResponses responses, PartyEntity partyRef, ClaimEntity claimRef) {
         CounterClaim cc = responses.getCounterClaim();
         if (cc == null) {
             return null;
