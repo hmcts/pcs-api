@@ -203,7 +203,8 @@ class PcsCaseServiceTest {
             .legislativeCountry(LegislativeCountry.ENGLAND)
             .build();
         when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
-        when(postCodeCourtService.getCourtManagementLocation(postcode, LegislativeCountry.ENGLAND)).thenReturn(newEpimsId);
+        when(postCodeCourtService.getCourtManagementLocation(postcode, LegislativeCountry.ENGLAND))
+            .thenReturn(newEpimsId);
 
         // When
         underTest.allocateCaseManagementLocation(CASE_REFERENCE);
