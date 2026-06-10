@@ -98,6 +98,7 @@ export class ActionRegistry {
     ['changeSearchLink', new GlobalSearchCaseAction()],
     ['handleJudgeBookingPage', new GlobalSearchCaseAction()],
     ['validateResults', new GlobalSearchCaseAction()],
+    ['validateResultsWithRetry', new GlobalSearchCaseAction()],
     ['selectClaimingCosts', new CreateCaseAction()],
     ['wantToUploadDocuments', new CreateCaseAction()],
     ['uploadAdditionalDocs', new CreateCaseAction()],

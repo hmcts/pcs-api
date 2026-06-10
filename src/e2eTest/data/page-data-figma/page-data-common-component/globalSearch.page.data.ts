@@ -46,5 +46,6 @@ export const globalSearch =
     searchButton: 'Search',
     invalidCaseReferenceInputText: '0000000000000000',
     invalidPostcodeInputText: 'ZZ99 9ZZ',
-    invalidNameInputText: 'XYZ_NonExistent_Name_ABC'
+    invalidNameInputText: 'XYZ_NonExistent_Name_ABC',
+    nextLink: 'Next page'
   }
