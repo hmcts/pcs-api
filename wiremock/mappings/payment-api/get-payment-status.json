@@ -1,0 +1,15 @@
+{
+  "request": {
+    "method": "GET",
+    "urlPathTemplate": "/payments/card-payments/{internalReference}/status"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "status": "{{ regexExtract request.path.internalReference 'internal-ref-for-(.+)' 'status'}}{{ status.0 }}"
+    }
+  }
+}

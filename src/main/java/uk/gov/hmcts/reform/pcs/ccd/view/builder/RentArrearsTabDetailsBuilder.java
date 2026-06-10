@@ -10,7 +10,9 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsSection;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentPaymentFrequency;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.ClaimGroundSummary;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.RentArrearsTabDetails;
+import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -21,6 +23,10 @@ public class RentArrearsTabDetailsBuilder {
     private static final String NO_ANSWER = " ";
 
     public RentArrearsTabDetails buildRentArrearsTabDetails(PCSCase pcsCase) {
+        if (hasCurrentGroundSummariesWithoutRentArrears(pcsCase)) {
+            return null;
+        }
+
         RentDetails rentDetails = pcsCase.getRentDetails();
         RentArrearsSection rentArrears = pcsCase.getRentArrears();
 
@@ -48,6 +54,27 @@ public class RentArrearsTabDetailsBuilder {
             .build();
     }
 
+    private boolean hasCurrentGroundSummariesWithoutRentArrears(PCSCase pcsCase) {
+        if (CollectionUtils.isEmpty(pcsCase.getClaimGroundSummaries())) {
+            return false;
+        }
+
+        boolean hasRentArrearsFlag = false;
+        for (ListValue<ClaimGroundSummary> summaryListValue : pcsCase.getClaimGroundSummaries()) {
+            ClaimGroundSummary summary = summaryListValue.getValue();
+            if (summary == null || summary.getIsRentArrears() == null) {
+                continue;
+            }
+
+            hasRentArrearsFlag = true;
+            if (summary.getIsRentArrears() == YesOrNo.YES) {
+                return false;
+            }
+        }
+
+        return hasRentArrearsFlag;
+    }
+
     public RentArrearsTabDetails buildDetailedRentArrearsTabDetails(PCSCase pcsCase) {
         if (pcsCase.getShowRentSectionPage() != YesOrNo.YES) {
             return null;
@@ -72,18 +99,24 @@ public class RentArrearsTabDetailsBuilder {
 
             rentArrearsTabDetails = RentArrearsTabDetails.builder()
                 .rentAmount(rentAmount != null ? rentAmount : NO_ANSWER)
-                .calculationFrequency(calculationFrequency != null ? calculationFrequency : NO_ANSWER)
                 .dailyRate(dailyRate != null ? dailyRate : NO_ANSWER)
                 .judgmentRequested(judgmentRequested)
                 .frequency(frequency)
                 .build();
+
+            setFrequency(
+                rentArrearsTabDetails,
+                pcsCase.getLegislativeCountry(),
+                calculationFrequency != null ? calculationFrequency : NO_ANSWER
+            );
         } else {
             rentArrearsTabDetails = RentArrearsTabDetails.builder()
                 .rentAmount(NO_ANSWER)
-                .calculationFrequency(NO_ANSWER)
                 .dailyRate(NO_ANSWER)
                 .judgmentRequested(judgmentRequested)
                 .build();
+
+            setFrequency(rentArrearsTabDetails, pcsCase.getLegislativeCountry(), NO_ANSWER);
         }
 
         if (rentArrears != null) {
@@ -164,5 +197,17 @@ public class RentArrearsTabDetailsBuilder {
         }
 
         return rentDetails.getFrequency().getLabel();
+    }
+
+    private void setFrequency(
+        RentArrearsTabDetails rentArrearsTabDetails,
+        LegislativeCountry country,
+        String frequency
+    ) {
+        if (country == LegislativeCountry.WALES) {
+            rentArrearsTabDetails.setRentFrequency(frequency);
+        } else {
+            rentArrearsTabDetails.setCalculationFrequency(frequency);
+        }
     }
 }
