@@ -1,4 +1,4 @@
-import {IAction} from '@utils/interfaces';
+import {actionRecord, IAction} from '@utils/interfaces';
 import {ClickTabAction} from '@utils/actions/element-actions/clickTab.action';
 import {InputTextAction} from '@utils/actions/element-actions/inputText.action';
 import {CheckAction} from '@utils/actions/element-actions/check.action';
@@ -18,7 +18,7 @@ import {ClickLinkAction} from '@utils/actions/element-actions/clickLink.action';
 import {CreateCaseAPIAction} from '@utils/actions/custom-actions/createCaseAPI.action';
 import {ExpandSummaryAction} from '@utils/actions/element-actions';
 import {FeeAndPayAction } from '@utils/actions/custom-actions/commonComponent/feeAndPay.action';
-import {CaseFlagAction } from '@utils/actions/custom-actions/commonComponent/caseFlag.action'; 
+import {CaseFlagAction } from '@utils/actions/custom-actions/commonComponent/caseFlag.action';
 import {CaseLinking } from '@utils/actions/custom-actions/commonComponent/caseLinking.action';
 import { LinkSolicitorAPIAction } from '@utils/actions/custom-actions/linkSolicitorAPI.action';
 
@@ -91,6 +91,7 @@ export class ActionRegistry {
     ['selectHousingAct', new CreateCaseAction()],
     ['enterReasonForSuspensionOrder', new CreateCaseAction()],
     ['searchCaseFromFindCase', new SearchCaseAction()],
+    ['searchCase', new SearchCaseAction()],
     ['filterCaseFromCaseList', new SearchCaseAction()],
     ['accessingTheSearch', new GlobalSearchCaseAction()],
     ['searchByCaseReference', new GlobalSearchCaseAction()],
@@ -129,9 +130,16 @@ export class ActionRegistry {
     ['viewCaseFlags', new CaseFlagAction()],
     ['manageCaseFlags', new CaseFlagAction()],
     ['makeFlagInactive', new CaseFlagAction()],
+    ['navigateToCaseSummary', new CaseFlagAction()],
+    ['canCreateCaseLevelFlag', new CaseFlagAction()],
+    ['canCreatePartyLevelFlag', new CaseFlagAction()],
+    ['canManageCaseLevelFlag', new CaseFlagAction()],
+    ['canManagePartyLevelFlag', new CaseFlagAction()],
+    ['canViewCaseAndPartyFlag', new CaseFlagAction()],
     ['selectCasesToLink', new CaseLinking()],
     ['selectCasesToUnLink', new CaseLinking()],
     ['verifyLinkedCases', new CaseLinking()],
+    ['handleJudgeBookingPage', new CaseFlagAction()],
     ['searchResults', new GlobalSearchCaseAction()],
     ['enterPaymentDetails', new FeeAndPayAction()]
   ]);
