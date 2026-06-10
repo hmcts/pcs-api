@@ -17,6 +17,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.claim.RentArrearsEntity;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mock.Strictness.LENIENT;
@@ -82,9 +83,11 @@ class RentArrearsViewTest {
         when(rentArrearsEntity.getArrearsJudgmentWanted()).thenReturn(VerticalYesNo.YES);
         when(rentArrearsEntity.getRecoveryAttempted()).thenReturn(VerticalYesNo.YES);
         when(rentArrearsEntity.getRecoveryAttemptDetails()).thenReturn(details);
+        UUID rentDocumentId = UUID.randomUUID();
         when(pcsCaseEntity.getDocuments()).thenReturn(
             List.of(
                 DocumentEntity.builder()
+                    .id(rentDocumentId)
                     .type(DocumentType.RENT_STATEMENT)
                     .build()
             )

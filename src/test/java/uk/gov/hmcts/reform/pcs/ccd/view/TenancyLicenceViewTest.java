@@ -6,6 +6,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.ccd.sdk.type.Document;
+import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CombinedLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -21,6 +23,7 @@ import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -73,9 +76,12 @@ class TenancyLicenceViewTest {
         when(tenancyLicenceEntity.getStartDate()).thenReturn(tenancyStartDate);
         when(tenancyLicenceEntity.getHasCopyOfTenancyLicence()).thenReturn(hasCopyOfTenancyLicence);
         when(tenancyLicenceEntity.getReasonsForNoTenancyLicence()).thenReturn(reasonsForNoTenancyLicence);
+
+        UUID tenancyLicenceDocumentId = UUID.randomUUID();
         when(pcsCaseEntity.getDocuments()).thenReturn(
             List.of(
                 DocumentEntity.builder()
+                    .id(tenancyLicenceDocumentId)
                     .type(DocumentType.TENANCY_LICENCE)
                     .build()
             )
@@ -98,7 +104,10 @@ class TenancyLicenceViewTest {
         assertThat(tenancyLicenceDetails.getHasCopyOfTenancyLicence()).isEqualTo(hasCopyOfTenancyLicence);
         assertThat(tenancyLicenceDetails.getReasonsForNoTenancyLicenceDocuments())
             .isEqualTo(reasonsForNoTenancyLicence);
-        assertThat(tenancyLicenceDetails.getTenancyLicenceDocuments()).hasSize(1);
+
+        List<ListValue<Document>> tenancyLicenceDocuments = tenancyLicenceDetails.getTenancyLicenceDocuments();
+        assertThat(tenancyLicenceDocuments).hasSize(1);
+        assertThat(tenancyLicenceDocuments.getFirst().getId()).isEqualTo(tenancyLicenceDocumentId.toString());
     }
 
     @Test
