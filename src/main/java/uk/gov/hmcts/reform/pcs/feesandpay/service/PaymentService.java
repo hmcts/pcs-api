@@ -82,7 +82,7 @@ public class PaymentService {
                                                       feesAndPayTaskData.getVolume());
         CasePaymentRequestDto casePaymentRequest = paymentRequestMapper.toCasePaymentRequest(
             feesAndPayTaskData.getResponsiblePartyName());
-        log.info("casePaymentRequest: {}", casePaymentRequest);
+
         long caseReference = feesAndPayTaskData.getCaseReference();
         CreateServiceRequestDTO requestDto = CreateServiceRequestDTO.builder()
             .callBackUrl(callbackUrl)

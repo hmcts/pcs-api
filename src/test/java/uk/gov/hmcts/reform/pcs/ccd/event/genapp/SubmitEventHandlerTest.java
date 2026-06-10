@@ -175,10 +175,13 @@ class SubmitEventHandlerTest {
             GenAppEntity genAppEntity = stubCreateGenAppEntity(genAppRequest, pcsCaseEntity, representedParty);
             when(genAppEntity.getId()).thenReturn(expectedGenAppEntityId);
 
+            FeeDetails expectedFeeDetails;
+
             if (feeApplies) {
-                stubApplicationFeeCalculation(genAppRequest);
+                expectedFeeDetails = stubApplicationFeeCalculation(genAppRequest);
             } else {
                 stubNoApplicationFee(genAppRequest);
+                expectedFeeDetails = null;
             }
 
             PCSCase caseData = PCSCase.builder()
@@ -190,7 +193,6 @@ class SubmitEventHandlerTest {
             underTest.submit(eventPayload(caseData));
 
             // Then
-
             if (feeApplies) {
                 verify(schedulerClient).scheduleIfNotExists(schedulableInstanceCaptor.capture());
                 SchedulableInstance<FeesAndPayTaskData> schedulableInstance = schedulableInstanceCaptor.getValue();
@@ -198,6 +200,7 @@ class SubmitEventHandlerTest {
 
                 assertThat(feesAndPayTaskData.getCcdCaseNumber()).isEqualTo(Long.toString(TEST_CASE_REFERENCE));
                 assertThat(feesAndPayTaskData.getCaseReference()).isEqualTo(TEST_CASE_REFERENCE);
+                assertThat(feesAndPayTaskData.getFeeDetails()).isEqualTo(expectedFeeDetails);
                 assertThat(feesAndPayTaskData.getResponsiblePartyName()).isEqualTo(CURRENT_USER_FULL_NAME);
                 assertThat(feesAndPayTaskData.getPaymentCallbackHandlerType()).isEqualTo(GEN_APP_ISSUE);
                 assertThat(feesAndPayTaskData.getRelatedEntityId()).isEqualTo(expectedGenAppEntityId);
