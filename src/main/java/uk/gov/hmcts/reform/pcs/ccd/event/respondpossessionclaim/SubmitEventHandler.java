@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.callback.Submit;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
@@ -13,18 +12,16 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaim;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState;
-import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.RespondPossessionClaimSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
-import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
-import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.ClaimResponseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.CounterClaimFeeCalculator;
-import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.CounterClaimService;
-import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.DefendantResponseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.RespondPossessionClaimSubmitPersistenceResult;
+import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.RespondPossessionClaimSubmitService;
 import uk.gov.hmcts.reform.pcs.exception.DraftNotFoundException;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
@@ -33,11 +30,9 @@ import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.PaymentService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 import uk.gov.hmcts.reform.payments.response.PaymentServiceResponse;
-import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.respondPossessionClaim;
@@ -49,15 +44,12 @@ import static uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentCallbackHandlerTyp
 public class SubmitEventHandler implements Submit<PCSCase, State> {
 
     private final DraftCaseDataService draftCaseDataService;
-    private final ClaimResponseService claimResponseService;
-    private final DefendantResponseService defendantResponseService;
-    private final CounterClaimService counterClaimService;
+    private final RespondPossessionClaimSubmitService respondPossessionClaimSubmitService;
     private final SecurityContextService securityContextService;
     private final PartyService partyService;
     private final FeeService feeService;
     private final PaymentService paymentService;
     private final CounterClaimFeeCalculator counterClaimFeeCalculator;
-    private final DocumentService documentService;
     private final ObjectMapper objectMapper;
 
     @Override
@@ -80,42 +72,10 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
             return validationError;
         }
 
-        claimResponseService.saveDraftData(responseDraftData, caseReference);
-        defendantResponseService.saveDefendantResponse(caseReference, responseDraftData);
+        RespondPossessionClaimSubmitPersistenceResult persistenceResult =
+            respondPossessionClaimSubmitService.persistFinalSubmit(caseReference, responseDraftData);
 
-        DefendantResponses defendantResponses = responseDraftData.getDefendantResponses();
-        CounterClaim counterClaim = defendantResponses.getCounterClaim();
-        Optional<CounterClaimEntity> savedCounterClaim =
-            counterClaimService.saveCounterClaim(caseReference, counterClaim);
-
-        savedCounterClaim.ifPresent(counterClaimEntity -> saveCounterClaimDocuments(
-            defendantResponses,
-            counterClaimEntity
-        ));
-
-        SubmitResponse<State> submitResponse = buildSubmitResponse(
-            caseReference,
-            responseDraftData,
-            savedCounterClaim.orElse(null)
-        );
-
-        draftCaseDataService.deleteUnsubmittedCaseData(caseReference, respondPossessionClaim);
-        log.info("Successfully saved defendant response for case: {}", caseReference);
-        return submitResponse;
-    }
-
-    private void saveCounterClaimDocuments(DefendantResponses defendantResponses,
-                                           CounterClaimEntity counterClaimEntity) {
-        if (CollectionUtils.isEmpty(defendantResponses.getCounterClaimDocuments())) {
-            return;
-        }
-
-        documentService.createCounterClaimUploadedDocuments(
-            defendantResponses.getCounterClaimDocuments(),
-            counterClaimEntity,
-            counterClaimEntity.getPcsCase(),
-            counterClaimEntity.getParty()
-        );
+        return buildSubmitResponse(caseReference, persistenceResult);
     }
 
     private SubmitResponse<State> validate(PossessionClaimResponse possessionClaimResponse, long caseReference) {
@@ -133,23 +93,24 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
 
     private SubmitResponse<State> buildSubmitResponse(
         long caseReference,
-        PossessionClaimResponse possessionClaimResponse,
-        CounterClaimEntity counterClaimEntity
+        RespondPossessionClaimSubmitPersistenceResult persistenceResult
     ) {
+        CounterClaimEntity counterClaimEntity = persistenceResult.counterClaimEntity();
         if (counterClaimEntity == null) {
             return SubmitResponse.defaultResponse();
         }
 
-        CounterClaim counterClaim = possessionClaimResponse.getDefendantResponses().getCounterClaim();
-        if (!counterClaimFeeCalculator.isPaymentRequired(counterClaim)) {
-            CounterClaimEntity issuedCounterClaim = counterClaimService.issueCounterClaim(counterClaimEntity);
+        if (persistenceResult.issuedWithoutPayment()) {
             return buildCounterClaimConfirmationResponse(
-                issuedCounterClaim.getStatus(),
+                persistenceResult.counterClaimEntity().getStatus(),
                 null,
                 null
             );
         }
 
+        CounterClaim counterClaim = persistenceResult.possessionClaimResponse()
+            .getDefendantResponses()
+            .getCounterClaim();
         FeeType feeType = counterClaimFeeCalculator.resolveFeeType(counterClaim);
         FeeDetails feeDetails = feeService.getFee(
             feeType,

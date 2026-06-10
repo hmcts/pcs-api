@@ -38,6 +38,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.ClaimResponseS
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.CounterClaimFeeCalculator;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.CounterClaimService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.DefendantResponseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.RespondPossessionClaimSubmitService;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
@@ -100,17 +101,23 @@ class SubmitEventHandlerTest {
 
     @BeforeEach
     void setUp() {
-        underTest = new SubmitEventHandler(
-            draftCaseDataService,
+        CounterClaimFeeCalculator counterClaimFeeCalculator = new CounterClaimFeeCalculator();
+        RespondPossessionClaimSubmitService submitService = new RespondPossessionClaimSubmitService(
             claimResponseService,
             defendantResponseService,
             counterClaimService,
+            counterClaimFeeCalculator,
+            documentService,
+            draftCaseDataService
+        );
+        underTest = new SubmitEventHandler(
+            draftCaseDataService,
+            submitService,
             securityContextService,
             partyService,
             feeService,
             paymentService,
-            new CounterClaimFeeCalculator(),
-            documentService,
+            counterClaimFeeCalculator,
             objectMapper
         );
     }

@@ -31,6 +31,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.CounterClaimFe
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.CounterClaimService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.DefendantResponseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.PossessionClaimResponseMapper;
+import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.RespondPossessionClaimSubmitService;
 import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.PaymentService;
@@ -102,17 +103,23 @@ class RespondPossessionClaimTest extends BaseEventTest {
             draftCaseDataService
         );
 
-        SubmitEventHandler submitEventHandler = new SubmitEventHandler(
-            draftCaseDataService,
+        RespondPossessionClaimSubmitService submitService = new RespondPossessionClaimSubmitService(
             claimResponseService,
             defendantResponseService,
             counterClaimService,
+            counterClaimFeeCalculator,
+            documentService,
+            draftCaseDataService
+        );
+
+        SubmitEventHandler submitEventHandler = new SubmitEventHandler(
+            draftCaseDataService,
+            submitService,
             securityContextService,
             partyService,
             feeService,
             paymentService,
             counterClaimFeeCalculator,
-            documentService,
             objectMapper
         );
 
