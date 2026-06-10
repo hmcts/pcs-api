@@ -5,6 +5,8 @@ export const home =
     caseListTab: 'Case list',
     createCaseTab: 'Create case',
     findCaseTab: 'Find case',
+    findButton: 'Find',
+    caseReferenceSearchLabel: '16-digit case reference:',
     caseParties: 'Case Parties',
     globalSearchTab: 'Search',
     caseNotes: 'Notes',
