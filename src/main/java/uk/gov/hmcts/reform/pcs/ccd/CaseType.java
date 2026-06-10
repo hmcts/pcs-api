@@ -228,7 +228,7 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
             .field("detailsTab_SuspensionOfRightToBuyDetails");
     }
 
-    private void buildCaseListView(ConfigBuilder<PCSCase, State, UserRole> builder) {
+    private void buildCaseListView(ConfigBuilder<PCSCase, State, AccessProfile> builder) {
         builder.workBasketResultFields()
             .caseReferenceField()
             .field(PCSCase::getDateIssuedString, "Date issued")
