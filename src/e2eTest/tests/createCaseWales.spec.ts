@@ -2,8 +2,7 @@ import { test } from '@utils/test-fixtures';
 import {
   initializeExecutor,
   performAction,
-  performValidation,
-  performValidations
+  performValidation
 } from '@utils/controller';
 import {
   addressCheckYourAnswers,

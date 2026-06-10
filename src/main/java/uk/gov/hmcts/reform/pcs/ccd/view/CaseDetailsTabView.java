@@ -121,6 +121,7 @@ public class CaseDetailsTabView {
         AntisocialAndConductTabDetails antisocialAndConductTabDetails = buildAntisocialAndConductTabDetails(pcsCase);
         ProhibitedConductStandardContractTabDetails prohibitedConductStandardContractTabDetails =
             buildProhibitedConductStandardContractTabDetails(pcsCase);
+
         CaseDetailsTab caseDetailsTab = CaseDetailsTab.builder()
             .claimDetails(claimTabDetails)
             .propertyAddress(pcsCase.getPropertyAddress())
@@ -741,5 +742,4 @@ public class CaseDetailsTabView {
 
         return prohibitedConductStandardContractTabDetails;
     }
-
 }
