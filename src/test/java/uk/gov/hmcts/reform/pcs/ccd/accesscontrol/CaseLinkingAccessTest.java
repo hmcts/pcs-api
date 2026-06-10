@@ -8,8 +8,9 @@ import uk.gov.hmcts.ccd.sdk.api.Permission;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.entry;
-import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.PCS_SOLICITOR;
-import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.PCS_CASE_WORKER;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CTSC_ADMIN;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.HEARING_CENTRE_ADMIN;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.AccessProfile.WLU_ADMIN_READ;
 
 class CaseLinkingAccessTest {
 
@@ -23,7 +24,8 @@ class CaseLinkingAccessTest {
     @Test
     void shouldGrantCaseLinkingAccess() {
         SetMultimap<HasRole, Permission> grants = underTest.getGrants();
-        assertThat(grants.asMap()).contains(entry(PCS_SOLICITOR, Permission.CRU));
-        assertThat(grants.get(PCS_CASE_WORKER)).contains(Permission.R);
+        assertThat(grants.asMap()).contains(entry(CTSC_ADMIN, Permission.CRU));
+        assertThat(grants.asMap()).contains(entry(HEARING_CENTRE_ADMIN, Permission.CRU));
+        assertThat(grants.get(WLU_ADMIN_READ)).contains(Permission.R);
     }
 }

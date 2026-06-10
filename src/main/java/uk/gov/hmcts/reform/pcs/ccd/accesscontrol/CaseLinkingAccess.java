@@ -6,7 +6,8 @@ import uk.gov.hmcts.ccd.sdk.api.HasAccessControl;
 import uk.gov.hmcts.ccd.sdk.api.HasRole;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 
-import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.PCS_CASE_WORKER;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CTSC_ADMIN;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.HEARING_CENTRE_ADMIN;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.PCS_SOLICITOR;
 
 public class CaseLinkingAccess implements HasAccessControl {
@@ -16,7 +17,9 @@ public class CaseLinkingAccess implements HasAccessControl {
     public SetMultimap<HasRole, Permission> getGrants() {
         SetMultimap<HasRole, Permission> grants = HashMultimap.create();
         grants.putAll(PCS_SOLICITOR, Permission.CRU);
-        grants.put(PCS_CASE_WORKER, Permission.R);
+        grants.putAll(HEARING_CENTRE_ADMIN, Permission.CRU);
+        grants.putAll(CTSC_ADMIN, Permission.CRU);
+        grants.put(AccessProfile.WLU_ADMIN_READ, Permission.R);
 
         return grants;
     }

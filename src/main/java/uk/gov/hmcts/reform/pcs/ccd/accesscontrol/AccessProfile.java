@@ -29,6 +29,7 @@ public enum AccessProfile implements HasRole {
     CTSC_ADMIN("ctsc", Permission.CRU),
     HEARING_CENTRE_ADMIN("hearing-centre-admin", Permission.CRU),
     WLU_ADMIN("wlu-admin", Permission.CRU),
+    WLU_ADMIN_READ("wlu-admin",Set.of(R)),
     GS_PROFILE("GS_profile", Set.of(R)),
     SYSTEM_USER("pcs-system-update", CRU);
 
