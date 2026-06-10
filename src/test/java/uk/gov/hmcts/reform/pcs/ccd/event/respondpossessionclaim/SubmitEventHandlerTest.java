@@ -454,7 +454,7 @@ class SubmitEventHandlerTest {
         CounterClaim counterClaim = CounterClaim.builder()
             .claimType(CounterClaimType.PAYMENT_OR_COMPENSATION)
             .isClaimAmountKnown(VerticalYesNo.YES)
-            .claimAmount(new BigDecimal("6000"))
+            .claimAmount(new BigDecimal("600000"))
             .build();
         PCSCase caseData = createCounterClaimPaymentDraft(counterClaim);
         stubDraft(caseData);
@@ -466,7 +466,7 @@ class SubmitEventHandlerTest {
             .feeAmount(FEE_AMOUNT)
             .version(1)
             .build();
-        when(feeService.getFee(FeeType.COUNTER_CLAIM)).thenReturn(feeDetails);
+        when(feeService.getFee(FeeType.COUNTER_CLAIM, new BigDecimal("6000.00"))).thenReturn(feeDetails);
         when(paymentService.createServiceRequest(any(FeesAndPayTaskData.class)))
             .thenReturn(PaymentServiceResponse.builder().serviceRequestReference(SERVICE_REQUEST_REFERENCE).build());
 
@@ -557,11 +557,11 @@ class SubmitEventHandlerTest {
         PCSCase caseData = createCounterClaimPaymentDraft(counterClaim);
         stubDraft(caseData);
         stubCounterClaimPaymentDependencies();
-        stubFeeLookupAndServiceRequest(FeeType.COUNTER_CLAIM_FLAT_FEE);
+        stubFeeLookupAndServiceRequest(FeeType.COUNTER_CLAIM_FLAT_FEE, null);
 
         underTest.submit(createEventPayload(caseData));
 
-        verify(feeService).getFee(FeeType.COUNTER_CLAIM_FLAT_FEE);
+        verify(feeService).getFee(FeeType.COUNTER_CLAIM_FLAT_FEE, null);
     }
 
     @Test
@@ -569,16 +569,16 @@ class SubmitEventHandlerTest {
         CounterClaim counterClaim = CounterClaim.builder()
             .claimType(CounterClaimType.PAYMENT_OR_COMPENSATION)
             .isClaimAmountKnown(VerticalYesNo.YES)
-            .claimAmount(new BigDecimal("5000"))
+            .claimAmount(new BigDecimal("500000"))
             .build();
         PCSCase caseData = createCounterClaimPaymentDraft(counterClaim);
         stubDraft(caseData);
         stubCounterClaimPaymentDependencies();
-        stubFeeLookupAndServiceRequest(FeeType.COUNTER_CLAIM_RANGED);
+        stubFeeLookupAndServiceRequest(FeeType.COUNTER_CLAIM_RANGED, new BigDecimal("5000.00"));
 
         underTest.submit(createEventPayload(caseData));
 
-        verify(feeService).getFee(FeeType.COUNTER_CLAIM_RANGED);
+        verify(feeService).getFee(FeeType.COUNTER_CLAIM_RANGED, new BigDecimal("5000.00"));
     }
 
     @Test
@@ -586,16 +586,16 @@ class SubmitEventHandlerTest {
         CounterClaim counterClaim = CounterClaim.builder()
             .claimType(CounterClaimType.PAYMENT_OR_COMPENSATION)
             .isClaimAmountKnown(VerticalYesNo.YES)
-            .claimAmount(new BigDecimal("5001"))
+            .claimAmount(new BigDecimal("500100"))
             .build();
         PCSCase caseData = createCounterClaimPaymentDraft(counterClaim);
         stubDraft(caseData);
         stubCounterClaimPaymentDependencies();
-        stubFeeLookupAndServiceRequest(FeeType.COUNTER_CLAIM);
+        stubFeeLookupAndServiceRequest(FeeType.COUNTER_CLAIM, new BigDecimal("5001.00"));
 
         underTest.submit(createEventPayload(caseData));
 
-        verify(feeService).getFee(FeeType.COUNTER_CLAIM);
+        verify(feeService).getFee(FeeType.COUNTER_CLAIM, new BigDecimal("5001.00"));
     }
 
     @Test
@@ -603,16 +603,16 @@ class SubmitEventHandlerTest {
         CounterClaim counterClaim = CounterClaim.builder()
             .claimType(CounterClaimType.PAYMENT_OR_COMPENSATION)
             .isClaimAmountKnown(VerticalYesNo.NO)
-            .estimatedMaxClaimAmount(new BigDecimal("2500"))
+            .estimatedMaxClaimAmount(new BigDecimal("250000"))
             .build();
         PCSCase caseData = createCounterClaimPaymentDraft(counterClaim);
         stubDraft(caseData);
         stubCounterClaimPaymentDependencies();
-        stubFeeLookupAndServiceRequest(FeeType.COUNTER_CLAIM_RANGED);
+        stubFeeLookupAndServiceRequest(FeeType.COUNTER_CLAIM_RANGED, new BigDecimal("2500.00"));
 
         underTest.submit(createEventPayload(caseData));
 
-        verify(feeService).getFee(FeeType.COUNTER_CLAIM_RANGED);
+        verify(feeService).getFee(FeeType.COUNTER_CLAIM_RANGED, new BigDecimal("2500.00"));
     }
 
     @Test
@@ -698,14 +698,14 @@ class SubmitEventHandlerTest {
             .thenReturn(Optional.of(counterClaimEntity));
     }
 
-    private void stubFeeLookupAndServiceRequest(FeeType feeType) {
+    private void stubFeeLookupAndServiceRequest(FeeType feeType, BigDecimal amountOrVolume) {
         FeeDetails feeDetails = FeeDetails.builder()
             .code("FEE0441")
             .description("Counterclaim fee")
             .feeAmount(FEE_AMOUNT)
             .version(1)
             .build();
-        when(feeService.getFee(feeType)).thenReturn(feeDetails);
+        when(feeService.getFee(feeType, amountOrVolume)).thenReturn(feeDetails);
         when(paymentService.createServiceRequest(any(FeesAndPayTaskData.class)))
             .thenReturn(PaymentServiceResponse.builder().serviceRequestReference(SERVICE_REQUEST_REFERENCE).build());
     }

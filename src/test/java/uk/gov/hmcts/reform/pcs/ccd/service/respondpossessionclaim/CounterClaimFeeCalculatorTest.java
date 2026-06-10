@@ -48,10 +48,22 @@ class CounterClaimFeeCalculatorTest {
         CounterClaim counterClaim = CounterClaim.builder()
             .claimType(CounterClaimType.PAYMENT_OR_COMPENSATION)
             .isClaimAmountKnown(VerticalYesNo.NO)
-            .estimatedMaxClaimAmount(new BigDecimal("2500"))
+            .estimatedMaxClaimAmount(new BigDecimal("250000"))
             .build();
 
         assertThat(underTest.resolveFeeType(counterClaim)).isEqualTo(FeeType.COUNTER_CLAIM_RANGED);
+    }
+
+    @Test
+    void shouldResolveFeeLookupAmountInPoundsFromPence() {
+        CounterClaim counterClaim = CounterClaim.builder()
+            .claimType(CounterClaimType.PAYMENT_OR_COMPENSATION)
+            .isClaimAmountKnown(VerticalYesNo.YES)
+            .claimAmount(new BigDecimal("250000"))
+            .build();
+
+        assertThat(underTest.resolveFeeLookupAmountInPounds(counterClaim))
+            .isEqualByComparingTo(new BigDecimal("2500.00"));
     }
 
     @Test
@@ -82,8 +94,8 @@ class CounterClaimFeeCalculatorTest {
 
     private static Stream<Arguments> knownAmountFeeScenarios() {
         return Stream.of(
-            Arguments.of(new BigDecimal("5000"), FeeType.COUNTER_CLAIM_RANGED),
-            Arguments.of(new BigDecimal("5001"), FeeType.COUNTER_CLAIM)
+            Arguments.of(new BigDecimal("500000"), FeeType.COUNTER_CLAIM_RANGED),
+            Arguments.of(new BigDecimal("500100"), FeeType.COUNTER_CLAIM)
         );
     }
 }

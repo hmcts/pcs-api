@@ -151,7 +151,10 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
         }
 
         FeeType feeType = counterClaimFeeCalculator.resolveFeeType(counterClaim);
-        FeeDetails feeDetails = feeService.getFee(feeType);
+        FeeDetails feeDetails = feeService.getFee(
+            feeType,
+            counterClaimFeeCalculator.resolveFeeLookupAmountInPounds(counterClaim)
+        );
         String serviceRequestReference = createPaymentServiceRequest(
             counterClaimEntity,
             feeDetails,

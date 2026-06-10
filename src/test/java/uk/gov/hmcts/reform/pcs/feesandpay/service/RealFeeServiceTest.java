@@ -22,6 +22,8 @@ import java.util.HashMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -51,7 +53,7 @@ class RealFeeServiceTest {
 
     @Test
     void shouldSuccessfullyGetFeeDetails() {
-        when(pcsFeesClient.lookupFee(FEE_TYPE)).thenReturn(feeLookupResponseDto);
+        when(pcsFeesClient.lookupFee(eq(FEE_TYPE), isNull())).thenReturn(feeLookupResponseDto);
 
         FeeDetails feeDetails = underTest.getFee(FEE_TYPE);
 
@@ -61,7 +63,7 @@ class RealFeeServiceTest {
         assertThat(feeDetails.getVersion()).isEqualTo(4);
         assertThat(feeDetails.getFeeAmount()).isEqualTo(BigDecimal.valueOf(404.00));
 
-        verify(pcsFeesClient).lookupFee(FEE_TYPE);
+        verify(pcsFeesClient).lookupFee(eq(FEE_TYPE), isNull());
     }
 
     @Test
@@ -74,13 +76,24 @@ class RealFeeServiceTest {
             new RequestTemplate()
         );
 
-        when(pcsFeesClient.lookupFee(any(FeeType.class)))
+        when(pcsFeesClient.lookupFee(any(FeeType.class), isNull()))
             .thenThrow(new NotFound("Fee not found", request, null, null));
 
         assertThatThrownBy(() -> underTest.getFee(FEE_TYPE))
             .isInstanceOf(FeeNotFoundException.class)
             .hasMessageContaining("Unable to retrieve fee: " + FEE_TYPE)
             .hasCauseInstanceOf(NotFound.class);
+    }
+
+    @Test
+    void shouldPassAmountOrVolumeToFeesClientWhenProvided() {
+        BigDecimal claimAmountInPounds = new BigDecimal("2500.00");
+        when(pcsFeesClient.lookupFee(FEE_TYPE, claimAmountInPounds)).thenReturn(feeLookupResponseDto);
+
+        FeeDetails feeDetails = underTest.getFee(FEE_TYPE, claimAmountInPounds);
+
+        assertThat(feeDetails.getFeeAmount()).isEqualTo(BigDecimal.valueOf(404.00));
+        verify(pcsFeesClient).lookupFee(FEE_TYPE, claimAmountInPounds);
     }
 
     @Test
@@ -94,7 +107,7 @@ class RealFeeServiceTest {
             new RequestTemplate()
         );
 
-        when(pcsFeesClient.lookupFee(any(FeeType.class)))
+        when(pcsFeesClient.lookupFee(any(FeeType.class), isNull()))
             .thenThrow(new InternalServerError(
                 "Internal server error", request, null, null));
 

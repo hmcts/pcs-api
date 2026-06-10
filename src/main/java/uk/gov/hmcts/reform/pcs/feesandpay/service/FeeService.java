@@ -11,6 +11,8 @@ import uk.gov.hmcts.reform.pcs.feesandpay.exception.FeeNotFoundException;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
 
+import java.math.BigDecimal;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -27,9 +29,13 @@ public class FeeService {
      * @throws FeeNotFoundException if the fee type is not configured or the Fees Register call fails
      */
     public FeeDetails getFee(FeeType feeType) {
-        log.debug("Requesting fee of type: {}", feeType);
+        return getFee(feeType, null);
+    }
+
+    public FeeDetails getFee(FeeType feeType, BigDecimal amountOrVolume) {
+        log.debug("Requesting fee of type: {} amountOrVolume={}", feeType, amountOrVolume);
         try {
-            FeeLookupResponseDto feeLookupResponse = pcsFeesClient.lookupFee(feeType);
+            FeeLookupResponseDto feeLookupResponse = pcsFeesClient.lookupFee(feeType, amountOrVolume);
             log.debug("Successfully retrieved fee: type={}, code={}, amount={}",
                       feeType, feeLookupResponse.getCode(), feeLookupResponse.getFeeAmount());
 
