@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.callback.Submit;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
@@ -12,12 +13,14 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaim;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.RespondPossessionClaimSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
+import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.ClaimResponseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.CounterClaimFeeCalculator;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.CounterClaimService;
@@ -54,6 +57,7 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
     private final FeeService feeService;
     private final PaymentService paymentService;
     private final CounterClaimFeeCalculator counterClaimFeeCalculator;
+    private final DocumentService documentService;
     private final ObjectMapper objectMapper;
 
     @Override
@@ -79,9 +83,15 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
         claimResponseService.saveDraftData(responseDraftData, caseReference);
         defendantResponseService.saveDefendantResponse(caseReference, responseDraftData);
 
-        CounterClaim counterClaim = responseDraftData.getDefendantResponses().getCounterClaim();
+        DefendantResponses defendantResponses = responseDraftData.getDefendantResponses();
+        CounterClaim counterClaim = defendantResponses.getCounterClaim();
         Optional<CounterClaimEntity> savedCounterClaim =
             counterClaimService.saveCounterClaim(caseReference, counterClaim);
+
+        savedCounterClaim.ifPresent(counterClaimEntity -> saveCounterClaimDocuments(
+            defendantResponses,
+            counterClaimEntity
+        ));
 
         SubmitResponse<State> submitResponse = buildSubmitResponse(
             caseReference,
@@ -92,6 +102,20 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
         draftCaseDataService.deleteUnsubmittedCaseData(caseReference, respondPossessionClaim);
         log.info("Successfully saved defendant response for case: {}", caseReference);
         return submitResponse;
+    }
+
+    private void saveCounterClaimDocuments(DefendantResponses defendantResponses,
+                                           CounterClaimEntity counterClaimEntity) {
+        if (CollectionUtils.isEmpty(defendantResponses.getCounterClaimDocuments())) {
+            return;
+        }
+
+        documentService.createCounterClaimUploadedDocuments(
+            defendantResponses.getCounterClaimDocuments(),
+            counterClaimEntity,
+            counterClaimEntity.getPcsCase(),
+            counterClaimEntity.getParty()
+        );
     }
 
     private SubmitResponse<State> validate(PossessionClaimResponse possessionClaimResponse, long caseReference) {

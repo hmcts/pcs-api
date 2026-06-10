@@ -86,6 +86,8 @@ class RespondPossessionClaimTest extends BaseEventTest {
     @Mock
     private PaymentService paymentService;
     @Mock
+    private uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService documentService;
+    @Mock
     private com.fasterxml.jackson.databind.ObjectMapper objectMapper;
 
     @BeforeEach
@@ -110,6 +112,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
             feeService,
             paymentService,
             counterClaimFeeCalculator,
+            documentService,
             objectMapper
         );
 

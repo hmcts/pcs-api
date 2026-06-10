@@ -11,7 +11,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.ccd.sdk.type.Document;
+import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.UploadedDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
@@ -25,9 +28,11 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantRespon
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.HouseholdCircumstances;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.RecurrenceFrequency;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
+import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.ClaimResponseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.CounterClaimFeeCalculator;
@@ -43,6 +48,7 @@ import uk.gov.hmcts.reform.payments.response.PaymentServiceResponse;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -85,6 +91,8 @@ class SubmitEventHandlerTest {
     private FeeService feeService;
     @Mock
     private PaymentService paymentService;
+    @Mock
+    private DocumentService documentService;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -102,6 +110,7 @@ class SubmitEventHandlerTest {
             feeService,
             paymentService,
             new CounterClaimFeeCalculator(),
+            documentService,
             objectMapper
         );
     }
@@ -389,6 +398,55 @@ class SubmitEventHandlerTest {
 
         verify(defendantResponseService).saveDefendantResponse(CASE_REFERENCE, capturedResponse);
         verify(draftCaseDataService).deleteUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim);
+    }
+
+    @Test
+    void shouldSaveCounterClaimDocumentsWhenPresent() {
+        UploadedDocument ccDoc = UploadedDocument.builder()
+            .document(Document.builder()
+                .url("url-cc").filename("counter-claim.pdf").binaryUrl("bin-cc").categoryId("cat-cc").build())
+            .contentType("application/pdf")
+            .sizeInBytes(50000L)
+            .build();
+
+        List<ListValue<UploadedDocument>> counterClaimDocs = List.of(
+            ListValue.<UploadedDocument>builder().id("1").value(ccDoc).build()
+        );
+
+        CounterClaim counterClaim = CounterClaim.builder()
+            .claimType(CounterClaimType.PAYMENT_OR_COMPENSATION)
+            .hwfReferenceNumber("HWF-123-456")
+            .build();
+        DefendantResponses responses = DefendantResponses.builder()
+            .makeCounterClaim(VerticalYesNo.YES)
+            .counterClaim(counterClaim)
+            .counterClaimDocuments(counterClaimDocs)
+            .build();
+        PCSCase caseData = PCSCase.builder()
+            .possessionClaimResponse(PossessionClaimResponse.builder().defendantResponses(responses).build())
+            .build();
+        stubDraft(caseData);
+
+        PartyEntity partyEntity = PartyEntity.builder().id(PARTY_ID).build();
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().caseReference(CASE_REFERENCE).build();
+        CounterClaimEntity counterClaimEntity = CounterClaimEntity.builder()
+            .id(COUNTER_CLAIM_ID)
+            .party(partyEntity)
+            .pcsCase(pcsCaseEntity)
+            .build();
+        when(counterClaimService.saveCounterClaim(eq(CASE_REFERENCE), any(CounterClaim.class)))
+            .thenReturn(Optional.of(counterClaimEntity));
+        when(counterClaimService.issueCounterClaim(any(CounterClaimEntity.class)))
+            .thenReturn(counterClaimEntity);
+
+        underTest.submit(createEventPayload(caseData));
+
+        verify(documentService).createCounterClaimUploadedDocuments(
+            eq(counterClaimDocs),
+            eq(counterClaimEntity),
+            eq(pcsCaseEntity),
+            eq(partyEntity)
+        );
     }
 
     @Test
