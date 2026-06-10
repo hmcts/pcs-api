@@ -10,6 +10,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.postcodecourt.entity.PostCodeCourtEntity;
 import uk.gov.hmcts.reform.pcs.postcodecourt.entity.PostCodeCourtKey;
+import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.postcodecourt.repository.PostCodeCourtRepository;
 
 import java.time.Clock;
@@ -90,6 +91,31 @@ class PostCodeCourtServiceTest {
 
         // Then
         assertThat(actualEpimsId).isEqualTo(expectedEpimsId);
+    }
+
+    @Test
+    void shouldUseLegislativeCountryWhenResolvingCourtManagementLocation() {
+        // Given
+        String crossBorderPostcode = "SY13 2LH";
+        int expectedWelshEpimsId = 28837;
+        List<String> partialPostcodes = List.of("SY132LH", "SY132L", "SY132", "SY13");
+        when(partialPostcodesGenerator.generateForPostcode(crossBorderPostcode)).thenReturn(partialPostcodes);
+        when(postCodeCourtRepository.findActiveByPostCodeIn(
+            partialPostcodes,
+            LegislativeCountry.WALES,
+            TEST_DATE
+        )).thenReturn(List.of(postCodeCourtEntity("SY132LH", expectedWelshEpimsId)));
+
+        // When
+        Integer actualEpimsId = underTest.getCourtManagementLocation(crossBorderPostcode, LegislativeCountry.WALES);
+
+        // Then
+        assertThat(actualEpimsId).isEqualTo(expectedWelshEpimsId);
+        verify(postCodeCourtRepository).findActiveByPostCodeIn(
+            partialPostcodes,
+            LegislativeCountry.WALES,
+            TEST_DATE
+        );
     }
 
     private PostCodeCourtEntity postCodeCourtEntity(String postcode, int epimsId) {

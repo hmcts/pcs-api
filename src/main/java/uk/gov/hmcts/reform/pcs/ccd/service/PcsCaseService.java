@@ -94,7 +94,10 @@ public class PcsCaseService {
     public void allocateCaseManagementLocation(long caseReference) {
         PcsCaseEntity pcsCaseEntity = loadCase(caseReference);
         Integer caseManagementLocation =
-            postCodeCourtService.getCourtManagementLocation(pcsCaseEntity.getPropertyAddress().getPostcode());
+            postCodeCourtService.getCourtManagementLocation(
+                pcsCaseEntity.getPropertyAddress().getPostcode(),
+                pcsCaseEntity.getLegislativeCountry()
+            );
         if (caseManagementLocation != null) {
             pcsCaseEntity.setCaseManagementLocation(caseManagementLocation);
         }

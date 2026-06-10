@@ -153,9 +153,10 @@ class PcsCaseServiceTest {
         PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
             .caseReference(CASE_REFERENCE)
             .propertyAddress(propertyAddress)
+            .legislativeCountry(LegislativeCountry.ENGLAND)
             .build();
         when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
-        when(postCodeCourtService.getCourtManagementLocation(postcode)).thenReturn(epimsId);
+        when(postCodeCourtService.getCourtManagementLocation(postcode, LegislativeCountry.ENGLAND)).thenReturn(epimsId);
 
         // When
         underTest.allocateCaseManagementLocation(CASE_REFERENCE);
@@ -175,9 +176,10 @@ class PcsCaseServiceTest {
             .caseReference(CASE_REFERENCE)
             .propertyAddress(propertyAddress)
             .caseManagementLocation(existingEpimsId)
+            .legislativeCountry(LegislativeCountry.ENGLAND)
             .build();
         when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
-        when(postCodeCourtService.getCourtManagementLocation(postcode)).thenReturn(null);
+        when(postCodeCourtService.getCourtManagementLocation(postcode, LegislativeCountry.ENGLAND)).thenReturn(null);
 
         // When
         underTest.allocateCaseManagementLocation(CASE_REFERENCE);
@@ -198,9 +200,10 @@ class PcsCaseServiceTest {
             .caseReference(CASE_REFERENCE)
             .propertyAddress(propertyAddress)
             .caseManagementLocation(existingEpimsId)
+            .legislativeCountry(LegislativeCountry.ENGLAND)
             .build();
         when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
-        when(postCodeCourtService.getCourtManagementLocation(postcode)).thenReturn(newEpimsId);
+        when(postCodeCourtService.getCourtManagementLocation(postcode, LegislativeCountry.ENGLAND)).thenReturn(newEpimsId);
 
         // When
         underTest.allocateCaseManagementLocation(CASE_REFERENCE);
@@ -219,9 +222,11 @@ class PcsCaseServiceTest {
         PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
             .caseReference(CASE_REFERENCE)
             .propertyAddress(propertyAddress)
+            .legislativeCountry(LegislativeCountry.ENGLAND)
             .build();
         when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
-        when(postCodeCourtService.getCourtManagementLocation(postcode)).thenThrow(expectedException);
+        when(postCodeCourtService.getCourtManagementLocation(postcode, LegislativeCountry.ENGLAND))
+            .thenThrow(expectedException);
 
         // When
         Throwable throwable = catchThrowable(() -> underTest.allocateCaseManagementLocation(CASE_REFERENCE));

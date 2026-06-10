@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.pcs.postcodecourt.entity.PostCodeCourtEntity;
+import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.postcodecourt.repository.PostCodeCourtRepository;
 
 import java.time.Clock;
@@ -29,8 +30,12 @@ public class PostCodeCourtService {
     }
 
     public Integer getCourtManagementLocation(String postCode) {
+        return getCourtManagementLocation(postCode, null);
+    }
 
-        List<PostCodeCourtEntity> results = getPostcodeCourtMappings(postCode);
+    public Integer getCourtManagementLocation(String postCode, LegislativeCountry legislativeCountry) {
+
+        List<PostCodeCourtEntity> results = getPostcodeCourtMappings(postCode, legislativeCountry);
 
         if (results.isEmpty()) {
             log.error("EpimId not found, Case management location couldn't be allocated for postcode: {}", postCode);
@@ -44,12 +49,15 @@ public class PostCodeCourtService {
         return results.getFirst().getId().getEpimsId();
     }
 
-    private List<PostCodeCourtEntity> getPostcodeCourtMappings(String postcode) {
+    private List<PostCodeCourtEntity> getPostcodeCourtMappings(String postcode,
+                                                               LegislativeCountry legislativeCountry) {
 
         List<String> postcodes = partialPostcodesGenerator.generateForPostcode(postcode);
 
         LocalDate currentDate = LocalDate.now(ukClock);
-        List<PostCodeCourtEntity> results = postCodeCourtRepository.findActiveByPostCodeIn(postcodes, currentDate);
+        List<PostCodeCourtEntity> results = legislativeCountry == null
+            ? postCodeCourtRepository.findActiveByPostCodeIn(postcodes, currentDate)
+            : postCodeCourtRepository.findActiveByPostCodeIn(postcodes, legislativeCountry, currentDate);
         if (results.isEmpty()) {
             log.warn("Postcode court mapping not found for postcode {}", postcode);
             return List.of();
