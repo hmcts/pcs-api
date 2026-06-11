@@ -8,7 +8,7 @@ import { expect, test } from '@utils/test-fixtures';
 import { createCaseApiData, submitCaseApiData } from '@data/api-data';
 import { getCaseTypeId } from '@utils/common/caseType.utils';
 import { VERY_LONG_TIMEOUT } from 'playwright.config';
-import { cancelPayment, caseSummary, confirmYourPayment, enterPaymentDetails, serviceRequest } from '@data/page-data';
+import { cancelPayment, confirmYourPayment, enterPaymentDetails, serviceRequest } from '@data/page-data';
 
 test.beforeEach(async ({ page }) => {
   initializeExecutor(page);
@@ -28,8 +28,8 @@ test.afterEach(async () => {
   }
 });
 
-test.describe('[Common Component Fee And Pay] @CC' , async () => {
-  test('Fee And Pay - Pay by account PBA @nightly @feeAndPay', async () => {
+test.describe('[Common Component Fee And Pay] @nightly @CC @caseFlags' , async () => {
+  test('Fee And Pay - Pay by account PBA', async () => {
     await performAction('clickPayNowLink', serviceRequest.payNowLink);
     await performAction('selectPaymentTypePBA', {
       amountLabel: serviceRequest.amountToPayLabel,
@@ -105,6 +105,6 @@ test.describe('[Common Component Fee And Pay] @CC' , async () => {
     });
     await performValidation('mainHeader', confirmYourPayment.mainHeader);
     await performAction('clickButton', confirmYourPayment.cancelPaymentButton);
-    await performValidation('mainHeader', cancelPayment.mainHeader); 
+    await performValidation('mainHeader', cancelPayment.mainHeader);
   });
 });

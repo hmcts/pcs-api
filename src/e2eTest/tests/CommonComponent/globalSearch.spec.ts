@@ -49,7 +49,7 @@ const runGlobalSearchScenarios = () => {
     await performValidation('mainHeader', globalSearch.mainHeader);
   });
 
-  test('Valid case reference using Mortage and Landlord Possession Claim Service', async () => {
+  test('Valid case reference using Mortgage and Landlord Possession Claim Service', async () => {
     await performAction('accessingTheSearch');
     await performAction('searchByCaseReference', process.env.CASE_NUMBER);
     await performAction('validateResults');
@@ -60,7 +60,7 @@ const runGlobalSearchScenarios = () => {
     await performAction('searchByCaseReference', process.env.CASE_NUMBER);
     await performAction('validateResults');
   });
-  
+
   test('Invalid case reference', async () => {
     await performAction('accessingTheSearch');
     await performAction('invalidCaseReferenceSearch', globalSearch.invalidCaseReferenceInputText);
@@ -77,7 +77,7 @@ const runGlobalSearchScenarios = () => {
   { roleName: 'CTSC User', account: user.ctscAdministrator },
   { roleName: 'Judge', account: user.judge }
 ].forEach(({ roleName, account }) => {
-  test.describe(`[Global Search - ${roleName} - @globalSearch @CC @nightly]`, () => {
+  test.describe(`[Global Search - ${roleName} - @nightly @CC @caseFlags]`, () => {
     test.beforeEach(async ({ page, context }) => {
       await setupGlobalSearchUser(page, context, account);
     });
