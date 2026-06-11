@@ -1047,27 +1047,32 @@ export class CreateCaseAction implements IAction {
     let caseSummary = new Map<string, string>();
     let submitPayLoad = caseSummarySection.submitPayload as Record<string, any>;
     let createPayLoad = caseSummarySection.createPayload as Record<string, any>;
+    const dateSubmitted = page.locator(`//th[@id="case-viewer-field-label"]/following-sibling::td`);
+    expect(await dateSubmitted.textContent()).toEqual(process.env.Submission_TIME);
+    
 
     switch (caseSummarySection.section) {
       case 'Defendant details':
         if (submitPayLoad.defendant1.nameKnown === 'YES') {
+          caseSummary.set(`Defendant 1’s name known?`, formatWord(submitPayLoad.defendant1.nameKnown))
           caseSummary.set(`First name`, submitPayLoad.defendant1.firstName);
           caseSummary.set(`Last name`, submitPayLoad.defendant1.lastName);
         }
         if (submitPayLoad.defendant1.addressKnown === 'YES' && submitPayLoad.defendant1.addressSameAsPossession === 'YES') {
-          const address = submitPayLoad.formattedClaimantContactAddress.split('<br>');
-          caseSummary.set(`Building and Street`, address[0]);
-          caseSummary.set(`Address Line 2`, address[1]);
-          caseSummary.set(`Town or City`, address[2]);
-          caseSummary.set(`Postcode/Zipcode`, address[3]);
-          caseSummary.set('Country', 'United Kingdom')
+          caseSummary.set(`Defendant 1’s address for service known?`, formatWord(submitPayLoad.defendant1.addressKnown));
+          caseSummary.set(`Building and Street`, createPayLoad.propertyAddress.AddressLine1);
+          caseSummary.set(`Address Line 2`, createPayLoad.propertyAddress.AddressLine2);
+          caseSummary.set(`Town or City`, createPayLoad.propertyAddress.PostTown);
+          caseSummary.set(`Postcode/Zipcode`, createPayLoad.propertyAddress.PostCode);
+          caseSummary.set('Country', createPayLoad.propertyAddress.Country);
 
         } else if (submitPayLoad.defendant1.addressKnown === 'YES' && submitPayLoad.defendant1.addressSameAsPossession === 'NO') {
+          caseSummary.set(`Defendant 1’s address for service known?`, formatWord(submitPayLoad.defendant1.addressKnown));
           caseSummary.set(`Building and Street`, submitPayLoad.defendant1.correspondenceAddress.AddressLine1);
           caseSummary.set(`Address Line 2`, submitPayLoad.defendant1.correspondenceAddress.AddressLine2);
           caseSummary.set(`Town or City`, submitPayLoad.defendant1.correspondenceAddress.PostTown);
           caseSummary.set(`Postcode/Zipcode`, submitPayLoad.defendant1.correspondenceAddress.PostCode);
-          caseSummary.set('Country', 'United Kingdom')
+          caseSummary.set('Country', submitPayLoad.defendant1.correspondenceAddress.Country)
         }
         break;
 
@@ -1077,13 +1082,12 @@ export class CreateCaseAction implements IAction {
         caseSummary.set(`Last name`, submitPayLoad.defendant1.lastName);
 
         if (submitPayLoad.defendant1.addressKnown === 'YES' && submitPayLoad.defendant1.addressSameAsPossession === 'YES') {
-          const address = submitPayLoad.formattedClaimantContactAddress.split('<br>');
           caseSummary.set(`Defendant 1’s address for service known?`, formatWord(submitPayLoad.defendant1.addressKnown));
-          caseSummary.set(`Building and Street`, address[0]);
-          caseSummary.set(`Address Line 2`, address[1]);
-          caseSummary.set(`Town or City`, address[2]);
-          caseSummary.set(`Postcode/Zipcode`, address[3]);
-          caseSummary.set('Country', 'United Kingdom')
+          caseSummary.set(`Building and Street`, createPayLoad.propertyAddress.AddressLine1);
+          caseSummary.set(`Address Line 2`, createPayLoad.propertyAddress.AddressLine2);
+          caseSummary.set(`Town or City`, createPayLoad.propertyAddress.PostTown);
+          caseSummary.set(`Postcode/Zipcode`, createPayLoad.propertyAddress.PostCode);
+          caseSummary.set('Country', createPayLoad.propertyAddress.Country);
 
         } else if (submitPayLoad.defendant1.addressKnown === 'YES' && submitPayLoad.defendant1.addressSameAsPossession === 'NO') {
           caseSummary.set(`Defendant 1’s address for service known?`, formatWord(submitPayLoad.defendant1.addressKnown));
@@ -1091,7 +1095,7 @@ export class CreateCaseAction implements IAction {
           caseSummary.set(`Address Line 2`, submitPayLoad.defendant1.correspondenceAddress.AddressLine2);
           caseSummary.set(`Town or City`, submitPayLoad.defendant1.correspondenceAddress.PostTown);
           caseSummary.set(`Postcode/Zipcode`, submitPayLoad.defendant1.correspondenceAddress.PostCode);
-          caseSummary.set('Country', 'United Kingdom')
+          caseSummary.set('Country', submitPayLoad.defendant1.correspondenceAddress.Country)
         }
         break;
 
@@ -1125,7 +1129,12 @@ export class CreateCaseAction implements IAction {
       case 'Claimant contact details':
         caseSummary.set(`Email address for notifications`, submitPayLoad.claimantContactEmail);
         caseSummary.set(`Do you want to provide a phone number for urgent updates about your case?`, formatWord(submitPayLoad.claimantProvidePhoneNumber));
-        caseSummary.set(`Contact phone number`, submitPayLoad.claimantContactPhoneNumber);
+        if (submitPayLoad.claimantProvidePhoneNumber === 'YES')
+          caseSummary.set(`Contact phone number`, submitPayLoad.claimantContactPhoneNumber);
+        break;
+      
+      case 'Claimant registration and licensing':
+        caseSummary.set(`Are you an exempt landlord under Part 1 of the Housing (Wales) Act 2014?`, formatWord(submitPayLoad.isExemptLandlord));
         break;
 
       case 'Claimant circumstances':
@@ -1136,23 +1145,33 @@ export class CreateCaseAction implements IAction {
         break;
 
       case 'Tenancy and Occupation':
-        caseSummary.set(`Tenancy, occupation contract or licence agreement type`, (submitPayLoad.tenancy_TypeOfTenancyLicence)
-          .toLowerCase()
-          .replace(/_/g, " ")
-          .replace(/^\w/, (c: string) => c.toUpperCase())
-        );
+        caseSummary.set(`Tenancy, occupation contract or licence agreement type`, formatText(submitPayLoad.tenancy_TypeOfTenancyLicence));
         caseSummary.set(`Tenancy, occupation contract or licence agreement start date`, formatDate(submitPayLoad.tenancy_TenancyLicenceDate, 'DD/MM/YYYY'));
         break;
 
       case 'Tenancy and Occupation Case details':
-        caseSummary.set(`Tenancy, occupation contract or licence agreement type`, (submitPayLoad.tenancy_TypeOfTenancyLicence)
-          .toLowerCase()
-          .replace(/_/g, " ")
-          .replace(/^\w/, (c: string) => c.toUpperCase())
-        );
+        caseSummary.set(`Tenancy, occupation contract or licence agreement type`, formatText(submitPayLoad.tenancy_TypeOfTenancyLicence));
         caseSummary.set(`Tenancy, occupation contract or licence start date`, formatDate(submitPayLoad.tenancy_TenancyLicenceDate, 'DD/MONTH/YYYY'));
         caseSummary.set(`Do you have a copy of the tenancy or licence agreement?`, formatWord(submitPayLoad.tenancy_HasCopyOfTenancyLicence));
         caseSummary.set(`Details of why you do not have a copy`, submitPayLoad.tenancy_ReasonsForNoTenancyLicenceDocuments);
+        break;
+      
+      case 'Occupation contract or licence':
+        caseSummary.set(`Occupation contract or licence agreement type`, formatText(submitPayLoad.occupationLicenceTypeWales));
+        caseSummary.set(`Occupation contract or licence start date`, formatDate(submitPayLoad.licenceStartDate, 'DD/MM/YYYY'))
+        break;
+
+      case 'Occupation contract or licence':
+        caseSummary.set(`Occupation contract or licence agreement type`, formatText(submitPayLoad.occupationLicenceTypeWales));
+        caseSummary.set(`Occupation contract or licence start date`, formatDate(submitPayLoad.licenceStartDate, 'DD/MM/YYYY'))
+        break;
+
+      case 'Occupation contract or licence Case details':
+        caseSummary.set(`Occupation contract or licence agreement type`, formatText(submitPayLoad.occupationLicenceTypeWales));
+        caseSummary.set(`Occupation contract or licence start date`, formatDate(submitPayLoad.licenceStartDate, 'DD/MONTH/YYYY'));
+        if (submitPayLoad.licenceDocuments.length === 0) {
+          caseSummary.set('Occupation contract or licence agreement', '');
+        }
         break;
 
       case 'Grounds of possession':
@@ -1162,6 +1181,37 @@ export class CreateCaseAction implements IAction {
               item === "Anti social" ? "Antisocial behaviour" : item
             )
             .join(','));
+        };
+        break;
+
+      case 'Grounds of possession Wales':
+        if (submitPayLoad.showReasonsForGroundsPageWales === 'Yes') {
+          const combinedGrounds = [...submitPayLoad.secureGroundsWales_MandatoryGrounds, ...submitPayLoad.secureGroundsWales_DiscretionaryGrounds]
+          caseSummary.set(`Grounds`, combinedGrounds.map(formatText).
+            map((item: string) => {
+              if (item === "Antisocial behaviour s157") {
+                return "Antisocial behaviour (breach of contract) (section 157)";
+              }
+              if (
+                item === "Rent arrears s157"
+              ) {
+                return "Rent arrears (breach of contract) (section 157)";
+              }
+              if (
+                item === "Landlord notice s186"
+              ) {
+                return "Landlord’s notice in connection with end of fixed term given (section 186)";
+              }
+              if (
+                item === "Estate management grounds s160"
+              ) {
+                return `Estate management grounds (section 160): ${formatText(submitPayLoad.secureGroundsWales_EstateManagementGrounds[0])} (ground A)`;
+              }
+              return item;
+            })
+            .join(',')
+          );
+
         };
         break;
 
@@ -1178,6 +1228,19 @@ export class CreateCaseAction implements IAction {
         caseSummary.set(`How rent is calculated`, formatWord(submitPayLoad.rentDetails_Frequency));
         caseSummary.set(`Daily rate`, formatCurrency(submitPayLoad.rentDetails_CalculatedDailyCharge));
         caseSummary.set(`Previous steps taken to recover rent arrears?`, formatWord(submitPayLoad.rentArrears_RecoveryAttempted));
+        caseSummary.set(`Rent statement`, submitPayLoad.rentArrears_StatementDocuments?.[0]?.value?.document_filename);
+        caseSummary.set(`Rent arrears total at the time of claim issue`, formatCurrency(submitPayLoad.rentArrears_Total));
+        caseSummary.set(`Judgment requested for the outstanding arrears?`, formatWord(submitPayLoad.arrearsJudgmentWanted));
+        break;
+
+      case 'Rent arrears Case details Wales':
+        caseSummary.set(`Rent amount`, formatCurrency(submitPayLoad.rentDetails_CurrentRent));
+        caseSummary.set(`Rent frequency`, formatWord(submitPayLoad.rentDetails_Frequency));
+        caseSummary.set(`Daily rate`, formatCurrency(submitPayLoad.rentDetails_CalculatedDailyCharge));
+        caseSummary.set(`Previous steps taken to recover rent arrears?`, formatWord(submitPayLoad.rentArrears_RecoveryAttempted));
+        if (submitPayLoad.rentArrears_RecoveryAttempted === 'YES') {
+          caseSummary.set(`Details of previous steps taken`, submitPayLoad.rentArrears_RecoveryAttemptDetails);
+        }
         caseSummary.set(`Rent statement`, submitPayLoad.rentArrears_StatementDocuments?.[0]?.value?.document_filename);
         caseSummary.set(`Rent arrears total at the time of claim issue`, formatCurrency(submitPayLoad.rentArrears_Total));
         caseSummary.set(`Judgment requested for the outstanding arrears?`, formatWord(submitPayLoad.arrearsJudgmentWanted));
@@ -1224,6 +1287,29 @@ export class CreateCaseAction implements IAction {
         }
         break;
 
+      case 'Notice Case details Wales':
+        const serviceMethodCaseDetailsWales = submitPayLoad.notice_NoticeServiceMethod;
+        const dateServedCaseDetailsWales =
+          serviceMethodCaseDetailsWales === 'FIRST_CLASS_POST'
+            ? submitPayLoad.notice_NoticePostedDate
+            : serviceMethodCaseDetailsWales === 'EMAIL'
+              ? submitPayLoad.notice_NoticeEmailSentDateTime
+              : null;
+        const methodOfServiceWales = serviceMethodCaseDetailsWales === 'FIRST_CLASS_POST' ? 'By first class post or other service which provides for delivery on the next business day' : serviceMethodCaseDetailsWales === 'EMAIL' ? 'By Email' : null;
+        caseSummary.set('Has notice been served?', formatWord(submitPayLoad.walesNoticeServed));
+        caseSummary.set('Type of notice served', submitPayLoad.walesTypeOfNoticeServed);
+        caseSummary.set('Method of service', methodOfServiceWales as string);
+
+        if (dateServedCaseDetailsWales) {
+          const formattedDate =
+            serviceMethodCaseDetailsWales === 'FIRST_CLASS_POST'
+              ? formatDate(dateServedCaseDetailsWales, 'DD/MONTH/YYYY')
+              : formatDateTime(dateServedCaseDetailsWales);
+
+          caseSummary.set('Date and time notice served (if applicable)', formattedDate);
+        }
+        break;
+
       case 'Claim details':
         caseSummary.set(`Claimant type`, submitPayLoad.claimantType.value.label);
         caseSummary.set(`Is your claim a trespass claim?`, formatWord(submitPayLoad.claimAgainstTrespassers));
@@ -1247,7 +1333,31 @@ export class CreateCaseAction implements IAction {
         }
         caseSummary.set(`Do you have any additional reasons for possession?`, formatWord(submitPayLoad.additionalReasonsForPossession.hasReasons));
         if (submitPayLoad.additionalReasonsForPossession.hasReasons === 'YES') {
-          caseSummary.set(`Details of additional reasons`, formatWord(submitPayLoad.additionalReasonsForPossession.reasons));
+          caseSummary.set(`Details of additional reasons`, submitPayLoad.additionalReasonsForPossession.reasons);
+        }
+        break;
+      case 'Reasons for possession Wales':
+        if (submitPayLoad.secureGroundsWales_DiscretionaryGrounds?.includes('ESTATE_MANAGEMENT_GROUNDS_S160')) {
+          caseSummary.set(`Reasons for claiming possession under ground A`, submitPayLoad.walesSecureBuildingWorksReason);
+        }
+        if (submitPayLoad.secureGroundsWales_MandatoryGrounds?.includes('LANDLORD_NOTICE_S186')) {
+          caseSummary.set(`Reasons for claiming possession under section 186`, submitPayLoad.walesSecureLandlordNoticeSection186Reason);
+        }
+        if (submitPayLoad.additionalReasonsForPossession.hasReasons === 'YES') {
+          caseSummary.set(`Details of additional reasons`, submitPayLoad.additionalReasonsForPossession.reasons);
+        }
+        break;
+
+      case 'Reasons for possession Case details Wales':
+        if (submitPayLoad.secureGroundsWales_DiscretionaryGrounds?.includes('ESTATE_MANAGEMENT_GROUNDS_S160')) {
+          caseSummary.set(`Reasons for claiming possession under ground A`, submitPayLoad.walesSecureBuildingWorksReason);
+        }
+        if (submitPayLoad.secureGroundsWales_MandatoryGrounds?.includes('LANDLORD_NOTICE_S186')) {
+          caseSummary.set(`Reasons for claiming possession under section 186`, submitPayLoad.walesSecureLandlordNoticeSection186Reason);
+        }
+        caseSummary.set(`Do you have any additional reasons for possession?`, formatWord(submitPayLoad.additionalReasonsForPossession.hasReasons));
+        if (submitPayLoad.additionalReasonsForPossession.hasReasons === 'YES') {
+          caseSummary.set(`Details of additional reasons`, submitPayLoad.additionalReasonsForPossession.reasons);
         }
         break;
 
@@ -1287,6 +1397,30 @@ export class CreateCaseAction implements IAction {
             caseSummary.set(`Postcode/Zipcode`, submitPayLoad.underlesseeOrMortgagee1.address.PostCode);
             caseSummary.set('Country', submitPayLoad.underlesseeOrMortgagee1.address.Country);
           }
+        }
+        break;
+      
+      case 'Antisocial behaviour and illegal or prohibited conduct':
+        caseSummary.set(`Is there actual or threatened antisocial behaviour?`,formatWord(submitPayLoad.walesAntisocialBehaviour));
+        if(submitPayLoad.walesAntisocialBehaviour === 'YES'){
+          caseSummary.set(`Details of actual or threatened antisocial behaviour`, submitPayLoad.walesAntisocialBehaviourDetails);
+        }
+        caseSummary.set(`Is there actual or threatened use of the premises for illegal purposes?`,formatWord(submitPayLoad.walesIllegalPurposesUse));
+        if(submitPayLoad.walesIllegalPurposesUse === 'YES'){
+          caseSummary.set(`Details of actual or threatened use of the premises for illegal purposes`, submitPayLoad.walesIllegalPurposesUseDetails);
+        }
+        caseSummary.set(`Has there been other prohibited conduct?`,formatWord(submitPayLoad.walesOtherProhibitedConduct));
+        if(submitPayLoad.walesOtherProhibitedConduct === 'YES'){
+          caseSummary.set(`Details of other prohibited conduct`, submitPayLoad.walesOtherProhibitedConductDetails);
+        }
+        break;
+      
+      case 'Prohibited conduct standard contract':
+        caseSummary.set(`Are you seeking an order imposing a prohibited conduct standard contract?`, formatWord(submitPayLoad.prohibitedConductWalesClaim));
+        if (submitPayLoad.prohibitedConductWalesClaim === 'YES') {
+          caseSummary.set('Have you and the contract holder agreed terms of the periodic standard contract in addition to those incorporated by statute?', formatWord(submitPayLoad.periodicContractTermsWales.agreedTermsOfPeriodicContract));
+          caseSummary.set(`Details of terms`, submitPayLoad.periodicContractTermsWales.detailsOfTerms);
+          caseSummary.set(`Why are you making this claim?`, submitPayLoad.prohibitedConductWalesClaimDetails);
         }
         break;
 

@@ -50,7 +50,7 @@ public class FeePaymentEntity {
     private UUID id;
 
     @OneToOne(fetch = LAZY)
-    @JoinColumn(name = "claim_id", nullable = false)
+    @JoinColumn(name = "possession_claim_id", nullable = false)
     @JsonBackReference
     private ClaimEntity claim;
 
@@ -72,6 +72,7 @@ public class FeePaymentEntity {
     private BigDecimal amount;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "status")
     private PaymentStatus paymentStatus;
 
     @Transient
