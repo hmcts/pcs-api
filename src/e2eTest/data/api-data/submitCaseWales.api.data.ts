@@ -91,7 +91,7 @@ export const submitCaseApiDataWales = {
     mediationAttempted: 'YES',
     settlementAttempted: 'YES',
     walesNoticeServed: 'Yes',
-    walesTypeOfNoticeServed: 'notice',
+    walesTypeOfNoticeServed: 'document',
     notice_NoticeServiceMethod: 'FIRST_CLASS_POST',
     notice_NoticePostedDate: '2015-12-01',
     notice_NoticeDocuments: [],
@@ -122,7 +122,7 @@ export const submitCaseApiDataWales = {
       agreedTermsOfPeriodicContract: 'YES',
       detailsOfTerms: 'test data contract holder agreement'
     },
-    prohibitedConductWalesClaimDetails: 'test data making this claim',
+    prohibitedConductWalesClaimDetails: 'test data why making this claim',
     additionalReasonsForPossession: {
       hasReasons: 'YES',
       reasons: 'test data additional reasons'
