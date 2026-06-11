@@ -87,6 +87,7 @@ class DraftCaseJsonMergerTest {
                             "allUnderlesseeOrMortgagees",
                             "possessionClaimResponse",
                             "enforcementOrder.rawWarrantDetails.vulnerableAdultsChildren",
+                            "xuiGenAppRequest",
                             "casePartiesTab.claimantDetails.emailAddress",
                             "casePartiesTab.claimantDetails.name",
                             "casePartiesTab.claimantDetails.serviceAddress",
@@ -94,6 +95,7 @@ class DraftCaseJsonMergerTest {
                             "casePartiesTab.defendantOneDetails.firstName",
                             "casePartiesTab.defendantOneDetails.lastName",
                             "casePartiesTab.defendantOneDetails.serviceAddress",
+                            "caseDetailsTab",
                             "summaryTab")
             .isEqualTo(existingCaseData);
 

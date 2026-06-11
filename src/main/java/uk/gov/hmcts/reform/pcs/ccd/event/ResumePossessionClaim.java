@@ -4,6 +4,7 @@ import com.github.kagkarlsson.scheduler.SchedulerClient;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
 import uk.gov.hmcts.ccd.sdk.api.DecentralisedConfigBuilder;
 import uk.gov.hmcts.ccd.sdk.api.Event.EventBuilder;
@@ -35,6 +36,7 @@ import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
+import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
@@ -70,6 +72,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final MoneyFormatter moneyFormatter;
     private final ResumePossessionClaimConfigurer resumePossessionClaimConfigurer;
     private final SchedulingConfig schedulingConfig;
+    private final NotificationService notificationService;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -160,13 +163,15 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
         caseData.setHasUnsubmittedCaseData(YesOrNo.from(hasUnsubmittedCaseData));
     }
 
-    private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
+    @Transactional
+    public SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
         long caseReference = eventPayload.caseReference();
         PCSCase pcsCase = eventPayload.caseData();
 
         if (pcsCase.getCompletionNextStep() == SUBMIT_AND_PAY_NOW) {
             return submitClaim(caseReference, pcsCase);
         } else {
+            notificationService.sendClaimantDraftSavedForLater(caseReference, pcsCase);
             return saveForLater();
         }
     }
