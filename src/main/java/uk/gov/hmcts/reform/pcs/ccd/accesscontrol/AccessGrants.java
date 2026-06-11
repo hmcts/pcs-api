@@ -63,6 +63,10 @@ final class AccessGrants {
         return readAccess(PARTY_VISIBLE_ROLES);
     }
 
+    static SetMultimap<HasRole, Permission> internalReadAccess() {
+        return readAccess(INTERNAL_READ_ROLES);
+    }
+
     static SetMultimap<HasRole, Permission> documentAccess() {
         SetMultimap<HasRole, Permission> grants = HashMultimap.create();
         grants.putAll(PCS_SOLICITOR, Permission.CR);
