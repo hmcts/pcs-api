@@ -1,40 +1,40 @@
 package uk.gov.hmcts.reform.pcs.ccd.accesscontrol;
 
 import com.google.common.collect.SetMultimap;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.ccd.sdk.api.HasRole;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.entry;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CIRCUIT_JUDGE;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CITIZEN;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CLAIMANT_SOLICITOR;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CREATOR;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CTSC_ADMIN;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CTSC_TEAM_LEADER;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.DEFENDANT;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.DEFENDANT_SOLICITOR;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.FEE_PAID_JUDGE;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.HEARING_CENTRE_ADMIN;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.HEARING_CENTRE_TEAM_LEADER;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.JUDGE;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.LEADERSHIP_JUDGE;
-import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.PCS_SOLICITOR;
-import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.PCS_CASE_WORKER;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.WLU_ADMIN;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.WLU_TEAM_LEADER;
 
-class CaseLinkingAccessTest {
+class PartyVisibleTabAccessTest {
 
-    private CaseLinkingAccess underTest;
-
-    @BeforeEach
-    void setup() {
-        underTest = new CaseLinkingAccess();
-    }
+    private final PartyVisibleTabAccess underTest = new PartyVisibleTabAccess();
 
     @Test
-    void shouldGrantCaseLinkingAccess() {
+    void shouldGrantReadAccessToPartyVisibleTabRoles() {
         SetMultimap<HasRole, Permission> grants = underTest.getGrants();
-        assertThat(grants.asMap()).contains(entry(PCS_SOLICITOR, Permission.CRU));
-        assertThat(grants.get(PCS_CASE_WORKER)).contains(Permission.R);
+
+        assertThat(grants.get(CREATOR)).contains(Permission.R);
+        assertThat(grants.get(CITIZEN)).contains(Permission.R);
+        assertThat(grants.get(DEFENDANT)).contains(Permission.R);
+        assertThat(grants.get(CLAIMANT_SOLICITOR)).contains(Permission.R);
+        assertThat(grants.get(DEFENDANT_SOLICITOR)).contains(Permission.R);
         assertThat(grants.get(JUDGE)).contains(Permission.R);
         assertThat(grants.get(FEE_PAID_JUDGE)).contains(Permission.R);
         assertThat(grants.get(CIRCUIT_JUDGE)).contains(Permission.R);

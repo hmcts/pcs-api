@@ -26,6 +26,35 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
     private static final String JURISDICTION_ID = "PCS";
     private static final String JURISDICTION_NAME = "Civil Possession";
     private static final String JURISDICTION_DESCRIPTION = "Civil Possession Jurisdiction";
+    private static final AccessProfile[] PARTY_VISIBLE_TAB_ROLES = {
+        AccessProfile.CREATOR,
+        AccessProfile.CITIZEN,
+        AccessProfile.DEFENDANT,
+        AccessProfile.CLAIMANT_SOLICITOR,
+        AccessProfile.DEFENDANT_SOLICITOR,
+        AccessProfile.JUDGE,
+        AccessProfile.FEE_PAID_JUDGE,
+        AccessProfile.CIRCUIT_JUDGE,
+        AccessProfile.LEADERSHIP_JUDGE,
+        AccessProfile.HEARING_CENTRE_TEAM_LEADER,
+        AccessProfile.HEARING_CENTRE_ADMIN,
+        AccessProfile.CTSC_TEAM_LEADER,
+        AccessProfile.CTSC_ADMIN,
+        AccessProfile.WLU_TEAM_LEADER,
+        AccessProfile.WLU_ADMIN
+    };
+    private static final AccessProfile[] INTERNAL_TAB_ROLES = {
+        AccessProfile.JUDGE,
+        AccessProfile.FEE_PAID_JUDGE,
+        AccessProfile.CIRCUIT_JUDGE,
+        AccessProfile.LEADERSHIP_JUDGE,
+        AccessProfile.HEARING_CENTRE_TEAM_LEADER,
+        AccessProfile.HEARING_CENTRE_ADMIN,
+        AccessProfile.CTSC_TEAM_LEADER,
+        AccessProfile.CTSC_ADMIN,
+        AccessProfile.WLU_TEAM_LEADER,
+        AccessProfile.WLU_ADMIN
+    };
 
     @Value("${hmcts.hmctsOrgId}")
     private String hmctsServiceId;
@@ -82,12 +111,14 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
         buildCaseDetailsTab(builder);
 
         builder.tab("caseFileView", "Case File View")
+            .forRoles(PARTY_VISIBLE_TAB_ROLES)
             .showCondition(ShowConditions.stateNotEquals(AWAITING_SUBMISSION_TO_HMCTS))
             .field(PCSCase::getCaseFileView, null, "#ARGUMENT(CaseFileView)");
 
         buildSummaryTab(builder);
 
         builder.tab("CaseHistory", "History")
+            .forRoles(INTERNAL_TAB_ROLES)
             .showCondition(ShowConditions.stateNotEquals(AWAITING_SUBMISSION_TO_HMCTS))
             .field("caseHistory");
 
@@ -97,22 +128,19 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
             .field(PCSCase::getDashboardData);
 
         builder.tab("serviceRequest", "Service Request")
+            .forRoles(PARTY_VISIBLE_TAB_ROLES)
             .showCondition(ShowConditions.stateNotEquals(AWAITING_SUBMISSION_TO_HMCTS))
             .field("waysToPay");
 
         buildCaseNotesTab(builder);
 
         builder.tab("caseLinks", "Linked Cases")
-            .forRoles(AccessProfile.PCS_SOLICITOR)
+            .forRoles(INTERNAL_TAB_ROLES)
             .field(PCSCase::getLinkedCasesComponentLauncher, null, "#ARGUMENT(LinkedCases)")
             .field(PCSCase::getCaseLinks, "LinkedCasesComponentLauncher!=\"\"", "#ARGUMENT(LinkedCases)");
 
         builder.tab("caseFlags", "Case flags")
-            .forRoles(AccessProfile.JUDGE, AccessProfile.FEE_PAID_JUDGE, AccessProfile.CIRCUIT_JUDGE,
-                AccessProfile.LEADERSHIP_JUDGE,
-                AccessProfile.CTSC_ADMIN,
-                AccessProfile.HEARING_CENTRE_ADMIN,
-                AccessProfile.WLU_ADMIN)
+            .forRoles(INTERNAL_TAB_ROLES)
             .field(PCSCase::getFlagLauncherInternal, null, "#ARGUMENT(READ)")
             .field(PCSCase::getCaseFlags, "flagLauncherInternal!=\"\"")
             .field(PCSCase::getParties, "flagLauncherInternal!=\"\"", "#ARGUMENT(Flags)");
@@ -132,11 +160,13 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
 
     private void buildCaseNotesTab(ConfigBuilder<PCSCase, State, AccessProfile> builder) {
         builder.tab("notes", "Notes")
+            .forRoles(INTERNAL_TAB_ROLES)
             .field(PCSCase::getCaseNotes);
     }
 
     private void buildCasePartiesTab(ConfigBuilder<PCSCase, State, AccessProfile> builder) {
         builder.tab("caseParties", "Case Parties")
+            .forRoles(PARTY_VISIBLE_TAB_ROLES)
             .label("Case Parties", null, "#### Case Parties")
             .field("casePartiesTab_ClaimantDetails")
             .field("casePartiesTab_DefendantOneDetails")
@@ -145,6 +175,7 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
 
     private void buildSummaryTab(ConfigBuilder<PCSCase, State, AccessProfile> builder) {
         builder.tab("summary", "Summary")
+            .forRoles(PARTY_VISIBLE_TAB_ROLES)
             .label("confirmEvictionSummaryMarkupLabel", null, "${confirmEvictionSummaryMarkup}")
             .field("confirmEvictionSummaryMarkup", NEVER_SHOW)
             .label("Summary", null, "# Summary")
@@ -181,6 +212,7 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
 
     private void buildCaseDetailsTab(ConfigBuilder<PCSCase, State, AccessProfile> builder) {
         builder.tab("caseDetails", "Case Details")
+            .forRoles(PARTY_VISIBLE_TAB_ROLES)
             .label("Case details", null, "# Case details")
             .field("detailsTab_ClaimDetails")
             .field("detailsTab_PropertyAddress")

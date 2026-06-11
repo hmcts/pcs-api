@@ -108,6 +108,8 @@ class CaseTypeTest {
         final Tab<PCSCase, AccessProfile> casePartiesTab = casePartiesTabBuilder.build();
         final Tab<PCSCase, AccessProfile> caseFileViewTab = caseFileViewTabBuilder.build();
         final Tab<PCSCase, AccessProfile> caseDetailsTab = caseDetailsTabBuilder.build();
+        final Tab<PCSCase, AccessProfile> caseNotesTab = caseNotesTabBuilder.build();
+        final Tab<PCSCase, AccessProfile> caseFlagsTab = caseFlagsTabBuilder.build();
 
 
         // Then
@@ -123,5 +125,40 @@ class CaseTypeTest {
         assertThat(caseDetailsTab.getFields()).extracting(TabField::getId).contains("detailsTab_ClaimDetails");
         assertThat(summaryTab.getFields()).extracting(TabField::getId)
             .contains("summaryTab_OccupationContractOrLicenceDetails");
+        assertThat(summaryTab.getForRoles()).contains(
+            AccessProfile.CREATOR,
+            AccessProfile.CITIZEN,
+            AccessProfile.DEFENDANT,
+            AccessProfile.CLAIMANT_SOLICITOR,
+            AccessProfile.DEFENDANT_SOLICITOR,
+            AccessProfile.JUDGE,
+            AccessProfile.HEARING_CENTRE_TEAM_LEADER,
+            AccessProfile.HEARING_CENTRE_ADMIN,
+            AccessProfile.CTSC_TEAM_LEADER,
+            AccessProfile.CTSC_ADMIN,
+            AccessProfile.WLU_TEAM_LEADER,
+            AccessProfile.WLU_ADMIN
+        );
+        assertThat(casePartiesTab.getForRoles()).containsAll(summaryTab.getForRoles());
+        assertThat(caseDetailsTab.getForRoles()).containsAll(summaryTab.getForRoles());
+        assertThat(caseFileViewTab.getForRoles()).containsAll(summaryTab.getForRoles());
+        assertThat(serviceRequestTab.getForRoles()).containsAll(summaryTab.getForRoles());
+        assertThat(caseHistoryTab.getForRoles()).contains(
+            AccessProfile.JUDGE,
+            AccessProfile.HEARING_CENTRE_TEAM_LEADER,
+            AccessProfile.HEARING_CENTRE_ADMIN,
+            AccessProfile.CTSC_TEAM_LEADER,
+            AccessProfile.CTSC_ADMIN,
+            AccessProfile.WLU_TEAM_LEADER,
+            AccessProfile.WLU_ADMIN
+        );
+        assertThat(caseHistoryTab.getForRoles()).doesNotContain(
+            AccessProfile.CITIZEN,
+            AccessProfile.DEFENDANT,
+            AccessProfile.DEFENDANT_SOLICITOR
+        );
+        assertThat(caseLinksTab.getForRoles()).containsAll(caseHistoryTab.getForRoles());
+        assertThat(caseNotesTab.getForRoles()).containsAll(caseHistoryTab.getForRoles());
+        assertThat(caseFlagsTab.getForRoles()).containsAll(caseHistoryTab.getForRoles());
     }
 }

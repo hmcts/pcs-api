@@ -26,6 +26,7 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DefendantAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DocumentAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.GlobalSearchAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.InternalCaseFlagAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.PartyVisibleTabAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.RasValidationAccess;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.DashboardData;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
@@ -526,7 +527,8 @@ public class PCSCase {
 
     @CCD(
         searchable = false,
-        label = "Ways to pay"
+        label = "Ways to pay",
+        access = {PartyVisibleTabAccess.class}
     )
     private WaysToPay waysToPay;
 
@@ -640,15 +642,15 @@ public class PCSCase {
     private List<ListValue<GeneralApplication>> genApps;
 
     @JsonUnwrapped(prefix = "casePartiesTab_")
-    @CCD
+    @CCD(access = {PartyVisibleTabAccess.class})
     private CasePartiesTab casePartiesTab;
 
     @JsonUnwrapped(prefix = "summaryTab_")
-    @CCD(searchable = false)
+    @CCD(searchable = false, access = {PartyVisibleTabAccess.class})
     private SummaryTab summaryTab;
 
     @JsonUnwrapped(prefix = "detailsTab_")
-    @CCD
+    @CCD(access = {PartyVisibleTabAccess.class})
     private CaseDetailsTab caseDetailsTab;
 
     @CCD(

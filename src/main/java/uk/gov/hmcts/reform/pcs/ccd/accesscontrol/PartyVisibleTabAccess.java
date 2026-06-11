@@ -9,6 +9,7 @@ import uk.gov.hmcts.ccd.sdk.api.Permission;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CIRCUIT_JUDGE;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CITIZEN;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CLAIMANT_SOLICITOR;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CREATOR;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CTSC_ADMIN;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CTSC_TEAM_LEADER;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.DEFENDANT;
@@ -18,21 +19,19 @@ import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.HEARING_CENTRE_
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.HEARING_CENTRE_TEAM_LEADER;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.JUDGE;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.LEADERSHIP_JUDGE;
-import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.PCS_SOLICITOR;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.WLU_ADMIN;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.WLU_TEAM_LEADER;
 
-
-public class DocumentAccess implements HasAccessControl {
+public class PartyVisibleTabAccess implements HasAccessControl {
 
     @Override
     public SetMultimap<HasRole, Permission> getGrants() {
         SetMultimap<HasRole, Permission> grants = HashMultimap.create();
-        grants.putAll(PCS_SOLICITOR, Permission.CR);
-        grants.putAll(CITIZEN, Permission.CR);
-        grants.putAll(DEFENDANT, Permission.CR);
-        grants.putAll(CLAIMANT_SOLICITOR, Permission.CR);
-        grants.putAll(DEFENDANT_SOLICITOR, Permission.CR);
+        grants.put(CREATOR, Permission.R);
+        grants.put(CITIZEN, Permission.R);
+        grants.put(DEFENDANT, Permission.R);
+        grants.put(CLAIMANT_SOLICITOR, Permission.R);
+        grants.put(DEFENDANT_SOLICITOR, Permission.R);
         grants.put(JUDGE, Permission.R);
         grants.put(FEE_PAID_JUDGE, Permission.R);
         grants.put(CIRCUIT_JUDGE, Permission.R);
@@ -45,5 +44,4 @@ public class DocumentAccess implements HasAccessControl {
         grants.put(WLU_ADMIN, Permission.R);
         return grants;
     }
-
 }
