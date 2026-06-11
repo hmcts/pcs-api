@@ -135,31 +135,46 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
         };
     }
 
-    private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
+    SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
         Long caseReference = eventPayload.caseReference();
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
+
         PCSCase pcsCase = eventPayload.caseData();
         LegalRepDocumentUploadDetails legalRepDocumentUploadDetails = pcsCase.getLegalRepDocumentUploadDetails();
-        if (legalRepDocumentUploadDetails != null) {
-            List<LegalRepDocument> legalRepDocuments = legalRepDocumentUploadDetails.getLegalRepDocuments().stream()
-                .map(ListValue::getValue).toList();
 
-            List<DocumentEntity> documentEntities = legalRepDocuments.stream()
-                .map(legalRepDoc -> DocumentEntity.builder()
-                    .pcsCase(pcsCaseEntity)
-                    .url(legalRepDoc.getDocument().getUrl())
-                    .fileName(legalRepDoc.getDocument().getFilename())
-                    .binaryUrl(legalRepDoc.getDocument().getBinaryUrl())
-                    .categoryId(legalRepDoc.getDocument().getCategoryId())
-                    .description(legalRepDoc.getDescription())
-                    .type(mapEvidenceTypeToDocumentType(legalRepDoc.getDocumentType()))
-                    .build())
-                .toList();
+        List<LegalRepDocument> legalRepDocuments = legalRepDocumentUploadDetails.getLegalRepDocuments().stream()
+            .map(ListValue::getValue).toList();
 
-            pcsCaseEntity.addDocuments(documentEntities);
+        boolean isDocumentNull = legalRepDocuments.stream()
+            .anyMatch(doc -> doc == null || doc.getDocument() == null);
+
+        if (isDocumentNull) {
+            return errorResponse("Your files were not submitted. Try again.");
         }
+
+        List<DocumentEntity> documentEntities = legalRepDocuments.stream()
+            .map(legalRepDoc -> DocumentEntity.builder()
+                .pcsCase(pcsCaseEntity)
+                .url(legalRepDoc.getDocument().getUrl())
+                .fileName(legalRepDoc.getDocument().getFilename())
+                .binaryUrl(legalRepDoc.getDocument().getBinaryUrl())
+                .categoryId(legalRepDoc.getDocument().getCategoryId())
+                .description(legalRepDoc.getDescription())
+                .type(mapEvidenceTypeToDocumentType(legalRepDoc.getDocumentType()))
+                .build())
+            .toList();
+
+        pcsCaseEntity.addDocuments(documentEntities);
+
         return SubmitResponse.<State>builder()
             .confirmationBody(getDocumentUploadedConfirmationMarkdown())
+            .build();
+    }
+
+    @SuppressWarnings("SameParameterValue")
+    private SubmitResponse<State> errorResponse(String message) {
+        return SubmitResponse.<State>builder()
+            .errors(List.of(message))
             .build();
     }
 
