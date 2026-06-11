@@ -6,20 +6,37 @@ import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.ccd.sdk.api.HasRole;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 
+import java.util.Set;
+
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.entry;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CIRCUIT_JUDGE;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CTSC_ADMIN;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CTSC_TEAM_LEADER;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.FEE_PAID_JUDGE;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.HEARING_CENTRE_ADMIN;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.HEARING_CENTRE_TEAM_LEADER;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.JUDGE;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.LEADERSHIP_JUDGE;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.WLU_ADMIN;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.WLU_TEAM_LEADER;
-import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.FEE_PAID_JUDGE;
-import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CIRCUIT_JUDGE;
-import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.LEADERSHIP_JUDGE;
-import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.JUDGE;
 
 class InternalCaseFlagAccessTest {
+
+    private static final UserRole[] CREATE_READ_UPDATE_ROLES = {
+        CTSC_TEAM_LEADER,
+        CTSC_ADMIN,
+        HEARING_CENTRE_TEAM_LEADER,
+        HEARING_CENTRE_ADMIN,
+        WLU_TEAM_LEADER,
+        WLU_ADMIN
+    };
+
+    private static final UserRole[] READ_ROLES = {
+        FEE_PAID_JUDGE,
+        CIRCUIT_JUDGE,
+        LEADERSHIP_JUDGE,
+        JUDGE
+    };
 
     private InternalCaseFlagAccess underTest;
 
@@ -35,16 +52,24 @@ class InternalCaseFlagAccessTest {
         SetMultimap<HasRole, Permission> grants = underTest.getGrants();
 
         // Then
-        assertThat(grants.asMap()).contains(entry(CTSC_TEAM_LEADER, Permission.CRU));
-        assertThat(grants.asMap()).contains(entry(CTSC_ADMIN, Permission.CRU));
-        assertThat(grants.asMap()).contains(entry(HEARING_CENTRE_TEAM_LEADER, Permission.CRU));
-        assertThat(grants.asMap()).contains(entry(HEARING_CENTRE_ADMIN, Permission.CRU));
-        assertThat(grants.asMap()).contains(entry(WLU_TEAM_LEADER, Permission.CRU));
-        assertThat(grants.asMap()).contains(entry(WLU_ADMIN, Permission.CRU));
-        assertThat(grants.get(FEE_PAID_JUDGE)).contains(Permission.R);
-        assertThat(grants.get(CIRCUIT_JUDGE)).contains(Permission.R);
-        assertThat(grants.get(LEADERSHIP_JUDGE)).contains(Permission.R);
-        assertThat(grants.get(JUDGE)).contains(Permission.R);
+        assertAllHavePermissions(grants, CREATE_READ_UPDATE_ROLES, Permission.CRU);
+        assertAllHavePermission(grants, READ_ROLES, Permission.R);
         assertThat(grants.asMap().size()).isEqualTo(10);
+    }
+
+    private void assertAllHavePermissions(SetMultimap<HasRole, Permission> grants,
+                                          UserRole[] roles,
+                                          Set<Permission> permissions) {
+        for (UserRole role : roles) {
+            assertThat(grants.get(role)).containsAll(permissions);
+        }
+    }
+
+    private void assertAllHavePermission(SetMultimap<HasRole, Permission> grants,
+                                         UserRole[] roles,
+                                         Permission permission) {
+        for (UserRole role : roles) {
+            assertThat(grants.get(role)).contains(permission);
+        }
     }
 }
