@@ -17,6 +17,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.claim.RentArrearsEntity;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mock.Strictness.LENIENT;
@@ -82,9 +83,11 @@ class RentArrearsViewTest {
         when(rentArrearsEntity.getArrearsJudgmentWanted()).thenReturn(VerticalYesNo.YES);
         when(rentArrearsEntity.getRecoveryAttempted()).thenReturn(VerticalYesNo.YES);
         when(rentArrearsEntity.getRecoveryAttemptDetails()).thenReturn(details);
+        UUID documentId = UUID.fromString("11111111-1111-1111-1111-111111111111");
         when(pcsCaseEntity.getDocuments()).thenReturn(
             List.of(
                 DocumentEntity.builder()
+                    .id(documentId)
                     .type(DocumentType.RENT_STATEMENT)
                     .build()
             )
@@ -103,6 +106,8 @@ class RentArrearsViewTest {
         assertThat(rentArrears.getRecoveryAttempted()).isEqualTo(VerticalYesNo.YES);
         assertThat(rentArrears.getRecoveryAttemptDetails()).isEqualTo(details);
         assertThat(rentArrears.getStatementDocuments()).hasSize(1);
+        // Collection items must carry an id — the Case File View reads rentStatement[0].id
+        assertThat(rentArrears.getStatementDocuments().get(0).getId()).isEqualTo(documentId.toString());
 
         verify(pcsCase).setArrearsJudgmentWanted(VerticalYesNo.YES);
     }
