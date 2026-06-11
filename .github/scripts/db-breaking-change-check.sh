@@ -11,11 +11,6 @@ summary_file="db-scan-summary.md"
 
 : > "$findings_file"
 
-mapfile -t changed_files < <(
-  git diff --name-only --diff-filter=ACMRT "${base_sha}...${head_sha}" -- "$migration_dir" \
-    | grep -E '\.sql$' || true
-)
-
 scan_file() {
   local file="$1"
 
@@ -48,23 +43,23 @@ scan_file() {
 
         upper_content = upper(content)
 
-        if (upper_content ~ /\bDROP[[:space:]]+TABLE\b/) {
+        if (upper_content ~ /DROP[[:space:]]+TABLE/) {
           emit(line, "high", "Drop table", "Dropping a table will break any app code that still reads from or writes to it.", trimmed)
-        } else if (upper_content ~ /\bDROP[[:space:]]+COLUMN\b/) {
+        } else if (upper_content ~ /DROP[[:space:]]+COLUMN/) {
           emit(line, "high", "Drop column", "Dropping a column can break queries, ORM mappings, serializers, and reports that still expect it.", trimmed)
-        } else if (upper_content ~ /\bRENAME[[:space:]]+COLUMN\b/) {
+        } else if (upper_content ~ /RENAME[[:space:]]+COLUMN/) {
           emit(line, "high", "Rename column", "Renaming a column is breaking unless the application is deployed with a matching change first.", trimmed)
-        } else if (upper_content ~ /\bRENAME[[:space:]]+TO\b/) {
+        } else if (upper_content ~ /RENAME[[:space:]]+TO/) {
           emit(line, "high", "Rename table", "Renaming a table is breaking unless every caller is updated in lockstep.", trimmed)
-        } else if (upper_content ~ /\bDROP[[:space:]]+INDEX\b/) {
+        } else if (upper_content ~ /DROP[[:space:]]+INDEX/) {
           emit(line, "medium", "Drop index", "Dropping an index can cause performance regressions or query-plan changes that affect production behaviour.", trimmed)
-        } else if (upper_content ~ /\bDROP[[:space:]]+CONSTRAINT\b/) {
+        } else if (upper_content ~ /DROP[[:space:]]+CONSTRAINT/) {
           emit(line, "medium", "Drop constraint", "Dropping a constraint can change data integrity guarantees or break code that depends on the constraint existing.", trimmed)
-        } else if (upper_content ~ /\bTRUNCATE[[:space:]]+TABLE\b/) {
+        } else if (upper_content ~ /TRUNCATE[[:space:]]+TABLE/) {
           emit(line, "high", "Truncate table", "Truncating a table removes all rows immediately and can break the app if it still expects data to exist.", trimmed)
-        } else if (upper_content ~ /\bALTER[[:space:]]+COLUMN\b.*\bTYPE\b/) {
+        } else if (upper_content ~ /ALTER[[:space:]]+COLUMN.*TYPE/) {
           emit(line, "medium", "Alter column type", "Changing a column type can break reads and writes if the application still uses the old type contract.", trimmed)
-        } else if (upper_content ~ /\bSET[[:space:]]+NOT[[:space:]]+NULL\b/) {
+        } else if (upper_content ~ /SET[[:space:]]+NOT[[:space:]]+NULL/) {
           emit(line, "medium", "Set not null", "Making a column non-null can break writes while the old app version still sends null values.", trimmed)
         }
 
@@ -78,9 +73,15 @@ scan_file() {
     '
 }
 
-for file in "${changed_files[@]}"; do
+changed_files="$(git diff --name-only --diff-filter=ACMRT "${base_sha}...${head_sha}" -- "$migration_dir" \
+  | grep -E '\.sql$' || true)"
+
+while IFS= read -r file; do
+  [ -n "$file" ] || continue
   scan_file "$file"
-done
+done <<EOF
+$changed_files
+EOF
 
 findings_count=$(wc -l < "$findings_file" | tr -d ' ')
 
