@@ -12,6 +12,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.RentPaymentFrequency;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.ClaimGroundSummary;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.RentArrearsTabDetails;
+import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -42,6 +43,7 @@ public class RentArrearsTabDetailsBuilderTest {
 
         // Then
         assertThat(rentArrearsDetails.getCalculationFrequency()).isEqualTo("Weekly");
+        assertThat(rentArrearsDetails.getRentFrequency()).isNull();
         assertThat(rentArrearsDetails.getDailyRate()).isEqualTo("£1.50");
     }
 
@@ -225,6 +227,7 @@ public class RentArrearsTabDetailsBuilderTest {
         // Then
         assertThat(rentArrearsDetails.getRentAmount()).isEqualTo("£4");
         assertThat(rentArrearsDetails.getCalculationFrequency()).isEqualTo("Weekly");
+        assertThat(rentArrearsDetails.getRentFrequency()).isNull();
         assertThat(rentArrearsDetails.getFrequency()).isNull();
         assertThat(rentArrearsDetails.getDailyRate()).isEqualTo("£3.40");
         assertThat(rentArrearsDetails.getArrearsTotal()).isEqualTo("£100");
@@ -383,6 +386,43 @@ public class RentArrearsTabDetailsBuilderTest {
         assertThat(rentArrearsDetails.getRentStatement()).isNull();
         assertThat(rentArrearsDetails.getRentStatementPlaceholder()).isEqualTo(" ");
         assertThat(rentArrearsDetails.getJudgmentRequested()).isEqualTo(" ");
+    }
+
+    @Test
+    void shouldSetRentFrequencyInDetailedRentArrearsWhenCountryIsWales() {
+        // Given
+        PCSCase pcsCase = PCSCase.builder()
+            .legislativeCountry(LegislativeCountry.WALES)
+            .showRentSectionPage(YesOrNo.YES)
+            .rentDetails(
+                RentDetails.builder()
+                    .currentRent(new BigDecimal("4.00"))
+                    .frequency(RentPaymentFrequency.WEEKLY)
+                    .calculatedDailyCharge(new BigDecimal("3.40"))
+                    .build())
+            .arrearsJudgmentWanted(VerticalYesNo.YES)
+            .rentArrears(
+                RentArrearsSection.builder()
+                    .recoveryAttempted(VerticalYesNo.YES)
+                    .recoveryAttemptDetails("recovery details")
+                    .total(new BigDecimal("100.00"))
+                    .statementDocuments(
+                        List.of(
+                            ListValue.<Document>builder()
+                                .value(Document.builder().build())
+                                .build())
+                    )
+                    .build()
+            )
+            .build();
+
+        // When
+        RentArrearsTabDetails rentArrearsDetails = rentArrearsTabDetailsBuilder
+            .buildDetailedRentArrearsTabDetails(pcsCase);
+
+        // Then
+        assertThat(rentArrearsDetails.getCalculationFrequency()).isNull();
+        assertThat(rentArrearsDetails.getRentFrequency()).isEqualTo("Weekly");
     }
 
     private static <T> ListValue<T> listValue(T value) {
