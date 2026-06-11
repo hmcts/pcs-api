@@ -9,8 +9,6 @@ import java.util.Set;
 
 import static uk.gov.hmcts.ccd.sdk.api.Permission.CRU;
 import static uk.gov.hmcts.ccd.sdk.api.Permission.R;
-import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.AccessProfile.CASE_LINK_READ;
-import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.AccessProfile.CASE_LINK_WRITE;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.AccessProfile.GS_PROFILE;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.RoleType.IDAM;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.RoleType.RAS;
@@ -37,13 +35,13 @@ public enum UserRole implements HasRole {
     HMCTS_CTSC("hmcts-ctsc", Set.of(R), RAS, GS_PROFILE),
     HMCTS_LEGAL_OPERATIONS("hmcts-legal-operations", Set.of(R), RAS, GS_PROFILE),
 
-    CTSC_ADMIN("ctsc", Permission.CRU, RAS, CASE_LINK_WRITE),
-    HEARING_CENTRE_ADMIN("hearing-centre-admin", Permission.CRU, RAS,  CASE_LINK_WRITE),
-    WLU_ADMIN("wlu-admin", Permission.CRU, RAS, CASE_LINK_READ),
-    FEE_PAID_JUDGE("fee-paid-judge", Permission.CRU, RAS, CASE_LINK_WRITE),
-    LEADERSHIP_JUDGE("leadership-judge", Permission.CRU, RAS, CASE_LINK_WRITE),
-    CIRCUIT_JUDGE("circuit-judge", Permission.CRU, RAS, CASE_LINK_WRITE),
-    JUDGE("judge", Permission.CRU, RAS, CASE_LINK_WRITE),
+    CTSC_ADMIN("ctsc", Permission.CRU, RAS),
+    HEARING_CENTRE_ADMIN("hearing-centre-admin", Permission.CRU, RAS),
+    WLU_ADMIN("wlu-admin", Permission.CRU, RAS),
+    FEE_PAID_JUDGE("fee-paid-judge", Permission.CRU, RAS),
+    LEADERSHIP_JUDGE("leadership-judge", Permission.CRU, RAS),
+    CIRCUIT_JUDGE("circuit-judge", Permission.CRU, RAS),
+    JUDGE("judge", Permission.CRU, RAS),
     SYSTEM_USER("pcs-system-update", Permission.CRU, IDAM);
 
 
