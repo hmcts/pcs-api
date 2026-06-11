@@ -104,7 +104,8 @@ class LegalRepresentativePartyLinkServiceTest {
         when(organisationDetailsService.getOrganisationAddress(organisationDetails))
             .thenReturn(addressUK);
         when(addressMapper.toAddressEntityAndNormalise(addressUK)).thenReturn(addressEntity);
-        when(legalRepresentativeRepository.findByIdamIdAndCaseReference(userUid, caseReference)).thenReturn(Optional.empty());
+        when(legalRepresentativeRepository.findByIdamIdAndCaseReference(userUid, caseReference))
+            .thenReturn(Optional.empty());
 
         // when
         legalRepresentativePartyLinkService.linkLegalRepresentativeToParty(
@@ -415,7 +416,8 @@ class LegalRepresentativePartyLinkServiceTest {
         when(organisationDetailsService.getOrganisationAddress(organisationDetails))
             .thenReturn(addressUK);
         when(addressMapper.toAddressEntityAndNormalise(addressUK)).thenReturn(addressEntity);
-        when(legalRepresentativeRepository.findByIdamIdAndCaseReference(userUid, caseReference)).thenReturn(Optional.empty());
+        when(legalRepresentativeRepository.findByIdamIdAndCaseReference(userUid, caseReference))
+            .thenReturn(Optional.empty());
 
         // when
         legalRepresentativePartyLinkService.linkLegalRepresentativeToParty(caseReference, partyId.toString(), userInfo,
