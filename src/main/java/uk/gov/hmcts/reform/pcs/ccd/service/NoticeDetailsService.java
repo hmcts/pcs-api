@@ -24,7 +24,8 @@ public class NoticeDetailsService {
     private static final String NOTICE_UNABLE_TO_UPLOAD_DOCUMENT_TXT =
             "Why can you not upload a copy of the notice you served?";
     private static final String NOTICE_OTHER_EXPLANATION_LABEL = "Other";
-    private static final String NAME_OF_PERSON_DOCUMENT_LEFT_WITH = "Name of person the document was left with";
+    private static final String NAME_OF_PERSON_DOCUMENT_LEFT_WITH_LABEL = "Name of person the document was left with";
+    private static final String EMAIL_ADDRESS_LABEL = "What email address was the document sent to?";
 
     private final TextAreaValidationService textAreaValidationService;
 
@@ -63,7 +64,12 @@ public class NoticeDetailsService {
                 ),
                 TextAreaValidationService.FieldValidation.of(
                         noticeServedDetails.getPersonName(),
-                        NAME_OF_PERSON_DOCUMENT_LEFT_WITH,
+                        NAME_OF_PERSON_DOCUMENT_LEFT_WITH_LABEL,
+                        TextAreaValidationService.EXTRA_SHORT_TEXT_LIMIT
+                ),
+                TextAreaValidationService.FieldValidation.of(
+                        noticeServedDetails.getPersonName(),
+                        EMAIL_ADDRESS_LABEL,
                         TextAreaValidationService.EXTRA_SHORT_TEXT_LIMIT
                 ),
                 TextAreaValidationService.FieldValidation.of(

@@ -78,30 +78,26 @@ public class NoticeServedDetails {
 
     // Text fields for different service methods
     @CCD(
-            label = "Name of person the document was left with",
-            max = 60)
+            label = "Name of person the document was left with")
     private String personName;
 
     @CCD(
             label = "What email address was the document sent to?",
             hint = "For example, name@example.com",
-            typeOverride = Email,
-            max = 60
+            typeOverride = Email
     )
     private String emailAddress;
 
     @CCD(
             hint = "Give details of how the notice was served. You can enter up to 250 characters",
-            typeOverride = TextArea,
-            max = 250
+            typeOverride = TextArea
     )
     private String otherExplanation;
 
     @CCD(
             label = "Give details of how the notice was served",
             hint = "You can enter up to 250 characters",
-            typeOverride = TextArea,
-            max = 250
+            typeOverride = TextArea
     )
     private String otherElectronicExplanation;
 
@@ -124,8 +120,7 @@ public class NoticeServedDetails {
 
     @CCD(
             label = "Why can you not upload a copy of the notice you served?",
-            typeOverride = TextArea,
-            max = 500
+            typeOverride = TextArea
     )
     private String unableToUploadReason;
 }
