@@ -102,8 +102,8 @@ export const submitCaseApiDataWales = {
       {
         id: 'd5c91eae-1c3c-40c6-9338-47bade17efe9',
         value: {
-          document_url: 'http://dm-store-aat.service.core-compute-aat.internal/documents/f2d85b20-14dd-48e5-a614-7e6da6e93f9d',
-          document_binary_url: 'http://dm-store-aat.service.core-compute-aat.internal/documents/f2d85b20-14dd-48e5-a614-7e6da6e93f9d/binary',
+          document_url: `${process.env.DM_STORE}/documents/f2d85b20-14dd-48e5-a614-7e6da6e93f9d`,
+          document_binary_url: `${process.env.DM_STORE}/documents/f2d85b20-14dd-48e5-a614-7e6da6e93f9d/binary`,
           document_filename: 'rentStatement.pdf',
         }
       }
