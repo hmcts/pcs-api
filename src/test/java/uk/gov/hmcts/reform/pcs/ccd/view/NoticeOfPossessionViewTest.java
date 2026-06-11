@@ -21,6 +21,7 @@ import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mock.Strictness.LENIENT;
@@ -269,9 +270,11 @@ class NoticeOfPossessionViewTest {
         LocalDate postedDate = mock(LocalDate.class);
         when(noticeOfPossessionEntity.getServingMethod()).thenReturn(FIRST_CLASS_POST);
         when(noticeOfPossessionEntity.getNoticeDate()).thenReturn(postedDate);
+        UUID noticeDocId = UUID.fromString("44444444-4444-4444-4444-444444444444");
         when(pcsCaseEntity.getDocuments()).thenReturn(
             List.of(
                 DocumentEntity.builder()
+                    .id(noticeDocId)
                     .type(DocumentType.NOTICE_FOR_SERVICE_OUT_OF_JURISDICTION)
                     .build()
             )
@@ -287,5 +290,6 @@ class NoticeOfPossessionViewTest {
         assertThat(noticeServedDetails.getNoticeServiceMethod()).isEqualTo(FIRST_CLASS_POST);
         assertThat(noticeServedDetails.getNoticePostedDate()).isSameAs(postedDate);
         assertThat(noticeServedDetails.getNoticeDocuments()).hasSize(1);
+        assertThat(noticeServedDetails.getNoticeDocuments().get(0).getId()).isEqualTo(noticeDocId.toString());
     }
 }

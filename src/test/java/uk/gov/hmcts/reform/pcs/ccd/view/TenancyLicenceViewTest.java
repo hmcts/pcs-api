@@ -21,6 +21,7 @@ import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -73,9 +74,11 @@ class TenancyLicenceViewTest {
         when(tenancyLicenceEntity.getStartDate()).thenReturn(tenancyStartDate);
         when(tenancyLicenceEntity.getHasCopyOfTenancyLicence()).thenReturn(hasCopyOfTenancyLicence);
         when(tenancyLicenceEntity.getReasonsForNoTenancyLicence()).thenReturn(reasonsForNoTenancyLicence);
+        UUID tenancyDocId = UUID.fromString("22222222-2222-2222-2222-222222222222");
         when(pcsCaseEntity.getDocuments()).thenReturn(
             List.of(
                 DocumentEntity.builder()
+                    .id(tenancyDocId)
                     .type(DocumentType.TENANCY_LICENCE)
                     .build()
             )
@@ -99,6 +102,8 @@ class TenancyLicenceViewTest {
         assertThat(tenancyLicenceDetails.getReasonsForNoTenancyLicenceDocuments())
             .isEqualTo(reasonsForNoTenancyLicence);
         assertThat(tenancyLicenceDetails.getTenancyLicenceDocuments()).hasSize(1);
+        assertThat(tenancyLicenceDetails.getTenancyLicenceDocuments().get(0).getId())
+            .isEqualTo(tenancyDocId.toString());
     }
 
     @Test
@@ -114,9 +119,11 @@ class TenancyLicenceViewTest {
         when(tenancyLicenceEntity.getType()).thenReturn(CombinedLicenceType.SECURE_CONTRACT);
         when(tenancyLicenceEntity.getOtherTypeDetails()).thenReturn(otherTypeDetails);
         when(tenancyLicenceEntity.getStartDate()).thenReturn(tenancyStartDate);
+        UUID occupationDocId = UUID.fromString("33333333-3333-3333-3333-333333333333");
         when(pcsCaseEntity.getDocuments()).thenReturn(
             List.of(
                 DocumentEntity.builder()
+                    .id(occupationDocId)
                     .type(DocumentType.OCCUPATION_LICENCE)
                     .build()
             )
@@ -138,6 +145,8 @@ class TenancyLicenceViewTest {
         assertThat(occupationLicenceDetails.getOtherLicenceTypeDetails()).isEqualTo(otherTypeDetails);
         assertThat(occupationLicenceDetails.getLicenceStartDate()).isEqualTo(tenancyStartDate);
         assertThat(occupationLicenceDetails.getLicenceDocuments()).hasSize(1);
+        assertThat(occupationLicenceDetails.getLicenceDocuments().get(0).getId())
+            .isEqualTo(occupationDocId.toString());
     }
 
 }
