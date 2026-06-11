@@ -26,7 +26,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -70,7 +69,6 @@ class CitizenSubmissionEventStrategyTest {
         PCSCase caseData = createDraftSaveCaseData(responses);
         RespondPossessionClaimSubmitPersistenceResult persistenceResult =
             new RespondPossessionClaimSubmitPersistenceResult(caseData.getPossessionClaimResponse(), null, false);
-        SubmitResponse<State> submitResponse = SubmitResponse.defaultResponse();
 
         stubDraft(caseData);
         when(eventPayload.caseReference()).thenReturn(CASE_REFERENCE);
@@ -78,6 +76,7 @@ class CitizenSubmissionEventStrategyTest {
             CASE_REFERENCE,
             caseData.getPossessionClaimResponse()
         )).thenReturn(persistenceResult);
+        SubmitResponse<State> submitResponse = SubmitResponse.defaultResponse();
         when(counterClaimSubmitConfirmationService.buildSubmitResponse(CASE_REFERENCE, persistenceResult))
             .thenReturn(submitResponse);
 
