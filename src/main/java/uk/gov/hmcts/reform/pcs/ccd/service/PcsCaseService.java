@@ -54,7 +54,7 @@ public class PcsCaseService {
         return pcsCaseRepository.save(pcsCaseEntity);
     }
 
-    public void createMainClaimOnCase(long caseReference, PCSCase pcsCase) {
+    public void createMainClaimOnCase(long caseReference, PCSCase pcsCase, String organisationIdForCurrentUser) {
         PcsCaseEntity pcsCaseEntity = loadCase(caseReference);
 
         ClaimEntity claimEntity = claimService.createMainClaimEntity(pcsCase);
@@ -65,7 +65,8 @@ public class PcsCaseService {
         pcsCaseEntity.addClaim(claimEntity);
         pcsCaseEntity.setBaseLocation(pcsCase.getCaseManagementLocationNumber());
         pcsCaseEntity.setRegionId(pcsCase.getRegionId());
-        partyService.createAllParties(pcsCase, pcsCaseEntity, claimEntity);
+
+        partyService.createAllParties(pcsCase, pcsCaseEntity, claimEntity, organisationIdForCurrentUser);
 
         pcsCaseEntity.setTenancyLicence(tenancyLicenceService.createTenancyLicenceEntity(pcsCase));
     }
