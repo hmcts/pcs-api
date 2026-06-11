@@ -78,8 +78,7 @@ public class LocationReferenceDataApiConsumerTest {
         assertThat(response).isNotEmpty();
 
         CourtVenue location = response.get(0);
-
-        System.out.println(location);
+        
         assertThat(location.epimsId()).isEqualTo("123456789");
         assertThat(location.courtLocationId()).isEqualTo("1");
         assertThat(location.courtLocationName()).isEqualTo("ABERDEEN TRIBUNAL HEARING CENTRE 1");
