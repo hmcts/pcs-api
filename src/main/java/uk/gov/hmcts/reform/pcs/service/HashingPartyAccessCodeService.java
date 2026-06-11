@@ -41,9 +41,13 @@ public class HashingPartyAccessCodeService implements PartyAccessCodeHashingServ
             .findFirst();
     }
 
-    // pre-flag codes are stored cleartext: fall back to equality so they still verify
+    // Codes minted while the flag was off are stored cleartext; pick the comparator by the stored
+    // value's shape (BCrypt hashes start with "$2") so a cleartext value never hits encoder.matches
+    // (which would log a "does not look like BCrypt" warning) and still verifies by equality.
     private boolean matches(String accessCode, String storedCode) {
-        return encoder.matches(accessCode, storedCode) || accessCode.equals(storedCode);
+        return storedCode.startsWith("$2")
+            ? encoder.matches(accessCode, storedCode)
+            : accessCode.equals(storedCode);
     }
 }
 

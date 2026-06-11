@@ -23,7 +23,7 @@ public class DispatchingPartyAccessCodeHashingService implements PartyAccessCode
     @Override
     public String encodeForStorage(String accessCode) {
         // write: the flag picks the storage scheme
-        return featureToggle.isAccessCodeHashingEnabled()
+        return featureToggle.isEnabled(FeatureFlag.ACCESS_CODE_HASHING)
             ? hashedImpl.encodeForStorage(accessCode)
             : cleartextImpl.encodeForStorage(accessCode);
     }

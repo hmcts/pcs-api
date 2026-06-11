@@ -23,7 +23,7 @@ public class LaunchDarklyConfiguration {
 
     private static final String OFFLINE_PLACEHOLDER_KEY = "offline-placeholder";
 
-    @Bean
+    @Bean(destroyMethod = "close")
     public LDClient ldClient(@Value("${launchdarkly.sdk-key:}") String sdkKey,
                              @Value("${launchdarkly.offline-mode:false}") Boolean offlineMode,
                              @Value("${launchdarkly.file:}") String[] flagFiles) {
@@ -37,7 +37,11 @@ public class LaunchDarklyConfiguration {
         getExistingFiles(flagFiles)
             .map(this::getDataSource)
             .ifPresent(builder::dataSource);
-        return new LDClient(sdkKey, builder.build());
+        LDClient client = new LDClient(sdkKey, builder.build());
+        if (!client.isInitialized()) {
+            log.warn("LaunchDarkly not initialised at startup - serving code defaults until connected");
+        }
+        return client;
     }
 
     private ComponentConfigurer<DataSource> getDataSource(Path[] flagFilePaths) {

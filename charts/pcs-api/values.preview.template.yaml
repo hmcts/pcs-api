@@ -36,7 +36,6 @@ java:
     ENABLE_TESTING_SUPPORT: true
     # per-PR value (e.g. pcs-api-pr-538) so LD rules can target a single preview; stable envs use global.environment
     LAUNCHDARKLY_ENV: "${SERVICE_NAME}"
-    ACCESS_CODE_HASHING_DEFAULT: "false"
     DB_SCHEDULER_EXECUTOR_ENABLED: true
     DOC_ASSEMBLY_URL: http://dg-docassembly-aat.service.core-compute-aat.internal
     IDAM_API_URL: https://idam-api.aat.platform.hmcts.net

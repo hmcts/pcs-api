@@ -32,7 +32,7 @@ class DispatchingPartyAccessCodeHashingServiceTest {
 
     @Test
     void shouldRouteEncodeToCleartextWhenFlagOff() {
-        when(featureToggle.isAccessCodeHashingEnabled()).thenReturn(false);
+        when(featureToggle.isEnabled(FeatureFlag.ACCESS_CODE_HASHING)).thenReturn(false);
         when(cleartextImpl.encodeForStorage("CODE")).thenReturn("CODE");
 
         assertThat(underTest.encodeForStorage("CODE")).isEqualTo("CODE");
@@ -41,7 +41,7 @@ class DispatchingPartyAccessCodeHashingServiceTest {
 
     @Test
     void shouldRouteEncodeToHashedWhenFlagOn() {
-        when(featureToggle.isAccessCodeHashingEnabled()).thenReturn(true);
+        when(featureToggle.isEnabled(FeatureFlag.ACCESS_CODE_HASHING)).thenReturn(true);
         when(hashedImpl.encodeForStorage("CODE")).thenReturn("$2a$hashed");
 
         assertThat(underTest.encodeForStorage("CODE")).isEqualTo("$2a$hashed");
