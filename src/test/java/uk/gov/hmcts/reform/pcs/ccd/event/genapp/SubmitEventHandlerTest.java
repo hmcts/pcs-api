@@ -21,13 +21,14 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.GenAppRepository;
-import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.LegalRepresentativeRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.LegalRepresentativeOrganisationRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentImportService;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppDocumentGenerator;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.UUID;
@@ -65,17 +66,19 @@ class SubmitEventHandlerTest {
     @Mock(strictness = LENIENT)
     private DocumentImportService documentImportService;
     @Mock
-    private LegalRepresentativeRepository legalRepresentativeRepository;
+    private LegalRepresentativeOrganisationRepository legalRepresentativeOrganisationRepository;
     @Mock
     private ConfirmationScreenFactory confirmationScreenFactory;
-
+    @Mock
+    private OrganisationService organisationService;
     private SubmitEventHandler underTest;
 
     @BeforeEach
     void setUp() {
         underTest = new SubmitEventHandler(pcsCaseService, partyService, securityContextService, genAppService,
                                            genAppRepository, genAppDocumentGenerator, documentImportService,
-                                           legalRepresentativeRepository, confirmationScreenFactory);
+                                           legalRepresentativeOrganisationRepository, confirmationScreenFactory,
+                                           organisationService);
     }
 
     @Nested
@@ -167,10 +170,11 @@ class SubmitEventHandlerTest {
                 .build();
 
             UUID currentUserId = UUID.randomUUID();
+            String orgId = "org";
             when(securityContextService.getCurrentUserId()).thenReturn(currentUserId);
-
-            when(legalRepresentativeRepository
-                     .isLegalRepresentativeLinkedToPartyAndActive(currentUserId, representedPartyUuid))
+            when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(orgId);
+            when(legalRepresentativeOrganisationRepository
+                     .isRepresentativeOrganisationLinkedToPartyAndActive(orgId, representedPartyUuid))
                 .thenReturn(false);
 
             // When
@@ -182,9 +186,11 @@ class SubmitEventHandlerTest {
 
         private void stubLegalRepForParty(UUID representedPartyUuid) {
             UUID currentUserId = UUID.randomUUID();
+            String orgId = "org";
             when(securityContextService.getCurrentUserId()).thenReturn(currentUserId);
-            when(legalRepresentativeRepository
-                     .isLegalRepresentativeLinkedToPartyAndActive(currentUserId, representedPartyUuid))
+            when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(orgId);
+            when(legalRepresentativeOrganisationRepository
+                     .isRepresentativeOrganisationLinkedToPartyAndActive(orgId, representedPartyUuid))
                 .thenReturn(true);
         }
 

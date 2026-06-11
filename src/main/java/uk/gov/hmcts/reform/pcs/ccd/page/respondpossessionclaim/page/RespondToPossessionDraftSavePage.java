@@ -70,18 +70,12 @@ public class RespondToPossessionDraftSavePage implements CcdPageConfiguration {
                 }
                 UUID representedPartyId = selectedPartyId.get();
 
-
-                UUID legalRepOrganisationIdForUser = legalRepresentativeRetriever.getLegalRepOrganisationIdForUser(
-                    caseRef,
-                    organisationId
-                );
-
                 draftCaseDataService.saveUnsubmittedEventData(
                     caseRef,
                     partialUpdate,
                     respondPossessionClaim,
                     representedPartyId,
-                    legalRepOrganisationIdForUser
+                    organisationId
                 );
             }
             return AboutToStartOrSubmitResponse.<PCSCase, State>builder()

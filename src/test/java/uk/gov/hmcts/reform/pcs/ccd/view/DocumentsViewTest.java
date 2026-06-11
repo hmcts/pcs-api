@@ -12,7 +12,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
-import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -26,10 +26,8 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class DocumentsViewTest {
 
-    private static final UUID CURRENT_USER_ID = UUID.randomUUID();
-
     @Mock
-    private SecurityContextService securityContextService;
+    private OrganisationService organisationService;
     @Mock
     private GenAppVisibilityService genAppVisibilityService;
     @Mock
@@ -43,7 +41,7 @@ class DocumentsViewTest {
     void setUp() {
         pcsCase = PCSCase.builder().build();
 
-        underTest = new DocumentsView(securityContextService, genAppVisibilityService);
+        underTest = new DocumentsView(organisationService, genAppVisibilityService);
     }
 
     @Test
@@ -121,16 +119,17 @@ class DocumentsViewTest {
     }
 
     @Test
-    void shoulFilterGenAppDocumentsBasedOnVisibilitty() {
+    void shoulFilterGenAppDocumentsBasedOnVisibility() {
         // Given
-        when(securityContextService.getCurrentUserId()).thenReturn(CURRENT_USER_ID);
+        String orgId = "org";
+        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(orgId);
 
         GenAppEntity genAppEntity1 = mock(GenAppEntity.class);
-        when(genAppVisibilityService.isGenAppVisibleToUser(genAppEntity1, CURRENT_USER_ID))
+        when(genAppVisibilityService.isGenAppVisibleToUser(genAppEntity1, orgId))
             .thenReturn(true);
 
         GenAppEntity genAppEntity2 = mock(GenAppEntity.class);
-        when(genAppVisibilityService.isGenAppVisibleToUser(genAppEntity2, CURRENT_USER_ID))
+        when(genAppVisibilityService.isGenAppVisibleToUser(genAppEntity2, orgId))
             .thenReturn(false);
 
         UUID document1Id = UUID.randomUUID();

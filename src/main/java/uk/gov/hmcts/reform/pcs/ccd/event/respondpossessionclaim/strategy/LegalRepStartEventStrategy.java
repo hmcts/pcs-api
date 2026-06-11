@@ -8,14 +8,12 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.LegalRepPartySelectionService;
-import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.utils.LegalRepresentativeRetriever;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.LegalRepForDefendantAccessValidator;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationDetailsService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.List;
-import java.util.UUID;
 
 @Component
 @Slf4j
@@ -27,7 +25,6 @@ public class LegalRepStartEventStrategy implements RespondPossessionClaimStartEv
     private final SecurityContextService securityContextService;
     private final LegalRepPartySelectionService legalRepPartySelectionService;
     private final OrganisationDetailsService organisationDetailsService;
-    private final LegalRepresentativeRetriever legalRepresentativeRetriever;
 
     @Override
     public boolean supports(List<String> roles) {
@@ -41,20 +38,17 @@ public class LegalRepStartEventStrategy implements RespondPossessionClaimStartEv
 
         List<PartyEntity> defendantPartiesLinkedAndActive = loadAndValidateDefendants(caseReference, organisationId);
 
-        UUID legalRepOrganisationIdForUser = legalRepresentativeRetriever
-            .getLegalRepOrganisationIdForUser(caseReference, organisationId);
-
         if (defendantPartiesLinkedAndActive.size() == 1) {
             PartyEntity defendant = defendantPartiesLinkedAndActive.getFirst();
             legalRepPartySelectionService.validateResponseNotAlreadySubmitted(caseReference, defendant.getId());
 
             return legalRepPartySelectionService.getDraftCaseData(caseReference, pcsCase, defendant,
                                                                   defendantPartiesLinkedAndActive,
-                                                                  legalRepOrganisationIdForUser);
+                                                                  organisationId);
         }
 
         return legalRepPartySelectionService.getDraft(pcsCase, defendantPartiesLinkedAndActive,
-                                                      caseReference, legalRepOrganisationIdForUser);
+                                                      caseReference, organisationId);
     }
 
     private List<PartyEntity> loadAndValidateDefendants(long caseReference, String organisationId) {

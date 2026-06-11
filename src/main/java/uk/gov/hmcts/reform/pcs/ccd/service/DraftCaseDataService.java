@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.pcs.ccd.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
@@ -65,7 +66,7 @@ public class DraftCaseDataService {
     public Optional<PCSCase> getUnsubmittedCaseData(long caseReference,
                                                     EventId eventId,
                                                     UUID partyId,
-                                                    UUID legalRepresentativeOrganisationId) {
+                                                    String legalRepresentativeOrganisationId) {
 
         return getUnsubmittedCaseDataInternal(
             caseReference,
@@ -73,7 +74,7 @@ public class DraftCaseDataService {
             legalRepresentativeOrganisationId,
             partyId,
             () -> draftCaseDataRepository
-                .findByCaseReferenceAndEventIdAndIdamUserIdAndPartyId(
+                .findByCaseReferenceAndEventIdAndLegalRepresentativeOrganisationIdAndPartyId(
                     caseReference,
                     eventId,
                     legalRepresentativeOrganisationId,
@@ -102,7 +103,7 @@ public class DraftCaseDataService {
     public boolean hasUnsubmittedCaseData(long caseReference,
                                           EventId eventId,
                                           UUID partyId,
-                                          UUID legalRepresentativeOrganisationId) {
+                                          String legalRepresentativeOrganisationId) {
 
         return hasUnsubmittedCaseDataInternal(
             caseReference,
@@ -110,7 +111,7 @@ public class DraftCaseDataService {
             legalRepresentativeOrganisationId,
             partyId,
             () -> draftCaseDataRepository
-                .existsByCaseReferenceAndEventIdAndIdamUserIdAndPartyId(
+                .existsByCaseReferenceAndEventIdAndLegalRepresentativeOrganisationIdAndPartyId(
                     caseReference,
                     eventId,
                     legalRepresentativeOrganisationId,
@@ -160,7 +161,7 @@ public class DraftCaseDataService {
                                              T eventData,
                                              EventId eventId,
                                              UUID partyId,
-                                             UUID legalRepresentativeOrganisationId) {
+                                             String legalRepresentativeOrganisationId) {
 
         saveUnsubmittedEventDataInternal(
             caseReference,
@@ -169,7 +170,7 @@ public class DraftCaseDataService {
             legalRepresentativeOrganisationId,
             partyId,
             () -> draftCaseDataRepository
-                .findByCaseReferenceAndEventIdAndIdamUserIdAndPartyId(
+                .findByCaseReferenceAndEventIdAndLegalRepresentativeOrganisationIdAndPartyId(
                     caseReference,
                     eventId,
                     legalRepresentativeOrganisationId,
@@ -312,11 +313,15 @@ public class DraftCaseDataService {
         );
     }
 
+     class DraftCaseData {
+        long
+     }
+
     @Transactional
     public void deleteUnsubmittedCaseData(long caseReference,
                                           EventId eventId,
                                           UUID partyId,
-                                          UUID organisationId) {
+                                          String organisationId) {
 
         deleteUnsubmittedCaseDataInternal(
             caseReference,
@@ -324,7 +329,7 @@ public class DraftCaseDataService {
             organisationId,
             partyId,
             () -> draftCaseDataRepository
-                .deleteByCaseReferenceAndEventIdAndIdamUserIdAndPartyId(
+                .deleteByCaseReferenceAndEventIdAndLegalRepresentativeOrganisationIdAndPartyId(
                     caseReference,
                     eventId,
                     organisationId,
@@ -584,4 +589,6 @@ public class DraftCaseDataService {
             });
         draftCaseDataRepository.save(draftCaseDataEntity);
     }
+
+
 }

@@ -17,6 +17,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.time.LocalDateTime;
@@ -33,11 +34,11 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class GenAppsViewTest {
 
-    private static final UUID CURRENT_USER_IDAM_ID = UUID.randomUUID();
+    private static final String ORG_ID = "org";
     @Mock
     private ModelMapper modelMapper;
     @Mock
-    private SecurityContextService securityContextService;
+    private OrganisationService organisationService;
     @Mock
     private GenAppVisibilityService genAppVisibilityService;
     @Mock
@@ -49,13 +50,13 @@ class GenAppsViewTest {
 
     @BeforeEach
     void setUp() {
-        when(securityContextService.getCurrentUserId()).thenReturn(CURRENT_USER_IDAM_ID);
-        when(genAppVisibilityService.isGenAppVisibleToUser(isA(GenAppEntity.class), eq(CURRENT_USER_IDAM_ID)))
+        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(ORG_ID);
+        when(genAppVisibilityService.isGenAppVisibleToUser(isA(GenAppEntity.class), eq(ORG_ID)))
             .thenReturn(true);
 
         pcsCase = PCSCase.builder().build();
 
-        underTest = new GenAppsView(modelMapper, securityContextService, genAppVisibilityService);
+        underTest = new GenAppsView(modelMapper, organisationService, genAppVisibilityService);
     }
 
     @Test
@@ -97,17 +98,17 @@ class GenAppsViewTest {
         UUID genApp1Id = UUID.randomUUID();
         LocalDateTime genApp1SubmittedDate = LocalDateTime.parse("2026-05-02T15:00:00");
         GenAppEntity genAppEntity1 = createGenAppEntity(genApp1Id, genApp1SubmittedDate);
-        when(genAppVisibilityService.isGenAppVisibleToUser(genAppEntity1, CURRENT_USER_IDAM_ID)).thenReturn(true);
+        when(genAppVisibilityService.isGenAppVisibleToUser(genAppEntity1, ORG_ID)).thenReturn(true);
 
         UUID genApp2Id = UUID.randomUUID();
         LocalDateTime genApp2SubmittedDate = LocalDateTime.parse("2026-05-04T10:00:00");
         GenAppEntity genAppEntity2 = createGenAppEntity(genApp2Id, genApp2SubmittedDate);
-        when(genAppVisibilityService.isGenAppVisibleToUser(genAppEntity2, CURRENT_USER_IDAM_ID)).thenReturn(false);
+        when(genAppVisibilityService.isGenAppVisibleToUser(genAppEntity2, ORG_ID)).thenReturn(false);
 
         UUID genApp3Id = UUID.randomUUID();
         LocalDateTime genApp3SubmittedDate = LocalDateTime.parse("2026-05-04T09:00:00");
         GenAppEntity genAppEntity3 = createGenAppEntity(genApp3Id, genApp3SubmittedDate);
-        when(genAppVisibilityService.isGenAppVisibleToUser(genAppEntity3, CURRENT_USER_IDAM_ID)).thenReturn(true);
+        when(genAppVisibilityService.isGenAppVisibleToUser(genAppEntity3, ORG_ID)).thenReturn(true);
 
         when(pcsCaseEntity.getGenApps()).thenReturn(Set.of(genAppEntity1, genAppEntity2, genAppEntity3));
 
@@ -126,13 +127,13 @@ class GenAppsViewTest {
     @Test
     void shouldMapPartyDetails() {
         // Given
-        PartyEntity currentParty = createPartyEntityWithIdamId(CURRENT_USER_IDAM_ID);
+        PartyEntity currentParty = createPartyEntity();
         currentParty.setId(UUID.randomUUID());
         currentParty.setIdamId(UUID.randomUUID());
         currentParty.setFirstName("Current party first name");
         currentParty.setLastName("Current party last name");
 
-        PartyEntity otherParty = createPartyEntityWithIdamId(UUID.randomUUID());
+        PartyEntity otherParty = createPartyEntity();
         otherParty.setId(UUID.randomUUID());
         otherParty.setIdamId(null);
         otherParty.setFirstName("Other party first name");
@@ -244,10 +245,9 @@ class GenAppsViewTest {
         return document;
     }
 
-    private static PartyEntity createPartyEntityWithIdamId(UUID currentUserIdamId) {
+    private static PartyEntity createPartyEntity() {
         return PartyEntity.builder()
             .id(UUID.randomUUID())
-            .idamId(currentUserIdamId)
             .build();
     }
 

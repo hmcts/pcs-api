@@ -9,6 +9,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.List;
@@ -19,7 +20,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class DocumentsView {
 
-    private final SecurityContextService securityContextService;
+    private final OrganisationService organisationService;
     private final GenAppVisibilityService genAppVisibilityService;
 
     public void setCaseFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
@@ -32,10 +33,10 @@ public class DocumentsView {
             return List.of();
         }
 
-        UUID currentUserId = securityContextService.getCurrentUserId();
+        String orgId = organisationService.getOrganisationIdForCurrentUser();
 
         return pcsCaseEntity.getDocuments().stream()
-            .filter(documentEntity -> this.isDocumentVisibleToUser(documentEntity, currentUserId))
+            .filter(documentEntity -> this.isDocumentVisibleToUser(documentEntity, orgId))
             .map(entity -> ListValue.<Document>builder()
                 .id(entity.getId().toString())
                 .value(Document.builder()
@@ -52,11 +53,11 @@ public class DocumentsView {
             .collect(Collectors.toList());
     }
 
-    public boolean isDocumentVisibleToUser(DocumentEntity documentEntity, UUID currentUserId) {
+    public boolean isDocumentVisibleToUser(DocumentEntity documentEntity, String orgId) {
         GenAppEntity genAppEntity = documentEntity.getGeneralApplication();
 
         if (genAppEntity != null) {
-            return genAppVisibilityService.isGenAppVisibleToUser(genAppEntity, currentUserId);
+            return genAppVisibilityService.isGenAppVisibleToUser(genAppEntity, orgId);
         } else {
             return true;
         }

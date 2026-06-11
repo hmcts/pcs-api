@@ -33,7 +33,6 @@ public class LegalRepSubmissionEventStrategy implements RespondPossessionClaimSu
     private final DefendantResponseService defendantResponseService;
     private final SelectedPartyRetriever selectedPartyRetriever;
     private final SubmitResponseFactory submitResponseFactory;
-    private final LegalRepresentativeRetriever legalRepresentativeRetriever;
     private final OrganisationDetailsService organisationDetailsService;
     private final SecurityContextService securityContextService;
 
@@ -53,14 +52,9 @@ public class LegalRepSubmissionEventStrategy implements RespondPossessionClaimSu
         String organisationId = organisationDetailsService
             .getOrganisationIdentifier(securityContextService.getCurrentUserId().toString());
 
-        UUID legalRepOrganisationIdForUser = legalRepresentativeRetriever.getLegalRepOrganisationIdForUser(
-            caseReference,
-            organisationId
-        );
-
         PCSCase draftData = draftCaseDataService
             .getUnsubmittedCaseData(caseReference, respondPossessionClaim, representedPartyId,
-                                    legalRepOrganisationIdForUser)
+                                    organisationId)
             .orElseThrow(() -> new DraftNotFoundException(caseReference, respondPossessionClaim));
 
         PossessionClaimResponse responseDraftData = draftData.getPossessionClaimResponse();
@@ -75,7 +69,7 @@ public class LegalRepSubmissionEventStrategy implements RespondPossessionClaimSu
         claimResponseService.saveDraftDataForParty(responseDraftData, caseReference, representedPartyId);
         defendantResponseService.saveDefendantResponse(caseReference, responseDraftData, representedPartyId);
         draftCaseDataService.deleteUnsubmittedCaseData(caseReference, respondPossessionClaim, representedPartyId,
-                                                       legalRepOrganisationIdForUser);
+                                                       organisationId);
 
         return submitResponseFactory.success();
     }

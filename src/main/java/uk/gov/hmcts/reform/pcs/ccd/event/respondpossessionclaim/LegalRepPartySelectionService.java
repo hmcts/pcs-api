@@ -35,7 +35,7 @@ public class LegalRepPartySelectionService {
     private final PossessionClaimMerger possessionClaimMerger;
 
     public PCSCase getDraft(PCSCase pcsCase, List<PartyEntity> defendantPartiesLinkedAndActive, long caseReference,
-                            UUID legalRepresentativeOrganisationId) {
+                            String legalRepresentativeOrganisationId) {
         Optional<UUID> selectedPartyId = selectedPartyRetriever.getSelectedPartyId(pcsCase);
 
         if (selectedPartyId.isEmpty()) {
@@ -56,7 +56,7 @@ public class LegalRepPartySelectionService {
     }
 
     public PCSCase getDraftCaseData(long caseReference, PCSCase pcsCase, PartyEntity matchedDefendant,
-                                    List<PartyEntity> linkedDefendants, UUID legalRepresentativeOrganisationId) {
+                                    List<PartyEntity> linkedDefendants, String legalRepresentativeOrganisationId) {
 
         boolean hasDraft = draftCaseDataService.hasUnsubmittedCaseData(
             caseReference,
@@ -81,7 +81,7 @@ public class LegalRepPartySelectionService {
     }
 
     private PCSCase restoreDraft(long caseReference, PCSCase pcsCase, PartyEntity matchedDefendant,
-                                 List<PartyEntity> linkedDefendants, UUID legalRepresentativeOrganisationId) {
+                                 List<PartyEntity> linkedDefendants, String legalRepresentativeOrganisationId) {
 
         PCSCase savedDraft = draftCaseDataService.getUnsubmittedCaseData(
             caseReference,

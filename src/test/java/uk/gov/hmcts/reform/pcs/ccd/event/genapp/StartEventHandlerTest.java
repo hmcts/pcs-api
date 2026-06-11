@@ -19,6 +19,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.XuiGenAppRequest;
 import uk.gov.hmcts.reform.pcs.ccd.util.FeeApplier;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 import uk.gov.hmcts.reform.pcs.service.LegalRepresentativeService;
 
@@ -41,7 +42,7 @@ class StartEventHandlerTest {
     private static final long TEST_CASE_REFERENCE = 1234L;
 
     @Mock
-    private SecurityContextService securityContextService;
+    private OrganisationService organisationService;
     @Mock
     private LegalRepresentativeService legalRepresentativeService;
     @Mock
@@ -53,7 +54,7 @@ class StartEventHandlerTest {
 
     @BeforeEach
     void setUp() {
-        underTest = new StartEventHandler(securityContextService, legalRepresentativeService, feeApplier);
+        underTest = new StartEventHandler(organisationService, legalRepresentativeService, feeApplier);
     }
 
     @Test
@@ -68,9 +69,9 @@ class StartEventHandlerTest {
                                    .build()))
             .build();
 
-        UUID currentUserId = UUID.randomUUID();
-        when(securityContextService.getCurrentUserId()).thenReturn(currentUserId);
-        when(legalRepresentativeService.getRepresentedPartiesDynamicList(currentUserId, TEST_CASE_REFERENCE))
+        String orgId = UUID.randomUUID().toString();
+        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(orgId);
+        when(legalRepresentativeService.getRepresentedPartiesDynamicList(orgId, TEST_CASE_REFERENCE))
             .thenReturn(Optional.of(expectedPartyNameList));
 
         PCSCase caseData = PCSCase.builder()
@@ -99,9 +100,9 @@ class StartEventHandlerTest {
             .listItems(listItems)
             .build();
 
-        UUID currentUserId = UUID.randomUUID();
-        when(securityContextService.getCurrentUserId()).thenReturn(currentUserId);
-        when(legalRepresentativeService.getRepresentedPartiesDynamicList(currentUserId, TEST_CASE_REFERENCE))
+        String orgId = UUID.randomUUID().toString();
+        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(orgId);
+        when(legalRepresentativeService.getRepresentedPartiesDynamicList(orgId, TEST_CASE_REFERENCE))
             .thenReturn(Optional.of(expectedPartyNameList));
 
         PCSCase caseData = PCSCase.builder()
@@ -127,9 +128,9 @@ class StartEventHandlerTest {
     @Test
     void shouldNotSetRepresentedPartiesFieldWhenUserDoesNotRepresentAny() {
         // Given
-        UUID currentUserId = UUID.randomUUID();
-        when(securityContextService.getCurrentUserId()).thenReturn(currentUserId);
-        when(legalRepresentativeService.getRepresentedPartiesDynamicList(currentUserId, TEST_CASE_REFERENCE))
+        String orgId = UUID.randomUUID().toString();
+        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(orgId);
+        when(legalRepresentativeService.getRepresentedPartiesDynamicList(orgId, TEST_CASE_REFERENCE))
             .thenReturn(Optional.empty());
 
         PCSCase caseData = PCSCase.builder()

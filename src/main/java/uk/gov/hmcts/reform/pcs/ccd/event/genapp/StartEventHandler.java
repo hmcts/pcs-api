@@ -10,16 +10,14 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.util.FeeApplier;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
-import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.service.LegalRepresentativeService;
-
-import java.util.UUID;
 
 @Component("genAppStartEventHandler")
 @RequiredArgsConstructor
 public class StartEventHandler implements Start<PCSCase, State> {
 
-    private final SecurityContextService securityContextService;
+    private final OrganisationService organisationService;
     private final LegalRepresentativeService legalRepresentativeService;
     private final FeeApplier feeApplier;
 
@@ -38,8 +36,8 @@ public class StartEventHandler implements Start<PCSCase, State> {
 
     // Set represented parties if the current user is a legal rep
     private void setRepresentedParties(long caseReference, PCSCase caseData) {
-        UUID currentUserId = securityContextService.getCurrentUserId();
-        legalRepresentativeService.getRepresentedPartiesDynamicList(currentUserId, caseReference)
+        String organisationIdForCurrentUser = organisationService.getOrganisationIdForCurrentUser();
+        legalRepresentativeService.getRepresentedPartiesDynamicList(organisationIdForCurrentUser, caseReference)
             .ifPresent(representedPartyNames -> {
                 boolean representingMultipleParties = representedPartyNames.getListItems().size() > 1;
                 caseData.setMultipleRepresentedParties(VerticalYesNo.from(representingMultipleParties));
