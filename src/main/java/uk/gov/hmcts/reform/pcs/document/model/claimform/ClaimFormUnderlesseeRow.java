@@ -1,12 +1,12 @@
-package uk.gov.hmcts.reform.pcs.document.model.claimpack;
+package uk.gov.hmcts.reform.pcs.document.model.claimform;
 
 import lombok.Builder;
 import lombok.Data;
 
 /**
- * One row in the {@code underlessees} repeating section of the claim pack template.
+ * One row in the {@code underlessees} repeating section of the claim form template.
  *
- * <p>Mirrors {@link ClaimPackDefendantRow} in shape, but address semantics differ: per the
+ * <p>Mirrors {@link ClaimFormDefendantRow} in shape, but address semantics differ: per the
  * mapping spec, an underlessee's address "will either be provided or it will be
  * 'Address unknown'". When the address is missing, render the single line
  * "Address unknown" instead of the full 6-line block.</p>
@@ -16,7 +16,7 @@ import lombok.Data;
  */
 @Data
 @Builder
-public class ClaimPackUnderlesseeRow implements ClaimPackAddressRow {
+public class ClaimFormUnderlesseeRow implements ClaimFormAddressRow {
 
     private int underlesseeNumber;
     private String heading;

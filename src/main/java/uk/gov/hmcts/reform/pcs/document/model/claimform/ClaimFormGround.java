@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.document.model.claimpack;
+package uk.gov.hmcts.reform.pcs.document.model.claimform;
 
 import lombok.Builder;
 import lombok.Data;
@@ -11,7 +11,7 @@ import lombok.Data;
  */
 @Data
 @Builder
-public class ClaimPackGround {
+public class ClaimFormGround {
 
     /** Printable label, e.g. "Ground 8 (Rent arrears, mandatory)". */
     private String nameAndNumber;

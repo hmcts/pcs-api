@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.service.claimpack;
+package uk.gov.hmcts.reform.pcs.ccd.service.claimform;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -28,9 +28,9 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseNameFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseReferenceFormatter;
-import uk.gov.hmcts.reform.pcs.document.model.claimpack.ClaimPackDefendantRow;
-import uk.gov.hmcts.reform.pcs.document.model.claimpack.ClaimPackFormPayload;
-import uk.gov.hmcts.reform.pcs.document.model.claimpack.ClaimPackUnderlesseeRow;
+import uk.gov.hmcts.reform.pcs.document.model.claimform.ClaimFormDefendantRow;
+import uk.gov.hmcts.reform.pcs.document.model.claimform.ClaimFormPayload;
+import uk.gov.hmcts.reform.pcs.document.model.claimform.ClaimFormUnderlesseeRow;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.math.BigDecimal;
@@ -43,15 +43,15 @@ import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class ClaimPackPayloadBuilderTest {
+class ClaimFormPayloadBuilderTest {
 
-    private ClaimPackPayloadBuilder builder;
+    private ClaimFormPayloadBuilder builder;
 
     @BeforeEach
     void setUp() {
-        builder = new ClaimPackPayloadBuilder(
+        builder = new ClaimFormPayloadBuilder(
             new CaseReferenceFormatter(),
-            new ClaimPackPartyMapper(new CaseNameFormatter())
+            new ClaimFormPartyMapper(new CaseNameFormatter())
         );
     }
 
@@ -61,22 +61,22 @@ class ClaimPackPayloadBuilderTest {
         @Test
         void englandCaseIsWalesFalse() {
             PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
-            ClaimPackFormPayload payload = builder.build(pcsCase);
+            ClaimFormPayload payload = builder.build(pcsCase);
             assertThat(payload.isWales()).isFalse();
         }
 
         @Test
         void walesCaseIsWalesTrue() {
             PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.WALES);
-            ClaimPackFormPayload payload = builder.build(pcsCase);
+            ClaimFormPayload payload = builder.build(pcsCase);
             assertThat(payload.isWales()).isTrue();
         }
 
         @Test
         void isEnglandIsComplementOfIsWales() {
             // Docmosis compact syntax can't negate, so the payload sends both.
-            ClaimPackFormPayload eng = builder.build(minimalCase(LegislativeCountry.ENGLAND));
-            ClaimPackFormPayload wal = builder.build(minimalCase(LegislativeCountry.WALES));
+            ClaimFormPayload eng = builder.build(minimalCase(LegislativeCountry.ENGLAND));
+            ClaimFormPayload wal = builder.build(minimalCase(LegislativeCountry.WALES));
 
             assertThat(eng.isEngland()).isTrue();
             assertThat(eng.isWales()).isFalse();
@@ -88,7 +88,7 @@ class ClaimPackPayloadBuilderTest {
         void caseReferenceFormattedWithDashes() {
             PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
             pcsCase.setCaseReference(1234567812345678L);
-            ClaimPackFormPayload payload = builder.build(pcsCase);
+            ClaimFormPayload payload = builder.build(pcsCase);
             assertThat(payload.getReferenceNumber()).isEqualTo("1234-5678-1234-5678");
         }
     }
@@ -102,7 +102,7 @@ class ClaimPackPayloadBuilderTest {
             PartyEntity claimant = party("Alice", "Owner", VerticalYesNo.YES, address("1 High St"));
             attach(pcsCase, claimant, PartyRole.CLAIMANT, 1);
 
-            ClaimPackFormPayload payload = builder.build(pcsCase);
+            ClaimFormPayload payload = builder.build(pcsCase);
 
             assertThat(payload.getClaimant()).isNotNull();
             assertThat(payload.getClaimant().getFirstName()).isEqualTo("Alice");
@@ -124,10 +124,10 @@ class ClaimPackPayloadBuilderTest {
             attach(pcsCase, party("Bob", "Tenant", VerticalYesNo.YES, address("42 Renters Way")),
                 PartyRole.DEFENDANT, 1);
 
-            ClaimPackFormPayload payload = builder.build(pcsCase);
+            ClaimFormPayload payload = builder.build(pcsCase);
 
             assertThat(payload.getDefendants()).hasSize(1);
-            ClaimPackDefendantRow row = payload.getDefendants().getFirst();
+            ClaimFormDefendantRow row = payload.getDefendants().getFirst();
             assertThat(row.getDefendantNumber()).isEqualTo(1);
             assertThat(row.getHeading()).isEqualTo("Defendant 1 details");
             assertThat(row.getDisplayName()).isEqualTo("Bob Tenant");
@@ -143,15 +143,15 @@ class ClaimPackPayloadBuilderTest {
             attach(pcsCase, party("Carol", "Two", VerticalYesNo.YES, address("X2")), PartyRole.DEFENDANT, 2);
             attach(pcsCase, party("Dave", "Three", VerticalYesNo.YES, address("X3")), PartyRole.DEFENDANT, 3);
 
-            ClaimPackFormPayload payload = builder.build(pcsCase);
+            ClaimFormPayload payload = builder.build(pcsCase);
 
             assertThat(payload.getDefendants()).hasSize(3);
-            assertThat(payload.getDefendants()).extracting(ClaimPackDefendantRow::getHeading)
+            assertThat(payload.getDefendants()).extracting(ClaimFormDefendantRow::getHeading)
                 .containsExactly("Defendant 1 details",
                     "Additional defendant 1 details", "Additional defendant 2 details");
-            assertThat(payload.getDefendants()).extracting(ClaimPackDefendantRow::getDisplayName)
+            assertThat(payload.getDefendants()).extracting(ClaimFormDefendantRow::getDisplayName)
                 .containsExactly("Bob One", "Carol Two", "Dave Three");
-            assertThat(payload.getDefendants()).extracting(ClaimPackDefendantRow::getAddressLine1)
+            assertThat(payload.getDefendants()).extracting(ClaimFormDefendantRow::getAddressLine1)
                 .containsExactly("X1", "X2", "X3");
         }
 
@@ -164,10 +164,10 @@ class ClaimPackPayloadBuilderTest {
             attach(pcsCase, party(null, null, VerticalYesNo.NO, address("99 Last Known Rd")),
                 PartyRole.DEFENDANT, 1);
 
-            ClaimPackFormPayload payload = builder.build(pcsCase);
+            ClaimFormPayload payload = builder.build(pcsCase);
 
             assertThat(payload.getDefendants()).hasSize(1);
-            ClaimPackDefendantRow row = payload.getDefendants().getFirst();
+            ClaimFormDefendantRow row = payload.getDefendants().getFirst();
             assertThat(row.getDisplayName()).isEqualTo("Persons unknown");
             // Address still rendered — spec: defendant address cannot be "Unknown".
             assertThat(row.getAddressLine1()).isEqualTo("99 Last Known Rd");
@@ -185,12 +185,12 @@ class ClaimPackPayloadBuilderTest {
             attach(pcsCase, party(null, null, VerticalYesNo.NO, address("5 Maes Y Coed Rd")),
                 PartyRole.DEFENDANT, 3);
 
-            ClaimPackFormPayload payload = builder.build(pcsCase);
+            ClaimFormPayload payload = builder.build(pcsCase);
 
             assertThat(payload.getDefendants()).hasSize(3);
-            assertThat(payload.getDefendants()).extracting(ClaimPackDefendantRow::getDisplayName)
+            assertThat(payload.getDefendants()).extracting(ClaimFormDefendantRow::getDisplayName)
                 .containsExactly("Persons unknown", "Carwyn Jones", "Persons unknown");
-            assertThat(payload.getDefendants()).extracting(ClaimPackDefendantRow::getHeading)
+            assertThat(payload.getDefendants()).extracting(ClaimFormDefendantRow::getHeading)
                 .containsExactly("Defendant 1 details",
                     "Additional defendant 1 details", "Additional defendant 2 details");
         }
@@ -207,9 +207,9 @@ class ClaimPackPayloadBuilderTest {
             attach(pcsCase, party("Bob", "Tenant", VerticalYesNo.YES, null),
                 PartyRole.DEFENDANT, 1);
 
-            ClaimPackFormPayload payload = builder.build(pcsCase);
+            ClaimFormPayload payload = builder.build(pcsCase);
 
-            ClaimPackDefendantRow row = payload.getDefendants().getFirst();
+            ClaimFormDefendantRow row = payload.getDefendants().getFirst();
             assertThat(row.getDisplayName()).isEqualTo("Bob Tenant");
             assertThat(row.getAddressLine1()).isEqualTo("99 Property Lane");
         }
@@ -224,9 +224,9 @@ class ClaimPackPayloadBuilderTest {
             attach(pcsCase, party("Bob", "Tenant", VerticalYesNo.YES, null),
                 PartyRole.DEFENDANT, 1);
 
-            ClaimPackFormPayload payload = builder.build(pcsCase);
+            ClaimFormPayload payload = builder.build(pcsCase);
 
-            ClaimPackDefendantRow row = payload.getDefendants().getFirst();
+            ClaimFormDefendantRow row = payload.getDefendants().getFirst();
             assertThat(row.getDisplayName()).isEqualTo("Bob Tenant");
             assertThat(row.getAddressLine1()).isNull();
             assertThat(row.isHasAddressLine2()).isFalse();
@@ -244,9 +244,9 @@ class ClaimPackPayloadBuilderTest {
             attach(pcsCase, party("Dave", "Three", VerticalYesNo.YES, address("X3")), PartyRole.DEFENDANT, 3);
             attach(pcsCase, party("Eve", "Four", VerticalYesNo.YES, address("X4")), PartyRole.DEFENDANT, 4);
 
-            ClaimPackFormPayload payload = builder.build(pcsCase);
+            ClaimFormPayload payload = builder.build(pcsCase);
 
-            assertThat(payload.getDefendants()).extracting(ClaimPackDefendantRow::getHeading)
+            assertThat(payload.getDefendants()).extracting(ClaimFormDefendantRow::getHeading)
                 .containsExactly(
                     "Defendant 1 details",
                     "Additional defendant 1 details",
@@ -263,7 +263,7 @@ class ClaimPackPayloadBuilderTest {
             PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.WALES);
             attach(pcsCase, orgParty("Possession Claims Solicitor Org", address("MOJ")), PartyRole.CLAIMANT, 1);
 
-            ClaimPackFormPayload payload = builder.build(pcsCase);
+            ClaimFormPayload payload = builder.build(pcsCase);
 
             assertThat(payload.getClaimantDisplayName()).isEqualTo("Possession Claims Solicitor Org");
         }
@@ -273,7 +273,7 @@ class ClaimPackPayloadBuilderTest {
             PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
             attach(pcsCase, party("Alice", "Owner", VerticalYesNo.YES, address("X")), PartyRole.CLAIMANT, 1);
 
-            ClaimPackFormPayload payload = builder.build(pcsCase);
+            ClaimFormPayload payload = builder.build(pcsCase);
 
             assertThat(payload.getClaimantDisplayName()).isEqualTo("Alice Owner");
         }
@@ -283,7 +283,7 @@ class ClaimPackPayloadBuilderTest {
             PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
             attach(pcsCase, party(null, null, VerticalYesNo.NO, address("X")), PartyRole.CLAIMANT, 1);
 
-            ClaimPackFormPayload payload = builder.build(pcsCase);
+            ClaimFormPayload payload = builder.build(pcsCase);
 
             assertThat(payload.getClaimantDisplayName()).isEqualTo("Persons unknown");
         }
@@ -301,7 +301,7 @@ class ClaimPackPayloadBuilderTest {
                 .build();
             attach(pcsCase, orgParty("Org", addr), PartyRole.CLAIMANT, 1);
 
-            ClaimPackFormPayload payload = builder.build(pcsCase);
+            ClaimFormPayload payload = builder.build(pcsCase);
 
             assertThat(payload.isHasClaimantAddressLine2()).isTrue();
             assertThat(payload.isHasClaimantAddressLine3()).isFalse();
@@ -316,7 +316,7 @@ class ClaimPackPayloadBuilderTest {
             pcsCase.getClaims().getFirst().setIsExemptLandlord(VerticalYesNo.NO);
             attach(pcsCase, orgParty("Org", address("X")), PartyRole.CLAIMANT, 1);
 
-            ClaimPackFormPayload payload = builder.build(pcsCase);
+            ClaimFormPayload payload = builder.build(pcsCase);
 
             assertThat(payload.getClaimantIsExemptLandlord()).isEqualTo("No");
             // Housing (Wales) Act 2014 question — shown on Wales.
@@ -328,7 +328,7 @@ class ClaimPackPayloadBuilderTest {
             PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
             attach(pcsCase, orgParty("Org", address("X")), PartyRole.CLAIMANT, 1);
 
-            ClaimPackFormPayload payload = builder.build(pcsCase);
+            ClaimFormPayload payload = builder.build(pcsCase);
 
             assertThat(payload.getClaimantIsExemptLandlord()).isNull();
             // The Welsh-only exempt-landlord row must be hidden on England.
@@ -342,7 +342,7 @@ class ClaimPackPayloadBuilderTest {
         @Test
         void noGroundsImpliesNoOrAbsoluteOrOtherGrounds() {
             PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
-            ClaimPackFormPayload payload = builder.build(pcsCase);
+            ClaimFormPayload payload = builder.build(pcsCase);
 
             assertThat(payload.getHasGroundsYesNo()).isEqualTo("No");
             assertThat(payload.getGrounds()).isEmpty();
@@ -363,7 +363,7 @@ class ClaimPackPayloadBuilderTest {
                 .build();
             claim.getClaimGrounds().add(g);
 
-            ClaimPackFormPayload payload = builder.build(pcsCase);
+            ClaimFormPayload payload = builder.build(pcsCase);
 
             assertThat(payload.isHasRentArrearsGround()).isTrue();
             assertThat(payload.getGrounds()).hasSize(1);
@@ -381,7 +381,7 @@ class ClaimPackPayloadBuilderTest {
                 .claim(claim)
                 .build());
 
-            ClaimPackFormPayload payload = builder.build(pcsCase);
+            ClaimFormPayload payload = builder.build(pcsCase);
 
             assertThat(payload.getGrounds().getFirst().getNameAndNumber())
                 .isEqualTo("Serious rent arrears (ground 8)");
@@ -394,7 +394,7 @@ class ClaimPackPayloadBuilderTest {
         @ParameterizedTest
         @MethodSource("countryGatedSections")
         void countryOnlySectionsAreGatedByLegislativeCountry(LegislativeCountry country, boolean wales) {
-            ClaimPackFormPayload payload = builder.build(minimalCase(country));
+            ClaimFormPayload payload = builder.build(minimalCase(country));
 
             // Wales-only sections.
             assertThat(payload.isShowPcscSection()).isEqualTo(wales);
@@ -423,7 +423,7 @@ class ClaimPackPayloadBuilderTest {
                 .claim(claim)
                 .build());
 
-            ClaimPackFormPayload payload = builder.build(pcsCase);
+            ClaimFormPayload payload = builder.build(pcsCase);
 
             assertThat(payload.isShowDescriptionOfGrounds()).isTrue();
             assertThat(payload.isShowWhyClaimingPossession()).isTrue();
@@ -442,7 +442,7 @@ class ClaimPackPayloadBuilderTest {
                 .claim(claim)
                 .build());
 
-            ClaimPackFormPayload payload = builder.build(pcsCase);
+            ClaimFormPayload payload = builder.build(pcsCase);
 
             assertThat(payload.isShowDescriptionOfGrounds()).isFalse();
             assertThat(payload.isShowWhyClaimingPossession()).isFalse();
@@ -463,7 +463,7 @@ class ClaimPackPayloadBuilderTest {
                 .claim(claim)
                 .build());
 
-            ClaimPackFormPayload payload = builder.build(pcsCase);
+            ClaimFormPayload payload = builder.build(pcsCase);
 
             assertThat(payload.isShowWhyClaimingPossession()).isTrue();
             assertThat(payload.isShowDescriptionOfGrounds()).isFalse();
@@ -486,7 +486,7 @@ class ClaimPackPayloadBuilderTest {
                 .claim(claim)
                 .build());
 
-            ClaimPackFormPayload payload = builder.build(pcsCase);
+            ClaimFormPayload payload = builder.build(pcsCase);
 
             assertThat(payload.isHasOtherGround()).isFalse();
             assertThat(payload.isShowDescriptionOfGrounds()).isFalse();
@@ -509,7 +509,7 @@ class ClaimPackPayloadBuilderTest {
                 .claim(claim)
                 .build());
 
-            ClaimPackFormPayload payload = builder.build(pcsCase);
+            ClaimFormPayload payload = builder.build(pcsCase);
 
             assertThat(payload.getGrounds()).hasSize(2);
             assertThat(payload.getGroundsWithReasons()).hasSize(1);
@@ -522,7 +522,7 @@ class ClaimPackPayloadBuilderTest {
             PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
             pcsCase.getClaims().getFirst().setAdditionalReasonsProvided(VerticalYesNo.NO);
 
-            ClaimPackFormPayload payload = builder.build(pcsCase);
+            ClaimFormPayload payload = builder.build(pcsCase);
 
             assertThat(payload.getHasAdditionalReasonsYesNo()).isEqualTo("No");
             assertThat(payload.isAdditionalReasonsProvided()).isFalse();
@@ -535,7 +535,7 @@ class ClaimPackPayloadBuilderTest {
             claim.setAdditionalReasonsProvided(VerticalYesNo.YES);
             claim.setAdditionalReasons("Defendant has refused mediation.");
 
-            ClaimPackFormPayload payload = builder.build(pcsCase);
+            ClaimFormPayload payload = builder.build(pcsCase);
 
             assertThat(payload.getHasAdditionalReasonsYesNo()).isEqualTo("Yes");
             assertThat(payload.isAdditionalReasonsProvided()).isTrue();
@@ -556,7 +556,7 @@ class ClaimPackPayloadBuilderTest {
                 .claim(claim)
                 .build());
 
-            ClaimPackFormPayload payload = builder.build(pcsCase);
+            ClaimFormPayload payload = builder.build(pcsCase);
 
             assertThat(payload.isShowDescriptionOfGrounds()).isFalse();
             assertThat(payload.isShowWhyClaimingPossession()).isFalse();
@@ -571,7 +571,7 @@ class ClaimPackPayloadBuilderTest {
             // §13.3 — these fields have no entity source yet; payload must leave them null
             // (not throw) so the template renders empty rows for them.
             PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
-            ClaimPackFormPayload payload = builder.build(pcsCase);
+            ClaimFormPayload payload = builder.build(pcsCase);
 
             assertThat(payload.getIssueDateSealed()).isNull();
             assertThat(payload.getWhyClaimingPossession()).isNull();
@@ -592,7 +592,7 @@ class ClaimPackPayloadBuilderTest {
         void missingNoticeAsbRentTenancySotDoesNotThrow() {
             PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
             // claim has all sub-entities null — builder must tolerate this without NPE.
-            ClaimPackFormPayload payload = builder.build(pcsCase);
+            ClaimFormPayload payload = builder.build(pcsCase);
             assertThat(payload).isNotNull();
             assertThat(payload.getNoticeServedYesNo()).isNull();
             assertThat(payload.getAsbAllegedYesNo()).isNull();
@@ -619,7 +619,7 @@ class ClaimPackPayloadBuilderTest {
                 .build();
             claim.setNoticeOfPossession(notice);
 
-            ClaimPackFormPayload payload = builder.build(pcsCase);
+            ClaimFormPayload payload = builder.build(pcsCase);
 
             assertThat(payload.getMethodOfService()).isEqualTo(NoticeServiceMethod.EMAIL);
             assertThat(payload.getNoticeServedToEmail()).isEqualTo("served@example.com");
@@ -639,7 +639,7 @@ class ClaimPackPayloadBuilderTest {
                 .build();
             claim.setNoticeOfPossession(notice);
 
-            ClaimPackFormPayload payload = builder.build(pcsCase);
+            ClaimFormPayload payload = builder.build(pcsCase);
 
             assertThat(payload.getNoticeLeftWithName()).isNull();
             assertThat(payload.getNoticeServedToEmail()).isNull();
@@ -661,7 +661,7 @@ class ClaimPackPayloadBuilderTest {
                 .build();
             pcsCase.setTenancyLicence(t);
 
-            ClaimPackFormPayload payload = builder.build(pcsCase);
+            ClaimFormPayload payload = builder.build(pcsCase);
 
             assertThat(payload.isIntroDemotedOtherTenancy()).isTrue();
             assertThat(payload.getTenancyStartDate()).isEqualTo("1 January 2024");
@@ -676,7 +676,7 @@ class ClaimPackPayloadBuilderTest {
                 .build();
             pcsCase.setTenancyLicence(t);
 
-            ClaimPackFormPayload payload = builder.build(pcsCase);
+            ClaimFormPayload payload = builder.build(pcsCase);
 
             assertThat(payload.isIntroDemotedOtherTenancy()).isFalse();
         }
@@ -752,7 +752,7 @@ class ClaimPackPayloadBuilderTest {
                 .build();
             pcsCase.setTenancyLicence(t);
 
-            ClaimPackFormPayload payload = builder.build(pcsCase);
+            ClaimFormPayload payload = builder.build(pcsCase);
 
             assertThat(payload.isTenancyUploadedYes()).isTrue();
             assertThat(payload.isTenancyUploadedNo()).isFalse();
@@ -801,7 +801,7 @@ class ClaimPackPayloadBuilderTest {
                 .build();
             pcsCase.setTenancyLicence(t);
 
-            ClaimPackFormPayload payload = builder.build(pcsCase);
+            ClaimFormPayload payload = builder.build(pcsCase);
 
             assertThat(payload.isTenancyUploadedYes()).isFalse();
             assertThat(payload.isTenancyUploadedNo()).isTrue();
@@ -821,7 +821,7 @@ class ClaimPackPayloadBuilderTest {
                 .build();
             claim.setStatementOfTruth(sot);
 
-            ClaimPackFormPayload payload = builder.build(pcsCase);
+            ClaimFormPayload payload = builder.build(pcsCase);
 
             assertThat(payload.isSignedByLegalRep()).isFalse();
             assertThat(payload.getSotFullName()).isEqualTo("Alice Owner");
@@ -839,7 +839,7 @@ class ClaimPackPayloadBuilderTest {
                 .build();
             claim.setStatementOfTruth(sot);
 
-            ClaimPackFormPayload payload = builder.build(pcsCase);
+            ClaimFormPayload payload = builder.build(pcsCase);
 
             assertThat(payload.isSignedByLegalRep()).isTrue();
             assertThat(payload.getSotFirmName()).isEqualTo("Solicitors Ltd");
@@ -861,7 +861,7 @@ class ClaimPackPayloadBuilderTest {
                 .build();
             claim.setPossessionAlternativesEntity(alt);
 
-            ClaimPackFormPayload payload = builder.build(pcsCase);
+            ClaimFormPayload payload = builder.build(pcsCase);
 
             assertThat(payload.getIsDemotionClaimYesNo()).isEqualTo("Yes");
             assertThat(payload.getDemotionReasonsFreeText()).isEqualTo("Anti-social behaviour");
@@ -874,7 +874,7 @@ class ClaimPackPayloadBuilderTest {
             PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
             // PossessionAlternativesEntity not set at all.
 
-            ClaimPackFormPayload payload = builder.build(pcsCase);
+            ClaimFormPayload payload = builder.build(pcsCase);
 
             assertThat(payload.isShowIsDemotionClaim()).isFalse();
             assertThat(payload.isShowDemotionDetails()).isFalse();
@@ -892,7 +892,7 @@ class ClaimPackPayloadBuilderTest {
                 .dotReason("Breach of conditions.")
                 .build());
 
-            ClaimPackFormPayload payload = builder.build(pcsCase);
+            ClaimFormPayload payload = builder.build(pcsCase);
 
             assertThat(payload.isShowIsDemotionClaim()).isTrue();
             assertThat(payload.isShowDemotionDetails()).isTrue();
@@ -908,7 +908,7 @@ class ClaimPackPayloadBuilderTest {
                 .dotRequested(YesOrNo.NO)
                 .build());
 
-            ClaimPackFormPayload payload = builder.build(pcsCase);
+            ClaimFormPayload payload = builder.build(pcsCase);
 
             assertThat(payload.isShowIsDemotionClaim()).isTrue();   // Y/N row visible
             assertThat(payload.isShowDemotionDetails()).isFalse();  // 4 follow-ups hidden
@@ -924,7 +924,7 @@ class ClaimPackPayloadBuilderTest {
                 .dotStatementServed(YesOrNo.NO)
                 .build());
 
-            ClaimPackFormPayload payload = builder.build(pcsCase);
+            ClaimFormPayload payload = builder.build(pcsCase);
 
             assertThat(payload.isShowDemotionDetails()).isTrue();
             assertThat(payload.isShowDemotionTermsFreeText()).isFalse();
@@ -939,7 +939,7 @@ class ClaimPackPayloadBuilderTest {
                 .suspensionOfRTBReason("Reasons given.")
                 .build());
 
-            ClaimPackFormPayload payload = builder.build(pcsCase);
+            ClaimFormPayload payload = builder.build(pcsCase);
 
             assertThat(payload.isShowIsSuspensionClaim()).isTrue();
             assertThat(payload.isShowSuspensionDetails()).isTrue();
@@ -956,7 +956,7 @@ class ClaimPackPayloadBuilderTest {
             claim.setClaimantCircumstancesProvided(VerticalYesNo.YES);
             claim.setClaimantCircumstances("Two children in the household.");
 
-            ClaimPackFormPayload payload = builder.build(pcsCase);
+            ClaimFormPayload payload = builder.build(pcsCase);
 
             assertThat(payload.getHasClaimantCircsYesNo()).isEqualTo("Yes");
             assertThat(payload.isShowClaimantCircsFreeText()).isTrue();
@@ -968,7 +968,7 @@ class ClaimPackPayloadBuilderTest {
             PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
             pcsCase.getClaims().getFirst().setClaimantCircumstancesProvided(VerticalYesNo.NO);
 
-            ClaimPackFormPayload payload = builder.build(pcsCase);
+            ClaimFormPayload payload = builder.build(pcsCase);
 
             assertThat(payload.getHasClaimantCircsYesNo()).isEqualTo("No");
             assertThat(payload.isShowClaimantCircsFreeText()).isFalse();
@@ -981,7 +981,7 @@ class ClaimPackPayloadBuilderTest {
             claim.setDefendantCircumstancesProvided(VerticalYesNo.YES);
             claim.setDefendantCircumstances("Defendant has been unemployed.");
 
-            ClaimPackFormPayload payload = builder.build(pcsCase);
+            ClaimFormPayload payload = builder.build(pcsCase);
 
             assertThat(payload.getHasDefendantCircsYesNo()).isEqualTo("Yes");
             assertThat(payload.isShowDefendantCircsFreeText()).isTrue();
@@ -992,7 +992,7 @@ class ClaimPackPayloadBuilderTest {
             PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
             pcsCase.getClaims().getFirst().setDefendantCircumstancesProvided(VerticalYesNo.NO);
 
-            ClaimPackFormPayload payload = builder.build(pcsCase);
+            ClaimFormPayload payload = builder.build(pcsCase);
 
             assertThat(payload.getHasDefendantCircsYesNo()).isEqualTo("No");
             assertThat(payload.isShowDefendantCircsFreeText()).isFalse();
@@ -1010,7 +1010,7 @@ class ClaimPackPayloadBuilderTest {
                 .startDate(LocalDate.of(2024, 1, 1))
                 .build());
 
-            ClaimPackFormPayload payload = builder.build(pcsCase);
+            ClaimFormPayload payload = builder.build(pcsCase);
 
             assertThat(payload.isShowTenancyStartDate()).isTrue();
             assertThat(payload.getTenancyStartDate()).isEqualTo("1 January 2024");
@@ -1023,7 +1023,7 @@ class ClaimPackPayloadBuilderTest {
                 .type(CombinedLicenceType.ASSURED_TENANCY)
                 .build());
 
-            ClaimPackFormPayload payload = builder.build(pcsCase);
+            ClaimFormPayload payload = builder.build(pcsCase);
 
             assertThat(payload.isShowTenancyStartDate()).isFalse();
         }
@@ -1044,7 +1044,7 @@ class ClaimPackPayloadBuilderTest {
                 .build();
             claim.setAsbProhibitedConductEntity(asb);
 
-            ClaimPackFormPayload payload = builder.build(pcsCase);
+            ClaimFormPayload payload = builder.build(pcsCase);
 
             assertThat(payload.getAsbAllegedYesNo()).isEqualTo("Yes");
             assertThat(payload.getAsbDetailsFreeText()).isEqualTo("Loud noise complaints");
@@ -1060,7 +1060,7 @@ class ClaimPackPayloadBuilderTest {
         void walesShowsPcscSection() {
             PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.WALES);
 
-            ClaimPackFormPayload payload = builder.build(pcsCase);
+            ClaimFormPayload payload = builder.build(pcsCase);
 
             assertThat(payload.isShowPcscSection()).isTrue();
         }
@@ -1069,7 +1069,7 @@ class ClaimPackPayloadBuilderTest {
         void englandHidesPcscSection() {
             PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
 
-            ClaimPackFormPayload payload = builder.build(pcsCase);
+            ClaimFormPayload payload = builder.build(pcsCase);
 
             assertThat(payload.isShowPcscSection()).isFalse();
         }
@@ -1084,7 +1084,7 @@ class ClaimPackPayloadBuilderTest {
                 .periodicContractDetails("Standard 12-month PCSC terms.")
                 .build());
 
-            ClaimPackFormPayload payload = builder.build(pcsCase);
+            ClaimFormPayload payload = builder.build(pcsCase);
 
             assertThat(payload.getIsPcscYesNo()).isEqualTo("Yes");
             assertThat(payload.isShowPcscDetails()).isTrue();
@@ -1100,7 +1100,7 @@ class ClaimPackPayloadBuilderTest {
                 .claimingStandardContract(VerticalYesNo.NO)
                 .build());
 
-            ClaimPackFormPayload payload = builder.build(pcsCase);
+            ClaimFormPayload payload = builder.build(pcsCase);
 
             assertThat(payload.getIsPcscYesNo()).isEqualTo("No");
             assertThat(payload.isShowPcscDetails()).isFalse();
@@ -1116,7 +1116,7 @@ class ClaimPackPayloadBuilderTest {
                 .periodicContractAgreed(VerticalYesNo.NO)
                 .build());
 
-            ClaimPackFormPayload payload = builder.build(pcsCase);
+            ClaimFormPayload payload = builder.build(pcsCase);
 
             assertThat(payload.isShowPcscDetails()).isTrue();
             assertThat(payload.isShowPcscTermsFreeText()).isFalse();
@@ -1128,13 +1128,13 @@ class ClaimPackPayloadBuilderTest {
 
         @Test
         void walesShowsRequiredDocumentsSection() {
-            ClaimPackFormPayload payload = builder.build(minimalCase(LegislativeCountry.WALES));
+            ClaimFormPayload payload = builder.build(minimalCase(LegislativeCountry.WALES));
             assertThat(payload.isShowRequiredDocumentsSection()).isTrue();
         }
 
         @Test
         void englandHidesRequiredDocumentsSection() {
-            ClaimPackFormPayload payload = builder.build(minimalCase(LegislativeCountry.ENGLAND));
+            ClaimFormPayload payload = builder.build(minimalCase(LegislativeCountry.ENGLAND));
             assertThat(payload.isShowRequiredDocumentsSection()).isFalse();
         }
         // EPC/gas/EICR field data still §13.3 gap; show*NotUploadedReason booleans default to
@@ -1156,7 +1156,7 @@ class ClaimPackPayloadBuilderTest {
                 .claim(claim)
                 .build());
 
-            ClaimPackFormPayload payload = builder.build(pcsCase);
+            ClaimFormPayload payload = builder.build(pcsCase);
 
             assertThat(payload.isShowAsbSection()).isFalse();
         }
@@ -1171,7 +1171,7 @@ class ClaimPackPayloadBuilderTest {
                 .claim(claim)
                 .build());
 
-            ClaimPackFormPayload payload = builder.build(pcsCase);
+            ClaimFormPayload payload = builder.build(pcsCase);
 
             assertThat(payload.isShowAsbSection()).isFalse();
         }
@@ -1188,7 +1188,7 @@ class ClaimPackPayloadBuilderTest {
                 .claim(claim)
                 .build());
 
-            ClaimPackFormPayload payload = builder.build(pcsCase);
+            ClaimFormPayload payload = builder.build(pcsCase);
 
             assertThat(payload.isShowAsbSection()).isTrue();
         }
@@ -1205,7 +1205,7 @@ class ClaimPackPayloadBuilderTest {
                 .claim(claim)
                 .build());
 
-            ClaimPackFormPayload payload = builder.build(pcsCase);
+            ClaimFormPayload payload = builder.build(pcsCase);
 
             assertThat(payload.isShowAsbSection()).isTrue();
         }
@@ -1225,7 +1225,7 @@ class ClaimPackPayloadBuilderTest {
                 .build();
             claim.setAsbProhibitedConductEntity(asb);
 
-            ClaimPackFormPayload payload = builder.build(pcsCase);
+            ClaimFormPayload payload = builder.build(pcsCase);
 
             assertThat(payload.getAsbAllegedYesNo()).isEqualTo("Yes");
             assertThat(payload.isShowAsbDetails()).isTrue();
@@ -1267,7 +1267,7 @@ class ClaimPackPayloadBuilderTest {
                 .build();
             claim.setRentArrears(rent);
 
-            ClaimPackFormPayload payload = builder.build(pcsCase);
+            ClaimFormPayload payload = builder.build(pcsCase);
 
             assertThat(payload.getRentArrearsTotal()).isEqualTo("£1,500.00");
             assertThat(payload.getJudgmentRequestedYesNo()).isEqualTo("Yes");
@@ -1287,7 +1287,7 @@ class ClaimPackPayloadBuilderTest {
                 .claim(claim)
                 .build());
 
-            ClaimPackFormPayload payload = builder.build(pcsCase);
+            ClaimFormPayload payload = builder.build(pcsCase);
 
             assertThat(payload.isHasRentArrearsGround()).isTrue();
         }
@@ -1303,7 +1303,7 @@ class ClaimPackPayloadBuilderTest {
                 .claim(claim)
                 .build());
 
-            ClaimPackFormPayload payload = builder.build(pcsCase);
+            ClaimFormPayload payload = builder.build(pcsCase);
 
             assertThat(payload.isHasRentArrearsGround()).isFalse();
         }
@@ -1321,7 +1321,7 @@ class ClaimPackPayloadBuilderTest {
                 .claim(claim)
                 .build());
 
-            ClaimPackFormPayload payload = builder.build(pcsCase);
+            ClaimFormPayload payload = builder.build(pcsCase);
 
             assertThat(payload.isHasRentArrearsGround()).isTrue();
         }
@@ -1335,7 +1335,7 @@ class ClaimPackPayloadBuilderTest {
                 .recoveryAttemptDetails("Three letters sent.")
                 .build());
 
-            ClaimPackFormPayload payload = builder.build(pcsCase);
+            ClaimFormPayload payload = builder.build(pcsCase);
 
             assertThat(payload.getHasPreviousStepsYesNo()).isEqualTo("Yes");
             assertThat(payload.isShowPreviousStepsFreeText()).isTrue();
@@ -1350,7 +1350,7 @@ class ClaimPackPayloadBuilderTest {
                 .recoveryAttempted(VerticalYesNo.NO)
                 .build());
 
-            ClaimPackFormPayload payload = builder.build(pcsCase);
+            ClaimFormPayload payload = builder.build(pcsCase);
 
             assertThat(payload.getHasPreviousStepsYesNo()).isEqualTo("No");
             assertThat(payload.isShowPreviousStepsFreeText()).isFalse();
@@ -1365,7 +1365,7 @@ class ClaimPackPayloadBuilderTest {
             PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
             pcsCase.getClaims().getFirst().setPreActionProtocolFollowed(VerticalYesNo.YES);
 
-            ClaimPackFormPayload payload = builder.build(pcsCase);
+            ClaimFormPayload payload = builder.build(pcsCase);
 
             assertThat(payload.getPreActionProtocolFollowedYesNo()).isEqualTo("Yes");
             assertThat(payload.isShowPreActionProtocolNotFollowedReason()).isFalse();
@@ -1378,7 +1378,7 @@ class ClaimPackPayloadBuilderTest {
             claim.setPreActionProtocolFollowed(VerticalYesNo.NO);
             claim.setPreActionProtocolIncompleteExplanation("Defendant in hospital — couldn't deliver.");
 
-            ClaimPackFormPayload payload = builder.build(pcsCase);
+            ClaimFormPayload payload = builder.build(pcsCase);
 
             assertThat(payload.getPreActionProtocolFollowedYesNo()).isEqualTo("No");
             assertThat(payload.isShowPreActionProtocolNotFollowedReason()).isTrue();
@@ -1392,7 +1392,7 @@ class ClaimPackPayloadBuilderTest {
             PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.WALES);
             pcsCase.getClaims().getFirst().setPreActionProtocolFollowed(VerticalYesNo.NO);
 
-            ClaimPackFormPayload payload = builder.build(pcsCase);
+            ClaimFormPayload payload = builder.build(pcsCase);
 
             assertThat(payload.isShowPreActionProtocolNotFollowedReason()).isFalse();
         }
@@ -1404,7 +1404,7 @@ class ClaimPackPayloadBuilderTest {
             claim.setMediationAttempted(VerticalYesNo.YES);
             claim.setSettlementAttempted(VerticalYesNo.NO);
 
-            ClaimPackFormPayload payload = builder.build(pcsCase);
+            ClaimFormPayload payload = builder.build(pcsCase);
 
             assertThat(payload.getMediationAttemptedYesNo()).isEqualTo("Yes");
             assertThat(payload.getSettlementAttemptedYesNo()).isEqualTo("No");
@@ -1422,7 +1422,7 @@ class ClaimPackPayloadBuilderTest {
                 .noticeServed(YesOrNo.YES)
                 .build());
 
-            ClaimPackFormPayload payload = builder.build(pcsCase);
+            ClaimFormPayload payload = builder.build(pcsCase);
 
             assertThat(payload.getNoticeServedYesNo()).isEqualTo("Yes");
             assertThat(payload.isNoticeNotServedDisplayed()).isFalse();
@@ -1437,7 +1437,7 @@ class ClaimPackPayloadBuilderTest {
                 .noticeStatement("Defendant address unknown — no notice possible.")
                 .build());
 
-            ClaimPackFormPayload payload = builder.build(pcsCase);
+            ClaimFormPayload payload = builder.build(pcsCase);
 
             assertThat(payload.getNoticeServedYesNo()).isEqualTo("No");
             assertThat(payload.isNoticeNotServedDisplayed()).isTrue();
@@ -1453,7 +1453,7 @@ class ClaimPackPayloadBuilderTest {
                 .noticeServed(YesOrNo.NO)
                 .build());
 
-            ClaimPackFormPayload payload = builder.build(pcsCase);
+            ClaimFormPayload payload = builder.build(pcsCase);
 
             assertThat(payload.getNoticeServedYesNo()).isEqualTo("No");
             assertThat(payload.isNoticeNotServedDisplayed()).isFalse();
@@ -1468,7 +1468,7 @@ class ClaimPackPayloadBuilderTest {
                 .noticeType("Section 173")
                 .build());
 
-            ClaimPackFormPayload payload = builder.build(pcsCase);
+            ClaimFormPayload payload = builder.build(pcsCase);
 
             assertThat(payload.isShowNoticeType()).isTrue();
             assertThat(payload.getNoticeType()).isEqualTo("Section 173");
@@ -1482,7 +1482,7 @@ class ClaimPackPayloadBuilderTest {
                 .noticeServed(YesOrNo.NO)
                 .build());
 
-            ClaimPackFormPayload payload = builder.build(pcsCase);
+            ClaimFormPayload payload = builder.build(pcsCase);
 
             assertThat(payload.isShowNoticeType()).isFalse();
         }
@@ -1497,7 +1497,7 @@ class ClaimPackPayloadBuilderTest {
                 .noticeType("Section 8")
                 .build());
 
-            ClaimPackFormPayload payload = builder.build(pcsCase);
+            ClaimFormPayload payload = builder.build(pcsCase);
 
             assertThat(payload.isShowNoticeType()).isFalse();
         }
@@ -1511,7 +1511,7 @@ class ClaimPackPayloadBuilderTest {
                 .noticeDate(LocalDate.of(2026, 3, 1))
                 .build());
 
-            ClaimPackFormPayload payload = builder.build(pcsCase);
+            ClaimFormPayload payload = builder.build(pcsCase);
 
             assertThat(payload.isNoticeServedYes()).isTrue();
             assertThat(payload.isShowNoticeServedOn()).isTrue();
@@ -1527,7 +1527,7 @@ class ClaimPackPayloadBuilderTest {
                 .noticeDetails("served@example.com")
                 .build());
 
-            ClaimPackFormPayload payload = builder.build(pcsCase);
+            ClaimFormPayload payload = builder.build(pcsCase);
 
             assertThat(payload.isShowNoticeServedToEmail()).isTrue();
             assertThat(payload.isShowNoticeLeftWithName()).isFalse();
@@ -1544,7 +1544,7 @@ class ClaimPackPayloadBuilderTest {
                 .servingMethod(NoticeServiceMethod.FIRST_CLASS_POST)
                 .build());
 
-            ClaimPackFormPayload payload = builder.build(pcsCase);
+            ClaimFormPayload payload = builder.build(pcsCase);
 
             assertThat(payload.isShowNoticeLeftWithName()).isFalse();
             assertThat(payload.isShowNoticeServedToEmail()).isFalse();
@@ -1562,7 +1562,7 @@ class ClaimPackPayloadBuilderTest {
                 .noticeDate(LocalDate.of(2024, 1, 10))
                 .build());
 
-            ClaimPackFormPayload payload = builder.build(pcsCase);
+            ClaimFormPayload payload = builder.build(pcsCase);
 
             assertThat(payload.isShowNoticeServedOn()).isTrue();
             assertThat(payload.getNoticeServedOn()).isEqualTo("10 January 2024");
@@ -1582,7 +1582,7 @@ class ClaimPackPayloadBuilderTest {
                 .noticeDateTime(LocalDateTime.of(2024, 1, 10, 14, 30))
                 .build());
 
-            ClaimPackFormPayload payload = builder.build(pcsCase);
+            ClaimFormPayload payload = builder.build(pcsCase);
 
             assertThat(payload.isShowNoticeServedOn()).isTrue();
             assertThat(payload.getNoticeServedOn()).isEqualTo("10 January 2024");
@@ -1599,7 +1599,7 @@ class ClaimPackPayloadBuilderTest {
             PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
             // No underlessees attached.
 
-            ClaimPackFormPayload payload = builder.build(pcsCase);
+            ClaimFormPayload payload = builder.build(pcsCase);
 
             assertThat(payload.getUnderlessees()).isEmpty();
         }
@@ -1613,10 +1613,10 @@ class ClaimPackPayloadBuilderTest {
                 party("Building Society", "Ltd", VerticalYesNo.YES, address("100 King Street")),
                 PartyRole.UNDERLESSEE_OR_MORTGAGEE, 1);
 
-            ClaimPackFormPayload payload = builder.build(pcsCase);
+            ClaimFormPayload payload = builder.build(pcsCase);
 
             assertThat(payload.getUnderlessees()).hasSize(1);
-            ClaimPackUnderlesseeRow row = payload.getUnderlessees().getFirst();
+            ClaimFormUnderlesseeRow row = payload.getUnderlessees().getFirst();
             assertThat(row.isAddressKnown()).isTrue();
             assertThat(row.isAddressUnknown()).isFalse();
             assertThat(row.getAddressLine1()).isEqualTo("100 King Street");
@@ -1632,9 +1632,9 @@ class ClaimPackPayloadBuilderTest {
             attach(pcsCase, party("Building", "Society", VerticalYesNo.YES, null),
                 PartyRole.UNDERLESSEE_OR_MORTGAGEE, 1);
 
-            ClaimPackFormPayload payload = builder.build(pcsCase);
+            ClaimFormPayload payload = builder.build(pcsCase);
 
-            ClaimPackUnderlesseeRow row = payload.getUnderlessees().getFirst();
+            ClaimFormUnderlesseeRow row = payload.getUnderlessees().getFirst();
             assertThat(row.isAddressKnown()).isFalse();
             assertThat(row.isAddressUnknown()).isTrue();
             assertThat(row.getAddressLine1()).isNull();
@@ -1648,9 +1648,9 @@ class ClaimPackPayloadBuilderTest {
             attach(pcsCase, party(null, null, VerticalYesNo.NO, address("Some address")),
                 PartyRole.UNDERLESSEE_OR_MORTGAGEE, 1);
 
-            ClaimPackFormPayload payload = builder.build(pcsCase);
+            ClaimFormPayload payload = builder.build(pcsCase);
 
-            ClaimPackUnderlesseeRow row = payload.getUnderlessees().getFirst();
+            ClaimFormUnderlesseeRow row = payload.getUnderlessees().getFirst();
             assertThat(row.getDisplayName()).isEqualTo("Persons unknown");
             assertThat(row.isAddressKnown()).isTrue();
         }
@@ -1665,10 +1665,10 @@ class ClaimPackPayloadBuilderTest {
             attach(pcsCase, party("Second", "Ltd", VerticalYesNo.YES, address("Addr B")),
                 PartyRole.UNDERLESSEE_OR_MORTGAGEE, 2);
 
-            ClaimPackFormPayload payload = builder.build(pcsCase);
+            ClaimFormPayload payload = builder.build(pcsCase);
 
             assertThat(payload.getUnderlessees()).hasSize(2);
-            assertThat(payload.getUnderlessees()).extracting(ClaimPackUnderlesseeRow::getHeading)
+            assertThat(payload.getUnderlessees()).extracting(ClaimFormUnderlesseeRow::getHeading)
                 .containsExactly(
                     "Underlessee or mortgagee 1 details",
                     "Additional underlessee or mortgagee 1 details");

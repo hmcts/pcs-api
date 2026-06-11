@@ -1,10 +1,10 @@
-package uk.gov.hmcts.reform.pcs.document.model.claimpack;
+package uk.gov.hmcts.reform.pcs.document.model.claimform;
 
 import lombok.Builder;
 import lombok.Data;
 
 /**
- * Six-line address rendered into the claim pack template.
+ * Six-line address rendered into the claim form template.
  * Mirrors {@link uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity} minus the id.
  * Fields are individually addressable from the Docmosis template ({@code <<address.line1>>} etc.),
  * which is why we don't reuse the flattened {@link uk.gov.hmcts.reform.pcs.document.model.Party}
@@ -12,7 +12,7 @@ import lombok.Data;
  */
 @Data
 @Builder
-public class ClaimPackAddress {
+public class ClaimFormAddress {
 
     private String addressLine1;
     private String addressLine2;

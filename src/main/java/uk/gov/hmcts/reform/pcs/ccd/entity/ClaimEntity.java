@@ -193,8 +193,8 @@ public class ClaimEntity {
     private FeePaymentEntity feePayment;
 
     @OneToOne(cascade = ALL, orphanRemoval = true)
-    @JoinColumn(name = "claim_pack_document_id")
-    private DocumentEntity claimPackDocument;
+    @JoinColumn(name = "claim_form_document_id")
+    private DocumentEntity claimFormDocument;
 
     public void setAsbProhibitedConductEntity(AsbProhibitedConductEntity asbProhibitedConductEntity) {
         if (this.asbProhibitedConductEntity != null) {

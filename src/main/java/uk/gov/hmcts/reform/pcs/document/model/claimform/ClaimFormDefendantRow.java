@@ -1,12 +1,12 @@
-package uk.gov.hmcts.reform.pcs.document.model.claimpack;
+package uk.gov.hmcts.reform.pcs.document.model.claimform;
 
 import lombok.Builder;
 import lombok.Data;
 
 /**
- * One row in the {@code defendants} repeating section of the claim pack template.
+ * One row in the {@code defendants} repeating section of the claim form template.
  *
- * <p>{@code ClaimPackPayloadBuilder} resolves every field, so the template just renders them.
+ * <p>{@code ClaimFormPayloadBuilder} resolves every field, so the template just renders them.
  * {@code heading} is the "Defendant N details" string, {@code displayName} is "First Last", an
  * org name, or "Persons unknown", and the address fields are the defendant's own address, or the
  * property address when the defendant has none.</p>
@@ -16,7 +16,7 @@ import lombok.Data;
  */
 @Data
 @Builder
-public class ClaimPackDefendantRow implements ClaimPackAddressRow {
+public class ClaimFormDefendantRow implements ClaimFormAddressRow {
 
     private int defendantNumber;
     private String heading;

@@ -1,11 +1,11 @@
-package uk.gov.hmcts.reform.pcs.document.model.claimpack;
+package uk.gov.hmcts.reform.pcs.document.model.claimform;
 
 /**
  * Common address fields shared by the defendant and underlessee/mortgagee repeat rows, so the
  * builder can populate them with a single helper. The {@code @Data} on each row supplies these
  * setters.
  */
-public interface ClaimPackAddressRow {
+public interface ClaimFormAddressRow {
     void setAddressLine1(String addressLine1);
 
     void setAddressLine2(String addressLine2);

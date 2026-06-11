@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.service.claimpack;
+package uk.gov.hmcts.reform.pcs.ccd.service.claimform;
 
 import com.github.kagkarlsson.scheduler.SchedulerClient;
 import com.github.kagkarlsson.scheduler.task.SchedulableInstance;
@@ -16,7 +16,7 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 @SuppressWarnings({"unchecked", "rawtypes"})  // Mockito + db-scheduler's SchedulableInstance<T> generics
-class ClaimPackSchedulerTest {
+class ClaimFormSchedulerTest {
 
     private static final long CASE_REFERENCE = 1234567812345678L;
 
@@ -24,13 +24,13 @@ class ClaimPackSchedulerTest {
     private SchedulerClient schedulerClient;
 
     @InjectMocks
-    private ClaimPackScheduler scheduler;
+    private ClaimFormScheduler scheduler;
 
     @Test
     void usesCaseReferenceAsInstanceIdForProducerDedup() {
         when(schedulerClient.scheduleIfNotExists((SchedulableInstance<Object>) any())).thenReturn(true);
 
-        scheduler.scheduleClaimPackGeneration(CASE_REFERENCE);
+        scheduler.scheduleClaimFormGeneration(CASE_REFERENCE);
 
         ArgumentCaptor<SchedulableInstance> captor = ArgumentCaptor.forClass(SchedulableInstance.class);
         verify(schedulerClient).scheduleIfNotExists(captor.capture());
@@ -45,7 +45,7 @@ class ClaimPackSchedulerTest {
         when(schedulerClient.scheduleIfNotExists((SchedulableInstance<Object>) any())).thenReturn(false);
         // `scheduleIfNotExists` returning false is the happy-path signal that a row already
         // exists for this case. No exception, no second insertion — just a log line.
-        scheduler.scheduleClaimPackGeneration(CASE_REFERENCE);
+        scheduler.scheduleClaimFormGeneration(CASE_REFERENCE);
         verify(schedulerClient).scheduleIfNotExists((SchedulableInstance<Object>) any());
     }
 }

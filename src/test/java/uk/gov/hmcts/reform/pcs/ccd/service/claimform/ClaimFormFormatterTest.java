@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.service.claimpack;
+package uk.gov.hmcts.reform.pcs.ccd.service.claimform;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -10,15 +10,15 @@ import java.math.BigDecimal;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static uk.gov.hmcts.reform.pcs.ccd.service.claimpack.ClaimPackFormatter.formatDefendantHeading;
-import static uk.gov.hmcts.reform.pcs.ccd.service.claimpack.ClaimPackFormatter.formatGbp;
-import static uk.gov.hmcts.reform.pcs.ccd.service.claimpack.ClaimPackFormatter.formatUnderlesseeHeading;
-import static uk.gov.hmcts.reform.pcs.ccd.service.claimpack.ClaimPackFormatter.isNo;
-import static uk.gov.hmcts.reform.pcs.ccd.service.claimpack.ClaimPackFormatter.isPopulated;
-import static uk.gov.hmcts.reform.pcs.ccd.service.claimpack.ClaimPackFormatter.isYes;
-import static uk.gov.hmcts.reform.pcs.ccd.service.claimpack.ClaimPackFormatter.toLabel;
+import static uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimFormFormatter.formatDefendantHeading;
+import static uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimFormFormatter.formatGbp;
+import static uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimFormFormatter.formatUnderlesseeHeading;
+import static uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimFormFormatter.isNo;
+import static uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimFormFormatter.isPopulated;
+import static uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimFormFormatter.isYes;
+import static uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimFormFormatter.toLabel;
 
-class ClaimPackFormatterTest {
+class ClaimFormFormatterTest {
 
     @ParameterizedTest
     @MethodSource("gbpAmounts")

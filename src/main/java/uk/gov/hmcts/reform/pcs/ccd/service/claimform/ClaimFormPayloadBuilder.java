@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.service.claimpack;
+package uk.gov.hmcts.reform.pcs.ccd.service.claimform;
 
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
@@ -21,8 +21,8 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseReferenceFormatter;
-import uk.gov.hmcts.reform.pcs.document.model.claimpack.ClaimPackFormPayload;
-import uk.gov.hmcts.reform.pcs.document.model.claimpack.ClaimPackGround;
+import uk.gov.hmcts.reform.pcs.document.model.claimform.ClaimFormPayload;
+import uk.gov.hmcts.reform.pcs.document.model.claimform.ClaimFormGround;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.time.LocalDate;
@@ -35,21 +35,21 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-import static uk.gov.hmcts.reform.pcs.ccd.service.claimpack.ClaimPackFormatter.formatGbp;
-import static uk.gov.hmcts.reform.pcs.ccd.service.claimpack.ClaimPackFormatter.formatGroundLabel;
-import static uk.gov.hmcts.reform.pcs.ccd.service.claimpack.ClaimPackFormatter.formatLongDate;
-import static uk.gov.hmcts.reform.pcs.ccd.service.claimpack.ClaimPackFormatter.formatNoticeTime;
-import static uk.gov.hmcts.reform.pcs.ccd.service.claimpack.ClaimPackFormatter.formatRentDescription;
-import static uk.gov.hmcts.reform.pcs.ccd.service.claimpack.ClaimPackFormatter.formatTenancyLabel;
-import static uk.gov.hmcts.reform.pcs.ccd.service.claimpack.ClaimPackFormatter.isNo;
-import static uk.gov.hmcts.reform.pcs.ccd.service.claimpack.ClaimPackFormatter.isPopulated;
-import static uk.gov.hmcts.reform.pcs.ccd.service.claimpack.ClaimPackFormatter.isYes;
-import static uk.gov.hmcts.reform.pcs.ccd.service.claimpack.ClaimPackFormatter.toClaimPackAddress;
-import static uk.gov.hmcts.reform.pcs.ccd.service.claimpack.ClaimPackFormatter.toLabel;
-import static uk.gov.hmcts.reform.pcs.ccd.service.claimpack.ClaimPackFormatter.yesOrNoToVertical;
+import static uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimFormFormatter.formatGbp;
+import static uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimFormFormatter.formatGroundLabel;
+import static uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimFormFormatter.formatLongDate;
+import static uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimFormFormatter.formatNoticeTime;
+import static uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimFormFormatter.formatRentDescription;
+import static uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimFormFormatter.formatTenancyLabel;
+import static uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimFormFormatter.isNo;
+import static uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimFormFormatter.isPopulated;
+import static uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimFormFormatter.isYes;
+import static uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimFormFormatter.toClaimFormAddress;
+import static uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimFormFormatter.toLabel;
+import static uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimFormFormatter.yesOrNoToVertical;
 
 /**
- * Builds {@link ClaimPackFormPayload} from a {@link PcsCaseEntity}.
+ * Builds {@link ClaimFormPayload} from a {@link PcsCaseEntity}.
  *
  * <p>One {@code mapXxx} method per source entity; each takes that entity (nullable for optional
  * relations) plus the payload builder and writes its fields. {@link #build(PcsCaseEntity)} runs
@@ -57,7 +57,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.service.claimpack.ClaimPackFormatter.y
  * conditional blocks do not render them.</p>
  */
 @Service
-public class ClaimPackPayloadBuilder {
+public class ClaimFormPayloadBuilder {
 
     private static final Set<CombinedLicenceType> INTRO_DEMOTED_OTHER_TYPES = Set.of(
         CombinedLicenceType.INTRODUCTORY_TENANCY,
@@ -66,17 +66,17 @@ public class ClaimPackPayloadBuilder {
     );
 
     private final CaseReferenceFormatter caseReferenceFormatter;
-    private final ClaimPackPartyMapper partyMapper;
+    private final ClaimFormPartyMapper partyMapper;
 
-    public ClaimPackPayloadBuilder(CaseReferenceFormatter caseReferenceFormatter,
-                                   ClaimPackPartyMapper partyMapper) {
+    public ClaimFormPayloadBuilder(CaseReferenceFormatter caseReferenceFormatter,
+                                   ClaimFormPartyMapper partyMapper) {
         this.caseReferenceFormatter = caseReferenceFormatter;
         this.partyMapper = partyMapper;
     }
 
-    public ClaimPackFormPayload build(PcsCaseEntity pcsCase) {
+    public ClaimFormPayload build(PcsCaseEntity pcsCase) {
         final ClaimEntity claim = pcsCase.getClaims().getFirst();
-        final ClaimPackFormPayload.ClaimPackFormPayloadBuilder payloadBuilder = ClaimPackFormPayload.builder();
+        final ClaimFormPayload.ClaimFormPayloadBuilder payloadBuilder = ClaimFormPayload.builder();
 
         mapCase(pcsCase, payloadBuilder);
         mapClaim(claim, payloadBuilder);
@@ -106,7 +106,7 @@ public class ClaimPackPayloadBuilder {
      * computed after the individual mappers have populated their source data.
      */
     private void mapClaimDetailsShowFlags(PcsCaseEntity pcsCase, ClaimEntity claim,
-                                          ClaimPackFormPayload.ClaimPackFormPayloadBuilder payloadBuilder) {
+                                          ClaimFormPayload.ClaimFormPayloadBuilder payloadBuilder) {
         boolean isWales = isWalesClaim(pcsCase);
         boolean isEngland = !isWales;
         boolean isIntroDemotedOther = isIntroDemotedOtherTenancy(pcsCase.getTenancyLicence());
@@ -186,12 +186,12 @@ public class ClaimPackPayloadBuilder {
         return notice != null && notice.getNoticeServed() == YesOrNo.YES;
     }
 
-    private void mapCase(PcsCaseEntity pcsCase, ClaimPackFormPayload.ClaimPackFormPayloadBuilder payloadBuilder) {
+    private void mapCase(PcsCaseEntity pcsCase, ClaimFormPayload.ClaimFormPayloadBuilder payloadBuilder) {
         boolean isWales = isWalesClaim(pcsCase);
         payloadBuilder.isWales(isWales);
         payloadBuilder.isEngland(!isWales);
         AddressEntity propertyAddress = pcsCase.getPropertyAddress();
-        payloadBuilder.propertyAddress(toClaimPackAddress(propertyAddress));
+        payloadBuilder.propertyAddress(toClaimFormAddress(propertyAddress));
         if (propertyAddress != null) {
             payloadBuilder.hasPropertyAddressLine2(isPopulated(propertyAddress.getAddressLine2()));
             payloadBuilder.hasPropertyAddressLine3(isPopulated(propertyAddress.getAddressLine3()));
@@ -201,7 +201,7 @@ public class ClaimPackPayloadBuilder {
             caseReferenceFormatter.formatCaseReferenceWithDashes(pcsCase.getCaseReference()));
     }
 
-    private void mapClaim(ClaimEntity claim, ClaimPackFormPayload.ClaimPackFormPayloadBuilder payloadBuilder) {
+    private void mapClaim(ClaimEntity claim, ClaimFormPayload.ClaimFormPayloadBuilder payloadBuilder) {
         if (claim.getClaimSubmittedDate() != null) {
             payloadBuilder.submittedOn(claim.getClaimSubmittedDate().toLocalDate());
         }
@@ -236,7 +236,7 @@ public class ClaimPackPayloadBuilder {
     }
 
     private void mapGrounds(Set<ClaimGroundEntity> allGrounds,
-                            ClaimPackFormPayload.ClaimPackFormPayloadBuilder payloadBuilder) {
+                            ClaimFormPayload.ClaimFormPayloadBuilder payloadBuilder) {
         List<ClaimGroundEntity> grounds = groundsExcludingNoGroundsSentinel(allGrounds);
         if (grounds.isEmpty()) {
             payloadBuilder.grounds(Collections.emptyList());
@@ -250,15 +250,15 @@ public class ClaimPackPayloadBuilder {
             return;
         }
 
-        List<ClaimPackGround> mapped = grounds.stream()
-            .map(g -> ClaimPackGround.builder()
+        List<ClaimFormGround> mapped = grounds.stream()
+            .map(g -> ClaimFormGround.builder()
                 .nameAndNumber(formatGroundLabel(g))
                 .reasonFreeText(g.getReason())
                 .hasReason(g.getReason() != null && !g.getReason().isBlank())
                 .build())
             .toList();
         payloadBuilder.grounds(mapped);
-        payloadBuilder.groundsWithReasons(mapped.stream().filter(ClaimPackGround::isHasReason).toList());
+        payloadBuilder.groundsWithReasons(mapped.stream().filter(ClaimFormGround::isHasReason).toList());
         payloadBuilder.hasGroundsYesNo(VerticalYesNo.YES.getLabel());
         payloadBuilder.showGroundsList(true);
 
@@ -280,7 +280,7 @@ public class ClaimPackPayloadBuilder {
     }
 
     private void mapNotice(NoticeOfPossessionEntity notice,
-                            ClaimPackFormPayload.ClaimPackFormPayloadBuilder payloadBuilder) {
+                            ClaimFormPayload.ClaimFormPayloadBuilder payloadBuilder) {
         if (notice == null) {
             return;
         }
@@ -321,7 +321,7 @@ public class ClaimPackPayloadBuilder {
     }
 
     private void routeNoticeDetailByMethod(NoticeServiceMethod method, String details,
-                                           ClaimPackFormPayload.ClaimPackFormPayloadBuilder payloadBuilder) {
+                                           ClaimFormPayload.ClaimFormPayloadBuilder payloadBuilder) {
         if (method == null || details == null) {
             return;
         }
@@ -351,14 +351,14 @@ public class ClaimPackPayloadBuilder {
     // The "can you upload the notice?" answer has no data source yet, so hide the whole row instead
     // of printing a label with a blank value. Set showNoticeUploadQuestion from the answer once an
     // entity field exists.
-    private void clearUnsourcedNoticeUploadFlags(ClaimPackFormPayload.ClaimPackFormPayloadBuilder payloadBuilder) {
+    private void clearUnsourcedNoticeUploadFlags(ClaimFormPayload.ClaimFormPayloadBuilder payloadBuilder) {
         payloadBuilder.showNoticeUploadQuestion(false);
         payloadBuilder.noticeUploadedYes(false);
         payloadBuilder.noticeUploadedNo(false);
     }
 
     private void mapTenancyLicence(TenancyLicenceEntity tenancy,
-                                       ClaimPackFormPayload.ClaimPackFormPayloadBuilder payloadBuilder) {
+                                       ClaimFormPayload.ClaimFormPayloadBuilder payloadBuilder) {
         if (tenancy == null) {
             return;
         }
@@ -378,7 +378,7 @@ public class ClaimPackPayloadBuilder {
     }
 
     private void mapRentArrears(RentArrearsEntity rent,
-                            ClaimPackFormPayload.ClaimPackFormPayloadBuilder payloadBuilder) {
+                            ClaimFormPayload.ClaimFormPayloadBuilder payloadBuilder) {
         if (rent == null) {
             return;
         }
@@ -392,7 +392,7 @@ public class ClaimPackPayloadBuilder {
     }
 
     private void mapAsbProhibitedConduct(AsbProhibitedConductEntity asb,
-                                             ClaimPackFormPayload.ClaimPackFormPayloadBuilder payloadBuilder) {
+                                             ClaimFormPayload.ClaimFormPayloadBuilder payloadBuilder) {
         if (asb == null) {
             return;
         }
@@ -401,7 +401,7 @@ public class ClaimPackPayloadBuilder {
     }
 
     private void mapAsbDetails(AsbProhibitedConductEntity asb,
-                               ClaimPackFormPayload.ClaimPackFormPayloadBuilder payloadBuilder) {
+                               ClaimFormPayload.ClaimFormPayloadBuilder payloadBuilder) {
         VerticalYesNo asbEnum = asb.getAntisocialBehaviour();
         payloadBuilder.asbAllegedYesNo(toLabel(asbEnum));
         // Hide the Yes/No row when unanswered, matching the null-gate on the sibling rows below.
@@ -423,7 +423,7 @@ public class ClaimPackPayloadBuilder {
     // PCSC (Wales) is captured on the same entity as ASB. Its outer section gate (showPcscSection)
     // lives in mapClaimDetailsShowFlags, which is where the country is known.
     private void mapPcscDetails(AsbProhibitedConductEntity asb,
-                                ClaimPackFormPayload.ClaimPackFormPayloadBuilder payloadBuilder) {
+                                ClaimFormPayload.ClaimFormPayloadBuilder payloadBuilder) {
         VerticalYesNo pcscEnum = asb.getClaimingStandardContract();
         payloadBuilder.isPcscYesNo(toLabel(pcscEnum));
         payloadBuilder.showPcscDetails(isYes(pcscEnum));
@@ -436,7 +436,7 @@ public class ClaimPackPayloadBuilder {
     }
 
     private void mapPossessionAlternatives(PossessionAlternativesEntity alternatives,
-                                               ClaimPackFormPayload.ClaimPackFormPayloadBuilder payloadBuilder) {
+                                               ClaimFormPayload.ClaimFormPayloadBuilder payloadBuilder) {
         if (alternatives == null) {
             return;
         }
@@ -465,7 +465,7 @@ public class ClaimPackPayloadBuilder {
     }
 
     private void mapStatementOfTruth(StatementOfTruthEntity sot,
-                                         ClaimPackFormPayload.ClaimPackFormPayloadBuilder payloadBuilder) {
+                                         ClaimFormPayload.ClaimFormPayloadBuilder payloadBuilder) {
         if (sot == null) {
             return;
         }

@@ -5,12 +5,12 @@ import lombok.Builder;
 import lombok.Data;
 
 /**
- * Payload for the claim-pack-generation db-scheduler task. Mirrors {@link AccessCodeTaskData}.
+ * Payload for the claim-form-generation db-scheduler task. Mirrors {@link AccessCodeTaskData}.
  */
 @Data
 @Builder
 @AllArgsConstructor
-public class ClaimPackTaskData {
+public class ClaimFormTaskData {
 
     private final String caseReference;
 

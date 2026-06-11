@@ -11,9 +11,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.gov.hmcts.reform.pcs.ccd.model.ClaimPackTaskData;
-import uk.gov.hmcts.reform.pcs.ccd.service.claimpack.ClaimActivityLogService;
-import uk.gov.hmcts.reform.pcs.ccd.service.claimpack.ClaimPackService;
+import uk.gov.hmcts.reform.pcs.ccd.model.ClaimFormTaskData;
+import uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimActivityLogService;
+import uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimFormService;
 
 import java.time.Duration;
 
@@ -23,21 +23,21 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static uk.gov.hmcts.reform.pcs.ccd.task.ClaimPackGenerationComponent.CLAIM_PACK_TASK_DESCRIPTOR;
+import static uk.gov.hmcts.reform.pcs.ccd.task.ClaimFormGenerationComponent.CLAIM_FORM_TASK_DESCRIPTOR;
 
 @ExtendWith(MockitoExtension.class)
-class ClaimPackGenerationComponentTest {
+class ClaimFormGenerationComponentTest {
 
-    private ClaimPackGenerationComponent component;
+    private ClaimFormGenerationComponent component;
 
     @Mock
-    private ClaimPackService claimPackService;
+    private ClaimFormService claimFormService;
 
     @Mock
     private ClaimActivityLogService claimActivityLogService;
 
     @Mock
-    private TaskInstance<ClaimPackTaskData> taskInstance;
+    private TaskInstance<ClaimFormTaskData> taskInstance;
 
     @Mock
     private ExecutionContext executionContext;
@@ -50,43 +50,43 @@ class ClaimPackGenerationComponentTest {
 
     @BeforeEach
     void setUp() {
-        component = new ClaimPackGenerationComponent(
-            claimPackService, claimActivityLogService, maxRetries, backoffDelay);
+        component = new ClaimFormGenerationComponent(
+            claimFormService, claimActivityLogService, maxRetries, backoffDelay);
     }
 
     @Test
     @DisplayName("Task descriptor has correct name and data class")
     void taskDescriptorHasCorrectNameAndDataClass() {
-        assertThat(CLAIM_PACK_TASK_DESCRIPTOR.getTaskName()).isEqualTo("claim-pack-generation-task");
-        assertThat(CLAIM_PACK_TASK_DESCRIPTOR.getDataClass()).isEqualTo(ClaimPackTaskData.class);
+        assertThat(CLAIM_FORM_TASK_DESCRIPTOR.getTaskName()).isEqualTo("claim-form-generation-task");
+        assertThat(CLAIM_FORM_TASK_DESCRIPTOR.getDataClass()).isEqualTo(ClaimFormTaskData.class);
     }
 
     @Test
-    @DisplayName("Successful execution calls ClaimPackService and returns OnCompleteRemove")
+    @DisplayName("Successful execution calls ClaimFormService and returns OnCompleteRemove")
     void successfulExecutionReturnsOnCompleteRemove() {
-        ClaimPackTaskData data = ClaimPackTaskData.builder().caseReference("1234567812345678").build();
+        ClaimFormTaskData data = ClaimFormTaskData.builder().caseReference("1234567812345678").build();
         when(taskInstance.getData()).thenReturn(data);
 
-        CustomTask<ClaimPackTaskData> task = component.claimPackGenerationTask();
-        CompletionHandler<ClaimPackTaskData> result = task.execute(taskInstance, executionContext);
+        CustomTask<ClaimFormTaskData> task = component.claimFormGenerationTask();
+        CompletionHandler<ClaimFormTaskData> result = task.execute(taskInstance, executionContext);
 
-        verify(claimPackService).generateAndAttach(1234567812345678L);
+        verify(claimFormService).generateAndAttach(1234567812345678L);
         assertThat(result).isInstanceOf(CompletionHandler.OnCompleteRemove.class);
     }
 
     @Test
     @DisplayName("Exception in service is rethrown so failure handler can retry")
     void exceptionIsRethrown() {
-        ClaimPackTaskData data = ClaimPackTaskData.builder().caseReference("999").build();
+        ClaimFormTaskData data = ClaimFormTaskData.builder().caseReference("999").build();
         when(taskInstance.getData()).thenReturn(data);
         when(executionContext.getExecution()).thenReturn(execution);
-        doThrow(mock(RuntimeException.class)).when(claimPackService).generateAndAttach(999L);
+        doThrow(mock(RuntimeException.class)).when(claimFormService).generateAndAttach(999L);
 
-        CustomTask<ClaimPackTaskData> task = component.claimPackGenerationTask();
+        CustomTask<ClaimFormTaskData> task = component.claimFormGenerationTask();
 
         assertThatThrownBy(() -> task.execute(taskInstance, executionContext))
             .isInstanceOf(RuntimeException.class);
-        verify(claimPackService).generateAndAttach(999L);
+        verify(claimFormService).generateAndAttach(999L);
         // AC01: failure recorded in the activity log (separate transaction) before the retry.
         verify(claimActivityLogService).logGenerationFailure(999L);
     }
@@ -94,13 +94,13 @@ class ClaimPackGenerationComponentTest {
     @Test
     @DisplayName("A failure while logging the failure does not mask the original exception")
     void loggingFailureDoesNotMaskOriginalException() {
-        ClaimPackTaskData data = ClaimPackTaskData.builder().caseReference("999").build();
+        ClaimFormTaskData data = ClaimFormTaskData.builder().caseReference("999").build();
         when(taskInstance.getData()).thenReturn(data);
         when(executionContext.getExecution()).thenReturn(execution);
-        doThrow(new RuntimeException("generation failed")).when(claimPackService).generateAndAttach(999L);
+        doThrow(new RuntimeException("generation failed")).when(claimFormService).generateAndAttach(999L);
         doThrow(new RuntimeException("log write failed")).when(claimActivityLogService).logGenerationFailure(999L);
 
-        CustomTask<ClaimPackTaskData> task = component.claimPackGenerationTask();
+        CustomTask<ClaimFormTaskData> task = component.claimFormGenerationTask();
 
         assertThatThrownBy(() -> task.execute(taskInstance, executionContext))
             .isInstanceOf(RuntimeException.class)

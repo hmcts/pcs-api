@@ -1,10 +1,10 @@
-package uk.gov.hmcts.reform.pcs.document.model.claimpack;
+package uk.gov.hmcts.reform.pcs.document.model.claimform;
 
 import lombok.Builder;
 import lombok.Data;
 
 /**
- * Party rendered in the claim pack: claimant, defendants, and underlessees or mortgagees.
+ * Party rendered in the claim form: claimant, defendants, and underlessees or mortgagees.
  *
  * <p>"Persons unknown" is a name-only state. The address is always known and populated, even when
  * {@code isPersonsUnknown} is true, so the unnamed-defendant and unnamed-underlessee sections
@@ -15,7 +15,7 @@ import lombok.Data;
  */
 @Data
 @Builder
-public class ClaimPackParty {
+public class ClaimFormParty {
 
     private String firstName;
     private String lastName;
@@ -26,6 +26,6 @@ public class ClaimPackParty {
     @Builder.Default
     private boolean isPersonsUnknown = false;
     /** Always populated; never null in a well-formed case. See the class javadoc. */
-    private ClaimPackAddress address;
+    private ClaimFormAddress address;
 
 }

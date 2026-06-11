@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.service.claimpack;
+package uk.gov.hmcts.reform.pcs.ccd.service.claimform;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -13,7 +13,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentImportService;
-import uk.gov.hmcts.reform.pcs.document.model.claimpack.ClaimPackFormPayload;
+import uk.gov.hmcts.reform.pcs.document.model.claimform.ClaimFormPayload;
 
 import java.util.List;
 
@@ -26,7 +26,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class ClaimPackServiceTest {
+class ClaimFormServiceTest {
 
     private static final long CASE_REFERENCE = 1234567812345678L;
     private static final String DM_STORE_URL = "https://dm-store/xyz";
@@ -34,33 +34,33 @@ class ClaimPackServiceTest {
     @Mock
     private PcsCaseService pcsCaseService;
     @Mock
-    private ClaimPackPayloadBuilder payloadBuilder;
+    private ClaimFormPayloadBuilder payloadBuilder;
     @Mock
-    private ClaimPackDocumentGenerator documentGenerator;
+    private ClaimFormDocumentGenerator documentGenerator;
     @Mock
     private DocumentImportService documentImportService;
     @Mock
     private ClaimActivityLogService claimActivityLogService;
 
     @InjectMocks
-    private ClaimPackService claimPackService;
+    private ClaimFormService claimFormService;
 
     @Test
-    void rendersStoresAndAttachesClaimPackToClaim() {
+    void rendersStoresAndAttachesClaimFormToClaim() {
         ClaimEntity claim = mock(ClaimEntity.class);
         PcsCaseEntity loaded = mock(PcsCaseEntity.class);
-        ClaimPackFormPayload payload = ClaimPackFormPayload.builder().build();
+        ClaimFormPayload payload = ClaimFormPayload.builder().build();
         DocumentEntity document = DocumentEntity.builder().build();
 
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(loaded);
         when(loaded.getClaims()).thenReturn(List.of(claim));
-        when(claim.getClaimPackDocument()).thenReturn(null);
+        when(claim.getClaimFormDocument()).thenReturn(null);
         when(payloadBuilder.build(loaded)).thenReturn(payload);
         when(documentGenerator.generate(payload)).thenReturn(DM_STORE_URL);
         when(documentImportService.addDocumentToCase(
             CASE_REFERENCE, DM_STORE_URL, CaseFileCategory.STATEMENTS_OF_CASE)).thenReturn(document);
 
-        claimPackService.generateAndAttach(CASE_REFERENCE);
+        claimFormService.generateAndAttach(CASE_REFERENCE);
 
         // load, build, generate, store, then attach, in order.
         InOrder order = inOrder(pcsCaseService, payloadBuilder, documentGenerator, documentImportService, claim);
@@ -69,7 +69,7 @@ class ClaimPackServiceTest {
         order.verify(documentGenerator).generate(payload);
         order.verify(documentImportService)
             .addDocumentToCase(CASE_REFERENCE, DM_STORE_URL, CaseFileCategory.STATEMENTS_OF_CASE);
-        order.verify(claim).setClaimPackDocument(document);
+        order.verify(claim).setClaimFormDocument(document);
 
         // AC01: document typed as a Claim, and a success activity-log entry written in this transaction.
         assertThat(document.getType()).isEqualTo(DocumentType.CLAIM);
@@ -77,17 +77,17 @@ class ClaimPackServiceTest {
     }
 
     @Test
-    void skipsRegenerationWhenClaimPackAlreadyAttached() {
+    void skipsRegenerationWhenClaimFormAlreadyAttached() {
         ClaimEntity claim = mock(ClaimEntity.class);
         PcsCaseEntity loaded = mock(PcsCaseEntity.class);
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(loaded);
         when(loaded.getClaims()).thenReturn(List.of(claim));
-        when(claim.getClaimPackDocument()).thenReturn(DocumentEntity.builder().build());
+        when(claim.getClaimFormDocument()).thenReturn(DocumentEntity.builder().build());
 
-        claimPackService.generateAndAttach(CASE_REFERENCE);
+        claimFormService.generateAndAttach(CASE_REFERENCE);
 
         // Already attached: no render, no store, no second attach, no activity-log entry.
         verifyNoInteractions(payloadBuilder, documentGenerator, documentImportService, claimActivityLogService);
-        verify(claim, never()).setClaimPackDocument(org.mockito.ArgumentMatchers.any());
+        verify(claim, never()).setClaimFormDocument(org.mockito.ArgumentMatchers.any());
     }
 }

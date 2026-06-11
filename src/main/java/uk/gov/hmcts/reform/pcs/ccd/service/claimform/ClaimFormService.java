@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.service.claimpack;
+package uk.gov.hmcts.reform.pcs.ccd.service.claimform;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -10,10 +10,10 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentImportService;
-import uk.gov.hmcts.reform.pcs.document.model.claimpack.ClaimPackFormPayload;
+import uk.gov.hmcts.reform.pcs.document.model.claimform.ClaimFormPayload;
 
 /**
- * Builds the payload, renders the claim pack PDF via Docmosis, stores it, and attaches it to
+ * Builds the payload, renders the claim form PDF via Docmosis, stores it, and attaches it to
  * the claim.
  *
  * <p>Runs in a transaction so the payload builder can read lazy JPA relations
@@ -22,17 +22,17 @@ import uk.gov.hmcts.reform.pcs.document.model.claimpack.ClaimPackFormPayload;
  */
 @Service
 @Slf4j
-public class ClaimPackService {
+public class ClaimFormService {
 
     private final PcsCaseService pcsCaseService;
-    private final ClaimPackPayloadBuilder payloadBuilder;
-    private final ClaimPackDocumentGenerator documentGenerator;
+    private final ClaimFormPayloadBuilder payloadBuilder;
+    private final ClaimFormDocumentGenerator documentGenerator;
     private final DocumentImportService documentImportService;
     private final ClaimActivityLogService claimActivityLogService;
 
-    public ClaimPackService(PcsCaseService pcsCaseService,
-                            ClaimPackPayloadBuilder payloadBuilder,
-                            ClaimPackDocumentGenerator documentGenerator,
+    public ClaimFormService(PcsCaseService pcsCaseService,
+                            ClaimFormPayloadBuilder payloadBuilder,
+                            ClaimFormDocumentGenerator documentGenerator,
                             DocumentImportService documentImportService,
                             ClaimActivityLogService claimActivityLogService) {
         this.pcsCaseService = pcsCaseService;
@@ -43,7 +43,7 @@ public class ClaimPackService {
     }
 
     /**
-     * Renders the claim pack and attaches it to the claim, where it shows under "Statements of
+     * Renders the claim form and attaches it to the claim, where it shows under "Statements of
      * case". Skips generation when the claim already has a pack, so a re-run never creates a
      * second one.
      */
@@ -51,20 +51,20 @@ public class ClaimPackService {
     public void generateAndAttach(long caseReference) {
         PcsCaseEntity pcsCase = pcsCaseService.loadCase(caseReference);
         ClaimEntity claim = pcsCase.getClaims().getFirst();
-        if (claim.getClaimPackDocument() != null) {
-            log.info("Claim pack already attached for case {}, skipping", caseReference);
+        if (claim.getClaimFormDocument() != null) {
+            log.info("Claim form already attached for case {}, skipping", caseReference);
             return;
         }
 
-        ClaimPackFormPayload payload = payloadBuilder.build(pcsCase);
+        ClaimFormPayload payload = payloadBuilder.build(pcsCase);
         String dmStoreUrl = documentGenerator.generate(payload);
         DocumentEntity document = documentImportService.addDocumentToCase(
             caseReference, dmStoreUrl, CaseFileCategory.STATEMENTS_OF_CASE);
         document.setType(DocumentType.CLAIM);
-        claim.setClaimPackDocument(document);
+        claim.setClaimFormDocument(document);
         // Success log shares this transaction, so the pack and its activity-log row commit together.
         claimActivityLogService.logGenerationSuccess(caseReference);
-        log.info("Generated and attached claim pack for case {}: {}", caseReference, dmStoreUrl);
+        log.info("Generated and attached claim form for case {}: {}", caseReference, dmStoreUrl);
     }
 
 }

@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.service.claimpack;
+package uk.gov.hmcts.reform.pcs.ccd.service.claimform;
 
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CombinedLicenceType;
@@ -10,7 +10,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.TenancyLicenceEntity;
-import uk.gov.hmcts.reform.pcs.document.model.claimpack.ClaimPackAddress;
+import uk.gov.hmcts.reform.pcs.document.model.claimform.ClaimFormAddress;
 
 import java.math.BigDecimal;
 import java.text.NumberFormat;
@@ -20,12 +20,12 @@ import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 
 /**
- * Value formatting helpers for the claim-pack payload mapping, kept out of
- * {@link ClaimPackPayloadBuilder}.
+ * Value formatting helpers for the claim-form payload mapping, kept out of
+ * {@link ClaimFormPayloadBuilder}.
  */
-final class ClaimPackFormatter {
+final class ClaimFormFormatter {
 
-    private ClaimPackFormatter() {
+    private ClaimFormFormatter() {
     }
 
     // Formats: "10 January 2024" and "2:30pm".
@@ -83,11 +83,11 @@ final class ClaimPackFormatter {
         return ClaimGroundSummary.labelFor(ground.getCategory(), ground.getCode());
     }
 
-    static ClaimPackAddress toClaimPackAddress(AddressEntity address) {
+    static ClaimFormAddress toClaimFormAddress(AddressEntity address) {
         if (address == null) {
             return null;
         }
-        return ClaimPackAddress.builder()
+        return ClaimFormAddress.builder()
             .addressLine1(address.getAddressLine1())
             .addressLine2(address.getAddressLine2())
             .addressLine3(address.getAddressLine3())

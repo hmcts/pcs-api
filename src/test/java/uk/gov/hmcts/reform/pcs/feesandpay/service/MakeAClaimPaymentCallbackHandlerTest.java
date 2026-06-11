@@ -14,7 +14,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.service.CcdPaymentStateUpdateService;
-import uk.gov.hmcts.reform.pcs.ccd.service.claimpack.ClaimPackScheduler;
+import uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimFormScheduler;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
@@ -52,7 +52,7 @@ class MakeAClaimPaymentCallbackHandlerTest {
     @Mock
     private ObjectMapper objectMapper;
     @Mock
-    private ClaimPackScheduler claimPackScheduler;
+    private ClaimFormScheduler claimFormScheduler;
 
     @InjectMocks
     private MakeAClaimPaymentCallbackHandler underTest;
@@ -83,10 +83,10 @@ class MakeAClaimPaymentCallbackHandlerTest {
         if (PaymentStatus.PAID == feePaymentEntity.getPaymentStatus()) {
             verify(ccdPaymentStateUpdateService).submitPaymentSuccess(taskData.getCaseReference());
             // §3.1 producer-side gate: scheduler is invoked ONLY on PAID.
-            verify(claimPackScheduler).scheduleClaimPackGeneration(taskData.getCaseReference());
+            verify(claimFormScheduler).scheduleClaimFormGeneration(taskData.getCaseReference());
         } else {
             verifyNoInteractions(ccdPaymentStateUpdateService);
-            verifyNoInteractions(claimPackScheduler);
+            verifyNoInteractions(claimFormScheduler);
         }
     }
 
@@ -105,7 +105,7 @@ class MakeAClaimPaymentCallbackHandlerTest {
             .isThrownBy(() -> underTest.handle(callback, feePaymentEntity))
             .withMessageContaining("Unable to process");
         verifyNoInteractions(ccdPaymentStateUpdateService);
-        verifyNoInteractions(claimPackScheduler);
+        verifyNoInteractions(claimFormScheduler);
     }
 
     @Test
@@ -130,7 +130,7 @@ class MakeAClaimPaymentCallbackHandlerTest {
         // Then
         assertThat(throwable).isEqualTo(expectedException);
         verifyNoInteractions(ccdPaymentStateUpdateService);
-        verifyNoInteractions(claimPackScheduler);
+        verifyNoInteractions(claimFormScheduler);
     }
 
     private FeesAndPayTaskData buildTaskData() {

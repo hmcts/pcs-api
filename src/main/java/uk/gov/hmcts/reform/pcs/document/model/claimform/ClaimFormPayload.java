@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.document.model.claimpack;
+package uk.gov.hmcts.reform.pcs.document.model.claimform;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
@@ -11,16 +11,16 @@ import java.time.LocalDate;
 import java.util.List;
 
 /**
- * Typed payload rendered into the claim pack Docmosis template
+ * Typed payload rendered into the claim form Docmosis template
  * ({@code CV-PCS-CLM-ENG-Claim-Pack.docx}, a single file covering England and Wales).
  *
- * <p>Values are pre-formatted by {@link ClaimPackPayloadBuilder}; the {@code show*} flags gate the
+ * <p>Values are pre-formatted by {@link ClaimFormPayloadBuilder}; the {@code show*} flags gate the
  * matching template rows/sections. Fields without an entity source yet are declared here and render
  * as empty rows until the source is wired, with no template change needed.</p>
  */
 @Data
 @Builder
-public class ClaimPackFormPayload implements FormPayload {
+public class ClaimFormPayload implements FormPayload {
 
     // ---------- Title block ----------
     private String referenceNumber;
@@ -39,7 +39,7 @@ public class ClaimPackFormPayload implements FormPayload {
     private boolean isEngland;
 
     // ---------- Claimant ----------
-    private ClaimPackParty claimant;
+    private ClaimFormParty claimant;
     private String claimantDisplayName;
     private boolean hasClaimantAddressLine2;
     private boolean hasClaimantAddressLine3;
@@ -48,10 +48,10 @@ public class ClaimPackFormPayload implements FormPayload {
     private String claimantIsExemptLandlord;
 
     // ---------- Defendants ----------
-    private List<ClaimPackDefendantRow> defendants;
+    private List<ClaimFormDefendantRow> defendants;
 
     // ---------- Claim details / grounds ----------
-    private ClaimPackAddress propertyAddress;
+    private ClaimFormAddress propertyAddress;
     private boolean hasPropertyAddressLine2;
     private boolean hasPropertyAddressLine3;
     private boolean hasPropertyCounty;
@@ -60,8 +60,8 @@ public class ClaimPackFormPayload implements FormPayload {
     private String hasGroundsYesNo;
     private boolean showGroundsYesNoQuestion;
     private boolean showGroundsList;
-    private List<ClaimPackGround> grounds;
-    private List<ClaimPackGround> groundsWithReasons;
+    private List<ClaimFormGround> grounds;
+    private List<ClaimFormGround> groundsWithReasons;
     private boolean hasOtherGround;
     private String otherGroundsDescription;
     private boolean showDescriptionOfGrounds;
@@ -152,7 +152,7 @@ public class ClaimPackFormPayload implements FormPayload {
 
     // ---------- Underlessees / mortgagees ----------
     private String hasUnderlesseeYesNo;
-    private List<ClaimPackUnderlesseeRow> underlessees;
+    private List<ClaimFormUnderlesseeRow> underlessees;
 
     // ---------- Demotion of tenancy ----------
     private boolean showIsDemotionClaim;

@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.service.claimpack;
+package uk.gov.hmcts.reform.pcs.ccd.service.claimform;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -15,7 +15,7 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimActivityLogRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 
 /**
- * Records claim-pack generation outcomes in the claim_activity_log table.
+ * Records claim-form generation outcomes in the claim_activity_log table.
  *
  * <p>Success is written in the caller's transaction, so it commits atomically with the document
  * attach. Failure is written in its own transaction ({@code REQUIRES_NEW}) so the row survives the
