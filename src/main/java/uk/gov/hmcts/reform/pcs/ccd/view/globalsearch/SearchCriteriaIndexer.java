@@ -7,7 +7,9 @@ import uk.gov.hmcts.ccd.sdk.type.SearchCriteria;
 import uk.gov.hmcts.ccd.sdk.type.SearchParty;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
+import uk.gov.hmcts.reform.pcs.ccd.view.CaseTabView;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -32,17 +34,19 @@ public class SearchCriteriaIndexer {
      * @return search criteria covering the case parties and the property to be repossessed
      */
     public SearchCriteria buildSearchCriteria(PCSCase pcsCase) {
+        AddressUK propertyAddress = pcsCase.getPropertyAddress();
+
         List<SearchParty> searchParties = new ArrayList<>(
             Optional.ofNullable(pcsCase.getParties())
                 .orElse(List.of())
                 .stream()
                 .map(ListValue::getValue)
-                .map(this::toSearchParty)
+                .map(party -> toSearchParty(party, propertyAddress))
                 .toList());
 
         // Global search only indexes postcodes that appear on a SearchParty.
         // We add the property to be repossessed address as an extra SearchParty here to make it searchable.
-        SearchParty propertySearchParty = toPropertySearchParty(pcsCase.getPropertyAddress());
+        SearchParty propertySearchParty = toPropertySearchParty(propertyAddress);
         if (propertySearchParty != null) {
             searchParties.add(propertySearchParty);
         }
@@ -65,17 +69,32 @@ public class SearchCriteriaIndexer {
             .build();
     }
 
-    private SearchParty toSearchParty(Party party) {
-        AddressUK address = party.getAddress();
+    private SearchParty toSearchParty(Party party, AddressUK propertyAddress) {
+        // When a party's address is the same as the property to be repossessed, the address is not
+        // duplicated on the party — only the addressSameAsProperty flag is stored. We resolve it back
+        // to the property address here so the party's SearchParty carries both the name and postcode,
+        // allowing a combined name + postcode global search to match within a single SearchParty.
+        AddressUK address = party.getAddressSameAsProperty() == VerticalYesNo.YES
+            ? propertyAddress
+            : party.getAddress();
         return SearchParty.builder()
-            .name(isNotBlank(party.getOrgName())
-                ? party.getOrgName()
-                : joinNonBlank(party.getFirstName(), party.getLastName()))
+            .name(resolveSearchPartyName(party))
             .emailAddress(party.getEmailAddress())
             .addressLine1(address == null ? null : address.getAddressLine1())
             .postcode(address == null ? null : address.getPostCode())
             .dateOfBirth(party.getDateOfBirth())
             .build();
+    }
+
+    /**
+     * Resolves the name to index for a SearchParty. When the party has no known name, the
+     * placeholder {@link CaseTabView#NAME_UNKNOWN} is indexed
+     */
+    private static String resolveSearchPartyName(Party party) {
+        String name = isNotBlank(party.getOrgName())
+            ? party.getOrgName()
+            : joinNonBlank(party.getFirstName(), party.getLastName());
+        return name != null ? name : CaseTabView.NAME_UNKNOWN;
     }
 
     private static String joinNonBlank(String... parts) {
