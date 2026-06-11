@@ -8,7 +8,9 @@ import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaim;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
+import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
 
@@ -27,6 +29,7 @@ public class RespondPossessionClaimSubmitService {
     private final CounterClaimFeeCalculator counterClaimFeeCalculator;
     private final DocumentService documentService;
     private final DraftCaseDataService draftCaseDataService;
+    private final ClaimRepository claimRepository;
 
     @Transactional
     public RespondPossessionClaimSubmitPersistenceResult persistFinalSubmit(
@@ -43,7 +46,8 @@ public class RespondPossessionClaimSubmitService {
 
         savedCounterClaim.ifPresent(counterClaimEntity -> saveCounterClaimDocuments(
             defendantResponses,
-            counterClaimEntity
+            counterClaimEntity,
+            caseReference
         ));
 
         CounterClaimEntity counterClaimEntity = savedCounterClaim.orElse(null);
@@ -66,16 +70,22 @@ public class RespondPossessionClaimSubmitService {
     }
 
     private void saveCounterClaimDocuments(DefendantResponses defendantResponses,
-                                           CounterClaimEntity counterClaimEntity) {
+                                           CounterClaimEntity counterClaimEntity,
+                                           long caseReference) {
         if (CollectionUtils.isEmpty(defendantResponses.getCounterClaimDocuments())) {
             return;
         }
+
+        ClaimEntity claimEntity = claimRepository.findIdByCaseReference(caseReference)
+            .map(claimRepository::getReferenceById)
+            .orElseThrow(() -> new IllegalStateException("No claim found for case: " + caseReference));
 
         documentService.createCounterClaimUploadedDocuments(
             defendantResponses.getCounterClaimDocuments(),
             counterClaimEntity,
             counterClaimEntity.getPcsCase(),
-            counterClaimEntity.getParty()
+            counterClaimEntity.getParty(),
+            claimEntity
         );
     }
 }

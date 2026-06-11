@@ -22,6 +22,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.EvidenceDocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.EvidenceOfDefendants;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
+import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
@@ -43,6 +44,7 @@ public class DocumentService {
 
     private final DocumentRepository documentRepository;
     private final DocumentIdExtractor documentIdExtractor;
+    private final DocumentNameService documentNameService;
 
     public List<DocumentEntity> createAllDocuments(PCSCase pcsCase) {
 
@@ -220,7 +222,8 @@ public class DocumentService {
         List<ListValue<UploadedDocument>> counterClaimDocuments,
         CounterClaimEntity counterClaim,
         PcsCaseEntity pcsCase,
-        PartyEntity party
+        PartyEntity party,
+        ClaimEntity claim
     ) {
         if (CollectionUtils.isEmpty(counterClaimDocuments)) {
             log.info("No counter claim documents to save");
@@ -235,10 +238,13 @@ public class DocumentService {
                 .party(party)
                 .counterClaim(counterClaim)
                 .url(ccDoc.getDocument().getUrl())
-                .fileName(ccDoc.getDocument().getFilename())
+                .fileName(documentNameService.appendCounterClaimDocumentName(
+                    ccDoc.getDocument().getFilename(), claim, party.getId()))
                 .binaryUrl(ccDoc.getDocument().getBinaryUrl())
                 .contentType(ccDoc.getContentType())
                 .size(ccDoc.getSizeInBytes())
+                .type(DocumentType.DOCUMENTS_SUPPORTING_A_COUNTERCLAIM)
+                .categoryId(CaseFileCategory.STATEMENTS_OF_CASE.getId())
                 .build())
             .toList();
 
@@ -249,6 +255,7 @@ public class DocumentService {
 
         return saved;
     }
+
 
     private Optional<CaseFileCategory> mapDocumentTypeToCategory(DocumentType documentType) {
         return switch (documentType) {
@@ -272,6 +279,7 @@ public class DocumentService {
                 Optional.of(CaseFileCategory.CORRESPONDENCE);
             case NOTICE_SERVED,
                  POLICE_REPORT,
+                 DOCUMENTS_SUPPORTING_A_COUNTERCLAIM,
                  OTHER ->
                 Optional.empty();
         };
