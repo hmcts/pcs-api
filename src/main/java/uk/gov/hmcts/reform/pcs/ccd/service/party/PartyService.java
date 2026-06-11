@@ -37,8 +37,9 @@ public class PartyService {
     private final PartyRepository partyRepository;
     private final AddressMapper addressMapper;
 
-    public void createAllParties(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity, ClaimEntity claimEntity) {
-        PartyEntity claimant = createClaimant(pcsCase);
+    public void createAllParties(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity, ClaimEntity claimEntity,
+                                 String organisationIdForCurrentUser) {
+        PartyEntity claimant = createClaimant(pcsCase, organisationIdForCurrentUser);
         pcsCaseEntity.addParty(claimant);
         claimEntity.addParty(claimant, PartyRole.CLAIMANT);
 
@@ -115,13 +116,20 @@ public class PartyService {
     public PartyRole getPartyRole(PartyEntity partyEntity) {
         ClaimEntity mainClaim = partyEntity.getPcsCase().getClaims().getFirst();
         return mainClaim.getClaimParties().stream()
-            .filter(claimPartyEntity -> claimPartyEntity.getParty().getId().equals(partyEntity.getId()))
-            .findFirst()
-            .map(ClaimPartyEntity::getRole)
-            .orElseThrow(() -> new PartyNotFoundException("Party not found on main claim"));
+                .filter(claimPartyEntity -> claimPartyEntity.getParty().getId().equals(partyEntity.getId()))
+                .findFirst()
+                .map(ClaimPartyEntity::getRole)
+                .orElseThrow(() -> new PartyNotFoundException("Party not found on main claim"));
+    }
+    
+    public PartyEntity getPartyEntityById(UUID partyId, long caseReference) {
+        return partyRepository.findByIdAndPcsCaseCaseReference(partyId, caseReference)
+            .orElseThrow(() -> new IllegalStateException(
+                "No party found for party ID: " + partyId + " and case reference: " + caseReference
+            ));
     }
 
-    private PartyEntity createClaimant(PCSCase pcsCase) {
+    private PartyEntity createClaimant(PCSCase pcsCase, String organisationIdForCurrentUser) {
 
         ClaimantInformation claimantInformation = pcsCase.getClaimantInformation();
         Objects.requireNonNull(claimantInformation, "Claimant must be provided");
@@ -129,6 +137,7 @@ public class PartyService {
         PartyEntity claimantParty = new PartyEntity();
 
         setClaimantOrgName(claimantInformation, claimantParty);
+        claimantParty.setOrganisationId(organisationIdForCurrentUser);
 
         ClaimantContactPreferences claimantContactPreferences = pcsCase.getClaimantContactPreferences();
         AddressUK contactAddress = resolveContactAddress(claimantContactPreferences);

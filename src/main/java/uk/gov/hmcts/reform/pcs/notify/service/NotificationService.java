@@ -18,17 +18,17 @@ import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.config.NotificationTemplateConfiguration;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
+import uk.gov.hmcts.reform.pcs.notify.model.NotificationClaimType;
+import uk.gov.hmcts.reform.pcs.notify.model.NotificationRecipient;
+import uk.gov.hmcts.reform.pcs.notify.model.NotificationType;
+import uk.gov.hmcts.reform.pcs.notify.task.SendEmailTaskComponent;
 import uk.gov.hmcts.reform.pcs.notify.entities.CaseNotification;
 import uk.gov.hmcts.reform.pcs.notify.exception.NotificationException;
 import uk.gov.hmcts.reform.pcs.notify.model.EmailNotificationRequest;
 import uk.gov.hmcts.reform.pcs.notify.model.EmailNotificationResponse;
-import uk.gov.hmcts.reform.pcs.notify.model.NotificationClaimType;
-import uk.gov.hmcts.reform.pcs.notify.model.NotificationRecipient;
 import uk.gov.hmcts.reform.pcs.notify.model.SendEmailTaskData;
 import uk.gov.hmcts.reform.pcs.notify.model.NotificationStatus;
-import uk.gov.hmcts.reform.pcs.notify.model.NotificationType;
 import uk.gov.hmcts.reform.pcs.notify.repository.NotificationRepository;
-import uk.gov.hmcts.reform.pcs.notify.task.SendEmailTaskComponent;
 import uk.gov.hmcts.reform.pcs.notify.template.EmailTemplate;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.TemplatePersonalisation;
 
@@ -40,6 +40,7 @@ import java.util.UUID;
 @Slf4j
 @RequiredArgsConstructor
 public class NotificationService {
+
     private final NotificationRepository notificationRepository;
     private final PartyService partyService;
     private final SchedulerClient schedulerClient;
@@ -99,12 +100,17 @@ public class NotificationService {
             return null;
         }
 
-        return sendEmail(
-            recipient,
-            EmailTemplate.MAKE_A_CLAIM_CLAIM_SAVED_FOR_LATER,
-            NotificationClaimType.POSSESSION_CLAIM,
-            notificationPersonalisationFactory.forClaimant(caseReference, pcsCase)
-        );
+        try {
+            return sendEmail(
+                recipient,
+                EmailTemplate.MAKE_A_CLAIM_CLAIM_SAVED_FOR_LATER,
+                NotificationClaimType.POSSESSION_CLAIM,
+                notificationPersonalisationFactory.forClaimant(caseReference, pcsCase)
+            );
+        } catch (Exception e) {
+            log.error("Failed to send draft saved email notification for case reference: {}", caseReference, e);
+            return null;
+        }
     }
 
     public EmailNotificationResponse sendClaimantDefendantHasMadeCounterclaimEmail(ClaimEntity claim) {
@@ -116,14 +122,34 @@ public class NotificationService {
         );
     }
 
+    public EmailNotificationResponse sendClaimantDefendantResponseReceived(ClaimEntity claim) {
+        return sendEmail(
+            claimantRecipient(claim),
+            EmailTemplate.MAKE_A_CLAIM_DEFENDANT_RESPONSE_RECEIVED,
+            NotificationClaimType.NO_COUNTER_CLAIM,
+            notificationPersonalisationFactory.forClaimant(claim)
+        );
+    }
+
     public void sendGenAppReceivedEmail(GenAppEntity genAppEntity) {
         PartyEntity applicantPartyEntity = genAppEntity.getParty();
 
         sendEmail(
-            partyRecipient(applicantPartyEntity),
-            EmailTemplate.GENERAL_APPLICATION_RECEIVED,
-            NotificationClaimType.GENERAL_APPLICATION,
-            notificationPersonalisationFactory.forParty(applicantPartyEntity, genAppEntity.getPcsCase())
+                partyRecipient(applicantPartyEntity),
+                EmailTemplate.GENERAL_APPLICATION_RECEIVED,
+                NotificationClaimType.GENERAL_APPLICATION,
+                notificationPersonalisationFactory.forParty(applicantPartyEntity, genAppEntity.getPcsCase())
+        );
+    }
+
+    private NotificationRecipient partyRecipient(PartyEntity party) {
+        PartyRole partyRole = partyService.getPartyRole(party);
+        return new NotificationRecipient(
+                party.getEmailAddress(),
+                party,
+                party.getPcsCase(),
+                null,
+                partyRole
         );
     }
 
@@ -340,7 +366,7 @@ public class NotificationService {
         }
     }
 
-    private EmailNotificationResponse sendEmail(
+    public EmailNotificationResponse sendEmail(
         NotificationRecipient recipient,
         EmailTemplate template,
         NotificationClaimType claimType,
@@ -348,7 +374,12 @@ public class NotificationService {
     ) {
         PartyEntity party = recipient.party();
 
-        if (!partyService.canSendEmailNotification(party, recipient.recipientRole())) {
+        if (party == null) {
+            if (recipient.email() == null) {
+                log.info("Skipping email notification because both party and recipient email are null");
+                return null;
+            }
+        } else if (!partyService.canSendEmailNotification(party, recipient.recipientRole())) {
             log.info("Skipping email notification to user: {}", party.getId());
             return null;
         }
@@ -385,17 +416,6 @@ public class NotificationService {
         return isCorrectClaimantContactEmail == null || isCorrectClaimantContactEmail.toBoolean()
             ? claimantContactPreferences.getClaimantContactEmail()
             : claimantContactPreferences.getOverriddenClaimantContactEmail();
-    }
-
-    private NotificationRecipient partyRecipient(PartyEntity party) {
-        PartyRole partyRole = partyService.getPartyRole(party);
-        return new NotificationRecipient(
-            party.getEmailAddress(),
-            party,
-            party.getPcsCase(),
-            null,
-            partyRole
-        );
     }
 
     private NotificationRecipient claimantRecipient(long caseReference, PCSCase pcsCase) {
