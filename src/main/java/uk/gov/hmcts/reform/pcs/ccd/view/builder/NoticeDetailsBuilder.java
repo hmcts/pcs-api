@@ -5,7 +5,9 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServedDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServiceMethod;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.WalesNoticeDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.NoticeTabDetails;
+import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -18,6 +20,14 @@ import static uk.gov.hmcts.reform.pcs.ccd.view.CaseDetailsTabUtil.formatDateTime
 public class NoticeDetailsBuilder {
 
     public NoticeTabDetails buildNoticeTabDetails(PCSCase pcsCase) {
+        if (pcsCase.getLegislativeCountry() == LegislativeCountry.WALES) {
+            return buildNoticeTabDetailsWales(pcsCase);
+        }
+
+        return buildNoticeTabDetailsEngland(pcsCase);
+    }
+
+    public NoticeTabDetails buildNoticeTabDetailsEngland(PCSCase pcsCase) {
         if (pcsCase.getNoticeServed() == null) {
             return NoticeTabDetails.builder()
                     .noticeServed(NO_ANSWER)
@@ -36,6 +46,32 @@ public class NoticeDetailsBuilder {
         if (noticeServed == YesOrNo.YES) {
             populateNoticeDetails(noticeTabDetails, pcsCase.getNoticeServedDetails());
         }
+
+        return noticeTabDetails;
+    }
+
+    private NoticeTabDetails buildNoticeTabDetailsWales(PCSCase pcsCase) {
+        WalesNoticeDetails walesNoticeDetails = pcsCase.getWalesNoticeDetails();
+
+        if (walesNoticeDetails == null) {
+            return NoticeTabDetails.builder()
+                    .noticeServed(NO_ANSWER)
+                    .noticeMethod(NO_ANSWER)
+                    .noticeDate(NO_ANSWER)
+                    .build();
+        }
+
+        YesOrNo noticeServed = walesNoticeDetails.getNoticeServed();
+
+        NoticeTabDetails noticeTabDetails = NoticeTabDetails.builder()
+                .noticeServed(noticeServed != null ? noticeServed.getValue() : NO_ANSWER)
+                .typeOfNoticeServed(noticeServed == YesOrNo.YES ? walesNoticeDetails.getTypeOfNoticeServed() : null)
+                .statement(noticeServed == YesOrNo.NO ? walesNoticeDetails.getNoticeStatement() : null)
+                .noticeMethod(NO_ANSWER)
+                .noticeDate(NO_ANSWER)
+                .build();
+
+        populateNoticeDetails(noticeTabDetails, pcsCase.getNoticeServedDetails());
 
         return noticeTabDetails;
     }

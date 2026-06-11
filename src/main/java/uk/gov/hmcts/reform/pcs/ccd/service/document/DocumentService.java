@@ -25,6 +25,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DocumentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
@@ -211,6 +212,40 @@ public class DocumentService {
 
         log.info("Saved {} defendant evidence documents for defendant response {}",
             saved.size(), defendantResponse.getId());
+
+        return saved;
+    }
+
+    public List<DocumentEntity> createCounterClaimUploadedDocuments(
+        List<ListValue<UploadedDocument>> counterClaimDocuments,
+        CounterClaimEntity counterClaim,
+        PcsCaseEntity pcsCase,
+        PartyEntity party
+    ) {
+        if (CollectionUtils.isEmpty(counterClaimDocuments)) {
+            log.info("No counter claim documents to save");
+            return Collections.emptyList();
+        }
+
+        List<DocumentEntity> documentEntities = counterClaimDocuments.stream()
+            .map(ListValue::getValue)
+            .filter(Objects::nonNull)
+            .map(ccDoc -> DocumentEntity.builder()
+                .pcsCase(pcsCase)
+                .party(party)
+                .counterClaim(counterClaim)
+                .url(ccDoc.getDocument().getUrl())
+                .fileName(ccDoc.getDocument().getFilename())
+                .binaryUrl(ccDoc.getDocument().getBinaryUrl())
+                .contentType(ccDoc.getContentType())
+                .size(ccDoc.getSizeInBytes())
+                .build())
+            .toList();
+
+        List<DocumentEntity> saved = documentRepository.saveAll(documentEntities);
+
+        log.info("Saved {} counter claim documents for counter claim {}",
+            saved.size(), counterClaim.getId());
 
         return saved;
     }

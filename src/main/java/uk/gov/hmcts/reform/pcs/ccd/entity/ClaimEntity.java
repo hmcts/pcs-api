@@ -192,6 +192,8 @@ public class ClaimEntity {
     @JsonManagedReference
     private FeePaymentEntity feePayment;
 
+    private LocalDateTime claimIssuedDate;
+
     public void setAsbProhibitedConductEntity(AsbProhibitedConductEntity asbProhibitedConductEntity) {
         if (this.asbProhibitedConductEntity != null) {
             this.asbProhibitedConductEntity.setClaim(null);
@@ -289,7 +291,6 @@ public class ClaimEntity {
             .filter(claimPartyEntity -> claimPartyEntity.getRole().equals(partyRole))
             .count();
     }
-
 
     public void addCaseNote(CaseNoteEntity caseNote) {
         caseNotes.add(caseNote);

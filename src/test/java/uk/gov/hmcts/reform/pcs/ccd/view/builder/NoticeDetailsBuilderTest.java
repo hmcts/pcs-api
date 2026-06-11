@@ -12,7 +12,9 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.CanUploadNoticeServedDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServedDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServiceMethod;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.WalesNoticeDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.NoticeTabDetails;
+import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -22,6 +24,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(MockitoExtension.class)
 class NoticeDetailsBuilderTest {
+
+    private final String noAnswer = " ";
 
     @InjectMocks
     private NoticeDetailsBuilder noticeDetailsBuilder = new NoticeDetailsBuilder();
@@ -269,6 +273,65 @@ class NoticeDetailsBuilderTest {
         assertThat(noticeTabDetails.getNoticeMethod()).isEqualTo(expectedMethod);
         assertThat(noticeTabDetails.getNoticeDate()).isEqualTo(" ");
     }
+
+    @Test
+    void shouldSetNoticeStatementIfNoticeServedIsNoWales() {
+        PCSCase pcsCase = PCSCase.builder()
+                .legislativeCountry(LegislativeCountry.WALES)
+                .walesNoticeDetails(
+                        WalesNoticeDetails.builder()
+                                .noticeServed(YesOrNo.NO)
+                                .typeOfNoticeServed("notice type")
+                                .noticeStatement("notice statement")
+                                .build()
+                )
+                .build();
+
+        // When
+        NoticeTabDetails noticeTabDetails = noticeDetailsBuilder.buildNoticeTabDetails(pcsCase);
+
+        // Then
+        assertThat(noticeTabDetails.getNoticeServed()).isEqualTo("No");
+        assertThat(noticeTabDetails.getStatement()).isEqualTo("notice statement");
+        assertThat(noticeTabDetails.getTypeOfNoticeServed()).isNull();
+    }
+
+    @Test
+    void shouldNotSetDetailedNoticeDetailsWhenNoticeServedIsNoEngland() {
+        // Given
+        PCSCase pcsCase = PCSCase.builder()
+                .noticeServed(YesOrNo.NO)
+                .build();
+
+        // When
+        NoticeTabDetails noticeTabDetails = noticeDetailsBuilder.buildNoticeTabDetails(pcsCase);
+
+        assertThat(noticeTabDetails.getNoticeServed()).isEqualTo("No");
+        assertThat(noticeTabDetails.getNoticeDate()).isEqualTo(noAnswer);
+        assertThat(noticeTabDetails.getNoticeMethod()).isEqualTo(noAnswer);
+    }
+
+    @Test
+    void shouldNotSetDetailedNoticeDetailsWhenNoticeServedIsNoWales() {
+        // Given
+        PCSCase pcsCase = PCSCase.builder()
+                .legislativeCountry(LegislativeCountry.WALES)
+                .walesNoticeDetails(
+                        WalesNoticeDetails.builder()
+                                .noticeServed(YesOrNo.NO)
+                                .build()
+                )
+                .build();
+
+        // When
+        NoticeTabDetails noticeTabDetails = noticeDetailsBuilder.buildNoticeTabDetails(pcsCase);
+
+        // Then
+        assertThat(noticeTabDetails.getNoticeServed()).isEqualTo("No");
+        assertThat(noticeTabDetails.getNoticeDate()).isEqualTo(noAnswer);
+        assertThat(noticeTabDetails.getNoticeMethod()).isEqualTo(noAnswer);
+    }
+
 
     private static Stream<Arguments> noticeServiceMethodWithNullDatesProvider() {
         return Stream.of(
