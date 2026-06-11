@@ -12,6 +12,7 @@ export class GlobalSearchCaseAction implements IAction {
       ['invalidCaseReferenceSearch', () => this.invalidCaseReferenceSearch(page)],
       ['changeSearchLink', () => this.changeSearchLink(page)],
       ['handleJudgeBookingPage', () => this.handleJudgeBookingPage(page)],
+      ['submitGlobalSearch', () => this.submitGlobalSearch(page)],
       ['validateResults', () => this.validateResults(page)],
       ['validateResultsWithRetry', () => this.validateResultsWithRetry(page)]
     ]);
@@ -52,6 +53,10 @@ export class GlobalSearchCaseAction implements IAction {
     await page.getByRole('radio', { name: workAccess.viewTasksAndCasesOption, exact: true }).check();
     await page.getByRole('button', { name: workAccess.continueButton, exact: true }).click();
     await performValidation('mainHeader', caseList.mainHeader);
+  }
+
+  private async submitGlobalSearch(page: Page): Promise<void> {
+    await page.locator('button[type="submit"]').click();
   }
 
   private async validateResults(page: Page): Promise<void> {

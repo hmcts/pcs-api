@@ -62,37 +62,37 @@ const runGlobalSearchScenarios = () => {
     await performAction('validateResults');
   });
 
-  test('Search by postcode', async ({ page }) => {
+  test('Search by postcode', async () => {
     await performAction('accessingTheSearch');
     await performAction('inputText', globalSearch.postCodeLabel, globalSearch.postcodeInputText);
     await performAction('select', globalSearch.servicesLabel, globalSearch.servicesDropdownOption2);
     await performAction('clickButton', globalSearch.searchButton);
-    await page.locator('button[type="submit"]').click();
+    await performAction('submitGlobalSearch');
     await performAction('validateResultsWithRetry');
   });
 
-  test('Search by email address', async ({ page }) => {
+  test('Search by email address', async () => {
     await performAction('accessingTheSearch');
     await performAction('inputText', globalSearch.emailAddressLabel, globalSearch.emailAddressInputText);
     await performAction('select', globalSearch.servicesLabel, globalSearch.servicesDropdownOption2);
     await performAction('clickButton', globalSearch.searchButton);
-    await page.locator('button[type="submit"]').click();
+    await performAction('submitGlobalSearch');
   });
 
-  test('first line of address', async ({ page }) => {
+  test('first line of address', async () => {
     await performAction('accessingTheSearch');
     await performAction('inputText', globalSearch.firstLineOfAddressLabel, globalSearch.firstLineOfAddressInputText);
     await performAction('select', globalSearch.servicesLabel, globalSearch.servicesDropdownOption2);
     await performAction('clickButton', globalSearch.searchButton);
-    await page.locator('button[type="submit"]').click();
+    await performAction('submitGlobalSearch');
   });
   
-  test('Search by party name', async ({ page }) => {
+  test('Search by party name', async () => {
     await performAction('accessingTheSearch');
     await performAction('inputText', globalSearch.nameLabel, globalSearch.nameInputText);
     await performAction('select', globalSearch.servicesLabel, globalSearch.servicesDropdownOption2);
     await performAction('clickButton', globalSearch.searchButton);
-    await page.locator('button[type="submit"]').click();
+    await performAction('submitGlobalSearch');
   });
 
   test('Invalid case reference', async () => {
