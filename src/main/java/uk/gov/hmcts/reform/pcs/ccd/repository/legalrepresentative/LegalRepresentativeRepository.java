@@ -55,7 +55,7 @@ public interface LegalRepresentativeRepository extends JpaRepository<LegalRepres
         AND cplr.active = 'YES'
         AND lr.idamId = :idamId
         """)
-    Optional<LegalRepresentativeEntity> findByIdamId(@Param("idamId") UUID idamId,
+    Optional<LegalRepresentativeEntity> findByIdamIdAndCaseReference(@Param("idamId") UUID idamId,
                                                      @Param("caseReference") long caseReference);
 
     @Query("""
@@ -71,5 +71,7 @@ public interface LegalRepresentativeRepository extends JpaRepository<LegalRepres
     Optional<LegalRepresentativeEntity> findByOrganisationId(@Param("organisationId") String organisationId,
                                                              @Param("caseReference") long caseReference);
 
+
+    Optional<LegalRepresentativeEntity> findByIdamId(UUID idamUserId);
 
 }

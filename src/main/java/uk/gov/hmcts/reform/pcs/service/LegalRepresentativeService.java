@@ -31,12 +31,13 @@ public class LegalRepresentativeService {
      *     correspond to a known legal rep in the PCS database
      */
     public Optional<DynamicList> getRepresentedPartiesDynamicList(UUID legalRepIdamId, long caseReference) {
-        return legalRepresentativeRepository.findByIdamId(legalRepIdamId, caseReference)
+        return legalRepresentativeRepository.findByIdamId(legalRepIdamId)
             .map(
                 legalRepresentativeEntity -> {
                     List<PartyEntity> partyEntities = legalRepresentativeEntity.getClaimPartyLegalRepresentativeList()
                         .stream()
                         .map(ClaimPartyLegalRepresentativeEntity::getParty)
+                        .filter(partyEntity -> partyEntity.getPcsCase().getCaseReference() == caseReference)
                         .toList();
                     return createPartyNamesDynamicList(partyEntities);
                 }

@@ -123,7 +123,7 @@ public class LegalRepresentativePartyLinkService {
         return Optional.ofNullable(organisationId)
             .filter(StringUtils::isNotBlank)
             .flatMap(id -> legalRepresentativeRepository.findByOrganisationId(id, caseReference))
-            .or(() -> legalRepresentativeRepository.findByIdamId(userId, caseReference));
+            .or(() -> legalRepresentativeRepository.findByIdamIdAndCaseReference(userId, caseReference));
     }
 
     private void backfillOrganisationMetadata(LegalRepresentativeEntity legalRepresentative,
