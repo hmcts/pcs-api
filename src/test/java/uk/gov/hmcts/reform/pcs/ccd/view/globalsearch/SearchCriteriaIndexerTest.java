@@ -7,6 +7,7 @@ import uk.gov.hmcts.ccd.sdk.type.SearchCriteria;
 import uk.gov.hmcts.ccd.sdk.type.SearchParty;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
 
 import java.time.LocalDate;
@@ -179,6 +180,70 @@ class SearchCriteriaIndexerTest {
             .satisfies(searchParty -> {
                 assertThat(searchParty.getAddressLine1()).isNull();
                 assertThat(searchParty.getPostcode()).isNull();
+            });
+    }
+
+    @Test
+    void shouldUsePropertyAddressForPartyWhenAddressIsSameAsProperty() {
+        // Given - a party whose address is the same as the property, so it carries no address of its
+        // own (only the flag). The property address must be resolved onto the party's SearchParty so a
+        // combined name + postcode search matches within a single object.
+        Party party = Party.builder()
+            .firstName("John")
+            .lastName("Doe")
+            .addressSameAsProperty(VerticalYesNo.YES)
+            .build();
+        PCSCase pcsCase = PCSCase.builder()
+            .parties(ListValueUtils.wrapListItems(List.of(party)))
+            .propertyAddress(AddressUK.builder()
+                                 .addressLine1("2 Second Avenue")
+                                 .postCode("W3 7RX")
+                                 .build())
+            .build();
+
+        // When
+        SearchCriteria searchCriteria = underTest.buildSearchCriteria(pcsCase);
+
+        // Then - the party SearchParty carries both the name and the property postcode
+        assertThat(searchCriteria.getParties())
+            .extracting(ListValue::getValue)
+            .anySatisfy(searchParty -> {
+                assertThat(searchParty.getName()).isEqualTo("John Doe");
+                assertThat(searchParty.getAddressLine1()).isEqualTo("2 Second Avenue");
+                assertThat(searchParty.getPostcode()).isEqualTo("W3 7RX");
+            });
+    }
+
+    @Test
+    void shouldUsePartyOwnAddressWhenAddressIsNotSameAsProperty() {
+        // Given - a party with its own address that differs from the property
+        Party party = Party.builder()
+            .firstName("John")
+            .lastName("Doe")
+            .addressSameAsProperty(VerticalYesNo.NO)
+            .address(AddressUK.builder()
+                         .addressLine1("1 Party Street")
+                         .postCode("PA1 2RT")
+                         .build())
+            .build();
+        PCSCase pcsCase = PCSCase.builder()
+            .parties(ListValueUtils.wrapListItems(List.of(party)))
+            .propertyAddress(AddressUK.builder()
+                                 .addressLine1("2 Second Avenue")
+                                 .postCode("W3 7RX")
+                                 .build())
+            .build();
+
+        // When
+        SearchCriteria searchCriteria = underTest.buildSearchCriteria(pcsCase);
+
+        // Then - the party keeps its own address, not the property address
+        assertThat(searchCriteria.getParties())
+            .extracting(ListValue::getValue)
+            .anySatisfy(searchParty -> {
+                assertThat(searchParty.getName()).isEqualTo("John Doe");
+                assertThat(searchParty.getAddressLine1()).isEqualTo("1 Party Street");
+                assertThat(searchParty.getPostcode()).isEqualTo("PA1 2RT");
             });
     }
 
