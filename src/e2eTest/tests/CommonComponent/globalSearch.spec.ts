@@ -44,6 +44,14 @@ test.afterEach(async () => {
   }
 });
 
+const runFieldSearch = async (label: string, value: string) => {
+  await performAction('accessingTheSearch');
+  await performAction('inputText', label, value);
+  await performAction('select', globalSearch.servicesLabel, globalSearch.servicesDropdownOption2);
+  await performAction('executeSearch');
+  await performAction('validateResultsWithRetry');
+};
+
 const runGlobalSearchScenarios = () => {
   test('Global search menu @smoke', async () => {
     await performAction('accessingTheSearch');
@@ -63,35 +71,19 @@ const runGlobalSearchScenarios = () => {
   });
 
   test('Search by postcode', async () => {
-    await performAction('accessingTheSearch');
-    await performAction('inputText', globalSearch.postCodeLabel, globalSearch.postcodeInputText);
-    await performAction('select', globalSearch.servicesLabel, globalSearch.servicesDropdownOption2);
-    await performAction('executeSearch');
-    await performAction('validateResultsWithRetry');
+    await runFieldSearch(globalSearch.postCodeLabel, globalSearch.postcodeInputText);
   });
 
   test('Search by email address', async () => {
-    await performAction('accessingTheSearch');
-    await performAction('inputText', globalSearch.emailAddressLabel, globalSearch.emailAddressInputText);
-    await performAction('select', globalSearch.servicesLabel, globalSearch.servicesDropdownOption2);
-    await performAction('executeSearch');
-    await performAction('validateResultsWithRetry');
+    await runFieldSearch(globalSearch.emailAddressLabel, globalSearch.emailAddressInputText);
   });
 
   test('first line of address', async () => {
-    await performAction('accessingTheSearch');
-    await performAction('inputText', globalSearch.firstLineOfAddressLabel, globalSearch.firstLineOfAddressInputText);
-    await performAction('select', globalSearch.servicesLabel, globalSearch.servicesDropdownOption2);
-    await performAction('executeSearch');
-    await performAction('validateResultsWithRetry');
+    await runFieldSearch(globalSearch.firstLineOfAddressLabel, globalSearch.firstLineOfAddressInputText);
   });
-  
+
   test('Search by party name', async () => {
-    await performAction('accessingTheSearch');
-    await performAction('inputText', globalSearch.nameLabel, globalSearch.nameInputText);
-    await performAction('select', globalSearch.servicesLabel, globalSearch.servicesDropdownOption2);
-    await performAction('executeSearch');
-    await performAction('validateResultsWithRetry');
+    await runFieldSearch(globalSearch.nameLabel, globalSearch.nameInputText);
   });
 
   test('Invalid case reference', async () => {
