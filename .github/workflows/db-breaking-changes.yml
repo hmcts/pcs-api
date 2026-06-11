@@ -21,7 +21,21 @@ jobs:
       - name: Fetch base branch
         run: git fetch origin "${{ github.base_ref }}"
 
+      - name: Detect migration SQL changes
+        id: detect
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          has_sql_files='false'
+          if git diff --name-only --diff-filter=ACMRT "${BASE_SHA}...${HEAD_SHA}" -- src/main/resources/db/migration | grep -E '\.sql$' >/dev/null 2>&1; then
+            has_sql_files='true'
+          fi
+          echo "has-sql-files=$has_sql_files" >> "$GITHUB_OUTPUT"
+
       - name: Scan Flyway migration diff
+        if: steps.detect.outputs.has-sql-files == 'true'
         id: scan
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
@@ -51,6 +65,7 @@ jobs:
           done < db-scan-findings.tsv
 
       - name: Create or update PR comment
+        if: steps.detect.outputs.has-sql-files == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
