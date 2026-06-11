@@ -9,6 +9,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
+import uk.gov.hmcts.reform.pcs.ccd.view.CaseTabView;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -76,7 +77,7 @@ class SearchCriteriaIndexerTest {
     }
 
     @Test
-    void shouldSetNullNameWhenNoNamePartsKnown() {
+    void shouldIndexUnknownNameWhenNoNamePartsKnown() {
         // Given - neither first nor last name known
         Party party = Party.builder().build();
         PCSCase pcsCase = PCSCase.builder()
@@ -86,12 +87,33 @@ class SearchCriteriaIndexerTest {
         // When
         SearchCriteria searchCriteria = underTest.buildSearchCriteria(pcsCase);
 
-        // Then
+        // Then - a placeholder name is indexed so the party remains searchable
         assertThat(searchCriteria.getParties())
             .extracting(ListValue::getValue)
             .singleElement()
             .extracting(SearchParty::getName)
-            .isNull();
+            .isEqualTo(CaseTabView.NAME_UNKNOWN);
+    }
+
+    @Test
+    void shouldIndexUnknownNameWhenNameIsNotKnown() {
+        // Given - a party explicitly flagged as having no known name
+        Party party = Party.builder()
+            .nameKnown(VerticalYesNo.NO)
+            .build();
+        PCSCase pcsCase = PCSCase.builder()
+            .parties(ListValueUtils.wrapListItems(List.of(party)))
+            .build();
+
+        // When
+        SearchCriteria searchCriteria = underTest.buildSearchCriteria(pcsCase);
+
+        // Then - the placeholder name is indexed so the unnamed party is searchable
+        assertThat(searchCriteria.getParties())
+            .extracting(ListValue::getValue)
+            .singleElement()
+            .extracting(SearchParty::getName)
+            .isEqualTo(CaseTabView.NAME_UNKNOWN);
     }
 
     @Test
