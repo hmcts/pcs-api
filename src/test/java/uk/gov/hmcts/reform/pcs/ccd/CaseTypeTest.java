@@ -132,11 +132,8 @@ class CaseTypeTest {
             AccessProfile.CLAIMANT_SOLICITOR,
             AccessProfile.DEFENDANT_SOLICITOR,
             AccessProfile.JUDGE,
-            AccessProfile.HEARING_CENTRE_TEAM_LEADER,
             AccessProfile.HEARING_CENTRE_ADMIN,
-            AccessProfile.CTSC_TEAM_LEADER,
             AccessProfile.CTSC_ADMIN,
-            AccessProfile.WLU_TEAM_LEADER,
             AccessProfile.WLU_ADMIN
         );
         assertThat(casePartiesTab.getForRoles()).containsAll(summaryTab.getForRoles());
@@ -145,11 +142,8 @@ class CaseTypeTest {
         assertThat(serviceRequestTab.getForRoles()).containsAll(summaryTab.getForRoles());
         assertThat(caseHistoryTab.getForRoles()).contains(
             AccessProfile.JUDGE,
-            AccessProfile.HEARING_CENTRE_TEAM_LEADER,
             AccessProfile.HEARING_CENTRE_ADMIN,
-            AccessProfile.CTSC_TEAM_LEADER,
             AccessProfile.CTSC_ADMIN,
-            AccessProfile.WLU_TEAM_LEADER,
             AccessProfile.WLU_ADMIN
         );
         assertThat(caseHistoryTab.getForRoles()).doesNotContain(

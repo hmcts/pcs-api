@@ -56,4 +56,12 @@ class RoleToAccessProfilesTest {
         });
         verify(accessProfileBuilder, times(UserRole.values().length)).build();
     }
+
+    @Test
+    void shouldMapTeamLeaderRolesToExistingAdminAccessProfiles() {
+        assertThat(UserRole.CTSC_TEAM_LEADER.getAccessProfiles()).containsExactly(AccessProfile.CTSC_ADMIN.getRole());
+        assertThat(UserRole.HEARING_CENTRE_TEAM_LEADER.getAccessProfiles())
+            .containsExactly(AccessProfile.HEARING_CENTRE_ADMIN.getRole());
+        assertThat(UserRole.WLU_TEAM_LEADER.getAccessProfiles()).containsExactly(AccessProfile.WLU_ADMIN.getRole());
+    }
 }

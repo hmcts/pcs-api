@@ -11,23 +11,17 @@ import java.util.Set;
 import static org.assertj.core.api.Assertions.assertThat;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CIRCUIT_JUDGE;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CTSC_ADMIN;
-import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CTSC_TEAM_LEADER;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.FEE_PAID_JUDGE;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.HEARING_CENTRE_ADMIN;
-import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.HEARING_CENTRE_TEAM_LEADER;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.JUDGE;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.LEADERSHIP_JUDGE;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.WLU_ADMIN;
-import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.WLU_TEAM_LEADER;
 
 class InternalCaseFlagAccessTest {
 
     private static final UserRole[] CREATE_READ_UPDATE_ROLES = {
-        CTSC_TEAM_LEADER,
         CTSC_ADMIN,
-        HEARING_CENTRE_TEAM_LEADER,
         HEARING_CENTRE_ADMIN,
-        WLU_TEAM_LEADER,
         WLU_ADMIN
     };
 
@@ -54,7 +48,7 @@ class InternalCaseFlagAccessTest {
         // Then
         assertAllHavePermissions(grants, CREATE_READ_UPDATE_ROLES, Permission.CRU);
         assertAllHavePermission(grants, READ_ROLES, Permission.R);
-        assertThat(grants.asMap().size()).isEqualTo(10);
+        assertThat(grants.asMap().size()).isEqualTo(7);
     }
 
     private void assertAllHavePermissions(SetMultimap<HasRole, Permission> grants,
