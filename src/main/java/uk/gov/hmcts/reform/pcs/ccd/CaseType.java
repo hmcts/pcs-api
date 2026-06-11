@@ -103,15 +103,13 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
         buildCaseNotesTab(builder);
 
         builder.tab("caseLinks", "Linked Cases")
-            .forRoles(AccessProfile.CTSC_ADMIN, AccessProfile.HEARING_CENTRE_ADMIN, AccessProfile.WLU_ADMIN_READ,
-                      AccessProfile.CIRCUIT_JUDGE_WRITE, AccessProfile.FEE_PAID_JUDGE_WRITE,
-                      AccessProfile.JUDGE_WRITE, AccessProfile.LEADERSHIP_JUDGE_WRITE)
+            .forRoles(AccessProfile.CASE_LINK_WRITE, AccessProfile.CASE_LINK_READ)
             .field(PCSCase::getLinkedCasesComponentLauncher, null, "#ARGUMENT(LinkedCases)")
             .field(PCSCase::getCaseLinks, "LinkedCasesComponentLauncher!=\"\"", "#ARGUMENT(LinkedCases)");
 
         builder.tab("caseFlags", "Case flags")
-            .forRoles(AccessProfile.JUDGE, AccessProfile.FEE_PAID_JUDGE, AccessProfile.CIRCUIT_JUDGE,
-                AccessProfile.LEADERSHIP_JUDGE,
+            .forRoles(AccessProfile.JUDGE_READ, AccessProfile.FEE_PAID_JUDGE_READ, AccessProfile.CIRCUIT_JUDGE_READ,
+                AccessProfile.LEADERSHIP_JUDGE_READ,
                 AccessProfile.CTSC_ADMIN,
                 AccessProfile.HEARING_CENTRE_ADMIN,
                 AccessProfile.WLU_ADMIN)

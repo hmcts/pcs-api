@@ -5,6 +5,7 @@ import static uk.gov.hmcts.ccd.sdk.api.Permission.CRU;
 import static uk.gov.hmcts.ccd.sdk.api.Permission.R;
 
 import com.fasterxml.jackson.annotation.JsonValue;
+
 import java.util.Set;
 import lombok.Getter;
 import uk.gov.hmcts.ccd.sdk.api.HasRole;
@@ -22,18 +23,18 @@ public enum AccessProfile implements HasRole {
     PCS_CASE_WORKER("caseworker-pcs", Set.of(R)),
     PCS_SOLICITOR("caseworker-pcs-solicitor", CRU),
 
-    JUDGE("judge", Set.of(R)),
-    FEE_PAID_JUDGE("fee-paid-judge", Set.of(R)),
-    CIRCUIT_JUDGE("circuit-judge", Set.of(R)),
-    LEADERSHIP_JUDGE("leadership-judge", Set.of(R)),
+    JUDGE_READ("judge", Set.of(R)),
+    FEE_PAID_JUDGE_READ("fee-paid-judge", Set.of(R)),
+    CIRCUIT_JUDGE_READ("circuit-judge", Set.of(R)),
+    LEADERSHIP_JUDGE_READ("leadership-judge", Set.of(R)),
     CTSC_ADMIN("ctsc", Permission.CRU),
     HEARING_CENTRE_ADMIN("hearing-centre-admin", Permission.CRU),
     WLU_ADMIN("wlu-admin", Permission.CRU),
-    WLU_ADMIN_READ("wlu-admin",Set.of(R)),
-    LEADERSHIP_JUDGE_WRITE("leadership-judge", Permission.CRU),
-    CIRCUIT_JUDGE_WRITE("circuit-judge", Permission.CRU),
-    JUDGE_WRITE("judge", Permission.CRU),
-    FEE_PAID_JUDGE_WRITE("fee-paid-judge", Permission.CRU),
+    WLU_ADMIN_READ("wlu-admin", Set.of(R)),
+
+    CASE_LINK_READ("case_link_read",Set.of(R)),
+    CASE_LINK_WRITE("case_link_write",CRU),
+
     GS_PROFILE("GS_profile", Set.of(R)),
     SYSTEM_USER("pcs-system-update", CRU);
 
