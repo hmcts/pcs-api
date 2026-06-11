@@ -114,6 +114,13 @@ class TenancyLicenceViewTest {
         when(tenancyLicenceEntity.getType()).thenReturn(CombinedLicenceType.SECURE_CONTRACT);
         when(tenancyLicenceEntity.getOtherTypeDetails()).thenReturn(otherTypeDetails);
         when(tenancyLicenceEntity.getStartDate()).thenReturn(tenancyStartDate);
+        when(pcsCaseEntity.getDocuments()).thenReturn(
+            List.of(
+                DocumentEntity.builder()
+                    .type(DocumentType.OCCUPATION_LICENCE)
+                    .build()
+            )
+        );
 
         // When
         underTest.setCaseFields(pcsCase, pcsCaseEntity);
@@ -130,6 +137,7 @@ class TenancyLicenceViewTest {
             .isEqualTo(OccupationLicenceTypeWales.SECURE_CONTRACT);
         assertThat(occupationLicenceDetails.getOtherLicenceTypeDetails()).isEqualTo(otherTypeDetails);
         assertThat(occupationLicenceDetails.getLicenceStartDate()).isEqualTo(tenancyStartDate);
+        assertThat(occupationLicenceDetails.getLicenceDocuments()).hasSize(1);
     }
 
 }

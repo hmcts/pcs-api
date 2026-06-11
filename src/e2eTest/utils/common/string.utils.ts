@@ -105,3 +105,24 @@ export function formatDateTime(dateStr: string): string {
 
   return `${day}/${month}/${year}, ${hours}:${minutes}:${seconds}${ampm}`;
 }
+
+/* covert 2026-06-03T16:31:23.063194 to 3 June 2026, 5:31:23PM */
+export function formatDateTimeBST(dataTime: string): string {
+  const date = new Date(`${dataTime}Z`);
+
+  return new Intl.DateTimeFormat('en-GB', {
+    timeZone: 'Europe/London',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: true
+  })
+    .format(date)
+    .replace(' at ', ', ')
+    .replace(' am', 'AM')
+    .replace(' pm', 'PM');
+}
+
