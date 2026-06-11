@@ -1,0 +1,77 @@
+name: DB breaking change scan
+
+on:
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Fetch base branch
+        run: git fetch origin "${{ github.base_ref }}"
+
+      - name: Scan Flyway migration diff
+        id: scan
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          bash .github/scripts/db-breaking-change-check.sh
+          has_findings='false'
+          if [ -s db-scan-findings.tsv ]; then
+            has_findings='true'
+          fi
+          {
+            echo "has-findings=$has_findings"
+            echo "summary-path=$GITHUB_WORKSPACE/db-scan-summary.md"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Add inline annotations
+        if: steps.scan.outputs.has-findings == 'true'
+        run: |
+          guidance_url='https://hmcts.github.io/cloud-native-platform/standards/db-schema-change.html#zero-downtime-database-deployments'
+          while IFS=$'\t' read -r file line severity label advice content; do
+            message="${severity^^} ${label}: ${content}. ${advice} See: ${guidance_url}"
+            message="${message//'%'/'%25'}"
+            message="${message//$'\r'/'%0D'}"
+            message="${message//$'\n'/'%0A'}"
+            echo "::warning file=${file},line=${line},title=DB breaking change::${message}"
+          done < db-scan-findings.tsv
+
+      - name: Create or update PR comment
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          SUMMARY_PATH: ${{ steps.scan.outputs.summary-path }}
+          RUN_URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}?check_suite_focus=true
+        run: |
+          BODY_FILE="$(mktemp)"
+          {
+            cat "$SUMMARY_PATH"
+            printf '\nRun details: %s\n' "$RUN_URL"
+          } > "$BODY_FILE"
+
+          COMMENT_ID=$(gh pr view "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" \
+            --json comments \
+            --jq '[.comments[]
+            | select(.body | startswith("# DB breaking change scan"))
+            | .url | capture("#issuecomment-(?<id>[0-9]+)$").id][-1]')
+
+          if [ -n "$COMMENT_ID" ]; then
+            gh api repos/$GITHUB_REPOSITORY/issues/comments/$COMMENT_ID \
+              -X PATCH -f body="$(cat "$BODY_FILE")"
+          else
+            gh pr comment "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --body-file "$BODY_FILE"
+          fi
