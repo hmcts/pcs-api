@@ -95,9 +95,4 @@ public class PcsCaseService {
             caseLinkService.mergeCaseLinks(pcsCase.getCaseLinks(), pcsCaseEntity);
         }
     }
-
-    public void setCaseIssuedDate(long caseReference) {
-        PcsCaseEntity pcsCaseEntity = loadCase(caseReference);
-        claimService.setClaimIssuedDate(pcsCaseEntity.getClaims().getFirst());
-    }
 }

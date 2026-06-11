@@ -303,19 +303,6 @@ class ClaimServiceTest {
         assertThat(createdClaimEntity.getStatementOfTruth()).isEqualTo(statementOfTruthEntity);
     }
 
-    @Test
-    void shouldSetClaimIssuedDate() {
-        // Given
-        ClaimEntity claimEntity = ClaimEntity.builder().build();
-        when(utcClock.instant()).thenReturn(TEST_UTC_DATE_TIME.toInstant(ZoneOffset.UTC));
-        when(utcClock.getZone()).thenReturn(ZoneOffset.UTC);
-
-        // When
-        claimService.setClaimIssuedDate(claimEntity);
-        verify(claimRepository, times(1)).save(claimEntity);
-        assertThat(claimEntity.getClaimIssuedDate()).isEqualTo(TEST_UTC_DATE_TIME);
-    }
-
     private static Stream<Arguments> claimantTypeScenarios() {
         return Stream.of(
             arguments(ClaimantType.PRIVATE_LANDLORD),

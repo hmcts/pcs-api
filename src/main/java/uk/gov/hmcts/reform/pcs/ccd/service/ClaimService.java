@@ -91,9 +91,4 @@ public class ClaimService {
             .build();
     }
 
-    public void setClaimIssuedDate(ClaimEntity claimEntity) {
-        claimEntity.setClaimIssuedDate(LocalDateTime.now(utcClock));
-        claimRepository.save(claimEntity);
-    }
-
 }
