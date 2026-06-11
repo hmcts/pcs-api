@@ -79,22 +79,23 @@ public class LocationReferenceDataApiConsumerTest {
 
         CourtVenue location = response.get(0);
 
-        assertThat(location.epimsId()).isEqualTo(123456789);
-        assertThat(location.courtLocationId()).isEqualTo(1L);
+        System.out.println(location);
+        assertThat(location.epimsId()).isEqualTo("123456789");
+        assertThat(location.courtLocationId()).isEqualTo("1");
         assertThat(location.courtLocationName()).isEqualTo("ABERDEEN TRIBUNAL HEARING CENTRE 1");
     }
 
     static DslPart buildLocationRefDataResponseBody() {
         return new PactDslJsonArray()
             .object()
-            .stringType("epimms_id", "123456789")
-            .stringType("court_venue_id", "1")
-            .stringType("court_name", "ABERDEEN TRIBUNAL HEARING CENTRE 1")
+            .stringType("epims_id", "123456789")
+            .stringType("court_location_id", "1")
+            .stringType("court_location_name", "ABERDEEN TRIBUNAL HEARING CENTRE 1")
             .closeObject()
             .object()
-            .stringType("epimms_id", "123456789")
-            .stringType("court_venue_id", "2")
-            .stringType("court_name", "GLASGOW TRIBUNAL HEARING CENTRE")
+            .stringType("epims_id", "123456789")
+            .stringType("court_location_id", "2")
+            .stringType("court_location_name", "GLASGOW TRIBUNAL HEARING CENTRE")
             .closeObject();
     }
 }
