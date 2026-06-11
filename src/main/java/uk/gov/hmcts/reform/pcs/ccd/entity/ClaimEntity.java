@@ -196,6 +196,8 @@ public class ClaimEntity {
     @JoinColumn(name = "claim_form_document_id")
     private DocumentEntity claimFormDocument;
 
+    private LocalDateTime claimIssuedDate;
+
     public void setAsbProhibitedConductEntity(AsbProhibitedConductEntity asbProhibitedConductEntity) {
         if (this.asbProhibitedConductEntity != null) {
             this.asbProhibitedConductEntity.setClaim(null);
