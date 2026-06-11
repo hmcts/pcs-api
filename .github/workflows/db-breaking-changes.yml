@@ -23,6 +23,9 @@ jobs:
 
       - name: Scan Flyway migration diff
         id: scan
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
           set -euo pipefail
           bash .github/scripts/db-breaking-change-check.sh

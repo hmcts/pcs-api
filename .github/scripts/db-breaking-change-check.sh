@@ -2,8 +2,8 @@
 
 set -euo pipefail
 
-base_ref="${GITHUB_BASE_REF:?missing GITHUB_BASE_REF}"
-github_sha="${GITHUB_SHA:?missing GITHUB_SHA}"
+base_sha="${BASE_SHA:?missing BASE_SHA}"
+head_sha="${HEAD_SHA:?missing HEAD_SHA}"
 
 migration_dir="src/main/resources/db/migration"
 findings_file="db-scan-findings.tsv"
@@ -12,14 +12,14 @@ summary_file="db-scan-summary.md"
 : > "$findings_file"
 
 mapfile -t changed_files < <(
-  git diff --name-only --diff-filter=ACMRT "origin/${base_ref}...${github_sha}" -- "$migration_dir" \
+  git diff --name-only --diff-filter=ACMRT "${base_sha}...${head_sha}" -- "$migration_dir" \
     | grep -E '\.sql$' || true
 )
 
 scan_file() {
   local file="$1"
 
-  git diff --unified=0 --no-color "origin/${base_ref}...${github_sha}" -- "$file" |
+  git diff --unified=0 --no-color "${base_sha}...${head_sha}" -- "$file" |
     awk -v file="$file" -v findings_file="$findings_file" '
       function emit(line, severity, label, advice, content) {
         printf "%s\t%s\t%s\t%s\t%s\t%s\n", file, line, severity, label, advice, content >> findings_file
