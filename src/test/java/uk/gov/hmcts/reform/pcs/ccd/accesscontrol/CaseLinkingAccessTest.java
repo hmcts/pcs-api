@@ -16,7 +16,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.JUDGE;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.LEADERSHIP_JUDGE;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CTSC_ADMIN;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.HEARING_CENTRE_ADMIN;
-import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.AccessProfile.WLU_ADMIN_READ;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.AccessProfile.WLU_ADMIN;
 
 
 class CaseLinkingAccessTest {
@@ -38,6 +38,6 @@ class CaseLinkingAccessTest {
         assertThat(grants.asMap()).contains(entry(FEE_PAID_JUDGE, Permission.CRU));
         assertThat(grants.asMap()).contains(entry(JUDGE, Permission.CRU));
         assertThat(grants.asMap()).contains(entry(LEADERSHIP_JUDGE, Permission.CRU));
-        assertThat(grants.get(WLU_ADMIN_READ)).contains(Permission.R);
+        assertThat(grants.get(WLU_ADMIN)).contains(Permission.R);
     }
 }
