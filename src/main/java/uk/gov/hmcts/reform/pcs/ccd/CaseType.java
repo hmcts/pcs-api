@@ -184,11 +184,13 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
             .field("detailsTab_PropertyAddress")
             .field("detailsTab_GroundsForPossessionDetails")
             .field("detailsTab_DateClaimSubmitted")
+            .field("detailsTab_OccupationContractLicenceDetails")
             .field("detailsTab_TenancyLicenceDetails")
             .field("detailsTab_NoticeDetails")
             .field("detailsTab_ActionsTakenDetails")
             .field("detailsTab_RentArrearsDetails")
             .field("detailsTab_ReasonsForPossessionDetails")
+            .field("detailsTab_AntisocialAndConductDetails")
             .field("detailsTab_ApplicationsDetails")
             .label(
                 "Claimant Details",
@@ -198,6 +200,7 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
             .field("detailsTab_ClaimantInformation")
             .field("detailsTab_ClaimantAddress")
             .field("detailsTab_ClaimantContactDetails")
+            .field("detailsTab_ClaimantRegistrationAndLicensingDetails")
             .field("detailsTab_ClaimantCircumstances")
             .label(
                 "Defendant Details",
@@ -225,7 +228,13 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
                 "detailsTab_SuspensionOfRightToBuyDetails!=\"\"",
                 "## Suspension of right to buy"
             )
-            .field("detailsTab_SuspensionOfRightToBuyDetails");
+            .field("detailsTab_SuspensionOfRightToBuyDetails")
+            .label(
+                "Prohibited conduct standard contract",
+                "detailsTab_ProhibitedConductStandardContractDetails!=\"\"",
+                "## Prohibited conduct standard contract"
+            )
+            .field("detailsTab_ProhibitedConductStandardContractDetails");
     }
 
     private void buildCaseListView(ConfigBuilder<PCSCase, State, AccessProfile> builder) {

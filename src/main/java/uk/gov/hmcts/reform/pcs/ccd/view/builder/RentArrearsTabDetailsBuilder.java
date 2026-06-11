@@ -12,6 +12,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.RentPaymentFrequency;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.ClaimGroundSummary;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.RentArrearsTabDetails;
+import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -98,18 +99,24 @@ public class RentArrearsTabDetailsBuilder {
 
             rentArrearsTabDetails = RentArrearsTabDetails.builder()
                 .rentAmount(rentAmount != null ? rentAmount : NO_ANSWER)
-                .calculationFrequency(calculationFrequency != null ? calculationFrequency : NO_ANSWER)
                 .dailyRate(dailyRate != null ? dailyRate : NO_ANSWER)
                 .judgmentRequested(judgmentRequested)
                 .frequency(frequency)
                 .build();
+
+            setFrequency(
+                rentArrearsTabDetails,
+                pcsCase.getLegislativeCountry(),
+                calculationFrequency != null ? calculationFrequency : NO_ANSWER
+            );
         } else {
             rentArrearsTabDetails = RentArrearsTabDetails.builder()
                 .rentAmount(NO_ANSWER)
-                .calculationFrequency(NO_ANSWER)
                 .dailyRate(NO_ANSWER)
                 .judgmentRequested(judgmentRequested)
                 .build();
+
+            setFrequency(rentArrearsTabDetails, pcsCase.getLegislativeCountry(), NO_ANSWER);
         }
 
         if (rentArrears != null) {
@@ -190,5 +197,17 @@ public class RentArrearsTabDetailsBuilder {
         }
 
         return rentDetails.getFrequency().getLabel();
+    }
+
+    private void setFrequency(
+        RentArrearsTabDetails rentArrearsTabDetails,
+        LegislativeCountry country,
+        String frequency
+    ) {
+        if (country == LegislativeCountry.WALES) {
+            rentArrearsTabDetails.setRentFrequency(frequency);
+        } else {
+            rentArrearsTabDetails.setCalculationFrequency(frequency);
+        }
     }
 }
