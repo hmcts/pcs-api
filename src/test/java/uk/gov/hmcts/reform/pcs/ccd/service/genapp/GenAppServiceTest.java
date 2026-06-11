@@ -7,6 +7,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.NullSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InOrder;
@@ -15,13 +16,17 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.UploadedDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.CitizenGenAppRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.XuiGenAppRequest;
+import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.AgreementDefendantLegalRep;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
@@ -31,6 +36,8 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DocumentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.GenAppRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentNameService;
+import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
+import uk.gov.hmcts.reform.pcs.exception.GenAppException;
 
 import java.time.Clock;
 import java.time.LocalDate;
@@ -41,6 +48,7 @@ import java.util.UUID;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.junit.jupiter.params.provider.Arguments.argumentSet;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
@@ -61,6 +69,8 @@ class GenAppServiceTest {
 
     @Mock
     private GenAppRepository genAppRepository;
+    @Mock
+    private DocumentService documentService;
     @Mock
     private DocumentNameService documentNameService;
     @Mock(strictness = LENIENT)
@@ -85,13 +95,15 @@ class GenAppServiceTest {
         stubUtcClock(TEST_UTC_DATE_TIME);
         when(pcsCaseEntity.getClaims()).thenReturn(List.of(mainClaim));
 
-        underTest = new GenAppService(genAppRepository, documentNameService, documentRepository, utcClock);
+        underTest = new GenAppService(genAppRepository, documentService, documentNameService,
+                                      documentRepository, utcClock);
     }
 
     @Test
     void shouldReturnSavedEntity() {
         // Given
         CitizenGenAppRequest genAppRequest = CitizenGenAppRequest.builder()
+            .sotAccepted(VerticalYesNo.YES)
             .applicationType(GenAppType.SOMETHING_ELSE)
             .build();
 
@@ -111,6 +123,7 @@ class GenAppServiceTest {
         // Given
         GenAppType genAppType = GenAppType.SOMETHING_ELSE;
         CitizenGenAppRequest genAppRequest = CitizenGenAppRequest.builder()
+            .sotAccepted(VerticalYesNo.YES)
             .applicationType(genAppType)
             .build();
 
@@ -130,6 +143,7 @@ class GenAppServiceTest {
     void shouldSetGeneralApplicationType(GenAppType genAppType) {
         // Given
         CitizenGenAppRequest genAppRequest = CitizenGenAppRequest.builder()
+            .sotAccepted(VerticalYesNo.YES)
             .applicationType(genAppType)
             .build();
 
@@ -145,6 +159,7 @@ class GenAppServiceTest {
     void shouldSetInitialState() {
         // Given
         CitizenGenAppRequest genAppRequest = CitizenGenAppRequest.builder()
+            .sotAccepted(VerticalYesNo.YES)
             .build();
 
         // When
@@ -159,6 +174,7 @@ class GenAppServiceTest {
     void shouldSetApplicantParty() {
         // Given
         CitizenGenAppRequest genAppRequest = CitizenGenAppRequest.builder()
+            .sotAccepted(VerticalYesNo.YES)
             .applicationType(GenAppType.ADJOURN)
             .build();
 
@@ -175,6 +191,7 @@ class GenAppServiceTest {
     void shouldSetWithin14DaysFlag(VerticalYesNo within14Days) {
         // Given
         CitizenGenAppRequest genAppRequest = CitizenGenAppRequest.builder()
+            .sotAccepted(VerticalYesNo.YES)
             .within14Days(within14Days)
             .build();
 
@@ -191,6 +208,7 @@ class GenAppServiceTest {
         // Given
         String expectedHwfReference = "hwf-1234";
         CitizenGenAppRequest genAppRequest = CitizenGenAppRequest.builder()
+            .sotAccepted(VerticalYesNo.YES)
             .needHwf(VerticalYesNo.YES)
             .appliedForHwf(VerticalYesNo.YES)
             .hwfReference(expectedHwfReference)
@@ -209,9 +227,32 @@ class GenAppServiceTest {
     }
 
     @Test
+    void shouldNotSetHwfReferenceIfNeedHwfIsNo() {
+        // Given
+        CitizenGenAppRequest genAppRequest = CitizenGenAppRequest.builder()
+            .sotAccepted(VerticalYesNo.YES)
+            .needHwf(VerticalYesNo.NO)
+            .appliedForHwf(VerticalYesNo.YES)
+            .hwfReference("hwf-1234")
+            .build();
+
+        // When
+        underTest.createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty);
+
+        // Then
+        verify(genAppRepository).save(genAppEntityCaptor.capture());
+        GenAppEntity genAppEntity = genAppEntityCaptor.getValue();
+
+        assertThat(genAppEntity.getNeedHwf()).isEqualTo(VerticalYesNo.NO);
+        assertThat(genAppEntity.getAppliedForHwf()).isNull();
+        assertThat(genAppEntity.getHelpWithFeesEntity()).isNull();
+    }
+
+    @Test
     void shouldNotSetHwfReferenceIfAppliedForIsNo() {
         // Given
         CitizenGenAppRequest genAppRequest = CitizenGenAppRequest.builder()
+            .sotAccepted(VerticalYesNo.YES)
             .needHwf(VerticalYesNo.YES)
             .appliedForHwf(VerticalYesNo.NO)
             .hwfReference("hwf-1234")
@@ -236,6 +277,9 @@ class GenAppServiceTest {
                                             VerticalYesNo expectedWithoutNotice,
                                             String expectedWithoutNoticeReason) {
 
+        // Given
+        genAppRequest.setSotAccepted(VerticalYesNo.YES);
+
         // When
         underTest.createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty);
 
@@ -254,6 +298,7 @@ class GenAppServiceTest {
         String expectedOrder = "this is the order wanted";
 
         CitizenGenAppRequest genAppRequest = CitizenGenAppRequest.builder()
+            .sotAccepted(VerticalYesNo.YES)
             .whatOrderWanted(expectedOrder)
             .build();
 
@@ -270,6 +315,7 @@ class GenAppServiceTest {
     void shouldSetSupportingDocumentsFlag(VerticalYesNo hasSupportingDocuments) {
         // Given
         CitizenGenAppRequest genAppRequest = CitizenGenAppRequest.builder()
+            .sotAccepted(VerticalYesNo.YES)
             .hasSupportingDocuments(hasSupportingDocuments)
             .build();
 
@@ -299,19 +345,26 @@ class GenAppServiceTest {
                                       eq(mainClaim), eq(applicantPartyId)))
             .thenReturn(modifiedFilename);
 
+        AdditionalDocumentType additionalDocumentType = AdditionalDocumentType.CERTIFICATE_OF_SERVICE;
         UploadedDocument uploadedDocument = UploadedDocument.builder()
             .document(document)
+            .documentType(additionalDocumentType)
             .contentType("test content type")
             .sizeInBytes(1234L)
             .build();
 
         CitizenGenAppRequest genAppRequest = CitizenGenAppRequest.builder()
+            .sotAccepted(VerticalYesNo.YES)
             .hasSupportingDocuments(VerticalYesNo.YES)
             .uploadedDocuments(List.of(ListValue.<UploadedDocument>builder().value(uploadedDocument).build()))
             .build();
 
         List<DocumentEntity> savedDocumentEntities = List.of(mock(DocumentEntity.class));
         when(documentRepository.saveAll(anyList())).thenReturn(savedDocumentEntities);
+
+        DocumentType expectedDocumentType = DocumentType.CERTIFICATE_OF_SERVICE;
+        when(documentService.mapAdditionalDocumentTypeToDocumentType(additionalDocumentType))
+            .thenReturn(expectedDocumentType);
 
         // When
         underTest.createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty);
@@ -328,6 +381,7 @@ class GenAppServiceTest {
         assertThat(documentEntity.getFileName()).isEqualTo(modifiedFilename);
         assertThat(documentEntity.getUrl()).isEqualTo("test url");
         assertThat(documentEntity.getBinaryUrl()).isEqualTo("test binary url");
+        assertThat(documentEntity.getType()).isEqualTo(expectedDocumentType);
         assertThat(documentEntity.getCategoryId()).isEqualTo(CaseFileCategory.APPLICATIONS.getId());
         assertThat(documentEntity.getContentType()).isEqualTo("test content type");
         assertThat(documentEntity.getSize()).isEqualTo(1234L);
@@ -349,6 +403,7 @@ class GenAppServiceTest {
             .build();
 
         CitizenGenAppRequest genAppRequest = CitizenGenAppRequest.builder()
+            .sotAccepted(VerticalYesNo.YES)
             .hasSupportingDocuments(VerticalYesNo.NO)
             .uploadedDocuments(List.of(ListValue.<UploadedDocument>builder().value(uploadedDocument).build()))
             .build();
@@ -382,6 +437,7 @@ class GenAppServiceTest {
             .build();
 
         CitizenGenAppRequest genAppRequest = CitizenGenAppRequest.builder()
+            .sotAccepted(VerticalYesNo.YES)
             .hasSupportingDocuments(VerticalYesNo.YES)
             .uploadedDocuments(List.of(ListValue.<UploadedDocument>builder().value(uploadedDocument).build()))
             .build();
@@ -401,6 +457,7 @@ class GenAppServiceTest {
     void shouldSetLanguageUsed(LanguageUsed languageUsed) {
         // Given
         CitizenGenAppRequest genAppRequest = CitizenGenAppRequest.builder()
+            .sotAccepted(VerticalYesNo.YES)
                 .languageUsed(languageUsed)
                 .build();
 
@@ -416,6 +473,7 @@ class GenAppServiceTest {
     void shouldSetApplicationSubmittedDate() {
         // Given
         CitizenGenAppRequest genAppRequest = CitizenGenAppRequest.builder()
+            .sotAccepted(VerticalYesNo.YES)
             .build();
 
         // When
@@ -426,8 +484,28 @@ class GenAppServiceTest {
         assertThat(genAppEntityCaptor.getValue().getApplicationSubmittedDate()).isEqualTo(TEST_UTC_DATE_TIME);
     }
 
+    @ParameterizedTest
+    @NullSource
+    @EnumSource(value = VerticalYesNo.class, names = "NO")
+    void shouldThrowExceptionIfSoTNotAcceptedForCitizenJourney(VerticalYesNo sotAccepted) {
+        // Given
+        CitizenGenAppRequest genAppRequest = CitizenGenAppRequest.builder()
+            .sotAccepted(sotAccepted)
+            .build();
+
+        // When
+        Throwable throwable = catchThrowable(
+            () -> underTest.createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty)
+        );
+
+        // Then
+        assertThat(throwable)
+            .isInstanceOf(GenAppException.class)
+            .hasMessage("Statement of truth must be accepted to create a gen app");
+    }
+
     @Test
-    void shouldCreateAndSetStatementOfTruth() {
+    void shouldCreateAndSetStatementOfTruthForCuiJourney() {
         // Given
         String expectedFullName = "Expected full name";
         CitizenGenAppRequest genAppRequest = CitizenGenAppRequest.builder()
@@ -444,6 +522,52 @@ class GenAppServiceTest {
         StatementOfTruthEntity statementOfTruth = genAppEntityCaptor.getValue().getStatementOfTruth();
         assertThat(statementOfTruth.getAccepted()).isEqualTo(YesOrNo.YES);
         assertThat(statementOfTruth.getFullName()).isEqualTo(expectedFullName);
+        assertThat(statementOfTruth.getCompletedDate()).isEqualTo(TEST_UTC_DATE_TIME);
+    }
+
+    @Test
+    void shouldThrowExceptionIfSoTNotAcceptedForXuiJourney() {
+        // Given
+        XuiGenAppRequest genAppRequest = XuiGenAppRequest.builder()
+            .agreementDefendantLegalRep(List.of())
+            .build();
+
+        // When
+        Throwable throwable = catchThrowable(
+            () -> underTest.createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty)
+        );
+
+        // Then
+        assertThat(throwable)
+            .isInstanceOf(GenAppException.class)
+            .hasMessage("Statement of truth must be accepted to create a gen app");
+    }
+
+    @Test
+    void shouldCreateAndSetStatementOfTruthForXuiJourney() {
+        // Given
+        String expectedFullName = "Expected full name";
+        String expectedFirmName = "Expected firm name";
+        String expectedPositionHeld = "Expected position held";
+
+        XuiGenAppRequest genAppRequest = XuiGenAppRequest.builder()
+            .agreementDefendantLegalRep(List.of(AgreementDefendantLegalRep.AGREED))
+            .sotFullName(expectedFullName)
+            .sotFirmName(expectedFirmName)
+            .sotPositionHeld(expectedPositionHeld)
+            .build();
+
+        // When
+        underTest.createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty);
+
+        // Then
+        verify(genAppRepository).save(genAppEntityCaptor.capture());
+
+        StatementOfTruthEntity statementOfTruth = genAppEntityCaptor.getValue().getStatementOfTruth();
+        assertThat(statementOfTruth.getAccepted()).isEqualTo(YesOrNo.YES);
+        assertThat(statementOfTruth.getFullName()).isEqualTo(expectedFullName);
+        assertThat(statementOfTruth.getFirmName()).isEqualTo(expectedFirmName);
+        assertThat(statementOfTruth.getPositionHeld()).isEqualTo(expectedPositionHeld);
         assertThat(statementOfTruth.getCompletedDate()).isEqualTo(TEST_UTC_DATE_TIME);
     }
 

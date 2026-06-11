@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.domain.genapp;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.AllArgsConstructor;
@@ -9,11 +10,16 @@ import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.SolicitorAccess;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.UploadedDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.AgreementDefendantLegalRep;
 
 import java.util.List;
+import java.util.Optional;
+
+import static uk.gov.hmcts.ccd.sdk.type.FieldType.MultiSelectList;
 
 @Builder
 @Data
@@ -68,17 +74,44 @@ public class XuiGenAppRequest implements GenAppRequest {
     )
     private String whatOrderWanted;
 
+    @CCD(
+        label = "Do you want to upload documents to support the defendant’s application?"
+    )
     private VerticalYesNo hasSupportingDocuments;
 
+    @CCD(
+        label = "Add document",
+        hint = "Upload a document to the system",
+        access = SolicitorAccess.class
+    )
     private List<ListValue<UploadedDocument>> uploadedDocuments;
 
     @CCD(label = "Which language did you use to complete this service?")
     private LanguageUsed languageUsed;
 
-    private VerticalYesNo sotAccepted;
+    @CCD(
+        typeOverride = MultiSelectList,
+        typeParameterOverride = "AgreementDefendantLegalRep"
+    )
+    protected List<AgreementDefendantLegalRep> agreementDefendantLegalRep;
 
-    @CCD(max = 100)
-    private String sotFullName;
+    @CCD(
+        label = "Full name",
+        max = 100
+    )
+    protected String sotFullName;
+
+    @CCD(
+        label = "Name of firm",
+        max = 100
+    )
+    protected String sotFirmName;
+
+    @CCD(
+        label = "Position or office held",
+        max = 100
+    )
+    protected String sotPositionHeld;
 
     @CCD(searchable = false)
     private String standardFee;
@@ -88,5 +121,13 @@ public class XuiGenAppRequest implements GenAppRequest {
 
     @CCD(searchable = false)
     private VerticalYesNo showHwfScreens;
+
+    @Override
+    @JsonIgnore
+    public VerticalYesNo getSotAccepted() {
+        return Optional.ofNullable(agreementDefendantLegalRep)
+            .map(list -> list.contains(AgreementDefendantLegalRep.AGREED) ? VerticalYesNo.YES : null)
+            .orElse(null);
+    }
 
 }
