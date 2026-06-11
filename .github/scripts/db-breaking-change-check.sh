@@ -77,6 +77,11 @@ scan_file() {
 changed_files="$(git diff --name-only --diff-filter=ACMRT "${base_sha}...${head_sha}" -- "$migration_dir" \
   | grep -E '\.sql$' || true)"
 
+changed_file_count=0
+if [ -n "$changed_files" ]; then
+  changed_file_count=$(printf '%s\n' "$changed_files" | sed '/^$/d' | wc -l | tr -d ' ')
+fi
+
 while IFS= read -r file; do
   [ -n "$file" ] || continue
   scan_file "$file"
@@ -103,8 +108,10 @@ findings_count=$(wc -l < "$findings_file" | tr -d ' ')
         "$content"
     done < "$findings_file"
     printf '\nThis is advisory only, but each item above could break the app if the database is deployed before the compatible application version.\n'
+  elif [ "$changed_file_count" -eq 0 ]; then
+    printf 'No changed `.sql` files were detected under `src/main/resources/db/migration`, so the DB breaking change scan was skipped.\n'
   else
-    printf 'No potentially breaking database changes were detected in Flyway migrations.\n\n'
+    printf 'No potentially breaking database changes were detected in the changed Flyway migration `.sql` files.\n\n'
     printf 'This check only scans changed `.sql` files under `src/main/resources/db/migration` and flags high-risk DDL patterns. It does not replace a full migration review.\n\n'
   fi
 } > "$summary_file"
