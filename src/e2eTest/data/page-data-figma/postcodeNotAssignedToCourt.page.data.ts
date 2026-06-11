@@ -5,7 +5,7 @@ export const postcodeNotAssignedToCourt = {
   whatToDoNextHeader: `What to do next`,
   forRentOrMortgageParagraph: `for rent or mortgage arrears claims in England, use the Possession Claim Online (PCOL) service (opens in new tab)`,
   possessionClaimOnlineDynamicLink: `Possession Claim Online (PCOL) service (opens in new tab)`,
-  forOtherTypesParagraph: `for other claim types in England, fill in form N5 and the correct particulars of claim form`,
+  forOtherTypesParagraph: `for other claims types in England, fill in form N5 and the correct particulars of claim form`,
   forClaimsInWalesParagraph: `for claims in Wales, use form N5 Wales and the correct particulars of claim form`,
   forClaimsInScotlandParagraph: `for claims in Scotland, use your local sheriff court (opens in new tab)`,
   forClaimsInNorthernIrelandParagraph: `for claims in Northern Ireland, use the Enforcement of Judgments Office (EJO) (opens in new tab)`,
