@@ -1,5 +1,5 @@
 import { test } from '@utils/test-fixtures';
-import { expect } from '@playwright/test';
+import { expect, Page, BrowserContext } from '@playwright/test';
 import { initializeExecutor, performAction, performValidation } from '@utils/controller';
 import { globalSearch} from '@data/page-data-figma';
 import { dismissCookieBanner } from '@config/cookie-banner';
@@ -10,8 +10,8 @@ import { user} from '@data/page-data';
 test.use({ storageState: undefined });
 
 const setupGlobalSearchUser = async (
-  page: any,
-  context: any,
+  page: Page,
+  context: BrowserContext,
   loggedInUser: typeof user.ctscAdministrator
 ) => {
   await context.clearCookies();
@@ -52,13 +52,13 @@ const runGlobalSearchScenarios = () => {
 
   test('Valid case reference using Mortgage and Landlord Possession Claim Service', async () => {
     await performAction('accessingTheSearch');
-    await performAction('searchByCaseReference', process.env.CASE_NUMBER);
+    await performAction('searchByCaseReference', process.env.CASE_NUMBER, globalSearch.servicesDropdownOption2);
     await performAction('validateResults');
   });
 
   test('Valid case reference using All Services', async () => {
     await performAction('accessingTheSearch');
-    await performAction('searchByCaseReference', process.env.CASE_NUMBER);
+    await performAction('searchByCaseReference', process.env.CASE_NUMBER, globalSearch.servicesDropdownOption1);
     await performAction('validateResults');
   });
 
@@ -66,8 +66,7 @@ const runGlobalSearchScenarios = () => {
     await performAction('accessingTheSearch');
     await performAction('inputText', globalSearch.postCodeLabel, globalSearch.postcodeInputText);
     await performAction('select', globalSearch.servicesLabel, globalSearch.servicesDropdownOption2);
-    await performAction('clickButton', globalSearch.searchButton);
-    await performAction('submitGlobalSearch');
+    await performAction('executeSearch');
     await performAction('validateResultsWithRetry');
   });
 
@@ -75,24 +74,24 @@ const runGlobalSearchScenarios = () => {
     await performAction('accessingTheSearch');
     await performAction('inputText', globalSearch.emailAddressLabel, globalSearch.emailAddressInputText);
     await performAction('select', globalSearch.servicesLabel, globalSearch.servicesDropdownOption2);
-    await performAction('clickButton', globalSearch.searchButton);
-    await performAction('submitGlobalSearch');
+    await performAction('executeSearch');
+    await performAction('validateResultsWithRetry');
   });
 
   test('first line of address', async () => {
     await performAction('accessingTheSearch');
     await performAction('inputText', globalSearch.firstLineOfAddressLabel, globalSearch.firstLineOfAddressInputText);
     await performAction('select', globalSearch.servicesLabel, globalSearch.servicesDropdownOption2);
-    await performAction('clickButton', globalSearch.searchButton);
-    await performAction('submitGlobalSearch');
+    await performAction('executeSearch');
+    await performAction('validateResultsWithRetry');
   });
   
   test('Search by party name', async () => {
     await performAction('accessingTheSearch');
     await performAction('inputText', globalSearch.nameLabel, globalSearch.nameInputText);
     await performAction('select', globalSearch.servicesLabel, globalSearch.servicesDropdownOption2);
-    await performAction('clickButton', globalSearch.searchButton);
-    await performAction('submitGlobalSearch');
+    await performAction('executeSearch');
+    await performAction('validateResultsWithRetry');
   });
 
   test('Invalid case reference', async () => {

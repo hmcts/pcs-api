@@ -5,14 +5,15 @@ import { globalSearch, noResultFound, searchResults, workAccess } from '@data/pa
 import { caseList, home } from '@data/page-data';
 
 export class GlobalSearchCaseAction implements IAction {
-  async execute(page: Page, action: string, fieldName: string | actionRecord): Promise<void> {
+  async execute(page: Page, action: string, fieldName: string | actionRecord, value?: string | actionRecord): Promise<void> {
     const actionsMap = new Map<string, () => Promise<void>>([
       ['accessingTheSearch', () => this.accessingTheSearch(page)],
-      ['searchByCaseReference', () => this.searchByCaseReference(fieldName as string, page)],
+      ['searchByCaseReference', () => this.searchByCaseReference(fieldName as string, page, value as string | undefined)],
       ['invalidCaseReferenceSearch', () => this.invalidCaseReferenceSearch(page)],
       ['changeSearchLink', () => this.changeSearchLink(page)],
       ['handleJudgeBookingPage', () => this.handleJudgeBookingPage(page)],
       ['submitGlobalSearch', () => this.submitGlobalSearch(page)],
+      ['executeSearch', () => this.executeSearch(page)],
       ['validateResults', () => this.validateResults(page)],
       ['validateResultsWithRetry', () => this.validateResultsWithRetry(page)]
     ]);
@@ -26,11 +27,11 @@ export class GlobalSearchCaseAction implements IAction {
     await performAction('clickButton', home.globalSearchTab);
   }
 
-  private async searchByCaseReference(caseReference: string, page: Page): Promise<void> {
+  private async searchByCaseReference(caseReference: string, page: Page, serviceOption?: string): Promise<void> {
     await performAction('inputText', globalSearch.DigitCaseReferenceLabel, caseReference);
-    await performAction('select', globalSearch.servicesLabel, globalSearch.servicesDropdownOption2);
+    await performAction('select', globalSearch.servicesLabel, serviceOption ?? globalSearch.servicesDropdownOption2);
     await performAction('clickButton', globalSearch.searchButton);
-    await page.locator('button[type="submit"]').click();
+    await this.submitGlobalSearch(page);
     await performValidation('mainHeader', searchResults.mainHeader);
   }
   
@@ -38,7 +39,7 @@ export class GlobalSearchCaseAction implements IAction {
     await performAction('inputText', globalSearch.DigitCaseReferenceLabel, globalSearch.invalidCaseReferenceInputText);
     await performAction('select', globalSearch.servicesLabel, globalSearch.servicesDropdownOption1);
     await performAction('clickButton', globalSearch.searchButton);
-    await page.locator('button[type="submit"]').click();
+    await this.submitGlobalSearch(page);
     await performValidation('mainHeader', noResultFound.mainHeader);
   }
 
@@ -57,6 +58,11 @@ export class GlobalSearchCaseAction implements IAction {
 
   private async submitGlobalSearch(page: Page): Promise<void> {
     await page.locator('button[type="submit"]').click();
+  }
+
+  private async executeSearch(page: Page): Promise<void> {
+    await performAction('clickButton', globalSearch.searchButton);
+    await this.submitGlobalSearch(page);
   }
 
   private async validateResults(page: Page): Promise<void> {
@@ -82,25 +88,28 @@ export class GlobalSearchCaseAction implements IAction {
   }
 
   private async validateResultsWithRetry(page: Page): Promise<void> {
-    const attempts = 6;
-    const waitMs = 5000;
+  const maxRetries = 6;
 
-    for (let attempt = 1; attempt <= attempts; attempt++) {
-      try {
-        await this.validateResults(page);
-        return;
-      } catch (error: any) {
-        const shouldRetry = String(error?.message ?? '').includes('was not found on any paginated search result page');
-        if (!shouldRetry || attempt === attempts) {
-          throw error;
-        }
+  for (let retryCount = 0; retryCount < maxRetries; retryCount++) {
+    try {
+      await this.validateResults(page);
+      return;
+    } catch (error: any) {
+      const shouldRetry = String(error?.message ?? '').includes(
+        'was not found on any paginated search result page'
+      );
 
-        await page.waitForTimeout(waitMs);
-        await page.reload({ waitUntil: 'domcontentloaded' });
-        await expect(page.getByRole('heading', { name: searchResults.mainHeader })).toBeVisible();
+      if (!shouldRetry || retryCount === maxRetries - 1) {
+        throw error;
       }
+
+      await page.reload({ waitUntil: 'domcontentloaded' });
+      await expect(
+        page.getByRole('heading', { name: searchResults.mainHeader })
+      ).toBeVisible();
     }
   }
+}
 
   private async findCaseReferenceRowAcrossPages(page: Page, normalizedCaseReference: string): Promise<Locator> {
     const maxPagesToScan = 50;
