@@ -56,6 +56,7 @@ import static org.mockito.Mockito.times;
 class PcsCaseServiceTest {
 
     private static final long CASE_REFERENCE = 1234L;
+    private static final String ORG_ID = "org123";
 
     @Mock
     private PcsCaseRepository pcsCaseRepository;
@@ -246,7 +247,7 @@ class PcsCaseServiceTest {
         PCSCase caseData = PCSCase.builder().build();
 
         // When
-        underTest.createMainClaimOnCase(CASE_REFERENCE, caseData);
+        underTest.createMainClaimOnCase(CASE_REFERENCE, caseData, ORG_ID);
 
         // Then
         verify(claimService).createMainClaimEntity(caseData);
@@ -262,10 +263,10 @@ class PcsCaseServiceTest {
         PCSCase caseData = PCSCase.builder().build();
 
         // When
-        underTest.createMainClaimOnCase(CASE_REFERENCE, caseData);
+        underTest.createMainClaimOnCase(CASE_REFERENCE, caseData, ORG_ID);
 
         // Then
-        verify(partyService).createAllParties(caseData, pcsCaseEntity, mainClaimEntity);
+        verify(partyService).createAllParties(caseData, pcsCaseEntity, mainClaimEntity, ORG_ID);
     }
 
     @Test
@@ -280,7 +281,7 @@ class PcsCaseServiceTest {
         when(documentService.createAllDocuments(caseData)).thenReturn(documentEntities);
 
         // When
-        underTest.createMainClaimOnCase(CASE_REFERENCE, caseData);
+        underTest.createMainClaimOnCase(CASE_REFERENCE, caseData, ORG_ID);
 
         // Then
         verify(pcsCaseEntity).addDocuments(documentEntities);
@@ -301,7 +302,7 @@ class PcsCaseServiceTest {
 
 
         // When
-        underTest.createMainClaimOnCase(CASE_REFERENCE, caseData);
+        underTest.createMainClaimOnCase(CASE_REFERENCE, caseData, ORG_ID);
 
         // Then
         verify(pcsCaseEntity).setTenancyLicence(tenancyLicenceEntity);

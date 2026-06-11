@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.pcs.ccd.model.CounterClaimStatusChangeTaskData;
+import uk.gov.hmcts.reform.pcs.notify.service.CounterClaimNotificationService;
 import uk.gov.hmcts.reform.pcs.notify.service.PaymentNotificationService;
 
 import java.time.Duration;
@@ -24,16 +25,19 @@ public class CounterClaimIssuedNotificationTaskComponent {
         TaskDescriptor.of(COUNTER_CLAIM_ISSUED_TASK_NAME, CounterClaimStatusChangeTaskData.class);
 
     private final PaymentNotificationService paymentNotificationService;
+    private final CounterClaimNotificationService counterClaimNotificationService;
 
     private final int maxRetries;
     private final Duration backoffDelay;
 
     public CounterClaimIssuedNotificationTaskComponent(
         PaymentNotificationService paymentNotificationService,
+        CounterClaimNotificationService counterClaimNotificationService,
         @Value("${counter-claim-notification.request.max-retries}") int maxRetries,
         @Value("${counter-claim-notification.request.backoff-delay-seconds}") Duration backoffDelay
     ) {
         this.paymentNotificationService = paymentNotificationService;
+        this.counterClaimNotificationService = counterClaimNotificationService;
         this.maxRetries = maxRetries;
         this.backoffDelay = backoffDelay;
     }
@@ -50,6 +54,7 @@ public class CounterClaimIssuedNotificationTaskComponent {
                 UUID counterClaimId = taskData.getCounterClaimId();
                 log.info("Processing counter claim issued notification for: {}", counterClaimId);
 
+                counterClaimNotificationService.sendClaimantEmailNotificationCounterClaimIssued(counterClaimId);
                 paymentNotificationService.sendCounterClaimPaymentSuccessNotification(counterClaimId);
                 return new CompletionHandler.OnCompleteRemove<>();
             });
