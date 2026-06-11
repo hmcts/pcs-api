@@ -39,6 +39,23 @@ public class DocumentNameService {
         return filename;
     }
 
+    public String appendCounterClaimDocumentName(String originalFilename, ClaimEntity claim, UUID partyId) {
+        if (originalFilename == null) {
+            return null;
+        }
+
+        String baseName = FilenameUtils.getBaseName(originalFilename);
+        String extension = FilenameUtils.getExtension(originalFilename);
+        String partyLabel = getPartyLabel(claim, partyId);
+        String filename = partyLabel != null ? baseName + " - " + partyLabel : baseName;
+
+        if (!extension.isBlank()) {
+            filename += "." + extension;
+        }
+
+        return filename;
+    }
+
     private static String getPartyLabel(ClaimEntity mainClaim, UUID partyId) {
         ClaimPartyEntity applicantClaimParty = getClaimParty(mainClaim, partyId);
 
