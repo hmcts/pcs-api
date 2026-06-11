@@ -52,6 +52,7 @@ public class DefendantResponseSubmittedNotificationTaskComponent {
                 log.info("Processing defendant response submitted notification for: {}", defendantResponseId);
 
                 defendantResponseNotificationService.sendEmailNotificationForNoCounterClaim(defendantResponseId);
+                defendantResponseNotificationService.sendDefendantResponseReceived(defendantResponseId);
 
                 return new CompletionHandler.OnCompleteRemove<>();
             });
