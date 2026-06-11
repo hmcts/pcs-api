@@ -57,6 +57,17 @@ public class LegalRepresentativePartyLinkService {
 
         LegalRepresentativeOrganisationEntity legalRepresentativeOrganisation;
 
+        /// case 124
+        // def 1 & 2
+        // def 1 -> org1
+        // def 2 -> org2
+        // def 3 -> org2
+
+        /////
+        // noc org 1 now wants def 2
+        //
+
+
         if (legalRepresentativeOrganisationEntity.isPresent()) {
 
             legalRepresentativeOrganisation = legalRepresentativeOrganisationEntity.get();

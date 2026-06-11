@@ -49,7 +49,9 @@ class LegalRepresentativeContactDetailsTest extends BaseEventTest {
             .legalRepresentativeDetails(legalRepresentativeDetails)
             .build();
         when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(organisationId);
-        when(legalRepresentativePageService.retrieveLegalRepresentativeDetails(organisationId, TEST_CASE_REFERENCE, legalRepresentativeDetails)).thenReturn(legalRepresentativeDetails);
+        when(legalRepresentativePageService.retrieveLegalRepresentativeDetails(organisationId, TEST_CASE_REFERENCE,
+                                                                               legalRepresentativeDetails))
+            .thenReturn(legalRepresentativeDetails);
 
         // when
         PCSCase updatedCase = callStartHandler(caseData);

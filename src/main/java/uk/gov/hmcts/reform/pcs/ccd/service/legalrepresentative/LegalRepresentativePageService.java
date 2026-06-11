@@ -94,7 +94,8 @@ public class LegalRepresentativePageService {
         }
 
         details
-            .setLegalRepresentativeOrganisationAddress(mapAddressEntityToAddressUk(legalRepresentativeOrganisation.getAddress()));
+            .setLegalRepresentativeOrganisationAddress(mapAddressEntityToAddressUk(legalRepresentativeOrganisation
+                                                                                       .getAddress()));
 
         details
             .setFormattedContactAddress(formatContactAddress(details.getLegalRepresentativeOrganisationAddress()));

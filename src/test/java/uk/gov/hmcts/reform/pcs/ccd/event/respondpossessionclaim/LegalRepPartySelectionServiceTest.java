@@ -105,8 +105,9 @@ class LegalRepPartySelectionServiceTest {
         when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyId(12345L, partyId)).thenReturn(true);
 
         // when / then
-        assertThatThrownBy(() -> underTest.getDraft(pcsCase, List.of(partyEntity), 12345L, organisationId)).isInstanceOf(
-            IllegalStateException.class).hasMessage("A response has already been submitted for this case.");
+        assertThatThrownBy(() -> underTest.getDraft(pcsCase, List.of(partyEntity), 12345L,
+                                                    organisationId)).isInstanceOf(IllegalStateException.class)
+            .hasMessage("A response has already been submitted for this case.");
     }
 
     @Test
@@ -135,8 +136,8 @@ class LegalRepPartySelectionServiceTest {
             caseReference,
             partyId
         )).thenReturn(false);
-        when(draftCaseDataService.hasUnsubmittedCaseData(caseReference, respondPossessionClaim, partyId, organisationId)).thenReturn(
-            false);
+        when(draftCaseDataService.hasUnsubmittedCaseData(caseReference, respondPossessionClaim, partyId,
+                                                         organisationId)).thenReturn(false);
         when(responseMapper.mapFrom(pcsCase, partyEntity)).thenReturn(response);
 
         // when
@@ -200,10 +201,10 @@ class LegalRepPartySelectionServiceTest {
             caseReference,
             partyId
         )).thenReturn(false);
-        when(draftCaseDataService.hasUnsubmittedCaseData(caseReference, respondPossessionClaim, partyId, organisationId)).thenReturn(
-            true);
-        when(draftCaseDataService.getUnsubmittedCaseData(caseReference, respondPossessionClaim, partyId, organisationId)).thenReturn(
-            Optional.of(savedDraft));
+        when(draftCaseDataService.hasUnsubmittedCaseData(caseReference, respondPossessionClaim, partyId,
+                                                         organisationId)).thenReturn(true);
+        when(draftCaseDataService.getUnsubmittedCaseData(caseReference, respondPossessionClaim, partyId,
+                                                         organisationId)).thenReturn(Optional.of(savedDraft));
         when(responseMapper.buildPartyFromEntity(partyEntity, pcsCase)).thenReturn(defendantParty);
 
         // when
@@ -254,14 +255,14 @@ class LegalRepPartySelectionServiceTest {
             caseReference,
             partyId
         )).thenReturn(false);
-        when(draftCaseDataService.hasUnsubmittedCaseData(caseReference, respondPossessionClaim, partyId, organisationId)).thenReturn(
-            true);
-        when(draftCaseDataService.getUnsubmittedCaseData(caseReference, respondPossessionClaim, partyId, organisationId)).thenReturn(
-            Optional.empty());
+        when(draftCaseDataService.hasUnsubmittedCaseData(caseReference, respondPossessionClaim, partyId,
+                                                         organisationId)).thenReturn(true);
+        when(draftCaseDataService.getUnsubmittedCaseData(caseReference, respondPossessionClaim, partyId,
+                                                         organisationId)).thenReturn(Optional.empty());
 
         // when / then
-        assertThatThrownBy(() -> underTest.getDraft(pcsCase, List.of(partyEntity), caseReference, organisationId)).isInstanceOf(
-            DraftNotFoundException.class);
+        assertThatThrownBy(() -> underTest.getDraft(pcsCase, List.of(partyEntity), caseReference, organisationId))
+            .isInstanceOf(DraftNotFoundException.class);
     }
 
     @Test
@@ -312,7 +313,8 @@ class LegalRepPartySelectionServiceTest {
 
         List<PartyEntity> defendants = List.of(defendant1);
 
-        PCSCase result = underTest.getDraftCaseData(caseReference, pcsCase, matchedPartyEntity, defendants, organisationId);
+        PCSCase result = underTest.getDraftCaseData(caseReference, pcsCase, matchedPartyEntity, defendants,
+                                                    organisationId);
 
         assertThat(result.getAllLinkedDefendants()).hasSize(1);
         assertThat(result.getAllLinkedDefendants().getFirst().getId()).isEqualTo(matchedPartyId.toString());

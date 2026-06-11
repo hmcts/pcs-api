@@ -92,7 +92,8 @@ class LegalRepStartEventStrategyTest {
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(caseEntity);
         when(securityContextService.getCurrentUserId()).thenReturn(userId);
         when(organisationDetailsService.getOrganisationIdentifier(userId.toString())).thenReturn(organisationId);
-        when(legalRepresentativeRetriever.getLegalRepOrganisationIdForUser(CASE_REFERENCE, organisationId)).thenReturn(legalRepOrganisationId);
+        when(legalRepresentativeRetriever.getLegalRepOrganisationIdForUser(CASE_REFERENCE, organisationId))
+            .thenReturn(legalRepOrganisationId);
         when(legalRepForDefendantAccessValidator.validateAndGetDefendants(caseEntity, organisationId))
             .thenReturn(defendants);
 
@@ -110,7 +111,8 @@ class LegalRepStartEventStrategyTest {
 
         verify(legalRepPartySelectionService).validateResponseNotAlreadySubmitted(CASE_REFERENCE, defendant.getId());
 
-        verify(legalRepPartySelectionService).getDraftCaseData(CASE_REFERENCE, pcsCase, defendant, defendants, legalRepOrganisationId);
+        verify(legalRepPartySelectionService).getDraftCaseData(CASE_REFERENCE, pcsCase, defendant, defendants,
+                                                               legalRepOrganisationId);
     }
 
     @Test
@@ -129,7 +131,8 @@ class LegalRepStartEventStrategyTest {
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(caseEntity);
         when(securityContextService.getCurrentUserId()).thenReturn(userId);
         when(organisationDetailsService.getOrganisationIdentifier(userId.toString())).thenReturn(organisationId);
-        when(legalRepresentativeRetriever.getLegalRepOrganisationIdForUser(CASE_REFERENCE, organisationId)).thenReturn(legalRepOrganisationId);
+        when(legalRepresentativeRetriever.getLegalRepOrganisationIdForUser(CASE_REFERENCE, organisationId))
+            .thenReturn(legalRepOrganisationId);
         when(legalRepForDefendantAccessValidator.validateAndGetDefendants(caseEntity, organisationId))
             .thenReturn(defendants);
 

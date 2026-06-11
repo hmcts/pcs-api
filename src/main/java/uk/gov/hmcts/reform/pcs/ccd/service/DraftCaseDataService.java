@@ -162,19 +162,17 @@ public class DraftCaseDataService {
                                              UUID partyId,
                                              UUID legalRepresentativeOrganisationId) {
 
-        UUID userId = legalRepresentativeOrganisationId;
-
         saveUnsubmittedEventDataInternal(
             caseReference,
             eventData,
             eventId,
-            userId,
+            legalRepresentativeOrganisationId,
             partyId,
             () -> draftCaseDataRepository
                 .findByCaseReferenceAndEventIdAndIdamUserIdAndPartyId(
                     caseReference,
                     eventId,
-                    userId,
+                    legalRepresentativeOrganisationId,
                     partyId
                 )
         );
@@ -245,12 +243,15 @@ public class DraftCaseDataService {
         patchUnsubmittedEventDataInternal(caseReference, eventData, eventId, null, null);
     }
 
-    public <T> void patchUnsubmittedEventData(long caseReference, T eventData, EventId eventId, UUID partyId, UUID legalRepresentativeOrganisationId) {
+    public <T> void patchUnsubmittedEventData(long caseReference, T eventData, EventId eventId, UUID partyId,
+                                              UUID legalRepresentativeOrganisationId) {
 
-        patchUnsubmittedEventDataInternal(caseReference, eventData, eventId, partyId, legalRepresentativeOrganisationId);
+        patchUnsubmittedEventDataInternal(caseReference, eventData, eventId, partyId,
+                                          legalRepresentativeOrganisationId);
     }
 
-    public void patchUnsubmittedCaseData(long caseReference, EventId eventId, String patchEventDataJson, UUID partyId, UUID legalRepresentativeOrganisationId) {
+    public void patchUnsubmittedCaseData(long caseReference, EventId eventId, String patchEventDataJson, UUID partyId,
+                                         UUID legalRepresentativeOrganisationId) {
         UUID userId = legalRepresentativeOrganisationId;
         patchInternal(
             caseReference,
@@ -314,20 +315,19 @@ public class DraftCaseDataService {
     @Transactional
     public void deleteUnsubmittedCaseData(long caseReference,
                                           EventId eventId,
-                                          UUID partyId) {
-
-        UUID userId = getCurrentUserId();
+                                          UUID partyId,
+                                          UUID organisationId) {
 
         deleteUnsubmittedCaseDataInternal(
             caseReference,
             eventId,
-            userId,
+            organisationId,
             partyId,
             () -> draftCaseDataRepository
                 .deleteByCaseReferenceAndEventIdAndIdamUserIdAndPartyId(
                     caseReference,
                     eventId,
-                    userId,
+                    organisationId,
                     partyId
                 )
         );
@@ -540,12 +540,12 @@ public class DraftCaseDataService {
         Objects.requireNonNull(eventData, "eventData must not be null");
         Objects.requireNonNull(eventId, "eventId must not be null");
 
-        UUID userId = getCurrentUserId();
 
         if (partyId != null) {
-            log.info("Patching draft: caseReference={}, eventId={}, userId={}, partyId={}",
-                     caseReference, eventId, userId, partyId);
+            log.info("Patching draft: caseReference={}, eventId={}, legalRepresentativeOrganisationId={}, partyId={}",
+                     caseReference, eventId, legalRepresentativeOrganisationId, partyId);
         } else {
+            UUID userId = getCurrentUserId();
             log.info("Patching draft: caseReference={}, eventId={}, userId={}",
                      caseReference, eventId, userId);
         }
@@ -553,7 +553,8 @@ public class DraftCaseDataService {
         String patchEventDataJson = writeCaseDataJson(eventData);
 
         if (partyId != null) {
-            patchUnsubmittedCaseData(caseReference, eventId, patchEventDataJson, partyId, legalRepresentativeOrganisationId);
+            patchUnsubmittedCaseData(caseReference, eventId, patchEventDataJson, partyId,
+                                     legalRepresentativeOrganisationId);
         } else {
             patchUnsubmittedCaseData(caseReference, eventId, patchEventDataJson);
         }

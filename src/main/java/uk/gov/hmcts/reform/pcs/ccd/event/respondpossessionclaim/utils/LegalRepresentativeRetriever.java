@@ -20,7 +20,8 @@ public class LegalRepresentativeRetriever {
             findExistingRepresentativeOrganisation(organisationId, caseReference);
 
         LegalRepresentativeOrganisationEntity legalRepresentativeOrganisation = legalRepresentativeOrganisationEntity
-            .orElseThrow(() -> new IllegalStateException("Legal Representative Organisation not linked to case or party"));
+            .orElseThrow(() -> new IllegalStateException("Legal Representative Organisation "
+                                                             + "not linked to case or party"));
 
         return legalRepresentativeOrganisation.getId();
     }

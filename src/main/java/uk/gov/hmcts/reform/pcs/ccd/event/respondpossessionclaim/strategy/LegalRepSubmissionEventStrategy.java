@@ -9,7 +9,6 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
-import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeOrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.utils.LegalRepresentativeRetriever;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.ClaimResponseService;
@@ -75,7 +74,8 @@ public class LegalRepSubmissionEventStrategy implements RespondPossessionClaimSu
 
         claimResponseService.saveDraftDataForParty(responseDraftData, caseReference, representedPartyId);
         defendantResponseService.saveDefendantResponse(caseReference, responseDraftData, representedPartyId);
-        draftCaseDataService.deleteUnsubmittedCaseData(caseReference, respondPossessionClaim, representedPartyId);
+        draftCaseDataService.deleteUnsubmittedCaseData(caseReference, respondPossessionClaim, representedPartyId,
+                                                       legalRepOrganisationIdForUser);
 
         return submitResponseFactory.success();
     }

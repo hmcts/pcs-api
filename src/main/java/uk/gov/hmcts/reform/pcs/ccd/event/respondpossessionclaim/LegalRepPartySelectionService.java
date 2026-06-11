@@ -8,11 +8,9 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
-import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeOrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.utils.PossessionClaimMerger;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DefendantResponseRepository;
-import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.LegalRepresentativeOrganisationRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.PossessionClaimResponseMapper;
 import uk.gov.hmcts.reform.pcs.ccd.util.SelectedPartyRetriever;
@@ -36,7 +34,8 @@ public class LegalRepPartySelectionService {
     private final PossessionClaimResponseMapper responseMapper;
     private final PossessionClaimMerger possessionClaimMerger;
 
-    public PCSCase getDraft(PCSCase pcsCase, List<PartyEntity> defendantPartiesLinkedAndActive, long caseReference, UUID legalRepresentativeOrganisationId) {
+    public PCSCase getDraft(PCSCase pcsCase, List<PartyEntity> defendantPartiesLinkedAndActive, long caseReference,
+                            UUID legalRepresentativeOrganisationId) {
         Optional<UUID> selectedPartyId = selectedPartyRetriever.getSelectedPartyId(pcsCase);
 
         if (selectedPartyId.isEmpty()) {
@@ -46,7 +45,8 @@ public class LegalRepPartySelectionService {
         PartyEntity matchedDefendant = findMatchedDefendant(defendantPartiesLinkedAndActive, selectedPartyId.get());
         validateResponseNotAlreadySubmitted(caseReference, matchedDefendant.getId());
 
-        return getDraftCaseData(caseReference, pcsCase, matchedDefendant, defendantPartiesLinkedAndActive, legalRepresentativeOrganisationId);
+        return getDraftCaseData(caseReference, pcsCase, matchedDefendant, defendantPartiesLinkedAndActive,
+                                legalRepresentativeOrganisationId);
     }
 
     public void validateResponseNotAlreadySubmitted(long caseReference, UUID partyId) {
@@ -66,7 +66,8 @@ public class LegalRepPartySelectionService {
         );
 
         if (hasDraft) {
-            return restoreDraft(caseReference, pcsCase, matchedDefendant, linkedDefendants, legalRepresentativeOrganisationId);
+            return restoreDraft(caseReference, pcsCase, matchedDefendant, linkedDefendants,
+                                legalRepresentativeOrganisationId);
         }
 
         return initialiseDraft(caseReference, pcsCase, matchedDefendant, legalRepresentativeOrganisationId);
@@ -138,14 +139,16 @@ public class LegalRepPartySelectionService {
             .build();
     }
 
-    private PCSCase initialiseDraft(long caseReference, PCSCase pcsCase, PartyEntity defendant, UUID legalRepresentativeOrganisationId) {
+    private PCSCase initialiseDraft(long caseReference, PCSCase pcsCase, PartyEntity defendant,
+                                    UUID legalRepresentativeOrganisationId) {
         PossessionClaimResponse response = responseMapper.mapFrom(pcsCase, defendant);
 
         PCSCase draft = PCSCase.builder()
             .possessionClaimResponse(createDefendantOnlyDraft(response))
             .build();
 
-        draftCaseDataService.patchUnsubmittedEventData(caseReference, draft, respondPossessionClaim, defendant.getId(), legalRepresentativeOrganisationId);
+        draftCaseDataService.patchUnsubmittedEventData(caseReference, draft, respondPossessionClaim, defendant.getId(),
+                                                       legalRepresentativeOrganisationId);
 
         return pcsCase.toBuilder()
             .possessionClaimResponse(response)

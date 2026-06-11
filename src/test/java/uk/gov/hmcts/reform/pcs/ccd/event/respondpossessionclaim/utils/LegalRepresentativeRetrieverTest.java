@@ -14,7 +14,7 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertThrows;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -25,34 +25,37 @@ class LegalRepresentativeRetrieverTest {
     private LegalRepresentativeRetriever legalRepresentativeRetriever;
 
     @Test
-    void getLegalRepOrganisationIdForUser_LegalRepOrgFound_ReturnsID(){
-        //given
+    void getLegalRepOrganisationIdForUser_LegalRepOrgFound_ReturnsID() {
+        // given
         long caseReference = 0;
-        String organisationId = "";
+        String organisationId = "org";
         UUID id = UUID.randomUUID();
         LegalRepresentativeOrganisationEntity legalRepresentativeOrganisationEntity =
             LegalRepresentativeOrganisationEntity.builder().id(id).build();
         when(legalRepresentativeOrganisationRepository
                          .findByOrganisationIdAndCaseReference(organisationId,caseReference)).thenReturn(
             Optional.ofNullable(legalRepresentativeOrganisationEntity));
-        //when
+
+        // when
         UUID legalRepOrganisationIdForUser = legalRepresentativeRetriever.getLegalRepOrganisationIdForUser(
             caseReference,
             organisationId
         );
-        //then
+
+        // then
         assertEquals(id,legalRepOrganisationIdForUser);
     }
 
     @Test
-    void getLegalRepOrganisationIdForUser_LegalRepOrgNotFound_ThrowsException(){
-        //given
+    void getLegalRepOrganisationIdForUser_LegalRepOrgNotFound_ThrowsException() {
+        // given
         long caseReference = 0;
-        String organisationId = "";
+        String organisationId = "org";
         when(legalRepresentativeOrganisationRepository
                          .findByOrganisationIdAndCaseReference(organisationId,caseReference))
             .thenReturn(Optional.empty());
-        //when then
+
+        // when / then
         assertThat(assertThrows(
             IllegalStateException.class,
             () -> legalRepresentativeRetriever.getLegalRepOrganisationIdForUser(caseReference,organisationId)

@@ -508,7 +508,11 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
 
     @Test
     void shouldThrowErrorWhenNoSelectedPartyId() {
+        UUID userId = UUID.randomUUID();
+        String organisationId = "org";
         when(userInfo.getRoles()).thenReturn(List.of(UserRole.DEFENDANT_SOLICITOR.getRole()));
+        when(securityContextService.getCurrentUserId()).thenReturn(userId);
+        when(organisationDetailsService.getOrganisationIdentifier(userId.toString())).thenReturn(organisationId);
         DefendantContactDetails contactDetails = DefendantContactDetails.builder()
             .party(Party.builder().firstName("Jack").lastName("Smith").build())
             .build();
