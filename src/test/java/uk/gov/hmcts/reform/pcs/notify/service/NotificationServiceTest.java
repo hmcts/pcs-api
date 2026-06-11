@@ -502,6 +502,32 @@ class NotificationServiceTest {
         }
 
         @Test
+        @DisplayName("Should send claimant defendant response received email")
+        void shouldSendClaimantDefendantResponseReceivedEmail() {
+            PartyEntity claimantParty = new PartyEntity();
+            claimantParty.setEmailAddress(TEST_EMAIL);
+            when(partyService.getPrimaryClaimantPartyEntity(any())).thenReturn(claimantParty);
+
+            when(partyService.canSendEmailNotification(any(), any())).thenReturn(true);
+            when(templateConfiguration.getTemplateId(EmailTemplate.MAKE_A_CLAIM_DEFENDANT_RESPONSE_RECEIVED))
+                .thenReturn(TEMPLATE_ID);
+
+            CaseNotification savedNotification = createCaseNotification();
+            when(notificationRepository.save(any())).thenReturn(savedNotification);
+            when(schedulerClient.scheduleIfNotExists(any())).thenReturn(true);
+
+            EmailNotificationResponse response =
+                notificationService.sendClaimantDefendantResponseReceived(defendantResponse.getClaim());
+
+            assertThat(response).isNotNull();
+            assertThat(response.getStatus()).isEqualTo(NotificationStatus.SCHEDULED.toString());
+
+            verify(templateConfiguration).getTemplateId(EmailTemplate.MAKE_A_CLAIM_DEFENDANT_RESPONSE_RECEIVED);
+            verify(notificationRepository, times(2)).save(any());
+            verify(schedulerClient).scheduleIfNotExists(any());
+        }
+
+        @Test
         @DisplayName("Should throw PartyNotFoundException when claimant is null in claimantRecipient")
         void shouldThrowPartyNotFoundExceptionWhenClaimantIsNullInClaimantRecipient() {
             when(partyService.getPrimaryClaimantPartyEntity(any())).thenReturn(null);

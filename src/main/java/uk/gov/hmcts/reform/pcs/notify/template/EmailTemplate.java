@@ -12,7 +12,8 @@ public enum EmailTemplate {
 
     // Make a Claim Email Templates
     MAKE_A_CLAIM_CLAIM_SAVED_FOR_LATER("make-a-claim-claim-saved-for-later"),
-    MAKE_A_CLAIM_DEFENDANT_MADE_COUNTERCLAIM("make-a-claim-defendant-made-counterclaim");
+    MAKE_A_CLAIM_DEFENDANT_MADE_COUNTERCLAIM("make-a-claim-defendant-made-counterclaim"),
+    MAKE_A_CLAIM_DEFENDANT_RESPONSE_RECEIVED("make-a-claim-defendant-response-received");
 
     private final String templateKey;
 
