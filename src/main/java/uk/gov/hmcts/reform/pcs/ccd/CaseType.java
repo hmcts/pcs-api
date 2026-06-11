@@ -107,7 +107,7 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
                       AccessProfile.LEADERSHIP_JUDGE_READ,
                       AccessProfile.CTSC_ADMIN,
                       AccessProfile.HEARING_CENTRE_ADMIN,
-                      AccessProfile.WLU_ADMIN)
+                      AccessProfile.CASE_LINK_READ)
             .field(PCSCase::getLinkedCasesComponentLauncher, null, "#ARGUMENT(LinkedCases)")
             .field(PCSCase::getCaseLinks, "LinkedCasesComponentLauncher!=\"\"", "#ARGUMENT(LinkedCases)");
 

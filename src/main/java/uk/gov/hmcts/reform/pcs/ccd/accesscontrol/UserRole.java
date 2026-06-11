@@ -9,6 +9,7 @@ import java.util.Set;
 
 import static uk.gov.hmcts.ccd.sdk.api.Permission.CRU;
 import static uk.gov.hmcts.ccd.sdk.api.Permission.R;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.AccessProfile.CASE_LINK_READ;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.AccessProfile.GS_PROFILE;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.RoleType.IDAM;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.RoleType.RAS;
@@ -37,7 +38,7 @@ public enum UserRole implements HasRole {
 
     CTSC_ADMIN("ctsc", Permission.CRU, RAS),
     HEARING_CENTRE_ADMIN("hearing-centre-admin", Permission.CRU, RAS),
-    WLU_ADMIN("wlu-admin", Permission.CRU, RAS),
+    WLU_ADMIN("wlu-admin", Permission.CRU, RAS, CASE_LINK_READ),
     FEE_PAID_JUDGE("fee-paid-judge", Permission.CRU, RAS),
     LEADERSHIP_JUDGE("leadership-judge", Permission.CRU, RAS),
     CIRCUIT_JUDGE("circuit-judge", Permission.CRU, RAS),

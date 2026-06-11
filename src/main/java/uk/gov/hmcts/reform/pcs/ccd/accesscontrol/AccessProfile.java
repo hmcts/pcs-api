@@ -27,7 +27,7 @@ public enum AccessProfile implements HasRole {
     FEE_PAID_JUDGE_READ("fee-paid-judge", Set.of(R)),
     CIRCUIT_JUDGE_READ("circuit-judge", Set.of(R)),
     LEADERSHIP_JUDGE_READ("leadership-judge", Set.of(R)),
-    WLU_ADMIN_READ("wlu-admin", Set.of(R)),
+    CASE_LINK_READ("case_link_read", Set.of(R)),
 
     CTSC_ADMIN("ctsc", Permission.CRU),
     HEARING_CENTRE_ADMIN("hearing-centre-admin", Permission.CRU),

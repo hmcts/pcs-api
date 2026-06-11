@@ -33,7 +33,8 @@ public class HighLevelDataSetupApp extends DataLoaderToDefinitionStore {
         new CcdRoleConfig("fee-paid-judge", "PUBLIC"),
         new CcdRoleConfig("circuit-judge", "PUBLIC"),
         new CcdRoleConfig("leadership-judge", "PUBLIC"),
-        new CcdRoleConfig("pcs-system-update", "PUBLIC")
+        new CcdRoleConfig("pcs-system-update", "PUBLIC"),
+        new CcdRoleConfig("case_link_read", "PUBLIC")
     };
 
 
