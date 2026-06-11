@@ -13,7 +13,7 @@ import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.List;
 
-@Component
+@Component("respondToClaimSubmitEventHandler")
 @Slf4j
 @RequiredArgsConstructor
 public class SubmitEventHandler implements Submit<PCSCase, State> {

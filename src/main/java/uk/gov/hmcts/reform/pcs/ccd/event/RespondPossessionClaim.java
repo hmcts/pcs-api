@@ -1,7 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.event;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
 import uk.gov.hmcts.ccd.sdk.api.DecentralisedConfigBuilder;
@@ -19,13 +19,20 @@ import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.respondPossessionClaim;
 
 @Component
 @Slf4j
-@RequiredArgsConstructor
 public class RespondPossessionClaim implements CCDConfig<PCSCase, State, UserRole> {
 
     private final StartEventHandler startEventHandler;
     private final SubmitEventHandler submitEventHandler;
-
     private final RespondToPossessionDraftSavePage respondToPossessionDraftSavePage;
+
+    public RespondPossessionClaim(@Qualifier("respondToClaimStartEventHandler") StartEventHandler startEventHandler,
+                                  @Qualifier("respondToClaimSubmitEventHandler") SubmitEventHandler submitEventHandler,
+                                  RespondToPossessionDraftSavePage respondToPossessionDraftSavePage) {
+
+        this.startEventHandler = startEventHandler;
+        this.submitEventHandler = submitEventHandler;
+        this.respondToPossessionDraftSavePage = respondToPossessionDraftSavePage;
+    }
 
     @Override
     public void configureDecentralised(final DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
