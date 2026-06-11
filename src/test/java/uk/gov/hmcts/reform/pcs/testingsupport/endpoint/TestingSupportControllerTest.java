@@ -32,6 +32,8 @@ import uk.gov.hmcts.reform.pcs.idam.User;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityResult;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.postcodecourt.service.EligibilityService;
+import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationDetailsService;
 import uk.gov.hmcts.reform.pcs.service.LegalRepresentativePartyLinkService;
 import uk.gov.hmcts.reform.pcs.testingsupport.service.CcdTestCaseOrchestrator;
 import uk.gov.hmcts.reform.pcs.testingsupport.service.EntityTestStatusService;
@@ -83,6 +85,11 @@ class TestingSupportControllerTest {
     private User user;
     @Mock
     private UserInfo userInfo;
+    @Mock
+    private OrganisationDetailsService organisationDetailsService;
+    @Mock
+    private OrganisationDetailsResponse organisationDetails;
+
 
     private TestingSupportController underTest;
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -96,7 +103,8 @@ class TestingSupportControllerTest {
                                                  caseRoleAssignmentService,
                                                  legalRepresentativePartyLinkService,
                                                  idamAuthenticator,
-                                                 entityTestStatusService
+                                                 entityTestStatusService,
+                                                 organisationDetailsService
         );
     }
 
@@ -356,6 +364,7 @@ class TestingSupportControllerTest {
         when(idamAuthenticator.validateAuthToken(authToken)).thenReturn(user);
         when(user.getUserDetails()).thenReturn(userInfo);
         when(userInfo.getUid()).thenReturn(userUid);
+        when(organisationDetailsService.getOrganisationDetails(userUid.toString())).thenReturn(organisationDetails);
 
         // when
         ResponseEntity<Void> response = underTest.linkDefendantSolicitorToParty(
@@ -369,7 +378,7 @@ class TestingSupportControllerTest {
         verify(caseRoleAssignmentService).assignRasRole(caseReference, userUid, UserRole.DEFENDANT_SOLICITOR);
 
         verify(legalRepresentativePartyLinkService)
-            .linkLegalRepresentativeToParty(caseReference, partyId, userInfo);
+            .linkLegalRepresentativeToParty(caseReference, partyId, userInfo, organisationDetails);
 
         assertThat(HttpStatus.OK.equals(response.getStatusCode()));
     }
