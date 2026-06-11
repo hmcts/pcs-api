@@ -8,6 +8,7 @@ head_sha="${HEAD_SHA:?missing HEAD_SHA}"
 migration_dir="src/main/resources/db/migration"
 findings_file="db-scan-findings.tsv"
 summary_file="db-scan-summary.md"
+guidance_url="https://hmcts.github.io/cloud-native-platform/standards/db-schema-change.html#zero-downtime-database-deployments"
 
 : > "$findings_file"
 
@@ -87,6 +88,7 @@ findings_count=$(wc -l < "$findings_file" | tr -d ' ')
 
 {
   printf '# DB breaking change scan\n\n'
+  printf 'Recommended reading: [HMCTS zero-downtime database deployments](%s)\n\n' "$guidance_url"
   if [ "$findings_count" -gt 0 ]; then
     printf 'Found %s potentially breaking database change%s in Flyway migrations that could cause an issue while the application is still on the previous version.\n\n' \
       "$findings_count" \
@@ -103,6 +105,6 @@ findings_count=$(wc -l < "$findings_file" | tr -d ' ')
     printf '\nThis is advisory only, but each item above could break the app if the database is deployed before the compatible application version.\n'
   else
     printf 'No potentially breaking database changes were detected in Flyway migrations.\n\n'
-    printf 'This check only scans changed `.sql` files under `src/main/resources/db/migration` and flags high-risk DDL patterns. It does not replace a full migration review.\n'
+    printf 'This check only scans changed `.sql` files under `src/main/resources/db/migration` and flags high-risk DDL patterns. It does not replace a full migration review.\n\n'
   fi
 } > "$summary_file"

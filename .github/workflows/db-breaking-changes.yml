@@ -41,8 +41,9 @@ jobs:
       - name: Add inline annotations
         if: steps.scan.outputs.has-findings == 'true'
         run: |
+          guidance_url='https://hmcts.github.io/cloud-native-platform/standards/db-schema-change.html#zero-downtime-database-deployments'
           while IFS=$'\t' read -r file line severity label advice content; do
-            message="${severity^^} ${label}: ${content}. ${advice}"
+            message="${severity^^} ${label}: ${content}. ${advice} See: ${guidance_url}"
             message="${message//'%'/'%25'}"
             message="${message//$'\r'/'%0D'}"
             message="${message//$'\n'/'%0A'}"
