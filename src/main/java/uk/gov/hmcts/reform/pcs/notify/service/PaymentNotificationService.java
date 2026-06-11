@@ -33,11 +33,16 @@ public class PaymentNotificationService {
 
         FeePaymentEntity feePayment = pcsCase.getClaims().stream()
             .filter(claim -> claim.getFeePayment() != null
+                && claim.getFeePayment().getParty() != null
                 && claim.getFeePayment().getParty().getId().equals(defendant.getId()))
             .map(ClaimEntity::getFeePayment)
             .findFirst()
-            .orElseThrow(() -> new IllegalArgumentException(
-                "No fee payment found for counterclaim: " + counterClaim.getId()));
+            .orElse(null);
+
+        if (feePayment == null) {
+            log.info("Fee payment for counter claim: {} not found, skipping email notification", counterClaimId);
+            return;
+        }
 
         if (feePayment.getPaymentStatus() != PaymentStatus.PAID) {
             log.info("Fee payment {} not paid, skipping email notification", feePayment.getId());
