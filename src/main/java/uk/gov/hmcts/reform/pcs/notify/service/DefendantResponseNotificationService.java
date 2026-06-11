@@ -22,6 +22,14 @@ public class DefendantResponseNotificationService {
     private final CounterClaimRepository counterClaimRepository;
 
     @Transactional
+    public void sendDefendantResponseReceived(UUID defendantResponseId) {
+        DefendantResponseEntity defendantResponse = defendantResponseRepository.findById(defendantResponseId)
+            .orElseThrow(() -> new IllegalArgumentException("Defendant response not found: " + defendantResponseId));
+
+        notificationService.sendClaimantDefendantResponseReceived(defendantResponse.getClaim());
+    }
+
+    @Transactional
     public void sendEmailNotificationForNoCounterClaim(UUID defendantResponseId) {
         DefendantResponseEntity defendantResponse = defendantResponseRepository.findById(defendantResponseId)
             .orElseThrow(() -> new IllegalArgumentException("Defendant response not found: " + defendantResponseId));
@@ -36,7 +44,7 @@ public class DefendantResponseNotificationService {
     }
 
     @Transactional
-    public void sendEmailNotificationForCounterclaim(UUID defendantResponseId) {
+    public void sendDefendantEmailNotificationForCounterclaim(UUID defendantResponseId) {
         DefendantResponseEntity defendantResponse = defendantResponseRepository.findById(defendantResponseId)
             .orElseThrow(() -> new IllegalArgumentException("Defendant response not found: " + defendantResponseId));
 
@@ -86,7 +94,7 @@ public class DefendantResponseNotificationService {
             .filter(dr -> dr.getParty().getId().equals(counterClaim.getParty().getId()))
             .findFirst()
             .map(DefendantResponseEntity::getId)
-            .ifPresent(this::sendEmailNotificationForCounterclaim);
+            .ifPresent(this::sendDefendantEmailNotificationForCounterclaim);
     }
 
     private CounterClaimEntity getAssociatedCounterClaim(DefendantResponseEntity defendantResponse) {
