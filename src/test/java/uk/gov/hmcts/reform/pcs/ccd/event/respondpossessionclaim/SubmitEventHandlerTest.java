@@ -31,6 +31,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.RecurrenceFrequ
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
@@ -435,7 +436,10 @@ class SubmitEventHandlerTest {
         stubDraft(caseData);
 
         PartyEntity partyEntity = PartyEntity.builder().id(PARTY_ID).build();
-        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().caseReference(CASE_REFERENCE).build();
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
+            .caseReference(CASE_REFERENCE)
+            .build();
+        pcsCaseEntity.addClaim(ClaimEntity.builder().build());
         CounterClaimEntity counterClaimEntity = CounterClaimEntity.builder()
             .id(COUNTER_CLAIM_ID)
             .party(partyEntity)

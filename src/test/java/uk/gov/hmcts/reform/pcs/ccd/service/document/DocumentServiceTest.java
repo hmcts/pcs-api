@@ -27,6 +27,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.E
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.EvidenceOfDefendants;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.WarrantOfRestitutionDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
+import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
@@ -55,6 +56,8 @@ class DocumentServiceTest {
     private DocumentRepository documentRepository;
     @Mock
     private DocumentIdExtractor documentIdExtractor;
+    @Mock
+    private DocumentNameService documentNameService;
     @Captor
     private ArgumentCaptor<List<DocumentEntity>> documentEntityListCaptor;
 
@@ -62,7 +65,7 @@ class DocumentServiceTest {
 
     @BeforeEach
     void setUp() {
-        underTest = new DocumentService(documentRepository, documentIdExtractor);
+        underTest = new DocumentService(documentRepository, documentIdExtractor, documentNameService);
     }
 
     @Test
@@ -797,10 +800,19 @@ class DocumentServiceTest {
     @Test
     void shouldSaveCounterClaimDocuments() {
         // Given
+        UUID partyId = UUID.randomUUID();
+        ClaimEntity claim = ClaimEntity.builder().build();
+        PcsCaseEntity pcsCase = PcsCaseEntity.builder().build();
+        pcsCase.addClaim(claim);
         CounterClaimEntity counterClaim = mock(CounterClaimEntity.class);
-        PcsCaseEntity pcsCase = mock(PcsCaseEntity.class);
         PartyEntity party = mock(PartyEntity.class);
+
         when(counterClaim.getId()).thenReturn(UUID.randomUUID());
+        when(party.getId()).thenReturn(partyId);
+        when(documentNameService.appendCounterClaimDocumentName("file1.pdf", claim, partyId))
+            .thenReturn("file1 - Defendant 1.pdf");
+        when(documentNameService.appendCounterClaimDocumentName("file2.docx", claim, partyId))
+            .thenReturn("file2 - Defendant 1.docx");
 
         UploadedDocument ccDoc1 = UploadedDocument.builder()
             .document(Document.builder()
@@ -833,8 +845,8 @@ class DocumentServiceTest {
         assertThat(entities).hasSize(2);
 
         assertThat(entities).allSatisfy(entity -> {
-            assertThat(entity.getType()).isNull();
-            assertThat(entity.getCategoryId()).isNull();
+            assertThat(entity.getType()).isEqualTo(DocumentType.DOCUMENTS_SUPPORTING_A_COUNTERCLAIM);
+            assertThat(entity.getCategoryId()).isEqualTo(CaseFileCategory.STATEMENTS_OF_CASE.getId());
             assertThat(entity.getCounterClaim()).isEqualTo(counterClaim);
             assertThat(entity.getPcsCase()).isEqualTo(pcsCase);
             assertThat(entity.getParty()).isEqualTo(party);
@@ -842,7 +854,7 @@ class DocumentServiceTest {
 
         assertThat(entities)
             .extracting(DocumentEntity::getFileName)
-            .containsExactly("file1.pdf", "file2.docx");
+            .containsExactly("file1 - Defendant 1.pdf", "file2 - Defendant 1.docx");
 
         assertThat(result).hasSize(2);
     }
@@ -883,10 +895,17 @@ class DocumentServiceTest {
     @Test
     void shouldFilterOutNullValuesFromCounterClaimDocuments() {
         // Given
+        UUID partyId = UUID.randomUUID();
+        ClaimEntity claim = ClaimEntity.builder().build();
+        PcsCaseEntity pcsCase = PcsCaseEntity.builder().build();
+        pcsCase.addClaim(claim);
         CounterClaimEntity counterClaim = mock(CounterClaimEntity.class);
-        PcsCaseEntity pcsCase = mock(PcsCaseEntity.class);
         PartyEntity party = mock(PartyEntity.class);
+
         when(counterClaim.getId()).thenReturn(UUID.randomUUID());
+        when(party.getId()).thenReturn(partyId);
+        when(documentNameService.appendCounterClaimDocumentName("file1.pdf", claim, partyId))
+            .thenReturn("file1 - Defendant 1.pdf");
 
         UploadedDocument validDoc = UploadedDocument.builder()
             .document(Document.builder()
@@ -909,7 +928,7 @@ class DocumentServiceTest {
         verify(documentRepository).saveAll(documentEntityListCaptor.capture());
         List<DocumentEntity> entities = documentEntityListCaptor.getValue();
         assertThat(entities).hasSize(1);
-        assertThat(entities.getFirst().getFileName()).isEqualTo("file1.pdf");
+        assertThat(entities.getFirst().getFileName()).isEqualTo("file1 - Defendant 1.pdf");
     }
 
     private static Stream<Arguments> additionalDocumentTypeScenarios() {

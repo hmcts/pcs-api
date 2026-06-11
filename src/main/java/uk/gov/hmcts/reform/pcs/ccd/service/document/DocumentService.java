@@ -222,13 +222,14 @@ public class DocumentService {
         List<ListValue<UploadedDocument>> counterClaimDocuments,
         CounterClaimEntity counterClaim,
         PcsCaseEntity pcsCase,
-        PartyEntity party,
-        ClaimEntity claim
+        PartyEntity party
     ) {
         if (CollectionUtils.isEmpty(counterClaimDocuments)) {
             log.info("No counter claim documents to save");
             return Collections.emptyList();
         }
+
+        ClaimEntity claim = pcsCase.getClaims().getFirst();
 
         List<DocumentEntity> documentEntities = counterClaimDocuments.stream()
             .map(ListValue::getValue)
