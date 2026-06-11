@@ -19,6 +19,14 @@ public class NoticeDetailsService {
 
     private static final String FUTURE_DATETIME_ERROR = "The date and time cannot be today or in the future";
     private static final String FUTURE_DATE_ERROR = "The date cannot be today or in the future";
+    private static final String NOTICE_OTHER_ELECTRONIC_METHOD_EXPLANATION_LABEL =
+            "Give details of how the notice was served";
+    private static final String NOTICE_UNABLE_TO_UPLOAD_DOCUMENT_TXT =
+            "Why can you not upload a copy of the notice you served?";
+    private static final String NOTICE_OTHER_EXPLANATION_LABEL = "Other";
+    private static final String NAME_OF_PERSON_DOCUMENT_LEFT_WITH = "Name of person the document was left with";
+
+    private final TextAreaValidationService textAreaValidationService;
 
     public List<String> validateNoticeDetails(PCSCase caseData) {
         List<String> errors = new ArrayList<>();
@@ -46,6 +54,29 @@ public class NoticeDetailsService {
                 validateOther(noticeServedDetails, errors);
                 break;
         }
+
+        errors.addAll(textAreaValidationService.validateMultipleTextAreas(
+                TextAreaValidationService.FieldValidation.of(
+                        noticeServedDetails.getOtherExplanation(),
+                        NOTICE_OTHER_EXPLANATION_LABEL,
+                        TextAreaValidationService.SHORT_TEXT_LIMIT
+                ),
+                TextAreaValidationService.FieldValidation.of(
+                        noticeServedDetails.getPersonName(),
+                        NAME_OF_PERSON_DOCUMENT_LEFT_WITH,
+                        TextAreaValidationService.EXTRA_SHORT_TEXT_LIMIT
+                ),
+                TextAreaValidationService.FieldValidation.of(
+                        noticeServedDetails.getOtherElectronicExplanation(),
+                        NOTICE_OTHER_ELECTRONIC_METHOD_EXPLANATION_LABEL,
+                        TextAreaValidationService.SHORT_TEXT_LIMIT
+                ),
+                TextAreaValidationService.FieldValidation.of(
+                        noticeServedDetails.getUnableToUploadReason(),
+                        NOTICE_UNABLE_TO_UPLOAD_DOCUMENT_TXT,
+                        TextAreaValidationService.MEDIUM_TEXT_LIMIT
+                )
+        ));
 
         return errors;
     }

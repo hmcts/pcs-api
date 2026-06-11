@@ -13,6 +13,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.service.NoticeDetailsService;
+import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
 import java.util.List;
 
@@ -21,6 +22,7 @@ import java.util.List;
 public class NoticeDetails implements CcdPageConfiguration {
 
     private final NoticeDetailsService noticeDetailsService;
+    private final TextAreaValidationService textAreaValidationService;
 
     private static final String NOTICE_SERVICE_METHOD_CONDITION = "notice_ServiceMethod=\"";
 
@@ -125,9 +127,6 @@ public class NoticeDetails implements CcdPageConfiguration {
 
         List<String> validationErrors = noticeDetailsService.validateNoticeDetails(caseData);
 
-        return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-                .data(caseData)
-                .errors(validationErrors)
-                .build();
+        return textAreaValidationService.createValidationResponse(caseData, validationErrors);
     }
 }

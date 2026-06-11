@@ -1,8 +1,12 @@
 package uk.gov.hmcts.reform.pcs.ccd.service;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServedDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServiceMethod;
@@ -11,367 +15,127 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@ExtendWith(MockitoExtension.class)
 class NoticeDetailsServiceTest {
 
+    private static final String FUTURE_DATE_TIME_ERROR_MESSAGE = "The date and time cannot be today or in the future";
+    private static final String FUTURE_DATE_ERROR_MESSAGE = "The date cannot be today or in the future";
+    @Mock
+    private TextAreaValidationService textAreaValidationService;
+
+    @InjectMocks
     private NoticeDetailsService noticeDetailsService;
 
-    @BeforeEach
-    void setUp() {
-        noticeDetailsService = new NoticeDetailsService();
-    }
+    @ParameterizedTest(name = "[{index}] {0} with date={1} => expectNoErrors={2}")
+    @MethodSource("dateBasedProvider")
+    void validateDateBasedServiceMethods(NoticeServiceMethod method, LocalDate date, boolean expectNoErrors,
+                                         String expectedMessage) {
 
-    @Nested
-    class ConditionalValidationTests {
+        NoticeServedDetails.NoticeServedDetailsBuilder builder = NoticeServedDetails.builder()
+                .serviceMethod(method);
 
-        @Test
-        void shouldValidateNoticeDetailsWhenNoticeServedIsYes() {
-            PCSCase caseData = PCSCase.builder()
-                .noticeServed(YesOrNo.YES)
-                .noticeServedDetails(NoticeServedDetails.builder()
-                    .serviceMethod(NoticeServiceMethod.EMAIL)
-                    .build())
-                .build();
-            List<String> errors = noticeDetailsService.validateNoticeDetails(caseData);
-
-            assertThat(errors)
-                .isEmpty();
+        switch (method) {
+            case FIRST_CLASS_POST -> builder.postedDate(date);
+            case DELIVERED_PERMITTED_PLACE -> builder.deliveredDate(date);
+            default -> throw new IllegalArgumentException("Unexpected date-based method: " + method);
         }
-    }
 
-    @Nested
-    class DateFieldValidation {
-
-        @Test
-        void shouldValidateFirstClassPostWithValidDate() {
-            // Given
-            PCSCase caseData = PCSCase.builder()
+        PCSCase caseData = PCSCase.builder()
                 .noticeServed(YesOrNo.YES)
-                .noticeServedDetails(NoticeServedDetails.builder()
-                    .serviceMethod(NoticeServiceMethod.FIRST_CLASS_POST)
-                    .postedDate(LocalDate.of(2023, 1, 1))
-                    .build())
+                .noticeServedDetails(builder.build())
                 .build();
 
-            // When
-            List<String> errors = noticeDetailsService.validateNoticeDetails(caseData);
+        List<String> errors = noticeDetailsService.validateNoticeDetails(caseData);
 
-            // Then
+        if (expectNoErrors) {
             assertThat(errors).isEmpty();
-        }
-
-        @Test
-        void shouldValidateFirstClassPostWithNullDate() {
-            // Given
-            PCSCase caseData = PCSCase.builder()
-                .noticeServed(YesOrNo.YES)
-                .noticeServedDetails(NoticeServedDetails.builder()
-                    .serviceMethod(NoticeServiceMethod.FIRST_CLASS_POST)
-                    .postedDate(null) // Null date is allowed for optional fields
-                    .build())
-                .build();
-
-            // When
-            List<String> errors = noticeDetailsService.validateNoticeDetails(caseData);
-
-            // Then
-            assertThat(errors).isEmpty();
-        }
-
-        @Test
-        void shouldValidateFirstClassPostWithFutureDate() {
-            // Given
-            PCSCase caseData = PCSCase.builder()
-                .noticeServed(YesOrNo.YES)
-                .noticeServedDetails(NoticeServedDetails.builder()
-                    .serviceMethod(NoticeServiceMethod.FIRST_CLASS_POST)
-                    .postedDate(LocalDate.now().plusDays(1))
-                    .build())
-                .build();
-
-            // When
-            List<String> errors = noticeDetailsService.validateNoticeDetails(caseData);
-
-            // Then
-            assertThat(errors)
-                .isNotEmpty()
-                .contains("The date cannot be today or in the future");
-        }
-
-        @Test
-        void shouldValidateFirstClassPostWithTodayDate() {
-            // Given
-            PCSCase caseData = PCSCase.builder()
-                .noticeServed(YesOrNo.YES)
-                .noticeServedDetails(NoticeServedDetails.builder()
-                    .serviceMethod(NoticeServiceMethod.FIRST_CLASS_POST)
-                    .postedDate(LocalDate.now())
-                    .build())
-                .build();
-
-            // When
-            List<String> errors = noticeDetailsService.validateNoticeDetails(caseData);
-
-            // Then
-            assertThat(errors)
-                .isNotEmpty()
-                .contains("The date cannot be today or in the future");
-        }
-
-        @Test
-        void shouldValidateDeliveredPermittedPlaceWithValidDate() {
-            // Given
-            PCSCase caseData = PCSCase.builder()
-                .noticeServed(YesOrNo.YES)
-                .noticeServedDetails(NoticeServedDetails.builder()
-                    .serviceMethod(NoticeServiceMethod.DELIVERED_PERMITTED_PLACE)
-                    .deliveredDate(LocalDate.of(2023, 1, 1))
-                    .build())
-                .build();
-
-            // When
-            List<String> errors = noticeDetailsService.validateNoticeDetails(caseData);
-
-            // Then
-            assertThat(errors).isEmpty();
-        }
-
-        @Test
-        void shouldValidateDeliveredPermittedPlaceWithNullDate() {
-            // Given
-            PCSCase caseData = PCSCase.builder()
-                .noticeServed(YesOrNo.YES)
-                .noticeServedDetails(NoticeServedDetails.builder()
-                    .serviceMethod(NoticeServiceMethod.DELIVERED_PERMITTED_PLACE)
-                    .deliveredDate(null)
-                    .build())
-                .build();
-
-            // When
-            List<String> errors = noticeDetailsService.validateNoticeDetails(caseData);
-
-            // Then
-            assertThat(errors).isEmpty();
-        }
-
-        @Test
-        void shouldAcceptValidDateFormat() {
-            // Given
-            PCSCase caseData = PCSCase.builder()
-                .noticeServed(YesOrNo.YES)
-                .noticeServedDetails(NoticeServedDetails.builder()
-                    .serviceMethod(NoticeServiceMethod.FIRST_CLASS_POST)
-                    .postedDate(LocalDate.of(2025, 11, 10))
-                    .build())
-                .build();
-
-            // When
-            List<String> errors = noticeDetailsService.validateNoticeDetails(caseData);
-
-            // Then
-            assertThat(errors).isEmpty();
+        } else {
+            assertThat(errors).isNotEmpty();
+            if (expectedMessage != null) {
+                assertThat(errors).anyMatch(e -> e.contains(expectedMessage));
+            }
         }
     }
 
-    @Nested
-    class DateTimeFieldValidation {
+    @ParameterizedTest(name = "[{index}] {0} with dateTime={1} => expectNoErrors={2}")
+    @MethodSource("dateTimeBasedProvider")
+    void validateDateTimeBasedServiceMethods(NoticeServiceMethod method, LocalDateTime dateTime, boolean expectNoErrors,
+                                             String expectedMessage) {
+        NoticeServedDetails.NoticeServedDetailsBuilder builder = NoticeServedDetails.builder()
+                .serviceMethod(method);
 
-        @Test
-        void shouldValidatePersonallyHandedWithValidDateTime() {
-            // Given
-            LocalDateTime pastDateTime = LocalDateTime.now().minusDays(1);
-            PCSCase caseData = PCSCase.builder()
+        switch (method) {
+            case PERSONALLY_HANDED -> builder.handedOverDateTime(dateTime);
+            case EMAIL -> builder.emailSentDateTime(dateTime).emailAddress("test@example.com");
+            case OTHER_ELECTRONIC -> builder.otherElectronicDateTime(dateTime);
+            case OTHER -> builder.otherDateTime(dateTime);
+            default -> throw new IllegalArgumentException("Unexpected date-time based method: " + method);
+        }
+
+        PCSCase caseData = PCSCase.builder()
                 .noticeServed(YesOrNo.YES)
-                .noticeServedDetails(NoticeServedDetails.builder()
-                    .serviceMethod(NoticeServiceMethod.PERSONALLY_HANDED)
-                    .handedOverDateTime(pastDateTime) // Valid past date-time
-                    .build())
+                .noticeServedDetails(builder.build())
                 .build();
 
-            // When
-            List<String> errors = noticeDetailsService.validateNoticeDetails(caseData);
+        List<String> errors = noticeDetailsService.validateNoticeDetails(caseData);
 
-            // Then
+        if (expectNoErrors) {
             assertThat(errors).isEmpty();
-        }
-
-        @Test
-        void shouldAcceptPartialTimeEntries() {
-            // Given
-            // Create a LocalDateTime with only the date portion (time is midnight by default)
-            LocalDateTime pastDateOnly = LocalDateTime.now().minusDays(1)
-                .withHour(0).withMinute(0).withSecond(0).withNano(0);
-            PCSCase caseData = PCSCase.builder()
-                .noticeServed(YesOrNo.YES)
-                .noticeServedDetails(NoticeServedDetails.builder()
-                    .serviceMethod(NoticeServiceMethod.PERSONALLY_HANDED)
-                    .handedOverDateTime(pastDateOnly) // Date with default time (midnight)
-                    .build())
-                .build();
-
-            // When
-            List<String> errors = noticeDetailsService.validateNoticeDetails(caseData);
-
-            // Then
-            assertThat(errors).isEmpty();
-        }
-
-        @Test
-        void shouldValidatePersonallyHandedWithFutureDateTime() {
-            // Given
-            LocalDateTime futureDateTime = LocalDateTime.now().plusDays(1);
-            PCSCase caseData = PCSCase.builder()
-                .noticeServed(YesOrNo.YES)
-                .noticeServedDetails(NoticeServedDetails.builder()
-                    .serviceMethod(NoticeServiceMethod.PERSONALLY_HANDED)
-                    .handedOverDateTime(futureDateTime) // Future date-time
-                    .build())
-                .build();
-
-            // When
-            List<String> errors = noticeDetailsService.validateNoticeDetails(caseData);
-
-            // Then
-            assertThat(errors)
-                .isNotEmpty()
-                .contains("The date and time cannot be today or in the future");
-        }
-
-        @Test
-        void shouldValidatePersonallyHandedWithTodayDateTime() {
-            // Given
-            LocalDateTime todayDateTime = LocalDateTime.now()
-                .withHour(0).withMinute(0).withSecond(0).withNano(0);
-            PCSCase caseData = PCSCase.builder()
-                .noticeServed(YesOrNo.YES)
-                .noticeServedDetails(NoticeServedDetails.builder()
-                    .serviceMethod(NoticeServiceMethod.PERSONALLY_HANDED)
-                    .handedOverDateTime(todayDateTime) // Today's date-time
-                    .build())
-                .build();
-
-            // When
-            List<String> errors = noticeDetailsService.validateNoticeDetails(caseData);
-
-            // Then
-            assertThat(errors)
-                .isNotEmpty()
-                .contains("The date and time cannot be today or in the future");
-        }
-
-        @Test
-        void shouldValidateOtherElectronicWithValidDateTime() {
-            // Given
-            LocalDateTime pastDateTime = LocalDateTime.now().minusDays(1);
-            PCSCase caseData = PCSCase.builder()
-                .noticeServed(YesOrNo.YES)
-                .noticeServedDetails(NoticeServedDetails.builder()
-                    .serviceMethod(NoticeServiceMethod.OTHER_ELECTRONIC)
-                    .otherElectronicDateTime(pastDateTime) // Valid past date-time
-                    .build())
-                .build();
-
-            // When
-            List<String> errors = noticeDetailsService.validateNoticeDetails(caseData);
-
-            // Then
-            assertThat(errors).isEmpty();
-        }
-
-        @Test
-        void shouldValidateOtherElectronicWithFutureDateTime() {
-            // Given
-            LocalDateTime futureDateTime = LocalDateTime.now().plusDays(1);
-            PCSCase caseData = PCSCase.builder()
-                .noticeServed(YesOrNo.YES)
-                .noticeServedDetails(NoticeServedDetails.builder()
-                    .serviceMethod(NoticeServiceMethod.OTHER_ELECTRONIC)
-                    .otherElectronicDateTime(futureDateTime) // Future date-time
-                    .build())
-                .build();
-
-            // When
-            List<String> errors = noticeDetailsService.validateNoticeDetails(caseData);
-
-            // Then
-            assertThat(errors)
-                .isNotEmpty()
-                .contains("The date and time cannot be today or in the future");
+        } else {
+            assertThat(errors).isNotEmpty();
+            if (expectedMessage != null) {
+                assertThat(errors).anyMatch(e -> e.contains(expectedMessage));
+            }
         }
     }
 
-    @Nested
-    class EmailValidation {
+    private static Stream<Arguments> dateBasedProvider() {
+        LocalDate past = LocalDate.now().minusDays(1);
+        LocalDate today = LocalDate.now();
+        LocalDate future = LocalDate.now().plusDays(1);
 
-        @Test
-        void shouldValidateEmailWithFutureDateTime() {
-            // Given
-            LocalDateTime futureDateTime = LocalDateTime.now().plusDays(1);
-            PCSCase caseData = PCSCase.builder()
-                .noticeServed(YesOrNo.YES)
-                .noticeServedDetails(NoticeServedDetails.builder()
-                    .serviceMethod(NoticeServiceMethod.EMAIL)
-                    .emailSentDateTime(futureDateTime)
-                    .emailAddress("test@example.com")
-                    .build())
-                .build();
+        return Stream.of(
+                Arguments.of(NoticeServiceMethod.FIRST_CLASS_POST, past, true, null),
+                Arguments.of(NoticeServiceMethod.FIRST_CLASS_POST, null, true, null),
+                Arguments.of(NoticeServiceMethod.FIRST_CLASS_POST, today, false, FUTURE_DATE_ERROR_MESSAGE),
+                Arguments.of(NoticeServiceMethod.FIRST_CLASS_POST, future, false, FUTURE_DATE_ERROR_MESSAGE),
 
-            // When
-            List<String> errors = noticeDetailsService.validateNoticeDetails(caseData);
-
-            // Then
-            assertThat(errors)
-                .isNotEmpty()
-                .contains("The date and time cannot be today or in the future");
-        }
+                Arguments.of(NoticeServiceMethod.DELIVERED_PERMITTED_PLACE, past, true, null),
+                Arguments.of(NoticeServiceMethod.DELIVERED_PERMITTED_PLACE, null, true, null),
+                Arguments.of(NoticeServiceMethod.DELIVERED_PERMITTED_PLACE, today, false, FUTURE_DATE_ERROR_MESSAGE),
+                Arguments.of(NoticeServiceMethod.DELIVERED_PERMITTED_PLACE, future, false, FUTURE_DATE_ERROR_MESSAGE)
+        );
     }
 
-    @Nested
-    class OtherValidation {
+    private static Stream<Arguments> dateTimeBasedProvider() {
+        LocalDateTime past = LocalDateTime.now().minusDays(1).withNano(0);
+        LocalDateTime today = LocalDateTime.now().withNano(0);
+        LocalDateTime future = LocalDateTime.now().plusDays(1).withNano(0);
 
-        @Test
-        void shouldValidateOtherWithFutureDateTime() {
-            // Given
-            LocalDateTime futureDateTime = LocalDateTime.now().plusDays(1);
-            PCSCase caseData = PCSCase.builder()
-                .noticeServed(YesOrNo.YES)
-                .noticeServedDetails(NoticeServedDetails.builder()
-                    .serviceMethod(NoticeServiceMethod.OTHER)
-                    .otherDateTime(futureDateTime)
-                    .otherExplanation("Valid explanation")
-                    .build())
-                .build();
+        return Stream.of(
+                Arguments.of(NoticeServiceMethod.PERSONALLY_HANDED, past, true, null),
+                Arguments.of(NoticeServiceMethod.PERSONALLY_HANDED, null, true, null),
+                Arguments.of(NoticeServiceMethod.PERSONALLY_HANDED, today, false, FUTURE_DATE_TIME_ERROR_MESSAGE),
+                Arguments.of(NoticeServiceMethod.PERSONALLY_HANDED, future, false, FUTURE_DATE_TIME_ERROR_MESSAGE),
 
-            // When
-            List<String> errors = noticeDetailsService.validateNoticeDetails(caseData);
+                Arguments.of(NoticeServiceMethod.EMAIL, past, true, null),
+                Arguments.of(NoticeServiceMethod.EMAIL, null, true, null),
+                Arguments.of(NoticeServiceMethod.EMAIL, today, false, FUTURE_DATE_TIME_ERROR_MESSAGE),
+                Arguments.of(NoticeServiceMethod.EMAIL, future, false, FUTURE_DATE_TIME_ERROR_MESSAGE),
 
-            // Then
-            assertThat(errors)
-                .isNotEmpty()
-                .contains("The date and time cannot be today or in the future");
-        }
+                Arguments.of(NoticeServiceMethod.OTHER_ELECTRONIC, past, true, null),
+                Arguments.of(NoticeServiceMethod.OTHER_ELECTRONIC, null, true, null),
+                Arguments.of(NoticeServiceMethod.OTHER_ELECTRONIC, today, false, FUTURE_DATE_TIME_ERROR_MESSAGE),
+                Arguments.of(NoticeServiceMethod.OTHER_ELECTRONIC, future, false, FUTURE_DATE_TIME_ERROR_MESSAGE),
 
-        @Test
-        void shouldNotValidateOtherWithNullDateTime() {
-            // Given
-            LocalDateTime dateTime = null;
-            PCSCase caseData = PCSCase.builder()
-                    .noticeServed(YesOrNo.YES)
-                    .noticeServedDetails(NoticeServedDetails.builder()
-                            .serviceMethod(NoticeServiceMethod.OTHER)
-                            .otherDateTime(dateTime)
-                            .otherExplanation("Valid explanation")
-                            .build())
-                    .build();
-
-            // When
-            List<String> errors = noticeDetailsService.validateNoticeDetails(caseData);
-
-            // Then
-            assertThat(errors)
-                    .isEmpty();
-        }
+                Arguments.of(NoticeServiceMethod.OTHER, past, true, null),
+                Arguments.of(NoticeServiceMethod.OTHER, null, true, null),
+                Arguments.of(NoticeServiceMethod.OTHER, today, false, FUTURE_DATE_TIME_ERROR_MESSAGE),
+                Arguments.of(NoticeServiceMethod.OTHER, future, false, FUTURE_DATE_TIME_ERROR_MESSAGE)
+        );
     }
 }
