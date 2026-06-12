@@ -10,6 +10,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.idam.UserInfo;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -19,6 +20,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.LegalRepresentativeRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.CaseRoleAssignmentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 import uk.gov.hmcts.reform.pcs.exception.LegalRepresentativeAlreadyLinkedToPartyException;
@@ -35,6 +37,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -58,6 +61,9 @@ class LegalRepresentativePartyLinkServiceTest {
 
     @Mock
     private AddressMapper addressMapper;
+
+    @Mock
+    private CaseRoleAssignmentService caseRoleAssignmentService;
 
     @Mock
     private UserInfo userInfo;
@@ -124,6 +130,57 @@ class LegalRepresentativePartyLinkServiceTest {
         assertEquals(userUid, actual.getIdamId());
         assertEquals(addressEntity, actual.getAddress());
         assertEquals(partyEntity, actual.getClaimPartyLegalRepresentativeList().getFirst().getParty());
+        verify(caseRoleAssignmentService, never()).revokeRasRole(anyLong(), anyString(), any(UserRole.class));
+    }
+
+    @Test
+    void linkLegalRepresentativeToParty_WithLinkedDefendant_RevokesDefendantRole() {
+        // given
+        UUID userUid = UUID.randomUUID();
+        UUID defendantIdamId = UUID.randomUUID();
+        long caseReference = 1L;
+        UUID partyId = UUID.randomUUID();
+        String organisationName = "orgName";
+        String organisationId = "ORG-123";
+
+        PartyEntity partyEntity = PartyEntity.builder()
+            .id(partyId)
+            .idamId(defendantIdamId)
+            .build();
+
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
+            .claims(List.of(ClaimEntity.builder()
+                                .claimParties(
+                                    List.of(ClaimPartyEntity.builder()
+                                                .role(PartyRole.DEFENDANT)
+                                                .party(partyEntity)
+                                                .build()))
+                                .build()
+            )).build();
+
+        when(organisationDetails.getName()).thenReturn(organisationName);
+        when(organisationDetails.getOrganisationIdentifier()).thenReturn(organisationId);
+        when(userInfo.getUid()).thenReturn(userUid.toString());
+        when(pcsCaseService.loadCase(caseReference)).thenReturn(pcsCaseEntity);
+        when(organisationDetailsService.getOrganisationAddress(organisationDetails))
+            .thenReturn(addressUK);
+        when(addressMapper.toAddressEntityAndNormalise(addressUK)).thenReturn(addressEntity);
+        when(legalRepresentativeRepository.findByIdamId(userUid, caseReference)).thenReturn(Optional.empty());
+
+        // when
+        legalRepresentativePartyLinkService.linkLegalRepresentativeToParty(
+            caseReference,
+            partyId.toString(),
+            userInfo,
+            organisationDetails
+        );
+
+        // then
+        verify(caseRoleAssignmentService).revokeRasRole(
+            caseReference,
+            defendantIdamId.toString(),
+            UserRole.DEFENDANT
+        );
     }
 
     @Test
