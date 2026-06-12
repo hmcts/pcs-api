@@ -60,6 +60,12 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.OccupationLi
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ProhibitedConductWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ReasonsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.SecureContractGroundsForPossessionWalesPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.UploadRequiredDocumentsWales;
+import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
+import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
+import uk.gov.hmcts.reform.pcs.ccd.util.MoneyFormatter;
+import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 
 @Component
 @AllArgsConstructor
@@ -101,6 +107,7 @@ public class ResumePossessionClaimConfigurer implements PageConfigurer {
     private final UnderlesseeOrMortgageeDetailsPage underlesseeOrMortgageeDetailsPage;
     private final RentDetailsPage rentDetailsPage;
     private final RentArrears rentArrears;
+    private final UploadRequiredDocumentsWales uploadRequiredDocumentsWales;
     private final PreActionProtocol preActionProtocol;
     private final StatementOfTruth statementOfTruth;
 
@@ -157,7 +164,8 @@ public class ResumePossessionClaimConfigurer implements PageConfigurer {
             .add(additionalReasonsForPossession)
             .add(new UnderlesseeOrMortgageeEntitledToClaimRelief())
             .add(underlesseeOrMortgageeDetailsPage)
-            //TO DO will be routed later on correctly using tech debt ticket
+            .add(uploadRequiredDocumentsWales)
+            //TO DO will be routed later on  correctly using tech debt ticket
             .add(new WantToUploadDocuments())
             .add(uploadAdditionalDocumentsDetails)
             .add(new GeneralApplication())

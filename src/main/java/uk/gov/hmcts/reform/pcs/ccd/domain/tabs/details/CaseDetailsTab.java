@@ -100,4 +100,7 @@ public class CaseDetailsTab {
 
     @CCD(label = "Prohibited conduct standard contract claim")
     private ProhibitedConductStandardContractTabDetails prohibitedConductStandardContractDetails;
+
+    @CCD(label = "Required documents")
+    private RequiredDocumentsTabDetails requiredDocumentsDetails;
 }

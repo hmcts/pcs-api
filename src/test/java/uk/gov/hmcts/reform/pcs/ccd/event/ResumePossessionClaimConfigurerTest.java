@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.event;
 
+import com.github.kagkarlsson.scheduler.SchedulerClient;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -66,6 +67,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.OccupationLi
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ProhibitedConductWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ReasonsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.SecureContractGroundsForPossessionWalesPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.UploadRequiredDocumentsWales;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -123,18 +125,12 @@ public class ResumePossessionClaimConfigurerTest {
     private StatementOfExpressTerms statementOfExpressTerms;
     @Mock
     private DemotionOfTenancyOrderReason demotionOfTenancyOrderReason;
-    //@Mock
-    //private OrganisationService organisationService;
     @Mock
     private ClaimantInformationPage claimantInformationPage;
     @Mock
     private ExemptLandlord exemptLandlord;
     @Mock
     private ProhibitedConductWales prohibitedConductWalesPage;
-    //@Mock
-    //private SchedulerClient schedulerClient;
-    //@Mock
-    //private DraftCaseDataService draftCaseDataService;
     @Mock
     private OccupationLicenceDetailsWalesPage occupationLicenceDetailsWalesPage;
     @Mock
@@ -165,6 +161,8 @@ public class ResumePossessionClaimConfigurerTest {
     private PreActionProtocol preActionProtocol;
     @Mock
     private StatementOfTruth statementOfTruth;
+    @Mock
+    private UploadRequiredDocumentsWales uploadRequiredDocumentsWales;
 
     @Test
     @SuppressWarnings("squid:S5961")
@@ -232,6 +230,7 @@ public class ResumePossessionClaimConfigurerTest {
         verifyAndCount(inOrder, pageBuilder, additionalReasonsForPossession, verificationCount);
         verifyAndCount(inOrder, pageBuilder, UnderlesseeOrMortgageeEntitledToClaimRelief.class, verificationCount);
         verifyAndCount(inOrder, pageBuilder, underlesseeOrMortgageeDetailsPage, verificationCount);
+        verifyAndCount(inOrder, pageBuilder, uploadRequiredDocumentsWales, verificationCount);
         verifyAndCount(inOrder, pageBuilder, WantToUploadDocuments.class, verificationCount);
         verifyAndCount(inOrder, pageBuilder, uploadAdditionalDocumentsDetails, verificationCount);
         verifyAndCount(inOrder, pageBuilder, GeneralApplication.class, verificationCount);
