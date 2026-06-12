@@ -59,6 +59,10 @@ public class NotificationPersonalisationFactory {
             .build();
     }
 
+    public BasePersonalisation forParty(PartyEntity partyEntity, PcsCaseEntity pcsCaseEntity) {
+        return buildPersonalisation(partyEntity, pcsCaseEntity);
+    }
+
     public CounterclaimPaymentSuccessPersonalisation counterclaimSuccess(DefendantResponseEntity defendantResponse) {
         FeePaymentEntity defendantFeePayment = defendantResponse.getClaim().getFeePayment();
         if (defendantFeePayment == null || !defendantFeePayment.getPaymentStatus().equals(PaymentStatus.PAID)) {
