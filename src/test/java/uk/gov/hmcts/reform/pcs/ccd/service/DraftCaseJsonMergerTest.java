@@ -83,6 +83,7 @@ class DraftCaseJsonMergerTest {
                             "parties",
                             "allClaimants",
                             "allDefendants",
+                            "allLinkedDefendants",
                             "allUnderlesseeOrMortgagees",
                             "possessionClaimResponse",
                             "enforcementOrder.rawWarrantDetails.vulnerableAdultsChildren",

@@ -9,7 +9,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
-import uk.gov.hmcts.reform.pcs.ccd.view.CaseTabView;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -78,23 +77,14 @@ public class SearchCriteriaIndexer {
             ? propertyAddress
             : party.getAddress();
         return SearchParty.builder()
-            .name(resolveSearchPartyName(party))
+            .name(isNotBlank(party.getOrgName())
+                ? party.getOrgName()
+                : joinNonBlank(party.getFirstName(), party.getLastName()))
             .emailAddress(party.getEmailAddress())
             .addressLine1(address == null ? null : address.getAddressLine1())
             .postcode(address == null ? null : address.getPostCode())
             .dateOfBirth(party.getDateOfBirth())
             .build();
-    }
-
-    /**
-     * Resolves the name to index for a SearchParty. When the party has no known name, the
-     * placeholder {@link CaseTabView#NAME_UNKNOWN} is indexed
-     */
-    private static String resolveSearchPartyName(Party party) {
-        String name = isNotBlank(party.getOrgName())
-            ? party.getOrgName()
-            : joinNonBlank(party.getFirstName(), party.getLastName());
-        return name != null ? name : CaseTabView.NAME_UNKNOWN;
     }
 
     private static String joinNonBlank(String... parts) {
