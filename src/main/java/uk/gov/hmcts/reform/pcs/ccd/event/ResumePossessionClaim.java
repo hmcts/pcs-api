@@ -177,7 +177,8 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     }
 
     public SubmitResponse<State> submitClaim(long caseReference, PCSCase pcsCase) {
-        pcsCaseService.createMainClaimOnCase(caseReference, pcsCase);
+        String organisationIdForCurrentUser = organisationService.getOrganisationIdForCurrentUser();
+        pcsCaseService.createMainClaimOnCase(caseReference, pcsCase, organisationIdForCurrentUser);
 
         draftCaseDataService.deleteUnsubmittedCaseData(caseReference, resumePossessionClaim);
 
