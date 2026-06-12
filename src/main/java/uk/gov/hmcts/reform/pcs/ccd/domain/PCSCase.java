@@ -23,6 +23,7 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseLinkingAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.ClaimantAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DefendantAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DefendantSolicitorAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DocumentAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.GlobalSearchAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.InternalCaseFlagAccess;
@@ -43,7 +44,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexibleGroundsReasons
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexiblePossessionGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthDetails;
-import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.CasePartiesTab;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.parties.CasePartiesTab;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.CaseDetailsTab;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.summary.SummaryTab;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.ASBQuestionsDetailsWales;
@@ -98,7 +99,7 @@ public class PCSCase {
     @JsonUnwrapped
     private ClaimantInformation claimantInformation;
 
-    @CCD(access = {ClaimantAccess.class, CitizenAccess.class})
+    @CCD(access = {ClaimantAccess.class, DefendantAccess.class})
     private List<ListValue<Party>> allClaimants;
 
     @CCD(
@@ -118,7 +119,7 @@ public class PCSCase {
 
     @CCD(
         label = "Property address",
-        access = {CitizenAccess.class}
+        access = {DefendantAccess.class}
     )
     @External
     private AddressUK propertyAddress;
@@ -163,14 +164,14 @@ public class PCSCase {
 
     @CCD(
         searchable = false,
-        access = {CitizenAccess.class}
+        access = {DefendantAccess.class}
     )
     @External
     private String userPcqId;
 
     @CCD(
         searchable = false,
-        access = {CitizenAccess.class}
+        access = {DefendantAccess.class}
     )
     private YesOrNo userPcqIdSet;
 
@@ -560,7 +561,6 @@ public class PCSCase {
     )
     private DynamicList testCaseSupportFileList;
 
-
     @CCD(access = DocumentAccess.class)
     private List<ListValue<Document>> allDocuments;
 
@@ -677,4 +677,6 @@ public class PCSCase {
 
     private FlagLauncher flagLauncherInternal;
 
+    @CCD(access = {DefendantSolicitorAccess.class})
+    private List<ListValue<Party>> allLinkedDefendants;
 }

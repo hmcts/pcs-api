@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.domain.tabs;
+package uk.gov.hmcts.reform.pcs.ccd.domain.tabs.parties;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
@@ -18,18 +18,12 @@ import java.util.List;
 @JsonNaming(PropertyNamingStrategies.UpperCamelCaseStrategy.class)
 public class CasePartiesTab {
 
-    @CCD (
-        label = "Claimant"
-    )
+    @CCD(label = "Claimant")
     private ClaimantTabDetails claimantDetails;
 
-    @CCD(
-        label = "Defendant"
-    )
+    @CCD(label = "Defendant")
     private DefendantTabDetails defendantOneDetails;
 
-    @CCD(
-        label = "Additional defendant"
-    )
+    @CCD(label = "Additional defendant")
     private List<ListValue<DefendantTabDetails>> defendantsDetails;
 }

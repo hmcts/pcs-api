@@ -13,6 +13,8 @@ public class MapperConfig {
     public ModelMapper modelMapper() {
         ModelMapper modelMapper = new ModelMapper();
 
+        modelMapper.getConfiguration().setAmbiguityIgnored(true);
+
         Converter<VerticalYesNo, Boolean> verticalYesNoToBoolean =
             context -> context.getSource() == null
                 ? null : context.getSource().toBoolean();

@@ -91,7 +91,7 @@ export const submitCaseApiDataWales = {
     mediationAttempted: 'YES',
     settlementAttempted: 'YES',
     walesNoticeServed: 'Yes',
-    walesTypeOfNoticeServed: 'notice',
+    walesTypeOfNoticeServed: 'document',
     notice_NoticeServiceMethod: 'FIRST_CLASS_POST',
     notice_NoticePostedDate: '2015-12-01',
     notice_NoticeDocuments: [],
@@ -102,8 +102,8 @@ export const submitCaseApiDataWales = {
       {
         id: 'd5c91eae-1c3c-40c6-9338-47bade17efe9',
         value: {
-          document_url: 'http://dm-store-aat.service.core-compute-aat.internal/documents/f2d85b20-14dd-48e5-a614-7e6da6e93f9d',
-          document_binary_url: 'http://dm-store-aat.service.core-compute-aat.internal/documents/f2d85b20-14dd-48e5-a614-7e6da6e93f9d/binary',
+          document_url: `${process.env.DM_STORE}/documents/f2d85b20-14dd-48e5-a614-7e6da6e93f9d`,
+          document_binary_url: `${process.env.DM_STORE}/documents/f2d85b20-14dd-48e5-a614-7e6da6e93f9d/binary`,
           document_filename: 'rentStatement.pdf',
         }
       }
@@ -122,7 +122,7 @@ export const submitCaseApiDataWales = {
       agreedTermsOfPeriodicContract: 'YES',
       detailsOfTerms: 'test data contract holder agreement'
     },
-    prohibitedConductWalesClaimDetails: 'test data making this claim',
+    prohibitedConductWalesClaimDetails: 'test data why making this claim',
     additionalReasonsForPossession: {
       hasReasons: 'YES',
       reasons: 'test data additional reasons'
