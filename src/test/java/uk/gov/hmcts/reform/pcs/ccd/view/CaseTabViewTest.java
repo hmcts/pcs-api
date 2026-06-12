@@ -7,6 +7,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.Mock;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.reform.pcs.LegalRepresentative;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DemotionOfTenancy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DemotionOfTenancyHousingAct;
@@ -18,9 +19,10 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.SuspensionOfRightToBuyHousingAct;
 import uk.gov.hmcts.reform.pcs.ccd.domain.UnderlesseeMortgageeDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.ClaimGroundSummary;
-import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.ClaimantTabDetails;
-import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.DefendantTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.CaseDetailsTab;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.parties.ClaimantTabDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.parties.DefendantTabDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.parties.RepresentativeTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.summary.SummaryTab;
 import uk.gov.hmcts.reform.pcs.ccd.view.builder.ClaimGroundSummaryBuilder;
 
@@ -122,6 +124,7 @@ class CaseTabViewTest {
         assertThat(defendant1TabDetails.getFirstName()).isEqualTo(firstName);
         assertThat(defendant1TabDetails.getLastName()).isEqualTo(lastName);
         assertThat(defendant1TabDetails.getServiceAddress()).isEqualTo(address);
+        assertThat(defendant1TabDetails.getRepresentative()).isNull();
         assertThat(additionalDefendantsTabDetails).isNull();
     }
 
@@ -176,13 +179,164 @@ class CaseTabViewTest {
         assertThat(defendant1TabDetails.getFirstName()).isEqualTo(defendant1FirstName);
         assertThat(defendant1TabDetails.getLastName()).isEqualTo(defendant1LastName);
         assertThat(defendant1TabDetails.getServiceAddress()).isEqualTo(address1);
+        assertThat(defendant1TabDetails.getRepresentative()).isNull();
         assertThat(additionalDefendantsTabDetails).isNotNull();
-        assertThat(additionalDefendantsTabDetails.size()).isEqualTo(1);
+        assertThat(additionalDefendantsTabDetails).hasSize(1);
 
         DefendantTabDetails defendant2TabDetails = additionalDefendantsTabDetails.getFirst().getValue();
         assertThat(defendant2TabDetails.getFirstName()).isEqualTo(defendant2FirstName);
         assertThat(defendant2TabDetails.getLastName()).isEqualTo(defendant2LastName);
         assertThat(defendant2TabDetails.getServiceAddress()).isEqualTo(address2);
+        assertThat(defendant2TabDetails.getRepresentative()).isNull();
+    }
+
+    @Test
+    void shouldSetDefendantRepresentativeIfPresent() {
+        // Given
+        String defendant1FirstName = "defendant1";
+        String defendant1LastName = "one";
+        AddressUK address1 = AddressUK.builder().build();
+        AddressUK address2 = AddressUK.builder().build();
+        LegalRepresentative legalRepresentative1 = LegalRepresentative.builder()
+            .firstName("legal1")
+            .lastName("representative1")
+            .telephoneNumber("telephone1")
+            .emailAddress("rep1@email.com")
+            .organisationName("org1")
+            .address(address2)
+            .build();
+        Party defendant1 = Party.builder()
+            .firstName(defendant1FirstName)
+            .lastName(defendant1LastName)
+            .nameKnown(VerticalYesNo.YES)
+            .address(address1)
+            .legalRepresentative(legalRepresentative1)
+            .build();
+
+        String defendant2FirstName = "defendant2";
+        String defendant2LastName = "two";
+        AddressUK address3 = AddressUK.builder().build();
+        AddressUK address4 = AddressUK.builder().build();
+        LegalRepresentative legalRepresentative2 = LegalRepresentative.builder()
+            .firstName("legal2")
+            .lastName("representative2")
+            .telephoneNumber("telephone2")
+            .emailAddress("rep2@email.com")
+            .organisationName("org2")
+            .address(address4)
+            .build();
+        Party defendant2 = Party.builder()
+            .firstName(defendant2FirstName)
+            .lastName(defendant2LastName)
+            .nameKnown(VerticalYesNo.YES)
+            .address(address3)
+            .legalRepresentative(legalRepresentative2)
+            .build();
+
+        ListValue<Party> defendant1ListValue = ListValue.<Party>builder()
+            .value(defendant1)
+            .build();
+
+        ListValue<Party> defendant2ListValue = ListValue.<Party>builder()
+            .value(defendant2)
+            .build();
+
+        List<ListValue<Party>> defendants = new ArrayList<>();
+        defendants.add(defendant1ListValue);
+        defendants.add(defendant2ListValue);
+
+        PCSCase pcsCase = PCSCase.builder()
+            .allDefendants(defendants)
+            .build();
+
+        // When
+        underTest.setCaseTabFields(pcsCase);
+
+        // Then
+        assertThat(pcsCase.getCasePartiesTab()).isNotNull();
+        DefendantTabDetails defendant1TabDetails = pcsCase.getCasePartiesTab().getDefendantOneDetails();
+        List<ListValue<DefendantTabDetails>> additionalDefendantsTabDetails =
+            pcsCase.getCasePartiesTab().getDefendantsDetails();
+
+        assertThat(defendant1TabDetails.getFirstName()).isEqualTo(defendant1FirstName);
+        assertThat(defendant1TabDetails.getLastName()).isEqualTo(defendant1LastName);
+        assertThat(defendant1TabDetails.getServiceAddress()).isEqualTo(address1);
+
+        RepresentativeTabDetails representativeTabDetails1 = defendant1TabDetails.getRepresentative();
+        assertThat(representativeTabDetails1.getFirstName()).isEqualTo(legalRepresentative1.getFirstName());
+        assertThat(representativeTabDetails1.getLastName()).isEqualTo(legalRepresentative1.getLastName());
+        assertThat(representativeTabDetails1.getTelephoneNumber()).isEqualTo(legalRepresentative1.getTelephoneNumber());
+        assertThat(representativeTabDetails1.getEmailAddress()).isEqualTo(legalRepresentative1.getEmailAddress());
+        assertThat(representativeTabDetails1.getOrganisation().getName())
+            .isEqualTo(legalRepresentative1.getOrganisationName());
+        assertThat(representativeTabDetails1.getOrganisation().getAddress()).isEqualTo(address2);
+
+
+        assertThat(additionalDefendantsTabDetails).isNotNull();
+        assertThat(additionalDefendantsTabDetails).hasSize(1);
+        DefendantTabDetails defendant2TabDetails = additionalDefendantsTabDetails.getFirst().getValue();
+        assertThat(defendant2TabDetails.getFirstName()).isEqualTo(defendant2FirstName);
+        assertThat(defendant2TabDetails.getLastName()).isEqualTo(defendant2LastName);
+        assertThat(defendant2TabDetails.getServiceAddress()).isEqualTo(address3);
+
+        RepresentativeTabDetails representativeTabDetails2 = defendant2TabDetails.getRepresentative();
+        assertThat(representativeTabDetails2.getFirstName()).isEqualTo(legalRepresentative2.getFirstName());
+        assertThat(representativeTabDetails2.getLastName()).isEqualTo(legalRepresentative2.getLastName());
+        assertThat(representativeTabDetails2.getTelephoneNumber()).isEqualTo(legalRepresentative2.getTelephoneNumber());
+        assertThat(representativeTabDetails2.getEmailAddress()).isEqualTo(legalRepresentative2.getEmailAddress());
+        assertThat(representativeTabDetails2.getOrganisation().getName())
+            .isEqualTo(legalRepresentative2.getOrganisationName());
+        assertThat(representativeTabDetails2.getOrganisation().getAddress()).isEqualTo(address4);
+    }
+
+    @Test
+    void shouldNotSetDefendantRepresentativeOrgDetailsIfAddressAndOrgNameAreMissing() {
+        // Given
+        String defendant1FirstName = "defendant1";
+        String defendant1LastName = "one";
+        AddressUK address1 = AddressUK.builder().build();
+        LegalRepresentative legalRepresentative1 = LegalRepresentative.builder()
+            .firstName("legal1")
+            .lastName("representative1")
+            .telephoneNumber("telephone1")
+            .emailAddress("rep1@email.com")
+            .build();
+        Party defendant1 = Party.builder()
+            .firstName(defendant1FirstName)
+            .lastName(defendant1LastName)
+            .nameKnown(VerticalYesNo.YES)
+            .address(address1)
+            .legalRepresentative(legalRepresentative1)
+            .build();
+
+        ListValue<Party> defendant1ListValue = ListValue.<Party>builder()
+            .value(defendant1)
+            .build();
+
+        List<ListValue<Party>> defendants = new ArrayList<>();
+        defendants.add(defendant1ListValue);
+
+        PCSCase pcsCase = PCSCase.builder()
+            .allDefendants(defendants)
+            .build();
+
+        // When
+        underTest.setCaseTabFields(pcsCase);
+
+        // Then
+        assertThat(pcsCase.getCasePartiesTab()).isNotNull();
+        DefendantTabDetails defendant1TabDetails = pcsCase.getCasePartiesTab().getDefendantOneDetails();
+
+        assertThat(defendant1TabDetails.getFirstName()).isEqualTo(defendant1FirstName);
+        assertThat(defendant1TabDetails.getLastName()).isEqualTo(defendant1LastName);
+        assertThat(defendant1TabDetails.getServiceAddress()).isEqualTo(address1);
+
+        RepresentativeTabDetails representativeTabDetails1 = defendant1TabDetails.getRepresentative();
+        assertThat(representativeTabDetails1.getFirstName()).isEqualTo(legalRepresentative1.getFirstName());
+        assertThat(representativeTabDetails1.getLastName()).isEqualTo(legalRepresentative1.getLastName());
+        assertThat(representativeTabDetails1.getTelephoneNumber()).isEqualTo(legalRepresentative1.getTelephoneNumber());
+        assertThat(representativeTabDetails1.getEmailAddress()).isEqualTo(legalRepresentative1.getEmailAddress());
+        assertThat(representativeTabDetails1.getOrganisation()).isNull();
     }
 
     @Test
