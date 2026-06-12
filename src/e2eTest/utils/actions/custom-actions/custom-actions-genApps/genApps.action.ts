@@ -1,7 +1,7 @@
 import {
+  applicationSubmitted,
   areThereAnyReasonsThatThisApplicationShouldNotBeShared,
-  checkYourAnswersGenApps,
-  chooseAnApplication, doYouWantToUploadDocumentsToSupportDefendantsApplication,
+  chooseAnApplication, confirmGenApps, doYouWantToUploadDocumentsToSupportDefendantsApplication,
   hasTheDefendantAskedTheOtherPartiesAgreedToThisApplication,
   haveTheyAlreadyAppliedForHelpWithFees,
   helpPayingTheFee,
@@ -57,6 +57,8 @@ export class GenAppsAction implements IAction {
       ['reviewAndUpdateCYA', () => this.reviewAndUpdateCYA(page, fieldName as actionRecord)],
       ['getDefendantDetails', () => this.getDefendantDetails(fieldName as actionRecord)],
       ['selectApplicant', () => this.selectApplicant(fieldName as actionRecord)],
+      ['verifyApplicationSubmitted', () => this.verifyApplicationSubmitted()],
+      ['payClaimFeeGenApps', () => this.payClaimFeeGenApps()],
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) {
@@ -254,6 +256,23 @@ export class GenAppsAction implements IAction {
     await performAction('inputText', sot.label3, sot.input3);
     FieldsStore.delete(sot.question as string);
     await performAction('clickButton', statementOfTruth.continueButton);
+  }
+
+  private async verifyApplicationSubmitted(): Promise<void> {
+    await performValidation('mainHeader', applicationSubmitted.mainHeader);
+    await performValidation('text', {elementType: 'span', text: applicationSubmitted.applicationSubmittedHeader});
+    await performAction('clickButton', applicationSubmitted.closeAndReturnToCaseOverviewButton);
+  }
+
+  private async payClaimFeeGenApps(params?: { clickLink?: boolean }) {
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
+    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`});
+    await performValidation('mainHeader',confirmGenApps.mainHeader);
+    await performValidation('text', {elementType: 'span', text: confirmGenApps.pay123ApplicationFeeParagraph});
+    if (params?.clickLink === true) {
+      await performAction('clickButton', confirmGenApps.payYourApplicationLink);
+    }
+    await performAction('clickButton', confirmGenApps.closeAndReturnToCaseDetailsButton);
   }
 
   private async inputErrorValidationGenApp(validationArr: actionRecord) {

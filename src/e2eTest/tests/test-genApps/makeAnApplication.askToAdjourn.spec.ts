@@ -19,10 +19,9 @@ import {
   selectParty, whatOrderDoYouWantTheCourtToMakeAndWhy, hasTheDefendantAskedTheOtherPartiesAgreedToThisApplication,
   areThereAnyReasonsThatThisApplicationShouldNotBeShared,
   doYouWantToUploadDocumentsToSupportDefendantsApplication, whichLanguageDidYouUseToCompleteThisService,
-  statementOfTruth, uploadDocumentsToSupportDefendantsApplication, checkYourAnswersGenApps, paymentDetails
+  statementOfTruth, uploadDocumentsToSupportDefendantsApplication, checkYourAnswersGenApps
 } from '@data/page-data-figma/page-data-genApps-figma';
 import { defendantDetails } from '@utils/actions/custom-actions/custom-actions-genApps/genApps.action';
-import {confirmGenApps} from "@data/page-data-figma/page-data-genApps-figma/confirmGenApps.page.data";
 
 test.use({ storageState: undefined });
 
@@ -138,12 +137,12 @@ test.describe('Make an Application - e2e Journey @nightly', async () => {
     await performAction('retrieveCYATableData', { name: 'check your answers table' });
     await performAction('validateCYA');
     await performAction('clickButton', checkYourAnswersGenApps.submitButton);
-    await performAction('clickButton', confirmGenApps.closeAndReturnToCaseDetailsButton);
+    await performAction('verifyApplicationSubmitted');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make an application');
   });
 
 
-test('Select an Application - Ask to Adjourn journey - Court hearing 14 days[No]', async () => {
+test('Select an Application - Ask to Adjourn journey - Help paying the Fee[No] @PR', async () => {
   await performAction('select', caseSummary.nextStepEventList, caseSummary.makeAnApplication);
   await performAction('clickButton', caseSummary.go);
   await performAction('chooseAnApplication', {
@@ -159,7 +158,12 @@ test('Select an Application - Ask to Adjourn journey - Court hearing 14 days[No]
   });
   await performAction('confirmIfCourtHearingInNext14Days', {
     question: isTheCourtHearingInTheNext14Days.isTheCourtHearingInTheNext14DaysQuestion,
-    option: isTheCourtHearingInTheNext14Days.noRadioOption,
+    option: isTheCourtHearingInTheNext14Days.yesRadioOption,
+  });
+  await performValidation('mainHeader', helpPayingTheFee.mainHeader);
+  await performAction('doYouNeedHelpPayingFee', {
+    question: helpPayingTheFee.doYouNeedHelpPayingTheFeeQuestion,
+    option: helpPayingTheFee.noRadioOption,
   });
   await performValidation('mainHeader',hasTheDefendantAskedTheOtherPartiesAgreedToThisApplication.mainHeader);
   await performAction('confirmOtherPartiesAgreed', {
@@ -200,32 +204,8 @@ test('Select an Application - Ask to Adjourn journey - Court hearing 14 days[No]
   await performValidation('mainHeader', checkYourAnswersGenApps.mainHeader);
   await performAction('retrieveCYATableData', { name: 'check your answers table' });
   await performAction('validateCYA');
-  await performAction('clickButton', checkYourAnswersGenApps.continueToPaymentButton);
-  await performAction('payForApplication');
-  await performValidation('mainHeader', paymentDetails.mainHeader);
-  await performAction('inputPaymentDetails', {
-    question: paymentDetails.mainHeader,
-    cardNumberLabel: paymentDetails.cardNumberTextLabel,
-    cardNumber: paymentDetails.cardNumberTextInput,
-    monthLabel: paymentDetails.monthTextLabel,
-    month: paymentDetails.monthTextInput,
-    yearLabel: paymentDetails.yearTextLabel,
-    year: paymentDetails.yearTextInput,
-    nameOnCardLabel: paymentDetails.nameOnCardTextLabel,
-    nameOnCard: paymentDetails.nameOnCardTextInput,
-    cardSecurityCodeLabel: paymentDetails.cardSecurityCodeTextLabel,
-    cardSecurityCode: paymentDetails.cardSecurityCodeTextInput,
-    addressLine1Label: paymentDetails.addressLine1TextLabel,
-    addressLine1: paymentDetails.addressLine1TextInput,
-    townOrCityLabel: paymentDetails.townOrCityTextLabel,
-    townOrCity: paymentDetails.townOrCityTextInput,
-    postcodeLabel: paymentDetails.postcodeTextLabel,
-    postcode: paymentDetails.postcodeTextInput,
-    emailLabel: paymentDetails.emailTextLabel,
-    email: paymentDetails.emailTextInput,
-  });
-  await performAction('confirmPayment');
-  await performAction('clickButton', confirmGenApps.closeAndReturnToCaseDetailsButton);
+  await performAction('clickButton', checkYourAnswersGenApps.submitButton);
+  await performAction('payClaimFeeGenApps');
   await performValidation('bannerAlert', 'Case #.* has been updated with event: Make an application');
 });
 });

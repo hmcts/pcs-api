@@ -49,6 +49,8 @@ export class ActionGenAppsRegistry {
     ['selectApplicant', new GenAppsAction()],
     ['confirmDocumentToUpload', new GenAppsAction()],
     ['uploadFilesGenApps', new GenAppsAction()],
+    ['verifyApplicationSubmitted', new GenAppsAction()],
+    ['payClaimFeeGenApps', new GenAppsAction()],
 
   ]);
 

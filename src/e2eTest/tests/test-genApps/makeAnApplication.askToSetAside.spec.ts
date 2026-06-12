@@ -21,7 +21,6 @@ import {
   whichLanguageDidYouUseToCompleteThisService
 } from "@data/page-data-figma/page-data-genApps-figma";
 import { defendantDetails } from '@utils/actions/custom-actions/custom-actions-genApps';
-import {confirmGenApps} from "@data/page-data-figma/page-data-genApps-figma/confirmGenApps.page.data";
 
 test.use({ storageState: undefined });
 
@@ -132,7 +131,7 @@ test.describe('Make an Application - e2e Journey @nightly', async () => {
     await performAction('retrieveCYATableData', { name: 'check your answers table' });
     await performAction('validateCYA');
     await performAction('clickButton', checkYourAnswersGenApps.submitButton);
-    await performAction('clickButton', confirmGenApps.closeAndReturnToCaseDetailsButton);
+    await performAction('verifyApplicationSubmitted');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make an application');
   });
 });
