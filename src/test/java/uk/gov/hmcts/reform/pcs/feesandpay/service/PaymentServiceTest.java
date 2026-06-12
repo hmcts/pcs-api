@@ -94,6 +94,8 @@ class PaymentServiceTest {
     private PartyService partyService;
     @Mock
     private PaymentCallbackStrategyFactory paymentCallbackStrategyFactory;
+    @Mock
+    private CardPaymentStatusPollProcessor cardPaymentStatusPollProcessor;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -471,7 +473,7 @@ class PaymentServiceTest {
 
             // Then
             assertThat(paymentStatusResponse.getStatus()).isEqualTo(expectedStatus);
-
+            verify(cardPaymentStatusPollProcessor).processIfPaid(paymentDto);
         }
 
     }

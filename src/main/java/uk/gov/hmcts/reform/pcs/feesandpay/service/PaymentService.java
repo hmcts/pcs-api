@@ -46,6 +46,7 @@ public class PaymentService {
     private final PcsCaseService pcsCaseService;
     private final PartyService partyService;
     private final PaymentCallbackStrategyFactory paymentCallbackStrategyFactory;
+    private final CardPaymentStatusPollProcessor cardPaymentStatusPollProcessor;
     private final ObjectMapper objectMapper;
 
     @Value("${payments.api.callback-url}")
@@ -57,7 +58,8 @@ public class PaymentService {
     public PaymentService(PaymentsClient paymentsClient, PaymentRequestMapper paymentRequestMapper,
         @Qualifier("systemUpdateUserTokenProvider") IdamTokenProvider systemUpdateUserTokenProvider,
         FeePaymentRepository feePaymentRepository, PcsCaseService pcsCaseService, PartyService partyService,
-        PaymentCallbackStrategyFactory paymentCallbackStrategyFactory, ObjectMapper objectMapper) {
+        PaymentCallbackStrategyFactory paymentCallbackStrategyFactory,
+        CardPaymentStatusPollProcessor cardPaymentStatusPollProcessor, ObjectMapper objectMapper) {
         this.paymentsClient = paymentsClient;
         this.paymentRequestMapper = paymentRequestMapper;
         this.systemUpdateUserTokenProvider = systemUpdateUserTokenProvider;
@@ -65,6 +67,7 @@ public class PaymentService {
         this.pcsCaseService = pcsCaseService;
         this.partyService = partyService;
         this.paymentCallbackStrategyFactory = paymentCallbackStrategyFactory;
+        this.cardPaymentStatusPollProcessor = cardPaymentStatusPollProcessor;
         this.objectMapper = objectMapper;
     }
 
@@ -145,6 +148,8 @@ public class PaymentService {
             internalReference,
             systemUpdateUserTokenProvider.getAuthToken()
         );
+
+        cardPaymentStatusPollProcessor.processIfPaid(govPayCardPaymentStatus);
 
         return CardPaymentStatusResponse.builder()
             .status(govPayCardPaymentStatus.getStatus())
