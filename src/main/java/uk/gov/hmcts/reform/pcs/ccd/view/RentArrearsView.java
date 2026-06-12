@@ -46,7 +46,7 @@ public class RentArrearsView {
 
     private static List<ListValue<Document>> getRentStatement(PcsCaseEntity pcsCaseEntity) {
         if (pcsCaseEntity.getDocuments().isEmpty()) {
-            return null;
+            return List.of();
         }
 
         return pcsCaseEntity.getDocuments().stream()
