@@ -60,8 +60,6 @@ import uk.gov.hmcts.reform.pcs.ccd.view.builder.RentArrearsTabDetailsBuilder;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.List;
 import java.util.Set;
 
@@ -72,9 +70,8 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType.DEMOTED_TENA
 import static uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType.INTRODUCTORY_TENANCY;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType.OTHER;
 import static uk.gov.hmcts.reform.pcs.ccd.view.CaseDetailsTabUtil.DATE_FORMATTER;
-import static uk.gov.hmcts.reform.pcs.ccd.view.CaseDetailsTabUtil.DATE_TIME_FORMATTER;
 import static uk.gov.hmcts.reform.pcs.ccd.view.CaseDetailsTabUtil.NO_ANSWER;
-import static uk.gov.hmcts.reform.pcs.config.ClockConfiguration.UK_ZONE_ID;
+import static uk.gov.hmcts.reform.pcs.ccd.view.CaseDetailsTabUtil.formatSubmittedDate;
 
 @AllArgsConstructor
 @Component
@@ -484,23 +481,6 @@ public class CaseDetailsTabView {
             .housingAct(housingAct != null ? housingAct.getLabel() : NO_ANSWER)
             .reasons(reason != null ? reason : NO_ANSWER)
             .build();
-    }
-
-    private String formatSubmittedDate(LocalDateTime dateSubmitted) {
-        if (dateSubmitted == null) {
-            return null;
-        }
-
-        LocalDateTime ukDateSubmitted = dateSubmitted
-            .atZone(ZoneId.systemDefault())
-            .withZoneSameInstant(UK_ZONE_ID)
-            .toLocalDateTime();
-
-        return formatDateTime(ukDateSubmitted);
-    }
-
-    private String formatDateTime(LocalDateTime localDateTime) {
-        return localDateTime.format(DATE_TIME_FORMATTER).replace("am", "AM").replace("pm", "PM");
     }
 
     private OccupationContractOrLicenceTabDetails buildOccupationContractLicenceTabDetails(PCSCase pcsCase) {

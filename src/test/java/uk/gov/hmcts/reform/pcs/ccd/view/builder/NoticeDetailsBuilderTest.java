@@ -275,6 +275,22 @@ class NoticeDetailsBuilderTest {
     }
 
     @Test
+    void shouldSetNoanswerIfWalesNoticeDetailsIsNull() {
+        PCSCase pcsCase = PCSCase.builder()
+                .legislativeCountry(LegislativeCountry.WALES)
+                .walesNoticeDetails(null)
+                .build();
+
+        // When
+        NoticeTabDetails noticeTabDetails = noticeDetailsBuilder.buildNoticeTabDetails(pcsCase);
+
+        // Then
+        assertThat(noticeTabDetails.getNoticeServed()).isEqualTo(" ");
+        assertThat(noticeTabDetails.getStatement()).isNull();
+        assertThat(noticeTabDetails.getTypeOfNoticeServed()).isNull();
+    }
+
+    @Test
     void shouldSetNoticeStatementIfNoticeServedIsNoWales() {
         PCSCase pcsCase = PCSCase.builder()
                 .legislativeCountry(LegislativeCountry.WALES)

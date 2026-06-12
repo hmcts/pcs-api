@@ -27,7 +27,7 @@ public class NoticeDetailsBuilder {
         return buildNoticeTabDetailsEngland(pcsCase);
     }
 
-    public NoticeTabDetails buildNoticeTabDetailsEngland(PCSCase pcsCase) {
+    private NoticeTabDetails buildNoticeTabDetailsEngland(PCSCase pcsCase) {
         if (pcsCase.getNoticeServed() == null) {
             return NoticeTabDetails.builder()
                     .noticeServed(NO_ANSWER)
