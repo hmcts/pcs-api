@@ -6,6 +6,7 @@ import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.AlternativesToPossession;
+import uk.gov.hmcts.reform.pcs.LegalRepresentative;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DemotionOfTenancy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -15,10 +16,12 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.SuspensionOfRightToBuyDemotionOfTenanc
 import uk.gov.hmcts.reform.pcs.ccd.domain.UnderlesseeMortgageeDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.ClaimGroundSummary;
-import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.CasePartiesTab;
-import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.ClaimantTabDetails;
-import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.DefendantTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.CaseDetailsTab;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.parties.CasePartiesTab;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.parties.ClaimantTabDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.parties.DefendantTabDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.parties.OrganisationTabDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.parties.RepresentativeTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.summary.SummaryTab;
 import uk.gov.hmcts.reform.pcs.ccd.view.builder.ClaimGroundSummaryBuilder;
 
@@ -226,6 +229,33 @@ public class CaseTabView {
             .serviceAddress(defendantAddress)
             .firstName(defendantFirstName)
             .lastName(defendantLastName)
+            .representative(buildRepresentativeTabDetails(defendant))
+            .build();
+    }
+
+    private RepresentativeTabDetails buildRepresentativeTabDetails(Party party) {
+        LegalRepresentative legalRepresentative = party.getLegalRepresentative();
+        if (legalRepresentative == null) {
+            return null;
+        }
+
+        OrganisationTabDetails organisationTabDetails = null;
+        String orgName = legalRepresentative.getOrganisationName();
+        AddressUK addressUK = legalRepresentative.getAddress();
+
+        if (orgName != null || addressUK != null) {
+            organisationTabDetails = OrganisationTabDetails.builder()
+                .name(legalRepresentative.getOrganisationName())
+                .address(legalRepresentative.getAddress())
+                .build();
+        }
+
+        return RepresentativeTabDetails.builder()
+            .firstName(legalRepresentative.getFirstName())
+            .lastName(legalRepresentative.getLastName())
+            .telephoneNumber(legalRepresentative.getTelephoneNumber())
+            .emailAddress(legalRepresentative.getEmailAddress())
+            .organisation(organisationTabDetails)
             .build();
     }
 }
