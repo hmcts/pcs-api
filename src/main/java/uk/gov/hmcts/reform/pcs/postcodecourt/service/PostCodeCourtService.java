@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.pcs.postcodecourt.entity.PostCodeCourtEntity;
+import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.postcodecourt.repository.PostCodeCourtRepository;
 
 import java.time.Clock;
@@ -29,21 +30,28 @@ public class PostCodeCourtService {
     }
 
     public Integer getCourtManagementLocation(String postCode) {
-        List<PostCodeCourtEntity> results = getPostcodeCourtMappings(postCode);
+        return getCourtManagementLocation(postCode, null);
+    }
+
+    public Integer getCourtManagementLocation(String postCode, LegislativeCountry legislativeCountry) {
+        List<PostCodeCourtEntity> results = getPostcodeCourtMappings(postCode, legislativeCountry);
         if (results.isEmpty()) {
-            log.error("EpimId not found, Court management location couldn't be allocated for postcode: {}", postCode);
+            log.error("EpimId not found for postcode: {}", postCode);
             return null;
         }
         log.info("Court management location allocated for postcode {}", postCode);
         return results.getFirst().getId().getEpimsId();
     }
 
-    private List<PostCodeCourtEntity> getPostcodeCourtMappings(String postcode) {
+    private List<PostCodeCourtEntity> getPostcodeCourtMappings(String postcode,
+                                                               LegislativeCountry legislativeCountry) {
 
         List<String> postcodes = partialPostcodesGenerator.generateForPostcode(postcode);
 
         LocalDate currentDate = LocalDate.now(ukClock);
-        List<PostCodeCourtEntity> results = postCodeCourtRepository.findActiveByPostCodeIn(postcodes, currentDate);
+        List<PostCodeCourtEntity> results = legislativeCountry == null
+            ? postCodeCourtRepository.findActiveByPostCodeIn(postcodes, currentDate)
+            : postCodeCourtRepository.findActiveByPostCodeIn(postcodes, legislativeCountry, currentDate);
         if (results.isEmpty()) {
             log.warn("Postcode court mapping not found for postcode {}", postcode);
             return List.of();
@@ -59,7 +67,7 @@ public class PostCodeCourtService {
 
         if (filteredResults.size() > 1) {
             log.error(
-                "Multiple active EpimId's found for postcode:{} count:{}",
+                "Multiple active EpimIds found for postcode:{} count:{}",
                 longestPostcodeMatch,
                 filteredResults.size()
             );

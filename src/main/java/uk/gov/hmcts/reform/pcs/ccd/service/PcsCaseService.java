@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseFlagEntity;
@@ -97,7 +98,8 @@ public class PcsCaseService {
 
     public void allocateCaseManagementLocation(PCSCase pcsCase) {
         Integer caseManagementLocation =
-            postCodeCourtService.getCourtManagementLocation(pcsCase.getPropertyAddress().getPostCode());
+            postCodeCourtService.getCourtManagementLocation(pcsCase.getPropertyAddress().getPostCode(),
+                                                            pcsCase.getLegislativeCountry());
         pcsCase.setCaseManagementLocationNumber(caseManagementLocation);
     }
 

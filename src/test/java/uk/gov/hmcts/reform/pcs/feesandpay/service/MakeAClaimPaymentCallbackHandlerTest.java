@@ -34,11 +34,12 @@ import java.util.stream.Stream;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.assertj.core.api.Assertions.catchThrowable;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -127,6 +128,7 @@ class MakeAClaimPaymentCallbackHandlerTest {
         } else {
             verifyNoInteractions(pcsCaseService);
             verifyNoInteractions(ccdPaymentStateUpdateService);
+            verifyNoInteractions(claimRepository);
         }
     }
 
@@ -167,7 +169,9 @@ class MakeAClaimPaymentCallbackHandlerTest {
 
         // Then
         assertThat(throwable).isEqualTo(expectedException);
+        verifyNoInteractions(pcsCaseService);
         verifyNoInteractions(ccdPaymentStateUpdateService);
+        verifyNoInteractions(claimRepository);
     }
 
     private FeesAndPayTaskData buildTaskData() {
@@ -183,4 +187,5 @@ class MakeAClaimPaymentCallbackHandlerTest {
     private static Stream<PaymentStatus> paymentStatus() {
         return Stream.of(PaymentStatus.values());
     }
+
 }

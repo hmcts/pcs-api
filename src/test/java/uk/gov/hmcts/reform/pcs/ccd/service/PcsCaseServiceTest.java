@@ -156,7 +156,8 @@ class PcsCaseServiceTest {
         String postcode = "SW1A 1AA";
         int epimsId = 123456;
         AddressUK addressUK = AddressUK.builder().postCode(postcode).build();
-        PCSCase pcsCase = PCSCase.builder().propertyAddress(addressUK).build();
+        PCSCase pcsCase = PCSCase.builder().propertyAddress(addressUK)
+            .legislativeCountry(LegislativeCountry.ENGLAND).build();
         when(postCodeCourtService.getCourtManagementLocation(postcode)).thenReturn(epimsId);
 
         // When
