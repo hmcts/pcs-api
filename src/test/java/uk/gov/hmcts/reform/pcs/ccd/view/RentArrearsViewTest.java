@@ -6,6 +6,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.ccd.sdk.type.Document;
+import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsSection;
@@ -77,6 +79,7 @@ class RentArrearsViewTest {
         // Given
         BigDecimal totalRentArrears = new BigDecimal("1234.00");
         String details = "details";
+        final UUID rentDocumentId = UUID.randomUUID();
 
         when(rentArrearsEntity.getTotalRentArrears()).thenReturn(totalRentArrears);
         when(rentArrearsEntity.getTotalRentArrears()).thenReturn(totalRentArrears);
@@ -86,7 +89,7 @@ class RentArrearsViewTest {
         when(pcsCaseEntity.getDocuments()).thenReturn(
             List.of(
                 DocumentEntity.builder()
-                    .id(UUID.randomUUID())
+                    .id(rentDocumentId)
                     .type(DocumentType.RENT_STATEMENT)
                     .build()
             )
@@ -104,7 +107,9 @@ class RentArrearsViewTest {
         assertThat(rentArrears.getTotal()).isEqualTo(totalRentArrears);
         assertThat(rentArrears.getRecoveryAttempted()).isEqualTo(VerticalYesNo.YES);
         assertThat(rentArrears.getRecoveryAttemptDetails()).isEqualTo(details);
-        assertThat(rentArrears.getStatementDocuments()).hasSize(1);
+        List<ListValue<Document>> statementDocuments = rentArrears.getStatementDocuments();
+        assertThat(statementDocuments).hasSize(1);
+        assertThat(statementDocuments.getFirst().getId()).isEqualTo(rentDocumentId.toString());
 
         verify(pcsCase).setArrearsJudgmentWanted(VerticalYesNo.YES);
     }

@@ -226,7 +226,7 @@ class NoticeDetailsBuilderTest {
         NoticeTabDetails noticeTabDetails = noticeDetailsBuilder.buildNoticeTabDetails(pcsCase);
 
         // Then
-        assertThat(noticeTabDetails.getNoticeUploaded()).isEqualTo("NO");
+        assertThat(noticeTabDetails.getNoticeUploaded()).isEqualTo("No");
         assertThat(noticeTabDetails.getReasonsForNoNoticeDocument())
                 .isEqualTo("reason for unable to upload");
     }
@@ -248,8 +248,8 @@ class NoticeDetailsBuilderTest {
         NoticeTabDetails noticeTabDetails = noticeDetailsBuilder.buildNoticeTabDetails(pcsCase);
 
         // Then
-        assertThat(noticeTabDetails.getNoticeUploaded()).isEqualTo("YES");
-        assertThat(noticeTabDetails.getReasonsForNoNoticeDocument()).isEqualTo(" ");
+        assertThat(noticeTabDetails.getNoticeUploaded()).isEqualTo("Yes");
+        assertThat(noticeTabDetails.getReasonsForNoNoticeDocument()).isNull();
     }
 
     @ParameterizedTest
