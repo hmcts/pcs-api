@@ -10,6 +10,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
@@ -17,7 +18,6 @@ import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.DynamicList;
 import uk.gov.hmcts.ccd.sdk.type.DynamicListElement;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
-import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.testcasesupport.TestCaseSupportHelper;
@@ -26,6 +26,7 @@ import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
 import uk.gov.hmcts.reform.pcs.idam.User;
+import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.util.IdamHelper;
 
 import java.math.BigDecimal;
@@ -40,6 +41,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.State.CASE_ISSUED;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.State.PENDING_CASE_ISSUED;
 import static uk.gov.hmcts.reform.pcs.ccd.event.TestCaseGeneration.ENFORCEMENT_CASE_GENERATOR;
 import static uk.gov.hmcts.reform.pcs.ccd.event.TestCaseGeneration.MAKE_A_CLAIM_CASE_GENERATOR;
 import static uk.gov.hmcts.reform.pcs.ccd.event.TestCaseGeneration.NO_NON_PROD_CASE_AVAILABLE;
@@ -65,30 +67,21 @@ public class TestCaseGenerationIT extends AbstractPostgresContainerIT {
     private TestCaseGeneration underTest;
     @Autowired
     private TestCaseSupportHelper testCaseSupportHelper;
-    @MockitoBean
-    private IdamClient idamClient;
     @Autowired
     private IdamHelper idamHelper;
     @MockitoBean
     private FeeService feeService;
+    @MockitoBean
+    private OAuth2AuthorizedClientManager authorizedClientManager;
+    @MockitoBean
+    private IdamClient idamClient;
 
     @BeforeEach
     void setUp() {
-        idamHelper.stubIdamSystemUser(idamClient, SYSTEM_USER_ID_TOKEN);
-
-        // Stub IDAM user info for token validation
-        UserInfo userInfo = mock(UserInfo.class);
-        when(userInfo.getUid()).thenReturn(USER_ID.toString());
-        when(idamClient.getUserInfo(anyString())).thenReturn(userInfo);
-
-        User user = new User("testing", userInfo);
-        UsernamePasswordAuthenticationToken auth =
-            new UsernamePasswordAuthenticationToken(user, null, Collections.emptyList());
-        SecurityContextHolder.getContext().setAuthentication(auth);
+        setUpAuthenticatedUser();
 
         FeeDetails feeDetails = FeeDetails.builder().code("FEE0001").feeAmount(new BigDecimal("123.45")).build();
         when(feeService.getFee(any(FeeType.class))).thenReturn(feeDetails);
-
     }
 
     @AfterEach
@@ -108,7 +101,7 @@ public class TestCaseGenerationIT extends AbstractPostgresContainerIT {
 
         // Then
         assertThat(response).isNotNull();
-        assertThat(response.getState()).isEqualTo(CASE_ISSUED);
+        assertThat(response.getState()).isEqualTo(PENDING_CASE_ISSUED);
     }
 
     @Test
@@ -166,6 +159,19 @@ public class TestCaseGenerationIT extends AbstractPostgresContainerIT {
             .findFirst()
             .orElseThrow(() -> new IllegalStateException(
                 "No test-case-generation file found with prefix: " + prefix));
+    }
+
+    private void setUpAuthenticatedUser() {
+        idamHelper.stubIdamSystemUser(authorizedClientManager, SYSTEM_USER_ID_TOKEN);
+        uk.gov.hmcts.reform.idam.client.models.UserInfo idamUserInfo =
+            mock(uk.gov.hmcts.reform.idam.client.models.UserInfo.class);
+        when(idamUserInfo.getUid()).thenReturn(USER_ID.toString());
+        when(idamClient.getUserInfo(anyString())).thenReturn(idamUserInfo);
+        UserInfo userInfo = UserInfo.builder().uid(USER_ID.toString()).build();
+        User user = new User("testing", userInfo);
+        UsernamePasswordAuthenticationToken auth =
+            new UsernamePasswordAuthenticationToken(user, null, Collections.emptyList());
+        SecurityContextHolder.getContext().setAuthentication(auth);
     }
 
 }
