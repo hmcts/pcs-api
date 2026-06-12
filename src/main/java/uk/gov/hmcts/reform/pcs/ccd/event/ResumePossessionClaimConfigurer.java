@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.event;
 
+import com.github.kagkarlsson.scheduler.SchedulerClient;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
@@ -60,6 +61,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.OccupationLi
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ProhibitedConductWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ReasonsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.SecureContractGroundsForPossessionWalesPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.UploadRequiredDocumentsWales;
 
 @Component
 @AllArgsConstructor
@@ -101,6 +103,7 @@ public class ResumePossessionClaimConfigurer implements PageConfigurer {
     private final UnderlesseeOrMortgageeDetailsPage underlesseeOrMortgageeDetailsPage;
     private final RentDetailsPage rentDetailsPage;
     private final RentArrears rentArrears;
+    private final UploadRequiredDocumentsWales uploadRequiredDocumentsWales;
     private final PreActionProtocol preActionProtocol;
     private final WantToUploadDocuments wantToUploadDocuments;
 
@@ -157,6 +160,7 @@ public class ResumePossessionClaimConfigurer implements PageConfigurer {
             .add(additionalReasonsForPossession)
             .add(new UnderlesseeOrMortgageeEntitledToClaimRelief())
             .add(underlesseeOrMortgageeDetailsPage)
+            .add(uploadRequiredDocumentsWales)
             //TO DO will be routed later on  correctly using tech debt ticket
             .add(wantToUploadDocuments)
             .add(uploadAdditionalDocumentsDetails)

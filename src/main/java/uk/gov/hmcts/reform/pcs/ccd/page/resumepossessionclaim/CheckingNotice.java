@@ -11,6 +11,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.service.routing.RentSectionRoutingService;
 
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.ENGLAND;
+
 @Component
 @RequiredArgsConstructor
 public class CheckingNotice implements CcdPageConfiguration {
@@ -22,7 +24,7 @@ public class CheckingNotice implements CcdPageConfiguration {
         pageBuilder
                 .page("checkingNotice", this::midEvent)
                 .pageLabel("Notice of your intention to begin possession proceedings")
-                .showCondition("legislativeCountry=\"England\"")
+                .showCondition(ENGLAND)
                 .label("checkingNotice-info",
                         """
                         ---

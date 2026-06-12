@@ -110,6 +110,7 @@ export class ActionRegistry {
     ['clickLinkAndVerifyNewTabTitle', new ClickLinkAndVerifyNewTabTitleAction()],
     ['selectStatementOfTruth', new CreateCaseAction()],
     ['selectAsb', new CreateCaseWalesAction()],
+    ['requiredDocumentsUpload', new CreateCaseWalesAction()],
     ['payClaimFee', new CreateCaseAction()],
     ['claimSaved', new CreateCaseAction()],
     ['validateDefendantDetails', new CreateCaseAction()],

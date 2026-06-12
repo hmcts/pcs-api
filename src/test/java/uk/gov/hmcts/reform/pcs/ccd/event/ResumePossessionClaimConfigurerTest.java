@@ -66,6 +66,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.OccupationLi
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ProhibitedConductWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ReasonsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.SecureContractGroundsForPossessionWalesPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.UploadRequiredDocumentsWales;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -159,6 +160,8 @@ class ResumePossessionClaimConfigurerTest {
     private PreActionProtocol preActionProtocol;
     @Mock
     private WantToUploadDocuments wantToUploadDocuments;
+    @Mock
+    private UploadRequiredDocumentsWales uploadRequiredDocumentsWales;
 
     @Test
     @SuppressWarnings("squid:S5961")
@@ -226,6 +229,7 @@ class ResumePossessionClaimConfigurerTest {
         verifyAndCount(inOrder, pageBuilder, additionalReasonsForPossession, verificationCount);
         verifyAndCount(inOrder, pageBuilder, UnderlesseeOrMortgageeEntitledToClaimRelief.class, verificationCount);
         verifyAndCount(inOrder, pageBuilder, underlesseeOrMortgageeDetailsPage, verificationCount);
+        verifyAndCount(inOrder, pageBuilder, uploadRequiredDocumentsWales, verificationCount);
         verifyAndCount(inOrder, pageBuilder, wantToUploadDocuments, verificationCount);
         verifyAndCount(inOrder, pageBuilder, uploadAdditionalDocumentsDetails, verificationCount);
         verifyAndCount(inOrder, pageBuilder, GeneralApplication.class, verificationCount);

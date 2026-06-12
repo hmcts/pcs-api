@@ -23,6 +23,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.EvidenceDocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.EvidenceOfDefendants;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.WalesDocuments;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
@@ -95,6 +96,21 @@ public class DocumentService {
             Optional.ofNullable(pcsCase.getNoticeServedDetails())
                     .map(NoticeServedDetails::getNoticeDocuments)
                     .orElse(null), DocumentType.POSSESSION_NOTICE));
+
+        allDocuments.addAll(mapDocumentsWithType(
+            Optional.ofNullable(pcsCase.getRequiredDocumentsWales())
+                .map(WalesDocuments::getEnergyPerformance)
+                .orElse(null), DocumentType.ENERGY_PERFORMANCE_CERTIFICATE));
+
+        allDocuments.addAll(mapDocumentsWithType(
+            Optional.ofNullable(pcsCase.getRequiredDocumentsWales())
+                .map(WalesDocuments::getGasSafetyReport)
+                .orElse(null), DocumentType.GAS_SAFETY_CERTIFICATE));
+
+        allDocuments.addAll(mapDocumentsWithType(
+            Optional.ofNullable(pcsCase.getRequiredDocumentsWales())
+                .map(WalesDocuments::getElectricalInstallation)
+                .orElse(null), DocumentType.EICR_REPORT));
 
         return allDocuments;
     }
