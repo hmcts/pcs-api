@@ -13,7 +13,7 @@ test.beforeEach(async ({ page }, testInfo) => {
   await performAction('createCaseAPI', { data: createCaseApiWalesData.createCasePayload });
   await performAction('submitCaseAPI', { data: submitCaseApiDataWales.submitCasePayloadCaseSummary });
   await performAction('getCaseAPI', 'Claim Submission Time');
-  await performAction('fetchCurrentUserAPI');
+  await performAction('fetchCurrentUserAPI', 'Claimant');
 
   await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/${getCaseTypeId()}/${process.env.CASE_NUMBER}#Summary`);
   await expect(async () => {

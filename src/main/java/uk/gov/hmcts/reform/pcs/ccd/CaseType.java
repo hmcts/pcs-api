@@ -137,7 +137,7 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
 
     private void buildCasePartiesTab(ConfigBuilder<PCSCase, State, AccessProfile> builder) {
         builder.tab("caseParties", "Case Parties")
-            .label("Case Parties", null, "#### Case Parties")
+            .label("Case Parties", null, "# Case Parties")
             .field("casePartiesTab_ClaimantDetails")
             .field("casePartiesTab_DefendantOneDetails")
             .field("casePartiesTab_DefendantsDetails");
