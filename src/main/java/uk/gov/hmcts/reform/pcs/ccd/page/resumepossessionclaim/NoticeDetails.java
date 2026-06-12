@@ -109,6 +109,7 @@ public class NoticeDetails implements CcdPageConfiguration {
             )
 
             // Document upload section
+            .label("noticeDetails-document-separator", "---")
             .mandatory(NoticeServedDetails::getAbleToUploadDocument)
             .mandatory(NoticeServedDetails::getDocuments,
                     "notice_AbleToUploadDocument=\"YES\"")
