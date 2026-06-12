@@ -244,6 +244,28 @@ class NotificationPersonalisationFactoryTest {
     }
 
     @Nested
+    @DisplayName("forParty")
+    class ForPartyEntityTests {
+        @Test
+        @DisplayName("Should build correct personalisation for party")
+        void shouldBuildCorrectPersonalisation() {
+            PartyEntity partyEntity = createParty("Another", "Party");
+            stubClaimantParty();
+            stubDefendantParty();
+
+            BasePersonalisation result = factory.forParty(partyEntity, pcsCaseEntity);
+
+            Map<String, Object> map = result.toMap();
+            assertThat(map)
+                .containsEntry("firstName", "Another")
+                .containsEntry("lastName", "Party")
+                .containsEntry("caseNumber", "1234-5678-90")
+                .containsEntry("claimantName", "JANE SMITH")
+                .containsEntry("primaryDefendantName", "JOHN DOE");
+        }
+    }
+
+    @Nested
     @DisplayName("counterclaimSuccess")
     class CounterclaimSuccessTests {
         @Test

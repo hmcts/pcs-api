@@ -267,6 +267,62 @@ class PartyServiceTest {
     }
 
     @Nested
+    @DisplayName("Get Party Role")
+    class GetPartyRoleTests {
+
+        @Test
+        void shouldReturnPartyRole() {
+            // Given
+            PartyEntity partyEntity = PartyEntity.builder()
+                    .id(UUID.randomUUID())
+                    .pcsCase(pcsCaseEntity)
+                    .build();
+
+            PartyEntity differentPartyEntity = PartyEntity.builder()
+                    .id(UUID.randomUUID())
+                    .pcsCase(pcsCaseEntity)
+                    .build();
+
+            when(pcsCaseEntity.getClaims()).thenReturn(List.of(claimEntity));
+            when(claimEntity.getClaimParties()).thenReturn(List.of(
+                    ClaimPartyEntity.builder().party(differentPartyEntity).role(PartyRole.DEFENDANT).build(),
+                    ClaimPartyEntity.builder().party(partyEntity).role(PartyRole.CLAIMANT).build()
+            ));
+
+            // When
+            PartyRole partyRole = underTest.getPartyRole(partyEntity);
+
+            // Then
+            assertThat(partyRole).isEqualTo(PartyRole.CLAIMANT);
+        }
+
+        @Test
+        void shouldThrowExceptionIfPartyNotFoundOnMainClaim() {
+            // Given
+            PartyEntity partyEntity = PartyEntity.builder()
+                    .id(UUID.randomUUID())
+                    .pcsCase(pcsCaseEntity)
+                    .build();
+
+            PartyEntity differentPartyEntity = PartyEntity.builder()
+                    .id(UUID.randomUUID())
+                    .pcsCase(pcsCaseEntity)
+                    .build();
+
+            when(pcsCaseEntity.getClaims()).thenReturn(List.of(claimEntity));
+            when(claimEntity.getClaimParties()).thenReturn(List.of(
+                    ClaimPartyEntity.builder().party(differentPartyEntity).role(PartyRole.DEFENDANT).build()
+            ));
+
+            // When
+            Throwable throwable = catchThrowable(() -> underTest.getPartyRole(partyEntity));
+
+            // Then
+            assertThat(throwable).isInstanceOf(PartyNotFoundException.class);
+        }
+    }
+    
+    @Nested
     @DisplayName("Get Party Name")
     class GetPartyNameTests {
 
