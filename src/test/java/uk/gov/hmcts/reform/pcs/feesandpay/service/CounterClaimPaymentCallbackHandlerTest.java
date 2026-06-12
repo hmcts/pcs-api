@@ -177,6 +177,54 @@ class CounterClaimPaymentCallbackHandlerTest {
     }
 
     @Test
+    void shouldThrowWhenCounterClaimNotFound() throws Exception {
+        UUID counterClaimId = UUID.randomUUID();
+        UUID partyId = UUID.randomUUID();
+        FeesAndPayTaskData taskData = FeesAndPayTaskData.builder()
+            .feeDetails(FeeDetails.builder().feeAmount(BigDecimal.TEN).build())
+            .caseReference(1234567890123456L)
+            .ccdCaseNumber("1234567890123456")
+            .responsiblePartyId(partyId)
+            .paymentCallbackHandlerType(PaymentCallbackHandlerType.COUNTER_CLAIM_ISSUE)
+            .relatedEntityId(counterClaimId)
+            .build();
+        FeePaymentEntity feePaymentEntity = FeePaymentEntity.builder()
+            .paymentStatus(PaymentStatus.PAID)
+            .taskData("task-data")
+            .build();
+        PaymentStatusCallback callback = PaymentStatusCallback.builder()
+            .serviceRequestStatus(PaymentStatus.PAID.getValue())
+            .payment(Payment.builder().paymentReference("RC-127").build())
+            .build();
+
+        when(objectMapper.readValue(anyString(), eq(FeesAndPayTaskData.class))).thenReturn(taskData);
+        when(counterClaimRepository.findById(counterClaimId)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> underTest.handle(callback, feePaymentEntity))
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessageContaining("Counterclaim not found");
+    }
+
+    @Test
+    void shouldThrowWhenTaskDataCannotBeParsed() throws Exception {
+        FeePaymentEntity feePaymentEntity = FeePaymentEntity.builder()
+            .paymentStatus(PaymentStatus.PAID)
+            .taskData("invalid-json")
+            .build();
+        PaymentStatusCallback callback = PaymentStatusCallback.builder()
+            .serviceRequestStatus(PaymentStatus.PAID.getValue())
+            .payment(Payment.builder().paymentReference("RC-128").build())
+            .build();
+
+        when(objectMapper.readValue(anyString(), eq(FeesAndPayTaskData.class)))
+            .thenThrow(new com.fasterxml.jackson.core.JsonParseException(null, "invalid"));
+
+        assertThatThrownBy(() -> underTest.handle(callback, feePaymentEntity))
+            .isInstanceOf(PaymentCallbackException.class)
+            .hasMessageContaining("Unable to process");
+    }
+
+    @Test
     void shouldThrowWhenTaskDataDoesNotContainCounterClaimId() throws Exception {
         UUID partyId = UUID.randomUUID();
         FeesAndPayTaskData taskData = FeesAndPayTaskData.builder()

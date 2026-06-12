@@ -92,6 +92,61 @@ class CounterClaimFeeCalculatorTest {
             .hasMessageContaining("claim type");
     }
 
+    @Test
+    void shouldThrowWhenCounterClaimIsNull() {
+        assertThatThrownBy(() -> underTest.resolveFeeType(null))
+            .isInstanceOf(IllegalStateException.class)
+            .hasMessageContaining("claim type");
+    }
+
+    @Test
+    void shouldNotRequirePaymentWhenCounterClaimIsNull() {
+        assertThat(underTest.isPaymentRequired(null)).isFalse();
+    }
+
+    @Test
+    void shouldRequirePaymentWhenHwfReferenceIsBlank() {
+        CounterClaim counterClaim = CounterClaim.builder()
+            .claimType(CounterClaimType.PAYMENT_OR_COMPENSATION)
+            .hwfReferenceNumber("   ")
+            .build();
+
+        assertThat(underTest.isPaymentRequired(counterClaim)).isTrue();
+    }
+
+    @Test
+    void shouldUseStandardFeeWhenClaimAmountIsUnknown() {
+        CounterClaim counterClaim = CounterClaim.builder()
+            .claimType(CounterClaimType.PAYMENT_OR_COMPENSATION)
+            .isClaimAmountKnown(VerticalYesNo.NO)
+            .build();
+
+        assertThat(underTest.resolveFeeType(counterClaim)).isEqualTo(FeeType.COUNTER_CLAIM);
+    }
+
+    @Test
+    void shouldUseStandardFeeWhenClaimAmountIsNegative() {
+        CounterClaim counterClaim = CounterClaim.builder()
+            .claimType(CounterClaimType.PAYMENT_OR_COMPENSATION)
+            .isClaimAmountKnown(VerticalYesNo.YES)
+            .claimAmount(new BigDecimal("-100"))
+            .build();
+
+        assertThat(underTest.resolveFeeType(counterClaim)).isEqualTo(FeeType.COUNTER_CLAIM);
+    }
+
+    @Test
+    void shouldResolveFeeLookupAmountInPoundsFromEstimatedMaxAmount() {
+        CounterClaim counterClaim = CounterClaim.builder()
+            .claimType(CounterClaimType.PAYMENT_OR_COMPENSATION)
+            .isClaimAmountKnown(VerticalYesNo.NO)
+            .estimatedMaxClaimAmount(new BigDecimal("10050"))
+            .build();
+
+        assertThat(underTest.resolveFeeLookupAmountInPounds(counterClaim))
+            .isEqualByComparingTo(new BigDecimal("100.50"));
+    }
+
     private static Stream<Arguments> knownAmountFeeScenarios() {
         return Stream.of(
             Arguments.of(new BigDecimal("500000"), FeeType.COUNTER_CLAIM_RANGED),
