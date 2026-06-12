@@ -52,7 +52,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-
+import static uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.ENGLAND;
 
 @ExtendWith(MockitoExtension.class)
 class PcsCaseServiceTest {
@@ -157,15 +157,15 @@ class PcsCaseServiceTest {
         int epimsId = 123456;
         AddressUK addressUK = AddressUK.builder().postCode(postcode).build();
         PCSCase pcsCase = PCSCase.builder().propertyAddress(addressUK)
-            .legislativeCountry(LegislativeCountry.ENGLAND).build();
-        when(postCodeCourtService.getCourtManagementLocation(postcode)).thenReturn(epimsId);
+            .legislativeCountry(ENGLAND).build();
+        when(postCodeCourtService.getCourtManagementLocation(postcode, ENGLAND)).thenReturn(epimsId);
 
         // When
         underTest.allocateCaseManagementLocation(pcsCase);
 
         // Then
         assertThat(pcsCase.getCaseManagementLocationNumber()).isEqualTo(epimsId);
-        verify(postCodeCourtService).getCourtManagementLocation(postcode);
+        verify(postCodeCourtService).getCourtManagementLocation(postcode, ENGLAND);
     }
 
     @Test
@@ -174,15 +174,15 @@ class PcsCaseServiceTest {
         String postcode = "SW1A 1AA";
         int newEpimsId = 654321;
         AddressUK addressUK = AddressUK.builder().postCode(postcode).build();
-        PCSCase pcsCase = PCSCase.builder().propertyAddress(addressUK).build();
-        when(postCodeCourtService.getCourtManagementLocation(postcode)).thenReturn(newEpimsId);
+        PCSCase pcsCase = PCSCase.builder().propertyAddress(addressUK).legislativeCountry(ENGLAND).build();
+        when(postCodeCourtService.getCourtManagementLocation(postcode, ENGLAND)).thenReturn(newEpimsId);
 
         // When
         underTest.allocateCaseManagementLocation(pcsCase);
 
         // Then
         assertThat(pcsCase.getCaseManagementLocationNumber()).isEqualTo(newEpimsId);
-        verify(postCodeCourtService).getCourtManagementLocation(postcode);
+        verify(postCodeCourtService).getCourtManagementLocation(postcode, ENGLAND);
     }
 
     @Test
@@ -434,14 +434,15 @@ class PcsCaseServiceTest {
         String postCode = "MK10 8RD";
         PCSCase caseData = PCSCase.builder()
             .propertyAddress(AddressUK.builder().postCode(postCode).build())
+            .legislativeCountry(ENGLAND)
             .build();
-        when(postCodeCourtService.getCourtManagementLocation(postCode)).thenReturn(caseManagementLocation);
+        when(postCodeCourtService.getCourtManagementLocation(postCode, ENGLAND)).thenReturn(caseManagementLocation);
 
         // When
         underTest.allocateCaseManagementLocation(caseData);
 
         // Then
-        verify(postCodeCourtService).getCourtManagementLocation(postCode);
+        verify(postCodeCourtService).getCourtManagementLocation(postCode, ENGLAND);
         assertThat(caseData.getCaseManagementLocationNumber()).isEqualTo(caseManagementLocation);
     }
 
@@ -452,8 +453,9 @@ class PcsCaseServiceTest {
         String postCode = "MK10 8RD";
         PCSCase caseData = PCSCase.builder()
             .propertyAddress(AddressUK.builder().postCode(postCode).build())
+            .legislativeCountry(ENGLAND)
             .build();
-        when(postCodeCourtService.getCourtManagementLocation(postCode)).thenReturn(caseManagementLocation);
+        when(postCodeCourtService.getCourtManagementLocation(postCode, ENGLAND)).thenReturn(caseManagementLocation);
         CourtVenue courtVenue = newCourtVenue();
         when(locationReferenceService.getCourtVenues(any())).thenReturn(List.of(courtVenue));
 
@@ -461,7 +463,7 @@ class PcsCaseServiceTest {
         underTest.allocateRegionId(caseData);
 
         // Then
-        verify(postCodeCourtService).getCourtManagementLocation(postCode);
+        verify(postCodeCourtService).getCourtManagementLocation(postCode, ENGLAND);
         assertThat(caseData.getRegionId()).isEqualTo(Integer.valueOf(courtVenue.regionId()));
         assertThat(caseData.getCaseManagementLocationNumber()).isEqualTo(caseManagementLocation);
     }
@@ -473,15 +475,15 @@ class PcsCaseServiceTest {
         String postCode = "MK10 8RD";
         PCSCase caseData = PCSCase.builder()
             .propertyAddress(AddressUK.builder().postCode(postCode).build())
-            .build();
-        when(postCodeCourtService.getCourtManagementLocation(postCode)).thenReturn(caseManagementLocation);
+            .legislativeCountry(ENGLAND).build();
+        when(postCodeCourtService.getCourtManagementLocation(postCode, ENGLAND)).thenReturn(caseManagementLocation);
         when(locationReferenceService.getCourtVenues(any())).thenReturn(List.of());
 
         // When
         underTest.allocateRegionId(caseData);
 
         // Then
-        verify(postCodeCourtService).getCourtManagementLocation(postCode);
+        verify(postCodeCourtService).getCourtManagementLocation(postCode, ENGLAND);
         assertThat(caseData.getRegionId()).isNull();
         assertThat(caseData.getCaseManagementLocationNumber()).isEqualTo(caseManagementLocation);
     }
@@ -492,14 +494,15 @@ class PcsCaseServiceTest {
         String postCode = "MK10 8RD";
         PCSCase caseData = PCSCase.builder()
             .propertyAddress(AddressUK.builder().postCode(postCode).build())
+            .legislativeCountry(ENGLAND)
             .build();
-        when(postCodeCourtService.getCourtManagementLocation(postCode)).thenReturn(null);
+        when(postCodeCourtService.getCourtManagementLocation(postCode, ENGLAND)).thenReturn(null);
 
         // When
         underTest.allocateRegionId(caseData);
 
         // Then
-        verify(postCodeCourtService).getCourtManagementLocation(postCode);
+        verify(postCodeCourtService).getCourtManagementLocation(postCode, ENGLAND);
         verify(locationReferenceService, never()).getCourtVenues(anyList());
         assertThat(caseData.getRegionId()).isNull();
     }
