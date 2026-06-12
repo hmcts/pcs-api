@@ -452,6 +452,7 @@ class ClaimResponseServiceTest {
                 .contactByPost(VerticalYesNo.NO)
                 .contactByPhone(VerticalYesNo.YES)
                 .contactByText(VerticalYesNo.YES)
+                .propertyAddressConfirmation(VerticalYesNo.YES)
                 .build()
         );
 
@@ -492,6 +493,7 @@ class ClaimResponseServiceTest {
                 .contactByPhone(VerticalYesNo.YES)
                 .contactByText(VerticalYesNo.YES)
                 .dateOfBirth(dob)
+                .propertyAddressConfirmation(VerticalYesNo.YES)
                 .build()
         );
 
