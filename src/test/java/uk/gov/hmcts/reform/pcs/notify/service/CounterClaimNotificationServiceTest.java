@@ -61,7 +61,7 @@ class CounterClaimNotificationServiceTest {
 
         underTest.sendClaimantEmailNotificationCounterClaimIssued(counterClaimId);
 
-        verify(notificationService).sendClaimantDefendantHasMadeCounterclaimEmail(claim);
+        verify(notificationService).sendClaimantDefendantHasMadeCounterclaimEmailNotification(claim);
     }
 
     @Test

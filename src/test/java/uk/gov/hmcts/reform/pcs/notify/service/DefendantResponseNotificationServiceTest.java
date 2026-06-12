@@ -72,7 +72,7 @@ class DefendantResponseNotificationServiceTest {
 
         underTest.sendDefendantResponseReceived(defendantResponseId);
 
-        verify(notificationService).sendClaimantDefendantResponseReceived(claim);
+        verify(notificationService).sendClaimantDefendantResponseReceivedEmailNotification(claim);
     }
 
     @Test

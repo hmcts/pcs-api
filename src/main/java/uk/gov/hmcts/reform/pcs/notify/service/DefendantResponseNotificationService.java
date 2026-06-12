@@ -26,7 +26,7 @@ public class DefendantResponseNotificationService {
         DefendantResponseEntity defendantResponse = defendantResponseRepository.findById(defendantResponseId)
             .orElseThrow(() -> new IllegalArgumentException("Defendant response not found: " + defendantResponseId));
 
-        notificationService.sendClaimantDefendantResponseReceived(defendantResponse.getClaim());
+        notificationService.sendClaimantDefendantResponseReceivedEmailNotification(defendantResponse.getClaim());
     }
 
     @Transactional
