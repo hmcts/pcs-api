@@ -1,15 +1,14 @@
 package uk.gov.hmcts.reform.pcs.ccd.accesscontrol;
 
-import static java.util.Arrays.stream;
-import static uk.gov.hmcts.ccd.sdk.api.Permission.CRU;
-import static uk.gov.hmcts.ccd.sdk.api.Permission.R;
-
 import com.fasterxml.jackson.annotation.JsonValue;
-
 import java.util.Set;
 import lombok.Getter;
 import uk.gov.hmcts.ccd.sdk.api.HasRole;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
+
+import static java.util.Arrays.stream;
+import static uk.gov.hmcts.ccd.sdk.api.Permission.CRU;
+import static uk.gov.hmcts.ccd.sdk.api.Permission.R;
 
 @Getter
 public enum AccessProfile implements HasRole {
