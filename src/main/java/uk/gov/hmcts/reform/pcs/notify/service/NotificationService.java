@@ -9,6 +9,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantContactPreferences;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
@@ -39,6 +40,7 @@ import java.util.UUID;
 @Slf4j
 @RequiredArgsConstructor
 public class NotificationService {
+
     private final NotificationRepository notificationRepository;
     private final PartyService partyService;
     private final SchedulerClient schedulerClient;
@@ -90,7 +92,10 @@ public class NotificationService {
         );
     }
 
-    public EmailNotificationResponse sendClaimantDraftSavedForLater(long caseReference, PCSCase pcsCase) {
+    public EmailNotificationResponse sendClaimantDraftSavedForLaterEmailNotification(
+        long caseReference,
+        PCSCase pcsCase
+    ) {
         NotificationRecipient recipient = claimantRecipient(caseReference, pcsCase);
 
         if (recipient.email() == null) {
@@ -111,7 +116,7 @@ public class NotificationService {
         }
     }
 
-    public EmailNotificationResponse sendClaimantDefendantHasMadeCounterclaimEmail(ClaimEntity claim) {
+    public EmailNotificationResponse sendClaimantDefendantHasMadeCounterclaimEmailNotification(ClaimEntity claim) {
         return sendEmail(
             claimantRecipient(claim),
             EmailTemplate.MAKE_A_CLAIM_DEFENDANT_MADE_COUNTERCLAIM,
@@ -120,12 +125,43 @@ public class NotificationService {
         );
     }
 
-    public EmailNotificationResponse sendClaimantDefendantResponseReceived(ClaimEntity claim) {
+    public EmailNotificationResponse sendClaimantDefendantResponseReceivedEmailNotification(ClaimEntity claim) {
         return sendEmail(
             claimantRecipient(claim),
             EmailTemplate.MAKE_A_CLAIM_DEFENDANT_RESPONSE_RECEIVED,
             NotificationClaimType.NO_COUNTER_CLAIM,
             notificationPersonalisationFactory.forClaimant(claim)
+        );
+    }
+
+    public EmailNotificationResponse sendClaimantClaimIssuedEmailNotification(ClaimEntity claim) {
+        return sendEmail(
+            claimantRecipient(claim),
+            EmailTemplate.MAKE_A_CLAIM_CLAIM_ISSUED,
+            NotificationClaimType.POSSESSION_CLAIM,
+            notificationPersonalisationFactory.forClaimant(claim)
+        );
+    }
+
+    public void sendGenAppReceivedEmail(GenAppEntity genAppEntity) {
+        PartyEntity applicantPartyEntity = genAppEntity.getParty();
+
+        sendEmail(
+                partyRecipient(applicantPartyEntity),
+                EmailTemplate.GENERAL_APPLICATION_RECEIVED,
+                NotificationClaimType.GENERAL_APPLICATION,
+                notificationPersonalisationFactory.forParty(applicantPartyEntity, genAppEntity.getPcsCase())
+        );
+    }
+
+    private NotificationRecipient partyRecipient(PartyEntity party) {
+        PartyRole partyRole = partyService.getPartyRole(party);
+        return new NotificationRecipient(
+                party.getEmailAddress(),
+                party,
+                party.getPcsCase(),
+                null,
+                partyRole
         );
     }
 
