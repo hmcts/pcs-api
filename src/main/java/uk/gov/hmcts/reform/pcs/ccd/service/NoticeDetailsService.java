@@ -68,7 +68,7 @@ public class NoticeDetailsService {
                         TextAreaValidationService.EXTRA_SHORT_TEXT_LIMIT
                 ),
                 TextAreaValidationService.FieldValidation.of(
-                        noticeServedDetails.getPersonName(),
+                        noticeServedDetails.getEmailAddress(),
                         EMAIL_ADDRESS_LABEL,
                         TextAreaValidationService.EXTRA_SHORT_TEXT_LIMIT
                 ),
