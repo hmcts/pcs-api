@@ -59,7 +59,7 @@ class NoticeDetailsTest extends BasePageTest {
             .noticeServedDetails(NoticeServedDetails.builder()
                 .serviceMethod(NoticeServiceMethod.FIRST_CLASS_POST)
                 .postedDate(LocalDate.of(2023, 1, 1))
-                .ableToUploadDocument(CanUploadNoticeServedDocument.YES)
+                .ableToUploadDocument(CanUploadNoticeServedDocument.Yes)
                 .build())
             .build();
 
@@ -78,7 +78,7 @@ class NoticeDetailsTest extends BasePageTest {
                 .noticeServedDetails(NoticeServedDetails.builder()
                         .serviceMethod(NoticeServiceMethod.FIRST_CLASS_POST)
                         .postedDate(LocalDate.of(2023, 1, 1))
-                        .ableToUploadDocument(CanUploadNoticeServedDocument.NO)
+                        .ableToUploadDocument(CanUploadNoticeServedDocument.No)
                         .unableToUploadReason("Unable to upload document")
                         .build())
                 .build();

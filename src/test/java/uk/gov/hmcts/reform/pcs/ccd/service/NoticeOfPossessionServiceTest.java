@@ -253,7 +253,7 @@ class NoticeOfPossessionServiceTest {
         NoticeServedDetails details = NoticeServedDetails.builder()
                         .serviceMethod(NoticeServiceMethod.EMAIL)
                         .documents(List.of())
-                        .ableToUploadDocument(CanUploadNoticeServedDocument.NO)
+                        .ableToUploadDocument(CanUploadNoticeServedDocument.No)
                         .unableToUploadReason(unableToUploadReason)
                         .build();
         PCSCase caseData = PCSCase.builder()
@@ -277,7 +277,7 @@ class NoticeOfPossessionServiceTest {
         NoticeServedDetails details = NoticeServedDetails.builder()
                 .serviceMethod(NoticeServiceMethod.EMAIL)
                 .documents(List.of())
-                .ableToUploadDocument(CanUploadNoticeServedDocument.YES)
+                .ableToUploadDocument(CanUploadNoticeServedDocument.Yes)
                 .unableToUploadReason(unableToUploadReason)
                 .build();
         PCSCase caseData = PCSCase.builder()

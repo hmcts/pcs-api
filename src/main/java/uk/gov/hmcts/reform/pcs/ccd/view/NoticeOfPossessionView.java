@@ -119,7 +119,7 @@ public class NoticeOfPossessionView {
                                                 NoticeOfPossessionEntity noticeOfPossessionEntity) {
         if (noticeOfPossessionEntity.getIsAbleToUploadDocument() != null) {
             noticeServedDetails.setAbleToUploadDocument(noticeOfPossessionEntity.getIsAbleToUploadDocument()
-                    .equals(YesOrNo.YES) ? CanUploadNoticeServedDocument.YES : CanUploadNoticeServedDocument.NO);
+                    .equals(YesOrNo.YES) ? CanUploadNoticeServedDocument.Yes : CanUploadNoticeServedDocument.No);
         }
     }
 }

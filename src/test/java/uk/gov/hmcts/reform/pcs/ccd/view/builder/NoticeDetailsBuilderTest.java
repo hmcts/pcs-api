@@ -217,7 +217,7 @@ class NoticeDetailsBuilderTest {
                 .noticeServedDetails(NoticeServedDetails.builder()
                         .serviceMethod(NoticeServiceMethod.OTHER)
                         .otherDateTime(LocalDateTime.of(2026, 5, 11, 9, 0, 0))
-                        .ableToUploadDocument(CanUploadNoticeServedDocument.NO)
+                        .ableToUploadDocument(CanUploadNoticeServedDocument.No)
                         .unableToUploadReason("reason for unable to upload")
                         .build())
                 .build();
@@ -239,7 +239,7 @@ class NoticeDetailsBuilderTest {
                 .noticeServedDetails(NoticeServedDetails.builder()
                         .serviceMethod(NoticeServiceMethod.OTHER)
                         .otherDateTime(LocalDateTime.of(2026, 5, 11, 9, 0, 0))
-                        .ableToUploadDocument(CanUploadNoticeServedDocument.YES)
+                        .ableToUploadDocument(CanUploadNoticeServedDocument.Yes)
                         .unableToUploadReason(null)
                         .build())
                 .build();

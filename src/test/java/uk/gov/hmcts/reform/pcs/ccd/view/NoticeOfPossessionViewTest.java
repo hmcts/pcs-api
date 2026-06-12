@@ -305,7 +305,7 @@ class NoticeOfPossessionViewTest {
         verify(pcsCase).setNoticeServedDetails(noticeServedDetailsCaptor.capture());
 
         NoticeServedDetails noticeServedDetails = noticeServedDetailsCaptor.getValue();
-        assertThat(noticeServedDetails.getAbleToUploadDocument()).isEqualTo(CanUploadNoticeServedDocument.YES);
+        assertThat(noticeServedDetails.getAbleToUploadDocument()).isEqualTo(CanUploadNoticeServedDocument.Yes);
     }
 
     @Test
@@ -322,7 +322,7 @@ class NoticeOfPossessionViewTest {
         verify(pcsCase).setNoticeServedDetails(noticeServedDetailsCaptor.capture());
 
         NoticeServedDetails noticeServedDetails = noticeServedDetailsCaptor.getValue();
-        assertThat(noticeServedDetails.getAbleToUploadDocument()).isEqualTo(CanUploadNoticeServedDocument.NO);
+        assertThat(noticeServedDetails.getAbleToUploadDocument()).isEqualTo(CanUploadNoticeServedDocument.No);
         assertThat(noticeServedDetails.getUnableToUploadReason()).isEqualTo("some reason");
     }
 }

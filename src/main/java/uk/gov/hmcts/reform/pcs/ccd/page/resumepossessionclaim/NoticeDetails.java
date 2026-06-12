@@ -122,7 +122,7 @@ public class NoticeDetails implements CcdPageConfiguration {
                                                                   CaseDetails<PCSCase, State> detailsBefore) {
         PCSCase caseData = details.getData();
 
-        if (CanUploadNoticeServedDocument.YES.equals(caseData.getNoticeServedDetails().getAbleToUploadDocument())) {
+        if (CanUploadNoticeServedDocument.Yes.equals(caseData.getNoticeServedDetails().getAbleToUploadDocument())) {
             caseData.getNoticeServedDetails().setUnableToUploadReason(null);
         }
 

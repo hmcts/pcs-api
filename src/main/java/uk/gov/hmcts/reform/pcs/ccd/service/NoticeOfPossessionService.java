@@ -83,7 +83,7 @@ public class NoticeOfPossessionService {
     }
 
     private static YesOrNo getIsAbleToUploadDocument(NoticeServedDetails noticeServedDetails) {
-        if (noticeServedDetails.getAbleToUploadDocument() == CanUploadNoticeServedDocument.YES) {
+        if (noticeServedDetails.getAbleToUploadDocument() == CanUploadNoticeServedDocument.Yes) {
             return YesOrNo.YES;
         } else {
             return YesOrNo.NO;
