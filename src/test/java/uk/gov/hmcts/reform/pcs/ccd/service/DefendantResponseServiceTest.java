@@ -1394,8 +1394,6 @@ class DefendantResponseServiceTest {
     void shouldSaveStatementOfTruthWhenAccepted() {
         // Given
         when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
-        when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
-            CASE_REFERENCE, USER_ID)).thenReturn(false);
         stubPartyLookup();
         stubClaimLookup();
 
