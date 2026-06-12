@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.domain.tabs;
+package uk.gov.hmcts.reform.pcs.ccd.domain.tabs.parties;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -13,23 +13,15 @@ import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 @AllArgsConstructor
 public class ClaimantTabDetails {
 
-    @CCD(
-        label = "Name"
-    )
+    @CCD(label = "Name")
     private String name;
 
-    @CCD(
-        label = "Service address"
-    )
+    @CCD(label = "Service address")
     private AddressUK serviceAddress;
 
-    @CCD(
-        label = "Email address"
-    )
+    @CCD(label = "Email address")
     private String emailAddress;
 
-    @CCD(
-        label = "Telephone number"
-    )
+    @CCD(label = "Telephone number")
     private String telephoneNumber;
 }
