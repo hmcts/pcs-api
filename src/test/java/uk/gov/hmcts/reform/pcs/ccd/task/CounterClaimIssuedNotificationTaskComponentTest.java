@@ -11,6 +11,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.model.CounterClaimStatusChangeTaskData;
+import uk.gov.hmcts.reform.pcs.notify.service.CounterClaimNotificationService;
 import uk.gov.hmcts.reform.pcs.notify.service.PaymentNotificationService;
 
 import java.time.Duration;
@@ -31,6 +32,9 @@ class CounterClaimIssuedNotificationTaskComponentTest {
     private PaymentNotificationService paymentNotificationService;
 
     @Mock
+    private CounterClaimNotificationService counterClaimNotificationService;
+
+    @Mock
     private TaskInstance<CounterClaimStatusChangeTaskData> taskInstance;
 
     @Mock
@@ -42,6 +46,7 @@ class CounterClaimIssuedNotificationTaskComponentTest {
     void setUp() {
         underTest = new CounterClaimIssuedNotificationTaskComponent(
             paymentNotificationService,
+            counterClaimNotificationService,
             MAX_RETRIES,
             BACKOFF_DELAY
         );
@@ -71,6 +76,7 @@ class CounterClaimIssuedNotificationTaskComponentTest {
             task.execute(taskInstance, executionContext);
 
         assertThat(completionHandler).isInstanceOf(CompletionHandler.OnCompleteRemove.class);
+        verify(counterClaimNotificationService).sendClaimantEmailNotificationCounterClaimIssued(counterClaimId);
         verify(paymentNotificationService).sendCounterClaimPaymentSuccessNotification(counterClaimId);
     }
 }

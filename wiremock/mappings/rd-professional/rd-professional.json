@@ -9,11 +9,11 @@
       "Content-Type": "application/json"
     },
     "jsonBody": {
-      "name": "Local test org",
-      "organisationIdentifier": "TEST-123",
+      "name": "Local test org-Dan",
+      "organisationIdentifier": "TEST-123-DAN",
       "contactInformation": [
         {
-          "addressLine1": "10 Org Street",
+          "addressLine1": "21 Jump Street",
           "addressLine2": "",
           "addressLine3": "",
           "townCity": "Cardiff",

@@ -16,6 +16,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.ContactPreferencesEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
@@ -97,11 +98,28 @@ public class PartyService {
             .orElseThrow(() -> new PartyNotFoundException("No party of type %s found on case".formatted(role)));
     }
 
-    public boolean canSendEmailNotification(PartyEntity party) {
-        return party.getEmailAddress() != null
-            && party.getContactPreferences() != null
-            && party.getContactPreferences().getContactByEmail() != null
-            && party.getContactPreferences().getContactByEmail().toBoolean();
+    public boolean canSendEmailNotification(PartyEntity party, PartyRole role) {
+        if (party.getEmailAddress() == null) {
+            return false;
+        }
+
+        if (role == PartyRole.CLAIMANT) {
+            return true;
+        }
+
+        ContactPreferencesEntity preferences = party.getContactPreferences();
+        return preferences != null
+            && preferences.getContactByEmail() != null
+            && preferences.getContactByEmail().toBoolean();
+    }
+
+    public PartyRole getPartyRole(PartyEntity partyEntity) {
+        ClaimEntity mainClaim = partyEntity.getPcsCase().getClaims().getFirst();
+        return mainClaim.getClaimParties().stream()
+                .filter(claimPartyEntity -> claimPartyEntity.getParty().getId().equals(partyEntity.getId()))
+                .findFirst()
+                .map(ClaimPartyEntity::getRole)
+                .orElseThrow(() -> new PartyNotFoundException("Party not found on main claim"));
     }
 
     public PartyEntity getPartyEntityById(UUID partyId, long caseReference) {

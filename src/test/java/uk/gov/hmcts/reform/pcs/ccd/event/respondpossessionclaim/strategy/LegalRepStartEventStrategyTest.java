@@ -140,5 +140,4 @@ class LegalRepStartEventStrategyTest {
         verify(legalRepPartySelectionService).getDraft(pcsCase, defendants, CASE_REFERENCE, organisationId);
     }
 
-
 }

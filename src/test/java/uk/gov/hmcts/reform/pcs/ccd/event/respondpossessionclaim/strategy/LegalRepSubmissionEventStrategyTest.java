@@ -197,7 +197,7 @@ class LegalRepSubmissionEventStrategyTest {
         verify(claimResponseService, never()).saveDraftDataForParty(possessionClaimResponse, CASE_REFERENCE,
                                                                     representedPartyId);
         verify(defendantResponseService, never()).saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse,
-                                                               representedPartyId);
+                                                                        representedPartyId);
         verify(draftCaseDataService, never()).deleteUnsubmittedCaseData(eq(CASE_REFERENCE), eq(respondPossessionClaim),
                                                                         eq(representedPartyId), anyString());
         verify(draftCaseDataService, never()).getUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim);

@@ -2,9 +2,6 @@ package uk.gov.hmcts.reform.pcs.ccd.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
@@ -19,7 +16,6 @@ import uk.gov.hmcts.reform.pcs.exception.UnsubmittedDataException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.io.IOException;
-import java.util.Date;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
@@ -197,12 +193,13 @@ public class DraftCaseDataService {
 
         DraftCaseDataEntity draftCaseDataEntity = draftSupplier.get()
             .orElseThrow(() -> new UnsubmittedDataException(
-                draftCaseData.getPartyId() != null ? "No draft found for caseReference=" +
-                    draftCaseData.getCaseReference() + ", eventId=" + draftCaseData.getEventId()
-                      + ", organisationId=" + draftCaseData.getOrganisationId() + ", partyId=" +
-                    draftCaseData.getPartyId()
-                    : "No draft found for caseReference=" + draftCaseData.getCaseReference() + ", eventId=" +
-                    draftCaseData.getEventId()
+                draftCaseData.getPartyId() != null ? "No draft found for caseReference="
+                                                     + draftCaseData.getCaseReference()
+                                                     + ", eventId=" + draftCaseData.getEventId()
+                      + ", organisationId=" + draftCaseData.getOrganisationId() + ", partyId="
+                                                     + draftCaseData.getPartyId()
+                    : "No draft found for caseReference=" + draftCaseData.getCaseReference() + ", eventId="
+                      + draftCaseData.getEventId()
                       + ", userId=" + draftCaseData.getUserId()));
 
         if (draftCaseData.getPartyId() != null) {
@@ -251,6 +248,7 @@ public class DraftCaseDataService {
 
     public void patchUnsubmittedCaseData(long caseReference, EventId eventId, String patchEventDataJson, UUID partyId,
                                          String legalRepresentativeOrganisationId) {
+        UUID userId = getCurrentUserId();
         patchInternal(
             DraftCaseData.builder().caseReference(caseReference).eventId(eventId).partyId(partyId)
                 .organisationId(legalRepresentativeOrganisationId).build(),
@@ -260,7 +258,7 @@ public class DraftCaseDataService {
                     caseReference, eventId, legalRepresentativeOrganisationId, partyId
                 ),
             () -> createNewDraft(
-                caseReference, eventId, legalRepresentativeOrganisationId, patchEventDataJson, partyId
+                caseReference, eventId, legalRepresentativeOrganisationId, patchEventDataJson, partyId, userId
             )
         );
     }
@@ -357,8 +355,9 @@ public class DraftCaseDataService {
     }
 
     private DraftCaseDataEntity createNewDraft(long caseReference, EventId eventId, String organisationId,
-                                               String caseData, UUID partyId) {
+                                               String caseData, UUID partyId, UUID userId) {
         DraftCaseDataEntity newDraft = new DraftCaseDataEntity();
+        newDraft.setIdamUserId(userId);
         newDraft.setCaseReference(caseReference);
         newDraft.setCaseData(caseData);
         newDraft.setEventId(eventId);
@@ -556,8 +555,8 @@ public class DraftCaseDataService {
         DraftCaseDataEntity draftCaseDataEntity = findDraft.get()
             .map(existingDraft -> {
                 log.debug(
-                    draftCaseData.getPartyId() != null ?
-                        "Updating existing draft for organisationId=" + draftCaseData.getOrganisationId() :
+                    draftCaseData.getPartyId() != null
+                        ? "Updating existing draft for organisationId=" + draftCaseData.getOrganisationId() :
                         "Updating existing draft for userId=" + draftCaseData.getUserId());
                 existingDraft.setCaseData(
                     mergeCaseDataJson(existingDraft.getCaseData(), patchEventDataJson)
@@ -566,8 +565,8 @@ public class DraftCaseDataService {
             })
             .orElseGet(() -> {
                 log.debug(
-                    draftCaseData.getPartyId() != null ?
-                    "Creating new draft for caseReference=" + draftCaseData.getCaseReference() + "eventId="
+                    draftCaseData.getPartyId() != null
+                        ? "Creating new draft for caseReference=" + draftCaseData.getCaseReference() + "eventId="
                     + draftCaseData.getEventId() + "organisationId=" + draftCaseData.getOrganisationId()
                     + "partyId=" + draftCaseData.getPartyId() :
                         "Creating new draft for caseReference=" + draftCaseData.getCaseReference() + "eventId="

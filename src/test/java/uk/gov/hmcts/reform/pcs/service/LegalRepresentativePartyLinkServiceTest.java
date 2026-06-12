@@ -156,10 +156,10 @@ class LegalRepresentativePartyLinkServiceTest {
 
         PartyLegalRepresentativeOrganisationEntity partyLegalRepresentativeOrganisation =
             PartyLegalRepresentativeOrganisationEntity
-            .builder()
-            .active(YesOrNo.YES)
-            .party(partyEntity)
-            .build();
+                .builder()
+                .active(YesOrNo.YES)
+                .party(partyEntity)
+                .build();
 
         LegalRepresentativeOrganisationEntity legalRepresentative = LegalRepresentativeOrganisationEntity.builder()
             .partyLegalRepresentativeOrganisationList(List.of(partyLegalRepresentativeOrganisation))
@@ -220,10 +220,10 @@ class LegalRepresentativePartyLinkServiceTest {
 
         PartyLegalRepresentativeOrganisationEntity partyLegalRepresentativeOrganisation =
             PartyLegalRepresentativeOrganisationEntity
-            .builder()
-            .active(YesOrNo.YES)
-            .party(partyEntity)
-            .build();
+                .builder()
+                .active(YesOrNo.YES)
+                .party(partyEntity)
+                .build();
 
         LegalRepresentativeOrganisationEntity legalRepresentative = LegalRepresentativeOrganisationEntity.builder()
             .organisationName(organisationName)

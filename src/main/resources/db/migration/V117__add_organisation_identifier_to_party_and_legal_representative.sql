@@ -6,6 +6,3 @@ alter table party
 
 ALTER TABLE defendant_response
   ADD CONSTRAINT defendant_response_claim_party UNIQUE (claim_id, party_id);
-
-ALTER TABLE draft_case_data
-  ADD COLUMN organisation_id varchar(64);

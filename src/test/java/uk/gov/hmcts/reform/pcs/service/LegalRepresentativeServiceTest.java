@@ -64,8 +64,8 @@ class LegalRepresentativeServiceTest {
             .build();
         PartyLegalRepresentativeOrganisationEntity casePartyLegalRepOrgEntity =
             PartyLegalRepresentativeOrganisationEntity.builder()
-            .party(casePartyEntity)
-            .build();
+                .party(casePartyEntity)
+                .build();
         LegalRepresentativeOrganisationEntity legalRepEntity = LegalRepresentativeOrganisationEntity.builder()
             .partyLegalRepresentativeOrganisationList(List.of(casePartyLegalRepOrgEntity))
             .build();

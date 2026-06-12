@@ -57,17 +57,6 @@ public class LegalRepresentativePartyLinkService {
 
         LegalRepresentativeOrganisationEntity legalRepresentativeOrganisation;
 
-        /// case 124
-        // def 1 & 2
-        // def 1 -> org1
-        // def 2 -> org2
-        // def 3 -> org2
-
-        /////
-        // noc org 1 now wants def 2
-        //
-
-
         if (legalRepresentativeOrganisationEntity.isPresent()) {
 
             legalRepresentativeOrganisation = legalRepresentativeOrganisationEntity.get();
@@ -77,7 +66,7 @@ public class LegalRepresentativePartyLinkService {
         } else {
             legalRepresentativeOrganisation = createNewLegalRepresentative(organisationId,
                                                                            organisationDetails.getName(),
-                                                               idamId, organisationDetails, caseEntity);
+                                                                           idamId, organisationDetails, caseEntity);
         }
 
         legalRepresentativeOrganisation.addParty(defendantPartyEntity);
@@ -86,15 +75,16 @@ public class LegalRepresentativePartyLinkService {
     }
 
     private LegalRepresentativeOrganisationEntity createNewLegalRepresentative(String id, String name, UUID idamId,
-                                                                   OrganisationDetailsResponse organisationDetails,
+                                                                               OrganisationDetailsResponse
+                                                                                   organisationDetails,
                                                                                PcsCaseEntity caseEntity) {
         LegalRepresentativeOrganisationEntity legalRepresentativeOrganisation =
             LegalRepresentativeOrganisationEntity.builder()
-            .organisationId(id)
-            .organisationName(name)
-            .address(addressMapper.toAddressEntityAndNormalise(
-                organisationDetailsService.getOrganisationAddress(organisationDetails)))
-            .build();
+                .organisationId(id)
+                .organisationName(name)
+                .address(addressMapper.toAddressEntityAndNormalise(
+                    organisationDetailsService.getOrganisationAddress(organisationDetails)))
+                .build();
 
         LegalRepresentativeEntity legalRepresentative = LegalRepresentativeEntity.builder()
             .idamId(idamId)
@@ -133,7 +123,7 @@ public class LegalRepresentativePartyLinkService {
                                              UUID idamId) {
         boolean isLegalRepresentativeNotPresent = legalRepresentativeOrganisation.getLegalRepresentativeList().stream()
             .noneMatch(legalRepresentative -> legalRepresentative.getIdamId().equals(
-            idamId));
+                idamId));
 
         if (isLegalRepresentativeNotPresent) {
             LegalRepresentativeEntity legalRepresentative = LegalRepresentativeEntity.builder()

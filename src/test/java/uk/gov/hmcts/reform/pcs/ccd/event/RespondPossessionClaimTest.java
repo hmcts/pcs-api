@@ -135,8 +135,8 @@ class RespondPossessionClaimTest extends BaseEventTest {
                                                   possessionClaimDraftBuilder,
                                                   defendantOnlyDraftBuilder),
                     new LegalRepStartEventStrategy(pcsCaseService,
-                                                            legalRepForDefendantAccessValidator,
-                                                            securityContextService,
+                                                   legalRepForDefendantAccessValidator,
+                                                   securityContextService,
                                                    new LegalRepPartySelectionService(selectedPartyRetriever,
                                                                                      defendantResponseRepository,
                                                                                      draftCaseDataService,
@@ -229,12 +229,12 @@ class RespondPossessionClaimTest extends BaseEventTest {
 
         PossessionClaimResponse mockResponse = PossessionClaimResponse.builder()
             .defendantContactDetails(DefendantContactDetails.builder()
-                .party(Party.builder()
-                    .firstName("John")
-                    .lastName("Doe")
-                    .address(expectedAddress)
-                    .build())
-                .build())
+                                         .party(Party.builder()
+                                                    .firstName("John")
+                                                    .lastName("Doe")
+                                                    .address(expectedAddress)
+                                                    .build())
+                                         .build())
             .build();
 
         when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
@@ -412,12 +412,12 @@ class RespondPossessionClaimTest extends BaseEventTest {
 
         PossessionClaimResponse mockResponse = PossessionClaimResponse.builder()
             .defendantContactDetails(DefendantContactDetails.builder()
-                .party(Party.builder()
-                    .firstName("Jane")
-                    .lastName("Smith")
-                    .address(propertyAddress)
-                    .build())
-                .build())
+                                         .party(Party.builder()
+                                                    .firstName("Jane")
+                                                    .lastName("Smith")
+                                                    .address(propertyAddress)
+                                                    .build())
+                                         .build())
             .build();
 
         when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
@@ -482,8 +482,8 @@ class RespondPossessionClaimTest extends BaseEventTest {
 
         PossessionClaimResponse mockResponse = PossessionClaimResponse.builder()
             .defendantContactDetails(DefendantContactDetails.builder()
-                .party(Party.builder().address(emptyAddress).build())
-                .build())
+                                         .party(Party.builder().address(emptyAddress).build())
+                                         .build())
             .build();
 
         when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
@@ -562,8 +562,8 @@ class RespondPossessionClaimTest extends BaseEventTest {
 
         PossessionClaimResponse draftResponse = PossessionClaimResponse.builder()
             .defendantContactDetails(DefendantContactDetails.builder()
-                .party(draftParty)
-                .build())
+                                         .party(draftParty)
+                                         .build())
             .build();
 
         PCSCase draftData = PCSCase.builder()
@@ -954,8 +954,8 @@ class RespondPossessionClaimTest extends BaseEventTest {
         verify(defendantResponseService).saveDefendantResponse(TEST_CASE_REFERENCE, possessionClaimResponse,
                                                                representedPartyId);
         verify(draftCaseDataService).deleteUnsubmittedCaseData(eq(TEST_CASE_REFERENCE),
-                                                                        eq(respondPossessionClaim),
-                                                                        eq(representedPartyId), eq(orgId));
+                                                               eq(respondPossessionClaim),
+                                                               eq(representedPartyId), eq(orgId));
         verify(draftCaseDataService).getUnsubmittedCaseData(TEST_CASE_REFERENCE, respondPossessionClaim,
                                                             representedPartyId, orgId);
     }

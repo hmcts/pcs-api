@@ -213,9 +213,9 @@ class LegalRepForDefendantAccessValidatorTest {
     private PcsCaseEntity createCaseWithDefendant(PartyEntity defendant) {
         ClaimEntity claimEntity = ClaimEntity.builder().build();
         claimEntity.getClaimParties().add(ClaimPartyEntity.builder()
-            .party(defendant)
-            .role(PartyRole.DEFENDANT)
-            .build());
+                                              .party(defendant)
+                                              .role(PartyRole.DEFENDANT)
+                                              .build());
 
         return PcsCaseEntity.builder()
             .caseReference(CASE_REFERENCE)
