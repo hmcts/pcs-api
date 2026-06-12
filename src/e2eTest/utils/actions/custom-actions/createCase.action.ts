@@ -918,31 +918,55 @@ export class CreateCaseAction implements IAction {
   private async validateDefendantDetails(page: Page, defendantsDetails: actionRecord) {
 
     const defendant = new Map<string, string>();
-    const payLoad = defendantsDetails.payLoad as Record<string, any>;
+    let submitPayload = defendantsDetails.submitPayload as Record<string, any>;
+    let createPayLoad = defendantsDetails.createPayload as Record<string, any>;
+    let section = String(`${defendantsDetails.mainTable}-${defendantsDetails.subTable}`);
+
+    switch (section) {
+      case 'Defendant-Service address':
+        if (submitPayload.defendant1.addressKnown === 'YES' && submitPayload.defendant1.addressSameAsPossession === 'YES') {
+          defendant.set(`Defendant 1’s address for service known?`, formatWord(submitPayload.defendant1.addressKnown));
+          defendant.set(`Building and Street`, createPayLoad.propertyAddress.AddressLine1);
+          defendant.set(`Address Line 2`, createPayLoad.propertyAddress.AddressLine2);
+          defendant.set(`Town or City`, createPayLoad.propertyAddress.PostTown);
+          defendant.set(`Postcode/Zipcode`, createPayLoad.propertyAddress.PostCode);
+          defendant.set('Country', createPayLoad.propertyAddress.Country);
+
+        } else if (submitPayload.defendant1.addressKnown === 'YES' && submitPayload.defendant1.addressSameAsPossession === 'NO') {
+          defendant.set(`Building and Street`, submitPayload.defendant1.correspondenceAddress.AddressLine1);
+          defendant.set(`Address Line 2`, submitPayload.defendant1.correspondenceAddress.AddressLine2);
+          defendant.set(`Town or City`, submitPayload.defendant1.correspondenceAddress.PostTown);
+          defendant.set(`Postcode/Zipcode`, submitPayload.defendant1.correspondenceAddress.PostCode);
+          defendant.set('Country', submitPayload.defendant1.correspondenceAddress.Country);
+        }
+        break;
+      
+      case 'Defendant-Representative':
+        const defendantSolicitor = JSON.parse(process.env.Defendant_SOLICITOR || '');
+        defendant.set(`Representative’s first name`, defendantSolicitor.displayName);
+        defendant.set(`Representative’s last name`, defendantSolicitor.surname);
+        defendant.set(`Email address`, defendantSolicitor.email);
+        defendant.set(`Name`, 'Possession Claim Service Org1')
+        defendant.set(`Building and Street`, submitPayload.organisationAddress.AddressLine1);
+        defendant.set(`Address Line 2`, submitPayload.organisationAddress.AddressLine2);
+        defendant.set(`Town or City`, submitPayload.organisationAddress.PostTown);
+        defendant.set(`Postcode/Zipcode`, submitPayload.organisationAddress.PostCode);
+        defendant.set('Country', submitPayload.organisationAddress.Country)
+        break
+    
+      default:
+        break;
+    }
     if (defendantsDetails.defendant1NameKnown === 'YES') {
-      defendant.set(`Defendant's first name`, `${payLoad.defendant1.firstName}`);
-      defendant.set(`Defendant's last name`, `${payLoad.defendant1.lastName}`);
+      expect(await this.getTableDataValue(page,`Defendant’s first name`)).toEqual(`${submitPayload.defendant1.firstName}`);
+      expect(await this.getTableDataValue(page,`Defendant’s last name`)).toEqual(`${submitPayload.defendant1.lastName}`);
     } else {
-      defendant.set(`Defendant's first name`, `null`);
-      defendant.set(`Defendant's last name`, `null`);
+      defendant.set(`Defendant’s first name`, `null`);
+      defendant.set(`Defendant’s last name`, `null`);
     }
 
-    if (payLoad.defendant1.addressKnown === 'YES' && payLoad.defendant1.addressSameAsPossession === 'YES') {
-      const address = payLoad.formattedClaimantContactAddress.split('<br>');
-      defendant.set(`Building and Street`, address[0]);
-      defendant.set(`Address Line 2`, address[1]);
-      defendant.set(`Town or City`, address[2]);
-      defendant.set(`Postcode/Zipcode`, address[3]);
-      defendant.set('Country', 'United Kingdom')
-
-    } else if (payLoad.defendant1.addressKnown === 'YES' && payLoad.defendant1.addressSameAsPossession === 'NO') {
-      defendant.set(`Building and Street`, payLoad.defendant1.correspondenceAddress.AddressLine1);
-      defendant.set(`Address Line 2`, payLoad.defendant1.correspondenceAddress.AddressLine2);
-      defendant.set(`Town or City`, payLoad.defendant1.correspondenceAddress.PostTown);
-      defendant.set(`Postcode/Zipcode`, payLoad.defendant1.correspondenceAddress.PostCode);
-      defendant.set('Country', 'United Kingdom')
-    }
-    await this.caseTabTableData(page, defendantsDetails.table as string);
+    
+    await this.caseTabTableData(page, defendantsDetails.mainTable as string, defendantsDetails.subTable as string );
 
     const misMatchMap = compareMaps(defendant, caseTabMap, {
       name1: 'Defendant',
@@ -958,19 +982,19 @@ export class CreateCaseAction implements IAction {
           console.log(`• key: "${String(key)}" → Expected: ${expectedValue} | Actual: ${actualValue}`);
         }
         console.log(`\n**********  END OF FAILURE LIST. ***************`);
-        throw new Error(`Case Parties (Defendant) validations failed for ${misMatchMap.size} ${misMatchMap.size === 1 ? 'item' : 'items'}`);
+        throw new Error(`Case Parties section "Defendant ${defendantsDetails.subTable}" validations failed for ${misMatchMap.size} ${misMatchMap.size === 1 ? 'item' : 'items'}`);
       } else {
-        console.log('\n✅ Case Parties (Defendant) VALIDATION PASSED!\n');
+        console.log(`\n✅ Case Parties section "Defendant ${defendantsDetails.subTable}" VALIDATIONS PASSED!\n`);
       }
     
     caseTabMap.clear();
 
   }
 
-  private async validateClaimantDetails(page: Page, defendantsDetails: actionRecord) {
+  private async validateClaimantDetails(page: Page, claimantDetails: actionRecord) {
 
     const claimant = new Map<string, string>();
-    const payLoad = defendantsDetails.payLoad as Record<string, any>;
+    const payLoad = claimantDetails.submitPayload as Record<string, any>;
 
     claimant.set(`Name`, payLoad.claimantName);
     claimant.set(`Email address`, payLoad.claimantContactEmail);
@@ -985,7 +1009,7 @@ export class CreateCaseAction implements IAction {
       claimant.set(`Postcode/Zipcode`, payLoad.organisationAddress.PostCode);
       claimant.set('Country', payLoad.organisationAddress.Country)
     }
-    await this.caseTabTableData(page, defendantsDetails.table as string);
+    await this.caseTabTableData(page, claimantDetails.table as string);
 
     const misMatchMap = compareMaps(claimant, caseTabMap, {
       name1: 'Claimant',
@@ -1003,7 +1027,7 @@ export class CreateCaseAction implements IAction {
         console.log(`\n**********  END OF FAILURE LIST. ***************`);
         throw new Error(`Case Parties (Claimant) validations failed for ${misMatchMap.size} ${misMatchMap.size === 1 ? 'item' : 'items'}`);
       } else {
-        console.log('\n✅ Case Parties (Claimant) VALIDATION PASSED!\n');
+        console.log('\n✅ Case Parties (Claimant) VALIDATIONS PASSED!\n');
       }
     
     caseTabMap.clear();
@@ -1453,12 +1477,28 @@ export class CreateCaseAction implements IAction {
 
   }
 
-  private async caseTabTableData(page: Page, table: string) {
+  private async caseTabTableData(page: Page, mainTable: string, subTable?: string) {
 
-    const tables = page.locator(`//span[text()="${table}"]/ancestor::div[1]/child::table[@aria-describedby="complex field table"]`);
+    const tableLocator = subTable
+      ? `//span[normalize-space()="${mainTable}"]
+        /ancestor::div[1]
+        //span[normalize-space()="${subTable}"]
+        /ancestor::dl/following-sibling::table[1]`
+      : `//span[normalize-space()="${mainTable}"]
+        /ancestor::div[1]
+        //table[@aria-describedby="complex field table"]`;
+
+
+    const tables = page.locator(tableLocator);
     const tableCount = await tables.count();
 
-    if (tableCount === 0) throw new Error(`the table ${table} not found. Exiting...`);
+    if (tableCount === 0) {
+      throw new Error(
+        `Table ${subTable ? `${mainTable} -> ${subTable}` : mainTable
+        } not found.`
+      );
+    }
+
 
     for (let i = 0; i < tableCount; i++) {
       const table = tables.nth(i);
@@ -1489,4 +1529,9 @@ export class CreateCaseAction implements IAction {
       }
     }
   };
+
+  public async getTableDataValue(page: Page, tableHeader: string): Promise<string> {
+    const tdLocator = page.locator(`//span[text()="${tableHeader}"]/ancestor::tr[1]/child::td`);
+    return ((await tdLocator.textContent()) || '').trim();
+  }
 }
