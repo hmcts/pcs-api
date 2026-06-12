@@ -52,7 +52,6 @@ class HashingPartyAccessCodeServiceTest {
         String accessCode = "ABCD1234";
         PartyAccessCodeRepository repository = mock(PartyAccessCodeRepository.class);
         UUID caseId = UUID.randomUUID();
-        // Code minted before hashing was switched on: stored as cleartext, not a BCrypt hash.
         PartyAccessCodeEntity cleartextEntity = PartyAccessCodeEntity.builder()
             .partyId(UUID.randomUUID())
             .code(accessCode)

@@ -10,7 +10,6 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.PartyAccessCodeRepository;
 import java.util.Optional;
 import java.util.UUID;
 
-// BCrypt impl, used when the hashing flag is on.
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -41,9 +40,6 @@ public class HashingPartyAccessCodeService implements PartyAccessCodeHashingServ
             .findFirst();
     }
 
-    // Codes minted while the flag was off are stored cleartext; pick the comparator by the stored
-    // value's shape (BCrypt hashes start with "$2") so a cleartext value never hits encoder.matches
-    // (which would log a "does not look like BCrypt" warning) and still verifies by equality.
     private boolean matches(String accessCode, String storedCode) {
         return storedCode.startsWith("$2")
             ? encoder.matches(accessCode, storedCode)

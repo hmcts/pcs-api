@@ -9,8 +9,6 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.PartyAccessCodeRepository;
 import java.util.Optional;
 import java.util.UUID;
 
-// Write path follows the LD hashing flag; read path is scheme-agnostic so codes stay verifiable
-// across a flag flip. Replaces the old @ConditionalOnProperty bean selection.
 @Service
 @Primary
 @RequiredArgsConstructor
@@ -22,7 +20,6 @@ public class DispatchingPartyAccessCodeHashingService implements PartyAccessCode
 
     @Override
     public String encodeForStorage(String accessCode) {
-        // write: the flag picks the storage scheme
         return featureToggle.isEnabled(FeatureFlag.ACCESS_CODE_HASHING)
             ? hashedImpl.encodeForStorage(accessCode)
             : cleartextImpl.encodeForStorage(accessCode);
@@ -34,7 +31,6 @@ public class DispatchingPartyAccessCodeHashingService implements PartyAccessCode
         UUID caseId,
         String accessCode
     ) {
-        // read: hashedImpl verifies both schemes, so a flag flip never orphans existing codes
         return hashedImpl.findMatchingAccessCode(repository, caseId, accessCode);
     }
 }

@@ -34,7 +34,6 @@ java:
     SPRING_FLYWAY_LOCATIONS: "classpath:db/migration,classpath:db/testdata"
     SPRING_LOGGING_LEVEL_ROOT: "DEBUG"
     ENABLE_TESTING_SUPPORT: true
-    # per-PR value (e.g. pcs-api-pr-538) so LD rules can target a single preview; stable envs use global.environment
     LAUNCHDARKLY_ENV: "${SERVICE_NAME}"
     DB_SCHEDULER_EXECUTOR_ENABLED: true
     DOC_ASSEMBLY_URL: http://dg-docassembly-aat.service.core-compute-aat.internal

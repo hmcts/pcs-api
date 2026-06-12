@@ -55,7 +55,6 @@ class DispatchingPartyAccessCodeHashingServiceTest {
         PartyAccessCodeEntity entity = PartyAccessCodeEntity.builder().build();
         when(hashedImpl.findMatchingAccessCode(repository, caseId, "CODE")).thenReturn(Optional.of(entity));
 
-        // reads ignore the flag, so a flip never breaks verification
         assertThat(underTest.findMatchingAccessCode(repository, caseId, "CODE")).contains(entity);
         verify(hashedImpl).findMatchingAccessCode(repository, caseId, "CODE");
         verifyNoInteractions(cleartextImpl, featureToggle);

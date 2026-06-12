@@ -7,7 +7,6 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.PartyAccessCodeRepository;
 import java.util.Optional;
 import java.util.UUID;
 
-// Cleartext impl, used when the hashing flag is off.
 @Service
 public class SimplePartyAccessCodeService implements PartyAccessCodeHashingService {
 

@@ -5,12 +5,6 @@ import com.launchdarkly.sdk.server.LDClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-/**
- * The single entry point for evaluating LaunchDarkly flags. Holds the {@link LDClient} and builds the
- * evaluation context (kind {@code user}, key {@code pcs-api}, attribute {@code environment} from
- * {@code LAUNCHDARKLY_ENV}) that targeting rules match on. Callers pass a {@link FeatureFlag}, never a
- * raw key string.
- */
 @Service
 public class FeatureToggleService {
 
