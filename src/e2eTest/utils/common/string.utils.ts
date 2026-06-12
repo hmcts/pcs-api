@@ -125,4 +125,3 @@ export function formatDateTimeBST(dataTime: string): string {
     .replace(' am', 'AM')
     .replace(' pm', 'PM');
 }
-
