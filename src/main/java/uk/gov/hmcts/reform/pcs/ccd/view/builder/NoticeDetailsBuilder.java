@@ -83,8 +83,7 @@ public class NoticeDetailsBuilder {
 
         noticeTabDetails.setNoticeDocuments(noticeServedDetails.getDocuments());
         noticeTabDetails.setNoticeUploaded(String.valueOf(noticeServedDetails.getAbleToUploadDocument()));
-        noticeTabDetails.setReasonsForNoNoticeDocument(noticeServedDetails.getUnableToUploadReason() == null
-                ? NO_ANSWER : noticeServedDetails.getUnableToUploadReason());
+        noticeTabDetails.setReasonsForNoNoticeDocument(noticeServedDetails.getUnableToUploadReason());
 
         NoticeServiceMethod method = noticeServedDetails.getServiceMethod();
         noticeTabDetails.setNoticeMethod(method.getLabel());
