@@ -5,7 +5,6 @@ import { enterPaymentDetails } from '@data/page-data/enterPaymentDetails.page.da
 import { caseSummary } from '@data/page-data';
 
 export class FeeAndPayAction implements IAction {
-  private currentUrl: string = '';
   async execute(page: Page, action: string, fieldName: actionData | actionRecord, data?: actionData): Promise<void> {
     const actionsMap = new Map<string, () => Promise<void>>([
       ['selectPaymentTypePBA', () => this.selectPaymentTypePBA(fieldName as actionRecord, page)],
@@ -70,7 +69,6 @@ export class FeeAndPayAction implements IAction {
   }
 
   private async clickPayNowLink( pay: actionData, page: Page) {
-    this.currentUrl = page.url();
     const maxRetries = 10;
     const payNowText = String(pay);
     for (
@@ -102,9 +100,12 @@ export class FeeAndPayAction implements IAction {
 
   private async verifyStatusInHistoryAndSummaryTab(statusDetails: actionRecord, page: Page) {
     //Verify status only in AAT env as its NOT working in preview 
-    if (this.currentUrl.includes('api-pr')) {
+    const currentUrl= process.env.MANAGE_CASE_BASE_URL;
+    console.log(process.env.MANAGE_CASE_BASE_URL);
+    if (currentUrl && currentUrl.includes('api-pr')) {
       console.log('Verification steps skipped as this is NOT working in PREVIEW env.');
     } else {
+      console.log('Verifying payment status');
       await performAction('clickButton', statusDetails.serviceReqLink);
       await performAction('clickTab', statusDetails.historyTab);
       const endStateElement = page.locator(`th:has-text("${String(statusDetails.endState)}") ~ td span.text-16`);
