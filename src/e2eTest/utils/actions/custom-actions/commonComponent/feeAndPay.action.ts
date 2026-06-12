@@ -103,11 +103,12 @@ export class FeeAndPayAction implements IAction {
     const currentUrl = process.env.MANAGE_CASE_BASE_URL;
     console.log(process.env.MANAGE_CASE_BASE_URL);
     if (currentUrl && currentUrl.includes('api-pr')) {
-      console.log('Verification steps skipped as this is NOT working in PREVIEW env.');
+      console.log('Verification steps skipped as this is NOT working in PREVIEW env. POFCC-229');
     } else {
       console.log('Verifying payment status');
       await performAction('clickButton', statusDetails.serviceReqLink);
       await performAction('clickTab', statusDetails.historyTab);
+      //Implementing retry login because POFCC-238
       const maxRetries = 10;
       let isStatusUpdated = false;
       for (let retryCount = 0; retryCount < maxRetries; retryCount++) {
