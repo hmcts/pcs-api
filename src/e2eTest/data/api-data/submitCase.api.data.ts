@@ -584,8 +584,8 @@ export const submitCaseApiData = {
       {
         id: '77d43175-cf1f-4feb-885f-0a0c454391c2',
         value: {
-          document_url: 'http://dm-store-aat.service.core-compute-aat.internal/documents/fee16b4c-b9f2-4697-8f5e-10db5c51e056',
-          document_binary_url: 'http://dm-store-aat.service.core-compute-aat.internal/documents/fee16b4c-b9f2-4697-8f5e-10db5c51e056/binary',
+          document_url: `${process.env.DM_STORE}/documents/fee16b4c-b9f2-4697-8f5e-10db5c51e056`,
+          document_binary_url: `${process.env.DM_STORE}/documents/fee16b4c-b9f2-4697-8f5e-10db5c51e056/binary`,
           document_filename: 'rentStatement.pdf',
         }
       }
