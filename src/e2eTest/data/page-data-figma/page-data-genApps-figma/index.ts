@@ -17,4 +17,3 @@ export * from './youNeedToApplyForHelpWithYourApplicationFee.page.data';
 export * from './selectParty.page.data';
 export * from './statementOfTruth.page.data';
 export * from './confirmGenApps.page.data';
-export * from './paymentDetails.page.data';
