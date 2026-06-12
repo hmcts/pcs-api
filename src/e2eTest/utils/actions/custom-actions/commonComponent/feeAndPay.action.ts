@@ -102,7 +102,7 @@ export class FeeAndPayAction implements IAction {
 
   private async verifyStatusInHistoryAndSummaryTab(statusDetails: actionRecord, page: Page) {
     //Verify status only in AAT env as its NOT working in preview 
-    if (!this.currentUrl.includes('api-pr')) {
+    if (this.currentUrl.includes('api-pr')) {
       console.log('Verification steps skipped as this is NOT working in PREVIEW env.');
     } else {
       await performAction('clickButton', statusDetails.serviceReqLink);
