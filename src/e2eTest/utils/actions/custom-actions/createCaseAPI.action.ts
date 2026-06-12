@@ -17,7 +17,7 @@ export class CreateCaseAPIAction implements IAction {
       ['submitCaseAPI', () => this.submitCaseAPI(fieldName)],
       ['deleteCaseRole', () => this.deleteCaseRole(fieldName)],
       ['enforceCaseAPI', () => this.enforceCaseAPI(fieldName)],
-      ['fetchCurrentUserAPI', () => this.fetchCurrentUserAPI()],
+      ['fetchCurrentUserAPI', () => this.fetchCurrentUserAPI(fieldName)],
       ['getCaseAPI', () => this.getCaseAPI(fieldName)],
     ]);
     const actionToPerform = actionsMap.get(action);
@@ -173,8 +173,6 @@ export class CreateCaseAPIAction implements IAction {
 
   private async getCaseAPI(getDetails: actionData): Promise<void> {
     const getCaseApi = Axios.create(createCaseEventTokenApiData.createCaseEventTokenApiInstance());
-
-    //process.env.CREATE_EVENT_TOKEN = (await getCaseApi.get(createCaseEventTokenApiData.createCaseEventTokenApiEndPoint)).data.token;
     try {
       const createResponse = await getCaseApi.get(getCaseApiData.getCaseApiEndPoint());
       if (typeof getDetails === 'string' && getDetails === 'Claim Submission Time') {
@@ -227,14 +225,22 @@ export class CreateCaseAPIAction implements IAction {
     });
   }
 
-  private async fetchCurrentUserAPI(): Promise<void> {
+  private async fetchCurrentUserAPI(getUser: actionData): Promise<void> {
     const fetchUserCaseApi = Axios.create(fetchCurrentUserTokenApiData.fetchCurrentUserTokenApiInstance());
 
     try {
-      const userResponse = await fetchUserCaseApi.get(fetchCurrentUserTokenApiData.fetchCurrentUserApiEndPoint());
-      process.env.Display_NAME = await userResponse.data.displayName;
-      console.log(`\n✅ FETCH CURRENT USER:`);
-      console.log(`Successfully fetched Current User: ${process.env.Display_NAME}`);
+      if (typeof getUser === 'string' && getUser === 'Claimant') {
+        const userResponse = await fetchUserCaseApi.get(fetchCurrentUserTokenApiData.fetchCurrentUserApiEndPoint());
+        process.env.Display_NAME = await userResponse.data.displayName;
+        console.log(`\n✅ FETCH CURRENT USER:`);
+        console.log(`Successfully fetched Current User: ${process.env.Display_NAME}`);
+      } else {
+        const userResponse = await fetchUserCaseApi.get(fetchCurrentUserTokenApiData.fetchDefendantSolicitorUserApiEndPoint());
+        process.env.Defendant_SOLICITOR = JSON.stringify(await userResponse.data);
+        process.env.Display_NAME = await userResponse.data.displayName;
+        console.log(`\n✅ FETCH CURRENT USER:`);
+        console.log(`Successfully fetched Current User: ${process.env.Display_NAME}`);
+      }
     } catch (error: any) {
       const status = error?.response?.status;
       const responseBody = error?.response?.data;
