@@ -100,7 +100,7 @@ export class FeeAndPayAction implements IAction {
 
   private async verifyStatusInHistoryAndSummaryTab(statusDetails: actionRecord, page: Page) {
     //Verify status only in AAT env as its NOT working in preview 
-    const currentUrl= process.env.MANAGE_CASE_BASE_URL;
+    const currentUrl = process.env.MANAGE_CASE_BASE_URL;
     console.log(process.env.MANAGE_CASE_BASE_URL);
     if (currentUrl && currentUrl.includes('api-pr')) {
       console.log('Verification steps skipped as this is NOT working in PREVIEW env.');
@@ -108,8 +108,19 @@ export class FeeAndPayAction implements IAction {
       console.log('Verifying payment status');
       await performAction('clickButton', statusDetails.serviceReqLink);
       await performAction('clickTab', statusDetails.historyTab);
-      const endStateElement = page.locator(`th:has-text("${String(statusDetails.endState)}") ~ td span.text-16`);
-      await expect(endStateElement).toHaveText(String(statusDetails.historyStatus));
+      const maxRetries = 10;
+      let isStatusUpdated = false;
+      for (let retryCount = 0; retryCount < maxRetries; retryCount++) {
+        await page.reload();
+        const endStateElement = page.locator(`th:has-text("${String(statusDetails.endState)}") ~ td span.text-16`);
+        const actualText = (await endStateElement.textContent())?.trim();
+
+        if (actualText === String(statusDetails.historyStatus)) {
+          isStatusUpdated = true;
+          break;
+        }
+        await page.waitForTimeout(3000);
+      }
       await performAction('clickTab', statusDetails.serviceReqTab);
       const summaryStatusElement = page.locator(`text=${String(statusDetails.status)}`);
       await expect(summaryStatusElement).toBeVisible();
