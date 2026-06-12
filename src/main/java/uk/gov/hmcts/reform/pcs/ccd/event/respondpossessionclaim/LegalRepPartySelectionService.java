@@ -140,7 +140,7 @@ public class LegalRepPartySelectionService {
     }
 
     private PCSCase initialiseDraft(long caseReference, PCSCase pcsCase, PartyEntity defendant,
-                                    UUID legalRepresentativeOrganisationId) {
+                                    String legalRepresentativeOrganisationId) {
         PossessionClaimResponse response = responseMapper.mapFrom(pcsCase, defendant);
 
         PCSCase draft = PCSCase.builder()

@@ -11,7 +11,6 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
-import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.utils.LegalRepresentativeRetriever;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.util.SelectedPartyRetriever;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationDetailsService;
@@ -32,7 +31,6 @@ public class RespondToPossessionDraftSavePage implements CcdPageConfiguration {
     private final SecurityContextService securityContextService;
     private final SelectedPartyRetriever selectedPartyRetriever;
     private final OrganisationDetailsService organisationDetailsService;
-    private final LegalRepresentativeRetriever legalRepresentativeRetriever;
 
     @Override
     public void addTo(PageBuilder pageBuilder) {

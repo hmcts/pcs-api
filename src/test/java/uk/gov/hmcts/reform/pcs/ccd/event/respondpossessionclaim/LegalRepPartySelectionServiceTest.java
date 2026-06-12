@@ -73,7 +73,7 @@ class LegalRepPartySelectionServiceTest {
             .orgName("Org")
             .build();
 
-        UUID organisationId = UUID.randomUUID();
+        String organisationId = UUID.randomUUID().toString();;
 
         when(selectedPartyRetriever.getSelectedPartyId(pcsCase)).thenReturn(Optional.empty());
 
@@ -99,7 +99,7 @@ class LegalRepPartySelectionServiceTest {
         PartyEntity partyEntity = PartyEntity.builder()
             .id(partyId)
             .build();
-        UUID organisationId = UUID.randomUUID();
+        String organisationId = UUID.randomUUID().toString();;
 
         when(selectedPartyRetriever.getSelectedPartyId(pcsCase)).thenReturn(Optional.of(partyId));
         when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyId(12345L, partyId)).thenReturn(true);
@@ -129,7 +129,7 @@ class LegalRepPartySelectionServiceTest {
         PossessionClaimResponse response = PossessionClaimResponse.builder()
             .defendantContactDetails(contactDetails)
             .build();
-        UUID organisationId = UUID.randomUUID();
+        String organisationId = UUID.randomUUID().toString();;
 
         when(selectedPartyRetriever.getSelectedPartyId(pcsCase)).thenReturn(Optional.of(partyId));
         when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyId(
@@ -194,7 +194,7 @@ class LegalRepPartySelectionServiceTest {
         PCSCase savedDraft = PCSCase.builder()
             .possessionClaimResponse(savedResponse)
             .build();
-        UUID organisationId = UUID.randomUUID();
+        String organisationId = UUID.randomUUID().toString();;
 
         when(selectedPartyRetriever.getSelectedPartyId(pcsCase)).thenReturn(Optional.of(partyId));
         when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyId(
@@ -223,7 +223,7 @@ class LegalRepPartySelectionServiceTest {
             .build();
 
         UUID selectedPartyId = UUID.randomUUID();
-        UUID organisationId = UUID.randomUUID();
+        String organisationId = UUID.randomUUID().toString();;
 
         when(selectedPartyRetriever.getSelectedPartyId(pcsCase)).thenReturn(Optional.of(selectedPartyId));
 
@@ -248,7 +248,7 @@ class LegalRepPartySelectionServiceTest {
         PartyEntity partyEntity = PartyEntity.builder()
             .id(partyId)
             .build();
-        UUID organisationId = UUID.randomUUID();
+        String organisationId = UUID.randomUUID().toString();;
 
         when(selectedPartyRetriever.getSelectedPartyId(pcsCase)).thenReturn(Optional.of(partyId));
         when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyId(
@@ -292,7 +292,7 @@ class LegalRepPartySelectionServiceTest {
         PossessionClaimResponse savedResponse = PossessionClaimResponse.builder().build();
 
         PCSCase savedDraft = PCSCase.builder().possessionClaimResponse(savedResponse).build();
-        UUID organisationId = UUID.randomUUID();
+        String organisationId = UUID.randomUUID().toString();;
 
         when(draftCaseDataService.hasUnsubmittedCaseData(
             caseReference,

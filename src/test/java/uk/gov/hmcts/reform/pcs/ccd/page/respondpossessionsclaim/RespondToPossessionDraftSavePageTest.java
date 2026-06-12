@@ -25,7 +25,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaim
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.ReasonableAdjustments;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.RecurrenceFrequency;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.RespondToClaimSection;
-import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.utils.LegalRepresentativeRetriever;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 import uk.gov.hmcts.reform.pcs.ccd.page.respondpossessionclaim.page.RespondToPossessionDraftSavePage;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
@@ -63,8 +62,6 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
     private SelectedPartyRetriever selectedPartyRetriever;
     @Mock
     private OrganisationDetailsService organisationDetailsService;
-    @Mock
-    private LegalRepresentativeRetriever legalRepresentativeRetriever;
     @Captor
     private ArgumentCaptor<PCSCase> pcsCaseCaptor;
 
@@ -76,8 +73,7 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
             draftCaseDataService,
             securityContextService,
             selectedPartyRetriever,
-            organisationDetailsService,
-            legalRepresentativeRetriever
+            organisationDetailsService
 
         ));
     }
@@ -489,20 +485,18 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
                                              .build());
         UUID userId = UUID.randomUUID();
         String organisationId = "org";
-        UUID legalRepresentativeOrg = UUID.randomUUID();
+        String legalRepresentativeOrg = UUID.randomUUID().toString();
         when(securityContextService.getCurrentUserId()).thenReturn(userId);
         when(organisationDetailsService.getOrganisationIdentifier(userId.toString())).thenReturn(organisationId);
         when(selectedPartyRetriever.getSelectedPartyId(TEST_CASE_REFERENCE, organisationId))
             .thenReturn(Optional.of(representedPartyId));
-        when(legalRepresentativeRetriever.getLegalRepOrganisationIdForUser(TEST_CASE_REFERENCE, organisationId))
-            .thenReturn(legalRepresentativeOrg);
 
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
         assertThat(response.getErrors()).isNull();
         verify(draftCaseDataService).saveUnsubmittedEventData(
             eq(TEST_CASE_REFERENCE), pcsCaseCaptor.capture(), eq(respondPossessionClaim), eq(representedPartyId),
-            eq(legalRepresentativeOrg)
+            eq(organisationId)
         );
     }
 
