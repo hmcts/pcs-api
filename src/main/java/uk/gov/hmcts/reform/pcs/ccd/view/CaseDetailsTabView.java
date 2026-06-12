@@ -353,7 +353,7 @@ public class CaseDetailsTabView {
                     noticeTabDetails.setNoticeDate(dateTime != null ? formatDateTime(dateTime) : NO_ANSWER);
                     noticeTabDetails.setNoticeOtherExplanation(explanation != null ? explanation : NO_ANSWER);
                 }
-            };
+            }
         }
     }
 
@@ -509,7 +509,7 @@ public class CaseDetailsTabView {
     ) {
         List<ListValue<Party>> underlesseeMortgageParties = pcsCase.getAllUnderlesseeOrMortgagees();
         if (CollectionUtils.isEmpty(underlesseeMortgageParties) || underlesseeMortgageParties.size() < 2) {
-            return null;
+            return List.of();
         }
 
         return underlesseeMortgageParties.stream()
