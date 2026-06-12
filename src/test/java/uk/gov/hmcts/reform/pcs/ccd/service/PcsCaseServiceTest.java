@@ -171,9 +171,7 @@ class PcsCaseServiceTest {
     void shouldReplaceExistingCaseManagementLocationWhenNewLocationIsAllocated() {
         // Given
         String postcode = "SW1A 1AA";
-        int existingEpimsId = 123456;
         int newEpimsId = 654321;
-        AddressEntity propertyAddress = AddressEntity.builder().postcode(postcode).build();
         AddressUK addressUK = AddressUK.builder().postCode(postcode).build();
         PCSCase pcsCase = PCSCase.builder().propertyAddress(addressUK).build();
         when(postCodeCourtService.getCourtManagementLocation(postcode)).thenReturn(newEpimsId);
@@ -590,22 +588,44 @@ class PcsCaseServiceTest {
     }
 
     CourtVenue newCourtVenue() {
+        String siteName = "ABERDEEN TRIBUNAL HEARING CENTRE 1";
         return new CourtVenue(
+            "1",
             "123",
-            "locationName",
-            "456",
-            "YES",
-            "County",
+            siteName,
+            "1",
             "London",
-            "1",
-            "London Cluster",
-            "1",
-            "",
-            "TW8 0JJ",
+            "Central London County Court",
+            "7",
+            null,
+            null,
+            "YES",
             "Brentford County Court, Alexandra Road",
+            "TW8 0JJ",
             "020 1234 5678",
+            null,
             "",
             "DX 12345 Brentford",
+            "",
+            "",
+            "Open",
+            null,
+            siteName,
+            siteName,
+            "N",
+            "Y",
+            "",
+            "N",
+            "N",
+            "COURT",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
             "",
             ""
         );

@@ -78,10 +78,10 @@ public class LocationReferenceDataApiConsumerTest {
         assertThat(response).isNotEmpty();
 
         CourtVenue location = response.get(0);
-        
-        assertThat(location.epimsId()).isEqualTo("123456789");
-        assertThat(location.courtLocationId()).isEqualTo("1");
-        assertThat(location.courtLocationName()).isEqualTo("ABERDEEN TRIBUNAL HEARING CENTRE 1");
+
+        assertThat(location.epimmsId()).isEqualTo("123456789");
+        assertThat(location.courtVenueId()).isEqualTo("1");
+        assertThat(location.courtName()).isEqualTo("ABERDEEN TRIBUNAL HEARING CENTRE 1");
     }
 
     static DslPart buildLocationRefDataResponseBody() {
