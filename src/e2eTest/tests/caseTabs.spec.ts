@@ -16,21 +16,26 @@ test.beforeEach(async ({ page }, testInfo) => {
     await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
     await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayloadCaseSummary });
     await performAction('getCaseAPI', 'Claim Submission Time');
-    await performAction('fetchCurrentUserAPI');
+    await performAction('fetchCurrentUserAPI', 'Claimant');
   } else if (testInfo.title.includes('Details')) {
     await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
     await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayloadCaseDetails });
     await performAction('getCaseAPI', 'Claim Submission Time');
-    await performAction('fetchCurrentUserAPI');
+    await performAction('fetchCurrentUserAPI', 'Claimant');
+  } else if (testInfo.title.includes('Notes')) {
+    await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
+    await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayloadCaseDetails });
+    await performAction('getCaseAPI', 'Claim Submission Time');
+    await performAction('fetchCurrentUserAPI', 'Claimant');
   } else {
     await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
     await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayloadCaseTab });
-    await performAction('getCaseAPI', 'Claim Submission Time');
-    await performAction('fetchCurrentUserAPI');
+    await performAction('getCaseAPI', 'Link Solicitor');
+    await performAction('fetchCurrentUserAPI', 'Defendant');
   }
   await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/${getCaseTypeId()}/${process.env.CASE_NUMBER}#Summary`);
   await expect(async () => {
-    await page.waitForURL(`${process.env.MANAGE_CASE_BASE_URL}/**/**/**/**/**#Summary`);
+    await page.waitForURL(`${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/${getCaseTypeId()}/${process.env.CASE_NUMBER}#Summary`, { waitUntil: 'domcontentloaded' });
   }).toPass({
     timeout: VERY_LONG_TIMEOUT,
   });
@@ -49,12 +54,22 @@ test.describe('[Case tabs - England Journey] @nightly', async () => {
     await performAction('validateDefendantDetails', {
       defendant1NameKnown: submitCaseApiData.submitCasePayloadCaseTab.defendant1.nameKnown,
       additionalDefendants: submitCaseApiData.submitCasePayloadCaseTab.addAnotherDefendant,
-      payLoad: submitCaseApiData.submitCasePayloadCaseTab,
-      table: 'Defendant'
+      createPayload: createCaseApiData.createCasePayload,
+      submitPayload: submitCaseApiData.submitCasePayloadCaseTab,
+      mainTable: 'Defendant',
+      subTable: 'Service address'
+    });
+    await performAction('validateDefendantDetails', {
+      defendant1NameKnown: submitCaseApiData.submitCasePayloadCaseTab.defendant1.nameKnown,
+      additionalDefendants: submitCaseApiData.submitCasePayloadCaseTab.addAnotherDefendant,
+      createPayload: createCaseApiData.createCasePayload,
+      submitPayload: submitCaseApiData.submitCasePayloadCaseTab,
+      mainTable: 'Defendant',
+      subTable: 'Representative'
     });
 
     await performAction('validateClaimantDetails', {
-      payLoad: submitCaseApiData.submitCasePayloadCaseTab,
+      submitPayload: submitCaseApiData.submitCasePayloadCaseTab,
       table: 'Claimant'
     });
   });

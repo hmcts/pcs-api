@@ -158,7 +158,7 @@ notify:
     make-a-claim-claim-saved-for-later: bf648abe-5a45-4cc2-8d5b-d1e817ace18b
     make-a-claim-defendant-made-counterclaim: 6f583b02-6857-4207-a7ae-8c73d2310a80
     make-a-claim-defendant-response-received: 64a6cfbd-9797-4110-9a44-b9b04f1e2c53
-
+    general-application-received: e5daba0d-5c66-4c76-9e0f-06646200dc89
 testing-support:
   enabled: ${ENABLE_TESTING_SUPPORT:true}
 
