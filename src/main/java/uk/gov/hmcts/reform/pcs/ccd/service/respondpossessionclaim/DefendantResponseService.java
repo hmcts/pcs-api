@@ -27,6 +27,7 @@ import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.UUID;
+import java.util.function.Supplier;
 
 import static uk.gov.hmcts.reform.pcs.ccd.util.YesOrNoConverter.toYesOrNo;
 
@@ -108,34 +109,57 @@ public class DefendantResponseService {
      * @throws IllegalStateException if user ID is null, response already exists,
      *         party not found, or claim not found
      */
-    public void saveDefendantResponse(
+    public void saveDefendantResponse(long caseReference,
+                                      PossessionClaimResponse possessionClaimResponse) {
+
+        UUID userId = requireCurrentUserId();
+
+        saveDefendantResponseInternal(
+            caseReference,
+            possessionClaimResponse,
+            () -> partyService.getPartyEntityByIdamId(userId, caseReference),
+            String.format("Successfully saved defendant response for case %s user %s",
+                          caseReference, userId)
+        );
+    }
+
+    public void saveDefendantResponse(long caseReference,
+                                      PossessionClaimResponse possessionClaimResponse,
+                                      UUID partyId) {
+
+        requireCurrentUserId();
+
+        saveDefendantResponseInternal(
+            caseReference,
+            possessionClaimResponse,
+            () -> partyRepository
+                .findByIdAndPcsCaseCaseReference(partyId, caseReference)
+                .orElseThrow(() -> new IllegalStateException(
+                    "No party found for party ID: "
+                        + partyId
+                        + " and case reference: "
+                        + caseReference
+                )),
+            String.format("Successfully saved defendant response for case %s represented party %s",
+                          caseReference, partyId)
+        );
+    }
+
+    private void saveDefendantResponseInternal(
         long caseReference,
-        PossessionClaimResponse possessionClaimResponse
+        PossessionClaimResponse possessionClaimResponse,
+        Supplier<PartyEntity> partySupplier,
+        String successLogMessage
     ) {
-        UUID userId = securityContextService.getCurrentUserId();
-
-        if (userId == null) {
-            log.error("Cannot save defendant response: current user IDAM ID is null");
-            throw new IllegalStateException("Current user IDAM ID is null");
-        }
-
-        // Fail fast - check duplicate first (indexed query, very fast)
-        if (defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
-                caseReference, userId)) {
-            log.warn("Duplicate defendant response attempt for case {} user {}", caseReference, userId);
-            throw new IllegalStateException("A response has already been submitted for this case.");
-        }
-
-        UUID partyId = partyService.getPartyEntityByIdamId(userId, caseReference).getId();
-
+        PartyEntity partyRef = partySupplier.get();
         UUID claimId = claimRepository.findIdByCaseReference(caseReference)
             .orElseThrow(() -> {
                 log.error("No claim found for case: {}", caseReference);
                 return new IllegalStateException(
-                    String.format("No claim found for case: %d", caseReference));
+                    String.format("No claim found for case: %d", caseReference)
+                );
             });
 
-        PartyEntity partyRef = partyRepository.getReferenceById(partyId);
         ClaimEntity claimRef = claimRepository.getReferenceById(claimId);
 
         DefendantResponses responses = possessionClaimResponse.getDefendantResponses();
@@ -171,7 +195,18 @@ public class DefendantResponseService {
 
         partyAttributeAssertationService.buildPartyAttributeEntities(possessionClaimResponse, partyRef);
 
-        log.info("Successfully saved defendant response for case {} user {}", caseReference, userId);
+        log.info(successLogMessage);
+    }
+
+    private UUID requireCurrentUserId() {
+        UUID userId = securityContextService.getCurrentUserId();
+
+        if (userId == null) {
+            log.error("Cannot save defendant response: current user IDAM ID is null");
+            throw new IllegalStateException("Current user IDAM ID is null");
+        }
+
+        return userId;
     }
 
     private DefendantResponseEntity buildDefendantResponseEntity(ClaimEntity claimRef,
