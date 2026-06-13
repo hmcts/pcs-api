@@ -9,6 +9,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.service.CcdPaymentStateUpdateService;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimFormScheduler;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
@@ -26,6 +27,7 @@ public class MakeAClaimPaymentCallbackHandler implements PaymentCallbackStrategy
 
     private final CcdPaymentStateUpdateService ccdPaymentStateUpdateService;
     private final PartyService partyService;
+    private final PcsCaseService pcsCaseService;
     private final ObjectMapper objectMapper;
     private final ClaimFormScheduler claimFormScheduler;
     private final Clock utcClock;
@@ -45,6 +47,7 @@ public class MakeAClaimPaymentCallbackHandler implements PaymentCallbackStrategy
     }
 
     private void handleSuccessfulPayment(FeePaymentEntity feePaymentEntity, long caseReference) {
+        pcsCaseService.allocateCaseManagementLocation(caseReference);
         ccdPaymentStateUpdateService.submitPaymentSuccess(caseReference);
         issueClaim(feePaymentEntity);
         claimFormScheduler.scheduleClaimFormGeneration(caseReference);

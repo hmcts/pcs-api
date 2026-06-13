@@ -25,6 +25,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantRespon
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.HouseholdCircumstances;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PaymentAgreement;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.RTCStatementOfTruth;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.ReasonableAdjustments;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -1387,6 +1388,62 @@ class DefendantResponseServiceTest {
             .hasMessage("Current user IDAM ID is null");
 
         verify(defendantResponseRepository, never()).save(any());
+    }
+
+    @Test
+    void shouldSaveStatementOfTruthWhenAccepted() {
+        // Given
+        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
+        stubPartyLookup();
+        stubClaimLookup();
+
+        DefendantResponses responses = DefendantResponses.builder()
+            .statementOfTruth(RTCStatementOfTruth.builder()
+                .accepted(VerticalYesNo.YES)
+                .fullName("John Doe")
+                .build())
+            .build();
+
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .defendantResponses(responses)
+            .build();
+
+        // When
+        underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse);
+
+        // Then
+        verify(defendantResponseRepository).save(responseCaptor.capture());
+        DefendantResponseEntity saved = responseCaptor.getValue();
+
+        assertThat(saved.getStatementOfTruth()).isNotNull();
+        assertThat(saved.getStatementOfTruth().getAccepted()).isEqualTo(YesOrNo.YES);
+        assertThat(saved.getStatementOfTruth().getFullName()).isEqualTo("John Doe");
+        assertThat(saved.getStatementOfTruth().getCompletedDate()).isEqualTo("2026-04-22T21:00");
+    }
+
+    @Test
+    void shouldNotSaveStatementOfTruthWhenAcceptedIsNull() {
+        // Given
+        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
+        stubPartyLookup();
+        stubClaimLookup();
+
+        DefendantResponses responses = DefendantResponses.builder()
+            .statementOfTruth(RTCStatementOfTruth.builder()
+                .accepted(null)
+                .build())
+            .build();
+
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .defendantResponses(responses)
+            .build();
+
+        // When
+        underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse);
+
+        // Then
+        verify(defendantResponseRepository).save(responseCaptor.capture());
+        assertThat(responseCaptor.getValue().getStatementOfTruth()).isNull();
     }
 
     @ParameterizedTest(name = "counterClaimWantToUploadFiles={0}")

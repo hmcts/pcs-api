@@ -296,7 +296,6 @@ public class ClaimEntity {
             .count();
     }
 
-
     public void addCaseNote(CaseNoteEntity caseNote) {
         caseNotes.add(caseNote);
         caseNote.setClaim(this);
