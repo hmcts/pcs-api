@@ -15,9 +15,11 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimActivityLogRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 
 import java.util.List;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -33,6 +35,8 @@ class ClaimActivityLogServiceTest {
     private PcsCaseService pcsCaseService;
     @Mock
     private ClaimActivityLogRepository claimActivityLogRepository;
+    @Mock
+    private PartyRepository partyRepository;
 
     @InjectMocks
     private ClaimActivityLogService claimActivityLogService;
@@ -68,6 +72,44 @@ class ClaimActivityLogServiceTest {
         when(claim.getClaimParties()).thenReturn(List.of());
 
         claimActivityLogService.logGenerationSuccess(CASE_REFERENCE);
+
+        assertThat(captureSaved().getParty()).isNull();
+    }
+
+    @Test
+    void logsSuccessAgainstTheSuppliedParty() {
+        PcsCaseEntity pcsCase = mock(PcsCaseEntity.class);
+        PartyEntity defendant = mock(PartyEntity.class);
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCase);
+
+        claimActivityLogService.logGenerationSuccess(CASE_REFERENCE, defendant);
+
+        ClaimActivityLogEntity saved = captureSaved();
+        assertThat(saved.getStatus()).isEqualTo(ClaimActivityStatus.SUCCESS);
+        assertThat(saved.getParty()).isSameAs(defendant);
+    }
+
+    @Test
+    void logsFailureAgainstThePartyResolvedFromId() {
+        PcsCaseEntity pcsCase = mock(PcsCaseEntity.class);
+        PartyEntity defendant = mock(PartyEntity.class);
+        UUID partyId = UUID.randomUUID();
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCase);
+        when(partyRepository.getReferenceById(partyId)).thenReturn(defendant);
+
+        claimActivityLogService.logGenerationFailure(CASE_REFERENCE, partyId);
+
+        ClaimActivityLogEntity saved = captureSaved();
+        assertThat(saved.getStatus()).isEqualTo(ClaimActivityStatus.FAILURE);
+        assertThat(saved.getParty()).isSameAs(defendant);
+    }
+
+    @Test
+    void logsFailureWithNullPartyWhenPartyIdIsNull() {
+        PcsCaseEntity pcsCase = mock(PcsCaseEntity.class);
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCase);
+
+        claimActivityLogService.logGenerationFailure(CASE_REFERENCE, (UUID) null);
 
         assertThat(captureSaved().getParty()).isNull();
     }

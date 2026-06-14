@@ -240,6 +240,11 @@ claim-form:
     max-retries: ${CLAIM_FORM_MAX_RETRIES:5}
     backoff-delay-seconds: ${CLAIM_FORM_BACKOFF_DELAY_SECONDS:3600s}
 
+defence-form:
+  request:
+    max-retries: ${DEFENCE_FORM_MAX_RETRIES:5}
+    backoff-delay-seconds: ${DEFENCE_FORM_BACKOFF_DELAY_SECONDS:3600s}
+
 role-assignment:
   request:
     max-retries: ${ROLE_ASSIGNMENT_MAX_RETRIES:5}

@@ -12,7 +12,10 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimActivityLogRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+
+import java.util.UUID;
 
 /**
  * Records claim-form generation outcomes in the claim_activity_log table.
@@ -28,23 +31,41 @@ public class ClaimActivityLogService {
 
     private final PcsCaseService pcsCaseService;
     private final ClaimActivityLogRepository claimActivityLogRepository;
+    private final PartyRepository partyRepository;
 
     @Transactional
     public void logGenerationSuccess(long caseReference) {
-        record(caseReference, ClaimActivityStatus.SUCCESS);
+        PcsCaseEntity pcsCase = pcsCaseService.loadCase(caseReference);
+        record(pcsCase, claimantParty(pcsCase), ClaimActivityStatus.SUCCESS);
+    }
+
+    @Transactional
+    public void logGenerationSuccess(long caseReference, PartyEntity party) {
+        record(pcsCaseService.loadCase(caseReference), party, ClaimActivityStatus.SUCCESS);
+    }
+
+    @Transactional
+    public void logGenerationSuccess(PcsCaseEntity pcsCase, PartyEntity party) {
+        record(pcsCase, party, ClaimActivityStatus.SUCCESS);
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void logGenerationFailure(long caseReference) {
-        record(caseReference, ClaimActivityStatus.FAILURE);
+        PcsCaseEntity pcsCase = pcsCaseService.loadCase(caseReference);
+        record(pcsCase, claimantParty(pcsCase), ClaimActivityStatus.FAILURE);
     }
 
-    private void record(long caseReference, ClaimActivityStatus status) {
-        PcsCaseEntity pcsCase = pcsCaseService.loadCase(caseReference);
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void logGenerationFailure(long caseReference, UUID partyId) {
+        PartyEntity party = partyId == null ? null : partyRepository.getReferenceById(partyId);
+        record(pcsCaseService.loadCase(caseReference), party, ClaimActivityStatus.FAILURE);
+    }
+
+    private void record(PcsCaseEntity pcsCase, PartyEntity party, ClaimActivityStatus status) {
         claimActivityLogRepository.save(
             ClaimActivityLogEntity.builder()
                 .pcsCase(pcsCase)
-                .party(claimantParty(pcsCase))
+                .party(party)
                 .activityType(ClaimActivityType.DOCUMENTS_CREATED)
                 .status(status)
                 .build());

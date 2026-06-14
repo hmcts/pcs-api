@@ -40,6 +40,12 @@ public class DocumentImportService {
     public DocumentEntity addDocumentToCase(long caseReference,
                                             String documentUrl,
                                             CaseFileCategory caseFileCategory) {
+        return addDocumentToCase(pcsCaseService.loadCase(caseReference), documentUrl, caseFileCategory);
+    }
+
+    public DocumentEntity addDocumentToCase(PcsCaseEntity pcsCaseEntity,
+                                            String documentUrl,
+                                            CaseFileCategory caseFileCategory) {
 
         UUID documentId = documentIdExtractor.extractDocumentId(documentUrl);
 
@@ -60,7 +66,6 @@ public class DocumentImportService {
             .categoryId(caseFileCategory.getId())
             .build();
 
-        PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
         pcsCaseEntity.addDocuments(List.of(documentEntity));
 
         return documentEntity;

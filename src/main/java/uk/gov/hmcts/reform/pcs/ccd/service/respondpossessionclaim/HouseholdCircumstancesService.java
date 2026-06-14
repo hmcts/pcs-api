@@ -46,6 +46,7 @@ public class HouseholdCircumstancesService {
                                                       ? hc.getAlternativeAccommodationTransferDate() : null)
             .shareIncomeExpenseDetails(toVerticalYesNo(hc.getShareIncomeExpenseDetails()))
             .universalCredit(toVerticalYesNo(hc.getUniversalCredit()))
+            .hasAppliedForUniversalCredit(toVerticalYesNo(hc.getHasAppliedForUniversalCredit()))
             .ucApplicationDate(hc.getUcApplicationDate())
             .priorityDebts(toVerticalYesNo(hc.getPriorityDebts()))
             .debtTotal(hc.getDebtTotal())

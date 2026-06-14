@@ -4,6 +4,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaim;
@@ -20,6 +22,7 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.CounterClaimRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DefendantResponseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.defenceform.DefenceFormScheduler;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
@@ -59,6 +62,7 @@ public class DefendantResponseService {
     private final DocumentService documentService;
     private final PartyAttributeAssertationService partyAttributeAssertationService;
     private final CounterClaimRepository counterClaimRepository;
+    private final DefenceFormScheduler defenceFormScheduler;
     private final Clock utcClock;
 
     public DefendantResponseService(PartyService partyService,
@@ -72,6 +76,7 @@ public class DefendantResponseService {
                                     DocumentService documentService,
                                     PartyAttributeAssertationService partyAttributeAssertationService,
                                     CounterClaimRepository counterClaimRepository,
+                                    DefenceFormScheduler defenceFormScheduler,
                                     @Qualifier("utcClock") Clock utcClock) {
         this.partyService = partyService;
         this.partyRepository = partyRepository;
@@ -84,6 +89,7 @@ public class DefendantResponseService {
         this.documentService = documentService;
         this.partyAttributeAssertationService = partyAttributeAssertationService;
         this.counterClaimRepository = counterClaimRepository;
+        this.defenceFormScheduler = defenceFormScheduler;
         this.utcClock = utcClock;
     }
 
@@ -114,13 +120,22 @@ public class DefendantResponseService {
 
         UUID userId = requireCurrentUserId();
 
-        saveDefendantResponseInternal(
+        DefendantResponseEntity savedResponse = saveDefendantResponseInternal(
             caseReference,
             possessionClaimResponse,
             () -> partyService.getPartyEntityByIdamId(userId, caseReference),
             String.format("Successfully saved defendant response for case %s user %s",
                           caseReference, userId)
         );
+
+        // Citizen path only: legal-rep submissions (the overload below) are out of scope for the
+        // defence form, so they must not trigger generation. Schedule after the response commits so
+        // the generation task can never fire against a rolled-back response (the scheduler insert
+        // commits on its own connection, outside this transaction).
+        UUID defendantResponseId = savedResponse.getId();
+        UUID defendantPartyId = savedResponse.getParty().getId();
+        scheduleAfterCommit(() -> defenceFormScheduler.scheduleDefenceFormGeneration(
+            caseReference, defendantResponseId, defendantPartyId));
     }
 
     public void saveDefendantResponse(long caseReference,
@@ -145,7 +160,20 @@ public class DefendantResponseService {
         );
     }
 
-    private void saveDefendantResponseInternal(
+    private void scheduleAfterCommit(Runnable schedule) {
+        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    schedule.run();
+                }
+            });
+        } else {
+            schedule.run();
+        }
+    }
+
+    private DefendantResponseEntity saveDefendantResponseInternal(
         long caseReference,
         PossessionClaimResponse possessionClaimResponse,
         Supplier<PartyEntity> partySupplier,
@@ -196,6 +224,8 @@ public class DefendantResponseService {
         partyAttributeAssertationService.buildPartyAttributeEntities(possessionClaimResponse, partyRef);
 
         log.info(successLogMessage);
+
+        return savedResponse;
     }
 
     private UUID requireCurrentUserId() {
@@ -217,6 +247,8 @@ public class DefendantResponseService {
             .claim(claimRef)
             .party(partyRef)
             .freeLegalAdvice(responses.getFreeLegalAdvice())
+            .possessionNoticeReceived(responses.getPossessionNoticeReceived())
+            .noticeReceivedDate(responses.getNoticeReceivedDate())
             .defendantNameConfirmation(responses.getDefendantNameConfirmation())
             .correspondenceAddressConfirmation(responses.getCorrespondenceAddressConfirmation())
             .landlordRegistered(responses.getLandlordRegistered())

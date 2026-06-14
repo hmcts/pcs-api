@@ -252,7 +252,7 @@ public class DocumentService {
 
     private Optional<CaseFileCategory> mapDocumentTypeToCategory(DocumentType documentType) {
         return switch (documentType) {
-            case NOTICE_FOR_SERVICE_OUT_OF_JURISDICTION, CLAIM ->
+            case NOTICE_FOR_SERVICE_OUT_OF_JURISDICTION, CLAIM, DEFENDANT_RESPONSE ->
                 Optional.of(CaseFileCategory.STATEMENTS_OF_CASE);
             case RENT_STATEMENT,
                  TENANCY_AGREEMENT,

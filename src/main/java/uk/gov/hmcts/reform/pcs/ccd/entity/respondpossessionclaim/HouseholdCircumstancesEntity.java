@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -99,6 +100,11 @@ public class HouseholdCircumstancesEntity {
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private VerticalYesNo universalCredit;
+
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    @Column(name = "has_applied_for_universal_credit")
+    private VerticalYesNo hasAppliedForUniversalCredit;
 
     private LocalDate ucApplicationDate;
 

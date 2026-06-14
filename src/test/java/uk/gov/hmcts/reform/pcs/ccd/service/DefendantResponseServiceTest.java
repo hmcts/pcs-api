@@ -40,6 +40,7 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.CounterClaimRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DefendantResponseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.defenceform.DefenceFormScheduler;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.DefendantResponseService;
@@ -65,6 +66,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -100,6 +102,8 @@ class DefendantResponseServiceTest {
     @Mock
     private CounterClaimRepository counterClaimRepository;
     @Mock
+    private DefenceFormScheduler defenceFormScheduler;
+    @Mock
     private PartyEntity partyEntity;
     @Mock
     private ClaimEntity claimEntity;
@@ -130,8 +134,13 @@ class DefendantResponseServiceTest {
             documentService,
             partyAttributeAssertationService,
             counterClaimRepository,
+            defenceFormScheduler,
             FIXED_UTC_CLOCK
         );
+        // Mirror Hibernate returning the managed entity from save(); individual tests still assert on
+        // the captured argument, and the citizen path reads the returned entity's id for scheduling.
+        lenient().when(defendantResponseRepository.save(any(DefendantResponseEntity.class)))
+            .thenAnswer(invocation -> invocation.getArgument(0));
     }
 
     private void stubPartyLookup() {
@@ -1451,6 +1460,7 @@ class DefendantResponseServiceTest {
     void shouldPersistCounterClaimWantToUploadFiles(VerticalYesNo counterClaimWantToUploadFiles) {
         // Given
         when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
+        stubPartyLookup();
         stubClaimLookup();
 
         DefendantResponses responses = DefendantResponses.builder()
@@ -1477,5 +1487,76 @@ class DefendantResponseServiceTest {
             Arguments.of(VerticalYesNo.NO),
             Arguments.of((VerticalYesNo) null)
         );
+    }
+
+    @Test
+    void shouldPersistNoticeReceivedFieldsFromResponses() {
+        // Given
+        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
+        stubPartyLookup();
+        stubClaimLookup();
+
+        DefendantResponses responses = DefendantResponses.builder()
+            .possessionNoticeReceived(YesNoNotSure.NOT_SURE)
+            .noticeReceivedDate(LocalDate.of(2024, 5, 1))
+            .build();
+
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .defendantResponses(responses)
+            .build();
+
+        // When
+        underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse);
+
+        // Then
+        verify(defendantResponseRepository).save(responseCaptor.capture());
+        DefendantResponseEntity savedResponse = responseCaptor.getValue();
+
+        assertThat(savedResponse.getPossessionNoticeReceived()).isEqualTo(YesNoNotSure.NOT_SURE);
+        assertThat(savedResponse.getNoticeReceivedDate()).isEqualTo(LocalDate.of(2024, 5, 1));
+    }
+
+    @Test
+    void shouldScheduleDefenceFormGenerationOnCitizenPath() {
+        // Given
+        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
+        stubPartyLookup();
+        stubClaimLookup();
+        UUID partyId = UUID.randomUUID();
+        when(partyEntity.getId()).thenReturn(partyId);
+        UUID responseId = UUID.randomUUID();
+        when(defendantResponseRepository.save(any(DefendantResponseEntity.class)))
+            .thenReturn(DefendantResponseEntity.builder().id(responseId).party(partyEntity).build());
+
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .defendantResponses(DefendantResponses.builder().build())
+            .build();
+
+        // When
+        underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse);
+
+        // Then - the persisted response id and party id are carried to the scheduler.
+        verify(defenceFormScheduler)
+            .scheduleDefenceFormGeneration(eq(CASE_REFERENCE), eq(responseId), eq(partyId));
+    }
+
+    @Test
+    void shouldNotScheduleDefenceFormGenerationOnLegalRepPath() {
+        // Given
+        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
+        UUID partyId = UUID.randomUUID();
+        when(partyRepository.findByIdAndPcsCaseCaseReference(partyId, CASE_REFERENCE))
+            .thenReturn(Optional.of(partyEntity));
+        stubClaimLookup();
+
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .defendantResponses(DefendantResponses.builder().build())
+            .build();
+
+        // When
+        underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse, partyId);
+
+        // Then
+        verify(defenceFormScheduler, never()).scheduleDefenceFormGeneration(anyLong(), any(), any());
     }
 }

@@ -6,6 +6,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseNameFormatter;
+import uk.gov.hmcts.reform.pcs.ccd.service.form.PartyDisplayMapper;
 import uk.gov.hmcts.reform.pcs.document.model.claimform.ClaimFormAddress;
 import uk.gov.hmcts.reform.pcs.document.model.claimform.ClaimFormAddressRow;
 import uk.gov.hmcts.reform.pcs.document.model.claimform.ClaimFormDefendantRow;
@@ -137,12 +138,7 @@ class ClaimFormPartyMapper {
     }
 
     private static Party toDomainParty(PartyEntity party) {
-        return Party.builder()
-            .firstName(party.getFirstName())
-            .lastName(party.getLastName())
-            .orgName(party.getOrgName())
-            .nameKnown(party.getNameKnown())
-            .build();
+        return PartyDisplayMapper.toDomainParty(party);
     }
 
     // Org name, else "Persons unknown" when the name isn't known or is absent, else "first last".
@@ -153,13 +149,7 @@ class ClaimFormPartyMapper {
         if (isNo(party.getNameKnown())) {
             return "Persons unknown";
         }
-        String name = joinName(party.getFirstName(), party.getLastName());
+        String name = PartyDisplayMapper.joinName(party.getFirstName(), party.getLastName());
         return name.isEmpty() ? "Persons unknown" : name;
-    }
-
-    private static String joinName(String firstName, String lastName) {
-        boolean hasFirst = isPopulated(firstName);
-        boolean hasLast = isPopulated(lastName);
-        return (hasFirst ? firstName : "") + (hasFirst && hasLast ? " " : "") + (hasLast ? lastName : "");
     }
 }
