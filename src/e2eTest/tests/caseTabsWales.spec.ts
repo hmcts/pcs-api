@@ -254,6 +254,14 @@ test.describe('[Case tabs - Wales Journey] @nightly', async () => {
       section: 'Prohibited conduct standard contract',
       table: 'Prohibited conduct standard contract claim'
     });
+    await performAction('validateCaseSummaryDetails', {
+      defendant1NameKnown: submitCaseApiDataWales.submitCasePayloadCaseSummary.defendant1.nameKnown,
+      additionalDefendants: submitCaseApiDataWales.submitCasePayloadCaseSummary.addAnotherDefendant,
+      createPayload: createCaseApiWalesData.createCasePayload,
+      submitPayload: submitCaseApiDataWales.submitCasePayloadCaseSummary,
+      section: 'Required Documents',
+      table: 'Required documents'
+    });
 
   });
 });

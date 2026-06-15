@@ -56,6 +56,7 @@ import uk.gov.hmcts.reform.pcs.ccd.view.builder.DefendantInformationTabDetailsBu
 import uk.gov.hmcts.reform.pcs.ccd.view.builder.GroundsBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.view.builder.NoticeDetailsBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.view.builder.ReasonsForPossessionTabDetailsBuilder;
+import uk.gov.hmcts.reform.pcs.ccd.view.builder.RequiredDocumentsTabDetailsBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.view.builder.RentArrearsTabDetailsBuilder;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
@@ -83,6 +84,7 @@ public class CaseDetailsTabView {
     private final ClaimantInformationTabDetailsBuilder claimantInformationTabDetailsBuilder;
     private final DefendantInformationTabDetailsBuilder defendantInformationTabDetailsBuilder;
     private final AdditionalDefendantInformationTabDetailsBuilder additionalDefendantInformationTabDetailsBuilder;
+    private final RequiredDocumentsTabDetailsBuilder requiredDocumentsTabDetailsBuilder;
     private final NoticeDetailsBuilder noticeDetailsBuilder;
 
     public CaseDetailsTab buildCaseDetailsTab(PCSCase pcsCase) {
@@ -130,6 +132,7 @@ public class CaseDetailsTabView {
             .occupationContractLicenceDetails(occupationContractLicenceTabDetails)
             .antisocialAndConductDetails(antisocialAndConductTabDetails)
             .prohibitedConductStandardContractDetails(prohibitedConductStandardContractTabDetails)
+            .requiredDocumentsDetails(requiredDocumentsTabDetailsBuilder.buildRequiredDocumentsTabDetails(pcsCase))
             .build();
 
         if (claimantInformationTabDetails != null) {

@@ -112,9 +112,9 @@ public class NoticeDetails implements CcdPageConfiguration {
             .label("noticeDetails-document-separator", "---")
             .mandatory(NoticeServedDetails::getAbleToUploadDocument)
             .mandatory(NoticeServedDetails::getDocuments,
-                    "notice_AbleToUploadDocument=\"YES\"")
+                    "notice_AbleToUploadDocument=\"Yes\"")
             .mandatory(NoticeServedDetails::getUnableToUploadReason,
-                    "notice_AbleToUploadDocument=\"NO\"")
+                    "notice_AbleToUploadDocument=\"No\"")
             .label("noticeDetails-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 
