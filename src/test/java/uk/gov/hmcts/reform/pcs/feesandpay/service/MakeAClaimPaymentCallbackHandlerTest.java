@@ -10,11 +10,14 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.service.CcdPaymentStateUpdateService;
+import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
@@ -38,6 +41,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -55,7 +59,11 @@ class MakeAClaimPaymentCallbackHandlerTest {
     @Mock
     private PartyService partyService;
     @Mock
+    private PcsCaseService pcsCaseService;
+    @Mock
     private ObjectMapper objectMapper;
+    @Mock
+    private ClaimRepository claimRepository;
 
     @Mock
     private Clock utcClock;
@@ -71,8 +79,9 @@ class MakeAClaimPaymentCallbackHandlerTest {
     }
 
     @ParameterizedTest
-    @MethodSource("paymentStatus")
-    void shouldSetPartyOnEntityAndSubmitPaymentSuccess(PaymentStatus paymentStatus) throws Exception {
+    @MethodSource("nonPaidPaymentStatus")
+    void shouldSetPartyAndNotAllocateCaseManagementLocationWhenPaymentIsNotPaid(PaymentStatus paymentStatus)
+        throws Exception {
         // Given
         FeesAndPayTaskData taskData = buildTaskData();
         when(objectMapper.readValue(anyString(), eq(FeesAndPayTaskData.class))).thenReturn(taskData);
@@ -93,11 +102,9 @@ class MakeAClaimPaymentCallbackHandlerTest {
 
         // Then
         assertThat(feePaymentEntity.getParty()).isSameAs(partyEntity);
-        if (PaymentStatus.PAID == feePaymentEntity.getPaymentStatus()) {
-            verify(ccdPaymentStateUpdateService).submitPaymentSuccess(taskData.getCaseReference());
-        } else {
-            verifyNoInteractions(ccdPaymentStateUpdateService);
-        }
+        verifyNoInteractions(pcsCaseService);
+        verifyNoInteractions(ccdPaymentStateUpdateService);
+        verifyNoInteractions(claimRepository);
     }
 
     @Test
@@ -232,7 +239,9 @@ class MakeAClaimPaymentCallbackHandlerTest {
 
         // Then
         assertThat(throwable).isEqualTo(expectedException);
+        verifyNoInteractions(pcsCaseService);
         verifyNoInteractions(ccdPaymentStateUpdateService);
+        verifyNoInteractions(claimRepository);
     }
 
     private FeesAndPayTaskData buildTaskData() {
@@ -247,6 +256,10 @@ class MakeAClaimPaymentCallbackHandlerTest {
 
     private static Stream<PaymentStatus> paymentStatus() {
         return Stream.of(PaymentStatus.values());
+    }
+
+    private static Stream<PaymentStatus> nonPaidPaymentStatus() {
+        return paymentStatus().filter(paymentStatus -> PaymentStatus.PAID != paymentStatus);
     }
 
 }

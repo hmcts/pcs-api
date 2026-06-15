@@ -8,7 +8,7 @@ import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
-import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DefendantAccess;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 
 import java.time.LocalDate;
@@ -31,7 +31,7 @@ public class PossessionClaimResponse {
      * Supports multiple claimants (e.g., joint landlords).
      */
     @CCD(
-        access = {CitizenAccess.class},
+        access = {DefendantAccess.class},
         typeOverride = FieldType.Collection,
         typeParameterOverride = "Text"
     )
@@ -43,13 +43,13 @@ public class PossessionClaimResponse {
     @CCD(access = {CitizenAccess.class})
     private Party claimantEnteredDefendantDetails;
 
-    @CCD(access = {CitizenAccess.class})
+    @CCD(access = {DefendantAccess.class})
     private DefendantContactDetails defendantContactDetails;
 
-    @CCD(access = {CitizenAccess.class})
+    @CCD(access = {DefendantAccess.class})
     private DefendantResponses defendantResponses;
 
-    @CCD(access = {CitizenAccess.class})
+    @CCD(access = {DefendantAccess.class})
     private String currentDefendantPartyId;
 
     @CCD(access = {CitizenAccess.class}, label = "Date issued")

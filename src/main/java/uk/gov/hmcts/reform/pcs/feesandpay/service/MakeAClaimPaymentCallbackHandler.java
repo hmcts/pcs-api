@@ -9,6 +9,8 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.service.CcdPaymentStateUpdateService;
+import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
@@ -24,6 +26,7 @@ public class MakeAClaimPaymentCallbackHandler implements PaymentCallbackStrategy
 
     private final CcdPaymentStateUpdateService ccdPaymentStateUpdateService;
     private final PartyService partyService;
+    private final PcsCaseService pcsCaseService;
     private final ObjectMapper objectMapper;
     private final Clock utcClock;
 
@@ -42,20 +45,25 @@ public class MakeAClaimPaymentCallbackHandler implements PaymentCallbackStrategy
     @Override
     public void handle(PaymentStatusCallback paymentStatusCallback, FeePaymentEntity feePaymentEntity) {
         FeesAndPayTaskData feesAndPayTaskData = toFeesAndPayTaskData(feePaymentEntity.getTaskData());
-
         PartyEntity claimParty = getResponsibleParty(feesAndPayTaskData);
         feePaymentEntity.setParty(claimParty);
-
         if (PaymentStatus.PAID == feePaymentEntity.getPaymentStatus()) {
             ClaimEntity claim = feePaymentEntity.getClaim();
             if (claim != null && claim.getClaimIssuedDate() == null) {
                 claim.setClaimIssuedDate(LocalDateTime.now(utcClock));
             }
             ccdPaymentStateUpdateService.submitPaymentSuccess(feesAndPayTaskData.getCaseReference());
+            issueClaim(feePaymentEntity);
         } else {
             log.warn("The payment was not successful [{}] for case: {}", feePaymentEntity.getPaymentStatus(),
-                     feePaymentEntity.getClaim().getPcsCase().getCaseReference());
+                     feesAndPayTaskData.getCaseReference());
         }
+    }
+
+    private void issueClaim(FeePaymentEntity feePaymentEntity) {
+        ClaimEntity claim = feePaymentEntity.getClaim();
+        claim.setClaimIssuedDate(LocalDateTime.now(utcClock));
+        claimRepository.save(claim);
     }
 
     private FeesAndPayTaskData toFeesAndPayTaskData(String feesAndPayTaskDataAsString) {

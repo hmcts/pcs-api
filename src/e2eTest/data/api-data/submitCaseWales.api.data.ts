@@ -102,8 +102,8 @@ export const submitCaseApiDataWales = {
       {
         id: 'd5c91eae-1c3c-40c6-9338-47bade17efe9',
         value: {
-          document_url: 'http://dm-store-aat.service.core-compute-aat.internal/documents/f2d85b20-14dd-48e5-a614-7e6da6e93f9d',
-          document_binary_url: 'http://dm-store-aat.service.core-compute-aat.internal/documents/f2d85b20-14dd-48e5-a614-7e6da6e93f9d/binary',
+          document_url: `${process.env.DM_STORE}/documents/f2d85b20-14dd-48e5-a614-7e6da6e93f9d`,
+          document_binary_url: `${process.env.DM_STORE}/documents/f2d85b20-14dd-48e5-a614-7e6da6e93f9d/binary`,
           document_filename: 'rentStatement.pdf',
         }
       }
@@ -143,6 +143,21 @@ export const submitCaseApiDataWales = {
       }
     },
     addAdditionalUnderlesseeOrMortgagee: 'NO',
+    walesDocs_HasEnergyPerformanceCertificate: 'YES',
+    walesDocs_EnergyPerformance: [
+      {
+        id: 'a66903c1-ce7e-453e-b82e-174984654f7e',
+        value: {
+          document_url: `${process.env.DM_STORE}/documents/3ab9f8fe-0d71-4a82-bbda-c754c39a4780`,
+          document_binary_url: `${process.env.DM_STORE}/documents/3ab9f8fe-0d71-4a82-bbda-c754c39a4780/binary`,
+          document_filename: `noticeForService.pdf`,
+        }
+      }
+    ],
+    walesDocs_HasGasSafetyReport: 'NO',
+    walesDocs_NoGasReportReason: 'no gas safety report',
+    walesDocs_HasElectricalInstallationConditionReport: 'NO',
+    walesDocs_NoEicrReason: 'no copy of EICR',
     wantToUploadDocuments: 'NO',
     applicationWithClaim: 'YES',
     languageUsed: 'WELSH',
