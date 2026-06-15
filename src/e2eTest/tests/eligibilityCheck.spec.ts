@@ -112,6 +112,7 @@ test.describe('[Eligibility Check - Create Case] @nightly @MAC', async () => {
       postcode: addressDetails.englandNoCourtAssignedPostcodeTextInput,
       addressIndex: addressDetails.addressIndex
     });
+    await performValidation('mainHeader', postcodeNotAssignedToCourt.youCannotUseHeader)
     await performValidation('link', {text: postcodeNotAssignedToCourt.possessionClaimOnlineDynamicLink});
   });
 
