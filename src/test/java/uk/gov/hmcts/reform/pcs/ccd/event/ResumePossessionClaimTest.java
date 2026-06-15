@@ -379,7 +379,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
             // Then
             assertThat(submitResponse.getConfirmationBody()).contains("A draft of your claim has been saved");
 
-            verify(notificationService).sendClaimantDraftSavedForLater(TEST_CASE_REFERENCE, caseData);
+            verify(notificationService).sendClaimantDraftSavedForLaterEmailNotification(TEST_CASE_REFERENCE, caseData);
         }
 
         @Test
@@ -394,7 +394,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
 
             // Then
             verify(draftCaseDataService, never()).deleteUnsubmittedCaseData(anyLong(), any());
-            verify(notificationService).sendClaimantDraftSavedForLater(TEST_CASE_REFERENCE, caseData);
+            verify(notificationService).sendClaimantDraftSavedForLaterEmailNotification(TEST_CASE_REFERENCE, caseData);
         }
     }
 
@@ -417,6 +417,8 @@ class ResumePossessionClaimTest extends BaseEventTest {
         void shouldCreateMainClaimOnCase() {
             // Given
             stubFeeService();
+            String orgId = "org123";
+            when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(orgId);
 
             PCSCase caseData = PCSCase.builder()
                 .completionNextStep(SUBMIT_AND_PAY_NOW)
@@ -427,7 +429,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
             callSubmitHandler(caseData);
 
             // Then
-            verify(pcsCaseService).createMainClaimOnCase(TEST_CASE_REFERENCE, caseData);
+            verify(pcsCaseService).createMainClaimOnCase(TEST_CASE_REFERENCE, caseData, orgId);
         }
 
         @Test
