@@ -978,6 +978,47 @@ class DefendantResponseServiceTest {
         );
     }
 
+    @Test
+    void shouldSaveDefendantResponseForRepresentedParty() {
+        UUID representedPartyId = UUID.randomUUID();
+        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
+        when(partyRepository.findByIdAndPcsCaseCaseReference(representedPartyId, CASE_REFERENCE))
+            .thenReturn(Optional.of(partyEntity));
+        stubClaimLookup();
+
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .defendantResponses(DefendantResponses.builder()
+                .freeLegalAdvice(YesNoPreferNotToSay.YES)
+                .build())
+            .build();
+
+        underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse, representedPartyId);
+
+        verify(partyRepository).findByIdAndPcsCaseCaseReference(representedPartyId, CASE_REFERENCE);
+        verify(partyService, never()).getPartyEntityByIdamId(any(), anyLong());
+        verify(defendantResponseRepository).save(responseCaptor.capture());
+        assertThat(responseCaptor.getValue().getParty()).isEqualTo(partyEntity);
+    }
+
+    @Test
+    void shouldThrowWhenRepresentedPartyNotFound() {
+        UUID representedPartyId = UUID.randomUUID();
+        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
+        when(partyRepository.findByIdAndPcsCaseCaseReference(representedPartyId, CASE_REFERENCE))
+            .thenReturn(Optional.empty());
+
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .defendantResponses(DefendantResponses.builder().build())
+            .build();
+
+        assertThatThrownBy(() ->
+            underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse, representedPartyId))
+            .isInstanceOf(IllegalStateException.class)
+            .hasMessageContaining("No party found for party ID");
+
+        verify(defendantResponseRepository, never()).save(any());
+    }
+
     @ParameterizedTest(name = "counterClaimWantToUploadFiles={0}")
     @MethodSource("counterClaimWantToUploadFilesPersistenceScenarios")
     void shouldPersistCounterClaimWantToUploadFiles(VerticalYesNo counterClaimWantToUploadFiles) {
