@@ -147,6 +147,16 @@ class CounterClaimFeeCalculatorTest {
             .isEqualByComparingTo(new BigDecimal("100.50"));
     }
 
+    @Test
+    void shouldReturnNullFeeLookupAmountWhenClaimAmountKnownIsUnset() {
+        CounterClaim counterClaim = CounterClaim.builder()
+            .claimType(CounterClaimType.PAYMENT_OR_COMPENSATION)
+            .build();
+
+        assertThat(underTest.resolveFeeLookupAmountInPounds(counterClaim)).isNull();
+        assertThat(underTest.resolveFeeType(counterClaim)).isEqualTo(FeeType.COUNTER_CLAIM);
+    }
+
     private static Stream<Arguments> knownAmountFeeScenarios() {
         return Stream.of(
             Arguments.of(new BigDecimal("5000.00"), FeeType.COUNTER_CLAIM_RANGED),
