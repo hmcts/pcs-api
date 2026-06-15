@@ -123,7 +123,13 @@ public class DefendantResponses {
 
     @CCD
     private VerticalYesNo counterClaimWantToUploadFiles;
+    @CCD(
+        access = {DefendantSolicitorAccess.class},
+        typeOverride = FieldType.MultiSelectList,
+        typeParameterOverride = "RespondToClaimSection"
+    )
+    private List<RespondToClaimSection> completedSections;
 
-    @CCD(max = 100)
-    private String statementOfTruthCompletedBy;
+    @CCD
+    private DefendantResponseStatus status;
 }
