@@ -131,5 +131,8 @@ public class DefendantResponses {
     private List<RespondToClaimSection> completedSections;
 
     @CCD
+    private String statementOfTruthCompletedBy;
+
+    @CCD
     private DefendantResponseStatus status;
 }
