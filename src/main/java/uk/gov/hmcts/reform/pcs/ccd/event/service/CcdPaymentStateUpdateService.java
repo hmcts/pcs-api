@@ -42,6 +42,7 @@ public class CcdPaymentStateUpdateService {
         return caseResource;
     }
 
+
     private JsonNode toJsonNode(PCSCase pcsCase) {
         return objectMapper.valueToTree(pcsCase);
     }
