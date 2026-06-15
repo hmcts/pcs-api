@@ -43,6 +43,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexibleMandato
 import static uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexibleMandatoryGroundsAlternativeAccomm.LANDLORD_WORKS;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexibleMandatoryGroundsAlternativeAccomm.OVERCROWDING;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexibleMandatoryGroundsAlternativeAccomm.PROPERTY_SOLD;
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.ENGLAND;
 
 @AllArgsConstructor
 @Component
@@ -66,7 +67,7 @@ public class SecureOrFlexibleGroundsForPossessionReasons implements CcdPageConfi
                     "tenancy_TypeOfTenancyLicence=\"SECURE_TENANCY\""
                             + " OR tenancy_TypeOfTenancyLicence=\"FLEXIBLE_TENANCY\""
                             + " AND (showBreachOfTenancyTextarea=\"Yes\" OR showReasonsForGroundsPage=\"Yes\")"
-                            + " AND legislativeCountry=\"England\""
+                            + " AND " + ENGLAND
             )
             .label("possessionReasons-lineSeparator","---")
             .complex(PCSCase::getSecureOrFlexibleGroundsReasons)

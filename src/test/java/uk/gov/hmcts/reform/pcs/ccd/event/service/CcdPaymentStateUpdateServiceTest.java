@@ -13,6 +13,8 @@ import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.CaseResource;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
+import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
+import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -38,6 +40,10 @@ class CcdPaymentStateUpdateServiceTest {
     private CoreCaseDataApi coreCaseDataApi;
     @Mock
     private ObjectMapper objectMapper;
+    @Mock
+    private NotificationService notificationService;
+    @Mock
+    private ClaimEntity claim;
 
     @InjectMocks
     private CcdPaymentStateUpdateService underTest;
@@ -54,7 +60,7 @@ class CcdPaymentStateUpdateServiceTest {
 
         CaseResource expectedCaseResource = new CaseResource();
         when(coreCaseDataApi.createEvent(eq(IDAM_TOKEN), eq(S2S_TOKEN), eq(String.valueOf(CASE_ID)),
-                                         org.mockito.ArgumentMatchers.any(CaseDataContent.class)))
+                                         any(CaseDataContent.class)))
             .thenReturn(expectedCaseResource);
         when(objectMapper.valueToTree(any())).thenReturn(mock(JsonNode.class));
 
