@@ -15,6 +15,13 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CTSC_ADMIN;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CTSC_TEAM_LEADER;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.HEARING_CENTRE_ADMIN;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.HEARING_CENTRE_TEAM_LEADER;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.WLU_ADMIN;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.WLU_TEAM_LEADER;
+
 @Component
 @Slf4j
 @AllArgsConstructor
@@ -29,8 +36,8 @@ public class MaintainLinkCase implements CCDConfig<PCSCase, State, UserRole> {
                             .forStates(State.PENDING_CASE_ISSUED, State.CASE_ISSUED)
                             .name("Manage case links")
                             .description("To manage link related cases")
-                            .grant(Permission.R, UserRole.PCS_CASE_WORKER)
-                            .grant(Permission.CRUD, UserRole.PCS_SOLICITOR))
+                            .grant(Permission.CRUD, HEARING_CENTRE_ADMIN, HEARING_CENTRE_TEAM_LEADER,
+                                   CTSC_ADMIN, CTSC_TEAM_LEADER, WLU_ADMIN, WLU_TEAM_LEADER))
             .page("maintainCaseLink")
             .pageLabel("Case Link")
             .optional(PCSCase::getCaseLinks, "LinkedCasesComponentLauncher = \"DONOTSHOW\"", null, true)

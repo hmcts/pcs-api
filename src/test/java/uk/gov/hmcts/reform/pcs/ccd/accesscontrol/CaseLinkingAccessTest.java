@@ -23,8 +23,8 @@ class CaseLinkingAccessTest {
     void shouldGrantCaseLinkingAccess() {
         SetMultimap<HasRole, Permission> grants = underTest.getGrants();
 
-        assertThat(grants.get(PCS_SOLICITOR)).containsAll(Permission.CRU);
-        assertThat(grants.get(PCS_CASE_WORKER)).contains(Permission.R);
+        assertThat(grants.get(PCS_SOLICITOR)).isEmpty();
+        assertThat(grants.get(PCS_CASE_WORKER)).isEmpty();
         for (UserRole role : AccessGrants.INTERNAL_READ_ROLES) {
             assertThat(grants.get(role)).contains(Permission.R);
         }

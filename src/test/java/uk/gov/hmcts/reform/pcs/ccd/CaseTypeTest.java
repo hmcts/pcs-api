@@ -18,6 +18,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -125,34 +126,15 @@ class CaseTypeTest {
         assertThat(caseDetailsTab.getFields()).extracting(TabField::getId).contains("detailsTab_ClaimDetails");
         assertThat(summaryTab.getFields()).extracting(TabField::getId)
             .contains("summaryTab_OccupationContractOrLicenceDetails");
-        assertThat(summaryTab.getForRoles()).contains(
-            AccessProfile.CREATOR,
-            AccessProfile.CITIZEN,
-            AccessProfile.DEFENDANT,
-            AccessProfile.CLAIMANT_SOLICITOR,
-            AccessProfile.DEFENDANT_SOLICITOR,
-            AccessProfile.JUDGE,
-            AccessProfile.HEARING_CENTRE_ADMIN,
-            AccessProfile.CTSC_ADMIN,
-            AccessProfile.WLU_ADMIN
-        );
-        assertThat(casePartiesTab.getForRoles()).containsAll(summaryTab.getForRoles());
-        assertThat(caseDetailsTab.getForRoles()).containsAll(summaryTab.getForRoles());
-        assertThat(caseFileViewTab.getForRoles()).containsAll(summaryTab.getForRoles());
-        assertThat(serviceRequestTab.getForRoles()).containsAll(summaryTab.getForRoles());
-        assertThat(caseHistoryTab.getForRoles()).contains(
-            AccessProfile.JUDGE,
-            AccessProfile.HEARING_CENTRE_ADMIN,
-            AccessProfile.CTSC_ADMIN,
-            AccessProfile.WLU_ADMIN
-        );
-        assertThat(caseHistoryTab.getForRoles()).doesNotContain(
-            AccessProfile.CITIZEN,
-            AccessProfile.DEFENDANT,
-            AccessProfile.DEFENDANT_SOLICITOR
-        );
-        assertThat(caseLinksTab.getForRoles()).containsAll(caseHistoryTab.getForRoles());
-        assertThat(caseNotesTab.getForRoles()).containsAll(caseHistoryTab.getForRoles());
-        assertThat(caseFlagsTab.getForRoles()).containsAll(caseHistoryTab.getForRoles());
+        assertThat(summaryTab.getForRoles()).containsExactlyInAnyOrder(CaseType.PARTY_VISIBLE_TAB_ROLES);
+        assertThat(casePartiesTab.getForRoles()).containsExactlyInAnyOrder(CaseType.PARTY_VISIBLE_TAB_ROLES);
+        assertThat(caseDetailsTab.getForRoles()).containsExactlyInAnyOrder(CaseType.PARTY_VISIBLE_TAB_ROLES);
+        assertThat(caseFileViewTab.getForRoles()).containsExactlyInAnyOrder(CaseType.PARTY_VISIBLE_TAB_ROLES);
+        assertThat(serviceRequestTab.getForRoles()).containsExactlyInAnyOrder(CaseType.PARTY_VISIBLE_TAB_ROLES);
+        assertThat(caseHistoryTab.getForRoles()).containsExactlyInAnyOrder(CaseType.INTERNAL_TAB_ROLES);
+        assertThat(caseLinksTab.getForRoles()).containsExactlyInAnyOrder(CaseType.INTERNAL_TAB_ROLES);
+        assertThat(caseNotesTab.getForRoles()).containsExactlyInAnyOrder(CaseType.INTERNAL_TAB_ROLES);
+        assertThat(caseFlagsTab.getForRoles()).containsExactlyInAnyOrder(CaseType.INTERNAL_TAB_ROLES);
+        verify(builder).omitHistoryForRoles(CaseType.NON_INTERNAL_HISTORY_ROLES);
     }
 }

@@ -9,6 +9,9 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 
+import java.util.Arrays;
+import java.util.EnumSet;
+
 import static java.lang.System.getenv;
 import static java.util.Optional.ofNullable;
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
@@ -26,7 +29,7 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
     private static final String JURISDICTION_ID = "PCS";
     private static final String JURISDICTION_NAME = "Civil Possession";
     private static final String JURISDICTION_DESCRIPTION = "Civil Possession Jurisdiction";
-    private static final AccessProfile[] PARTY_VISIBLE_TAB_ROLES = {
+    static final AccessProfile[] PARTY_VISIBLE_TAB_ROLES = {
         AccessProfile.CREATOR,
         AccessProfile.CITIZEN,
         AccessProfile.DEFENDANT,
@@ -40,7 +43,7 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
         AccessProfile.CTSC_ADMIN,
         AccessProfile.WLU_ADMIN
     };
-    private static final AccessProfile[] INTERNAL_TAB_ROLES = {
+    static final AccessProfile[] INTERNAL_TAB_ROLES = {
         AccessProfile.JUDGE,
         AccessProfile.FEE_PAID_JUDGE,
         AccessProfile.CIRCUIT_JUDGE,
@@ -49,6 +52,7 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
         AccessProfile.CTSC_ADMIN,
         AccessProfile.WLU_ADMIN
     };
+    static final AccessProfile[] NON_INTERNAL_HISTORY_ROLES = nonInternalHistoryRoles();
 
     @Value("${hmcts.hmctsOrgId}")
     private String hmctsServiceId;
@@ -74,6 +78,14 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
             .orElse(base);
     }
 
+    private static AccessProfile[] nonInternalHistoryRoles() {
+        EnumSet<AccessProfile> internalRoles = EnumSet.copyOf(Arrays.asList(INTERNAL_TAB_ROLES));
+
+        return Arrays.stream(AccessProfile.values())
+            .filter(accessProfile -> !internalRoles.contains(accessProfile))
+            .toArray(AccessProfile[]::new);
+    }
+
     @Override
     public void configure(final ConfigBuilder<PCSCase, State, AccessProfile> builder) {
         builder.setCallbackHost(caseApiUrl);
@@ -84,6 +96,8 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
 
         builder.searchInputFields()
             .caseReferenceField();
+
+        builder.omitHistoryForRoles(NON_INTERNAL_HISTORY_ROLES);
 
         builder.searchCasesFields()
             .caseReferenceField();
