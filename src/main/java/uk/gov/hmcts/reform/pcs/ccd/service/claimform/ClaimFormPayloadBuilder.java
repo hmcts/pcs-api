@@ -93,6 +93,7 @@ public class ClaimFormPayloadBuilder {
         mapRentArrears(claim.getRentArrears(), payloadBuilder);
         mapAsbProhibitedConduct(claim.getAsbProhibitedConductEntity(), payloadBuilder);
         mapPossessionAlternatives(claim.getPossessionAlternativesEntity(), payloadBuilder);
+        mapRequiredDocuments(claim, payloadBuilder);
         mapStatementOfTruth(claim.getStatementOfTruth(), payloadBuilder);
 
         partyMapper.mapCaseName(claimants, defendants, payloadBuilder);
@@ -375,6 +376,26 @@ public class ClaimFormPayloadBuilder {
         payloadBuilder.tenancyNotUploadedReason(tenancy.getReasonsForNoTenancyLicence());
         payloadBuilder.rentAmount(formatGbp(tenancy.getRentAmount()));
         payloadBuilder.rentCalculatedDescription(formatRentDescription(tenancy));
+    }
+
+    // Wales-only required documents (EPC, gas safety, EICR). The section itself is gated on isWales
+    // via showRequiredDocumentsSection; England claims never capture these so the getters return null.
+    private void mapRequiredDocuments(ClaimEntity claim,
+                                      ClaimFormPayload.ClaimFormPayloadBuilder payloadBuilder) {
+        VerticalYesNo epc = claim.getEnergyPerformanceCertificateProvided();
+        payloadBuilder.epcUploadedYesNo(toLabel(epc));
+        payloadBuilder.showEpcNotUploadedReason(isNo(epc));
+        payloadBuilder.epcNotUploadedReason(claim.getNoEnergyPerformanceCertificateReason());
+
+        VerticalYesNo gas = claim.getGasSafetyReportProvided();
+        payloadBuilder.gasSafetyUploadedYesNo(toLabel(gas));
+        payloadBuilder.showGasSafetyNotUploadedReason(isNo(gas));
+        payloadBuilder.gasSafetyNotUploadedReason(claim.getNoGasSafetyReportReason());
+
+        VerticalYesNo eicr = claim.getElectricalInstallationConditionProvided();
+        payloadBuilder.eicrUploadedYesNo(toLabel(eicr));
+        payloadBuilder.showEicrNotUploadedReason(isNo(eicr));
+        payloadBuilder.eicrNotUploadedReason(claim.getNoElectricalInstallationConditionReason());
     }
 
     private void mapRentArrears(RentArrearsEntity rent,

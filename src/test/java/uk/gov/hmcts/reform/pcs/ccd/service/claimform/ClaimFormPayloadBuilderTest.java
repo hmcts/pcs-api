@@ -1137,8 +1137,59 @@ class ClaimFormPayloadBuilderTest {
             ClaimFormPayload payload = builder.build(minimalCase(LegislativeCountry.ENGLAND));
             assertThat(payload.isShowRequiredDocumentsSection()).isFalse();
         }
-        // EPC/gas/EICR field data still §13.3 gap; show*NotUploadedReason booleans default to
-        // false (since the upload Y/N fields are null until source is wired).
+
+        @Test
+        void mapsUploadedAnswersWhenAllProvided() {
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.WALES);
+            ClaimEntity claim = pcsCase.getClaims().getFirst();
+            claim.setEnergyPerformanceCertificateProvided(VerticalYesNo.YES);
+            claim.setGasSafetyReportProvided(VerticalYesNo.YES);
+            claim.setElectricalInstallationConditionProvided(VerticalYesNo.YES);
+
+            ClaimFormPayload payload = builder.build(pcsCase);
+
+            assertThat(payload.getEpcUploadedYesNo()).isEqualTo("Yes");
+            assertThat(payload.getGasSafetyUploadedYesNo()).isEqualTo("Yes");
+            assertThat(payload.getEicrUploadedYesNo()).isEqualTo("Yes");
+            assertThat(payload.isShowEpcNotUploadedReason()).isFalse();
+            assertThat(payload.isShowGasSafetyNotUploadedReason()).isFalse();
+            assertThat(payload.isShowEicrNotUploadedReason()).isFalse();
+        }
+
+        @Test
+        void mapsNotUploadedReasonsWhenNotProvided() {
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.WALES);
+            ClaimEntity claim = pcsCase.getClaims().getFirst();
+            claim.setEnergyPerformanceCertificateProvided(VerticalYesNo.NO);
+            claim.setNoEnergyPerformanceCertificateReason("EPC pending from agent");
+            claim.setGasSafetyReportProvided(VerticalYesNo.NO);
+            claim.setNoGasSafetyReportReason("Gas check booked");
+            claim.setElectricalInstallationConditionProvided(VerticalYesNo.NO);
+            claim.setNoElectricalInstallationConditionReason("EICR not yet done");
+
+            ClaimFormPayload payload = builder.build(pcsCase);
+
+            assertThat(payload.getEpcUploadedYesNo()).isEqualTo("No");
+            assertThat(payload.isShowEpcNotUploadedReason()).isTrue();
+            assertThat(payload.getEpcNotUploadedReason()).isEqualTo("EPC pending from agent");
+            assertThat(payload.getGasSafetyUploadedYesNo()).isEqualTo("No");
+            assertThat(payload.isShowGasSafetyNotUploadedReason()).isTrue();
+            assertThat(payload.getGasSafetyNotUploadedReason()).isEqualTo("Gas check booked");
+            assertThat(payload.getEicrUploadedYesNo()).isEqualTo("No");
+            assertThat(payload.isShowEicrNotUploadedReason()).isTrue();
+            assertThat(payload.getEicrNotUploadedReason()).isEqualTo("EICR not yet done");
+        }
+
+        @Test
+        void leavesValuesUnsetWhenNotAnswered() {
+            ClaimFormPayload payload = builder.build(minimalCase(LegislativeCountry.WALES));
+            assertThat(payload.getEpcUploadedYesNo()).isNull();
+            assertThat(payload.getGasSafetyUploadedYesNo()).isNull();
+            assertThat(payload.getEicrUploadedYesNo()).isNull();
+            assertThat(payload.isShowEpcNotUploadedReason()).isFalse();
+            assertThat(payload.isShowGasSafetyNotUploadedReason()).isFalse();
+            assertThat(payload.isShowEicrNotUploadedReason()).isFalse();
+        }
     }
 
     @Nested
