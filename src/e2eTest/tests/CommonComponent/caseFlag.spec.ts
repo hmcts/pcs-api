@@ -127,7 +127,6 @@ test.describe('[Common Component Case Flags] @nightly @CC @caseFlags', async () 
     });
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage case flags');
   });
-
   test('Case Flags - Create Party Level Case Flag', async ({page}) => {
     await performAction('login', user.ctscAdministrator);
     await dismissCookieBanner(page, 'analytics');
