@@ -376,7 +376,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
             // Then
             assertThat(submitResponse.getConfirmationBody()).contains("A draft of your claim has been saved");
 
-            verify(notificationService).sendClaimantDraftSavedForLater(TEST_CASE_REFERENCE, caseData);
+            verify(notificationService).sendClaimantDraftSavedForLaterEmailNotification(TEST_CASE_REFERENCE, caseData);
         }
 
         @Test
@@ -391,7 +391,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
 
             // Then
             verify(draftCaseDataService, never()).deleteUnsubmittedCaseData(anyLong(), any());
-            verify(notificationService).sendClaimantDraftSavedForLater(TEST_CASE_REFERENCE, caseData);
+            verify(notificationService).sendClaimantDraftSavedForLaterEmailNotification(TEST_CASE_REFERENCE, caseData);
         }
     }
 
