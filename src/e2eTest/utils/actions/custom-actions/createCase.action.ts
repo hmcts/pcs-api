@@ -525,8 +525,14 @@ export class CreateCaseAction implements IAction {
         ['inputText', noticeDetails.minuteHiddenTextLabel, noticeData.minute],
         ['inputText', noticeDetails.secondHiddenTextLabel, noticeData.second]);
     }
-    if (noticeData.files) {
+    await performAction('clickRadioButton', {
+      question: noticeData.uploadNoticeQuestion,
+      option: noticeData.uploadNoticeOption
+    });
+    if (noticeData.files && noticeData.uploadNoticeOption === 'Yes, I can upload a copy of the notice served') {
       await performAction('uploadFile', noticeData.files);
+    } else {
+      await performAction('inputText', noticeDetails.whyYouCannotUploadHiddenTextLabel, noticeDetails.whyYouCannotUploadHiddenTextInput);
     }
     await performAction('clickButton', noticeDetails.continueButton);
   }

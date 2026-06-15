@@ -449,8 +449,8 @@ test.describe('[Create Case - Wales] @nightly', async () => {
       typeOfNoticeInput: 'RWH20'
     });
     await performAction('selectNoticeDetails', {
-     howDidYouServeNotice: noticeDetails.byOtherElectronicMethodRadioOption,
-      day: '25', month: '02', year: '1970', hour: '22', minute: '45', second: '10', files: 'NoticeDetails.pdf'});
+      howDidYouServeNotice: noticeDetails.byOtherElectronicMethodRadioOption,
+      day: '25', month: '02', year: '1970', hour: '22', minute: '45', second: '10', files: 'NoticeDetails.pdf', uploadNoticeQuestion: noticeDetails.areYouAbleToUploadQuestion,uploadNoticeOption: noticeDetails.yesRadioOption});
     await performValidation('mainHeader', claimantCircumstances.mainHeader);
     await performAction('selectClaimantCircumstances', {
       circumstanceOption: claimantCircumstances.noRadioOption,

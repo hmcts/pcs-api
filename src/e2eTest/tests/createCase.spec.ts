@@ -145,7 +145,7 @@ test.describe('[Create Case - England] @nightly', async () => {
     await performValidation('mainHeader', noticeDetails.mainHeader);
     await performAction('selectNoticeDetails', {
        howDidYouServeNotice: noticeDetails.byFirstClassPostOrRadioOption,
-       day: '16', month: '07', year: '1985'});
+       day: '16', month: '07', year: '1985', uploadNoticeQuestion: noticeDetails.areYouAbleToUploadQuestion,uploadNoticeOption: noticeDetails.noRadioOption});
     await performValidation('mainHeader', rentDetails.mainHeader);
     await performAction('provideRentDetails', {rentFrequencyOption:'Weekly', rentAmount:'800'});
     await performValidation('mainHeader', rentArrears.mainHeader);
@@ -251,7 +251,7 @@ test.describe('[Create Case - England] @nightly', async () => {
     await performValidation('mainHeader', noticeDetails.mainHeader);
     await performAction('selectNoticeDetails', {
       howDidYouServeNotice: noticeDetails.byFirstClassPostOrRadioOption,
-      day: '16', month: '07', year: '1985', files: 'NoticeDetails.pdf'});
+      day: '16', month: '07', year: '1985', files: 'NoticeDetails.pdf', uploadNoticeQuestion: noticeDetails.areYouAbleToUploadQuestion,uploadNoticeOption: noticeDetails.yesRadioOption});
     await performValidation('mainHeader', rentDetails.mainHeader);
     await performAction('provideRentDetails', {rentFrequencyOption:'Weekly', rentAmount:'800'});
     await performValidation('mainHeader', rentArrears.mainHeader);
@@ -467,7 +467,7 @@ test.describe('[Create Case - England] @nightly', async () => {
       howDidYouServeNotice: noticeDetails.byPersonallyHandingItToRadioOption,
       explanationLabel: noticeDetails.nameOfPersonTheDocumentWasLeftHiddenTextLabel,
       explanation: noticeDetails.nameOfPersonTheDocumentWasLeftHiddenTextInput,
-      day: '31', month: '01', year: '1962', hour: '10', minute: '55', second: '30'});
+      day: '31', month: '01', year: '1962', hour: '10', minute: '55', second: '30', uploadNoticeQuestion: noticeDetails.areYouAbleToUploadQuestion,uploadNoticeOption: noticeDetails.noRadioOption});
     await performValidation('mainHeader', rentDetails.mainHeader);
     await performAction('provideRentDetails', {rentFrequencyOption:'Weekly', rentAmount:'800'});
     await performValidation('mainHeader', rentArrears.mainHeader);
@@ -572,7 +572,7 @@ test.describe('[Create Case - England] @nightly', async () => {
       howDidYouServeNotice: noticeDetails.byPersonallyHandingItToRadioOption,
       explanationLabel: noticeDetails.nameOfPersonTheDocumentWasLeftHiddenTextLabel,
       explanation: noticeDetails.nameOfPersonTheDocumentWasLeftHiddenTextInput,
-      day: '31', month: '01', year: '1962', hour: '10', minute: '55', second: '30'});
+      day: '31', month: '01', year: '1962', hour: '10', minute: '55', second: '30', uploadNoticeQuestion: noticeDetails.areYouAbleToUploadQuestion,uploadNoticeOption: noticeDetails.noRadioOption});
     await performValidation('mainHeader', claimantCircumstances.mainHeader);
     await performAction('selectClaimantCircumstances', {
       circumstanceOption: claimantCircumstances.yesRadioOption,
@@ -659,7 +659,7 @@ test.describe('[Create Case - England] @nightly', async () => {
       howDidYouServeNotice: noticeDetails.byEmailRadioOption,
       explanationLabel: noticeDetails.explainHowItWasServedByEmailHiddenTextLabel,
       explanation: noticeDetails.explainHowItWasServedByEmailHiddenTextInput,
-      day: '29', month: '02', year: '2000', hour: '16', minute: '01', second: '56'});
+      day: '29', month: '02', year: '2000', hour: '16', minute: '01', second: '56', uploadNoticeQuestion: noticeDetails.areYouAbleToUploadQuestion,uploadNoticeOption: noticeDetails.noRadioOption});
     await performValidation('mainHeader', claimantCircumstances.mainHeader);
     await performAction('selectClaimantCircumstances', {
       circumstanceOption: claimantCircumstances.yesRadioOption,
@@ -972,7 +972,7 @@ test.describe('[Create Case - England] @nightly', async () => {
     });
     await performAction('selectNoticeDetails', {
        howDidYouServeNotice: noticeDetails.byOtherElectronicMethodRadioOption,
-      day: '25', month: '02', year: '1970', hour: '22', minute: '45', second: '10'});
+      day: '25', month: '02', year: '1970', hour: '22', minute: '45', second: '10', uploadNoticeQuestion: noticeDetails.areYouAbleToUploadQuestion,uploadNoticeOption: noticeDetails.noRadioOption});
     await performValidation('mainHeader', rentDetails.mainHeader);
     await performAction('provideRentDetails', {rentFrequencyOption: 'Monthly', rentAmount: '1000'});
     await performValidation('mainHeader', rentArrears.mainHeader);
@@ -1084,7 +1084,7 @@ test.describe('[Create Case - England] @nightly', async () => {
       howDidYouServeNotice: noticeDetails.byEmailRadioOption,
       explanationLabel: noticeDetails.explainHowItWasServedByEmailHiddenTextLabel,
       explanation: noticeDetails.explainHowItWasServedByEmailHiddenTextInput,
-      day: '29', month: '02', year: '2000', hour: '16', minute: '01', second: '56'
+      day: '29', month: '02', year: '2000', hour: '16', minute: '01', second: '56', uploadNoticeQuestion: noticeDetails.areYouAbleToUploadQuestion,uploadNoticeOption: noticeDetails.noRadioOption
     });
     await performValidation('mainHeader', rentDetails.mainHeader);
     await performAction('provideRentDetails', {rentFrequencyOption: 'Weekly', rentAmount: '800'});
@@ -1185,7 +1185,7 @@ test.describe('[Create Case - England] @nightly', async () => {
     await performAction('selectNoticeDetails', {
       howDidYouServeNotice: noticeDetails.byEmailRadioOption,
       explanationLabel: noticeDetails.explainHowItWasServedByEmailHiddenTextLabel,
-      explanation: noticeDetails.explainHowItWasServedByEmailHiddenTextInput});
+      explanation: noticeDetails.explainHowItWasServedByEmailHiddenTextInput, uploadNoticeQuestion: noticeDetails.areYouAbleToUploadQuestion,uploadNoticeOption: noticeDetails.noRadioOption});
     await performValidation('mainHeader', claimantCircumstances.mainHeader);
     await performAction('selectClaimantCircumstances', {
       circumstanceOption: claimantCircumstances.noRadioOption,
