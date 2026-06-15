@@ -25,6 +25,9 @@ public enum DocumentType implements HasLabel {
     LEGAL_AID_CERTIFICATE("Legal aid certificate"),
     POLICE_REPORT("Police report"),
     DOCUMENTS_SUPPORTING_A_COUNTERCLAIM("Documents supporting a Counterclaim"),
+    ENERGY_PERFORMANCE_CERTIFICATE("Energy performance certificate"),
+    GAS_SAFETY_REPORT("Gas safety report"),
+    ELECTRICAL_INSTALLATION_CONDITION("Electrical installation condition"),
     OTHER("Other document");
 
     private final String label;

@@ -23,6 +23,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.E
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.EvidenceOfDefendants;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.WalesDocuments;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
@@ -84,6 +85,21 @@ public class DocumentService {
             Optional.ofNullable(pcsCase.getNoticeServedDetails())
                     .map(NoticeServedDetails::getNoticeDocuments)
                     .orElse(null), DocumentType.NOTICE_FOR_SERVICE_OUT_OF_JURISDICTION));
+
+        allDocuments.addAll(mapDocumentsWithType(
+            Optional.ofNullable(pcsCase.getRequiredDocumentsWales())
+                .map(WalesDocuments::getEnergyPerformance)
+                .orElse(null), DocumentType.ENERGY_PERFORMANCE_CERTIFICATE));
+
+        allDocuments.addAll(mapDocumentsWithType(
+            Optional.ofNullable(pcsCase.getRequiredDocumentsWales())
+                .map(WalesDocuments::getGasSafetyReport)
+                .orElse(null), DocumentType.GAS_SAFETY_REPORT));
+
+        allDocuments.addAll(mapDocumentsWithType(
+            Optional.ofNullable(pcsCase.getRequiredDocumentsWales())
+                .map(WalesDocuments::getElectricalInstallation)
+                .orElse(null), DocumentType.ELECTRICAL_INSTALLATION_CONDITION));
 
         return allDocuments;
     }
@@ -257,7 +273,6 @@ public class DocumentService {
         return saved;
     }
 
-
     private Optional<CaseFileCategory> mapDocumentTypeToCategory(DocumentType documentType) {
         return switch (documentType) {
             case NOTICE_FOR_SERVICE_OUT_OF_JURISDICTION ->
@@ -281,6 +296,9 @@ public class DocumentService {
             case NOTICE_SERVED,
                  POLICE_REPORT,
                  DOCUMENTS_SUPPORTING_A_COUNTERCLAIM,
+                 ENERGY_PERFORMANCE_CERTIFICATE,
+                 GAS_SAFETY_REPORT,
+                 ELECTRICAL_INSTALLATION_CONDITION,
                  OTHER ->
                 Optional.empty();
         };
