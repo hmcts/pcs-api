@@ -18,9 +18,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import static java.util.Objects.requireNonNullElse;
 
@@ -93,21 +90,24 @@ public class CaseFlagsView {
     }
 
     private void mapComplexPartyFlagFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
-        if (CollectionUtils.isEmpty(pcsCase.getParties())) {
+        List<ListValue<Party>> partyListValues = pcsCase.getParties();
+        if (CollectionUtils.isEmpty(partyListValues)) {
             return;
         }
 
-        Map<String, PartyEntity> defendantEntitiesById = pcsCaseEntity.getParties().stream()
-            .filter(this::isDefendant)
-            .collect(Collectors.toMap(partyEntity -> partyEntity.getId().toString(), Function.identity()));
-
-        pcsCase.getParties().forEach(partyListValue -> {
-            Party party = partyListValue.getValue();
-            PartyEntity defendantEntity = defendantEntitiesById.get(party.getId());
-            if (defendantEntity != null) {
-                party.setDefendantFlags(mapDefendantFlags(defendantEntity));
+        // pcsCase.parties is wrapped from pcsCaseEntity.getParties() in iteration order, but the
+        // entity id is dropped during the entity->domain mapping. Re-attach it onto each ListValue
+        // so the entity can be matched back, then apply the defendant flags.
+        // same party set.
+        List<PartyEntity> partyEntities = new ArrayList<>(pcsCaseEntity.getParties());
+        for (int i = 0; i < partyListValues.size() && i < partyEntities.size(); i++) {
+            PartyEntity partyEntity = partyEntities.get(i);
+            ListValue<Party> partyListValue = partyListValues.get(i);
+            partyListValue.setId(partyEntity.getId().toString());
+            if (isDefendant(partyEntity)) {
+                partyListValue.getValue().setDefendantFlags(mapDefendantFlags(partyEntity));
             }
-        });
+        }
     }
 
     private boolean isDefendant(PartyEntity partyEntity) {
