@@ -22,6 +22,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -242,6 +243,7 @@ class ClaimViewTest {
 
     private static DocumentEntity documentEntity(DocumentType documentType, String fileName) {
         return DocumentEntity.builder()
+            .id(documentId(fileName))
             .type(documentType)
             .url("http://dm-store/documents/" + fileName)
             .binaryUrl("http://dm-store/documents/" + fileName + "/binary")
@@ -250,11 +252,17 @@ class ClaimViewTest {
             .build();
     }
 
+    private static UUID documentId(String fileName) {
+        return UUID.nameUUIDFromBytes(fileName.getBytes());
+    }
+
     private static void assertSingleDocument(List<ListValue<Document>> documents, String fileName) {
         assertThat(documents)
             .singleElement()
-            .extracting(ListValue::getValue)
-            .satisfies(document -> {
+            .satisfies(listValue -> {
+                // Case File View resolves documents by ListValue id - it must be set (HDPI-7064)
+                assertThat(listValue.getId()).isEqualTo(documentId(fileName).toString());
+                Document document = listValue.getValue();
                 assertThat(document.getFilename()).isEqualTo(fileName);
                 assertThat(document.getUrl()).isEqualTo("http://dm-store/documents/" + fileName);
                 assertThat(document.getBinaryUrl()).isEqualTo("http://dm-store/documents/" + fileName + "/binary");
