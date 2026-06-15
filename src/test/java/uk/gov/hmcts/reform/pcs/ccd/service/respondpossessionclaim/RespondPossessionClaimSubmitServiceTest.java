@@ -90,7 +90,7 @@ class RespondPossessionClaimSubmitServiceTest {
         CounterClaim counterClaim = CounterClaim.builder()
             .claimType(CounterClaimType.PAYMENT_OR_COMPENSATION)
             .isClaimAmountKnown(VerticalYesNo.YES)
-            .claimAmount(new BigDecimal("250000"))
+            .claimAmount(new BigDecimal("2500.00"))
             .build();
         DefendantResponses defendantResponses = DefendantResponses.builder()
             .counterClaim(counterClaim)

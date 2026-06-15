@@ -48,7 +48,7 @@ class CounterClaimSubmitConfirmationServiceTest {
     private static final UUID COUNTER_CLAIM_ID = UUID.randomUUID();
     private static final String SERVICE_REQUEST_REFERENCE = "0000000000000001";
     private static final BigDecimal FEE_AMOUNT = new BigDecimal("80.00");
-    private static final BigDecimal CLAIM_AMOUNT_PENCE = new BigDecimal("250000");
+    private static final BigDecimal CLAIM_AMOUNT_POUNDS = new BigDecimal("2500.00");
 
     @Mock
     private PartyService partyService;
@@ -121,7 +121,7 @@ class CounterClaimSubmitConfirmationServiceTest {
         CounterClaim counterClaim = CounterClaim.builder()
             .claimType(CounterClaimType.PAYMENT_OR_COMPENSATION)
             .isClaimAmountKnown(VerticalYesNo.YES)
-            .claimAmount(CLAIM_AMOUNT_PENCE)
+            .claimAmount(CLAIM_AMOUNT_POUNDS)
             .build();
         DefendantResponses defendantResponses = DefendantResponses.builder()
             .counterClaim(counterClaim)
