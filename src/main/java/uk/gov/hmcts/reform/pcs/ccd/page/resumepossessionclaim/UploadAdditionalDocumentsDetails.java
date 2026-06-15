@@ -62,7 +62,7 @@ public class UploadAdditionalDocumentsDetails implements CcdPageConfiguration {
             .build();
     }
 
-    public List<String> validateDocumentDescription(
+    private List<String> validateDocumentDescription(
         List<ListValue<AdditionalDocument>> additionalDocuments,
         String sectionLabel) {
 
