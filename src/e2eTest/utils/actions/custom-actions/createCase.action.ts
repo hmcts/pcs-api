@@ -1453,6 +1453,26 @@ export class CreateCaseAction implements IAction {
           caseSummary.set(`Why are you making this claim?`, submitPayLoad.prohibitedConductWalesClaimDetails);
         }
         break;
+      
+      case 'Required Documents':
+        caseSummary.set(`Can the claimant upload a copy of the energy performance certificate?`, formatWord(submitPayLoad.walesDocs_HasEnergyPerformanceCertificate));
+        if(submitPayLoad.walesDocs_HasEnergyPerformanceCertificate === 'NO'){
+          caseSummary.set(`Why can the claimant not upload a copy of the energy performance certificate?`, submitPayLoad.walesDocs_NoEpcReason);
+        } else {
+          caseSummary.set(`Energy performance certificate`, submitPayLoad.walesDocs_EnergyPerformance?.[0]?.value?.document_filename);
+        }
+        caseSummary.set(`Can the claimant upload a copy of the current gas safety report?`, formatWord(submitPayLoad.walesDocs_HasGasSafetyReport));
+        if(submitPayLoad.walesDocs_HasGasSafetyReport === 'NO'){
+          caseSummary.set(`Why can the claimant not upload a copy of the current gas safety report?`, submitPayLoad.walesDocs_NoGasReportReason);
+        }else {
+          caseSummary.set(`Gas safety report`, submitPayLoad.walesDocs_GasSafetyReport  ?.[0]?.value?.document_filename);
+        }
+        caseSummary.set(`Can the claimant upload a copy of the Electrical Installation Condition Report (EICR)?`, formatWord(submitPayLoad.walesDocs_HasElectricalInstallationConditionReport));
+        if(submitPayLoad.walesDocs_HasElectricalInstallationConditionReport === 'NO'){
+          caseSummary.set(`Why can the claimant not upload a copy of the Electrical Installation Condition Report (EICR)?`, submitPayLoad.walesDocs_NoEicrReason);
+        }else {
+          caseSummary.set(`Electrical Installation Condition Report (EICR)`, submitPayLoad.walesDocs_ElectricalInstallation?.[0]?.value?.document_filename);
+        }
 
       default:
         break;
