@@ -49,10 +49,6 @@ public class MakeAClaimPaymentCallbackHandler implements PaymentCallbackStrategy
         PartyEntity claimParty = getResponsibleParty(feesAndPayTaskData);
         feePaymentEntity.setParty(claimParty);
         if (PaymentStatus.PAID == feePaymentEntity.getPaymentStatus()) {
-            ClaimEntity claim = feePaymentEntity.getClaim();
-            if (claim != null && claim.getClaimIssuedDate() == null) {
-                claim.setClaimIssuedDate(LocalDateTime.now(utcClock));
-            }
             ccdPaymentStateUpdateService.submitPaymentSuccess(feesAndPayTaskData.getCaseReference());
             issueClaim(feePaymentEntity);
         } else {
@@ -63,6 +59,9 @@ public class MakeAClaimPaymentCallbackHandler implements PaymentCallbackStrategy
 
     private void issueClaim(FeePaymentEntity feePaymentEntity) {
         ClaimEntity claim = feePaymentEntity.getClaim();
+        if (claim == null || claim.getClaimIssuedDate() != null) {
+            return;
+        }
         claim.setClaimIssuedDate(LocalDateTime.now(utcClock));
         claimRepository.save(claim);
     }
