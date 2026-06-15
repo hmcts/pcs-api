@@ -1,7 +1,6 @@
 import { actionData, actionRecord, IAction } from '@utils/interfaces';
 import { Page } from '@playwright/test';
 import { performAction, performValidation } from '@utils/controller';
-import { addressInfo, caseNumber } from '../createCase.action';
 import {expect} from "@utils/test-fixtures";
 import {caseSummary, caseList} from "@data/page-data";
 import { getCaseTypeId } from '@utils/common/caseType.utils';
@@ -16,6 +15,8 @@ import {
   updateFlagComments
 } from '@data/page-data-figma';
 import {workAccess} from "@data/page-data-figma/page-data-common-component/workAccess.page.data";
+import {createCaseApiData} from "@data/api-data";
+import {formatTheCaseNumber} from "@utils/common/string.utils";
 
 export class CaseFlagAction implements IAction {
   async execute(page: Page, action: string, fieldName: actionData | actionRecord, data?: actionData): Promise<void> {
@@ -44,8 +45,17 @@ export class CaseFlagAction implements IAction {
   }
 
   private async validateCaseContext(): Promise<void> {
-    if (caseNumber) await performValidation('text', { elementType: 'paragraph', text: `Case number: ${caseNumber}` });
-    if (addressInfo) await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
+
+    if(process.env.CASE_NUMBER) {
+      await performValidation('text', {
+        elementType: 'paragraph',
+        text: `Case number: ${formatTheCaseNumber(process.env.CASE_NUMBER)}`
+      });
+      await performValidation('text', {
+        elementType: 'paragraph',
+        text: `Property address: ${createCaseApiData.createCasePayload.propertyAddress.AddressLine1}, ${createCaseApiData.createCasePayload.propertyAddress.PostTown}, ${createCaseApiData.createCasePayload.propertyAddress.PostCode}`
+      });
+    }
   }
 
   private async whereShouldThisFlagBeAdded(flagOptions: actionRecord, page: Page) {

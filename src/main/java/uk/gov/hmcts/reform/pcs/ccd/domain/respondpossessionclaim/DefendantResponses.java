@@ -129,4 +129,7 @@ public class DefendantResponses {
         typeParameterOverride = "RespondToClaimSection"
     )
     private List<RespondToClaimSection> completedSections;
+
+    @CCD
+    private DefendantResponseStatus status;
 }
