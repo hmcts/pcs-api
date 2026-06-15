@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.domain;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import lombok.Builder;
@@ -155,6 +156,7 @@ public class PCSCase {
         typeOverride = Collection,
         label = "Linked cases",
         typeParameterOverride = "CaseLink")
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
     @Builder.Default
     private List<ListValue<CaseLink>> caseLinks = new ArrayList<>();
 
