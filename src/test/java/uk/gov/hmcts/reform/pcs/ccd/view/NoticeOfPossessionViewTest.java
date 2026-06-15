@@ -7,6 +7,8 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.ccd.sdk.type.Document;
+import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServedDetails;
@@ -268,13 +270,14 @@ class NoticeOfPossessionViewTest {
     void shouldSetNoticeDocumentIfPresent() {
         // Given
         LocalDate postedDate = mock(LocalDate.class);
+        UUID noticeDocumentId = UUID.randomUUID();
+
         when(noticeOfPossessionEntity.getServingMethod()).thenReturn(FIRST_CLASS_POST);
         when(noticeOfPossessionEntity.getNoticeDate()).thenReturn(postedDate);
-        UUID noticeDocId = UUID.fromString("44444444-4444-4444-4444-444444444444");
         when(pcsCaseEntity.getDocuments()).thenReturn(
             List.of(
                 DocumentEntity.builder()
-                    .id(noticeDocId)
+                    .id(noticeDocumentId)
                     .type(DocumentType.NOTICE_FOR_SERVICE_OUT_OF_JURISDICTION)
                     .build()
             )
@@ -289,7 +292,8 @@ class NoticeOfPossessionViewTest {
         NoticeServedDetails noticeServedDetails = noticeServedDetailsCaptor.getValue();
         assertThat(noticeServedDetails.getNoticeServiceMethod()).isEqualTo(FIRST_CLASS_POST);
         assertThat(noticeServedDetails.getNoticePostedDate()).isSameAs(postedDate);
-        assertThat(noticeServedDetails.getNoticeDocuments()).hasSize(1);
-        assertThat(noticeServedDetails.getNoticeDocuments().get(0).getId()).isEqualTo(noticeDocId.toString());
+        List<ListValue<Document>> noticeDocuments = noticeServedDetails.getNoticeDocuments();
+        assertThat(noticeDocuments).hasSize(1);
+        assertThat(noticeDocuments.getFirst().getId()).isEqualTo(noticeDocumentId.toString());
     }
 }
