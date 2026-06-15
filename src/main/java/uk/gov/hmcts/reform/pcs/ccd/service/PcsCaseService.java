@@ -63,13 +63,23 @@ public class PcsCaseService {
         pcsCaseEntity.addDocuments(documentEntities);
         claimEntity.addClaimDocuments(documentEntities);
         pcsCaseEntity.addClaim(claimEntity);
+        log.info("Source caseManagementLocationNumber={}, regionId={}",
+                 pcsCase.getCaseManagementLocationNumber(),
+                 pcsCase.getRegionId());
+
         pcsCaseEntity.setBaseLocation(pcsCase.getCaseManagementLocationNumber());
         pcsCaseEntity.setRegionId(pcsCase.getRegionId());
+
+        log.info("Entity baseLocation={}, regionId={}",
+                 pcsCaseEntity.getBaseLocation(),
+                 pcsCaseEntity.getRegionId());
+
+        pcsCaseRepository.save(pcsCaseEntity);
 
         partyService.createAllParties(pcsCase, pcsCaseEntity, claimEntity, organisationIdForCurrentUser);
 
         pcsCaseEntity.setTenancyLicence(tenancyLicenceService.createTenancyLicenceEntity(pcsCase));
-        pcsCaseRepository.save(pcsCaseEntity);
+
     }
 
     public void patchCaseFlags(long caseReference, PCSCase pcsCase) {
