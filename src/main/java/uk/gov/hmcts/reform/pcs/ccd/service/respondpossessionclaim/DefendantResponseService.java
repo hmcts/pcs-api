@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponseStatus;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
@@ -18,6 +19,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.time.Clock;
+import java.time.LocalDateTime;
 import java.util.UUID;
 import java.util.function.Supplier;
 
@@ -150,9 +152,10 @@ public class DefendantResponseService {
         ClaimEntity claimRef = claimRepository.getReferenceById(claimId);
 
         DefendantResponses responses = possessionClaimResponse.getDefendantResponses();
+        LocalDateTime submittedAt = LocalDateTime.now(utcClock);
 
         DefendantResponseEntity responseEntity =
-            buildDefendantResponseEntity(claimRef, partyRef, responses);
+            buildDefendantResponseEntity(claimRef, partyRef, responses, submittedAt);
 
         buildAndLinkChildEntities(responseEntity, responses);
 
@@ -185,11 +188,14 @@ public class DefendantResponseService {
 
     private DefendantResponseEntity buildDefendantResponseEntity(ClaimEntity claimRef,
                                                                 PartyEntity partyRef,
-                                                                DefendantResponses responses) {
+                                                                DefendantResponses responses,
+                                                                LocalDateTime submittedAt) {
 
         DefendantResponseEntity defendantResponse = DefendantResponseEntity.builder()
             .claim(claimRef)
             .party(partyRef)
+            .status(DefendantResponseStatus.SUBMITTED)
+            .responseSubmittedDate(submittedAt)
             .freeLegalAdvice(responses.getFreeLegalAdvice())
             .defendantNameConfirmation(responses.getDefendantNameConfirmation())
             .correspondenceAddressConfirmation(responses.getCorrespondenceAddressConfirmation())

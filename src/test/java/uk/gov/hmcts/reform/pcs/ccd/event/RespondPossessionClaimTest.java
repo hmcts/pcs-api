@@ -97,6 +97,9 @@ class RespondPossessionClaimTest extends BaseEventTest {
     private DefendantResponseService defendantResponseService;
 
     @Mock
+    private DefendantResponseRepository defendantResponseRepository;
+
+    @Mock
     private RespondToPossessionDraftSavePage respondToPossessionDraftSavePage;
     @Mock
     private CounterClaimService counterClaimService;
@@ -118,9 +121,6 @@ class RespondPossessionClaimTest extends BaseEventTest {
 
     @Mock
     private UserInfo userInfo;
-
-    @Mock
-    private DefendantResponseRepository defendantResponseRepository;
 
     @Mock
     private LegalRepForDefendantAccessValidator legalRepForDefendantAccessValidator;
@@ -151,7 +151,8 @@ class RespondPossessionClaimTest extends BaseEventTest {
                                                   draftCaseDataService,
                                                   possessionClaimMerger,
                                                   possessionClaimDraftBuilder,
-                                                  defendantOnlyDraftBuilder),
+                                                  defendantOnlyDraftBuilder,
+                                                  defendantResponseRepository),
                     new LegalRepStartEventStrategy(pcsCaseService,
                                                             legalRepForDefendantAccessValidator,
                                                             securityContextService,
@@ -303,6 +304,8 @@ class RespondPossessionClaimTest extends BaseEventTest {
             eq(EventId.respondPossessionClaim)
         );
         verify(defendantOnlyDraftBuilder).createDefendantOnlyDraft(mockResponse);
+        verify(defendantResponseRepository).existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
+            TEST_CASE_REFERENCE, defendantUserId);
     }
 
     @Test
