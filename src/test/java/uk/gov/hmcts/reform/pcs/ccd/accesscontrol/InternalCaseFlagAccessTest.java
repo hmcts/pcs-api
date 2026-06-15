@@ -39,6 +39,6 @@ class InternalCaseFlagAccessTest {
         assertThat(grants.get(CIRCUIT_JUDGE)).contains(Permission.R);
         assertThat(grants.get(LEADERSHIP_JUDGE)).contains(Permission.R);
         assertThat(grants.get(JUDGE)).contains(Permission.R);
-        assertThat(grants.asMap().size()).isEqualTo(7);
+        assertThat(grants.asMap().size()).isEqualTo(8);
     }
 }

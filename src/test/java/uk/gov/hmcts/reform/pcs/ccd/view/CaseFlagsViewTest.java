@@ -69,24 +69,28 @@ class CaseFlagsViewTest {
 
     @Test
     void shouldMapComplexPartyFlagFieldsWhenPartiesExist() {
-        // Given - a defendant (with flags) and a non-defendant organisation party,
-        // both already mapped onto the case earlier (as PCSCaseView does)
+        // Given - a defendant (with flags) and a non-defendant organisation party.
+        // The case parties are wrapped from the same entity set (as PCSCaseView does),
+        // with the entity id dropped during mapping, so the two collections share order.
         PartyEntity defendantEntity = createPartyEntity(null);
         markAsDefendant(defendantEntity);
         defendantEntity.setDefendantFlags(List.of(createMockCasePartyFlagsEntity()));
 
         PartyEntity orgEntity = createPartyEntity("King Smith");
 
+        Set<PartyEntity> partyEntities = Set.of(defendantEntity, orgEntity);
+
         PCSCase pcsCase = PCSCase.builder()
-            .parties(List.of(mappedParty(defendantEntity), mappedParty(orgEntity)))
+            .parties(partyEntities.stream().map(this::mappedParty).toList())
             .build();
         PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
-        pcsCaseEntity.setParties(Set.of(defendantEntity, orgEntity));
+        pcsCaseEntity.setParties(partyEntities);
 
         // When
         underTest.setCaseFields(pcsCase, pcsCaseEntity);
 
-        // Then - both parties remain, but only the defendant is given flags
+        // Then - both parties remain, each ListValue now carries its entity id,
+        // but only the defendant is given flags
         assertNotNull(pcsCase.getParties());
         assertEquals(2, pcsCase.getParties().size());
 
@@ -130,8 +134,8 @@ class CaseFlagsViewTest {
 
     private Party findPartyById(PCSCase pcsCase, String id) {
         return pcsCase.getParties().stream()
+            .filter(partyListValue -> id.equals(partyListValue.getId()))
             .map(ListValue::getValue)
-            .filter(party -> id.equals(party.getId()))
             .findFirst()
             .orElseThrow();
     }
@@ -150,9 +154,10 @@ class CaseFlagsViewTest {
     }
 
     private ListValue<Party> mappedParty(PartyEntity entity) {
+        // Mirrors PCSCaseView.mapAndWrapParties: the entity id is NOT carried onto the
+        // domain Party or the ListValue - CaseFlagsView is responsible for attaching it.
         return ListValue.<Party>builder()
             .value(Party.builder()
-                .id(entity.getId().toString())
                 .orgName(entity.getOrgName())
                 .firstName(entity.getFirstName())
                 .lastName(entity.getLastName())
