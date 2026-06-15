@@ -60,6 +60,10 @@ public class DefenceFormPayload implements FormPayload {
     private String tenancyStartDateConfirmation;
     private boolean showCorrectedStartDate;
     private String correctedStartDate;
+    private boolean showLandlordRegistered;
+    private String landlordRegistered;
+    private boolean showLandlordLicensed;
+    private String landlordLicensed;
     private boolean showWrittenTerms;
     private String writtenTerms;
     private String possessionNoticeReceived;
@@ -90,13 +94,23 @@ public class DefenceFormPayload implements FormPayload {
 
     // ---------- Household & circumstances ----------
     private String dependantChildren;
+    private boolean showDependantChildrenDetails;
+    private String dependantChildrenDetails;
     private String otherDependants;
+    private boolean showOtherDependantsDetails;
+    private String otherDependantsDetails;
     private String otherTenants;
+    private boolean showOtherTenantsDetails;
+    private String otherTenantsDetails;
     private String alternativeAccommodation;
     private boolean showTransferDate;
     private String transferDate;
     private String shareAdditionalCircumstances;
+    private boolean showAdditionalCircumstancesDetails;
+    private String additionalCircumstancesDetails;
     private String exceptionalHardship;
+    private boolean showExceptionalHardshipDetails;
+    private String exceptionalHardshipDetails;
 
     // ---------- Income & expenses ----------
     private boolean showIncomeExpenseSection;

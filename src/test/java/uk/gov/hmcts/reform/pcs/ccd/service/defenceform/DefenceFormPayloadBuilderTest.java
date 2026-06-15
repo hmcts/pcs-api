@@ -167,6 +167,24 @@ class DefenceFormPayloadBuilderTest {
         }
 
         @Test
+        void landlordRegisteredAndLicensedShownForWalesOnly() {
+            DefendantResponseEntity wales = response(LegislativeCountry.WALES);
+            wales.setLandlordRegistered(YesNoNotSure.YES);
+            wales.setLandlordLicensed(YesNoNotSure.NO);
+
+            DefenceFormPayload payload = builder.build(wales);
+
+            assertThat(payload.isShowLandlordRegistered()).isTrue();
+            assertThat(payload.getLandlordRegistered()).isEqualTo("Yes");
+            assertThat(payload.isShowLandlordLicensed()).isTrue();
+            assertThat(payload.getLandlordLicensed()).isEqualTo("No");
+
+            DefenceFormPayload england = builder.build(response(LegislativeCountry.ENGLAND));
+            assertThat(england.isShowLandlordRegistered()).isFalse();
+            assertThat(england.isShowLandlordLicensed()).isFalse();
+        }
+
+        @Test
         void mapsNoticeAnswerAndDate() {
             DefendantResponseEntity response = response(LegislativeCountry.ENGLAND);
             response.setPossessionNoticeReceived(YesNoNotSure.YES);
@@ -366,6 +384,29 @@ class DefenceFormPayloadBuilderTest {
 
             // null UC answer must not show the follow-up question (was a bug: !isYes(null) == true).
             assertThat(builder.build(response).isShowAppliedForUniversalCredit()).isFalse();
+        }
+
+        @Test
+        void showsHouseholdDetailOnlyWhenAnswerIsYes() {
+            HouseholdCircumstancesEntity household = HouseholdCircumstancesEntity.builder()
+                .dependantChildren(VerticalYesNo.YES)
+                .dependantChildrenDetails("Two children, aged 5 and 8")
+                .otherTenants(VerticalYesNo.NO)
+                .otherTenantsDetails(null)
+                .exceptionalHardship(VerticalYesNo.YES)
+                .exceptionalHardshipDetails("Sole carer for a disabled parent")
+                .build();
+            DefendantResponseEntity response = response(LegislativeCountry.ENGLAND);
+            response.setHouseholdCircumstances(household);
+
+            DefenceFormPayload payload = builder.build(response);
+
+            assertThat(payload.isShowDependantChildrenDetails()).isTrue();
+            assertThat(payload.getDependantChildrenDetails()).isEqualTo("Two children, aged 5 and 8");
+            assertThat(payload.isShowExceptionalHardshipDetails()).isTrue();
+            assertThat(payload.getExceptionalHardshipDetails()).isEqualTo("Sole carer for a disabled parent");
+            // answered "No" -> no detail row at all
+            assertThat(payload.isShowOtherTenantsDetails()).isFalse();
         }
 
         @Test

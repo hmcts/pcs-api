@@ -153,6 +153,10 @@ public class DefenceFormPayloadBuilder {
             isNo(response.getTenancyStartDateConfirmation()) && isPopulated(correctedStartDate));
         payload.correctedStartDate(formatIsoDate(correctedStartDate));
 
+        payload.showLandlordRegistered(isWales);
+        payload.landlordRegistered(toLabel(response.getLandlordRegistered()));
+        payload.showLandlordLicensed(isWales);
+        payload.landlordLicensed(toLabel(response.getLandlordLicensed()));
         payload.showWrittenTerms(isWales);
         payload.writtenTerms(toLabel(response.getWrittenTerms()));
 
@@ -206,13 +210,23 @@ public class DefenceFormPayloadBuilder {
             return;
         }
         payload.dependantChildren(toLabel(household.getDependantChildren()));
+        payload.showDependantChildrenDetails(isYes(household.getDependantChildren()));
+        payload.dependantChildrenDetails(household.getDependantChildrenDetails());
         payload.otherDependants(toLabel(household.getOtherDependants()));
+        payload.showOtherDependantsDetails(isYes(household.getOtherDependants()));
+        payload.otherDependantsDetails(household.getOtherDependantDetails());
         payload.otherTenants(toLabel(household.getOtherTenants()));
+        payload.showOtherTenantsDetails(isYes(household.getOtherTenants()));
+        payload.otherTenantsDetails(household.getOtherTenantsDetails());
         payload.alternativeAccommodation(toLabel(household.getAlternativeAccommodation()));
         payload.showTransferDate(household.getAlternativeAccommodationTransferDate() != null);
         payload.transferDate(formatLongDate(household.getAlternativeAccommodationTransferDate()));
         payload.shareAdditionalCircumstances(toLabel(household.getShareAdditionalCircumstances()));
+        payload.showAdditionalCircumstancesDetails(isYes(household.getShareAdditionalCircumstances()));
+        payload.additionalCircumstancesDetails(household.getAdditionalCircumstancesDetails());
         payload.exceptionalHardship(toLabel(household.getExceptionalHardship()));
+        payload.showExceptionalHardshipDetails(isYes(household.getExceptionalHardship()));
+        payload.exceptionalHardshipDetails(household.getExceptionalHardshipDetails());
 
         payload.showIncomeExpenseSection(isYes(household.getShareIncomeExpenseDetails()));
         mapRegularIncome(household.getRegularIncomeEntity(), payload);
