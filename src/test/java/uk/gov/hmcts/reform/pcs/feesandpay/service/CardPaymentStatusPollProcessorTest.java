@@ -111,4 +111,113 @@ class CardPaymentStatusPollProcessorTest {
         verify(feePaymentRepository, never()).findByServiceRequestReference(any());
         verify(paymentService, never()).processPaymentResponse(any());
     }
+
+    @Test
+    @DisplayName("Should skip processing when payment group reference is blank")
+    void shouldSkipWhenPaymentGroupReferenceBlank() {
+        underTest.processIfPaid(PaymentDto.builder()
+            .status("Success")
+            .paymentGroupReference("   ")
+            .build());
+
+        verify(feePaymentRepository, never()).findByServiceRequestReference(any());
+        verify(paymentService, never()).processPaymentResponse(any());
+    }
+
+    @Test
+    @DisplayName("Should skip processing when no fee payment exists for service request")
+    void shouldSkipWhenNoFeePaymentFound() {
+        when(feePaymentRepository.findByServiceRequestReference(SERVICE_REQUEST_REFERENCE))
+            .thenReturn(Optional.empty());
+
+        underTest.processIfPaid(PaymentDto.builder()
+            .status("Success")
+            .paymentGroupReference(SERVICE_REQUEST_REFERENCE)
+            .build());
+
+        verify(paymentService, never()).processPaymentResponse(any());
+    }
+
+    @Test
+    @DisplayName("Should use paymentReference when reference is missing")
+    void shouldUsePaymentReferenceWhenReferenceMissing() {
+        when(feePaymentRepository.findByServiceRequestReference(SERVICE_REQUEST_REFERENCE))
+            .thenReturn(Optional.of(FeePaymentEntity.builder()
+                .serviceRequestReference(SERVICE_REQUEST_REFERENCE)
+                .paymentCallbackHandlerType(PaymentCallbackHandlerType.COUNTER_CLAIM_ISSUE)
+                .build()));
+
+        underTest.processIfPaid(PaymentDto.builder()
+            .status("Success")
+            .paymentGroupReference(SERVICE_REQUEST_REFERENCE)
+            .paymentReference(PAYMENT_REFERENCE)
+            .build());
+
+        ArgumentCaptor<PaymentStatusCallback> callbackCaptor = ArgumentCaptor.forClass(PaymentStatusCallback.class);
+        verify(paymentService).processPaymentResponse(callbackCaptor.capture());
+        assertThat(callbackCaptor.getValue().getPaymentReference()).isEqualTo(PAYMENT_REFERENCE);
+    }
+
+    @Test
+    @DisplayName("Should use paymentReference when reference is blank")
+    void shouldUsePaymentReferenceWhenReferenceBlank() {
+        when(feePaymentRepository.findByServiceRequestReference(SERVICE_REQUEST_REFERENCE))
+            .thenReturn(Optional.of(FeePaymentEntity.builder()
+                .serviceRequestReference(SERVICE_REQUEST_REFERENCE)
+                .paymentCallbackHandlerType(PaymentCallbackHandlerType.COUNTER_CLAIM_ISSUE)
+                .build()));
+
+        underTest.processIfPaid(PaymentDto.builder()
+            .status("Success")
+            .paymentGroupReference(SERVICE_REQUEST_REFERENCE)
+            .reference("   ")
+            .paymentReference(PAYMENT_REFERENCE)
+            .build());
+
+        ArgumentCaptor<PaymentStatusCallback> callbackCaptor = ArgumentCaptor.forClass(PaymentStatusCallback.class);
+        verify(paymentService).processPaymentResponse(callbackCaptor.capture());
+        assertThat(callbackCaptor.getValue().getPaymentReference()).isEqualTo(PAYMENT_REFERENCE);
+    }
+
+    @Test
+    @DisplayName("Should use externalReference when reference fields are missing")
+    void shouldUseExternalReferenceWhenReferenceFieldsMissing() {
+        when(feePaymentRepository.findByServiceRequestReference(SERVICE_REQUEST_REFERENCE))
+            .thenReturn(Optional.of(FeePaymentEntity.builder()
+                .serviceRequestReference(SERVICE_REQUEST_REFERENCE)
+                .paymentCallbackHandlerType(PaymentCallbackHandlerType.COUNTER_CLAIM_ISSUE)
+                .build()));
+
+        underTest.processIfPaid(PaymentDto.builder()
+            .status("Success")
+            .paymentGroupReference(SERVICE_REQUEST_REFERENCE)
+            .externalReference(PAYMENT_REFERENCE)
+            .build());
+
+        ArgumentCaptor<PaymentStatusCallback> callbackCaptor = ArgumentCaptor.forClass(PaymentStatusCallback.class);
+        verify(paymentService).processPaymentResponse(callbackCaptor.capture());
+        assertThat(callbackCaptor.getValue().getPaymentReference()).isEqualTo(PAYMENT_REFERENCE);
+    }
+
+    @Test
+    @DisplayName("Should use externalReference when reference fields are blank")
+    void shouldUseExternalReferenceWhenReferenceFieldsBlank() {
+        when(feePaymentRepository.findByServiceRequestReference(SERVICE_REQUEST_REFERENCE))
+            .thenReturn(Optional.of(FeePaymentEntity.builder()
+                .serviceRequestReference(SERVICE_REQUEST_REFERENCE)
+                .paymentCallbackHandlerType(PaymentCallbackHandlerType.COUNTER_CLAIM_ISSUE)
+                .build()));
+
+        underTest.processIfPaid(PaymentDto.builder()
+            .status("Success")
+            .paymentGroupReference(SERVICE_REQUEST_REFERENCE)
+            .reference("   ")
+            .paymentReference("   ")
+            .externalReference(PAYMENT_REFERENCE)
+            .build());
+
+        ArgumentCaptor<PaymentStatusCallback> callbackCaptor = ArgumentCaptor.forClass(PaymentStatusCallback.class);
+        verify(paymentService).processPaymentResponse(callbackCaptor.capture());
+        assertThat(callbackCaptor.getValue().getPaymentReference()).isEqualTo(PAYMENT_REFERENCE);
+    }
 }
