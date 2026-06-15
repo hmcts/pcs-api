@@ -28,6 +28,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.E
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.WarrantOfRestitutionDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.WalesDocuments;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -338,6 +339,37 @@ class DocumentServiceTest {
         assertThat(entity.getType()).isEqualTo(DocumentType.NOTICE_FOR_SERVICE_OUT_OF_JURISDICTION);
         assertThat(entity.getFileName()).isEqualTo("file4");
         assertThat(entity.getCategoryId()).isEqualTo(CaseFileCategory.STATEMENTS_OF_CASE.getId());
+    }
+
+    @ParameterizedTest
+    @MethodSource("requiredDocumentsWalesScenarios")
+    void shouldSaveRequiredDocumentsWales(DocumentType expectedDocumentType) {
+        // Given
+        PCSCase pcsCase = mock(PCSCase.class);
+
+        Document doc = Document.builder()
+            .url("url4/bf112cdf-76d7-4d15-bb92-cd7c3483a7ef")
+            .filename("file4")
+            .binaryUrl("bin4")
+            .categoryId("cat4")
+            .build();
+
+        List<ListValue<Document>> documents = List.of(ListValue.<Document>builder().id("1").value(doc).build());
+        WalesDocuments walesDocuments = buildRequiredDocumentsWales(expectedDocumentType, documents);
+
+        when(pcsCase.getRequiredDocumentsWales()).thenReturn(walesDocuments);
+
+        // When
+        underTest.createAllDocuments(pcsCase);
+
+        // Then
+        verify(documentRepository).saveAll(documentEntityListCaptor.capture());
+        List<DocumentEntity> entities = documentEntityListCaptor.getValue();
+        assertThat(entities).hasSize(1);
+        DocumentEntity entity = entities.getFirst();
+        assertThat(entity.getType()).isEqualTo(expectedDocumentType);
+        assertThat(entity.getFileName()).isEqualTo("file4");
+        assertThat(entity.getCategoryId()).isNull();
     }
 
     @Test
@@ -1103,6 +1135,25 @@ class DocumentServiceTest {
         List<DocumentEntity> entities = documentEntityListCaptor.getValue();
         assertThat(entities).hasSize(1);
         assertThat(entities.getFirst().getFileName()).isEqualTo("file1.pdf");
+    }
+
+    private static Stream<Arguments> requiredDocumentsWalesScenarios() {
+        return Stream.of(
+            Arguments.of(DocumentType.ENERGY_PERFORMANCE_CERTIFICATE),
+            Arguments.of(DocumentType.GAS_SAFETY_REPORT),
+            Arguments.of(DocumentType.ELECTRICAL_INSTALLATION_CONDITION)
+        );
+    }
+
+    private static WalesDocuments buildRequiredDocumentsWales(DocumentType documentType,
+                                                              List<ListValue<Document>> documents) {
+        return switch (documentType) {
+            case ENERGY_PERFORMANCE_CERTIFICATE -> WalesDocuments.builder().energyPerformance(documents).build();
+            case GAS_SAFETY_REPORT -> WalesDocuments.builder().gasSafetyReport(documents).build();
+            case ELECTRICAL_INSTALLATION_CONDITION ->
+                WalesDocuments.builder().electricalInstallation(documents).build();
+            default -> throw new IllegalArgumentException("Unsupported document type: " + documentType);
+        };
     }
 
     private static Stream<Arguments> additionalDocumentTypeScenarios() {

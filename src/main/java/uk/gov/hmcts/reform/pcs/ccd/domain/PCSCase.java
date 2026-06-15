@@ -54,6 +54,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.wales.GroundsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.GroundsReasonsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.PeriodicContractTermsWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.WalesDocuments;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractGroundsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
@@ -458,6 +459,10 @@ public class PCSCase {
         hint = "Upload a document to the system"
     )
     private List<ListValue<AdditionalDocument>> additionalDocuments;
+
+    @CCD
+    @JsonUnwrapped(prefix = "walesDocs_")
+    private WalesDocuments requiredDocumentsWales;
 
     @CCD(
         access = DefendantAccess.class,
