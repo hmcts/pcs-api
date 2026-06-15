@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -34,7 +35,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentCallbackHandlerType.COUNTER_CLAIM_ISSUE;
@@ -206,5 +209,35 @@ class CounterClaimSubmitConfirmationServiceTest {
         assertThatThrownBy(() -> underTest.buildSubmitResponse(CASE_REFERENCE, persistenceResult))
             .isInstanceOf(IllegalStateException.class)
             .hasMessageContaining("Current user IDAM ID is null");
+    }
+
+    @Test
+    void shouldThrowWhenSubmitResponseCannotBeSerialised() throws Exception {
+        ObjectMapper failingObjectMapper = spy(new ObjectMapper());
+        CounterClaimSubmitConfirmationService serviceUnderTest = new CounterClaimSubmitConfirmationService(
+            partyService,
+            feeService,
+            paymentService,
+            counterClaimFeeCalculator,
+            securityContextService,
+            failingObjectMapper
+        );
+        CounterClaimEntity counterClaimEntity = CounterClaimEntity.builder()
+            .id(COUNTER_CLAIM_ID)
+            .status(CounterClaimState.COUNTER_CLAIM_ISSUED)
+            .build();
+        RespondPossessionClaimSubmitPersistenceResult persistenceResult =
+            new RespondPossessionClaimSubmitPersistenceResult(
+                PossessionClaimResponse.builder().build(),
+                counterClaimEntity,
+                true
+            );
+
+        doThrow(new JsonProcessingException("serialisation failed") {})
+            .when(failingObjectMapper).writeValueAsString(any());
+
+        assertThatThrownBy(() -> serviceUnderTest.buildSubmitResponse(CASE_REFERENCE, persistenceResult))
+            .isInstanceOf(IllegalStateException.class)
+            .hasMessageContaining("Unable to serialise respond possession claim submit response");
     }
 }
