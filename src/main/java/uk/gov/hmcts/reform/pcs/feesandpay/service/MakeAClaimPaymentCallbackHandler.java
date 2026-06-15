@@ -10,7 +10,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.service.CcdPaymentStateUpdateService;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
-import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
@@ -26,18 +25,20 @@ public class MakeAClaimPaymentCallbackHandler implements PaymentCallbackStrategy
 
     private final CcdPaymentStateUpdateService ccdPaymentStateUpdateService;
     private final PartyService partyService;
-    private final PcsCaseService pcsCaseService;
+    private final ClaimRepository claimRepository;
     private final ObjectMapper objectMapper;
     private final Clock utcClock;
 
     public MakeAClaimPaymentCallbackHandler(
         CcdPaymentStateUpdateService ccdPaymentStateUpdateService,
         PartyService partyService,
+        ClaimRepository claimRepository,
         ObjectMapper objectMapper,
         @Qualifier("utcClock") Clock utcClock
     ) {
         this.ccdPaymentStateUpdateService = ccdPaymentStateUpdateService;
         this.partyService = partyService;
+        this.claimRepository = claimRepository;
         this.objectMapper = objectMapper;
         this.utcClock = utcClock;
     }
