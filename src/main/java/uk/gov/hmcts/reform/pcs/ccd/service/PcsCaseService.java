@@ -69,6 +69,7 @@ public class PcsCaseService {
         partyService.createAllParties(pcsCase, pcsCaseEntity, claimEntity, organisationIdForCurrentUser);
 
         pcsCaseEntity.setTenancyLicence(tenancyLicenceService.createTenancyLicenceEntity(pcsCase));
+        pcsCaseRepository.save(pcsCaseEntity);
     }
 
     public void patchCaseFlags(long caseReference, PCSCase pcsCase) {
