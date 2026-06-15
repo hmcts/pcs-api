@@ -22,6 +22,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -39,10 +40,12 @@ class ClaimViewTest {
 
     private ClaimView underTest;
 
+    private UUID documentId;
+
     @BeforeEach
     void setUp() {
         pcsCase = PCSCase.builder().build();
-
+        documentId = UUID.randomUUID();
         underTest = new ClaimView();
     }
 
@@ -163,10 +166,10 @@ class ClaimViewTest {
         // Given
         when(pcsCaseEntity.getClaims()).thenReturn(List.of(claimEntity));
         when(pcsCaseEntity.getDocuments()).thenReturn(List.of(
-            documentEntity(DocumentType.ENERGY_PERFORMANCE_CERTIFICATE, "epc.pdf"),
-            documentEntity(DocumentType.GAS_SAFETY_CERTIFICATE, "gas.pdf"),
-            documentEntity(DocumentType.EICR_REPORT, "eicr.pdf"),
-            documentEntity(DocumentType.OTHER, "other.pdf")
+            documentEntity(DocumentType.ENERGY_PERFORMANCE_CERTIFICATE, "epc.pdf", documentId),
+            documentEntity(DocumentType.GAS_SAFETY_CERTIFICATE, "gas.pdf", documentId),
+            documentEntity(DocumentType.EICR_REPORT, "eicr.pdf", documentId),
+            documentEntity(DocumentType.OTHER, "other.pdf", documentId)
         ));
 
         // When
@@ -174,9 +177,14 @@ class ClaimViewTest {
 
         // Then
         WalesDocuments requiredDocumentsWales = pcsCase.getRequiredDocumentsWales();
+
         assertSingleDocument(requiredDocumentsWales.getEnergyPerformance(), "epc.pdf");
         assertSingleDocument(requiredDocumentsWales.getGasSafetyReport(), "gas.pdf");
         assertSingleDocument(requiredDocumentsWales.getElectricalInstallation(), "eicr.pdf");
+
+        assertDocumentId(requiredDocumentsWales.getEnergyPerformance(), documentId);
+        assertDocumentId(requiredDocumentsWales.getGasSafetyReport(), documentId);
+        assertDocumentId(requiredDocumentsWales.getElectricalInstallation(), documentId);
     }
 
     @Test
@@ -184,8 +192,8 @@ class ClaimViewTest {
         // Given
         when(pcsCaseEntity.getClaims()).thenReturn(List.of(claimEntity));
         when(pcsCaseEntity.getDocuments()).thenReturn(List.of(
-            documentEntity(DocumentType.OTHER, "other.pdf"),
-            documentEntity(DocumentType.RENT_STATEMENT, "rent-statement.pdf")
+            documentEntity(DocumentType.OTHER, "other.pdf",documentId),
+            documentEntity(DocumentType.RENT_STATEMENT, "rent-statement.pdf", documentId)
         ));
 
         // When
@@ -240,8 +248,9 @@ class ClaimViewTest {
         );
     }
 
-    private static DocumentEntity documentEntity(DocumentType documentType, String fileName) {
+    private static DocumentEntity documentEntity(DocumentType documentType, String fileName, UUID documentId) {
         return DocumentEntity.builder()
+            .id(documentId)
             .type(documentType)
             .url("http://dm-store/documents/" + fileName)
             .binaryUrl("http://dm-store/documents/" + fileName + "/binary")
@@ -262,4 +271,10 @@ class ClaimViewTest {
             });
     }
 
+    private static void assertDocumentId(List<ListValue<Document>> documents, UUID expectedId) {
+        assertThat(documents)
+            .singleElement()
+            .extracting(ListValue::getId)
+            .isEqualTo(expectedId.toString());
+    }
 }

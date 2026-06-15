@@ -138,7 +138,8 @@ public class ClaimView {
 
     private static ListValue<Document> toDocument(DocumentEntity documentEntity) {
         return ListValue.<Document>builder()
-            .value(
+                .id(documentEntity.getId().toString())
+                .value(
                 Document.builder()
                     .url(documentEntity.getUrl())
                     .filename(documentEntity.getFileName())
