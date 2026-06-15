@@ -99,14 +99,18 @@ public class PcsCaseService {
         Integer caseManagementLocation =
             postCodeCourtService.getCourtManagementLocation(pcsCase.getPropertyAddress().getPostCode(),
                                                             pcsCase.getLegislativeCountry());
+        log.info("Setting caseManagementLocationNumber to: {}", caseManagementLocation);
         pcsCase.setCaseManagementLocationNumber(caseManagementLocation);
     }
 
     public void allocateRegionId(PCSCase pcsCase) {
         allocateCaseManagementLocation(pcsCase);
         if (pcsCase.getCaseManagementLocationNumber() != null) {
+            log.info("Calling locationReferenceService.getCourtVenues(...) with {}",
+                     pcsCase.getCaseManagementLocationNumber());
             List<CourtVenue> courtVenues = locationReferenceService
                 .getCourtVenues(List.of(pcsCase.getCaseManagementLocationNumber()));
+            log.info("Court venues are : {}", courtVenues);
             if (!CollectionUtils.isEmpty(courtVenues)) {
                 pcsCase.setRegionId(Integer.valueOf(courtVenues.getFirst().regionId()));
             }
