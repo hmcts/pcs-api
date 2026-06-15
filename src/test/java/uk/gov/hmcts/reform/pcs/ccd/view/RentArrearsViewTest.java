@@ -6,6 +6,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.ccd.sdk.type.Document;
+import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsSection;
@@ -77,17 +79,17 @@ class RentArrearsViewTest {
         // Given
         BigDecimal totalRentArrears = new BigDecimal("1234.00");
         String details = "details";
+        final UUID rentDocumentId = UUID.randomUUID();
 
         when(rentArrearsEntity.getTotalRentArrears()).thenReturn(totalRentArrears);
         when(rentArrearsEntity.getTotalRentArrears()).thenReturn(totalRentArrears);
         when(rentArrearsEntity.getArrearsJudgmentWanted()).thenReturn(VerticalYesNo.YES);
         when(rentArrearsEntity.getRecoveryAttempted()).thenReturn(VerticalYesNo.YES);
         when(rentArrearsEntity.getRecoveryAttemptDetails()).thenReturn(details);
-        UUID documentId = UUID.fromString("11111111-1111-1111-1111-111111111111");
         when(pcsCaseEntity.getDocuments()).thenReturn(
             List.of(
                 DocumentEntity.builder()
-                    .id(documentId)
+                    .id(rentDocumentId)
                     .type(DocumentType.RENT_STATEMENT)
                     .build()
             )
@@ -105,9 +107,9 @@ class RentArrearsViewTest {
         assertThat(rentArrears.getTotal()).isEqualTo(totalRentArrears);
         assertThat(rentArrears.getRecoveryAttempted()).isEqualTo(VerticalYesNo.YES);
         assertThat(rentArrears.getRecoveryAttemptDetails()).isEqualTo(details);
-        assertThat(rentArrears.getStatementDocuments()).hasSize(1);
-        // Collection items must carry an id — the Case File View reads rentStatement[0].id
-        assertThat(rentArrears.getStatementDocuments().get(0).getId()).isEqualTo(documentId.toString());
+        List<ListValue<Document>> statementDocuments = rentArrears.getStatementDocuments();
+        assertThat(statementDocuments).hasSize(1);
+        assertThat(statementDocuments.getFirst().getId()).isEqualTo(rentDocumentId.toString());
 
         verify(pcsCase).setArrearsJudgmentWanted(VerticalYesNo.YES);
     }

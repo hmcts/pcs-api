@@ -134,4 +134,5 @@ public class DefendantResponses {
 
     @CCD
     private RTCStatementOfTruth statementOfTruth;
+    private DefendantResponseStatus status;
 }

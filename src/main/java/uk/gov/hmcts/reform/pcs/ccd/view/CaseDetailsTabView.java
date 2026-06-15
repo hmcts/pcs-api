@@ -58,6 +58,7 @@ import uk.gov.hmcts.reform.pcs.ccd.view.builder.ClaimantInformationTabDetailsBui
 import uk.gov.hmcts.reform.pcs.ccd.view.builder.DefendantInformationTabDetailsBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.view.builder.GroundsBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.view.builder.ReasonsForPossessionTabDetailsBuilder;
+import uk.gov.hmcts.reform.pcs.ccd.view.builder.RequiredDocumentsTabDetailsBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.view.builder.RentArrearsTabDetailsBuilder;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
@@ -93,6 +94,7 @@ public class CaseDetailsTabView {
     private final ClaimantInformationTabDetailsBuilder claimantInformationTabDetailsBuilder;
     private final DefendantInformationTabDetailsBuilder defendantInformationTabDetailsBuilder;
     private final AdditionalDefendantInformationTabDetailsBuilder additionalDefendantInformationTabDetailsBuilder;
+    private final RequiredDocumentsTabDetailsBuilder requiredDocumentsTabDetailsBuilder;
 
     public CaseDetailsTab buildCaseDetailsTab(PCSCase pcsCase) {
         ClaimTabDetails claimTabDetails = buildClaimTabDetails(pcsCase);
@@ -139,6 +141,7 @@ public class CaseDetailsTabView {
             .occupationContractLicenceDetails(occupationContractLicenceTabDetails)
             .antisocialAndConductDetails(antisocialAndConductTabDetails)
             .prohibitedConductStandardContractDetails(prohibitedConductStandardContractTabDetails)
+            .requiredDocumentsDetails(requiredDocumentsTabDetailsBuilder.buildRequiredDocumentsTabDetails(pcsCase))
             .build();
 
         if (claimantInformationTabDetails != null) {
@@ -353,7 +356,7 @@ public class CaseDetailsTabView {
                     noticeTabDetails.setNoticeDate(dateTime != null ? formatDateTime(dateTime) : NO_ANSWER);
                     noticeTabDetails.setNoticeOtherExplanation(explanation != null ? explanation : NO_ANSWER);
                 }
-            };
+            }
         }
     }
 
@@ -509,7 +512,7 @@ public class CaseDetailsTabView {
     ) {
         List<ListValue<Party>> underlesseeMortgageParties = pcsCase.getAllUnderlesseeOrMortgagees();
         if (CollectionUtils.isEmpty(underlesseeMortgageParties) || underlesseeMortgageParties.size() < 2) {
-            return null;
+            return List.of();
         }
 
         return underlesseeMortgageParties.stream()

@@ -9,7 +9,9 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaim;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimStatus;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponseStatus;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
@@ -191,15 +193,16 @@ public class DefendantResponseService {
         ClaimEntity claimRef = claimRepository.getReferenceById(claimId);
 
         DefendantResponses responses = possessionClaimResponse.getDefendantResponses();
+        LocalDateTime submittedAt = LocalDateTime.now(utcClock);
 
         DefendantResponseEntity responseEntity =
-            buildDefendantResponseEntity(claimRef, partyRef, responses);
+            buildDefendantResponseEntity(claimRef, partyRef, responses, submittedAt);
 
         buildAndLinkChildEntities(responseEntity, responses);
 
         buildStatementOfTruth(responses, responseEntity);
 
-        CounterClaimEntity savedCounterClaim = saveCounterClaim(responses, partyRef, claimRef);
+        CounterClaimEntity savedCounterClaim = saveCounterClaim(responses, partyRef, claimRef, submittedAt);
 
         DefendantResponseEntity savedResponse = defendantResponseRepository.save(responseEntity);
 
@@ -241,11 +244,14 @@ public class DefendantResponseService {
 
     private DefendantResponseEntity buildDefendantResponseEntity(ClaimEntity claimRef,
                                                                 PartyEntity partyRef,
-                                                                DefendantResponses responses) {
+                                                                DefendantResponses responses,
+                                                                LocalDateTime submittedAt) {
 
         DefendantResponseEntity defendantResponse = DefendantResponseEntity.builder()
             .claim(claimRef)
             .party(partyRef)
+            .status(DefendantResponseStatus.SUBMITTED)
+            .responseSubmittedDate(submittedAt)
             .freeLegalAdvice(responses.getFreeLegalAdvice())
             .possessionNoticeReceived(responses.getPossessionNoticeReceived())
             .noticeReceivedDate(responses.getNoticeReceivedDate())
@@ -297,7 +303,8 @@ public class DefendantResponseService {
 
     private CounterClaimEntity saveCounterClaim(DefendantResponses responses,
                                                 PartyEntity partyRef,
-                                                ClaimEntity claimRef) {
+                                                ClaimEntity claimRef,
+                                                LocalDateTime submittedAt) {
         CounterClaim cc = responses.getCounterClaim();
         if (cc == null) {
             return null;
@@ -321,7 +328,8 @@ public class DefendantResponseService {
             .needHelpWithFees(cc.getNeedHelpWithFees())
             .appliedForHwf(cc.getAppliedForHwf())
             .hwfReferenceNumber(cc.getHwfReferenceNumber())
-            .claimSubmittedDate(LocalDateTime.now(utcClock))
+            .status(CounterClaimStatus.PENDING_COUNTER_CLAIM_ISSUED)
+            .claimSubmittedDate(submittedAt)
             .party(partyRef)
             .build();
 

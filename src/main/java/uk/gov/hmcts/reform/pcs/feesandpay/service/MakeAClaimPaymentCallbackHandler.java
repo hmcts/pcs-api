@@ -42,7 +42,7 @@ public class MakeAClaimPaymentCallbackHandler implements PaymentCallbackStrategy
             handleSuccessfulPayment(feePaymentEntity, feesAndPayTaskData.getCaseReference());
         } else {
             log.warn("The payment was not successful [{}] for case: {}", feePaymentEntity.getPaymentStatus(),
-                     feePaymentEntity.getClaim().getPcsCase().getCaseReference());
+                     feesAndPayTaskData.getCaseReference());
         }
     }
 
