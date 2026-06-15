@@ -1277,12 +1277,12 @@ export class CreateCaseAction implements IAction {
         break;
 
       case 'Notice':
-        const serviceMethod = submitPayLoad.notice_NoticeServiceMethod;
+        const serviceMethod = submitPayLoad.notice_ServiceMethod;
         const dateServed =
           serviceMethod === 'FIRST_CLASS_POST'
-            ? submitPayLoad.notice_NoticePostedDate
+            ? submitPayLoad.notice_PostedDate
             : serviceMethod === 'EMAIL'
-              ? submitPayLoad.notice_NoticeEmailSentDateTime
+              ? submitPayLoad.notice_EmailSentDateTime
               : null;
 
         if (dateServed) {
@@ -1296,12 +1296,12 @@ export class CreateCaseAction implements IAction {
         break;
 
       case 'Notice Case details':
-        const serviceMethodCaseDetails = submitPayLoad.notice_NoticeServiceMethod;
+        const serviceMethodCaseDetails = submitPayLoad.notice_ServiceMethod;
         const dateServedCaseDetails =
           serviceMethodCaseDetails === 'FIRST_CLASS_POST'
-            ? submitPayLoad.notice_NoticePostedDate
+            ? submitPayLoad.notice_PostedDate
             : serviceMethodCaseDetails === 'EMAIL'
-              ? submitPayLoad.notice_NoticeEmailSentDateTime
+              ? submitPayLoad.notice_EmailSentDateTime
               : null;
         const methodOfService = serviceMethodCaseDetails === 'FIRST_CLASS_POST' ? 'By first class post or other service which provides for delivery on the next business day' : serviceMethodCaseDetails === 'EMAIL' ? 'By Email' : null;
         caseSummary.set('Has notice been served?',formatWord(submitPayLoad.noticeServed));
@@ -1315,15 +1315,19 @@ export class CreateCaseAction implements IAction {
 
           caseSummary.set('Date and time notice served (if applicable)', formattedDate);
         }
+        caseSummary.set('Are you able to upload a copy of the notice you served?', formatWord(submitPayLoad.notice_AbleToUploadDocument));
+        if (submitPayLoad.notice_AbleToUploadDocument === 'No') {
+          caseSummary.set('Details of why you cannot upload a copy', submitPayLoad.notice_UnableToUploadReason);
+        }
         break;
 
       case 'Notice Case details Wales':
-        const serviceMethodCaseDetailsWales = submitPayLoad.notice_NoticeServiceMethod;
+        const serviceMethodCaseDetailsWales = submitPayLoad.notice_ServiceMethod;
         const dateServedCaseDetailsWales =
           serviceMethodCaseDetailsWales === 'FIRST_CLASS_POST'
-            ? submitPayLoad.notice_NoticePostedDate
+            ? submitPayLoad.notice_PostedDate
             : serviceMethodCaseDetailsWales === 'EMAIL'
-              ? submitPayLoad.notice_NoticeEmailSentDateTime
+              ? submitPayLoad.notice_EmailSentDateTime
               : null;
         const methodOfServiceWales = serviceMethodCaseDetailsWales === 'FIRST_CLASS_POST' ? 'By first class post or other service which provides for delivery on the next business day' : serviceMethodCaseDetailsWales === 'EMAIL' ? 'By Email' : null;
         caseSummary.set('Has notice been served?', formatWord(submitPayLoad.walesNoticeServed));
@@ -1337,6 +1341,10 @@ export class CreateCaseAction implements IAction {
               : formatDateTime(dateServedCaseDetailsWales);
 
           caseSummary.set('Date and time notice served (if applicable)', formattedDate);
+        }
+        caseSummary.set('Are you able to upload a copy of the notice you served?', formatWord(submitPayLoad.notice_AbleToUploadDocument));
+        if (submitPayLoad.notice_AbleToUploadDocument === 'No') {
+          caseSummary.set('Details of why you cannot upload a copy', submitPayLoad.notice_UnableToUploadReason);
         }
         break;
 
