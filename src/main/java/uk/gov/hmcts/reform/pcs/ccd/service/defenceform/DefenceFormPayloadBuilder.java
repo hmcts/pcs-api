@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.ccd.domain.IncomeType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.RegularExpenseType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PartyAttributeAssertedBy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PartyAttributeAssertionStatus;
@@ -243,7 +244,7 @@ public class DefenceFormPayloadBuilder {
         payload.debtContributionFrequency(formatFrequency(household.getDebtContributionFrequency()));
 
         payload.expenses(household.getRegularExpenses().stream()
-            .map(expense -> amountRow(expense.getExpenseType().getLabel(),
+            .map(expense -> amountRow(expenseLabel(expense.getExpenseType()),
                 expense.getAmount(), formatFrequency(expense.getExpenseFrequency())))
             .toList());
     }
@@ -260,7 +261,7 @@ public class DefenceFormPayloadBuilder {
         payload.income(INCOME_ROW_ORDER.stream()
             .filter(byType::containsKey)
             .map(byType::get)
-            .map(item -> amountRow(item.getIncomeType().getLabel(),
+            .map(item -> amountRow(incomeLabel(item.getIncomeType()),
                 item.getAmount(), formatFrequency(item.getFrequency())))
             .toList());
 
@@ -361,6 +362,32 @@ public class DefenceFormPayloadBuilder {
     private static String text(JsonNode node, String field) {
         JsonNode value = node.get(field);
         return value == null || value.isNull() ? null : value.asText();
+    }
+
+    // Defence-form row labels follow Cook's design template wording (1st preference) then the FE
+    // check-your-answers wording — fuller than the shared IncomeType/RegularExpenseType enum labels.
+    private static String incomeLabel(IncomeType type) {
+        return switch (type) {
+            case INCOME_FROM_JOBS -> "Income from all jobs you do";
+            case PENSION -> "Pension – state and private";
+            case UNIVERSAL_CREDIT -> "Universal Credit";
+            case OTHER_BENEFITS -> "Other benefits and credits";
+            case MONEY_FROM_ELSEWHERE -> "Money from somewhere else";
+        };
+    }
+
+    private static String expenseLabel(RegularExpenseType type) {
+        return switch (type) {
+            case HOUSEHOLD_BILLS -> "Household bills (for example, council tax, gas, electricity, water, internet)";
+            case LOAN_PAYMENTS -> "Loan payments";
+            case CHILD_SPOUSAL_MAINTENANCE -> "Child or spousal maintenance";
+            case MOBILE_PHONE -> "Mobile phone";
+            case GROCERY_SHOPPING -> "Grocery shopping";
+            case FUEL_PARKING_TRANSPORT -> "Fuel, parking and transport";
+            case SCHOOL_COSTS -> "School costs (for example, uniform and school dinners)";
+            case CLOTHING -> "Clothing";
+            case OTHER -> "Other";
+        };
     }
 
     private static boolean isRentArrears(ClaimGroundEntity ground) {

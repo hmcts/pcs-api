@@ -335,7 +335,7 @@ class DefenceFormPayloadBuilderTest {
             assertThat(payload.isShowIncomeExpenseSection()).isTrue();
             assertThat(payload.getIncome()).hasSize(1);
             DefenceFormAmountRow incomeRow = payload.getIncome().getFirst();
-            assertThat(incomeRow.getLabel()).isEqualTo("Income from jobs");
+            assertThat(incomeRow.getLabel()).isEqualTo("Income from all jobs you do");
             assertThat(incomeRow.getAmount()).isEqualTo("£1,500.00");
             assertThat(incomeRow.getFrequency()).isEqualTo("Monthly");
 
