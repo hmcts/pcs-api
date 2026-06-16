@@ -18,14 +18,14 @@ export const globalSearch =
     otherReferenceInputText: 'Test reference',
     otherReferenceParagraph:'Any other reference to identify a case, for example National Insurance number, or system reference',
     nameLabel:'Name',
-    nameInputText: 'Smith',
+    nameInputText: 'Possession Claims Solicitor Org',
     nameParagraph: 'For example, name of a party or solicitor',
     firstLineOfAddressLabel: 'First line of address',
     firstLineOfAddressInputText: '2 Second Avenue',
     postCodeLabel: 'Postcode',
     postcodeInputText: 'W3 7RX',
     emailAddressLabel: 'Email address',
-    emailAddressInputText: 'test@test.com',
+    emailAddressInputText: 'pcs-solicitor1@test.com',
     dateOfBirthLabel: 'Date of birth',
     dateOfBirthDayLabel: 'Day',
     dateOfBirthMonthLabel: 'Month',
@@ -46,5 +46,6 @@ export const globalSearch =
     searchButton: 'Search',
     invalidCaseReferenceInputText: '0000000000000000',
     invalidPostcodeInputText: 'ZZ99 9ZZ',
-    invalidNameInputText: 'XYZ_NonExistent_Name_ABC'
+    invalidNameInputText: 'XYZ_NonExistent_Name_ABC',
+    nextLink: 'Next page'
   }
