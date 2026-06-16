@@ -6,18 +6,24 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.ccd.sdk.type.Document;
+import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CombinedLicenceType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales;
+import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.TenancyLicenceEntity;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.time.LocalDate;
+import java.util.List;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -64,12 +70,21 @@ class TenancyLicenceViewTest {
         LocalDate tenancyStartDate = mock(LocalDate.class);
         VerticalYesNo hasCopyOfTenancyLicence = VerticalYesNo.NO;
         String reasonsForNoTenancyLicence = "reasons for no tenancy licence";
+        final UUID tenancyLicenceDocumentId = UUID.randomUUID();
 
         when(tenancyLicenceEntity.getType()).thenReturn(CombinedLicenceType.SECURE_TENANCY);
         when(tenancyLicenceEntity.getOtherTypeDetails()).thenReturn(otherTypeDetails);
         when(tenancyLicenceEntity.getStartDate()).thenReturn(tenancyStartDate);
         when(tenancyLicenceEntity.getHasCopyOfTenancyLicence()).thenReturn(hasCopyOfTenancyLicence);
         when(tenancyLicenceEntity.getReasonsForNoTenancyLicence()).thenReturn(reasonsForNoTenancyLicence);
+        when(pcsCaseEntity.getDocuments()).thenReturn(
+            List.of(
+                DocumentEntity.builder()
+                    .id(tenancyLicenceDocumentId)
+                    .type(DocumentType.TENANCY_LICENCE)
+                    .build()
+            )
+        );
 
         // When
         underTest.setCaseFields(pcsCase, pcsCaseEntity);
@@ -88,6 +103,9 @@ class TenancyLicenceViewTest {
         assertThat(tenancyLicenceDetails.getHasCopyOfTenancyLicence()).isEqualTo(hasCopyOfTenancyLicence);
         assertThat(tenancyLicenceDetails.getReasonsForNoTenancyLicenceDocuments())
             .isEqualTo(reasonsForNoTenancyLicence);
+        List<ListValue<Document>> tenancyLicenceDocuments = tenancyLicenceDetails.getTenancyLicenceDocuments();
+        assertThat(tenancyLicenceDocuments).hasSize(1);
+        assertThat(tenancyLicenceDocuments.getFirst().getId()).isEqualTo(tenancyLicenceDocumentId.toString());
     }
 
     @Test
@@ -99,10 +117,19 @@ class TenancyLicenceViewTest {
 
         String otherTypeDetails = "other type details";
         LocalDate tenancyStartDate = mock(LocalDate.class);
+        final UUID tenancyLicenceDocumentId = UUID.randomUUID();
 
         when(tenancyLicenceEntity.getType()).thenReturn(CombinedLicenceType.SECURE_CONTRACT);
         when(tenancyLicenceEntity.getOtherTypeDetails()).thenReturn(otherTypeDetails);
         when(tenancyLicenceEntity.getStartDate()).thenReturn(tenancyStartDate);
+        when(pcsCaseEntity.getDocuments()).thenReturn(
+            List.of(
+                DocumentEntity.builder()
+                    .id(tenancyLicenceDocumentId)
+                    .type(DocumentType.OCCUPATION_LICENCE)
+                    .build()
+            )
+        );
 
         // When
         underTest.setCaseFields(pcsCase, pcsCaseEntity);
@@ -119,6 +146,9 @@ class TenancyLicenceViewTest {
             .isEqualTo(OccupationLicenceTypeWales.SECURE_CONTRACT);
         assertThat(occupationLicenceDetails.getOtherLicenceTypeDetails()).isEqualTo(otherTypeDetails);
         assertThat(occupationLicenceDetails.getLicenceStartDate()).isEqualTo(tenancyStartDate);
+        List<ListValue<Document>> licenceDocuments = occupationLicenceDetails.getLicenceDocuments();
+        assertThat(licenceDocuments).hasSize(1);
+        assertThat(licenceDocuments.getFirst().getId()).isEqualTo(tenancyLicenceDocumentId.toString());
     }
 
 }

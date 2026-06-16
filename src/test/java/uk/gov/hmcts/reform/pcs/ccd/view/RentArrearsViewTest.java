@@ -6,15 +6,20 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.ccd.sdk.type.Document;
+import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsSection;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.RentArrearsEntity;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mock.Strictness.LENIENT;
@@ -74,12 +79,21 @@ class RentArrearsViewTest {
         // Given
         BigDecimal totalRentArrears = new BigDecimal("1234.00");
         String details = "details";
+        final UUID rentDocumentId = UUID.randomUUID();
 
         when(rentArrearsEntity.getTotalRentArrears()).thenReturn(totalRentArrears);
         when(rentArrearsEntity.getTotalRentArrears()).thenReturn(totalRentArrears);
         when(rentArrearsEntity.getArrearsJudgmentWanted()).thenReturn(VerticalYesNo.YES);
         when(rentArrearsEntity.getRecoveryAttempted()).thenReturn(VerticalYesNo.YES);
         when(rentArrearsEntity.getRecoveryAttemptDetails()).thenReturn(details);
+        when(pcsCaseEntity.getDocuments()).thenReturn(
+            List.of(
+                DocumentEntity.builder()
+                    .id(rentDocumentId)
+                    .type(DocumentType.RENT_STATEMENT)
+                    .build()
+            )
+        );
 
         // When
         underTest.setCaseFields(pcsCase, pcsCaseEntity);
@@ -93,6 +107,9 @@ class RentArrearsViewTest {
         assertThat(rentArrears.getTotal()).isEqualTo(totalRentArrears);
         assertThat(rentArrears.getRecoveryAttempted()).isEqualTo(VerticalYesNo.YES);
         assertThat(rentArrears.getRecoveryAttemptDetails()).isEqualTo(details);
+        List<ListValue<Document>> statementDocuments = rentArrears.getStatementDocuments();
+        assertThat(statementDocuments).hasSize(1);
+        assertThat(statementDocuments.getFirst().getId()).isEqualTo(rentDocumentId.toString());
 
         verify(pcsCase).setArrearsJudgmentWanted(VerticalYesNo.YES);
     }
