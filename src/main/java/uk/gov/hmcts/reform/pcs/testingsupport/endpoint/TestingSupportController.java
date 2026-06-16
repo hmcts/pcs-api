@@ -17,6 +17,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -31,10 +32,9 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimStatus;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponseStatus;
-import uk.gov.hmcts.reform.pcs.ccd.entity.PartyAccessCodeEntity;
+import uk.gov.hmcts.reform.pcs.testingsupport.model.TestingSupportPin;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.repository.PartyAccessCodeRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseRoleAssignmentService;
 import uk.gov.hmcts.reform.pcs.idam.IdamAuthenticator;
@@ -72,7 +72,7 @@ public class TestingSupportController {
     private final Task<Void> helloWorldTask;
     private final EligibilityService eligibilityService;
     private final PcsCaseRepository pcsCaseRepository;
-    private final PartyAccessCodeRepository partyAccessCodeRepository;
+    private final JdbcTemplate jdbcTemplate;
     private final ModelMapper modelMapper;
     private final CcdTestCaseOrchestrator ccdTestCaseOrchestrator;
     private final CaseRoleAssignmentService caseRoleAssignmentService;
@@ -265,7 +265,12 @@ public class TestingSupportController {
 
             PcsCaseEntity pcsCaseEntity = maybeCase.get();
 
-            List<PartyAccessCodeEntity> accessCodes = partyAccessCodeRepository.findAllByPcsCase_Id(
+            List<TestingSupportPin> pins = jdbcTemplate.query(
+                "SELECT party_id, plaintext_code FROM testing_support_pin WHERE case_id = ?",
+                (rs, rowNum) -> new TestingSupportPin(
+                    rs.getObject("party_id", UUID.class),
+                    rs.getString("plaintext_code")
+                ),
                 pcsCaseEntity.getId()
             );
 
@@ -281,11 +286,11 @@ public class TestingSupportController {
 
             Map<String, Party> minimalPartyMap = new HashMap<>();
 
-            for (var accessCodeObject : accessCodes) {
+            for (var pinObject : pins) {
                 //for each access code return the matching defendant's name and address
 
-                String accessCode = accessCodeObject.getCode();
-                UUID partyId = accessCodeObject.getPartyId();
+                String accessCode = pinObject.plaintextCode();
+                UUID partyId = pinObject.partyId();
 
                 PartyEntity matched = partyByPartyId.get(partyId);
                 if (matched == null) {

@@ -1,0 +1,19 @@
+{
+  "request": {
+    "method": "GET",
+    "urlPath": "/refdata/location/court-venues"
+  },
+  "response": {
+    "status": 200,
+    "headers": { "Content-Type": "application/json" },
+    "jsonBody": [
+      {
+        "epimms_id": 20264,
+        "court_venue_id": 40827,
+        "court_name": "Central London County Court",
+        "court_address": "13-14 Park Crescent, London",
+        "postcode": "W1B 1HT"
+      }
+    ]
+  }
+}

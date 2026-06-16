@@ -21,7 +21,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.model.AccessCodeTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilderFactory;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
@@ -50,7 +49,6 @@ import java.util.UUID;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.CompletionNextStep.SUBMIT_AND_PAY_NOW;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.State.AWAITING_SUBMISSION_TO_HMCTS;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.resumePossessionClaim;
-import static uk.gov.hmcts.reform.pcs.ccd.task.AccessCodeGenerationComponent.ACCESS_CODE_TASK_DESCRIPTOR;
 import static uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter.BR_DELIMITER;
 import static uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentCallbackHandlerType.CLAIM;
 import static uk.gov.hmcts.reform.pcs.feesandpay.task.FeesAndPayTaskComponent.FEES_AND_PAY_TASK_DESCRIPTOR;
@@ -182,8 +180,6 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
 
         draftCaseDataService.deleteUnsubmittedCaseData(caseReference, resumePossessionClaim);
 
-        schedulePartyAccessCodeGeneration(caseReference);
-
         FeeDetails feeDetails = scheduleCaseIssueFeePayment(caseReference, getResponsiblePartyId(caseReference));
 
         String caseIssueFee = moneyFormatter.formatFee(feeDetails.getFeeAmount());
@@ -228,22 +224,6 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
         );
 
         return feeDetails;
-    }
-
-    private void schedulePartyAccessCodeGeneration(long caseReference) {
-
-        String taskId = UUID.randomUUID().toString();
-
-        AccessCodeTaskData taskData = AccessCodeTaskData.builder()
-            .caseReference(String.valueOf(caseReference))
-            .build();
-
-        schedulerClient.scheduleIfNotExists(
-            ACCESS_CODE_TASK_DESCRIPTOR
-                .instance(taskId)
-                .data(taskData)
-                .scheduledTo(Instant.now())
-        );
     }
 
     private static String getPaymentConfirmationMarkdown(String caseIssueFee, long caseReference) {

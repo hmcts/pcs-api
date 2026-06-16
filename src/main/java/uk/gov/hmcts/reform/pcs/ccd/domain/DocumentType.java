@@ -27,6 +27,7 @@ public enum DocumentType implements HasLabel {
     ENERGY_PERFORMANCE_CERTIFICATE("Energy performance certificate"),
     GAS_SAFETY_REPORT("Gas safety report"),
     ELECTRICAL_INSTALLATION_CONDITION("Electrical installation condition"),
+    DEFENDANT_ACCESS_CODE("Defendant access code"),
     OTHER("Other document");
 
     private final String label;

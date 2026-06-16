@@ -25,7 +25,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.model.AccessCodeTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilderFactory;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
@@ -472,7 +471,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
         }
 
         @Test
-        void shouldScheduleAccessCodeTask() {
+        void shouldNotScheduleAccessCodeTaskOnSubmit() {
             // Given
             stubFeeService();
 
@@ -485,8 +484,12 @@ class ResumePossessionClaimTest extends BaseEventTest {
             callSubmitHandler(caseData);
 
             // Then
-            AccessCodeTaskData taskData = getScheduledTaskData(ACCESS_CODE_TASK_DESCRIPTOR);
-            assertThat(taskData.getCaseReference()).isEqualTo(String.valueOf(TEST_CASE_REFERENCE));
+            ArgumentCaptor<SchedulableInstance<?>> captor = ArgumentCaptor.forClass(SchedulableInstance.class);
+            verify(schedulerClient, atLeastOnce()).scheduleIfNotExists(captor.capture());
+            boolean accessCodeScheduled = captor.getAllValues().stream()
+                .anyMatch(task -> task.getTaskInstance().getTaskName()
+                    .equals(ACCESS_CODE_TASK_DESCRIPTOR.getTaskName()));
+            assertThat(accessCodeScheduled).isFalse();
         }
 
         @Test

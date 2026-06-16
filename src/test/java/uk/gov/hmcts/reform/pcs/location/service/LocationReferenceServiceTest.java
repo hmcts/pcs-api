@@ -45,7 +45,8 @@ public class LocationReferenceServiceTest {
     @Test
     void shouldReturnCountyCourts_whenCalledWithValidSingleEpimId() {
         List<CourtVenue> expectedCourtVenues = List.of(
-                new CourtVenue(BRENTFORD_COURT_EPIM_ID, 40838, "Brentford County Court And Family Court")
+                new CourtVenue(BRENTFORD_COURT_EPIM_ID, 40838, "Brentford County Court And Family Court",
+                        "Alexandra Road, High Wycombe", "HP11 2XE")
         );
         when(authTokenGenerator.generate()).thenReturn(SERVICE_AUTH_TOKEN);
         when(locationReferenceApi.getCountyCourts(
@@ -71,8 +72,10 @@ public class LocationReferenceServiceTest {
     @Test
     void shouldReturnCountyCourts_whenCalledWithValidMultipleEpimIds() {
         List<CourtVenue> expectedCourtVenues = List.of(
-                new CourtVenue(BRENTFORD_COURT_EPIM_ID, 40838, "Brentford County Court And Family Court"),
-                new CourtVenue(LONDON_COURT_EPIM_ID, 40827, "Central London County Court")
+                new CourtVenue(BRENTFORD_COURT_EPIM_ID, 40838, "Brentford County Court And Family Court",
+                        "Alexandra Road, High Wycombe", "HP11 2XE"),
+                new CourtVenue(LONDON_COURT_EPIM_ID, 40827, "Central London County Court",
+                        "13-14 Park Crescent", "W1B 1HT")
         );
         when(authTokenGenerator.generate()).thenReturn(SERVICE_AUTH_TOKEN);
         when(locationReferenceApi.getCountyCourts(
@@ -107,7 +110,7 @@ public class LocationReferenceServiceTest {
 
         List<CourtVenue> actualCourtVenues = locationReferenceService.getCountyCourts(AUTHORIZATION, EPIM_IDS);
 
-        assertThat(actualCourtVenues.isEmpty()).isTrue();
+        assertThat(actualCourtVenues.isEmpty());
 
         verify(authTokenGenerator).generate();
         verify(locationReferenceApi).getCountyCourts(
@@ -125,7 +128,7 @@ public class LocationReferenceServiceTest {
                 IllegalArgumentException.class,
                 () -> locationReferenceService.getCountyCourts(AUTHORIZATION, epimIds)
         );
-        assertThat("epimIds cannot be null or empty").isEqualTo(exception.getMessage());
+        assertThat(exception.getMessage()).isEqualTo("epimIds cannot be null or empty");
     }
 
     @Test

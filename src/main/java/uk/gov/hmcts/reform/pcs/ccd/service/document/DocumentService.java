@@ -291,6 +291,8 @@ public class DocumentService {
                  ENERGY_PERFORMANCE_CERTIFICATE,
                  GAS_SAFETY_REPORT,
                  ELECTRICAL_INSTALLATION_CONDITION,
+                 // Defendant access-code (pin pack) letters aren't shown on the case file
+                 DEFENDANT_ACCESS_CODE,
                  OTHER ->
                 Optional.empty();
         };

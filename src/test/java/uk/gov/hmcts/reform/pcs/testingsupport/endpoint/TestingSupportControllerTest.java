@@ -21,10 +21,11 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimStatus;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponseStatus;
-import uk.gov.hmcts.reform.pcs.ccd.entity.PartyAccessCodeEntity;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
+import uk.gov.hmcts.reform.pcs.testingsupport.model.TestingSupportPin;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.repository.PartyAccessCodeRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseRoleAssignmentService;
 import uk.gov.hmcts.reform.pcs.idam.IdamAuthenticator;
@@ -68,7 +69,7 @@ class TestingSupportControllerTest {
     @Mock
     private PcsCaseRepository pcsCaseRepository;
     @Mock
-    private PartyAccessCodeRepository partyAccessCodeRepository;
+    private JdbcTemplate jdbcTemplate;
     @Mock
     private CcdTestCaseOrchestrator ccdTestCaseOrchestrator;
     @Mock
@@ -98,7 +99,7 @@ class TestingSupportControllerTest {
     void setUp() {
         underTest = new TestingSupportController(schedulerClient, helloWorldTask,
                                                  eligibilityService,
-                                                 pcsCaseRepository, partyAccessCodeRepository,
+                                                 pcsCaseRepository, jdbcTemplate,
                                                  modelMapper, ccdTestCaseOrchestrator,
                                                  caseRoleAssignmentService,
                                                  legalRepresentativePartyLinkService,
@@ -269,6 +270,7 @@ class TestingSupportControllerTest {
         verify(eligibilityService).checkEligibility(postcode, country);
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     void shouldReturnPins() {
         // Given
@@ -292,19 +294,14 @@ class TestingSupportControllerTest {
             .parties(Set.of(defendant))
             .build();
 
-        List<PartyAccessCodeEntity> accessCodes = new ArrayList<>();
-        PartyAccessCodeEntity accessCode1 = PartyAccessCodeEntity.builder()
-            .id(UUID.randomUUID())
-            .code(accessCodeString)
-            .partyId(partyCode)
-            .build();
-        accessCodes.add(accessCode1);
+        List<TestingSupportPin> pins = new ArrayList<>();
+        pins.add(new TestingSupportPin(partyCode, accessCodeString));
 
         when(pcsCaseRepository.findByCaseReference(caseReference))
             .thenReturn(Optional.ofNullable(caseEntity));
 
-        when(partyAccessCodeRepository.findAllByPcsCase_Id(caseId))
-            .thenReturn(accessCodes);
+        when(jdbcTemplate.query(anyString(), any(RowMapper.class), any(UUID.class)))
+            .thenReturn(pins);
 
         // When
         ResponseEntity<Map<String, Party>> response = underTest.getPins(
