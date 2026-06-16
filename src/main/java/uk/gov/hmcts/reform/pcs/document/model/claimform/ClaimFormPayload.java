@@ -25,7 +25,7 @@ public class ClaimFormPayload implements FormPayload {
     // ---------- Title block ----------
     private String referenceNumber;
     private String caseName;
-    private LocalDate issueDateSealed;     // No source yet; null until ClaimEntity.issueDate exists.
+    private LocalDate issueDateSealed;     // from ClaimEntity.claimIssuedDate (set on payment/issue)
     private LocalDate submittedOn;
     /**
      * {@code @JsonProperty} keeps the wire key as {@code isWales}: Jackson otherwise strips the
@@ -67,7 +67,7 @@ public class ClaimFormPayload implements FormPayload {
     private boolean showDescriptionOfGrounds;
     @JsonProperty("isNoOrAbsoluteOrOtherGrounds")
     private boolean isNoOrAbsoluteOrOtherGrounds;
-    private String whyClaimingPossession;       // No source yet; null until the source field is identified.
+    private String whyClaimingPossession;       // intro/demoted/other no-grounds reason
     private boolean showWhyClaimingPossession;
     private String hasAdditionalReasonsYesNo;
     private boolean additionalReasonsProvided;
