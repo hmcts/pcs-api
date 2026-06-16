@@ -86,9 +86,8 @@ public class DefendantResponseEntity {
     @JsonManagedReference
     private ReasonableAdjustmentEntity reasonableAdjustment;
 
-    // Non-owning reference: the generated form's lifecycle is owned by PcsCaseEntity.documents
-    // (cascade/orphanRemoval there). No cascade/orphanRemoval here, so the two collections can't both
-    // try to delete the same document row; the FK is ON DELETE SET NULL (see V122).
+    // Link to the generated defence PDF. The document is owned by PcsCaseEntity.documents,
+    // so no cascade here; the FK is SET NULL on delete.
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "submission_document_id")
     private DocumentEntity submissionDocument;
