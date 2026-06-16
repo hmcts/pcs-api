@@ -11,7 +11,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseNoteEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
@@ -31,7 +31,7 @@ class CaseNoteServiceTest {
     private PcsCaseService pcsCaseService;
 
     @Mock
-    private ClaimRepository claimRepository;
+    private PcsCaseRepository pcsCaseRepository;
 
     @Mock
     private SecurityContextService securityContextService;
@@ -78,12 +78,13 @@ class CaseNoteServiceTest {
         // When
         caseNoteService.addCaseNote(caseReference, pcsCase);
 
-        ArgumentCaptor<ClaimEntity> claimEntityCaptor = ArgumentCaptor.forClass(ClaimEntity.class);
-        verify(claimRepository).save(claimEntityCaptor.capture());
+        ArgumentCaptor<PcsCaseEntity> pcsCaseEntityCaptor = ArgumentCaptor.forClass(PcsCaseEntity.class);
+        verify(pcsCaseRepository).save(pcsCaseEntityCaptor.capture());
 
-        ClaimEntity persistedClaimEntity = claimEntityCaptor.getValue();
-        assertThat(persistedClaimEntity.getCaseNotes()).hasSize(1);
-        CaseNoteEntity persistedCaseNote = persistedClaimEntity.getCaseNotes().getFirst();
+        PcsCaseEntity persistedCaseEntity = pcsCaseEntityCaptor.getValue();
+        assertThat(persistedCaseEntity.getCaseNotes()).hasSize(1);
+        CaseNoteEntity persistedCaseNote = persistedCaseEntity.getCaseNotes().getFirst();
+        assertThat(persistedCaseNote.getPcsCase()).isEqualTo(persistedCaseEntity);
         assertThat(persistedCaseNote.getNote()).isEqualTo(note);
         assertThat(persistedCaseNote.getCreatedBy()).isEqualTo(name);
         assertThat(persistedCaseNote.getCreatedOn()).isEqualTo(FIXED_INSTANT);
@@ -103,15 +104,10 @@ class CaseNoteServiceTest {
             .build();
         List<CaseNoteEntity> caseNoteEntities = new ArrayList<>();
         caseNoteEntities.add(preExistingCaseNote);
-        ClaimEntity claimEntity = ClaimEntity.builder()
-            .caseNotes(caseNoteEntities)
-            .build();
-        List<ClaimEntity> claimEntities = new ArrayList<>();
-        claimEntities.add(claimEntity);
 
         PcsCaseEntity pcsCaseEntity = PcsCaseEntity
             .builder()
-            .claims(claimEntities)
+            .caseNotes(caseNoteEntities)
             .build();
 
         String newNote = "New Note";
@@ -133,22 +129,22 @@ class CaseNoteServiceTest {
         caseNoteService.addCaseNote(caseReference, pcsCase);
 
         // Then
-        ArgumentCaptor<ClaimEntity> claimEntityCaptor = ArgumentCaptor.forClass(ClaimEntity.class);
-        verify(claimRepository).save(claimEntityCaptor.capture());
+        ArgumentCaptor<PcsCaseEntity> pcsCaseEntityCaptor = ArgumentCaptor.forClass(PcsCaseEntity.class);
+        verify(pcsCaseRepository).save(pcsCaseEntityCaptor.capture());
 
-        ClaimEntity persistedClaimEntity = claimEntityCaptor.getValue();
+        PcsCaseEntity persistedCaseEntity = pcsCaseEntityCaptor.getValue();
 
         // Verify the collection now has 2 notes
-        assertThat(persistedClaimEntity.getCaseNotes()).hasSize(2);
+        assertThat(persistedCaseEntity.getCaseNotes()).hasSize(2);
 
         // Verify the pre-existing note is still there
-        CaseNoteEntity firstCaseNote = persistedClaimEntity.getCaseNotes().getFirst();
+        CaseNoteEntity firstCaseNote = persistedCaseEntity.getCaseNotes().getFirst();
         assertThat(firstCaseNote.getNote()).isEqualTo(preExistingNote);
         assertThat(firstCaseNote.getCreatedBy()).isEqualTo(preExistingAuthor);
         assertThat(firstCaseNote.getCreatedOn()).isEqualTo(preExistingInstant);
 
         // Verify the new note was added
-        CaseNoteEntity secondCaseNote = persistedClaimEntity.getCaseNotes().getLast();
+        CaseNoteEntity secondCaseNote = persistedCaseEntity.getCaseNotes().getLast();
         assertThat(secondCaseNote.getNote()).isEqualTo(newNote);
         assertThat(secondCaseNote.getCreatedBy()).isEqualTo(newAuthor);
         assertThat(secondCaseNote.getCreatedOn()).isEqualTo(FIXED_INSTANT);
@@ -167,16 +163,9 @@ class CaseNoteServiceTest {
             existingNotes.add(note);
         }
 
-        ClaimEntity claimEntity = ClaimEntity.builder()
-                .caseNotes(existingNotes)
-                .build();
-
-        List<ClaimEntity> claimEntities = new ArrayList<>();
-        claimEntities.add(claimEntity);
-
         PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
-                .claims(claimEntities)
-                .build();
+            .caseNotes(existingNotes)
+            .build();
 
         String newNote = "Latest Note";
         String newAuthor = "Latest Author";
@@ -197,19 +186,19 @@ class CaseNoteServiceTest {
         caseNoteService.addCaseNote(caseReference, pcsCase);
 
         // Then
-        ArgumentCaptor<ClaimEntity> claimEntityCaptor = ArgumentCaptor.forClass(ClaimEntity.class);
-        verify(claimRepository).save(claimEntityCaptor.capture());
+        ArgumentCaptor<PcsCaseEntity> pcsCaseEntityCaptor = ArgumentCaptor.forClass(PcsCaseEntity.class);
+        verify(pcsCaseRepository).save(pcsCaseEntityCaptor.capture());
 
-        ClaimEntity persistedClaimEntity = claimEntityCaptor.getValue();
+        PcsCaseEntity persistedCaseEntity = pcsCaseEntityCaptor.getValue();
 
-        assertThat(persistedClaimEntity.getCaseNotes()).hasSize(4);
+        assertThat(persistedCaseEntity.getCaseNotes()).hasSize(4);
 
-        assertThat(persistedClaimEntity.getCaseNotes().get(0).getNote()).isEqualTo("Existing Note 1");
-        assertThat(persistedClaimEntity.getCaseNotes().get(1).getNote()).isEqualTo("Existing Note 2");
-        assertThat(persistedClaimEntity.getCaseNotes().get(2).getNote()).isEqualTo("Existing Note 3");
+        assertThat(persistedCaseEntity.getCaseNotes().get(0).getNote()).isEqualTo("Existing Note 1");
+        assertThat(persistedCaseEntity.getCaseNotes().get(1).getNote()).isEqualTo("Existing Note 2");
+        assertThat(persistedCaseEntity.getCaseNotes().get(2).getNote()).isEqualTo("Existing Note 3");
 
-        assertThat(persistedClaimEntity.getCaseNotes().getLast().getNote()).isEqualTo(newNote);
-        assertThat(persistedClaimEntity.getCaseNotes().getLast().getCreatedBy()).isEqualTo(newAuthor);
-        assertThat(persistedClaimEntity.getCaseNotes().getLast().getCreatedOn()).isEqualTo(FIXED_INSTANT);
+        assertThat(persistedCaseEntity.getCaseNotes().getLast().getNote()).isEqualTo(newNote);
+        assertThat(persistedCaseEntity.getCaseNotes().getLast().getCreatedBy()).isEqualTo(newAuthor);
+        assertThat(persistedCaseEntity.getCaseNotes().getLast().getCreatedOn()).isEqualTo(FIXED_INSTANT);
     }
 }
