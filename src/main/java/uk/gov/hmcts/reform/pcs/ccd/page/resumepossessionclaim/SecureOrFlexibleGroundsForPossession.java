@@ -18,6 +18,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import java.util.Set;
 
 import static uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexibleDiscretionaryGrounds.RENT_ARREARS_OR_BREACH_OF_TENANCY;
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.ENGLAND;
 
 public class SecureOrFlexibleGroundsForPossession implements CcdPageConfiguration {
 
@@ -28,7 +29,7 @@ public class SecureOrFlexibleGroundsForPossession implements CcdPageConfiguratio
             .pageLabel("What are your grounds for possession?")
             .showCondition("(tenancy_TypeOfTenancyLicence=\"SECURE_TENANCY\""
                         + " OR tenancy_TypeOfTenancyLicence=\"FLEXIBLE_TENANCY\")"
-                        + " AND legislativeCountry=\"England\"")
+                        + " AND " + ENGLAND)
             .label("secureOrFlexibleGroundsForPossession-info", """
                ---
                <p class="govuk-body" tabindex="0">
