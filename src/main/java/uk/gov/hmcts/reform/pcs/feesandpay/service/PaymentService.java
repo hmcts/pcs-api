@@ -196,8 +196,13 @@ public class PaymentService {
                                   ClaimEntity claimEntity, String serviceRequestReference) {
         log.info("Saving New Fee Payment for the case: {} with serviceRequestReference: {}",
                  feesAndPayTaskData.getCaseReference(), serviceRequestReference);
+        PartyEntity responsibleParty = partyService.getPartyEntityByEntityId(
+            feesAndPayTaskData.getResponsiblePartyId(),
+            feesAndPayTaskData.getCaseReference()
+        );
         FeePaymentEntity feePaymentEntity = FeePaymentEntity.builder()
             .claim(claimEntity)
+            .party(responsibleParty)
             .serviceRequestReference(serviceRequestReference)
             .amount(feesAndPayTaskData.getFeeDetails().getFeeAmount())
             .paymentCallbackHandlerType(feesAndPayTaskData.getPaymentCallbackHandlerType())

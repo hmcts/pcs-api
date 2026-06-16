@@ -311,6 +311,7 @@ class PaymentServiceTest {
             FeesAndPayTaskData feesAndPayTaskData = createFeesAndPayTaskData(feeDetails);
             String asString = objectMapper.writeValueAsString(feesAndPayTaskData);
             ClaimEntity claimEntity = new ClaimEntity();
+            stubResponsibleParty();
 
             // When
             underTest.saveNewFeePayment(asString, feesAndPayTaskData, claimEntity, SERVICE_REQUEST_REFERENCE);
@@ -332,6 +333,7 @@ class PaymentServiceTest {
             FeesAndPayTaskData feesAndPayTaskData = createFeesAndPayTaskData(feeDetails);
             String taskDataJson = objectMapper.writeValueAsString(feesAndPayTaskData);
             ClaimEntity claimEntity = new ClaimEntity();
+            stubResponsibleParty();
 
             // When
             underTest.saveNewFeePayment(taskDataJson, feesAndPayTaskData, claimEntity, SERVICE_REQUEST_REFERENCE);
@@ -343,7 +345,9 @@ class PaymentServiceTest {
 
             assertThat(saved.getTaskData()).isEqualTo(taskDataJson);
             assertThat(saved.getPaymentCallbackHandlerType()).isEqualTo(CLAIM);
-            assertThat(saved.getParty()).isNull();
+            assertThat(saved.getParty()).isSameAs(
+                partyService.getPartyEntityByEntityId(RESPONSIBLE_PARTY_ID, CASE_REFERENCE)
+            );
         }
 
     }
@@ -565,11 +569,12 @@ class PaymentServiceTest {
             .build();
     }
 
-    private void stubResponsibleParty() {
+    private PartyEntity stubResponsibleParty() {
         PartyEntity responsiblePartyEntity = mock(PartyEntity.class);
         when(partyService.getPartyEntityByEntityId(RESPONSIBLE_PARTY_ID, CASE_REFERENCE))
             .thenReturn(responsiblePartyEntity);
-        when(partyService.getPartyName(responsiblePartyEntity)).thenReturn(RESPONSIBLE_PARTY);
+        lenient().when(partyService.getPartyName(responsiblePartyEntity)).thenReturn(RESPONSIBLE_PARTY);
+        return responsiblePartyEntity;
     }
 
 }
