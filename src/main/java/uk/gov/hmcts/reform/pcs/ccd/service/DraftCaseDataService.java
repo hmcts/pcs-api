@@ -80,7 +80,6 @@ public class DraftCaseDataService {
     public boolean hasUnsubmittedCaseData(long caseReference, EventId eventId) {
         UUID userId = getCurrentUserId();
 
-
         return hasUnsubmittedCaseDataInternal(
             DraftCaseData.builder().caseReference(caseReference).eventId(eventId).userId(userId).build(),
             () -> draftCaseDataRepository

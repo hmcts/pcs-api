@@ -404,6 +404,10 @@ class DraftCaseDataServiceTest {
             .thenReturn(Optional.empty());
         when(draftCaseDataRepository.save(any(DraftCaseDataEntity.class)))
             .thenAnswer(invocation -> invocation.getArgument(0));
+        UserInfo userInfo = UserInfo.builder()
+            .uid(USER_ID.toString())
+            .build();
+        when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
 
         // When
         underTest.patchUnsubmittedEventData(CASE_REFERENCE, caseData, eventId, partyId, organisationId);
@@ -440,6 +444,10 @@ class DraftCaseDataServiceTest {
             .thenReturn(Optional.of(draftCaseDataEntity));
         when(draftCaseDataRepository.save(any(DraftCaseDataEntity.class)))
             .thenAnswer(invocation -> invocation.getArgument(0));
+        UserInfo userInfo = UserInfo.builder()
+            .uid(USER_ID.toString())
+            .build();
+        when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
 
         // When
         underTest.patchUnsubmittedEventData(CASE_REFERENCE, newCaseData, eventId, partyId, organisationId);
@@ -483,6 +491,11 @@ class DraftCaseDataServiceTest {
             CASE_REFERENCE, eventId, organisationId, partyId))
             .thenReturn(Optional.of(draftCaseDataEntity));
         String patchJson = "patch json";
+        UserInfo userInfo = UserInfo.builder()
+            .uid(USER_ID.toString())
+            .build();
+        when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
+
         // When
         underTest.patchUnsubmittedEventData(CASE_REFERENCE, patchJson, eventId, partyId, organisationId);
 
