@@ -172,7 +172,7 @@ def setPreviewEnvVars(githubApi) {
   if (frontendLabels && frontendLabels.size() > 0) {
     def labelName = frontendLabels[0]
     def PCS_FRONTEND_CHANGE_ID = labelName.replace("pcs-frontend-pr:", "")
-    env.PCS_FRONTEND_CHANGE_ID = "https://pcs-frontend-pr-${PCS_FRONTEND_CHANGE_ID}.preview.platform.hmcts.net"
+    env.PCS_FRONTEND_URL = "https://pcs-frontend-pr-${PCS_FRONTEND_CHANGE_ID}.preview.platform.hmcts.net"
   }
 }
 
