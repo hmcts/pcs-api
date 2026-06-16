@@ -1,7 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
-
 import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
