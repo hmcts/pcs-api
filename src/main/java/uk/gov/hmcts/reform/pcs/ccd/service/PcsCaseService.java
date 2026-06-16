@@ -10,6 +10,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.CaseFlagEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
@@ -22,6 +23,7 @@ import uk.gov.hmcts.reform.pcs.postcodecourt.service.PostCodeCourtService;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 @Service
 @Slf4j
@@ -38,6 +40,7 @@ public class PcsCaseService {
     private final CaseFlagService caseFlagService;
     private final PostCodeCourtService postCodeCourtService;
     private final LocationReferenceService locationReferenceService;
+    private final DraftCaseDataService draftCaseDataService;
 
     public PcsCaseEntity createCase(long caseReference,
                                     AddressUK propertyAddress,
@@ -65,6 +68,13 @@ public class PcsCaseService {
         pcsCaseEntity.addClaim(claimEntity);
         partyService.createAllParties(pcsCase, pcsCaseEntity, claimEntity, organisationIdForCurrentUser);
         pcsCaseEntity.setTenancyLicence(tenancyLicenceService.createTenancyLicenceEntity(pcsCase));
+
+        Optional<PCSCase> unsubmittedCaseData = draftCaseDataService.getUnsubmittedCaseData(
+            caseReference,
+            EventId.resumePossessionClaim
+        );
+
+        System.out.println(unsubmittedCaseData);
     }
 
     public void patchCaseFlags(long caseReference, PCSCase pcsCase) {
@@ -95,7 +105,7 @@ public class PcsCaseService {
         Integer caseManagementLocation =
             postCodeCourtService.getCourtManagementLocation(pcsCase.getPropertyAddress().getPostCode(),
                                                             pcsCase.getLegislativeCountry());
-        log.info("Setting caseManagementLocationNumber to: {}", caseManagementLocation);
+        log.debug("Setting caseManagementLocationNumber to: {}", caseManagementLocation);
         pcsCase.setCaseManagementLocationNumber(caseManagementLocation);
     }
 
@@ -104,11 +114,11 @@ public class PcsCaseService {
         allocateCaseManagementLocation(pcsCase);
         if (pcsCase.getCaseManagementLocationNumber() != null) {
             pcsCaseEntity.setBaseLocation(pcsCase.getCaseManagementLocationNumber());
-            log.info("Calling locationReferenceService.getCourtVenues(...) with {}",
+            log.debug("Calling locationReferenceService.getCourtVenues(...) with {}",
                      pcsCase.getCaseManagementLocationNumber());
             List<CourtVenue> courtVenues = locationReferenceService
                 .getCourtVenues(List.of(pcsCase.getCaseManagementLocationNumber()));
-            log.info("Court venues are : {}", courtVenues);
+            log.debug("Court venues are : {}", courtVenues);
             if (!CollectionUtils.isEmpty(courtVenues)) {
                 Integer regionId = Integer.valueOf(courtVenues.getFirst().regionId());
                 pcsCase.setRegionId(regionId);
