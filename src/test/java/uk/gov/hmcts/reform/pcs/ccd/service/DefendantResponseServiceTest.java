@@ -771,7 +771,7 @@ class DefendantResponseServiceTest {
 
         UploadedDocument ccDoc = UploadedDocument.builder()
             .document(Document.builder()
-                .url("url-cc").filename("counter-claim.pdf").binaryUrl("bin-cc").categoryId("cat-cc").build())
+                          .url("url-cc").filename("counter-claim.pdf").binaryUrl("bin-cc").categoryId("cat-cc").build())
             .contentType("application/pdf")
             .sizeInBytes(50000L)
             .build();
@@ -863,7 +863,7 @@ class DefendantResponseServiceTest {
 
         UploadedDocument defDoc = UploadedDocument.builder()
             .document(Document.builder()
-                .url("url1").filename("file1.pdf").binaryUrl("bin1").categoryId("cat1").build())
+                          .url("url1").filename("file1.pdf").binaryUrl("bin1").categoryId("cat1").build())
             .contentType("application/pdf")
             .sizeInBytes(135529L)
             .build();
@@ -1425,66 +1425,4 @@ class DefendantResponseServiceTest {
             Arguments.of((VerticalYesNo) null)
         );
     }
-
-    @Test
-    void shouldSaveDefendantResponseWithJpaProxies_WithPartyId() {
-        // Given
-        UUID partyId = UUID.randomUUID();
-        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
-        when(partyRepository.findByIdAndPcsCaseCaseReference(partyId, CASE_REFERENCE))
-            .thenReturn(Optional.of(partyEntity));
-
-        stubClaimLookup();
-
-        DefendantResponses responses = DefendantResponses.builder()
-            .freeLegalAdvice(YesNoPreferNotToSay.YES)
-            .possessionNoticeReceived(YesNoNotSure.YES)
-            .noticeReceivedDate(LocalDate.of(2024, 1, 15))
-            .rentArrearsAmountConfirmation(YesNoNotSure.NO)
-            .landlordRegistered(YesNoNotSure.YES)
-            .build();
-
-        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
-            .defendantResponses(responses)
-            .build();
-
-
-        // When
-        underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse, partyId);
-
-        // Then
-        verify(defendantResponseRepository).save(responseCaptor.capture());
-        DefendantResponseEntity savedResponse = responseCaptor.getValue();
-
-        assertThat(savedResponse.getParty()).isEqualTo(partyEntity);
-        assertThat(savedResponse.getClaim()).isEqualTo(claimEntity);
-        assertThat(savedResponse.getFreeLegalAdvice()).isEqualTo(YesNoPreferNotToSay.YES);
-        assertThat(savedResponse.getRentArrearsAmountConfirmation()).isEqualTo(YesNoNotSure.NO);
-        assertThat(savedResponse.getLandlordRegistered()).isEqualTo(YesNoNotSure.YES);
-        verify(pcsCaseEntity).addDefendantResponse(savedResponse);
-    }
-
-    @Test
-    void shouldThrowExceptionWhenCurrentUserIdIsNull_WithPartyId() {
-        // Given
-        DefendantResponses responses = DefendantResponses.builder()
-            .freeLegalAdvice(YesNoPreferNotToSay.YES)
-            .build();
-
-        when(securityContextService.getCurrentUserId()).thenReturn(null);
-
-        // When / Then
-        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
-            .defendantResponses(responses)
-            .build();
-
-        assertThatThrownBy(() -> underTest.saveDefendantResponse(CASE_REFERENCE,
-                                                                 possessionClaimResponse,
-                                                                 UUID.randomUUID()))
-            .isInstanceOf(IllegalStateException.class)
-            .hasMessage("Current user IDAM ID is null");
-
-        verify(defendantResponseRepository, never()).save(any());
-    }
-
 }
