@@ -3,14 +3,11 @@ package uk.gov.hmcts.reform.pcs.ccd.event.legalrepdocumentupload;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.Document;
-import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
@@ -18,13 +15,12 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.E
 
 import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.DocumentUploadCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocument;
-import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocumentUploadDetails;
-import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.BaseEventTest;
 import uk.gov.hmcts.reform.pcs.ccd.page.legalrepdocumentupload.LegalRepDocumentUploadConfigurer;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType;
@@ -32,6 +28,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
@@ -51,16 +48,15 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
     @Mock
     private PcsCaseService pcsCaseService;
 
+    @Mock
+    private DocumentService documentService;
+
     @InjectMocks
     private LegalRepDocumentUpload legalRepDocumentUpload;
-
-    @Captor
-    private ArgumentCaptor<List<DocumentEntity>> listCaptor;
 
     @BeforeEach
     void setUp() {
         setEventUnderTest(legalRepDocumentUpload);
-
     }
 
     @Test
@@ -201,15 +197,12 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
             .description(description)
             .build();
 
-        List<ListValue<LegalRepDocument>> legalRepDocList = List.of(ListValue.<LegalRepDocument>builder()
-                                                                        .value(legalRepDocument).build());
-
-        LegalRepDocumentUploadDetails legalRepDocumentUploadDetails = LegalRepDocumentUploadDetails.builder()
-            .legalRepDocuments(legalRepDocList).build();
+        List<LegalRepDocument> legalRepDocList = List.of(legalRepDocument);
 
         PCSCase pcsCase = PCSCase.builder()
-            .legalRepDocumentUploadDetails(legalRepDocumentUploadDetails)
             .build();
+
+        when(documentService.createLegalRepDocuments(pcsCase)).thenReturn(legalRepDocList);
 
         when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
 
@@ -217,16 +210,8 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
         callSubmitHandler(pcsCase);
 
         // Then
-        verify(pcsCaseEntity, times(1)).addDocuments(listCaptor.capture());
-
-        List<DocumentEntity> capturedDocumentList = listCaptor.getValue();
-        assertThat(capturedDocumentList).hasSize(1);
-
-        DocumentEntity documentEntity = capturedDocumentList.get(0);
-
-        assertThat(documentEntity.getUrl()).isEqualTo("test url");
-        assertThat(documentEntity.getFileName()).isEqualTo("test filename");
-        assertThat(documentEntity.getDescription()).isEqualTo(description);
+        verify(documentService, times(1))
+            .createDocumentEntitiesFromLegalRepDocuments(legalRepDocList,pcsCaseEntity);
     }
 
     @Test
@@ -238,18 +223,13 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
             .documentType(EvidenceDocumentType.PHOTOGRAPHIC_EVIDENCE)
             .build();
 
-        List<ListValue<LegalRepDocument>> legalRepDocList = List.of(ListValue.<LegalRepDocument>builder()
-                                                                        .value(legalRepDocument).build());
-
-        LegalRepDocumentUploadDetails legalRepDocumentUploadDetails = LegalRepDocumentUploadDetails.builder()
-            .legalRepDocuments(legalRepDocList)
-            .build();
+        List<LegalRepDocument> legalRepDocList = List.of(legalRepDocument);
 
         PCSCase pcsCase = PCSCase.builder()
-            .legalRepDocumentUploadDetails(legalRepDocumentUploadDetails)
             .build();
 
         when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+        when(documentService.createLegalRepDocuments(pcsCase)).thenReturn(legalRepDocList);
 
         SubmitResponse<State> submitResponse = callSubmitHandler(pcsCase);
 
@@ -259,8 +239,6 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
 
     @Test
     void shouldReturnErrorWhenLegalRepDocumentIsNull() {
-
-
         when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
 
         LegalRepDocument nullLegalRepDocument = null;
@@ -270,18 +248,13 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
             .documentType(EvidenceDocumentType.PHOTOGRAPHIC_EVIDENCE)
             .build();
 
-        List<ListValue<LegalRepDocument>> legalRepDocList = List.of(
-            ListValue.<LegalRepDocument>builder().value(nullLegalRepDocument).build(),
-            ListValue.<LegalRepDocument>builder().value(validLegalRepDocument).build()
-        );
-
-        LegalRepDocumentUploadDetails legalRepDocumentUploadDetails = LegalRepDocumentUploadDetails.builder()
-            .legalRepDocuments(legalRepDocList)
-            .build();
+        List<LegalRepDocument> legalRepDocList = Stream.of(nullLegalRepDocument,
+                                                           validLegalRepDocument).toList();
 
         PCSCase pcsCase = PCSCase.builder()
-            .legalRepDocumentUploadDetails(legalRepDocumentUploadDetails)
             .build();
+
+        when(documentService.createLegalRepDocuments(pcsCase)).thenReturn(legalRepDocList);
 
         SubmitResponse<State> submitResponse = callSubmitHandler(pcsCase);
 

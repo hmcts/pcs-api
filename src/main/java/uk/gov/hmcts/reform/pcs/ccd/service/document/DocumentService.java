@@ -21,6 +21,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.UploadedDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.EvidenceDocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.EvidenceOfDefendants;
+import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocument;
+import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocumentUploadDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -257,5 +259,34 @@ public class DocumentService {
         private Document document;
         private DocumentType type;
         private String description;
+    }
+
+
+    public List<LegalRepDocument> createLegalRepDocuments(
+        PCSCase pcsCase
+    ) {
+        LegalRepDocumentUploadDetails legalRepDocumentUploadDetails = pcsCase.getLegalRepDocumentUploadDetails();
+
+        return legalRepDocumentUploadDetails.getLegalRepDocuments().stream()
+            .map(ListValue::getValue).toList();
+    }
+
+    public void createDocumentEntitiesFromLegalRepDocuments(
+        List<LegalRepDocument> legalRepDocuments,
+        PcsCaseEntity pcsCaseEntity
+    ) {
+        List<DocumentEntity> documentEntities = legalRepDocuments.stream()
+            .map(legalRepDoc -> DocumentEntity.builder()
+                .pcsCase(pcsCaseEntity)
+                .url(legalRepDoc.getDocument().getUrl())
+                .fileName(legalRepDoc.getDocument().getFilename())
+                .binaryUrl(legalRepDoc.getDocument().getBinaryUrl())
+                .categoryId(legalRepDoc.getDocument().getCategoryId())
+                .description(legalRepDoc.getDescription())
+                .type(mapEvidenceDocumentTypeToDocumentType(legalRepDoc.getDocumentType()))
+                .build())
+            .toList();
+
+        pcsCaseEntity.addDocuments(documentEntities);
     }
 }

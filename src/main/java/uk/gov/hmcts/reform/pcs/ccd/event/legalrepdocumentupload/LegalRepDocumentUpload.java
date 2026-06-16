@@ -9,20 +9,17 @@ import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
-import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.EvidenceDocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocumentUploadDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.DocumentUploadCategory;
-import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.page.legalrepdocumentupload.LegalRepDocumentUploadConfigurer;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 
@@ -43,6 +40,7 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
 
     private final LegalRepDocumentUploadConfigurer legalRepDocumentUploadConfigurer;
     private final PcsCaseService pcsCaseService;
+    private final DocumentService documentService;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -138,12 +136,9 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
     SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
         Long caseReference = eventPayload.caseReference();
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
-
         PCSCase pcsCase = eventPayload.caseData();
-        LegalRepDocumentUploadDetails legalRepDocumentUploadDetails = pcsCase.getLegalRepDocumentUploadDetails();
 
-        List<LegalRepDocument> legalRepDocuments = legalRepDocumentUploadDetails.getLegalRepDocuments().stream()
-            .map(ListValue::getValue).toList();
+        List<LegalRepDocument> legalRepDocuments = documentService.createLegalRepDocuments(pcsCase);
 
         boolean isDocumentNull = legalRepDocuments.stream()
             .anyMatch(doc -> doc == null || doc.getDocument() == null);
@@ -152,19 +147,7 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
             return errorResponse("Your files were not submitted. Try again.");
         }
 
-        List<DocumentEntity> documentEntities = legalRepDocuments.stream()
-            .map(legalRepDoc -> DocumentEntity.builder()
-                .pcsCase(pcsCaseEntity)
-                .url(legalRepDoc.getDocument().getUrl())
-                .fileName(legalRepDoc.getDocument().getFilename())
-                .binaryUrl(legalRepDoc.getDocument().getBinaryUrl())
-                .categoryId(legalRepDoc.getDocument().getCategoryId())
-                .description(legalRepDoc.getDescription())
-                .type(mapEvidenceTypeToDocumentType(legalRepDoc.getDocumentType()))
-                .build())
-            .toList();
-
-        pcsCaseEntity.addDocuments(documentEntities);
+        documentService.createDocumentEntitiesFromLegalRepDocuments(legalRepDocuments,pcsCaseEntity);
 
         return SubmitResponse.<State>builder()
             .confirmationBody(getDocumentUploadedConfirmationMarkdown())
@@ -176,15 +159,6 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
         return SubmitResponse.<State>builder()
             .errors(List.of(message))
             .build();
-    }
-
-    private DocumentType mapEvidenceTypeToDocumentType(EvidenceDocumentType evidenceDocumentType) {
-        return switch (evidenceDocumentType) {
-            case PHOTOGRAPHIC_EVIDENCE -> DocumentType.PHOTOGRAPHIC_EVIDENCE;
-            case POLICE_REPORT -> DocumentType.POLICE_REPORT;
-            case WITNESS_STATEMENT -> DocumentType.WITNESS_STATEMENT;
-            case OTHER -> DocumentType.OTHER;
-        };
     }
 
     private static String getDocumentUploadedConfirmationMarkdown() {
