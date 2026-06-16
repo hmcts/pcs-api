@@ -4,6 +4,7 @@ import java.io.File;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
@@ -52,7 +53,7 @@ public class JudicialHistoryAuthorisationGenerator implements ConfigGenerator<PC
     private Map<String, Object> caseHistoryAuthorisation(String caseTypeId, AccessProfile role) {
         Map<String, Object> authorisation = JsonUtils.caseRow(caseTypeId);
         authorisation.put("CaseFieldID", CASE_HISTORY_FIELD);
-        authorisation.put("CRUD", Permission.toString(Permission.CRU));
+        authorisation.put("CRUD", Permission.toString(Set.of(Permission.R)));
         authorisation.put("UserRole", role.getRole());
         return authorisation;
     }

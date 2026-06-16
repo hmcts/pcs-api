@@ -47,7 +47,7 @@ class JudicialHistoryAuthorisationGeneratorTest {
             .anySatisfy(authorisation -> {
                 assertThat(authorisation).containsEntry("CaseFieldID", "caseHistory");
                 assertThat(authorisation).containsEntry("CaseTypeID", "PCS");
-                assertThat(authorisation).containsEntry("CRUD", "CRU");
+                assertThat(authorisation).containsEntry("CRUD", "R");
                 assertThat(authorisation).containsEntry("UserRole", role.getRole());
             });
     }
