@@ -109,9 +109,6 @@ public class HouseholdCircumstances {
     private YesOrNo universalCredit;
 
     @CCD
-    private YesOrNo hasAppliedForUniversalCredit;
-
-    @CCD
     private LocalDate ucApplicationDate;
 
     @CCD(typeOverride = FieldType.MoneyGBP)

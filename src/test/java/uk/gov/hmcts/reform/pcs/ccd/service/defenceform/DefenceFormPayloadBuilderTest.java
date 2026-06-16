@@ -318,7 +318,6 @@ class DefenceFormPayloadBuilderTest {
             HouseholdCircumstancesEntity household = HouseholdCircumstancesEntity.builder()
                 .shareIncomeExpenseDetails(VerticalYesNo.YES)
                 .universalCredit(VerticalYesNo.NO)
-                .hasAppliedForUniversalCredit(VerticalYesNo.YES)
                 .priorityDebts(VerticalYesNo.YES)
                 .debtTotal(new BigDecimal("300.00"))
                 .build();
@@ -342,48 +341,12 @@ class DefenceFormPayloadBuilderTest {
             assertThat(payload.isShowMoneyFromElsewhere()).isTrue();
             assertThat(payload.getMoneyFromElsewhereDetails()).isEqualTo("Cash gifts");
 
-            // UC is not a current income -> the "applied for UC?" question shows.
-            assertThat(payload.isShowAppliedForUniversalCredit()).isTrue();
-            assertThat(payload.getAppliedForUniversalCredit()).isEqualTo("Yes");
-
             assertThat(payload.isShowDebtDetails()).isTrue();
             assertThat(payload.getDebtTotal()).isEqualTo("£300.00");
 
             assertThat(payload.getExpenses()).hasSize(1);
             assertThat(payload.getExpenses().getFirst().getLabel()).isEqualTo("Other");
             assertThat(payload.getExpenses().getFirst().getAmount()).isEqualTo("£25.00");
-        }
-
-        @Test
-        void appliedForUniversalCreditQuestionHiddenWhenUcIsCurrentIncome() {
-            HouseholdCircumstancesEntity household = HouseholdCircumstancesEntity.builder()
-                .universalCredit(VerticalYesNo.YES)
-                .build();
-            DefendantResponseEntity response = response(LegislativeCountry.ENGLAND);
-            response.setHouseholdCircumstances(household);
-
-            assertThat(builder.build(response).isShowAppliedForUniversalCredit()).isFalse();
-        }
-
-        @Test
-        void appliedForUniversalCreditQuestionShownWhenUcNotReceived() {
-            HouseholdCircumstancesEntity household = HouseholdCircumstancesEntity.builder()
-                .universalCredit(VerticalYesNo.NO)
-                .build();
-            DefendantResponseEntity response = response(LegislativeCountry.ENGLAND);
-            response.setHouseholdCircumstances(household);
-
-            assertThat(builder.build(response).isShowAppliedForUniversalCredit()).isTrue();
-        }
-
-        @Test
-        void appliedForUniversalCreditQuestionHiddenWhenUcUnanswered() {
-            HouseholdCircumstancesEntity household = HouseholdCircumstancesEntity.builder().build();
-            DefendantResponseEntity response = response(LegislativeCountry.ENGLAND);
-            response.setHouseholdCircumstances(household);
-
-            // null UC answer must not show the follow-up question (was a bug: !isYes(null) == true).
-            assertThat(builder.build(response).isShowAppliedForUniversalCredit()).isFalse();
         }
 
         @Test

@@ -232,8 +232,6 @@ public class DefenceFormPayloadBuilder {
         payload.showIncomeExpenseSection(isYes(household.getShareIncomeExpenseDetails()));
         mapRegularIncome(household.getRegularIncomeEntity(), payload);
 
-        payload.showAppliedForUniversalCredit(isNo(household.getUniversalCredit()));
-        payload.appliedForUniversalCredit(toLabel(household.getHasAppliedForUniversalCredit()));
         payload.showUcApplicationDate(household.getUcApplicationDate() != null);
         payload.ucApplicationDate(formatLongDate(household.getUcApplicationDate()));
 
