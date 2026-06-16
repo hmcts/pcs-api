@@ -46,7 +46,7 @@ public class RentArrearsView {
 
     private static List<ListValue<Document>> getRentStatement(PcsCaseEntity pcsCaseEntity) {
         if (pcsCaseEntity.getDocuments().isEmpty()) {
-            return null;
+            return List.of();
         }
 
         return pcsCaseEntity.getDocuments().stream()
@@ -61,6 +61,7 @@ public class RentArrearsView {
 
     private static ListValue<Document> toDocument(DocumentEntity documentEntity) {
         return ListValue.<Document>builder()
+            .id(documentEntity.getId().toString())
             .value(
                 Document.builder()
                     .url(documentEntity.getUrl())

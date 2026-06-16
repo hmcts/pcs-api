@@ -2,8 +2,7 @@ import { test } from '@utils/test-fixtures';
 import {
   initializeExecutor,
   performAction,
-  performValidation,
-  performValidations
+  performValidation
 } from '@utils/controller';
 import {
   addressCheckYourAnswers,
@@ -41,7 +40,8 @@ import {
   exemptLandlord,
   occupationLicenceDetailsWales,
   prohibitedConductWales,
-  underlesseeMortgageeDetails
+  underlesseeMortgageeDetails,
+  uploadRequiredDocumentsWales
 } from '@data/page-data-figma';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
 import { caseNumber } from '@utils/actions/custom-actions/createCase.action';
@@ -152,6 +152,30 @@ test.describe('[Create Case - Wales] @nightly', async () => {
     await performAction('selectUnderlesseeOrMortgageeEntitledToClaim', {
       question: underlesseeMortgageeEntitledToClaimRelief.isThereAnUnderlesseeQuestion,
       option: underlesseeMortgageeEntitledToClaimRelief.noRadioOption});
+    await performValidation('mainHeader', uploadRequiredDocumentsWales.mainHeader);
+    await performAction('requiredDocumentsUpload',{
+      question: uploadRequiredDocumentsWales.uploadEnergyPerformanceQuestion,
+      option: uploadRequiredDocumentsWales.yesRadioOption,
+      label: uploadRequiredDocumentsWales.energyPerformanceHiddenTextLabel,
+      input: uploadRequiredDocumentsWales.energyPerformanceTextInput,
+      file: ['noticeForService.pdf'],
+    })
+    await performAction('requiredDocumentsUpload',{
+      question: uploadRequiredDocumentsWales.uploadCurrentGasReportQuestion,
+      option: uploadRequiredDocumentsWales.noRadioOption,
+      label: uploadRequiredDocumentsWales.currentGasHiddenTextLabel,
+      input: uploadRequiredDocumentsWales.currentGasTextInput,
+      file: ['certificateOfService.pdf'],
+    })
+    await performAction('requiredDocumentsUpload',{
+      question: uploadRequiredDocumentsWales.uploadEICRQuestion,
+      option: uploadRequiredDocumentsWales.noRadioOption,
+      label: uploadRequiredDocumentsWales.currentEICRHiddenTextLabel,
+      input: uploadRequiredDocumentsWales.currentEICRTextInput,
+      file: ['inspectionOrReport.pdf'],
+    })
+    await performAction('clickButton', uploadRequiredDocumentsWales.continueButton);
+    await performValidation('mainHeader', wantToUploadDocuments.mainHeader);
     await performAction('wantToUploadDocuments', {
       question: wantToUploadDocuments.uploadAnyAdditionalDocumentsQuestion,
       option: wantToUploadDocuments.noRadioOption
@@ -264,6 +288,30 @@ test.describe('[Create Case - Wales] @nightly', async () => {
     await performAction('selectUnderlesseeOrMortgageeEntitledToClaim', {
       question: underlesseeMortgageeEntitledToClaimRelief.isThereAnUnderlesseeQuestion,
       option: underlesseeMortgageeEntitledToClaimRelief.noRadioOption});
+    await performValidation('mainHeader', uploadRequiredDocumentsWales.mainHeader);
+    await performAction('requiredDocumentsUpload',{
+      question: uploadRequiredDocumentsWales.uploadEnergyPerformanceQuestion,
+      option: uploadRequiredDocumentsWales.noRadioOption,
+      label: uploadRequiredDocumentsWales.energyPerformanceHiddenTextLabel,
+      input: uploadRequiredDocumentsWales.energyPerformanceTextInput,
+      file: ['noticeForService.pdf'],
+    })
+    await performAction('requiredDocumentsUpload',{
+      question: uploadRequiredDocumentsWales.uploadCurrentGasReportQuestion,
+      option: uploadRequiredDocumentsWales.noRadioOption,
+      label: uploadRequiredDocumentsWales.currentGasHiddenTextLabel,
+      input: uploadRequiredDocumentsWales.currentGasTextInput,
+      file: ['certificateOfService.pdf'],
+    })
+    await performAction('requiredDocumentsUpload',{
+      question: uploadRequiredDocumentsWales.uploadEICRQuestion,
+      option: uploadRequiredDocumentsWales.noRadioOption,
+      label: uploadRequiredDocumentsWales.currentEICRHiddenTextLabel,
+      input: uploadRequiredDocumentsWales.currentEICRTextInput,
+      file: ['inspectionOrReport.pdf'],
+    })
+    await performAction('clickButton', uploadRequiredDocumentsWales.continueButton);
+    await performValidation('mainHeader', wantToUploadDocuments.mainHeader);
     await performAction('wantToUploadDocuments', {
       question: wantToUploadDocuments.uploadAnyAdditionalDocumentsQuestion,
       option: wantToUploadDocuments.noRadioOption
@@ -373,6 +421,30 @@ test.describe('[Create Case - Wales] @nightly', async () => {
     await performAction('selectUnderlesseeOrMortgageeEntitledToClaim', {
       question: underlesseeMortgageeEntitledToClaimRelief.isThereAnUnderlesseeQuestion,
       option: underlesseeMortgageeEntitledToClaimRelief.noRadioOption});
+    await performValidation('mainHeader', uploadRequiredDocumentsWales.mainHeader);
+    await performAction('requiredDocumentsUpload',{
+      question: uploadRequiredDocumentsWales.uploadEnergyPerformanceQuestion,
+      option: uploadRequiredDocumentsWales.noRadioOption,
+      label: uploadRequiredDocumentsWales.energyPerformanceHiddenTextLabel,
+      input: uploadRequiredDocumentsWales.energyPerformanceTextInput,
+      file: ['noticeForService.pdf'],
+    })
+    await performAction('requiredDocumentsUpload',{
+      question: uploadRequiredDocumentsWales.uploadCurrentGasReportQuestion,
+      option: uploadRequiredDocumentsWales.noRadioOption,
+      label: uploadRequiredDocumentsWales.currentGasHiddenTextLabel,
+      input: uploadRequiredDocumentsWales.currentGasTextInput,
+      file: ['certificateOfService.pdf'],
+    })
+    await performAction('requiredDocumentsUpload',{
+      question: uploadRequiredDocumentsWales.uploadEICRQuestion,
+      option: uploadRequiredDocumentsWales.noRadioOption,
+      label: uploadRequiredDocumentsWales.currentEICRHiddenTextLabel,
+      input: uploadRequiredDocumentsWales.currentEICRTextInput,
+      file: ['inspectionOrReport.pdf'],
+    })
+    await performAction('clickButton', uploadRequiredDocumentsWales.continueButton);
+    await performValidation('mainHeader', wantToUploadDocuments.mainHeader);
     await performAction('wantToUploadDocuments', {
       question: wantToUploadDocuments.uploadAnyAdditionalDocumentsQuestion,
       option: wantToUploadDocuments.noRadioOption
@@ -472,6 +544,30 @@ test.describe('[Create Case - Wales] @nightly', async () => {
     await performAction('selectUnderlesseeOrMortgageeEntitledToClaim', {
       question: underlesseeMortgageeEntitledToClaimRelief.isThereAnUnderlesseeQuestion,
       option: underlesseeMortgageeEntitledToClaimRelief.noRadioOption});
+    await performValidation('mainHeader', uploadRequiredDocumentsWales.mainHeader);
+    await performAction('requiredDocumentsUpload',{
+      question: uploadRequiredDocumentsWales.uploadEnergyPerformanceQuestion,
+      option: uploadRequiredDocumentsWales.noRadioOption,
+      label: uploadRequiredDocumentsWales.energyPerformanceHiddenTextLabel,
+      input: uploadRequiredDocumentsWales.energyPerformanceTextInput,
+      file: ['noticeForService.pdf'],
+    })
+    await performAction('requiredDocumentsUpload',{
+      question: uploadRequiredDocumentsWales.uploadCurrentGasReportQuestion,
+      option: uploadRequiredDocumentsWales.noRadioOption,
+      label: uploadRequiredDocumentsWales.currentGasHiddenTextLabel,
+      input: uploadRequiredDocumentsWales.currentGasTextInput,
+      file: ['certificateOfService.pdf'],
+    })
+    await performAction('requiredDocumentsUpload',{
+      question: uploadRequiredDocumentsWales.uploadEICRQuestion,
+      option: uploadRequiredDocumentsWales.noRadioOption,
+      label: uploadRequiredDocumentsWales.currentEICRHiddenTextLabel,
+      input: uploadRequiredDocumentsWales.currentEICRTextInput,
+      file: ['inspectionOrReport.pdf'],
+    })
+    await performAction('clickButton', uploadRequiredDocumentsWales.continueButton);
+    await performValidation('mainHeader', wantToUploadDocuments.mainHeader);
     await performAction('wantToUploadDocuments', {
       question: wantToUploadDocuments.uploadAnyAdditionalDocumentsQuestion,
       option: wantToUploadDocuments.noRadioOption
@@ -587,6 +683,30 @@ test.describe('[Create Case - Wales] @nightly', async () => {
       name2Option: underlesseeMortgageeDetails.noRadioOption,
       correspondenceAddress2Option: underlesseeMortgageeDetails.noRadioOption,
     });
+    await performValidation('mainHeader', uploadRequiredDocumentsWales.mainHeader);
+    await performAction('requiredDocumentsUpload',{
+      question: uploadRequiredDocumentsWales.uploadEnergyPerformanceQuestion,
+      option: uploadRequiredDocumentsWales.noRadioOption,
+      label: uploadRequiredDocumentsWales.energyPerformanceHiddenTextLabel,
+      input: uploadRequiredDocumentsWales.energyPerformanceTextInput,
+      file: ['noticeForService.pdf'],
+    })
+    await performAction('requiredDocumentsUpload',{
+      question: uploadRequiredDocumentsWales.uploadCurrentGasReportQuestion,
+      option: uploadRequiredDocumentsWales.noRadioOption,
+      label: uploadRequiredDocumentsWales.currentGasHiddenTextLabel,
+      input: uploadRequiredDocumentsWales.currentGasTextInput,
+      file: ['certificateOfService.pdf'],
+    })
+    await performAction('requiredDocumentsUpload',{
+      question: uploadRequiredDocumentsWales.uploadEICRQuestion,
+      option: uploadRequiredDocumentsWales.noRadioOption,
+      label: uploadRequiredDocumentsWales.currentEICRHiddenTextLabel,
+      input: uploadRequiredDocumentsWales.currentEICRTextInput,
+      file: ['inspectionOrReport.pdf'],
+    })
+    await performAction('clickButton', uploadRequiredDocumentsWales.continueButton);
+    await performValidation('mainHeader', wantToUploadDocuments.mainHeader);
     await performAction('wantToUploadDocuments', {
       question: wantToUploadDocuments.uploadAnyAdditionalDocumentsQuestion,
       option: wantToUploadDocuments.noRadioOption
@@ -689,6 +809,30 @@ test.describe('[Create Case - Wales] @nightly', async () => {
       name2Option: underlesseeMortgageeDetails.noRadioOption,
       correspondenceAddress2Option: underlesseeMortgageeDetails.noRadioOption,
     });
+    await performValidation('mainHeader', uploadRequiredDocumentsWales.mainHeader);
+    await performAction('requiredDocumentsUpload',{
+      question: uploadRequiredDocumentsWales.uploadEnergyPerformanceQuestion,
+      option: uploadRequiredDocumentsWales.noRadioOption,
+      label: uploadRequiredDocumentsWales.energyPerformanceHiddenTextLabel,
+      input: uploadRequiredDocumentsWales.energyPerformanceTextInput,
+      file: ['noticeForService.pdf'],
+    })
+    await performAction('requiredDocumentsUpload',{
+      question: uploadRequiredDocumentsWales.uploadCurrentGasReportQuestion,
+      option: uploadRequiredDocumentsWales.noRadioOption,
+      label: uploadRequiredDocumentsWales.currentGasHiddenTextLabel,
+      input: uploadRequiredDocumentsWales.currentGasTextInput,
+      file: ['certificateOfService.pdf'],
+    })
+    await performAction('requiredDocumentsUpload',{
+      question: uploadRequiredDocumentsWales.uploadEICRQuestion,
+      option: uploadRequiredDocumentsWales.noRadioOption,
+      label: uploadRequiredDocumentsWales.currentEICRHiddenTextLabel,
+      input: uploadRequiredDocumentsWales.currentEICRTextInput,
+      file: ['inspectionOrReport.pdf'],
+    })
+    await performAction('clickButton', uploadRequiredDocumentsWales.continueButton);
+    await performValidation('mainHeader', wantToUploadDocuments.mainHeader);
     await performAction('wantToUploadDocuments', {
       question: wantToUploadDocuments.uploadAnyAdditionalDocumentsQuestion,
       option: wantToUploadDocuments.noRadioOption
@@ -795,6 +939,30 @@ test.describe('[Create Case - Wales] @nightly', async () => {
       name2Option: underlesseeMortgageeDetails.noRadioOption,
       correspondenceAddress2Option: underlesseeMortgageeDetails.noRadioOption,
     });
+    await performValidation('mainHeader', uploadRequiredDocumentsWales.mainHeader);
+    await performAction('requiredDocumentsUpload',{
+      question: uploadRequiredDocumentsWales.uploadEnergyPerformanceQuestion,
+      option: uploadRequiredDocumentsWales.noRadioOption,
+      label: uploadRequiredDocumentsWales.energyPerformanceHiddenTextLabel,
+      input: uploadRequiredDocumentsWales.energyPerformanceTextInput,
+      file: ['noticeForService.pdf'],
+    })
+    await performAction('requiredDocumentsUpload',{
+      question: uploadRequiredDocumentsWales.uploadCurrentGasReportQuestion,
+      option: uploadRequiredDocumentsWales.noRadioOption,
+      label: uploadRequiredDocumentsWales.currentGasHiddenTextLabel,
+      input: uploadRequiredDocumentsWales.currentGasTextInput,
+      file: ['certificateOfService.pdf'],
+    })
+    await performAction('requiredDocumentsUpload',{
+      question: uploadRequiredDocumentsWales.uploadEICRQuestion,
+      option: uploadRequiredDocumentsWales.noRadioOption,
+      label: uploadRequiredDocumentsWales.currentEICRHiddenTextLabel,
+      input: uploadRequiredDocumentsWales.currentEICRTextInput,
+      file: ['inspectionOrReport.pdf'],
+    })
+    await performAction('clickButton', uploadRequiredDocumentsWales.continueButton);
+    await performValidation('mainHeader', wantToUploadDocuments.mainHeader);
     await performAction('wantToUploadDocuments', {
       question: wantToUploadDocuments.uploadAnyAdditionalDocumentsQuestion,
       option: wantToUploadDocuments.noRadioOption
