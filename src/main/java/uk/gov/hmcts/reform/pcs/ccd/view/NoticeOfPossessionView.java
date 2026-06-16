@@ -85,7 +85,7 @@ public class NoticeOfPossessionView {
 
     private static List<ListValue<Document>> getNoticeStatement(PcsCaseEntity pcsCaseEntity) {
         if (pcsCaseEntity.getDocuments().isEmpty()) {
-            return null;
+            return List.of();
         }
 
         return pcsCaseEntity.getDocuments().stream()
@@ -95,7 +95,7 @@ public class NoticeOfPossessionView {
     }
 
     private static boolean isNoticeStatement(DocumentEntity documentEntity) {
-        return documentEntity.getType() == DocumentType.NOTICE_FOR_SERVICE_OUT_OF_JURISDICTION;
+        return documentEntity.getType() == DocumentType.POSSESSION_NOTICE;
     }
 
     private static ListValue<Document> toDocument(DocumentEntity documentEntity) {

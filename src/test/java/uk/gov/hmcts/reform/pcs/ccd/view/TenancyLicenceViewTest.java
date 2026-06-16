@@ -81,7 +81,7 @@ class TenancyLicenceViewTest {
             List.of(
                 DocumentEntity.builder()
                     .id(tenancyLicenceDocumentId)
-                    .type(DocumentType.TENANCY_LICENCE)
+                    .type(DocumentType.TENANCY_AGREEMENT)
                     .build()
             )
         );

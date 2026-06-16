@@ -78,7 +78,7 @@ public class TenancyLicenceView {
     }
 
     private static boolean isTenancyLicence(DocumentEntity documentEntity) {
-        return documentEntity.getType() == DocumentType.TENANCY_LICENCE;
+        return documentEntity.getType() == DocumentType.TENANCY_AGREEMENT;
     }
 
     private static List<ListValue<Document>> getOccupationLicenceDocument(PcsCaseEntity pcsCaseEntity) {

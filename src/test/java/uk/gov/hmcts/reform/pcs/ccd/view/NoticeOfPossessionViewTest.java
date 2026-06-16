@@ -142,7 +142,9 @@ class NoticeOfPossessionViewTest {
 
         assertThat(noticeServedDetails)
             .usingRecursiveComparison()
-            .isEqualTo(NoticeServedDetails.builder().build());
+            .isEqualTo(NoticeServedDetails.builder()
+                    .noticeDocuments(List.of())
+                    .build());
     }
 
     @Test
@@ -278,7 +280,7 @@ class NoticeOfPossessionViewTest {
             List.of(
                 DocumentEntity.builder()
                     .id(noticeDocumentId)
-                    .type(DocumentType.NOTICE_FOR_SERVICE_OUT_OF_JURISDICTION)
+                    .type(DocumentType.POSSESSION_NOTICE)
                     .build()
             )
         );
