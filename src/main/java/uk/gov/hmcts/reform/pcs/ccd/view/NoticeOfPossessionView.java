@@ -100,6 +100,7 @@ public class NoticeOfPossessionView {
 
     private static ListValue<Document> toDocument(DocumentEntity documentEntity) {
         return ListValue.<Document>builder()
+            .id(documentEntity.getId().toString())
             .value(
                 Document.builder()
                     .url(documentEntity.getUrl())

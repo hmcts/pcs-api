@@ -13,6 +13,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.AdditionalDefendantInforma
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.ClaimantInformationTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.DefendantInformationTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.GroundsForPossessionTabDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.OccupationContractOrLicenceTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.ReasonsForPossessionTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.RentArrearsTabDetails;
 
@@ -87,4 +88,19 @@ public class CaseDetailsTab {
 
     @CCD(label = "Suspension of right to buy claim")
     private SuspensionOfRightToBuyTabDetails suspensionOfRightToBuyDetails;
+
+    @CCD(label = "Occupation contract or licence details")
+    private OccupationContractOrLicenceTabDetails occupationContractLicenceDetails;
+
+    @CCD(label = "Antisocial behaviour and illegal or prohibited conduct")
+    private AntisocialAndConductTabDetails antisocialAndConductDetails;
+
+    @CCD(label = "Claimant registration and licensing")
+    private ClaimantRegistrationAndLicensingTabDetails claimantRegistrationAndLicensingDetails;
+
+    @CCD(label = "Prohibited conduct standard contract claim")
+    private ProhibitedConductStandardContractTabDetails prohibitedConductStandardContractDetails;
+
+    @CCD(label = "Required documents")
+    private RequiredDocumentsTabDetails requiredDocumentsDetails;
 }

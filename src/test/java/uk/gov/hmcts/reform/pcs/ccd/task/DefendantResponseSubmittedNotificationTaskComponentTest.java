@@ -73,6 +73,7 @@ class DefendantResponseSubmittedNotificationTaskComponentTest {
 
         assertThat(completionHandler).isInstanceOf(CompletionHandler.OnCompleteRemove.class);
         verify(defendantResponseNotificationService).sendEmailNotificationForNoCounterClaim(defendantResponseId);
+        verify(defendantResponseNotificationService).sendDefendantResponseReceived(defendantResponseId);
     }
 
     @Test
