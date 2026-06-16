@@ -30,11 +30,9 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
     private static final String JURISDICTION_NAME = "Civil Possession";
     private static final String JURISDICTION_DESCRIPTION = "Civil Possession Jurisdiction";
     static final AccessProfile[] PARTY_VISIBLE_TAB_ROLES = {
-        AccessProfile.CREATOR,
         AccessProfile.CITIZEN,
         AccessProfile.DEFENDANT,
-        AccessProfile.CLAIMANT_SOLICITOR,
-        AccessProfile.DEFENDANT_SOLICITOR,
+        AccessProfile.PCS_SOLICITOR,
         AccessProfile.JUDGE,
         AccessProfile.FEE_PAID_JUDGE,
         AccessProfile.CIRCUIT_JUDGE,
