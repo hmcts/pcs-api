@@ -130,10 +130,7 @@ public class DefendantResponseService {
                           caseReference, userId)
         );
 
-        // Citizen path only: legal-rep submissions (the overload below) are out of scope for the
-        // defence form, so they must not trigger generation. Schedule after the response commits so
-        // the generation task can never fire against a rolled-back response (the scheduler insert
-        // commits on its own connection, outside this transaction).
+        // Citizen path only. Schedule after commit so generation can't run against a rolled-back response.
         UUID defendantResponseId = savedResponse.getId();
         UUID defendantPartyId = savedResponse.getParty().getId();
         scheduleAfterCommit(() -> defenceFormScheduler.scheduleDefenceFormGeneration(
@@ -272,7 +269,7 @@ public class DefendantResponseService {
             .otherConsiderationsDetails(responses.getOtherConsiderationsDetails())
             .build();
 
-        //set bidirectional relationship with the pcs case
+        // link back to the case
         claimRef.getPcsCase().addDefendantResponse(defendantResponse);
 
         return defendantResponse;

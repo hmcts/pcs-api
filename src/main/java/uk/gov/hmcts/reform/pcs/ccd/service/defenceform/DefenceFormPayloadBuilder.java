@@ -306,8 +306,7 @@ public class DefenceFormPayloadBuilder {
         return assertion == null ? null : assertion.getAssertedValue();
     }
 
-    // The responding defendant is always named, so this never falls back to "Persons unknown":
-    // it uses the disputed name assertion when present, else the claim's party name.
+    // disputed name assertion if present, else the claim's party name
     private String resolveDefendantName(PartyEntity defendant,
                                         Map<PartyAttributeType, PartyAttributeAssertationEntity> assertions) {
         String assertedName = assertedValue(assertions, PartyAttributeType.DEFENDANT_NAME);
@@ -325,9 +324,7 @@ public class DefenceFormPayloadBuilder {
         return displayName(defendant);
     }
 
-    // Precedence: the defendant's disputed correspondence-address assertion (when they changed it),
-    // else the party address (claimant-typed), else the property address (defendant was same-as-property,
-    // so the party has no address of its own) - mirrors the claim form's pickAddressOrFallback.
+    // disputed address assertion, else the party address, else the property address (same-as-property defendant)
     private ClaimFormAddress resolveDefendantAddress(
         PartyEntity defendant, Map<PartyAttributeType, PartyAttributeAssertationEntity> assertions,
         AddressEntity propertyAddress) {
@@ -368,8 +365,7 @@ public class DefenceFormPayloadBuilder {
         return value == null || value.isNull() ? null : value.asText();
     }
 
-    // Defence-form row labels follow Cook's design template wording (1st preference) then the FE
-    // check-your-answers wording — fuller than the shared IncomeType/RegularExpenseType enum labels.
+    // Defence-form wording (Cook's design), fuller than the shared IncomeType/RegularExpenseType labels.
     private static String incomeLabel(IncomeType type) {
         return switch (type) {
             case INCOME_FROM_JOBS -> "Income from all jobs you do";

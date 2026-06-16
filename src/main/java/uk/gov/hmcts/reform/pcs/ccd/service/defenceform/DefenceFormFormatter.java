@@ -72,8 +72,7 @@ final class DefenceFormFormatter {
         return formatLongDate(LocalDate.parse(isoDate));
     }
 
-    // The payment-agreement frequency is stored as the raw FE value rather than RecurrenceFrequency,
-    // so map its four known values to display labels.
+    // Payment-agreement frequency is the raw FE value, not RecurrenceFrequency - map the known ones.
     static String formatAdditionalContributionFrequency(String rawFrequency) {
         if (!isPopulated(rawFrequency)) {
             return null;
@@ -84,7 +83,7 @@ final class DefenceFormFormatter {
             case "every4Weeks" -> "Every 4 weeks";
             case "monthly" -> "Monthly";
             default -> {
-                // Don't leak an unmapped internal FE token onto the rendered form; hide it and flag it.
+                // unknown value - render blank rather than leak the raw token
                 log.warn("Unmapped instalment contribution frequency '{}'; rendering blank", rawFrequency);
                 yield null;
             }

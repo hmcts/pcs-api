@@ -73,9 +73,8 @@ public class DefenceFormGenerationComponent {
                               executionContext.getExecution().consecutiveFailures + 1,
                               maxRetries,
                               e);
-                    // Runs after generateAndAttach's transaction has rolled back; logGenerationFailure
-                    // uses REQUIRES_NEW so its row survives. Guarded (incl. a defensive re-parse of the
-                    // case reference) so a logging error can't mask the original failure or break the retry.
+                    // logGenerationFailure is REQUIRES_NEW so its row survives the rollback; guard it
+                    // so a logging error can't mask the real failure or break the retry.
                     try {
                         long caseReference = Long.parseLong(data.getCaseReference());
                         claimActivityLogService.logGenerationFailure(caseReference, data.getDefendantPartyId());
