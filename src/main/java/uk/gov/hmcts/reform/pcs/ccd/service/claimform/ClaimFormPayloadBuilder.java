@@ -17,20 +17,18 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.claim.NoticeOfPossessionEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.PossessionAlternativesEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.RentArrearsEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.StatementOfTruthEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseReferenceFormatter;
+import uk.gov.hmcts.reform.pcs.ccd.service.form.PartyDisplayMapper;
 import uk.gov.hmcts.reform.pcs.document.model.claimform.ClaimFormPayload;
 import uk.gov.hmcts.reform.pcs.document.model.claimform.ClaimFormGround;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -500,14 +498,7 @@ public class ClaimFormPayloadBuilder {
     }
 
     private List<PartyEntity> partiesByRole(ClaimEntity claim, PartyRole role) {
-        if (claim.getClaimParties() == null) {
-            return List.of();
-        }
-        List<ClaimPartyEntity> filtered = new ArrayList<>(claim.getClaimParties().stream()
-            .filter(cp -> cp.getRole() == role)
-            .toList());
-        filtered.sort(Comparator.comparingInt(ClaimPartyEntity::getRank));
-        return filtered.stream().map(ClaimPartyEntity::getParty).toList();
+        return PartyDisplayMapper.partiesByRole(claim, role);
     }
 
 }
