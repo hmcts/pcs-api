@@ -176,37 +176,29 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         pcsCase.setCaseTitleMarkdown(caseTitleService.buildCaseTitle(pcsCase));
 
         if (hasUnsubmittedCaseData) {
-            pcsCase.setNextStepsMarkdown("""
+            pcsCase.setNextStepsIntroMarkdown("""
                                              <h2 class="govuk-heading-m">Resume claim</h2>
-                                             You've already answered some questions about this claim.
-                                             <br>
-                                             <br>
-                                             <a href="/cases/case-details/${[CASE_REFERENCE]}/trigger/%s"
-                                                role="button"
-                                                class="govuk-button govuk-link govuk-link--no-visited-state">
-                                               Continue
-                                             </a>
-                                             <p class="govuk-body govuk-!-font-size-19">
-                                             <span><a class="govuk-link--no-visited-state" href="/cases">Cancel</a></span>
-                                             </p>
-                                             """.formatted(resumePossessionClaim));
+                                             You've already answered some questions about this claim.""");
         } else {
-            pcsCase.setNextStepsMarkdown("""
+            pcsCase.setNextStepsIntroMarkdown("""
                                              <h2 class="govuk-heading-m">Provide more details about your claim</h2>
                                              Your answers will be saved from this point so you can return to your draft
-                                             later.
-                                             <br>
-                                             <br>
+                                             later.""");
+        }
+
+        // The case reference in the link is resolved by the UI after translation, so the Continue button is
+        // kept in its own field/label to isolate the dynamic value from the surrounding translatable text.
+        pcsCase.setNextStepsButtonMarkdown("""
                                              <a href="/cases/case-details/${[CASE_REFERENCE]}/trigger/%s"
                                                 role="button"
                                                 class="govuk-button govuk-link govuk-link--no-visited-state">
                                                Continue
-                                             </a>
+                                             </a>""".formatted(resumePossessionClaim));
+
+        pcsCase.setNextStepsCancelMarkdown("""
                                              <p class="govuk-body govuk-!-font-size-19">
                                              <span><a class="govuk-link--no-visited-state" href="/cases">Cancel</a></span>
-                                             </p>
-                                             """.formatted(resumePossessionClaim));
-        }
+                                             </p>""");
     }
 
     private Optional<PartyEntity> findPartyForCurrentUser(PcsCaseEntity pcsCaseEntity) {

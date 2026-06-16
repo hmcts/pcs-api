@@ -353,7 +353,13 @@ public class PCSCase {
     private TenancyLicenceDetails tenancyLicenceDetails;
 
     @CCD(searchable = false)
-    private String nextStepsMarkdown;
+    private String nextStepsIntroMarkdown;
+
+    @CCD(searchable = false)
+    private String nextStepsButtonMarkdown;
+
+    @CCD(searchable = false)
+    private String nextStepsCancelMarkdown;
 
     @JsonUnwrapped(prefix = "rentArrears_")
     @CCD

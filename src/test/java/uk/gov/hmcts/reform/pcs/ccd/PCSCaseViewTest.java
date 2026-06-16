@@ -304,7 +304,7 @@ class PCSCaseViewTest {
         verify(draftCaseDataService).getUnsubmittedCaseData(CASE_REFERENCE, resumePossessionClaim);
         verify(caseTabView).setDraftCaseTabFields(pcsCase, draftCaseData);
         verify(caseTabView, never()).setCaseTabFields(any(PCSCase.class));
-        assertThat(pcsCase.getNextStepsMarkdown()).contains("Resume claim");
+        assertThat(pcsCase.getNextStepsIntroMarkdown()).contains("Resume claim");
     }
 
     @Test
@@ -323,7 +323,7 @@ class PCSCaseViewTest {
         verify(draftCaseDataService).getUnsubmittedCaseData(CASE_REFERENCE, resumePossessionClaim);
         verify(caseTabView, never()).setDraftCaseTabFields(any(PCSCase.class), any(PCSCase.class));
         verify(caseTabView).setCaseTabFields(pcsCase);
-        assertThat(pcsCase.getNextStepsMarkdown()).contains("Resume claim");
+        assertThat(pcsCase.getNextStepsIntroMarkdown()).contains("Resume claim");
     }
 
     @Test

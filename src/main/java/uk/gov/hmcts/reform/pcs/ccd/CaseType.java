@@ -74,8 +74,12 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
 
         builder.tab("nextSteps", "Next steps")
             .showCondition(ShowConditions.stateEquals(AWAITING_SUBMISSION_TO_HMCTS))
-            .label("nextStepsMarkdownLabel", null, "${nextStepsMarkdown}")
-            .field("nextStepsMarkdown", NEVER_SHOW);
+            .label("nextStepsIntroLabel", null, "${nextStepsIntroMarkdown}")
+            .label("nextStepsButtonLabel", null, "${nextStepsButtonMarkdown}")
+            .label("nextStepsCancelLabel", null, "${nextStepsCancelMarkdown}")
+            .field("nextStepsIntroMarkdown", NEVER_SHOW)
+            .field("nextStepsButtonMarkdown", NEVER_SHOW)
+            .field("nextStepsCancelMarkdown", NEVER_SHOW);
 
         buildCasePartiesTab(builder);
 

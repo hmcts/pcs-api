@@ -111,7 +111,8 @@ class CaseTypeTest {
 
 
         // Then
-        assertThat(nextStepsTab.getFields()).extracting(TabField::getId).contains("nextStepsMarkdown");
+        assertThat(nextStepsTab.getFields()).extracting(TabField::getId)
+            .contains("nextStepsIntroMarkdown", "nextStepsButtonMarkdown", "nextStepsCancelMarkdown");
         assertThat(summaryTab.getFields()).extracting(TabField::getId).contains("confirmEvictionSummaryMarkup");
         assertThat(caseHistoryTab.getFields()).extracting(TabField::getId).contains("caseHistory");
         assertThat(hiddenTab.getFields().size()).isEqualTo(2);
