@@ -22,9 +22,11 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.EvidenceDocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.EvidenceOfDefendants;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.WalesDocuments;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DocumentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
@@ -81,6 +83,21 @@ public class DocumentService {
             Optional.ofNullable(pcsCase.getNoticeServedDetails())
                     .map(NoticeServedDetails::getNoticeDocuments)
                     .orElse(null), DocumentType.NOTICE_FOR_SERVICE_OUT_OF_JURISDICTION));
+
+        allDocuments.addAll(mapDocumentsWithType(
+            Optional.ofNullable(pcsCase.getRequiredDocumentsWales())
+                .map(WalesDocuments::getEnergyPerformance)
+                .orElse(null), DocumentType.ENERGY_PERFORMANCE_CERTIFICATE));
+
+        allDocuments.addAll(mapDocumentsWithType(
+            Optional.ofNullable(pcsCase.getRequiredDocumentsWales())
+                .map(WalesDocuments::getGasSafetyReport)
+                .orElse(null), DocumentType.GAS_SAFETY_REPORT));
+
+        allDocuments.addAll(mapDocumentsWithType(
+            Optional.ofNullable(pcsCase.getRequiredDocumentsWales())
+                .map(WalesDocuments::getElectricalInstallation)
+                .orElse(null), DocumentType.ELECTRICAL_INSTALLATION_CONDITION));
 
         return allDocuments;
     }
@@ -215,6 +232,40 @@ public class DocumentService {
         return saved;
     }
 
+    public List<DocumentEntity> createCounterClaimUploadedDocuments(
+        List<ListValue<UploadedDocument>> counterClaimDocuments,
+        CounterClaimEntity counterClaim,
+        PcsCaseEntity pcsCase,
+        PartyEntity party
+    ) {
+        if (CollectionUtils.isEmpty(counterClaimDocuments)) {
+            log.info("No counter claim documents to save");
+            return Collections.emptyList();
+        }
+
+        List<DocumentEntity> documentEntities = counterClaimDocuments.stream()
+            .map(ListValue::getValue)
+            .filter(Objects::nonNull)
+            .map(ccDoc -> DocumentEntity.builder()
+                .pcsCase(pcsCase)
+                .party(party)
+                .counterClaim(counterClaim)
+                .url(ccDoc.getDocument().getUrl())
+                .fileName(ccDoc.getDocument().getFilename())
+                .binaryUrl(ccDoc.getDocument().getBinaryUrl())
+                .contentType(ccDoc.getContentType())
+                .size(ccDoc.getSizeInBytes())
+                .build())
+            .toList();
+
+        List<DocumentEntity> saved = documentRepository.saveAll(documentEntities);
+
+        log.info("Saved {} counter claim documents for counter claim {}",
+            saved.size(), counterClaim.getId());
+
+        return saved;
+    }
+
     private Optional<CaseFileCategory> mapDocumentTypeToCategory(DocumentType documentType) {
         return switch (documentType) {
             case NOTICE_FOR_SERVICE_OUT_OF_JURISDICTION ->
@@ -237,6 +288,9 @@ public class DocumentService {
                 Optional.of(CaseFileCategory.CORRESPONDENCE);
             case NOTICE_SERVED,
                  POLICE_REPORT,
+                 ENERGY_PERFORMANCE_CERTIFICATE,
+                 GAS_SAFETY_REPORT,
+                 ELECTRICAL_INSTALLATION_CONDITION,
                  OTHER ->
                 Optional.empty();
         };

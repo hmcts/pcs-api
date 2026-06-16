@@ -1,7 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
-
 import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -12,16 +11,14 @@ import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.Setter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 
 import java.time.Instant;
-
-import static jakarta.persistence.FetchType.LAZY;
 
 @Entity
 @Table(name = "claim_party_legal_representative")
@@ -36,12 +33,12 @@ public class ClaimPartyLegalRepresentativeEntity {
     @Builder.Default
     private LegalRepresentativePartyId id = new LegalRepresentativePartyId();
 
-    @ManyToOne(fetch = LAZY)
+    @ManyToOne
     @MapsId("partyId")
     @JsonBackReference
     private PartyEntity party;
 
-    @ManyToOne(fetch = LAZY)
+    @ManyToOne
     @MapsId("legalRepresentativeId")
     @JsonBackReference
     private LegalRepresentativeEntity legalRepresentative;

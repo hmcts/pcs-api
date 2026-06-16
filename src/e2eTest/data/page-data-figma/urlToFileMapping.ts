@@ -46,7 +46,12 @@ export default {
   'resumePossessionClaimreasonsForRequestingASuspensionAndDemotionOrder': 'suspensionToBuyDemotionOfTenancyOrderReasons',
   'resumePossessionClaimstatementOfExpressTerms': 'statementOfExpressTerms',
   'resumePossessionClaimunderlesseeMortgageeDetails': 'underlesseeMortgageeDetails',
+  'resumePossessionClaimuploadRequiredDocumentsWales': 'uploadRequiredDocumentsWales',
+  'search': 'globalSearch',
   'createFlagscaseworkerCaseFlag': 'whereShouldThisFlagBeAdded',
-  'submit': 'reviewFlagDetails'
+  'submit': 'reviewFlagDetails',
   'addCaseNoteaddCaseNote': 'addCaseNote',
+  'booking': 'workAccess',
+  'noresults': 'noResultFound',
+  'results': 'searchResults'
 };

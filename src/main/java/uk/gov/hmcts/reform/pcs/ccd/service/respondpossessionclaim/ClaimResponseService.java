@@ -18,6 +18,7 @@ import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Supplier;
 
 /**
  * Service for managing defendant contact preferences.
@@ -46,20 +47,29 @@ public class ClaimResponseService {
             throw new IllegalStateException("Current user IDAM ID is null");
         }
 
-        PartyEntity defendant = partyService.getPartyEntityByIdamId(currentUserIdamId, caseReference);
+        saveDraftDataForPartyInternal(dataFromDraftTable, () -> partyService.getPartyEntityByIdamId(currentUserIdamId,
+                                                                                                    caseReference));
+        log.debug("Successfully saved contact preferences for defendant with IDAM ID: {}", currentUserIdamId);
+    }
+
+    public void saveDraftDataForParty(PossessionClaimResponse dataFromDraftTable, long caseReference, UUID partyId) {
+        saveDraftDataForPartyInternal(dataFromDraftTable, () ->  partyService.getPartyEntityById(partyId,
+                                                                                                 caseReference));
+    }
+
+    private void saveDraftDataForPartyInternal(PossessionClaimResponse dataFromDraftTable, Supplier<PartyEntity>
+        partyEntitySupplier) {
+        PartyEntity defendant = partyEntitySupplier.get();
 
         saveContactPreferences(defendant, dataFromDraftTable.getDefendantResponses());
-        updatePartyContactDetails(defendant, dataFromDraftTable.getDefendantContactDetails(),
-                                  dataFromDraftTable.getDefendantResponses());
+        updatePartyContactDetails(defendant, dataFromDraftTable.getDefendantContactDetails(), dataFromDraftTable
+            .getDefendantResponses());
 
-        // Copy dateOfBirth from defendantResponses to party entity if present
         if (dataFromDraftTable.getDefendantResponses() != null
             && dataFromDraftTable.getDefendantResponses().getDateOfBirth() != null) {
             defendant.setDateOfBirth(dataFromDraftTable.getDefendantResponses().getDateOfBirth());
             log.debug("Updated date of birth from defendantResponses for party ID: {}", defendant.getId());
         }
-
-        log.debug("Successfully saved contact preferences for defendant with IDAM ID: {}", currentUserIdamId);
     }
 
     /**
