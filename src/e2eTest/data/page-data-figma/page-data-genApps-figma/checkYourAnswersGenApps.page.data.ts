@@ -4,5 +4,4 @@ export const checkYourAnswersGenApps = {
   submitButton: `Submit`,
   previousButton: `Previous`,
   cancelLink: `Cancel`,
-  continueToPaymentButton: `Continue to payment`
 };
