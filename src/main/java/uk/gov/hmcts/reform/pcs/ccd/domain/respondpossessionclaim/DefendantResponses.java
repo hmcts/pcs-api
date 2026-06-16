@@ -86,6 +86,9 @@ public class DefendantResponses {
     private VerticalYesNo disputeClaim;
 
     @CCD
+    private VerticalYesNo hasSolicitor;
+
+    @CCD
     private String disputeClaimDetails;
 
     @CCD
@@ -117,13 +120,19 @@ public class DefendantResponses {
 
     @CCD(max = 6400)
     private String otherConsiderationsDetails;
+    
     @CCD
     private VerticalYesNo makeCounterClaim;
 
+    @CCD
+    private VerticalYesNo counterClaimWantToUploadFiles;
     @CCD(
         access = {DefendantSolicitorAccess.class},
         typeOverride = FieldType.MultiSelectList,
         typeParameterOverride = "RespondToClaimSection"
     )
     private List<RespondToClaimSection> completedSections;
+
+    @CCD
+    private DefendantResponseStatus status;
 }
