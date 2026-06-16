@@ -8,6 +8,7 @@ import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DefendantAccess;
 import uk.gov.hmcts.reform.pcs.ccd.annotation.JacksonMoneyGBP;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
@@ -21,46 +22,49 @@ import java.util.List;
 @AllArgsConstructor
 public class CounterClaim {
 
-    @CCD(access = {CitizenAccess.class})
+    @CCD(access = {DefendantAccess.class})
     private VerticalYesNo isClaimAmountKnown;
 
-    @CCD(typeOverride = FieldType.MoneyGBP, access = {CitizenAccess.class})
+    @CCD(typeOverride = FieldType.MoneyGBP, access = {DefendantAccess.class})
     @JacksonMoneyGBP
     private BigDecimal claimAmount;
 
-    @CCD(typeOverride = FieldType.MoneyGBP, access = {CitizenAccess.class})
+    @CCD(typeOverride = FieldType.MoneyGBP, access = {DefendantAccess.class})
     @JacksonMoneyGBP
     private BigDecimal estimatedMaxClaimAmount;
 
-    @CCD(access = {CitizenAccess.class})
+    @CCD(access = {DefendantAccess.class})
     private CounterClaimType claimType;
 
-    @CCD(access = {CitizenAccess.class}, max = 6800)
+    @CCD(access = {DefendantAccess.class}, max = 6800)
     private String counterClaimFor;
 
-    @CCD(access = {CitizenAccess.class}, max = 6800)
+    @CCD(access = {DefendantAccess.class}, max = 6800)
     private String counterClaimReasons;
 
-    @CCD(access = {CitizenAccess.class}, max = 6800)
+    @CCD(access = {DefendantAccess.class}, max = 6800)
     private String otherOrderRequestDetails;
 
-    @CCD(access = {CitizenAccess.class}, max = 6800)
+    @CCD(access = {DefendantAccess.class}, max = 6800)
     private String otherOrderRequestFacts;
 
-    @CCD(access = {CitizenAccess.class})
+    @CCD(access = {DefendantAccess.class})
     private VerticalYesNo needHelpWithFees;
 
-    @CCD(access = {CitizenAccess.class})
+    @CCD(access = {DefendantAccess.class})
     private VerticalYesNo appliedForHwf;
 
-    @CCD(access = {CitizenAccess.class})
+    @CCD(access = {DefendantAccess.class})
     private String hwfReferenceNumber;
 
     @CCD(
-        access = {CitizenAccess.class},
+        access = {DefendantAccess.class},
         typeOverride = FieldType.Collection,
         typeParameterOverride = "Party"
     )
     private List<ListValue<Party>> counterClaimAgainst;
+
+    @CCD(access = {CitizenAccess.class})
+    private CounterClaimStatus status;
 
 }
