@@ -88,7 +88,7 @@ public class DefendantResponseEntity {
 
     // Non-owning reference: the generated form's lifecycle is owned by PcsCaseEntity.documents
     // (cascade/orphanRemoval there). No cascade/orphanRemoval here, so the two collections can't both
-    // try to delete the same document row; the FK is ON DELETE SET NULL (see V120).
+    // try to delete the same document row; the FK is ON DELETE SET NULL (see V122).
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "submission_document_id")
     private DocumentEntity submissionDocument;
