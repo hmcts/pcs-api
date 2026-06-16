@@ -1,4 +1,4 @@
-# pcs-api PR
+# pcs-api
 
 ## Building and deploying the application
 
