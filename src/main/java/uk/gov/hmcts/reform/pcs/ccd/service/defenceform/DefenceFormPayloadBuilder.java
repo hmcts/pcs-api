@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PartyAttributeAssertedBy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PartyAttributeAssertionStatus;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PartyAttributeType;
+import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -133,7 +134,8 @@ public class DefenceFormPayloadBuilder {
         }
 
         payload.defendantName(resolveDefendantName(defendant, assertions));
-        ClaimFormAddress defendantAddress = resolveDefendantAddress(defendant, assertions);
+        ClaimFormAddress defendantAddress =
+            resolveDefendantAddress(defendant, assertions, pcsCase.getPropertyAddress());
         payload.defendantAddress(defendantAddress);
         applyAddressFlags(defendantAddress,
             payload::hasDefendantAddressLine2, payload::hasDefendantAddressLine3, payload::hasDefendantCounty);
@@ -323,8 +325,12 @@ public class DefenceFormPayloadBuilder {
         return displayName(defendant);
     }
 
+    // Precedence: the defendant's disputed correspondence-address assertion (when they changed it),
+    // else the party address (claimant-typed), else the property address (defendant was same-as-property,
+    // so the party has no address of its own) - mirrors the claim form's pickAddressOrFallback.
     private ClaimFormAddress resolveDefendantAddress(
-        PartyEntity defendant, Map<PartyAttributeType, PartyAttributeAssertationEntity> assertions) {
+        PartyEntity defendant, Map<PartyAttributeType, PartyAttributeAssertationEntity> assertions,
+        AddressEntity propertyAddress) {
         String assertedAddress = assertedValue(assertions, PartyAttributeType.CORRESPONDENCE_ADDRESS);
         if (isPopulated(assertedAddress)) {
             try {
@@ -333,7 +339,7 @@ public class DefenceFormPayloadBuilder {
                 log.error("Failed to parse defendant correspondence address assertion", e);
             }
         }
-        return toFormAddress(defendant.getAddress());
+        return toFormAddress(defendant.getAddress() != null ? defendant.getAddress() : propertyAddress);
     }
 
     private static void applyAddressFlags(ClaimFormAddress address,

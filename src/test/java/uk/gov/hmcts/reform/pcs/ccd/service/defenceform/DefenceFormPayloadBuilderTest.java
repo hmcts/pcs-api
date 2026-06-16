@@ -110,6 +110,19 @@ class DefenceFormPayloadBuilderTest {
         }
 
         @Test
+        void fallsBackToPropertyAddressWhenDefendantSameAsProperty() {
+            // Defendant confirmed the claim-time address (no assertion) and was same-as-property,
+            // so the party has no address of its own - the property address must fill the row.
+            DefendantResponseEntity response = response(LegislativeCountry.ENGLAND);
+            response.getParty().setAddress(null);
+            response.getPcsCase().setPropertyAddress(address("1 Second Avenue"));
+
+            DefenceFormPayload payload = builder.build(response);
+
+            assertThat(payload.getDefendantAddress().getAddressLine1()).isEqualTo("1 Second Avenue");
+        }
+
+        @Test
         void neverRendersPersonsUnknownForRespondingDefendant() {
             DefendantResponseEntity response = response(LegislativeCountry.ENGLAND);
             response.getParty().setFirstName(null);
