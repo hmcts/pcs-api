@@ -229,7 +229,7 @@ fees:
       jurisdiction2: county court
       channel: default
       event: issue
-      keyword: CMCCounter
+      keyword: counter-claim
     enforcementWarrantFee: # FEE0380 - County Court
       service: civil money claims
       jurisdiction1: civil
