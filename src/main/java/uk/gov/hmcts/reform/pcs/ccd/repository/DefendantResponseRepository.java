@@ -12,8 +12,7 @@ import java.util.UUID;
 @Repository
 public interface DefendantResponseRepository extends JpaRepository<DefendantResponseEntity, UUID> {
 
-    Optional<DefendantResponseEntity> findByClaimPcsCaseCaseReferenceAndPartyIdamId(
-        Long caseReference, UUID partyIdamId);
+    boolean existsByClaimPcsCaseCaseReferenceAndPartyId(Long caseReference, UUID partyId);
 
     /**
      * Checks if a defendant response exists for the given case reference and party IDAM ID.

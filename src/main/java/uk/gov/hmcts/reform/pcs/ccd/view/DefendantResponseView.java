@@ -1,7 +1,9 @@
 package uk.gov.hmcts.reform.pcs.ccd.view;
 
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
+import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
@@ -15,6 +17,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.DefendantRespo
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -44,6 +47,7 @@ public class DefendantResponseView {
             defendantResponseService.getSubmittedResponse(caseReference);
 
         enrichClaimantServiceAddress(pcsCaseEntity, response);
+        enrichClaimantOrganisations(pcsCaseEntity, response);
         pcsCase.setPossessionClaimResponse(response);
     }
 
@@ -57,6 +61,19 @@ public class DefendantResponseView {
             Optional.ofNullable(claimant.getAddress())
                 .map(addressMapper::toAddressUK)
                 .ifPresent(response::setClaimantServiceAddress);
+        });
+    }
+
+    private void enrichClaimantOrganisations(PcsCaseEntity caseEntity, PossessionClaimResponse response) {
+        findPrimaryClaimant(caseEntity).ifPresent(claimant -> {
+            if (StringUtils.isNotBlank(claimant.getOrgName())) {
+                response.setClaimantOrganisations(List.of(
+                    ListValue.<String>builder()
+                        .id(claimant.getId() != null ? claimant.getId().toString() : null)
+                        .value(claimant.getOrgName())
+                        .build()
+                ));
+            }
         });
     }
 

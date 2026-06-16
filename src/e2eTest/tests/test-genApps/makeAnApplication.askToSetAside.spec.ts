@@ -33,7 +33,7 @@ test.beforeEach(async ({ page, context }) => {
   FieldsStore.clear();
   await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
   await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayload });
-  await performAction('getCaseAPI');
+  await performAction('getCaseAPI', 'Link Solicitor');
   await performAction('getDefendantDetails', {
     defendant1NameKnown: submitCaseApiData.submitCasePayload.defendant1.nameKnown,
     additionalDefendants: submitCaseApiData.submitCasePayload.addAnotherDefendant,
@@ -69,7 +69,7 @@ test.afterEach(async () => {
 });
 
 test.describe('Make an Application - e2e Journey @nightly', async () => {
-  test('Select an Application - Ask to Set aside @regression @PR @smoke', async () => {
+  test('Select an Application - Ask to Set aside @regression @smoke', async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.makeAnApplication);
     await performAction('clickButton', caseSummary.go);
     await performAction('chooseAnApplication', {
