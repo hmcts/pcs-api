@@ -79,6 +79,11 @@ public class PcsCaseEntity {
     @OneToMany(mappedBy = "pcsCase", fetch = LAZY, cascade = ALL)
     @Builder.Default
     @JsonManagedReference
+    private List<CaseNoteEntity> caseNotes = new ArrayList<>();
+
+    @OneToMany(mappedBy = "pcsCase", fetch = LAZY, cascade = ALL)
+    @Builder.Default
+    @JsonManagedReference
     @OrderBy("rank ASC")
     private Set<GenAppEntity> genApps = new HashSet<>();
 
@@ -153,6 +158,11 @@ public class PcsCaseEntity {
     public void addCounterClaim(CounterClaimEntity counterClaim) {
         counterClaims.add(counterClaim);
         counterClaim.setPcsCase(this);
+    }
+
+    public void addCaseNote(CaseNoteEntity caseNote) {
+        caseNotes.add(caseNote);
+        caseNote.setPcsCase(this);
     }
 
     private int countNumberOfGenAppsForParty(PartyEntity party) {
