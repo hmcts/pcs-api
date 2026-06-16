@@ -183,6 +183,10 @@ public class DocumentService {
     }
 
     public DocumentType mapAdditionalDocumentTypeToDocumentType(AdditionalDocumentType additionalType) {
+        if (additionalType == null) {
+            return null;
+        }
+
         return switch (additionalType) {
             case WITNESS_STATEMENT -> DocumentType.WITNESS_STATEMENT;
             case RENT_STATEMENT -> DocumentType.RENT_STATEMENT;

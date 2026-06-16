@@ -1016,6 +1016,10 @@ class DocumentServiceTest {
     private static Stream<Arguments> additionalDocumentTypeScenarios() {
         return Stream.of(
             Arguments.of(
+                null,
+                null
+            ),
+            Arguments.of(
                 AdditionalDocumentType.WITNESS_STATEMENT,
                 DocumentType.WITNESS_STATEMENT
             ),
