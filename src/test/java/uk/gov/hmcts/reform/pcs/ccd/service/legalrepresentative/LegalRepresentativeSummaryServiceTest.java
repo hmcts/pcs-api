@@ -13,10 +13,10 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeOrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.PartyLegalRepresentativeOrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.service.party.DefendantPartyExtractor;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 
 import java.util.List;
-import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
@@ -29,6 +29,9 @@ class LegalRepresentativeSummaryServiceTest {
 
     @Mock
     private OrganisationService organisationService;
+
+    @Mock
+    private DefendantPartyExtractor defendantPartyExtractor;
 
     private static final String RESPOND_TO_CLAIM_MARKDOWN = """
         <h2 class="govuk-heading-m">What happens next</h2>
@@ -55,7 +58,8 @@ class LegalRepresentativeSummaryServiceTest {
 
     @BeforeEach
     void setUp() {
-        legalRepresentativeSummaryService = new LegalRepresentativeSummaryService(organisationService);
+        legalRepresentativeSummaryService = new LegalRepresentativeSummaryService(organisationService,
+                                                                                  defendantPartyExtractor);
         ReflectionTestUtils.setField(legalRepresentativeSummaryService, "frontendUrl",
                                      "testUrl");
     }
@@ -68,7 +72,7 @@ class LegalRepresentativeSummaryServiceTest {
             LegalRepresentativeOrganisationEntity.builder()
             .organisationId(organisationId)
             .build();
-        Set<PartyEntity> parties = Set.of(PartyEntity.builder()
+        List<PartyEntity> parties = List.of(PartyEntity.builder()
                                             .partyLegalRepresentativeOrganisationList(List.of(
                                                 PartyLegalRepresentativeOrganisationEntity.builder()
                                                     .active(YesOrNo.YES)
@@ -76,9 +80,11 @@ class LegalRepresentativeSummaryServiceTest {
                                                     .build()))
                                             .build());
 
+
         PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
-            .parties(parties)
             .build();
+
+        when(defendantPartyExtractor.summaryScreenSafeExtractDefendants(pcsCaseEntity)).thenReturn(parties);
 
         PCSCase pcsCase = PCSCase.builder().build();
 
@@ -100,7 +106,7 @@ class LegalRepresentativeSummaryServiceTest {
                 .organisationId(organisationId)
                 .hasAmendedContactDetails(YesOrNo.YES)
                 .build();
-        Set<PartyEntity> parties = Set.of(PartyEntity.builder()
+        List<PartyEntity> parties = List.of(PartyEntity.builder()
                                               .partyLegalRepresentativeOrganisationList(List.of(
                                                   PartyLegalRepresentativeOrganisationEntity.builder()
                                                       .active(YesOrNo.YES)
@@ -109,8 +115,9 @@ class LegalRepresentativeSummaryServiceTest {
                                               .build());
 
         PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
-            .parties(parties)
             .build();
+
+        when(defendantPartyExtractor.summaryScreenSafeExtractDefendants(pcsCaseEntity)).thenReturn(parties);
 
         PCSCase pcsCase = PCSCase.builder().build();
 
@@ -131,7 +138,7 @@ class LegalRepresentativeSummaryServiceTest {
             LegalRepresentativeOrganisationEntity.builder()
             .organisationId(organisationId)
             .build();
-        Set<PartyEntity> parties = Set.of(PartyEntity.builder()
+        List<PartyEntity> parties = List.of(PartyEntity.builder()
                                               .partyLegalRepresentativeOrganisationList(List.of(
                                                   PartyLegalRepresentativeOrganisationEntity.builder()
                                                       .active(YesOrNo.NO)
@@ -139,11 +146,11 @@ class LegalRepresentativeSummaryServiceTest {
                                                       .build()))
                                               .build());
 
+        PCSCase pcsCase = PCSCase.builder().build();
         PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
-            .parties(parties)
             .build();
 
-        PCSCase pcsCase = PCSCase.builder().build();
+        when(defendantPartyExtractor.summaryScreenSafeExtractDefendants(pcsCaseEntity)).thenReturn(parties);
 
         when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(organisationId);
 
@@ -162,7 +169,7 @@ class LegalRepresentativeSummaryServiceTest {
             LegalRepresentativeOrganisationEntity.builder()
             .organisationId(organisationId + "1")
             .build();
-        Set<PartyEntity> parties = Set.of(PartyEntity.builder()
+        List<PartyEntity> parties = List.of(PartyEntity.builder()
                                               .partyLegalRepresentativeOrganisationList(List.of(
                                                   PartyLegalRepresentativeOrganisationEntity.builder()
                                                       .active(YesOrNo.YES)
@@ -171,8 +178,9 @@ class LegalRepresentativeSummaryServiceTest {
                                               .build());
 
         PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
-            .parties(parties)
             .build();
+
+        when(defendantPartyExtractor.summaryScreenSafeExtractDefendants(pcsCaseEntity)).thenReturn(parties);
 
         PCSCase pcsCase = PCSCase.builder().build();
 
@@ -193,7 +201,7 @@ class LegalRepresentativeSummaryServiceTest {
             LegalRepresentativeOrganisationEntity.builder()
             .organisationId(organisationId)
             .build();
-        Set<PartyEntity> parties = Set.of(PartyEntity.builder()
+        List<PartyEntity> parties = List.of(PartyEntity.builder()
                                               .partyLegalRepresentativeOrganisationList(List.of(
                                                   PartyLegalRepresentativeOrganisationEntity.builder()
                                                       .active(YesOrNo.NO)
@@ -202,8 +210,9 @@ class LegalRepresentativeSummaryServiceTest {
                                               .build());
 
         PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
-            .parties(parties)
             .build();
+
+        when(defendantPartyExtractor.summaryScreenSafeExtractDefendants(pcsCaseEntity)).thenReturn(parties);
 
         PCSCase pcsCase = PCSCase.builder().build();
 

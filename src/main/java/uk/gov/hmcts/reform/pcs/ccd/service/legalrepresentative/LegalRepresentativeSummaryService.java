@@ -8,8 +8,11 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.PartyLegalRepresentativeOrganisationEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.service.party.DefendantPartyExtractor;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 
+import java.util.List;
 import java.util.Optional;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.legalRepresentativeContactDetails;
@@ -41,6 +44,7 @@ public class LegalRepresentativeSummaryService {
         """;
 
     private final OrganisationService organisationService;
+    private final DefendantPartyExtractor defendantPartyExtractor;
 
     @Value("${frontend.url}")
     private String frontendUrl;
@@ -71,8 +75,8 @@ public class LegalRepresentativeSummaryService {
 
     private Optional<PartyLegalRepresentativeOrganisationEntity> isActivelyLinkedToAnyDefendant(PcsCaseEntity
                                                                                                     pcsCaseEntity) {
-
-        return pcsCaseEntity.getParties().stream()
+        List<PartyEntity> defendants = defendantPartyExtractor.summaryScreenSafeExtractDefendants(pcsCaseEntity);
+        return defendants.stream()
             .flatMap(partyEntity -> partyEntity.getPartyLegalRepresentativeOrganisationList().stream())
             .filter(claimPartyLegalRepresentative ->
                         claimPartyLegalRepresentative.getLegalRepresentativeOrganisation()
