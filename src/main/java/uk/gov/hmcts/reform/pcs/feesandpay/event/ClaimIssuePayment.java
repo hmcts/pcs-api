@@ -14,6 +14,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.claimIssuePayment;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
 
 @Component
 @AllArgsConstructor
@@ -32,7 +33,8 @@ public class ClaimIssuePayment implements CCDConfig<PCSCase, State, UserRole> {
             .grant(Permission.R, UserRole.CITIZEN)
             .grant(Permission.R, UserRole.DEFENDANT)
             .grant(Permission.R, UserRole.PCS_CASE_WORKER)
-            .grant(Permission.R, UserRole.DEFENDANT_SOLICITOR);
+            .grant(Permission.R, UserRole.DEFENDANT_SOLICITOR)
+            .grantHistoryOnly(JUDICIAL_HISTORY_ROLES);
     }
 
     private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {

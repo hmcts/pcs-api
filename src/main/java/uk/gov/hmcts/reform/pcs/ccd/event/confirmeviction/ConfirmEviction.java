@@ -16,6 +16,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.confirmeviction.ConfirmEvictionConfigurer;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.confirmEviction;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
 import static uk.gov.hmcts.reform.pcs.ccd.testcasesupport.TestSupportEnvironment.isDev;
 
 @Component
@@ -40,6 +41,7 @@ public class ConfirmEviction implements CCDConfig<PCSCase, State, UserRole> {
                 .forState(State.CASE_ISSUED)
                 .name("Confirm the eviction details")
                 .grant(Permission.CRUD, UserRole.PCS_SOLICITOR)
+                .grantHistoryOnly(JUDICIAL_HISTORY_ROLES)
                 .showSummary();
         confirmEvictionConfigurer.configurePages(new PageBuilder(eventBuilder));
     }

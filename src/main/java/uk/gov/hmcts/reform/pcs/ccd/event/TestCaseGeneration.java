@@ -30,6 +30,7 @@ import java.util.Optional;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.State.AWAITING_SUBMISSION_TO_HMCTS;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.State.CASE_ISSUED;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.State.PENDING_CASE_ISSUED;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.createTestCase;
 
 @Component
@@ -68,7 +69,8 @@ public class TestCaseGeneration implements CCDConfig<PCSCase, State, UserRole> {
                 .initialState(AWAITING_SUBMISSION_TO_HMCTS)
                 .showSummary()
                 .name(EVENT_NAME)
-                .grant(Permission.CRUD, UserRole.PCS_SOLICITOR);
+                .grant(Permission.CRUD, UserRole.PCS_SOLICITOR)
+                .grantHistoryOnly(JUDICIAL_HISTORY_ROLES);
         new PageBuilder(eventBuilder).add(new TestCaseSelectionPage());
     }
 

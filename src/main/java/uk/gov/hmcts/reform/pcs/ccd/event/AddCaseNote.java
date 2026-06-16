@@ -16,6 +16,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.addcasenote.AddCaseNoteConfigurer;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseNoteService;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.addCaseNote;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
 
 @Component
 @AllArgsConstructor
@@ -32,6 +33,7 @@ public class AddCaseNote implements CCDConfig<PCSCase, State, UserRole> {
                         .forStates(State.PENDING_CASE_ISSUED, State.CASE_ISSUED)
                         .name("Add a case note")
                         .grant(Permission.CRUD, UserRole.PCS_SOLICITOR)
+                        .grantHistoryOnly(JUDICIAL_HISTORY_ROLES)
                         .showSummary()
                         .endButtonLabel("Submit");
         addCaseNoteConfigurer.configurePages(new PageBuilder(eventBuilder));

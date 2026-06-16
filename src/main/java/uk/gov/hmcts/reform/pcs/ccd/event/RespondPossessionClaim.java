@@ -17,6 +17,7 @@ import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.SubmitEventHandl
 import uk.gov.hmcts.reform.pcs.ccd.page.respondpossessionclaim.page.RespondToPossessionDraftSavePage;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.respondPossessionClaim;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
 
 @Component
 @Slf4j
@@ -46,7 +47,8 @@ public class RespondPossessionClaim implements CCDConfig<PCSCase, State, UserRol
             .name("Defendant Response Submission")
             .description("Save defendants response as draft or to a case based on flag")
             .grant(Permission.CRU, UserRole.DEFENDANT)
-            .grant(Permission.CRU, UserRole.DEFENDANT_SOLICITOR);
+            .grant(Permission.CRU, UserRole.DEFENDANT_SOLICITOR)
+            .grantHistoryOnly(JUDICIAL_HISTORY_ROLES);
         new PageBuilder(eventBuilder)
             .add(respondToPossessionDraftSavePage);
     }
