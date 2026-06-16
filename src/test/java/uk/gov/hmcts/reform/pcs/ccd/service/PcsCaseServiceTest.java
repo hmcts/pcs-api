@@ -202,8 +202,6 @@ class PcsCaseServiceTest {
         // Then
         verify(claimService).createMainClaimEntity(caseData);
         verify(pcsCaseEntity).addClaim(mainClaimEntity);
-        verify(pcsCaseEntity).setRegionId(caseData.getRegionId());
-        verify(pcsCaseEntity).setBaseLocation(caseData.getCaseManagementLocationNumber());
     }
 
     @Test
@@ -451,19 +449,20 @@ class PcsCaseServiceTest {
         // Given
         Integer caseManagementLocation = 123;
         String postCode = "MK10 8RD";
-        PCSCase caseData = PCSCase.builder()
-            .propertyAddress(AddressUK.builder().postCode(postCode).build())
-            .legislativeCountry(ENGLAND)
-            .build();
         when(postCodeCourtService.getCourtManagementLocation(postCode, ENGLAND)).thenReturn(caseManagementLocation);
         CourtVenue courtVenue = newCourtVenue();
         when(locationReferenceService.getCourtVenues(any())).thenReturn(List.of(courtVenue));
+        when(pcsCaseRepository.findByCaseReference(456L)).thenReturn(Optional.of(new PcsCaseEntity()));
+        PCSCase caseData = PCSCase.builder()
+            .propertyAddress(AddressUK.builder().postCode(postCode).build())
+            .legislativeCountry(ENGLAND).build();
 
         // When
-        underTest.allocateRegionId(caseData);
+        underTest.allocateRegionId(456L, caseData);
 
         // Then
         verify(postCodeCourtService).getCourtManagementLocation(postCode, ENGLAND);
+        verify(pcsCaseRepository).save(any(PcsCaseEntity.class));
         assertThat(caseData.getRegionId()).isEqualTo(Integer.valueOf(courtVenue.regionId()));
         assertThat(caseData.getCaseManagementLocationNumber()).isEqualTo(caseManagementLocation);
     }
@@ -473,17 +472,19 @@ class PcsCaseServiceTest {
         // Given
         Integer caseManagementLocation = 123;
         String postCode = "MK10 8RD";
+        when(postCodeCourtService.getCourtManagementLocation(postCode, ENGLAND)).thenReturn(caseManagementLocation);
+        when(locationReferenceService.getCourtVenues(any())).thenReturn(List.of());
+        when(pcsCaseRepository.findByCaseReference(456L)).thenReturn(Optional.of(new PcsCaseEntity()));
         PCSCase caseData = PCSCase.builder()
             .propertyAddress(AddressUK.builder().postCode(postCode).build())
             .legislativeCountry(ENGLAND).build();
-        when(postCodeCourtService.getCourtManagementLocation(postCode, ENGLAND)).thenReturn(caseManagementLocation);
-        when(locationReferenceService.getCourtVenues(any())).thenReturn(List.of());
 
         // When
-        underTest.allocateRegionId(caseData);
+        underTest.allocateRegionId(456L, caseData);
 
         // Then
         verify(postCodeCourtService).getCourtManagementLocation(postCode, ENGLAND);
+        verify(pcsCaseRepository).save(any(PcsCaseEntity.class));
         assertThat(caseData.getRegionId()).isNull();
         assertThat(caseData.getCaseManagementLocationNumber()).isEqualTo(caseManagementLocation);
     }
@@ -497,12 +498,14 @@ class PcsCaseServiceTest {
             .legislativeCountry(ENGLAND)
             .build();
         when(postCodeCourtService.getCourtManagementLocation(postCode, ENGLAND)).thenReturn(null);
+        when(pcsCaseRepository.findByCaseReference(456L)).thenReturn(Optional.of(new PcsCaseEntity()));
 
         // When
-        underTest.allocateRegionId(caseData);
+        underTest.allocateRegionId(456L, caseData);
 
         // Then
         verify(postCodeCourtService).getCourtManagementLocation(postCode, ENGLAND);
+        verify(pcsCaseRepository, never()).save(any(PcsCaseEntity.class));
         verify(locationReferenceService, never()).getCourtVenues(anyList());
         assertThat(caseData.getRegionId()).isNull();
     }

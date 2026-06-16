@@ -63,23 +63,8 @@ public class PcsCaseService {
         pcsCaseEntity.addDocuments(documentEntities);
         claimEntity.addClaimDocuments(documentEntities);
         pcsCaseEntity.addClaim(claimEntity);
-        log.info("Source caseManagementLocationNumber={}, regionId={}",
-                 pcsCase.getCaseManagementLocationNumber(),
-                 pcsCase.getRegionId());
-
-        pcsCaseEntity.setBaseLocation(pcsCase.getCaseManagementLocationNumber());
-        pcsCaseEntity.setRegionId(pcsCase.getRegionId());
-
-        log.info("Entity baseLocation={}, regionId={}",
-                 pcsCaseEntity.getBaseLocation(),
-                 pcsCaseEntity.getRegionId());
-
-        pcsCaseRepository.save(pcsCaseEntity);
-
         partyService.createAllParties(pcsCase, pcsCaseEntity, claimEntity, organisationIdForCurrentUser);
-
         pcsCaseEntity.setTenancyLicence(tenancyLicenceService.createTenancyLicenceEntity(pcsCase));
-
     }
 
     public void patchCaseFlags(long caseReference, PCSCase pcsCase) {
@@ -114,17 +99,22 @@ public class PcsCaseService {
         pcsCase.setCaseManagementLocationNumber(caseManagementLocation);
     }
 
-    public void allocateRegionId(PCSCase pcsCase) {
+    public void allocateRegionId(Long caseReference, PCSCase pcsCase) {
+        PcsCaseEntity pcsCaseEntity = loadCase(caseReference);
         allocateCaseManagementLocation(pcsCase);
         if (pcsCase.getCaseManagementLocationNumber() != null) {
+            pcsCaseEntity.setBaseLocation(pcsCase.getCaseManagementLocationNumber());
             log.info("Calling locationReferenceService.getCourtVenues(...) with {}",
                      pcsCase.getCaseManagementLocationNumber());
             List<CourtVenue> courtVenues = locationReferenceService
                 .getCourtVenues(List.of(pcsCase.getCaseManagementLocationNumber()));
             log.info("Court venues are : {}", courtVenues);
             if (!CollectionUtils.isEmpty(courtVenues)) {
-                pcsCase.setRegionId(Integer.valueOf(courtVenues.getFirst().regionId()));
+                Integer regionId = Integer.valueOf(courtVenues.getFirst().regionId());
+                pcsCase.setRegionId(regionId);
+                pcsCaseEntity.setRegionId(regionId);
             }
+            pcsCaseRepository.save(pcsCaseEntity);
         }
     }
 

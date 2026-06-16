@@ -160,7 +160,7 @@ public class ResumePossessionClaimConfigurer implements PageConfigurer {
             .add(new UnderlesseeOrMortgageeEntitledToClaimRelief())
             .add(underlesseeOrMortgageeDetailsPage)
             .add(uploadRequiredDocumentsWales)
-            //TO DO will be routed later on  correctly using tech debt ticket
+            //TO DO will be routed later on correctly using tech debt ticket
             .add(new WantToUploadDocuments())
             .add(uploadAdditionalDocumentsDetails)
             .add(new GeneralApplication())
