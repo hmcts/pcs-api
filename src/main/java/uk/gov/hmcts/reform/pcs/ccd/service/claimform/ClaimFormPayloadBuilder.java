@@ -117,6 +117,8 @@ public class ClaimFormPayloadBuilder {
         boolean noticeServedYes = isNoticeServedYes(claim.getNoticeOfPossession());
 
         boolean noOrAbsoluteOrOtherGrounds = hasNoGrounds || hasAbsoluteGround || hasOtherGround;
+        // "Why is the claimant claiming possession?" (intro/demoted/other) carries the no-grounds reason.
+        payloadBuilder.whyClaimingPossession(noGroundsReason(claim.getClaimGrounds()));
         // The grounds Yes/No question has no country qualifier, only the tenancy-type check;
         // the description and why-claiming rows below are England-only.
         payloadBuilder.showGroundsYesNoQuestion(isIntroDemotedOther);
@@ -152,6 +154,19 @@ public class ClaimFormPayloadBuilder {
         return grounds.stream()
             .filter(g -> g.getCategory() != ClaimGroundCategory.INTRODUCTORY_DEMOTED_OTHER_NO_GROUNDS)
             .toList();
+    }
+
+    // The intro/demoted/other "no grounds" reason is stored on the no-grounds sentinel ground.
+    private static String noGroundsReason(Collection<ClaimGroundEntity> grounds) {
+        if (grounds == null) {
+            return null;
+        }
+        return grounds.stream()
+            .filter(g -> g.getCategory() == ClaimGroundCategory.INTRODUCTORY_DEMOTED_OTHER_NO_GROUNDS)
+            .map(ClaimGroundEntity::getReason)
+            .filter(reason -> isPopulated(reason))
+            .findFirst()
+            .orElse(null);
     }
 
     private static Optional<String> firstOtherGroundDescription(Collection<ClaimGroundEntity> grounds) {
@@ -203,6 +218,9 @@ public class ClaimFormPayloadBuilder {
     private void mapClaim(ClaimEntity claim, ClaimFormPayload.ClaimFormPayloadBuilder payloadBuilder) {
         if (claim.getClaimSubmittedDate() != null) {
             payloadBuilder.submittedOn(claim.getClaimSubmittedDate().toLocalDate());
+        }
+        if (claim.getClaimIssuedDate() != null) {
+            payloadBuilder.issueDateSealed(claim.getClaimIssuedDate().toLocalDate());
         }
 
         VerticalYesNo preActionFollowed = claim.getPreActionProtocolFollowed();

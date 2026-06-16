@@ -494,6 +494,38 @@ class ClaimFormPayloadBuilderTest {
         }
 
         @Test
+        void englandIntroNoGrounds_whyClaimingPossessionShowsTheNoGroundsReason() {
+            // HDPI-6478 bug fix: the no-grounds reason was captured but never mapped, so the
+            // "Why is the claimant claiming possession?" row rendered with a blank value.
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
+            pcsCase.setTenancyLicence(TenancyLicenceEntity.builder()
+                .type(CombinedLicenceType.INTRODUCTORY_TENANCY)
+                .build());
+            ClaimEntity claim = pcsCase.getClaims().getFirst();
+            claim.getClaimGrounds().add(ClaimGroundEntity.builder()
+                .category(ClaimGroundCategory.INTRODUCTORY_DEMOTED_OTHER_NO_GROUNDS)
+                .code("NO_GROUNDS")
+                .reason("test-intro flow")
+                .claim(claim)
+                .build());
+
+            ClaimFormPayload payload = builder.build(pcsCase);
+
+            assertThat(payload.isShowWhyClaimingPossession()).isTrue();
+            assertThat(payload.getWhyClaimingPossession()).isEqualTo("test-intro flow");
+        }
+
+        @Test
+        void issueDateSealedMappedFromClaimIssuedDate() {
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
+            pcsCase.getClaims().getFirst().setClaimIssuedDate(LocalDateTime.of(2026, 2, 12, 9, 0));
+
+            ClaimFormPayload payload = builder.build(pcsCase);
+
+            assertThat(payload.getIssueDateSealed()).isEqualTo(LocalDate.of(2026, 2, 12));
+        }
+
+        @Test
         void groundsWithReasonsListIncludesOnlyGroundsWithReasonText() {
             PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
             ClaimEntity claim = pcsCase.getClaims().getFirst();
@@ -568,8 +600,8 @@ class ClaimFormPayloadBuilderTest {
 
         @Test
         void issueDateAndWhyClaimingAndNoticeNotUploadedAndWalesDocsAllNull() {
-            // §13.3 — these fields have no entity source yet; payload must leave them null
-            // (not throw) so the template renders empty rows for them.
+            // With no source data these stay null (not thrown). issueDateSealed and whyClaimingPossession
+            // now have sources (claimIssuedDate / no-grounds reason) but remain null on an empty case.
             PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
             ClaimFormPayload payload = builder.build(pcsCase);
 
