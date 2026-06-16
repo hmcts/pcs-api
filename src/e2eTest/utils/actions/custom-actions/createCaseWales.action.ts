@@ -7,8 +7,7 @@ import {
   contactPreferences,
   exemptLandlord,
   occupationLicenceDetailsWales,
-  prohibitedConductWales
-} from '@data/page-data-figma';
+  prohibitedConductWales} from '@data/page-data-figma';
 import {asbQuestionsWales} from '@data/page-data/asbQuestionsWales.page.data';
 
 export class CreateCaseWalesAction extends CreateCaseAction implements IAction {
@@ -17,7 +16,8 @@ export class CreateCaseWalesAction extends CreateCaseAction implements IAction {
       ['selectClaimantDetails', () => this.selectClaimantDetails(fieldName as actionRecord)],
       ['selectProhibitedConductStandardContract', () => this.selectProhibitedConductStandardContract(fieldName as actionRecord)],
       ['selectOccupationContractOrLicenceDetails', () => this.selectOccupationContractOrLicenceDetails(fieldName as actionRecord)],
-      ['selectAsb', () => this.selectAsb(fieldName as actionRecord)]
+      ['selectAsb', () => this.selectAsb(fieldName as actionRecord)],
+      ['requiredDocumentsUpload', () => this.requiredDocumentsUpload(fieldName as actionRecord)],
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -96,5 +96,23 @@ export class CreateCaseWalesAction extends CreateCaseAction implements IAction {
       await performAction('inputText', asbQuestionsWales.giveDetailsOfTheOtherHiddenTextLabel, asbQuestions.giveDetailsOfTheOther);
     }
     await performAction('clickButton', asbQuestionsWales.continueButton);
+  }
+
+  private async requiredDocumentsUpload(reqDocs: actionRecord){
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseNumber });
+    await performValidation('text', {
+      elementType: 'paragraph',
+      text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
+    });
+    await performAction('clickRadioButton', {
+      question: reqDocs.question,
+      option: reqDocs.option
+    });
+    if (reqDocs.option === 'Yes') {
+      await performAction('uploadFile', reqDocs.file);
+    } else {
+      await performAction('inputText', reqDocs.label, reqDocs.input);
+    }   
+
   }
 }

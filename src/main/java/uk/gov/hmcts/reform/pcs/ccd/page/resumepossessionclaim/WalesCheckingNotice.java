@@ -16,6 +16,8 @@ import uk.gov.hmcts.reform.pcs.ccd.service.routing.wales.WalesRentSectionRouting
 
 import java.util.List;
 
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.WALES;
+
 @Component
 @RequiredArgsConstructor
 public class WalesCheckingNotice implements CcdPageConfiguration {
@@ -28,7 +30,7 @@ public class WalesCheckingNotice implements CcdPageConfiguration {
         pageBuilder
             .page("walesCheckingNotice", this::midEvent)
             .pageLabel("Notice")
-            .showCondition("legislativeCountry=\"Wales\"")
+            .showCondition(WALES)
             .label("walesCheckingNotice-info",
                    """
                    ---

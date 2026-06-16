@@ -234,7 +234,13 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
                 "detailsTab_ProhibitedConductStandardContractDetails!=\"\"",
                 "## Prohibited conduct standard contract"
             )
-            .field("detailsTab_ProhibitedConductStandardContractDetails");
+            .field("detailsTab_ProhibitedConductStandardContractDetails")
+            .label(
+                "Required Documents",
+                "detailsTab_RequiredDocumentsDetails!=\"\"",
+                "## Required Documents"
+            )
+            .field("detailsTab_RequiredDocumentsDetails");
     }
 
     private void buildCaseListView(ConfigBuilder<PCSCase, State, AccessProfile> builder) {
