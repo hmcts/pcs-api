@@ -24,7 +24,6 @@ import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatusCallback;
 
 import java.math.BigDecimal;
-import java.time.Clock;
 import java.util.UUID;
 import java.util.stream.Stream;
 
