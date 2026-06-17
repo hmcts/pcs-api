@@ -60,16 +60,9 @@ class MakeAClaimPaymentCallbackHandlerTest {
     private PcsCaseService pcsCaseService;
     @Mock
     private ObjectMapper objectMapper;
-    @Mock
-    private ClaimRepository claimRepository;
 
     @InjectMocks
     private MakeAClaimPaymentCallbackHandler underTest;
-
-    @BeforeEach
-    void beforeEach() {
-        ReflectionTestUtils.setField(underTest, "utcClock", Clock.systemUTC());
-    }
 
     @Test
     void shouldSetPartyAllocateCaseManagementLocationSubmitPaymentSuccessAndIssueClaimWhenPaid() throws Exception {
@@ -93,11 +86,9 @@ class MakeAClaimPaymentCallbackHandlerTest {
 
         // Then
         assertThat(feePaymentEntity.getParty()).isSameAs(partyEntity);
-        assertThat(claimEntity.getClaimIssuedDate()).isNotNull();
-        var inOrder = inOrder(pcsCaseService, ccdPaymentStateUpdateService, claimRepository);
+        var inOrder = inOrder(pcsCaseService, ccdPaymentStateUpdateService);
         inOrder.verify(pcsCaseService).allocateCaseManagementLocation(taskData.getCaseReference());
         inOrder.verify(ccdPaymentStateUpdateService).submitPaymentSuccess(taskData.getCaseReference());
-        inOrder.verify(claimRepository).save(claimEntity);
     }
 
     @Test
@@ -123,7 +114,6 @@ class MakeAClaimPaymentCallbackHandlerTest {
         // Then
         assertThat(throwable).isSameAs(expectedException);
         verify(ccdPaymentStateUpdateService, never()).submitPaymentSuccess(CASE_REFERENCE);
-        verifyNoInteractions(claimRepository);
     }
 
     @ParameterizedTest
@@ -152,7 +142,6 @@ class MakeAClaimPaymentCallbackHandlerTest {
         assertThat(feePaymentEntity.getParty()).isSameAs(partyEntity);
         verifyNoInteractions(pcsCaseService);
         verifyNoInteractions(ccdPaymentStateUpdateService);
-        verifyNoInteractions(claimRepository);
     }
 
     @Test
@@ -194,7 +183,6 @@ class MakeAClaimPaymentCallbackHandlerTest {
         assertThat(throwable).isEqualTo(expectedException);
         verifyNoInteractions(pcsCaseService);
         verifyNoInteractions(ccdPaymentStateUpdateService);
-        verifyNoInteractions(claimRepository);
     }
 
     private FeesAndPayTaskData buildTaskData() {

@@ -16,6 +16,7 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.time.Clock;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -76,6 +77,11 @@ public class ClaimService {
         claimEntity.setStatementOfTruth(statementOfTruthService.createStatementOfTruthEntity(pcsCase));
 
         return claimRepository.save(claimEntity);
+    }
+
+    public void setClaimIssuedDate(ClaimEntity claimEntity) {
+        claimEntity.setClaimIssuedDate(LocalDateTime.now(utcClock));
+        claimRepository.save(claimEntity);
     }
 
 
