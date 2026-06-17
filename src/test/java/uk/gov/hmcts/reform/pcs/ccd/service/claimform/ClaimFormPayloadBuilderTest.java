@@ -29,6 +29,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseNameFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseReferenceFormatter;
 import uk.gov.hmcts.reform.pcs.document.model.claimform.ClaimFormDefendantRow;
+import uk.gov.hmcts.reform.pcs.document.model.claimform.ClaimFormGround;
 import uk.gov.hmcts.reform.pcs.document.model.claimform.ClaimFormPayload;
 import uk.gov.hmcts.reform.pcs.document.model.claimform.ClaimFormUnderlesseeRow;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
@@ -428,13 +429,18 @@ class ClaimFormPayloadBuilderTest {
             claim.getClaimGrounds().add(ClaimGroundEntity.builder()
                 .category(ClaimGroundCategory.INTRODUCTORY_DEMOTED_OTHER)
                 .code("OTHER")
+                .reason("why other")
+                .description("other description")
                 .claim(claim)
                 .build());
 
             ClaimFormPayload payload = builder.build(pcsCase);
 
             assertThat(payload.isShowDescriptionOfGrounds()).isTrue();
-            assertThat(payload.isShowWhyClaimingPossession()).isTrue();
+            assertThat(payload.getOtherGroundsDescription()).isEqualTo("other description");
+            assertThat(payload.getWhyClaimingPossessionGrounds()).hasSize(1);
+            assertThat(payload.getWhyClaimingPossessionGrounds().getFirst().getNameAndNumber())
+                .isEqualTo("Other grounds");
         }
 
         @Test
@@ -453,13 +459,13 @@ class ClaimFormPayloadBuilderTest {
             ClaimFormPayload payload = builder.build(pcsCase);
 
             assertThat(payload.isShowDescriptionOfGrounds()).isFalse();
-            assertThat(payload.isShowWhyClaimingPossession()).isFalse();
+            assertThat(payload.getWhyClaimingPossessionGrounds()).isEmpty();
         }
 
         @Test
         void englandIntroDemotedOtherWithAbsoluteGround_whyClaimingShownDescriptionHidden() {
-            // D13 (Cook [17]): absolute grounds triggers "Why claiming possession?". Absolute grounds
-            // are identified by the code ABSOLUTE_GROUNDS, not by the category.
+            // Absolute grounds answer the general "Why are you claiming possession?" question; they are
+            // identified by the code ABSOLUTE_GROUNDS, not by the category.
             PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
             pcsCase.setTenancyLicence(TenancyLicenceEntity.builder()
                 .type(CombinedLicenceType.INTRODUCTORY_TENANCY)
@@ -468,12 +474,15 @@ class ClaimFormPayloadBuilderTest {
             claim.getClaimGrounds().add(ClaimGroundEntity.builder()
                 .category(ClaimGroundCategory.INTRODUCTORY_DEMOTED_OTHER)
                 .code("ABSOLUTE_GROUNDS")
+                .reason("absolute reason")
                 .claim(claim)
                 .build());
 
             ClaimFormPayload payload = builder.build(pcsCase);
 
-            assertThat(payload.isShowWhyClaimingPossession()).isTrue();
+            assertThat(payload.getWhyClaimingPossessionGrounds()).hasSize(1);
+            assertThat(payload.getWhyClaimingPossessionGrounds().getFirst().getNameAndNumber())
+                .isEqualTo("Absolute grounds");
             assertThat(payload.isShowDescriptionOfGrounds()).isFalse();
             assertThat(payload.isHasOtherGround()).isFalse();
             assertThat(payload.getHasGroundsYesNo()).isEqualTo("Yes");
@@ -498,7 +507,7 @@ class ClaimFormPayloadBuilderTest {
 
             assertThat(payload.isHasOtherGround()).isFalse();
             assertThat(payload.isShowDescriptionOfGrounds()).isFalse();
-            assertThat(payload.isShowWhyClaimingPossession()).isFalse();
+            assertThat(payload.getWhyClaimingPossessionGrounds()).isEmpty();
         }
 
         @Test
@@ -519,8 +528,67 @@ class ClaimFormPayloadBuilderTest {
 
             ClaimFormPayload payload = builder.build(pcsCase);
 
-            assertThat(payload.isShowWhyClaimingPossession()).isTrue();
-            assertThat(payload.getWhyClaimingPossession()).isEqualTo("test-intro flow");
+            assertThat(payload.getWhyClaimingPossessionGrounds()).hasSize(1);
+            assertThat(payload.getWhyClaimingPossessionGrounds().getFirst().getNameAndNumber()).isNull();
+            assertThat(payload.getWhyClaimingPossessionGrounds().getFirst().getReasonFreeText())
+                .isEqualTo("test-intro flow");
+        }
+
+        @Test
+        void englandIntroCombination_absoluteAndOtherReasonsFeedWhyClaimingNotPerGround() {
+            // Combination flow: the Absolute and Other answers are the "Why are you claiming
+            // possession?" answers (D13), combined; Breach is an "under this ground" answer (D12).
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
+            pcsCase.setTenancyLicence(TenancyLicenceEntity.builder()
+                .type(CombinedLicenceType.INTRODUCTORY_TENANCY)
+                .build());
+            ClaimEntity claim = pcsCase.getClaims().getFirst();
+            claim.getClaimGrounds().add(ClaimGroundEntity.builder()
+                .category(ClaimGroundCategory.INTRODUCTORY_DEMOTED_OTHER).code("ABSOLUTE_GROUNDS")
+                .reason("3").claim(claim).build());
+            claim.getClaimGrounds().add(ClaimGroundEntity.builder()
+                .category(ClaimGroundCategory.INTRODUCTORY_DEMOTED_OTHER).code("OTHER")
+                .reason("4").claim(claim).build());
+            claim.getClaimGrounds().add(ClaimGroundEntity.builder()
+                .category(ClaimGroundCategory.INTRODUCTORY_DEMOTED_OTHER).code("BREACH_OF_THE_TENANCY")
+                .reason("2").claim(claim).build());
+
+            ClaimFormPayload payload = builder.build(pcsCase);
+
+            List<ClaimFormGround> why = payload.getWhyClaimingPossessionGrounds();
+            assertThat(why).hasSize(2);
+            assertThat(why.get(0).getNameAndNumber()).isEqualTo("Absolute grounds");
+            assertThat(why.get(0).getReasonFreeText()).isEqualTo("3");
+            assertThat(why.get(1).getNameAndNumber()).isEqualTo("Other grounds");
+            assertThat(why.get(1).getReasonFreeText()).isEqualTo("4");
+            // Absolute/Other reasons are NOT duplicated in the per-ground D12 list; only Breach remains.
+            assertThat(payload.getGroundsWithReasons()).hasSize(1);
+            assertThat(payload.getGroundsWithReasons().getFirst().getReasonFreeText()).isEqualTo("2");
+            // The grounds list (D10) still shows all three selected grounds.
+            assertThat(payload.getGrounds()).hasSize(3);
+        }
+
+        @Test
+        void assuredOtherGround_descriptionShown() {
+            // Gap fix: the assured "Other" ground description was captured but never rendered.
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
+            pcsCase.setTenancyLicence(TenancyLicenceEntity.builder()
+                .type(CombinedLicenceType.ASSURED_TENANCY)
+                .build());
+            ClaimEntity claim = pcsCase.getClaims().getFirst();
+            claim.getClaimGrounds().add(ClaimGroundEntity.builder()
+                .category(ClaimGroundCategory.ASSURED_OTHER)
+                .code("OTHER")
+                .description("assured other description")
+                .claim(claim)
+                .build());
+
+            ClaimFormPayload payload = builder.build(pcsCase);
+
+            assertThat(payload.isShowDescriptionOfGrounds()).isTrue();
+            assertThat(payload.getOtherGroundsDescription()).isEqualTo("assured other description");
+            // Assured never hits the "Why is the claimant claiming possession?" row.
+            assertThat(payload.getWhyClaimingPossessionGrounds()).isEmpty();
         }
 
         @Test
@@ -620,7 +688,7 @@ class ClaimFormPayloadBuilderTest {
             ClaimFormPayload payload = builder.build(pcsCase);
 
             assertThat(payload.isShowDescriptionOfGrounds()).isFalse();
-            assertThat(payload.isShowWhyClaimingPossession()).isFalse();
+            assertThat(payload.getWhyClaimingPossessionGrounds()).isEmpty();
         }
     }
 
@@ -629,13 +697,12 @@ class ClaimFormPayloadBuilderTest {
 
         @Test
         void issueDateAndWhyClaimingAndNoticeNotUploadedAndWalesDocsAllNull() {
-            // With no source data these stay null (not thrown). issueDateSealed and whyClaimingPossession
-            // now have sources (claimIssuedDate / no-grounds reason) but remain null on an empty case.
+            // With no source data these stay null/empty (not thrown).
             PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
             ClaimFormPayload payload = builder.build(pcsCase);
 
             assertThat(payload.getIssueDateSealed()).isNull();
-            assertThat(payload.getWhyClaimingPossession()).isNull();
+            assertThat(payload.getWhyClaimingPossessionGrounds()).isEmpty();
             assertThat(payload.getNoticeNotUploadedReason()).isNull();
             assertThat(payload.getEpcUploadedYesNo()).isNull();
             assertThat(payload.getEpcNotUploadedReason()).isNull();

@@ -32,6 +32,7 @@ import java.time.LocalTime;
 import java.time.ZoneOffset;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -116,20 +117,15 @@ public class ClaimFormPayloadBuilder {
         boolean isEngland = !isWales;
         boolean isIntroDemotedOther = isIntroDemotedOtherTenancy(pcsCase.getTenancyLicence());
         List<ClaimGroundEntity> grounds = groundsExcludingNoGroundsSentinel(claim.getClaimGrounds());
-        boolean hasNoGrounds = grounds.isEmpty();
         boolean hasOtherGround = anyGroundIsOther(grounds);
-        boolean hasAbsoluteGround = anyGroundHasCode(grounds, "ABSOLUTE_GROUNDS");
         boolean hasWalesAsbGround = anyGroundHasCode(grounds, "ANTISOCIAL_BEHAVIOUR_S157");
         boolean noticeServedYes = isNoticeServedYes(claim.getNoticeOfPossession());
 
-        boolean noOrAbsoluteOrOtherGrounds = hasNoGrounds || hasAbsoluteGround || hasOtherGround;
-        // "Why is the claimant claiming possession?" (intro/demoted/other) carries the no-grounds reason.
-        payloadBuilder.whyClaimingPossession(noGroundsReason(claim.getClaimGrounds()));
-        // The grounds Yes/No question has no country qualifier, only the tenancy-type check;
-        // the description and why-claiming rows below are England-only.
+        // One "Why is the claimant claiming possession?" row per Absolute/Other/No-grounds answer.
+        payloadBuilder.whyClaimingPossessionGrounds(whyClaimingPossessionGrounds(claim.getClaimGrounds()));
         payloadBuilder.showGroundsYesNoQuestion(isIntroDemotedOther);
-        payloadBuilder.showDescriptionOfGrounds(isEngland && isIntroDemotedOther && hasOtherGround);
-        payloadBuilder.showWhyClaimingPossession(isEngland && isIntroDemotedOther && noOrAbsoluteOrOtherGrounds);
+        // "Description of grounds" covers any England "Other" ground (intro/demoted/other or assured).
+        payloadBuilder.showDescriptionOfGrounds(isEngland && hasOtherGround);
         payloadBuilder.showAsbSection(isWales && hasWalesAsbGround);
         payloadBuilder.showNoticeType(isWales && noticeServedYes);
         payloadBuilder.showPcscSection(isWales);
@@ -162,17 +158,57 @@ public class ClaimFormPayloadBuilder {
             .toList();
     }
 
-    // The intro/demoted/other "no grounds" reason is stored on the no-grounds sentinel ground.
-    private static String noGroundsReason(Collection<ClaimGroundEntity> grounds) {
+    // D13 "Why is the claimant claiming possession?": the intro/demoted/other journey asks this general
+    // question (rather than "...under this ground?") for the No-grounds, Absolute and Other grounds, so
+    // their answers feed this single row. mapGrounds excludes the same grounds from the per-ground D12
+    // list so the text is not shown twice. Absolute and Other can both be selected, so the answers are
+    // combined in a stable order (no-grounds, absolute, other).
+    private static List<ClaimFormGround> whyClaimingPossessionGrounds(Collection<ClaimGroundEntity> grounds) {
         if (grounds == null) {
-            return null;
+            return Collections.emptyList();
         }
         return grounds.stream()
-            .filter(g -> g.getCategory() == ClaimGroundCategory.INTRODUCTORY_DEMOTED_OTHER_NO_GROUNDS)
-            .map(ClaimGroundEntity::getReason)
-            .filter(reason -> isPopulated(reason))
-            .findFirst()
-            .orElse(null);
+            .filter(ClaimFormPayloadBuilder::isWhyClaimingPossessionGround)
+            .filter(g -> isPopulated(g.getReason()))
+            .sorted(Comparator.comparingInt(ClaimFormPayloadBuilder::whyClaimingPossessionOrder))
+            .map(g -> ClaimFormGround.builder()
+                .nameAndNumber(whyClaimingPossessionGroundName(g))
+                .reasonFreeText(g.getReason())
+                .hasReason(true)
+                .build())
+            .toList();
+    }
+
+    // Bracket label: the Other ground reads "Other grounds" (its journey heading); no-grounds has none.
+    private static String whyClaimingPossessionGroundName(ClaimGroundEntity ground) {
+        if (ground.getCategory() == ClaimGroundCategory.INTRODUCTORY_DEMOTED_OTHER_NO_GROUNDS) {
+            return null;
+        }
+        return "OTHER".equals(ground.getCode()) ? "Other grounds" : formatGroundLabel(ground);
+    }
+
+    // The grounds whose reason answers the general "Why are you claiming possession?" question.
+    private static boolean isWhyClaimingPossessionGround(ClaimGroundEntity ground) {
+        if (ground.getCategory() == ClaimGroundCategory.INTRODUCTORY_DEMOTED_OTHER_NO_GROUNDS) {
+            return true;
+        }
+        return ground.getCategory() == ClaimGroundCategory.INTRODUCTORY_DEMOTED_OTHER
+            && ("ABSOLUTE_GROUNDS".equals(ground.getCode()) || "OTHER".equals(ground.getCode()));
+    }
+
+    private static int whyClaimingPossessionOrder(ClaimGroundEntity ground) {
+        if (ground.getCategory() == ClaimGroundCategory.INTRODUCTORY_DEMOTED_OTHER_NO_GROUNDS) {
+            return 0;
+        }
+        return "ABSOLUTE_GROUNDS".equals(ground.getCode()) ? 1 : 2;
+    }
+
+    private static ClaimFormGround toClaimFormGround(ClaimGroundEntity ground) {
+        return ClaimFormGround.builder()
+            .nameAndNumber(formatGroundLabel(ground))
+            .reasonFreeText(ground.getReason())
+            .hasReason(isPopulated(ground.getReason()))
+            .build();
     }
 
     private static Optional<String> firstOtherGroundDescription(Collection<ClaimGroundEntity> grounds) {
@@ -279,14 +315,15 @@ public class ClaimFormPayloadBuilder {
         }
 
         List<ClaimFormGround> mapped = grounds.stream()
-            .map(g -> ClaimFormGround.builder()
-                .nameAndNumber(formatGroundLabel(g))
-                .reasonFreeText(g.getReason())
-                .hasReason(g.getReason() != null && !g.getReason().isBlank())
-                .build())
+            .map(ClaimFormPayloadBuilder::toClaimFormGround)
             .toList();
         payloadBuilder.grounds(mapped);
-        payloadBuilder.groundsWithReasons(mapped.stream().filter(ClaimFormGround::isHasReason).toList());
+        // The Absolute/Other intro grounds answer the general "Why are you claiming possession?"
+        // question (D13), so they are excluded from the per-ground reason list to avoid duplication.
+        payloadBuilder.groundsWithReasons(grounds.stream()
+            .filter(g -> isPopulated(g.getReason()) && !isWhyClaimingPossessionGround(g))
+            .map(ClaimFormPayloadBuilder::toClaimFormGround)
+            .toList());
         payloadBuilder.hasGroundsYesNo(VerticalYesNo.YES.getLabel());
         payloadBuilder.showGroundsList(true);
 

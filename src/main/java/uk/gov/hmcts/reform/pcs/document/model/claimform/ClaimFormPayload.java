@@ -67,8 +67,8 @@ public class ClaimFormPayload implements FormPayload {
     private boolean showDescriptionOfGrounds;
     @JsonProperty("isNoOrAbsoluteOrOtherGrounds")
     private boolean isNoOrAbsoluteOrOtherGrounds;
-    private String whyClaimingPossession;       // intro/demoted/other no-grounds reason
-    private boolean showWhyClaimingPossession;
+    // One row per Absolute/Other/No-grounds ground; nameAndNumber is the bracket label (null = no-grounds).
+    private List<ClaimFormGround> whyClaimingPossessionGrounds;
     private String hasAdditionalReasonsYesNo;
     private boolean additionalReasonsProvided;
     private String additionalReasonsFreeText;
