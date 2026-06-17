@@ -11,7 +11,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.CounterClaimRepository;
-import uk.gov.hmcts.reform.pcs.ccd.repository.feeandpay.FeePaymentRepository;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
 
 import java.util.UUID;
@@ -23,14 +22,21 @@ public class PaymentNotificationService {
 
     private final NotificationService notificationService;
     private final CounterClaimRepository counterClaimRepository;
-    private final FeePaymentRepository feePaymentRepository;
 
     @Transactional
     public void sendCounterClaimPaymentSuccessNotification(UUID counterClaimId) {
         CounterClaimEntity counterClaim = counterClaimRepository.findById(counterClaimId)
             .orElseThrow(() -> new IllegalArgumentException("Counter claim not found: " + counterClaimId));
 
-        FeePaymentEntity feePayment = feePaymentRepository.findByRelatedEntityId(counterClaimId)
+        PcsCaseEntity pcsCase = counterClaim.getPcsCase();
+        PartyEntity defendant = counterClaim.getParty();
+
+        FeePaymentEntity feePayment = pcsCase.getClaims().stream()
+            .filter(claim -> claim.getFeePayment() != null
+                && claim.getFeePayment().getParty() != null
+                && claim.getFeePayment().getParty().getId().equals(defendant.getId()))
+            .map(ClaimEntity::getFeePayment)
+            .findFirst()
             .orElse(null);
 
         if (feePayment == null) {
@@ -44,10 +50,8 @@ public class PaymentNotificationService {
         }
 
         ClaimEntity claim = feePayment.getClaim();
-        PcsCaseEntity pcsCase = counterClaim.getPcsCase();
-        PartyEntity defendant = counterClaim.getParty();
 
-        DefendantResponseEntity defendantResponse = pcsCase.getDefendantResponses().stream()
+        DefendantResponseEntity defendantResponse = claim.getPcsCase().getDefendantResponses().stream()
             .filter(counter -> counter.getParty().getId().equals(defendant.getId()))
             .findFirst()
             .orElse(null);

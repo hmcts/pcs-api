@@ -16,9 +16,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
-import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.repository.feeandpay.FeePaymentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.exception.FeePaymentNotFoundException;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
@@ -26,7 +24,6 @@ import uk.gov.hmcts.reform.pcs.notify.template.personalisation.BasePersonalisati
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.ClaimantBasePersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.CounterclaimPaymentSuccessPersonalisation;
 
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -44,8 +41,6 @@ class NotificationPersonalisationFactoryTest {
     @Mock(strictness = LENIENT)
     private PartyService partyService;
     @Mock(strictness = LENIENT)
-    private FeePaymentRepository feePaymentRepository;
-    @Mock(strictness = LENIENT)
     private PcsCaseEntity pcsCaseEntity;
 
     private NotificationPersonalisationFactory factory;
@@ -54,7 +49,7 @@ class NotificationPersonalisationFactoryTest {
     void setUp() {
         when(pcsCaseEntity.getCaseReference()).thenReturn(CASE_REFERENCE);
 
-        factory = new NotificationPersonalisationFactory(partyService, feePaymentRepository);
+        factory = new NotificationPersonalisationFactory(partyService);
     }
 
     @Nested
@@ -303,9 +298,12 @@ class NotificationPersonalisationFactoryTest {
             PartyEntity claimantParty = stubClaimantParty();
             PartyEntity defendantParty = stubDefendantParty();
             DefendantResponseEntity response = createDefendantResponse(claimantParty, defendantParty);
-            UUID counterClaimId = UUID.randomUUID();
 
-            stubCounterClaimFeePayment(counterClaimId, defendantParty, PaymentStatus.PAID, "PAY-123");
+            FeePaymentEntity feePayment = FeePaymentEntity.builder()
+                .paymentStatus(PaymentStatus.PAID)
+                .externalReference("PAY-123")
+                .build();
+            response.getClaim().setFeePayment(feePayment);
 
             CounterclaimPaymentSuccessPersonalisation result = factory.counterclaimSuccess(response);
 
@@ -323,9 +321,12 @@ class NotificationPersonalisationFactoryTest {
             PartyEntity claimantParty = stubClaimantParty();
             PartyEntity defendantParty = stubDefendantParty();
             DefendantResponseEntity response = createDefendantResponse(claimantParty, defendantParty);
-            UUID counterClaimId = UUID.randomUUID();
 
-            stubCounterClaimFeePayment(counterClaimId, defendantParty, PaymentStatus.NOT_PAID, "PAY-123");
+            FeePaymentEntity feePayment = FeePaymentEntity.builder()
+                .paymentStatus(PaymentStatus.NOT_PAID)
+                .externalReference("PAY-123")
+                .build();
+            response.getClaim().setFeePayment(feePayment);
 
             assertThatThrownBy(() -> factory.counterclaimSuccess(response))
                 .isInstanceOf(FeePaymentNotFoundException.class)
@@ -338,10 +339,8 @@ class NotificationPersonalisationFactoryTest {
             PartyEntity claimantParty = stubClaimantParty();
             PartyEntity defendantParty = stubDefendantParty();
             DefendantResponseEntity response = createDefendantResponse(claimantParty, defendantParty);
-            UUID counterClaimId = UUID.randomUUID();
 
-            stubCounterClaim(counterClaimId, defendantParty);
-            when(feePaymentRepository.findByRelatedEntityId(counterClaimId)).thenReturn(java.util.Optional.empty());
+            response.getClaim().setFeePayment(null);
 
             assertThatThrownBy(() -> factory.counterclaimSuccess(response))
                 .isInstanceOf(FeePaymentNotFoundException.class)
@@ -387,7 +386,6 @@ class NotificationPersonalisationFactoryTest {
 
     private PartyEntity createParty(String firstName, String lastName) {
         PartyEntity party = new PartyEntity();
-        party.setId(UUID.randomUUID());
         party.setFirstName(firstName);
         party.setLastName(lastName);
         party.setNameKnown(VerticalYesNo.YES);
@@ -415,28 +413,6 @@ class NotificationPersonalisationFactoryTest {
         response.setParty(defendantParty);
         response.setClaim(createClaim(claimantParty, defendantParty));
         return response;
-    }
-
-    private void stubCounterClaimFeePayment(
-        UUID counterClaimId,
-        PartyEntity defendantParty,
-        PaymentStatus paymentStatus,
-        String externalReference
-    ) {
-        stubCounterClaim(counterClaimId, defendantParty);
-        FeePaymentEntity feePayment = FeePaymentEntity.builder()
-            .paymentStatus(paymentStatus)
-            .externalReference(externalReference)
-            .build();
-        when(feePaymentRepository.findByRelatedEntityId(counterClaimId)).thenReturn(java.util.Optional.of(feePayment));
-    }
-
-    private void stubCounterClaim(UUID counterClaimId, PartyEntity defendantParty) {
-        CounterClaimEntity counterClaim = CounterClaimEntity.builder()
-            .id(counterClaimId)
-            .party(defendantParty)
-            .build();
-        when(pcsCaseEntity.getCounterClaims()).thenReturn(List.of(counterClaim));
     }
 
     private PCSCase createPcsCase(VerticalYesNo nameFlag, String claimantName, String overriddenName) {

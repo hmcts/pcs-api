@@ -21,7 +21,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
-import uk.gov.hmcts.reform.pcs.ccd.repository.feeandpay.FeePaymentRepository;
+import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ContactPreferencesEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
@@ -32,6 +32,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantRespon
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.PaymentAgreementEntity;
 import uk.gov.hmcts.reform.pcs.config.NotificationTemplateConfiguration;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.notify.entities.CaseNotification;
 import uk.gov.hmcts.reform.pcs.notify.exception.NotificationException;
 import uk.gov.hmcts.reform.pcs.notify.model.EmailNotificationRequest;
@@ -671,6 +672,12 @@ class NotificationServiceTest {
                 EmailTemplate.COUNTERCLAIM_PAYMENT_SUCCESS))
                 .thenReturn(TEMPLATE_ID);
 
+            FeePaymentEntity feePayment = FeePaymentEntity.builder()
+                .paymentStatus(PaymentStatus.PAID)
+                .externalReference("PAY-123")
+                .build();
+            defendantResponse.getClaim().setFeePayment(feePayment);
+
             CaseNotification savedNotification = createCaseNotification();
             when(notificationRepository.save(any())).thenReturn(savedNotification);
             when(schedulerClient.scheduleIfNotExists(any())).thenReturn(true);
@@ -1009,15 +1016,7 @@ class NotificationServiceTest {
     @Nested
     @DisplayName("TemplatePersonalisation Method Tests")
     class TemplatePersonalisationMethodTests {
-        @Mock
-        private FeePaymentRepository feePaymentRepository;
-
-        private NotificationPersonalisationFactory factory;
-
-        @BeforeEach
-        void setUpFactory() {
-            factory = new NotificationPersonalisationFactory(partyService, feePaymentRepository);
-        }
+        private final NotificationPersonalisationFactory factory = new NotificationPersonalisationFactory(partyService);
 
         @Test
         @DisplayName("Should use overridden claimant name when name flag is NO")
