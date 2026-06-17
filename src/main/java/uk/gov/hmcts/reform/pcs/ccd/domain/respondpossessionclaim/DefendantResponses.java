@@ -86,6 +86,9 @@ public class DefendantResponses {
     private VerticalYesNo disputeClaim;
 
     @CCD
+    private VerticalYesNo hasSolicitor;
+
+    @CCD
     private String disputeClaimDetails;
 
     @CCD
@@ -129,4 +132,7 @@ public class DefendantResponses {
         typeParameterOverride = "RespondToClaimSection"
     )
     private List<RespondToClaimSection> completedSections;
+
+    @CCD
+    private DefendantResponseStatus status;
 }
