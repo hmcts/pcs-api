@@ -3,8 +3,8 @@ import {caseNumber} from '@utils/actions/custom-actions/createCase.action';
 import {test} from '@utils/test-fixtures';
 import {createCaseApiData, submitCaseApiData} from '@data/api-data';
 import {caseSummary, user} from '@data/page-data';
-import {staff} from '@data/user-data/staff.user.data';
-import {judicialEmails} from '@data/user-data/judicial.user.data';
+import {staffUserEmailsForScope} from '@data/user-data/staff.user.data';
+import {judicialUserEmailsForScope} from '@data/user-data/judicial.user.data';
 import {
   addCommentsForFlag,
   manageCaseFlags,
@@ -23,8 +23,8 @@ import {
   UserTestResult
 } from '@utils/common/userTestResults.utils';
 
-const staffUserEmails = Object.values(staff);
-const judicialUserEmails = Object.values(judicialEmails);
+const staffUserEmails = staffUserEmailsForScope();
+const judicialUserEmails = judicialUserEmailsForScope();
 const ACCESS_CONTROL_TEST_TIMEOUT = 30 * 60 * 1000;
 
 async function clearBrowserSession(page: Page, context: BrowserContext): Promise<void> {
