@@ -56,7 +56,7 @@ public class StatementOfTruth implements CcdPageConfiguration {
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
                                                                   CaseDetails<PCSCase, State> detailsBefore) {
 
-        pcsCaseService.allocateRegionId(details.getId(), details.getData());
+        pcsCaseService.allocateRegionId(details.getData());
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(details.getData())
             .build();

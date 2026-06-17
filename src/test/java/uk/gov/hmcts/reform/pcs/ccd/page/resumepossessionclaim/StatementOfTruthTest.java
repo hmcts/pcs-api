@@ -32,7 +32,7 @@ class StatementOfTruthTest extends BasePageTest {
         callMidEventHandler(caseData);
 
         // Then
-        verify(pcsCaseService).allocateRegionId(TEST_CASE_REFERENCE, caseData);
+        verify(pcsCaseService).allocateRegionId(caseData);
     }
 
 }

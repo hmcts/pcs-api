@@ -59,7 +59,6 @@ public class PcsCaseService {
 
     public void createMainClaimOnCase(long caseReference, PCSCase pcsCase, String organisationIdForCurrentUser) {
         PcsCaseEntity pcsCaseEntity = loadCase(caseReference);
-
         ClaimEntity claimEntity = claimService.createMainClaimEntity(pcsCase);
         List<DocumentEntity> documentEntities = documentService.createAllDocuments(pcsCase);
         documentEntities.forEach(doc -> doc.setClaim(claimEntity));
@@ -68,13 +67,26 @@ public class PcsCaseService {
         pcsCaseEntity.addClaim(claimEntity);
         partyService.createAllParties(pcsCase, pcsCaseEntity, claimEntity, organisationIdForCurrentUser);
         pcsCaseEntity.setTenancyLicence(tenancyLicenceService.createTenancyLicenceEntity(pcsCase));
+        log.info("pcsCase.getRegionId={}", pcsCase.getRegionId());
+        log.info("pcsCase.getCaseManagementLocationNumber={}", pcsCase.getCaseManagementLocationNumber());
+        outOfSyncPCSCaseTempFix(caseReference, pcsCaseEntity);
+    }
 
+    // The PCSCase in the EventPayload on Submit can be out of sync with the data held in the draft.
+    // Please see the evidence screenshot on ticket HDPI-5486  This is a temp fix for the issue as other tickets
+    // depend on these values.  This is better than the remote calls being run within the transaction.
+    private void outOfSyncPCSCaseTempFix(long caseReference, PcsCaseEntity pcsCaseEntity) {
         Optional<PCSCase> unsubmittedCaseData = draftCaseDataService.getUnsubmittedCaseData(
-            caseReference,
-            EventId.resumePossessionClaim
-        );
-
-        System.out.println(unsubmittedCaseData);
+            caseReference, EventId.resumePossessionClaim);
+        if (unsubmittedCaseData.isPresent()) {
+            PCSCase inSyncPCSCase = unsubmittedCaseData.get();
+            log.info("inSyncPCSCase.getRegionId={}", inSyncPCSCase.getRegionId());
+            log.info("inSyncPCSCase.getCaseManagementLocationNumber={}",
+                     inSyncPCSCase.getCaseManagementLocationNumber());
+            pcsCaseEntity.setRegionId(inSyncPCSCase.getRegionId());
+            pcsCaseEntity.setBaseLocation(inSyncPCSCase.getCaseManagementLocationNumber());
+            pcsCaseRepository.save(pcsCaseEntity);
+        }
     }
 
     public void patchCaseFlags(long caseReference, PCSCase pcsCase) {
@@ -109,11 +121,9 @@ public class PcsCaseService {
         pcsCase.setCaseManagementLocationNumber(caseManagementLocation);
     }
 
-    public void allocateRegionId(Long caseReference, PCSCase pcsCase) {
-        PcsCaseEntity pcsCaseEntity = loadCase(caseReference);
+    public void allocateRegionId(PCSCase pcsCase) {
         allocateCaseManagementLocation(pcsCase);
         if (pcsCase.getCaseManagementLocationNumber() != null) {
-            pcsCaseEntity.setBaseLocation(pcsCase.getCaseManagementLocationNumber());
             log.debug("Calling locationReferenceService.getCourtVenues(...) with {}",
                      pcsCase.getCaseManagementLocationNumber());
             List<CourtVenue> courtVenues = locationReferenceService
@@ -122,9 +132,7 @@ public class PcsCaseService {
             if (!CollectionUtils.isEmpty(courtVenues)) {
                 Integer regionId = Integer.valueOf(courtVenues.getFirst().regionId());
                 pcsCase.setRegionId(regionId);
-                pcsCaseEntity.setRegionId(regionId);
             }
-            pcsCaseRepository.save(pcsCaseEntity);
         }
     }
 
