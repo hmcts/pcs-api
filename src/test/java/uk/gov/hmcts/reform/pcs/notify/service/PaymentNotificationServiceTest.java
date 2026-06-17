@@ -77,7 +77,7 @@ class PaymentNotificationServiceTest {
         underTest.sendCounterClaimPaymentSuccessNotification(counterClaimId);
 
         verify(notificationService)
-            .sendDefendantResponseCounterclaimPaymentSuccessEmailNotification(defendantResponse);
+            .sendDefendantResponseCounterclaimPaymentSuccessEmailNotification(defendantResponse, feePayment);
     }
 
     @Test

@@ -11,9 +11,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.repository.feeandpay.FeePaymentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.exception.FeePaymentNotFoundException;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
@@ -21,10 +19,7 @@ import uk.gov.hmcts.reform.pcs.notify.template.personalisation.BasePersonalisati
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.ClaimantBasePersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.CounterclaimPaymentSuccessPersonalisation;
 
-import java.util.Comparator;
 import java.util.Locale;
-import java.util.Optional;
-import java.util.UUID;
 
 @Slf4j
 @Service
@@ -32,7 +27,6 @@ import java.util.UUID;
 public class NotificationPersonalisationFactory {
 
     private final PartyService partyService;
-    private final FeePaymentRepository feePaymentRepository;
 
     public BasePersonalisation forDefendant(DefendantResponseEntity defendantResponse) {
         PartyEntity defendant = defendantResponse.getParty();
@@ -69,30 +63,19 @@ public class NotificationPersonalisationFactory {
         return buildPersonalisation(partyEntity, pcsCaseEntity);
     }
 
-    public CounterclaimPaymentSuccessPersonalisation counterclaimSuccess(DefendantResponseEntity defendantResponse) {
-        FeePaymentEntity defendantFeePayment = findPaidCounterClaimFeePayment(defendantResponse);
+    public CounterclaimPaymentSuccessPersonalisation counterclaimSuccess(
+        DefendantResponseEntity defendantResponse,
+        FeePaymentEntity feePayment
+    ) {
+        if (feePayment == null || !PaymentStatus.PAID.equals(feePayment.getPaymentStatus())) {
+            throw new FeePaymentNotFoundException(
+                "Paid fee payment not found for defendant response: " + defendantResponse.getId());
+        }
 
         return CounterclaimPaymentSuccessPersonalisation.builder()
             .base(forDefendant(defendantResponse))
-            .paymentReferenceNumber(defendantFeePayment.getExternalReference())
+            .paymentReferenceNumber(feePayment.getExternalReference())
             .build();
-    }
-
-    private FeePaymentEntity findPaidCounterClaimFeePayment(DefendantResponseEntity defendantResponse) {
-        UUID defendantPartyId = defendantResponse.getParty().getId();
-
-        return defendantResponse.getPcsCase().getCounterClaims().stream()
-            .filter(counterClaim -> defendantPartyId.equals(counterClaim.getParty().getId()))
-            .map(CounterClaimEntity::getId)
-            .map(feePaymentRepository::findByRelatedEntityId)
-            .flatMap(Optional::stream)
-            .filter(feePayment -> PaymentStatus.PAID.equals(feePayment.getPaymentStatus()))
-            .max(Comparator.comparing(
-                FeePaymentEntity::getRequestDate,
-                Comparator.nullsLast(Comparator.naturalOrder())
-            ))
-            .orElseThrow(() -> new FeePaymentNotFoundException(
-                "Paid fee payment not found for defendant response: " + defendantResponse.getId()));
     }
 
     private BasePersonalisation buildPersonalisation(
