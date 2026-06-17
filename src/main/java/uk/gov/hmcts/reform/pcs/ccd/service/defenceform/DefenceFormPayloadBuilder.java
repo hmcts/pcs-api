@@ -41,14 +41,14 @@ import java.util.Map;
 
 import static uk.gov.hmcts.reform.pcs.ccd.service.defenceform.DefenceFormFormatter.formatAdditionalContributionFrequency;
 import static uk.gov.hmcts.reform.pcs.ccd.service.defenceform.DefenceFormFormatter.formatFrequency;
-import static uk.gov.hmcts.reform.pcs.ccd.service.defenceform.DefenceFormFormatter.formatGbp;
 import static uk.gov.hmcts.reform.pcs.ccd.service.defenceform.DefenceFormFormatter.formatIsoDate;
-import static uk.gov.hmcts.reform.pcs.ccd.service.defenceform.DefenceFormFormatter.formatLongDate;
-import static uk.gov.hmcts.reform.pcs.ccd.service.defenceform.DefenceFormFormatter.isNo;
-import static uk.gov.hmcts.reform.pcs.ccd.service.defenceform.DefenceFormFormatter.isPopulated;
-import static uk.gov.hmcts.reform.pcs.ccd.service.defenceform.DefenceFormFormatter.isYes;
-import static uk.gov.hmcts.reform.pcs.ccd.service.defenceform.DefenceFormFormatter.toFormAddress;
-import static uk.gov.hmcts.reform.pcs.ccd.service.defenceform.DefenceFormFormatter.toLabel;
+import static uk.gov.hmcts.reform.pcs.ccd.service.form.FormFieldFormatter.formatGbp;
+import static uk.gov.hmcts.reform.pcs.ccd.service.form.FormFieldFormatter.formatLongDate;
+import static uk.gov.hmcts.reform.pcs.ccd.service.form.FormFieldFormatter.isNo;
+import static uk.gov.hmcts.reform.pcs.ccd.service.form.FormFieldFormatter.isPopulated;
+import static uk.gov.hmcts.reform.pcs.ccd.service.form.FormFieldFormatter.isYes;
+import static uk.gov.hmcts.reform.pcs.ccd.service.form.FormFieldFormatter.toFormAddress;
+import static uk.gov.hmcts.reform.pcs.ccd.service.form.FormFieldFormatter.toLabel;
 
 /**
  * Builds {@link DefenceFormPayload} from a {@link DefendantResponseEntity} and its claim baseline.
