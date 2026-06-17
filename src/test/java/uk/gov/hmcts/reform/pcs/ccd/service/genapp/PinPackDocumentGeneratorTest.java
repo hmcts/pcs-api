@@ -34,6 +34,7 @@ import java.time.ZoneId;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -179,7 +180,7 @@ class PinPackDocumentGeneratorTest {
     }
 
     @Test
-    void shouldLeaveCourtFieldsNullAndSkipLookupWhenNoCaseManagementLocation() {
+    void shouldThrowWhenNoCaseManagementLocation() {
         PartyEntity defendant = PartyEntity.builder()
             .nameKnown(VerticalYesNo.NO)
             .addressKnown(VerticalYesNo.NO)
@@ -187,12 +188,31 @@ class PinPackDocumentGeneratorTest {
         PcsCaseEntity caseEntity = caseWith(defendant);
         caseEntity.setCaseManagementLocation(null);
 
-        underTest.generatePinPack(caseEntity, caseEntity.getClaims().getFirst(), defendant, "PLAINTEXTPIN1");
+        assertThatThrownBy(() ->
+            underTest.generatePinPack(caseEntity, caseEntity.getClaims().getFirst(), defendant, "PLAINTEXTPIN1"))
+            .isInstanceOf(IllegalStateException.class)
+            .hasMessageContaining("case management location")
+            .hasMessageContaining("AC06");
+        verify(docAssemblyService, never()).generateDocument(any(), anyString(), any(), anyString());
+    }
 
-        PinPackFormPayload payload = capturedPayload();
-        assertThat(payload.getRespondByPostCourtName()).isNull();
-        assertThat(payload.getRespondByPostCourtAddress()).isNull();
-        verify(locationReferenceService, never()).getCountyCourts(anyString(), any());
+    @Test
+    void shouldThrowWhenLocationReferenceReturnsNoVenue() {
+        when(locationReferenceService.getCountyCourts(eq(AUTH_TOKEN), eq(List.of(EPIMS_ID))))
+            .thenReturn(List.of());
+
+        PartyEntity defendant = PartyEntity.builder()
+            .nameKnown(VerticalYesNo.NO)
+            .addressKnown(VerticalYesNo.NO)
+            .build();
+        PcsCaseEntity caseEntity = caseWith(defendant);
+
+        assertThatThrownBy(() ->
+            underTest.generatePinPack(caseEntity, caseEntity.getClaims().getFirst(), defendant, "PLAINTEXTPIN1"))
+            .isInstanceOf(IllegalStateException.class)
+            .hasMessageContaining("No court venue found")
+            .hasMessageContaining("AC06");
+        verify(docAssemblyService, never()).generateDocument(any(), anyString(), any(), anyString());
     }
 
     @Test

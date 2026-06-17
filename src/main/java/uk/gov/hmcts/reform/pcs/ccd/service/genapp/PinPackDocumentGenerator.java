@@ -136,16 +136,17 @@ public class PinPackDocumentGenerator {
     private CourtVenue resolveServingCourt(PcsCaseEntity pcsCaseEntity) {
         Integer epimsId = pcsCaseEntity.getCaseManagementLocation();
         if (epimsId == null) {
-            log.warn("No case management location set for case {}; cannot resolve respond-by-post court",
-                     pcsCaseEntity.getCaseReference());
-            return null;
+            throw new IllegalStateException(
+                "No case management location set for case " + pcsCaseEntity.getCaseReference()
+                    + "; cannot resolve respond-by-post court (AC06)");
         }
 
         String authToken = systemUpdateUserTokenProvider.getAuthToken();
         List<CourtVenue> venues = locationReferenceService.getCountyCourts(authToken, List.of(epimsId));
         if (venues == null || venues.isEmpty()) {
-            log.warn("No court venue found for epimsId {} on case {}", epimsId, pcsCaseEntity.getCaseReference());
-            return null;
+            throw new IllegalStateException(
+                "No court venue found for epimsId " + epimsId + " on case " + pcsCaseEntity.getCaseReference()
+                    + "; cannot resolve respond-by-post court (AC06)");
         }
         return venues.getFirst();
     }

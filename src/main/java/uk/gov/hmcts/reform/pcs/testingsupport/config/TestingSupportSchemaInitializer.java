@@ -3,7 +3,7 @@ package uk.gov.hmcts.reform.pcs.testingsupport.config;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
@@ -12,20 +12,15 @@ import org.springframework.stereotype.Component;
  * migration so the table never exists in production.
  */
 @Component
+@ConditionalOnProperty(name = "pin-test-table.enabled", havingValue = "true")
 @RequiredArgsConstructor
 @Slf4j
 public class TestingSupportSchemaInitializer {
 
     private final JdbcTemplate jdbcTemplate;
 
-    @Value("${pin-test-table.enabled:false}")
-    private boolean enabled;
-
     @PostConstruct
     public void createTestingSupportPinTable() {
-        if (!enabled) {
-            return;
-        }
         log.info("Ensuring testing_support_pin table exists");
 
         jdbcTemplate.execute("""

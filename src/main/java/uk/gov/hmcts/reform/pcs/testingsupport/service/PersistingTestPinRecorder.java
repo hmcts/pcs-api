@@ -14,7 +14,7 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-@ConditionalOnProperty(name = "pin-test-table.enabled", havingValue = "true", matchIfMissing = true)
+@ConditionalOnProperty(name = "pin-test-table.enabled", havingValue = "true")
 public class PersistingTestPinRecorder implements TestPinRecorder {
 
     private final JdbcTemplate jdbcTemplate;
