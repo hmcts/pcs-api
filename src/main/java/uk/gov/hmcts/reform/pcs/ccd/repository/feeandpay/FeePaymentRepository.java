@@ -10,4 +10,6 @@ public interface FeePaymentRepository extends JpaRepository<FeePaymentEntity, UU
 
     Optional<FeePaymentEntity> findByRequestReference(String requestReference);
 
+    Optional<FeePaymentEntity> findByRelatedEntityId(UUID relatedEntityId);
+
 }

@@ -1016,7 +1016,8 @@ class NotificationServiceTest {
     @Nested
     @DisplayName("TemplatePersonalisation Method Tests")
     class TemplatePersonalisationMethodTests {
-        private final NotificationPersonalisationFactory factory = new NotificationPersonalisationFactory(partyService);
+        private final NotificationPersonalisationFactory factory =
+            new NotificationPersonalisationFactory(partyService, mock(uk.gov.hmcts.reform.pcs.ccd.repository.feeandpay.FeePaymentRepository.class));
 
         @Test
         @DisplayName("Should use overridden claimant name when name flag is NO")

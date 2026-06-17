@@ -88,4 +88,6 @@ public class FeePaymentEntity {
     @JdbcTypeCode(SqlTypes.JSON)
     private String taskData;
 
+    private UUID relatedEntityId;
+
 }

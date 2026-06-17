@@ -16,7 +16,9 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.repository.feeandpay.FeePaymentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.exception.FeePaymentNotFoundException;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
@@ -24,9 +26,11 @@ import uk.gov.hmcts.reform.pcs.notify.template.personalisation.BasePersonalisati
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.ClaimantBasePersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.CounterclaimPaymentSuccessPersonalisation;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -44,6 +48,8 @@ class NotificationPersonalisationFactoryTest {
     private PartyService partyService;
     @Mock(strictness = LENIENT)
     private PcsCaseEntity pcsCaseEntity;
+    @Mock(strictness = LENIENT)
+    private FeePaymentRepository feePaymentRepository;
 
     private NotificationPersonalisationFactory factory;
 
@@ -51,7 +57,7 @@ class NotificationPersonalisationFactoryTest {
     void setUp() {
         when(pcsCaseEntity.getCaseReference()).thenReturn(CASE_REFERENCE);
 
-        factory = new NotificationPersonalisationFactory(partyService);
+        factory = new NotificationPersonalisationFactory(partyService, feePaymentRepository);
     }
 
     @Nested
@@ -300,13 +306,14 @@ class NotificationPersonalisationFactoryTest {
             PartyEntity claimantParty = stubClaimantParty();
             PartyEntity defendantParty = stubDefendantParty();
             DefendantResponseEntity response = createDefendantResponse(claimantParty, defendantParty);
+            CounterClaimEntity counterClaim = stubCounterClaim(defendantParty);
 
             FeePaymentEntity feePayment = FeePaymentEntity.builder()
                 .paymentStatus(PaymentStatus.PAID)
                 .externalReference("PAY-123")
                 .party(defendantParty)
                 .build();
-            response.getClaim().addFeePayment(feePayment);
+            when(feePaymentRepository.findByRelatedEntityId(counterClaim.getId())).thenReturn(Optional.of(feePayment));
 
             CounterclaimPaymentSuccessPersonalisation result = factory.counterclaimSuccess(response);
 
@@ -324,13 +331,14 @@ class NotificationPersonalisationFactoryTest {
             PartyEntity claimantParty = stubClaimantParty();
             PartyEntity defendantParty = stubDefendantParty();
             DefendantResponseEntity response = createDefendantResponse(claimantParty, defendantParty);
+            CounterClaimEntity counterClaim = stubCounterClaim(defendantParty);
 
             FeePaymentEntity feePayment = FeePaymentEntity.builder()
                 .paymentStatus(PaymentStatus.NOT_PAID)
                 .externalReference("PAY-123")
                 .party(defendantParty)
                 .build();
-            response.getClaim().addFeePayment(feePayment);
+            when(feePaymentRepository.findByRelatedEntityId(counterClaim.getId())).thenReturn(Optional.of(feePayment));
 
             assertThatThrownBy(() -> factory.counterclaimSuccess(response))
                 .isInstanceOf(FeePaymentNotFoundException.class)
@@ -343,12 +351,43 @@ class NotificationPersonalisationFactoryTest {
             PartyEntity claimantParty = stubClaimantParty();
             PartyEntity defendantParty = stubDefendantParty();
             DefendantResponseEntity response = createDefendantResponse(claimantParty, defendantParty);
-
-            response.getClaim().setFeePayments(new ArrayList<>());
+            CounterClaimEntity counterClaim = stubCounterClaim(defendantParty);
+            when(feePaymentRepository.findByRelatedEntityId(counterClaim.getId())).thenReturn(Optional.empty());
 
             assertThatThrownBy(() -> factory.counterclaimSuccess(response))
                 .isInstanceOf(FeePaymentNotFoundException.class)
                 .hasMessageContaining("Paid fee payment not found");
+        }
+
+        @Test
+        @DisplayName("Should use the latest paid fee payment when multiple counterclaims exist for a party")
+        void shouldUseLatestPaidFeePaymentWhenMultipleCounterClaimsExist() {
+            PartyEntity claimantParty = stubClaimantParty();
+            PartyEntity defendantParty = stubDefendantParty();
+            DefendantResponseEntity response = createDefendantResponse(claimantParty, defendantParty);
+
+            CounterClaimEntity firstCounterClaim = stubCounterClaim(defendantParty, UUID.randomUUID());
+            CounterClaimEntity secondCounterClaim = stubCounterClaim(defendantParty, UUID.randomUUID());
+            when(pcsCaseEntity.getCounterClaims()).thenReturn(List.of(firstCounterClaim, secondCounterClaim));
+
+            FeePaymentEntity firstPaidPayment = FeePaymentEntity.builder()
+                .paymentStatus(PaymentStatus.PAID)
+                .externalReference("PAY-OLD")
+                .requestDate(LocalDateTime.now().minusDays(1))
+                .build();
+            FeePaymentEntity secondPaidPayment = FeePaymentEntity.builder()
+                .paymentStatus(PaymentStatus.PAID)
+                .externalReference("PAY-NEW")
+                .requestDate(LocalDateTime.now())
+                .build();
+            when(feePaymentRepository.findByRelatedEntityId(firstCounterClaim.getId()))
+                .thenReturn(Optional.of(firstPaidPayment));
+            when(feePaymentRepository.findByRelatedEntityId(secondCounterClaim.getId()))
+                .thenReturn(Optional.of(secondPaidPayment));
+
+            CounterclaimPaymentSuccessPersonalisation result = factory.counterclaimSuccess(response);
+
+            assertThat(result.toMap()).containsEntry("paymentReferenceNumber", "PAY-NEW");
         }
     }
 
@@ -387,6 +426,18 @@ class NotificationPersonalisationFactoryTest {
         return defendantParty;
     }
 
+
+    private CounterClaimEntity stubCounterClaim(PartyEntity defendantParty) {
+        return stubCounterClaim(defendantParty, UUID.randomUUID());
+    }
+
+    private CounterClaimEntity stubCounterClaim(PartyEntity defendantParty, UUID counterClaimId) {
+        CounterClaimEntity counterClaim = new CounterClaimEntity();
+        counterClaim.setId(counterClaimId);
+        counterClaim.setParty(defendantParty);
+        when(pcsCaseEntity.getCounterClaims()).thenReturn(List.of(counterClaim));
+        return counterClaim;
+    }
 
     private PartyEntity createParty(String firstName, String lastName) {
         PartyEntity party = new PartyEntity();
