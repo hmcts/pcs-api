@@ -40,7 +40,7 @@ public class UploadAdditionalDocumentsPage implements CcdPageConfiguration, CcdP
                        TIF/TIFF.
                     </p>
 
-                    <p class="govuk-body govuk-!-font-weight-bold">
+                    <p class="govuk-body govuk-!-font-weight-bold govuk-!-margin-0">
                         Before you upload your documents
                     </p>
 
@@ -55,7 +55,7 @@ public class UploadAdditionalDocumentsPage implements CcdPageConfiguration, CcdP
         String pageKey = getPageKey();
         pageBuilder
             .page(pageKey)
-            .pageLabel("Upload your documents")
+            .pageLabel("Upload additional documents")
             .label(pageKey + "-line-separator", "---")
             .label(pageKey + "-content", DOCUMENT_DETAILS_CONTENT)
             .complex(PCSCase::getLegalRepDocumentUploadDetails)
