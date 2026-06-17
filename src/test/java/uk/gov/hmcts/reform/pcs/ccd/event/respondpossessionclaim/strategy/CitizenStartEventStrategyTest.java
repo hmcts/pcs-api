@@ -15,12 +15,14 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantContactDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponseStatus;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.utils.DefendantOnlyDraftBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.utils.PossessionClaimDraftBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.utils.PossessionClaimMerger;
+import uk.gov.hmcts.reform.pcs.ccd.repository.DefendantResponseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.DefendantAccessValidator;
@@ -65,6 +67,8 @@ class CitizenStartEventStrategyTest {
     private PossessionClaimDraftBuilder possessionClaimDraftBuilder;
     @Mock
     private DefendantOnlyDraftBuilder defendantOnlyDraftBuilder;
+    @Mock
+    private DefendantResponseRepository defendantResponseRepository;
 
     private CitizenStartEventStrategy underTest;
 
@@ -78,7 +82,8 @@ class CitizenStartEventStrategyTest {
             draftCaseDataService,
             possessionClaimMerger,
             possessionClaimDraftBuilder,
-            defendantOnlyDraftBuilder
+            defendantOnlyDraftBuilder,
+            defendantResponseRepository
         );
     }
 
@@ -405,6 +410,48 @@ class CitizenStartEventStrategyTest {
         verify(possessionClaimDraftBuilder, never()).buildCaseWithDraft(eq(caseData),
                                                                         any(PossessionClaimResponse.class));
         verify(possessionClaimMerger, never()).mergeLatestCaseData(any(), any(), any());
+    }
+
+    @Test
+    void shouldReturnSubmittedStatusWhenResponseAlreadySubmitted() {
+        // Given
+        UUID defendantUserId = UUID.randomUUID();
+        PartyEntity defendantEntity = PartyEntity.builder().idamId(defendantUserId).build();
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().build();
+
+        when(securityContextService.getCurrentUserId()).thenReturn(defendantUserId);
+        when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
+            CASE_REFERENCE, defendantUserId))
+            .thenReturn(true);
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+        when(accessValidator.validateAndGetDefendant(pcsCaseEntity, defendantUserId)).thenReturn(defendantEntity);
+
+        // When
+        PCSCase result = underTest.loadDraft(CASE_REFERENCE, PCSCase.builder().build());
+
+        // Then
+        assertThat(result.getPossessionClaimResponse().getDefendantResponses().getStatus())
+            .isEqualTo(DefendantResponseStatus.SUBMITTED);
+    }
+
+    @Test
+    void shouldNotTreatResponseAsSubmittedWhenCurrentUserIdIsNull() {
+        // Given
+        PartyEntity defendantEntity = PartyEntity.builder().build();
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().build();
+
+        when(securityContextService.getCurrentUserId()).thenReturn(null);
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+        when(accessValidator.validateAndGetDefendant(pcsCaseEntity, null)).thenReturn(defendantEntity);
+        when(draftCaseDataService.hasUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim)).thenReturn(false);
+        when(responseMapper.mapFrom(any(PCSCase.class), eq(defendantEntity)))
+            .thenReturn(PossessionClaimResponse.builder().build());
+
+        // When
+        PCSCase result = underTest.loadDraft(CASE_REFERENCE, PCSCase.builder().build());
+
+        // Then
+        assertThat(result.getPossessionClaimResponse().getDefendantResponses()).isNull();
     }
 
     @Test
