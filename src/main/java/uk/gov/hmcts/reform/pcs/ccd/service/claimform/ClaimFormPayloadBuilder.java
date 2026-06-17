@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.claimform;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CombinedLicenceType;
@@ -25,8 +26,10 @@ import uk.gov.hmcts.reform.pcs.document.model.claimform.ClaimFormPayload;
 import uk.gov.hmcts.reform.pcs.document.model.claimform.ClaimFormGround;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
+import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.ZoneOffset;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -65,11 +68,14 @@ public class ClaimFormPayloadBuilder {
 
     private final CaseReferenceFormatter caseReferenceFormatter;
     private final ClaimFormPartyMapper partyMapper;
+    private final Clock ukClock;
 
     public ClaimFormPayloadBuilder(CaseReferenceFormatter caseReferenceFormatter,
-                                   ClaimFormPartyMapper partyMapper) {
+                                   ClaimFormPartyMapper partyMapper,
+                                   @Qualifier("ukClock") Clock ukClock) {
         this.caseReferenceFormatter = caseReferenceFormatter;
         this.partyMapper = partyMapper;
+        this.ukClock = ukClock;
     }
 
     public ClaimFormPayload build(PcsCaseEntity pcsCase) {
@@ -217,10 +223,15 @@ public class ClaimFormPayloadBuilder {
 
     private void mapClaim(ClaimEntity claim, ClaimFormPayload.ClaimFormPayloadBuilder payloadBuilder) {
         if (claim.getClaimSubmittedDate() != null) {
-            payloadBuilder.submittedOn(claim.getClaimSubmittedDate().toLocalDate());
+            // The claim form is generated at submission, so the current UK date is the date
+            // submitted - same approach as the general-application document.
+            payloadBuilder.submittedOn(LocalDate.now(ukClock));
         }
         if (claim.getClaimIssuedDate() != null) {
-            payloadBuilder.issueDateSealed(claim.getClaimIssuedDate().toLocalDate());
+            // Stored as a UTC timestamp; convert to the UK calendar date so a claim issued just
+            // after midnight BST shows the correct day rather than the previous one.
+            payloadBuilder.issueDateSealed(claim.getClaimIssuedDate().atZone(ZoneOffset.UTC)
+                .withZoneSameInstant(ukClock.getZone()).toLocalDate());
         }
 
         VerticalYesNo preActionFollowed = claim.getPreActionProtocolFollowed();

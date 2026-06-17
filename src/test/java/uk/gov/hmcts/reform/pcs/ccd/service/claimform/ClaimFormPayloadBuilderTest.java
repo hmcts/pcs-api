@@ -34,8 +34,11 @@ import uk.gov.hmcts.reform.pcs.document.model.claimform.ClaimFormUnderlesseeRow;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.math.BigDecimal;
+import java.time.Clock;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -45,13 +48,18 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class ClaimFormPayloadBuilderTest {
 
+    // Fixed UK clock: generation happens on 16 July 2026 (BST).
+    private static final Clock UK_CLOCK =
+        Clock.fixed(Instant.parse("2026-07-16T08:00:00Z"), ZoneId.of("Europe/London"));
+
     private ClaimFormPayloadBuilder builder;
 
     @BeforeEach
     void setUp() {
         builder = new ClaimFormPayloadBuilder(
             new CaseReferenceFormatter(),
-            new ClaimFormPartyMapper(new CaseNameFormatter())
+            new ClaimFormPartyMapper(new CaseNameFormatter()),
+            UK_CLOCK
         );
     }
 
@@ -523,6 +531,27 @@ class ClaimFormPayloadBuilderTest {
             ClaimFormPayload payload = builder.build(pcsCase);
 
             assertThat(payload.getIssueDateSealed()).isEqualTo(LocalDate.of(2026, 2, 12));
+        }
+
+        @Test
+        void issueDateUsesUkCalendarDayForTimestampJustAfterMidnightBst() {
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
+            // 23:30 UTC on 15 July = 00:30 BST on 16 July - the UK day is the 16th.
+            pcsCase.getClaims().getFirst().setClaimIssuedDate(LocalDateTime.of(2026, 7, 15, 23, 30));
+
+            ClaimFormPayload payload = builder.build(pcsCase);
+
+            assertThat(payload.getIssueDateSealed()).isEqualTo(LocalDate.of(2026, 7, 16));
+        }
+
+        @Test
+        void submittedOnUsesCurrentUkDate() {
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
+            pcsCase.getClaims().getFirst().setClaimSubmittedDate(LocalDateTime.of(2026, 3, 1, 10, 30));
+
+            ClaimFormPayload payload = builder.build(pcsCase);
+
+            assertThat(payload.getSubmittedOn()).isEqualTo(LocalDate.of(2026, 7, 16));
         }
 
         @Test
