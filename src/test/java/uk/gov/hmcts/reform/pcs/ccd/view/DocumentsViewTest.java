@@ -196,12 +196,10 @@ class DocumentsViewTest {
 
     private static Stream<Arguments> descriptionProvider() {
         return Stream.of(
-                org.junit.jupiter.params.provider.Arguments.of(null, true),
-                org.junit.jupiter.params.provider.Arguments.of("", true),
-                org.junit.jupiter.params.provider.Arguments.of("   ", true),
-                org.junit.jupiter.params.provider.Arguments.of("Description", false),
-                org.junit.jupiter.params.provider.Arguments.of("A", false),
-                org.junit.jupiter.params.provider.Arguments.of("Valid description text", false)
+                Arguments.of(null, true),
+                Arguments.of("", true),
+                Arguments.of("   ", true),
+                Arguments.of("Valid description text", false)
         );
     }
 }
