@@ -62,7 +62,6 @@ public class DefenceFormGenerationComponent {
                           data.getDefendantResponseId());
 
                 try {
-                    long caseReference = Long.parseLong(data.getCaseReference());
                     defenceFormService.generateAndAttach(data.getDefendantResponseId());
                     log.info("Defence form generated and attached for defendant response {}",
                              data.getDefendantResponseId());
