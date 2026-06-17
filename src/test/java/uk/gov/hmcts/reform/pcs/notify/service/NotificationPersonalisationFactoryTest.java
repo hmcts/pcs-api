@@ -306,7 +306,7 @@ class NotificationPersonalisationFactoryTest {
                 .externalReference("PAY-123")
                 .party(defendantParty)
                 .build();
-            response.getClaim().setFeePayments(new ArrayList<>(List.of(feePayment)));
+            response.getClaim().addFeePayment(feePayment);
 
             CounterclaimPaymentSuccessPersonalisation result = factory.counterclaimSuccess(response);
 
@@ -330,7 +330,7 @@ class NotificationPersonalisationFactoryTest {
                 .externalReference("PAY-123")
                 .party(defendantParty)
                 .build();
-            response.getClaim().setFeePayments(new ArrayList<>(List.of(feePayment)));
+            response.getClaim().addFeePayment(feePayment);
 
             assertThatThrownBy(() -> factory.counterclaimSuccess(response))
                 .isInstanceOf(FeePaymentNotFoundException.class)

@@ -208,6 +208,11 @@ public class ClaimEntity {
 
     private LocalDateTime claimIssuedDate;
 
+    public void addFeePayment(FeePaymentEntity feePayment) {
+        feePayments.add(feePayment);
+        feePayment.setClaim(this);
+    }
+
     public void setAsbProhibitedConductEntity(AsbProhibitedConductEntity asbProhibitedConductEntity) {
         if (this.asbProhibitedConductEntity != null) {
             this.asbProhibitedConductEntity.setClaim(null);

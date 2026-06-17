@@ -676,7 +676,7 @@ class NotificationServiceTest {
                 .paymentStatus(PaymentStatus.PAID)
                 .externalReference("PAY-123")
                 .build();
-            defendantResponse.getClaim().setFeePayments(new ArrayList<>(List.of(feePayment)));
+            defendantResponse.getClaim().addFeePayment(feePayment);
 
             CaseNotification savedNotification = createCaseNotification();
             when(notificationRepository.save(any())).thenReturn(savedNotification);
