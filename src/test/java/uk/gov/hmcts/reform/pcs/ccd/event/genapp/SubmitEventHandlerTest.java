@@ -42,6 +42,7 @@ import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.PaymentService;
 import uk.gov.hmcts.reform.pcs.idam.UserInfo;
+import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.math.BigDecimal;
@@ -92,6 +93,8 @@ class SubmitEventHandlerTest {
     @Mock
     private PaymentService paymentService;
     @Mock
+    private NotificationService notificationService;
+    @Mock
     private SchedulerClient schedulerClient;
     @Mock
     private ObjectMapper objectMapper;
@@ -107,7 +110,7 @@ class SubmitEventHandlerTest {
         underTest = new SubmitEventHandler(pcsCaseService, partyService, securityContextService, genAppService,
                                            genAppRepository, genAppDocumentGenerator, genAppFeeCalculator,
                                            legalRepresentativeRepository, confirmationScreenFactory,
-                                           paymentService, schedulerClient, objectMapper
+                                           paymentService, schedulerClient, notificationService, objectMapper
         );
     }
 
@@ -295,7 +298,7 @@ class SubmitEventHandlerTest {
         }
 
         @Test
-        void shouldCreateGenAppWithCaseDataAndApplicantPartyWhenNoFeeDue() {
+        void shouldCreateGenAppWhenNoFeeDue() {
             // Given
             final PartyEntity applicantParty = mock(PartyEntity.class);
 
@@ -304,13 +307,13 @@ class SubmitEventHandlerTest {
                 .clientReference("some reference")
                 .build();
 
-            stubCreateGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty);
-
             UUID currentUserId = UUID.randomUUID();
             given(securityContextService.getCurrentUserId()).willReturn(currentUserId);
             given(partyService.getPartyEntityByIdamId(currentUserId, TEST_CASE_REFERENCE)).willReturn(applicantParty);
 
             when(genAppFeeCalculator.getApplicationFeeDetails(genAppRequest)).thenReturn(Optional.empty());
+
+            GenAppEntity genAppEntity = stubCreateGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty);
 
             PCSCase caseData = PCSCase.builder()
                 .citizenGenAppRequest(genAppRequest)
@@ -322,6 +325,7 @@ class SubmitEventHandlerTest {
             // Then
             verify(genAppService)
                 .createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty, GEN_APP_ISSUED);
+            verify(notificationService).sendGenAppReceivedEmail(genAppEntity);
         }
 
         @Test
