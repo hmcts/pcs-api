@@ -10,7 +10,6 @@ import org.modelmapper.ModelMapper;
 import uk.gov.hmcts.ccd.sdk.CaseViewRequest;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
-import uk.gov.hmcts.ccd.sdk.type.SearchCriteria;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
@@ -39,7 +38,6 @@ import uk.gov.hmcts.reform.pcs.ccd.view.RentDetailsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.StatementOfTruthView;
 import uk.gov.hmcts.reform.pcs.ccd.view.TenancyLicenceView;
 import uk.gov.hmcts.reform.pcs.ccd.view.globalsearch.CaseFieldsView;
-import uk.gov.hmcts.reform.pcs.ccd.view.globalsearch.SearchCriteriaIndexer;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
@@ -117,8 +115,6 @@ class PCSCaseViewTest {
     private PartiesView partiesView;
     @Mock
     private CaseFlagsView caseFlagsView;
-    @Mock
-    private SearchCriteriaIndexer searchCriteriaIndexer;
 
     private PCSCaseView underTest;
 
@@ -132,8 +128,7 @@ class PCSCaseViewTest {
                                     rentDetailsView, alternativesToPossessionView, asbProhibitedConductView,
                                     rentArrearsView, noticeOfPossessionView,
                                     statementOfTruthView, caseFieldsView, caseLinkView, enforcementOrderMediator,
-                                    caseNoteView, caseTabView, partiesView, genAppsView, caseFlagsView,
-                                    searchCriteriaIndexer
+                                    caseNoteView, caseTabView, partiesView, genAppsView, caseFlagsView
         );
     }
 
@@ -193,20 +188,6 @@ class PCSCaseViewTest {
 
         // Then
         assertThat(pcsCase.getPropertyAddress()).isEqualTo(addressUK);
-    }
-
-    @Test
-    void shouldSetSearchCriteriaFromIndexer() {
-        // Given
-        SearchCriteria searchCriteria = SearchCriteria.builder().build();
-        when(searchCriteriaIndexer.buildSearchCriteria(any(PCSCase.class))).thenReturn(searchCriteria);
-
-        // When
-        PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
-
-        // Then - indexing is delegated to the indexer and its result is set on the case
-        verify(searchCriteriaIndexer).buildSearchCriteria(pcsCase);
-        assertThat(pcsCase.getSearchCriteria()).isSameAs(searchCriteria);
     }
 
     @Test

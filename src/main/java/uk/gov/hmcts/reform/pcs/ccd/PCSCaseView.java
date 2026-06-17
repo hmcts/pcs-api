@@ -7,6 +7,7 @@ import uk.gov.hmcts.ccd.sdk.CaseView;
 import uk.gov.hmcts.ccd.sdk.CaseViewRequest;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.ccd.sdk.type.SearchCriteria;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
@@ -37,7 +38,6 @@ import uk.gov.hmcts.reform.pcs.ccd.view.RentDetailsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.StatementOfTruthView;
 import uk.gov.hmcts.reform.pcs.ccd.view.TenancyLicenceView;
 import uk.gov.hmcts.reform.pcs.ccd.view.globalsearch.CaseFieldsView;
-import uk.gov.hmcts.reform.pcs.ccd.view.globalsearch.SearchCriteriaIndexer;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
@@ -80,7 +80,6 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
     private final PartiesView partiesView;
     private final GenAppsView genAppsView;
     private final CaseFlagsView flagsView;
-    private final SearchCriteriaIndexer searchCriteriaIndexer;
 
 
     /**
@@ -110,7 +109,8 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
 
         caseFieldsView.setCaseFields(pcsCase);
 
-        pcsCase.setSearchCriteria(searchCriteriaIndexer.buildSearchCriteria(pcsCase));
+        //allows indexing for Global Search
+        pcsCase.setSearchCriteria(new SearchCriteria());
 
         return pcsCase;
     }
