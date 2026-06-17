@@ -1,5 +1,5 @@
 import { test } from '@utils/test-fixtures';
-import { expect, Page, BrowserContext } from '@playwright/test';
+import { Page, BrowserContext } from '@playwright/test';
 import { initializeExecutor, performAction, performValidation } from '@utils/controller';
 import { globalSearch} from '@data/page-data-figma';
 import { dismissCookieBanner } from '@config/cookie-banner';
