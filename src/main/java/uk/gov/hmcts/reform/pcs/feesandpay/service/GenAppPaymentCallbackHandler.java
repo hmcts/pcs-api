@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppDocumentGenerator;
 import uk.gov.hmcts.reform.pcs.exception.GenAppNotFoundException;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatusCallback;
+import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
 
 import java.util.UUID;
 
@@ -21,6 +22,7 @@ public class GenAppPaymentCallbackHandler implements PaymentCallbackStrategy {
 
     private final GenAppRepository genAppRepository;
     private final GenAppDocumentGenerator genAppDocumentGenerator;
+    private final NotificationService notificationService;
 
     @Override
     public void handle(PaymentStatusCallback paymentStatusCallback, FeePaymentEntity feePaymentEntity) {
@@ -35,8 +37,7 @@ public class GenAppPaymentCallbackHandler implements PaymentCallbackStrategy {
                 genAppEntity.setState(GenAppState.GEN_APP_ISSUED);
                 long caseReference = genAppEntity.getPcsCase().getCaseReference();
                 genAppDocumentGenerator.createSubmissionDocument(caseReference, genAppEntity);
-                // TODO: Send email notification here (HDPI-4297)
-
+                notificationService.sendGenAppReceivedEmail(genAppEntity);
             } else {
                 log.warn("Gen app {} state {} not valid for this callback", genAppId, genAppEntity.getState());
             }
