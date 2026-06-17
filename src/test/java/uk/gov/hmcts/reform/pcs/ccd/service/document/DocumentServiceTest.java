@@ -9,6 +9,7 @@ import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.Document;
@@ -26,6 +27,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.EvidenceDocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.EvidenceOfDefendants;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.WarrantOfRestitutionDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocument;
+import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocumentUploadDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -42,10 +45,11 @@ import java.util.stream.Stream;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.never;
 
 @ExtendWith(MockitoExtension.class)
 class DocumentServiceTest {
@@ -56,6 +60,10 @@ class DocumentServiceTest {
     private DocumentIdExtractor documentIdExtractor;
     @Captor
     private ArgumentCaptor<List<DocumentEntity>> documentEntityListCaptor;
+    @InjectMocks
+    private DocumentService documentService;
+    @Captor
+    private ArgumentCaptor<List<DocumentEntity>> listCaptor;
 
     private DocumentService underTest;
 
@@ -780,5 +788,65 @@ class DocumentServiceTest {
             Arguments.of(AdditionalDocumentType.LEGAL_AID_CERTIFICATE, CaseFileCategory.CORRESPONDENCE.getId()),
             Arguments.of(AdditionalDocumentType.OTHER, null)
         );
+    }
+
+    @Test
+    void shouldCreateValidLegalRepDocuments() {
+
+        LegalRepDocument legalRepDocument = LegalRepDocument.builder()
+            .documentType(EvidenceDocumentType.PHOTOGRAPHIC_EVIDENCE)
+            .description("Test Description")
+            .document(Document.builder().build())
+            .build();
+
+        LegalRepDocumentUploadDetails legalRepDocumentUploadDetails = LegalRepDocumentUploadDetails.builder()
+            .legalRepDocuments(List.of(ListValue.<LegalRepDocument>builder().value(legalRepDocument).build()))
+            .build();
+
+        PCSCase pcsCase = PCSCase.builder()
+            .legalRepDocumentUploadDetails(legalRepDocumentUploadDetails)
+            .build();
+
+        List<LegalRepDocument> listOfLegalRepDocuments = documentService.createLegalRepDocuments(pcsCase);
+        assertThat(listOfLegalRepDocuments).hasSize(1);
+        assertThat(listOfLegalRepDocuments.get(0).getDocumentType().getLabel()).isEqualTo("Photographic evidence");
+        assertThat(listOfLegalRepDocuments.get(0).getDescription()).isEqualTo("Test Description");
+    }
+
+    @Test
+    void shouldSaveLegalRepDocuments() {
+        String description = "test description";
+
+        Document document = Document.builder()
+            .filename("test filename")
+            .url("test url")
+            .binaryUrl("test binary url")
+            .build();
+
+        LegalRepDocument legalRepDocument = LegalRepDocument.builder()
+            .document(document)
+            .documentType(EvidenceDocumentType.PHOTOGRAPHIC_EVIDENCE)
+            .description(description)
+            .build();
+
+        List<LegalRepDocument> legalRepDocList = List.of(legalRepDocument);
+
+        PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
+
+        // When
+        documentService.createDocumentEntitiesFromLegalRepDocuments(legalRepDocList, pcsCaseEntity);
+
+        // Then
+        verify(pcsCaseEntity, times(1)).addDocuments(listCaptor.capture());
+
+        List<DocumentEntity> capturedDocumentList = listCaptor.getValue();
+        assertThat(capturedDocumentList).hasSize(1);
+
+        DocumentEntity documentEntity = capturedDocumentList.getFirst();
+
+        assertThat(documentEntity.getUrl()).isEqualTo("test url");
+        assertThat(documentEntity.getFileName()).isEqualTo("test filename");
+        assertThat(documentEntity.getType().getLabel()).isEqualTo("Photographic evidence");
+        assertThat(documentEntity.getDescription()).isEqualTo(description);
     }
 }
