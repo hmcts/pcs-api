@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.repository.DefendantResponseRepository;
 import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationDetailsService;
 
@@ -21,6 +22,7 @@ public class LegalRepForDefendantAccessValidator {
 
     private final OrganisationDetailsService organisationDetailsService;
     private final DefendantPartyExtractor defendantPartyExtractor;
+    private final DefendantResponseRepository defendantResponseRepository;
 
     public List<PartyEntity> validateAndGetDefendants(PcsCaseEntity caseEntity, UUID authenticatedUserId) {
         long caseReference = caseEntity.getCaseReference();
@@ -48,6 +50,8 @@ public class LegalRepForDefendantAccessValidator {
                                   organisationId
                               )
                 ))
+            .filter(part -> !defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyId(
+                caseReference, part.getId()))
             .toList();
 
         if (linkedDefendants.isEmpty()) {
