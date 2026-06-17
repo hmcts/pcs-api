@@ -334,6 +334,11 @@ class NoticeOfPossessionViewTest {
                                 .type(DocumentType.POSSESSION_NOTICE)
                                 .build(),
                         DocumentEntity.builder()
+                                .id(noticeDocumentId)
+                                .type(DocumentType.POSSESSION_NOTICE)
+                                .description("Additional document uploaded")
+                                .build(),
+                        DocumentEntity.builder()
                                 .id(UUID.randomUUID())
                                 .type(DocumentType.WITNESS_STATEMENT)
                                 .build()

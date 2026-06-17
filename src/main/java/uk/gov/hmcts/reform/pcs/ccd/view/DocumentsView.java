@@ -64,6 +64,7 @@ public class DocumentsView {
     }
 
     public static boolean isDescriptionEmpty(DocumentEntity documentEntity) {
-        return ObjectUtils.isEmpty(documentEntity.getDescription());
+        return ObjectUtils.isEmpty(documentEntity.getDescription())
+                || documentEntity.getDescription().trim().isEmpty();
     }
 }
