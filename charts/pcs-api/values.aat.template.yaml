@@ -6,4 +6,3 @@ java:
     ENABLE_TESTING_SUPPORT: true
     DOC_ASSEMBLY_URL: http://dg-docassembly-aat.service.core-compute-aat.internal
     CASE_TYPE_SUFFIX: "staging"
-    RESPOND_ONLINE_URL: https://pcs-frontend.aat.platform.hmcts.net/access-your-case
