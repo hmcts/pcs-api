@@ -9,6 +9,13 @@ import { user} from '@data/page-data';
 
 test.use({ storageState: undefined });
 
+let globalSearchTestData = {
+  name: '',
+  addressLine1: '',
+  postcode: '',
+  email: ''
+};
+
 const setupGlobalSearchUser = async (
   page: Page,
   context: BrowserContext,
@@ -16,8 +23,35 @@ const setupGlobalSearchUser = async (
 ) => {
   await context.clearCookies();
   initializeExecutor(page);
-  await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
-  await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayload });
+
+  const suffix = Date.now();
+  const { propertyAddress } = createCaseApiData.createCasePayload;
+  const { submitCasePayload } = submitCaseApiData;
+
+  globalSearchTestData = {
+    name: `${submitCasePayload.claimantName} ${suffix}`,
+    addressLine1: `${propertyAddress.AddressLine1} ${suffix}`,
+    postcode: propertyAddress.PostCode,
+    email: submitCasePayload.claimantContactEmail.replace('@', `+${suffix}@`)
+  };
+
+  await performAction('createCaseAPI', {
+    data: {
+      ...createCaseApiData.createCasePayload,
+      propertyAddress: {
+        ...propertyAddress,
+        AddressLine1: globalSearchTestData.addressLine1
+      }
+    }
+  });
+  await performAction('submitCaseAPI', {
+    data: {
+      ...submitCasePayload,
+      claimantName: globalSearchTestData.name,
+      claimantContactEmail: globalSearchTestData.email,
+      formattedClaimantContactAddress: `${globalSearchTestData.addressLine1}<br>${propertyAddress.PostTown}<br>${propertyAddress.PostCode}`
+    }
+  });
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
   await page.evaluate(() => {
     try {
@@ -71,19 +105,19 @@ const runGlobalSearchScenarios = () => {
   });
 
   test('Search by postcode', async () => {
-    await runFieldSearch(globalSearch.postCodeLabel, globalSearch.postcodeInputText);
+    await runFieldSearch(globalSearch.postCodeLabel, globalSearchTestData.postcode);
   });
 
   test('Search by email address', async () => {
-    await runFieldSearch(globalSearch.emailAddressLabel, globalSearch.emailAddressInputText);
+    await runFieldSearch(globalSearch.emailAddressLabel, globalSearchTestData.email);
   });
 
   test('first line of address', async () => {
-    await runFieldSearch(globalSearch.firstLineOfAddressLabel, globalSearch.firstLineOfAddressInputText);
+    await runFieldSearch(globalSearch.firstLineOfAddressLabel, globalSearchTestData.addressLine1);
   });
 
   test('Search by party name', async () => {
-    await runFieldSearch(globalSearch.nameLabel, globalSearch.nameInputText);
+    await runFieldSearch(globalSearch.nameLabel, globalSearchTestData.name);
   });
 
   test('Invalid case reference', async () => {
