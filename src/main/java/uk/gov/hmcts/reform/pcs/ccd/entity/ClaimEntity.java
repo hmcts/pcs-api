@@ -201,9 +201,10 @@ public class ClaimEntity {
     @Column(updatable = false, nullable = false)
     private LocalDateTime claimSubmittedDate;
 
-    @OneToOne(mappedBy = "claim", cascade = ALL, orphanRemoval = true)
+    @Builder.Default
+    @OneToMany(mappedBy = "claim", cascade = ALL, orphanRemoval = true)
     @JsonManagedReference
-    private FeePaymentEntity feePayment;
+    private List<FeePaymentEntity> feePayments = new ArrayList<>();
 
     private LocalDateTime claimIssuedDate;
 

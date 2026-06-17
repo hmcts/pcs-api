@@ -24,6 +24,8 @@ import uk.gov.hmcts.reform.pcs.notify.template.personalisation.BasePersonalisati
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.ClaimantBasePersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.CounterclaimPaymentSuccessPersonalisation;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -302,8 +304,9 @@ class NotificationPersonalisationFactoryTest {
             FeePaymentEntity feePayment = FeePaymentEntity.builder()
                 .paymentStatus(PaymentStatus.PAID)
                 .externalReference("PAY-123")
+                .party(defendantParty)
                 .build();
-            response.getClaim().setFeePayment(feePayment);
+            response.getClaim().setFeePayments(new ArrayList<>(List.of(feePayment)));
 
             CounterclaimPaymentSuccessPersonalisation result = factory.counterclaimSuccess(response);
 
@@ -325,8 +328,9 @@ class NotificationPersonalisationFactoryTest {
             FeePaymentEntity feePayment = FeePaymentEntity.builder()
                 .paymentStatus(PaymentStatus.NOT_PAID)
                 .externalReference("PAY-123")
+                .party(defendantParty)
                 .build();
-            response.getClaim().setFeePayment(feePayment);
+            response.getClaim().setFeePayments(new ArrayList<>(List.of(feePayment)));
 
             assertThatThrownBy(() -> factory.counterclaimSuccess(response))
                 .isInstanceOf(FeePaymentNotFoundException.class)
@@ -340,7 +344,7 @@ class NotificationPersonalisationFactoryTest {
             PartyEntity defendantParty = stubDefendantParty();
             DefendantResponseEntity response = createDefendantResponse(claimantParty, defendantParty);
 
-            response.getClaim().setFeePayment(null);
+            response.getClaim().setFeePayments(new ArrayList<>());
 
             assertThatThrownBy(() -> factory.counterclaimSuccess(response))
                 .isInstanceOf(FeePaymentNotFoundException.class)
@@ -386,6 +390,7 @@ class NotificationPersonalisationFactoryTest {
 
     private PartyEntity createParty(String firstName, String lastName) {
         PartyEntity party = new PartyEntity();
+        party.setId(UUID.randomUUID());
         party.setFirstName(firstName);
         party.setLastName(lastName);
         party.setNameKnown(VerticalYesNo.YES);

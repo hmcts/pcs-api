@@ -60,7 +60,7 @@ class PaymentNotificationServiceTest {
         when(feePayment.getParty()).thenReturn(feePaymentParty);
 
         ClaimEntity claim = mock(ClaimEntity.class);
-        when(claim.getFeePayment()).thenReturn(feePayment);
+        when(claim.getFeePayments()).thenReturn(List.of(feePayment));
         when(feePayment.getClaim()).thenReturn(claim);
         when(claim.getPcsCase()).thenReturn(pcsCase);
 
@@ -102,7 +102,7 @@ class PaymentNotificationServiceTest {
         when(feePayment.getParty()).thenReturn(null);
 
         ClaimEntity claim = mock(ClaimEntity.class);
-        when(claim.getFeePayment()).thenReturn(feePayment);
+        when(claim.getFeePayments()).thenReturn(List.of(feePayment));
 
         when(counterClaimRepository.findById(counterClaimId)).thenReturn(Optional.of(counterClaim));
         when(counterClaim.getParty()).thenReturn(defendant);
@@ -124,7 +124,7 @@ class PaymentNotificationServiceTest {
         PcsCaseEntity pcsCase = mock(PcsCaseEntity.class);
 
         ClaimEntity claim = mock(ClaimEntity.class);
-        when(claim.getFeePayment()).thenReturn(null);
+        when(claim.getFeePayments()).thenReturn(List.of());
 
         when(counterClaimRepository.findById(counterClaimId)).thenReturn(Optional.of(counterClaim));
         when(counterClaim.getParty()).thenReturn(defendant);
@@ -156,7 +156,7 @@ class PaymentNotificationServiceTest {
         when(feePayment.getParty()).thenReturn(feePaymentParty);
 
         ClaimEntity claim = mock(ClaimEntity.class);
-        when(claim.getFeePayment()).thenReturn(feePayment);
+        when(claim.getFeePayments()).thenReturn(List.of(feePayment));
 
         when(counterClaimRepository.findById(counterClaimId)).thenReturn(Optional.of(counterClaim));
         when(pcsCase.getClaims()).thenReturn(List.of(claim));
@@ -186,7 +186,7 @@ class PaymentNotificationServiceTest {
         when(feePayment.getParty()).thenReturn(feePaymentParty);
 
         ClaimEntity claim = mock(ClaimEntity.class);
-        when(claim.getFeePayment()).thenReturn(feePayment);
+        when(claim.getFeePayments()).thenReturn(List.of(feePayment));
         when(feePayment.getClaim()).thenReturn(claim);
         when(claim.getPcsCase()).thenReturn(pcsCase);
 

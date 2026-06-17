@@ -32,10 +32,8 @@ public class PaymentNotificationService {
         PartyEntity defendant = counterClaim.getParty();
 
         FeePaymentEntity feePayment = pcsCase.getClaims().stream()
-            .filter(claim -> claim.getFeePayment() != null
-                && claim.getFeePayment().getParty() != null
-                && claim.getFeePayment().getParty().getId().equals(defendant.getId()))
-            .map(ClaimEntity::getFeePayment)
+            .flatMap(claim -> claim.getFeePayments().stream())
+            .filter(fp -> fp.getParty() != null && fp.getParty().getId().equals(defendant.getId()))
             .findFirst()
             .orElse(null);
 

@@ -20,6 +20,7 @@ import uk.gov.hmcts.reform.pcs.notify.template.personalisation.ClaimantBasePerso
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.CounterclaimPaymentSuccessPersonalisation;
 
 import java.util.Locale;
+import java.util.UUID;
 
 @Slf4j
 @Service
@@ -64,16 +65,25 @@ public class NotificationPersonalisationFactory {
     }
 
     public CounterclaimPaymentSuccessPersonalisation counterclaimSuccess(DefendantResponseEntity defendantResponse) {
-        FeePaymentEntity defendantFeePayment = defendantResponse.getClaim().getFeePayment();
-        if (defendantFeePayment == null || !defendantFeePayment.getPaymentStatus().equals(PaymentStatus.PAID)) {
-            throw new FeePaymentNotFoundException(
-                "Paid fee payment not found for defendant response: " + defendantResponse.getId());
-        }
+        FeePaymentEntity defendantFeePayment = findPaidFeePaymentForParty(
+            defendantResponse.getClaim(),
+            defendantResponse.getParty().getId(),
+            defendantResponse.getId()
+        );
 
         return CounterclaimPaymentSuccessPersonalisation.builder()
             .base(forDefendant(defendantResponse))
             .paymentReferenceNumber(defendantFeePayment.getExternalReference())
             .build();
+    }
+
+    private FeePaymentEntity findPaidFeePaymentForParty(ClaimEntity claim, UUID partyId, UUID defendantResponseId) {
+        return claim.getFeePayments().stream()
+            .filter(feePayment -> feePayment.getParty() != null && partyId.equals(feePayment.getParty().getId()))
+            .filter(feePayment -> PaymentStatus.PAID.equals(feePayment.getPaymentStatus()))
+            .findFirst()
+            .orElseThrow(() -> new FeePaymentNotFoundException(
+                "Paid fee payment not found for defendant response: " + defendantResponseId));
     }
 
     private BasePersonalisation buildPersonalisation(
