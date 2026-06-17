@@ -38,8 +38,11 @@ import uk.gov.hmcts.reform.pcs.document.model.defenceform.DefenceFormPayload;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.math.BigDecimal;
+import java.time.Clock;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -54,6 +57,10 @@ class DefenceFormPayloadBuilderTest {
 
     private static final UUID DEFENDANT_ID = UUID.randomUUID();
 
+    // Fixed UK clock: generation happens on 16 July 2026 (BST).
+    private static final Clock UK_CLOCK =
+        Clock.fixed(Instant.parse("2026-07-16T08:00:00Z"), ZoneId.of("Europe/London"));
+
     @Mock
     private PartyAttributeAssertionRepository assertionRepository;
 
@@ -65,7 +72,8 @@ class DefenceFormPayloadBuilderTest {
             new CaseReferenceFormatter(),
             new CaseNameFormatter(),
             assertionRepository,
-            new ObjectMapper());
+            new ObjectMapper(),
+            UK_CLOCK);
         stubAssertions();
     }
 
@@ -86,6 +94,17 @@ class DefenceFormPayloadBuilderTest {
         void mapsIssueDateFromClaim() {
             DefenceFormPayload payload = builder.build(response(LegislativeCountry.ENGLAND));
             assertThat(payload.getIssueDateSealed()).isEqualTo(LocalDate.of(2026, 1, 5));
+        }
+
+        @Test
+        void issueDateUsesUkCalendarDayForTimestampJustAfterMidnightBst() {
+            DefendantResponseEntity response = response(LegislativeCountry.ENGLAND);
+            // 23:30 UTC on 15 July = 00:30 BST on 16 July - the UK day is the 16th.
+            response.getClaim().setClaimIssuedDate(LocalDateTime.of(2026, 7, 15, 23, 30));
+
+            DefenceFormPayload payload = builder.build(response);
+
+            assertThat(payload.getIssueDateSealed()).isEqualTo(LocalDate.of(2026, 7, 16));
         }
 
         @Test
@@ -401,7 +420,7 @@ class DefenceFormPayloadBuilderTest {
     class StatementOfTruth {
 
         @Test
-        void mapsSubmittedDateAndFullName() {
+        void mapsSubmittedDateFromUkClockAndFullName() {
             DefendantResponseEntity response = response(LegislativeCountry.ENGLAND);
             response.setStatementOfTruth(StatementOfTruthEntity.builder()
                 .fullName("Bob Tenant")
@@ -410,7 +429,8 @@ class DefenceFormPayloadBuilderTest {
 
             DefenceFormPayload payload = builder.build(response);
 
-            assertThat(payload.getSubmittedOn()).isEqualTo(LocalDate.of(2026, 3, 1));
+            // The defence is generated now, so the submitted date is the current UK date.
+            assertThat(payload.getSubmittedOn()).isEqualTo(LocalDate.of(2026, 7, 16));
             assertThat(payload.getSotFullName()).isEqualTo("Bob Tenant");
         }
 

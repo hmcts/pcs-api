@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.pcs.ccd.service.defenceform;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.ccd.domain.IncomeType;
@@ -34,6 +35,9 @@ import uk.gov.hmcts.reform.pcs.document.model.defenceform.DefenceFormPayload;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.math.BigDecimal;
+import java.time.Clock;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.util.Collection;
 import java.util.EnumMap;
 import java.util.List;
@@ -66,6 +70,7 @@ public class DefenceFormPayloadBuilder {
     private final CaseNameFormatter caseNameFormatter;
     private final PartyAttributeAssertionRepository assertionRepository;
     private final ObjectMapper objectMapper;
+    private final Clock ukClock;
 
     private static final List<IncomeType> INCOME_ROW_ORDER = List.of(
         IncomeType.INCOME_FROM_JOBS,
@@ -77,11 +82,13 @@ public class DefenceFormPayloadBuilder {
     public DefenceFormPayloadBuilder(CaseReferenceFormatter caseReferenceFormatter,
                                      CaseNameFormatter caseNameFormatter,
                                      PartyAttributeAssertionRepository assertionRepository,
-                                     ObjectMapper objectMapper) {
+                                     ObjectMapper objectMapper,
+                                     @Qualifier("ukClock") Clock ukClock) {
         this.caseReferenceFormatter = caseReferenceFormatter;
         this.caseNameFormatter = caseNameFormatter;
         this.assertionRepository = assertionRepository;
         this.objectMapper = objectMapper;
+        this.ukClock = ukClock;
     }
 
     public DefenceFormPayload build(DefendantResponseEntity response) {
@@ -121,7 +128,10 @@ public class DefenceFormPayloadBuilder {
         payload.caseName(caseNameFormatter.formatCaseName(toDomainParties(claimants), toDomainParties(defendants)));
 
         if (claim.getClaimIssuedDate() != null) {
-            payload.issueDateSealed(claim.getClaimIssuedDate().toLocalDate());
+            // Stored as a UTC timestamp; convert to the UK calendar date so a claim issued just
+            // after midnight BST shows the correct day rather than the previous one.
+            payload.issueDateSealed(claim.getClaimIssuedDate().atZone(ZoneOffset.UTC)
+                .withZoneSameInstant(ukClock.getZone()).toLocalDate());
         }
 
         if (!claimants.isEmpty()) {
@@ -274,9 +284,9 @@ public class DefenceFormPayloadBuilder {
         if (statementOfTruth == null) {
             return;
         }
-        if (statementOfTruth.getCompletedDate() != null) {
-            payload.submittedOn(statementOfTruth.getCompletedDate().toLocalDate());
-        }
+        // The defence PDF is generated at submission time, so the current UK date is the date the
+        // defendant submitted - same approach as the general-application document.
+        payload.submittedOn(LocalDate.now(ukClock));
         payload.sotFullName(statementOfTruth.getFullName());
     }
 
