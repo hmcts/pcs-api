@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.view;
 
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
@@ -84,12 +85,13 @@ public class NoticeOfPossessionView {
     }
 
     private static List<ListValue<Document>> getNoticeStatement(PcsCaseEntity pcsCaseEntity) {
-        if (pcsCaseEntity.getDocuments().isEmpty()) {
+        if (CollectionUtils.isEmpty(pcsCaseEntity.getDocuments())) {
             return List.of();
         }
 
         return pcsCaseEntity.getDocuments().stream()
             .filter(NoticeOfPossessionView::isNoticeStatement)
+            .filter(DocumentsView::isDescriptionEmpty)
             .map(NoticeOfPossessionView::toDocument)
             .toList();
     }
