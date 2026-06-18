@@ -42,6 +42,14 @@ class CaseTypeTest {
     }
 
     @Test
+    void shouldNotBeSuffixedCaseTypeByDefault() {
+        // No CASE_TYPE_SUFFIX in the test environment -> canonical PCS, which IS indexed into
+        // global search. The suffixed (true) branch is covered behaviourally by
+        // PCSCaseViewTest#shouldNotSetSearchCriteriaForSuffixedCaseType.
+        assertThat(CaseType.isSuffixedCaseType()).isFalse();
+    }
+
+    @Test
     void shouldGetJurisdictionId() {
         // When
         String jurisdictionId = CaseType.getJurisdictionId();
