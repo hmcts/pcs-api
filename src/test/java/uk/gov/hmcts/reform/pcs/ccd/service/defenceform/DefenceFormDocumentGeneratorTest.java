@@ -43,6 +43,6 @@ class DefenceFormDocumentGeneratorTest {
     @Test
     void templateIdMatchesRdoDocmosisNamingConvention() {
         assertThat(DefenceFormDocumentGenerator.TEMPLATE_ID)
-            .matches("^CV-PCS-DEF-(ENG|WEL)-.+\\.docx$");
+            .matches("^CV-PCS-CLM-(ENG|WEL)-.+\\.docx$");
     }
 }

@@ -11,7 +11,7 @@ import java.util.List;
 
 /**
  * Typed payload rendered into the defence form Docmosis template
- * ({@code CV-PCS-DEF-ENG-Defence-Form.docx}). One form is produced for the defendant who submits
+ * ({@code CV-PCS-CLM-ENG-Defence-Form.docx}). One form is produced for the defendant who submits
  * the response.
  *
  * <p>Values are pre-formatted by {@code DefenceFormPayloadBuilder}, except the two title-block dates
