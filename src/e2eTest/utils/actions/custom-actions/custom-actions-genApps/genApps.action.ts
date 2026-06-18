@@ -6,7 +6,7 @@ import {
   hasTheDefendantAskedTheOtherPartiesAgreedToThisApplication,
   haveTheyAlreadyAppliedForHelpWithFees,
   helpPayingTheFee,
-  isTheCourtHearingInTheNext14Days, paymentDetails, statementOfTruth,
+  isTheCourtHearingInTheNext14Days, paymentDetails, serviceRequestGenApps, statementOfTruth,
   uploadDocumentsToSupportDefendantsApplication,
   whatOrderDoYouWantTheCourtToMakeAndWhy,
   whichLanguageDidYouUseToCompleteThisService
@@ -269,15 +269,19 @@ export class GenAppsAction implements IAction {
     await performAction('clickButton', applicationSubmitted.closeAndReturnToCaseOverviewButton);
   }
 
-  private async payClaimFeeGenApps(params?: { clickLink?: boolean }) {
-    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
-    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`});
-    await performValidation('mainHeader',confirmGenApps.mainHeader);
+  private async payClaimFeeGenApps( clickLink?: boolean ) {
+    await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid});
+    await performValidation('text', {
+      elementType: 'paragraph',
+      text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
+    });
+    await performValidation('mainHeader', confirmGenApps.mainHeader);
     await performValidation('text', {elementType: 'span', text: confirmGenApps.pay123ApplicationFeeParagraph});
-    if (params?.clickLink === true) {
+    if (clickLink === true) {
       await performAction('clickButton', confirmGenApps.payYourApplicationLink);
+    } else {
+      await performAction('clickButton', confirmGenApps.closeAndReturnToCaseDetailsButton);
     }
-    await performAction('clickButton', confirmGenApps.closeAndReturnToCaseDetailsButton);
   }
 
   private async clickPayNowLinkGenApps(page: Page ) {
@@ -325,11 +329,20 @@ export class GenAppsAction implements IAction {
     }
     const expectedAmount = paymentOptions.expectedAmount;
     if (typeof expectedAmount === 'string' && expectedAmount !== '') {
-      await expect(page.getByText(expectedAmount, { exact: true })).toBeVisible();
+      await expect(page.getByText(expectedAmount, {exact: true})).toBeVisible();
     }
-    await performAction('clickRadioButton', { option: paymentOptions.payByOption });
-    await performAction('clickButton', paymentOptions.continueButton);
-  }
+    await performAction('clickRadioButton', {option: paymentOptions.payByOption});
+      if(paymentOptions.payByOption == serviceRequestGenApps.payByAccountRadioOption) {
+        await performAction('clickRadioButton', {option: paymentOptions.payByOption});
+        await performAction('select', paymentOptions.pbaLabel, paymentOptions.pbaValue);
+        const locator = page.locator('button', {hasText: 'Confirm payment'});
+        await expect(locator).toBeDisabled();
+        await performAction('inputText', paymentOptions.referenceLabel, paymentOptions.referenceText);
+        await page.click('body');
+        await expect(locator).toBeEnabled();
+      }
+      await performAction('clickButton', paymentOptions.button);
+}
 
   private async inputPaymentDetails(inputDetails: actionRecord) {
     await performActions(

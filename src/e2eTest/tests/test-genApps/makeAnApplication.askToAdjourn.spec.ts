@@ -212,7 +212,7 @@ test('Select an Application - Ask to Adjourn journey - Help paying the Fee[No] @
   await performAction('selectPaymentOptions', {
     amountLabel: serviceRequestGenApps.amountToPayLabel,
     payByOption: serviceRequestGenApps.payByCardRadioOption,
-    continueButton: serviceRequestGenApps.continueButton
+    button: serviceRequestGenApps.continueButton
   });
   await performValidation('mainHeader', paymentDetails.mainHeader);
   await performAction('inputPaymentDetails', {

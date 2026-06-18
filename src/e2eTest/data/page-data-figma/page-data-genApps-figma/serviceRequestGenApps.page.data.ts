@@ -7,4 +7,9 @@ export const serviceRequestGenApps = {
   confirmPaymentButton: `Confirm payment`,
   paymentSuccessMainHeader: `Payment successful`,
   returnToServiceRequestLink: `Return to service request`,
+  selectPBALabel: `Select a PBA`,
+  pbaIndex1: 1,
+  pbaValue: `PBA0092853`,
+  pbaReferenceLabel: `Enter a reference for your PBA account statements`,
+  pbaReferenceInputText: `PBAReferenceText-Automation`,
 }

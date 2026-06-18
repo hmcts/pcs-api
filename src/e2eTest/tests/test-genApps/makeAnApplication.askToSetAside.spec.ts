@@ -16,7 +16,7 @@ import {
   askTheCourtToSetAsideTheOrder, checkYourAnswersGenApps, chooseAnApplication,
   doYouWantToUploadDocumentsToSupportDefendantsApplication,
   hasTheDefendantAskedTheOtherPartiesAgreedToThisApplication,
-  haveTheyAlreadyAppliedForHelpWithFees, helpPayingTheFee, selectParty,
+  helpPayingTheFee, selectParty, serviceRequestGenApps,
   statementOfTruth, uploadDocumentsToSupportDefendantsApplication, whatOrderDoYouWantTheCourtToMakeAndWhy,
   whichLanguageDidYouUseToCompleteThisService
 } from "@data/page-data-figma/page-data-genApps-figma";
@@ -85,13 +85,7 @@ test.describe('Make an Application - e2e Journey @nightly', async () => {
     await performValidation('mainHeader', helpPayingTheFee.mainHeader);
     await performAction('doYouNeedHelpPayingFee', {
       question: helpPayingTheFee.doYouNeedHelpPayingTheFeeQuestion,
-      option: helpPayingTheFee.yesRadioOption,
-    });
-    await performAction('confirmYouHaveAppliedForFeeHelp', {
-      question: haveTheyAlreadyAppliedForHelpWithFees.haveYouAlreadyAppliedForHelpQuestion,
-      option: haveTheyAlreadyAppliedForHelpWithFees.yesRadioOption,
-      label: haveTheyAlreadyAppliedForHelpWithFees.hwfReferenceHiddenTextLabel,
-      input: haveTheyAlreadyAppliedForHelpWithFees.hwfReferenceTextInput,
+      option: helpPayingTheFee.noRadioOption,
     });
     await performAction('confirmOtherPartiesAgreed', {
       question: hasTheDefendantAskedTheOtherPartiesAgreedToThisApplication.haveTheOtherPartiesAgreedQuestion,
@@ -131,7 +125,19 @@ test.describe('Make an Application - e2e Journey @nightly', async () => {
     await performAction('retrieveCYATableData', { name: 'check your answers table' });
     await performAction('validateCYA');
     await performAction('clickButton', checkYourAnswersGenApps.submitButton);
-    await performAction('verifyApplicationSubmitted');
-    await performValidation('bannerAlert', 'Case #.* has been updated with event: Make an application');
+    await performAction('payClaimFeeGenApps', {clickLink: true});
+    await performAction('clickPayNowLinkGenApps');
+    await performAction('selectPaymentOptions', {
+      amountLabel: serviceRequestGenApps.amountToPayLabel,
+      payByOption: serviceRequestGenApps.payByAccountRadioOption,
+      expectedAmount: serviceRequestGenApps.amount123,
+      pbaLabel: serviceRequestGenApps.selectPBALabel,
+      pbaValue: serviceRequestGenApps.pbaIndex1,
+      referenceLabel: serviceRequestGenApps.pbaReferenceLabel,
+      referenceText: serviceRequestGenApps.pbaReferenceInputText,
+      button: serviceRequestGenApps.confirmPaymentButton,
+    });
+    await performValidation('mainHeader', serviceRequestGenApps.paymentSuccessMainHeader);
+
   });
 });
