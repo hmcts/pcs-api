@@ -20,6 +20,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoPreferNotToSay;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaim;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponseStatus;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.HouseholdCircumstances;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PaymentAgreement;
@@ -49,6 +50,7 @@ import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
@@ -163,6 +165,8 @@ class DefendantResponseServiceTest {
         assertThat(savedResponse.getFreeLegalAdvice()).isEqualTo(YesNoPreferNotToSay.YES);
         assertThat(savedResponse.getRentArrearsAmountConfirmation()).isEqualTo(YesNoNotSure.NO);
         assertThat(savedResponse.getLandlordRegistered()).isEqualTo(YesNoNotSure.YES);
+        assertThat(savedResponse.getStatus()).isEqualTo(DefendantResponseStatus.SUBMITTED);
+        assertThat(savedResponse.getResponseSubmittedDate()).isEqualTo(LocalDateTime.now(FIXED_UTC_CLOCK));
         verify(pcsCaseEntity).addDefendantResponse(savedResponse);
 
     }
@@ -972,6 +976,47 @@ class DefendantResponseServiceTest {
             Arguments.of(VerticalYesNo.NO),
             Arguments.of((VerticalYesNo) null)
         );
+    }
+
+    @Test
+    void shouldSaveDefendantResponseForRepresentedParty() {
+        UUID representedPartyId = UUID.randomUUID();
+        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
+        when(partyRepository.findByIdAndPcsCaseCaseReference(representedPartyId, CASE_REFERENCE))
+            .thenReturn(Optional.of(partyEntity));
+        stubClaimLookup();
+
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .defendantResponses(DefendantResponses.builder()
+                .freeLegalAdvice(YesNoPreferNotToSay.YES)
+                .build())
+            .build();
+
+        underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse, representedPartyId);
+
+        verify(partyRepository).findByIdAndPcsCaseCaseReference(representedPartyId, CASE_REFERENCE);
+        verify(partyService, never()).getPartyEntityByIdamId(any(), anyLong());
+        verify(defendantResponseRepository).save(responseCaptor.capture());
+        assertThat(responseCaptor.getValue().getParty()).isEqualTo(partyEntity);
+    }
+
+    @Test
+    void shouldThrowWhenRepresentedPartyNotFound() {
+        UUID representedPartyId = UUID.randomUUID();
+        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
+        when(partyRepository.findByIdAndPcsCaseCaseReference(representedPartyId, CASE_REFERENCE))
+            .thenReturn(Optional.empty());
+
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .defendantResponses(DefendantResponses.builder().build())
+            .build();
+
+        assertThatThrownBy(() ->
+            underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse, representedPartyId))
+            .isInstanceOf(IllegalStateException.class)
+            .hasMessageContaining("No party found for party ID");
+
+        verify(defendantResponseRepository, never()).save(any());
     }
 
     @ParameterizedTest(name = "counterClaimWantToUploadFiles={0}")

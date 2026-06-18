@@ -48,18 +48,18 @@ class CounterClaimFeeCalculatorTest {
         CounterClaim counterClaim = CounterClaim.builder()
             .claimType(CounterClaimType.PAYMENT_OR_COMPENSATION)
             .isClaimAmountKnown(VerticalYesNo.NO)
-            .estimatedMaxClaimAmount(new BigDecimal("250000"))
+            .estimatedMaxClaimAmount(new BigDecimal("2500.00"))
             .build();
 
         assertThat(underTest.resolveFeeType(counterClaim)).isEqualTo(FeeType.COUNTER_CLAIM_RANGED);
     }
 
     @Test
-    void shouldResolveFeeLookupAmountInPoundsFromPence() {
+    void shouldResolveFeeLookupAmountInPoundsFromClaimAmount() {
         CounterClaim counterClaim = CounterClaim.builder()
             .claimType(CounterClaimType.PAYMENT_OR_COMPENSATION)
             .isClaimAmountKnown(VerticalYesNo.YES)
-            .claimAmount(new BigDecimal("250000"))
+            .claimAmount(new BigDecimal("2500.00"))
             .build();
 
         assertThat(underTest.resolveFeeLookupAmountInPounds(counterClaim))
@@ -140,17 +140,27 @@ class CounterClaimFeeCalculatorTest {
         CounterClaim counterClaim = CounterClaim.builder()
             .claimType(CounterClaimType.PAYMENT_OR_COMPENSATION)
             .isClaimAmountKnown(VerticalYesNo.NO)
-            .estimatedMaxClaimAmount(new BigDecimal("10050"))
+            .estimatedMaxClaimAmount(new BigDecimal("100.50"))
             .build();
 
         assertThat(underTest.resolveFeeLookupAmountInPounds(counterClaim))
             .isEqualByComparingTo(new BigDecimal("100.50"));
     }
 
+    @Test
+    void shouldReturnNullFeeLookupAmountWhenClaimAmountKnownIsUnset() {
+        CounterClaim counterClaim = CounterClaim.builder()
+            .claimType(CounterClaimType.PAYMENT_OR_COMPENSATION)
+            .build();
+
+        assertThat(underTest.resolveFeeLookupAmountInPounds(counterClaim)).isNull();
+        assertThat(underTest.resolveFeeType(counterClaim)).isEqualTo(FeeType.COUNTER_CLAIM);
+    }
+
     private static Stream<Arguments> knownAmountFeeScenarios() {
         return Stream.of(
-            Arguments.of(new BigDecimal("500000"), FeeType.COUNTER_CLAIM_RANGED),
-            Arguments.of(new BigDecimal("500100"), FeeType.COUNTER_CLAIM)
+            Arguments.of(new BigDecimal("5000.00"), FeeType.COUNTER_CLAIM_RANGED),
+            Arguments.of(new BigDecimal("5001.00"), FeeType.COUNTER_CLAIM)
         );
     }
 }

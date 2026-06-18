@@ -7,12 +7,10 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimTyp
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 
 @Service
 public class CounterClaimFeeCalculator {
 
-    private static final BigDecimal PENCE_PER_POUND = new BigDecimal("100");
     private static final BigDecimal RANGED_FEE_UPPER_BOUND_POUNDS = new BigDecimal("5000");
 
     public boolean isPaymentRequired(CounterClaim counterClaim) {
@@ -41,22 +39,11 @@ public class CounterClaimFeeCalculator {
         return FeeType.COUNTER_CLAIM;
     }
 
-    /**
-     * Claim amounts are stored in pence (CCD / frontend). Fees register expects pounds.
-     */
     public BigDecimal resolveFeeLookupAmountInPounds(CounterClaim counterClaim) {
         return getCounterClaimAmountInPounds(counterClaim);
     }
 
     private BigDecimal getCounterClaimAmountInPounds(CounterClaim counterClaim) {
-        BigDecimal amountInPence = getCounterClaimAmountInPence(counterClaim);
-        if (amountInPence == null) {
-            return null;
-        }
-        return amountInPence.divide(PENCE_PER_POUND, 2, RoundingMode.HALF_UP);
-    }
-
-    private BigDecimal getCounterClaimAmountInPence(CounterClaim counterClaim) {
         if (counterClaim.getIsClaimAmountKnown() == VerticalYesNo.YES) {
             return counterClaim.getClaimAmount();
         }
