@@ -33,6 +33,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredAdditionalOtherGround;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.ClaimGroundSummary;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.IntroductoryDemotedOrOtherGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.CaseDetailsTab;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.NoticeTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.AdditionalDefendantInformationTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.ClaimantInformationTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.DefendantInformationTabDetails;
@@ -49,6 +50,7 @@ import uk.gov.hmcts.reform.pcs.ccd.view.builder.AdditionalDefendantInformationTa
 import uk.gov.hmcts.reform.pcs.ccd.view.builder.ClaimantInformationTabDetailsBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.view.builder.DefendantInformationTabDetailsBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.view.builder.GroundsBuilder;
+import uk.gov.hmcts.reform.pcs.ccd.view.builder.NoticeDetailsBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.view.builder.ReasonsForPossessionTabDetailsBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.view.builder.RequiredDocumentsTabDetailsBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.view.builder.RentArrearsTabDetailsBuilder;
@@ -90,6 +92,9 @@ class CaseDetailsTabViewTest {
 
     @Mock
     private AdditionalDefendantInformationTabDetailsBuilder additionalDefendantInformationTabDetailsBuilder;
+
+    @Mock
+    private NoticeDetailsBuilder noticeDetailsBuilder;
 
     @Spy
     private RequiredDocumentsTabDetailsBuilder requiredDocumentsTabDetailsBuilder;
@@ -190,8 +195,8 @@ class CaseDetailsTabViewTest {
                                        .build())
             .noticeServed(YesOrNo.YES)
             .noticeServedDetails(NoticeServedDetails.builder()
-                                     .noticeServiceMethod(NoticeServiceMethod.EMAIL)
-                                     .noticeEmailSentDateTime(LocalDateTime.of(2026, 5, 11, 17, 2))
+                                     .serviceMethod(NoticeServiceMethod.EMAIL)
+                                     .emailSentDateTime(LocalDateTime.of(2026, 5, 11, 17, 2))
                                      .build())
             .preActionProtocolCompleted(VerticalYesNo.NO)
             .preActionProtocolIncompleteExplanation("preaction explanation")
@@ -291,6 +296,14 @@ class CaseDetailsTabViewTest {
                 )
             );
 
+        when(noticeDetailsBuilder.buildNoticeTabDetails(pcsCase)).thenReturn(
+            NoticeTabDetails.builder()
+                .noticeServed("Yes")
+                .noticeMethod("By email")
+                .noticeDate("11 May 2026, 5:02:00PM")
+                .build()
+        );
+
         // When
         CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase);
 
@@ -386,13 +399,23 @@ class CaseDetailsTabViewTest {
 
     @Test
     void shouldSetCaseDetailsTabFieldsWithNoData() {
+        // Given
         PCSCase pcsCase = PCSCase.builder()
             .legislativeCountry(LegislativeCountry.ENGLAND)
             .build();
 
+        when(noticeDetailsBuilder.buildNoticeTabDetails(pcsCase)).thenReturn(
+            NoticeTabDetails.builder()
+                .noticeServed(noAnswer)
+                .noticeMethod(noAnswer)
+                .noticeDate(noAnswer)
+                .build()
+        );
+
         // When
         CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase);
 
+        // Then
         assertThat(caseDetailsTab.getPropertyAddress()).isNull();
         assertThat(caseDetailsTab.getGroundsForPossessionDetails().getGrounds()).isEqualTo(noAnswer);
         assertThat(caseDetailsTab.getReasonsForPossessionDetails()).isNull();
@@ -644,115 +667,6 @@ class CaseDetailsTabViewTest {
         assertThat(caseDetailsTab.getClaimantCircumstances().getClaimantCircumstancesDetails()).isNull();
     }
 
-    @Test
-    void shouldSetNoticeDetailsForFirstClassPost() {
-        // Given
-        PCSCase pcsCase = PCSCase.builder()
-            .noticeServed(YesOrNo.YES)
-            .noticeServedDetails(NoticeServedDetails.builder()
-                                     .noticeServiceMethod(NoticeServiceMethod.FIRST_CLASS_POST)
-                                     .noticePostedDate(LocalDate.of(2026, 5, 11))
-                                     .build())
-            .build();
-
-        // When
-        CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase);
-
-        // Then
-        assertThat(caseDetailsTab.getNoticeDetails().getNoticeMethod())
-            .isEqualTo(NoticeServiceMethod.FIRST_CLASS_POST.getLabel());
-        assertThat(caseDetailsTab.getNoticeDetails().getNoticeServed()).isEqualTo("Yes");
-        assertThat(caseDetailsTab.getNoticeDetails().getNoticeDate()).isEqualTo("11 May 2026");
-    }
-
-    @Test
-    void shouldSetNoticeDetailsForPermittedPlace() {
-        // Given
-        PCSCase pcsCase = PCSCase.builder()
-            .noticeServed(YesOrNo.YES)
-            .noticeServedDetails(NoticeServedDetails.builder()
-                                     .noticeServiceMethod(NoticeServiceMethod.DELIVERED_PERMITTED_PLACE)
-                                     .noticeDeliveredDate(LocalDate.of(2026, 5, 11))
-                                     .build())
-            .build();
-
-        // When
-        CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase);
-
-        // Then
-        assertThat(caseDetailsTab.getNoticeDetails().getNoticeMethod())
-            .isEqualTo(NoticeServiceMethod.DELIVERED_PERMITTED_PLACE.getLabel());
-        assertThat(caseDetailsTab.getNoticeDetails().getNoticeServed()).isEqualTo("Yes");
-        assertThat(caseDetailsTab.getNoticeDetails().getNoticeDate()).isEqualTo("11 May 2026");
-    }
-
-    @Test
-    void shouldSetNoticeDetailsForPersonallyHanded() {
-        // Given
-        PCSCase pcsCase = PCSCase.builder()
-            .noticeServed(YesOrNo.YES)
-            .noticeServedDetails(NoticeServedDetails.builder()
-                                     .noticeServiceMethod(NoticeServiceMethod.PERSONALLY_HANDED)
-                                     .noticeHandedOverDateTime(LocalDateTime.of(2026, 5, 11, 9, 0, 0))
-                                     .noticePersonName("Notice name")
-                                     .build())
-            .build();
-
-        // When
-        CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase);
-
-        // Then
-        assertThat(caseDetailsTab.getNoticeDetails().getNoticeMethod())
-            .isEqualTo(NoticeServiceMethod.PERSONALLY_HANDED.getLabel());
-        assertThat(caseDetailsTab.getNoticeDetails().getNoticeServed()).isEqualTo("Yes");
-        assertThat(caseDetailsTab.getNoticeDetails().getNoticeDate()).isEqualTo("11 May 2026, 9:00:00AM");
-        assertThat(caseDetailsTab.getNoticeDetails().getNoticePersonName()).isEqualTo("Notice name");
-    }
-
-    @Test
-    void shouldSetNoticeDetailsForOtherElectronic() {
-        // Given
-        PCSCase pcsCase = PCSCase.builder()
-            .noticeServed(YesOrNo.YES)
-            .noticeServedDetails(NoticeServedDetails.builder()
-                                     .noticeServiceMethod(NoticeServiceMethod.OTHER_ELECTRONIC)
-                                     .noticeOtherElectronicDateTime(LocalDateTime.of(2026, 5, 11, 9, 0, 0))
-                                     .noticeOtherElectronicMethodExplanation("explanation")
-                                     .build())
-            .build();
-
-        // When
-        CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase);
-
-        // Then
-        assertThat(caseDetailsTab.getNoticeDetails().getNoticeMethod())
-            .isEqualTo(NoticeServiceMethod.OTHER_ELECTRONIC.getLabel());
-        assertThat(caseDetailsTab.getNoticeDetails().getNoticeServed()).isEqualTo("Yes");
-        assertThat(caseDetailsTab.getNoticeDetails().getNoticeDate()).isEqualTo("11 May 2026, 9:00:00AM");
-        assertThat(caseDetailsTab.getNoticeDetails().getNoticeOtherElectronicDetails())
-            .isEqualTo("explanation");
-    }
-
-    @Test
-    void shouldSetNoticeDetailsForOther() {
-        // Given
-        PCSCase pcsCase = PCSCase.builder()
-            .noticeServed(YesOrNo.YES)
-            .noticeServedDetails(NoticeServedDetails.builder()
-                                     .noticeServiceMethod(NoticeServiceMethod.OTHER)
-                                     .noticeOtherDateTime(LocalDateTime.of(2026, 5, 11, 9, 0, 0))
-                                     .build())
-            .build();
-
-        // When
-        CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase);
-
-        // Then
-        assertThat(caseDetailsTab.getNoticeDetails().getNoticeMethod())
-            .isEqualTo(NoticeServiceMethod.OTHER.getLabel());
-        assertThat(caseDetailsTab.getNoticeDetails().getNoticeServed()).isEqualTo("Yes");
-        assertThat(caseDetailsTab.getNoticeDetails().getNoticeDate()).isEqualTo("11 May 2026, 9:00:00AM");
-    }
 
     @Test
     void shouldDisplaySubmittedDateInUkTimeWhenServerTimezoneIsUtc() {
@@ -913,8 +827,8 @@ class CaseDetailsTabViewTest {
                     .build()
             )
             .noticeServedDetails(NoticeServedDetails.builder()
-                                     .noticeServiceMethod(NoticeServiceMethod.EMAIL)
-                                     .noticeEmailSentDateTime(LocalDateTime.of(2026, 5, 11, 17, 2))
+                                     .serviceMethod(NoticeServiceMethod.EMAIL)
+                                     .emailSentDateTime(LocalDateTime.of(2026, 5, 11, 17, 2))
                                      .build())
             .preActionProtocolCompleted(VerticalYesNo.NO)
             .mediationAttempted(VerticalYesNo.YES)
@@ -1069,12 +983,6 @@ class CaseDetailsTabViewTest {
             .isEqualTo("16 April 2024");
         assertThat(caseDetailsTab.getOccupationContractLicenceDetails().getDocumentsPlaceholder()).isEqualTo(noAnswer);
         assertThat(caseDetailsTab.getOccupationContractLicenceDetails().getDocuments()).isNull();
-        assertThat(caseDetailsTab.getNoticeDetails().getNoticeDate())
-            .isEqualTo("11 May 2026, 5:02:00PM");
-        assertThat(caseDetailsTab.getNoticeDetails().getNoticeMethod()).isEqualTo("By email");
-        assertThat(caseDetailsTab.getNoticeDetails().getNoticeServed()).isEqualTo("Yes");
-        assertThat(caseDetailsTab.getNoticeDetails().getTypeOfNoticeServed()).isEqualTo("notice type");
-        assertThat(caseDetailsTab.getNoticeDetails().getStatement()).isNull();
         assertThat(caseDetailsTab.getApplicationsDetails().getPlanToMakeGeneralApplication()).isEqualTo("Yes");
         assertThat(caseDetailsTab.getActionsTakenDetails().getPreactionProtocolFollowed()).isEqualTo("No");
         assertThat(caseDetailsTab.getActionsTakenDetails().getMediationAttempted()).isEqualTo("Yes");
@@ -1146,11 +1054,6 @@ class CaseDetailsTabViewTest {
         assertThat(caseDetailsTab.getOccupationContractLicenceDetails().getAgreementStartDate()).isEqualTo(noAnswer);
         assertThat(caseDetailsTab.getOccupationContractLicenceDetails().getDocumentsPlaceholder()).isEqualTo(noAnswer);
         assertThat(caseDetailsTab.getOccupationContractLicenceDetails().getDocuments()).isNull();
-
-        assertThat(caseDetailsTab.getNoticeDetails().getNoticeDate()).isEqualTo(noAnswer);
-        assertThat(caseDetailsTab.getNoticeDetails().getNoticeMethod()).isEqualTo(noAnswer);
-        assertThat(caseDetailsTab.getNoticeDetails().getNoticeServed()).isEqualTo(noAnswer);
-        assertThat(caseDetailsTab.getNoticeDetails().getNoticeDate()).isEqualTo(noAnswer);
 
         assertThat(caseDetailsTab.getAntisocialAndConductDetails()).isNull();
         assertThat(caseDetailsTab.getProhibitedConductStandardContractDetails()).isNull();
@@ -1229,60 +1132,24 @@ class CaseDetailsTabViewTest {
     }
 
     @Test
-    void shouldNotSetDetailedNoticeDetailsWhenNoticeServedIsNoEngland() {
-        // Given
-        PCSCase pcsCase = PCSCase.builder()
-            .noticeServed(YesOrNo.NO)
-            .build();
-
-        // When
-        CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase);
-
-        assertThat(caseDetailsTab.getNoticeDetails().getNoticeServed()).isEqualTo("No");
-        assertThat(caseDetailsTab.getNoticeDetails().getNoticeDate()).isEqualTo(noAnswer);
-        assertThat(caseDetailsTab.getNoticeDetails().getNoticeMethod()).isEqualTo(noAnswer);
-    }
-
-    @Test
-    void shouldNotSetDetailedNoticeDetailsWhenNoticeServedIsNoWales() {
-        // Given
-        PCSCase pcsCase = PCSCase.builder()
-            .legislativeCountry(LegislativeCountry.WALES)
-            .walesNoticeDetails(
-                WalesNoticeDetails.builder()
-                    .noticeServed(YesOrNo.NO)
-                    .build()
-            )
-            .build();
-
-        // When
-        CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase);
-
-        // Then
-        assertThat(caseDetailsTab.getNoticeDetails().getNoticeServed()).isEqualTo("No");
-        assertThat(caseDetailsTab.getNoticeDetails().getNoticeDate()).isEqualTo(noAnswer);
-        assertThat(caseDetailsTab.getNoticeDetails().getNoticeMethod()).isEqualTo(noAnswer);
-    }
-
-    @Test
     void shouldShowDocumentsInRequiredDocumentsTabDetails() {
         // Given
         PCSCase pcsCase = PCSCase.builder()
-            .legislativeCountry(LegislativeCountry.WALES)
-            .requiredDocumentsWales(
-                WalesDocuments.builder()
-                    .hasEnergyPerformanceCertificate(VerticalYesNo.YES)
-                    .hasGasSafetyReport(VerticalYesNo.YES)
-                    .hasElectricalInstallationConditionReport(VerticalYesNo.YES)
-                    .noEpcReason("noEpcReason")
-                    .noGasReportReason("noGasReportReason")
-                    .noEicrReason("noEicrReason")
-                    .gasSafetyReport(List.of(listValue(Document.builder().build())))
-                    .energyPerformance((List.of(listValue(Document.builder().build()))))
-                    .electricalInstallation((List.of(listValue(Document.builder().build()))))
-                    .build()
-            )
-            .build();
+                .legislativeCountry(LegislativeCountry.WALES)
+                .requiredDocumentsWales(
+                        WalesDocuments.builder()
+                                .hasEnergyPerformanceCertificate(VerticalYesNo.YES)
+                                .hasGasSafetyReport(VerticalYesNo.YES)
+                                .hasElectricalInstallationConditionReport(VerticalYesNo.YES)
+                                .noEpcReason("noEpcReason")
+                                .noGasReportReason("noGasReportReason")
+                                .noEicrReason("noEicrReason")
+                                .gasSafetyReport(List.of(listValue(Document.builder().build())))
+                                .energyPerformance((List.of(listValue(Document.builder().build()))))
+                                .electricalInstallation((List.of(listValue(Document.builder().build()))))
+                                .build()
+                )
+                .build();
 
         // When
         CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase);
@@ -1291,36 +1158,14 @@ class CaseDetailsTabViewTest {
         assertThat(caseDetailsTab.getRequiredDocumentsDetails().getHasGasSafetyReport()).isEqualTo("Yes");
         assertThat(caseDetailsTab.getRequiredDocumentsDetails().getHasEnergyPerformanceCertificate()).isEqualTo("Yes");
         assertThat(caseDetailsTab.getRequiredDocumentsDetails().getHasElectricalInstallationConditionReport())
-            .isEqualTo("Yes");
+                .isEqualTo("Yes");
         assertThat(caseDetailsTab.getRequiredDocumentsDetails().getNoGasSafetyReportReason()).isNull();
         assertThat(caseDetailsTab.getRequiredDocumentsDetails().getNoEnergyPerformanceCertificateReason()).isNull();
         assertThat(caseDetailsTab.getRequiredDocumentsDetails().getNoElectricalInstallationConditionReportReason())
-            .isNull();
+                .isNull();
         assertThat(caseDetailsTab.getRequiredDocumentsDetails().getGasSafetyReports()).hasSize(1);
         assertThat(caseDetailsTab.getRequiredDocumentsDetails().getEnergyPerformanceCertificates()).hasSize(1);
         assertThat(caseDetailsTab.getRequiredDocumentsDetails().getElectricalInstallationReports()).hasSize(1);
-    }
-
-    @Test
-    void shouldSetNoticeStatementIfNoticeServedIsNoWales() {
-        PCSCase pcsCase = PCSCase.builder()
-            .legislativeCountry(LegislativeCountry.WALES)
-            .walesNoticeDetails(
-                WalesNoticeDetails.builder()
-                    .noticeServed(YesOrNo.NO)
-                    .typeOfNoticeServed("notice type")
-                    .noticeStatement("notice statement")
-                    .build()
-            )
-            .build();
-
-        // When
-        CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase);
-
-        // Then
-        assertThat(caseDetailsTab.getNoticeDetails().getNoticeServed()).isEqualTo("No");
-        assertThat(caseDetailsTab.getNoticeDetails().getStatement()).isEqualTo("notice statement");
-        assertThat(caseDetailsTab.getNoticeDetails().getTypeOfNoticeServed()).isNull();
     }
 
     private static <T> ListValue<T> listValue(T value) {

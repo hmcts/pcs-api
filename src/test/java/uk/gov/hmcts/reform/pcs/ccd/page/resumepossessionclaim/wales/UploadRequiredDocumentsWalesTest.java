@@ -23,7 +23,7 @@ import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
-public class UploadRequiredDocumentsWalesTest extends BasePageTest {
+class UploadRequiredDocumentsWalesTest extends BasePageTest {
     @Mock
     private TextAreaValidationService textAreaValidationService;
 

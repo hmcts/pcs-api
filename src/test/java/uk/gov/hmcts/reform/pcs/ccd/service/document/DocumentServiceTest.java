@@ -317,7 +317,7 @@ class DocumentServiceTest {
             .build();
 
         NoticeServedDetails noticeServedDetails = NoticeServedDetails.builder()
-            .noticeDocuments(List.of(ListValue.<Document>builder().id("1").value(doc).build()))
+            .documents(List.of(ListValue.<Document>builder().id("1").value(doc).build()))
             .build();
 
         when(pcsCase.getNoticeServedDetails()).thenReturn(noticeServedDetails);
@@ -590,7 +590,7 @@ class DocumentServiceTest {
                 .tenancyLicenceDocuments(List.of(ListValue.<Document>builder().id("2").value(tenancyDoc).build()))
                 .build());
         when(pcsCase.getNoticeServedDetails()).thenReturn(NoticeServedDetails.builder()
-                .noticeDocuments(List.of(ListValue.<Document>builder().id("3").value(noticeDoc).build()))
+                .documents(List.of(ListValue.<Document>builder().id("3").value(noticeDoc).build()))
                 .build());
 
         // When
@@ -624,7 +624,7 @@ class DocumentServiceTest {
             .build();
 
         NoticeServedDetails noticeServedDetails = NoticeServedDetails.builder()
-                .noticeDocuments(List.of(ListValue.<Document>builder().id("1").value(doc).build()))
+                .documents(List.of(ListValue.<Document>builder().id("1").value(doc).build()))
                 .build();
 
         when(pcsCase.getNoticeServedDetails()).thenReturn(noticeServedDetails);
