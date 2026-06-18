@@ -19,6 +19,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseTitleService;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
+import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
 import uk.gov.hmcts.reform.pcs.ccd.view.AlternativesToPossessionView;
 import uk.gov.hmcts.reform.pcs.ccd.view.AsbProhibitedConductView;
@@ -81,7 +82,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
     private final GenAppsView genAppsView;
     private final CaseFlagsView flagsView;
     private final SearchCriteriaIndexer searchCriteriaIndexer;
-
+    private final PcsCaseService pcsCaseService;
 
     /**
      * Invoked by CCD to load PCS cases by reference.
@@ -98,7 +99,10 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
             draftCaseDataService
                 .getUnsubmittedCaseData(caseReference, resumePossessionClaim)
                 .ifPresentOrElse(
-                    draft -> caseTabView.setDraftCaseTabFields(pcsCase, draft),
+                    draft -> {
+                        caseTabView.setDraftCaseTabFields(pcsCase, draft);
+                        setPcsCaseFields(pcsCase, draft);
+                        },
                     () -> caseTabView.setCaseTabFields(pcsCase)
                 );
         } else {
@@ -113,6 +117,14 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         pcsCase.setSearchCriteria(searchCriteriaIndexer.buildSearchCriteria(pcsCase));
 
         return pcsCase;
+    }
+
+    private void setPcsCaseFields(PCSCase pcsCase, PCSCase draftCaseData) {
+        if (draftCaseData.getRegionId() == null || draftCaseData.getCaseManagementLocationNumber() == null) {
+            pcsCaseService.allocateRegionId(draftCaseData);
+        }
+        pcsCase.setRegionId(draftCaseData.getRegionId());
+        pcsCase.setCaseManagementLocationNumber(draftCaseData.getCaseManagementLocationNumber());
     }
 
     private boolean caseHasUnsubmittedData(long caseReference, State state) {

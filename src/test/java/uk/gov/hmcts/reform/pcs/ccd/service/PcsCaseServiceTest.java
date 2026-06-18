@@ -80,8 +80,6 @@ class PcsCaseServiceTest {
     private PostCodeCourtService postCodeCourtService;
     @Mock
     private LocationReferenceService locationReferenceService;
-    @Mock
-    private DraftCaseDataService draftCaseDataService;
 
     @Captor
     private ArgumentCaptor<PcsCaseEntity> pcsCaseEntityCaptor;
@@ -101,8 +99,7 @@ class PcsCaseServiceTest {
             caseLinkService,
             caseFlagService,
             postCodeCourtService,
-            locationReferenceService,
-            draftCaseDataService
+            locationReferenceService
         );
     }
 

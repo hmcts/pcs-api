@@ -22,6 +22,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseTitleService;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
+import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.view.AlternativesToPossessionView;
 import uk.gov.hmcts.reform.pcs.ccd.view.AsbProhibitedConductView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseFlagsView;
@@ -53,6 +54,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mock.Strictness.LENIENT;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -98,6 +100,8 @@ class PCSCaseViewTest {
     private StatementOfTruthView statementOfTruthView;
     @Mock
     private GenAppsView genAppsView;
+    @Mock
+    private PcsCaseService pcsCaseService;
 
     @Mock(strictness = LENIENT)
     private PcsCaseEntity pcsCaseEntity;
@@ -133,7 +137,7 @@ class PCSCaseViewTest {
                                     rentArrearsView, noticeOfPossessionView,
                                     statementOfTruthView, caseFieldsView, caseLinkView, enforcementOrderMediator,
                                     caseNoteView, caseTabView, partiesView, genAppsView, caseFlagsView,
-                                    searchCriteriaIndexer
+                                    searchCriteriaIndexer, pcsCaseService
         );
     }
 
@@ -303,6 +307,7 @@ class PCSCaseViewTest {
         verify(draftCaseDataService).hasUnsubmittedCaseData(CASE_REFERENCE, resumePossessionClaim);
         verify(draftCaseDataService).getUnsubmittedCaseData(CASE_REFERENCE, resumePossessionClaim);
         verify(caseTabView).setDraftCaseTabFields(pcsCase, draftCaseData);
+        verify(pcsCaseService).allocateRegionId(draftCaseData);
         verify(caseTabView, never()).setCaseTabFields(any(PCSCase.class));
         assertThat(pcsCase.getNextStepsMarkdown()).contains("Resume claim");
     }
@@ -354,6 +359,62 @@ class PCSCaseViewTest {
 
         // Then
         verify(enforcementOrderMediator).handleEnforcementRequirements(CASE_REFERENCE, pcsCase);
+    }
+
+    @Test
+    void shouldSetPCSCaseFields() {
+        // Given
+        Integer regionId = 1;
+        Integer locationNumber = 20264;
+        PCSCase draftCaseData = PCSCase.builder().build();
+        when(draftCaseDataService.hasUnsubmittedCaseData(CASE_REFERENCE, resumePossessionClaim))
+            .thenReturn(true);
+        when(draftCaseDataService.getUnsubmittedCaseData(CASE_REFERENCE, resumePossessionClaim))
+            .thenReturn(Optional.of(draftCaseData));
+        doAnswer(invocation -> {
+            PCSCase draft = invocation.getArgument(0);
+            draft.setRegionId(regionId);
+            draft.setCaseManagementLocationNumber(locationNumber);
+            return null;
+        }).when(pcsCaseService).allocateRegionId(any(PCSCase.class));
+
+        // When
+        PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, State.AWAITING_SUBMISSION_TO_HMCTS));
+
+        // Then
+        verify(draftCaseDataService).hasUnsubmittedCaseData(CASE_REFERENCE, resumePossessionClaim);
+        verify(draftCaseDataService).getUnsubmittedCaseData(CASE_REFERENCE, resumePossessionClaim);
+        verify(caseTabView).setDraftCaseTabFields(pcsCase, draftCaseData);
+        verify(pcsCaseService).allocateRegionId(draftCaseData);
+        verify(caseTabView, never()).setCaseTabFields(any(PCSCase.class));
+        assertThat(pcsCase.getNextStepsMarkdown()).contains("Resume claim");
+        assertThat(pcsCase.getRegionId()).isEqualTo(regionId);
+        assertThat(pcsCase.getCaseManagementLocationNumber()).isEqualTo(locationNumber);
+    }
+
+    @Test
+    void shouldSetPcsCaseFieldsNotCallingPCSCaseService() {
+        // Given
+        Integer regionId = 1;
+        Integer number = 20264;
+        PCSCase draftCaseData = PCSCase.builder().regionId(regionId).caseManagementLocationNumber(number).build();
+        when(draftCaseDataService.hasUnsubmittedCaseData(CASE_REFERENCE, resumePossessionClaim))
+            .thenReturn(true);
+        when(draftCaseDataService.getUnsubmittedCaseData(CASE_REFERENCE, resumePossessionClaim))
+            .thenReturn(Optional.of(draftCaseData));
+
+        // When
+        PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, State.AWAITING_SUBMISSION_TO_HMCTS));
+
+        // Then
+        verify(draftCaseDataService).hasUnsubmittedCaseData(CASE_REFERENCE, resumePossessionClaim);
+        verify(draftCaseDataService).getUnsubmittedCaseData(CASE_REFERENCE, resumePossessionClaim);
+        verify(caseTabView).setDraftCaseTabFields(pcsCase, draftCaseData);
+        verify(pcsCaseService, never()).allocateRegionId(draftCaseData);
+        verify(caseTabView, never()).setCaseTabFields(any(PCSCase.class));
+        assertThat(pcsCase.getNextStepsMarkdown()).contains("Resume claim");
+        assertThat(pcsCase.getRegionId()).isEqualTo(regionId);
+        assertThat(pcsCase.getCaseManagementLocationNumber()).isEqualTo(number);
     }
 
     private AddressUK stubAddressEntityModelMapper(AddressEntity addressEntity) {

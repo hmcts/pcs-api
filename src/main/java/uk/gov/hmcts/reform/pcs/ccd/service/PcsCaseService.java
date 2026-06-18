@@ -10,7 +10,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.CaseFlagEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
@@ -23,7 +22,6 @@ import uk.gov.hmcts.reform.pcs.postcodecourt.service.PostCodeCourtService;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 
 @Service
 @Slf4j
@@ -40,7 +38,6 @@ public class PcsCaseService {
     private final CaseFlagService caseFlagService;
     private final PostCodeCourtService postCodeCourtService;
     private final LocationReferenceService locationReferenceService;
-    private final DraftCaseDataService draftCaseDataService;
 
     public PcsCaseEntity createCase(long caseReference,
                                     AddressUK propertyAddress,
@@ -67,26 +64,8 @@ public class PcsCaseService {
         pcsCaseEntity.addClaim(claimEntity);
         partyService.createAllParties(pcsCase, pcsCaseEntity, claimEntity, organisationIdForCurrentUser);
         pcsCaseEntity.setTenancyLicence(tenancyLicenceService.createTenancyLicenceEntity(pcsCase));
-        log.info("pcsCase.getRegionId={}", pcsCase.getRegionId());
-        log.info("pcsCase.getCaseManagementLocationNumber={}", pcsCase.getCaseManagementLocationNumber());
-        outOfSyncPCSCaseTempFix(caseReference, pcsCaseEntity);
-    }
-
-    // The PCSCase in the EventPayload on Submit can be out of sync with the data held in the draft.
-    // Please see the evidence screenshot on ticket HDPI-5486  This is a temp fix for the issue as other tickets
-    // depend on these values.  This is better than the remote calls being run within the transaction.
-    private void outOfSyncPCSCaseTempFix(long caseReference, PcsCaseEntity pcsCaseEntity) {
-        Optional<PCSCase> unsubmittedCaseData = draftCaseDataService.getUnsubmittedCaseData(
-            caseReference, EventId.resumePossessionClaim);
-        if (unsubmittedCaseData.isPresent()) {
-            PCSCase inSyncPCSCase = unsubmittedCaseData.get();
-            log.info("inSyncPCSCase.getRegionId={}", inSyncPCSCase.getRegionId());
-            log.info("inSyncPCSCase.getCaseManagementLocationNumber={}",
-                     inSyncPCSCase.getCaseManagementLocationNumber());
-            pcsCaseEntity.setRegionId(inSyncPCSCase.getRegionId());
-            pcsCaseEntity.setBaseLocation(inSyncPCSCase.getCaseManagementLocationNumber());
-            pcsCaseRepository.save(pcsCaseEntity);
-        }
+        pcsCaseEntity.setRegionId(pcsCase.getRegionId());
+        pcsCaseEntity.setBaseLocation(pcsCase.getCaseManagementLocationNumber());
     }
 
     public void patchCaseFlags(long caseReference, PCSCase pcsCase) {
