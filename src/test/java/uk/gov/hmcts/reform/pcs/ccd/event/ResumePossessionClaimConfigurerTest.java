@@ -79,7 +79,7 @@ import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.PageConfigurerHelper.verifyAndCount;
 
 @ExtendWith(MockitoExtension.class)
-public class ResumePossessionClaimConfigurerTest {
+class ResumePossessionClaimConfigurerTest {
 
     @InjectMocks
     private ResumePossessionClaimConfigurer underTest;
