@@ -14,4 +14,5 @@ public class CounterClaimSubmitResponse {
     private final CounterClaimState status;
     private final String serviceRequestReference;
     private final BigDecimal feeAmount;
+    private final CounterClaimType claimType;
 }

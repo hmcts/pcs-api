@@ -175,7 +175,8 @@ class CounterClaimSubmitConfirmationServiceTest {
         assertThat(response.getConfirmationBody())
             .contains("\"status\":\"PENDING_COUNTER_CLAIM_ISSUED\"")
             .contains("\"serviceRequestReference\":\"" + SERVICE_REQUEST_REFERENCE + "\"")
-            .contains("\"feeAmount\":80.00");
+            .contains("\"feeAmount\":80.00")
+            .contains("\"claimType\":\"PAYMENT_OR_COMPENSATION\"");
     }
 
     @Test

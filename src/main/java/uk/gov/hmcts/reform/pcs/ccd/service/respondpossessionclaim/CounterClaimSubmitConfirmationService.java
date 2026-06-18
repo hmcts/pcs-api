@@ -9,6 +9,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaim;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimSubmitResponse;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.RespondPossessionClaimSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
@@ -50,6 +51,7 @@ public class CounterClaimSubmitConfirmationService {
             return buildCounterClaimConfirmationResponse(
                 persistenceResult.counterClaimEntity().getStatus(),
                 null,
+                null,
                 null
             );
         }
@@ -71,7 +73,8 @@ public class CounterClaimSubmitConfirmationService {
         return buildCounterClaimConfirmationResponse(
             CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED,
             serviceRequestReference,
-            feeDetails.getFeeAmount()
+            feeDetails.getFeeAmount(),
+            counterClaim.getClaimType()
         );
     }
 
@@ -96,7 +99,8 @@ public class CounterClaimSubmitConfirmationService {
     private SubmitResponse<State> buildCounterClaimConfirmationResponse(
         CounterClaimState status,
         String serviceRequestReference,
-        BigDecimal feeAmount
+        BigDecimal feeAmount,
+        CounterClaimType claimType
     ) {
         CounterClaimSubmitResponse.CounterClaimSubmitResponseBuilder counterClaimResponseBuilder =
             CounterClaimSubmitResponse.builder().status(status);
@@ -105,6 +109,9 @@ public class CounterClaimSubmitConfirmationService {
         }
         if (feeAmount != null) {
             counterClaimResponseBuilder.feeAmount(feeAmount);
+        }
+        if (claimType != null) {
+            counterClaimResponseBuilder.claimType(claimType);
         }
 
         RespondPossessionClaimSubmitResponse response = RespondPossessionClaimSubmitResponse.builder()
