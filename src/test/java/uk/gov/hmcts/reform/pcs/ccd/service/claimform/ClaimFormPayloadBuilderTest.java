@@ -864,10 +864,10 @@ class ClaimFormPayloadBuilderTest {
 
         private static Stream<Arguments> rentFrequencyDescriptions() {
             return Stream.of(
-                Arguments.argumentSet("weekly", RentPaymentFrequency.WEEKLY, "£500.00 (Weekly)"),
-                Arguments.argumentSet("fortnightly", RentPaymentFrequency.FORTNIGHTLY, "£500.00 (Fortnightly)"),
-                Arguments.argumentSet("monthly", RentPaymentFrequency.MONTHLY, "£500.00 (Monthly)"),
-                Arguments.argumentSet("other", RentPaymentFrequency.OTHER, "£500.00 (Other)")
+                Arguments.argumentSet("weekly", RentPaymentFrequency.WEEKLY, "Weekly"),
+                Arguments.argumentSet("fortnightly", RentPaymentFrequency.FORTNIGHTLY, "Fortnightly"),
+                Arguments.argumentSet("monthly", RentPaymentFrequency.MONTHLY, "Monthly"),
+                Arguments.argumentSet("other", RentPaymentFrequency.OTHER, "Other")
             );
         }
 

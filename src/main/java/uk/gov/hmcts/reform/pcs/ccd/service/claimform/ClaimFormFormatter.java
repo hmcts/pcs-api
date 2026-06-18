@@ -92,11 +92,8 @@ final class ClaimFormFormatter {
             : label;
     }
 
-    static String formatRentDescription(TenancyLicenceEntity tenancy) {
-        if (tenancy.getRentAmount() == null || tenancy.getRentFrequency() == null) {
-            return null;
-        }
-        return formatGbp(tenancy.getRentAmount()) + " (" + tenancy.getRentFrequency().getLabel() + ")";
+    static String formatRentFrequency(TenancyLicenceEntity tenancy) {
+        return tenancy.getRentFrequency() == null ? null : tenancy.getRentFrequency().getLabel();
     }
 
     // "Defendant 1 details", then "Additional defendant N details" for later defendants.

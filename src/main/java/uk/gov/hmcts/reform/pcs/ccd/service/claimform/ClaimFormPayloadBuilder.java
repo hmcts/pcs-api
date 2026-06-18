@@ -41,7 +41,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimFormFormatter.f
 import static uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimFormFormatter.formatGroundLabel;
 import static uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimFormFormatter.formatLongDate;
 import static uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimFormFormatter.formatNoticeTime;
-import static uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimFormFormatter.formatRentDescription;
+import static uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimFormFormatter.formatRentFrequency;
 import static uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimFormFormatter.formatTenancyLabel;
 import static uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimFormFormatter.isNo;
 import static uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimFormFormatter.isPopulated;
@@ -439,7 +439,7 @@ public class ClaimFormPayloadBuilder {
         payloadBuilder.tenancyUploadedNo(isNo(tenancyUploaded));
         payloadBuilder.tenancyNotUploadedReason(tenancy.getReasonsForNoTenancyLicence());
         payloadBuilder.rentAmount(formatGbp(tenancy.getRentAmount()));
-        payloadBuilder.rentCalculatedDescription(formatRentDescription(tenancy));
+        payloadBuilder.rentCalculatedDescription(formatRentFrequency(tenancy));
     }
 
     // Wales-only required documents (EPC, gas safety, EICR). The section itself is gated on isWales
