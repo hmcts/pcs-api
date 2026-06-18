@@ -96,8 +96,11 @@ public class DefendantResponseReadMapper {
     private DefendantResponses toDefendantResponses(DefendantResponseEntity entity, PartyEntity party) {
         DefendantResponses.DefendantResponsesBuilder builder = DefendantResponses.builder()
             .tenancyTypeConfirmation(entity.getTenancyTypeConfirmation())
+            .tenancyType(entity.getTenancyType())
             .tenancyStartDateConfirmation(entity.getTenancyStartDateConfirmation())
+            .tenancyStartDate(entity.getTenancyStartDate())
             .rentArrearsAmountConfirmation(entity.getRentArrearsAmountConfirmation())
+            .rentArrearsAmount(entity.getRentArrearsAmount())
             .landlordRegistered(entity.getLandlordRegistered())
             .landlordLicensed(entity.getLandlordLicensed())
             .writtenTerms(entity.getWrittenTerms())
@@ -294,6 +297,8 @@ public class DefendantResponseReadMapper {
             .needHelpWithFees(entity.getNeedHelpWithFees())
             .counterClaimFor(entity.getCounterClaimFor())
             .counterClaimReasons(entity.getCounterClaimReasons())
+            .otherOrderRequestDetails(entity.getOtherOrderRequestDetails())
+            .otherOrderRequestFacts(entity.getOtherOrderRequestFacts())
             .build();
     }
 }

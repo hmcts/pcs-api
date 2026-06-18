@@ -35,6 +35,8 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.notify.listener.DefendantResponseEntityListener;
 
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -94,10 +96,16 @@ public class DefendantResponseEntity {
     @Column(name = "tenancy_start_date_confirmation")
     private YesNoNotSure tenancyStartDateConfirmation;
 
+    @Column(name = "tenancy_start_date")
+    private LocalDate tenancyStartDate;
+
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @Column(name = "tenancy_type_confirmation")
     private YesNoNotSure tenancyTypeConfirmation;
+
+    @Column(name = "tenancy_type")
+    private String tenancyType;
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
@@ -111,6 +119,9 @@ public class DefendantResponseEntity {
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private YesNoNotSure rentArrearsAmountConfirmation;
+
+    @Column(name = "rent_arrears_amount")
+    private BigDecimal rentArrearsAmount;
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
