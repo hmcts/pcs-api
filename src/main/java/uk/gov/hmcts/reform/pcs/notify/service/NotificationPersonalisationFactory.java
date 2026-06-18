@@ -63,16 +63,18 @@ public class NotificationPersonalisationFactory {
         return buildPersonalisation(partyEntity, pcsCaseEntity);
     }
 
-    public CounterclaimPaymentSuccessPersonalisation counterclaimSuccess(DefendantResponseEntity defendantResponse) {
-        FeePaymentEntity defendantFeePayment = defendantResponse.getClaim().getFeePayment();
-        if (defendantFeePayment == null || !defendantFeePayment.getPaymentStatus().equals(PaymentStatus.PAID)) {
+    public CounterclaimPaymentSuccessPersonalisation counterclaimSuccess(
+        DefendantResponseEntity defendantResponse,
+        FeePaymentEntity feePayment
+    ) {
+        if (feePayment == null || !PaymentStatus.PAID.equals(feePayment.getPaymentStatus())) {
             throw new FeePaymentNotFoundException(
                 "Paid fee payment not found for defendant response: " + defendantResponse.getId());
         }
 
         return CounterclaimPaymentSuccessPersonalisation.builder()
             .base(forDefendant(defendantResponse))
-            .paymentReferenceNumber(defendantFeePayment.getExternalReference())
+            .paymentReferenceNumber(feePayment.getExternalReference())
             .build();
     }
 

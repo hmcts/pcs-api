@@ -455,7 +455,7 @@ class NotificationServiceTest {
                     .primaryDefendantName("JOHN DOE")
                     .build());
 
-            lenient().when(notificationPersonalisationFactory.counterclaimSuccess(any()))
+            lenient().when(notificationPersonalisationFactory.counterclaimSuccess(any(), any()))
                 .thenReturn(CounterclaimPaymentSuccessPersonalisation.builder()
                     .base(BasePersonalisation.builder()
                         .firstName("John")
@@ -676,14 +676,16 @@ class NotificationServiceTest {
                 .paymentStatus(PaymentStatus.PAID)
                 .externalReference("PAY-123")
                 .build();
-            defendantResponse.getClaim().setFeePayment(feePayment);
 
             CaseNotification savedNotification = createCaseNotification();
             when(notificationRepository.save(any())).thenReturn(savedNotification);
             when(schedulerClient.scheduleIfNotExists(any())).thenReturn(true);
 
             EmailNotificationResponse response =
-                notificationService.sendDefendantResponseCounterclaimPaymentSuccessEmailNotification(defendantResponse);
+                notificationService.sendDefendantResponseCounterclaimPaymentSuccessEmailNotification(
+                    defendantResponse,
+                    feePayment
+                );
 
             assertThat(response).isNotNull();
             assertThat(response.getStatus()).isEqualTo(NotificationStatus.SCHEDULED.toString());
@@ -1016,7 +1018,8 @@ class NotificationServiceTest {
     @Nested
     @DisplayName("TemplatePersonalisation Method Tests")
     class TemplatePersonalisationMethodTests {
-        private final NotificationPersonalisationFactory factory = new NotificationPersonalisationFactory(partyService);
+        private final NotificationPersonalisationFactory factory =
+            new NotificationPersonalisationFactory(partyService);
 
         @Test
         @DisplayName("Should use overridden claimant name when name flag is NO")

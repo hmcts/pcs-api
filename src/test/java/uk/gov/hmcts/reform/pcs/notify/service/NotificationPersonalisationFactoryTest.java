@@ -302,10 +302,10 @@ class NotificationPersonalisationFactoryTest {
             FeePaymentEntity feePayment = FeePaymentEntity.builder()
                 .paymentStatus(PaymentStatus.PAID)
                 .externalReference("PAY-123")
+                .party(defendantParty)
                 .build();
-            response.getClaim().setFeePayment(feePayment);
 
-            CounterclaimPaymentSuccessPersonalisation result = factory.counterclaimSuccess(response);
+            CounterclaimPaymentSuccessPersonalisation result = factory.counterclaimSuccess(response, feePayment);
 
             Map<String, Object> map = result.toMap();
             assertThat(map)
@@ -316,7 +316,7 @@ class NotificationPersonalisationFactoryTest {
         }
 
         @Test
-        @DisplayName("Should throw FeePaymentNotFoundException when no paid fee payment found")
+        @DisplayName("Should throw FeePaymentNotFoundException when fee payment is not paid")
         void shouldThrowExceptionWhenNoPaidFeePaymentFound() {
             PartyEntity claimantParty = stubClaimantParty();
             PartyEntity defendantParty = stubDefendantParty();
@@ -325,10 +325,10 @@ class NotificationPersonalisationFactoryTest {
             FeePaymentEntity feePayment = FeePaymentEntity.builder()
                 .paymentStatus(PaymentStatus.NOT_PAID)
                 .externalReference("PAY-123")
+                .party(defendantParty)
                 .build();
-            response.getClaim().setFeePayment(feePayment);
 
-            assertThatThrownBy(() -> factory.counterclaimSuccess(response))
+            assertThatThrownBy(() -> factory.counterclaimSuccess(response, feePayment))
                 .isInstanceOf(FeePaymentNotFoundException.class)
                 .hasMessageContaining("Paid fee payment not found");
         }
@@ -340,9 +340,7 @@ class NotificationPersonalisationFactoryTest {
             PartyEntity defendantParty = stubDefendantParty();
             DefendantResponseEntity response = createDefendantResponse(claimantParty, defendantParty);
 
-            response.getClaim().setFeePayment(null);
-
-            assertThatThrownBy(() -> factory.counterclaimSuccess(response))
+            assertThatThrownBy(() -> factory.counterclaimSuccess(response, null))
                 .isInstanceOf(FeePaymentNotFoundException.class)
                 .hasMessageContaining("Paid fee payment not found");
         }
@@ -386,6 +384,7 @@ class NotificationPersonalisationFactoryTest {
 
     private PartyEntity createParty(String firstName, String lastName) {
         PartyEntity party = new PartyEntity();
+        party.setId(UUID.randomUUID());
         party.setFirstName(firstName);
         party.setLastName(lastName);
         party.setNameKnown(VerticalYesNo.YES);

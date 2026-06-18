@@ -11,9 +11,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.PaymentAgreementEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DefendantResponseRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.feeandpay.FeePaymentRepository;
 import uk.gov.hmcts.reform.pcs.notify.model.EmailNotificationRequest;
 import uk.gov.hmcts.reform.pcs.notify.model.EmailNotificationResponse;
 import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
@@ -38,6 +41,9 @@ class NotifyControllerTest {
     @Mock
     private DefendantResponseRepository defendantResponseRepository;
 
+    @Mock
+    private FeePaymentRepository feePaymentRepository;
+
     private NotifyController notifyController;
 
     private static final String AUTH_HEADER = "Bearer test-token";
@@ -49,7 +55,7 @@ class NotifyControllerTest {
 
     @BeforeEach
     void setUp() {
-        notifyController = new NotifyController(notificationService, defendantResponseRepository);
+        notifyController = new NotifyController(notificationService, defendantResponseRepository, feePaymentRepository);
     }
 
     @Nested
@@ -59,6 +65,7 @@ class NotifyControllerTest {
         @DisplayName("Should return all email responses when defendant response exists")
         void shouldReturnAllEmailResponsesWhenDefendantResponseExists() {
             PartyEntity party = new PartyEntity();
+            party.setId(UUID.randomUUID());
             party.setEmailAddress(TEST_EMAIL);
             party.setFirstName("John");
             party.setLastName("Doe");
@@ -66,6 +73,11 @@ class NotifyControllerTest {
             PcsCaseEntity pcsCase = new PcsCaseEntity();
             pcsCase.setId(UUID.randomUUID());
             pcsCase.setCaseReference(1234567890L);
+
+            CounterClaimEntity counterClaim = new CounterClaimEntity();
+            counterClaim.setId(UUID.randomUUID());
+            counterClaim.setParty(party);
+            pcsCase.setCounterClaims(List.of(counterClaim));
 
             PaymentAgreementEntity paymentAgreement = new PaymentAgreementEntity();
             paymentAgreement.setId(UUID.randomUUID());
@@ -79,6 +91,10 @@ class NotifyControllerTest {
             when(defendantResponseRepository.findById(defendantResponseId))
                 .thenReturn(Optional.of(defendantResponse));
 
+            FeePaymentEntity feePayment = FeePaymentEntity.builder().build();
+            when(feePaymentRepository.findByRelatedEntityId(counterClaim.getId()))
+                .thenReturn(Optional.of(feePayment));
+
             EmailNotificationResponse response = createEmailResponse();
 
             when(notificationService.sendDefendantResponseNoCounterclaimEmailNotification(defendantResponse))
@@ -87,7 +103,7 @@ class NotifyControllerTest {
                      .sendDefendantResponseCounterclaimPaymentRequiredEmailNotification(defendantResponse)
             ).thenReturn(response);
             when(notificationService
-                     .sendDefendantResponseCounterclaimPaymentSuccessEmailNotification(defendantResponse)
+                     .sendDefendantResponseCounterclaimPaymentSuccessEmailNotification(defendantResponse, feePayment)
             ).thenReturn(response);
             when(notificationService
                      .sendDefendantResponseCounterclaimNoPaymentRequiredEmailNotification(defendantResponse)
@@ -105,7 +121,7 @@ class NotifyControllerTest {
             verify(notificationService)
                 .sendDefendantResponseCounterclaimPaymentRequiredEmailNotification(defendantResponse);
             verify(notificationService)
-                .sendDefendantResponseCounterclaimPaymentSuccessEmailNotification(defendantResponse);
+                .sendDefendantResponseCounterclaimPaymentSuccessEmailNotification(defendantResponse, feePayment);
             verify(notificationService)
                 .sendDefendantResponseCounterclaimNoPaymentRequiredEmailNotification(defendantResponse);
         }
@@ -136,7 +152,11 @@ class NotifyControllerTest {
         @Test
         @DisplayName("Should create controller with dependencies")
         void shouldCreateControllerWithNotificationServiceDependency() {
-            NotifyController controller = new NotifyController(notificationService, defendantResponseRepository);
+            NotifyController controller = new NotifyController(
+                notificationService,
+                defendantResponseRepository,
+                feePaymentRepository
+            );
 
             assertThat(controller).isNotNull();
         }
