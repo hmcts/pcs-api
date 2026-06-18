@@ -56,7 +56,9 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
      * per-PR preview type, driven by the CASE_TYPE_SUFFIX env var.
      */
     public static boolean isSuffixedCaseType() {
-        return ofNullable(getenv().get("CASE_TYPE_SUFFIX")).isPresent();
+        return ofNullable(getenv().get("CASE_TYPE_SUFFIX"))
+            .filter(suffix -> !suffix.isBlank())
+            .isPresent();
     }
 
     @Override
