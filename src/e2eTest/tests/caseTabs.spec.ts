@@ -330,6 +330,9 @@ test.describe('[Case tabs - England Journey] @nightly', async () => {
 
   test('Case tabs - CaseList view test @MAC @regression', async () => {
     await performValidation('mainHeader', home.mainHeader);
-    await performAction('validateCaseListTable');
+    await performAction('validateCaseListTable',{
+      createPayload: createCaseApiData.createCasePayload,
+      submitPayload: submitCaseApiData.submitCasePayload,
+    })
   });
 });
