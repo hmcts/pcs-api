@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.ConfigBuilderImpl;
 import uk.gov.hmcts.ccd.sdk.api.CaseCategory;
@@ -17,7 +18,10 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.AccessProfile;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 
+import java.util.Map;
+
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -42,11 +46,34 @@ class CaseTypeTest {
     }
 
     @Test
-    void shouldNotBeSuffixedCaseTypeByDefault() {
-        // No CASE_TYPE_SUFFIX in the test environment -> canonical PCS, which IS indexed into
-        // global search. The suffixed (true) branch is covered behaviourally by
-        // PCSCaseViewTest#shouldNotSetSearchCriteriaForSuffixedCaseType.
-        assertThat(CaseType.isSuffixedCaseType()).isFalse();
+    void shouldNotBeSuffixedCaseTypeWhenSuffixAbsent() {
+        // CASE_TYPE_SUFFIX not set -> suffix is null -> canonical PCS (indexed into global search)
+        try (MockedStatic<System> system = mockStatic(System.class)) {
+            system.when(System::getenv).thenReturn(Map.of());
+            assertThat(CaseType.isSuffixedCaseType()).isFalse();
+        }
+    }
+
+    @Test
+    void shouldNotBeSuffixedCaseTypeWhenSuffixBlank() {
+        // Pipeline encodes "canonical" as an empty CASE_TYPE_SUFFIX (see Jenkinsfile_CNP)
+        try (MockedStatic<System> system = mockStatic(System.class)) {
+            system.when(System::getenv).thenReturn(Map.of("CASE_TYPE_SUFFIX", ""));
+            assertThat(CaseType.isSuffixedCaseType()).isFalse();
+        }
+        try (MockedStatic<System> system = mockStatic(System.class)) {
+            system.when(System::getenv).thenReturn(Map.of("CASE_TYPE_SUFFIX", "   "));
+            assertThat(CaseType.isSuffixedCaseType()).isFalse();
+        }
+    }
+
+    @Test
+    void shouldBeSuffixedCaseTypeWhenSuffixSet() {
+        // Suffixed (e.g. PCS-STAGING, PR previews) -> NOT indexed into global search
+        try (MockedStatic<System> system = mockStatic(System.class)) {
+            system.when(System::getenv).thenReturn(Map.of("CASE_TYPE_SUFFIX", "staging"));
+            assertThat(CaseType.isSuffixedCaseType()).isTrue();
+        }
     }
 
     @Test
