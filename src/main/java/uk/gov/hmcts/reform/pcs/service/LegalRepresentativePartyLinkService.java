@@ -37,7 +37,7 @@ public class LegalRepresentativePartyLinkService {
     private final AddressMapper addressMapper;
 
     @Transactional
-    public void linkLegalRepresentativeToParty(long caseReference, String partyId, UserInfo user,
+    public void linkLegalRepresentativeToParty(long caseReference, String partyId, UUID idamId,
                                                OrganisationDetailsResponse organisationDetails) {
         String organisationId = organisationDetails.getOrganisationIdentifier();
         if (isAlreadyLinkedToParty(partyId, organisationId)) {
@@ -49,8 +49,6 @@ public class LegalRepresentativePartyLinkService {
         PartyEntity defendantPartyEntity = getDefendantPartyEntity(caseEntity, partyId);
 
         unlinkExistingRepresentation(UUID.fromString(partyId));
-
-        UUID idamId = UUID.fromString(user.getUid());
 
         Optional<LegalRepresentativeOrganisationEntity> legalRepresentativeOrganisationEntity =
             findExistingRepresentativeOrganisation(organisationId, caseReference);

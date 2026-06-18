@@ -22,6 +22,7 @@ public class HighLevelDataSetupApp extends DataLoaderToDefinitionStore {
     private static final CcdRoleConfig[] CCD_ROLES = {
         new CcdRoleConfig("caseworker-pcs", "PUBLIC"),
         new CcdRoleConfig("caseworker-pcs-solicitor", "PUBLIC"),
+        new CcdRoleConfig("caseworker-divorce-solicitor", "PUBLIC"),
         new CcdRoleConfig("caseworker-ras-validation", "PUBLIC"),
         new CcdRoleConfig("citizen", "PUBLIC"),
         new CcdRoleConfig("caseworker", "PUBLIC"),

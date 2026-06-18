@@ -443,6 +443,7 @@ dependencies {
     exclude group: 'com.launchdarkly', module: 'launchdarkly-java-server-sdk'
   }
 
+  implementation group: 'com.github.hmcts', name: 'ccd-config-generator', version: 'DEV-SNAPSHOT'
   functionalTestImplementation group: 'net.serenity-bdd', name: 'serenity-rest-assured', version: serenityBddVersion
   functionalTestImplementation group: 'net.serenity-bdd', name: 'serenity-core', version: serenityBddVersion
   functionalTestImplementation group: 'net.serenity-bdd', name: 'serenity-junit5', version: serenityBddVersion

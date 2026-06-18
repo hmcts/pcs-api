@@ -29,6 +29,7 @@ public enum UserRole implements HasRole {
 
     PCS_CASE_WORKER("caseworker-pcs", Set.of(R), IDAM),
     PCS_SOLICITOR("caseworker-pcs-solicitor", CRU, IDAM),
+    DIVORCE_SOLICITOR("caseworker-divorce-solicitor", CRU, IDAM),
 
     HMCTS_ADMIN("hmcts-admin", Set.of(R), RAS, GS_PROFILE),
     HMCTS_JUDICIARY("hmcts-judiciary", Set.of(R), RAS, GS_PROFILE),

@@ -177,7 +177,7 @@ xui-webapp:
   nodejs:
     imagePullPolicy: Always
     releaseNameOverride: ${SERVICE_NAME}-xui-webapp
-    image: hmctsprod.azurecr.io/xui/webapp:latest
+    image: hmctsprod.azurecr.io/xui/webapp:latest /// pr docker image
     ingressHost: xui-${SERVICE_FQDN}
     devmemoryRequests: 2Gi
     devcpuRequests: 500m
@@ -219,6 +219,7 @@ xui-webapp:
           - mc-idam-client-secret
           - system-user-name
           - system-user-password
+          - mc-session-secret
 ccd-case-document-am-api:
   enabled: true
   java:

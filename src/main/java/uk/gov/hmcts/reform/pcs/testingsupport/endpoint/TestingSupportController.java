@@ -383,7 +383,7 @@ public class TestingSupportController {
         legalRepresentativePartyLinkService.linkLegalRepresentativeToParty(
             caseReference,
             partyId,
-            userDetails,
+            UUID.fromString(userDetails.getUid()),
             organisationDetails
         );
         return ResponseEntity.ok().build();
