@@ -1,7 +1,7 @@
 export const judicial = {
   //Possession Fee Paid User
   mrs_justice_chavez_email: 'DDJ.Randell.Lesch@ejudiciary.net',
-  chief_CCJ_Judge_email: 'ChiefICCJudge.Nichols@ejudiciary.net'
+  //chief_CCJ_Judge_email: 'ChiefICCJudge.Nichols@ejudiciary.net'
 } as const;
 export const judicialNightly: readonly string[] = [
   judicial.mrs_justice_chavez_email
