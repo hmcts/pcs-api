@@ -388,6 +388,51 @@ class GenAppServiceTest {
     }
 
     @Test
+    void shouldSaveUploadedDocumentWithNullTypeWhenNoDocumentType() {
+        // Given
+        String originalFilename = "original filename";
+        String modifiedFilename = "modified filename";
+
+        Document document = Document.builder()
+            .filename(originalFilename)
+            .url("test url")
+            .binaryUrl("test binary url")
+            .build();
+
+        UUID applicantPartyId = UUID.randomUUID();
+        when(applicantParty.getId()).thenReturn(applicantPartyId);
+        when(documentNameService.appendGenAppPostfix(eq(originalFilename), isA(GenAppEntity.class),
+                                      eq(mainClaim), eq(applicantPartyId)))
+            .thenReturn(modifiedFilename);
+
+        UploadedDocument uploadedDocument = UploadedDocument.builder()
+            .document(document)
+            .contentType("test content type")
+            .sizeInBytes(1234L)
+            .build();
+
+        CitizenGenAppRequest genAppRequest = CitizenGenAppRequest.builder()
+            .sotAccepted(VerticalYesNo.YES)
+            .hasSupportingDocuments(VerticalYesNo.YES)
+            .uploadedDocuments(List.of(ListValue.<UploadedDocument>builder().value(uploadedDocument).build()))
+            .build();
+
+        when(documentRepository.saveAll(anyList())).thenReturn(List.of(mock(DocumentEntity.class)));
+
+        // When
+        Throwable throwable = catchThrowable(
+            () -> underTest.createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty)
+        );
+
+        // Then
+        assertThat(throwable).isNull();
+
+        verify(documentRepository).saveAll(documentEntityListCaptor.capture());
+        assertThat(documentEntityListCaptor.getValue()).hasSize(1);
+        assertThat(documentEntityListCaptor.getValue().getFirst().getType()).isNull();
+    }
+
+    @Test
     void shouldNotSaveUploadedDocumentsIfSupportingDocumentsFlagIsNo() {
         // Given
         Document document = Document.builder()
