@@ -371,6 +371,8 @@ export class PageContentValidation implements IValidation {
       let mappingPath;
       if(url.includes("enforceTheOrder")){
          mappingPath = path.join(__dirname, '../../../data/page-data-figma/page-data-enforcement-figma/urlToFileMappingEnforcement.ts');
+      } else if(url.includes("makeAnApplication")){
+        mappingPath = path.join(__dirname, '../../../data/page-data-figma/page-data-genApps-figma/urlToFileMappingGenApps.ts');
       }
       else{
          mappingPath = path.join(__dirname, '../../../data/page-data-figma/urlToFileMapping.ts');
