@@ -27,18 +27,29 @@ test.beforeEach(async ({ page }, testInfo) => {
     await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayloadCaseDetails });
     await performAction('getCaseAPI', 'Claim Submission Time');
     await performAction('fetchCurrentUserAPI', 'Claimant');
+  } else if (testInfo.title.includes('CaseList')) {
+    await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
+    await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayload });
+    await performAction('getCaseAPI', 'Claim Submission Time');
+    await performAction('fetchCurrentUserAPI', 'Claimant');
   } else {
     await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
     await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayloadCaseTab });
     await performAction('getCaseAPI', 'Link Solicitor');
     await performAction('fetchCurrentUserAPI', 'Defendant');
   }
-  await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/${getCaseTypeId()}/${process.env.CASE_NUMBER}#Summary`);
-  await expect(async () => {
-    await page.waitForURL(`${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/${getCaseTypeId()}/${process.env.CASE_NUMBER}#Summary`, { waitUntil: 'domcontentloaded' });
-  }).toPass({
-    timeout: VERY_LONG_TIMEOUT,
-  });
+
+  if (testInfo.title.includes('CaseList')) {
+    await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}/cases`);   
+
+  } else {
+    await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/${getCaseTypeId()}/${process.env.CASE_NUMBER}#Summary`);
+    await expect(async () => {
+      await page.waitForURL(`${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/${getCaseTypeId()}/${process.env.CASE_NUMBER}#Summary`, { waitUntil: 'domcontentloaded' });
+    }).toPass({
+      timeout: VERY_LONG_TIMEOUT,
+    });
+  }
 });
 
 test.afterEach(async () => {
@@ -311,5 +322,10 @@ test.describe('[Case tabs - England Journey] @nightly', async () => {
       table: 'Underlessee or mortgagee 1'
     });
 
+  });
+
+  test('Case tabs - CaseList view test @MAC @regression', async () => {
+    await performValidation('mainHeader', home.mainHeader);
+    await performAction('validateCaseListTable');
   });
 });

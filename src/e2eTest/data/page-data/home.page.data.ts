@@ -12,5 +12,6 @@ export const home =
     caseNotes: 'Notes',
     caseSummary: 'Summary',
     caseDetails: 'Case Details',
-    signOutButton: 'Sign out'
+    signOutButton: 'Sign out',
+    caseListTableHeader: ['Case number','Date issued','Claimant names','Defendant names','Postcode','State']
   };

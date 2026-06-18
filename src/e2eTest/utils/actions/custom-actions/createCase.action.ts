@@ -12,7 +12,8 @@ import {
   whatAreYourGroundsForPossession,
   userIneligible,
   whatAreYourGroundsForPossessionWales,
-  addressCheckYourAnswers
+  addressCheckYourAnswers,
+  home
 } from '@data/page-data';
 import {
   claimantType,
@@ -52,7 +53,7 @@ import {
   checkingNoticeWales,
   addCaseNote,
 } from '@data/page-data-figma';
-import {MEDIUM_TIMEOUT, VERY_LONG_TIMEOUT} from 'playwright.config';
+import {LONG_TIMEOUT, MEDIUM_TIMEOUT, SHORT_TIMEOUT, VERY_LONG_TIMEOUT} from 'playwright.config';
 import {compareMaps} from '@utils/common/compareMaps.util';
 import {caseInfo} from './createCaseAPI.action';
 import {createCaseApiData} from '@data/api-data';
@@ -127,6 +128,7 @@ export class CreateCaseAction implements IAction {
       ['addCaseNotes', () => this.addCaseNotes(fieldName as actionRecord)],
       ['validateCaseNotesDetails', () => this.validateCaseNotesDetails(page, fieldName as actionRecord)],
       ['validateCaseSummaryDetails', () => this.validateCaseSummaryDetails(page, fieldName as actionRecord)],
+      ['validateCaseListTable', () => this.validateCaseListTable(page)],
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -1553,5 +1555,85 @@ export class CreateCaseAction implements IAction {
   public async getTableDataValue(page: Page, tableHeader: string): Promise<string> {
     const tdLocator = page.locator(`//span[text()="${tableHeader}"]/ancestor::tr[1]/child::td`);
     return ((await tdLocator.textContent()) || '').trim();
+  }
+
+  public async validateCaseListTable(page: Page){
+    const mainTable = page.locator('#search-result thead');
+    await expect(mainTable).toBeVisible({ timeout: MEDIUM_TIMEOUT, visible: true });
+    const tHeader = mainTable.locator('th');
+
+    const headers = await tHeader.allTextContents();
+
+    const cleanedHeaders = headers
+      .map(h => h.replace(/\u200B/g, '').replace(/\s*▼\s*/, '').trim())
+      .filter(Boolean);
+    expect(cleanedHeaders, 'validating  case list table header').toEqual(home.caseListTableHeader);
+    //const rowCount = await page.locator('#search-result tbody tr').count();
+    // const target = caseInfo.fid;
+    // console.log('case number is ' + target)
+
+    const userInputArray: string[] = [];
+    userInputArray.push(caseInfo.fid,);
+    userInputArray.push('Possession Claims Solicitor Org');
+    userInputArray.push('Doe, Parker and Others');
+    userInputArray.push('W3 7RX');
+    userInputArray.push('Pending Case Issued');
+    const caseValueRetrieved = await this.findCasePagination(page, caseInfo.fid);
+    expect(caseValueRetrieved, 'validating  case list table header').toEqual(userInputArray);
+  }
+
+  private async findCasePagination(page: Page,caseNumber:string): Promise<string[]>{
+
+    const nextButton = page.locator('.pagination-next');
+    const rows = page.locator('#search-result tbody tr');
+    let pageNumber = 1;
+
+    while (true) {
+      console.log(`Checking page ${pageNumber}`);
+
+      await expect(rows.first()).toBeVisible();
+
+      const rowCount = await rows.count();
+
+      for (let i = 0; i < rowCount; i++) {
+        const row = rows.nth(i);
+
+        const rowText = await row.innerText();
+
+        if (rowText.includes(caseNumber)) {
+          console.log(`✅ Found on page ${pageNumber}, row ${i + 1}`);
+
+          // ✅ Extract individual cell values
+          const cells = row.locator('td');
+          const values = await cells.allTextContents();
+
+          console.log('Row values:', values);
+          const formattedTexts = values
+            .map(h => h.replace(/\u200B/g, '').trim())
+            .filter(Boolean);
+          console.log('Row values:', formattedTexts);
+          
+
+          return formattedTexts; // ✅ return only that row
+        }
+      }
+
+      // ✅ Pagination handling
+      const hasNext = await nextButton.count() > 0;
+      const disabled = await nextButton.getAttribute('class');
+
+      if (!hasNext || disabled?.includes('disabled')) {
+
+        throw new Error(
+          `Case number ${caseNumber} was not found after checking ${pageNumber} page(s).`
+        );
+      }
+
+      await nextButton.click();
+      await page.waitForLoadState();
+      await page.locator('.spinner-container').waitFor({ state: 'detached' });
+
+      pageNumber++;
+    }
   }
 }
