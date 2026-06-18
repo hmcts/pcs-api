@@ -20,6 +20,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.PartyAttributeAssertationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.CounterClaimRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DefendantResponseRepository;
@@ -30,6 +31,7 @@ import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.time.Clock;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -371,6 +373,9 @@ public class DefendantResponseService {
             .findWithDetailsByClaimPcsCaseCaseReferenceAndPartyIdamId(caseReference, userId)
             .orElseThrow(() -> new IllegalStateException("No submitted defendant response for case " + caseReference));
 
-        return defendantResponseReadMapper.toPossessionClaimResponse(entity);
+        List<PartyAttributeAssertationEntity> assertions = partyAttributeAssertationService
+            .getSubmittedAssertionsForParty(entity.getParty().getId());
+
+        return defendantResponseReadMapper.toPossessionClaimResponse(entity, assertions);
     }
 }

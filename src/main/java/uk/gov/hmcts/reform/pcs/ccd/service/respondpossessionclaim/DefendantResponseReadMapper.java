@@ -13,6 +13,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantRespon
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.HouseholdCircumstances;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.IncomeExpenseDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PaymentAgreement;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PartyAttributeType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.StatementOfTruthEntity;
@@ -22,6 +23,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEnt
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.HouseholdCircumstancesEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.PaymentAgreementEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.PartyAttributeAssertationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.RegularExpenseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.RegularIncomeEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.RegularIncomeItemEntity;
@@ -30,9 +32,12 @@ import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 
 import static uk.gov.hmcts.reform.pcs.ccd.util.YesOrNoConverter.toYesOrNo;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.EnumMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -45,13 +50,16 @@ public class DefendantResponseReadMapper {
         this.addressMapper = addressMapper;
     }
 
-    public PossessionClaimResponse toPossessionClaimResponse(DefendantResponseEntity entity) {
+    public PossessionClaimResponse toPossessionClaimResponse(
+        DefendantResponseEntity entity,
+        List<PartyAttributeAssertationEntity> assertions
+    ) {
         PartyEntity party = entity.getParty();
         PcsCaseEntity pcsCase = entity.getPcsCase();
 
         return PossessionClaimResponse.builder()
             .defendantContactDetails(toDefendantContactDetails(party, pcsCase))
-            .defendantResponses(toDefendantResponses(entity, party))
+            .defendantResponses(toDefendantResponses(entity, party, assertions))
             .currentDefendantPartyId(party.getId() != null ? party.getId().toString() : null)
             .claimIssuedDate(toClaimIssuedDate(entity.getClaim()))
             .build();
@@ -93,7 +101,11 @@ public class DefendantResponseReadMapper {
             .orElse(AddressUK.builder().build());
     }
 
-    private DefendantResponses toDefendantResponses(DefendantResponseEntity entity, PartyEntity party) {
+    private DefendantResponses toDefendantResponses(
+        DefendantResponseEntity entity,
+        PartyEntity party,
+        List<PartyAttributeAssertationEntity> assertions
+    ) {
         DefendantResponses.DefendantResponsesBuilder builder = DefendantResponses.builder()
             .tenancyTypeConfirmation(entity.getTenancyTypeConfirmation())
             .tenancyStartDateConfirmation(entity.getTenancyStartDateConfirmation())
@@ -117,7 +129,42 @@ public class DefendantResponseReadMapper {
             .dateOfBirth(party.getDateOfBirth());
 
         applyContactPreferences(builder, party.getContactPreferences());
+        applyPartyAssertions(builder, toAssertionValues(assertions));
         return builder.build();
+    }
+
+    private Map<PartyAttributeType, String> toAssertionValues(List<PartyAttributeAssertationEntity> assertions) {
+        Map<PartyAttributeType, String> values = new EnumMap<>(PartyAttributeType.class);
+        if (assertions == null) {
+            return values;
+        }
+
+        assertions.forEach(assertion -> {
+            if (assertion.getAttributesName() != null) {
+                values.put(assertion.getAttributesName(), assertion.getAssertedValue());
+            }
+        });
+        return values;
+    }
+
+    private void applyPartyAssertions(
+        DefendantResponses.DefendantResponsesBuilder builder,
+        Map<PartyAttributeType, String> values
+    ) {
+        String tenancyType = values.get(PartyAttributeType.TENANCY_TYPE);
+        if (StringUtils.isNotBlank(tenancyType)) {
+            builder.tenancyType(tenancyType);
+        }
+
+        String tenancyStartDate = values.get(PartyAttributeType.TENANCY_START_DATE);
+        if (StringUtils.isNotBlank(tenancyStartDate)) {
+            builder.tenancyStartDate(LocalDate.parse(tenancyStartDate));
+        }
+
+        String rentArrearsAmount = values.get(PartyAttributeType.RENT_ARREARS_AMOUNT);
+        if (StringUtils.isNotBlank(rentArrearsAmount)) {
+            builder.rentArrearsAmount(new BigDecimal(rentArrearsAmount));
+        }
     }
 
     private static String mapStatementOfTruthCompletedBy(DefendantResponseEntity entity) {
