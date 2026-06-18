@@ -997,6 +997,15 @@ class DocumentServiceTest {
         verify(documentRepository, never()).saveAll(anyList());
     }
 
+    @Test
+    void shouldReturnNullWhenAdditionalDocumentTypeIsNull() {
+        // When
+        DocumentType actualDocumentType = underTest.mapAdditionalDocumentTypeToDocumentType(null);
+
+        // Then
+        assertThat(actualDocumentType).isNull();
+    }
+
     private static Stream<Arguments> additionalDocumentCategoryScenarios() {
         return Stream.of(
             Arguments.of(
