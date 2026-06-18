@@ -19,11 +19,13 @@ import {
   selectParty, whatOrderDoYouWantTheCourtToMakeAndWhy, hasTheDefendantAskedTheOtherPartiesAgreedToThisApplication,
   areThereAnyReasonsThatThisApplicationShouldNotBeShared,
   doYouWantToUploadDocumentsToSupportDefendantsApplication, whichLanguageDidYouUseToCompleteThisService,
-  statementOfTruth, uploadDocumentsToSupportDefendantsApplication, checkYourAnswersGenApps
+  statementOfTruth, uploadDocumentsToSupportDefendantsApplication, checkYourAnswersGenApps, paymentDetails,
+  serviceRequestGenApps
 } from '@data/page-data-figma/page-data-genApps-figma';
 import { defendantDetails } from '@utils/actions/custom-actions/custom-actions-genApps/genApps.action';
 
-test.use({ storageState: undefined });
+
+test.use({ storageState: undefined })
 
 test.beforeEach(async ({ page, context }) => {
   await context.clearCookies();
@@ -205,7 +207,36 @@ test('Select an Application - Ask to Adjourn journey - Help paying the Fee[No] @
   await performAction('retrieveCYATableData', { name: 'check your answers table' });
   await performAction('validateCYA');
   await performAction('clickButton', checkYourAnswersGenApps.submitButton);
-  await performAction('payClaimFeeGenApps');
-  await performValidation('bannerAlert', 'Case #.* has been updated with event: Make an application');
+  await performAction('payClaimFeeGenApps', {clickLink: true});
+  await performAction('clickPayNowLinkGenApps');
+  await performAction('selectPaymentOptions', {
+    amountLabel: serviceRequestGenApps.amountToPayLabel,
+    payByOption: serviceRequestGenApps.payByCardRadioOption,
+    continueButton: serviceRequestGenApps.continueButton
+  });
+  await performValidation('mainHeader', paymentDetails.mainHeader);
+  await performAction('inputPaymentDetails', {
+    question: paymentDetails.mainHeader,
+    cardNumberLabel: paymentDetails.cardNumberTextLabel,
+    cardNumber: paymentDetails.cardNumberTextInput,
+    monthLabel: paymentDetails.monthTextLabel,
+    month: paymentDetails.monthTextInput,
+    yearLabel: paymentDetails.yearTextLabel,
+    year: paymentDetails.yearTextInput,
+    nameOnCardLabel: paymentDetails.nameOnCardTextLabel,
+    nameOnCard: paymentDetails.nameOnCardTextInput,
+    cardSecurityCodeLabel: paymentDetails.cardSecurityCodeTextLabel,
+    cardSecurityCode: paymentDetails.cardSecurityCodeTextInput,
+    addressLine1Label: paymentDetails.addressLine1TextLabel,
+    addressLine1: paymentDetails.addressLine1TextInput,
+    townOrCityLabel: paymentDetails.townOrCityTextLabel,
+    townOrCity: paymentDetails.townOrCityTextInput,
+    postcodeLabel: paymentDetails.postcodeTextLabel,
+    postcode: paymentDetails.postcodeTextInput,
+    emailLabel: paymentDetails.emailTextLabel,
+    email: paymentDetails.emailTextInput,
+  });
+  await performAction('confirmPaymentGenApps');
+  await performValidation('mainHeader', serviceRequestGenApps.paymentSuccessMainHeader);
 });
 });
