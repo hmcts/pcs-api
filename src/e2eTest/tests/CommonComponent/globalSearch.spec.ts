@@ -5,7 +5,8 @@ import { globalSearch} from '@data/page-data-figma';
 import { dismissCookieBanner } from '@config/cookie-banner';
 import { createCaseApiData, submitCaseApiData } from '@data/api-data';
 import { caseNumber } from '@utils/actions/custom-actions/createCase.action';
-import { user} from '@data/page-data';
+import {staff} from "@data/user-data/staff.user.data";
+import {judicial} from "@data/user-data/judicial.user.data";
 
 test.use({ storageState: undefined });
 
@@ -19,7 +20,7 @@ let globalSearchTestData = {
 const setupGlobalSearchUser = async (
   page: Page,
   context: BrowserContext,
-  loggedInUser: typeof user.ctscAdministrator
+  loggedInUser: any
 ) => {
   await context.clearCookies();
   initializeExecutor(page);
@@ -54,19 +55,11 @@ const setupGlobalSearchUser = async (
     }
   });
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
-  // await page.evaluate(() => {
-  //   try {
-  //     localStorage.clear();
-  //     sessionStorage.clear();
-  //   } catch (e) {
-  //     // Ignore if storage is not accessible
-  //   }
-  // });
 
   await dismissCookieBanner(page, 'additional');
-  await performAction('login', loggedInUser);
+  await performAction('login', {email: loggedInUser, password: process.env.IDAM_PCS_USER_PASSWORD});
 
-  if (loggedInUser.email === user.judge.email) {
+  if (loggedInUser === judicial.possessionFeePaid_Judge_email) {
     await performAction('handleJudgeBookingPage');
   }
 
@@ -134,8 +127,8 @@ const runGlobalSearchScenarios = () => {
 };
 
 [
-  { roleName: 'CTSC User', account: user.ctscAdministrator },
-  //{ roleName: 'Judge User', account: user.judge }
+  { roleName: 'CTSC User', account: staff.pcs_ctsc_admin_email},
+  { roleName: 'Judge User', account: judicial.possessionFeePaid_Judge_email }
 ].forEach(({ roleName, account }) => {
   test.describe(`[Common Component Global Search] - ${roleName} - @nightly @CC @globalSearch`, () => {
     test.beforeEach(async ({ page, context }) => {

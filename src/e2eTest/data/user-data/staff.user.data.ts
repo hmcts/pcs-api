@@ -33,7 +33,7 @@ export const staff = {
 
 /** First user from each CTSC / WLU role group — for `E2E_TEST_SCOPE=@nightly`. */
 export const staffNightly: readonly string[] = [
-  staff.pcs_ctsc_admin_email,
+  //staff.pcs_ctsc_admin_email,
   staff.pcs_ctsc_team_leader_email,
   staff.pcs_wlu_administrator_email,
   staff.pcs_wlu_team_leader_email,
