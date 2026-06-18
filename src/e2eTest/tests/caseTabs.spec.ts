@@ -61,6 +61,7 @@ test.afterEach(async () => {
 
 test.describe('[Case tabs - England Journey] @nightly', async () => {
   test('Case tabs - Case parties tab test @MAC @regression', async () => {
+    await performValidation('mainHeader', home.caseSummary)
     await performAction('clickTab', home.caseParties);
     await performAction('validateDefendantDetails', {
       defendant1NameKnown: submitCaseApiData.submitCasePayloadCaseTab.defendant1.nameKnown,
@@ -86,6 +87,7 @@ test.describe('[Case tabs - England Journey] @nightly', async () => {
   });
 
   test('Case tabs - Notes tab test @MAC @regression', async () => {
+    await performValidation('mainHeader', home.caseSummary)
     await performAction('select', caseSummary.nextStepEventList, caseSummary.addCaseNote);
     await performAction('clickButton', caseSummary.go);
     await performValidation('mainHeader', addCaseNote.mainHeader);
@@ -111,6 +113,7 @@ test.describe('[Case tabs - England Journey] @nightly', async () => {
 
   test('Case tabs - Summary tab test @MAC @regression', async () => {
     await performAction('clickTab', home.caseSummary);
+    await performValidation('mainHeader', home.caseSummary)
     await performAction('validateCaseSummaryDetails', {
       defendant1NameKnown: submitCaseApiData.submitCasePayloadCaseSummary.defendant1.nameKnown,
       additionalDefendants: submitCaseApiData.submitCasePayloadCaseSummary.addAnotherDefendant,
@@ -176,6 +179,7 @@ test.describe('[Case tabs - England Journey] @nightly', async () => {
   });
 
   test('Case tabs - Case Details tab test @MAC @regression', async () => {
+    await performValidation('mainHeader', home.caseSummary)
     await performAction('clickTab', home.caseDetails);
     await performAction('validateCaseSummaryDetails', {
       defendant1NameKnown: submitCaseApiData.submitCasePayloadCaseDetails.defendant1.nameKnown,
