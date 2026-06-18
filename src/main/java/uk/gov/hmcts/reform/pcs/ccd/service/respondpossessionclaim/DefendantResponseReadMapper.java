@@ -341,6 +341,8 @@ public class DefendantResponseReadMapper {
             .needHelpWithFees(entity.getNeedHelpWithFees())
             .counterClaimFor(entity.getCounterClaimFor())
             .counterClaimReasons(entity.getCounterClaimReasons())
+            .otherOrderRequestDetails(entity.getOtherOrderRequestDetails())
+            .otherOrderRequestFacts(entity.getOtherOrderRequestFacts())
             .build();
     }
 }
