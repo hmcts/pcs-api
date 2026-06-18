@@ -51,6 +51,14 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
             .orElse(base);
     }
 
+    /**
+     * Whether this deployment runs a suffixed case type, e.g. PCS-STAGING or a
+     * per-PR preview type, driven by the CASE_TYPE_SUFFIX env var.
+     */
+    public static boolean isSuffixedCaseType() {
+        return ofNullable(getenv().get("CASE_TYPE_SUFFIX")).isPresent();
+    }
+
     @Override
     public void configure(final ConfigBuilder<PCSCase, State, AccessProfile> builder) {
         builder.setCallbackHost(caseApiUrl);
