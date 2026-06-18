@@ -14,6 +14,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppDocumentGenerator;
 import uk.gov.hmcts.reform.pcs.exception.GenAppNotFoundException;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatusCallback;
+import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -23,6 +24,7 @@ import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -36,12 +38,14 @@ class GenAppPaymentCallbackHandlerTest {
     private GenAppDocumentGenerator genAppDocumentGenerator;
     @Mock
     private PaymentStatusCallback paymentStatusCallback;
+    @Mock
+    private NotificationService notificationService;
 
     private GenAppPaymentCallbackHandler underTest;
 
     @BeforeEach
     void setUp() {
-        underTest = new GenAppPaymentCallbackHandler(genAppRepository, genAppDocumentGenerator);
+        underTest = new GenAppPaymentCallbackHandler(genAppRepository, genAppDocumentGenerator, notificationService);
     }
 
     @Test
@@ -66,6 +70,7 @@ class GenAppPaymentCallbackHandlerTest {
 
         // Then
         verify(genAppDocumentGenerator).createSubmissionDocument(CASE_REFERENCE, genAppEntity);
+        verify(notificationService).sendGenAppReceivedEmail(genAppEntity);
     }
 
     @Test
@@ -87,6 +92,7 @@ class GenAppPaymentCallbackHandlerTest {
 
         // Then
         verify(genAppDocumentGenerator, never()).createSubmissionDocument(CASE_REFERENCE, genAppEntity);
+        verifyNoInteractions(notificationService);
     }
 
     @Test

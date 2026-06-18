@@ -60,6 +60,7 @@ import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState.GEN_APP_ISSUED;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState.PENDING_GEN_APP_ISSUED;
 
 @ExtendWith(MockitoExtension.class)
@@ -389,6 +390,51 @@ class GenAppServiceTest {
         assertThat(documentEntity.getCategoryId()).isEqualTo(CaseFileCategory.APPLICATIONS.getId());
         assertThat(documentEntity.getContentType()).isEqualTo("test content type");
         assertThat(documentEntity.getSize()).isEqualTo(1234L);
+    }
+
+    @Test
+    void shouldSaveUploadedDocumentWithNullTypeWhenNoDocumentType() {
+        // Given
+        String originalFilename = "original filename";
+        String modifiedFilename = "modified filename";
+
+        Document document = Document.builder()
+            .filename(originalFilename)
+            .url("test url")
+            .binaryUrl("test binary url")
+            .build();
+
+        UUID applicantPartyId = UUID.randomUUID();
+        when(applicantParty.getId()).thenReturn(applicantPartyId);
+        when(documentNameService.appendGenAppPostfix(eq(originalFilename), isA(GenAppEntity.class),
+                                      eq(mainClaim), eq(applicantPartyId)))
+            .thenReturn(modifiedFilename);
+
+        UploadedDocument uploadedDocument = UploadedDocument.builder()
+            .document(document)
+            .contentType("test content type")
+            .sizeInBytes(1234L)
+            .build();
+
+        CitizenGenAppRequest genAppRequest = CitizenGenAppRequest.builder()
+            .sotAccepted(VerticalYesNo.YES)
+            .hasSupportingDocuments(VerticalYesNo.YES)
+            .uploadedDocuments(List.of(ListValue.<UploadedDocument>builder().value(uploadedDocument).build()))
+            .build();
+
+        when(documentRepository.saveAll(anyList())).thenReturn(List.of(mock(DocumentEntity.class)));
+
+        // When
+        Throwable throwable = catchThrowable(
+            () -> underTest.createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty, GEN_APP_ISSUED)
+        );
+
+        // Then
+        assertThat(throwable).isNull();
+
+        verify(documentRepository).saveAll(documentEntityListCaptor.capture());
+        assertThat(documentEntityListCaptor.getValue()).hasSize(1);
+        assertThat(documentEntityListCaptor.getValue().getFirst().getType()).isNull();
     }
 
     @Test
