@@ -201,11 +201,11 @@ public class ClaimEntity {
     @Column(updatable = false, nullable = false)
     private LocalDateTime claimSubmittedDate;
 
+    private LocalDateTime claimIssuedDate;
+
     @OneToOne(mappedBy = "claim", cascade = ALL, orphanRemoval = true)
     @JsonManagedReference
     private FeePaymentEntity feePayment;
-
-    private LocalDateTime claimIssuedDate;
 
     public void setAsbProhibitedConductEntity(AsbProhibitedConductEntity asbProhibitedConductEntity) {
         if (this.asbProhibitedConductEntity != null) {

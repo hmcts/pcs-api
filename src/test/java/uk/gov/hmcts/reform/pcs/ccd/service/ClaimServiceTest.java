@@ -28,6 +28,10 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 
+import java.time.Clock;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -37,6 +41,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.ENGLAND;
@@ -44,6 +49,9 @@ import static uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.WAL
 
 @ExtendWith(MockitoExtension.class)
 class ClaimServiceTest {
+
+    private static final LocalDateTime TEST_UTC_DATE_TIME = LocalDate.of(2025, 8, 27)
+        .atTime(12, 51, 19);
 
     @Mock
     private ClaimRepository claimRepository;
@@ -61,6 +69,8 @@ class ClaimServiceTest {
     private StatementOfTruthService statementOfTruthService;
     @Mock
     private PCSCase pcsCase;
+    @Mock
+    private Clock utcClock;
 
     private ClaimService claimService;
 
@@ -68,7 +78,7 @@ class ClaimServiceTest {
     void setUp() {
         claimService = new ClaimService(claimRepository, claimGroundService, possessionAlternativesService,
                                         asbProhibitedConductService, rentArrearsService,
-                                        noticeOfPossessionService, statementOfTruthService);
+                                        noticeOfPossessionService, statementOfTruthService, utcClock);
         lenient().when(claimRepository.save(any(ClaimEntity.class)))
             .thenAnswer(invocation -> invocation.getArgument(0));
     }
@@ -383,6 +393,19 @@ class ClaimServiceTest {
         assertThat(createdClaimEntity.getNoEnergyPerformanceCertificateReason()).isNull();
         assertThat(createdClaimEntity.getNoGasSafetyReportReason()).isNull();
         assertThat(createdClaimEntity.getNoElectricalInstallationConditionReason()).isNull();
+    }
+
+    @Test
+    void shouldSetClaimIssuedDate() {
+        // Given
+        ClaimEntity claimEntity = ClaimEntity.builder().build();
+        when(utcClock.instant()).thenReturn(TEST_UTC_DATE_TIME.toInstant(ZoneOffset.UTC));
+        when(utcClock.getZone()).thenReturn(ZoneOffset.UTC);
+
+        // When
+        claimService.setClaimIssuedDate(claimEntity);
+        verify(claimRepository, times(1)).save(claimEntity);
+        assertThat(claimEntity.getClaimIssuedDate()).isEqualTo(TEST_UTC_DATE_TIME);
     }
 
     private static Stream<Arguments> claimantTypeScenarios() {
