@@ -162,7 +162,11 @@ export class PageContentValidation implements IValidation {
     try {
       const urlObj = new URL(url);
       const segments = urlObj.pathname.split('/').filter(Boolean);
-      return segments[segments.length - 1] || 'home';
+      const lastSegment = segments.at(-1);
+      if (lastSegment === 'confirm') {
+        return segments.slice(-2).join('/');
+      }
+      return lastSegment || 'home';
     } catch {
       const segments = url.split('/').filter(Boolean);
       return segments[segments.length - 1] || 'home';

@@ -21,6 +21,7 @@ import {
   whichLanguageDidYouUseToCompleteThisService
 } from "@data/page-data-figma/page-data-genApps-figma";
 import { defendantDetails } from '@utils/actions/custom-actions/custom-actions-genApps';
+import { home } from '@data/page-data';
 
 test.use({ storageState: undefined });
 
@@ -57,6 +58,9 @@ test.beforeEach(async ({ page, context }) => {
   }).toPass({
     timeout: VERY_LONG_TIMEOUT,
   });
+  await page.waitForLoadState();
+  await page.locator('.spinner-container').waitFor({ state: 'detached' });
+  await performValidation('mainHeader', home.caseSummary);
 });
 
 test.afterEach(async () => {
