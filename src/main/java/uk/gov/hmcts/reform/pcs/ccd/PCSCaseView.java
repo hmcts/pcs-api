@@ -131,7 +131,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
             .legislativeCountry(pcsCaseEntity.getLegislativeCountry())
             .caseManagementLocationNumber(pcsCaseEntity.getCaseManagementLocation())
             .dateSubmitted(getClaimSubmittedDate(pcsCaseEntity))
-            .claimIssueDate(getClaimIssueDate(pcsCaseEntity))
+            .dateIssued(getClaimIssuedDate(pcsCaseEntity))
             .build();
 
         setDerivedProperties(pcsCase, pcsCaseEntity);
@@ -163,7 +163,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
             .orElse(null);
     }
 
-    private LocalDateTime getClaimIssueDate(PcsCaseEntity pcsCaseEntity) {
+    private LocalDateTime getClaimIssuedDate(PcsCaseEntity pcsCaseEntity) {
         return pcsCaseEntity.getClaims().stream()
             .findFirst()
             .map(ClaimEntity::getClaimIssuedDate)

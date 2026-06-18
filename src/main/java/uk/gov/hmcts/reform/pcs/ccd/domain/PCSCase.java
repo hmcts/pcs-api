@@ -586,7 +586,7 @@ public class PCSCase {
     private LocalDateTime dateSubmitted;
 
     @CCD(access = {ClaimantAccess.class, DefendantAccess.class})
-    private LocalDateTime claimIssueDate;
+    private LocalDateTime dateIssued;
 
     @CCD(
         searchable = false
