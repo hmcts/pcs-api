@@ -192,9 +192,9 @@ test.describe('[Common Component Case Flags] @nightly @CC @caseFlags', async () 
   });
 });
 
-test.describe('[Common Component Case Flags - Access Management] @CC @caseFlags @nightly', async () => {
+test.describe('[Common Component Case Flags - Access Management] @nightly @CC @caseFlags', async () => {
   test.describe.configure({ retries: 0 });
-  test('Staff users can create, manage and view case-level and party-level flags @release', async ({page, context}) => {
+  test('Staff users can create, manage and view case-level and party-level flags', async ({page, context}) => {
     test.setTimeout(ACCESS_CONTROL_TEST_TIMEOUT);
     const results: UserTestResult[] = [];
     const password = process.env.IDAM_PCS_USER_PASSWORD as string;
@@ -221,7 +221,7 @@ test.describe('[Common Component Case Flags - Access Management] @CC @caseFlags 
     logUserTestResultsAndAssert('STAFF USER RESULTS', results);
   });
 
-  test('Judicial users can only view case-level and party-level flags and cannot create or manage flags @release', async ({page, context}) => {
+  test('Judicial users can only view case-level and party-level flags and cannot create or manage flags', async ({page, context}) => {
     test.setTimeout(ACCESS_CONTROL_TEST_TIMEOUT);
     const results: UserTestResult[] = [];
     const password = process.env.IDAM_PCS_USER_PASSWORD as string;
