@@ -56,7 +56,10 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
      * per-PR preview type, driven by the CASE_TYPE_SUFFIX env var.
      */
     public static boolean isSuffixedCaseType() {
-        String suffix = getenv().get("CASE_TYPE_SUFFIX");
+        return isSuffixed(getenv().get("CASE_TYPE_SUFFIX"));
+    }
+
+    static boolean isSuffixed(String suffix) {
         return suffix != null && !suffix.isBlank();
     }
 
