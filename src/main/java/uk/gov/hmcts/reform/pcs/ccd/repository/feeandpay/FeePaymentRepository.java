@@ -8,7 +8,7 @@ import java.util.UUID;
 
 public interface FeePaymentRepository extends JpaRepository<FeePaymentEntity, UUID> {
 
-    Optional<FeePaymentEntity> findByRequestReference(String requestReference);
+    Optional<FeePaymentEntity> findByServiceRequestReference(String serviceRequestReference);
 
     Optional<FeePaymentEntity> findByRelatedEntityId(UUID relatedEntityId);
 

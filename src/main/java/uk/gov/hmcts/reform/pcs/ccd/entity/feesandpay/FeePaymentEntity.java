@@ -63,7 +63,7 @@ public class FeePaymentEntity {
     private LocalDateTime requestDate;
 
     // Service Request Reference from the createRequest
-    private String requestReference;
+    private String serviceRequestReference;
 
     // This is the same as what the user sees - we receive it in the callback so behaves like a correlation id
     private String externalReference;
