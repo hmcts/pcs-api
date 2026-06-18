@@ -5,7 +5,7 @@ export const judicial = {
   //possession_Salaried_Salaried_Judge_email: 'DDJ.Carrie.Cruz@ejudiciary.net'
 } as const;
 export const judicialNightly: readonly string[] = [
-  //judicial.possessionFeePaid_Judge_email
+  judicial.possessionFeePaid_Judge_email
 ];
 
 export const judicialFull: readonly string[] = Object.values(judicial);
