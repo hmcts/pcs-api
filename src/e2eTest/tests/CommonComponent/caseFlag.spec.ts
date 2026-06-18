@@ -192,7 +192,7 @@ test.describe('[Common Component Case Flags] @nightly @CC @caseFlags', async () 
   });
 });
 
-test.describe('[Common Component Case Flags - Access Management] @CC @caseFlags @nightly', async () => {
+test.describe('[Common Component Case Flags - Access Management] @CC @caseFlags @release', async () => {
   test.describe.configure({ retries: 0 });
   test('Staff users can create, manage and view case-level and party-level flags', async ({page, context}) => {
     test.setTimeout(ACCESS_CONTROL_TEST_TIMEOUT);
