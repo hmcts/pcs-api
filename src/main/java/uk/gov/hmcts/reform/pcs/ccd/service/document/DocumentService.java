@@ -184,6 +184,7 @@ public class DocumentService {
         if (additionalType == null) {
             return null;
         }
+
         return switch (additionalType) {
             case WITNESS_STATEMENT -> DocumentType.WITNESS_STATEMENT;
             case RENT_STATEMENT -> DocumentType.RENT_STATEMENT;
