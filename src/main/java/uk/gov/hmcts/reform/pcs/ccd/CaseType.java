@@ -56,8 +56,6 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
      * per-PR preview type, driven by the CASE_TYPE_SUFFIX env var.
      */
     public static boolean isSuffixedCaseType() {
-        // A canonical PCS case type has no suffix. The pipeline encodes "canonical" as either an
-        // unset CASE_TYPE_SUFFIX or an empty string (see Jenkinsfile_CNP), so blank == canonical.
         String suffix = getenv().get("CASE_TYPE_SUFFIX");
         return suffix != null && !suffix.isBlank();
     }
