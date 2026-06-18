@@ -426,8 +426,54 @@ class PaymentServiceTest {
             assertThat(throwable).isInstanceOf(FeePaymentNotFoundException.class);
         }
 
+        @Test
+        void shouldCreatePaymentRequestWhenPreviousPaymentWasNotPaid() {
+            // Given
+            String serviceRequestReference = "SR-1234";
+            final BigDecimal expectedAmount = new BigDecimal("10.99");
+            final String expectedLanguage = "some language";
+            final String expectedReturnUrl = "some return URL";
+            final String expectedPaymentReference = "some payment reference";
+            final String expectedPaymentStatus = "some payment status";
+            final String expectedNextUrl = "some next url";
+
+            CreateCardPaymentRequest cardPaymentRequest = CreateCardPaymentRequest.builder()
+                .amount(expectedAmount)
+                .language(expectedLanguage)
+                .returnUrl(expectedReturnUrl)
+                .build();
+
+            CardPaymentServiceRequestResponse paymentServiceResponse = CardPaymentServiceRequestResponse.builder()
+                .paymentReference(expectedPaymentReference)
+                .status(expectedPaymentStatus)
+                .nextUrl(expectedNextUrl)
+                .build();
+
+            FeePaymentEntity feePaymentEntity = mock(FeePaymentEntity.class);
+            when(feePaymentEntity.getPaymentStatus()).thenReturn(PaymentStatus.NOT_PAID);
+            when(feePaymentRepository.findByServiceRequestReference(serviceRequestReference))
+                .thenReturn(Optional.of(feePaymentEntity));
+            when(paymentsClient.createGovPayCardPaymentRequest(anyString(),
+                                                               anyString(),
+                                                               any(CardPaymentServiceRequestDTO.class)))
+                .thenReturn(paymentServiceResponse);
+
+            // When
+            CreateCardPaymentResponse cardPaymentResponse = underTest.createPaymentRequest(
+                serviceRequestReference,
+                cardPaymentRequest
+            );
+
+            // Then
+            verify(paymentsClient).createGovPayCardPaymentRequest(eq(serviceRequestReference),
+                                                                  eq(SYSTEM_TOKEN),
+                                                                  any(CardPaymentServiceRequestDTO.class));
+            assertThat(cardPaymentResponse.getPaymentReference()).isEqualTo(expectedPaymentReference);
+            assertThat(cardPaymentResponse.getNextUrl()).isEqualTo(expectedNextUrl);
+        }
+
         @ParameterizedTest
-        @EnumSource(PaymentStatus.class)
+        @EnumSource(value = PaymentStatus.class, names = {"PAID", "PARTIALLY_PAID"})
         void shouldThrowExceptionIfServiceRequestAlreadyHasAPaymentStatus(PaymentStatus paymentStatus) {
             // Given
             String serviceRequestReference = "SR-1234";
