@@ -12,6 +12,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import static java.lang.System.getenv;
 import static java.util.Optional.ofNullable;
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory.HIDDEN;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.State.AWAITING_SUBMISSION_TO_HMCTS;
 
 /**
@@ -118,16 +119,27 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
             .field(PCSCase::getParties, "flagLauncherInternal!=\"\"", "#ARGUMENT(Flags)");
 
         configureCaseFileCategories(builder);
+        configureHiddenCaseFileCategory(builder);
     }
 
     private void configureCaseFileCategories(ConfigBuilder<PCSCase, State, AccessProfile> builder) {
-        for (CaseFileCategory category : CaseFileCategory.values()) {
+        CaseFileCategory[] values = CaseFileCategory.values();
+        for (int i = 0; i < values.length - 1; i++) {
+            CaseFileCategory category = values[i];
             builder.categories(AccessProfile.PCS_SOLICITOR)
                 .categoryID(category.getId())
                 .categoryLabel(category.getLabel())
                 .displayOrder(category.getDisplayOrder())
                 .build();
         }
+    }
+
+    private void configureHiddenCaseFileCategory(ConfigBuilder<PCSCase, State, AccessProfile> builder) {
+        builder.categories(AccessProfile.SYSTEM_USER)
+            .categoryID(HIDDEN.getId())
+            .categoryLabel(HIDDEN.getLabel())
+            .displayOrder(HIDDEN.getDisplayOrder())
+            .build();
     }
 
     private void buildCaseNotesTab(ConfigBuilder<PCSCase, State, AccessProfile> builder) {
@@ -195,9 +207,9 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
             .field("detailsTab_AntisocialAndConductDetails")
             .field("detailsTab_ApplicationsDetails")
             .label(
-                "Claimant Details",
+                "Claimant details",
                 "detailsTab_ClaimantInformation!=\"\"",
-                "## Claimant Details"
+                "## Claimant details"
             )
             .field("detailsTab_ClaimantInformation")
             .field("detailsTab_ClaimantAddress")
@@ -205,9 +217,9 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
             .field("detailsTab_ClaimantRegistrationAndLicensingDetails")
             .field("detailsTab_ClaimantCircumstances")
             .label(
-                "Defendant Details",
+                "Defendant details",
                 "detailsTab_DefendantInformationDetails!=\"\"",
-                "## Defendant Details"
+                "## Defendant details"
             )
             .field("detailsTab_DefendantInformationDetails")
             .field("detailsTab_AdditionalDefendants")

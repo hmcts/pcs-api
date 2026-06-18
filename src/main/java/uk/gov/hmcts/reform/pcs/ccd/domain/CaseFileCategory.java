@@ -14,7 +14,9 @@ public enum CaseFileCategory {
     ORDERS_AND_NOTICE_OF_HEARINGS("ordersAndNoticeOfHearings", "Orders and notice of hearings", 5),
     APPLICATIONS("applications", "Applications", 6),
     APPEALS("appeals", "Appeals", 7),
-    CORRESPONDENCE("correspondence", "Correspondence", 8);
+    CORRESPONDENCE("correspondence", "Correspondence", 8),
+    HIDDEN("hidden", "Hidden", 9);
+
 
     private final String id;
     private final String label;

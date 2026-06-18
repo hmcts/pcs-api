@@ -17,6 +17,8 @@ import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import java.util.List;
 import java.util.Optional;
 
+import static uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory.HIDDEN;
+
 @Component
 public class NoticeOfPossessionView {
 
@@ -106,7 +108,7 @@ public class NoticeOfPossessionView {
                     .url(documentEntity.getUrl())
                     .filename(documentEntity.getFileName())
                     .binaryUrl(documentEntity.getBinaryUrl())
-                    .categoryId(documentEntity.getCategoryId())
+                    .categoryId(HIDDEN.getId())
                     .build()
             ).build();
     }
