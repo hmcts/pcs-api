@@ -60,6 +60,7 @@ import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState.GEN_APP_ISSUED;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState.PENDING_GEN_APP_ISSUED;
 
 @ExtendWith(MockitoExtension.class)
@@ -425,7 +426,7 @@ class GenAppServiceTest {
 
         // When
         Throwable throwable = catchThrowable(
-            () -> underTest.createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty)
+            () -> underTest.createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty, GEN_APP_ISSUED)
         );
 
         // Then
