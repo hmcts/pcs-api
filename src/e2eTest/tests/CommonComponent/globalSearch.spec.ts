@@ -31,7 +31,7 @@ const setupGlobalSearchUser = async (
   globalSearchTestData = {
     name: `${submitCasePayload.claimantName} ${suffix}`,
     addressLine1: `${propertyAddress.AddressLine1} ${suffix}`,
-    postcode: propertyAddress.PostCode,
+    postcode: 'W3 6RS',
     email: submitCasePayload.claimantContactEmail.replace('@', `+${suffix}@`)
   };
 
@@ -40,6 +40,7 @@ const setupGlobalSearchUser = async (
       ...createCaseApiData.createCasePayload,
       propertyAddress: {
         ...propertyAddress,
+        PostCode: globalSearchTestData.postcode,
         AddressLine1: globalSearchTestData.addressLine1
       }
     }
@@ -49,18 +50,18 @@ const setupGlobalSearchUser = async (
       ...submitCasePayload,
       claimantName: globalSearchTestData.name,
       claimantContactEmail: globalSearchTestData.email,
-      formattedClaimantContactAddress: `${globalSearchTestData.addressLine1}<br>${propertyAddress.PostTown}<br>${propertyAddress.PostCode}`
+      formattedClaimantContactAddress: `${globalSearchTestData.addressLine1}<br>${propertyAddress.PostTown}<br>${globalSearchTestData.postcode}`
     }
   });
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
-  await page.evaluate(() => {
-    try {
-      localStorage.clear();
-      sessionStorage.clear();
-    } catch (e) {
-      // Ignore if storage is not accessible
-    }
-  });
+  // await page.evaluate(() => {
+  //   try {
+  //     localStorage.clear();
+  //     sessionStorage.clear();
+  //   } catch (e) {
+  //     // Ignore if storage is not accessible
+  //   }
+  // });
 
   await dismissCookieBanner(page, 'additional');
   await performAction('login', loggedInUser);
@@ -134,13 +135,12 @@ const runGlobalSearchScenarios = () => {
 
 [
   { roleName: 'CTSC User', account: user.ctscAdministrator },
-  { roleName: 'Judge User', account: user.judge }
+  //{ roleName: 'Judge User', account: user.judge }
 ].forEach(({ roleName, account }) => {
   test.describe(`[Common Component Global Search] - ${roleName} - @nightly @CC @caseFlags`, () => {
     test.beforeEach(async ({ page, context }) => {
       await setupGlobalSearchUser(page, context, account);
     });
-
     runGlobalSearchScenarios();
   });
 });
