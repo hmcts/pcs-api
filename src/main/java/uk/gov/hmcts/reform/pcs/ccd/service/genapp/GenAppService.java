@@ -145,7 +145,9 @@ public class GenAppService {
                     .fileName(updatedFilename)
                     .binaryUrl(uploadedDocument.getDocument().getBinaryUrl())
                     .categoryId(CaseFileCategory.APPLICATIONS.getId())
-                    .type(documentService.mapAdditionalDocumentTypeToDocumentType(uploadedDocument.getDocumentType()))
+                    .type(uploadedDocument.getDocumentType() != null
+                        ? documentService.mapAdditionalDocumentTypeToDocumentType(uploadedDocument.getDocumentType())
+                        : null)
                     .contentType(uploadedDocument.getContentType())
                     .size(uploadedDocument.getSizeInBytes())
                     .build();
