@@ -96,6 +96,8 @@ class CaseTypeTest {
         when(builder.tab("caseDetails", "Case Details")).thenReturn(caseDetailsTabBuilder);
         when(builder.categories(AccessProfile.PCS_SOLICITOR))
             .thenReturn(CaseCategory.CaseCategoryBuilder.builder(AccessProfile.PCS_SOLICITOR));
+        when(builder.categories(AccessProfile.SYSTEM_USER))
+            .thenReturn(CaseCategory.CaseCategoryBuilder.builder(AccessProfile.SYSTEM_USER));
 
         // When
         caseType.configure(builder);
