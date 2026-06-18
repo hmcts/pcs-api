@@ -56,7 +56,7 @@ properties([
     ),
     choice(
       name: 'PLAYWRIGHT_GREP_TAG',
-      choices: ['@nightly', '@smoke', '@e2e', '@regression'],
+      choices: ['@nightly', '@smoke', '@e2e', '@regression', '@release'],
       description: 'Title grep (E2E_TEST_SCOPE). First option is the scheduled default.'
     ),
   ])
