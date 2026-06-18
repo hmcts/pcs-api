@@ -74,6 +74,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
     private final NoticeOfPossessionView noticeOfPossessionView;
     private final StatementOfTruthView statementOfTruthView;
     private final CaseFieldsView caseFieldsView;
+    private final SearchCriteriaIndexer searchCriteriaIndexer;
     private final CaseLinkView caseLinkView;
     private final EnforcementOrderMediator enforcementOrderMediator;
     private final CaseNoteView caseNoteView;

@@ -107,6 +107,8 @@ class PCSCaseViewTest {
     @Mock
     private CaseFieldsView caseFieldsView;
     @Mock
+    private SearchCriteriaIndexer searchCriteriaIndexer;
+    @Mock
     private EnforcementOrderMediator enforcementOrderMediator;
     @Mock
     private CaseLinkView caseLinkView;
@@ -132,7 +134,8 @@ class PCSCaseViewTest {
                                     caseTitleService, claimView, documentsView, tenancyLicenceView, claimGroundsView,
                                     rentDetailsView, alternativesToPossessionView, asbProhibitedConductView,
                                     rentArrearsView, noticeOfPossessionView,
-                                    statementOfTruthView, caseFieldsView, caseLinkView, enforcementOrderMediator,
+                                    statementOfTruthView, caseFieldsView, searchCriteriaIndexer, caseLinkView,
+                                    enforcementOrderMediator,
                                     caseNoteView, caseTabView, partiesView, genAppsView, caseFlagsView, 
                                     defendantResponseView
         );
