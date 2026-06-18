@@ -6,41 +6,33 @@ import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType;
-import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.XuiGenAppRequest;
-import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppFeeCalculator;
 import uk.gov.hmcts.reform.pcs.ccd.util.MoneyFormatter;
-
-import java.math.BigDecimal;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 
 @Component
 @RequiredArgsConstructor
 public class ConfirmationScreenFactory {
 
-    private final GenAppFeeCalculator genAppFeeCalculator;
     private final MoneyFormatter moneyFormatter;
 
     public SubmitResponse<State> buildConfirmationScreenResponse(GenAppRequest genAppRequest,
-                                                                 long caseReference) {
+                                                                 long caseReference,
+                                                                 FeeDetails feeDetails) {
 
-        if (!isXuiJourney(genAppRequest)) {
-            return SubmitResponse.<State>builder().build();
+        String confirmationMarkdown;
+        if (feeDetails != null) {
+            confirmationMarkdown = buildFeeConfirmationMarkdown(feeDetails, caseReference);
+        } else {
+            confirmationMarkdown = buildNoFeeConfirmationMarkdown(genAppRequest);
         }
-
-        String confirmationMarkdown = genAppFeeCalculator.getApplicationFee(genAppRequest)
-            .map(feeAmount -> buildFeeConfirmationMarkdown(feeAmount, caseReference))
-            .orElseGet(() -> buildNoFeeConfirmationMarkdown(genAppRequest));
 
         return SubmitResponse.<State>builder()
             .confirmationBody(confirmationMarkdown)
             .build();
     }
 
-    private static boolean isXuiJourney(GenAppRequest genAppRequest) {
-        return genAppRequest instanceof XuiGenAppRequest;
-    }
-
-    private String buildFeeConfirmationMarkdown(BigDecimal feeAmount, long caseReference) {
-        String formattedFee = moneyFormatter.formatFee(feeAmount);
+    private String buildFeeConfirmationMarkdown(FeeDetails feeDetails, long caseReference) {
+        String formattedFee = moneyFormatter.formatFee(feeDetails.getFeeAmount());
 
         return """
             ---
