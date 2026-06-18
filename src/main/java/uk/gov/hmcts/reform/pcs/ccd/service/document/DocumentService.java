@@ -81,7 +81,7 @@ public class DocumentService {
 
         allDocuments.addAll(mapDocumentsWithType(
             Optional.ofNullable(pcsCase.getNoticeServedDetails())
-                    .map(NoticeServedDetails::getNoticeDocuments)
+                    .map(NoticeServedDetails::getDocuments)
                     .orElse(null), DocumentType.NOTICE_FOR_SERVICE_OUT_OF_JURISDICTION));
 
         allDocuments.addAll(mapDocumentsWithType(
@@ -181,6 +181,9 @@ public class DocumentService {
     }
 
     public DocumentType mapAdditionalDocumentTypeToDocumentType(AdditionalDocumentType additionalType) {
+        if (additionalType == null) {
+            return null;
+        }
         return switch (additionalType) {
             case WITNESS_STATEMENT -> DocumentType.WITNESS_STATEMENT;
             case RENT_STATEMENT -> DocumentType.RENT_STATEMENT;
