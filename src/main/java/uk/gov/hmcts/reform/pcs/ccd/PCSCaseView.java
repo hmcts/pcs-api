@@ -112,7 +112,10 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
 
         caseFieldsView.setCaseFields(pcsCase);
 
-        pcsCase.setSearchCriteria(searchCriteriaIndexer.buildSearchCriteria(pcsCase));
+        // Only the canonical PCS case type is indexed into the shared global_search index.
+        if (!CaseType.isSuffixedCaseType()) {
+            pcsCase.setSearchCriteria(searchCriteriaIndexer.buildSearchCriteria(pcsCase));
+        }
 
         return pcsCase;
     }
