@@ -18,6 +18,7 @@ Branch point: `master`
 
 ## Results
 
-| Commit | Change | Mean | Median | P90 | P95 | Min | Max | Improvement vs baseline |
-| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| Add case-load indexes | Add concurrent indexes for the case-load read path | 90.8 ms | 100.2 ms | 113.3 ms | 118.4 ms | 66.5 ms | 136.8 ms | 28.3% mean, 23.5% median |
+| Commit | Change | Mean | Median | P90 | P95 | Min | Max | Improvement vs previous | Improvement vs baseline |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| Add case-load indexes | Add concurrent indexes for the case-load read path | 90.8 ms | 100.2 ms | 113.3 ms | 118.4 ms | 66.5 ms | 136.8 ms | 28.3% mean, 23.5% median | 28.3% mean, 23.5% median |
+| Avoid repeated claim-party graph loading | Make `ClaimPartyEntity` parent links lazy and reuse loaded claim-party roles when mapping party flags | 36.7 ms | 35.4 ms | 41.3 ms | 47.6 ms | 31.9 ms | 56.5 ms | 59.6% mean, 64.7% median | 71.0% mean, 73.0% median |
