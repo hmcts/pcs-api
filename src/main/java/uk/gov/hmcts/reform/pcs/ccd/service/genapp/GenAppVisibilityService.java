@@ -28,7 +28,7 @@ public class GenAppVisibilityService {
         }
 
         PartyEntity applicantParty = genAppEntity.getParty();
-        if (applicantParty == null || organisationId == null) {
+        if (applicantParty == null || organisationId == null || applicantParty.getOrganisationId() == null) {
             return false;
         }
 

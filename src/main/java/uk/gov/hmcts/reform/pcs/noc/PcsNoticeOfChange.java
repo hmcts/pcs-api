@@ -1,13 +1,6 @@
 package uk.gov.hmcts.reform.pcs.noc;
 
 import com.github.kagkarlsson.scheduler.SchedulerClient;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
@@ -24,7 +17,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeOrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
@@ -38,6 +30,14 @@ import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationDetailsService;
 import uk.gov.hmcts.reform.pcs.service.LegalRepresentativePartyLinkService;
 
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.UUID;
+
 @Component
 @RequiredArgsConstructor
 public class PcsNoticeOfChange implements CCDConfig<PCSCase, State, UserRole> {
@@ -47,7 +47,7 @@ public class PcsNoticeOfChange implements CCDConfig<PCSCase, State, UserRole> {
     static final String CHALLENGE_ID = "NoC";
 
     private static final int EXPECTED_ANSWER_COUNT = 2;
-    private static final UserRole CASE_ROLE = UserRole.DEFENDANT_SOLICITOR;
+    private static final UserRole CASE_ROLE = UserRole.DEFENDANT;
 
     private final PcsCaseRepository pcsCaseRepository;
     private final LegalRepresentativeOrganisationRepository legalRepresentativeRepository;
