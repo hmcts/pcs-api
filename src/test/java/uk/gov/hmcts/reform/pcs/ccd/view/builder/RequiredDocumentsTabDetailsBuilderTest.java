@@ -166,12 +166,12 @@ class RequiredDocumentsTabDetailsBuilderTest {
 
     @Test
     void shouldUnsetRequiredDocumentsIfCaseIsSubmitted() {
-        List<ListValue<Document>> energyPerformance = List.of(ListValue.<Document>builder().value(Document.builder().build())
-                                                          .build());
-        List<ListValue<Document>> gasSafetyReport = List.of(ListValue.<Document>builder().value(Document.builder().build())
-                                                                             .build());
-        List<ListValue<Document>> electricalInstallation = List.of(ListValue.<Document>builder().value(Document.builder().build())
-                                                                .build());
+        List<ListValue<Document>> energyPerformance =
+            List.of(ListValue.<Document>builder().value(Document.builder().build()).build());
+        List<ListValue<Document>> gasSafetyReport =
+            List.of(ListValue.<Document>builder().value(Document.builder().build()).build());
+        List<ListValue<Document>> electricalInstallation =
+            List.of(ListValue.<Document>builder().value(Document.builder().build()).build());
 
         WalesDocuments walesDocuments = WalesDocuments.builder()
             .hasEnergyPerformanceCertificate(VerticalYesNo.YES)
@@ -200,10 +200,10 @@ class RequiredDocumentsTabDetailsBuilderTest {
 
     @Test
     void shouldNotUnsetRequiredDocumentsIfCaseIsInDraft() {
-        List<ListValue<Document>> energyPerformance = List.of(ListValue.<Document>builder().value(Document.builder().build())
-                                                                  .build());
-        List<ListValue<Document>> gasSafetyReport = List.of(ListValue.<Document>builder().value(Document.builder().build())
-                                                                .build());
+        List<ListValue<Document>> energyPerformance =
+            List.of(ListValue.<Document>builder().value(Document.builder().build()).build());
+        List<ListValue<Document>> gasSafetyReport =
+            List.of(ListValue.<Document>builder().value(Document.builder().build()).build());
         List<ListValue<Document>> electricalInstallation =
             List.of(ListValue.<Document>builder().value(Document.builder().build()).build());
 

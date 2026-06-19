@@ -53,6 +53,7 @@ import java.util.Set;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mock.Strictness.LENIENT;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
@@ -321,7 +322,7 @@ class PCSCaseViewTest {
         verify(draftCaseDataService).hasUnsubmittedCaseData(CASE_REFERENCE, resumePossessionClaim);
         verify(draftCaseDataService).getUnsubmittedCaseData(CASE_REFERENCE, resumePossessionClaim);
         verify(caseTabView).setDraftCaseTabFields(pcsCase, draftCaseData);
-        verify(caseTabView, never()).setCaseTabFields(any(PCSCase.class), true);
+        verify(caseTabView, never()).setCaseTabFields(any(PCSCase.class), anyBoolean());
         assertThat(pcsCase.getNextStepsMarkdown()).contains("Resume claim");
     }
 
@@ -353,7 +354,7 @@ class PCSCaseViewTest {
         verify(draftCaseDataService).hasUnsubmittedCaseData(CASE_REFERENCE, resumePossessionClaim);
         verify(draftCaseDataService, never()).getUnsubmittedCaseData(any(Long.class), any());
         verify(caseTabView, never()).setDraftCaseTabFields(any(PCSCase.class), any(PCSCase.class));
-        verify(caseTabView).setCaseTabFields(any(PCSCase.class), true);
+        verify(caseTabView).setCaseTabFields(any(PCSCase.class), anyBoolean());
     }
 
     @Test

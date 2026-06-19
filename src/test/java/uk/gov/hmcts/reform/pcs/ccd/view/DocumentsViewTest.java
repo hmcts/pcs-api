@@ -10,6 +10,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
@@ -194,12 +195,66 @@ class DocumentsViewTest {
         assertThat(result).isEqualTo(expectedEmpty);
     }
 
+    @ParameterizedTest
+    @MethodSource("caseDetailsTabDocuments")
+    void shouldFilterOutDocumentsThatAppearInCaseDetailsTab(DocumentType documentType) {
+        // Given
+        DocumentEntity documentEntity = DocumentEntity.builder()
+            .type(documentType)
+            .build();
+
+        when(pcsCaseEntity.getDocuments()).thenReturn(List.of(documentEntity));
+
+        // When
+        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+
+        // Then
+        List<ListValue<Document>> allDocuments = pcsCase.getAllDocuments();
+        assertThat(allDocuments).hasSize(0);
+    }
+
+    @ParameterizedTest
+    @MethodSource("caseDetailsTabDocuments")
+    void shouldFilterOutDocumentsThatHaveADescription(DocumentType documentType) {
+        // Given
+        UUID document1Id = UUID.randomUUID();
+        DocumentEntity documentEntity = DocumentEntity.builder()
+            .id(document1Id)
+            .type(documentType)
+            .fileName("filename")
+            .description("description")
+            .build();
+
+        when(pcsCaseEntity.getDocuments()).thenReturn(List.of(documentEntity));
+
+        // When
+        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+
+        // Then
+        List<ListValue<Document>> allDocuments = pcsCase.getAllDocuments();
+        assertThat(allDocuments).hasSize(1);
+        assertThat(allDocuments.getFirst().getValue().getFilename()).isEqualTo("filename");
+    }
+
     private static Stream<Arguments> descriptionProvider() {
         return Stream.of(
                 Arguments.of(null, true),
                 Arguments.of("", true),
                 Arguments.of("   ", true),
                 Arguments.of("Valid description text", false)
+        );
+    }
+
+
+    private static Stream<Arguments> caseDetailsTabDocuments() {
+        return Stream.of(
+            Arguments.of(DocumentType.TENANCY_AGREEMENT),
+            Arguments.of(DocumentType.POSSESSION_NOTICE),
+            Arguments.of(DocumentType.RENT_STATEMENT),
+            Arguments.of(DocumentType.ENERGY_PERFORMANCE_CERTIFICATE),
+            Arguments.of(DocumentType.GAS_SAFETY_CERTIFICATE),
+            Arguments.of(DocumentType.EICR_REPORT),
+            Arguments.of(DocumentType.OCCUPATION_LICENCE)
         );
     }
 }

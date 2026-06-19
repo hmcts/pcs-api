@@ -65,11 +65,6 @@ public class DocumentsView {
         }
     }
 
-    public static boolean isDescriptionEmpty(DocumentEntity documentEntity) {
-        return ObjectUtils.isEmpty(documentEntity.getDescription())
-                || documentEntity.getDescription().trim().isEmpty();
-    }
-
     private boolean isNotInCaseDetailsTab(DocumentEntity documentEntity) {
         List<DocumentType> caseDetailsDocuments = List.of(
             DocumentType.TENANCY_AGREEMENT,
@@ -81,12 +76,18 @@ public class DocumentsView {
             DocumentType.OCCUPATION_LICENCE
         );
 
-        if (!caseDetailsDocuments.contains(documentEntity.getType())) {
+        DocumentType type = documentEntity.getType();
+        if (type == null || !caseDetailsDocuments.contains(type)) {
             return true;
         }
 
         // Is not an additional document
         return documentEntity.getDescription() != null;
+    }
+
+    public static boolean isDescriptionEmpty(DocumentEntity documentEntity) {
+        return ObjectUtils.isEmpty(documentEntity.getDescription())
+                || documentEntity.getDescription().trim().isEmpty();
     }
 
 }
