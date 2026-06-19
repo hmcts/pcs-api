@@ -8,6 +8,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.ClaimGroundSummary;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexibleMandatoryGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.DiscretionaryGroundWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundEntity;
@@ -89,6 +90,13 @@ final class ClaimFormFormatter {
     // form names each "Rent arrears or breach of the tenancy (ground 1): <child>".
     static String formatRentArrearsOrBreachLabel(ClaimGroundEntity ground, RentArrearsOrBreachOfTenancy child) {
         return formatGroundLabel(ground) + ": " + child.getLabel();
+    }
+
+    // Wales estate management (s.160) is a parent checkbox whose children are the specific grounds
+    // (A-I); the form names each "Estate management grounds (section 160): <child>". Standard and
+    // secure-contract share the same parent label.
+    static String formatEstateManagementLabel(ClaimGroundEntity ground) {
+        return DiscretionaryGroundWales.ESTATE_MANAGEMENT_GROUNDS_S160.getLabel() + ": " + formatGroundLabel(ground);
     }
 
     static ClaimFormAddress toClaimFormAddress(AddressEntity address) {

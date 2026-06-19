@@ -8,6 +8,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServiceMethod;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsOrBreachOfTenancy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexibleDiscretionaryGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.DiscretionaryGroundWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthCompletedBy;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AsbProhibitedConductEntity;
@@ -41,6 +42,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import static uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimFormFormatter.formatAntisocialGroundLabel;
+import static uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimFormFormatter.formatEstateManagementLabel;
 import static uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimFormFormatter.formatGbp;
 import static uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimFormFormatter.formatGroundLabel;
 import static uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimFormFormatter.formatRentArrearsOrBreachLabel;
@@ -226,6 +228,10 @@ public class ClaimFormPayloadBuilder {
         if (ground.getCategory() == ClaimGroundCategory.SECURE_OR_FLEXIBLE_ANTISOCIAL) {
             return List.of(parentChildGround(formatAntisocialGroundLabel(ground), ground.getReason()));
         }
+        if (ground.getCategory() == ClaimGroundCategory.WALES_STANDARD_OTHER_ESTATE_MANAGEMENT
+            || ground.getCategory() == ClaimGroundCategory.WALES_SECURE_ESTATE_MANAGEMENT) {
+            return List.of(parentChildGround(formatEstateManagementLabel(ground), ground.getReason()));
+        }
         if (isRentArrearsOrBreachGround(ground)) {
             List<ClaimFormGround> rows = new ArrayList<>();
             if (Boolean.TRUE.equals(ground.getIsRentArrears())) {
@@ -255,6 +261,14 @@ public class ClaimFormPayloadBuilder {
     private static boolean isRentArrearsOrBreachGround(ClaimGroundEntity ground) {
         return ground.getCategory() == ClaimGroundCategory.SECURE_OR_FLEXIBLE_DISCRETIONARY
             && SecureOrFlexibleDiscretionaryGrounds.RENT_ARREARS_OR_BREACH_OF_TENANCY.name().equals(ground.getCode());
+    }
+
+    // The s.160 parent ground itself is a checkbox toggle for the estate-management children; it is
+    // shown via its prefixed children, so the bare parent row is suppressed from the claim form.
+    private static boolean isEstateManagementParent(ClaimGroundEntity ground) {
+        return (ground.getCategory() == ClaimGroundCategory.WALES_STANDARD_OTHER_DISCRETIONARY
+                || ground.getCategory() == ClaimGroundCategory.WALES_SECURE_DISCRETIONARY)
+            && DiscretionaryGroundWales.ESTATE_MANAGEMENT_GROUNDS_S160.name().equals(ground.getCode());
     }
 
     private static Optional<String> firstOtherGroundDescription(Collection<ClaimGroundEntity> grounds) {
@@ -364,13 +378,16 @@ public class ClaimFormPayloadBuilder {
         }
 
         List<ClaimFormGround> mapped = grounds.stream()
+            .filter(g -> !isEstateManagementParent(g))
             .flatMap(g -> toClaimFormGrounds(g).stream())
             .toList();
         payloadBuilder.grounds(mapped);
         // The Absolute/Other intro grounds answer the general "Why are you claiming possession?"
         // question (D13), so they are excluded from the per-ground reason list to avoid duplication.
+        // The estate-management parent (s.160) is represented via its prefixed children, so the bare
+        // parent row is dropped here too.
         payloadBuilder.groundsWithReasons(grounds.stream()
-            .filter(g -> !isWhyClaimingPossessionGround(g))
+            .filter(g -> !isWhyClaimingPossessionGround(g) && !isEstateManagementParent(g))
             .flatMap(g -> toClaimFormGrounds(g).stream())
             .filter(ClaimFormGround::isHasReason)
             .toList());

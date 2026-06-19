@@ -493,6 +493,68 @@ class ClaimFormPayloadBuilderTest {
             assertThat(payload.getGroundsWithReasons()).extracting(ClaimFormGround::getNameAndNumber)
                 .containsExactly("Rent arrears or breach of the tenancy (ground 1): Breach of the tenancy");
         }
+
+        @Test
+        void walesStandardEstateManagement_prefixedChildrenNoStandaloneParent() {
+            // Estate management (s.160) is a parent checkbox: GFP shows prefixed children, not a bare
+            // "Estate management grounds (section 160)" parent row.
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.WALES);
+            ClaimEntity claim = pcsCase.getClaims().getFirst();
+            claim.getClaimGrounds().add(ClaimGroundEntity.builder()
+                .category(ClaimGroundCategory.WALES_STANDARD_OTHER_DISCRETIONARY)
+                .code("ESTATE_MANAGEMENT_GROUNDS_S160")
+                .claim(claim)
+                .build());
+            claim.getClaimGrounds().add(ClaimGroundEntity.builder()
+                .category(ClaimGroundCategory.WALES_STANDARD_OTHER_ESTATE_MANAGEMENT)
+                .code("BUILDING_WORKS")
+                .reason("building works reason")
+                .claim(claim)
+                .build());
+            claim.getClaimGrounds().add(ClaimGroundEntity.builder()
+                .category(ClaimGroundCategory.WALES_STANDARD_OTHER_ESTATE_MANAGEMENT)
+                .code("CHARITIES")
+                .reason("charities reason")
+                .claim(claim)
+                .build());
+
+            ClaimFormPayload payload = builder.build(pcsCase);
+
+            assertThat(payload.getGrounds()).extracting(ClaimFormGround::getNameAndNumber)
+                .containsExactlyInAnyOrder(
+                    "Estate management grounds (section 160): Building works (ground A)",
+                    "Estate management grounds (section 160): Charities (ground C)");
+            assertThat(payload.getGrounds()).extracting(ClaimFormGround::getNameAndNumber)
+                .doesNotContain("Estate management grounds (section 160)");
+            assertThat(payload.getGroundsWithReasons()).extracting(ClaimFormGround::getNameAndNumber)
+                .containsExactlyInAnyOrder(
+                    "Estate management grounds (section 160): Building works (ground A)",
+                    "Estate management grounds (section 160): Charities (ground C)");
+        }
+
+        @Test
+        void walesSecureEstateManagement_prefixedChildrenNoStandaloneParent() {
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.WALES);
+            ClaimEntity claim = pcsCase.getClaims().getFirst();
+            claim.getClaimGrounds().add(ClaimGroundEntity.builder()
+                .category(ClaimGroundCategory.WALES_SECURE_DISCRETIONARY)
+                .code("ESTATE_MANAGEMENT_GROUNDS_S160")
+                .claim(claim)
+                .build());
+            claim.getClaimGrounds().add(ClaimGroundEntity.builder()
+                .category(ClaimGroundCategory.WALES_SECURE_ESTATE_MANAGEMENT)
+                .code("RESERVE_SUCCESSORS")
+                .reason("reserve successors reason")
+                .claim(claim)
+                .build());
+
+            ClaimFormPayload payload = builder.build(pcsCase);
+
+            assertThat(payload.getGrounds()).extracting(ClaimFormGround::getNameAndNumber)
+                .containsExactly("Estate management grounds (section 160): Reserve successors (ground G)");
+            assertThat(payload.getGrounds()).extracting(ClaimFormGround::getNameAndNumber)
+                .doesNotContain("Estate management grounds (section 160)");
+        }
     }
 
     @Nested
