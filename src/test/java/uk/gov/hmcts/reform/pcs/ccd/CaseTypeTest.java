@@ -43,6 +43,22 @@ class CaseTypeTest {
     }
 
     @Test
+    void shouldNotBeSuffixedCaseTypeWhenSuffixAbsentOrBlank() {
+        // Canonical PCS (indexed into global search): unset or blank CASE_TYPE_SUFFIX.
+        // The pipeline encodes "canonical" as either unset or an empty string (see Jenkinsfile_CNP).
+        assertThat(CaseType.isSuffixed(null)).isFalse();
+        assertThat(CaseType.isSuffixed("")).isFalse();
+        assertThat(CaseType.isSuffixed("   ")).isFalse();
+    }
+
+    @Test
+    void shouldBeSuffixedCaseTypeWhenSuffixSet() {
+        // Suffixed (e.g. PCS-STAGING, PR previews) -> NOT indexed into global search.
+        assertThat(CaseType.isSuffixed("staging")).isTrue();
+        assertThat(CaseType.isSuffixed("1234")).isTrue();
+    }
+
+    @Test
     void shouldGetJurisdictionId() {
         // When
         String jurisdictionId = CaseType.getJurisdictionId();
