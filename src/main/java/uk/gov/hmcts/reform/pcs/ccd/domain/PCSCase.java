@@ -97,6 +97,10 @@ public class PCSCase {
     @CCD(label = "Do you want to resume your claim using your saved answers?")
     private YesOrNo resumeClaimKeepAnswers;
 
+    @CCD(label = "Are you sure you want to permanently delete this case? You will no longer be able to view "
+        + "the details in the future.")
+    private YesOrNo deleteDraftClaim;
+
     @JsonUnwrapped
     private ClaimantInformation claimantInformation;
 

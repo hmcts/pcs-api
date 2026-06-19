@@ -6,6 +6,7 @@ import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerReadAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.ClaimantAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DeletedStateAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DefendantAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.InternalCaseFlagAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.GlobalSearchAccess;
@@ -40,6 +41,11 @@ public enum State {
             GlobalSearchAccess.class},
         hint = "${caseTitleMarkdown}"
     )
-    CASE_ISSUED
-}
+    CASE_ISSUED,
 
+    @CCD(
+        label = "Deleted",
+        access = {DeletedStateAccess.class}
+    )
+    DELETED
+}
