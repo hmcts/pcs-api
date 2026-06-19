@@ -119,6 +119,7 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
             .sorted(Comparator.reverseOrder()) // optional
             .toList();
     }
+    
     GenAppType mapCategoryToGenAppType(DocumentUploadCategory category) {
         return switch (category) {
             case ADJOURN_HEARING_APPLICATION -> GenAppType.ADJOURN;
