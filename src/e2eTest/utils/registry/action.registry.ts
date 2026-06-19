@@ -125,6 +125,7 @@ export class ActionRegistry {
     ['enterPaymentDetails', new FeeAndPayAction()],
     ['verifyStatusInHistoryAndSummaryTab', new FeeAndPayAction()],
     ['clickPayNowLink', new FeeAndPayAction()],
+    ['backDateTheCasePaymentAPI', new FeeAndPayAction()],
     ['whereShouldThisFlagBeAdded', new CaseFlagAction()],
     ['selectFlagType', new CaseFlagAction()],
     ['selectSpecialMeasureForFlag', new CaseFlagAction()],
@@ -145,7 +146,9 @@ export class ActionRegistry {
     ['verifyLinkedCases', new CaseLinking()],
     ['handleJudgeBookingPage', new CaseFlagAction()],
     ['searchResults', new GlobalSearchCaseAction()],
-    ['enterPaymentDetails', new FeeAndPayAction()]
+    ['enterPaymentDetails', new FeeAndPayAction()],
+    ['requestRefund', new FeeAndPayAction()],
+    ['approveRefund', new FeeAndPayAction()]
   ]);
 
   static getAction(actionName: string): IAction {

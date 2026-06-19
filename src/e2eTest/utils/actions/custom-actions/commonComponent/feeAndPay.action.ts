@@ -3,6 +3,8 @@ import { expect, Page } from '@playwright/test';
 import { performAction, performActions, performValidation } from '@utils/controller';
 import { enterPaymentDetails } from '@data/page-data/enterPaymentDetails.page.data';
 import { caseSummary } from '@data/page-data';
+import {backDateTheCasePaymentApiData} from "@data/api-data/backDateTheCasePayment.api.data";
+import Axios from "axios";
 
 export class FeeAndPayAction implements IAction {
   async execute(page: Page, action: string, fieldName: actionData | actionRecord, data?: actionData): Promise<void> {
@@ -12,6 +14,9 @@ export class FeeAndPayAction implements IAction {
       ['enterPaymentDetails', () => this.enterPaymentDetails(fieldName as actionRecord)],
       ['clickPayNowLink', () => this.clickPayNowLink(fieldName as actionRecord, page)],
       ['verifyStatusInHistoryAndSummaryTab', () => this.verifyStatusInHistoryAndSummaryTab(fieldName as actionRecord, page)],
+      ['backDateTheCasePaymentAPI', () => this.backDateTheCasePaymentAPI()],
+      ['requestRefund', () => this.requestRefund()],
+      ['approveRefund', () => this.approveRefund()],
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -99,7 +104,7 @@ export class FeeAndPayAction implements IAction {
   }
 
   private async verifyStatusInHistoryAndSummaryTab(statusDetails: actionRecord, page: Page) {
-    //Verify status only in AAT env as its NOT working in preview 
+    //Verify status only in AAT env as its NOT working in preview
     const currentUrl = process.env.MANAGE_CASE_BASE_URL;
     console.log(process.env.MANAGE_CASE_BASE_URL);
     if (currentUrl && currentUrl.includes('api-pr')) {
@@ -126,5 +131,30 @@ export class FeeAndPayAction implements IAction {
       const summaryStatusElement = page.locator(`text=${String(statusDetails.status)}`);
       await expect(summaryStatusElement).toBeVisible();
     }
+  }
+  private async backDateTheCasePaymentAPI(): Promise<void> {
+    if (!process.env.BEARER_TOKEN || !process.env.SERVICE_AUTH_TOKEN) {
+      throw new Error('Payment back date failed: BEARER_TOKEN and SERVICE_AUTH_TOKEN must be set (from global setup).');
+    }
+    if (!process.env.CASE_NUMBER) {
+      throw new Error('Payment back date failed: CASE_NUMBER is not set.');
+    }
+
+    const backDateTheCasePaymentApi = Axios.create(backDateTheCasePaymentApiData.backDateTheCasePaymentApiInstance());
+    try {
+      await backDateTheCasePaymentApi.patch(backDateTheCasePaymentApiData.backDateTheCasePaymentApiEndPoint);
+    } catch (error: any) {
+      const status = error?.response?.status;
+      const responseBody = error?.response?.data;
+      console.error('Payment back date failed:', { status, responseBody, caseNumber: process.env.CASE_NUMBER });
+      throw new Error(`Payment back date process failed - HTTP ${status ?? 'unknown'}.`);
+    }
+  }
+
+  private async requestRefund(): Promise<void> {
+
+  }
+
+  private async approveRefund(): Promise<void> {
   }
 }

@@ -30,3 +30,14 @@ export const staff = {
   pcs_wlu_team_leader_ts_email: 'pcs-wlu-team-leader-ts-01@justice.gov.uk',
   pcs_wlu_team_leader_ts_ca_email: 'pcs-wlu-team-leader-ts-ca-01@justice.gov.uk',
 };
+
+export const caseWorker = {
+  refundRequester:  {
+    email: 'pcs-ctsc-admin-02@justice.gov.uk',
+    password: process.env.IDAM_PCS_USER_PASSWORD
+  },
+  refundApprover:  {
+    email: 'pcs-ctsc-admin-02@hmcts.net',
+    password: process.env.IDAM_PCS_USER_PASSWORD
+  }
+}

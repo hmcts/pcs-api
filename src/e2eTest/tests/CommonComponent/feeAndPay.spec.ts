@@ -8,8 +8,29 @@ import { expect, test } from '@utils/test-fixtures';
 import { createCaseApiData, submitCaseApiData } from '@data/api-data';
 import { getCaseTypeId } from '@utils/common/caseType.utils';
 import { VERY_LONG_TIMEOUT } from 'playwright.config';
-import { cancelPayment, caseSummary, confirmYourPayment, enterPaymentDetails, serviceRequest } from '@data/page-data';
+import {
+  cancelPayment,
+  caseSummary,
+  confirmYourPayment,
+  enterPaymentDetails, home,
+  serviceRequest,
+  user
+} from '@data/page-data';
 import { history } from '@data/page-data/history.page.data';
+import {caseWorker} from "@data/user-data/staff.user.data";
+import {BrowserContext, Page} from "@playwright/test";
+
+async function clearBrowserSession(page: Page, context: BrowserContext): Promise<void> {
+  await context.clearCookies();
+  await page.evaluate(() => {
+    try {
+      localStorage.clear();
+      sessionStorage.clear();
+    } catch {
+      // Ignore if storage is not accessible
+    }
+  });
+}
 
 test.beforeEach(async ({ page }) => {
   initializeExecutor(page);
@@ -141,5 +162,31 @@ test.describe('[Common Component Fee And Pay] @nightly @CC @caseFlags' , async (
       endState: history.endStateTableHeader,
       historyStatus: history.pendingCaseIssuedTableHeader
     });
+  });
+});
+
+test.describe('[Common Component Fee And Pay Refund and Remission] @nightly @CC @caseFlags' , async () => {
+  test('Fee And Pay - Refund Process', async ({page, context}) => {
+    await performAction('clickPayNowLink', serviceRequest.payNowLink);
+    await performAction('selectPaymentTypePBA', {
+      amountLabel: serviceRequest.amountToPayLabel,
+      expectedAmount: serviceRequest.amount404,
+      payByOption: serviceRequest.payByAccountRadioOption,
+      pbaLabel: serviceRequest.selectPBALabel,
+      pbaValue: serviceRequest.pbaIndex1,
+      referenceLabel: serviceRequest.pbaReferenceLable,
+      referenceText: serviceRequest.pbaReferenceInputText,
+      confirmButton: serviceRequest.confirmPaymentButton,
+    });
+    await performValidation('mainHeader', serviceRequest.paymentSuccessMainHeader);
+
+    await performAction('backDateTheCasePaymentAPI');
+    await clearBrowserSession(page, context);
+    await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
+    await performAction('login', caseWorker.refundRequester);
+    await performAction('clickButton', home.globalSearchTab);
+    await performAction('searchByCaseReference', process.env.CASE_NUMBER);
+    await performAction('requestRefund');
+    await performAction('approveTheRefund');
   });
 });
