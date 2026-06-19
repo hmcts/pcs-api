@@ -697,7 +697,7 @@ class DocumentServiceTest {
                 .build();
 
         NoticeServedDetails noticeServedDetails = NoticeServedDetails.builder()
-                .noticeDocuments(List.of(ListValue.<Document>builder().id("1").value(doc).build()))
+                .documents(List.of(ListValue.<Document>builder().id("1").value(doc).build()))
                 .build();
 
         when(pcsCase.getNoticeServedDetails()).thenReturn(noticeServedDetails);
