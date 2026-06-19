@@ -17,5 +17,19 @@ public enum EventId {
     createFlags,
     amendFlags,
     claimIssuePayment,
-    deleteDraftClaim
+    DELETE_DRAFT_CLAIM("deleteDraftClaim");
+
+    private final String id;
+
+    EventId() {
+        this.id = name();
+    }
+
+    EventId(String id) {
+        this.id = id;
+    }
+
+    public String id() {
+        return id;
+    }
 }

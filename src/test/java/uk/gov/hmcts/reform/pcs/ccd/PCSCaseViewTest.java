@@ -12,6 +12,7 @@ import uk.gov.hmcts.ccd.sdk.CaseViewRequest;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.SearchCriteria;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
@@ -49,6 +50,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -168,6 +170,16 @@ class PCSCaseViewTest {
     }
 
     @Test
+    void shouldReturnSubmittedCaseForDeletedCaseWhenRelationalDataStillExists() {
+        // When
+        PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, State.DELETED));
+
+        // Then
+        verify(caseTabView).setCaseTabFields(pcsCase);
+        verify(enforcementOrderMediator).handleEnforcementRequirements(CASE_REFERENCE, pcsCase);
+    }
+
+    @Test
     void shouldReturnCaseWithNoPropertyAddress() {
         // When
         PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
@@ -258,6 +270,41 @@ class PCSCaseViewTest {
         List<ListValue<Party>> mappedParties = pcsCase.getParties();
         assertThat(mappedParties).hasSize(1);
         assertThat(mappedParties.getFirst().getValue()).isSameAs(party);
+    }
+
+    @Test
+    void shouldSetUserPcqIdSetWhenCurrentUserPartyHasPcqId() {
+        // Given
+        UUID userId = UUID.randomUUID();
+        PartyEntity partyEntity = mock(PartyEntity.class);
+        when(securityContextService.getCurrentUserId()).thenReturn(userId);
+        when(pcsCaseEntity.getParties()).thenReturn(Set.of(partyEntity));
+        when(partyEntity.getIdamId()).thenReturn(userId);
+        when(partyEntity.getPcqId()).thenReturn("pcq-id");
+        when(modelMapper.map(partyEntity, Party.class)).thenReturn(mock(Party.class));
+
+        // When
+        PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
+
+        // Then
+        assertThat(pcsCase.getUserPcqIdSet()).isEqualTo(YesOrNo.YES);
+    }
+
+    @Test
+    void shouldNotSetUserPcqIdSetWhenCurrentUserPartyHasNoPcqId() {
+        // Given
+        UUID userId = UUID.randomUUID();
+        PartyEntity partyEntity = mock(PartyEntity.class);
+        when(securityContextService.getCurrentUserId()).thenReturn(userId);
+        when(pcsCaseEntity.getParties()).thenReturn(Set.of(partyEntity));
+        when(partyEntity.getIdamId()).thenReturn(userId);
+        when(modelMapper.map(partyEntity, Party.class)).thenReturn(mock(Party.class));
+
+        // When
+        PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
+
+        // Then
+        assertThat(pcsCase.getUserPcqIdSet()).isEqualTo(YesOrNo.NO);
     }
 
     @Test

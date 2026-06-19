@@ -13,6 +13,11 @@ import java.util.UUID;
 @AllArgsConstructor
 public class DraftClaimDeletionService {
 
+    private static final String DEFENDANT_RESPONSE_IDS_BY_CASE_ID =
+        "(SELECT id FROM defendant_response WHERE pcs_case_id = ?)";
+    private static final String CLAIM_IDS_BY_CASE_ID = "(SELECT id FROM claim WHERE case_id = ?)";
+    private static final String PARTY_IDS_BY_CASE_ID = "(SELECT id FROM party WHERE case_id = ?)";
+
     private final JdbcTemplate jdbcTemplate;
 
     @Transactional
@@ -104,15 +109,15 @@ public class DraftClaimDeletionService {
         jdbcTemplate.update("DELETE FROM general_application WHERE case_id = ?", caseId);
         jdbcTemplate.update("DELETE FROM regular_expenses WHERE hc_id IN "
             + "(SELECT id FROM household_circumstances WHERE defendant_response_id IN "
-            + "(SELECT id FROM defendant_response WHERE pcs_case_id = ?))", caseId);
+            + DEFENDANT_RESPONSE_IDS_BY_CASE_ID + ")", caseId);
         jdbcTemplate.update("DELETE FROM household_circumstances WHERE defendant_response_id IN "
-            + "(SELECT id FROM defendant_response WHERE pcs_case_id = ?)", caseId);
+            + DEFENDANT_RESPONSE_IDS_BY_CASE_ID, caseId);
         jdbcTemplate.update("DELETE FROM reasonable_adjustments WHERE defendant_response_id IN "
-            + "(SELECT id FROM defendant_response WHERE pcs_case_id = ?)", caseId);
+            + DEFENDANT_RESPONSE_IDS_BY_CASE_ID, caseId);
         jdbcTemplate.update("DELETE FROM payment_agreement WHERE defendant_response_id IN "
-            + "(SELECT id FROM defendant_response WHERE pcs_case_id = ?)", caseId);
+            + DEFENDANT_RESPONSE_IDS_BY_CASE_ID, caseId);
         jdbcTemplate.update("DELETE FROM document WHERE defendant_response_id IN "
-            + "(SELECT id FROM defendant_response WHERE pcs_case_id = ?)", caseId);
+            + DEFENDANT_RESPONSE_IDS_BY_CASE_ID, caseId);
         jdbcTemplate.update("DELETE FROM defendant_response WHERE pcs_case_id = ?", caseId);
         jdbcTemplate.update("DELETE FROM document WHERE counter_claim_id IN "
             + "(SELECT id FROM counter_claim WHERE case_id = ?)", caseId);
@@ -124,49 +129,49 @@ public class DraftClaimDeletionService {
 
     private void deleteRowsLinkedToClaims(UUID caseId) {
         jdbcTemplate.update("DELETE FROM fee_payment WHERE possession_claim_id IN "
-            + "(SELECT id FROM claim WHERE case_id = ?)", caseId);
+            + CLAIM_IDS_BY_CASE_ID, caseId);
         jdbcTemplate.update("DELETE FROM claim_document WHERE claim_id IN "
-            + "(SELECT id FROM claim WHERE case_id = ?)", caseId);
+            + CLAIM_IDS_BY_CASE_ID, caseId);
         jdbcTemplate.update("DELETE FROM claim_ground WHERE claim_id IN "
-            + "(SELECT id FROM claim WHERE case_id = ?)", caseId);
+            + CLAIM_IDS_BY_CASE_ID, caseId);
         jdbcTemplate.update("DELETE FROM notice_of_possession WHERE claim_id IN "
-            + "(SELECT id FROM claim WHERE case_id = ?)", caseId);
+            + CLAIM_IDS_BY_CASE_ID, caseId);
         jdbcTemplate.update("DELETE FROM possession_alternatives WHERE claim_id IN "
-            + "(SELECT id FROM claim WHERE case_id = ?)", caseId);
+            + CLAIM_IDS_BY_CASE_ID, caseId);
         jdbcTemplate.update("DELETE FROM rent_arrears WHERE claim_id IN "
-            + "(SELECT id FROM claim WHERE case_id = ?)", caseId);
+            + CLAIM_IDS_BY_CASE_ID, caseId);
         jdbcTemplate.update("DELETE FROM statement_of_truth WHERE claim_id IN "
-            + "(SELECT id FROM claim WHERE case_id = ?)", caseId);
+            + CLAIM_IDS_BY_CASE_ID, caseId);
         jdbcTemplate.update("DELETE FROM asb_prohibited_conduct WHERE claim_id IN "
-            + "(SELECT id FROM claim WHERE case_id = ?)", caseId);
+            + CLAIM_IDS_BY_CASE_ID, caseId);
         jdbcTemplate.update("DELETE FROM document WHERE enf_case_id IN "
-            + "(SELECT id FROM enf_case WHERE claim_id IN (SELECT id FROM claim WHERE case_id = ?))", caseId);
+            + "(SELECT id FROM enf_case WHERE claim_id IN " + CLAIM_IDS_BY_CASE_ID + ")", caseId);
         jdbcTemplate.update("DELETE FROM enf_case WHERE claim_id IN "
-            + "(SELECT id FROM claim WHERE case_id = ?)", caseId);
+            + CLAIM_IDS_BY_CASE_ID, caseId);
         jdbcTemplate.update("DELETE FROM document WHERE claim_id IN "
-            + "(SELECT id FROM claim WHERE case_id = ?)", caseId);
+            + CLAIM_IDS_BY_CASE_ID, caseId);
         jdbcTemplate.update("DELETE FROM claim_party WHERE claim_id IN "
-            + "(SELECT id FROM claim WHERE case_id = ?)", caseId);
+            + CLAIM_IDS_BY_CASE_ID, caseId);
     }
 
     private void deleteRowsLinkedToParties(UUID caseId) {
         jdbcTemplate.update("DELETE FROM case_party_flag WHERE party_id IN "
-            + "(SELECT id FROM party WHERE case_id = ?)", caseId);
+            + PARTY_IDS_BY_CASE_ID, caseId);
         jdbcTemplate.update("DELETE FROM party_attribute_assertion WHERE party_id IN "
-            + "(SELECT id FROM party WHERE case_id = ?)", caseId);
+            + PARTY_IDS_BY_CASE_ID, caseId);
         jdbcTemplate.update("DELETE FROM counter_claim_party WHERE party_id IN "
-            + "(SELECT id FROM party WHERE case_id = ?)", caseId);
+            + PARTY_IDS_BY_CASE_ID, caseId);
         List<UUID> legalRepresentativeIds = jdbcTemplate.queryForList(
             "SELECT legal_representative_id FROM claim_party_legal_representative "
-                + "WHERE party_id IN (SELECT id FROM party WHERE case_id = ?)",
+                + "WHERE party_id IN " + PARTY_IDS_BY_CASE_ID,
             UUID.class,
             caseId
         );
         jdbcTemplate.update("DELETE FROM claim_party_legal_representative WHERE party_id IN "
-            + "(SELECT id FROM party WHERE case_id = ?)", caseId);
+            + PARTY_IDS_BY_CASE_ID, caseId);
         legalRepresentativeIds.forEach(legalRepresentativeId ->
             jdbcTemplate.update("DELETE FROM legal_representative WHERE id = ?", legalRepresentativeId));
         jdbcTemplate.update("DELETE FROM document WHERE party_id IN "
-            + "(SELECT id FROM party WHERE case_id = ?)", caseId);
+            + PARTY_IDS_BY_CASE_ID, caseId);
     }
 }

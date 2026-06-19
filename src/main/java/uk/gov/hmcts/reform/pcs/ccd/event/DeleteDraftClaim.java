@@ -28,7 +28,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.UUID;
 
-import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.deleteDraftClaim;
+import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.DELETE_DRAFT_CLAIM;
 
 @Component
 @AllArgsConstructor
@@ -46,7 +46,7 @@ public class DeleteDraftClaim implements CCDConfig<PCSCase, State, UserRole> {
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         new PageBuilder(configBuilder
-                            .decentralisedEvent(deleteDraftClaim.name(), this::submit)
+                            .decentralisedEvent(DELETE_DRAFT_CLAIM.id(), this::submit)
                             .forAllStates()
                             .name("Delete draft claim")
                             .showCondition(draftClaimStateCondition())
