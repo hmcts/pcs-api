@@ -19,3 +19,7 @@ create table party_legal_rep_org (
 
   primary key (party_id, legal_representative_organisation_id)
 );
+
+ALTER TABLE legal_representative
+  ADD COLUMN organisation_uuid UUID REFERENCES legal_representative_org(id);
+

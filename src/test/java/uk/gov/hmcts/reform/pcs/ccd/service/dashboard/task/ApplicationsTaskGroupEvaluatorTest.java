@@ -7,6 +7,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.Task;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.TaskGroup;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.TaskGroupId;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.TaskStatus;
+import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
@@ -112,6 +113,7 @@ class ApplicationsTaskGroupEvaluatorTest {
 
     private static GenAppEntity createGenApp(VerticalYesNo withoutNotice, String organisationId) {
         return GenAppEntity.builder()
+            .state(GenAppState.GEN_APP_ISSUED)
             .withoutNotice(withoutNotice)
             .party(PartyEntity.builder().organisationId(organisationId).build())
             .build();

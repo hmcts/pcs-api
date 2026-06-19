@@ -34,7 +34,7 @@ public class LegalRepresentativeEntity {
     private UUID idamId;
 
     @ManyToOne(fetch = LAZY)
-    @JoinColumn(name = "organisation_id")
+    @JoinColumn(name = "organisation_uuid")
     @JsonBackReference
     private LegalRepresentativeOrganisationEntity legalRepresentativeOrganisation;
 

@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.pcs.ccd.service.genapp;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.LegalRepresentativeOrganisationRepository;
@@ -20,6 +21,10 @@ public class GenAppVisibilityService {
 
     public boolean isGenAppVisibleToUser(GenAppEntity genAppEntity, String organisationId) {
         if (genAppEntity == null) {
+            return false;
+        }
+
+        if (genAppEntity.getState() != GenAppState.GEN_APP_ISSUED) {
             return false;
         }
 

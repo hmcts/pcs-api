@@ -13,6 +13,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.DashboardTaskTemplateIds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.RelatedApplication;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.TaskGroupId;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.TaskStatus;
+import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -165,7 +166,7 @@ class DashboardJourneyServiceTest {
     void shouldShowViewApplicationsTaskWhenAtLeastOneGeneralApplicationExists() {
         PCSCase submitted = PCSCase.builder().build();
         PcsCaseEntity caseEntity = PcsCaseEntity.builder()
-            .genApps(Set.of(GenAppEntity.builder().build()))
+            .genApps(Set.of(GenAppEntity.builder().state(GenAppState.GEN_APP_ISSUED).build()))
             .build();
 
         PartyEntity defendant = PartyEntity.builder().idamId(UUID.randomUUID()).build();
