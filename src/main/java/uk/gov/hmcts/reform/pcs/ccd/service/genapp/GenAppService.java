@@ -52,12 +52,13 @@ public class GenAppService {
 
     public GenAppEntity createGenAppEntity(GenAppRequest genAppRequest,
                                            PcsCaseEntity pcsCaseEntity,
-                                           PartyEntity applicantParty) {
+                                           PartyEntity applicantParty,
+                                           GenAppState initialState) {
 
         GenAppEntity genAppEntity = GenAppEntity.builder()
             .type(genAppRequest.getApplicationType())
             .party(applicantParty)
-            .state(GenAppState.SUBMITTED)
+            .state(initialState)
             .clientReference(genAppRequest.getClientReference())
             .within14Days(genAppRequest.getWithin14Days())
             .needHwf(genAppRequest.getNeedHwf())
@@ -144,7 +145,9 @@ public class GenAppService {
                     .fileName(updatedFilename)
                     .binaryUrl(uploadedDocument.getDocument().getBinaryUrl())
                     .categoryId(CaseFileCategory.APPLICATIONS.getId())
-                    .type(documentService.mapAdditionalDocumentTypeToDocumentType(uploadedDocument.getDocumentType()))
+                    .type(uploadedDocument.getDocumentType() != null
+                        ? documentService.mapAdditionalDocumentTypeToDocumentType(uploadedDocument.getDocumentType())
+                        : null)
                     .contentType(uploadedDocument.getContentType())
                     .size(uploadedDocument.getSizeInBytes())
                     .build();
