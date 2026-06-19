@@ -132,6 +132,66 @@ class CaseFlagsViewTest {
         assertEquals("Lessee", mapped.getLastName());
     }
 
+    @Test
+    void shouldNotMapDefendantFlagsWhenNoClaimsExist() {
+        PartyEntity partyEntity = createPartyEntity(null);
+
+        PCSCase pcsCase = PCSCase.builder()
+            .parties(List.of(mappedParty(partyEntity)))
+            .build();
+        PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
+        pcsCaseEntity.setParties(Set.of(partyEntity));
+
+        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+
+        Party mapped = pcsCase.getParties().getFirst().getValue();
+        assertNull(mapped.getDefendantFlags());
+    }
+
+    @Test
+    void shouldUsePartyEntityIdWhenClaimPartyEmbeddedIdHasNoPartyId() {
+        PartyEntity defendantEntity = createPartyEntity(null);
+        ClaimPartyEntity claimParty = ClaimPartyEntity.builder()
+            .id(new ClaimPartyId())
+            .party(defendantEntity)
+            .role(PartyRole.DEFENDANT)
+            .build();
+
+        PCSCase pcsCase = PCSCase.builder()
+            .parties(List.of(mappedParty(defendantEntity)))
+            .build();
+        PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
+        pcsCaseEntity.setParties(Set.of(defendantEntity));
+        setClaimParties(pcsCaseEntity, claimParty);
+
+        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+
+        Party mapped = pcsCase.getParties().getFirst().getValue();
+        assertNotNull(mapped.getDefendantFlags());
+        assertEquals(0, mapped.getDefendantFlags().getDetails().size());
+    }
+
+    @Test
+    void shouldIgnoreDefendantClaimPartyWhenNoPartyIdIsAvailable() {
+        PartyEntity partyEntity = createPartyEntity(null);
+        ClaimPartyEntity claimParty = ClaimPartyEntity.builder()
+            .id(new ClaimPartyId())
+            .role(PartyRole.DEFENDANT)
+            .build();
+
+        PCSCase pcsCase = PCSCase.builder()
+            .parties(List.of(mappedParty(partyEntity)))
+            .build();
+        PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
+        pcsCaseEntity.setParties(Set.of(partyEntity));
+        setClaimParties(pcsCaseEntity, claimParty);
+
+        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+
+        Party mapped = pcsCase.getParties().getFirst().getValue();
+        assertNull(mapped.getDefendantFlags());
+    }
+
     private Party findPartyById(PCSCase pcsCase, String id) {
         return pcsCase.getParties().stream()
             .filter(partyListValue -> id.equals(partyListValue.getId()))
