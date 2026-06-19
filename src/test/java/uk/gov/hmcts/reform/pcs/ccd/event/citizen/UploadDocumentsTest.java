@@ -96,7 +96,7 @@ class UploadDocumentsTest extends BaseEventTest {
             UUID selectedId = UUID.randomUUID();
             GenAppEntity selectedGenApp = mock(GenAppEntity.class);
             when(selectedGenApp.getId()).thenReturn(selectedId);
-            when(selectedGenApp.getState()).thenReturn(GenAppState.SUBMITTED);
+            when(selectedGenApp.getState()).thenReturn(GenAppState.GEN_APP_ISSUED);
             when(selectedGenApp.getApplicationSubmittedDate()).thenReturn(LocalDateTime.now());
             when(pcsCaseEntity.getGenApps()).thenReturn(Set.of(selectedGenApp));
 
@@ -127,7 +127,7 @@ class UploadDocumentsTest extends BaseEventTest {
             UUID strayId = UUID.randomUUID();
             GenAppEntity otherGenApp = mock(GenAppEntity.class);
             when(otherGenApp.getId()).thenReturn(UUID.randomUUID());
-            when(otherGenApp.getState()).thenReturn(GenAppState.SUBMITTED);
+            when(otherGenApp.getState()).thenReturn(GenAppState.GEN_APP_ISSUED);
             when(otherGenApp.getApplicationSubmittedDate()).thenReturn(LocalDateTime.now());
             when(pcsCaseEntity.getGenApps()).thenReturn(Set.of(otherGenApp));
 
@@ -220,7 +220,7 @@ class UploadDocumentsTest extends BaseEventTest {
         @Test
         void shouldIncludeAdjournCategoryWhenAdjournGenAppExists() {
             LocalDateTime submittedDate = LocalDateTime.now();
-            GenAppEntity adjourn = stubGenApp(GenAppType.ADJOURN, GenAppState.SUBMITTED, submittedDate);
+            GenAppEntity adjourn = stubGenApp(GenAppType.ADJOURN, GenAppState.GEN_APP_ISSUED, submittedDate);
 
             when(pcsCaseEntity.getGenApps()).thenReturn(Set.of(adjourn));
 
@@ -238,7 +238,7 @@ class UploadDocumentsTest extends BaseEventTest {
         @Test
         void shouldIncludeGenAppsInPendingSubmissionState() {
             LocalDateTime submittedDate = LocalDateTime.now();
-            GenAppEntity pending = stubGenApp(GenAppType.SET_ASIDE, GenAppState.PENDING_SUBMISSION, submittedDate);
+            GenAppEntity pending = stubGenApp(GenAppType.SET_ASIDE, GenAppState.PENDING_GEN_APP_ISSUED, submittedDate);
 
             when(pcsCaseEntity.getGenApps()).thenReturn(Set.of(pending));
 
@@ -267,7 +267,7 @@ class UploadDocumentsTest extends BaseEventTest {
         void shouldExcludeGenAppsWithNoType() {
             // A genApp with a null type means mapGenAppTypeToCategory returns null,
             // toOption returns null, and the option is filtered out.
-            GenAppEntity typeless = stubGenApp(null, GenAppState.SUBMITTED, LocalDateTime.now());
+            GenAppEntity typeless = stubGenApp(null, GenAppState.GEN_APP_ISSUED, LocalDateTime.now());
 
             when(pcsCaseEntity.getGenApps()).thenReturn(Set.of(typeless));
 
@@ -280,7 +280,7 @@ class UploadDocumentsTest extends BaseEventTest {
 
         @Test
         void shouldExcludeGenAppsWithNoApplicationSubmittedDate() {
-            GenAppEntity undated = stubGenApp(GenAppType.ADJOURN, GenAppState.SUBMITTED, null);
+            GenAppEntity undated = stubGenApp(GenAppType.ADJOURN, GenAppState.GEN_APP_ISSUED, null);
 
             when(pcsCaseEntity.getGenApps()).thenReturn(Set.of(undated));
 
@@ -294,9 +294,9 @@ class UploadDocumentsTest extends BaseEventTest {
         @Test
         void shouldSortOptionsByLatestSubmittedDateDescending() {
             LocalDateTime now = LocalDateTime.now();
-            GenAppEntity oldestAdjourn = stubGenApp(GenAppType.ADJOURN, GenAppState.SUBMITTED, now.minusDays(10));
-            GenAppEntity midSetAside = stubGenApp(GenAppType.SET_ASIDE, GenAppState.SUBMITTED, now.minusDays(3));
-            GenAppEntity newestGeneral = stubGenApp(GenAppType.SOMETHING_ELSE, GenAppState.SUBMITTED, now);
+            GenAppEntity oldestAdjourn = stubGenApp(GenAppType.ADJOURN, GenAppState.GEN_APP_ISSUED, now.minusDays(10));
+            GenAppEntity midSetAside = stubGenApp(GenAppType.SET_ASIDE, GenAppState.GEN_APP_ISSUED, now.minusDays(3));
+            GenAppEntity newestGeneral = stubGenApp(GenAppType.SOMETHING_ELSE, GenAppState.GEN_APP_ISSUED, now);
 
             when(pcsCaseEntity.getGenApps()).thenReturn(Set.of(oldestAdjourn, midSetAside, newestGeneral));
 
@@ -314,8 +314,8 @@ class UploadDocumentsTest extends BaseEventTest {
         void shouldEmitOneOptionPerVisibleGenAppEvenWithinTheSameCategory() {
             LocalDateTime older = LocalDateTime.now().minusDays(5);
             LocalDateTime newer = LocalDateTime.now();
-            GenAppEntity olderAdjourn = stubGenApp(GenAppType.ADJOURN, GenAppState.SUBMITTED, older);
-            GenAppEntity newerAdjourn = stubGenApp(GenAppType.ADJOURN, GenAppState.SUBMITTED, newer);
+            GenAppEntity olderAdjourn = stubGenApp(GenAppType.ADJOURN, GenAppState.GEN_APP_ISSUED, older);
+            GenAppEntity newerAdjourn = stubGenApp(GenAppType.ADJOURN, GenAppState.GEN_APP_ISSUED, newer);
 
             when(pcsCaseEntity.getGenApps()).thenReturn(Set.of(olderAdjourn, newerAdjourn));
 
@@ -330,7 +330,7 @@ class UploadDocumentsTest extends BaseEventTest {
         @Test
         void shouldStampOptionWithGenAppIdAndUseItAsListValueId() {
             LocalDateTime submittedDate = LocalDateTime.now();
-            GenAppEntity adjourn = stubGenApp(GenAppType.ADJOURN, GenAppState.SUBMITTED, submittedDate);
+            GenAppEntity adjourn = stubGenApp(GenAppType.ADJOURN, GenAppState.GEN_APP_ISSUED, submittedDate);
             UUID genAppId = UUID.randomUUID();
             when(adjourn.getId()).thenReturn(genAppId);
 
@@ -352,7 +352,7 @@ class UploadDocumentsTest extends BaseEventTest {
             // SUSPEND was removed from GenAppType by PR #1804. Until it is restored, the
             // SUSPEND_EVICTION_APPLICATION category must be filtered out so we don't render
             // a radio backed by no data.
-            GenAppEntity adjourn = stubGenApp(GenAppType.ADJOURN, GenAppState.SUBMITTED, LocalDateTime.now());
+            GenAppEntity adjourn = stubGenApp(GenAppType.ADJOURN, GenAppState.GEN_APP_ISSUED, LocalDateTime.now());
             when(pcsCaseEntity.getGenApps()).thenReturn(Set.of(adjourn));
 
             PCSCase result = callStartHandler(PCSCase.builder().build());

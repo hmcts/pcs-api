@@ -44,7 +44,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.uploadDocuments;
 public class UploadDocuments implements CCDConfig<PCSCase, State, UserRole> {
 
     private static final Set<GenAppState> VISIBLE_GEN_APP_STATES =
-        EnumSet.of(GenAppState.PENDING_SUBMISSION, GenAppState.SUBMITTED);
+        EnumSet.of(GenAppState.PENDING_GEN_APP_ISSUED, GenAppState.GEN_APP_ISSUED);
 
     private final PcsCaseService pcsCaseService;
     private final PartyService partyService;
