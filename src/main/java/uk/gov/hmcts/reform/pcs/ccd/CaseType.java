@@ -12,7 +12,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import static java.lang.System.getenv;
 import static java.util.Optional.ofNullable;
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory.HIDDEN;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.State.AWAITING_SUBMISSION_TO_HMCTS;
 
 /**
@@ -131,27 +130,16 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
             .field(PCSCase::getParties, "flagLauncherInternal!=\"\"", "#ARGUMENT(Flags)");
 
         configureCaseFileCategories(builder);
-        configureHiddenCaseFileCategory(builder);
     }
 
     private void configureCaseFileCategories(ConfigBuilder<PCSCase, State, AccessProfile> builder) {
-        CaseFileCategory[] values = CaseFileCategory.values();
-        for (int i = 0; i < values.length - 1; i++) {
-            CaseFileCategory category = values[i];
+        for (CaseFileCategory category : CaseFileCategory.values()) {
             builder.categories(AccessProfile.PCS_SOLICITOR)
                 .categoryID(category.getId())
                 .categoryLabel(category.getLabel())
                 .displayOrder(category.getDisplayOrder())
                 .build();
         }
-    }
-
-    private void configureHiddenCaseFileCategory(ConfigBuilder<PCSCase, State, AccessProfile> builder) {
-        builder.categories(AccessProfile.SYSTEM_USER)
-            .categoryID(HIDDEN.getId())
-            .categoryLabel(HIDDEN.getLabel())
-            .displayOrder(HIDDEN.getDisplayOrder())
-            .build();
     }
 
     private void buildCaseNotesTab(ConfigBuilder<PCSCase, State, AccessProfile> builder) {
@@ -161,7 +149,7 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
 
     private void buildCasePartiesTab(ConfigBuilder<PCSCase, State, AccessProfile> builder) {
         builder.tab("caseParties", "Case Parties")
-            .label("Case Parties", null, "# Case Parties")
+            .label("Case parties", null, "# Case parties")
             .field("casePartiesTab_ClaimantDetails")
             .field("casePartiesTab_DefendantOneDetails")
             .field("casePartiesTab_DefendantsDetails");

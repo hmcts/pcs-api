@@ -31,7 +31,7 @@ class RequiredDocumentsTabDetailsBuilderTest {
             .build();
 
         RequiredDocumentsTabDetails requiredDocumentsTabDetails =
-            requiredDocumentsTabDetailsBuilder.buildRequiredDocumentsTabDetails(pcsCase);
+            requiredDocumentsTabDetailsBuilder.buildRequiredDocumentsTabDetails(pcsCase, false);
 
         assertThat(requiredDocumentsTabDetails).isNull();
     }
@@ -43,7 +43,7 @@ class RequiredDocumentsTabDetailsBuilderTest {
             .build();
 
         RequiredDocumentsTabDetails requiredDocumentsTabDetails =
-            requiredDocumentsTabDetailsBuilder.buildRequiredDocumentsTabDetails(pcsCase);
+            requiredDocumentsTabDetailsBuilder.buildRequiredDocumentsTabDetails(pcsCase, false);
 
         assertThat(requiredDocumentsTabDetails).isNull();
     }
@@ -65,7 +65,7 @@ class RequiredDocumentsTabDetailsBuilderTest {
             .build();
 
         RequiredDocumentsTabDetails requiredDocumentsTabDetails =
-            requiredDocumentsTabDetailsBuilder.buildRequiredDocumentsTabDetails(pcsCase);
+            requiredDocumentsTabDetailsBuilder.buildRequiredDocumentsTabDetails(pcsCase, false);
 
         assertThat(requiredDocumentsTabDetails.getHasEnergyPerformanceCertificate()).isEqualTo("No");
         assertThat(requiredDocumentsTabDetails.getHasGasSafetyReport()).isEqualTo("No");
@@ -99,7 +99,7 @@ class RequiredDocumentsTabDetailsBuilderTest {
             .build();
 
         RequiredDocumentsTabDetails requiredDocumentsTabDetails =
-            requiredDocumentsTabDetailsBuilder.buildRequiredDocumentsTabDetails(pcsCase);
+            requiredDocumentsTabDetailsBuilder.buildRequiredDocumentsTabDetails(pcsCase, false);
 
         assertThat(requiredDocumentsTabDetails.getHasEnergyPerformanceCertificate()).isEqualTo("Yes");
         assertThat(requiredDocumentsTabDetails.getHasGasSafetyReport()).isEqualTo("Yes");
@@ -120,7 +120,7 @@ class RequiredDocumentsTabDetailsBuilderTest {
             .build();
 
         RequiredDocumentsTabDetails requiredDocumentsTabDetails =
-            requiredDocumentsTabDetailsBuilder.buildRequiredDocumentsTabDetails(pcsCase);
+            requiredDocumentsTabDetailsBuilder.buildRequiredDocumentsTabDetails(pcsCase, false);
 
         assertThat(requiredDocumentsTabDetails.getHasEnergyPerformanceCertificate()).isEqualTo(" ");
         assertThat(requiredDocumentsTabDetails.getHasGasSafetyReport()).isEqualTo(" ");
@@ -152,7 +152,7 @@ class RequiredDocumentsTabDetailsBuilderTest {
             .build();
 
         RequiredDocumentsTabDetails requiredDocumentsTabDetails =
-            requiredDocumentsTabDetailsBuilder.buildRequiredDocumentsTabDetails(pcsCase);
+            requiredDocumentsTabDetailsBuilder.buildRequiredDocumentsTabDetails(pcsCase, false);
 
         assertThat(requiredDocumentsTabDetails.getNoEnergyPerformanceCertificateReason()).isEqualTo("No EPC");
         assertThat(requiredDocumentsTabDetails.getEnergyPerformanceCertificates()).isNull();
@@ -162,5 +162,73 @@ class RequiredDocumentsTabDetailsBuilderTest {
             "No EICR"
         );
         assertThat(requiredDocumentsTabDetails.getElectricalInstallationReports()).isNull();
+    }
+
+    @Test
+    void shouldUnsetRequiredDocumentsIfCaseIsSubmitted() {
+        List<ListValue<Document>> energyPerformance = List.of(ListValue.<Document>builder().value(Document.builder().build())
+                                                          .build());
+        List<ListValue<Document>> gasSafetyReport = List.of(ListValue.<Document>builder().value(Document.builder().build())
+                                                                             .build());
+        List<ListValue<Document>> electricalInstallation = List.of(ListValue.<Document>builder().value(Document.builder().build())
+                                                                .build());
+
+        WalesDocuments walesDocuments = WalesDocuments.builder()
+            .hasEnergyPerformanceCertificate(VerticalYesNo.YES)
+            .hasGasSafetyReport(VerticalYesNo.YES)
+            .hasElectricalInstallationConditionReport(VerticalYesNo.YES)
+            .energyPerformance(energyPerformance)
+            .gasSafetyReport(gasSafetyReport)
+            .electricalInstallation(electricalInstallation)
+            .build();
+
+        PCSCase pcsCase = PCSCase.builder()
+            .legislativeCountry(LegislativeCountry.WALES)
+            .requiredDocumentsWales(walesDocuments)
+            .build();
+
+        RequiredDocumentsTabDetails requiredDocumentsTabDetails =
+            requiredDocumentsTabDetailsBuilder.buildRequiredDocumentsTabDetails(pcsCase, true);
+
+        assertThat(requiredDocumentsTabDetails.getEnergyPerformanceCertificates()).isEqualTo(energyPerformance);
+        assertThat(walesDocuments.getEnergyPerformance()).isNull();
+        assertThat(requiredDocumentsTabDetails.getGasSafetyReports()).isEqualTo(gasSafetyReport);
+        assertThat(walesDocuments.getGasSafetyReport()).isNull();
+        assertThat(requiredDocumentsTabDetails.getElectricalInstallationReports()).isEqualTo(electricalInstallation);
+        assertThat(walesDocuments.getElectricalInstallation()).isNull();
+    }
+
+    @Test
+    void shouldNotUnsetRequiredDocumentsIfCaseIsInDraft() {
+        List<ListValue<Document>> energyPerformance = List.of(ListValue.<Document>builder().value(Document.builder().build())
+                                                                  .build());
+        List<ListValue<Document>> gasSafetyReport = List.of(ListValue.<Document>builder().value(Document.builder().build())
+                                                                .build());
+        List<ListValue<Document>> electricalInstallation = List.of(ListValue.<Document>builder().value(Document.builder().build())
+                                                                       .build());
+
+        WalesDocuments walesDocuments = WalesDocuments.builder()
+            .hasEnergyPerformanceCertificate(VerticalYesNo.YES)
+            .hasGasSafetyReport(VerticalYesNo.YES)
+            .hasElectricalInstallationConditionReport(VerticalYesNo.YES)
+            .energyPerformance(energyPerformance)
+            .gasSafetyReport(gasSafetyReport)
+            .electricalInstallation(electricalInstallation)
+            .build();
+
+        PCSCase pcsCase = PCSCase.builder()
+            .legislativeCountry(LegislativeCountry.WALES)
+            .requiredDocumentsWales(walesDocuments)
+            .build();
+
+        RequiredDocumentsTabDetails requiredDocumentsTabDetails =
+            requiredDocumentsTabDetailsBuilder.buildRequiredDocumentsTabDetails(pcsCase, false);
+
+        assertThat(requiredDocumentsTabDetails.getEnergyPerformanceCertificates()).isEqualTo(energyPerformance);
+        assertThat(walesDocuments.getEnergyPerformance()).isEqualTo(energyPerformance);
+        assertThat(requiredDocumentsTabDetails.getGasSafetyReports()).isEqualTo(gasSafetyReport);
+        assertThat(walesDocuments.getGasSafetyReport()).isEqualTo(gasSafetyReport);
+        assertThat(requiredDocumentsTabDetails.getElectricalInstallationReports()).isEqualTo(electricalInstallation);
+        assertThat(walesDocuments.getElectricalInstallation()).isEqualTo(electricalInstallation);
     }
 }

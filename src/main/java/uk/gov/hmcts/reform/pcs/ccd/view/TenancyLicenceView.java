@@ -19,8 +19,6 @@ import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import java.util.ArrayList;
 import java.util.List;
 
-import static uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory.HIDDEN;
-
 @Component
 public class TenancyLicenceView {
 
@@ -109,7 +107,7 @@ public class TenancyLicenceView {
                     .url(documentEntity.getUrl())
                     .filename(documentEntity.getFileName())
                     .binaryUrl(documentEntity.getBinaryUrl())
-                    .categoryId(HIDDEN.getId())
+                    .categoryId(documentEntity.getCategoryId())
                     .build()
             ).build();
     }

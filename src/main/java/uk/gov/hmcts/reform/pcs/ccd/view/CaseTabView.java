@@ -42,10 +42,10 @@ public class CaseTabView {
     private final CaseSummaryTabView caseSummaryTabView;
     private final CaseDetailsTabView caseDetailsTabView;
 
-    public void setCaseTabFields(PCSCase pcsCase) {
+    public void setCaseTabFields(PCSCase pcsCase, boolean isSubmitted) {
         CasePartiesTab casePartiesTab = buildCasePartiesTab(pcsCase);
         SummaryTab summaryTab = caseSummaryTabView.buildSummaryTab(pcsCase);
-        CaseDetailsTab detailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase);
+        CaseDetailsTab detailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase, isSubmitted);
         pcsCase.setCasePartiesTab(casePartiesTab);
         pcsCase.setSummaryTab(summaryTab);
         pcsCase.setCaseDetailsTab(detailsTab);
@@ -85,7 +85,7 @@ public class CaseTabView {
             claimGroundSummaryBuilder.buildClaimGroundSummariesFromDraft(draftCaseData);
         draftCaseData.setClaimGroundSummaries(draftGrounds);
 
-        setCaseTabFields(draftCaseData);
+        setCaseTabFields(draftCaseData, false);
         pcsCase.setSummaryTab(draftCaseData.getSummaryTab());
         pcsCase.setCaseDetailsTab(draftCaseData.getCaseDetailsTab());
     }

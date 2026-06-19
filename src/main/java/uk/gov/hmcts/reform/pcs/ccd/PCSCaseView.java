@@ -99,10 +99,10 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
                 .getUnsubmittedCaseData(caseReference, resumePossessionClaim)
                 .ifPresentOrElse(
                     draft -> caseTabView.setDraftCaseTabFields(pcsCase, draft),
-                    () -> caseTabView.setCaseTabFields(pcsCase)
+                    () -> caseTabView.setCaseTabFields(pcsCase, true)
                 );
         } else {
-            caseTabView.setCaseTabFields(pcsCase);
+            caseTabView.setCaseTabFields(pcsCase, true);
         }
 
         setMarkdownFields(pcsCase, hasUnsubmittedCaseData);
