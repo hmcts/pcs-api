@@ -31,8 +31,8 @@ public class DraftClaimDeletionService {
 
         jdbcTemplate.update("DELETE FROM draft.draft_case_data WHERE case_reference = ?", caseReference);
 
-        List<UUID> addressIds = getAddressIdsForCase(caseId);
-        List<UUID> contactPreferenceIds = getContactPreferenceIdsForCase(caseId);
+        final List<UUID> addressIds = getAddressIdsForCase(caseId);
+        final List<UUID> contactPreferenceIds = getContactPreferenceIdsForCase(caseId);
 
         deleteRowsLinkedToCase(caseId);
         deleteRowsLinkedToClaims(caseId);
