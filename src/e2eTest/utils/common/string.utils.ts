@@ -70,7 +70,7 @@ export function formatDate(dateStr: string, formatType: string): string {
 /* convert string for ex RENT_ARREARS to Rent arrears */
 export function formatText(input: string): string {
   return input
-    .toLowerCase() 
+    .toLowerCase()
     .replace(/_/g, " ")
     .replace(/^\w/, c => c.toUpperCase());
 }
@@ -126,3 +126,9 @@ export function formatDateTimeBST(dataTime: string): string {
     .replace(' pm', 'PM');
 }
 
+/* Formats a numeric case number by inserting a hyphen after every 4 digits.
+Example: "1781518470935861" -> "1781-5184-7093-5861"
+*/
+export function formatTheCaseNumber(caseNumber: string): string {
+  return caseNumber.replace(/(\d{4})(?=\d)/g, '$1-');
+}

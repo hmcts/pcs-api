@@ -51,6 +51,18 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
             .orElse(base);
     }
 
+    /**
+     * Whether this deployment runs a suffixed case type, e.g. PCS-STAGING or a
+     * per-PR preview type, driven by the CASE_TYPE_SUFFIX env var.
+     */
+    public static boolean isSuffixedCaseType() {
+        return isSuffixed(getenv().get("CASE_TYPE_SUFFIX"));
+    }
+
+    static boolean isSuffixed(String suffix) {
+        return suffix != null && !suffix.isBlank();
+    }
+
     @Override
     public void configure(final ConfigBuilder<PCSCase, State, AccessProfile> builder) {
         builder.setCallbackHost(caseApiUrl);
@@ -141,7 +153,7 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
 
     private void buildCasePartiesTab(ConfigBuilder<PCSCase, State, AccessProfile> builder) {
         builder.tab("caseParties", "Case Parties")
-            .label("Case Parties", null, "#### Case Parties")
+            .label("Case Parties", null, "# Case Parties")
             .field("casePartiesTab_ClaimantDetails")
             .field("casePartiesTab_DefendantOneDetails")
             .field("casePartiesTab_DefendantsDetails");
@@ -240,6 +252,12 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
                 "detailsTab_ProhibitedConductStandardContractDetails!=\"\"",
                 "## Prohibited conduct standard contract"
             )
-            .field("detailsTab_ProhibitedConductStandardContractDetails");
+            .field("detailsTab_ProhibitedConductStandardContractDetails")
+            .label(
+                "Required Documents",
+                "detailsTab_RequiredDocumentsDetails!=\"\"",
+                "## Required Documents"
+            )
+            .field("detailsTab_RequiredDocumentsDetails");
     }
 }
