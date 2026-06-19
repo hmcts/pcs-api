@@ -128,7 +128,7 @@ export class CreateCaseAction implements IAction {
       ['validateCaseNotesDetails', () => this.validateCaseNotesDetails(page, fieldName as actionRecord)],
       ['validateCaseSummaryDetails', () => this.validateCaseSummaryDetails(page, fieldName as actionRecord)],
       ['validateCaseFileViewFolders', () => this.validateCaseFileViewFolders(page)],
-      ['validateCaseFileViewIndividualFolder', () => this.validateCaseFileViewIndividualFolder(page)],
+      ['validateCaseFileViewIndividualFolder', () => this.validateCaseFileViewIndividualFolder(page, fieldName as actionRecord)],
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -1584,42 +1584,71 @@ export class CreateCaseAction implements IAction {
     
   }
 
-  public async validateCaseFileViewIndividualFolder(page: Page){
-    // let folderLocator = page.locator('button[role="treeitem"]').filter({ visible: true });
-    // const folderCount = await folderLocator.count();
-    // let testLoc;
-    // let text = '';
-    // for (let i = 0; i < folderCount; i++) {
-    //   text = await folderLocator.nth(i).innerText()
-
-    //   if (text?.includes('Statements of case')) {
-    //     testLoc = folderLocator.nth(i);
-    //     break;
-    //   }
-      
-
-    // }
-
-    // if (Number(text?.charAt(0)) === 0) {
-    //   throw new Error(` For file ${} files are not present`)
-    // }
-    // await testLoc?.click();
-
-
-    const folderName = 'Statements of case';
+  public async validateCaseFileViewIndividualFolder(page: Page ,caseFile: actionRecord){
+    
+    const folderName = caseFile.folder as string;
+    let submitPayLoad = caseFile.submitPayload as Record<string, any>;
+    const userInputFiles:string[]= [];
+    switch (folderName) {
+      case 'Property documents':
+         this.readDocFilesFromPayLoad(userInputFiles,submitPayLoad.tenancy_TenancyLicenceDocuments);
+         this.readDocFilesFromPayLoad(userInputFiles,submitPayLoad.notice_Documents)
+         this.readDocFilesFromPayLoad(userInputFiles,submitPayLoad.rentArrears_StatementDocuments)
+        
+        break;
+    
+      default:
+        break;
+    }
 
     const folder = page
       .locator('button[role="treeitem"]')
       .filter({ hasText: folderName });
-
+   let fileLocator = page.locator('button.node.case-file__node').filter({ visible: true })
     const text = await folder.innerText();
     const fileCount = Number(text.match(/^\d+/)?.[0] ?? 0);
 
     if (fileCount === 0) {
       throw new Error(`For folder "${folderName}" files are not present`);
     }
-
     await folder.click();
+    console.log('files:'+await fileLocator.count());
+    const actualFileCount = await fileLocator.count();
+
+    expect(actualFileCount,'File count matching').toEqual(fileCount)
+    const fileArray =  this.cleanFilesArray(await fileLocator.allTextContents());
+    console.log(fileArray);
+
+    expect(userInputFiles.sort(),`validating  upload files for "${folderName}"`).toEqual(fileArray.sort());
+
+    if ((await folder.getAttribute('aria-expanded')) === 'true') {
+      await folder.click();
+      await expect(folder).toHaveAttribute('aria-expanded', 'false');
+    }
+  }
+
+  public  cleanFilesArray(filesArray: string[]): string[] {
+
+    const uniqueFiles = [...new Set(filesArray.map(f =>
+      f.replace(/\s+-\s+Claimant\s+\d+/i, '')
+        .replace(/\s+\d{1,2}\s+[A-Za-z]{3}\s+\d{4}\s+\d{2}:\d{2}$/, '')
+        .trim()
+    ))];
+
+    return uniqueFiles;
+
+  }
+
+  public readDocFilesFromPayLoad(mainArray: string[], subArray: any[]) {
+
+    if (Array.isArray(subArray)) {
+      subArray.forEach(doc => {
+        if (doc.value?.document_filename) {
+          mainArray.push(doc.value.document_filename);
+        }
+      });
+    }
+
 
   }
 }

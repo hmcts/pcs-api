@@ -326,6 +326,9 @@ test.describe('[Case tabs - England Journey] @nightly', async () => {
     await performValidation('mainHeader', home.caseSummary)
     await performAction('clickTab', home.caseFileView);
     await performAction('validateCaseFileViewFolders');
-    await performAction('validateCaseFileViewIndividualFolder');
+    await performAction('validateCaseFileViewIndividualFolder', {
+      folder: 'Property documents',
+      submitPayload: submitCaseApiData.submitCasePayloadCaseFileView,
+    });
   });
 });

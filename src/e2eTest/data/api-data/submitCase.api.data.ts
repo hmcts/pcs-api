@@ -721,9 +721,9 @@ export const submitCaseApiData = {
       {
         id: '3bbe3b5d-8a49-46cf-ac3e-8863a7aea372',
         value: {
-          document_url: `http://dm-store-aat.service.core-compute-aat.internal/documents/b5aacf07-97b4-4455-9140-c9220725a765`,
-          document_binary_url: `http://dm-store-aat.service.core-compute-aat.internal/documents/b5aacf07-97b4-4455-9140-c9220725a765/binary`,
-          document_filename: 'certificateOfService.pdf',
+          document_url: `${process.env.DM_STORE}/documents/b5aacf07-97b4-4455-9140-c9220725a765`,
+          document_binary_url: `${process.env.DM_STORE}/documents/b5aacf07-97b4-4455-9140-c9220725a765/binary`,
+          document_filename: 'tenancy.pdf',
         }
       }
     ],
@@ -736,15 +736,15 @@ export const submitCaseApiData = {
     mediationAttempted: 'YES',
     settlementAttempted: 'YES',
     noticeServed: 'Yes',
-    notice_NoticeServiceMethod: 'FIRST_CLASS_POST',
-    notice_NoticePostedDate: '2015-12-01',
-    notice_NoticeDocuments: [
+    notice_ServiceMethod: 'FIRST_CLASS_POST',
+    notice_PostedDate: '2015-12-01',
+    notice_Documents: [
       {
         id: '2fbd79a1-19dc-46fb-9baf-83534187f37f',
         value: {
-          document_url: `http://dm-store-aat.service.core-compute-aat.internal/documents/f42251d3-70ac-4a60-914d-c1af51f0a5ac`,
-          document_binary_url: `http://dm-store-aat.service.core-compute-aat.internal/documents/f42251d3-70ac-4a60-914d-c1af51f0a5ac/binary`,
-          document_filename: 'inspectionOrReport.pdf',
+          document_url: `${process.env.DM_STORE}/documents/f42251d3-70ac-4a60-914d-c1af51f0a5ac`,
+          document_binary_url: `${process.env.DM_STORE}/documents/f42251d3-70ac-4a60-914d-c1af51f0a5ac/binary`,
+          document_filename: 'NoticeDetails.pdf',
         }
       }
     ],
@@ -755,8 +755,8 @@ export const submitCaseApiData = {
       {
         id: '468ec779-350f-4484-9694-ea6b3285d86e',
         value: {
-          document_url: `http://dm-store-aat.service.core-compute-aat.internal/documents/c88969c7-b5c7-4f87-89b7-5ec0c74c3e52`,
-          document_binary_url: `http://dm-store-aat.service.core-compute-aat.internal/documents/c88969c7-b5c7-4f87-89b7-5ec0c74c3e52/binary`,
+          document_url: `${process.env.DM_STORE}/documents/c88969c7-b5c7-4f87-89b7-5ec0c74c3e52`,
+          document_binary_url: `${process.env.DM_STORE}/documents/c88969c7-b5c7-4f87-89b7-5ec0c74c3e52/binary`,
           document_filename: `rentStatement.pdf`,
         }
       }
@@ -807,72 +807,79 @@ export const submitCaseApiData = {
               code: '4b80f5c9-ed97-472e-a4c9-6dbb7bfd2863',
               label: 'Inspection or report'
             },
-            list_items: [
-              {
-                code: 'ca4c5ceb-7562-4d1f-9e74-3a77309606f2',
-                label: 'Witness statement'
-              },
-              {
-                code: '9309311c-dfe9-4269-81d6-60cb737dd4c9',
-                label: 'Rent statement'
-              },
-              {
-                code: 'fa98c4bc-e6de-4d3d-9698-17393669586f',
-                label: 'Tenancy agreement'
-              },
-              {
-                code: 'b4e38528-1762-4873-b6d9-7f6d29040503',
-                label: 'Certificate of service'
-              },
-              {
-                code: '5677880b-f7fe-461c-b40b-50a6d9dbe9d5',
-                label: 'Correspondence from defendant'
-              },
-              {
-                code: '2d70fba1-1167-46f1-a77b-40d395b71cef',
-                label: 'Correspondence from claimant'
-              },
-              {
-                code: '8dd23cb2-0429-4ebf-a6e9-7644a76d6eeb',
-                label: 'Possession notice'
-              },
-              {
-                code: 'f9aeb2bd-8995-43bf-b1ca-0a3712b6fa1a',
-                label: 'Notice for service out of the jurisdiction'
-              },
-              {
-                code: 'c8de6220-92d8-413a-ac44-9b0cb3db61c9',
-                label: 'Photographic evidence'
-              },
-              {
-                code: '4b80f5c9-ed97-472e-a4c9-6dbb7bfd2863',
-                label: 'Inspection or report'
-              },
-              {
-                code: 'b12355cb-1680-4e4d-9e00-1b173680307a',
-                label: 'Certificate of suitability as litigation friend'
-              },
-              {
-                code: '7ba88b12-32b9-42fe-ba73-8b53c1ab2ca6',
-                label: 'Legal aid certificate'
-              },
-              {
-                code: '8892ad5b-0cea-4631-84d0-0a3378704386',
-                label: 'Other document'
-              }
-            ],
             valueCode: '4b80f5c9-ed97-472e-a4c9-6dbb7bfd2863',
             valueLabel: 'Inspection or report'
           },
           description: 'inspection',
           document: {
-            document_url: `http://dm-store-aat.service.core-compute-aat.internal/documents/bdedc7cf-21e2-46db-8176-da5dc5728b3e`,
-            document_binary_url: `http://dm-store-aat.service.core-compute-aat.internal/documents/bdedc7cf-21e2-46db-8176-da5dc5728b3e/binary`,
+            document_url: `${process.env.DM_STORE}/documents/bdedc7cf-21e2-46db-8176-da5dc5728b3e`,
+            document_binary_url: `${process.env.DM_STORE}/documents/bdedc7cf-21e2-46db-8176-da5dc5728b3e/binary`,
             document_filename: 'inspectionOrReport.pdf',
           }
         },
         id: '6cb51a17-7ffe-4d10-b979-625bba2645f5'
+      },
+      {
+        value: {
+          documentType: {
+            value: {
+              code: 'a8a4ddf2-5d14-4b42-a892-de2547e6202e',
+              label: 'Other document'
+            },
+
+            valueLabel: 'Other document',
+            valueCode: 'a8a4ddf2-5d14-4b42-a892-de2547e6202e'
+          },
+          description: 'test',
+          document: {
+            document_url: `${process.env.DM_STORE}/documents/844af629-9597-42bd-9bed-6433f3cc9c86`,
+            document_binary_url: `${process.env.DM_STORE}/documents/844af629-9597-42bd-9bed-6433f3cc9c86/binary`,
+            document_filename: 'otherDocument.pdf',
+          }
+        },
+        id: '0765e04d-c8bc-4c64-afab-6f91916d19b2'
+      },
+      {
+        value: {
+          documentType: {
+            value: {
+              code: '8b60b091-8e09-4748-af9d-dc67dd1657cb',
+              label: 'Legal aid certificate'
+            },
+
+            valueLabel: 'Legal aid certificate',
+            valueCode: '8b60b091-8e09-4748-af9d-dc67dd1657cb'
+          },
+          description: 'legal aid',
+          document: {
+            document_url: `${process.env.DM_STORE}/documents/7a829740-61c3-4180-a6f3-0c24ab73cd6c`,
+            document_binary_url: `${process.env.DM_STORE}/documents/7a829740-61c3-4180-a6f3-0c24ab73cd6c/binary`,
+            document_filename: 'legalAidCertificate.pdf',
+          }
+        },
+        id: 'c76d0fb7-f5cb-4ea1-826a-29059e6322a3'
+      },
+      {
+        value: {
+          documentType: {
+            value: {
+              code: '1fa7f01c-5376-45f4-9fa6-baaee1d6f65d',
+              label: 'Notice for service out of the jurisdiction'
+            },
+
+            valueLabel: 'Notice for service out of the jurisdiction',
+            valueCode: '1fa7f01c-5376-45f4-9fa6-baaee1d6f65d'
+          },
+          description: 'Notice for service',
+          document: {
+            document_url: `${process.env.DM_STORE}/documents/481ce2ed-8557-4036-be9c-3d8e63638f79`,
+            document_binary_url: `${process.env.DM_STORE}/documents/481ce2ed-8557-4036-be9c-3d8e63638f79/binary`,
+            document_filename: 'noticeForService.pdf',
+          }
+        },
+        id: '7e7bcdea-7dd4-465b-b2ab-7e046ca2c57d'
       }
+
     ],
     applicationWithClaim: 'YES',
     languageUsed: 'ENGLISH',
