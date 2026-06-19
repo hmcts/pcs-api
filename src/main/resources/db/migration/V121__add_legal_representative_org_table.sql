@@ -19,27 +19,3 @@ create table party_legal_rep_org (
 
   primary key (party_id, legal_representative_organisation_id)
 );
-
-ALTER TABLE legal_representative
-  DROP Column organisation_name;
-
-ALTER TABLE legal_representative
-DROP Column organisation_id;
-
-ALTER TABLE legal_representative
-  DROP Column first_name;
-
-ALTER TABLE legal_representative
-  DROP Column last_name;
-
-ALTER TABLE legal_representative
-  DROP Column email;
-
-ALTER TABLE legal_representative
-  DROP Column phone;
-
-ALTER TABLE legal_representative
-  DROP Column address_id;
-
-ALTER TABLE legal_representative
-  ADD COLUMN organisation_id UUID REFERENCES legal_representative_org(id);
