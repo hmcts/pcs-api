@@ -17,6 +17,3 @@ CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_case_flag_pcs_case_id
 
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_case_party_flag_party_id
   ON case_party_flag (party_id);
-
-CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_general_application_case_id
-  ON general_application (case_id);
