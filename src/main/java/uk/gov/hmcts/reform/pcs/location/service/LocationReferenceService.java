@@ -1,13 +1,12 @@
 package uk.gov.hmcts.reform.pcs.location.service;
 
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
-import uk.gov.hmcts.reform.pcs.location.service.api.LocationReferenceApi;
 import uk.gov.hmcts.reform.pcs.location.model.CourtVenue;
+import uk.gov.hmcts.reform.pcs.location.service.api.LocationReferenceApi;
 import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
 
 import java.util.List;
@@ -18,9 +17,8 @@ import java.util.Objects;
 @Slf4j
 public class LocationReferenceService {
 
-    @Value("${location-reference.court-county-type-id}")
-    @Getter
-    private Integer countyCourtTypeId = 10;
+    @Value("${hmc.serviceId}")
+    private String serviceCode;
 
     private final LocationReferenceApi locationReferenceApi;
     private final AuthTokenGenerator authTokenGenerator;
@@ -31,10 +29,11 @@ public class LocationReferenceService {
             throw new IllegalArgumentException("epimIds cannot be null or empty");
         }
         String formattedEpimIds = formatEpimIds(epimIds);
-        log.debug("Getting County courts from /refdata/location/court-venues for EpimIds {}", formattedEpimIds);
+        log.debug("Getting County courts from /refdata/location/court-venues for EpimIds {} and serviceCode {}",
+                  formattedEpimIds, serviceCode);
         return locationReferenceApi.getCourtVenues(systemUpdateUserTokenProvider.getAuthToken(),
                                                    authTokenGenerator.generate(),
-                                                    formattedEpimIds, countyCourtTypeId);
+                                                    formattedEpimIds, serviceCode);
     }
 
     private String formatEpimIds(List<Integer> epimIds) {

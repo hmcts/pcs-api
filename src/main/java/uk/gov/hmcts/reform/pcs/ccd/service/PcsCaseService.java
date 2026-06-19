@@ -66,6 +66,7 @@ public class PcsCaseService {
         pcsCaseEntity.setTenancyLicence(tenancyLicenceService.createTenancyLicenceEntity(pcsCase));
         pcsCaseEntity.setRegionId(pcsCase.getRegionId());
         pcsCaseEntity.setBaseLocation(pcsCase.getCaseManagementLocationNumber());
+        pcsCaseEntity.setCaseManagementLocation(pcsCase.getCaseManagementLocationNumber());
     }
 
     public void patchCaseFlags(long caseReference, PCSCase pcsCase) {

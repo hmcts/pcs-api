@@ -58,6 +58,7 @@ public class PcsCaseEntity {
     @Column(name = "claimant_type")
     private ClaimantType claimantType;
 
+    private Integer caseManagementLocation;
     private Integer baseLocation;
 
     private Boolean preActionProtocolCompleted;

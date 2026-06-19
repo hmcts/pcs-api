@@ -10,6 +10,7 @@ import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.pcs.location.service.api.LocationReferenceApi;
 import uk.gov.hmcts.reform.pcs.location.model.CourtVenue;
@@ -31,7 +32,7 @@ public class LocationReferenceServiceTest {
     private static final String SYSTEM_USER_TOKEN = "Bearer system-user-token";
     private static final String BRENTFORD_COURT_EPIM_ID = "36791";
     private static final String LONDON_COURT_EPIM_ID = "20262";
-    private static final int COUNTY_COURT_TYPE_ID = 10;
+    private static final String SERVICE_CODE = "AAA3";
     public static final List<@NotNull Integer> EPIM_IDS = List.of(
         Integer.valueOf(BRENTFORD_COURT_EPIM_ID), Integer.valueOf(LONDON_COURT_EPIM_ID));
     private final String multipleEpimIdsJoined = String.join(",", BRENTFORD_COURT_EPIM_ID,
@@ -53,6 +54,7 @@ public class LocationReferenceServiceTest {
     void beforeEach() {
         lenient().when(systemUpdateUserTokenProvider.getAuthToken()).thenReturn(SYSTEM_USER_TOKEN);
         lenient().when(authTokenGenerator.generate()).thenReturn(SERVICE_AUTH_TOKEN);
+        ReflectionTestUtils.setField(locationReferenceService, "serviceCode", SERVICE_CODE);
     }
 
     @Test
@@ -66,7 +68,7 @@ public class LocationReferenceServiceTest {
             SYSTEM_USER_TOKEN,
             SERVICE_AUTH_TOKEN,
             BRENTFORD_COURT_EPIM_ID,
-            COUNTY_COURT_TYPE_ID))
+            SERVICE_CODE))
             .thenReturn(expectedCourtVenues);
 
         List<CourtVenue> actualCourtVenues = locationReferenceService
@@ -78,7 +80,7 @@ public class LocationReferenceServiceTest {
             SYSTEM_USER_TOKEN,
             SERVICE_AUTH_TOKEN,
             BRENTFORD_COURT_EPIM_ID,
-            COUNTY_COURT_TYPE_ID
+            SERVICE_CODE
         );
     }
 
@@ -98,7 +100,7 @@ public class LocationReferenceServiceTest {
             SYSTEM_USER_TOKEN,
             SERVICE_AUTH_TOKEN,
             multipleEpimIdsJoined,
-            COUNTY_COURT_TYPE_ID))
+            SERVICE_CODE))
                 .thenReturn(expectedCourtVenues);
 
         List<CourtVenue> actualCourtVenues = locationReferenceService.getCourtVenues(EPIM_IDS);
@@ -109,7 +111,7 @@ public class LocationReferenceServiceTest {
             SYSTEM_USER_TOKEN,
             SERVICE_AUTH_TOKEN,
             multipleEpimIdsJoined,
-            COUNTY_COURT_TYPE_ID
+            SERVICE_CODE
         );
     }
 
@@ -119,7 +121,7 @@ public class LocationReferenceServiceTest {
             SYSTEM_USER_TOKEN,
             SERVICE_AUTH_TOKEN,
             multipleEpimIdsJoined,
-            COUNTY_COURT_TYPE_ID
+            SERVICE_CODE
         )).thenReturn(Collections.emptyList());
 
         List<CourtVenue> actualCourtVenues = locationReferenceService.getCourtVenues(EPIM_IDS);
@@ -131,7 +133,7 @@ public class LocationReferenceServiceTest {
             SYSTEM_USER_TOKEN,
             SERVICE_AUTH_TOKEN,
             multipleEpimIdsJoined,
-            COUNTY_COURT_TYPE_ID
+            SERVICE_CODE
         );
     }
 
@@ -151,7 +153,7 @@ public class LocationReferenceServiceTest {
             SYSTEM_USER_TOKEN,
             SERVICE_AUTH_TOKEN,
             "425094",
-            COUNTY_COURT_TYPE_ID
+            SERVICE_CODE
         )).thenThrow(new RuntimeException("No matching courts found for LE2 0QB", null));
 
         assertThatThrownBy(() ->
@@ -165,7 +167,7 @@ public class LocationReferenceServiceTest {
             SYSTEM_USER_TOKEN,
             SERVICE_AUTH_TOKEN,
             "425094",
-            COUNTY_COURT_TYPE_ID
+            SERVICE_CODE
         );
     }
 
