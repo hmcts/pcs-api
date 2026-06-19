@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
 import uk.gov.hmcts.ccd.sdk.CaseViewRequest;
@@ -57,6 +58,7 @@ import static org.mockito.Mock.Strictness.LENIENT;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -211,6 +213,22 @@ class PCSCaseViewTest {
         // Then - indexing is delegated to the indexer and its result is set on the case
         verify(searchCriteriaIndexer).buildSearchCriteria(pcsCase);
         assertThat(pcsCase.getSearchCriteria()).isSameAs(searchCriteria);
+    }
+
+    @Test
+    void shouldNotSetSearchCriteriaForSuffixedCaseType() {
+        // Given a suffixed (non-canonical) case type, e.g. PCS-STAGING or a PR preview type
+        try (MockedStatic<CaseType> caseTypeMock = mockStatic(CaseType.class)) {
+            caseTypeMock.when(CaseType::isSuffixedCaseType).thenReturn(true);
+
+            // When
+            PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
+
+            // Then - the indexer is never invoked and SearchCriteria is left null, so the
+            // decentralised indexer won't write a global_search document for this case type
+            verify(searchCriteriaIndexer, never()).buildSearchCriteria(any(PCSCase.class));
+            assertThat(pcsCase.getSearchCriteria()).isNull();
+        }
     }
 
     @Test
