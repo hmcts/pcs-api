@@ -29,7 +29,7 @@ import java.util.Map;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.context.TestConstructor.AutowireMode.ALL;
 
-// Disabling until provider test is fixed
+// Disabling until provider test is fixed in PAY-8826
 @Disabled
 @ImportAutoConfiguration({
     FeignAutoConfiguration.class,
