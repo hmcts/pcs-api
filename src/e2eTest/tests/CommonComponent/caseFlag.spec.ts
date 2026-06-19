@@ -192,7 +192,7 @@ test.describe('[Common Component Case Flags] @nightly @CC @caseFlags', async () 
   });
 });
 
-test.describe('[Common Component Case Flags - Access Management] @nightly @CC @caseFlags', async () => {
+test.describe('[Common Component Case Flags - Access Management] @nightly @caseFlags', async () => {
   test.describe.configure({ retries: 0 });
   test('Staff users can create, manage and view case-level and party-level flags', async ({page, context}) => {
     test.setTimeout(ACCESS_CONTROL_TEST_TIMEOUT);
@@ -246,7 +246,7 @@ test.describe('[Common Component Case Flags - Access Management] @nightly @CC @c
     logUserTestResultsAndAssert('JUDICIAL USER RESULTS', results);
   });
 
-  test('Solicitor user cannot view, create or manage case-level and party-level flags', async ({page, context}) => {
+  test('Solicitor user cannot view, create or manage case-level and party-level flags @CC', async ({page, context}) => {
     const {email, password} = user.claimantSolicitor;
     await performAction('login', {email, password});
     await dismissCookieBanner(page, 'analytics');
@@ -259,7 +259,7 @@ test.describe('[Common Component Case Flags - Access Management] @nightly @CC @c
     await clearBrowserSession(page, context);
   });
 
-  test('User with Caseworker IDAM role without AM roles cannot view, create or manage case-level and party-level flags', async ({page, context}) => {
+  test('User with Caseworker IDAM role without AM roles cannot view, create or manage case-level and party-level flags @CC', async ({page, context}) => {
     const {email, password} = user.caseworker;
     await performAction('login', {email, password});
     await dismissCookieBanner(page, 'analytics');
