@@ -190,6 +190,37 @@ class DefenceFormPayloadBuilderTest {
 
             assertThat(payload.isShowCorrectedStartDate()).isTrue();
             assertThat(payload.getCorrectedStartDate()).isEqualTo("14 March 2022");
+            assertThat(payload.isShowStartDateConfirmation()).isTrue();
+            assertThat(payload.isShowDefendantProvidedStartDate()).isFalse();
+        }
+
+        @Test
+        void confirmedStartDate_showsConfirmationOnly() {
+            DefendantResponseEntity response = response(LegislativeCountry.ENGLAND);
+            response.setTenancyStartDateConfirmation(YesNoNotSure.YES);
+
+            DefenceFormPayload payload = builder.build(response);
+
+            assertThat(payload.isShowStartDateConfirmation()).isTrue();
+            assertThat(payload.getTenancyStartDateConfirmation()).isEqualTo("Yes");
+            assertThat(payload.isShowCorrectedStartDate()).isFalse();
+            assertThat(payload.isShowDefendantProvidedStartDate()).isFalse();
+        }
+
+        @Test
+        void claimantGaveNoStartDate_showsDefendantProvidedDateHidesConfirmation() {
+            // Unknown branch: claimant left the start date blank, defendant supplied one (stored as
+            // an assertion) without a confirmation. Show the provided date, hide the blank confirmation.
+            stubAssertions(plainAssertion(PartyAttributeType.TENANCY_START_DATE, "2020-02-01"));
+            DefendantResponseEntity response = response(LegislativeCountry.ENGLAND);
+            response.setTenancyStartDateConfirmation(null);
+
+            DefenceFormPayload payload = builder.build(response);
+
+            assertThat(payload.isShowStartDateConfirmation()).isFalse();
+            assertThat(payload.isShowCorrectedStartDate()).isFalse();
+            assertThat(payload.isShowDefendantProvidedStartDate()).isTrue();
+            assertThat(payload.getDefendantProvidedStartDate()).isEqualTo("1 February 2020");
         }
 
         @Test

@@ -160,11 +160,17 @@ public class DefenceFormPayloadBuilder {
         payload.showCorrectedTenancyType(isNo(response.getTenancyTypeConfirmation()) && isPopulated(correctedType));
         payload.correctedTenancyType(correctedType);
 
-        payload.tenancyStartDateConfirmation(toLabel(response.getTenancyStartDateConfirmation()));
-        String correctedStartDate = assertedValue(assertions, PartyAttributeType.TENANCY_START_DATE);
-        payload.showCorrectedStartDate(
-            isNo(response.getTenancyStartDateConfirmation()) && isPopulated(correctedStartDate));
-        payload.correctedStartDate(formatIsoDate(correctedStartDate));
+        var startDateConfirmation = response.getTenancyStartDateConfirmation();
+        String startDateValue = assertedValue(assertions, PartyAttributeType.TENANCY_START_DATE);
+        // When the claimant gave no start date the defendant supplies one via the "unknown" journey
+        // branch, which never captures a confirmation. Show that date instead of a blank confirmation.
+        boolean defendantProvidedStartDate = startDateConfirmation == null && isPopulated(startDateValue);
+        payload.showStartDateConfirmation(startDateConfirmation != null);
+        payload.tenancyStartDateConfirmation(toLabel(startDateConfirmation));
+        payload.showCorrectedStartDate(isNo(startDateConfirmation) && isPopulated(startDateValue));
+        payload.correctedStartDate(formatIsoDate(startDateValue));
+        payload.showDefendantProvidedStartDate(defendantProvidedStartDate);
+        payload.defendantProvidedStartDate(defendantProvidedStartDate ? formatIsoDate(startDateValue) : null);
 
         payload.showLandlordRegistered(isWales);
         payload.landlordRegistered(toLabel(response.getLandlordRegistered()));
