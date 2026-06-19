@@ -28,6 +28,9 @@ public class NoticeOfPossessionService {
         }
 
         NoticeServedDetails noticeServedDetails = pcsCase.getNoticeServedDetails();
+        if (noticeServedDetails == null) {
+            return noticeOfPossessionEntity;
+        }
 
         NoticeServiceMethod noticeServiceMethod = noticeServedDetails.getServiceMethod();
 

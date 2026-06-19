@@ -81,6 +81,20 @@ class NoticeOfPossessionServiceTest {
         assertThat(noticeOfPossessionEntity.getServingMethod()).isNull();
     }
 
+    @Test
+    void shouldNotThrowWhenNoticeServedButNoticeServedDetailsIsNull() {
+        // Given notice served but the notice-served details object is absent (e.g. Wales path)
+        when(pcsCase.getLegislativeCountry()).thenReturn(LegislativeCountry.ENGLAND);
+        when(pcsCase.getNoticeServed()).thenReturn(YesOrNo.YES);
+        when(pcsCase.getNoticeServedDetails()).thenReturn(null);
+
+        // When / Then - must not dereference null details
+        NoticeOfPossessionEntity noticeOfPossessionEntity =
+            assertDoesNotThrow(() -> underTest.createNoticeOfPossessionEntity(pcsCase));
+
+        assertThat(noticeOfPossessionEntity.getNoticeServed()).isEqualTo(YesOrNo.YES);
+    }
+
     @ParameterizedTest
     @EnumSource(value = YesOrNo.class)
     void shouldSetNoticeServedForWales(YesOrNo noticeServed) {
