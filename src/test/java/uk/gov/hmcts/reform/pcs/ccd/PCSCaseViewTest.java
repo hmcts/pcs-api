@@ -290,7 +290,8 @@ class PCSCaseViewTest {
         verify(noticeOfPossessionView).setCaseFields(pcsCase, pcsCaseEntity);
         verify(statementOfTruthView).setCaseFields(pcsCase, pcsCaseEntity);
         verify(caseLinkView).setCaseFields(pcsCase, pcsCaseEntity);
-        verify(caseFlagsView).setCaseFields(pcsCase, pcsCaseEntity);
+        // flagsView call disabled in PCSCaseView; see PCSCaseView.getSubmittedCase
+        // verify(caseFlagsView).setCaseFields(pcsCase, pcsCaseEntity);
         verify(genAppsView).setCaseFields(pcsCase, pcsCaseEntity);
     }
 

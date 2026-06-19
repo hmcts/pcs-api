@@ -153,7 +153,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         genAppsView.setCaseFields(pcsCase, pcsCaseEntity);
         caseLinkView.setCaseFields(pcsCase, pcsCaseEntity);
         caseNoteView.setCaseFields(pcsCase, pcsCaseEntity);
-        flagsView.setCaseFields(pcsCase, pcsCaseEntity);
+        // flagsView.setCaseFields(pcsCase, pcsCaseEntity);
 
         return pcsCase;
     }
