@@ -6,7 +6,7 @@ Local benchmark setup:
 - `pcs-api` running on `http://localhost:3206`
 - 42 deterministic case references from the restored AAT data that return `200` locally
 - Command: sequential rounds of `GET /ccd-persistence/cases?case-refs=<case-reference>` for every case reference
-- Total measured requests per run: 126 for the initial runs; 2,100 for the longer profile-guided run.
+- Total measured requests per run: 126 for the initial runs; 2,100 or 21,000 for the longer profile-guided runs.
 
 ## Baseline
 
@@ -24,3 +24,4 @@ Branch point: `master`
 | Avoid repeated claim-party graph loading | Make `ClaimPartyEntity` parent links lazy and reuse loaded claim-party roles when mapping party flags | 126 | 36.7 ms | 35.4 ms | 41.3 ms | 47.6 ms | 31.9 ms | 56.5 ms | 59.6% mean, 64.7% median | 71.0% mean, 73.0% median |
 | Add claim projection indexes | Add concurrent indexes for the claim-adjacent joins dominating the latest profile | 126 | 12.5 ms | 11.9 ms | 14.1 ms | 14.6 ms | 9.1 ms | 55.9 ms | 65.9% mean, 66.4% median | 90.1% mean, 90.9% median |
 | Batch party collection fetches with subselects | Use `SUBSELECT` fetch mode for party legal representatives and defendant flags | 2,100 | 9.3 ms | 9.2 ms | 10.3 ms | 10.7 ms | 6.9 ms | 25.1 ms | 25.4% mean, 22.4% median | 92.6% mean, 92.9% median |
+| Reuse loaded case for enforcement lookup | Pass the already-loaded `PcsCaseEntity` to the enforcement mediator, reducing PCS case/party fetches from 42,000 to 21,000 over 21,000 loads | 21,000 | 8.4 ms | 8.2 ms | 9.8 ms | 10.3 ms | 5.4 ms | 46.1 ms | 9.2% mean, 7.4% median vs same-session previous commit rerun | 93.4% mean, 93.7% median |
