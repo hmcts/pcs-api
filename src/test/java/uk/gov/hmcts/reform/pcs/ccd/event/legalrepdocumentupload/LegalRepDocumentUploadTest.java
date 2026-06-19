@@ -8,6 +8,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.DocumentUploadCategory;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -64,53 +65,95 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
         GenAppEntity earlierGenApp = GenAppEntity.builder()
             .type(GenAppType.ADJOURN)
             .applicationSubmittedDate(earlierDate)
+            .withoutNotice(VerticalYesNo.YES)
             .build();
+
         GenAppEntity laterGenApp = GenAppEntity.builder()
             .type(GenAppType.ADJOURN)
             .applicationSubmittedDate(laterDate)
+            .withoutNotice(VerticalYesNo.YES)
             .build();
+
         GenAppEntity generalGenApp = GenAppEntity.builder()
             .type(GenAppType.SOMETHING_ELSE)
             .applicationSubmittedDate(laterDate)
+            .withoutNotice(VerticalYesNo.YES)
             .build();
+
+        GenAppEntity generalGenAppNoticeNo = GenAppEntity.builder()
+            .type(GenAppType.SOMETHING_ELSE)
+            .applicationSubmittedDate(laterDate)
+            .withoutNotice(VerticalYesNo.NO)
+            .build();
+
         GenAppEntity generalGenAppWithNullDate = GenAppEntity.builder()
             .type(GenAppType.SOMETHING_ELSE)
             .applicationSubmittedDate(null)
+            .withoutNotice(VerticalYesNo.YES)
             .build();
 
         when(pcsCaseService.loadCase(TEST_CASE_REFERENCE))
             .thenReturn(PcsCaseEntity.builder()
-                .genApps(Set.of(earlierGenApp, laterGenApp, generalGenApp,  generalGenAppWithNullDate))
-                .build());
+                            .genApps(Set.of(
+                                earlierGenApp,
+                                laterGenApp,
+                                generalGenApp,
+                                generalGenAppNoticeNo,
+                                generalGenAppWithNullDate))
+                            .build());
 
         PCSCase result = callStartHandler(PCSCase.builder().build());
 
         assertThat(result.getLegalRepDocumentUploadDetails()).isNotNull();
-        DynamicStringList categories = result.getLegalRepDocumentUploadDetails().getValidCategories();
+
+        DynamicStringList categories =
+            result.getLegalRepDocumentUploadDetails().getValidCategories();
+
         assertThat(categories).isNotNull();
-        assertThat(categories.getListItems()).hasSize(3);
+        assertThat(categories.getListItems()).hasSize(4);
+
         assertThat(categories.getListItems())
             .extracting(DynamicStringListElement::getCode)
-            .containsExactly(
+            .containsExactlyInAnyOrder(
+                DocumentUploadCategory.MAIN_CLAIM_OR_COUNTERCLAIM.name(),
                 DocumentUploadCategory.ADJOURN_HEARING_APPLICATION.name(),
-                DocumentUploadCategory.GENERAL_APPLICATION.name(),
-                DocumentUploadCategory.MAIN_CLAIM_OR_COUNTERCLAIM.name());
+                DocumentUploadCategory.ADJOURN_HEARING_APPLICATION.name(),
+                DocumentUploadCategory.GENERAL_APPLICATION.name()
+            );
 
         assertThat(categories.getListItems())
-            .filteredOn(item -> DocumentUploadCategory.ADJOURN_HEARING_APPLICATION.name()
-                .equals(item.getCode()))
+            .filteredOn(item ->
+                            DocumentUploadCategory.ADJOURN_HEARING_APPLICATION.name()
+                                .equals(item.getCode()))
             .extracting(DynamicStringListElement::getLabel)
-            .containsExactly("Yes, the documents I’m uploading relate to the application to adjourn the "
-                                 + "hearing - submitted on Saturday 25 Apr 2026");
+            .containsExactlyInAnyOrder(
+                "Yes, the documents I’m uploading relate to the application to adjourn the "
+                    + "hearing - submitted on Monday 20 Apr 2026",
+                "Yes, the documents I’m uploading relate to the application to adjourn the "
+                    + "hearing - submitted on Saturday 25 Apr 2026"
+            );
 
         assertThat(categories.getListItems())
-            .filteredOn(item -> DocumentUploadCategory.GENERAL_APPLICATION.name()
-                .equals(item.getCode()))
+            .filteredOn(item ->
+                            DocumentUploadCategory.GENERAL_APPLICATION.name()
+                                .equals(item.getCode()))
             .extracting(DynamicStringListElement::getLabel)
-            .containsExactly("Yes, the documents I’m uploading relate to an application submitted on "
-                                 + "Saturday 25 Apr 2026");
+            .containsExactly(
+                "Yes, the documents I’m uploading relate to an application submitted on "
+                    + "Saturday 25 Apr 2026"
+            );
 
-        assertThat(result.getLegalRepDocumentUploadDetails().getShowExistingApplicationPage()).isEqualTo(YesOrNo.YES);
+        assertThat(categories.getListItems())
+            .filteredOn(item ->
+                            DocumentUploadCategory.MAIN_CLAIM_OR_COUNTERCLAIM.name()
+                                .equals(item.getCode()))
+            .extracting(DynamicStringListElement::getLabel)
+            .containsExactly(
+                "No, the documents I’m uploading relate to the main claim or counterclaim"
+            );
+
+        assertThat(result.getLegalRepDocumentUploadDetails().getShowExistingApplicationPage())
+            .isEqualTo(YesOrNo.YES);
     }
 
     @Test
@@ -158,9 +201,9 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
             .genApps(Set.of())
             .build();
 
-        assertThat(legalRepDocumentUpload.findLatestGenAppDateForCategory(
+        assertThat(legalRepDocumentUpload.findGenAppDatesForCategory(
             pcsCaseEntity,
             DocumentUploadCategory.MAIN_CLAIM_OR_COUNTERCLAIM))
-            .isNull();
+            .isEmpty();
     }
 }
