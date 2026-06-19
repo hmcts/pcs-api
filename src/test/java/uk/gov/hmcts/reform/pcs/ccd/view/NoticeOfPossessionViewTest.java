@@ -298,4 +298,62 @@ class NoticeOfPossessionViewTest {
         assertThat(noticeDocuments).hasSize(1);
         assertThat(noticeDocuments.getFirst().getId()).isEqualTo(noticeDocumentId.toString());
     }
+
+    @Test
+    void shouldHandleNullDocument() {
+        // Given
+        LocalDate postedDate = mock(LocalDate.class);
+
+        when(noticeOfPossessionEntity.getServingMethod()).thenReturn(FIRST_CLASS_POST);
+        when(noticeOfPossessionEntity.getNoticeDate()).thenReturn(postedDate);
+        when(pcsCaseEntity.getDocuments()).thenReturn(null);
+
+        // When
+        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+
+        // Then
+        verify(pcsCase).setNoticeServedDetails(noticeServedDetailsCaptor.capture());
+
+        NoticeServedDetails noticeServedDetails = noticeServedDetailsCaptor.getValue();
+        List<ListValue<Document>> noticeDocuments = noticeServedDetails.getNoticeDocuments();
+        assertThat(noticeDocuments).isEmpty();
+    }
+
+    @Test
+    void shouldNotIncludeAdditionalDocumentUploaded() {
+        // Given
+        LocalDate postedDate = mock(LocalDate.class);
+        UUID noticeDocumentId = UUID.randomUUID();
+
+        when(noticeOfPossessionEntity.getServingMethod()).thenReturn(FIRST_CLASS_POST);
+        when(noticeOfPossessionEntity.getNoticeDate()).thenReturn(postedDate);
+        when(pcsCaseEntity.getDocuments()).thenReturn(
+                List.of(
+                        DocumentEntity.builder()
+                                .id(noticeDocumentId)
+                                .type(DocumentType.POSSESSION_NOTICE)
+                                .build(),
+                        DocumentEntity.builder()
+                                .id(noticeDocumentId)
+                                .type(DocumentType.POSSESSION_NOTICE)
+                                .description("Additional document uploaded")
+                                .build(),
+                        DocumentEntity.builder()
+                                .id(UUID.randomUUID())
+                                .type(DocumentType.WITNESS_STATEMENT)
+                                .build()
+                )
+        );
+
+        // When
+        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+
+        // Then
+        verify(pcsCase).setNoticeServedDetails(noticeServedDetailsCaptor.capture());
+
+        NoticeServedDetails noticeServedDetails = noticeServedDetailsCaptor.getValue();
+        List<ListValue<Document>> noticeDocuments = noticeServedDetails.getNoticeDocuments();
+        assertThat(noticeDocuments).hasSize(1);
+        assertThat(noticeDocuments.getFirst().getId()).isEqualTo(noticeDocumentId.toString());
+    }
 }

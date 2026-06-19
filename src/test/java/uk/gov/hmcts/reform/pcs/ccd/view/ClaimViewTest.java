@@ -166,10 +166,10 @@ class ClaimViewTest {
         // Given
         when(pcsCaseEntity.getClaims()).thenReturn(List.of(claimEntity));
         when(pcsCaseEntity.getDocuments()).thenReturn(List.of(
-            documentEntity(DocumentType.ENERGY_PERFORMANCE_CERTIFICATE, "epc.pdf", documentId),
-            documentEntity(DocumentType.GAS_SAFETY_CERTIFICATE, "gas.pdf", documentId),
-            documentEntity(DocumentType.EICR_REPORT, "eicr.pdf", documentId),
-            documentEntity(DocumentType.OTHER, "other.pdf", documentId)
+            documentEntity(DocumentType.ENERGY_PERFORMANCE_CERTIFICATE, "epc.pdf", documentId, null),
+            documentEntity(DocumentType.GAS_SAFETY_CERTIFICATE, "gas.pdf", documentId, null),
+            documentEntity(DocumentType.EICR_REPORT, "eicr.pdf", documentId, null),
+            documentEntity(DocumentType.OTHER, "other.pdf", documentId, null)
         ));
 
         // When
@@ -192,8 +192,8 @@ class ClaimViewTest {
         // Given
         when(pcsCaseEntity.getClaims()).thenReturn(List.of(claimEntity));
         when(pcsCaseEntity.getDocuments()).thenReturn(List.of(
-            documentEntity(DocumentType.OTHER, "other.pdf",documentId),
-            documentEntity(DocumentType.RENT_STATEMENT, "rent-statement.pdf", documentId)
+            documentEntity(DocumentType.OTHER, "other.pdf",documentId, null),
+            documentEntity(DocumentType.RENT_STATEMENT, "rent-statement.pdf", documentId, null)
         ));
 
         // When
@@ -204,6 +204,29 @@ class ClaimViewTest {
         assertThat(requiredDocumentsWales.getEnergyPerformance()).isEmpty();
         assertThat(requiredDocumentsWales.getGasSafetyReport()).isEmpty();
         assertThat(requiredDocumentsWales.getElectricalInstallation()).isEmpty();
+    }
+
+    @Test
+    void shouldNotIncludeAdditionalDocumentUploaded() {
+        // Given
+        when(pcsCaseEntity.getClaims()).thenReturn(List.of(claimEntity));
+        when(pcsCaseEntity.getDocuments()).thenReturn(List.of(
+                documentEntity(DocumentType.ENERGY_PERFORMANCE_CERTIFICATE, "1.pdf", UUID.randomUUID(), null),
+                documentEntity(DocumentType.ENERGY_PERFORMANCE_CERTIFICATE, "1a.pdf", UUID.randomUUID(), "Add doc 1a"),
+                documentEntity(DocumentType.GAS_SAFETY_CERTIFICATE, "2.pdf", UUID.randomUUID(), null),
+                documentEntity(DocumentType.GAS_SAFETY_CERTIFICATE, "2a.pdf", UUID.randomUUID(), "Add doc 2a"),
+                documentEntity(DocumentType.EICR_REPORT, "3.pdf", UUID.randomUUID(), null),
+                documentEntity(DocumentType.EICR_REPORT, "3a.pdf", UUID.randomUUID(), "Add doc 3a")
+        ));
+
+        // When
+        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+
+        // Then
+        WalesDocuments requiredDocumentsWales = pcsCase.getRequiredDocumentsWales();
+        assertThat(requiredDocumentsWales.getEnergyPerformance()).hasSize(1);
+        assertThat(requiredDocumentsWales.getGasSafetyReport()).hasSize(1);
+        assertThat(requiredDocumentsWales.getElectricalInstallation()).hasSize(1);
     }
 
     @Test
@@ -248,10 +271,12 @@ class ClaimViewTest {
         );
     }
 
-    private static DocumentEntity documentEntity(DocumentType documentType, String fileName, UUID documentId) {
+    private static DocumentEntity documentEntity(DocumentType documentType, String fileName, UUID documentId,
+                                                 String description) {
         return DocumentEntity.builder()
             .id(documentId)
             .type(documentType)
+            .description(description)
             .url("http://dm-store/documents/" + fileName)
             .binaryUrl("http://dm-store/documents/" + fileName + "/binary")
             .fileName(fileName)

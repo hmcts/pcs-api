@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.pcs.ccd.view;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import org.springframework.util.ObjectUtils;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -62,4 +63,8 @@ public class DocumentsView {
         }
     }
 
+    public static boolean isDescriptionEmpty(DocumentEntity documentEntity) {
+        return ObjectUtils.isEmpty(documentEntity.getDescription())
+                || documentEntity.getDescription().trim().isEmpty();
+    }
 }

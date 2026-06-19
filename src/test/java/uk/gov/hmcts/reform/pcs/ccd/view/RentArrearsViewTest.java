@@ -82,7 +82,6 @@ class RentArrearsViewTest {
         final UUID rentDocumentId = UUID.randomUUID();
 
         when(rentArrearsEntity.getTotalRentArrears()).thenReturn(totalRentArrears);
-        when(rentArrearsEntity.getTotalRentArrears()).thenReturn(totalRentArrears);
         when(rentArrearsEntity.getArrearsJudgmentWanted()).thenReturn(VerticalYesNo.YES);
         when(rentArrearsEntity.getRecoveryAttempted()).thenReturn(VerticalYesNo.YES);
         when(rentArrearsEntity.getRecoveryAttemptDetails()).thenReturn(details);
@@ -114,4 +113,41 @@ class RentArrearsViewTest {
         verify(pcsCase).setArrearsJudgmentWanted(VerticalYesNo.YES);
     }
 
+    @Test
+    void shouldNotIncludeAdditionalDocumentUploaded() {
+        // Given
+        final UUID rentDocumentId = UUID.randomUUID();
+
+        when(pcsCaseEntity.getDocuments()).thenReturn(
+                List.of(
+                        DocumentEntity.builder()
+                                .id(rentDocumentId)
+                                .type(DocumentType.RENT_STATEMENT)
+                                .build(),
+                        DocumentEntity.builder()
+                                .id(UUID.randomUUID())
+                                .type(DocumentType.RENT_STATEMENT)
+                                .description("Additional document uploaded")
+                                .build(),
+                        DocumentEntity.builder()
+                                .id(UUID.randomUUID())
+                                .type(DocumentType.WITNESS_STATEMENT)
+                                .description("Witness Statement uploaded")
+                                .build()
+                )
+        );
+
+        // When
+        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+
+        // Then
+        ArgumentCaptor<RentArrearsSection> rentArrearsCaptor = ArgumentCaptor.forClass(RentArrearsSection.class);
+
+        verify(pcsCase).setRentArrears(rentArrearsCaptor.capture());
+
+        RentArrearsSection rentArrears = rentArrearsCaptor.getValue();
+        List<ListValue<Document>> statementDocuments = rentArrears.getStatementDocuments();
+        assertThat(statementDocuments).hasSize(1);
+        assertThat(statementDocuments.getFirst().getId()).isEqualTo(rentDocumentId.toString());
+    }
 }

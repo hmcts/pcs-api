@@ -61,6 +61,60 @@ class TenancyLicenceViewTest {
     }
 
     @Test
+    void shouldHandleNullDocument() {
+        // Given
+        TenancyLicenceEntity tenancyLicenceEntity = mock(TenancyLicenceEntity.class);
+        when(pcsCaseEntity.getTenancyLicence()).thenReturn(tenancyLicenceEntity);
+
+        String otherTypeDetails = "other type details";
+        LocalDate tenancyStartDate = mock(LocalDate.class);
+        VerticalYesNo hasCopyOfTenancyLicence = VerticalYesNo.NO;
+
+        when(tenancyLicenceEntity.getType()).thenReturn(CombinedLicenceType.SECURE_TENANCY);
+        when(tenancyLicenceEntity.getOtherTypeDetails()).thenReturn(otherTypeDetails);
+        when(tenancyLicenceEntity.getStartDate()).thenReturn(tenancyStartDate);
+        when(tenancyLicenceEntity.getHasCopyOfTenancyLicence()).thenReturn(hasCopyOfTenancyLicence);
+
+        // When
+        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+
+        // Then
+        ArgumentCaptor<TenancyLicenceDetails> tenancyLicenceDetailsCaptor
+                = ArgumentCaptor.forClass(TenancyLicenceDetails.class);
+
+        verify(pcsCase).setTenancyLicenceDetails(tenancyLicenceDetailsCaptor.capture());
+        assertThat(tenancyLicenceDetailsCaptor.getValue().getTenancyLicenceDocuments()).isEmpty();
+    }
+
+    @Test
+    void shouldHandleNullDocumentForWales() {
+        // Given
+        TenancyLicenceEntity tenancyLicenceEntity = mock(TenancyLicenceEntity.class);
+        when(pcsCaseEntity.getTenancyLicence()).thenReturn(tenancyLicenceEntity);
+        when(pcsCase.getLegislativeCountry()).thenReturn(LegislativeCountry.WALES);
+
+        String otherTypeDetails = "other type details";
+        LocalDate tenancyStartDate = mock(LocalDate.class);
+
+        when(tenancyLicenceEntity.getType()).thenReturn(CombinedLicenceType.SECURE_CONTRACT);
+        when(tenancyLicenceEntity.getOtherTypeDetails()).thenReturn(otherTypeDetails);
+        when(tenancyLicenceEntity.getStartDate()).thenReturn(tenancyStartDate);
+        when(pcsCaseEntity.getDocuments()).thenReturn(null);
+
+        // When
+        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+
+        // Then
+        ArgumentCaptor<OccupationLicenceDetailsWales> occupationLicenceDetailsCaptor
+                = ArgumentCaptor.forClass(OccupationLicenceDetailsWales.class);
+
+        verify(pcsCase).setOccupationLicenceDetailsWales(occupationLicenceDetailsCaptor.capture());
+        verify(pcsCase, never()).setTenancyLicenceDetails(any());
+
+        assertThat(occupationLicenceDetailsCaptor.getValue().getLicenceDocuments()).isEmpty();
+    }
+
+    @Test
     void shouldSetTenancyLicenceFieldsForNonWales() {
         // Given
         TenancyLicenceEntity tenancyLicenceEntity = mock(TenancyLicenceEntity.class);
@@ -151,4 +205,105 @@ class TenancyLicenceViewTest {
         assertThat(licenceDocuments.getFirst().getId()).isEqualTo(tenancyLicenceDocumentId.toString());
     }
 
+    @Test
+    void shouldNotIncludeAdditionalDocumentUploaded() {
+        // Given
+        TenancyLicenceEntity tenancyLicenceEntity = mock(TenancyLicenceEntity.class);
+        when(pcsCaseEntity.getTenancyLicence()).thenReturn(tenancyLicenceEntity);
+
+        String otherTypeDetails = "other type details";
+        LocalDate tenancyStartDate = mock(LocalDate.class);
+        VerticalYesNo hasCopyOfTenancyLicence = VerticalYesNo.NO;
+        String reasonsForNoTenancyLicence = "reasons for no tenancy licence";
+        final UUID tenancyLicenceDocumentId = UUID.randomUUID();
+
+        when(tenancyLicenceEntity.getType()).thenReturn(CombinedLicenceType.SECURE_TENANCY);
+        when(tenancyLicenceEntity.getOtherTypeDetails()).thenReturn(otherTypeDetails);
+        when(tenancyLicenceEntity.getStartDate()).thenReturn(tenancyStartDate);
+        when(tenancyLicenceEntity.getHasCopyOfTenancyLicence()).thenReturn(hasCopyOfTenancyLicence);
+        when(tenancyLicenceEntity.getReasonsForNoTenancyLicence()).thenReturn(reasonsForNoTenancyLicence);
+        when(pcsCaseEntity.getDocuments()).thenReturn(
+                List.of(
+                        DocumentEntity.builder()
+                                .id(tenancyLicenceDocumentId)
+                                .type(DocumentType.TENANCY_AGREEMENT)
+                                .description(null)
+                                .build(),
+                        DocumentEntity.builder()
+                                .id(UUID.randomUUID())
+                                .type(DocumentType.TENANCY_AGREEMENT)
+                                .description("Non-empty description")
+                                .build(),
+                        DocumentEntity.builder()
+                                .id(UUID.randomUUID())
+                                .type(DocumentType.WITNESS_STATEMENT)
+                                .description("Witness statement uploaded")
+                                .build())
+        );
+
+        // When
+        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+
+        // Then
+        ArgumentCaptor<TenancyLicenceDetails> tenancyLicenceDetailsCaptor
+                = ArgumentCaptor.forClass(TenancyLicenceDetails.class);
+
+        verify(pcsCase).setTenancyLicenceDetails(tenancyLicenceDetailsCaptor.capture());
+        verify(pcsCase, never()).setOccupationLicenceDetailsWales(any());
+
+        TenancyLicenceDetails tenancyLicenceDetails = tenancyLicenceDetailsCaptor.getValue();
+
+        List<ListValue<Document>> tenancyLicenceDocuments = tenancyLicenceDetails.getTenancyLicenceDocuments();
+        assertThat(tenancyLicenceDocuments).hasSize(1);
+        assertThat(tenancyLicenceDocuments.getFirst().getId()).isEqualTo(tenancyLicenceDocumentId.toString());
+    }
+
+    @Test
+    void shouldNotIncludeAdditionalDocumentUploadedForWales() {
+        // Given
+        TenancyLicenceEntity tenancyLicenceEntity = mock(TenancyLicenceEntity.class);
+        when(pcsCaseEntity.getTenancyLicence()).thenReturn(tenancyLicenceEntity);
+
+        String otherTypeDetails = "other type details";
+        LocalDate tenancyStartDate = mock(LocalDate.class);
+        final UUID tenancyLicenceDocumentId = UUID.randomUUID();
+
+        when(pcsCase.getLegislativeCountry()).thenReturn(LegislativeCountry.WALES);
+        when(tenancyLicenceEntity.getType()).thenReturn(CombinedLicenceType.SECURE_CONTRACT);
+        when(tenancyLicenceEntity.getOtherTypeDetails()).thenReturn(otherTypeDetails);
+        when(tenancyLicenceEntity.getStartDate()).thenReturn(tenancyStartDate);
+        when(pcsCaseEntity.getDocuments()).thenReturn(
+                List.of(
+                    DocumentEntity.builder()
+                        .id(tenancyLicenceDocumentId)
+                        .type(DocumentType.OCCUPATION_LICENCE)
+                        .build(),
+                    DocumentEntity.builder()
+                        .id(UUID.randomUUID())
+                        .type(DocumentType.OCCUPATION_LICENCE)
+                        .description("Non-empty description")
+                        .build(),
+                        DocumentEntity.builder()
+                        .id(UUID.randomUUID())
+                        .type(DocumentType.GAS_SAFETY_CERTIFICATE)
+                        .description("Gas safety certificate uploaded")
+                        .build()
+                )
+        );
+
+        // When
+        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+
+        // Then
+        ArgumentCaptor<OccupationLicenceDetailsWales> occupationLicenceDetailsCaptor
+                = ArgumentCaptor.forClass(OccupationLicenceDetailsWales.class);
+
+        verify(pcsCase).setOccupationLicenceDetailsWales(occupationLicenceDetailsCaptor.capture());
+        verify(pcsCase, never()).setTenancyLicenceDetails(any());
+
+        OccupationLicenceDetailsWales occupationLicenceDetails = occupationLicenceDetailsCaptor.getValue();
+        List<ListValue<Document>> occupationLicenceDocs = occupationLicenceDetails.getLicenceDocuments();
+        assertThat(occupationLicenceDocs).hasSize(1);
+        assertThat(occupationLicenceDocs.getFirst().getId()).isEqualTo(tenancyLicenceDocumentId.toString());
+    }
 }
