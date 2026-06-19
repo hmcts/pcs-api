@@ -7,15 +7,16 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
+import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseFlagEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CasePartyFlagEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.FlagRefDataEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyId;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -73,7 +74,6 @@ class CaseFlagsViewTest {
         // The case parties are wrapped from the same entity set (as PCSCaseView does),
         // with the entity id dropped during mapping, so the two collections share order.
         PartyEntity defendantEntity = createPartyEntity(null);
-        markAsDefendant(defendantEntity);
         defendantEntity.setDefendantFlags(List.of(createMockCasePartyFlagsEntity()));
 
         PartyEntity orgEntity = createPartyEntity("King Smith");
@@ -85,6 +85,7 @@ class CaseFlagsViewTest {
             .build();
         PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
         pcsCaseEntity.setParties(partyEntities);
+        setClaimParties(pcsCaseEntity, createClaimParty(defendantEntity, PartyRole.DEFENDANT));
 
         // When
         underTest.setCaseFields(pcsCase, pcsCaseEntity);
@@ -112,14 +113,13 @@ class CaseFlagsViewTest {
             .firstName("Under")
             .lastName("Lessee")
             .build();
-        individualUnderlessee.setClaimParties(new HashSet<>(Set.of(
-            ClaimPartyEntity.builder().role(PartyRole.UNDERLESSEE_OR_MORTGAGEE).build())));
 
         PCSCase pcsCase = PCSCase.builder()
             .parties(List.of(mappedParty(individualUnderlessee)))
             .build();
         PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
         pcsCaseEntity.setParties(Set.of(individualUnderlessee));
+        setClaimParties(pcsCaseEntity, createClaimParty(individualUnderlessee, PartyRole.UNDERLESSEE_OR_MORTGAGEE));
 
         // When
         underTest.setCaseFields(pcsCase, pcsCaseEntity);
@@ -138,11 +138,6 @@ class CaseFlagsViewTest {
             .map(ListValue::getValue)
             .findFirst()
             .orElseThrow();
-    }
-
-    private void markAsDefendant(PartyEntity partyEntity) {
-        partyEntity.setClaimParties(new HashSet<>(Set.of(
-            ClaimPartyEntity.builder().role(PartyRole.DEFENDANT).build())));
     }
 
     private PartyEntity createPartyEntity(String orgName) {
@@ -169,13 +164,13 @@ class CaseFlagsViewTest {
     void shouldMapComplexPartyFlagFieldsWhenPartiesExistsWithNoFlags() {
         // Given - a defendant with no party flags
         PartyEntity defendantEntity = createPartyEntity(null);
-        markAsDefendant(defendantEntity);
 
         PCSCase pcsCase = PCSCase.builder()
             .parties(List.of(mappedParty(defendantEntity)))
             .build();
         PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
         pcsCaseEntity.setParties(Set.of(defendantEntity));
+        setClaimParties(pcsCaseEntity, createClaimParty(defendantEntity, PartyRole.DEFENDANT));
 
         // When
         underTest.setCaseFields(pcsCase, pcsCaseEntity);
@@ -242,6 +237,31 @@ class CaseFlagsViewTest {
         return FlagRefDataEntity.builder()
             .flagCode(flagCode)
             .flagName(flagName)
+            .build();
+    }
+
+    private void setClaimParties(PcsCaseEntity pcsCaseEntity, ClaimPartyEntity... claimParties) {
+        UUID claimId = UUID.randomUUID();
+        ClaimEntity claim = ClaimEntity.builder()
+            .id(claimId)
+            .claimParties(List.of(claimParties))
+            .build();
+
+        for (ClaimPartyEntity claimParty : claimParties) {
+            claimParty.getId().setClaimId(claimId);
+        }
+
+        pcsCaseEntity.setClaims(List.of(claim));
+    }
+
+    private ClaimPartyEntity createClaimParty(PartyEntity partyEntity, PartyRole role) {
+        ClaimPartyId id = new ClaimPartyId();
+        id.setPartyId(partyEntity.getId());
+
+        return ClaimPartyEntity.builder()
+            .id(id)
+            .party(partyEntity)
+            .role(role)
             .build();
     }
 }
