@@ -7,6 +7,7 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.IncomeType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaim;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantContactDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
@@ -164,6 +165,21 @@ public class DefendantResponseReadMapper {
         String rentArrearsAmount = values.get(PartyAttributeType.RENT_ARREARS_AMOUNT);
         if (StringUtils.isNotBlank(rentArrearsAmount)) {
             builder.rentArrearsAmount(new BigDecimal(rentArrearsAmount));
+        }
+
+        String possessionNoticeReceived = values.get(PartyAttributeType.POSSESSION_NOTICE_RECEIVED);
+        YesNoNotSure parsedPossessionNotice = null;
+        if (StringUtils.isNotBlank(possessionNoticeReceived)) {
+            parsedPossessionNotice = YesNoNotSure.valueOf(possessionNoticeReceived);
+            builder.possessionNoticeReceived(parsedPossessionNotice);
+        }
+
+        String noticeReceivedDate = values.get(PartyAttributeType.NOTICE_RECEIVED_DATE);
+        if (StringUtils.isNotBlank(noticeReceivedDate)) {
+            builder.noticeReceivedDate(LocalDate.parse(noticeReceivedDate));
+            if (parsedPossessionNotice == null) {
+                builder.possessionNoticeReceived(YesNoNotSure.YES);
+            }
         }
     }
 
