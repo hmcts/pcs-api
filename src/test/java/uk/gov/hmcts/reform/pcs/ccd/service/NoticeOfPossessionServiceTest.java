@@ -21,6 +21,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.mockito.Mock.Strictness.LENIENT;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -63,6 +64,21 @@ class NoticeOfPossessionServiceTest {
                            .noticeServed(YesOrNo.NO)
                            .build()
             );
+    }
+
+    @Test
+    void shouldNotThrowWhenNoticeServedButServiceMethodIsNull() {
+        // Given notice served but no service method selected
+        when(pcsCase.getLegislativeCountry()).thenReturn(LegislativeCountry.ENGLAND);
+        when(pcsCase.getNoticeServed()).thenReturn(YesOrNo.YES);
+        when(noticeServedDetails.getServiceMethod()).thenReturn(null);
+
+        // When / Then - the switch must not be reached with a null method
+        NoticeOfPossessionEntity noticeOfPossessionEntity =
+            assertDoesNotThrow(() -> underTest.createNoticeOfPossessionEntity(pcsCase));
+
+        assertThat(noticeOfPossessionEntity.getNoticeServed()).isEqualTo(YesOrNo.YES);
+        assertThat(noticeOfPossessionEntity.getServingMethod()).isNull();
     }
 
     @ParameterizedTest

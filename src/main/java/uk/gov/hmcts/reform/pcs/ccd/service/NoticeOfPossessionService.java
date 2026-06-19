@@ -37,6 +37,10 @@ public class NoticeOfPossessionService {
             noticeOfPossessionEntity.setUnableToUploadReason(noticeServedDetails.getUnableToUploadReason());
         }
 
+        if (noticeServiceMethod == null) {
+            return noticeOfPossessionEntity;
+        }
+
         switch (noticeServiceMethod) {
             case FIRST_CLASS_POST ->
                 noticeOfPossessionEntity.setNoticeDate(noticeServedDetails.getPostedDate());
