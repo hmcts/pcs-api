@@ -9,19 +9,15 @@ import uk.gov.hmcts.ccd.sdk.type.Flags;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
-import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.BaseCaseFlag;
 import uk.gov.hmcts.reform.pcs.ccd.util.YesOrNoConverter;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static java.util.Objects.requireNonNullElse;
@@ -100,38 +96,25 @@ public class CaseFlagsView {
             return;
         }
 
-        // pcsCase.parties is wrapped from pcsCaseEntity.getParties() in iteration order, but the
-        // entity id is dropped during the entity->domain mapping. Re-attach it onto each ListValue
-        // so the entity can be matched back, then apply the defendant flags.
-        // same party set.
+        Set<String> defendantPartyIds = getDefendantPartyIds(pcsCase);
         List<PartyEntity> partyEntities = new ArrayList<>(pcsCaseEntity.getParties());
-        Set<UUID> defendantPartyIds = getDefendantPartyIds(pcsCaseEntity);
         for (int i = 0; i < partyListValues.size() && i < partyEntities.size(); i++) {
             PartyEntity partyEntity = partyEntities.get(i);
             ListValue<Party> partyListValue = partyListValues.get(i);
             partyListValue.setId(partyEntity.getId().toString());
-            if (defendantPartyIds.contains(partyEntity.getId())
-                || (defendantPartyIds.isEmpty() && isDefendant(partyEntity))) {
+            if (defendantPartyIds.contains(partyListValue.getId())) {
                 partyListValue.getValue().setDefendantFlags(mapDefendantFlags(partyEntity));
             }
         }
     }
 
-    private boolean isDefendant(PartyEntity partyEntity) {
-        return !CollectionUtils.isEmpty(partyEntity.getClaimParties())
-            && partyEntity.getClaimParties().stream()
-                .anyMatch(claimParty -> claimParty.getRole() == PartyRole.DEFENDANT);
-    }
+    private Set<String> getDefendantPartyIds(PCSCase pcsCase) {
+        if (CollectionUtils.isEmpty(pcsCase.getAllDefendants())) {
+            return Set.of();
+        }
 
-    private Set<UUID> getDefendantPartyIds(PcsCaseEntity pcsCaseEntity) {
-        return pcsCaseEntity.getClaims().stream()
-            .findFirst()
-            .map(ClaimEntity::getClaimParties)
-            .stream()
-            .flatMap(List::stream)
-            .filter(claimParty -> claimParty.getRole() == PartyRole.DEFENDANT)
-            .map(ClaimPartyEntity::getId)
-            .map(id -> id.getPartyId())
+        return pcsCase.getAllDefendants().stream()
+            .map(ListValue::getId)
             .collect(Collectors.toSet());
     }
 
