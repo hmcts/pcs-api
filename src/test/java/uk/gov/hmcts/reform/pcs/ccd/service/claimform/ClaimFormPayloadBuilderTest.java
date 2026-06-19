@@ -395,6 +395,104 @@ class ClaimFormPayloadBuilderTest {
             assertThat(payload.getGrounds().getFirst().getNameAndNumber())
                 .isEqualTo("Serious rent arrears (ground 8)");
         }
+
+        @Test
+        void antisocialConditionsPrefixedWithParentAndRepeated() {
+            // Parent checkbox "Antisocial behaviour" with two child conditions: each row repeats the
+            // parent, e.g. "Antisocial behaviour: Condition 1 of Section 84A of the Housing Act 1985".
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
+            ClaimEntity claim = pcsCase.getClaims().getFirst();
+            claim.getClaimGrounds().add(ClaimGroundEntity.builder()
+                .category(ClaimGroundCategory.SECURE_OR_FLEXIBLE_ANTISOCIAL)
+                .code("S84A_CONDITION_1")
+                .reason("condition 1 reason")
+                .claim(claim)
+                .build());
+            claim.getClaimGrounds().add(ClaimGroundEntity.builder()
+                .category(ClaimGroundCategory.SECURE_OR_FLEXIBLE_ANTISOCIAL)
+                .code("S84A_CONDITION_3")
+                .reason("condition 3 reason")
+                .claim(claim)
+                .build());
+
+            ClaimFormPayload payload = builder.build(pcsCase);
+
+            assertThat(payload.getGrounds()).extracting(ClaimFormGround::getNameAndNumber)
+                .containsExactlyInAnyOrder(
+                    "Antisocial behaviour: Condition 1 of Section 84A of the Housing Act 1985",
+                    "Antisocial behaviour: Condition 3 of Section 84A of the Housing Act 1985");
+            assertThat(payload.getGroundsWithReasons()).extracting(ClaimFormGround::getNameAndNumber)
+                .containsExactlyInAnyOrder(
+                    "Antisocial behaviour: Condition 1 of Section 84A of the Housing Act 1985",
+                    "Antisocial behaviour: Condition 3 of Section 84A of the Housing Act 1985");
+        }
+
+        @Test
+        void groundOneRentArrearsOnlyShowsChildWithNoReasonRow() {
+            // Ground 1, "Rent arrears" child only: appears in the grounds list as a child but has no
+            // free-text reason, so it never produces a "reason for claiming possession" row.
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
+            ClaimEntity claim = pcsCase.getClaims().getFirst();
+            claim.getClaimGrounds().add(ClaimGroundEntity.builder()
+                .category(ClaimGroundCategory.SECURE_OR_FLEXIBLE_DISCRETIONARY)
+                .code("RENT_ARREARS_OR_BREACH_OF_TENANCY")
+                .isRentArrears(true)
+                .claim(claim)
+                .build());
+
+            ClaimFormPayload payload = builder.build(pcsCase);
+
+            assertThat(payload.getGrounds()).extracting(ClaimFormGround::getNameAndNumber)
+                .containsExactly("Rent arrears or breach of the tenancy (ground 1): Rent arrears");
+            assertThat(payload.getGroundsWithReasons()).isEmpty();
+        }
+
+        @Test
+        void groundOneBreachOnlyShowsChildWithReason() {
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
+            ClaimEntity claim = pcsCase.getClaims().getFirst();
+            claim.getClaimGrounds().add(ClaimGroundEntity.builder()
+                .category(ClaimGroundCategory.SECURE_OR_FLEXIBLE_DISCRETIONARY)
+                .code("RENT_ARREARS_OR_BREACH_OF_TENANCY")
+                .isRentArrears(false)
+                .reason("kept a dog despite a no-pets clause")
+                .claim(claim)
+                .build());
+
+            ClaimFormPayload payload = builder.build(pcsCase);
+
+            assertThat(payload.getGrounds()).extracting(ClaimFormGround::getNameAndNumber)
+                .containsExactly("Rent arrears or breach of the tenancy (ground 1): Breach of the tenancy");
+            assertThat(payload.getGroundsWithReasons()).singleElement()
+                .satisfies(row -> {
+                    assertThat(row.getNameAndNumber())
+                        .isEqualTo("Rent arrears or breach of the tenancy (ground 1): Breach of the tenancy");
+                    assertThat(row.getReasonFreeText()).isEqualTo("kept a dog despite a no-pets clause");
+                });
+        }
+
+        @Test
+        void groundOneBothChildrenShowsTwoListRowsAndOneReasonRow() {
+            // Both children selected: list shows both; only breach (with free text) is a reason row.
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
+            ClaimEntity claim = pcsCase.getClaims().getFirst();
+            claim.getClaimGrounds().add(ClaimGroundEntity.builder()
+                .category(ClaimGroundCategory.SECURE_OR_FLEXIBLE_DISCRETIONARY)
+                .code("RENT_ARREARS_OR_BREACH_OF_TENANCY")
+                .isRentArrears(true)
+                .reason("kept a dog despite a no-pets clause")
+                .claim(claim)
+                .build());
+
+            ClaimFormPayload payload = builder.build(pcsCase);
+
+            assertThat(payload.getGrounds()).extracting(ClaimFormGround::getNameAndNumber)
+                .containsExactlyInAnyOrder(
+                    "Rent arrears or breach of the tenancy (ground 1): Rent arrears",
+                    "Rent arrears or breach of the tenancy (ground 1): Breach of the tenancy");
+            assertThat(payload.getGroundsWithReasons()).extracting(ClaimFormGround::getNameAndNumber)
+                .containsExactly("Rent arrears or breach of the tenancy (ground 1): Breach of the tenancy");
+        }
     }
 
     @Nested
@@ -441,6 +539,32 @@ class ClaimFormPayloadBuilderTest {
             assertThat(payload.getWhyClaimingPossessionGrounds()).hasSize(1);
             assertThat(payload.getWhyClaimingPossessionGrounds().getFirst().getNameAndNumber())
                 .isEqualTo("Other grounds");
+        }
+
+        @Test
+        void englandIntroDemotedOther_showsGroundsYesNoQuestion() {
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
+            pcsCase.setTenancyLicence(TenancyLicenceEntity.builder()
+                .type(CombinedLicenceType.OTHER)
+                .build());
+
+            ClaimFormPayload payload = builder.build(pcsCase);
+
+            assertThat(payload.isShowGroundsYesNoQuestion()).isTrue();
+        }
+
+        @Test
+        void walesOtherOccupationType_hidesGroundsYesNoQuestion() {
+            // Wales "Other" shares CombinedLicenceType.OTHER with England, but the grounds yes/no
+            // question is England intro/demoted/other only and must not render for Wales.
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.WALES);
+            pcsCase.setTenancyLicence(TenancyLicenceEntity.builder()
+                .type(CombinedLicenceType.OTHER)
+                .build());
+
+            ClaimFormPayload payload = builder.build(pcsCase);
+
+            assertThat(payload.isShowGroundsYesNoQuestion()).isFalse();
         }
 
         @Test
@@ -1587,6 +1711,35 @@ class ClaimFormPayloadBuilderTest {
 
             assertThat(payload.getMediationAttemptedYesNo()).isEqualTo("Yes");
             assertThat(payload.getSettlementAttemptedYesNo()).isEqualTo("No");
+        }
+
+        @Test
+        void mediationAndSettlementAnswered_showFlagsTrue() {
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
+            ClaimEntity claim = pcsCase.getClaims().getFirst();
+            claim.setMediationAttempted(VerticalYesNo.YES);
+            claim.setSettlementAttempted(VerticalYesNo.NO);
+
+            ClaimFormPayload payload = builder.build(pcsCase);
+
+            assertThat(payload.isShowMediationAttempted()).isTrue();
+            assertThat(payload.isShowSettlementAttempted()).isTrue();
+        }
+
+        @Test
+        void mediationAndSettlementUnanswered_rowsHidden() {
+            // Optional page skipped: both rows must hide rather than render a blank value.
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
+            ClaimEntity claim = pcsCase.getClaims().getFirst();
+            claim.setMediationAttempted(null);
+            claim.setSettlementAttempted(null);
+
+            ClaimFormPayload payload = builder.build(pcsCase);
+
+            assertThat(payload.isShowMediationAttempted()).isFalse();
+            assertThat(payload.getMediationAttemptedYesNo()).isNull();
+            assertThat(payload.isShowSettlementAttempted()).isFalse();
+            assertThat(payload.getSettlementAttemptedYesNo()).isNull();
         }
     }
 

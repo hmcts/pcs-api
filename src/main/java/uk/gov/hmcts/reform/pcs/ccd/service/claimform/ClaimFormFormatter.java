@@ -3,9 +3,11 @@ package uk.gov.hmcts.reform.pcs.ccd.service.claimform;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CombinedLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServiceMethod;
+import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsOrBreachOfTenancy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.ClaimGroundSummary;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexibleMandatoryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundEntity;
@@ -75,6 +77,18 @@ final class ClaimFormFormatter {
 
     static String formatGroundLabel(ClaimGroundEntity ground) {
         return ClaimGroundSummary.labelFor(ground.getCategory(), ground.getCode());
+    }
+
+    // Antisocial behaviour is a parent checkbox whose children are the s.84A conditions; the form
+    // names each "Antisocial behaviour: Condition N of Section 84A of the Housing Act 1985".
+    static String formatAntisocialGroundLabel(ClaimGroundEntity ground) {
+        return SecureOrFlexibleMandatoryGrounds.ANTI_SOCIAL.getLabel() + ": " + formatGroundLabel(ground);
+    }
+
+    // Ground 1 is a parent checkbox whose children are "Rent arrears" / "Breach of the tenancy"; the
+    // form names each "Rent arrears or breach of the tenancy (ground 1): <child>".
+    static String formatRentArrearsOrBreachLabel(ClaimGroundEntity ground, RentArrearsOrBreachOfTenancy child) {
+        return formatGroundLabel(ground) + ": " + child.getLabel();
     }
 
     static ClaimFormAddress toClaimFormAddress(AddressEntity address) {

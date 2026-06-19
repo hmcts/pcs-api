@@ -5,7 +5,9 @@ import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CombinedLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServiceMethod;
+import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsOrBreachOfTenancy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexibleDiscretionaryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthCompletedBy;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AsbProhibitedConductEntity;
@@ -30,6 +32,7 @@ import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZoneOffset;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -37,8 +40,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import static uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimFormFormatter.formatAntisocialGroundLabel;
 import static uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimFormFormatter.formatGbp;
 import static uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimFormFormatter.formatGroundLabel;
+import static uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimFormFormatter.formatRentArrearsOrBreachLabel;
 import static uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimFormFormatter.formatLongDate;
 import static uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimFormFormatter.formatNoticeTime;
 import static uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimFormFormatter.formatRentFrequency;
@@ -123,7 +128,9 @@ public class ClaimFormPayloadBuilder {
 
         // One "Why is the claimant claiming possession?" row per Absolute/Other/No-grounds answer.
         payloadBuilder.whyClaimingPossessionGrounds(whyClaimingPossessionGrounds(claim.getClaimGrounds()));
-        payloadBuilder.showGroundsYesNoQuestion(isIntroDemotedOther);
+        // England-only: Wales "Other" shares CombinedLicenceType.OTHER, but the grounds yes/no
+        // question belongs to the England intro/demoted/other journey, not the Wales flow.
+        payloadBuilder.showGroundsYesNoQuestion(isEngland && isIntroDemotedOther);
         // "Description of grounds" covers any England "Other" ground (intro/demoted/other or assured).
         payloadBuilder.showDescriptionOfGrounds(isEngland && hasOtherGround);
         payloadBuilder.showAsbSection(isWales && hasWalesAsbGround);
@@ -211,6 +218,45 @@ public class ClaimFormPayloadBuilder {
             .build();
     }
 
+    // Antisocial conditions and ground 1 (rent arrears / breach of tenancy) are parent-checkbox
+    // grounds: the form names them "<parent>: <child>", emitting one row per selected child (parent
+    // repeated). Rent arrears has no free-text reason, so it never produces a reason row. All other
+    // grounds map one-to-one.
+    private static List<ClaimFormGround> toClaimFormGrounds(ClaimGroundEntity ground) {
+        if (ground.getCategory() == ClaimGroundCategory.SECURE_OR_FLEXIBLE_ANTISOCIAL) {
+            return List.of(parentChildGround(formatAntisocialGroundLabel(ground), ground.getReason()));
+        }
+        if (isRentArrearsOrBreachGround(ground)) {
+            List<ClaimFormGround> rows = new ArrayList<>();
+            if (Boolean.TRUE.equals(ground.getIsRentArrears())) {
+                rows.add(parentChildGround(
+                    formatRentArrearsOrBreachLabel(ground, RentArrearsOrBreachOfTenancy.RENT_ARREARS), null));
+            }
+            if (isPopulated(ground.getReason())) {
+                rows.add(parentChildGround(
+                    formatRentArrearsOrBreachLabel(ground, RentArrearsOrBreachOfTenancy.BREACH_OF_TENANCY),
+                    ground.getReason()));
+            }
+            if (!rows.isEmpty()) {
+                return rows;
+            }
+        }
+        return List.of(toClaimFormGround(ground));
+    }
+
+    private static ClaimFormGround parentChildGround(String nameAndNumber, String reason) {
+        return ClaimFormGround.builder()
+            .nameAndNumber(nameAndNumber)
+            .reasonFreeText(reason)
+            .hasReason(isPopulated(reason))
+            .build();
+    }
+
+    private static boolean isRentArrearsOrBreachGround(ClaimGroundEntity ground) {
+        return ground.getCategory() == ClaimGroundCategory.SECURE_OR_FLEXIBLE_DISCRETIONARY
+            && SecureOrFlexibleDiscretionaryGrounds.RENT_ARREARS_OR_BREACH_OF_TENANCY.name().equals(ground.getCode());
+    }
+
     private static Optional<String> firstOtherGroundDescription(Collection<ClaimGroundEntity> grounds) {
         return grounds.stream()
             .filter(g -> "OTHER".equals(g.getCode()))
@@ -277,7 +323,10 @@ public class ClaimFormPayloadBuilder {
         payloadBuilder.showPreActionProtocolNotFollowedReason(isNo(preActionFollowed) && isPopulated(preActionReason));
         payloadBuilder.preActionProtocolNotFollowedReason(preActionReason);
 
+        // Optional questions: hide the row entirely when unanswered instead of a blank value.
+        payloadBuilder.showMediationAttempted(claim.getMediationAttempted() != null);
         payloadBuilder.mediationAttemptedYesNo(toLabel(claim.getMediationAttempted()));
+        payloadBuilder.showSettlementAttempted(claim.getSettlementAttempted() != null);
         payloadBuilder.settlementAttemptedYesNo(toLabel(claim.getSettlementAttempted()));
 
         VerticalYesNo claimantCircumstances = claim.getClaimantCircumstancesProvided();
@@ -315,14 +364,15 @@ public class ClaimFormPayloadBuilder {
         }
 
         List<ClaimFormGround> mapped = grounds.stream()
-            .map(ClaimFormPayloadBuilder::toClaimFormGround)
+            .flatMap(g -> toClaimFormGrounds(g).stream())
             .toList();
         payloadBuilder.grounds(mapped);
         // The Absolute/Other intro grounds answer the general "Why are you claiming possession?"
         // question (D13), so they are excluded from the per-ground reason list to avoid duplication.
         payloadBuilder.groundsWithReasons(grounds.stream()
-            .filter(g -> isPopulated(g.getReason()) && !isWhyClaimingPossessionGround(g))
-            .map(ClaimFormPayloadBuilder::toClaimFormGround)
+            .filter(g -> !isWhyClaimingPossessionGround(g))
+            .flatMap(g -> toClaimFormGrounds(g).stream())
+            .filter(ClaimFormGround::isHasReason)
             .toList());
         payloadBuilder.hasGroundsYesNo(VerticalYesNo.YES.getLabel());
         payloadBuilder.showGroundsList(true);

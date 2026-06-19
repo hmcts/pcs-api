@@ -101,7 +101,9 @@ public class ClaimFormPayload implements FormPayload {
     private String preActionProtocolFollowedYesNo;
     private boolean showPreActionProtocolNotFollowedReason;
     private String preActionProtocolNotFollowedReason;
+    private boolean showMediationAttempted;
     private String mediationAttemptedYesNo;
+    private boolean showSettlementAttempted;
     private String settlementAttemptedYesNo;
 
     // ---------- Notice ----------
