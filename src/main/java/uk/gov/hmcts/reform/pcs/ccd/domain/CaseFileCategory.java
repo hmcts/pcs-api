@@ -16,7 +16,6 @@ public enum CaseFileCategory {
     APPEALS("appeals", "Appeals", 7),
     CORRESPONDENCE("correspondence", "Correspondence", 8);
 
-
     private final String id;
     private final String label;
     private final int displayOrder;

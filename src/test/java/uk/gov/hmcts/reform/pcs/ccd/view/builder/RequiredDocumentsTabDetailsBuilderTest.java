@@ -204,8 +204,8 @@ class RequiredDocumentsTabDetailsBuilderTest {
                                                                   .build());
         List<ListValue<Document>> gasSafetyReport = List.of(ListValue.<Document>builder().value(Document.builder().build())
                                                                 .build());
-        List<ListValue<Document>> electricalInstallation = List.of(ListValue.<Document>builder().value(Document.builder().build())
-                                                                       .build());
+        List<ListValue<Document>> electricalInstallation =
+            List.of(ListValue.<Document>builder().value(Document.builder().build()).build());
 
         WalesDocuments walesDocuments = WalesDocuments.builder()
             .hasEnergyPerformanceCertificate(VerticalYesNo.YES)
