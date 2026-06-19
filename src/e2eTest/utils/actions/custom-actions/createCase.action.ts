@@ -1,5 +1,5 @@
 import {actionData, actionRecord, IAction} from '@utils/interfaces';
-import {expect, Page} from '@playwright/test';
+import {expect, Locator, Page} from '@playwright/test';
 import {getCaseTypeId} from '@utils/common/caseType.utils';
 import {performAction, performActions, performValidation} from '@utils/controller';
 import {
@@ -52,7 +52,7 @@ import {
   checkingNoticeWales,
   addCaseNote,
 } from '@data/page-data-figma';
-import {MEDIUM_TIMEOUT, VERY_LONG_TIMEOUT} from 'playwright.config';
+import {MEDIUM_TIMEOUT, SHORT_TIMEOUT, VERY_LONG_TIMEOUT} from 'playwright.config';
 import {compareMaps} from '@utils/common/compareMaps.util';
 import {caseInfo} from './createCaseAPI.action';
 import {createCaseApiData} from '@data/api-data';
@@ -127,6 +127,8 @@ export class CreateCaseAction implements IAction {
       ['addCaseNotes', () => this.addCaseNotes(fieldName as actionRecord)],
       ['validateCaseNotesDetails', () => this.validateCaseNotesDetails(page, fieldName as actionRecord)],
       ['validateCaseSummaryDetails', () => this.validateCaseSummaryDetails(page, fieldName as actionRecord)],
+      ['validateCaseFileViewFolders', () => this.validateCaseFileViewFolders(page)],
+      ['validateCaseFileViewIndividualFolder', () => this.validateCaseFileViewIndividualFolder(page)],
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -1567,5 +1569,57 @@ export class CreateCaseAction implements IAction {
   public async getTableDataValue(page: Page, tableHeader: string): Promise<string> {
     const tdLocator = page.locator(`//span[text()="${tableHeader}"]/ancestor::tr[1]/child::td`);
     return ((await tdLocator.textContent()) || '').trim();
+  }
+
+  public async validateCaseFileViewFolders(page: Page){
+    let folderLocator = page.locator('button[role="treeitem"]').filter({ visible: true })
+    await expect(async () => {
+      expect(await folderLocator.count()).toBeGreaterThan(0)
+    }).toPass({
+      timeout: SHORT_TIMEOUT,
+    });
+    const folderRetrieved = (await folderLocator.allTextContents()).map(item => item.slice(1));
+    const folder:string[] = ['Property documents','Evidence','Statements of case','Correspondence'];
+    expect(folder.every(name => folderRetrieved.some(text => text.includes(name)))).toBeTruthy();
+    
+  }
+
+  public async validateCaseFileViewIndividualFolder(page: Page){
+    // let folderLocator = page.locator('button[role="treeitem"]').filter({ visible: true });
+    // const folderCount = await folderLocator.count();
+    // let testLoc;
+    // let text = '';
+    // for (let i = 0; i < folderCount; i++) {
+    //   text = await folderLocator.nth(i).innerText()
+
+    //   if (text?.includes('Statements of case')) {
+    //     testLoc = folderLocator.nth(i);
+    //     break;
+    //   }
+      
+
+    // }
+
+    // if (Number(text?.charAt(0)) === 0) {
+    //   throw new Error(` For file ${} files are not present`)
+    // }
+    // await testLoc?.click();
+
+
+    const folderName = 'Statements of case';
+
+    const folder = page
+      .locator('button[role="treeitem"]')
+      .filter({ hasText: folderName });
+
+    const text = await folder.innerText();
+    const fileCount = Number(text.match(/^\d+/)?.[0] ?? 0);
+
+    if (fileCount === 0) {
+      throw new Error(`For folder "${folderName}" files are not present`);
+    }
+
+    await folder.click();
+
   }
 }

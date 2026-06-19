@@ -27,6 +27,11 @@ test.beforeEach(async ({ page }, testInfo) => {
     await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayloadCaseDetails });
     await performAction('getCaseAPI', 'Claim Submission Time');
     await performAction('fetchCurrentUserAPI', 'Claimant');
+  } else if (testInfo.title.includes('CaseFile')) {
+    await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
+    await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayloadCaseFileView });
+    await performAction('getCaseAPI', 'Claim Submission Time');
+    await performAction('fetchCurrentUserAPI', 'Claimant');
   } else {
     await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
     await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayloadCaseTab });
@@ -315,5 +320,12 @@ test.describe('[Case tabs - England Journey] @nightly', async () => {
       table: 'Underlessee or mortgagee 1'
     });
 
+  });
+
+  test('Case tabs - CaseFile View test @MAC @regression', async () => {
+    await performValidation('mainHeader', home.caseSummary)
+    await performAction('clickTab', home.caseFileView);
+    await performAction('validateCaseFileViewFolders');
+    await performAction('validateCaseFileViewIndividualFolder');
   });
 });

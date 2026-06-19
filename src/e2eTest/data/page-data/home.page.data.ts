@@ -12,5 +12,6 @@ export const home =
     caseNotes: 'Notes',
     caseSummary: 'Summary',
     caseDetails: 'Case Details',
+    caseFileView: 'Case File View',
     signOutButton: 'Sign out'
   };
