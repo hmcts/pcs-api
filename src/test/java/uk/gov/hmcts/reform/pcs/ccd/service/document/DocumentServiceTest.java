@@ -323,7 +323,7 @@ class DocumentServiceTest {
             .build();
 
         NoticeServedDetails noticeServedDetails = NoticeServedDetails.builder()
-            .noticeDocuments(List.of(ListValue.<Document>builder().id("1").value(doc).build()))
+            .documents(List.of(ListValue.<Document>builder().id("1").value(doc).build()))
             .build();
 
         when(pcsCase.getNoticeServedDetails()).thenReturn(noticeServedDetails);
@@ -596,7 +596,7 @@ class DocumentServiceTest {
                 .tenancyLicenceDocuments(List.of(ListValue.<Document>builder().id("2").value(tenancyDoc).build()))
                 .build());
         when(pcsCase.getNoticeServedDetails()).thenReturn(NoticeServedDetails.builder()
-                .noticeDocuments(List.of(ListValue.<Document>builder().id("3").value(noticeDoc).build()))
+                .documents(List.of(ListValue.<Document>builder().id("3").value(noticeDoc).build()))
                 .build());
 
         // When
@@ -630,7 +630,7 @@ class DocumentServiceTest {
             .build();
 
         NoticeServedDetails noticeServedDetails = NoticeServedDetails.builder()
-                .noticeDocuments(List.of(ListValue.<Document>builder().id("1").value(doc).build()))
+                .documents(List.of(ListValue.<Document>builder().id("1").value(doc).build()))
                 .build();
 
         when(pcsCase.getNoticeServedDetails()).thenReturn(noticeServedDetails);
@@ -997,6 +997,15 @@ class DocumentServiceTest {
         verify(documentRepository, never()).saveAll(anyList());
     }
 
+    @Test
+    void shouldReturnNullWhenAdditionalDocumentTypeIsNull() {
+        // When
+        DocumentType actualDocumentType = underTest.mapAdditionalDocumentTypeToDocumentType(null);
+
+        // Then
+        assertThat(actualDocumentType).isNull();
+    }
+
     private static Stream<Arguments> additionalDocumentCategoryScenarios() {
         return Stream.of(
             Arguments.of(
@@ -1158,6 +1167,10 @@ class DocumentServiceTest {
 
     private static Stream<Arguments> additionalDocumentTypeScenarios() {
         return Stream.of(
+            Arguments.of(
+                null,
+                null
+            ),
             Arguments.of(
                 AdditionalDocumentType.WITNESS_STATEMENT,
                 DocumentType.WITNESS_STATEMENT
