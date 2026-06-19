@@ -22,8 +22,7 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static uk.gov.hmcts.reform.pcs.ccd.task.DeleteDraftClaimRoleRevocationTaskComponent
-    .DELETE_DRAFT_CLAIM_ROLE_REVOCATION_TASK_DESCRIPTOR;
+import static uk.gov.hmcts.reform.pcs.ccd.task.DeleteDraftClaimRoleRevocationTaskComponent.DELETE_DRAFT_CLAIM_ROLE_REVOCATION_TASK_DESCRIPTOR;
 
 @ExtendWith(MockitoExtension.class)
 class DeleteDraftClaimRoleRevocationTaskComponentTest {

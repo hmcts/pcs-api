@@ -65,7 +65,8 @@ class DraftClaimDeletionServiceTest {
             .isInstanceOf(IllegalStateException.class)
             .hasMessage("Cannot delete a claim that has been issued");
 
-        verify(jdbcTemplate, never()).update("DELETE FROM draft.draft_case_data WHERE case_reference = ?", CASE_REFERENCE);
+        verify(jdbcTemplate, never())
+            .update("DELETE FROM draft.draft_case_data WHERE case_reference = ?", CASE_REFERENCE);
         verify(jdbcTemplate, never()).update("DELETE FROM ccd.case_data WHERE reference = ?", CASE_REFERENCE);
         verify(jdbcTemplate, never()).update(eq("DELETE FROM pcs_case WHERE id = ?"), eq(CASE_ID));
         verify(jdbcTemplate, never()).queryForList(anyString(), eq(UUID.class), eq(CASE_ID), eq(CASE_ID), eq(CASE_ID));
