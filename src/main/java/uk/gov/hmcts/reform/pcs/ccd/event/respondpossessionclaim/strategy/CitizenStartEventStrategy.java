@@ -3,14 +3,18 @@ package uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.strategy;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponseStatus;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.utils.DefendantOnlyDraftBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.utils.PossessionClaimDraftBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.utils.PossessionClaimMerger;
+import uk.gov.hmcts.reform.pcs.ccd.repository.DefendantResponseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.DefendantAccessValidator;
@@ -19,6 +23,7 @@ import uk.gov.hmcts.reform.pcs.exception.DraftNotFoundException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.List;
+import java.util.UUID;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.respondPossessionClaim;
 
@@ -35,6 +40,7 @@ public class CitizenStartEventStrategy implements RespondPossessionClaimStartEve
     private final PossessionClaimMerger possessionClaimMerger;
     private final PossessionClaimDraftBuilder possessionClaimDraftBuilder;
     private final DefendantOnlyDraftBuilder defendantOnlyDraftBuilder;
+    private final DefendantResponseRepository defendantResponseRepository;
 
     @Override
     public boolean supports(List<String> roles) {
@@ -44,10 +50,31 @@ public class CitizenStartEventStrategy implements RespondPossessionClaimStartEve
     @Override
     public PCSCase loadDraft(long caseReference, PCSCase pcsCase) {
         PartyEntity defendant = loadAndValidateDefendant(caseReference);
+
+        if (hasSubmittedResponse(caseReference, securityContextService.getCurrentUserId())) {
+            return buildSubmittedResponseCase(pcsCase);
+        }
+
         if (draftCaseDataService.hasUnsubmittedCaseData(caseReference, respondPossessionClaim)) {
             return restoreDraft(caseReference, pcsCase, defendant);
         }
         return initialiseDraft(caseReference, pcsCase, defendant);
+    }
+
+    private boolean hasSubmittedResponse(long caseReference, UUID userId) {
+        return userId != null
+            && defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(caseReference, userId);
+    }
+
+    private PCSCase buildSubmittedResponseCase(PCSCase pcsCase) {
+        return pcsCase.toBuilder()
+            .possessionClaimResponse(PossessionClaimResponse.builder()
+                .defendantResponses(DefendantResponses.builder()
+                    .status(DefendantResponseStatus.SUBMITTED)
+                    .build())
+                .build())
+            .hasUnsubmittedCaseData(YesOrNo.NO)
+            .build();
     }
 
     private PartyEntity loadAndValidateDefendant(long caseReference) {

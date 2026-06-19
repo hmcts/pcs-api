@@ -525,8 +525,14 @@ export class CreateCaseAction implements IAction {
         ['inputText', noticeDetails.minuteHiddenTextLabel, noticeData.minute],
         ['inputText', noticeDetails.secondHiddenTextLabel, noticeData.second]);
     }
-    if (noticeData.files) {
+    await performAction('clickRadioButton', {
+      question: noticeData.uploadNoticeQuestion,
+      option: noticeData.uploadNoticeOption
+    });
+    if (noticeData.files && noticeData.uploadNoticeOption === 'Yes, I can upload a copy of the notice served') {
       await performAction('uploadFile', noticeData.files);
+    } else {
+      await performAction('inputText', noticeDetails.whyYouCannotUploadHiddenTextLabel, noticeDetails.whyYouCannotUploadHiddenTextInput);
     }
     await performAction('clickButton', noticeDetails.continueButton);
   }
@@ -1271,12 +1277,12 @@ export class CreateCaseAction implements IAction {
         break;
 
       case 'Notice':
-        const serviceMethod = submitPayLoad.notice_NoticeServiceMethod;
+        const serviceMethod = submitPayLoad.notice_ServiceMethod;
         const dateServed =
           serviceMethod === 'FIRST_CLASS_POST'
-            ? submitPayLoad.notice_NoticePostedDate
+            ? submitPayLoad.notice_PostedDate
             : serviceMethod === 'EMAIL'
-              ? submitPayLoad.notice_NoticeEmailSentDateTime
+              ? submitPayLoad.notice_EmailSentDateTime
               : null;
 
         if (dateServed) {
@@ -1290,12 +1296,12 @@ export class CreateCaseAction implements IAction {
         break;
 
       case 'Notice Case details':
-        const serviceMethodCaseDetails = submitPayLoad.notice_NoticeServiceMethod;
+        const serviceMethodCaseDetails = submitPayLoad.notice_ServiceMethod;
         const dateServedCaseDetails =
           serviceMethodCaseDetails === 'FIRST_CLASS_POST'
-            ? submitPayLoad.notice_NoticePostedDate
+            ? submitPayLoad.notice_PostedDate
             : serviceMethodCaseDetails === 'EMAIL'
-              ? submitPayLoad.notice_NoticeEmailSentDateTime
+              ? submitPayLoad.notice_EmailSentDateTime
               : null;
         const methodOfService = serviceMethodCaseDetails === 'FIRST_CLASS_POST' ? 'By first class post or other service which provides for delivery on the next business day' : serviceMethodCaseDetails === 'EMAIL' ? 'By Email' : null;
         caseSummary.set('Has notice been served?',formatWord(submitPayLoad.noticeServed));
@@ -1309,15 +1315,19 @@ export class CreateCaseAction implements IAction {
 
           caseSummary.set('Date and time notice served (if applicable)', formattedDate);
         }
+        caseSummary.set('Are you able to upload a copy of the notice you served?', formatWord(submitPayLoad.notice_AbleToUploadDocument));
+        if (submitPayLoad.notice_AbleToUploadDocument === 'No') {
+          caseSummary.set('Details of why you cannot upload a copy', submitPayLoad.notice_UnableToUploadReason);
+        }
         break;
 
       case 'Notice Case details Wales':
-        const serviceMethodCaseDetailsWales = submitPayLoad.notice_NoticeServiceMethod;
+        const serviceMethodCaseDetailsWales = submitPayLoad.notice_ServiceMethod;
         const dateServedCaseDetailsWales =
           serviceMethodCaseDetailsWales === 'FIRST_CLASS_POST'
-            ? submitPayLoad.notice_NoticePostedDate
+            ? submitPayLoad.notice_PostedDate
             : serviceMethodCaseDetailsWales === 'EMAIL'
-              ? submitPayLoad.notice_NoticeEmailSentDateTime
+              ? submitPayLoad.notice_EmailSentDateTime
               : null;
         const methodOfServiceWales = serviceMethodCaseDetailsWales === 'FIRST_CLASS_POST' ? 'By first class post or other service which provides for delivery on the next business day' : serviceMethodCaseDetailsWales === 'EMAIL' ? 'By Email' : null;
         caseSummary.set('Has notice been served?', formatWord(submitPayLoad.walesNoticeServed));
@@ -1331,6 +1341,10 @@ export class CreateCaseAction implements IAction {
               : formatDateTime(dateServedCaseDetailsWales);
 
           caseSummary.set('Date and time notice served (if applicable)', formattedDate);
+        }
+        caseSummary.set('Are you able to upload a copy of the notice you served?', formatWord(submitPayLoad.notice_AbleToUploadDocument));
+        if (submitPayLoad.notice_AbleToUploadDocument === 'No') {
+          caseSummary.set('Details of why you cannot upload a copy', submitPayLoad.notice_UnableToUploadReason);
         }
         break;
 
@@ -1447,6 +1461,26 @@ export class CreateCaseAction implements IAction {
           caseSummary.set(`Why are you making this claim?`, submitPayLoad.prohibitedConductWalesClaimDetails);
         }
         break;
+      
+      case 'Required Documents':
+        caseSummary.set(`Can the claimant upload a copy of the energy performance certificate?`, formatWord(submitPayLoad.walesDocs_HasEnergyPerformanceCertificate));
+        if(submitPayLoad.walesDocs_HasEnergyPerformanceCertificate === 'NO'){
+          caseSummary.set(`Why can the claimant not upload a copy of the energy performance certificate?`, submitPayLoad.walesDocs_NoEpcReason);
+        } else {
+          caseSummary.set(`Energy performance certificate`, submitPayLoad.walesDocs_EnergyPerformance?.[0]?.value?.document_filename);
+        }
+        caseSummary.set(`Can the claimant upload a copy of the current gas safety report?`, formatWord(submitPayLoad.walesDocs_HasGasSafetyReport));
+        if(submitPayLoad.walesDocs_HasGasSafetyReport === 'NO'){
+          caseSummary.set(`Why can the claimant not upload a copy of the current gas safety report?`, submitPayLoad.walesDocs_NoGasReportReason);
+        }else {
+          caseSummary.set(`Gas safety report`, submitPayLoad.walesDocs_GasSafetyReport  ?.[0]?.value?.document_filename);
+        }
+        caseSummary.set(`Can the claimant upload a copy of the Electrical Installation Condition Report (EICR)?`, formatWord(submitPayLoad.walesDocs_HasElectricalInstallationConditionReport));
+        if(submitPayLoad.walesDocs_HasElectricalInstallationConditionReport === 'NO'){
+          caseSummary.set(`Why can the claimant not upload a copy of the Electrical Installation Condition Report (EICR)?`, submitPayLoad.walesDocs_NoEicrReason);
+        }else {
+          caseSummary.set(`Electrical Installation Condition Report (EICR)`, submitPayLoad.walesDocs_ElectricalInstallation?.[0]?.value?.document_filename);
+        }
 
       default:
         break;

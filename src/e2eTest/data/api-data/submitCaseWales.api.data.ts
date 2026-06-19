@@ -92,9 +92,10 @@ export const submitCaseApiDataWales = {
     settlementAttempted: 'YES',
     walesNoticeServed: 'Yes',
     walesTypeOfNoticeServed: 'document',
-    notice_NoticeServiceMethod: 'FIRST_CLASS_POST',
-    notice_NoticePostedDate: '2015-12-01',
-    notice_NoticeDocuments: [],
+    notice_ServiceMethod: 'FIRST_CLASS_POST',
+    notice_PostedDate: '2015-12-01',
+    notice_AbleToUploadDocument: 'No',
+    notice_UnableToUploadReason: "no documents to upload",
     rentDetails_CurrentRent: '10000',
     rentDetails_Frequency: 'WEEKLY',
     rentDetails_CalculatedDailyCharge: '1429',
@@ -143,6 +144,21 @@ export const submitCaseApiDataWales = {
       }
     },
     addAdditionalUnderlesseeOrMortgagee: 'NO',
+    walesDocs_HasEnergyPerformanceCertificate: 'YES',
+    walesDocs_EnergyPerformance: [
+      {
+        id: 'a66903c1-ce7e-453e-b82e-174984654f7e',
+        value: {
+          document_url: `${process.env.DM_STORE}/documents/3ab9f8fe-0d71-4a82-bbda-c754c39a4780`,
+          document_binary_url: `${process.env.DM_STORE}/documents/3ab9f8fe-0d71-4a82-bbda-c754c39a4780/binary`,
+          document_filename: `noticeForService.pdf`,
+        }
+      }
+    ],
+    walesDocs_HasGasSafetyReport: 'NO',
+    walesDocs_NoGasReportReason: 'no gas safety report',
+    walesDocs_HasElectricalInstallationConditionReport: 'NO',
+    walesDocs_NoEicrReason: 'no copy of EICR',
     wantToUploadDocuments: 'NO',
     applicationWithClaim: 'YES',
     languageUsed: 'WELSH',

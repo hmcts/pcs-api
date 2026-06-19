@@ -25,7 +25,7 @@ public class CounterClaimNotificationService {
 
         DefendantResponseEntity defendantResponse = getAssociatedDefendantResponse(counterClaimEntity);
 
-        notificationService.sendClaimantDefendantHasMadeCounterclaimEmail(defendantResponse.getClaim());
+        notificationService.sendClaimantDefendantHasMadeCounterclaimEmailNotification(defendantResponse.getClaim());
     }
 
     private DefendantResponseEntity getAssociatedDefendantResponse(CounterClaimEntity counterClaim) {
