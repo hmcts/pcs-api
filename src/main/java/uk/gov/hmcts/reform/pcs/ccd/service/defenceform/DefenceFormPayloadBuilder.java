@@ -23,6 +23,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantRespon
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.HouseholdCircumstancesEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.PartyAttributeAssertationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.PaymentAgreementEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.RegularExpenseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.RegularIncomeEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.RegularIncomeItemEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyAttributeAssertionRepository;
@@ -77,6 +78,19 @@ public class DefenceFormPayloadBuilder {
         IncomeType.PENSION,
         IncomeType.UNIVERSAL_CREDIT,
         IncomeType.OTHER_BENEFITS
+    );
+
+    // Fixed display order matching the design template (expenses persist in an unordered map).
+    private static final List<RegularExpenseType> EXPENSE_ROW_ORDER = List.of(
+        RegularExpenseType.HOUSEHOLD_BILLS,
+        RegularExpenseType.LOAN_PAYMENTS,
+        RegularExpenseType.CHILD_SPOUSAL_MAINTENANCE,
+        RegularExpenseType.MOBILE_PHONE,
+        RegularExpenseType.GROCERY_SHOPPING,
+        RegularExpenseType.FUEL_PARKING_TRANSPORT,
+        RegularExpenseType.SCHOOL_COSTS,
+        RegularExpenseType.CLOTHING,
+        RegularExpenseType.OTHER
     );
 
     public DefenceFormPayloadBuilder(CaseReferenceFormatter caseReferenceFormatter,
@@ -259,7 +273,11 @@ public class DefenceFormPayloadBuilder {
         payload.debtContribution(formatGbp(household.getDebtContribution()));
         payload.debtContributionFrequency(formatFrequency(household.getDebtContributionFrequency()));
 
-        payload.expenses(household.getRegularExpenses().stream()
+        Map<RegularExpenseType, RegularExpenseEntity> expensesByType = new EnumMap<>(RegularExpenseType.class);
+        household.getRegularExpenses().forEach(expense -> expensesByType.put(expense.getExpenseType(), expense));
+        payload.expenses(EXPENSE_ROW_ORDER.stream()
+            .filter(expensesByType::containsKey)
+            .map(expensesByType::get)
             .map(expense -> amountRow(expenseLabel(expense.getExpenseType()),
                 expense.getAmount(), formatFrequency(expense.getExpenseFrequency())))
             .toList());

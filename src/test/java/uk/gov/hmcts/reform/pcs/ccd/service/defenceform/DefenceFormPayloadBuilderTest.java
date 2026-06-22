@@ -413,6 +413,38 @@ class DefenceFormPayloadBuilderTest {
         }
 
         @Test
+        void expensesRenderInDesignOrderRegardlessOfInputOrder() {
+            // Expenses persist in an unordered map; the form must list them in the design order.
+            HouseholdCircumstancesEntity household = HouseholdCircumstancesEntity.builder()
+                .shareIncomeExpenseDetails(VerticalYesNo.YES)
+                .build();
+            household.addRegularExpense(RegularExpenseEntity.builder()
+                .expenseType(RegularExpenseType.CLOTHING).amount(new BigDecimal("10.00"))
+                .expenseFrequency(RecurrenceFrequency.WEEKLY).build());
+            household.addRegularExpense(RegularExpenseEntity.builder()
+                .expenseType(RegularExpenseType.HOUSEHOLD_BILLS).amount(new BigDecimal("20.00"))
+                .expenseFrequency(RecurrenceFrequency.MONTHLY).build());
+            household.addRegularExpense(RegularExpenseEntity.builder()
+                .expenseType(RegularExpenseType.OTHER).amount(new BigDecimal("5.00"))
+                .expenseFrequency(RecurrenceFrequency.WEEKLY).build());
+            household.addRegularExpense(RegularExpenseEntity.builder()
+                .expenseType(RegularExpenseType.MOBILE_PHONE).amount(new BigDecimal("15.00"))
+                .expenseFrequency(RecurrenceFrequency.MONTHLY).build());
+
+            DefendantResponseEntity response = response(LegislativeCountry.ENGLAND);
+            response.setHouseholdCircumstances(household);
+
+            DefenceFormPayload payload = builder.build(response);
+
+            assertThat(payload.getExpenses()).extracting(DefenceFormAmountRow::getLabel)
+                .containsExactly(
+                    "Household bills (for example, council tax, gas, electricity, water, internet)",
+                    "Mobile phone",
+                    "Clothing",
+                    "Other");
+        }
+
+        @Test
         void showsHouseholdDetailOnlyWhenAnswerIsYes() {
             HouseholdCircumstancesEntity household = HouseholdCircumstancesEntity.builder()
                 .dependantChildren(VerticalYesNo.YES)
