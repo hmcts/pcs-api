@@ -48,9 +48,9 @@ public class CaseFlagsView {
         Flags caseFlags = pcsCaseEntity.getCaseFlags().isEmpty()
             ? Flags.builder().build()
             : Flags.builder()
-            .visibility(FlagVisibility.INTERNAL)
-            .details(mapFlagDetails(baseCaseFlags))
-            .build();
+                .visibility(FlagVisibility.INTERNAL)
+                .details(mapFlagDetails(baseCaseFlags))
+                .build();
         pcsCase.setCaseFlags(caseFlags);
     }
 
@@ -104,7 +104,6 @@ public class CaseFlagsView {
         // pcsCase.parties is wrapped from pcsCaseEntity.getParties() in iteration order, but the
         // entity id is dropped during the entity->domain mapping. Re-attach it onto each ListValue
         // so the entity can be matched back, then apply the defendant flags.
-        // same party set.
         List<PartyEntity> partyEntities = new ArrayList<>(pcsCaseEntity.getParties());
         Set<UUID> defendantPartyIds = getDefendantPartyIds(pcsCaseEntity);
         for (int i = 0; i < partyListValues.size() && i < partyEntities.size(); i++) {
