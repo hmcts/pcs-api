@@ -28,6 +28,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.withSettings;
+import static org.mockito.quality.Strictness.LENIENT;
 
 @ExtendWith(MockitoExtension.class)
 class GenAppFeeCalculatorTest {
@@ -51,10 +53,10 @@ class GenAppFeeCalculatorTest {
             .build();
 
         // When
-        Optional<BigDecimal> applicationFee = underTest.getApplicationFee(genAppRequest);
+        Optional<FeeDetails> feeDetails = underTest.getApplicationFeeDetails(genAppRequest);
 
         // Then
-        assertThat(applicationFee).isEmpty();
+        assertThat(feeDetails).isEmpty();
         verify(feeService, never()).getFee(any(FeeType.class));
     }
 
@@ -69,10 +71,10 @@ class GenAppFeeCalculatorTest {
             .build();
 
         // When
-        Optional<BigDecimal> applicationFee = underTest.getApplicationFee(genAppRequest);
+        Optional<FeeDetails> feeDetails = underTest.getApplicationFeeDetails(genAppRequest);
 
         // Then
-        assertThat(applicationFee).isEmpty();
+        assertThat(feeDetails).isEmpty();
         verify(feeService, never()).getFee(any(FeeType.class));
     }
 
@@ -89,10 +91,10 @@ class GenAppFeeCalculatorTest {
         stubFeeService();
 
         // When
-        Optional<BigDecimal> applicationFee = underTest.getApplicationFee(genAppRequest);
+        Optional<FeeDetails> feeDetails = underTest.getApplicationFeeDetails(genAppRequest);
 
         // Then
-        assertThat(applicationFee).isNotEmpty();
+        assertThat(feeDetails).isNotEmpty();
     }
 
     @Test
@@ -108,10 +110,10 @@ class GenAppFeeCalculatorTest {
         stubFeeService();
 
         // When
-        Optional<BigDecimal> applicationFee = underTest.getApplicationFee(genAppRequest);
+        Optional<FeeDetails> feeDetails = underTest.getApplicationFeeDetails(genAppRequest);
 
         // Then
-        assertThat(applicationFee).isNotEmpty();
+        assertThat(feeDetails).isNotEmpty();
     }
 
     @ParameterizedTest
@@ -121,14 +123,16 @@ class GenAppFeeCalculatorTest {
         BigDecimal expectedFeeAmount = stubFeeService();
 
         // When
-        Optional<BigDecimal> applicationFee = underTest.getApplicationFee(genAppRequest);
+        Optional<FeeDetails> feeDetails = underTest.getApplicationFeeDetails(genAppRequest);
 
         // Then
         ArgumentCaptor<FeeType> feeTypeCaptor = ArgumentCaptor.forClass(FeeType.class);
         verify(feeService).getFee(feeTypeCaptor.capture());
 
         assertThat(feeTypeCaptor.getValue()).isEqualTo(expectedFeeType);
-        assertThat(applicationFee).contains(expectedFeeAmount);
+        assertThat(feeDetails)
+            .map(FeeDetails::getFeeAmount)
+            .contains(expectedFeeAmount);
     }
 
     private static Stream<Arguments> applicationTypeScenarios() {
@@ -218,7 +222,7 @@ class GenAppFeeCalculatorTest {
     }
 
     private BigDecimal stubFeeService() {
-        FeeDetails feeDetails = mock(FeeDetails.class);
+        FeeDetails feeDetails = mock(FeeDetails.class, withSettings().strictness(LENIENT));
         BigDecimal expectedFeeAmount = mock(BigDecimal.class);
         when(feeService.getFee(any(FeeType.class))).thenReturn(feeDetails);
         when(feeDetails.getFeeAmount()).thenReturn(expectedFeeAmount);
