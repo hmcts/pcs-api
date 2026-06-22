@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
@@ -53,6 +54,10 @@ public class DocumentsView {
     }
 
     public boolean isDocumentVisibleToUser(DocumentEntity documentEntity, UUID currentUserId) {
+        if (isExcludedFromCaseFile(documentEntity)) {
+            return false;
+        }
+
         GenAppEntity genAppEntity = documentEntity.getGeneralApplication();
 
         if (genAppEntity != null) {
@@ -60,6 +65,10 @@ public class DocumentsView {
         } else {
             return true;
         }
+    }
+
+    private boolean isExcludedFromCaseFile(DocumentEntity documentEntity) {
+        return documentEntity.getType() == DocumentType.DEFENDANT_ACCESS_CODE;
     }
 
 }

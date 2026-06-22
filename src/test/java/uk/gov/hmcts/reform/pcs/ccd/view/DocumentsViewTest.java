@@ -7,6 +7,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
@@ -106,6 +107,30 @@ class DocumentsViewTest {
                 }
             );
 
+    }
+
+    @Test
+    void shouldExcludeDefendantAccessCodePinPackFromCaseFile() {
+        DocumentEntity accessCodePack = DocumentEntity.builder()
+            .id(UUID.randomUUID())
+            .fileName("pin-pack.pdf")
+            .url("pin-url")
+            .type(DocumentType.DEFENDANT_ACCESS_CODE)
+            .build();
+
+        DocumentEntity visibleDocument = DocumentEntity.builder()
+            .id(UUID.randomUUID())
+            .fileName("claim.pdf")
+            .url("claim-url")
+            .categoryId("category")
+            .build();
+
+        when(pcsCaseEntity.getDocuments()).thenReturn(List.of(accessCodePack, visibleDocument));
+
+        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+
+        assertThat(pcsCase.getAllDocuments()).singleElement()
+            .satisfies(document -> assertThat(document.getValue().getFilename()).isEqualTo("claim.pdf"));
     }
 
     @Test
