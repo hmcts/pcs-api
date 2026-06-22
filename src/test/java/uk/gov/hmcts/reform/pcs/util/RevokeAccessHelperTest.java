@@ -202,7 +202,7 @@ class RevokeAccessHelperTest {
             eq(caseReference), eq(idamId.toString()), eq(UserRole.DEFENDANT));
         verify(draftCaseDataRepository).deleteByCaseReferenceAndEventIdAndIdamUserId(
             eq(caseReference), eq(EventId.respondPossessionClaim), eq(idamId));
-        verify(partyAccessCodeRepository).deleteByPcsCase_IdAndPartyId(eq(defendant.getId()), eq(caseEntity.getId()));
+        verify(partyAccessCodeRepository).deleteByPcsCase_IdAndPartyId(eq(caseEntity.getId()), eq(defendant.getId()));
     }
 
     @Test
@@ -230,7 +230,7 @@ class RevokeAccessHelperTest {
             eq(caseReference), anyString(), eq(UserRole.DEFENDANT));
         verify(draftCaseDataRepository, never()).deleteByCaseReferenceAndEventIdAndIdamUserId(
             eq(caseReference), eq(EventId.respondPossessionClaim), any());
-        verify(partyAccessCodeRepository).deleteByPcsCase_IdAndPartyId(eq(defendant.getId()), eq(caseEntity.getId()));
+        verify(partyAccessCodeRepository).deleteByPcsCase_IdAndPartyId(eq(caseEntity.getId()), eq(defendant.getId()));
     }
 }
 
