@@ -127,7 +127,7 @@ export class CreateCaseAction implements IAction {
       ['addCaseNotes', () => this.addCaseNotes(fieldName as actionRecord)],
       ['validateCaseNotesDetails', () => this.validateCaseNotesDetails(page, fieldName as actionRecord)],
       ['validateCaseSummaryDetails', () => this.validateCaseSummaryDetails(page, fieldName as actionRecord)],
-      ['validateCaseFileViewFolders', () => this.validateCaseFileViewFolders(page)],
+      ['validateCaseFileViewFolders', () => this.validateCaseFileViewFolders(page, fieldName as actionData)],
       ['validateCaseFileViewIndividualFolder', () => this.validateCaseFileViewIndividualFolder(page, fieldName as actionRecord)],
     ]);
     const actionToPerform = actionsMap.get(action);
@@ -1571,7 +1571,7 @@ export class CreateCaseAction implements IAction {
     return ((await tdLocator.textContent()) || '').trim();
   }
 
-  public async validateCaseFileViewFolders(page: Page){
+  public async validateCaseFileViewFolders(page: Page, caseFileView: actionData){
     let folderLocator = page.locator('button[role="treeitem"]').filter({ visible: true })
     await expect(async () => {
       expect(await folderLocator.count()).toBeGreaterThan(0)
@@ -1579,7 +1579,7 @@ export class CreateCaseAction implements IAction {
       timeout: SHORT_TIMEOUT,
     });
     const folderRetrieved = (await folderLocator.allTextContents()).map(item => item.slice(1));
-    const folder:string[] = ['Property documents','Evidence','Statements of case','Correspondence'];
+    const folder:string[] = caseFileView as string[];
     expect(folder.every(name => folderRetrieved.some(text => text.includes(name)))).toBeTruthy();
     
   }

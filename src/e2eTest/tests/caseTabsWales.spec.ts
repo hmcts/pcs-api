@@ -276,7 +276,7 @@ test.describe('[Case tabs - Wales Journey] @nightly', async () => {
   test('Case tabs - CaseFile View test @MAC @regression', async () => {
       await performValidation('mainHeader', home.caseSummary)
       await performAction('clickTab', home.caseFileView);
-      await performAction('validateCaseFileViewFolders');
+      await performAction('validateCaseFileViewFolders', home.caseFileFolders);
       await performAction('validateCaseFileViewIndividualFolder', {
         folder: 'Property documents',
         submitPayload: submitCaseApiDataWales.submitCasePayloadCaseFileView,

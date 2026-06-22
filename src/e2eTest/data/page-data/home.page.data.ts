@@ -13,5 +13,6 @@ export const home =
     caseSummary: 'Summary',
     caseDetails: 'Case Details',
     caseFileView: 'Case File View',
+    caseFileFolders: ['Appeals','Applications','Orders and notice of hearings','Hearing documents','Property documents','Evidence','Statements of case','Correspondence','Uncategorised documents'],
     signOutButton: 'Sign out'
   };
