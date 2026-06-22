@@ -77,7 +77,11 @@ public class DeleteDraftClaimRoleRevocationTaskComponent {
         try {
             caseRoleAssignmentService.revokeRasRole(caseReference, userId, role);
         } catch (FeignException.NotFound e) {
-            log.info("Deleted draft claim case {} or role {} no longer exists while revoking role", caseReference, role);
+            log.info(
+                "Deleted draft claim case {} or role {} no longer exists while revoking role",
+                caseReference,
+                role
+            );
         }
     }
 }
