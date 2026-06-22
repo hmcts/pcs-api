@@ -25,6 +25,7 @@ import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationDetailsService;
+import uk.gov.hmcts.reform.pcs.util.RevokeAccessHelper;
 
 import java.util.List;
 import java.util.Optional;
@@ -53,6 +54,9 @@ class LegalRepresentativePartyLinkServiceTest {
 
     @Mock
     private LegalRepresentativeOrganisationRepository legalRepresentativeOrganisationRepository;
+
+    @Mock
+    private RevokeAccessHelper revokeAccessHelper;
 
     @Mock
     private AddressMapper addressMapper;
