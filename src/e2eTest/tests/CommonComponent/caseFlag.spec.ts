@@ -127,7 +127,6 @@ test.describe('[Common Component Case Flags] @nightly @CC @caseFlags', async () 
     });
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage case flags');
   });
-
   test('Case Flags - Create Party Level Case Flag', async ({page}) => {
     await performAction('login', user.ctscAdministrator);
     await dismissCookieBanner(page, 'analytics');
@@ -193,8 +192,8 @@ test.describe('[Common Component Case Flags] @nightly @CC @caseFlags', async () 
   });
 });
 
-test.describe('[Common Component Case Flags - Access Management] @CC @caseFlags @nightly', async () => {
-
+test.describe('[Common Component Case Flags - Access Management] @CC @caseFlags @release', async () => {
+  test.describe.configure({ retries: 0 });
   test('Staff users can create, manage and view case-level and party-level flags', async ({page, context}) => {
     test.setTimeout(ACCESS_CONTROL_TEST_TIMEOUT);
     const results: UserTestResult[] = [];
