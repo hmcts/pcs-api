@@ -19,12 +19,14 @@ import {
   selectParty, whatOrderDoYouWantTheCourtToMakeAndWhy, hasTheDefendantAskedTheOtherPartiesAgreedToThisApplication,
   areThereAnyReasonsThatThisApplicationShouldNotBeShared,
   doYouWantToUploadDocumentsToSupportDefendantsApplication, whichLanguageDidYouUseToCompleteThisService,
-  statementOfTruth, uploadDocumentsToSupportDefendantsApplication, checkYourAnswersGenApps
+  statementOfTruth, uploadDocumentsToSupportDefendantsApplication, checkYourAnswersGenApps, paymentDetails,
+  serviceRequestGenApps
 } from '@data/page-data-figma/page-data-genApps-figma';
 import { defendantDetails } from '@utils/actions/custom-actions/custom-actions-genApps/genApps.action';
-import {confirmGenApps} from "@data/page-data-figma/page-data-genApps-figma/confirmGenApps.page.data";
+import { home } from '@data/page-data';
 
-test.use({ storageState: undefined });
+
+test.use({ storageState: undefined })
 
 test.beforeEach(async ({ page, context }) => {
   await context.clearCookies();
@@ -55,10 +57,13 @@ test.beforeEach(async ({ page, context }) => {
   await dismissCookieBanner(page, 'analytics');
   await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/${getCaseTypeId()}/${process.env.CASE_NUMBER}#Summary`);
   await expect(async () => {
-    await page.waitForURL(`${process.env.MANAGE_CASE_BASE_URL}/**/**/**/**/**#Summary`);
+    await page.waitForURL(`${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/${getCaseTypeId()}/${process.env.CASE_NUMBER}#Summary`);
   }).toPass({
     timeout: VERY_LONG_TIMEOUT,
   });
+  await page.waitForLoadState();
+  await page.locator('.spinner-container').waitFor({ state: 'detached' });
+  await performValidation('mainHeader', home.caseSummary);
 });
 
 test.afterEach(async () => {
@@ -138,12 +143,12 @@ test.describe('Make an Application - e2e Journey @nightly', async () => {
     await performAction('retrieveCYATableData', { name: 'check your answers table' });
     await performAction('validateCYA');
     await performAction('clickButton', checkYourAnswersGenApps.submitButton);
-    await performAction('clickButton', confirmGenApps.closeAndReturnToCaseDetailsButton);
+    await performAction('verifyApplicationSubmitted');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make an application');
   });
 
 
-test('Select an Application - Ask to Adjourn journey - Court hearing 14 days[No]', async () => {
+test('Select an Application - Ask to Adjourn journey - Help paying the Fee[No] @PR', async () => {
   await performAction('select', caseSummary.nextStepEventList, caseSummary.makeAnApplication);
   await performAction('clickButton', caseSummary.go);
   await performAction('chooseAnApplication', {
@@ -159,7 +164,12 @@ test('Select an Application - Ask to Adjourn journey - Court hearing 14 days[No]
   });
   await performAction('confirmIfCourtHearingInNext14Days', {
     question: isTheCourtHearingInTheNext14Days.isTheCourtHearingInTheNext14DaysQuestion,
-    option: isTheCourtHearingInTheNext14Days.noRadioOption,
+    option: isTheCourtHearingInTheNext14Days.yesRadioOption,
+  });
+  await performValidation('mainHeader', helpPayingTheFee.mainHeader);
+  await performAction('doYouNeedHelpPayingFee', {
+    question: helpPayingTheFee.doYouNeedHelpPayingTheFeeQuestion,
+    option: helpPayingTheFee.noRadioOption,
   });
   await performValidation('mainHeader',hasTheDefendantAskedTheOtherPartiesAgreedToThisApplication.mainHeader);
   await performAction('confirmOtherPartiesAgreed', {
@@ -201,7 +211,27 @@ test('Select an Application - Ask to Adjourn journey - Court hearing 14 days[No]
   await performAction('retrieveCYATableData', { name: 'check your answers table' });
   await performAction('validateCYA');
   await performAction('clickButton', checkYourAnswersGenApps.submitButton);
-  await performAction('clickButton', confirmGenApps.closeAndReturnToCaseDetailsButton);
-  await performValidation('bannerAlert', 'Case #.* has been updated with event: Make an application');
+  await performAction('payClaimFeeGenApps', {clickLink: true});
+  await performAction('clickPayNowLinkGenApps');
+  await performAction('selectPaymentOptions', {
+    amountLabel: serviceRequestGenApps.amountToPayLabel,
+    payByOption: serviceRequestGenApps.payByCardRadioOption,
+    button: serviceRequestGenApps.continueButton
+  });
+  await performValidation('mainHeader', paymentDetails.mainHeader);
+  await performAction('inputPaymentDetails', {
+    question: paymentDetails.mainHeader,
+    cardNumber: paymentDetails.cardNumberTextInput,
+    month: paymentDetails.monthTextInput,
+    year: paymentDetails.yearTextInput,
+    nameOnCard: paymentDetails.nameOnCardTextInput,
+    cardSecurityCode: paymentDetails.cardSecurityCodeTextInput,
+    addressLine1: paymentDetails.addressLine1TextInput,
+    townOrCity: paymentDetails.townOrCityTextInput,
+    postcode: paymentDetails.postcodeTextInput,
+    email: paymentDetails.emailTextInput,
+  });
+  await performAction('confirmPaymentGenApps');
+  await performValidation('mainHeader', serviceRequestGenApps.paymentSuccessMainHeader);
 });
 });

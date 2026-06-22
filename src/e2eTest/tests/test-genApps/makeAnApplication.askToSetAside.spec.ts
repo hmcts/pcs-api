@@ -16,12 +16,12 @@ import {
   askTheCourtToSetAsideTheOrder, checkYourAnswersGenApps, chooseAnApplication,
   doYouWantToUploadDocumentsToSupportDefendantsApplication,
   hasTheDefendantAskedTheOtherPartiesAgreedToThisApplication,
-  haveTheyAlreadyAppliedForHelpWithFees, helpPayingTheFee, selectParty,
+  helpPayingTheFee, selectParty, serviceRequestGenApps,
   statementOfTruth, uploadDocumentsToSupportDefendantsApplication, whatOrderDoYouWantTheCourtToMakeAndWhy,
   whichLanguageDidYouUseToCompleteThisService
 } from "@data/page-data-figma/page-data-genApps-figma";
 import { defendantDetails } from '@utils/actions/custom-actions/custom-actions-genApps';
-import {confirmGenApps} from "@data/page-data-figma/page-data-genApps-figma/confirmGenApps.page.data";
+import { home } from '@data/page-data';
 
 test.use({ storageState: undefined });
 
@@ -58,6 +58,9 @@ test.beforeEach(async ({ page, context }) => {
   }).toPass({
     timeout: VERY_LONG_TIMEOUT,
   });
+  await page.waitForLoadState();
+  await page.locator('.spinner-container').waitFor({ state: 'detached' });
+  await performValidation('mainHeader', home.caseSummary);
 });
 
 test.afterEach(async () => {
@@ -69,7 +72,7 @@ test.afterEach(async () => {
 });
 
 test.describe('Make an Application - e2e Journey @nightly', async () => {
-  test('Select an Application - Ask to Set aside @regression @smoke', async () => {
+  test('Select an Application - Ask to Set aside @regression @smoke @PR', async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.makeAnApplication);
     await performAction('clickButton', caseSummary.go);
     await performAction('chooseAnApplication', {
@@ -86,13 +89,7 @@ test.describe('Make an Application - e2e Journey @nightly', async () => {
     await performValidation('mainHeader', helpPayingTheFee.mainHeader);
     await performAction('doYouNeedHelpPayingFee', {
       question: helpPayingTheFee.doYouNeedHelpPayingTheFeeQuestion,
-      option: helpPayingTheFee.yesRadioOption,
-    });
-    await performAction('confirmYouHaveAppliedForFeeHelp', {
-      question: haveTheyAlreadyAppliedForHelpWithFees.haveYouAlreadyAppliedForHelpQuestion,
-      option: haveTheyAlreadyAppliedForHelpWithFees.yesRadioOption,
-      label: haveTheyAlreadyAppliedForHelpWithFees.hwfReferenceHiddenTextLabel,
-      input: haveTheyAlreadyAppliedForHelpWithFees.hwfReferenceTextInput,
+      option: helpPayingTheFee.noRadioOption,
     });
     await performAction('confirmOtherPartiesAgreed', {
       question: hasTheDefendantAskedTheOtherPartiesAgreedToThisApplication.haveTheOtherPartiesAgreedQuestion,
@@ -132,7 +129,19 @@ test.describe('Make an Application - e2e Journey @nightly', async () => {
     await performAction('retrieveCYATableData', { name: 'check your answers table' });
     await performAction('validateCYA');
     await performAction('clickButton', checkYourAnswersGenApps.submitButton);
-    await performAction('clickButton', confirmGenApps.closeAndReturnToCaseDetailsButton);
-    await performValidation('bannerAlert', 'Case #.* has been updated with event: Make an application');
+    await performAction('payClaimFeeGenApps', {clickLink: true});
+    await performAction('clickPayNowLinkGenApps');
+    await performAction('selectPaymentOptions', {
+      amountLabel: serviceRequestGenApps.amountToPayLabel,
+      payByOption: serviceRequestGenApps.payByAccountRadioOption,
+      expectedAmount: serviceRequestGenApps.amount123,
+      pbaLabel: serviceRequestGenApps.selectPBALabel,
+      pbaValue: serviceRequestGenApps.pbaIndex1,
+      referenceLabel: serviceRequestGenApps.pbaReferenceLabel,
+      referenceText: serviceRequestGenApps.pbaReferenceInputText,
+      button: serviceRequestGenApps.confirmPaymentButton,
+    });
+    await performValidation('mainHeader', serviceRequestGenApps.paymentSuccessMainHeader);
+
   });
 });

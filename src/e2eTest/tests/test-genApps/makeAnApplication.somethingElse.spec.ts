@@ -21,7 +21,7 @@ import {
   whichLanguageDidYouUseToCompleteThisService
 } from "@data/page-data-figma/page-data-genApps-figma";
 import { defendantDetails } from '@utils/actions/custom-actions/custom-actions-genApps';
-import {confirmGenApps} from "@data/page-data-figma/page-data-genApps-figma/confirmGenApps.page.data";
+import { home } from '@data/page-data';
 
 
 test.use({ storageState: undefined });
@@ -59,6 +59,9 @@ test.beforeEach(async ({ page, context }) => {
   }).toPass({
     timeout: VERY_LONG_TIMEOUT,
   });
+  await page.waitForLoadState();
+  await page.locator('.spinner-container').waitFor({ state: 'detached' });
+  await performValidation('mainHeader', home.caseSummary);
 });
 
 test.afterEach(async () => {
@@ -70,7 +73,7 @@ test.afterEach(async () => {
 });
 
 test.describe('Make an Application - e2e Journey @nightly', async () => {
-  test('Select an Application - Something else @regression @smoke', async () => {
+  test('Select an Application - Something else @regression @smoke @PR', async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.makeAnApplication);
     await performAction('clickButton', caseSummary.go);
     await performAction('chooseAnApplication', {
@@ -133,7 +136,7 @@ test.describe('Make an Application - e2e Journey @nightly', async () => {
     await performAction('retrieveCYATableData', { name: 'check your answers table' });
     await performAction('validateCYA');
     await performAction('clickButton', checkYourAnswersGenApps.submitButton);
-    await performAction('clickButton', confirmGenApps.closeAndReturnToCaseDetailsButton);
+    await performAction('verifyApplicationSubmitted');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make an application');
   });
 });
