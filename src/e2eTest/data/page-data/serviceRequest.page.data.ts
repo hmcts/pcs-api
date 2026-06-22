@@ -16,5 +16,9 @@ export const serviceRequest = {
   notPaidStatus: `Not paid`,
   paidStatus: `Paid`,
   returnToServiceRequestLink: `Return to service request`,
-  viewServiceRequestsLink: `View service requests`
+  viewServiceRequestsLink: `View service requests`,
+  reviewLink: `Review`,
+  addREmissionButton: `Add remission`,
+  issueRefundButton: `Issue refund`,
+
 }

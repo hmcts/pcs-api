@@ -2,7 +2,7 @@ import { actionData, actionRecord, IAction } from '@utils/interfaces';
 import { expect, Page } from '@playwright/test';
 import { performAction, performActions, performValidation } from '@utils/controller';
 import { enterPaymentDetails } from '@data/page-data/enterPaymentDetails.page.data';
-import { caseSummary } from '@data/page-data';
+import {caseSummary, serviceRequest} from '@data/page-data';
 import {backDateTheCasePaymentApiData} from "@data/api-data/backDateTheCasePayment.api.data";
 import Axios from "axios";
 
@@ -133,16 +133,10 @@ export class FeeAndPayAction implements IAction {
     }
   }
   private async backDateTheCasePaymentAPI(): Promise<void> {
-    if (!process.env.BEARER_TOKEN || !process.env.SERVICE_AUTH_TOKEN) {
-      throw new Error('Payment back date failed: BEARER_TOKEN and SERVICE_AUTH_TOKEN must be set (from global setup).');
-    }
-    if (!process.env.CASE_NUMBER) {
-      throw new Error('Payment back date failed: CASE_NUMBER is not set.');
-    }
-
-    const backDateTheCasePaymentApi = Axios.create(backDateTheCasePaymentApiData.backDateTheCasePaymentApiInstance());
+    const backDateApi = Axios.create(backDateTheCasePaymentApiData.backDateTheCasePaymentApiInstance());
     try {
-      await backDateTheCasePaymentApi.patch(backDateTheCasePaymentApiData.backDateTheCasePaymentApiEndPoint);
+      await backDateApi.patch(backDateTheCasePaymentApiData.backDateTheCasePaymentApiEndPoint());
+      console.log(`Back date of the payment sucessful for the case ${process.env.CASE_NUMBER}`);
     } catch (error: any) {
       const status = error?.response?.status;
       const responseBody = error?.response?.data;
@@ -152,6 +146,10 @@ export class FeeAndPayAction implements IAction {
   }
 
   private async requestRefund(): Promise<void> {
+    await performAction('clickLink', serviceRequest.reviewLink);
+    await performAction('clickButton', serviceRequest.issueRefundButton);
+    await performAction('check', 'select');
+
 
   }
 

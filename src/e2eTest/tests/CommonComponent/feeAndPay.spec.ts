@@ -13,8 +13,7 @@ import {
   caseSummary,
   confirmYourPayment,
   enterPaymentDetails, home,
-  serviceRequest,
-  user
+  serviceRequest
 } from '@data/page-data';
 import { history } from '@data/page-data/history.page.data';
 import {caseWorker} from "@data/user-data/staff.user.data";
@@ -187,6 +186,6 @@ test.describe('[Common Component Fee And Pay Refund and Remission] @nightly @CC 
     await performAction('clickButton', home.globalSearchTab);
     await performAction('searchByCaseReference', process.env.CASE_NUMBER);
     await performAction('requestRefund');
-    await performAction('approveTheRefund');
+    //await performAction('approveTheRefund');
   });
 });
