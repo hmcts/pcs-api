@@ -19,8 +19,10 @@ import java.time.Duration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.task.ClaimFormGenerationComponent.CLAIM_FORM_TASK_DESCRIPTOR;
@@ -75,8 +77,8 @@ class ClaimFormGenerationComponentTest {
     }
 
     @Test
-    @DisplayName("Exception in service is rethrown so failure handler can retry")
-    void exceptionIsRethrown() {
+    @DisplayName("Non-final attempt rethrows without recording a failure row")
+    void nonFinalAttemptRethrowsWithoutRecordingFailure() {
         ClaimFormTaskData data = ClaimFormTaskData.builder().caseReference("999").build();
         when(taskInstance.getData()).thenReturn(data);
         when(executionContext.getExecution()).thenReturn(execution);
@@ -87,7 +89,22 @@ class ClaimFormGenerationComponentTest {
         assertThatThrownBy(() -> task.execute(taskInstance, executionContext))
             .isInstanceOf(RuntimeException.class);
         verify(claimFormService).generateAndAttach(999L);
-        // AC01: failure recorded in the activity log (separate transaction) before the retry.
+        verify(claimActivityLogService, never()).logGenerationFailure(anyLong());
+    }
+
+    @Test
+    @DisplayName("Final attempt records the failure once before rethrowing")
+    void finalAttemptRecordsFailure() {
+        ClaimFormTaskData data = ClaimFormTaskData.builder().caseReference("999").build();
+        when(taskInstance.getData()).thenReturn(data);
+        execution.consecutiveFailures = maxRetries - 1;
+        when(executionContext.getExecution()).thenReturn(execution);
+        doThrow(mock(RuntimeException.class)).when(claimFormService).generateAndAttach(999L);
+
+        CustomTask<ClaimFormTaskData> task = component.claimFormGenerationTask();
+
+        assertThatThrownBy(() -> task.execute(taskInstance, executionContext))
+            .isInstanceOf(RuntimeException.class);
         verify(claimActivityLogService).logGenerationFailure(999L);
     }
 
@@ -96,6 +113,7 @@ class ClaimFormGenerationComponentTest {
     void loggingFailureDoesNotMaskOriginalException() {
         ClaimFormTaskData data = ClaimFormTaskData.builder().caseReference("999").build();
         when(taskInstance.getData()).thenReturn(data);
+        execution.consecutiveFailures = maxRetries - 1;
         when(executionContext.getExecution()).thenReturn(execution);
         doThrow(new RuntimeException("generation failed")).when(claimFormService).generateAndAttach(999L);
         doThrow(new RuntimeException("log write failed")).when(claimActivityLogService).logGenerationFailure(999L);

@@ -3,9 +3,12 @@ package uk.gov.hmcts.reform.pcs.ccd.service.claimform;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CombinedLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServiceMethod;
+import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsOrBreachOfTenancy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.ClaimGroundSummary;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexibleMandatoryGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.DiscretionaryGroundWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundEntity;
@@ -77,6 +80,25 @@ final class ClaimFormFormatter {
         return ClaimGroundSummary.labelFor(ground.getCategory(), ground.getCode());
     }
 
+    // Antisocial behaviour is a parent checkbox whose children are the s.84A conditions; the form
+    // names each "Antisocial behaviour: Condition N of Section 84A of the Housing Act 1985".
+    static String formatAntisocialGroundLabel(ClaimGroundEntity ground) {
+        return SecureOrFlexibleMandatoryGrounds.ANTI_SOCIAL.getLabel() + ": " + formatGroundLabel(ground);
+    }
+
+    // Ground 1 is a parent checkbox whose children are "Rent arrears" / "Breach of the tenancy"; the
+    // form names each "Rent arrears or breach of the tenancy (ground 1): <child>".
+    static String formatRentArrearsOrBreachLabel(ClaimGroundEntity ground, RentArrearsOrBreachOfTenancy child) {
+        return formatGroundLabel(ground) + ": " + child.getLabel();
+    }
+
+    // Wales estate management (s.160) is a parent checkbox whose children are the specific grounds
+    // (A-I); the form names each "Estate management grounds (section 160): <child>". Standard and
+    // secure-contract share the same parent label.
+    static String formatEstateManagementLabel(ClaimGroundEntity ground) {
+        return DiscretionaryGroundWales.ESTATE_MANAGEMENT_GROUNDS_S160.getLabel() + ": " + formatGroundLabel(ground);
+    }
+
     static ClaimFormAddress toClaimFormAddress(AddressEntity address) {
         return FormFieldFormatter.toFormAddress(address);
     }
@@ -92,11 +114,8 @@ final class ClaimFormFormatter {
             : label;
     }
 
-    static String formatRentDescription(TenancyLicenceEntity tenancy) {
-        if (tenancy.getRentAmount() == null || tenancy.getRentFrequency() == null) {
-            return null;
-        }
-        return formatGbp(tenancy.getRentAmount()) + " (" + tenancy.getRentFrequency().getLabel() + ")";
+    static String formatRentFrequency(TenancyLicenceEntity tenancy) {
+        return tenancy.getRentFrequency() == null ? null : tenancy.getRentFrequency().getLabel();
     }
 
     // "Defendant 1 details", then "Additional defendant N details" for later defendants.

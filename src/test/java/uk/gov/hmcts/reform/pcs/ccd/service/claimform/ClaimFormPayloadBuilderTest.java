@@ -29,13 +29,17 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseNameFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseReferenceFormatter;
 import uk.gov.hmcts.reform.pcs.document.model.claimform.ClaimFormDefendantRow;
+import uk.gov.hmcts.reform.pcs.document.model.claimform.ClaimFormGround;
 import uk.gov.hmcts.reform.pcs.document.model.claimform.ClaimFormPayload;
 import uk.gov.hmcts.reform.pcs.document.model.claimform.ClaimFormUnderlesseeRow;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.math.BigDecimal;
+import java.time.Clock;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -45,13 +49,18 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class ClaimFormPayloadBuilderTest {
 
+    // Fixed UK clock: generation happens on 16 July 2026 (BST).
+    private static final Clock UK_CLOCK =
+        Clock.fixed(Instant.parse("2026-07-16T08:00:00Z"), ZoneId.of("Europe/London"));
+
     private ClaimFormPayloadBuilder builder;
 
     @BeforeEach
     void setUp() {
         builder = new ClaimFormPayloadBuilder(
             new CaseReferenceFormatter(),
-            new ClaimFormPartyMapper(new CaseNameFormatter())
+            new ClaimFormPartyMapper(new CaseNameFormatter()),
+            UK_CLOCK
         );
     }
 
@@ -386,6 +395,166 @@ class ClaimFormPayloadBuilderTest {
             assertThat(payload.getGrounds().getFirst().getNameAndNumber())
                 .isEqualTo("Serious rent arrears (ground 8)");
         }
+
+        @Test
+        void antisocialConditionsPrefixedWithParentAndRepeated() {
+            // Parent checkbox "Antisocial behaviour" with two child conditions: each row repeats the
+            // parent, e.g. "Antisocial behaviour: Condition 1 of Section 84A of the Housing Act 1985".
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
+            ClaimEntity claim = pcsCase.getClaims().getFirst();
+            claim.getClaimGrounds().add(ClaimGroundEntity.builder()
+                .category(ClaimGroundCategory.SECURE_OR_FLEXIBLE_ANTISOCIAL)
+                .code("S84A_CONDITION_1")
+                .reason("condition 1 reason")
+                .claim(claim)
+                .build());
+            claim.getClaimGrounds().add(ClaimGroundEntity.builder()
+                .category(ClaimGroundCategory.SECURE_OR_FLEXIBLE_ANTISOCIAL)
+                .code("S84A_CONDITION_3")
+                .reason("condition 3 reason")
+                .claim(claim)
+                .build());
+
+            ClaimFormPayload payload = builder.build(pcsCase);
+
+            assertThat(payload.getGrounds()).extracting(ClaimFormGround::getNameAndNumber)
+                .containsExactlyInAnyOrder(
+                    "Antisocial behaviour: Condition 1 of Section 84A of the Housing Act 1985",
+                    "Antisocial behaviour: Condition 3 of Section 84A of the Housing Act 1985");
+            assertThat(payload.getGroundsWithReasons()).extracting(ClaimFormGround::getNameAndNumber)
+                .containsExactlyInAnyOrder(
+                    "Antisocial behaviour: Condition 1 of Section 84A of the Housing Act 1985",
+                    "Antisocial behaviour: Condition 3 of Section 84A of the Housing Act 1985");
+        }
+
+        @Test
+        void groundOneRentArrearsOnlyShowsChildWithNoReasonRow() {
+            // Ground 1, "Rent arrears" child only: appears in the grounds list as a child but has no
+            // free-text reason, so it never produces a "reason for claiming possession" row.
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
+            ClaimEntity claim = pcsCase.getClaims().getFirst();
+            claim.getClaimGrounds().add(ClaimGroundEntity.builder()
+                .category(ClaimGroundCategory.SECURE_OR_FLEXIBLE_DISCRETIONARY)
+                .code("RENT_ARREARS_OR_BREACH_OF_TENANCY")
+                .isRentArrears(true)
+                .claim(claim)
+                .build());
+
+            ClaimFormPayload payload = builder.build(pcsCase);
+
+            assertThat(payload.getGrounds()).extracting(ClaimFormGround::getNameAndNumber)
+                .containsExactly("Rent arrears or breach of the tenancy (ground 1): Rent arrears");
+            assertThat(payload.getGroundsWithReasons()).isEmpty();
+        }
+
+        @Test
+        void groundOneBreachOnlyShowsChildWithReason() {
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
+            ClaimEntity claim = pcsCase.getClaims().getFirst();
+            claim.getClaimGrounds().add(ClaimGroundEntity.builder()
+                .category(ClaimGroundCategory.SECURE_OR_FLEXIBLE_DISCRETIONARY)
+                .code("RENT_ARREARS_OR_BREACH_OF_TENANCY")
+                .isRentArrears(false)
+                .reason("kept a dog despite a no-pets clause")
+                .claim(claim)
+                .build());
+
+            ClaimFormPayload payload = builder.build(pcsCase);
+
+            assertThat(payload.getGrounds()).extracting(ClaimFormGround::getNameAndNumber)
+                .containsExactly("Rent arrears or breach of the tenancy (ground 1): Breach of the tenancy");
+            assertThat(payload.getGroundsWithReasons()).singleElement()
+                .satisfies(row -> {
+                    assertThat(row.getNameAndNumber())
+                        .isEqualTo("Rent arrears or breach of the tenancy (ground 1): Breach of the tenancy");
+                    assertThat(row.getReasonFreeText()).isEqualTo("kept a dog despite a no-pets clause");
+                });
+        }
+
+        @Test
+        void groundOneBothChildrenShowsTwoListRowsAndOneReasonRow() {
+            // Both children selected: list shows both; only breach (with free text) is a reason row.
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
+            ClaimEntity claim = pcsCase.getClaims().getFirst();
+            claim.getClaimGrounds().add(ClaimGroundEntity.builder()
+                .category(ClaimGroundCategory.SECURE_OR_FLEXIBLE_DISCRETIONARY)
+                .code("RENT_ARREARS_OR_BREACH_OF_TENANCY")
+                .isRentArrears(true)
+                .reason("kept a dog despite a no-pets clause")
+                .claim(claim)
+                .build());
+
+            ClaimFormPayload payload = builder.build(pcsCase);
+
+            assertThat(payload.getGrounds()).extracting(ClaimFormGround::getNameAndNumber)
+                .containsExactlyInAnyOrder(
+                    "Rent arrears or breach of the tenancy (ground 1): Rent arrears",
+                    "Rent arrears or breach of the tenancy (ground 1): Breach of the tenancy");
+            assertThat(payload.getGroundsWithReasons()).extracting(ClaimFormGround::getNameAndNumber)
+                .containsExactly("Rent arrears or breach of the tenancy (ground 1): Breach of the tenancy");
+        }
+
+        @Test
+        void walesStandardEstateManagement_prefixedChildrenNoStandaloneParent() {
+            // Estate management (s.160) is a parent checkbox: GFP shows prefixed children, not a bare
+            // "Estate management grounds (section 160)" parent row.
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.WALES);
+            ClaimEntity claim = pcsCase.getClaims().getFirst();
+            claim.getClaimGrounds().add(ClaimGroundEntity.builder()
+                .category(ClaimGroundCategory.WALES_STANDARD_OTHER_DISCRETIONARY)
+                .code("ESTATE_MANAGEMENT_GROUNDS_S160")
+                .claim(claim)
+                .build());
+            claim.getClaimGrounds().add(ClaimGroundEntity.builder()
+                .category(ClaimGroundCategory.WALES_STANDARD_OTHER_ESTATE_MANAGEMENT)
+                .code("BUILDING_WORKS")
+                .reason("building works reason")
+                .claim(claim)
+                .build());
+            claim.getClaimGrounds().add(ClaimGroundEntity.builder()
+                .category(ClaimGroundCategory.WALES_STANDARD_OTHER_ESTATE_MANAGEMENT)
+                .code("CHARITIES")
+                .reason("charities reason")
+                .claim(claim)
+                .build());
+
+            ClaimFormPayload payload = builder.build(pcsCase);
+
+            assertThat(payload.getGrounds()).extracting(ClaimFormGround::getNameAndNumber)
+                .containsExactlyInAnyOrder(
+                    "Estate management grounds (section 160): Building works (ground A)",
+                    "Estate management grounds (section 160): Charities (ground C)");
+            assertThat(payload.getGrounds()).extracting(ClaimFormGround::getNameAndNumber)
+                .doesNotContain("Estate management grounds (section 160)");
+            assertThat(payload.getGroundsWithReasons()).extracting(ClaimFormGround::getNameAndNumber)
+                .containsExactlyInAnyOrder(
+                    "Estate management grounds (section 160): Building works (ground A)",
+                    "Estate management grounds (section 160): Charities (ground C)");
+        }
+
+        @Test
+        void walesSecureEstateManagement_prefixedChildrenNoStandaloneParent() {
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.WALES);
+            ClaimEntity claim = pcsCase.getClaims().getFirst();
+            claim.getClaimGrounds().add(ClaimGroundEntity.builder()
+                .category(ClaimGroundCategory.WALES_SECURE_DISCRETIONARY)
+                .code("ESTATE_MANAGEMENT_GROUNDS_S160")
+                .claim(claim)
+                .build());
+            claim.getClaimGrounds().add(ClaimGroundEntity.builder()
+                .category(ClaimGroundCategory.WALES_SECURE_ESTATE_MANAGEMENT)
+                .code("RESERVE_SUCCESSORS")
+                .reason("reserve successors reason")
+                .claim(claim)
+                .build());
+
+            ClaimFormPayload payload = builder.build(pcsCase);
+
+            assertThat(payload.getGrounds()).extracting(ClaimFormGround::getNameAndNumber)
+                .containsExactly("Estate management grounds (section 160): Reserve successors (ground G)");
+            assertThat(payload.getGrounds()).extracting(ClaimFormGround::getNameAndNumber)
+                .doesNotContain("Estate management grounds (section 160)");
+        }
     }
 
     @Nested
@@ -420,13 +589,44 @@ class ClaimFormPayloadBuilderTest {
             claim.getClaimGrounds().add(ClaimGroundEntity.builder()
                 .category(ClaimGroundCategory.INTRODUCTORY_DEMOTED_OTHER)
                 .code("OTHER")
+                .reason("why other")
+                .description("other description")
                 .claim(claim)
                 .build());
 
             ClaimFormPayload payload = builder.build(pcsCase);
 
             assertThat(payload.isShowDescriptionOfGrounds()).isTrue();
-            assertThat(payload.isShowWhyClaimingPossession()).isTrue();
+            assertThat(payload.getOtherGroundsDescription()).isEqualTo("other description");
+            assertThat(payload.getWhyClaimingPossessionGrounds()).hasSize(1);
+            assertThat(payload.getWhyClaimingPossessionGrounds().getFirst().getNameAndNumber())
+                .isEqualTo("Other grounds");
+        }
+
+        @Test
+        void englandIntroDemotedOther_showsGroundsYesNoQuestion() {
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
+            pcsCase.setTenancyLicence(TenancyLicenceEntity.builder()
+                .type(CombinedLicenceType.OTHER)
+                .build());
+
+            ClaimFormPayload payload = builder.build(pcsCase);
+
+            assertThat(payload.isShowGroundsYesNoQuestion()).isTrue();
+        }
+
+        @Test
+        void walesOtherOccupationType_hidesGroundsYesNoQuestion() {
+            // Wales "Other" shares CombinedLicenceType.OTHER with England, but the grounds yes/no
+            // question is England intro/demoted/other only and must not render for Wales.
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.WALES);
+            pcsCase.setTenancyLicence(TenancyLicenceEntity.builder()
+                .type(CombinedLicenceType.OTHER)
+                .build());
+
+            ClaimFormPayload payload = builder.build(pcsCase);
+
+            assertThat(payload.isShowGroundsYesNoQuestion()).isFalse();
         }
 
         @Test
@@ -445,13 +645,13 @@ class ClaimFormPayloadBuilderTest {
             ClaimFormPayload payload = builder.build(pcsCase);
 
             assertThat(payload.isShowDescriptionOfGrounds()).isFalse();
-            assertThat(payload.isShowWhyClaimingPossession()).isFalse();
+            assertThat(payload.getWhyClaimingPossessionGrounds()).isEmpty();
         }
 
         @Test
         void englandIntroDemotedOtherWithAbsoluteGround_whyClaimingShownDescriptionHidden() {
-            // D13 (Cook [17]): absolute grounds triggers "Why claiming possession?". Absolute grounds
-            // are identified by the code ABSOLUTE_GROUNDS, not by the category.
+            // Absolute grounds answer the general "Why are you claiming possession?" question; they are
+            // identified by the code ABSOLUTE_GROUNDS, not by the category.
             PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
             pcsCase.setTenancyLicence(TenancyLicenceEntity.builder()
                 .type(CombinedLicenceType.INTRODUCTORY_TENANCY)
@@ -460,12 +660,15 @@ class ClaimFormPayloadBuilderTest {
             claim.getClaimGrounds().add(ClaimGroundEntity.builder()
                 .category(ClaimGroundCategory.INTRODUCTORY_DEMOTED_OTHER)
                 .code("ABSOLUTE_GROUNDS")
+                .reason("absolute reason")
                 .claim(claim)
                 .build());
 
             ClaimFormPayload payload = builder.build(pcsCase);
 
-            assertThat(payload.isShowWhyClaimingPossession()).isTrue();
+            assertThat(payload.getWhyClaimingPossessionGrounds()).hasSize(1);
+            assertThat(payload.getWhyClaimingPossessionGrounds().getFirst().getNameAndNumber())
+                .isEqualTo("Absolute grounds");
             assertThat(payload.isShowDescriptionOfGrounds()).isFalse();
             assertThat(payload.isHasOtherGround()).isFalse();
             assertThat(payload.getHasGroundsYesNo()).isEqualTo("Yes");
@@ -490,7 +693,7 @@ class ClaimFormPayloadBuilderTest {
 
             assertThat(payload.isHasOtherGround()).isFalse();
             assertThat(payload.isShowDescriptionOfGrounds()).isFalse();
-            assertThat(payload.isShowWhyClaimingPossession()).isFalse();
+            assertThat(payload.getWhyClaimingPossessionGrounds()).isEmpty();
         }
 
         @Test
@@ -511,8 +714,67 @@ class ClaimFormPayloadBuilderTest {
 
             ClaimFormPayload payload = builder.build(pcsCase);
 
-            assertThat(payload.isShowWhyClaimingPossession()).isTrue();
-            assertThat(payload.getWhyClaimingPossession()).isEqualTo("test-intro flow");
+            assertThat(payload.getWhyClaimingPossessionGrounds()).hasSize(1);
+            assertThat(payload.getWhyClaimingPossessionGrounds().getFirst().getNameAndNumber()).isNull();
+            assertThat(payload.getWhyClaimingPossessionGrounds().getFirst().getReasonFreeText())
+                .isEqualTo("test-intro flow");
+        }
+
+        @Test
+        void englandIntroCombination_absoluteAndOtherReasonsFeedWhyClaimingNotPerGround() {
+            // Combination flow: the Absolute and Other answers are the "Why are you claiming
+            // possession?" answers (D13), combined; Breach is an "under this ground" answer (D12).
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
+            pcsCase.setTenancyLicence(TenancyLicenceEntity.builder()
+                .type(CombinedLicenceType.INTRODUCTORY_TENANCY)
+                .build());
+            ClaimEntity claim = pcsCase.getClaims().getFirst();
+            claim.getClaimGrounds().add(ClaimGroundEntity.builder()
+                .category(ClaimGroundCategory.INTRODUCTORY_DEMOTED_OTHER).code("ABSOLUTE_GROUNDS")
+                .reason("3").claim(claim).build());
+            claim.getClaimGrounds().add(ClaimGroundEntity.builder()
+                .category(ClaimGroundCategory.INTRODUCTORY_DEMOTED_OTHER).code("OTHER")
+                .reason("4").claim(claim).build());
+            claim.getClaimGrounds().add(ClaimGroundEntity.builder()
+                .category(ClaimGroundCategory.INTRODUCTORY_DEMOTED_OTHER).code("BREACH_OF_THE_TENANCY")
+                .reason("2").claim(claim).build());
+
+            ClaimFormPayload payload = builder.build(pcsCase);
+
+            List<ClaimFormGround> why = payload.getWhyClaimingPossessionGrounds();
+            assertThat(why).hasSize(2);
+            assertThat(why.get(0).getNameAndNumber()).isEqualTo("Absolute grounds");
+            assertThat(why.get(0).getReasonFreeText()).isEqualTo("3");
+            assertThat(why.get(1).getNameAndNumber()).isEqualTo("Other grounds");
+            assertThat(why.get(1).getReasonFreeText()).isEqualTo("4");
+            // Absolute/Other reasons are NOT duplicated in the per-ground D12 list; only Breach remains.
+            assertThat(payload.getGroundsWithReasons()).hasSize(1);
+            assertThat(payload.getGroundsWithReasons().getFirst().getReasonFreeText()).isEqualTo("2");
+            // The grounds list (D10) still shows all three selected grounds.
+            assertThat(payload.getGrounds()).hasSize(3);
+        }
+
+        @Test
+        void assuredOtherGround_descriptionShown() {
+            // Gap fix: the assured "Other" ground description was captured but never rendered.
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
+            pcsCase.setTenancyLicence(TenancyLicenceEntity.builder()
+                .type(CombinedLicenceType.ASSURED_TENANCY)
+                .build());
+            ClaimEntity claim = pcsCase.getClaims().getFirst();
+            claim.getClaimGrounds().add(ClaimGroundEntity.builder()
+                .category(ClaimGroundCategory.ASSURED_OTHER)
+                .code("OTHER")
+                .description("assured other description")
+                .claim(claim)
+                .build());
+
+            ClaimFormPayload payload = builder.build(pcsCase);
+
+            assertThat(payload.isShowDescriptionOfGrounds()).isTrue();
+            assertThat(payload.getOtherGroundsDescription()).isEqualTo("assured other description");
+            // Assured never hits the "Why is the claimant claiming possession?" row.
+            assertThat(payload.getWhyClaimingPossessionGrounds()).isEmpty();
         }
 
         @Test
@@ -523,6 +785,27 @@ class ClaimFormPayloadBuilderTest {
             ClaimFormPayload payload = builder.build(pcsCase);
 
             assertThat(payload.getIssueDateSealed()).isEqualTo(LocalDate.of(2026, 2, 12));
+        }
+
+        @Test
+        void issueDateUsesUkCalendarDayForTimestampJustAfterMidnightBst() {
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
+            // 23:30 UTC on 15 July = 00:30 BST on 16 July - the UK day is the 16th.
+            pcsCase.getClaims().getFirst().setClaimIssuedDate(LocalDateTime.of(2026, 7, 15, 23, 30));
+
+            ClaimFormPayload payload = builder.build(pcsCase);
+
+            assertThat(payload.getIssueDateSealed()).isEqualTo(LocalDate.of(2026, 7, 16));
+        }
+
+        @Test
+        void submittedOnUsesStoredSubmissionDateAsUkDate() {
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
+            pcsCase.getClaims().getFirst().setClaimSubmittedDate(LocalDateTime.of(2026, 3, 1, 10, 30));
+
+            ClaimFormPayload payload = builder.build(pcsCase);
+
+            assertThat(payload.getSubmittedOn()).isEqualTo(LocalDate.of(2026, 3, 1));
         }
 
         @Test
@@ -591,7 +874,7 @@ class ClaimFormPayloadBuilderTest {
             ClaimFormPayload payload = builder.build(pcsCase);
 
             assertThat(payload.isShowDescriptionOfGrounds()).isFalse();
-            assertThat(payload.isShowWhyClaimingPossession()).isFalse();
+            assertThat(payload.getWhyClaimingPossessionGrounds()).isEmpty();
         }
     }
 
@@ -600,13 +883,12 @@ class ClaimFormPayloadBuilderTest {
 
         @Test
         void issueDateAndWhyClaimingAndNoticeNotUploadedAndWalesDocsAllNull() {
-            // With no source data these stay null (not thrown). issueDateSealed and whyClaimingPossession
-            // now have sources (claimIssuedDate / no-grounds reason) but remain null on an empty case.
+            // With no source data these stay null/empty (not thrown).
             PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
             ClaimFormPayload payload = builder.build(pcsCase);
 
             assertThat(payload.getIssueDateSealed()).isNull();
-            assertThat(payload.getWhyClaimingPossession()).isNull();
+            assertThat(payload.getWhyClaimingPossessionGrounds()).isEmpty();
             assertThat(payload.getNoticeNotUploadedReason()).isNull();
             assertThat(payload.getEpcUploadedYesNo()).isNull();
             assertThat(payload.getEpcNotUploadedReason()).isNull();
@@ -768,10 +1050,10 @@ class ClaimFormPayloadBuilderTest {
 
         private static Stream<Arguments> rentFrequencyDescriptions() {
             return Stream.of(
-                Arguments.argumentSet("weekly", RentPaymentFrequency.WEEKLY, "£500.00 (Weekly)"),
-                Arguments.argumentSet("fortnightly", RentPaymentFrequency.FORTNIGHTLY, "£500.00 (Fortnightly)"),
-                Arguments.argumentSet("monthly", RentPaymentFrequency.MONTHLY, "£500.00 (Monthly)"),
-                Arguments.argumentSet("other", RentPaymentFrequency.OTHER, "£500.00 (Other)")
+                Arguments.argumentSet("weekly", RentPaymentFrequency.WEEKLY, "Weekly"),
+                Arguments.argumentSet("fortnightly", RentPaymentFrequency.FORTNIGHTLY, "Fortnightly"),
+                Arguments.argumentSet("monthly", RentPaymentFrequency.MONTHLY, "Monthly"),
+                Arguments.argumentSet("other", RentPaymentFrequency.OTHER, "Other")
             );
         }
 
@@ -1491,6 +1773,35 @@ class ClaimFormPayloadBuilderTest {
 
             assertThat(payload.getMediationAttemptedYesNo()).isEqualTo("Yes");
             assertThat(payload.getSettlementAttemptedYesNo()).isEqualTo("No");
+        }
+
+        @Test
+        void mediationAndSettlementAnswered_showFlagsTrue() {
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
+            ClaimEntity claim = pcsCase.getClaims().getFirst();
+            claim.setMediationAttempted(VerticalYesNo.YES);
+            claim.setSettlementAttempted(VerticalYesNo.NO);
+
+            ClaimFormPayload payload = builder.build(pcsCase);
+
+            assertThat(payload.isShowMediationAttempted()).isTrue();
+            assertThat(payload.isShowSettlementAttempted()).isTrue();
+        }
+
+        @Test
+        void mediationAndSettlementUnanswered_rowsHidden() {
+            // Optional page skipped: both rows must hide rather than render a blank value.
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
+            ClaimEntity claim = pcsCase.getClaims().getFirst();
+            claim.setMediationAttempted(null);
+            claim.setSettlementAttempted(null);
+
+            ClaimFormPayload payload = builder.build(pcsCase);
+
+            assertThat(payload.isShowMediationAttempted()).isFalse();
+            assertThat(payload.getMediationAttemptedYesNo()).isNull();
+            assertThat(payload.isShowSettlementAttempted()).isFalse();
+            assertThat(payload.getSettlementAttemptedYesNo()).isNull();
         }
     }
 
