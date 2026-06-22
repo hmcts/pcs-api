@@ -5,11 +5,14 @@ import com.github.kagkarlsson.scheduler.task.FailureHandler;
 import com.github.kagkarlsson.scheduler.task.TaskDescriptor;
 import com.github.kagkarlsson.scheduler.task.helper.CustomTask;
 import com.github.kagkarlsson.scheduler.task.helper.Tasks;
+import feign.FeignException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.model.DeleteDraftClaimTaskData;
+import uk.gov.hmcts.reform.pcs.ccd.service.CaseRoleAssignmentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftClaimDeletionService;
 
 import java.time.Duration;
@@ -23,15 +26,18 @@ public class DeleteDraftClaimTaskComponent {
     public static final TaskDescriptor<DeleteDraftClaimTaskData> DELETE_DRAFT_CLAIM_TASK_DESCRIPTOR =
         TaskDescriptor.of(DELETE_DRAFT_CLAIM_TASK_NAME, DeleteDraftClaimTaskData.class);
 
+    private final CaseRoleAssignmentService caseRoleAssignmentService;
     private final DraftClaimDeletionService draftClaimDeletionService;
     private final int maxRetries;
     private final Duration backoffDelay;
 
     public DeleteDraftClaimTaskComponent(
+        CaseRoleAssignmentService caseRoleAssignmentService,
         DraftClaimDeletionService draftClaimDeletionService,
         @Value("${role-assignment.request.max-retries}") int maxRetries,
         @Value("${role-assignment.request.backoff-delay-seconds}") Duration backoffDelay
     ) {
+        this.caseRoleAssignmentService = caseRoleAssignmentService;
         this.draftClaimDeletionService = draftClaimDeletionService;
         this.maxRetries = maxRetries;
         this.backoffDelay = backoffDelay;
@@ -47,10 +53,12 @@ public class DeleteDraftClaimTaskComponent {
             .execute((taskInstance, executionContext) -> {
                 DeleteDraftClaimTaskData taskData = taskInstance.getData();
                 long caseReference = Long.parseLong(taskData.getCaseReference());
+                String userId = taskData.getUserId();
 
                 log.debug("Deleting draft claim for case: {}", caseReference);
 
                 try {
+                    revokeCaseRoles(caseReference, userId);
                     draftClaimDeletionService.deleteDraftClaim(caseReference);
                     return new CompletionHandler.OnCompleteRemove<>();
                 } catch (Exception e) {
@@ -62,5 +70,14 @@ public class DeleteDraftClaimTaskComponent {
                     throw e;
                 }
             });
+    }
+
+    private void revokeCaseRoles(long caseReference, String userId) {
+        try {
+            caseRoleAssignmentService.revokeRasRole(caseReference, userId, UserRole.CLAIMANT_SOLICITOR);
+            caseRoleAssignmentService.revokeRasRole(caseReference, userId, UserRole.CREATOR);
+        } catch (FeignException.NotFound e) {
+            log.info("Draft claim case {} no longer exists while revoking roles", caseReference);
+        }
     }
 }

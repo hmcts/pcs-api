@@ -2,40 +2,24 @@ package uk.gov.hmcts.reform.pcs.ccd.event;
 
 import com.github.kagkarlsson.scheduler.SchedulerClient;
 import com.github.kagkarlsson.scheduler.task.SchedulableInstance;
-import com.github.kagkarlsson.scheduler.task.TaskInstance;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
-import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.test.util.ReflectionTestUtils;
-import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.model.DeleteDraftClaimRoleRevocationTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.model.DeleteDraftClaimTaskData;
-import uk.gov.hmcts.reform.pcs.ccd.service.CaseRoleAssignmentService;
-import uk.gov.hmcts.reform.pcs.ccd.service.DraftClaimDeletionService;
-import uk.gov.hmcts.reform.pcs.ccd.task.DeleteDraftClaimRoleRevocationTaskComponent;
 import uk.gov.hmcts.reform.pcs.ccd.task.DeleteDraftClaimTaskComponent;
 import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executor;
-import java.util.concurrent.TimeUnit;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -50,28 +34,13 @@ class DeleteDraftClaimTest extends BaseEventTest {
     private SchedulerClient schedulerClient;
     @Mock
     private SecurityContextService securityContextService;
-    @Mock
-    private CaseRoleAssignmentService caseRoleAssignmentService;
-    @Mock
-    private DraftClaimDeletionService draftClaimDeletionService;
-
-    private DeleteDraftClaim eventUnderTest;
 
     @BeforeEach
     void setUp() {
-        eventUnderTest = new DeleteDraftClaim(
+        setEventUnderTest(new DeleteDraftClaim(
             schedulerClient,
-            securityContextService,
-            caseRoleAssignmentService,
-            draftClaimDeletionService
-        );
-        setEventUnderTest(eventUnderTest);
-    }
-
-    @Test
-    void shouldOnlyGrantDeleteDraftClaimEventToCreator() {
-        assertThat(configuredEvent.getGrants().keySet()).containsOnly(UserRole.CREATOR);
-        assertThat(configuredEvent.getGrants().get(UserRole.CREATOR)).isEqualTo(Permission.CRUD);
+            securityContextService
+        ));
     }
 
     @Test
@@ -85,7 +54,7 @@ class DeleteDraftClaimTest extends BaseEventTest {
     }
 
     @Test
-    void shouldScheduleCaseListAccessRemovalAndDraftClaimDeletionWhenUserSelectsYes() {
+    void shouldScheduleOrderedDraftClaimDeletionWhenUserSelectsYes() {
         UserInfo userDetails = mock(UserInfo.class);
         when(securityContextService.getCurrentUserDetails()).thenReturn(userDetails);
         when(userDetails.getUid()).thenReturn(USER_ID);
@@ -95,113 +64,24 @@ class DeleteDraftClaimTest extends BaseEventTest {
             .build());
 
         DeleteDraftClaimTaskData taskData = getCapturedDeleteDraftClaimTaskData();
-        DeleteDraftClaimRoleRevocationTaskData roleRevocationTaskData = getCapturedRoleRevocationTaskData();
         assertThat(taskData.getCaseReference()).isEqualTo(String.valueOf(TEST_CASE_REFERENCE));
-        assertThat(roleRevocationTaskData.getCaseReference()).isEqualTo(String.valueOf(TEST_CASE_REFERENCE));
-        assertThat(roleRevocationTaskData.getUserId()).isEqualTo(USER_ID);
+        assertThat(taskData.getUserId()).isEqualTo(USER_ID);
         assertThat(response.getState()).isEqualTo(State.DELETED);
         assertThat(response.getConfirmationBody()).contains("Case deleted");
-    }
-
-    @Test
-    void shouldRemoveLocalCaseListAccess() {
-        ReflectionTestUtils.invokeMethod(
-            eventUnderTest,
-            "removeCaseListAccess",
-            TEST_CASE_REFERENCE,
-            USER_ID
-        );
-
-        verify(caseRoleAssignmentService).revokeRasRole(TEST_CASE_REFERENCE, USER_ID, UserRole.CREATOR);
-    }
-
-    @Test
-    void shouldIgnoreLocalCaseListAccessRemovalFailure() {
-        doThrow(new RuntimeException("RAS failure"))
-            .when(caseRoleAssignmentService).revokeRasRole(TEST_CASE_REFERENCE, USER_ID, UserRole.CREATOR);
-
-        ReflectionTestUtils.invokeMethod(
-            eventUnderTest,
-            "removeCaseListAccess",
-            TEST_CASE_REFERENCE,
-            USER_ID
-        );
-
-        verify(caseRoleAssignmentService).revokeRasRole(TEST_CASE_REFERENCE, USER_ID, UserRole.CREATOR);
-    }
-
-    @Test
-    void shouldDeleteLocalDraftClaim() {
-        ReflectionTestUtils.invokeMethod(eventUnderTest, "deleteDraftClaim", TEST_CASE_REFERENCE);
-
-        verify(draftClaimDeletionService).deleteDraftClaim(TEST_CASE_REFERENCE);
-    }
-
-    @Test
-    void shouldIgnoreLocalDraftClaimDeletionFailure() {
-        doThrow(new RuntimeException("delete failure"))
-            .when(draftClaimDeletionService).deleteDraftClaim(TEST_CASE_REFERENCE);
-
-        ReflectionTestUtils.invokeMethod(eventUnderTest, "deleteDraftClaim", TEST_CASE_REFERENCE);
-
-        verify(draftClaimDeletionService).deleteDraftClaim(TEST_CASE_REFERENCE);
-    }
-
-    @Test
-    @SuppressWarnings("unchecked")
-    void shouldRunLocalFallbackTasksWhenSchedulingDraftClaimDeletion() {
-        UserInfo userDetails = mock(UserInfo.class);
-        when(securityContextService.getCurrentUserDetails()).thenReturn(userDetails);
-        when(userDetails.getUid()).thenReturn(USER_ID);
-
-        try (MockedStatic<CompletableFuture> completableFuture = mockStatic(CompletableFuture.class)) {
-            Executor directExecutor = Runnable::run;
-            completableFuture.when(() -> CompletableFuture.delayedExecutor(anyLong(), any(TimeUnit.class)))
-                .thenReturn(directExecutor);
-            completableFuture.when(() -> CompletableFuture.runAsync(any(Runnable.class), any(Executor.class)))
-                .thenAnswer(invocation -> {
-                    Runnable task = invocation.getArgument(0);
-                    task.run();
-                    return mock(CompletableFuture.class);
-                });
-
-            callSubmitHandler(PCSCase.builder()
-                .deleteDraftClaim(YesOrNo.YES)
-                .build());
-        }
-
-        verify(caseRoleAssignmentService).revokeRasRole(TEST_CASE_REFERENCE, USER_ID, UserRole.CREATOR);
-        verify(draftClaimDeletionService).deleteDraftClaim(TEST_CASE_REFERENCE);
     }
 
     @SuppressWarnings("unchecked")
     private DeleteDraftClaimTaskData getCapturedDeleteDraftClaimTaskData() {
         ArgumentCaptor<SchedulableInstance<?>> captor = ArgumentCaptor.forClass(SchedulableInstance.class);
-        verify(schedulerClient, times(2)).scheduleIfNotExists(captor.capture());
+        verify(schedulerClient, times(1)).scheduleIfNotExists(captor.capture());
 
         return captor.getAllValues().stream()
             .filter(t -> t.getTaskInstance().getTaskName()
                 .equals(DeleteDraftClaimTaskComponent.DELETE_DRAFT_CLAIM_TASK_DESCRIPTOR.getTaskName()))
             .map(SchedulableInstance::getTaskInstance)
-            .map(TaskInstance::getData)
+            .map(taskInstance -> taskInstance.getData())
             .map(DeleteDraftClaimTaskData.class::cast)
             .findFirst()
             .orElseThrow(() -> new AssertionError("No delete draft claim task found"));
-    }
-
-    @SuppressWarnings("unchecked")
-    private DeleteDraftClaimRoleRevocationTaskData getCapturedRoleRevocationTaskData() {
-        ArgumentCaptor<SchedulableInstance<?>> captor = ArgumentCaptor.forClass(SchedulableInstance.class);
-        verify(schedulerClient, times(2)).scheduleIfNotExists(captor.capture());
-
-        return captor.getAllValues().stream()
-            .filter(t -> t.getTaskInstance().getTaskName()
-                .equals(DeleteDraftClaimRoleRevocationTaskComponent
-                            .DELETE_DRAFT_CLAIM_ROLE_REVOCATION_TASK_DESCRIPTOR.getTaskName()))
-            .map(SchedulableInstance::getTaskInstance)
-            .map(TaskInstance::getData)
-            .map(DeleteDraftClaimRoleRevocationTaskData.class::cast)
-            .findFirst()
-            .orElseThrow(() -> new AssertionError("No delete draft claim role revocation task found"));
     }
 }

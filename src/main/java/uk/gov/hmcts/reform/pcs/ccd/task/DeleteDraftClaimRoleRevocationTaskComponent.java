@@ -5,6 +5,7 @@ import com.github.kagkarlsson.scheduler.task.FailureHandler;
 import com.github.kagkarlsson.scheduler.task.TaskDescriptor;
 import com.github.kagkarlsson.scheduler.task.helper.CustomTask;
 import com.github.kagkarlsson.scheduler.task.helper.Tasks;
+import feign.FeignException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -60,6 +61,9 @@ public class DeleteDraftClaimRoleRevocationTaskComponent {
                 try {
                     caseRoleAssignmentService.revokeRasRole(caseReference, userId, UserRole.CLAIMANT_SOLICITOR);
                     caseRoleAssignmentService.revokeRasRole(caseReference, userId, UserRole.CREATOR);
+                    return new CompletionHandler.OnCompleteRemove<>();
+                } catch (FeignException.NotFound e) {
+                    log.info("Deleted draft claim case {} no longer exists while revoking roles", caseReference);
                     return new CompletionHandler.OnCompleteRemove<>();
                 } catch (Exception e) {
                     log.error("Draft claim role revocation failed for case: {}. Attempt {}/{}",

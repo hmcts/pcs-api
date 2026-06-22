@@ -5,6 +5,7 @@ import com.github.kagkarlsson.scheduler.task.Execution;
 import com.github.kagkarlsson.scheduler.task.ExecutionContext;
 import com.github.kagkarlsson.scheduler.task.TaskInstance;
 import com.github.kagkarlsson.scheduler.task.helper.CustomTask;
+import feign.FeignException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -88,5 +89,23 @@ class DeleteDraftClaimRoleRevocationTaskComponentTest {
 
         assertThatThrownBy(() -> task.execute(taskInstance, executionContext))
             .isInstanceOf(RuntimeException.class);
+    }
+
+    @Test
+    void shouldCompleteWhenCaseNoLongerExistsDuringRoleRevocation() {
+        DeleteDraftClaimRoleRevocationTaskData data = DeleteDraftClaimRoleRevocationTaskData.builder()
+            .caseReference("1234")
+            .userId("user-abc")
+            .build();
+
+        when(taskInstance.getData()).thenReturn(data);
+        doThrow(mock(FeignException.NotFound.class)).when(caseRoleAssignmentService)
+            .revokeRasRole(1234L, "user-abc", UserRole.CLAIMANT_SOLICITOR);
+
+        CustomTask<DeleteDraftClaimRoleRevocationTaskData> task = underTest.deleteDraftClaimRoleRevocationTask();
+
+        CompletionHandler<DeleteDraftClaimRoleRevocationTaskData> result = task.execute(taskInstance, executionContext);
+
+        assertThat(result).isInstanceOf(CompletionHandler.OnCompleteRemove.class);
     }
 }
