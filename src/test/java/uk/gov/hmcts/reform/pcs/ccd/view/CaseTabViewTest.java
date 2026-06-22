@@ -26,6 +26,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.parties.RepresentativeTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.summary.SummaryTab;
 import uk.gov.hmcts.reform.pcs.ccd.view.builder.ClaimGroundSummaryBuilder;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -76,7 +77,7 @@ class CaseTabViewTest {
             .build();
 
         // When
-        underTest.setCaseTabFields(pcsCase, true);
+        underTest.setCaseTabFields(pcsCase);
 
         // Then
         assertThat(pcsCase.getCasePartiesTab()).isNotNull();
@@ -113,7 +114,7 @@ class CaseTabViewTest {
             .build();
 
         // When
-        underTest.setCaseTabFields(pcsCase, true);
+        underTest.setCaseTabFields(pcsCase);
 
         // Then
         assertThat(pcsCase.getCasePartiesTab()).isNotNull();
@@ -168,7 +169,7 @@ class CaseTabViewTest {
             .build();
 
         // When
-        underTest.setCaseTabFields(pcsCase, true);
+        underTest.setCaseTabFields(pcsCase);
 
         // Then
         assertThat(pcsCase.getCasePartiesTab()).isNotNull();
@@ -250,7 +251,7 @@ class CaseTabViewTest {
             .build();
 
         // When
-        underTest.setCaseTabFields(pcsCase, true);
+        underTest.setCaseTabFields(pcsCase);
 
         // Then
         assertThat(pcsCase.getCasePartiesTab()).isNotNull();
@@ -321,7 +322,7 @@ class CaseTabViewTest {
             .build();
 
         // When
-        underTest.setCaseTabFields(pcsCase, true);
+        underTest.setCaseTabFields(pcsCase);
 
         // Then
         assertThat(pcsCase.getCasePartiesTab()).isNotNull();
@@ -364,7 +365,7 @@ class CaseTabViewTest {
             .build();
 
         // When
-        underTest.setCaseTabFields(pcsCase, true);
+        underTest.setCaseTabFields(pcsCase);
 
         // Then
         assertThat(pcsCase.getCasePartiesTab()).isNotNull();
@@ -404,7 +405,7 @@ class CaseTabViewTest {
             .build();
 
         // When
-        underTest.setCaseTabFields(pcsCase, true);
+        underTest.setCaseTabFields(pcsCase);
 
         // Then
         assertThat(pcsCase.getCasePartiesTab()).isNotNull();
@@ -424,7 +425,7 @@ class CaseTabViewTest {
         PCSCase pcsCase = PCSCase.builder().build();
 
         // When
-        underTest.setCaseTabFields(pcsCase, true);
+        underTest.setCaseTabFields(pcsCase);
 
         // Then
         assertThat(pcsCase.getCasePartiesTab()).isNotNull();
@@ -1043,6 +1044,21 @@ class CaseTabViewTest {
 
         DemotionOfTenancy demotionOfTenancy = draftCaseData.getDemotionOfTenancy();
         assertThat(demotionOfTenancy).isNull();
+    }
+
+    @Test
+    void  shouldSetIsSubmittedToTrueWhenDateSubmittedIsSet() {
+        // Given
+        PCSCase pcsCase = PCSCase.builder()
+            .dateSubmitted(LocalDateTime.now())
+            .build();
+
+        // When
+        underTest.setCaseTabFields(pcsCase);
+
+        // Then
+        verify(caseDetailsTabView, times(0)).buildCaseDetailsTab(pcsCase, false);
+        verify(caseDetailsTabView, times(1)).buildCaseDetailsTab(pcsCase, true);
     }
 
     private static <T> ListValue<T> listValue(T value) {
