@@ -799,13 +799,13 @@ class ClaimFormPayloadBuilderTest {
         }
 
         @Test
-        void submittedOnUsesCurrentUkDate() {
+        void submittedOnUsesStoredSubmissionDateAsUkDate() {
             PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
             pcsCase.getClaims().getFirst().setClaimSubmittedDate(LocalDateTime.of(2026, 3, 1, 10, 30));
 
             ClaimFormPayload payload = builder.build(pcsCase);
 
-            assertThat(payload.getSubmittedOn()).isEqualTo(LocalDate.of(2026, 7, 16));
+            assertThat(payload.getSubmittedOn()).isEqualTo(LocalDate.of(2026, 3, 1));
         }
 
         @Test

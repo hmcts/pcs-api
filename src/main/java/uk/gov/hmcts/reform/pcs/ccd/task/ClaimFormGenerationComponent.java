@@ -66,22 +66,26 @@ public class ClaimFormGenerationComponent {
                     log.info("Claim form generated and attached for case {}", caseReference);
                     return new CompletionHandler.OnCompleteRemove<>();
                 } catch (Exception e) {
+                    int attempt = executionContext.getExecution().consecutiveFailures + 1;
                     log.error("Claim form generation failed for case: {}. Attempt {}/{}",
-                              caseReference,
-                              executionContext.getExecution().consecutiveFailures + 1,
-                              maxRetries,
-                              e);
-                    // Runs after generateAndAttach's transaction has rolled back; logGenerationFailure
-                    // uses REQUIRES_NEW so its row survives. Guarded so a logging error can't mask the
-                    // original failure or break the retry.
-                    try {
-                        claimActivityLogService.logGenerationFailure(caseReference);
-                    } catch (Exception logException) {
-                        log.error("Failed to record claim form generation failure for case {}",
-                                  caseReference, logException);
+                              caseReference, attempt, maxRetries, e);
+                    if (isFinalAttempt(attempt)) {
+                        recordGenerationFailure(caseReference);
                     }
                     throw e;
                 }
             });
+    }
+
+    private boolean isFinalAttempt(int attempt) {
+        return attempt >= maxRetries;
+    }
+
+    private void recordGenerationFailure(long caseReference) {
+        try {
+            claimActivityLogService.logGenerationFailure(caseReference);
+        } catch (Exception e) {
+            log.error("Failed to record claim form generation failure for case {}", caseReference, e);
+        }
     }
 }

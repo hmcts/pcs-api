@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.document.model.claimform;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Data;
 
@@ -24,6 +25,7 @@ public class ClaimFormParty {
      */
     private String orgName;
     @Builder.Default
+    @JsonProperty("isPersonsUnknown")
     private boolean isPersonsUnknown = false;
     /** Always populated; never null in a well-formed case. See the class javadoc. */
     private ClaimFormAddress address;

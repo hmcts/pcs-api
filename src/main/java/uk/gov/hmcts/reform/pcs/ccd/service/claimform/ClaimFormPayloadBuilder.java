@@ -319,9 +319,8 @@ public class ClaimFormPayloadBuilder {
 
     private void mapClaim(ClaimEntity claim, ClaimFormPayload.ClaimFormPayloadBuilder payloadBuilder) {
         if (claim.getClaimSubmittedDate() != null) {
-            // The claim form is generated at submission, so the current UK date is the date
-            // submitted - same approach as the general-application document.
-            payloadBuilder.submittedOn(LocalDate.now(ukClock));
+            payloadBuilder.submittedOn(claim.getClaimSubmittedDate().atZone(ZoneOffset.UTC)
+                .withZoneSameInstant(ukClock.getZone()).toLocalDate());
         }
         if (claim.getClaimIssuedDate() != null) {
             // Stored as a UTC timestamp; convert to the UK calendar date so a claim issued just
