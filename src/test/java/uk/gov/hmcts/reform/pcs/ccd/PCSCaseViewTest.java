@@ -376,7 +376,7 @@ class PCSCaseViewTest {
         PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
 
         // Then
-        verify(enforcementOrderMediator).handleEnforcementRequirements(CASE_REFERENCE, pcsCase);
+        verify(enforcementOrderMediator).handleEnforcementRequirements(pcsCaseEntity, pcsCase);
     }
 
     @Test
