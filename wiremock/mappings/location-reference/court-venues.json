@@ -6,8 +6,8 @@
       "epimms_id": {
         "matches": "\\d+"
       },
-      "court_type_id": {
-        "equalTo": "10"
+      "service_code": {
+        "equalTo": "AAA3"
       }
     }
   },
