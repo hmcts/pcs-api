@@ -1,13 +1,14 @@
 package uk.gov.hmcts.reform.pcs.ccd.service;
 
-import org.junit.jupiter.api.BeforeEach;
+import org.flywaydb.core.Flyway;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.test.context.ActiveProfiles;
-import uk.gov.hmcts.reform.pcs.config.AbstractPostgresContainerIT;
+import org.springframework.jdbc.datasource.DriverManagerDataSource;
+import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -16,18 +17,33 @@ import java.util.concurrent.ThreadLocalRandom;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest
-@ActiveProfiles("integration")
-class DraftClaimDeletionServiceIT extends AbstractPostgresContainerIT {
+@Testcontainers
+class DraftClaimDeletionServiceIT {
 
-    @Autowired
-    private DraftClaimDeletionService underTest;
+    @Container
+    private static final PostgreSQLContainer<?> POSTGRES = new PostgreSQLContainer<>("postgres:16-alpine");
 
-    @Autowired
-    private JdbcTemplate jdbcTemplate;
+    private static DraftClaimDeletionService underTest;
+    private static JdbcTemplate jdbcTemplate;
 
-    @BeforeEach
-    void setUp() {
+    @BeforeAll
+    static void setUp() {
+        DriverManagerDataSource dataSource = new DriverManagerDataSource(
+            POSTGRES.getJdbcUrl(),
+            POSTGRES.getUsername(),
+            POSTGRES.getPassword()
+        );
+        dataSource.setDriverClassName(POSTGRES.getDriverClassName());
+
+        Flyway.configure()
+            .dataSource(dataSource)
+            .locations("classpath:db/migration")
+            .load()
+            .migrate();
+
+        jdbcTemplate = new JdbcTemplate(dataSource);
+        underTest = new DraftClaimDeletionService(jdbcTemplate);
+
         jdbcTemplate.execute("CREATE SCHEMA IF NOT EXISTS ccd");
         jdbcTemplate.execute("""
             CREATE TABLE IF NOT EXISTS ccd.case_data (
@@ -121,10 +137,10 @@ class DraftClaimDeletionServiceIT extends AbstractPostgresContainerIT {
             INSERT INTO draft.draft_case_data (id, case_reference, case_data, event_id, idam_user_id, party_id)
             VALUES (?, ?, '{}'::jsonb, 'resumePossessionClaim', ?, ?)
             """, UUID.randomUUID(), caseReference, userId, partyId);
-        jdbcTemplate.update("""
-            INSERT INTO ccd.case_data (id, reference, jurisdiction, case_type_id, state, security_classification, data)
-            VALUES (?, ?, 'PCS', 'PCS', 'AWAITING_SUBMISSION_TO_HMCTS', 'PUBLIC', '{}'::jsonb)
-            """, ThreadLocalRandom.current().nextLong(1, Long.MAX_VALUE), caseReference);
+        jdbcTemplate.update(
+            "INSERT INTO ccd.case_data (reference, state) VALUES (?, 'AWAITING_SUBMISSION_TO_HMCTS')",
+            caseReference
+        );
 
         return new TestData(
             caseReference,
