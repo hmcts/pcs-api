@@ -1646,7 +1646,6 @@ export class CreateCaseAction implements IAction {
   }
 
   public  cleanFilesArray(filesArray: string[]): string[] {
-
     const uniqueFiles = [...new Set(filesArray.map(f =>
       f.replace(/\s+-\s+(?:Claimant|Defendant)\s+\d+/i, '')
         .replace(/\s+\d{1,2}\s+[A-Za-z]{3}\s+\d{4}\s+\d{2}:\d{2}$/, '')
@@ -1654,7 +1653,6 @@ export class CreateCaseAction implements IAction {
     ))];
 
     return uniqueFiles;
-
   }
 
   public readDocFilesFromPayLoad(mainArray: string[], subArray: any[], multiDocsLabel?: string) {
@@ -1672,6 +1670,5 @@ export class CreateCaseAction implements IAction {
         }
       });
     }
-
   }
 }
