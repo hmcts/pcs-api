@@ -2,7 +2,6 @@ package uk.gov.hmcts.reform.pcs.ccd.service.legalrepresentative;
 
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -46,7 +45,7 @@ public class LegalRepresentativeSummaryService {
     private final OrganisationService organisationService;
     private final DefendantPartyExtractor defendantPartyExtractor;
 
-    @Value("${frontend.url}")
+   // @Value("${frontend.url}")
     private String frontendUrl;
 
     public void handleLegalRepresentativeSummary(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
