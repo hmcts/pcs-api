@@ -12,8 +12,11 @@ import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.toSet;
 
 @Component
 @RequiredArgsConstructor
@@ -28,14 +31,15 @@ public class DocumentsView {
 
     private List<ListValue<Document>> mapAndWrapDocuments(PcsCaseEntity pcsCaseEntity) {
 
-        if (pcsCaseEntity.getDocuments().isEmpty()) {
+        List<DocumentEntity> documents = pcsCaseEntity.getDocuments();
+        if (documents.isEmpty()) {
             return List.of();
         }
 
-        UUID currentUserId = securityContextService.getCurrentUserId();
+        Set<UUID> visibleGenAppIds = getVisibleGenAppIds(pcsCaseEntity, documents);
 
-        return pcsCaseEntity.getDocuments().stream()
-            .filter(documentEntity -> this.isDocumentVisibleToUser(documentEntity, currentUserId))
+        return documents.stream()
+            .filter(documentEntity -> this.isDocumentVisibleToUser(documentEntity, visibleGenAppIds))
             .map(entity -> ListValue.<Document>builder()
                 .id(entity.getId().toString())
                 .value(Document.builder()
@@ -52,14 +56,33 @@ public class DocumentsView {
             .collect(Collectors.toList());
     }
 
-    public boolean isDocumentVisibleToUser(DocumentEntity documentEntity, UUID currentUserId) {
+    public boolean isDocumentVisibleToUser(DocumentEntity documentEntity, Set<UUID> visibleGenAppIds) {
         GenAppEntity genAppEntity = documentEntity.getGeneralApplication();
 
         if (genAppEntity != null) {
-            return genAppVisibilityService.isGenAppVisibleToUser(genAppEntity, currentUserId);
+            return visibleGenAppIds.contains(genAppEntity.getId());
         } else {
             return true;
         }
+    }
+
+    private Set<UUID> getVisibleGenAppIds(PcsCaseEntity pcsCaseEntity, List<DocumentEntity> documents) {
+        boolean hasGenAppDocuments = documents.stream()
+            .anyMatch(document -> document.getGeneralApplication() != null);
+        if (!hasGenAppDocuments) {
+            return Set.of();
+        }
+
+        if (pcsCaseEntity.getGenApps().isEmpty()) {
+            return Set.of();
+        }
+
+        UUID currentUserId = securityContextService.getCurrentUserId();
+
+        return pcsCaseEntity.getGenApps().stream()
+            .filter(genAppEntity -> genAppVisibilityService.isGenAppVisibleToUser(genAppEntity, currentUserId))
+            .map(GenAppEntity::getId)
+            .collect(toSet());
     }
 
 }

@@ -4,9 +4,12 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyLegalRepresentativeEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeEntity;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 @Repository
@@ -32,6 +35,16 @@ public interface LegalRepresentativeRepository extends JpaRepository<LegalRepres
         AND cplr.active = 'YES'
         """)
     Optional<LegalRepresentativeEntity> findByPartyLinkedToLegalRepresentativeAndActive(@Param("partyId") UUID partyId);
+
+    @Query("""
+        SELECT cplr
+        FROM ClaimPartyLegalRepresentativeEntity cplr
+        JOIN FETCH cplr.legalRepresentative lr
+        LEFT JOIN FETCH lr.address
+        WHERE cplr.id.partyId IN :partyIds
+        AND cplr.active = 'YES'
+        """)
+    List<ClaimPartyLegalRepresentativeEntity> findActiveByPartyIds(@Param("partyIds") Set<UUID> partyIds);
 
     @Query("""
         SELECT COUNT(lr) > 0

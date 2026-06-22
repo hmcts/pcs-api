@@ -11,8 +11,10 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseLinkEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseLinkReasonEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.repository.CaseLinkReasonRepository;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -28,24 +30,29 @@ class CaseLinkViewTest {
     private PcsCaseEntity pcsCaseEntity;
     @Mock(strictness = LENIENT)
     private CaseLinkEntity caseLinkEntity;
+    @Mock
+    private CaseLinkReasonRepository caseLinkReasonRepository;
     private CaseLinkView underTest;
 
     @BeforeEach
     void setUp() {
         pcsCase = PCSCase.builder().build();
-        underTest = new CaseLinkView();
+        underTest = new CaseLinkView(caseLinkReasonRepository);
     }
 
 
     @Test
     void shouldMapAndWrapCaseLinks() {
         // Given
+        UUID caseLinkId = UUID.randomUUID();
         CaseLinkReasonEntity caseLinkReasonEntity1 = createCaseLinkReasonEntity(UUID.randomUUID(), "CLR003");
         CaseLinkReasonEntity caseLinkReasonEntity2 = createCaseLinkReasonEntity(UUID.randomUUID(), "CLR010");
         when(pcsCaseEntity.getCaseLinks()).thenReturn(List.of(caseLinkEntity));
+        when(caseLinkEntity.getId()).thenReturn(caseLinkId);
         when(caseLinkEntity.getLinkedCaseReference()).thenReturn(1234L);
-        when(caseLinkEntity.getReasons()).thenReturn(List.of(caseLinkReasonEntity1, caseLinkReasonEntity2));
         when(caseLinkEntity.getCcdListId()).thenReturn("PCS");
+        when(caseLinkReasonRepository.findAllByCaseLinkIds(Set.of(caseLinkId)))
+            .thenReturn(List.of(caseLinkReasonEntity1, caseLinkReasonEntity2));
 
         // When
         underTest.setCaseFields(pcsCase, pcsCaseEntity);

@@ -108,7 +108,6 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
 
         setMarkdownFields(pcsCase, hasUnsubmittedCaseData);
         enforcementOrderMediator.handleEnforcementRequirements(submittedCase.pcsCaseEntity(), pcsCase);
-
         caseFieldsView.setCaseFields(pcsCase);
 
         // Only the canonical PCS case type is indexed into the shared global_search index.

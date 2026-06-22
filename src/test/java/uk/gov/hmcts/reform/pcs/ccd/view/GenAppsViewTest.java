@@ -16,6 +16,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.repository.DocumentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
@@ -25,8 +26,10 @@ import java.util.Set;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anySet;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isA;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -42,6 +45,8 @@ class GenAppsViewTest {
     private GenAppVisibilityService genAppVisibilityService;
     @Mock
     private PcsCaseEntity pcsCaseEntity;
+    @Mock
+    private DocumentRepository documentRepository;
 
     private PCSCase pcsCase;
 
@@ -54,8 +59,9 @@ class GenAppsViewTest {
             .thenReturn(true);
 
         pcsCase = PCSCase.builder().build();
+        lenient().when(documentRepository.findAllByGeneralApplicationIds(anySet())).thenReturn(List.of());
 
-        underTest = new GenAppsView(modelMapper, securityContextService, genAppVisibilityService);
+        underTest = new GenAppsView(modelMapper, securityContextService, genAppVisibilityService, documentRepository);
     }
 
     @Test
@@ -211,11 +217,14 @@ class GenAppsViewTest {
         when(pcsCaseEntity.getGenApps()).thenReturn(Set.of(genAppEntity));
         DocumentEntity documentEntity1 = mock(DocumentEntity.class);
         DocumentEntity documentEntity2 = mock(DocumentEntity.class);
+        when(documentEntity1.getGeneralApplication()).thenReturn(genAppEntity);
+        when(documentEntity2.getGeneralApplication()).thenReturn(genAppEntity);
 
         final Document expectedSupportingDocument1 = stubDocument(documentEntity1, pcsDocumentId1);
         final Document expectedSupportingDocument2 = stubDocument(documentEntity2, pcsDocumentId2);
 
-        genAppEntity.setDocuments(List.of(documentEntity1, documentEntity2));
+        when(documentRepository.findAllByGeneralApplicationIds(Set.of(genAppEntity.getId())))
+            .thenReturn(List.of(documentEntity1, documentEntity2));
 
         // When
         underTest.setCaseFields(pcsCase, pcsCaseEntity);

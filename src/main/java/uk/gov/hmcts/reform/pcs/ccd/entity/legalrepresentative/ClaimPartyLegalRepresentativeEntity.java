@@ -5,6 +5,7 @@ import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MapsId;
 import jakarta.persistence.Table;
@@ -33,12 +34,12 @@ public class ClaimPartyLegalRepresentativeEntity {
     @Builder.Default
     private LegalRepresentativePartyId id = new LegalRepresentativePartyId();
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("partyId")
     @JsonBackReference
     private PartyEntity party;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("legalRepresentativeId")
     @JsonBackReference
     private LegalRepresentativeEntity legalRepresentative;

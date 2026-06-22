@@ -8,7 +8,9 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
+import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.EnforcementOrderRepository;
+import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -24,17 +26,27 @@ import static uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.confirmeviction.M
 @AllArgsConstructor
 public class EnforcementOrderMediator {
 
+    private final PcsCaseRepository pcsCaseRepository;
     private final EnforcementOrderRepository enforcementOrderRepository;
+
+    public void handleEnforcementRequirements(long caseReference, PCSCase pcsCase) {
+        if (caseReference > 0 && pcsCase != null) {
+            getEnforcementOrder(caseReference).ifPresent(enforcementOrderEntity ->
+                handleEnforcementOrder(pcsCase, enforcementOrderEntity));
+        }
+    }
 
     public void handleEnforcementRequirements(PcsCaseEntity pcsCaseEntity, PCSCase pcsCase) {
         if (pcsCaseEntity != null && pcsCase != null) {
             getEnforcementOrder(pcsCaseEntity).ifPresent(enforcementOrderEntity ->
-                Optional.ofNullable(enforcementOrderEntity.getBailiffDate())
-                    .ifPresentOrElse(
-                        date -> prepareEvictionWithDates(pcsCase, date),
-                        () -> prepareEvictionWithNoDates(pcsCase)
-                    ));
+                handleEnforcementOrder(pcsCase, enforcementOrderEntity));
         }
+    }
+
+    Optional<EnforcementOrderEntity> getEnforcementOrder(long caseReference) {
+        PcsCaseEntity pcsCaseEntity = pcsCaseRepository.findByCaseReference(caseReference)
+            .orElseThrow(() -> new CaseNotFoundException(caseReference));
+        return getEnforcementOrder(pcsCaseEntity);
     }
 
     Optional<EnforcementOrderEntity> getEnforcementOrder(PcsCaseEntity pcsCaseEntity) {
@@ -49,6 +61,14 @@ public class EnforcementOrderMediator {
             }
         }
         return Optional.empty();
+    }
+
+    private void handleEnforcementOrder(PCSCase pcsCase, EnforcementOrderEntity enforcementOrderEntity) {
+        Optional.ofNullable(enforcementOrderEntity.getBailiffDate())
+            .ifPresentOrElse(
+                date -> prepareEvictionWithDates(pcsCase, date),
+                () -> prepareEvictionWithNoDates(pcsCase)
+            );
     }
 
     private void prepareEvictionWithDates(PCSCase pcsCase, LocalDateTime localDateTime) {

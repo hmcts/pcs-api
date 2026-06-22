@@ -13,6 +13,7 @@ import uk.gov.hmcts.reform.pcs.LegalRepresentative;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyLegalRepresentativeEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativePartyId;
 import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -23,12 +24,15 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyId;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
+import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.LegalRepresentativeRepository;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anySet;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -44,15 +48,18 @@ class PartiesViewTest {
     private ClaimEntity claimEntity;
     @Mock
     private UserInfo userInfo;
+    @Mock
+    private LegalRepresentativeRepository legalRepresentativeRepository;
 
     private PCSCase pcsCase;
     private PartiesView underTest;
 
     @BeforeEach
     void setUp() {
-        underTest = new PartiesView(securityContextService, modelMapper);
+        underTest = new PartiesView(securityContextService, modelMapper, legalRepresentativeRepository);
         pcsCase = PCSCase.builder().build();
         when(pcsCaseEntity.getClaims()).thenReturn(List.of(claimEntity));
+        lenient().when(legalRepresentativeRepository.findActiveByPartyIds(anySet())).thenReturn(List.of());
     }
 
     @Test
@@ -155,15 +162,12 @@ class PartiesViewTest {
             .organisationName("org name")
             .address(addressEntity)
             .build();
-        ClaimPartyLegalRepresentativeEntity claimPartyLegalRepresentative =
-            ClaimPartyLegalRepresentativeEntity.builder()
-                .legalRepresentative(legalRepresentativeEntity)
-                .active(YesOrNo.YES)
-                .build();
         PartyEntity defendant = buildParty(UUID.randomUUID(), "Bob", "B", null, null, null);
-        defendant.setClaimPartyLegalRepresentativeList(List.of(claimPartyLegalRepresentative));
         when(claimEntity.getClaimParties()).thenReturn(List.of(
             buildClaimPartyEntity(defendant, PartyRole.DEFENDANT)
+        ));
+        when(legalRepresentativeRepository.findActiveByPartyIds(anySet())).thenReturn(List.of(
+            buildClaimPartyLegalRepresentative(defendant.getId(), legalRepresentativeEntity, YesOrNo.YES)
         ));
 
         AddressUK address = AddressUK.builder().build();
@@ -196,13 +200,7 @@ class PartiesViewTest {
             .organisationName("org name")
             .address(addressEntity)
             .build();
-        ClaimPartyLegalRepresentativeEntity claimPartyLegalRepresentative =
-            ClaimPartyLegalRepresentativeEntity.builder()
-                .legalRepresentative(legalRepresentativeEntity)
-                .active(YesOrNo.NO)
-                .build();
         PartyEntity defendant = buildParty(UUID.randomUUID(), "Bob", "B", null, null, null);
-        defendant.setClaimPartyLegalRepresentativeList(List.of(claimPartyLegalRepresentative));
         when(claimEntity.getClaimParties()).thenReturn(List.of(
             buildClaimPartyEntity(defendant, PartyRole.DEFENDANT)
         ));
@@ -229,11 +227,6 @@ class PartiesViewTest {
             .organisationName("org name")
             .address(addressEntity1)
             .build();
-        ClaimPartyLegalRepresentativeEntity claimPartyLegalRepresentative1 =
-            ClaimPartyLegalRepresentativeEntity.builder()
-                .legalRepresentative(legalRepresentativeEntity1)
-                .active(YesOrNo.NO)
-                .build();
 
         AddressEntity addressEntity2 = AddressEntity.builder().build();
         LegalRepresentativeEntity legalRepresentativeEntity2 = LegalRepresentativeEntity.builder()
@@ -244,18 +237,13 @@ class PartiesViewTest {
             .organisationName("org name2")
             .address(addressEntity2)
             .build();
-        ClaimPartyLegalRepresentativeEntity claimPartyLegalRepresentative2 =
-            ClaimPartyLegalRepresentativeEntity.builder()
-                .legalRepresentative(legalRepresentativeEntity2)
-                .active(YesOrNo.YES)
-                .build();
 
         PartyEntity defendant = buildParty(UUID.randomUUID(), "Bob", "B", null, null, null);
-        defendant.setClaimPartyLegalRepresentativeList(
-            List.of(claimPartyLegalRepresentative1, claimPartyLegalRepresentative2)
-        );
         when(claimEntity.getClaimParties()).thenReturn(List.of(
             buildClaimPartyEntity(defendant, PartyRole.DEFENDANT)
+        ));
+        when(legalRepresentativeRepository.findActiveByPartyIds(anySet())).thenReturn(List.of(
+            buildClaimPartyLegalRepresentative(defendant.getId(), legalRepresentativeEntity2, YesOrNo.YES)
         ));
 
         AddressUK address = AddressUK.builder().build();
@@ -324,6 +312,22 @@ class PartiesViewTest {
             .id(id)
             .party(partyEntity)
             .role(role)
+            .build();
+    }
+
+    private ClaimPartyLegalRepresentativeEntity buildClaimPartyLegalRepresentative(
+        UUID partyId,
+        LegalRepresentativeEntity legalRepresentative,
+        YesOrNo active
+    ) {
+        LegalRepresentativePartyId id = new LegalRepresentativePartyId();
+        id.setPartyId(partyId);
+        id.setLegalRepresentativeId(UUID.randomUUID());
+
+        return ClaimPartyLegalRepresentativeEntity.builder()
+            .id(id)
+            .legalRepresentative(legalRepresentative)
+            .active(active)
             .build();
     }
 }

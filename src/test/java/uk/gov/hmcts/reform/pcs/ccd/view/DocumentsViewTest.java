@@ -17,9 +17,11 @@ import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -42,6 +44,7 @@ class DocumentsViewTest {
     @BeforeEach
     void setUp() {
         pcsCase = PCSCase.builder().build();
+        lenient().when(pcsCaseEntity.getGenApps()).thenReturn(Set.of());
 
         underTest = new DocumentsView(securityContextService, genAppVisibilityService);
     }
@@ -126,10 +129,14 @@ class DocumentsViewTest {
         when(securityContextService.getCurrentUserId()).thenReturn(CURRENT_USER_ID);
 
         GenAppEntity genAppEntity1 = mock(GenAppEntity.class);
+        UUID genApp1Id = UUID.randomUUID();
+        when(genAppEntity1.getId()).thenReturn(genApp1Id);
         when(genAppVisibilityService.isGenAppVisibleToUser(genAppEntity1, CURRENT_USER_ID))
             .thenReturn(true);
 
         GenAppEntity genAppEntity2 = mock(GenAppEntity.class);
+        UUID genApp2Id = UUID.randomUUID();
+        when(genAppEntity2.getId()).thenReturn(genApp2Id);
         when(genAppVisibilityService.isGenAppVisibleToUser(genAppEntity2, CURRENT_USER_ID))
             .thenReturn(false);
 
@@ -163,6 +170,7 @@ class DocumentsViewTest {
 
         when(pcsCaseEntity.getDocuments()).thenReturn(
             List.of(documentEntity1, documentEntity2, documentEntity3, documentEntity4));
+        when(pcsCaseEntity.getGenApps()).thenReturn(Set.of(genAppEntity1, genAppEntity2));
 
         // When
         underTest.setCaseFields(pcsCase, pcsCaseEntity);
