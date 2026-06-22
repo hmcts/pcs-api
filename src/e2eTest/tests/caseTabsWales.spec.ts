@@ -10,10 +10,17 @@ import { submitCaseApiDataWales } from '@data/api-data/submitCaseWales.api.data'
 
 test.beforeEach(async ({ page }, testInfo) => {
   initializeExecutor(page);
-  await performAction('createCaseAPI', { data: createCaseApiWalesData.createCasePayload });
-  await performAction('submitCaseAPI', { data: submitCaseApiDataWales.submitCasePayloadCaseSummary });
-  await performAction('getCaseAPI', 'Claim Submission Time');
-  await performAction('fetchCurrentUserAPI', 'Claimant');
+  if (testInfo.title.includes('CaseFile')) {
+    await performAction('createCaseAPI', { data: createCaseApiWalesData.createCasePayload });
+    await performAction('submitCaseAPI', { data: submitCaseApiDataWales.submitCasePayloadCaseFileView });
+    await performAction('getCaseAPI', 'Claim Submission Time');
+    await performAction('fetchCurrentUserAPI', 'Claimant');
+  } else {
+    await performAction('createCaseAPI', { data: createCaseApiWalesData.createCasePayload });
+    await performAction('submitCaseAPI', { data: submitCaseApiDataWales.submitCasePayloadCaseSummary });
+    await performAction('getCaseAPI', 'Claim Submission Time');
+    await performAction('fetchCurrentUserAPI', 'Claimant');
+  }
 
   await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/${getCaseTypeId()}/${process.env.CASE_NUMBER}#Summary`);
   await expect(async () => {
@@ -265,4 +272,30 @@ test.describe('[Case tabs - Wales Journey] @nightly', async () => {
     });
 
   });
+
+  test('Case tabs - CaseFile View test @MAC @regression', async () => {
+      await performValidation('mainHeader', home.caseSummary)
+      await performAction('clickTab', home.caseFileView);
+      await performAction('validateCaseFileViewFolders');
+      await performAction('validateCaseFileViewIndividualFolder', {
+        folder: 'Property documents',
+        submitPayload: submitCaseApiDataWales.submitCasePayloadCaseFileView,
+      });
+      await performAction('validateCaseFileViewIndividualFolder', {
+        folder: 'Statements of case',
+        submitPayload: submitCaseApiDataWales.submitCasePayloadCaseFileView,
+      });
+      await performAction('validateCaseFileViewIndividualFolder', {
+        folder: 'Evidence',
+        submitPayload: submitCaseApiDataWales.submitCasePayloadCaseFileView,
+      });
+      await performAction('validateCaseFileViewIndividualFolder', {
+        folder: 'Correspondence',
+        submitPayload: submitCaseApiDataWales.submitCasePayloadCaseFileView,
+      });
+      await performAction('validateCaseFileViewIndividualFolder', {
+        folder: 'Uncategorised documents',
+        submitPayload: submitCaseApiDataWales.submitCasePayloadCaseFileView,
+      });
+    });
 });

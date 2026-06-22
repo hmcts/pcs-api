@@ -663,24 +663,6 @@ export const submitCaseApiData = {
         code: 'PROVIDER_OF_SOCIAL_HOUSING',
         label: 'Registered provider of social housing or local authority'
       },
-      list_items: [
-        {
-          code: 'PRIVATE_LANDLORD',
-          label: 'Private landlord'
-        },
-        {
-          code: 'PROVIDER_OF_SOCIAL_HOUSING',
-          label: 'Registered provider of social housing or local authority'
-        },
-        {
-          code: 'MORTGAGE_LENDER',
-          label: 'Mortgage lender'
-        },
-        {
-          code: 'OTHER',
-          label: 'Other'
-        }
-      ],
       valueCode: 'PROVIDER_OF_SOCIAL_HOUSING'
     },
     claimAgainstTrespassers: 'NO',

@@ -1591,12 +1591,31 @@ export class CreateCaseAction implements IAction {
     const userInputFiles:string[]= [];
     switch (folderName) {
       case 'Property documents':
-         this.readDocFilesFromPayLoad(userInputFiles,submitPayLoad.tenancy_TenancyLicenceDocuments);
-         this.readDocFilesFromPayLoad(userInputFiles,submitPayLoad.notice_Documents)
-         this.readDocFilesFromPayLoad(userInputFiles,submitPayLoad.rentArrears_StatementDocuments)
-        
+        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad.tenancy_TenancyLicenceDocuments);
+        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad.notice_Documents);
+        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad.rentArrears_StatementDocuments);
+        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad.walesDocs_EnergyPerformance);
+        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad.walesDocs_GasSafetyReport);
+        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad.walesDocs_ElectricalInstallation);
+        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad.licenceDocuments);
         break;
-    
+
+      case 'Statements of case':
+        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad.additionalDocuments, 'Notice for service out of the jurisdiction');
+        break;
+
+      case 'Evidence':
+        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad.additionalDocuments, 'Inspection or report');
+        break;
+
+      case 'Correspondence':
+        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad.additionalDocuments, 'Legal aid certificate');
+        break;
+
+      case 'Uncategorised documents':
+        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad.additionalDocuments, 'Other document');
+        break;
+
       default:
         break;
     }
@@ -1604,7 +1623,7 @@ export class CreateCaseAction implements IAction {
     const folder = page
       .locator('button[role="treeitem"]')
       .filter({ hasText: folderName });
-   let fileLocator = page.locator('button.node.case-file__node').filter({ visible: true })
+    let fileLocator = page.locator('button.node.case-file__node').filter({ visible: true })
     const text = await folder.innerText();
     const fileCount = Number(text.match(/^\d+/)?.[0] ?? 0);
 
@@ -1612,14 +1631,13 @@ export class CreateCaseAction implements IAction {
       throw new Error(`For folder "${folderName}" files are not present`);
     }
     await folder.click();
-    console.log('files:'+await fileLocator.count());
     const actualFileCount = await fileLocator.count();
 
-    expect(actualFileCount,'File count matching').toEqual(fileCount)
-    const fileArray =  this.cleanFilesArray(await fileLocator.allTextContents());
-    console.log(fileArray);
-
-    expect(userInputFiles.sort(),`validating  upload files for "${folderName}"`).toEqual(fileArray.sort());
+    expect(actualFileCount, 'File count matching').toEqual(fileCount)
+    const fileArray = this.cleanFilesArray(await fileLocator.allTextContents());
+    
+    expect(userInputFiles.sort(), `validating  upload files for "${folderName}"`).toEqual(fileArray.sort());
+    console.log(`\n✅ The files under section "${folderName}" are \n "${fileArray}"`);
 
     if ((await folder.getAttribute('aria-expanded')) === 'true') {
       await folder.click();
@@ -1630,7 +1648,7 @@ export class CreateCaseAction implements IAction {
   public  cleanFilesArray(filesArray: string[]): string[] {
 
     const uniqueFiles = [...new Set(filesArray.map(f =>
-      f.replace(/\s+-\s+Claimant\s+\d+/i, '')
+      f.replace(/\s+-\s+(?:Claimant|Defendant)\s+\d+/i, '')
         .replace(/\s+\d{1,2}\s+[A-Za-z]{3}\s+\d{4}\s+\d{2}:\d{2}$/, '')
         .trim()
     ))];
@@ -1639,16 +1657,21 @@ export class CreateCaseAction implements IAction {
 
   }
 
-  public readDocFilesFromPayLoad(mainArray: string[], subArray: any[]) {
+  public readDocFilesFromPayLoad(mainArray: string[], subArray: any[], multiDocsLabel?: string) {
 
-    if (Array.isArray(subArray)) {
-      subArray.forEach(doc => {
-        if (doc.value?.document_filename) {
+    if (subArray && Array.isArray(subArray)) {
+      subArray.forEach(doc => { 
+        if (multiDocsLabel) {
+          const valueLabel = doc.value?.documentType?.valueLabel;
+          const filename = doc.value?.document?.document_filename;
+          if (multiDocsLabel === valueLabel && filename) {
+            mainArray.push(filename);
+          }
+        } else if (doc.value?.document_filename) {
           mainArray.push(doc.value.document_filename);
         }
       });
     }
-
 
   }
 }

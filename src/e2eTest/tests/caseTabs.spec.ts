@@ -330,5 +330,21 @@ test.describe('[Case tabs - England Journey] @nightly', async () => {
       folder: 'Property documents',
       submitPayload: submitCaseApiData.submitCasePayloadCaseFileView,
     });
+    await performAction('validateCaseFileViewIndividualFolder', {
+      folder: 'Statements of case',
+      submitPayload: submitCaseApiData.submitCasePayloadCaseFileView,
+    });
+    await performAction('validateCaseFileViewIndividualFolder', {
+      folder: 'Evidence',
+      submitPayload: submitCaseApiData.submitCasePayloadCaseFileView,
+    });
+    await performAction('validateCaseFileViewIndividualFolder', {
+      folder: 'Correspondence',
+      submitPayload: submitCaseApiData.submitCasePayloadCaseFileView,
+    });
+    await performAction('validateCaseFileViewIndividualFolder', {
+      folder: 'Uncategorised documents',
+      submitPayload: submitCaseApiData.submitCasePayloadCaseFileView,
+    });
   });
 });
