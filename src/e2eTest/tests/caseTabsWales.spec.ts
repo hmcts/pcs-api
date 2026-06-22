@@ -1,6 +1,6 @@
 import { expect, test } from '@utils/test-fixtures';
 import { getCaseTypeId } from '@utils/common/caseType.utils';
-import { initializeExecutor, performAction } from '@utils/controller';
+import { initializeExecutor, performAction, performValidation } from '@utils/controller';
 import { caseInfo } from '@utils/actions/custom-actions/createCaseAPI.action';
 import { VERY_LONG_TIMEOUT } from 'playwright.config';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
@@ -13,7 +13,7 @@ test.beforeEach(async ({ page }, testInfo) => {
   await performAction('createCaseAPI', { data: createCaseApiWalesData.createCasePayload });
   await performAction('submitCaseAPI', { data: submitCaseApiDataWales.submitCasePayloadCaseSummary });
   await performAction('getCaseAPI', 'Claim Submission Time');
-  await performAction('fetchCurrentUserAPI');
+  await performAction('fetchCurrentUserAPI', 'Claimant');
 
   await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/${getCaseTypeId()}/${process.env.CASE_NUMBER}#Summary`);
   await expect(async () => {
@@ -100,6 +100,7 @@ test.describe('[Case tabs - Wales Journey] @nightly', async () => {
   });
   
   test('Case tabs Wales - Case Details tab test @MAC @regression', async () => {
+    await performValidation('mainHeader', home.caseSummary)
     await performAction('clickTab', home.caseDetails);
     await performAction('validateCaseSummaryDetails', {
       defendant1NameKnown: submitCaseApiDataWales.submitCasePayloadCaseSummary.defendant1.nameKnown,
@@ -253,6 +254,14 @@ test.describe('[Case tabs - Wales Journey] @nightly', async () => {
       submitPayload: submitCaseApiDataWales.submitCasePayloadCaseSummary,
       section: 'Prohibited conduct standard contract',
       table: 'Prohibited conduct standard contract claim'
+    });
+    await performAction('validateCaseSummaryDetails', {
+      defendant1NameKnown: submitCaseApiDataWales.submitCasePayloadCaseSummary.defendant1.nameKnown,
+      additionalDefendants: submitCaseApiDataWales.submitCasePayloadCaseSummary.addAnotherDefendant,
+      createPayload: createCaseApiWalesData.createCasePayload,
+      submitPayload: submitCaseApiDataWales.submitCasePayloadCaseSummary,
+      section: 'Required Documents',
+      table: 'Required documents'
     });
 
   });
