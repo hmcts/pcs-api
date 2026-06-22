@@ -82,8 +82,10 @@ class DraftClaimDeletionServiceIT extends AbstractPostgresContainerIT {
                             partyAddressId, "Party address");
         jdbcTemplate.update("INSERT INTO address (id, version, address_line1) VALUES (?, 1, ?)",
                             legalRepresentativeAddressId, "Legal representative address");
-        jdbcTemplate.update("INSERT INTO pcs_case (id, version, case_reference, property_address_id) VALUES (?, 1, ?, ?)",
-                            caseId, caseReference, propertyAddressId);
+        jdbcTemplate.update("""
+            INSERT INTO pcs_case (id, version, case_reference, property_address_id)
+            VALUES (?, 1, ?, ?)
+            """, caseId, caseReference, propertyAddressId);
         jdbcTemplate.update("INSERT INTO contact_preferences (id) VALUES (?)", contactPreferencesId);
         jdbcTemplate.update("""
             INSERT INTO party (id, version, case_id, type, idam_id, address_id, contact_preferences_id)
