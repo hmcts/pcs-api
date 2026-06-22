@@ -6,6 +6,7 @@ import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
+import uk.gov.hmcts.reform.pcs.ccd.domain.CanUploadNoticeServedDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServedDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServiceMethod;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -16,10 +17,6 @@ import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
 import java.util.List;
 
-/**
- * CCD page configuration for Notice Details.
- * Allows users to specify how they served notice to the defendant.
- */
 @Component
 @RequiredArgsConstructor
 public class NoticeDetails implements CcdPageConfiguration {
@@ -27,7 +24,7 @@ public class NoticeDetails implements CcdPageConfiguration {
     private final NoticeDetailsService noticeDetailsService;
     private final TextAreaValidationService textAreaValidationService;
 
-    private static final String NOTICE_SERVICE_METHOD_CONDITION = "notice_NoticeServiceMethod=\"";
+    private static final String NOTICE_SERVICE_METHOD_CONDITION = "notice_ServiceMethod=\"";
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -38,7 +35,7 @@ public class NoticeDetails implements CcdPageConfiguration {
                                + " OR walesNoticeServed=\"Yes\"")
             .label("noticeDetails-separator", "---")
             .complex(PCSCase::getNoticeServedDetails)
-            .mandatory(NoticeServedDetails::getNoticeServiceMethod)
+            .mandatory(NoticeServedDetails::getServiceMethod)
 
             // First class post
             .label("noticeDetails-firstClassPost-section", """
@@ -46,7 +43,7 @@ public class NoticeDetails implements CcdPageConfiguration {
                 delivery on the next business day</h3>
                 """, NOTICE_SERVICE_METHOD_CONDITION + NoticeServiceMethod.FIRST_CLASS_POST + "\"")
             .optional(
-                NoticeServedDetails::getNoticePostedDate,
+                NoticeServedDetails::getPostedDate,
                 NOTICE_SERVICE_METHOD_CONDITION + NoticeServiceMethod.FIRST_CLASS_POST + "\""
             )
 
@@ -55,7 +52,7 @@ public class NoticeDetails implements CcdPageConfiguration {
                 <h3 class="govuk-heading-s">By delivering it to or leaving it at a permitted place</h3>
                 """, NOTICE_SERVICE_METHOD_CONDITION + NoticeServiceMethod.DELIVERED_PERMITTED_PLACE + "\"")
             .optional(
-                NoticeServedDetails::getNoticeDeliveredDate,
+                NoticeServedDetails::getDeliveredDate,
                 NOTICE_SERVICE_METHOD_CONDITION + NoticeServiceMethod.DELIVERED_PERMITTED_PLACE + "\""
             )
 
@@ -64,11 +61,11 @@ public class NoticeDetails implements CcdPageConfiguration {
                 <h3 class="govuk-heading-s">By personally handing it to or leaving it with someone</h3>
                 """, NOTICE_SERVICE_METHOD_CONDITION + NoticeServiceMethod.PERSONALLY_HANDED + "\"")
             .optional(
-                NoticeServedDetails::getNoticePersonName,
+                NoticeServedDetails::getPersonName,
                 NOTICE_SERVICE_METHOD_CONDITION + NoticeServiceMethod.PERSONALLY_HANDED + "\""
             )
             .optional(
-                NoticeServedDetails::getNoticeHandedOverDateTime,
+                NoticeServedDetails::getHandedOverDateTime,
                 NOTICE_SERVICE_METHOD_CONDITION + NoticeServiceMethod.PERSONALLY_HANDED + "\""
             )
 
@@ -77,11 +74,11 @@ public class NoticeDetails implements CcdPageConfiguration {
                 <h3 class="govuk-heading-s">By email</h3>
                 """, NOTICE_SERVICE_METHOD_CONDITION + NoticeServiceMethod.EMAIL + "\"")
             .optional(
-                NoticeServedDetails::getNoticeEmailAddress,
+                NoticeServedDetails::getEmailAddress,
                 NOTICE_SERVICE_METHOD_CONDITION + NoticeServiceMethod.EMAIL + "\""
             )
             .optional(
-                NoticeServedDetails::getNoticeEmailSentDateTime,
+                NoticeServedDetails::getEmailSentDateTime,
                 NOTICE_SERVICE_METHOD_CONDITION + NoticeServiceMethod.EMAIL + "\""
             )
 
@@ -90,11 +87,11 @@ public class NoticeDetails implements CcdPageConfiguration {
                 <h3 class="govuk-heading-s">By other electronic method</h3>
                 """, NOTICE_SERVICE_METHOD_CONDITION + NoticeServiceMethod.OTHER_ELECTRONIC + "\"")
             .optional(
-                NoticeServedDetails::getNoticeOtherElectronicMethodExplanation,
+                NoticeServedDetails::getOtherElectronicExplanation,
                 NOTICE_SERVICE_METHOD_CONDITION + NoticeServiceMethod.OTHER_ELECTRONIC + "\""
             )
             .optional(
-                NoticeServedDetails::getNoticeOtherElectronicDateTime,
+                NoticeServedDetails::getOtherElectronicDateTime,
                 NOTICE_SERVICE_METHOD_CONDITION + NoticeServiceMethod.OTHER_ELECTRONIC + "\""
             )
 
@@ -103,30 +100,31 @@ public class NoticeDetails implements CcdPageConfiguration {
                 <h3 class="govuk-heading-s">Other</h3>
                 """, NOTICE_SERVICE_METHOD_CONDITION + NoticeServiceMethod.OTHER + "\"")
             .optional(
-                NoticeServedDetails::getNoticeOtherExplanation,
+                NoticeServedDetails::getOtherExplanation,
                 NOTICE_SERVICE_METHOD_CONDITION + NoticeServiceMethod.OTHER + "\""
             )
             .optional(
-                NoticeServedDetails::getNoticeOtherDateTime,
+                NoticeServedDetails::getOtherDateTime,
                 NOTICE_SERVICE_METHOD_CONDITION + NoticeServiceMethod.OTHER + "\""
             )
 
             // Document upload section
-            .label("noticeDetails-documentUpload-section", """
-                ---
-                <h2 class="govuk-heading-m">Do you want to upload a copy of the notice you served or the
-                certificate of service? (Optional)</h2>
-                <p class="govuk-hint">You can either upload this now or closer to the hearing date.
-                Any documents you upload now will be included in the pack of documents a judge will
-                receive before the hearing (the bundle)</p>
-                """)
-              .optional(NoticeServedDetails::getNoticeDocuments)
-              .label("noticeDetails-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
+            .label("noticeDetails-document-separator", "---")
+            .mandatory(NoticeServedDetails::getAbleToUploadDocument)
+            .mandatory(NoticeServedDetails::getDocuments,
+                    "notice_AbleToUploadDocument=\"Yes\"")
+            .mandatory(NoticeServedDetails::getUnableToUploadReason,
+                    "notice_AbleToUploadDocument=\"No\"")
+            .label("noticeDetails-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
                                                                   CaseDetails<PCSCase, State> detailsBefore) {
         PCSCase caseData = details.getData();
+
+        if (CanUploadNoticeServedDocument.Yes.equals(caseData.getNoticeServedDetails().getAbleToUploadDocument())) {
+            caseData.getNoticeServedDetails().setUnableToUploadReason(null);
+        }
 
         List<String> validationErrors = noticeDetailsService.validateNoticeDetails(caseData);
 
