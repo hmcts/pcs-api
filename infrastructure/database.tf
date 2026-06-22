@@ -29,6 +29,16 @@ module "postgresql" {
       name : var.product
     }
   ]
+  pgsql_server_configuration = [
+    {
+      name  = "backslash_quote"
+      value = "on"
+    },
+    {
+      name  = "pg_qs.query_capture_mode"
+      value = "top"
+    }
+  ]
 
   pgsql_version        = var.pgsql_version
   admin_user_object_id = var.jenkins_AAD_objectId
