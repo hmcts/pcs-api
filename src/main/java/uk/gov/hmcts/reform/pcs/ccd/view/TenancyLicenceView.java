@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.view;
 
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CombinedLicenceType;
@@ -67,27 +68,29 @@ public class TenancyLicenceView {
     }
 
     private static List<ListValue<Document>> getTenancyLicenceDocument(PcsCaseEntity pcsCaseEntity) {
-        if (pcsCaseEntity.getDocuments().isEmpty()) {
+        if (CollectionUtils.isEmpty(pcsCaseEntity.getDocuments())) {
             return new ArrayList<>();
         }
 
         return pcsCaseEntity.getDocuments().stream()
             .filter(TenancyLicenceView::isTenancyLicence)
+            .filter(DocumentsView::isDescriptionEmpty)
             .map(TenancyLicenceView::toDocument)
             .toList();
     }
 
     private static boolean isTenancyLicence(DocumentEntity documentEntity) {
-        return documentEntity.getType() == DocumentType.TENANCY_LICENCE;
+        return documentEntity.getType() == DocumentType.TENANCY_AGREEMENT;
     }
 
     private static List<ListValue<Document>> getOccupationLicenceDocument(PcsCaseEntity pcsCaseEntity) {
-        if (pcsCaseEntity.getDocuments().isEmpty()) {
+        if (CollectionUtils.isEmpty(pcsCaseEntity.getDocuments())) {
             return new ArrayList<>();
         }
 
         return pcsCaseEntity.getDocuments().stream()
             .filter(TenancyLicenceView::isOccupationLicence)
+            .filter(DocumentsView::isDescriptionEmpty)
             .map(TenancyLicenceView::toDocument)
             .toList();
     }

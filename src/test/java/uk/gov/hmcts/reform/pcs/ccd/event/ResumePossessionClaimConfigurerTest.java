@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.pcs.ccd.event;
 
-import com.github.kagkarlsson.scheduler.SchedulerClient;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -68,11 +67,6 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ProhibitedCo
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ReasonsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.SecureContractGroundsForPossessionWalesPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.UploadRequiredDocumentsWales;
-import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
-import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
-import uk.gov.hmcts.reform.pcs.ccd.util.MoneyFormatter;
-import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
-import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -131,17 +125,11 @@ class ResumePossessionClaimConfigurerTest {
     @Mock
     private DemotionOfTenancyOrderReason demotionOfTenancyOrderReason;
     @Mock
-    private OrganisationService organisationService;
-    @Mock
     private ClaimantInformationPage claimantInformationPage;
     @Mock
     private ExemptLandlord exemptLandlord;
     @Mock
     private ProhibitedConductWales prohibitedConductWalesPage;
-    @Mock
-    private SchedulerClient schedulerClient;
-    @Mock
-    private DraftCaseDataService draftCaseDataService;
     @Mock
     private OccupationLicenceDetailsWalesPage occupationLicenceDetailsWalesPage;
     @Mock
@@ -150,8 +138,6 @@ class ResumePossessionClaimConfigurerTest {
     private SecureContractGroundsForPossessionWalesPage secureContractGroundsForPossessionWales;
     @Mock
     private ReasonsForPossessionWales reasonsForPossessionWales;
-    @Mock
-    private AddressFormatter addressFormatter;
     @Mock
     private RentArrearsGroundsForPossessionPage rentArrearsGroundsForPossessionPage;
     @Mock
@@ -167,15 +153,13 @@ class ResumePossessionClaimConfigurerTest {
     @Mock
     private UnderlesseeOrMortgageeDetailsPage underlesseeOrMortgageeDetailsPage;
     @Mock
-    private FeeService feeService;
-    @Mock
-    private MoneyFormatter moneyFormatter;
-    @Mock
     private RentDetailsPage rentDetailsPage;
     @Mock
     private RentArrears rentArrears;
     @Mock
     private PreActionProtocol preActionProtocol;
+    @Mock
+    private WantToUploadDocuments wantToUploadDocuments;
     @Mock
     private UploadRequiredDocumentsWales uploadRequiredDocumentsWales;
 
@@ -223,7 +207,7 @@ class ResumePossessionClaimConfigurerTest {
         verifyAndCount(inOrder, pageBuilder, rentArrearsGroundsForPossessionReasons, verificationCount);
         verifyAndCount(inOrder, pageBuilder, noRentArrearsGroundsForPossessionOptions, verificationCount);
         verifyAndCount(inOrder, pageBuilder, noRentArrearsGroundsForPossessionReason, verificationCount);
-        verifyAndCount(inOrder, pageBuilder, PreActionProtocol.class, verificationCount);
+        verifyAndCount(inOrder, pageBuilder, preActionProtocol, verificationCount);
         verifyAndCount(inOrder, pageBuilder, mediationAndSettlement, verificationCount);
         verifyAndCount(inOrder, pageBuilder, checkingNotice, verificationCount);
         verifyAndCount(inOrder, pageBuilder, walesCheckingNotice, verificationCount);
@@ -246,7 +230,7 @@ class ResumePossessionClaimConfigurerTest {
         verifyAndCount(inOrder, pageBuilder, UnderlesseeOrMortgageeEntitledToClaimRelief.class, verificationCount);
         verifyAndCount(inOrder, pageBuilder, underlesseeOrMortgageeDetailsPage, verificationCount);
         verifyAndCount(inOrder, pageBuilder, uploadRequiredDocumentsWales, verificationCount);
-        verifyAndCount(inOrder, pageBuilder, WantToUploadDocuments.class, verificationCount);
+        verifyAndCount(inOrder, pageBuilder, wantToUploadDocuments, verificationCount);
         verifyAndCount(inOrder, pageBuilder, uploadAdditionalDocumentsDetails, verificationCount);
         verifyAndCount(inOrder, pageBuilder, GeneralApplication.class, verificationCount);
         verifyAndCount(inOrder, pageBuilder, LanguageUsed.class, verificationCount);

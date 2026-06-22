@@ -9,7 +9,10 @@ import uk.gov.hmcts.ccd.sdk.api.HasLabel;
 public enum DocumentType implements HasLabel {
 
     RENT_STATEMENT("Rent statement"),
-    OCCUPATION_LICENCE("Occupation licence"),
+    OCCUPATION_LICENCE("Occupation contract or licence"),
+    ENERGY_PERFORMANCE_CERTIFICATE("Energy performance certificate"),
+    GAS_SAFETY_CERTIFICATE("Gas safety certificate"),
+    EICR_REPORT("Electrical Installation Condition Report (EICR)"),
     TENANCY_LICENCE("Tenancy licence"),
     NOTICE_SERVED("Notice served"),
     WITNESS_STATEMENT("Witness statement"),
@@ -24,9 +27,6 @@ public enum DocumentType implements HasLabel {
     CERTIFICATE_OF_SUITABILITY_AS_LF("Certificate of suitability as litigation friend"),
     LEGAL_AID_CERTIFICATE("Legal aid certificate"),
     POLICE_REPORT("Police report"),
-    ENERGY_PERFORMANCE_CERTIFICATE("Energy performance certificate"),
-    GAS_SAFETY_REPORT("Gas safety report"),
-    ELECTRICAL_INSTALLATION_CONDITION("Electrical installation condition"),
     OTHER("Other document");
 
     private final String label;

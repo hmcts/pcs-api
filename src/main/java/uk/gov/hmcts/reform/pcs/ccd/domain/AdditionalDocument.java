@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.Document;
+import uk.gov.hmcts.ccd.sdk.type.DynamicList;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DefendantAccess;
 
@@ -16,12 +17,10 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DefendantAccess;
 public class AdditionalDocument {
 
     @CCD(
-        label = "Type of document",
-        typeOverride = FieldType.FixedList,
-        typeParameterOverride = "AdditionalDocumentType",
-        access = {DefendantAccess.class}
+            label = "Type of document",
+            access = {DefendantAccess.class}
     )
-    private AdditionalDocumentType documentType;
+    private DynamicList documentType;
 
     @CCD(label = "Document", access = {DefendantAccess.class})
     private Document document;
