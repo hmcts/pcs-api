@@ -132,3 +132,15 @@ Example: "1781518470935861" -> "1781-5184-7093-5861"
 export function formatTheCaseNumber(caseNumber: string): string {
   return caseNumber.replace(/(\d{4})(?=\d)/g, '$1-');
 }
+
+/* format document name for eg "rentStatement.pdf" to rentStatement - Claimant 1.pdf */
+export function formatUploadDocName(docName: string): string {
+const fileExtension = docName.lastIndexOf('.');
+const newFilename =
+  fileExtension !== -1
+    ? `${docName.substring(0, fileExtension)} - Claimant 1${docName.substring(fileExtension)}`
+    : `${docName} - Claimant 1`;
+
+return newFilename;
+
+}

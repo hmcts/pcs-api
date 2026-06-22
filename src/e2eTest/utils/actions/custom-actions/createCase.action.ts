@@ -56,7 +56,7 @@ import {MEDIUM_TIMEOUT, SHORT_TIMEOUT, VERY_LONG_TIMEOUT} from 'playwright.confi
 import {compareMaps} from '@utils/common/compareMaps.util';
 import {caseInfo} from './createCaseAPI.action';
 import {createCaseApiData} from '@data/api-data';
-import {formatCurrency, formatDate, formatDateTime, formatText, formatWord} from '@utils/common/string.utils';
+import {formatCurrency, formatDate, formatDateTime, formatUploadDocName, formatText, formatWord} from '@utils/common/string.utils';
 export let caseNumber: string;
 export let claimantsName: string;
 export let addressInfo: { buildingStreet: string; townCity: string; engOrWalPostcode: string };
@@ -1260,7 +1260,7 @@ export class CreateCaseAction implements IAction {
         caseSummary.set(`How rent is calculated`, formatWord(submitPayLoad.rentDetails_Frequency));
         caseSummary.set(`Daily rate`, formatCurrency(submitPayLoad.rentDetails_CalculatedDailyCharge));
         caseSummary.set(`Previous steps taken to recover rent arrears?`, formatWord(submitPayLoad.rentArrears_RecoveryAttempted));
-        caseSummary.set(`Rent statement`, submitPayLoad.rentArrears_StatementDocuments?.[0]?.value?.document_filename);
+        caseSummary.set(`Rent statement`, formatUploadDocName(submitPayLoad.rentArrears_StatementDocuments?.[0]?.value?.document_filename));
         caseSummary.set(`Rent arrears total at the time of claim issue`, formatCurrency(submitPayLoad.rentArrears_Total));
         caseSummary.set(`Judgment requested for the outstanding arrears?`, formatWord(submitPayLoad.arrearsJudgmentWanted));
         break;
@@ -1273,7 +1273,7 @@ export class CreateCaseAction implements IAction {
         if (submitPayLoad.rentArrears_RecoveryAttempted === 'YES') {
           caseSummary.set(`Details of previous steps taken`, submitPayLoad.rentArrears_RecoveryAttemptDetails);
         }
-        caseSummary.set(`Rent statement`, submitPayLoad.rentArrears_StatementDocuments?.[0]?.value?.document_filename);
+        caseSummary.set(`Rent statement`, formatUploadDocName(submitPayLoad.rentArrears_StatementDocuments?.[0]?.value?.document_filename));
         caseSummary.set(`Rent arrears total at the time of claim issue`, formatCurrency(submitPayLoad.rentArrears_Total));
         caseSummary.set(`Judgment requested for the outstanding arrears?`, formatWord(submitPayLoad.arrearsJudgmentWanted));
         break;
@@ -1469,19 +1469,19 @@ export class CreateCaseAction implements IAction {
         if(submitPayLoad.walesDocs_HasEnergyPerformanceCertificate === 'NO'){
           caseSummary.set(`Why can the claimant not upload a copy of the energy performance certificate?`, submitPayLoad.walesDocs_NoEpcReason);
         } else {
-          caseSummary.set(`Energy performance certificate`, submitPayLoad.walesDocs_EnergyPerformance?.[0]?.value?.document_filename);
+          caseSummary.set(`Energy performance certificate`, formatUploadDocName(submitPayLoad.walesDocs_EnergyPerformance?.[0]?.value?.document_filename));
         }
         caseSummary.set(`Can the claimant upload a copy of the current gas safety report?`, formatWord(submitPayLoad.walesDocs_HasGasSafetyReport));
         if(submitPayLoad.walesDocs_HasGasSafetyReport === 'NO'){
           caseSummary.set(`Why can the claimant not upload a copy of the current gas safety report?`, submitPayLoad.walesDocs_NoGasReportReason);
         }else {
-          caseSummary.set(`Gas safety report`, submitPayLoad.walesDocs_GasSafetyReport  ?.[0]?.value?.document_filename);
+          caseSummary.set(`Gas safety report`, formatUploadDocName(submitPayLoad.walesDocs_GasSafetyReport  ?.[0]?.value?.document_filename));
         }
         caseSummary.set(`Can the claimant upload a copy of the Electrical Installation Condition Report (EICR)?`, formatWord(submitPayLoad.walesDocs_HasElectricalInstallationConditionReport));
         if(submitPayLoad.walesDocs_HasElectricalInstallationConditionReport === 'NO'){
           caseSummary.set(`Why can the claimant not upload a copy of the Electrical Installation Condition Report (EICR)?`, submitPayLoad.walesDocs_NoEicrReason);
         }else {
-          caseSummary.set(`Electrical Installation Condition Report (EICR)`, submitPayLoad.walesDocs_ElectricalInstallation?.[0]?.value?.document_filename);
+          caseSummary.set(`Electrical Installation Condition Report (EICR)`, formatUploadDocName(submitPayLoad.walesDocs_ElectricalInstallation?.[0]?.value?.document_filename));
         }
 
       default:
