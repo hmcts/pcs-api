@@ -1,9 +1,14 @@
 package uk.gov.hmcts.reform.pcs.feesandpay.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.kagkarlsson.scheduler.SchedulerClient;
+import com.github.kagkarlsson.scheduler.task.SchedulableInstance;
+import com.github.kagkarlsson.scheduler.task.TaskInstance;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -11,6 +16,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimSta
 import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.model.CounterClaimStatusChangeTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.repository.CounterClaimRepository;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
@@ -31,9 +37,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState.COUNTER_CLAIM_ISSUED;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED;
+import static uk.gov.hmcts.reform.pcs.ccd.task.CounterClaimIssuedNotificationTaskComponent.COUNTER_CLAIM_ISSUED_TASK_DESCRIPTOR;
 
 @ExtendWith(MockitoExtension.class)
 class CounterClaimPaymentCallbackHandlerTest {
@@ -41,7 +49,11 @@ class CounterClaimPaymentCallbackHandlerTest {
     @Mock
     private CounterClaimRepository counterClaimRepository;
     @Mock
-    private com.fasterxml.jackson.databind.ObjectMapper objectMapper;
+    private SchedulerClient schedulerClient;
+    @Mock
+    private ObjectMapper objectMapper;
+    @Captor
+    private ArgumentCaptor<SchedulableInstance<CounterClaimStatusChangeTaskData>> taskInstanceCaptor;
 
     @InjectMocks
     private CounterClaimPaymentCallbackHandler underTest;
@@ -51,7 +63,8 @@ class CounterClaimPaymentCallbackHandlerTest {
 
     @BeforeEach
     void setUp() {
-        underTest = new CounterClaimPaymentCallbackHandler(counterClaimRepository, objectMapper, FIXED_UTC_CLOCK);
+        underTest = new CounterClaimPaymentCallbackHandler(counterClaimRepository, schedulerClient,
+                                                           objectMapper, FIXED_UTC_CLOCK);
     }
 
     @Test
@@ -59,20 +72,12 @@ class CounterClaimPaymentCallbackHandlerTest {
         UUID counterClaimId = UUID.randomUUID();
         UUID partyId = UUID.randomUUID();
 
-        CounterClaimEntity counterClaimEntity = CounterClaimEntity.builder()
-            .id(counterClaimId)
-            .status(CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED)
-            .party(PartyEntity.builder().id(partyId).build())
-            .build();
+        CounterClaimEntity counterClaimEntity = createCounterClaimEntity(counterClaimId,
+                                                                         PENDING_COUNTER_CLAIM_ISSUED,
+                                                                         partyId
+        );
 
-        FeesAndPayTaskData taskData = FeesAndPayTaskData.builder()
-            .feeDetails(FeeDetails.builder().feeAmount(BigDecimal.TEN).build())
-            .caseReference(1234567890123456L)
-            .ccdCaseNumber("1234567890123456")
-            .responsiblePartyId(partyId)
-            .paymentCallbackHandlerType(PaymentCallbackHandlerType.COUNTER_CLAIM_ISSUE)
-            .relatedEntityId(counterClaimId)
-            .build();
+        FeesAndPayTaskData taskData = createFeesAndPayTaskData(partyId, counterClaimId);
 
         FeePaymentEntity feePaymentEntity = FeePaymentEntity.builder()
             .paymentStatus(PaymentStatus.PAID)
@@ -89,11 +94,17 @@ class CounterClaimPaymentCallbackHandlerTest {
 
         underTest.handle(callback, feePaymentEntity);
 
-        ArgumentCaptor<CounterClaimEntity> captor = ArgumentCaptor.forClass(CounterClaimEntity.class);
-        verify(counterClaimRepository).save(captor.capture());
-        CounterClaimEntity savedCounterClaim = captor.getValue();
-        assertThat(savedCounterClaim.getStatus()).isEqualTo(CounterClaimState.COUNTER_CLAIM_ISSUED);
-        assertThat(savedCounterClaim.getClaimIssuedDate()).isEqualTo(LocalDateTime.of(2026, 6, 1, 10, 0));
+        assertThat(counterClaimEntity.getStatus()).isEqualTo(CounterClaimState.COUNTER_CLAIM_ISSUED);
+        assertThat(counterClaimEntity.getClaimIssuedDate()).isEqualTo(LocalDateTime.of(2026, 6, 1, 10, 0));
+
+        verify(schedulerClient).scheduleIfNotExists(taskInstanceCaptor.capture());
+
+        SchedulableInstance<?> schedulableInstance = taskInstanceCaptor.getValue();
+
+        TaskInstance<?> taskInstance = schedulableInstance.getTaskInstance();
+        assertThat(taskInstance.getTaskName()).isEqualTo(COUNTER_CLAIM_ISSUED_TASK_DESCRIPTOR.getTaskName());
+        CounterClaimStatusChangeTaskData data = (CounterClaimStatusChangeTaskData) taskInstance.getData();
+        assertThat(data.getCounterClaimId()).isEqualTo(counterClaimId);
     }
 
     @Test
@@ -102,21 +113,10 @@ class CounterClaimPaymentCallbackHandlerTest {
         UUID partyId = UUID.randomUUID();
         LocalDateTime existingIssuedDate = LocalDateTime.of(2026, 5, 1, 9, 0);
 
-        CounterClaimEntity counterClaimEntity = CounterClaimEntity.builder()
-            .id(counterClaimId)
-            .status(CounterClaimState.COUNTER_CLAIM_ISSUED)
-            .claimIssuedDate(existingIssuedDate)
-            .party(PartyEntity.builder().id(partyId).build())
-            .build();
+        CounterClaimEntity counterClaimEntity = createCounterClaimEntity(counterClaimId, COUNTER_CLAIM_ISSUED, partyId);
+        counterClaimEntity.setClaimIssuedDate(existingIssuedDate);
 
-        FeesAndPayTaskData taskData = FeesAndPayTaskData.builder()
-            .feeDetails(FeeDetails.builder().feeAmount(BigDecimal.TEN).build())
-            .caseReference(1234567890123456L)
-            .ccdCaseNumber("1234567890123456")
-            .responsiblePartyId(partyId)
-            .paymentCallbackHandlerType(PaymentCallbackHandlerType.COUNTER_CLAIM_ISSUE)
-            .relatedEntityId(counterClaimId)
-            .build();
+        FeesAndPayTaskData taskData = createFeesAndPayTaskData(partyId, counterClaimId);
 
         FeePaymentEntity feePaymentEntity = FeePaymentEntity.builder()
             .paymentStatus(PaymentStatus.PAID)
@@ -135,7 +135,6 @@ class CounterClaimPaymentCallbackHandlerTest {
 
         assertThat(counterClaimEntity.getStatus()).isEqualTo(CounterClaimState.COUNTER_CLAIM_ISSUED);
         assertThat(counterClaimEntity.getClaimIssuedDate()).isEqualTo(existingIssuedDate);
-        verify(counterClaimRepository, never()).save(counterClaimEntity);
     }
 
     @Test
@@ -143,20 +142,12 @@ class CounterClaimPaymentCallbackHandlerTest {
         UUID counterClaimId = UUID.randomUUID();
         UUID partyId = UUID.randomUUID();
 
-        CounterClaimEntity counterClaimEntity = CounterClaimEntity.builder()
-            .id(counterClaimId)
-            .status(CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED)
-            .party(PartyEntity.builder().id(partyId).build())
-            .build();
+        CounterClaimEntity counterClaimEntity = createCounterClaimEntity(counterClaimId,
+                                                                         PENDING_COUNTER_CLAIM_ISSUED,
+                                                                         partyId
+        );
 
-        FeesAndPayTaskData taskData = FeesAndPayTaskData.builder()
-            .feeDetails(FeeDetails.builder().feeAmount(BigDecimal.TEN).build())
-            .caseReference(1234567890123456L)
-            .ccdCaseNumber("1234567890123456")
-            .responsiblePartyId(partyId)
-            .paymentCallbackHandlerType(PaymentCallbackHandlerType.COUNTER_CLAIM_ISSUE)
-            .relatedEntityId(counterClaimId)
-            .build();
+        FeesAndPayTaskData taskData = createFeesAndPayTaskData(partyId, counterClaimId);
 
         FeePaymentEntity feePaymentEntity = FeePaymentEntity.builder()
             .paymentStatus(PaymentStatus.NOT_PAID)
@@ -172,22 +163,13 @@ class CounterClaimPaymentCallbackHandlerTest {
         when(objectMapper.readValue(anyString(), eq(FeesAndPayTaskData.class))).thenReturn(taskData);
 
         underTest.handle(callback, feePaymentEntity);
-
-        verify(counterClaimRepository, never()).save(counterClaimEntity);
     }
 
     @Test
     void shouldThrowWhenCounterClaimNotFound() throws Exception {
         UUID counterClaimId = UUID.randomUUID();
         UUID partyId = UUID.randomUUID();
-        FeesAndPayTaskData taskData = FeesAndPayTaskData.builder()
-            .feeDetails(FeeDetails.builder().feeAmount(BigDecimal.TEN).build())
-            .caseReference(1234567890123456L)
-            .ccdCaseNumber("1234567890123456")
-            .responsiblePartyId(partyId)
-            .paymentCallbackHandlerType(PaymentCallbackHandlerType.COUNTER_CLAIM_ISSUE)
-            .relatedEntityId(counterClaimId)
-            .build();
+        FeesAndPayTaskData taskData = createFeesAndPayTaskData(partyId, counterClaimId);
         FeePaymentEntity feePaymentEntity = FeePaymentEntity.builder()
             .paymentStatus(PaymentStatus.PAID)
             .taskData("task-data")
@@ -227,14 +209,7 @@ class CounterClaimPaymentCallbackHandlerTest {
     @Test
     void shouldThrowWhenTaskDataDoesNotContainCounterClaimId() throws Exception {
         UUID partyId = UUID.randomUUID();
-        FeesAndPayTaskData taskData = FeesAndPayTaskData.builder()
-            .feeDetails(FeeDetails.builder().feeAmount(BigDecimal.TEN).build())
-            .caseReference(1234567890123456L)
-            .ccdCaseNumber("1234567890123456")
-            .responsiblePartyId(partyId)
-            .paymentCallbackHandlerType(PaymentCallbackHandlerType.COUNTER_CLAIM_ISSUE)
-            .relatedEntityId(null)
-            .build();
+        FeesAndPayTaskData taskData = createFeesAndPayTaskData(partyId, null);
         FeePaymentEntity feePaymentEntity = FeePaymentEntity.builder()
             .paymentStatus(PaymentStatus.PAID)
             .taskData("task-data")
@@ -250,4 +225,26 @@ class CounterClaimPaymentCallbackHandlerTest {
             .isInstanceOf(PaymentCallbackException.class)
             .hasMessageContaining("missing relatedEntityId");
     }
+
+    private static CounterClaimEntity createCounterClaimEntity(UUID counterClaimId,
+                                                               CounterClaimState counterClaimState,
+                                                               UUID partyId) {
+        return CounterClaimEntity.builder()
+            .id(counterClaimId)
+            .status(counterClaimState)
+            .party(PartyEntity.builder().id(partyId).build())
+            .build();
+    }
+
+    private static FeesAndPayTaskData createFeesAndPayTaskData(UUID partyId, UUID counterClaimId) {
+        return FeesAndPayTaskData.builder()
+            .feeDetails(FeeDetails.builder().feeAmount(BigDecimal.TEN).build())
+            .caseReference(1234567890123456L)
+            .ccdCaseNumber("1234567890123456")
+            .responsiblePartyId(partyId)
+            .paymentCallbackHandlerType(PaymentCallbackHandlerType.COUNTER_CLAIM_ISSUE)
+            .relatedEntityId(counterClaimId)
+            .build();
+    }
+
 }

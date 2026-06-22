@@ -12,7 +12,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.model.CounterClaimStatusChangeTaskData;
-import uk.gov.hmcts.reform.pcs.ccd.task.CounterClaimIssuedNotificationTaskComponent;
 import uk.gov.hmcts.reform.pcs.ccd.task.PendingCounterClaimIssuedNotificationTaskComponent;
 
 import java.util.UUID;
@@ -107,25 +106,4 @@ class CounterClaimEntityListenerTest {
         assertEquals(counterClaimId, data.getCounterClaimId());
     }
 
-    @Test
-    void shouldScheduleIssuedNotificationOnPostUpdateWhenStatusChangesToIssued() {
-        UUID counterClaimId = UUID.randomUUID();
-        CounterClaimEntity entity = CounterClaimEntity.builder()
-            .id(counterClaimId)
-            .status(CounterClaimState.COUNTER_CLAIM_ISSUED)
-            .previousStatus(CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED)
-            .build();
-
-        underTest.onPostUpdate(entity);
-
-        ArgumentCaptor<SchedulableInstance<?>> taskInstanceCaptor = ArgumentCaptor.forClass(SchedulableInstance.class);
-        verify(schedulerClient).scheduleIfNotExists(taskInstanceCaptor.capture());
-
-        SchedulableInstance<?> schedulableInstance = taskInstanceCaptor.getValue();
-        TaskInstance<?> taskInstance = schedulableInstance.getTaskInstance();
-        assertEquals(CounterClaimIssuedNotificationTaskComponent.COUNTER_CLAIM_ISSUED_TASK_DESCRIPTOR.getTaskName(),
-                     taskInstance.getTaskName());
-        CounterClaimStatusChangeTaskData data = (CounterClaimStatusChangeTaskData) taskInstance.getData();
-        assertEquals(counterClaimId, data.getCounterClaimId());
-    }
 }

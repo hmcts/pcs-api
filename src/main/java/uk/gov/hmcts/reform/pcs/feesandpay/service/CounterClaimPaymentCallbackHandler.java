@@ -1,19 +1,23 @@
 package uk.gov.hmcts.reform.pcs.feesandpay.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.kagkarlsson.scheduler.SchedulerClient;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState;
 import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.model.CounterClaimStatusChangeTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.repository.CounterClaimRepository;
+import uk.gov.hmcts.reform.pcs.ccd.task.CounterClaimIssuedNotificationTaskComponent;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatusCallback;
 
 import java.io.IOException;
 import java.time.Clock;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -22,13 +26,16 @@ import java.util.UUID;
 public class CounterClaimPaymentCallbackHandler implements PaymentCallbackStrategy {
 
     private final CounterClaimRepository counterClaimRepository;
+    private final SchedulerClient schedulerClient;
     private final ObjectMapper objectMapper;
     private final Clock utcClock;
 
     public CounterClaimPaymentCallbackHandler(CounterClaimRepository counterClaimRepository,
+                                              SchedulerClient schedulerClient,
                                               ObjectMapper objectMapper,
                                               @Qualifier("utcClock") Clock utcClock) {
         this.counterClaimRepository = counterClaimRepository;
+        this.schedulerClient = schedulerClient;
         this.objectMapper = objectMapper;
         this.utcClock = utcClock;
     }
@@ -59,7 +66,7 @@ public class CounterClaimPaymentCallbackHandler implements PaymentCallbackStrate
 
             counterClaimEntity.setStatus(CounterClaimState.COUNTER_CLAIM_ISSUED);
             counterClaimEntity.setClaimIssuedDate(LocalDateTime.now(utcClock));
-            counterClaimRepository.save(counterClaimEntity);
+            scheduleCounterClaimIssuedNotification(counterClaimEntity);
             return;
         }
 
@@ -76,5 +83,20 @@ public class CounterClaimPaymentCallbackHandler implements PaymentCallbackStrate
         } catch (IOException e) {
             throw new PaymentCallbackException("Unable to process: " + feesAndPayTaskDataAsString, e);
         }
+    }
+
+    private void scheduleCounterClaimIssuedNotification(CounterClaimEntity entity) {
+        String taskId = UUID.randomUUID().toString();
+        UUID counterClaimId = entity.getId();
+        log.info("Scheduling counter claim issued notification for: {}, with task id: {}", counterClaimId, taskId);
+
+        schedulerClient.scheduleIfNotExists(
+            CounterClaimIssuedNotificationTaskComponent.COUNTER_CLAIM_ISSUED_TASK_DESCRIPTOR
+                .instance(taskId)
+                .data(CounterClaimStatusChangeTaskData.builder()
+                          .counterClaimId(counterClaimId)
+                          .build())
+                .scheduledTo(Instant.now())
+        );
     }
 }

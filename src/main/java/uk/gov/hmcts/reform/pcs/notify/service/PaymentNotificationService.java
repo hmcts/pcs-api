@@ -4,14 +4,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.CounterClaimRepository;
-import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
 
 import java.util.UUID;
 
@@ -31,37 +28,17 @@ public class PaymentNotificationService {
         PcsCaseEntity pcsCase = counterClaim.getPcsCase();
         PartyEntity defendant = counterClaim.getParty();
 
-        FeePaymentEntity feePayment = pcsCase.getClaims().stream()
-            .filter(claim -> claim.getFeePayment() != null
-                && claim.getFeePayment().getParty() != null
-                && claim.getFeePayment().getParty().getId().equals(defendant.getId()))
-            .map(ClaimEntity::getFeePayment)
-            .findFirst()
-            .orElse(null);
-
-        if (feePayment == null) {
-            log.info("Fee payment for counter claim: {} not found, skipping email notification", counterClaimId);
-            return;
-        }
-
-        if (feePayment.getPaymentStatus() != PaymentStatus.PAID) {
-            log.info("Fee payment {} not paid, skipping email notification", feePayment.getId());
-            return;
-        }
-
-        ClaimEntity claim = feePayment.getClaim();
-
-        DefendantResponseEntity defendantResponse = claim.getPcsCase().getDefendantResponses().stream()
+        DefendantResponseEntity defendantResponse = pcsCase.getDefendantResponses().stream()
             .filter(counter -> counter.getParty().getId().equals(defendant.getId()))
             .findFirst()
             .orElse(null);
 
         if (defendantResponse == null) {
-            log.warn("No defendant response found for claim {}", claim.getId());
+            log.warn("No defendant response found for case reference {}", pcsCase.getCaseReference());
             return;
         }
 
-        log.info("Sending counterclaim payment success email for claim {}", claim.getId());
+        log.info("Sending counterclaim payment success email case reference {}", pcsCase.getCaseReference());
         notificationService.sendDefendantResponseCounterclaimPaymentSuccessEmailNotification(defendantResponse);
     }
 }
