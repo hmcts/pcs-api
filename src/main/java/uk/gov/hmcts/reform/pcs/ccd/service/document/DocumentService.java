@@ -23,20 +23,25 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.EvidenceDocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.EvidenceOfDefendants;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
+import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.WalesDocuments;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DocumentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
+import uk.gov.hmcts.reform.pcs.exception.ClaimNotFoundException;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Slf4j
 @AllArgsConstructor
@@ -45,6 +50,7 @@ public class DocumentService {
 
     private final DocumentRepository documentRepository;
     private final DocumentIdExtractor documentIdExtractor;
+    private final DocumentNameService documentNameService;
 
     private static final String CLAIMANT_1 = "Claimant 1";
 
@@ -223,6 +229,69 @@ public class DocumentService {
             case LEGAL_AID_CERTIFICATE -> DocumentType.LEGAL_AID_CERTIFICATE;
             case OTHER -> DocumentType.OTHER;
         };
+    }
+
+    public List<DocumentEntity> linkAdditionalDocumentsToCase(
+        List<ListValue<UploadedDocument>> uploadedDocuments,
+        PcsCaseEntity pcsCase,
+        PartyEntity party,
+        GenAppEntity selectedGenApp
+    ) {
+        if (CollectionUtils.isEmpty(uploadedDocuments)) {
+            log.info("No additional documents to save for case {}", pcsCase.getCaseReference());
+            return Collections.emptyList();
+        }
+
+        Set<String> existingUrls = pcsCase.getDocuments().stream()
+            .map(DocumentEntity::getUrl)
+            .filter(Objects::nonNull)
+            .collect(Collectors.toSet());
+
+        ClaimEntity mainClaim = getMainClaim(pcsCase);
+        String applicationsCategoryId = CaseFileCategory.APPLICATIONS.getId();
+
+        List<DocumentEntity> documentEntities = uploadedDocuments.stream()
+            .map(ListValue::getValue)
+            .filter(Objects::nonNull)
+            .filter(uploaded -> uploaded.getDocument() != null)
+            .filter(uploaded -> !existingUrls.contains(uploaded.getDocument().getUrl()))
+            .map(uploaded -> {
+                String originalFilename = uploaded.getDocument().getFilename();
+                String renamed = (selectedGenApp != null)
+                    ? documentNameService.appendGenAppPostfix(
+                        originalFilename, selectedGenApp, mainClaim, party.getId())
+                    : documentNameService.appendPartyPostfix(originalFilename, mainClaim, party.getId());
+                return DocumentEntity.builder()
+                    .pcsCase(pcsCase)
+                    .party(party)
+                    .generalApplication(selectedGenApp)
+                    .url(uploaded.getDocument().getUrl())
+                    .fileName(renamed)
+                    .binaryUrl(uploaded.getDocument().getBinaryUrl())
+                    .contentType(uploaded.getContentType())
+                    .size(uploaded.getSizeInBytes())
+                    .type(DocumentType.OTHER)
+                    .categoryId(selectedGenApp != null ? applicationsCategoryId : null)
+                    .build();
+            })
+            .toList();
+
+        if (documentEntities.isEmpty()) {
+            log.info("All additional documents for case {} already persisted; nothing to save",
+                pcsCase.getCaseReference());
+            return Collections.emptyList();
+        }
+
+        List<DocumentEntity> saved = documentRepository.saveAll(documentEntities);
+        log.info("Saved {} additional documents for case {} and party {}",
+            saved.size(), pcsCase.getCaseReference(), party.getId());
+        return saved;
+    }
+
+    private static ClaimEntity getMainClaim(PcsCaseEntity pcsCase) {
+        return pcsCase.getClaims().stream()
+            .findFirst()
+            .orElseThrow(() -> new ClaimNotFoundException(pcsCase.getCaseReference()));
     }
 
     public List<DocumentEntity> createDefendantUploadedDocuments(

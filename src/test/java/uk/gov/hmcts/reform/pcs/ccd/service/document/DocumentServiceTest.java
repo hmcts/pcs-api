@@ -29,14 +29,17 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.E
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.EvidenceOfDefendants;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.WarrantOfRestitutionDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
+import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.WalesDocuments;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DocumentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
+import uk.gov.hmcts.reform.pcs.exception.ClaimNotFoundException;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -45,6 +48,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.mock;
@@ -59,6 +63,8 @@ class DocumentServiceTest {
     private DocumentRepository documentRepository;
     @Mock
     private DocumentIdExtractor documentIdExtractor;
+    @Mock
+    private DocumentNameService documentNameService;
     @Captor
     private ArgumentCaptor<List<DocumentEntity>> documentEntityListCaptor;
 
@@ -66,7 +72,7 @@ class DocumentServiceTest {
 
     @BeforeEach
     void setUp() {
-        underTest = new DocumentService(documentRepository, documentIdExtractor);
+        underTest = new DocumentService(documentRepository, documentIdExtractor, documentNameService);
     }
 
     @Test
@@ -868,15 +874,202 @@ class DocumentServiceTest {
         assertThat(entities.getFirst().getSize()).isNull();
     }
 
-    @ParameterizedTest
-    @MethodSource("additionalDocumentTypeScenarios")
-    void shouldMapAdditionalDocumentTypeToDocumentType(AdditionalDocumentType additionalDocumentType,
-                                                       DocumentType expectedDocumentType) {
+    @Test
+    void shouldSaveAdditionalDocumentsForPartyAsOtherTypeWithPartyPostfixWhenNoGenAppSelected() {
+        // Given
+        PcsCaseEntity pcsCase = mock(PcsCaseEntity.class);
+        PartyEntity party = mock(PartyEntity.class);
+        UUID partyId = UUID.randomUUID();
+        ClaimEntity mainClaim = mock(ClaimEntity.class);
+        when(party.getId()).thenReturn(partyId);
+        when(pcsCase.getDocuments()).thenReturn(new ArrayList<>());
+        when(pcsCase.getClaims()).thenReturn(List.of(mainClaim));
+        when(documentNameService.appendPartyPostfix("file-new.pdf", mainClaim, partyId))
+            .thenReturn("file-new - Defendant 1.pdf");
+
+        UploadedDocument uploaded = UploadedDocument.builder()
+            .document(Document.builder()
+                .url("url-new").filename("file-new.pdf").binaryUrl("bin-new").build())
+            .contentType("application/pdf")
+            .sizeInBytes(123L)
+            .build();
+
+        List<ListValue<UploadedDocument>> uploadedDocs = List.of(
+            ListValue.<UploadedDocument>builder().id("1").value(uploaded).build()
+        );
+
+        when(documentRepository.saveAll(anyList())).thenAnswer(inv -> inv.getArgument(0));
+
         // When
-        DocumentType actualDocumentType = underTest.mapAdditionalDocumentTypeToDocumentType(additionalDocumentType);
+        underTest.linkAdditionalDocumentsToCase(uploadedDocs, pcsCase, party, null);
 
         // Then
-        assertThat(actualDocumentType).isEqualTo(expectedDocumentType);
+        verify(documentRepository).saveAll(documentEntityListCaptor.capture());
+        List<DocumentEntity> entities = documentEntityListCaptor.getValue();
+        assertThat(entities).hasSize(1);
+        DocumentEntity entity = entities.getFirst();
+        assertThat(entity.getType()).isEqualTo(DocumentType.OTHER);
+        assertThat(entity.getCategoryId()).isNull();
+        assertThat(entity.getGeneralApplication()).isNull();
+        assertThat(entity.getUrl()).isEqualTo("url-new");
+        assertThat(entity.getFileName()).isEqualTo("file-new - Defendant 1.pdf");
+        assertThat(entity.getBinaryUrl()).isEqualTo("bin-new");
+        assertThat(entity.getContentType()).isEqualTo("application/pdf");
+        assertThat(entity.getSize()).isEqualTo(123L);
+        assertThat(entity.getPcsCase()).isSameAs(pcsCase);
+        assertThat(entity.getParty()).isSameAs(party);
+    }
+
+    @Test
+    void shouldAttachGenAppAndApplicationsCategoryWhenGenAppSelected() {
+        // Given
+        PcsCaseEntity pcsCase = mock(PcsCaseEntity.class);
+        PartyEntity party = mock(PartyEntity.class);
+        UUID partyId = UUID.randomUUID();
+        ClaimEntity mainClaim = mock(ClaimEntity.class);
+        GenAppEntity selectedGenApp = mock(GenAppEntity.class);
+        when(party.getId()).thenReturn(partyId);
+        when(pcsCase.getDocuments()).thenReturn(new ArrayList<>());
+        when(pcsCase.getClaims()).thenReturn(List.of(mainClaim));
+        when(documentNameService.appendGenAppPostfix("file-new.pdf", selectedGenApp, mainClaim, partyId))
+            .thenReturn("file-new GA1 - Defendant 1.pdf");
+
+        UploadedDocument uploaded = UploadedDocument.builder()
+            .document(Document.builder()
+                .url("url-new").filename("file-new.pdf").binaryUrl("bin-new").build())
+            .contentType("application/pdf")
+            .sizeInBytes(123L)
+            .build();
+
+        List<ListValue<UploadedDocument>> uploadedDocs = List.of(
+            ListValue.<UploadedDocument>builder().id("1").value(uploaded).build()
+        );
+
+        when(documentRepository.saveAll(anyList())).thenAnswer(inv -> inv.getArgument(0));
+
+        // When
+        underTest.linkAdditionalDocumentsToCase(uploadedDocs, pcsCase, party, selectedGenApp);
+
+        // Then
+        verify(documentRepository).saveAll(documentEntityListCaptor.capture());
+        List<DocumentEntity> entities = documentEntityListCaptor.getValue();
+        assertThat(entities).hasSize(1);
+        DocumentEntity entity = entities.getFirst();
+        assertThat(entity.getType()).isEqualTo(DocumentType.OTHER);
+        assertThat(entity.getCategoryId()).isEqualTo(CaseFileCategory.APPLICATIONS.getId());
+        assertThat(entity.getGeneralApplication()).isSameAs(selectedGenApp);
+        assertThat(entity.getFileName()).isEqualTo("file-new GA1 - Defendant 1.pdf");
+    }
+
+    @Test
+    void shouldSkipAdditionalDocumentsAlreadyPersistedByUrl() {
+        // Given
+        PcsCaseEntity pcsCase = mock(PcsCaseEntity.class);
+        ClaimEntity mainClaim = mock(ClaimEntity.class);
+
+        DocumentEntity existing = DocumentEntity.builder().url("url-existing").build();
+        List<DocumentEntity> existingDocs = new ArrayList<>();
+        existingDocs.add(existing);
+        when(pcsCase.getDocuments()).thenReturn(existingDocs);
+        when(pcsCase.getClaims()).thenReturn(List.of(mainClaim));
+
+        UploadedDocument duplicate = UploadedDocument.builder()
+            .document(Document.builder()
+                .url("url-existing").filename("dup.pdf").binaryUrl("bin-dup").build())
+            .build();
+        UploadedDocument fresh = UploadedDocument.builder()
+            .document(Document.builder()
+                .url("url-new").filename("new.pdf").binaryUrl("bin-new").build())
+            .build();
+
+        when(documentRepository.saveAll(anyList())).thenAnswer(inv -> inv.getArgument(0));
+
+        PartyEntity party = mock(PartyEntity.class);
+        when(party.getId()).thenReturn(UUID.randomUUID());
+        when(documentNameService.appendPartyPostfix("new.pdf", mainClaim, party.getId()))
+            .thenReturn("new - Defendant 1.pdf");
+
+        List<ListValue<UploadedDocument>> uploadedDocs = List.of(
+            ListValue.<UploadedDocument>builder().id("1").value(duplicate).build(),
+            ListValue.<UploadedDocument>builder().id("2").value(fresh).build()
+        );
+
+        // When
+        underTest.linkAdditionalDocumentsToCase(uploadedDocs, pcsCase, party, null);
+
+        // Then
+        verify(documentRepository).saveAll(documentEntityListCaptor.capture());
+        List<DocumentEntity> entities = documentEntityListCaptor.getValue();
+        assertThat(entities).hasSize(1);
+        assertThat(entities.getFirst().getUrl()).isEqualTo("url-new");
+    }
+
+    @Test
+    void shouldNotCallRepositoryWhenAllAdditionalDocumentsAreDuplicates() {
+        // Given
+        PcsCaseEntity pcsCase = mock(PcsCaseEntity.class);
+
+        List<DocumentEntity> existingDocs = new ArrayList<>();
+        existingDocs.add(DocumentEntity.builder().url("url-existing").build());
+        when(pcsCase.getDocuments()).thenReturn(existingDocs);
+        when(pcsCase.getClaims()).thenReturn(List.of(mock(ClaimEntity.class)));
+
+        UploadedDocument duplicate = UploadedDocument.builder()
+            .document(Document.builder()
+                .url("url-existing").filename("dup.pdf").binaryUrl("bin-dup").build())
+            .build();
+
+        PartyEntity party = mock(PartyEntity.class);
+        List<ListValue<UploadedDocument>> uploadedDocs = List.of(
+            ListValue.<UploadedDocument>builder().id("1").value(duplicate).build()
+        );
+
+        // When
+        underTest.linkAdditionalDocumentsToCase(uploadedDocs, pcsCase, party, null);
+
+        // Then
+        verify(documentRepository, never()).saveAll(anyList());
+    }
+
+    @Test
+    void shouldReturnEmptyListWhenAdditionalDocumentsInputIsNullOrEmpty() {
+        // Given
+        PcsCaseEntity pcsCase = mock(PcsCaseEntity.class);
+        PartyEntity party = mock(PartyEntity.class);
+
+        // When
+        underTest.linkAdditionalDocumentsToCase(null, pcsCase, party, null);
+        underTest.linkAdditionalDocumentsToCase(Collections.emptyList(), pcsCase, party, null);
+
+        // Then
+        verify(documentRepository, never()).saveAll(anyList());
+    }
+
+    @Test
+    void shouldThrowClaimNotFoundExceptionWhenCaseHasNoClaims() {
+        // Given
+        long caseReference = 1234567890123456L;
+        PcsCaseEntity pcsCase = mock(PcsCaseEntity.class);
+        PartyEntity party = mock(PartyEntity.class);
+        when(pcsCase.getDocuments()).thenReturn(new ArrayList<>());
+        when(pcsCase.getClaims()).thenReturn(Collections.emptyList());
+        when(pcsCase.getCaseReference()).thenReturn(caseReference);
+
+        UploadedDocument uploaded = UploadedDocument.builder()
+            .document(Document.builder()
+                .url("url-new").filename("file-new.pdf").binaryUrl("bin-new").build())
+            .build();
+        List<ListValue<UploadedDocument>> uploadedDocs = List.of(
+            ListValue.<UploadedDocument>builder().id("1").value(uploaded).build()
+        );
+
+        // When / Then
+        assertThatThrownBy(() ->
+            underTest.linkAdditionalDocumentsToCase(uploadedDocs, pcsCase, party, null))
+            .isInstanceOf(ClaimNotFoundException.class)
+            .hasMessageContaining(String.valueOf(caseReference));
+
+        verify(documentRepository, never()).saveAll(anyList());
     }
 
     @Test
