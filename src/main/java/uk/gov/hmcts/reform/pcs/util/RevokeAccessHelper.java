@@ -36,9 +36,9 @@ public class RevokeAccessHelper {
 
     /**
      * 1. delete any drafts created by the existing LR's
-     * 2. revoke access for the legal representatives for the Organisation
-     * 3. delete this legal representatives draft response to the claim
-     * 4. deactivate the party legal representative organisation entities linked to the defendant to the LRO
+     * 2. revoke access for the organisation LR's
+     * - but only if the organisation does not represent any other defendant for the case
+     * 3. deactivate the party legal representative organisation entities linked to the defendant to the LRO
      */
     public void revokeOrganisationAccessToRespondToClaim(
         PcsCaseEntity caseEntity,
@@ -50,11 +50,7 @@ public class RevokeAccessHelper {
             EventId.respondPossessionClaim,
             String.valueOf(legalRepresentativeOrganisation.getId()), defendantParty.getId()
         );
-        /*
-         * revoke access for the legal representatives for the Organisation
-         * AND delete this legal representatives draft response to the claim
-         * - but only if the organisation does not represent any other defendant for the case
-         */
+
         boolean representsOtherDefendantsForCase = this.representsOtherDefendantsForCase(
             legalRepresentativeOrganisation,
             caseEntity.getCaseReference(),
@@ -72,7 +68,6 @@ public class RevokeAccessHelper {
                       legalRepresentativeIds, caseEntity.getCaseReference());
         }
 
-        // deactivate the party legal representative organisation entities linked to the defendant to the LRO
         List<PartyLegalRepresentativeOrganisationEntity> partyLegalRepresentativeOrganisationEntities =
             partyLegalRepresentativeOrganisationRepository
                 .findAllActiveByPartyIdLegalRepresentativeOrganisationIdAndCase(
@@ -80,7 +75,6 @@ public class RevokeAccessHelper {
                     legalRepresentativeOrganisation.getId(),
                     caseEntity.getCaseReference()
                 );
-
         if (!partyLegalRepresentativeOrganisationEntities.isEmpty()) {
             partyLegalRepresentativeOrganisationEntities.forEach(this::invalidatePartyLegalRepresentativeOrganisation);
             partyLegalRepresentativeOrganisationRepository.saveAll(partyLegalRepresentativeOrganisationEntities);
@@ -89,10 +83,8 @@ public class RevokeAccessHelper {
 
     /**
      * 1. revoke the defendants role to the case
-     *         2. delete the defendant's draft response to the claim
-     *         3. if the defendant has not started a response
-     *         a) revoke the defendants access to the response to the claim
-     *         b) Invalidate the PIN
+     * 2. delete the defendant's draft response to the claim
+     * 3. invalidate the PIN
      */
     public void revokeDefendantsAccessToRespondToClaim(PcsCaseEntity caseEntity, PartyEntity defendantParty) {
         if (defendantParty.getIdamId() != null) {
