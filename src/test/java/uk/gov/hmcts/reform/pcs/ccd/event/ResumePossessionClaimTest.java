@@ -57,6 +57,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mock.Strictness.LENIENT;
 import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -352,6 +353,28 @@ class ResumePossessionClaimTest extends BaseEventTest {
             // Then
             assertThat(updatedCaseData.getHasUnsubmittedCaseData()).isEqualTo(expectedCaseDataFlag);
             verify(draftCaseDataService).hasUnsubmittedCaseData(TEST_CASE_REFERENCE, resumePossessionClaim);
+        }
+
+        @Test
+        void shouldAllocateRegionId() {
+            // Given
+            Integer regionId = 123;
+            Integer locationId = 456;
+            doAnswer(invocation -> {
+                PCSCase argument = invocation.getArgument(0);
+                argument.setCaseManagementLocationNumber(locationId);
+                argument.setRegionId(regionId);
+                return null;
+            }).when(pcsCaseService).allocateRegionId(any(PCSCase.class));
+            PCSCase caseData = PCSCase.builder().legislativeCountry(ENGLAND).propertyAddress(mock(AddressUK.class))
+                .build();
+
+            // When
+            PCSCase updatedCaseData = callStartHandler(caseData);
+
+            // Then
+            assertThat(updatedCaseData.getCaseManagementLocationNumber()).isEqualTo(locationId);
+            assertThat(updatedCaseData.getRegionId()).isEqualTo(regionId);
         }
 
         private static Stream<Arguments> unsubmittedDataFlagScenarios() {

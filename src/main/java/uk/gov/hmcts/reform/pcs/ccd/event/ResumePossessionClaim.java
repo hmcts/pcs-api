@@ -150,6 +150,8 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
 
         caseData.setClaimantContactPreferences(contactPreferences);
 
+        pcsCaseService.allocateRegionId(caseData);
+
         return caseData;
     }
 
