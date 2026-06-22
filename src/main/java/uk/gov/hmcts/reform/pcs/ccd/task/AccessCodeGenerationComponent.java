@@ -51,20 +51,22 @@ public class AccessCodeGenerationComponent {
             ))
             .execute((taskInstance, executionContext) -> {
                 String caseReference = taskInstance.getData().getCaseReference();
+                int attempt = executionContext.getExecution().consecutiveFailures + 1;
                 log.debug("Starting generation of access codes for all parties in case: {}", caseReference);
 
                 try {
-                    accessCodeGenerationService.createAccessCodesForParties(caseReference);
+                    accessCodeGenerationService.createAccessCodesForParties(caseReference, isFinalAttempt(attempt));
                     return new CompletionHandler.OnCompleteRemove<>();
 
                 } catch (Exception e) {
                     log.error("Party access code generation failed for case: {}. Attempt {}/{}",
-                              caseReference,
-                              executionContext.getExecution().consecutiveFailures + 1,
-                              maxRetries,
-                              e);
+                              caseReference, attempt, maxRetries, e);
                     throw e;
                 }
             });
+    }
+
+    private boolean isFinalAttempt(int attempt) {
+        return attempt >= maxRetries;
     }
 }

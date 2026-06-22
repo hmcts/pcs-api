@@ -19,6 +19,8 @@ import java.time.Duration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -74,13 +76,14 @@ class AccessCodeGenerationComponentTest {
             .build();
 
         when(taskInstance.getData()).thenReturn(data);
+        when(executionContext.getExecution()).thenReturn(execution);
         CustomTask<AccessCodeTaskData> task = accessCodeGenerationComponent.accessCodeGenerationTask();
 
         //When
         CompletionHandler<AccessCodeTaskData> result = task.execute(taskInstance, executionContext);
 
         //Then
-        verify(accessCodeGenerationService).createAccessCodesForParties(caseReference);
+        verify(accessCodeGenerationService).createAccessCodesForParties(caseReference, false);
 
         assertThat(result).isInstanceOf(CompletionHandler.OnCompleteRemove.class);
     }
@@ -100,7 +103,7 @@ class AccessCodeGenerationComponentTest {
 
         doThrow(mock(RuntimeException.class))
             .when(accessCodeGenerationService)
-            .createAccessCodesForParties(caseReference);
+            .createAccessCodesForParties(eq(caseReference), anyBoolean());
 
         //When
         CustomTask<AccessCodeTaskData> task = accessCodeGenerationComponent.accessCodeGenerationTask();
@@ -109,7 +112,7 @@ class AccessCodeGenerationComponentTest {
         assertThatThrownBy(() -> task.execute(taskInstance, executionContext))
             .isInstanceOf(RuntimeException.class);
 
-        verify(accessCodeGenerationService).createAccessCodesForParties(caseReference);
+        verify(accessCodeGenerationService).createAccessCodesForParties(eq(caseReference), anyBoolean());
     }
 
 }
