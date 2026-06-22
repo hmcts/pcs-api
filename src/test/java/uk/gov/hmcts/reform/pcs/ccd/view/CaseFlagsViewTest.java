@@ -7,15 +7,16 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
-import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseFlagEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CasePartyFlagEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.FlagRefDataEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyId;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -36,32 +37,25 @@ class CaseFlagsViewTest {
 
     @Test
     void shouldMapBasicCaseFlagFieldsWhenCaseFlagsAreNull() {
-        // Given
         PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().build();
         PCSCase pcsCase = PCSCase.builder().build();
 
-        // When
         underTest.setCaseFields(pcsCase, pcsCaseEntity);
 
-        // Then
         assertNotNull(pcsCase.getCaseFlags());
         assertNotNull(pcsCase.getCaseFlags());
         assertNull(pcsCase.getCaseFlags().getDetails());
-
     }
 
     @Test
     void shouldMapBasicCaseFlagFieldsWhenCaseFlagsExist() {
-        // Given
         PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
         PCSCase pcsCase = PCSCase.builder().build();
 
         pcsCaseEntity.setCaseFlags(List.of(createMockCaseFlagsEntity()));
 
-        // When
         underTest.setCaseFields(pcsCase, pcsCaseEntity);
 
-        // Then
         assertNotNull(pcsCase.getCaseFlags());
         assertEquals(1, pcsCase.getCaseFlags().getDetails().size());
         assertEquals("CF0007", pcsCase.getCaseFlags().getDetails().getFirst().getValue().getFlagCode());
@@ -69,11 +63,7 @@ class CaseFlagsViewTest {
 
     @Test
     void shouldMapComplexPartyFlagFieldsWhenPartiesExist() {
-        // Given - a defendant (with flags) and a non-defendant organisation party.
-        // The case parties are wrapped from the same entity set (as PCSCaseView does),
-        // with the entity id dropped during mapping, so the two collections share order.
         PartyEntity defendantEntity = createPartyEntity(null);
-        markAsDefendant(defendantEntity);
         defendantEntity.setDefendantFlags(List.of(createMockCasePartyFlagsEntity()));
 
         PartyEntity orgEntity = createPartyEntity("King Smith");
@@ -85,12 +75,10 @@ class CaseFlagsViewTest {
             .build();
         PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
         pcsCaseEntity.setParties(partyEntities);
+        setClaimParties(pcsCaseEntity, createClaimParty(defendantEntity, PartyRole.DEFENDANT));
 
-        // When
         underTest.setCaseFields(pcsCase, pcsCaseEntity);
 
-        // Then - both parties remain, each ListValue now carries its entity id,
-        // but only the defendant is given flags
         assertNotNull(pcsCase.getParties());
         assertEquals(2, pcsCase.getParties().size());
 
@@ -106,30 +94,126 @@ class CaseFlagsViewTest {
 
     @Test
     void shouldNotMapDefendantFlagsForNonDefendantIndividual() {
-        // Given - an individual (no orgName) who is an underlessee, not a defendant
         PartyEntity individualUnderlessee = PartyEntity.builder()
             .id(UUID.randomUUID())
             .firstName("Under")
             .lastName("Lessee")
             .build();
-        individualUnderlessee.setClaimParties(new HashSet<>(Set.of(
-            ClaimPartyEntity.builder().role(PartyRole.UNDERLESSEE_OR_MORTGAGEE).build())));
 
         PCSCase pcsCase = PCSCase.builder()
             .parties(List.of(mappedParty(individualUnderlessee)))
             .build();
         PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
         pcsCaseEntity.setParties(Set.of(individualUnderlessee));
+        setClaimParties(pcsCaseEntity, createClaimParty(individualUnderlessee, PartyRole.UNDERLESSEE_OR_MORTGAGEE));
 
-        // When
         underTest.setCaseFields(pcsCase, pcsCaseEntity);
 
-        // Then - retained, but no defendant flags applied
         assertEquals(1, pcsCase.getParties().size());
         Party mapped = pcsCase.getParties().getFirst().getValue();
         assertNull(mapped.getDefendantFlags());
         assertEquals("Under", mapped.getFirstName());
         assertEquals("Lessee", mapped.getLastName());
+    }
+
+    @Test
+    void shouldNotMapDefendantFlagsWhenNoClaimsExist() {
+        PartyEntity partyEntity = createPartyEntity(null);
+
+        PCSCase pcsCase = PCSCase.builder()
+            .parties(List.of(mappedParty(partyEntity)))
+            .build();
+        PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
+        pcsCaseEntity.setParties(Set.of(partyEntity));
+
+        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+
+        Party mapped = pcsCase.getParties().getFirst().getValue();
+        assertNull(mapped.getDefendantFlags());
+    }
+
+    @Test
+    void shouldUsePartyEntityIdWhenClaimPartyEmbeddedIdHasNoPartyId() {
+        PartyEntity defendantEntity = createPartyEntity(null);
+        ClaimPartyEntity claimParty = ClaimPartyEntity.builder()
+            .id(new ClaimPartyId())
+            .party(defendantEntity)
+            .role(PartyRole.DEFENDANT)
+            .build();
+
+        PCSCase pcsCase = PCSCase.builder()
+            .parties(List.of(mappedParty(defendantEntity)))
+            .build();
+        PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
+        pcsCaseEntity.setParties(Set.of(defendantEntity));
+        setClaimParties(pcsCaseEntity, claimParty);
+
+        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+
+        Party mapped = pcsCase.getParties().getFirst().getValue();
+        assertNotNull(mapped.getDefendantFlags());
+        assertEquals(0, mapped.getDefendantFlags().getDetails().size());
+    }
+
+    @Test
+    void shouldIgnoreDefendantClaimPartyWhenNoPartyIdIsAvailable() {
+        PartyEntity partyEntity = createPartyEntity(null);
+        ClaimPartyEntity claimParty = ClaimPartyEntity.builder()
+            .id(new ClaimPartyId())
+            .role(PartyRole.DEFENDANT)
+            .build();
+
+        PCSCase pcsCase = PCSCase.builder()
+            .parties(List.of(mappedParty(partyEntity)))
+            .build();
+        PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
+        pcsCaseEntity.setParties(Set.of(partyEntity));
+        setClaimParties(pcsCaseEntity, claimParty);
+
+        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+
+        Party mapped = pcsCase.getParties().getFirst().getValue();
+        assertNull(mapped.getDefendantFlags());
+    }
+
+    @Test
+    void shouldMapComplexPartyFlagFieldsWhenPartiesExistsWithNoFlags() {
+        PartyEntity defendantEntity = createPartyEntity(null);
+
+        PCSCase pcsCase = PCSCase.builder()
+            .parties(List.of(mappedParty(defendantEntity)))
+            .build();
+        PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
+        pcsCaseEntity.setParties(Set.of(defendantEntity));
+        setClaimParties(pcsCaseEntity, createClaimParty(defendantEntity, PartyRole.DEFENDANT));
+
+        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+
+        assertNotNull(pcsCase.getParties());
+        assertEquals(1, pcsCase.getParties().size());
+        Party party = pcsCase.getParties().getFirst().getValue();
+        assertNotNull(party.getDefendantFlags());
+        assertEquals(0, party.getDefendantFlags().getDetails().size());
+    }
+
+    @Test
+    void shouldHandleNullCaseFlagsGracefully() {
+        PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
+        PCSCase pcsCase = PCSCase.builder().build();
+
+        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+
+        assertNull(pcsCase.getCaseFlags().getDetails());
+    }
+
+    @Test
+    void shouldHandleNullPartiesGracefully() {
+        PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
+        PCSCase pcsCase = PCSCase.builder().build();
+
+        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+
+        assertNull(pcsCase.getParties());
     }
 
     private Party findPartyById(PCSCase pcsCase, String id) {
@@ -140,13 +224,7 @@ class CaseFlagsViewTest {
             .orElseThrow();
     }
 
-    private void markAsDefendant(PartyEntity partyEntity) {
-        partyEntity.setClaimParties(new HashSet<>(Set.of(
-            ClaimPartyEntity.builder().role(PartyRole.DEFENDANT).build())));
-    }
-
     private PartyEntity createPartyEntity(String orgName) {
-
         return PartyEntity.builder()
             .id(UUID.randomUUID())
             .orgName(orgName)
@@ -154,8 +232,6 @@ class CaseFlagsViewTest {
     }
 
     private ListValue<Party> mappedParty(PartyEntity entity) {
-        // Mirrors PCSCaseView.mapAndWrapParties: the entity id is NOT carried onto the
-        // domain Party or the ListValue - CaseFlagsView is responsible for attaching it.
         return ListValue.<Party>builder()
             .value(Party.builder()
                 .orgName(entity.getOrgName())
@@ -165,80 +241,53 @@ class CaseFlagsViewTest {
             .build();
     }
 
-    @Test
-    void shouldMapComplexPartyFlagFieldsWhenPartiesExistsWithNoFlags() {
-        // Given - a defendant with no party flags
-        PartyEntity defendantEntity = createPartyEntity(null);
-        markAsDefendant(defendantEntity);
-
-        PCSCase pcsCase = PCSCase.builder()
-            .parties(List.of(mappedParty(defendantEntity)))
+    private void setClaimParties(PcsCaseEntity pcsCaseEntity, ClaimPartyEntity... claimParties) {
+        UUID claimId = UUID.randomUUID();
+        ClaimEntity claim = ClaimEntity.builder()
+            .id(claimId)
+            .claimParties(List.of(claimParties))
             .build();
-        PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
-        pcsCaseEntity.setParties(Set.of(defendantEntity));
 
-        // When
-        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+        for (ClaimPartyEntity claimParty : claimParties) {
+            claimParty.getId().setClaimId(claimId);
+        }
 
-        // Then
-        assertNotNull(pcsCase.getParties());
-        assertEquals(1, pcsCase.getParties().size());
-        Party party = pcsCase.getParties().getFirst().getValue();
-        assertNotNull(party.getDefendantFlags());
-        assertEquals(0, party.getDefendantFlags().getDetails().size());
+        pcsCaseEntity.setClaims(List.of(claim));
     }
 
-    @Test
-    void shouldHandleNullCaseFlagsGracefully() {
-        // Given
-        PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
-        PCSCase pcsCase = PCSCase.builder().build();
+    private ClaimPartyEntity createClaimParty(PartyEntity partyEntity, PartyRole role) {
+        ClaimPartyId id = new ClaimPartyId();
+        id.setPartyId(partyEntity.getId());
 
-        // When
-        underTest.setCaseFields(pcsCase, pcsCaseEntity);
-
-        // Then
-        assertNull(pcsCase.getCaseFlags().getDetails());
-    }
-
-    @Test
-    void shouldHandleNullPartiesGracefully() {
-        // Given - no parties have been mapped onto the case
-        PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
-        PCSCase pcsCase = PCSCase.builder().build();
-
-        // When
-        underTest.setCaseFields(pcsCase, pcsCaseEntity);
-
-        // Then - nothing to enrich, no failure
-        assertNull(pcsCase.getParties());
+        return ClaimPartyEntity.builder()
+            .id(id)
+            .party(partyEntity)
+            .role(role)
+            .build();
     }
 
     private CaseFlagEntity createMockCaseFlagsEntity() {
-
-        CaseFlagEntity  caseFlagEntity = new CaseFlagEntity();
+        CaseFlagEntity caseFlagEntity = new CaseFlagEntity();
         caseFlagEntity.setId(UUID.randomUUID());
         caseFlagEntity.setFlagComment("Urgent case");
-        caseFlagEntity.setPaths(UUID.randomUUID() + ":"  + "Case");
+        caseFlagEntity.setPaths(UUID.randomUUID() + ":" + "Case");
         caseFlagEntity.setFlagRefData(createMockRefDataFlagsEntity("CF0007", "Urgent case"));
 
-        return  caseFlagEntity;
+        return caseFlagEntity;
     }
 
     private CasePartyFlagEntity createMockCasePartyFlagsEntity() {
-
-        CasePartyFlagEntity  casePartyFlagEntity = new CasePartyFlagEntity();
+        CasePartyFlagEntity casePartyFlagEntity = new CasePartyFlagEntity();
 
         casePartyFlagEntity.setId(UUID.randomUUID());
         casePartyFlagEntity.setFlagComment("Language Interpreter");
         casePartyFlagEntity.setPaths(UUID.randomUUID() + ":" + "Case");
         casePartyFlagEntity.setFlagRefData(createMockRefDataFlagsEntity("PF0015", "Language Interpreter"));
 
-        return  casePartyFlagEntity;
+        return casePartyFlagEntity;
     }
 
     private FlagRefDataEntity createMockRefDataFlagsEntity(String flagCode, String flagName) {
-
         return FlagRefDataEntity.builder()
             .flagCode(flagCode)
             .flagName(flagName)

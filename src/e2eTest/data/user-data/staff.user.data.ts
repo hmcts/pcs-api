@@ -1,5 +1,5 @@
 export const staff = {
-  //pcs_ctsc_admin_email: 'pcs-ctsc-admin-01@justice.gov.uk', It is already used in e2e tests
+  pcs_ctsc_admin_email: 'pcs-ctsc-admin-01@justice.gov.uk',
   pcs_ctsc_admin_ca_email: 'pcs-ctsc-admin-ca-01@justice.gov.uk',
   pcs_ctsc_admin_ts_email: 'pcs-ctsc-admin-ts-01@justice.gov.uk',
   pcs_ctsc_admin_ts_ca_email: 'pcs-ctsc-admin-ts-ca-01@justice.gov.uk',
@@ -31,13 +31,17 @@ export const staff = {
   pcs_wlu_team_leader_ts_ca_email: 'pcs-wlu-team-leader-ts-ca-01@justice.gov.uk',
 };
 
-export const caseWorker = {
-  refundRequester:  {
-    email: 'pcs-ctsc-admin-02@justice.gov.uk',
-    password: process.env.IDAM_PCS_USER_PASSWORD
-  },
-  refundApprover:  {
-    email: 'pcs-ctsc-admin-02@hmcts.net',
-    password: process.env.IDAM_PCS_USER_PASSWORD
-  }
+/** First user from each CTSC / WLU role group — for `E2E_TEST_SCOPE=@nightly`. */
+export const staffNightly: readonly string[] = [
+  //staff.pcs_ctsc_admin_email,
+  staff.pcs_ctsc_team_leader_email,
+  staff.pcs_wlu_administrator_email,
+  staff.pcs_wlu_team_leader_email,
+];
+
+/** All active staff users — for `@release` and other scopes. */
+export const staffFull: readonly string[] = Object.values(staff);
+
+export function staffUserEmailsForScope(scope = process.env.E2E_TEST_SCOPE?.trim()): string[] {
+  return scope === '@nightly' ? [...staffNightly] : [...staffFull];
 }
