@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.pcs.ccd.event.enforcetheorder;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
 import uk.gov.hmcts.ccd.sdk.api.DecentralisedConfigBuilder;
@@ -28,6 +29,7 @@ import uk.gov.hmcts.reform.pcs.ccd.type.DynamicMultiSelectStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.util.FeeApplier;
+import uk.gov.hmcts.reform.pcs.config.RequestInterceptor;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
 
 import java.util.ArrayList;
@@ -81,6 +83,7 @@ public class EnforceTheOrder implements CCDConfig<PCSCase, State, UserRole> {
     }
 
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
+        MDC.put(RequestInterceptor.CASE_ID, String.valueOf(eventPayload.caseReference()));
         PCSCase pcsCase = eventPayload.caseData();
         pcsCase.setFormattedPropertyAddress(addressFormatter
                 .formatMediumAddress(pcsCase.getPropertyAddress(), BR_DELIMITER));

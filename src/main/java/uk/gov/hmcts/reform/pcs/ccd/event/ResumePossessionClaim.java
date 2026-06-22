@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.pcs.ccd.event;
 import com.github.kagkarlsson.scheduler.SchedulerClient;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
@@ -31,6 +32,7 @@ import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.util.MoneyFormatter;
+import uk.gov.hmcts.reform.pcs.config.RequestInterceptor;
 import uk.gov.hmcts.reform.pcs.config.SchedulingConfig;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
@@ -92,6 +94,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     }
 
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
+        MDC.put(RequestInterceptor.CASE_ID, String.valueOf(eventPayload.caseReference()));
         long caseReference = eventPayload.caseReference();
         PCSCase caseData = eventPayload.caseData();
 

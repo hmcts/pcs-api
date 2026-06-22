@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.event.genapp;
 
 import lombok.RequiredArgsConstructor;
+import org.slf4j.MDC;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.callback.Start;
@@ -9,6 +10,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.util.FeeApplier;
+import uk.gov.hmcts.reform.pcs.config.RequestInterceptor;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 import uk.gov.hmcts.reform.pcs.service.LegalRepresentativeService;
@@ -24,6 +26,7 @@ public class StartEventHandler implements Start<PCSCase, State> {
     private final FeeApplier feeApplier;
 
     public PCSCase start(EventPayload<PCSCase, State> eventPayload) {
+        MDC.put(RequestInterceptor.CASE_ID, String.valueOf(eventPayload.caseReference()));
         long caseReference = eventPayload.caseReference();
         PCSCase caseData = eventPayload.caseData();
 
