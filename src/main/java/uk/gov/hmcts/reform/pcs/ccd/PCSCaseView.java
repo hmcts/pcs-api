@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.pcs.ccd;
 
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.slf4j.MDC;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.CaseView;
 import uk.gov.hmcts.ccd.sdk.CaseViewRequest;
@@ -38,6 +39,7 @@ import uk.gov.hmcts.reform.pcs.ccd.view.StatementOfTruthView;
 import uk.gov.hmcts.reform.pcs.ccd.view.TenancyLicenceView;
 import uk.gov.hmcts.reform.pcs.ccd.view.globalsearch.CaseFieldsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.globalsearch.SearchCriteriaIndexer;
+import uk.gov.hmcts.reform.pcs.config.RequestInterceptor;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
@@ -90,6 +92,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
     @Override
     public PCSCase getCase(CaseViewRequest<State> request) {
         long caseReference = request.caseRef();
+        MDC.put(RequestInterceptor.CASE_ID, String.valueOf(caseReference));
         State state = request.state();
         PCSCase pcsCase = getSubmittedCase(caseReference);
         boolean hasUnsubmittedCaseData = caseHasUnsubmittedData(caseReference, state);
