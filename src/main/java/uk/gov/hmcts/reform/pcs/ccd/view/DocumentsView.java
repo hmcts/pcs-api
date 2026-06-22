@@ -82,7 +82,7 @@ public class DocumentsView {
         }
 
         // Is not an additional document
-        return isDescriptionEmpty(documentEntity);
+        return !isDescriptionEmpty(documentEntity);
     }
 
     public static boolean isDescriptionEmpty(DocumentEntity documentEntity) {

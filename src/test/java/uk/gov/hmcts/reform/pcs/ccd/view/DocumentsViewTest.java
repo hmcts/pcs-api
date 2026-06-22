@@ -215,7 +215,7 @@ class DocumentsViewTest {
 
     @ParameterizedTest
     @MethodSource("caseDetailsTabDocuments")
-    void shouldFilterOutDocumentsThatHaveADescription(DocumentType documentType) {
+    void shouldNotFilterOutDocumentsThatHaveADescription(DocumentType documentType) {
         // Given
         UUID document1Id = UUID.randomUUID();
         DocumentEntity documentEntity = DocumentEntity.builder()
