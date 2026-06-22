@@ -1,4 +1,4 @@
-import {actionRecord, IAction} from '@utils/interfaces';
+import {IAction} from '@utils/interfaces';
 import {ClickTabAction} from '@utils/actions/element-actions/clickTab.action';
 import {InputTextAction} from '@utils/actions/element-actions/inputText.action';
 import {CheckAction} from '@utils/actions/element-actions/check.action';
@@ -147,8 +147,10 @@ export class ActionRegistry {
     ['handleJudgeBookingPage', new CaseFlagAction()],
     ['searchResults', new GlobalSearchCaseAction()],
     ['enterPaymentDetails', new FeeAndPayAction()],
+    ['requestRemission', new FeeAndPayAction()],
     ['requestRefund', new FeeAndPayAction()],
-    ['approveRefund', new FeeAndPayAction()]
+    ['approveRefund', new FeeAndPayAction()],
+    ['rejectRefund', new FeeAndPayAction()]
   ]);
 
   static getAction(actionName: string): IAction {

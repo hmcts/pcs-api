@@ -5,6 +5,7 @@ import { enterPaymentDetails } from '@data/page-data/enterPaymentDetails.page.da
 import {caseSummary, serviceRequest} from '@data/page-data';
 import {backDateTheCasePaymentApiData} from "@data/api-data/backDateTheCasePayment.api.data";
 import Axios from "axios";
+import {refundAndRemission} from "@data/user-data/staff.user.data";
 
 export class FeeAndPayAction implements IAction {
   async execute(page: Page, action: string, fieldName: actionData | actionRecord, data?: actionData): Promise<void> {
@@ -15,8 +16,10 @@ export class FeeAndPayAction implements IAction {
       ['clickPayNowLink', () => this.clickPayNowLink(fieldName as actionRecord, page)],
       ['verifyStatusInHistoryAndSummaryTab', () => this.verifyStatusInHistoryAndSummaryTab(fieldName as actionRecord, page)],
       ['backDateTheCasePaymentAPI', () => this.backDateTheCasePaymentAPI()],
-      ['requestRefund', () => this.requestRefund()],
-      ['approveRefund', () => this.approveRefund()],
+      ['requestRemission', () => this.requestRemission(page)],
+      ['requestRefund', () => this.requestRefund(page)],
+      ['approveRefund', () => this.approveRefund(page)],
+      ['rejectRefund', () => this.rejectRefund(page)],
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -145,14 +148,72 @@ export class FeeAndPayAction implements IAction {
     }
   }
 
-  private async requestRefund(): Promise<void> {
-    await performAction('clickLink', serviceRequest.reviewLink);
-    await performAction('clickButton', serviceRequest.issueRefundButton);
-    await performAction('check', 'select');
-
-
+  private async navigateToServiceRequestReview(page: Page): Promise<void> {
+    await performAction('clickLink', serviceRequest.viewLink);
+    await performAction('clickTab', caseSummary.servieRequestTab);
+    await page.getByRole('link', { name: serviceRequest.reviewLink }).first().click();
   }
 
-  private async approveRefund(): Promise<void> {
+  private async requestRemission(page: Page): Promise<void> {
+    await this.navigateToServiceRequestReview(page);
+    await performAction('clickButton', serviceRequest.addRemissionButton);
+    await performAction('inputText', serviceRequest.remissionCodeLabel, serviceRequest.remissionCodeValue);
+    await performAction('clickButton', serviceRequest.continueButton);
+    await page.getByRole('spinbutton', { name: 'amount' }).fill(serviceRequest.remissionAmountValue);
+    await performAction('clickButton', serviceRequest.continueButton);
+    await performAction('clickButton', serviceRequest.addRemissionButton);
+    await performAction('clickButton', serviceRequest.continueButton);
+    await performAction('inputText', serviceRequest.refundInformationLabel, refundAndRemission.requesterEmail);
+    await performAction('clickButton', serviceRequest.continueButton);
+    await performAction('clickButton', serviceRequest.submitRefundButton);
+  }
+
+  private async selectFeeForRefund(page: Page, feeName: string, refundAmount: string): Promise<void> {
+    const feeRow = page.locator('tr[formarrayname="feesList"]').filter({ hasText: feeName });
+    await feeRow.getByRole('checkbox').check();
+    await feeRow.locator('input[formcontrolname="refund_amount"]').fill(refundAmount);
+  }
+
+  private async requestRefund(page: Page): Promise<void> {
+    await this.navigateToServiceRequestReview(page);
+    await performAction('clickButton', serviceRequest.issueRefundButton);
+    await this.selectFeeForRefund(page, serviceRequest.recoveryOfLandCountyCourtCheckbox, serviceRequest.refundAmountValue);
+    await performAction('clickButton', serviceRequest.continueButton);
+    await page.locator('.govuk-radios__item').filter({ hasText: 'Amended claim' }).locator('input').check();
+    await performAction('clickButton', serviceRequest.continueButton);
+    await performAction('inputText', serviceRequest.refundInformationLabel, refundAndRemission.requesterEmail);
+    await performAction('clickButton', serviceRequest.continueButton);
+    await performAction('clickButton', serviceRequest.submitRefundButton);
+  }
+
+  private async navigateToRefundsReview(page: Page): Promise<void> {
+    await performAction('clickLink', serviceRequest.viewLink);
+    await performAction('clickTab', caseSummary.servieRequestTab);
+    await page.locator('ccpay-refund-status').getByRole('link', { name: serviceRequest.reviewLink }).click();
+  }
+
+  private async approveRefund(page: Page): Promise<void> {
+    await this.navigateToRefundsReview(page);
+    await performAction('clickButton', serviceRequest.processRefundButton);
+    await page.getByRole('radio', { name: serviceRequest.approveRefundOption, exact: true }).check();
+    await performAction('clickButton', serviceRequest.submitButton);
+    await performValidation('mainHeader', serviceRequest.refundApprovedHeader);
+    await performAction('clickLink', serviceRequest.returnToCaseLink);
+    await performAction('clickTab', caseSummary.servieRequestTab);
+    await page.getByLabel(caseSummary.servieRequestTab).getByText(serviceRequest.refundsTab).click();
+    await expect(page.getByRole('cell', { name: serviceRequest.approvedStatus, exact: true })).toBeVisible();
+  }
+
+  private async rejectRefund(page: Page): Promise<void> {
+    await this.navigateToRefundsReview(page);
+    await performAction('clickButton', serviceRequest.processRefundButton);
+    await page.getByRole('radio', { name: serviceRequest.rejectRefundOption, exact: true }).check();
+    await page.getByRole('radio', { name: serviceRequest.rejectReasonOption, exact: true }).check();
+    await performAction('clickButton', serviceRequest.submitButton);
+    await performValidation('mainHeader', serviceRequest.refundRejectedHeader);
+    await performAction('clickLink', serviceRequest.returnToCaseLink);
+    await performAction('clickTab', caseSummary.servieRequestTab);
+    await page.getByLabel(caseSummary.servieRequestTab).getByText(serviceRequest.refundsTab).click();
+    await expect(page.getByRole('cell', { name: serviceRequest.rejectedStatus, exact: true })).toBeVisible();
   }
 }
