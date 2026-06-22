@@ -1,24 +1,5 @@
 [
   {
-    "email": "pcs-solicitor1@test.com",
-    "id": "f6484bbb-c10e-319b-ab8d-14361a7d2a23",
-    "roleAssignments": [
-      {
-        "roleType": "ORGANISATION",
-        "roleName": "idam:caseworker-pcs-solicitor",
-        "grantType": "STANDARD",
-        "roleCategory": "PROFESSIONAL",
-        "classification": "PUBLIC",
-        "readOnly": false,
-        "attributes": {
-          "jurisdiction": "PCS",
-          "caseType": "PCS"
-        },
-        "authorisations": []
-      }
-    ]
-  },
-  {
     "email": "citizen@pcs.com",
     "id": "355fe639-be35-3723-b802-c91d3a9372e7",
     "roleAssignments": [

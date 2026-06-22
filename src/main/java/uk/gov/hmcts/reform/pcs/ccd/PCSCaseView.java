@@ -92,10 +92,6 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         long caseReference = request.caseRef();
         State state = request.state();
 
-        if (State.DELETED == state && pcsCaseRepository.findByCaseReference(caseReference).isEmpty()) {
-            return PCSCase.builder().build();
-        }
-
         PCSCase pcsCase = getSubmittedCase(caseReference);
         boolean hasUnsubmittedCaseData = caseHasUnsubmittedData(caseReference, state);
 

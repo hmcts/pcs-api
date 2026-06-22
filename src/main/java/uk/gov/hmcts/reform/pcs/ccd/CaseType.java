@@ -80,9 +80,6 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
         builder.searchResultFields()
             .caseReferenceField();
 
-        builder.workBasketInputFields()
-            .caseReferenceField();
-
         builder.workBasketResultFields()
             .caseReferenceField()
             .field(PCSCase::getPropertyAddress, "Property Address");

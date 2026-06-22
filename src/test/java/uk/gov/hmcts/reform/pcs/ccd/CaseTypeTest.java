@@ -98,7 +98,6 @@ class CaseTypeTest {
         when(builder.searchInputFields()).thenReturn(searchBuilder);
         when(builder.searchCasesFields()).thenReturn(searchCasesBuilder);
         when(builder.searchResultFields()).thenReturn(searchBuilder);
-        when(builder.workBasketInputFields()).thenReturn(searchBuilder);
         when(builder.workBasketResultFields()).thenReturn(searchBuilder);
         when(builder.tab("nextSteps", "Next steps")).thenReturn(nextStepsTabBuilder);
         when(builder.tab("summary", "Summary")).thenReturn(summaryTabBuilder);

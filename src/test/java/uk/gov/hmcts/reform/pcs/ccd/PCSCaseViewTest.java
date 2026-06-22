@@ -156,30 +156,6 @@ class PCSCaseViewTest {
     }
 
     @Test
-    void shouldReturnEmptyCaseForDeletedCaseWhenRelationalDataHasBeenRemoved() {
-        // Given
-        when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.empty());
-
-        // When
-        PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, State.DELETED));
-
-        // Then
-        assertThat(pcsCase).isNotNull();
-        verify(caseTabView, never()).setCaseTabFields(any(PCSCase.class));
-        verify(enforcementOrderMediator, never()).handleEnforcementRequirements(CASE_REFERENCE, pcsCase);
-    }
-
-    @Test
-    void shouldReturnSubmittedCaseForDeletedCaseWhenRelationalDataStillExists() {
-        // When
-        PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, State.DELETED));
-
-        // Then
-        verify(caseTabView).setCaseTabFields(pcsCase);
-        verify(enforcementOrderMediator).handleEnforcementRequirements(CASE_REFERENCE, pcsCase);
-    }
-
-    @Test
     void shouldReturnCaseWithNoPropertyAddress() {
         // When
         PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
