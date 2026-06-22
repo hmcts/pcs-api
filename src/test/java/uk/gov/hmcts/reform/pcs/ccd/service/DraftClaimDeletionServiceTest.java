@@ -25,7 +25,9 @@ class DraftClaimDeletionServiceTest {
     private static final UUID CASE_ID = UUID.randomUUID();
     private static final UUID ADDRESS_ID = UUID.randomUUID();
     private static final UUID CONTACT_PREFERENCE_ID = UUID.randomUUID();
+    private static final UUID HELP_WITH_FEES_ID = UUID.randomUUID();
     private static final UUID LEGAL_REPRESENTATIVE_ID = UUID.randomUUID();
+    private static final UUID LEGAL_REPRESENTATIVE_ADDRESS_ID = UUID.randomUUID();
     private static final String GET_ADDRESS_IDS = """
         SELECT property_address_id FROM pcs_case WHERE id = ? AND property_address_id IS NOT NULL
         UNION
@@ -38,6 +40,21 @@ class DraftClaimDeletionServiceTest {
     private static final String GET_LEGAL_REPRESENTATIVE_IDS =
         "SELECT legal_representative_id FROM claim_party_legal_representative "
             + "WHERE party_id IN (SELECT id FROM party WHERE case_id = ?)";
+    private static final String GET_HELP_WITH_FEES_IDS = """
+        SELECT hwf_id FROM general_application WHERE case_id = ? AND hwf_id IS NOT NULL
+        UNION
+        SELECT hwf_id FROM fee_payment
+        WHERE possession_claim_id IN (SELECT id FROM claim WHERE case_id = ?)
+        AND hwf_id IS NOT NULL
+        """;
+    private static final String GET_LEGAL_REPRESENTATIVE_ADDRESS_IDS = """
+        SELECT address_id FROM legal_representative
+        WHERE id IN (
+            SELECT legal_representative_id FROM claim_party_legal_representative
+            WHERE party_id IN (SELECT id FROM party WHERE case_id = ?)
+        )
+        AND address_id IS NOT NULL
+        """;
 
     @Mock
     private JdbcTemplate jdbcTemplate;
@@ -104,6 +121,10 @@ class DraftClaimDeletionServiceTest {
             .thenReturn(List.of(ADDRESS_ID));
         when(jdbcTemplate.queryForList(GET_CONTACT_PREFERENCE_IDS, UUID.class, CASE_ID))
             .thenReturn(List.of(CONTACT_PREFERENCE_ID));
+        when(jdbcTemplate.queryForList(GET_HELP_WITH_FEES_IDS, UUID.class, CASE_ID, CASE_ID))
+            .thenReturn(List.of(HELP_WITH_FEES_ID));
+        when(jdbcTemplate.queryForList(GET_LEGAL_REPRESENTATIVE_ADDRESS_IDS, UUID.class, CASE_ID))
+            .thenReturn(List.of(LEGAL_REPRESENTATIVE_ADDRESS_ID));
         when(jdbcTemplate.queryForList(GET_LEGAL_REPRESENTATIVE_IDS, UUID.class, CASE_ID))
             .thenReturn(List.of(LEGAL_REPRESENTATIVE_ID));
 
@@ -112,6 +133,8 @@ class DraftClaimDeletionServiceTest {
         verify(jdbcTemplate).update("DELETE FROM draft.draft_case_data WHERE case_reference = ?", CASE_REFERENCE);
         verify(jdbcTemplate).update("DELETE FROM pcs_case WHERE id = ?", CASE_ID);
         verify(jdbcTemplate).update("DELETE FROM contact_preferences WHERE id = ?", CONTACT_PREFERENCE_ID);
+        verify(jdbcTemplate).update("DELETE FROM help_with_fees WHERE id = ?", HELP_WITH_FEES_ID);
+        verify(jdbcTemplate).update("DELETE FROM address WHERE id = ?", LEGAL_REPRESENTATIVE_ADDRESS_ID);
         verify(jdbcTemplate).update("DELETE FROM address WHERE id = ?", ADDRESS_ID);
         verify(jdbcTemplate).update("DELETE FROM legal_representative WHERE id = ?", LEGAL_REPRESENTATIVE_ID);
         verify(jdbcTemplate).update("DELETE FROM ccd.case_data WHERE reference = ?", CASE_REFERENCE);
@@ -132,6 +155,10 @@ class DraftClaimDeletionServiceTest {
         when(jdbcTemplate.queryForList(GET_ADDRESS_IDS, UUID.class, CASE_ID, CASE_ID))
             .thenReturn(List.of());
         when(jdbcTemplate.queryForList(GET_CONTACT_PREFERENCE_IDS, UUID.class, CASE_ID))
+            .thenReturn(List.of());
+        when(jdbcTemplate.queryForList(GET_HELP_WITH_FEES_IDS, UUID.class, CASE_ID, CASE_ID))
+            .thenReturn(List.of());
+        when(jdbcTemplate.queryForList(GET_LEGAL_REPRESENTATIVE_ADDRESS_IDS, UUID.class, CASE_ID))
             .thenReturn(List.of());
         when(jdbcTemplate.queryForList(GET_LEGAL_REPRESENTATIVE_IDS, UUID.class, CASE_ID))
             .thenReturn(List.of());

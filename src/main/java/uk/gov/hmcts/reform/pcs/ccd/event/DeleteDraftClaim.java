@@ -38,7 +38,7 @@ public class DeleteDraftClaim implements CCDConfig<PCSCase, State, UserRole> {
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         new PageBuilder(configBuilder
                             .decentralisedEvent(DELETE_DRAFT_CLAIM.id(), this::submit)
-                            .forAllStates()
+                            .forStates(State.AWAITING_SUBMISSION_TO_HMCTS, State.PENDING_CASE_ISSUED)
                             .name("Delete draft claim")
                             .showCondition(draftClaimStateCondition())
                             .grant(Permission.CRUD, UserRole.CREATOR)

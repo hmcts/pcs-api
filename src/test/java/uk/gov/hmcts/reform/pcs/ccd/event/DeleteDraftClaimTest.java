@@ -10,6 +10,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.model.DeleteDraftClaimTaskData;
@@ -24,6 +25,10 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.ccd.sdk.api.Permission.C;
+import static uk.gov.hmcts.ccd.sdk.api.Permission.D;
+import static uk.gov.hmcts.ccd.sdk.api.Permission.R;
+import static uk.gov.hmcts.ccd.sdk.api.Permission.U;
 
 @ExtendWith(MockitoExtension.class)
 class DeleteDraftClaimTest extends BaseEventTest {
@@ -41,6 +46,14 @@ class DeleteDraftClaimTest extends BaseEventTest {
             schedulerClient,
             securityContextService
         ));
+    }
+
+    @Test
+    void shouldConfigureDeleteDraftClaimEventForDraftStatesAndCreatorOrClaimantSolicitor() {
+        assertThat(configuredEvent.getPreState())
+            .containsExactlyInAnyOrder(State.AWAITING_SUBMISSION_TO_HMCTS, State.PENDING_CASE_ISSUED);
+        assertThat(configuredEvent.getGrants().get(UserRole.CREATOR)).containsExactlyInAnyOrder(C, R, U, D);
+        assertThat(configuredEvent.getGrants().get(UserRole.CLAIMANT_SOLICITOR)).containsExactlyInAnyOrder(C, R, U, D);
     }
 
     @Test

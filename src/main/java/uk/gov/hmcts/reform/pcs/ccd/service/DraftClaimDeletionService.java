@@ -38,6 +38,8 @@ public class DraftClaimDeletionService {
 
         final List<UUID> addressIds = getAddressIdsForCase(caseId);
         final List<UUID> contactPreferenceIds = getContactPreferenceIdsForCase(caseId);
+        final List<UUID> helpWithFeesIds = getHelpWithFeesIdsForCase(caseId);
+        final List<UUID> legalRepresentativeAddressIds = getLegalRepresentativeAddressIdsForCase(caseId);
 
         deleteRowsLinkedToCase(caseId);
         deleteRowsLinkedToClaims(caseId);
@@ -50,6 +52,10 @@ public class DraftClaimDeletionService {
 
         contactPreferenceIds.forEach(contactPreferenceId ->
             jdbcTemplate.update("DELETE FROM contact_preferences WHERE id = ?", contactPreferenceId));
+        helpWithFeesIds.forEach(helpWithFeesId ->
+            jdbcTemplate.update("DELETE FROM help_with_fees WHERE id = ?", helpWithFeesId));
+        legalRepresentativeAddressIds.forEach(addressId ->
+            jdbcTemplate.update("DELETE FROM address WHERE id = ?", addressId));
         addressIds.forEach(addressId -> jdbcTemplate.update("DELETE FROM address WHERE id = ?", addressId));
 
         deleteCcdCaseData(caseReference);
@@ -92,6 +98,27 @@ public class DraftClaimDeletionService {
         return jdbcTemplate.queryForList("""
             SELECT contact_preferences_id FROM party
             WHERE case_id = ? AND contact_preferences_id IS NOT NULL
+            """, UUID.class, caseId);
+    }
+
+    private List<UUID> getHelpWithFeesIdsForCase(UUID caseId) {
+        return jdbcTemplate.queryForList("""
+            SELECT hwf_id FROM general_application WHERE case_id = ? AND hwf_id IS NOT NULL
+            UNION
+            SELECT hwf_id FROM fee_payment
+            WHERE possession_claim_id IN (SELECT id FROM claim WHERE case_id = ?)
+            AND hwf_id IS NOT NULL
+            """, UUID.class, caseId, caseId);
+    }
+
+    private List<UUID> getLegalRepresentativeAddressIdsForCase(UUID caseId) {
+        return jdbcTemplate.queryForList("""
+            SELECT address_id FROM legal_representative
+            WHERE id IN (
+                SELECT legal_representative_id FROM claim_party_legal_representative
+                WHERE party_id IN (SELECT id FROM party WHERE case_id = ?)
+            )
+            AND address_id IS NOT NULL
             """, UUID.class, caseId);
     }
 
