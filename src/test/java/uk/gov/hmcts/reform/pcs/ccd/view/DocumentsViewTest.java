@@ -236,6 +236,28 @@ class DocumentsViewTest {
         assertThat(allDocuments.getFirst().getValue().getFilename()).isEqualTo("filename");
     }
 
+    @ParameterizedTest
+    @MethodSource("nonCaseDetailsTabDocuments")
+    void shouldNotFilterOutDocumentsThatDoNotAppearInCaseDetailsTab(DocumentType documentType) {
+        // Given
+        UUID document1Id = UUID.randomUUID();
+        DocumentEntity documentEntity = DocumentEntity.builder()
+            .id(document1Id)
+            .fileName("filename")
+            .type(documentType)
+            .build();
+
+        when(pcsCaseEntity.getDocuments()).thenReturn(List.of(documentEntity));
+
+        // When
+        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+
+        // Then
+        List<ListValue<Document>> allDocuments = pcsCase.getAllDocuments();
+        assertThat(allDocuments).hasSize(1);
+        assertThat(allDocuments.getFirst().getValue().getFilename()).isEqualTo("filename");
+    }
+
     private static Stream<Arguments> descriptionProvider() {
         return Stream.of(
                 Arguments.of(null, true),
@@ -255,6 +277,24 @@ class DocumentsViewTest {
             Arguments.of(DocumentType.GAS_SAFETY_CERTIFICATE),
             Arguments.of(DocumentType.EICR_REPORT),
             Arguments.of(DocumentType.OCCUPATION_LICENCE)
+        );
+    }
+
+    private static Stream<Arguments> nonCaseDetailsTabDocuments() {
+        return Stream.of(
+            Arguments.of(DocumentType.TENANCY_LICENCE),
+            Arguments.of(DocumentType.NOTICE_SERVED),
+            Arguments.of(DocumentType.WITNESS_STATEMENT),
+            Arguments.of(DocumentType.CERTIFICATE_OF_SERVICE),
+            Arguments.of(DocumentType.CORRESPONDENCE_FROM_DEFENDANT),
+            Arguments.of(DocumentType.CORRESPONDENCE_FROM_CLAIMANT),
+            Arguments.of(DocumentType.NOTICE_FOR_SERVICE_OUT_OF_JURISDICTION),
+            Arguments.of(DocumentType.PHOTOGRAPHIC_EVIDENCE),
+            Arguments.of(DocumentType.INSPECTION_OR_REPORT),
+            Arguments.of(DocumentType.CERTIFICATE_OF_SUITABILITY_AS_LF),
+            Arguments.of(DocumentType.LEGAL_AID_CERTIFICATE),
+            Arguments.of(DocumentType.POLICE_REPORT),
+            Arguments.of(DocumentType.OTHER)
         );
     }
 }
