@@ -9,6 +9,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantRespon
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.claim.StatementOfTruthEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
@@ -22,6 +23,8 @@ import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import java.util.function.Supplier;
+
+import static uk.gov.hmcts.reform.pcs.ccd.util.YesOrNoConverter.toYesOrNo;
 
 /**
  * Service for managing defendant responses.
@@ -159,6 +162,8 @@ public class DefendantResponseService {
 
         buildAndLinkChildEntities(responseEntity, responses);
 
+        buildStatementOfTruth(responses, responseEntity);
+
         DefendantResponseEntity savedResponse = defendantResponseRepository.save(responseEntity);
 
         if (!CollectionUtils.isEmpty(responses.getDefendantDocuments())) {
@@ -241,6 +246,18 @@ public class DefendantResponseService {
                 response.getPaymentAgreement()
             )
         );
+    }
+
+    private void buildStatementOfTruth(DefendantResponses responses, DefendantResponseEntity responseEntity) {
+        if (responses.getStatementOfTruth() == null || responses.getStatementOfTruth().getAccepted() == null) {
+            return;
+        }
+        StatementOfTruthEntity sot = StatementOfTruthEntity.builder()
+            .accepted(toYesOrNo(responses.getStatementOfTruth().getAccepted()))
+            .fullName(responses.getStatementOfTruth().getFullName())
+            .completedDate(LocalDateTime.now(utcClock))
+            .build();
+        responseEntity.setStatementOfTruth(sot);
     }
 
     public boolean hasSubmittedResponse(long caseReference) {
