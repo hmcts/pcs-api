@@ -38,7 +38,8 @@ public class DefenceFormService {
             return;
         }
 
-        String dmStoreUrl = documentGenerator.generate(context.get().payload(), context.get().defendantNumber());
+        DefenceFormRenderContext renderContext = context.get();
+        String dmStoreUrl = documentGenerator.generate(renderContext.payload(), renderContext.defendantNumber());
         try {
             persistenceService.attach(defendantResponseId, dmStoreUrl);
         } catch (Exception e) {
