@@ -7,7 +7,6 @@ import au.com.dius.pact.consumer.junit5.PactTestFor;
 import au.com.dius.pact.core.model.V4Pact;
 import au.com.dius.pact.core.model.annotations.Pact;
 import lombok.RequiredArgsConstructor;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
@@ -29,8 +28,6 @@ import java.util.Map;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.context.TestConstructor.AutowireMode.ALL;
 
-// Disabling until provider test is fixed in PAY-8826
-@Disabled
 @ImportAutoConfiguration({
     FeignAutoConfiguration.class,
     FeignClientsConfiguration.class,
@@ -44,8 +41,6 @@ import static org.springframework.test.context.TestConstructor.AutowireMode.ALL;
 @TestConstructor(autowireMode = ALL)
 class FeeRegistrationLookupConsumerTest {
     private final FeesApi feesApi;
-
-    private static final String SERVICE_AUTH_TOKEN = "Bearer serviceToken";
 
     private static final String POSSESSION_SERVICE = "possession claim";
     private static final String CIVIL_JURISDICTION = "civil";
