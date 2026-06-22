@@ -8,7 +8,6 @@ import uk.gov.hmcts.ccd.sdk.api.Permission;
 
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CLAIMANT_SOLICITOR;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CREATOR;
-import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.SYSTEM_USER;
 
 public class DeletedStateAccess implements HasAccessControl {
 
@@ -17,7 +16,6 @@ public class DeletedStateAccess implements HasAccessControl {
         SetMultimap<HasRole, Permission> grants = HashMultimap.create();
         grants.putAll(CLAIMANT_SOLICITOR, Permission.CRU);
         grants.putAll(CREATOR, Permission.CRU);
-        grants.putAll(SYSTEM_USER, Permission.CRU);
         return grants;
     }
 }
