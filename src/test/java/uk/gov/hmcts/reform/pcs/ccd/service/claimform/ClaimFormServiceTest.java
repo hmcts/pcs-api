@@ -6,12 +6,15 @@ import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentImportService;
 import uk.gov.hmcts.reform.pcs.document.model.claimform.ClaimFormPayload;
 
 import java.util.Optional;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -28,6 +31,8 @@ class ClaimFormServiceTest {
     private ClaimFormPersistenceService persistenceService;
     @Mock
     private ClaimFormDocumentGenerator documentGenerator;
+    @Mock
+    private DocumentImportService documentImportService;
 
     @InjectMocks
     private ClaimFormService claimFormService;
@@ -52,7 +57,20 @@ class ClaimFormServiceTest {
 
         claimFormService.generateAndAttach(CASE_REFERENCE);
 
-        verifyNoInteractions(documentGenerator);
+        verifyNoInteractions(documentGenerator, documentImportService);
         verify(persistenceService, never()).attach(anyLong(), anyString());
+    }
+
+    @Test
+    void deletesRenderedDocumentWhenAttachFails() {
+        ClaimFormPayload payload = ClaimFormPayload.builder().build();
+        when(persistenceService.buildPayloadIfNotAttached(CASE_REFERENCE)).thenReturn(Optional.of(payload));
+        when(documentGenerator.generate(payload)).thenReturn(DM_STORE_URL);
+        doThrow(new RuntimeException("attach failed")).when(persistenceService).attach(CASE_REFERENCE, DM_STORE_URL);
+
+        assertThatThrownBy(() -> claimFormService.generateAndAttach(CASE_REFERENCE))
+            .isInstanceOf(RuntimeException.class);
+
+        verify(documentImportService).deleteDocument(DM_STORE_URL);
     }
 }
