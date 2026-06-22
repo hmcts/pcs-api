@@ -67,22 +67,28 @@ public class DefenceFormGenerationComponent {
                              data.getDefendantResponseId());
                     return new CompletionHandler.OnCompleteRemove<>();
                 } catch (Exception e) {
+                    int attempt = executionContext.getExecution().consecutiveFailures + 1;
                     log.error("Defence form generation failed for defendant response: {}. Attempt {}/{}",
-                              data.getDefendantResponseId(),
-                              executionContext.getExecution().consecutiveFailures + 1,
-                              maxRetries,
-                              e);
-                    // logGenerationFailure is REQUIRES_NEW so its row survives the rollback; guard it
-                    // so a logging error can't mask the real failure or break the retry.
-                    try {
-                        long caseReference = Long.parseLong(data.getCaseReference());
-                        claimActivityLogService.logGenerationFailure(caseReference, data.getDefendantPartyId());
-                    } catch (Exception logException) {
-                        log.error("Failed to record defence form generation failure for defendant response {}",
-                                  data.getDefendantResponseId(), logException);
+                              data.getDefendantResponseId(), attempt, maxRetries, e);
+                    if (isFinalAttempt(attempt)) {
+                        recordGenerationFailure(data);
                     }
                     throw e;
                 }
             });
+    }
+
+    private boolean isFinalAttempt(int attempt) {
+        return attempt >= maxRetries;
+    }
+
+    private void recordGenerationFailure(DefenceFormTaskData data) {
+        try {
+            long caseReference = Long.parseLong(data.getCaseReference());
+            claimActivityLogService.logGenerationFailure(caseReference, data.getDefendantPartyId());
+        } catch (Exception e) {
+            log.error("Failed to record defence form generation failure for defendant response {}",
+                      data.getDefendantResponseId(), e);
+        }
     }
 }

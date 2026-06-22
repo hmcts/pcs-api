@@ -20,8 +20,11 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.task.DefenceFormGenerationComponent.DEFENCE_FORM_TASK_DESCRIPTOR;
@@ -78,9 +81,25 @@ class DefenceFormGenerationComponentTest {
     }
 
     @Test
-    @DisplayName("Exception is rethrown and failure logged against the defendant party")
-    void exceptionIsRethrownAndFailureLogged() {
+    @DisplayName("Non-final attempt rethrows without recording a failure row")
+    void nonFinalAttemptRethrowsWithoutRecordingFailure() {
         when(taskInstance.getData()).thenReturn(taskData());
+        when(executionContext.getExecution()).thenReturn(execution);
+        doThrow(mock(RuntimeException.class)).when(defenceFormService).generateAndAttach(RESPONSE_ID);
+
+        CustomTask<DefenceFormTaskData> task = component.defenceFormGenerationTask();
+
+        assertThatThrownBy(() -> task.execute(taskInstance, executionContext))
+            .isInstanceOf(RuntimeException.class);
+        verify(defenceFormService).generateAndAttach(RESPONSE_ID);
+        verify(claimActivityLogService, never()).logGenerationFailure(anyLong(), any());
+    }
+
+    @Test
+    @DisplayName("Final attempt records the failure once against the defendant party before rethrowing")
+    void finalAttemptRecordsFailure() {
+        when(taskInstance.getData()).thenReturn(taskData());
+        execution.consecutiveFailures = maxRetries - 1;
         when(executionContext.getExecution()).thenReturn(execution);
         doThrow(mock(RuntimeException.class)).when(defenceFormService).generateAndAttach(RESPONSE_ID);
 
@@ -96,6 +115,7 @@ class DefenceFormGenerationComponentTest {
     @DisplayName("A failure while logging the failure does not mask the original exception")
     void loggingFailureDoesNotMaskOriginalException() {
         when(taskInstance.getData()).thenReturn(taskData());
+        execution.consecutiveFailures = maxRetries - 1;
         when(executionContext.getExecution()).thenReturn(execution);
         doThrow(new RuntimeException("generation failed")).when(defenceFormService).generateAndAttach(RESPONSE_ID);
         doThrow(new RuntimeException("log write failed"))
