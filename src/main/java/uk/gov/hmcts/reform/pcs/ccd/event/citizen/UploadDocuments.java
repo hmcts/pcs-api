@@ -17,24 +17,20 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.documentupload.DocumentUploadCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.documentupload.DocumentUploadDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.documentupload.RelatedApplicationOption;
-import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
+import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.EnumSet;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Stream;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.uploadDocuments;
 
@@ -43,13 +39,11 @@ import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.uploadDocuments;
 @AllArgsConstructor
 public class UploadDocuments implements CCDConfig<PCSCase, State, UserRole> {
 
-    private static final Set<GenAppState> VISIBLE_GEN_APP_STATES =
-        EnumSet.of(GenAppState.PENDING_GEN_APP_ISSUED, GenAppState.GEN_APP_ISSUED);
-
     private final PcsCaseService pcsCaseService;
     private final PartyService partyService;
     private final SecurityContextService securityContextService;
     private final DocumentService documentService;
+    private final GenAppVisibilityService genAppVisibilityService;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -70,14 +64,13 @@ public class UploadDocuments implements CCDConfig<PCSCase, State, UserRole> {
         }
 
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
+        UUID currentUserId = securityContextService.getCurrentUserId();
 
-        List<ListValue<RelatedApplicationOption>> options = visibleGenApps(pcsCaseEntity)
-            .map(this::toOption)
-            .filter(Objects::nonNull)
-            .sorted(Comparator.comparing(
-                (ListValue<RelatedApplicationOption> listValue) -> listValue.getValue().getSubmittedDate())
-                .reversed())
-            .toList();
+        List<ListValue<RelatedApplicationOption>> options =
+            visibleGenAppsForUser(pcsCaseEntity, currentUserId).stream()
+                .map(this::toOption)
+                .filter(Objects::nonNull)
+                .toList();
 
         caseData.getDocumentUploadDetails().setRelatedApplicationOptions(new ArrayList<>(options));
 
@@ -87,14 +80,8 @@ public class UploadDocuments implements CCDConfig<PCSCase, State, UserRole> {
         return caseData;
     }
 
-    private Stream<GenAppEntity> visibleGenApps(PcsCaseEntity pcsCaseEntity) {
-        if (pcsCaseEntity == null || pcsCaseEntity.getGenApps() == null) {
-            return Stream.empty();
-        }
-        return pcsCaseEntity.getGenApps().stream()
-            .filter(Objects::nonNull)
-            .filter(genApp -> VISIBLE_GEN_APP_STATES.contains(genApp.getState()))
-            .filter(genApp -> genApp.getApplicationSubmittedDate() != null);
+    private List<GenAppEntity> visibleGenAppsForUser(PcsCaseEntity pcsCaseEntity, UUID currentUserId) {
+        return genAppVisibilityService.getVisibleGenAppsToUser(pcsCaseEntity.getGenApps(), currentUserId);
     }
 
     private ListValue<RelatedApplicationOption> toOption(GenAppEntity genApp) {
@@ -129,8 +116,9 @@ public class UploadDocuments implements CCDConfig<PCSCase, State, UserRole> {
         PCSCase caseData = eventPayload.caseData();
 
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
-        PartyEntity uploadingParty = getCurrentPartyEntity(caseReference);
-        GenAppEntity selectedGenApp = resolveSelectedGenApp(caseData, pcsCaseEntity);
+        UUID currentUserId = securityContextService.getCurrentUserId();
+        PartyEntity uploadingParty = partyService.getPartyEntityByIdamId(currentUserId, caseReference);
+        GenAppEntity selectedGenApp = resolveSelectedGenApp(caseData, pcsCaseEntity, currentUserId);
 
         documentService.linkAdditionalDocumentsToCase(
             caseData.getUploadedAdditionalDocuments(),
@@ -142,7 +130,7 @@ public class UploadDocuments implements CCDConfig<PCSCase, State, UserRole> {
         return SubmitResponse.<State>builder().build();
     }
 
-    private GenAppEntity resolveSelectedGenApp(PCSCase caseData, PcsCaseEntity pcsCaseEntity) {
+    private GenAppEntity resolveSelectedGenApp(PCSCase caseData, PcsCaseEntity pcsCaseEntity, UUID currentUserId) {
         DocumentUploadDetails details = caseData.getDocumentUploadDetails();
         if (details == null || details.getSelectedRelatedApplicationId() == null) {
             return null;
@@ -153,14 +141,9 @@ public class UploadDocuments implements CCDConfig<PCSCase, State, UserRole> {
         } catch (IllegalArgumentException e) {
             return null;
         }
-        return visibleGenApps(pcsCaseEntity)
+        return visibleGenAppsForUser(pcsCaseEntity, currentUserId).stream()
             .filter(genApp -> selectedId.equals(genApp.getId()))
             .findFirst()
             .orElse(null);
-    }
-
-    private PartyEntity getCurrentPartyEntity(long caseReference) {
-        UUID currentUserId = securityContextService.getCurrentUserId();
-        return partyService.getPartyEntityByIdamId(currentUserId, caseReference);
     }
 }
