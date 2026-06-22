@@ -12,15 +12,20 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.model.RoleAssignmentTaskData;
+import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.CcdCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseRoleAssignmentService;
 
 import java.time.Duration;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.task.CaseRoleAssignmentTaskComponent.ROLE_ASSIGNMENT_TASK_DESCRIPTOR;
@@ -32,6 +37,10 @@ class CaseRoleAssignmentTaskComponentTest {
 
     @Mock
     private CaseRoleAssignmentService caseRoleAssignmentService;
+    @Mock
+    private PcsCaseRepository pcsCaseRepository;
+    @Mock
+    private CcdCaseDataService ccdCaseDataService;
 
     @Mock
     private TaskInstance<RoleAssignmentTaskData> taskInstance;
@@ -49,6 +58,8 @@ class CaseRoleAssignmentTaskComponentTest {
         int maxRetries = 5;
         caseRoleAssignmentTaskComponent = new CaseRoleAssignmentTaskComponent(
             caseRoleAssignmentService,
+            pcsCaseRepository,
+            ccdCaseDataService,
             maxRetries,
             backoffDelay
         );
@@ -73,6 +84,8 @@ class CaseRoleAssignmentTaskComponentTest {
             .build();
 
         when(taskInstance.getData()).thenReturn(data);
+        when(ccdCaseDataService.isCaseDeletedOrMissing(1234L)).thenReturn(false);
+        when(pcsCaseRepository.findByCaseReference(1234L)).thenReturn(Optional.of(mock(PcsCaseEntity.class)));
         CustomTask<RoleAssignmentTaskData> task = caseRoleAssignmentTaskComponent.roleAssignmentTask();
 
         // When
@@ -81,6 +94,29 @@ class CaseRoleAssignmentTaskComponentTest {
         // Then
         verify(caseRoleAssignmentService).assignRasRole(1234L, "user-abc", UserRole.CLAIMANT_SOLICITOR);
         verify(caseRoleAssignmentService).revokeRasRole(1234L, "user-abc", UserRole.CREATOR);
+        assertThat(result).isInstanceOf(CompletionHandler.OnCompleteRemove.class);
+    }
+
+    @Test
+    @DisplayName("Should skip role assignment when case has already been deleted")
+    void shouldSkipRoleAssignmentWhenCaseHasAlreadyBeenDeleted() {
+        // Given
+        RoleAssignmentTaskData data = RoleAssignmentTaskData.builder()
+            .caseReference("1234")
+            .userId("user-abc")
+            .build();
+
+        when(taskInstance.getData()).thenReturn(data);
+        when(ccdCaseDataService.isCaseDeletedOrMissing(1234L)).thenReturn(true);
+
+        CustomTask<RoleAssignmentTaskData> task = caseRoleAssignmentTaskComponent.roleAssignmentTask();
+
+        // When
+        CompletionHandler<RoleAssignmentTaskData> result = task.execute(taskInstance, executionContext);
+
+        // Then
+        verify(caseRoleAssignmentService, never()).assignRasRole(1234L, "user-abc", UserRole.CLAIMANT_SOLICITOR);
+        verify(caseRoleAssignmentService, never()).revokeRasRole(1234L, "user-abc", UserRole.CREATOR);
         assertThat(result).isInstanceOf(CompletionHandler.OnCompleteRemove.class);
     }
 
@@ -94,6 +130,8 @@ class CaseRoleAssignmentTaskComponentTest {
             .build();
 
         when(taskInstance.getData()).thenReturn(data);
+        when(ccdCaseDataService.isCaseDeletedOrMissing(1234L)).thenReturn(false);
+        when(pcsCaseRepository.findByCaseReference(1234L)).thenReturn(Optional.of(mock(PcsCaseEntity.class)));
         when(executionContext.getExecution()).thenReturn(execution);
         doThrow(mock(RuntimeException.class)).when(caseRoleAssignmentService)
             .assignRasRole(1234L, "user-abc", UserRole.CLAIMANT_SOLICITOR);

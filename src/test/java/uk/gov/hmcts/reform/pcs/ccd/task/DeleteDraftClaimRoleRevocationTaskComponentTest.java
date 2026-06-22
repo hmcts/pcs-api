@@ -92,7 +92,7 @@ class DeleteDraftClaimRoleRevocationTaskComponentTest {
     }
 
     @Test
-    void shouldCompleteWhenCaseNoLongerExistsDuringRoleRevocation() {
+    void shouldStillRevokeCreatorRoleWhenClaimantSolicitorRoleDoesNotExist() {
         DeleteDraftClaimRoleRevocationTaskData data = DeleteDraftClaimRoleRevocationTaskData.builder()
             .caseReference("1234")
             .userId("user-abc")
@@ -106,6 +106,7 @@ class DeleteDraftClaimRoleRevocationTaskComponentTest {
 
         CompletionHandler<DeleteDraftClaimRoleRevocationTaskData> result = task.execute(taskInstance, executionContext);
 
+        verify(caseRoleAssignmentService).revokeRasRole(1234L, "user-abc", UserRole.CREATOR);
         assertThat(result).isInstanceOf(CompletionHandler.OnCompleteRemove.class);
     }
 }

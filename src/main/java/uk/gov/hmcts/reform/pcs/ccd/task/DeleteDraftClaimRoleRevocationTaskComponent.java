@@ -59,11 +59,8 @@ public class DeleteDraftClaimRoleRevocationTaskComponent {
                 log.debug("Revoking case roles for deleted draft claim: {}", caseReference);
 
                 try {
-                    caseRoleAssignmentService.revokeRasRole(caseReference, userId, UserRole.CLAIMANT_SOLICITOR);
-                    caseRoleAssignmentService.revokeRasRole(caseReference, userId, UserRole.CREATOR);
-                    return new CompletionHandler.OnCompleteRemove<>();
-                } catch (FeignException.NotFound e) {
-                    log.info("Deleted draft claim case {} no longer exists while revoking roles", caseReference);
+                    revokeCaseRole(caseReference, userId, UserRole.CLAIMANT_SOLICITOR);
+                    revokeCaseRole(caseReference, userId, UserRole.CREATOR);
                     return new CompletionHandler.OnCompleteRemove<>();
                 } catch (Exception e) {
                     log.error("Draft claim role revocation failed for case: {}. Attempt {}/{}",
@@ -74,5 +71,13 @@ public class DeleteDraftClaimRoleRevocationTaskComponent {
                     throw e;
                 }
             });
+    }
+
+    private void revokeCaseRole(long caseReference, String userId, UserRole role) {
+        try {
+            caseRoleAssignmentService.revokeRasRole(caseReference, userId, role);
+        } catch (FeignException.NotFound e) {
+            log.info("Deleted draft claim case {} or role {} no longer exists while revoking role", caseReference, role);
+        }
     }
 }

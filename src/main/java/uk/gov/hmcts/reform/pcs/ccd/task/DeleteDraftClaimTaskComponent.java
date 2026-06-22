@@ -73,11 +73,15 @@ public class DeleteDraftClaimTaskComponent {
     }
 
     private void revokeCaseRoles(long caseReference, String userId) {
+        revokeCaseRole(caseReference, userId, UserRole.CLAIMANT_SOLICITOR);
+        revokeCaseRole(caseReference, userId, UserRole.CREATOR);
+    }
+
+    private void revokeCaseRole(long caseReference, String userId, UserRole role) {
         try {
-            caseRoleAssignmentService.revokeRasRole(caseReference, userId, UserRole.CLAIMANT_SOLICITOR);
-            caseRoleAssignmentService.revokeRasRole(caseReference, userId, UserRole.CREATOR);
+            caseRoleAssignmentService.revokeRasRole(caseReference, userId, role);
         } catch (FeignException.NotFound e) {
-            log.info("Draft claim case {} no longer exists while revoking roles", caseReference);
+            log.info("Draft claim case {} or role {} no longer exists while revoking role", caseReference, role);
         }
     }
 }

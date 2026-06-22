@@ -24,7 +24,6 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.task.DeleteDraftClaimTaskComponent.DELETE_DRAFT_CLAIM_TASK_DESCRIPTOR;
@@ -100,7 +99,7 @@ class DeleteDraftClaimTaskComponentTest {
     }
 
     @Test
-    void shouldStillDeleteDraftClaimWhenCaseNoLongerExistsDuringRoleRevocation() {
+    void shouldStillRevokeCreatorRoleAndDeleteDraftClaimWhenClaimantSolicitorRoleDoesNotExist() {
         DeleteDraftClaimTaskData data = DeleteDraftClaimTaskData.builder()
             .caseReference("1234")
             .userId("user-abc")
@@ -113,7 +112,7 @@ class DeleteDraftClaimTaskComponentTest {
         CustomTask<DeleteDraftClaimTaskData> task = underTest.deleteDraftClaimTask();
         CompletionHandler<DeleteDraftClaimTaskData> result = task.execute(taskInstance, executionContext);
 
-        verify(caseRoleAssignmentService, never()).revokeRasRole(1234L, "user-abc", UserRole.CREATOR);
+        verify(caseRoleAssignmentService).revokeRasRole(1234L, "user-abc", UserRole.CREATOR);
         verify(draftClaimDeletionService).deleteDraftClaim(1234L);
         assertThat(result).isInstanceOf(CompletionHandler.OnCompleteRemove.class);
     }

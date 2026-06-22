@@ -11,6 +11,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.model.RoleAssignmentTaskData;
+import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.CcdCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseRoleAssignmentService;
 
 import java.time.Duration;
@@ -25,15 +27,21 @@ public class CaseRoleAssignmentTaskComponent {
         TaskDescriptor.of(ROLE_ASSIGNMENT_TASK_NAME, RoleAssignmentTaskData.class);
 
     private final CaseRoleAssignmentService caseRoleAssignmentService;
+    private final PcsCaseRepository pcsCaseRepository;
+    private final CcdCaseDataService ccdCaseDataService;
     private final int maxRetries;
     private final Duration backoffDelay;
 
     public CaseRoleAssignmentTaskComponent(
         CaseRoleAssignmentService caseRoleAssignmentService,
+        PcsCaseRepository pcsCaseRepository,
+        CcdCaseDataService ccdCaseDataService,
         @Value("${role-assignment.request.max-retries}") int maxRetries,
         @Value("${role-assignment.request.backoff-delay-seconds}") Duration backoffDelay
     ) {
         this.caseRoleAssignmentService = caseRoleAssignmentService;
+        this.pcsCaseRepository = pcsCaseRepository;
+        this.ccdCaseDataService = ccdCaseDataService;
         this.maxRetries = maxRetries;
         this.backoffDelay = backoffDelay;
     }
@@ -52,6 +60,10 @@ public class CaseRoleAssignmentTaskComponent {
                 log.debug("Assigning claimant solicitor role and revoking creator role for case: {}", caseReference);
 
                 try {
+                    if (shouldSkipRoleAssignment(caseReference)) {
+                        return new CompletionHandler.OnCompleteRemove<>();
+                    }
+
                     caseRoleAssignmentService.assignRasRole(caseReference, userId, UserRole.CLAIMANT_SOLICITOR);
                     caseRoleAssignmentService.revokeRasRole(caseReference, userId, UserRole.CREATOR);
                     return new CompletionHandler.OnCompleteRemove<>();
@@ -65,5 +77,19 @@ public class CaseRoleAssignmentTaskComponent {
                     throw e;
                 }
             });
+    }
+
+    private boolean shouldSkipRoleAssignment(long caseReference) {
+        if (ccdCaseDataService.isCaseDeletedOrMissing(caseReference)) {
+            log.info("Skipping claimant solicitor role assignment for deleted draft claim: {}", caseReference);
+            return true;
+        }
+
+        if (pcsCaseRepository.findByCaseReference(caseReference).isEmpty()) {
+            log.info("Skipping claimant solicitor role assignment for deleted PCS case: {}", caseReference);
+            return true;
+        }
+
+        return false;
     }
 }
