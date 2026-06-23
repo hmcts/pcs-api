@@ -142,6 +142,7 @@ const newFilename =
     : `${docName} - Claimant 1`;
 
 return newFilename;
+}
 
 /* convert string for ex RENT_ARREARS to Rent Arrears */
 export function formatCaseStateText(input: string): string {
