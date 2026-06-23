@@ -14,6 +14,7 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.model.AccessCodeTaskData;
+import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -27,6 +28,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.task.AccessCodeGenerationComponent.ACC
 public class ClaimIssuePayment implements CCDConfig<PCSCase, State, UserRole> {
 
     private final SchedulerClient schedulerClient;
+    private final PcsCaseService pcsCaseService;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -44,13 +46,16 @@ public class ClaimIssuePayment implements CCDConfig<PCSCase, State, UserRole> {
     }
 
     private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
+        log.info("Received: {}", eventPayload);
+        PCSCase caseData = eventPayload.caseData();
         long caseReference = eventPayload.caseReference();
-        log.info("Payment confirmed for case {} - issuing case and scheduling defendant pin pack generation",
-                 caseReference);
-
-        // Case has been issued (status -> CASE_ISSUED): generate the defendant access code pin packs.
-        schedulePinPackGeneration(caseReference);
-
+        if (caseData.getDateIssued() == null) {
+            log.info("Payment confirmed for case {} - issuing case and scheduling defendant pin pack generation",
+                     caseReference);
+            pcsCaseService.setCaseIssuedDate(caseReference);
+            // Case issued (status -> CASE_ISSUED): generate the defendant access code pin packs.
+            schedulePinPackGeneration(caseReference);
+        }
         return SubmitResponse.<State>builder().state(State.CASE_ISSUED).build();
     }
 
