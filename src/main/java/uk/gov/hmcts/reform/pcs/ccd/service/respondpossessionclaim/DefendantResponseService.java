@@ -37,6 +37,8 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static uk.gov.hmcts.reform.pcs.ccd.util.YesOrNoConverter.toYesOrNo;
+
 /**
  * Service for managing defendant responses.
  * Handles saving defendant responses to the defendant_response table with optimal concurrency.
@@ -179,6 +181,8 @@ public class DefendantResponseService {
 
         buildAndLinkChildEntities(responseEntity, responses);
         linkStatementOfTruth(responseEntity, responses, partyRef);
+
+        buildStatementOfTruth(responses, responseEntity);
 
         CounterClaimEntity savedCounterClaim = saveCounterClaim(responses, partyRef, claimRef, submittedAt);
 
@@ -352,6 +356,18 @@ public class DefendantResponseService {
         claimRef.getPcsCase().addCounterClaim(counterClaimEntity);
 
         return counterClaimRepository.save(counterClaimEntity);
+    }
+
+    private void buildStatementOfTruth(DefendantResponses responses, DefendantResponseEntity responseEntity) {
+        if (responses.getStatementOfTruth() == null || responses.getStatementOfTruth().getAccepted() == null) {
+            return;
+        }
+        StatementOfTruthEntity sot = StatementOfTruthEntity.builder()
+            .accepted(toYesOrNo(responses.getStatementOfTruth().getAccepted()))
+            .fullName(responses.getStatementOfTruth().getFullName())
+            .completedDate(LocalDateTime.now(utcClock))
+            .build();
+        responseEntity.setStatementOfTruth(sot);
     }
 
     public boolean hasSubmittedResponse(long caseReference) {

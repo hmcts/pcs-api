@@ -115,17 +115,19 @@ public class DefendantResponses {
     private LanguageUsed languageUsed;
 
     private EqualityAndDiversityQuestionsChoice equalityAndDiversityQuestionsChoice;
+
     @CCD
     private VerticalYesNo otherConsiderations;
 
     @CCD(max = 6400)
     private String otherConsiderationsDetails;
-    
+
     @CCD
     private VerticalYesNo makeCounterClaim;
 
     @CCD
     private VerticalYesNo counterClaimWantToUploadFiles;
+
     @CCD(
         access = {DefendantSolicitorAccess.class},
         typeOverride = FieldType.MultiSelectList,
@@ -134,7 +136,7 @@ public class DefendantResponses {
     private List<RespondToClaimSection> completedSections;
 
     @CCD
-    private String statementOfTruthCompletedBy;
+    private RTCStatementOfTruth statementOfTruth;
 
     @CCD
     private DefendantResponseStatus status;

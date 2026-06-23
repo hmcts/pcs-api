@@ -93,7 +93,8 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
     public PCSCase getCase(CaseViewRequest<State> request) {
         long caseReference = request.caseRef();
         State state = request.state();
-        PCSCase pcsCase = getSubmittedCase(caseReference);
+        SubmittedCase submittedCase = getSubmittedCase(caseReference);
+        PCSCase pcsCase = submittedCase.pcsCase();
         boolean hasUnsubmittedCaseData = caseHasUnsubmittedData(caseReference, state);
 
         if (hasUnsubmittedCaseData) {
@@ -108,7 +109,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         }
 
         setMarkdownFields(pcsCase, hasUnsubmittedCaseData);
-        enforcementOrderMediator.handleEnforcementRequirements(caseReference, pcsCase);
+        enforcementOrderMediator.handleEnforcementRequirements(submittedCase.pcsCaseEntity(), pcsCase);
 
         caseFieldsView.setCaseFields(pcsCase);
 
@@ -128,7 +129,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         return false;
     }
 
-    private PCSCase getSubmittedCase(long caseReference) {
+    private SubmittedCase getSubmittedCase(long caseReference) {
         PcsCaseEntity pcsCaseEntity = loadCaseData(caseReference);
 
         PCSCase pcsCase = PCSCase.builder()
@@ -158,7 +159,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         flagsView.setCaseFields(pcsCase, pcsCaseEntity);
         defendantResponseView.setCaseFields(pcsCase, pcsCaseEntity);
 
-        return pcsCase;
+        return new SubmittedCase(pcsCase, pcsCaseEntity);
     }
 
     private LocalDateTime getClaimSubmittedDate(PcsCaseEntity pcsCaseEntity) {
@@ -244,6 +245,9 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         return partyEntities.stream()
             .map(entity -> modelMapper.map(entity, Party.class))
             .collect(Collectors.collectingAndThen(Collectors.toList(), ListValueUtils::wrapListItems));
+    }
+
+    private record SubmittedCase(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
     }
 
 }

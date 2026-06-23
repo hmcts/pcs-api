@@ -1,5 +1,5 @@
 import { expect, Locator, Page } from '@playwright/test';
-import { performAction, performValidation } from '../../../controller';
+import { performAction, performValidation } from '@utils/controller';
 import { actionRecord, IAction } from '@utils/interfaces';
 import { globalSearch, noResultFound, searchResults, workAccess } from '@data/page-data-figma';
 import { caseList, home } from '@data/page-data';
@@ -33,7 +33,7 @@ export class GlobalSearchCaseAction implements IAction {
     await this.executeSearch(page);
     await performValidation('mainHeader', searchResults.mainHeader);
   }
-  
+
   private async invalidCaseReferenceSearch(page: Page): Promise<void> {
     await performAction('inputText', globalSearch.DigitCaseReferenceLabel, globalSearch.invalidCaseReferenceInputText);
     await performAction('select', globalSearch.servicesLabel, globalSearch.servicesDropdownOption1);
@@ -59,7 +59,6 @@ export class GlobalSearchCaseAction implements IAction {
   }
 
   private async executeSearch(page: Page): Promise<void> {
-    await performAction('clickButton', globalSearch.searchButton);
     await this.submitGlobalSearch(page);
   }
 
@@ -75,8 +74,8 @@ export class GlobalSearchCaseAction implements IAction {
     const formattedCaseReference = caseReference.replace(/(\d{4})(?=\d)/g, '$1-');
     expect(normalizedCellText).toContain(normalizedCaseReference);
     const caseNameText = caseCellText.replace(caseReference, '').replace(formattedCaseReference, '').trim();
-    expect(caseNameText.length).toBeGreaterThan(0); 
-    await expect(resultRow).toContainText(searchResults.serviceLabel);  
+    expect(caseNameText.length).toBeGreaterThan(0);
+    await expect(resultRow).toContainText(searchResults.serviceLabel);
     await expect(resultRow).toContainText(searchResults.stateLabel);
     await expect (resultRow).toContainText(searchResults.locationLabel);
     await expect(resultRow.getByRole('link', { name: searchResults.viewLinkText })).toBeVisible();
