@@ -38,6 +38,12 @@ public class SelectedPartyRetriever {
             ? Optional.of(UUID.fromString(caseData.getAllDefendants().getFirst().getId())) : getRequiredPartyId();
     }
 
+    public Optional<UUID> getCurrentRepresentedPartyId(PCSCase caseData) {
+        return caseData.getAllDefendants().size() == 1
+            ? Optional.of(UUID.fromString(caseData.getAllDefendants().getFirst().getId())) :
+            extractCurrentRepresentedPartyId(caseData.getCurrentRepresentedPartyId());
+    }
+
     private Optional<UUID> getRequiredPartyId() {
         ClientContext clientContext = clientContextRetriever.getClientContext();
         if (clientContext == null) {
@@ -53,5 +59,10 @@ public class SelectedPartyRetriever {
         } catch (IllegalArgumentException ex) {
             throw new IllegalStateException("Invalid selected responding party id for respond to claim", ex);
         }
+    }
+
+    private Optional<UUID> extractCurrentRepresentedPartyId(String currentRepresentedPartyId) {
+        return currentRepresentedPartyId != null ? Optional.of(UUID.fromString(currentRepresentedPartyId)) :
+            Optional.empty();
     }
 }

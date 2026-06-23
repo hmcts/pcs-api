@@ -13,7 +13,7 @@ import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.List;
 
-@Component
+@Component("respondToClaimSubmitEventHandler")
 @Slf4j
 @RequiredArgsConstructor
 public class SubmitEventHandler implements Submit<PCSCase, State> {
@@ -31,6 +31,6 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
             .filter(strategy -> strategy.supports(securityContextService.getCurrentUserDetails().getRoles()))
             .findFirst()
             .orElseThrow(() -> new IllegalStateException("No submit event strategy found"))
-            .process(caseReference);
+            .process(eventPayload);
     }
 }

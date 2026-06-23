@@ -15,5 +15,6 @@ export const caseList = {
   stateLabel: 'State',
   stateAwaitingSubmission: 'Awaiting Submission to HMCTS',
   stateAny: 'Any',
-  apply: 'Apply'
+  apply: 'Apply',
+  noResultsFoundHeader: 'No results found',
 }

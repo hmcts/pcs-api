@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.pcs.ccd.service;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseFlagEntity;
@@ -15,6 +16,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
+import uk.gov.hmcts.reform.pcs.postcodecourt.service.PostCodeCourtService;
 
 import java.util.List;
 import java.util.Objects;
@@ -32,6 +34,7 @@ public class PcsCaseService {
     private final AddressMapper addressMapper;
     private final CaseLinkService caseLinkService;
     private final CaseFlagService caseFlagService;
+    private final PostCodeCourtService postCodeCourtService;
 
     public PcsCaseEntity createCase(long caseReference,
                                     AddressUK propertyAddress,
@@ -85,6 +88,19 @@ public class PcsCaseService {
     public PcsCaseEntity loadCase(long caseReference) {
         return pcsCaseRepository.findByCaseReference(caseReference)
             .orElseThrow(() -> new CaseNotFoundException(caseReference));
+    }
+
+    @Transactional
+    public void allocateCaseManagementLocation(long caseReference) {
+        PcsCaseEntity pcsCaseEntity = loadCase(caseReference);
+        Integer epimsId =
+            postCodeCourtService.getCourtManagementLocation(
+                pcsCaseEntity.getPropertyAddress().getPostcode(),
+                pcsCaseEntity.getLegislativeCountry()
+            );
+        if (epimsId != null) {
+            pcsCaseEntity.setCaseManagementLocation(epimsId);
+        }
     }
 
     public void patchCaseLinks(long caseReference, PCSCase pcsCase) {

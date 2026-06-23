@@ -6,6 +6,7 @@ import { user } from '@data/user-data';
 import { caseNumber } from './createCase.action';
 import { performAction } from '@utils/controller';
 import { fetchCurrentUserTokenApiData } from '@data/api-data/fetchCurrentUser.api.data';
+import { formatDateTimeBST } from '@utils/common/string.utils';
 
 export let caseInfo: { id: string; fid: string; state: string } = { id: '', fid: '', state: '' };
 
@@ -16,8 +17,8 @@ export class CreateCaseAPIAction implements IAction {
       ['submitCaseAPI', () => this.submitCaseAPI(fieldName)],
       ['deleteCaseRole', () => this.deleteCaseRole(fieldName)],
       ['enforceCaseAPI', () => this.enforceCaseAPI(fieldName)],
-      ['fetchCurrentUserAPI', () => this.fetchCurrentUserAPI()],
-      ['getCaseAPI', () => this.getCaseAPI()],
+      ['fetchCurrentUserAPI', () => this.fetchCurrentUserAPI(fieldName)],
+      ['getCaseAPI', () => this.getCaseAPI(fieldName)],
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -170,23 +171,26 @@ export class CreateCaseAPIAction implements IAction {
     }
   }
 
-  private async getCaseAPI(): Promise<void> {
+  private async getCaseAPI(getDetails: actionData): Promise<void> {
     const getCaseApi = Axios.create(createCaseEventTokenApiData.createCaseEventTokenApiInstance());
-
-    //process.env.CREATE_EVENT_TOKEN = (await getCaseApi.get(createCaseEventTokenApiData.createCaseEventTokenApiEndPoint)).data.token;
     try {
       const createResponse = await getCaseApi.get(getCaseApiData.getCaseApiEndPoint());
-      await this.generateSolicitorAccessToken();
-      const allDefendants = createResponse.data.data.allDefendants;
-      const defendantIds = allDefendants.map((d: any) => d.id);
-      if (defendantIds.length === 0) throw new Error(`No Defendants ID retrieved and the status is ${createResponse.status}`);      
+      if (typeof getDetails === 'string' && getDetails === 'Claim Submission Time') {
+        process.env.Submission_TIME = formatDateTimeBST(createResponse.data.last_state_modified_on);
+        console.log(`\n✅ The claim was submitted on "${process.env.Submission_TIME}"`)
+      } else {
+        await this.generateSolicitorAccessToken();
+        const allDefendants = createResponse.data.data.allDefendants;
+        const defendantIds = allDefendants.map((d: any) => d.id);
+        if (defendantIds.length === 0) throw new Error(`No Defendants ID retrieved and the status is ${createResponse.status}`);
 
-      for (const defendantId of defendantIds) {
-        process.env.Defendant_ID = defendantId;
+        for (const defendantId of defendantIds) {
+          process.env.Defendant_ID = defendantId;
 
-        await performAction('linkSolicitorAPI');
-      }
-      console.log(`\n✅ GET DEFENDANT ID SUCCESSFUL : STATUS ${createResponse.status}`);     
+          await performAction('linkSolicitorAPI');
+        }
+        console.log(`\n✅ GET DEFENDANT ID SUCCESSFUL : STATUS ${createResponse.status}`);
+      }    
 
     } catch (error: any) {
       const status = error?.response?.status;
@@ -221,14 +225,22 @@ export class CreateCaseAPIAction implements IAction {
     });
   }
 
-  private async fetchCurrentUserAPI(): Promise<void> {
+  private async fetchCurrentUserAPI(getUser: actionData): Promise<void> {
     const fetchUserCaseApi = Axios.create(fetchCurrentUserTokenApiData.fetchCurrentUserTokenApiInstance());
 
     try {
-      const userResponse = await fetchUserCaseApi.get(fetchCurrentUserTokenApiData.fetchCurrentUserApiEndPoint());
-      process.env.Display_NAME = await userResponse.data.displayName;
-      console.log(`\n✅ FETCH CURRENT USER:`);
-      console.log(`Successfully fetched Current User: ${process.env.Display_NAME}`);
+      if (typeof getUser === 'string' && getUser === 'Claimant') {
+        const userResponse = await fetchUserCaseApi.get(fetchCurrentUserTokenApiData.fetchCurrentUserApiEndPoint());
+        process.env.Display_NAME = await userResponse.data.displayName;
+        console.log(`\n✅ FETCH CURRENT USER:`);
+        console.log(`Successfully fetched Current User: ${process.env.Display_NAME}`);
+      } else {
+        const userResponse = await fetchUserCaseApi.get(fetchCurrentUserTokenApiData.fetchDefendantSolicitorUserApiEndPoint());
+        process.env.Defendant_SOLICITOR = JSON.stringify(await userResponse.data);
+        process.env.Display_NAME = await userResponse.data.displayName;
+        console.log(`\n✅ FETCH CURRENT USER:`);
+        console.log(`Successfully fetched Current User: ${process.env.Display_NAME}`);
+      }
     } catch (error: any) {
       const status = error?.response?.status;
       const responseBody = error?.response?.data;

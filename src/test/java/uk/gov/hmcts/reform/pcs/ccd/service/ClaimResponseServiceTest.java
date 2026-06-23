@@ -366,6 +366,77 @@ class ClaimResponseServiceTest {
     }
 
     @Test
+    void shouldSetAddressSameAsPropertyToNoWhenCorrespondenceAddressConfirmationIsNo() {
+        testParty.setAddressSameAsProperty(VerticalYesNo.YES);
+
+        final PossessionClaimResponse response = buildResponse(
+            Party.builder().address(TEST_ADDRESS).build(),
+            DefendantResponses.builder().correspondenceAddressConfirmation(VerticalYesNo.NO).build()
+        );
+
+        final AddressEntity addressEntity = new AddressEntity();
+        when(securityContextService.getCurrentUserId()).thenReturn(TEST_IDAM_ID);
+        when(partyService.getPartyEntityByIdamId(TEST_IDAM_ID, TEST_CASE_REFERENCE)).thenReturn(testParty);
+        when(modelMapper.map(TEST_ADDRESS, AddressEntity.class)).thenReturn(addressEntity);
+
+        underTest.saveDraftData(response, TEST_CASE_REFERENCE);
+
+        assertThat(testParty.getAddressSameAsProperty()).isEqualTo(VerticalYesNo.NO);
+        assertThat(testParty.getAddress()).isEqualTo(addressEntity);
+    }
+
+    @Test
+    void shouldLeaveAddressSameAsPropertyAsYesWhenCorrespondenceAddressConfirmationIsYes() {
+        testParty.setAddressSameAsProperty(VerticalYesNo.YES);
+
+        final PossessionClaimResponse response = buildResponse(
+            Party.builder().build(),
+            DefendantResponses.builder().correspondenceAddressConfirmation(VerticalYesNo.YES).build()
+        );
+
+        when(securityContextService.getCurrentUserId()).thenReturn(TEST_IDAM_ID);
+        when(partyService.getPartyEntityByIdamId(TEST_IDAM_ID, TEST_CASE_REFERENCE)).thenReturn(testParty);
+
+        underTest.saveDraftData(response, TEST_CASE_REFERENCE);
+
+        assertThat(testParty.getAddressSameAsProperty()).isEqualTo(VerticalYesNo.YES);
+    }
+
+    @Test
+    void shouldLeaveAddressSameAsPropertyAsNoWhenClaimantTypedAddressAndCorrespondenceAddressConfirmationIsYes() {
+        testParty.setAddressSameAsProperty(VerticalYesNo.NO);
+
+        final PossessionClaimResponse response = buildResponse(
+            Party.builder().build(),
+            DefendantResponses.builder().correspondenceAddressConfirmation(VerticalYesNo.YES).build()
+        );
+
+        when(securityContextService.getCurrentUserId()).thenReturn(TEST_IDAM_ID);
+        when(partyService.getPartyEntityByIdamId(TEST_IDAM_ID, TEST_CASE_REFERENCE)).thenReturn(testParty);
+
+        underTest.saveDraftData(response, TEST_CASE_REFERENCE);
+
+        assertThat(testParty.getAddressSameAsProperty()).isEqualTo(VerticalYesNo.NO);
+    }
+
+    @Test
+    void shouldLeaveAddressSameAsPropertyUnchangedWhenCorrespondenceAddressConfirmationIsAbsent() {
+        testParty.setAddressSameAsProperty(VerticalYesNo.YES);
+
+        final PossessionClaimResponse response = buildResponse(
+            Party.builder().build(),
+            DefendantResponses.builder().build()
+        );
+
+        when(securityContextService.getCurrentUserId()).thenReturn(TEST_IDAM_ID);
+        when(partyService.getPartyEntityByIdamId(TEST_IDAM_ID, TEST_CASE_REFERENCE)).thenReturn(testParty);
+
+        underTest.saveDraftData(response, TEST_CASE_REFERENCE);
+
+        assertThat(testParty.getAddressSameAsProperty()).isEqualTo(VerticalYesNo.YES);
+    }
+
+    @Test
     void saveDraftDataForParty_WithPartyId() {
         // Given
         PossessionClaimResponse response = buildResponse(

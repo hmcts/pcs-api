@@ -19,7 +19,7 @@ import java.util.List;
  * - Citizen journey: Create draft or load existing draft for CITIZEN User role.
  * - Legal Representative journey: Create draft per active linked defendants or load specific defendant draft.
  */
-@Component
+@Component("respondToClaimStartEventHandler")
 @Slf4j
 @RequiredArgsConstructor
 public class StartEventHandler implements Start<PCSCase, State> {

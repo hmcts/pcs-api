@@ -21,6 +21,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoPreferNotToSay;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaim;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponseStatus;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.HouseholdCircumstances;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PaymentAgreement;
@@ -36,6 +37,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.HouseholdCircum
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.PaymentAgreementEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.ReasonableAdjustmentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.CounterClaimRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DefendantResponseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
@@ -52,6 +54,7 @@ import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
@@ -96,6 +99,8 @@ class DefendantResponseServiceTest {
     @Mock
     private PartyAttributeAssertationService partyAttributeAssertationService;
     @Mock
+    private CounterClaimRepository counterClaimRepository;
+    @Mock
     private PartyEntity partyEntity;
     @Mock
     private ClaimEntity claimEntity;
@@ -125,6 +130,7 @@ class DefendantResponseServiceTest {
             paymentAgreementService,
             documentService,
             partyAttributeAssertationService,
+            counterClaimRepository,
             FIXED_UTC_CLOCK
         );
     }
@@ -171,6 +177,8 @@ class DefendantResponseServiceTest {
         assertThat(savedResponse.getFreeLegalAdvice()).isEqualTo(YesNoPreferNotToSay.YES);
         assertThat(savedResponse.getRentArrearsAmountConfirmation()).isEqualTo(YesNoNotSure.NO);
         assertThat(savedResponse.getLandlordRegistered()).isEqualTo(YesNoNotSure.YES);
+        assertThat(savedResponse.getStatus()).isEqualTo(DefendantResponseStatus.SUBMITTED);
+        assertThat(savedResponse.getResponseSubmittedDate()).isEqualTo(LocalDateTime.now(FIXED_UTC_CLOCK));
         verify(pcsCaseEntity).addDefendantResponse(savedResponse);
 
     }
@@ -752,6 +760,99 @@ class DefendantResponseServiceTest {
     }
 
     @Test
+    void shouldSaveCounterClaimDocumentsWhenPresent() {
+        // Given
+        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
+        stubPartyLookup();
+        stubClaimLookup();
+
+        CounterClaimEntity savedCounterClaimEntity = CounterClaimEntity.builder().build();
+        when(counterClaimRepository.save(any(CounterClaimEntity.class))).thenReturn(savedCounterClaimEntity);
+
+        UploadedDocument ccDoc = UploadedDocument.builder()
+            .document(Document.builder()
+                          .url("url-cc").filename("counter-claim.pdf").binaryUrl("bin-cc").categoryId("cat-cc").build())
+            .contentType("application/pdf")
+            .sizeInBytes(50000L)
+            .build();
+
+        List<ListValue<UploadedDocument>> counterClaimDocs = List.of(
+            ListValue.<UploadedDocument>builder().id("1").value(ccDoc).build()
+        );
+
+        DefendantResponses responses = DefendantResponses.builder()
+            .counterClaim(CounterClaim.builder().build())
+            .counterClaimDocuments(counterClaimDocs)
+            .build();
+
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .defendantResponses(responses)
+            .build();
+
+        // When
+        underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse);
+
+        // Then
+        verify(documentService).createCounterClaimUploadedDocuments(
+            eq(counterClaimDocs), eq(savedCounterClaimEntity), eq(pcsCaseEntity), any(PartyEntity.class));
+    }
+
+    @Test
+    void shouldNotSaveCounterClaimDocumentsWhenCounterClaimIsNull() {
+        // Given
+        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
+        stubPartyLookup();
+        stubClaimLookup();
+
+        UploadedDocument ccDoc = UploadedDocument.builder()
+            .document(Document.builder().url("url-cc").filename("cc.pdf").binaryUrl("bin-cc").build())
+            .build();
+
+        DefendantResponses responses = DefendantResponses.builder()
+            .counterClaim(null)
+            .counterClaimDocuments(List.of(
+                ListValue.<UploadedDocument>builder().id("1").value(ccDoc).build()
+            ))
+            .build();
+
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .defendantResponses(responses)
+            .build();
+
+        // When
+        underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse);
+
+        // Then
+        verify(documentService, never()).createCounterClaimUploadedDocuments(any(), any(), any(), any());
+    }
+
+    @Test
+    void shouldNotSaveCounterClaimDocumentsWhenListIsEmpty() {
+        // Given
+        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
+        stubPartyLookup();
+        stubClaimLookup();
+
+        CounterClaimEntity savedCounterClaimEntity = CounterClaimEntity.builder().build();
+        when(counterClaimRepository.save(any(CounterClaimEntity.class))).thenReturn(savedCounterClaimEntity);
+
+        DefendantResponses responses = DefendantResponses.builder()
+            .counterClaim(CounterClaim.builder().build())
+            .counterClaimDocuments(null)
+            .build();
+
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .defendantResponses(responses)
+            .build();
+
+        // When
+        underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse);
+
+        // Then
+        verify(documentService, never()).createCounterClaimUploadedDocuments(any(), any(), any(), any());
+    }
+
+    @Test
     void shouldSaveUploadedDocumentsWhenPresent() {
         // Given
         when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
@@ -762,7 +863,7 @@ class DefendantResponseServiceTest {
 
         UploadedDocument defDoc = UploadedDocument.builder()
             .document(Document.builder()
-                .url("url1").filename("file1.pdf").binaryUrl("bin1").categoryId("cat1").build())
+                          .url("url1").filename("file1.pdf").binaryUrl("bin1").categoryId("cat1").build())
             .contentType("application/pdf")
             .sizeInBytes(135529L)
             .build();
@@ -854,7 +955,7 @@ class DefendantResponseServiceTest {
         assertThat(saved.getNeedHelpWithFees()).isEqualTo(VerticalYesNo.YES);
         assertThat(saved.getAppliedForHwf()).isEqualTo(VerticalYesNo.NO);
         assertThat(saved.getHwfReferenceNumber()).isEqualTo("HWF-123-456");
-        assertThat(saved.getClaimSubmittedDate()).isEqualTo("2026-04-22T21:00");
+        assertThat(saved.getClaimSubmittedDate()).isEqualTo(LocalDateTime.now(FIXED_UTC_CLOCK));
         assertThat(saved.getParty()).isEqualTo(partyEntity);
     }
 
@@ -1231,40 +1332,6 @@ class DefendantResponseServiceTest {
         assertThat(saved.getCounterClaimParties().getFirst().getParty()).isEqualTo(validPartyRef);
     }
 
-    @ParameterizedTest(name = "makeCounterClaim={0}")
-    @MethodSource("makeCounterClaimPersistenceScenarios")
-    void shouldPersistMakeCounterClaim(VerticalYesNo makeCounterClaim) {
-        // Given
-        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
-        stubPartyLookup();
-        stubClaimLookup();
-
-        DefendantResponses responses = DefendantResponses.builder()
-            .makeCounterClaim(makeCounterClaim)
-            .build();
-
-        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
-            .defendantResponses(responses)
-            .build();
-
-        // When
-        underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse);
-
-        // Then
-        verify(defendantResponseRepository).save(responseCaptor.capture());
-        DefendantResponseEntity savedResponse = responseCaptor.getValue();
-
-        assertThat(savedResponse.getMakeCounterClaim()).isEqualTo(makeCounterClaim);
-    }
-
-    private static Stream<Arguments> makeCounterClaimPersistenceScenarios() {
-        return Stream.of(
-            Arguments.of(VerticalYesNo.YES),
-            Arguments.of(VerticalYesNo.NO),
-            Arguments.of((VerticalYesNo) null)
-        );
-    }
-
     @Test
     void shouldSaveDefendantResponseWithJpaProxies_WithPartyId() {
         // Given
@@ -1326,4 +1393,36 @@ class DefendantResponseServiceTest {
         verify(defendantResponseRepository, never()).save(any());
     }
 
+    @ParameterizedTest(name = "counterClaimWantToUploadFiles={0}")
+    @MethodSource("counterClaimWantToUploadFilesPersistenceScenarios")
+    void shouldPersistCounterClaimWantToUploadFiles(VerticalYesNo counterClaimWantToUploadFiles) {
+        // Given
+        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
+        stubClaimLookup();
+
+        DefendantResponses responses = DefendantResponses.builder()
+            .counterClaimWantToUploadFiles(counterClaimWantToUploadFiles)
+            .build();
+
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .defendantResponses(responses)
+            .build();
+
+        // When
+        underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse);
+
+        // Then
+        verify(defendantResponseRepository).save(responseCaptor.capture());
+        DefendantResponseEntity savedResponse = responseCaptor.getValue();
+
+        assertThat(savedResponse.getCounterClaimWantToUploadFiles()).isEqualTo(counterClaimWantToUploadFiles);
+    }
+
+    private static Stream<Arguments> counterClaimWantToUploadFilesPersistenceScenarios() {
+        return Stream.of(
+            Arguments.of(VerticalYesNo.YES),
+            Arguments.of(VerticalYesNo.NO),
+            Arguments.of((VerticalYesNo) null)
+        );
+    }
 }

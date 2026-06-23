@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -47,7 +48,8 @@ class LegalRepSubmissionEventStrategyTest {
     private SelectedPartyRetriever selectedPartyRetriever;
     @Mock
     private SubmitResponseFactory submitResponseFactory;
-
+    @Mock
+    private EventPayload<PCSCase, State> eventPayload;
     private LegalRepSubmissionEventStrategy underTest;
 
     @BeforeEach
@@ -81,13 +83,15 @@ class LegalRepSubmissionEventStrategyTest {
         SubmitResponse<State> submitResponse = SubmitResponse.<State>builder()
             .build();
 
-        when(selectedPartyRetriever.getSelectedPartyId(CASE_REFERENCE)).thenReturn(Optional.of(representedPartyId));
+        when(selectedPartyRetriever.getCurrentRepresentedPartyId(caseData)).thenReturn(Optional.of(representedPartyId));
         when(draftCaseDataService.getUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim, representedPartyId))
             .thenReturn(Optional.of(caseData));
         when(submitResponseFactory.success()).thenReturn(submitResponse);
+        when(eventPayload.caseReference()).thenReturn(CASE_REFERENCE);
+        when(eventPayload.caseData()).thenReturn(caseData);
 
         // when
-        SubmitResponse<State> result = underTest.process(CASE_REFERENCE);
+        SubmitResponse<State> result = underTest.process(eventPayload);
 
         // then
         assertThat(result.getErrors()).isNullOrEmpty();
@@ -110,13 +114,18 @@ class LegalRepSubmissionEventStrategyTest {
         PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
             .defendantResponses(responses)
             .build();
+        PCSCase caseData = PCSCase.builder()
+            .possessionClaimResponse(possessionClaimResponse)
+            .build();
 
-        when(selectedPartyRetriever.getSelectedPartyId(CASE_REFERENCE)).thenReturn(Optional.empty());
+        when(selectedPartyRetriever.getCurrentRepresentedPartyId(caseData)).thenReturn(Optional.empty());
+        when(eventPayload.caseReference()).thenReturn(CASE_REFERENCE);
+        when(eventPayload.caseData()).thenReturn(caseData);
 
         // when / then
         assertThat(assertThrows(
             IllegalStateException.class,
-            () -> underTest.process(CASE_REFERENCE)
+            () -> underTest.process(eventPayload)
         )).hasMessage("No selected responding party id for respond to claim");
 
         verify(claimResponseService, never())
@@ -149,14 +158,16 @@ class LegalRepSubmissionEventStrategyTest {
             .errors(List.of("error"))
             .build();
 
-        when(selectedPartyRetriever.getSelectedPartyId(CASE_REFERENCE)).thenReturn(Optional.of(representedPartyId));
+        when(selectedPartyRetriever.getCurrentRepresentedPartyId(caseData)).thenReturn(Optional.of(representedPartyId));
         when(draftCaseDataService.getUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim, representedPartyId))
             .thenReturn(Optional.of(caseData));
         when(submitResponseFactory.validate(possessionClaimResponse, CASE_REFERENCE))
             .thenReturn(Optional.of(submitResponse));
+        when(eventPayload.caseReference()).thenReturn(CASE_REFERENCE);
+        when(eventPayload.caseData()).thenReturn(caseData);
 
         // when
-        SubmitResponse<State> result = underTest.process(CASE_REFERENCE);
+        SubmitResponse<State> result = underTest.process(eventPayload);
 
         // then
         assertThat(result.getErrors()).contains("error");
@@ -173,9 +184,14 @@ class LegalRepSubmissionEventStrategyTest {
     void shouldThrowExceptionWhenNoDraft() {
         // Given
         UUID representedPartyId = UUID.randomUUID();
-        when(selectedPartyRetriever.getSelectedPartyId(CASE_REFERENCE)).thenReturn(Optional.of(representedPartyId));
+        PCSCase caseData = PCSCase.builder()
+            .build();
+        when(selectedPartyRetriever.getCurrentRepresentedPartyId(caseData)).thenReturn(Optional.of(representedPartyId));
+        when(eventPayload.caseReference()).thenReturn(CASE_REFERENCE);
+        when(eventPayload.caseData()).thenReturn(caseData);
+
         // When
-        assertThatThrownBy(() -> underTest.process(CASE_REFERENCE))
+        assertThatThrownBy(() -> underTest.process(eventPayload))
             .isInstanceOf(DraftNotFoundException.class);
 
         // Then

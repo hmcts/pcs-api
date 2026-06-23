@@ -8,6 +8,7 @@ import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DefendantAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DefendantSolicitorAccess;
 import uk.gov.hmcts.reform.pcs.ccd.annotation.JacksonMoneyGBP;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.UploadedDocument;
@@ -85,6 +86,9 @@ public class DefendantResponses {
     private VerticalYesNo disputeClaim;
 
     @CCD
+    private VerticalYesNo hasSolicitor;
+
+    @CCD
     private String disputeClaimDetails;
 
     @CCD
@@ -116,6 +120,19 @@ public class DefendantResponses {
 
     @CCD(max = 6400)
     private String otherConsiderationsDetails;
+    
     @CCD
     private VerticalYesNo makeCounterClaim;
+
+    @CCD
+    private VerticalYesNo counterClaimWantToUploadFiles;
+    @CCD(
+        access = {DefendantSolicitorAccess.class},
+        typeOverride = FieldType.MultiSelectList,
+        typeParameterOverride = "RespondToClaimSection"
+    )
+    private List<RespondToClaimSection> completedSections;
+
+    @CCD
+    private DefendantResponseStatus status;
 }

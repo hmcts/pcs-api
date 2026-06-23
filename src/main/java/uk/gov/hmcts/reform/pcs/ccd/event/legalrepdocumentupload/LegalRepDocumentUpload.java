@@ -28,6 +28,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.time.LocalDateTime;
 import java.util.Objects;
+import java.util.stream.Stream;
 
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType;
@@ -68,19 +69,15 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
 
         List<DynamicStringListElement> validCategoryItems =
             Arrays.stream(DocumentUploadCategory.values())
-                .map(category -> {
+                .flatMap(category -> {
                     if (category == DocumentUploadCategory.MAIN_CLAIM_OR_COUNTERCLAIM) {
-                        return buildCategoryItem(category, null);
+                        return Stream.of(buildCategoryItem(category, null));
                     }
 
-                    LocalDateTime genAppDate =
-                        findLatestGenAppDateForCategory(pcsCaseEntity, category);
-
-                    return genAppDate == null
-                        ? null
-                        : buildCategoryItem(category, genAppDate);
+                    return findGenAppDatesForCategory(pcsCaseEntity, category)
+                        .stream()
+                        .map(date -> buildCategoryItem(category, date));
                 })
-                .filter(Objects::nonNull)
                 .toList();
 
         caseData.getLegalRepDocumentUploadDetails().setValidCategories(
@@ -105,23 +102,27 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
             .build();
     }
 
-    LocalDateTime findLatestGenAppDateForCategory(PcsCaseEntity pcsCaseEntity,
-                                                          DocumentUploadCategory category) {
+    List<LocalDateTime> findGenAppDatesForCategory(
+        PcsCaseEntity pcsCaseEntity,
+        DocumentUploadCategory category
+    ) {
         if (pcsCaseEntity.getGenApps() == null) {
-            return null;
+            return List.of();
         }
 
         GenAppType mapped = mapCategoryToGenAppType(category);
         if (mapped == null) {
-            return null;
+            return List.of();
         }
 
         return pcsCaseEntity.getGenApps().stream()
             .filter(genApp -> genApp.getType() == mapped)
+            .filter(genApp -> genApp.getWithoutNotice() != null
+                && genApp.getWithoutNotice().toBoolean())
             .map(GenAppEntity::getApplicationSubmittedDate)
             .filter(Objects::nonNull)
-            .max(Comparator.naturalOrder())
-            .orElse(null);
+            .sorted(Comparator.reverseOrder()) // optional
+            .toList();
     }
 
     GenAppType mapCategoryToGenAppType(DocumentUploadCategory category) {

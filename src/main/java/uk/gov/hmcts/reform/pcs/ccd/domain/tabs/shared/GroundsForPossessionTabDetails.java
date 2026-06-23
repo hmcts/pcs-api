@@ -16,4 +16,7 @@ public class GroundsForPossessionTabDetails {
 
     @CCD(label = "Grounds", typeOverride = TextArea)
     private String grounds;
+
+    @CCD(label = "Description of other grounds")
+    private String otherGroundsDescription;
 }

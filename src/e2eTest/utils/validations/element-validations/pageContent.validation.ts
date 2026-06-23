@@ -234,6 +234,9 @@ export class PageContentValidation implements IValidation {
     } else if (page.url().includes("makeAnApplication")) {
       filePath = path.join(__dirname, '../../../data/page-data-figma/page-data-genApps-figma', `${fileName}.page.data.ts`);
     }
+    else if (page.url().includes("globalSearch")) {
+      filePath = path.join(__dirname, '../../../data/page-data-figma/page-data-common-component', `${fileName}.page.data.ts`);
+    }
     else {
       filePath = path.join(__dirname, '../../../data/page-data-figma', `${fileName}.page.data.ts`);
     }

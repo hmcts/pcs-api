@@ -6,6 +6,7 @@ import {
 } from '@utils/controller';
 import { caseInfo } from '@utils/actions/custom-actions/createCaseAPI.action';
 import { createCaseApiData, submitCaseApiData } from '@data/api-data';
+import {caseNumber} from "@utils/actions/custom-actions";
 test.beforeEach(async ({ page }) => {
   initializeExecutor(page);
   await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
@@ -37,4 +38,5 @@ test.describe.skip('[Search Case]', () => {
       "elementType": "paragraph"
     });
   });
+
 });

@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -42,6 +43,9 @@ class CitizenSubmissionEventStrategyTest {
     private DefendantResponseService defendantResponseService;
     @Mock
     private SubmitResponseFactory submitResponseFactory;
+    @Mock
+    private EventPayload<PCSCase, State> eventPayload;
+
     private CitizenSubmissionEventStrategy underTest;
 
     @BeforeEach
@@ -65,9 +69,10 @@ class CitizenSubmissionEventStrategyTest {
         PCSCase caseData = createDraftSaveCaseData(responses);
 
         stubDraft(caseData);
+        when(eventPayload.caseReference()).thenReturn(CASE_REFERENCE);
 
         // when
-        underTest.process(CASE_REFERENCE);
+        underTest.process(eventPayload);
 
         // then
         verify(submitResponseFactory).success();
@@ -89,11 +94,12 @@ class CitizenSubmissionEventStrategyTest {
 
         when(draftCaseDataService.getUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim))
             .thenReturn(Optional.empty());
+        when(eventPayload.caseReference()).thenReturn(CASE_REFERENCE);
 
         // when
         assertThat(assertThrows(
             DraftNotFoundException.class,
-            () -> underTest.process(CASE_REFERENCE)
+            () -> underTest.process(eventPayload)
         )).hasMessage(String.format("No draft found for this case reference %s, eventId %s, and user ",
                                     CASE_REFERENCE, respondPossessionClaim));
 
@@ -130,9 +136,10 @@ class CitizenSubmissionEventStrategyTest {
 
         when(submitResponseFactory.validate(possessionClaimResponse, CASE_REFERENCE))
             .thenReturn(Optional.of(submitResponse));
+        when(eventPayload.caseReference()).thenReturn(CASE_REFERENCE);
 
         // when
-        underTest.process(CASE_REFERENCE);
+        underTest.process(eventPayload);
 
         // then
         verify(submitResponseFactory, never()).success();

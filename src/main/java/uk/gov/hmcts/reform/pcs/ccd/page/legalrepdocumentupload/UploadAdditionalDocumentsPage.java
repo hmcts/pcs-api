@@ -14,12 +14,12 @@ public class UploadAdditionalDocumentsPage implements CcdPageConfiguration, CcdP
 
     public static final String DOCUMENT_DETAILS_CONTENT  = """
                     <p class="govuk-body">
-                        You should only upload documents that are relevant to your application.
+                        You should only upload documents that are relevant to the claim.
                     </p>
 
                     <p class="govuk-body">
                         Before you upload the document, give it a name that tells the court what it is,
-                        for example, ‘witness statement’, or ‘tenancy agreement’.
+                        for example  ‘witness statement’, or ‘tenancy agreement’.
                     </p>
 
                     <p class="govuk-body">
@@ -28,7 +28,7 @@ public class UploadAdditionalDocumentsPage implements CcdPageConfiguration, CcdP
                        TIF/TIFF.
                     </p>
 
-                    <p class="govuk-body govuk-!-font-weight-bold">
+                    <p class="govuk-body govuk-!-font-weight-bold govuk-!-margin-0">
                         Before you upload your documents
                     </p>
 
@@ -43,7 +43,7 @@ public class UploadAdditionalDocumentsPage implements CcdPageConfiguration, CcdP
         String pageKey = getPageKey();
         pageBuilder
             .page(pageKey)
-            .pageLabel("Upload your documents")
+            .pageLabel("Upload additional documents")
             .label(pageKey + "-line-separator", "---")
             .label(pageKey + "-content", DOCUMENT_DETAILS_CONTENT)
             .complex(PCSCase::getLegalRepDocumentUploadDetails)

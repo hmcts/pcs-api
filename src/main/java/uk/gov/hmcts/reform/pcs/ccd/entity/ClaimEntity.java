@@ -134,6 +134,24 @@ public class ClaimEntity {
     @Enumerated(EnumType.STRING)
     private LanguageUsed languageUsed;
 
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private VerticalYesNo energyPerformanceCertificateProvided;
+
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private VerticalYesNo gasSafetyReportProvided;
+
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private VerticalYesNo electricalInstallationConditionProvided;
+
+    private String noEnergyPerformanceCertificateReason;
+
+    private String noGasSafetyReportReason;
+
+    private String noElectricalInstallationConditionReason;
+
     @OneToMany(fetch = LAZY, cascade = ALL, mappedBy = "claim")
     @Builder.Default
     @JsonManagedReference
@@ -154,11 +172,6 @@ public class ClaimEntity {
     @Builder.Default
     @JsonManagedReference
     private Set<EnforcementOrderEntity> enforcementOrders = new HashSet<>();
-
-    @OneToMany(fetch = LAZY, cascade = ALL, mappedBy = "claim")
-    @Builder.Default
-    @JsonManagedReference
-    private List<CaseNoteEntity> caseNotes = new ArrayList<>();
 
     @OneToOne(cascade = ALL, mappedBy = "claim", orphanRemoval = true)
     @JsonManagedReference
@@ -191,6 +204,8 @@ public class ClaimEntity {
     @OneToOne(mappedBy = "claim", cascade = ALL, orphanRemoval = true)
     @JsonManagedReference
     private FeePaymentEntity feePayment;
+
+    private LocalDateTime claimIssuedDate;
 
     public void setAsbProhibitedConductEntity(AsbProhibitedConductEntity asbProhibitedConductEntity) {
         if (this.asbProhibitedConductEntity != null) {
@@ -290,9 +305,4 @@ public class ClaimEntity {
             .count();
     }
 
-
-    public void addCaseNote(CaseNoteEntity caseNote) {
-        caseNotes.add(caseNote);
-        caseNote.setClaim(this);
-    }
 }

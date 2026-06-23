@@ -9,7 +9,10 @@ import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.payments.client.PaymentsClient;
 import uk.gov.hmcts.reform.payments.client.models.CasePaymentRequestDto;
 import uk.gov.hmcts.reform.payments.client.models.FeeDto;
+import uk.gov.hmcts.reform.payments.client.models.PaymentDto;
+import uk.gov.hmcts.reform.payments.request.CardPaymentServiceRequestDTO;
 import uk.gov.hmcts.reform.payments.request.CreateServiceRequestDTO;
+import uk.gov.hmcts.reform.payments.response.CardPaymentServiceRequestResponse;
 import uk.gov.hmcts.reform.payments.response.PaymentServiceResponse;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -18,7 +21,11 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.feeandpay.FeePaymentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
+import uk.gov.hmcts.reform.pcs.exception.FeePaymentNotFoundException;
 import uk.gov.hmcts.reform.pcs.feesandpay.mapper.PaymentRequestMapper;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.CardPaymentStatusResponse;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.CreateCardPaymentRequest;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.CreateCardPaymentResponse;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatusCallback;
@@ -102,6 +109,50 @@ public class PaymentService {
         return paymentServiceResponse;
     }
 
+    public CreateCardPaymentResponse createPaymentRequest(String serviceRequestReference,
+                                                          CreateCardPaymentRequest createCardPaymentRequest) {
+
+        FeePaymentEntity feePaymentEntity = feePaymentRepository.findByServiceRequestReference(serviceRequestReference)
+            .orElseThrow(
+                () -> new FeePaymentNotFoundException("No fee payment entity found for " + serviceRequestReference)
+            );
+
+        CardPaymentServiceRequestDTO paymentRequest = CardPaymentServiceRequestDTO.builder()
+            .amount(createCardPaymentRequest.getAmount())
+            .language(createCardPaymentRequest.getLanguage())
+            .returnUrl(createCardPaymentRequest.getReturnUrl())
+            .build();
+
+        if (feePaymentEntity.getPaymentStatus() != null) {
+            throw new IllegalStateException("Service request " + serviceRequestReference
+                                                + " already has a completed status");
+        }
+
+        CardPaymentServiceRequestResponse govPayCardPaymentResponse = paymentsClient.createGovPayCardPaymentRequest(
+            serviceRequestReference,
+            systemUpdateUserTokenProvider.getAuthToken(),
+            paymentRequest
+        );
+
+        return CreateCardPaymentResponse.builder()
+            .paymentReference(govPayCardPaymentResponse.getPaymentReference())
+            .status(govPayCardPaymentResponse.getStatus())
+            .nextUrl(govPayCardPaymentResponse.getNextUrl())
+            .build();
+    }
+
+
+    public CardPaymentStatusResponse getPaymentStatus(String internalReference) {
+        PaymentDto govPayCardPaymentStatus = paymentsClient.getGovPayCardPaymentStatusWithCallback(
+            internalReference,
+            systemUpdateUserTokenProvider.getAuthToken()
+        );
+
+        return CardPaymentStatusResponse.builder()
+            .status(govPayCardPaymentStatus.getStatus())
+            .build();
+    }
+
     private String getResponsiblePartyName(FeesAndPayTaskData feesAndPayTaskData) {
         UUID responsiblePartyId = feesAndPayTaskData.getResponsiblePartyId();
         long caseReference = feesAndPayTaskData.getCaseReference();
@@ -121,21 +172,30 @@ public class PaymentService {
     @Transactional
     public void processPaymentResponse(PaymentStatusCallback paymentStatusCallback) {
         log.info("PaymentStatusCallback status: {}", paymentStatusCallback.getServiceRequestStatus());
-        Optional<FeePaymentEntity> byCaseReference = feePaymentRepository
-            .findByRequestReference(paymentStatusCallback.getServiceRequestReference());
-        if (byCaseReference.isPresent()) {
-            FeePaymentEntity feePaymentEntity = byCaseReference.get();
-            feePaymentEntity.setExternalReference(paymentStatusCallback.getPaymentReference());
-            feePaymentEntity.setPaymentStatus(PaymentStatus.fromValue(paymentStatusCallback.getServiceRequestStatus()));
-            PaymentCallbackStrategy paymentCallbackStrategy = paymentCallbackStrategyFactory
-                .getStrategy(feePaymentEntity.getPaymentCallbackHandlerType());
-            if (paymentCallbackStrategy != null) {
-                paymentCallbackStrategy.handle(paymentStatusCallback, feePaymentEntity);
-            }
-            feePaymentRepository.save(feePaymentEntity);
+
+        getFeePaymentEntity(paymentStatusCallback.getServiceRequestReference())
+            .ifPresent(
+                feePaymentEntity -> {
+                    feePaymentEntity.setExternalReference(paymentStatusCallback.getPaymentReference());
+                    feePaymentEntity
+                        .setPaymentStatus(PaymentStatus.fromValue(paymentStatusCallback.getServiceRequestStatus()));
+
+                    callPaymentCallbackHandler(paymentStatusCallback, feePaymentEntity);
+
+                    feePaymentRepository.save(feePaymentEntity);
+                });
+    }
+
+    private void callPaymentCallbackHandler(PaymentStatusCallback paymentStatusCallback,
+                                            FeePaymentEntity feePaymentEntity) {
+
+        PaymentCallbackStrategy paymentCallbackStrategy = paymentCallbackStrategyFactory
+            .getStrategy(feePaymentEntity.getPaymentCallbackHandlerType());
+
+        if (paymentCallbackStrategy != null) {
+            paymentCallbackStrategy.handle(paymentStatusCallback, feePaymentEntity);
         } else {
-            log.error("Unable to find a payment with the service request reference : {}",
-                      paymentStatusCallback.getServiceRequestReference());
+            log.warn("No handler found for type {}", feePaymentEntity.getPaymentCallbackHandlerType());
         }
     }
 
@@ -146,10 +206,11 @@ public class PaymentService {
                  feesAndPayTaskData.getCaseReference(), serviceRequestReference);
         FeePaymentEntity feePaymentEntity = FeePaymentEntity.builder()
             .claim(claimEntity)
-            .requestReference(serviceRequestReference)
+            .serviceRequestReference(serviceRequestReference)
             .amount(feesAndPayTaskData.getFeeDetails().getFeeAmount())
             .paymentCallbackHandlerType(feesAndPayTaskData.getPaymentCallbackHandlerType())
             .taskData(feesAndPayTaskDataAsString)
+            .relatedEntityId(feesAndPayTaskData.getRelatedEntityId())
             .build();
         feePaymentRepository.save(feePaymentEntity);
     }
@@ -158,6 +219,17 @@ public class PaymentService {
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
         // Assuming 1 claim per PcsCase
         return pcsCaseEntity.getClaims().getFirst();
+    }
+
+    private Optional<FeePaymentEntity> getFeePaymentEntity(String serviceRequestReference) {
+        Optional<FeePaymentEntity> optionalFeePaymentEntity = feePaymentRepository
+            .findByServiceRequestReference(serviceRequestReference);
+
+        if (optionalFeePaymentEntity.isEmpty()) {
+            log.error("Unable to find a payment with the service request reference : {}", serviceRequestReference);
+        }
+
+        return optionalFeePaymentEntity;
     }
 
 }

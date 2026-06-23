@@ -209,4 +209,71 @@ class SelectedPartyRetrieverTest {
         // then
         assertFalse(result.isPresent());
     }
+
+    @Test
+    void getCurrentRepresentedPartyId_WithSingleDefendant_ReturnsPartyId() {
+        // given
+        UUID partyID = UUID.randomUUID();
+        Party party = Party.builder()
+            .build();
+
+        List<ListValue<Party>> defendantList = new ArrayList<>();
+        defendantList.add(ListValue.<Party>builder().value(party).id(partyID.toString()).build());
+
+        PCSCase pcsCase =  PCSCase.builder().build();
+        pcsCase.setAllDefendants(defendantList);
+
+        // when
+        Optional<UUID> result = selectedPartyRetriever.getCurrentRepresentedPartyId(pcsCase);
+
+        // then
+        assertTrue(result.isPresent());
+        assertEquals(partyID, result.get());
+        verify(clientContextRetriever, never()).getClientContext();
+    }
+
+    @Test
+    void getCurrentRepresentedPartyId_WithMultipleDefendantAndNoCurrentPartyId_ReturnsOptional() {
+        // given
+        UUID partyID = UUID.randomUUID();
+        Party party = Party.builder()
+            .build();
+
+        List<ListValue<Party>> defendantList = new ArrayList<>();
+        defendantList.add(ListValue.<Party>builder().value(party).id(partyID.toString()).build());
+        defendantList.add(ListValue.<Party>builder().value(party).build());
+
+        PCSCase pcsCase = PCSCase.builder().build();
+        pcsCase.setAllDefendants(defendantList);
+
+        // when
+        Optional<UUID> result = selectedPartyRetriever.getCurrentRepresentedPartyId(pcsCase);
+
+        // then
+        assertFalse(result.isPresent());
+    }
+
+    @Test
+    void getCurrentRepresentedPartyId_WithMultipleDefendantAndCurrentPartyId_ReturnsPartyId() {
+        // given
+        UUID partyID = UUID.randomUUID();
+        Party party = Party.builder()
+            .build();
+
+        List<ListValue<Party>> defendantList = new ArrayList<>();
+        defendantList.add(ListValue.<Party>builder().value(party).id(partyID.toString()).build());
+        defendantList.add(ListValue.<Party>builder().value(party).build());
+
+        PCSCase pcsCase = PCSCase.builder()
+            .currentRepresentedPartyId(partyID.toString())
+            .allDefendants(defendantList)
+            .build();
+
+        // when
+        Optional<UUID> result = selectedPartyRetriever.getCurrentRepresentedPartyId(pcsCase);
+
+        // then
+        assertTrue(result.isPresent());
+        assertEquals(partyID, result.get());
+    }
 }

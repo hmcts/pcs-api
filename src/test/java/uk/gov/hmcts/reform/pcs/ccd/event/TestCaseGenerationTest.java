@@ -1,10 +1,15 @@
 package uk.gov.hmcts.reform.pcs.ccd.event;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.io.Resource;
 import uk.gov.hmcts.ccd.sdk.api.DecentralisedConfigBuilder;
@@ -25,6 +30,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.testcasesupport.TestCaseSupportException;
 import uk.gov.hmcts.reform.pcs.ccd.testcasesupport.TestCaseSupportHelper;
+import uk.gov.hmcts.reform.pcs.ccd.testcasesupport.TestSupportEnvironment;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.io.ByteArrayInputStream;
@@ -43,8 +49,11 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.State.AWAITING_SUBMISSION_TO_HMCTS;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.createTestCase;
@@ -68,6 +77,18 @@ class TestCaseGenerationTest {
     private ResumePossessionClaim resumePossessionClaim;
     @Mock
     private EnforceTheOrder enforceTheOrder;
+
+    private MockedStatic<TestSupportEnvironment> mockedEnv;
+
+    @BeforeEach
+    void setUp() {
+        mockedEnv = Mockito.mockStatic(TestSupportEnvironment.class);
+    }
+
+    @AfterEach
+    void tearDown() {
+        mockedEnv.close();
+    }
 
     @Test
     @SuppressWarnings("unchecked")
@@ -236,6 +257,56 @@ class TestCaseGenerationTest {
         assertThat(response.getState()).isEqualTo(State.CASE_ISSUED);
         verify(spyUnderTest).makeAClaimTestCreation("Create-Case-Make-A-Claim-Basic-Case", caseReference);
         verify(enforceTheOrder).submitOrder(caseReference, loadedCase);
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void shouldConfigureDecentralisedWhenNonProdSupportEnabled() {
+        // Given
+        DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder = mockConfigBuilder();
+        EventTypeBuilder<PCSCase, UserRole, State> eventTypeBuilder =
+            (EventTypeBuilder<PCSCase, UserRole, State>) mock(EventTypeBuilder.class);
+        Event.EventBuilder<PCSCase, UserRole, State> eventBuilder =
+            (Event.EventBuilder<PCSCase, UserRole, State>) mock(Event.EventBuilder.class, RETURNS_SELF);
+        FieldCollection.FieldCollectionBuilder<PCSCase, State, Event.EventBuilder<PCSCase, UserRole, State>> fb =
+            (FieldCollection.FieldCollectionBuilder<PCSCase, State, Event.EventBuilder<PCSCase, UserRole, State>>)
+                mock(FieldCollection.FieldCollectionBuilder.class, RETURNS_SELF);
+
+        when(configBuilder.decentralisedEvent(eq(createTestCase.name()), any(), any()))
+            .thenReturn(eventTypeBuilder);
+        when(eventTypeBuilder.initialState(AWAITING_SUBMISSION_TO_HMCTS)).thenReturn(eventBuilder);
+        when(eventBuilder.fields()).thenReturn(fb);
+
+        // When
+        underTest.configureDecentralised(configBuilder);
+
+        // Then
+        verify(configBuilder, times(1)).decentralisedEvent(anyString(), any(), any());
+
+    }
+
+    @Disabled
+    @Test
+    void shouldConfigureDecentralisedWhenNonProdSupportNotEnabled() {
+        try (MockedStatic<System> mockedSystem = mockStatic(System.class)) {
+            mockedSystem.when(() -> System.getenv("ENABLE_TESTING_SUPPORT")).thenReturn("false");
+            // Given
+            mockedEnv.when(TestSupportEnvironment::isPreview).thenReturn(false);
+            DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder = mockConfigBuilder();
+
+            // When
+            underTest.configureDecentralised(configBuilder);
+
+            // Then
+            verifyNoInteractions(configBuilder);
+        }
+    }
+
+    private DecentralisedConfigBuilder<PCSCase, State, UserRole> mockConfigBuilder() {
+        @SuppressWarnings("unchecked")
+        DecentralisedConfigBuilder<PCSCase, State, UserRole> builder =
+            (DecentralisedConfigBuilder<PCSCase, State, UserRole>) mock(DecentralisedConfigBuilder.class);
+        return builder;
     }
 
 }

@@ -67,6 +67,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.OccupationLi
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ProhibitedConductWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ReasonsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.SecureContractGroundsForPossessionWalesPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.UploadRequiredDocumentsWales;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.util.MoneyFormatter;
@@ -84,7 +85,7 @@ import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.PageConfigurerHelper.verifyAndCount;
 
 @ExtendWith(MockitoExtension.class)
-public class ResumePossessionClaimConfigurerTest {
+class ResumePossessionClaimConfigurerTest {
 
     @InjectMocks
     private ResumePossessionClaimConfigurer underTest;
@@ -175,6 +176,8 @@ public class ResumePossessionClaimConfigurerTest {
     private RentArrears rentArrears;
     @Mock
     private PreActionProtocol preActionProtocol;
+    @Mock
+    private UploadRequiredDocumentsWales uploadRequiredDocumentsWales;
 
     @Test
     @SuppressWarnings("squid:S5961")
@@ -242,6 +245,7 @@ public class ResumePossessionClaimConfigurerTest {
         verifyAndCount(inOrder, pageBuilder, additionalReasonsForPossession, verificationCount);
         verifyAndCount(inOrder, pageBuilder, UnderlesseeOrMortgageeEntitledToClaimRelief.class, verificationCount);
         verifyAndCount(inOrder, pageBuilder, underlesseeOrMortgageeDetailsPage, verificationCount);
+        verifyAndCount(inOrder, pageBuilder, uploadRequiredDocumentsWales, verificationCount);
         verifyAndCount(inOrder, pageBuilder, WantToUploadDocuments.class, verificationCount);
         verifyAndCount(inOrder, pageBuilder, uploadAdditionalDocumentsDetails, verificationCount);
         verifyAndCount(inOrder, pageBuilder, GeneralApplication.class, verificationCount);

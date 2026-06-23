@@ -1,40 +1,22 @@
 package uk.gov.hmcts.reform.pcs.ccd.service;
 
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo.NO;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo.YES;
 
-@ExtendWith(MockitoExtension.class)
 class CaseNameFormatterTest {
-
-    private static final String CLAIMANT_NAME = "Freeman";
-    private static final String DEFENDANT_LAST_NAME = "Jackson";
-    private static final String CLAIMANT_ORGANISATION_NAME = "Treetops Housing";
-
-    @Mock
-    private PCSCase pcsCase;
-    @Mock
-    private ListValue<Party> defendantPartyListValue;
-    @Mock
-    private ListValue<Party> claimantListValue;
-    @Mock
-    private Party defendantParty;
-    @Mock
-    private Party claimantParty;
 
     private CaseNameFormatter underTest;
 
@@ -43,139 +25,186 @@ class CaseNameFormatterTest {
         underTest = new CaseNameFormatter();
     }
 
-    @Nested
-    @DisplayName("Format case name from PcsCase")
-    class FormatFromPcsCaseTests {
+    @Test
+    void shouldFormatCaseNameFromPcsCase() {
+        // Given
+        PCSCase pcsCase = PCSCase.builder()
+            .allClaimants(List.of(listValue(individualClaimant("Sarah", "Freeman"))))
+            .allDefendants(List.of(listValue(defendant("David", "Jackson"))))
+            .build();
 
-        @Test
-        void shouldFormatCaseNameWhenClaimantIsOrgAndDefendantIsKnown() {
-            // Given
-            when(pcsCase.getAllClaimants()).thenReturn(List.of(claimantListValue));
-            when(pcsCase.getAllDefendants()).thenReturn(List.of(defendantPartyListValue));
-            when(defendantPartyListValue.getValue()).thenReturn(defendantParty);
-            when(claimantListValue.getValue()).thenReturn(claimantParty);
-            when(claimantParty.getOrgName()).thenReturn(CLAIMANT_ORGANISATION_NAME);
-            when(defendantParty.getNameKnown()).thenReturn(YES);
-            when(defendantParty.getLastName()).thenReturn(DEFENDANT_LAST_NAME);
+        // When
+        String caseName = underTest.formatCaseName(pcsCase);
 
-            // When
-            String caseName = underTest.formatCaseName(pcsCase);
-
-            // Then
-            assertThat(caseName).isEqualTo("Treetops Housing vs Jackson");
-        }
-
-        @Test
-        void shouldFormatCaseNameWhenClaimantIsCitizenAndDefendantIsKnown() {
-            // Given
-            when(pcsCase.getAllClaimants()).thenReturn(List.of(claimantListValue));
-            when(pcsCase.getAllDefendants()).thenReturn(List.of(defendantPartyListValue));
-            when(defendantPartyListValue.getValue()).thenReturn(defendantParty);
-            when(claimantListValue.getValue()).thenReturn(claimantParty);
-            when(claimantParty.getLastName()).thenReturn(CLAIMANT_NAME);
-            when(defendantParty.getNameKnown()).thenReturn(YES);
-            when(defendantParty.getLastName()).thenReturn(DEFENDANT_LAST_NAME);
-
-            // When
-            String caseName = underTest.formatCaseName(pcsCase);
-
-            // Then
-            assertThat(caseName).isEqualTo("Freeman vs Jackson");
-        }
-
-        @Test
-        void shouldFormatCaseNameWhenClaimantIsOrgAndMultipleDefendants() {
-            // Given
-            when(pcsCase.getAllClaimants()).thenReturn(List.of(claimantListValue));
-            when(pcsCase.getAllDefendants()).thenReturn(List.of(defendantPartyListValue, defendantPartyListValue));
-            when(defendantPartyListValue.getValue()).thenReturn(defendantParty);
-            when(claimantListValue.getValue()).thenReturn(claimantParty);
-            when(claimantParty.getOrgName()).thenReturn(CLAIMANT_ORGANISATION_NAME);
-            when(defendantParty.getNameKnown()).thenReturn(YES);
-            when(defendantParty.getLastName()).thenReturn(DEFENDANT_LAST_NAME);
-
-            // When
-            String caseName = underTest.formatCaseName(pcsCase);
-
-            // Then
-            assertThat(caseName).isEqualTo("Treetops Housing vs Jackson and Others");
-        }
-
-        @Test
-        void shouldFormatCaseNameWhenClaimantIsCitizenAndDefendantUnknown() {
-            // Given
-            when(pcsCase.getAllClaimants()).thenReturn(List.of(claimantListValue));
-            when(pcsCase.getAllDefendants()).thenReturn(List.of(defendantPartyListValue));
-            when(claimantListValue.getValue()).thenReturn(claimantParty);
-            when(defendantPartyListValue.getValue()).thenReturn(defendantParty);
-            when(claimantParty.getLastName()).thenReturn(CLAIMANT_NAME);
-            when(defendantParty.getNameKnown()).thenReturn(NO);
-
-            // When
-            String caseName = underTest.formatCaseName(pcsCase);
-
-            // Then
-            assertThat(caseName).isEqualTo("Freeman vs persons unknown");
-        }
+        // Then
+        assertThat(caseName).isEqualTo("Sarah Freeman vs David Jackson");
     }
 
-    @Nested
-    @DisplayName("Format case name from lists of Party")
-    class FormatFromListOfPartyTests {
+    @ParameterizedTest
+    @MethodSource("claimantAndDefendantScenarios")
+    void shouldFormatCaseName(List<Party> allClaimants, List<Party> allDefendants, String output) {
+        // When
+        String caseName = underTest.formatCaseName(allClaimants, allDefendants);
 
-        @Test
-        void shouldFormatCaseNameWhenClaimantIsOrgAndDefendantIsKnown() {
-            // Given
-            when(claimantParty.getOrgName()).thenReturn(CLAIMANT_ORGANISATION_NAME);
-            when(defendantParty.getNameKnown()).thenReturn(YES);
-            when(defendantParty.getLastName()).thenReturn(DEFENDANT_LAST_NAME);
+        // Then
+        assertThat(caseName).isEqualTo(output);
+    }
 
-            // When
-            String caseName = underTest.formatCaseName(List.of(claimantParty), List.of(defendantParty));
+    private static Stream<Arguments> claimantAndDefendantScenarios() {
+        return Stream.of(
+            Arguments.argumentSet(
+                "Claimant is organisation and single defendant is known",
+                List.of(organisationClaimant("Treetops Housing")),
+                List.of(defendant("David", "Jackson")),
+                "Treetops Housing vs David Jackson"
+            ),
+            Arguments.argumentSet(
+                "Claimant is individual and single defendant is known",
+                List.of(individualClaimant("Sarah", "Freeman")),
+                List.of(defendant("David", "Jackson")),
+                "Sarah Freeman vs David Jackson"
+            ),
+            Arguments.argumentSet(
+                "Only last names are available",
+                List.of(individualClaimant(null, "Freeman")),
+                List.of(defendant(null, "Jackson")),
+                "Freeman vs Jackson"
+            ),
+            Arguments.argumentSet(
+                "Defendants are null",
+                List.of(individualClaimant("Sarah", "Freeman")),
+                null,
+                "Sarah Freeman vs Persons unknown"
+            ),
+            Arguments.argumentSet(
+                "Defendants are empty",
+                List.of(individualClaimant("Sarah", "Freeman")),
+                List.of(),
+                "Sarah Freeman vs Persons unknown"
+            ),
+            Arguments.argumentSet(
+                "Claimant is organisation and two defendants",
+                List.of(organisationClaimant("Treetops Housing")),
+                List.of(defendant("David", "Jackson"), defendant("Jane", "Smith")),
+                "Treetops Housing vs David Jackson and Jane Smith"
+            ),
+            Arguments.argumentSet(
+                "Claimant is individual and more than two defendants",
+                List.of(individualClaimant("Sarah", "Freeman")),
+                List.of(defendant("David", "Jackson"), defendant("Jane", "Smith"), defendant("Sam", "Taylor")),
+                "Sarah Freeman vs David Jackson, Jane Smith and Others"
+            ),
+            Arguments.argumentSet(
+                "Claimant is organisation and more than two defendants",
+                List.of(organisationClaimant("Treetops Housing")),
+                List.of(defendant("David", "Jackson"), defendant("Jane", "Smith"), defendant("Sam", "Taylor")),
+                "Treetops Housing vs David Jackson, Jane Smith and Others"
+            ),
+            Arguments.argumentSet(
+                "Claimant is organisation and defendant name not known",
+                List.of(organisationClaimant("Treetops Housing")),
+                List.of(unknownDefendant()),
+                "Treetops Housing vs Persons unknown"
+            ),
+            Arguments.argumentSet(
+                "Claimant is individual and defendant name not known",
+                List.of(individualClaimant("Sarah", "Freeman")),
+                List.of(unknownDefendant()),
+                "Sarah Freeman vs Persons unknown"
+            ),
+            Arguments.argumentSet(
+                "Claimant is individual and two defendant names not known",
+                List.of(individualClaimant("Sarah", "Freeman")),
+                List.of(unknownDefendant(), unknownDefendant()),
+                "Sarah Freeman vs Persons unknown and Persons unknown"
+            ),
+            Arguments.argumentSet(
+                "Claimant is organisation and two defendant names not known",
+                List.of(organisationClaimant("Treetops Housing")),
+                List.of(unknownDefendant(), unknownDefendant()),
+                "Treetops Housing vs Persons unknown and Persons unknown"
+            ),
+            Arguments.argumentSet(
+                "Claimant is individual and more than two defendant names not known",
+                List.of(individualClaimant("Sarah", "Freeman")),
+                List.of(unknownDefendant(), unknownDefendant(), unknownDefendant()),
+                "Sarah Freeman vs Persons unknown, Persons unknown and Others"
+            ),
+            Arguments.argumentSet(
+                "Claimant is individual and second defendant is not known",
+                List.of(individualClaimant("Sarah", "Freeman")),
+                List.of(defendant("David", "Jackson"), unknownDefendant()),
+                "Sarah Freeman vs David Jackson and Persons unknown"
+            ),
+            Arguments.argumentSet(
+                "Claimant is organisation and second defendant is not known",
+                List.of(organisationClaimant("Treetops Housing")),
+                List.of(defendant("David", "Jackson"), unknownDefendant()),
+                "Treetops Housing vs David Jackson and Persons unknown"
+            ),
+            Arguments.argumentSet(
+                "Claimant is individual and first defendant is not known",
+                List.of(individualClaimant("Sarah", "Freeman")),
+                List.of(unknownDefendant(), defendant("David", "Jackson")),
+                "Sarah Freeman vs Persons unknown and David Jackson"
+            ),
+            Arguments.argumentSet(
+                "Claimant is organisation and first defendant is not known",
+                List.of(organisationClaimant("Treetops Housing")),
+                List.of(unknownDefendant(), defendant("David", "Jackson")),
+                "Treetops Housing vs Persons unknown and David Jackson"
+            ),
+            Arguments.argumentSet(
+                "Claimant is individual and more than two defendants and second defendant is not known",
+                List.of(individualClaimant("Sarah", "Freeman")),
+                List.of(defendant("David", "Jackson"), unknownDefendant(), defendant("Sam", "Taylor")),
+                "Sarah Freeman vs David Jackson, Persons unknown and Others"
+            ),
+            Arguments.argumentSet(
+                "Claimant is organisation and more than two defendants and first defendant is not known",
+                List.of(organisationClaimant("Treetops Housing")),
+                List.of(defendant("David", "Jackson"), unknownDefendant(), defendant("Sam", "Taylor")),
+                "Treetops Housing vs David Jackson, Persons unknown and Others"
+            ),
+            Arguments.argumentSet(
+                "All claimants is empty",
+                List.of(),
+                List.of(defendant("David", "Jackson")),
+                "null vs David Jackson"
+            )
+        );
+    }
 
-            // Then
-            assertThat(caseName).isEqualTo("Treetops Housing vs Jackson");
-        }
+    private static Party organisationClaimant(String organisationName) {
+        return Party.builder()
+            .orgName(organisationName)
+            .build();
+    }
 
-        @Test
-        void shouldFormatCaseNameWhenClaimantIsCitizenAndDefendantIsKnown() {
-            //Given
-            when(claimantParty.getLastName()).thenReturn(CLAIMANT_NAME);
-            when(defendantParty.getNameKnown()).thenReturn(YES);
-            when(defendantParty.getLastName()).thenReturn(DEFENDANT_LAST_NAME);
+    private static Party individualClaimant(String firstName, String lastName) {
+        return Party.builder()
+            .firstName(firstName)
+            .lastName(lastName)
+            .build();
+    }
 
-            //When
-            String caseName = underTest.formatCaseName(List.of(claimantParty), List.of(defendantParty));
+    private static Party defendant(String firstName, String lastName) {
+        return Party.builder()
+            .nameKnown(YES)
+            .firstName(firstName)
+            .lastName(lastName)
+            .build();
+    }
 
-            // Then
-            assertThat(caseName).isEqualTo("Freeman vs Jackson");
-        }
+    private static Party unknownDefendant() {
+        return Party.builder()
+            .nameKnown(NO)
+            .build();
+    }
 
-        @Test
-        void shouldFormatCaseNameWhenClaimantIsOrgAndMultipleDefendants() {
-            //Given
-            when(claimantParty.getOrgName()).thenReturn(CLAIMANT_ORGANISATION_NAME);
-            when(defendantParty.getNameKnown()).thenReturn(YES);
-            when(defendantParty.getLastName()).thenReturn(DEFENDANT_LAST_NAME);
-
-            //When
-            String caseName = underTest.formatCaseName(List.of(claimantParty), List.of(defendantParty, defendantParty));
-
-            // Then
-            assertThat(caseName).isEqualTo("Treetops Housing vs Jackson and Others");
-        }
-
-        @Test
-        void shouldFormatCaseNameWhenClaimantIsCitizenAndDefendantUnknown() {
-            //Given
-            when(claimantParty.getLastName()).thenReturn(CLAIMANT_NAME);
-            when(defendantParty.getNameKnown()).thenReturn(NO);
-
-            //When
-            String caseName = underTest.formatCaseName(List.of(claimantParty), List.of(defendantParty, defendantParty));
-
-            // Then
-            assertThat(caseName).isEqualTo("Freeman vs persons unknown");
-        }
+    private static <T> ListValue<T> listValue(T value) {
+        return ListValue.<T>builder()
+            .value(value)
+            .build();
     }
 }

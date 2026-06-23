@@ -29,7 +29,7 @@ test.beforeEach(async ({ page }) => {
     // 🔹 log each case number immediately
     console.log(`Created Case ${i + 1}: ${caseNumber}`);
   }
-  await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/${getCaseTypeId()}/${process.env.CASE_NUMBER}#`);
+  await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/${getCaseTypeId()}/${process.env.CASE_NUMBER}#Summary`);
   await expect(async () => {
     await page.waitForURL(`${process.env.MANAGE_CASE_BASE_URL}/**/**/**/**/**#Summary`);
   }).toPass({
@@ -45,8 +45,8 @@ test.afterEach(async () => {
 
 //Case Linking is not working in preview env as explained in https://tools.hmcts.net/jira/browse/HDPI-6095
 //So these tests won't be executed in preview
-test.describe('[Common Component Case Linking]', async () => {
-  test('Case Linking @nightly @caseLinking', async () => {
+test.describe('[Common Component Case Linking] @nightly @caseFlags', async () => {
+  test('Case Linking', async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.linkCaseEvent);
     await performAction('clickButton', caseSummary.go);
     await performValidation('mainHeader', beforeYouStart.mainHeader);

@@ -18,6 +18,8 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.util.PossessionGro
 
 import java.util.Set;
 
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.ENGLAND;
+
 /**
  * Page for selecting additional grounds for possession on an assured tenancy.
  */
@@ -36,7 +38,7 @@ public class RentArrearsGroundForPossessionAdditionalGrounds implements CcdPageC
             .showCondition("hasOtherAdditionalGrounds=\"Yes\""
                            + " AND tenancy_TypeOfTenancyLicence=\"ASSURED_TENANCY\""
                            + " AND claimDueToRentArrears=\"Yes\""
-                           + " AND legislativeCountry=\"England\"")
+                           + " AND " + ENGLAND)
             .label("groundForPossessionAdditionalGrounds-info", """
             ---
             <p class="govuk-body">You may have already given the defendants notice of your intention to begin

@@ -16,6 +16,6 @@ public enum EventId {
     addCaseNote,
     createFlags,
     amendFlags,
-    payment,
+    claimIssuePayment,
     legalRepDocumentUpload,
 }

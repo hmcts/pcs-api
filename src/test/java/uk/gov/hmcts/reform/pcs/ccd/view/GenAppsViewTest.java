@@ -11,12 +11,12 @@ import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentWithId;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GeneralApplication;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.time.LocalDateTime;
@@ -25,6 +25,8 @@ import java.util.Set;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -37,6 +39,8 @@ class GenAppsViewTest {
     @Mock
     private SecurityContextService securityContextService;
     @Mock
+    private GenAppVisibilityService genAppVisibilityService;
+    @Mock
     private PcsCaseEntity pcsCaseEntity;
 
     private PCSCase pcsCase;
@@ -46,10 +50,12 @@ class GenAppsViewTest {
     @BeforeEach
     void setUp() {
         when(securityContextService.getCurrentUserId()).thenReturn(CURRENT_USER_IDAM_ID);
+        when(genAppVisibilityService.isGenAppVisibleToUser(isA(GenAppEntity.class), eq(CURRENT_USER_IDAM_ID)))
+            .thenReturn(true);
 
         pcsCase = PCSCase.builder().build();
 
-        underTest = new GenAppsView(modelMapper, securityContextService);
+        underTest = new GenAppsView(modelMapper, securityContextService, genAppVisibilityService);
     }
 
     @Test
@@ -86,37 +92,24 @@ class GenAppsViewTest {
     }
 
     @Test
-    void shouldHideWithoutNoticeGenAppsFromOtherParties() {
+    void shouldHideGenAppsFromOtherPartiesIfTheyShouldNotSeeThem() {
         // Given
-        final PartyEntity currentParty = createPartyEntityWithIdamId(CURRENT_USER_IDAM_ID);
-        final PartyEntity otherPartyWithIdamId = createPartyEntityWithIdamId(UUID.randomUUID());
-        final PartyEntity otherPartyWithoutIdamId = createPartyEntityWithIdamId(null);
-
         UUID genApp1Id = UUID.randomUUID();
         LocalDateTime genApp1SubmittedDate = LocalDateTime.parse("2026-05-02T15:00:00");
         GenAppEntity genAppEntity1 = createGenAppEntity(genApp1Id, genApp1SubmittedDate);
-        genAppEntity1.setParty(currentParty);
-        genAppEntity1.setWithoutNotice(VerticalYesNo.YES);
+        when(genAppVisibilityService.isGenAppVisibleToUser(genAppEntity1, CURRENT_USER_IDAM_ID)).thenReturn(true);
 
         UUID genApp2Id = UUID.randomUUID();
         LocalDateTime genApp2SubmittedDate = LocalDateTime.parse("2026-05-04T10:00:00");
         GenAppEntity genAppEntity2 = createGenAppEntity(genApp2Id, genApp2SubmittedDate);
-        genAppEntity2.setParty(otherPartyWithIdamId);
-        genAppEntity2.setWithoutNotice(VerticalYesNo.YES);
+        when(genAppVisibilityService.isGenAppVisibleToUser(genAppEntity2, CURRENT_USER_IDAM_ID)).thenReturn(false);
 
         UUID genApp3Id = UUID.randomUUID();
         LocalDateTime genApp3SubmittedDate = LocalDateTime.parse("2026-05-04T09:00:00");
         GenAppEntity genAppEntity3 = createGenAppEntity(genApp3Id, genApp3SubmittedDate);
-        genAppEntity3.setParty(otherPartyWithIdamId);
-        genAppEntity3.setWithoutNotice(VerticalYesNo.NO);
+        when(genAppVisibilityService.isGenAppVisibleToUser(genAppEntity3, CURRENT_USER_IDAM_ID)).thenReturn(true);
 
-        UUID genApp4Id = UUID.randomUUID();
-        LocalDateTime genApp4SubmittedDate = LocalDateTime.parse("2026-05-04T09:10:00");
-        GenAppEntity genAppEntity4 = createGenAppEntity(genApp4Id, genApp4SubmittedDate);
-        genAppEntity4.setParty(otherPartyWithoutIdamId);
-        genAppEntity4.setWithoutNotice(VerticalYesNo.YES);
-
-        when(pcsCaseEntity.getGenApps()).thenReturn(Set.of(genAppEntity1, genAppEntity2, genAppEntity3, genAppEntity4));
+        when(pcsCaseEntity.getGenApps()).thenReturn(Set.of(genAppEntity1, genAppEntity2, genAppEntity3));
 
         // When
         underTest.setCaseFields(pcsCase, pcsCaseEntity);
