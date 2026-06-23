@@ -40,6 +40,8 @@ public class LegalRepresentativeEntity {
 
     private UUID idamId;
 
+    private String organisationId;
+
     private String organisationName;
 
     private String firstName;

@@ -20,6 +20,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.ClaimResponseS
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
+import java.time.LocalDate;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -362,6 +363,156 @@ class ClaimResponseServiceTest {
 
         // Then
         assertThat(testParty.getAddress().getAddressLine1()).isEqualTo("Claimant Street");
+    }
+
+    @Test
+    void shouldSetAddressSameAsPropertyToNoWhenCorrespondenceAddressConfirmationIsNo() {
+        testParty.setAddressSameAsProperty(VerticalYesNo.YES);
+
+        final PossessionClaimResponse response = buildResponse(
+            Party.builder().address(TEST_ADDRESS).build(),
+            DefendantResponses.builder().correspondenceAddressConfirmation(VerticalYesNo.NO).build()
+        );
+
+        final AddressEntity addressEntity = new AddressEntity();
+        when(securityContextService.getCurrentUserId()).thenReturn(TEST_IDAM_ID);
+        when(partyService.getPartyEntityByIdamId(TEST_IDAM_ID, TEST_CASE_REFERENCE)).thenReturn(testParty);
+        when(modelMapper.map(TEST_ADDRESS, AddressEntity.class)).thenReturn(addressEntity);
+
+        underTest.saveDraftData(response, TEST_CASE_REFERENCE);
+
+        assertThat(testParty.getAddressSameAsProperty()).isEqualTo(VerticalYesNo.NO);
+        assertThat(testParty.getAddress()).isEqualTo(addressEntity);
+    }
+
+    @Test
+    void shouldLeaveAddressSameAsPropertyAsYesWhenCorrespondenceAddressConfirmationIsYes() {
+        testParty.setAddressSameAsProperty(VerticalYesNo.YES);
+
+        final PossessionClaimResponse response = buildResponse(
+            Party.builder().build(),
+            DefendantResponses.builder().correspondenceAddressConfirmation(VerticalYesNo.YES).build()
+        );
+
+        when(securityContextService.getCurrentUserId()).thenReturn(TEST_IDAM_ID);
+        when(partyService.getPartyEntityByIdamId(TEST_IDAM_ID, TEST_CASE_REFERENCE)).thenReturn(testParty);
+
+        underTest.saveDraftData(response, TEST_CASE_REFERENCE);
+
+        assertThat(testParty.getAddressSameAsProperty()).isEqualTo(VerticalYesNo.YES);
+    }
+
+    @Test
+    void shouldLeaveAddressSameAsPropertyAsNoWhenClaimantTypedAddressAndCorrespondenceAddressConfirmationIsYes() {
+        testParty.setAddressSameAsProperty(VerticalYesNo.NO);
+
+        final PossessionClaimResponse response = buildResponse(
+            Party.builder().build(),
+            DefendantResponses.builder().correspondenceAddressConfirmation(VerticalYesNo.YES).build()
+        );
+
+        when(securityContextService.getCurrentUserId()).thenReturn(TEST_IDAM_ID);
+        when(partyService.getPartyEntityByIdamId(TEST_IDAM_ID, TEST_CASE_REFERENCE)).thenReturn(testParty);
+
+        underTest.saveDraftData(response, TEST_CASE_REFERENCE);
+
+        assertThat(testParty.getAddressSameAsProperty()).isEqualTo(VerticalYesNo.NO);
+    }
+
+    @Test
+    void shouldLeaveAddressSameAsPropertyUnchangedWhenCorrespondenceAddressConfirmationIsAbsent() {
+        testParty.setAddressSameAsProperty(VerticalYesNo.YES);
+
+        final PossessionClaimResponse response = buildResponse(
+            Party.builder().build(),
+            DefendantResponses.builder().build()
+        );
+
+        when(securityContextService.getCurrentUserId()).thenReturn(TEST_IDAM_ID);
+        when(partyService.getPartyEntityByIdamId(TEST_IDAM_ID, TEST_CASE_REFERENCE)).thenReturn(testParty);
+
+        underTest.saveDraftData(response, TEST_CASE_REFERENCE);
+
+        assertThat(testParty.getAddressSameAsProperty()).isEqualTo(VerticalYesNo.YES);
+    }
+
+    @Test
+    void saveDraftDataForParty_WithPartyId() {
+        // Given
+        PossessionClaimResponse response = buildResponse(
+            Party.builder()
+                .phoneNumber("07123456789")
+                .emailAddress("defendant@example.com")
+                .address(TEST_ADDRESS)
+                .build(),
+            DefendantResponses.builder()
+                .contactByEmail(VerticalYesNo.YES)
+                .contactByPost(VerticalYesNo.NO)
+                .contactByPhone(VerticalYesNo.YES)
+                .contactByText(VerticalYesNo.YES)
+                .build()
+        );
+
+        AddressEntity addressEntity = new AddressEntity();
+        UUID partyId = UUID.randomUUID();
+        when(partyService.getPartyEntityById(partyId, TEST_CASE_REFERENCE))
+            .thenReturn(testParty);
+        when(modelMapper.map(TEST_ADDRESS, AddressEntity.class)).thenReturn(addressEntity);
+
+        // When
+        underTest.saveDraftDataForParty(response, TEST_CASE_REFERENCE, partyId);
+
+        // Then
+        assertThat(testParty.getPhoneNumber()).isEqualTo("07123456789");
+        assertThat(testParty.getEmailAddress()).isEqualTo("defendant@example.com");
+        assertThat(testParty.getAddress()).isEqualTo(addressEntity);
+
+        ContactPreferencesEntity savedPrefs = testParty.getContactPreferences();
+        assertThat(savedPrefs.getContactByPhone()).isEqualTo(VerticalYesNo.YES);
+        assertThat(savedPrefs.getContactByText()).isEqualTo(VerticalYesNo.YES);
+        assertThat(savedPrefs.getContactByEmail()).isEqualTo(VerticalYesNo.YES);
+        assertThat(savedPrefs.getContactByPost()).isEqualTo(VerticalYesNo.NO);
+    }
+
+    @Test
+    void saveDraftDataForParty_WithPartyIdAndDateOfBirth() {
+        // Given
+        LocalDate dob = LocalDate.now();
+        PossessionClaimResponse response = buildResponse(
+            Party.builder()
+                .phoneNumber("07123456789")
+                .emailAddress("defendant@example.com")
+                .address(TEST_ADDRESS)
+                .build(),
+            DefendantResponses.builder()
+                .contactByEmail(VerticalYesNo.YES)
+                .contactByPost(VerticalYesNo.NO)
+                .contactByPhone(VerticalYesNo.YES)
+                .contactByText(VerticalYesNo.YES)
+                .dateOfBirth(dob)
+                .build()
+        );
+
+        AddressEntity addressEntity = new AddressEntity();
+        UUID partyId = UUID.randomUUID();
+        when(partyService.getPartyEntityById(partyId, TEST_CASE_REFERENCE))
+            .thenReturn(testParty);
+        when(modelMapper.map(TEST_ADDRESS, AddressEntity.class)).thenReturn(addressEntity);
+
+        // When
+        underTest.saveDraftDataForParty(response, TEST_CASE_REFERENCE, partyId);
+
+        // Then
+        assertThat(testParty.getPhoneNumber()).isEqualTo("07123456789");
+        assertThat(testParty.getEmailAddress()).isEqualTo("defendant@example.com");
+        assertThat(testParty.getAddress()).isEqualTo(addressEntity);
+        assertThat(testParty.getDateOfBirth()).isEqualTo(dob);
+
+        ContactPreferencesEntity savedPrefs = testParty.getContactPreferences();
+        assertThat(savedPrefs.getContactByPhone()).isEqualTo(VerticalYesNo.YES);
+        assertThat(savedPrefs.getContactByText()).isEqualTo(VerticalYesNo.YES);
+        assertThat(savedPrefs.getContactByEmail()).isEqualTo(VerticalYesNo.YES);
+        assertThat(savedPrefs.getContactByPost()).isEqualTo(VerticalYesNo.NO);
     }
 
     private PossessionClaimResponse buildResponse(Party party, DefendantResponses defendantResponses) {

@@ -8,11 +8,15 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantCircumstances;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantCircumstances;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.WalesDocuments;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
+import java.time.Clock;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -26,9 +30,9 @@ public class ClaimService {
     private final RentArrearsService rentArrearsService;
     private final NoticeOfPossessionService noticeOfPossessionService;
     private final StatementOfTruthService statementOfTruthService;
+    private final Clock utcClock;
 
     public ClaimEntity createMainClaimEntity(PCSCase pcsCase) {
-
         ClaimEntity claimEntity = buildClaimEntity(pcsCase);
 
         List<ClaimGroundEntity> claimGrounds = claimGroundService.createClaimGroundEntities(pcsCase);
@@ -40,15 +44,44 @@ public class ClaimService {
         if (pcsCase.getLegislativeCountry() == LegislativeCountry.WALES) {
             claimEntity
                 .setAsbProhibitedConductEntity(asbProhibitedConductService.createAsbProhibitedConductEntity(pcsCase));
+
+            WalesDocuments walesDocuments = pcsCase.getRequiredDocumentsWales();
+            if (walesDocuments != null) {
+                VerticalYesNo hasEnergyPerformanceCertificate = walesDocuments.getHasEnergyPerformanceCertificate();
+                claimEntity.setEnergyPerformanceCertificateProvided(hasEnergyPerformanceCertificate);
+                if (hasEnergyPerformanceCertificate == VerticalYesNo.NO) {
+                    claimEntity.setNoEnergyPerformanceCertificateReason(
+                        walesDocuments.getNoEpcReason()
+                    );
+                }
+
+                VerticalYesNo hasGasSafetyReport = walesDocuments.getHasGasSafetyReport();
+                claimEntity.setGasSafetyReportProvided(hasGasSafetyReport);
+                if (hasGasSafetyReport == VerticalYesNo.NO) {
+                    claimEntity.setNoGasSafetyReportReason(walesDocuments.getNoGasReportReason());
+                }
+
+                VerticalYesNo hasElectricalInstallationConditionReport =
+                    walesDocuments.getHasElectricalInstallationConditionReport();
+                claimEntity.setElectricalInstallationConditionProvided(hasElectricalInstallationConditionReport);
+                if (hasElectricalInstallationConditionReport == VerticalYesNo.NO) {
+                    claimEntity.setNoElectricalInstallationConditionReason(
+                        walesDocuments.getNoEicrReason()
+                    );
+                }
+            }
         }
 
         claimEntity.setRentArrears(rentArrearsService.createRentArrearsEntity(pcsCase));
         claimEntity.setNoticeOfPossession(noticeOfPossessionService.createNoticeOfPossessionEntity(pcsCase));
         claimEntity.setStatementOfTruth(statementOfTruthService.createStatementOfTruthEntity(pcsCase));
 
-        claimRepository.save(claimEntity);
+        return claimRepository.save(claimEntity);
+    }
 
-        return claimEntity;
+    public void setClaimIssuedDate(ClaimEntity claimEntity) {
+        claimEntity.setClaimIssuedDate(LocalDateTime.now(utcClock));
+        claimRepository.save(claimEntity);
     }
 
 

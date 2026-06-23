@@ -3,11 +3,13 @@ import { performAction } from '../../controller';
 import { actionData, actionRecord, IAction } from '@utils/interfaces';
 import { caseList, home } from '@data/page-data';
 import { waitForPageRedirectionTimeout } from 'playwright.config';
+import {caseInfo} from "@utils/actions/custom-actions/createCaseAPI.action";
 
 export class SearchCaseAction implements IAction {
   async execute(page: Page, action: string, fieldName: string | actionRecord, caseData: string): Promise<void> {
     const actionsMap = new Map<string, () => Promise<void>>([
       ['searchCaseFromFindCase', () => this.searchCaseFromFindCase(page, fieldName)],
+      ['searchCase', () => this.searchCase(page, fieldName)],
       ['filterCaseFromCaseList', () => this.filterCaseFromCaseList(page, fieldName)]
     ]);
     const actionToPerform = actionsMap.get(action);
@@ -31,5 +33,10 @@ export class SearchCaseAction implements IAction {
     await performAction('select', caseList.stateLabel, caseState);
     await performAction('clickButton', caseList.apply);
     await page.waitForTimeout(waitForPageRedirectionTimeout);
+  }
+
+  async searchCase(page: Page, caseNumber: actionData): Promise<void> {
+    await performAction('inputText', home.caseReferenceSearchLabel, caseNumber);
+    await page.getByText(home.findButton, {exact: true}).click();
   }
 }

@@ -11,6 +11,9 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.WALES;
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.ENGLAND;
+
 
 /**
  * CCD page configuration for postcode not eligible.
@@ -35,8 +38,7 @@ public class PropertyNotEligible implements CcdPageConfiguration {
                     <hr class="govuk-section-break govuk-section-break--l govuk-section-break--visible">
                     <h2 class="govuk-heading-m">What to do next</h2>
                     <p class="govuk-body">
-                      This service is currently only available for claimants claiming possession of a property
-                      in Bedfordshire.
+                      This service is not available in your area yet.
                     </p>
                     <p class="govuk-body">If you’re making a claim in another area:</p>
 
@@ -57,7 +59,7 @@ public class PropertyNotEligible implements CcdPageConfiguration {
                     <p class="govuk-body">
                       <a class="govuk-link" href="https://www.gov.uk/government/collections/property-possession-forms" target="_blank" rel="noopener noreferrer">
                         View the full list of property possessions forms (opens in new tab)
-                      </a>
+                      </a>.
                     </p>
 
                     <div class="govuk-warning-text">
@@ -68,7 +70,7 @@ public class PropertyNotEligible implements CcdPageConfiguration {
                       </strong>
                     </div>
                     </section>
-                    """, "legislativeCountry=\"England\" OR legislativeCountry=\"Wales\"")
+                    """, ENGLAND + " OR " + WALES)
 
 
             // Scotland-specific guidance section

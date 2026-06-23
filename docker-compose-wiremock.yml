@@ -6,6 +6,7 @@ services:
       - "8083:8083"
     volumes:
       - ./wiremock/mappings:/home/wiremock/mappings:ro
+      - ./wiremock/__files:/home/wiremock/__files:ro
     command: --global-response-templating --verbose --port 8083
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8083/__admin/mappings"]

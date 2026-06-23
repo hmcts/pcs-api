@@ -9,6 +9,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
@@ -23,19 +24,28 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PaymentAgreemen
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.ReasonableAdjustments;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.RecurrenceFrequency;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.RespondToClaimSection;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 import uk.gov.hmcts.reform.pcs.ccd.page.respondpossessionclaim.page.RespondToPossessionDraftSavePage;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
+import uk.gov.hmcts.reform.pcs.ccd.util.SelectedPartyRetriever;
+import uk.gov.hmcts.reform.pcs.idam.UserInfo;
+import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.respondPossessionClaim;
 
 @ExtendWith(MockitoExtension.class)
@@ -43,12 +53,25 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
 
     @Mock
     private DraftCaseDataService draftCaseDataService;
+    @Mock
+    private SecurityContextService securityContextService;
+    @Mock
+    private UserInfo userInfo;
+    @Mock
+    private SelectedPartyRetriever selectedPartyRetriever;
     @Captor
     private ArgumentCaptor<PCSCase> pcsCaseCaptor;
 
     @BeforeEach
     void setUp() {
-        setPageUnderTest(new RespondToPossessionDraftSavePage(draftCaseDataService));
+        lenient().when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
+        lenient().when(userInfo.getRoles()).thenReturn(List.of(UserRole.CITIZEN.getRole()));
+        setPageUnderTest(new RespondToPossessionDraftSavePage(
+            draftCaseDataService,
+            securityContextService,
+            selectedPartyRetriever
+
+        ));
     }
 
     @Test
@@ -393,6 +416,34 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
     }
 
     @Test
+    void shouldRoundTripCompletedSectionsInDraft() {
+        //Given
+        DefendantResponses responses = DefendantResponses.builder()
+            .completedSections(java.util.List.of(
+                RespondToClaimSection.START_NOW_AND_DETAILS,
+                RespondToClaimSection.PERSONAL_DETAILS))
+            .build();
+
+        PCSCase caseData = buildCaseData(PossessionClaimResponse.builder()
+                                             .defendantResponses(responses)
+                                             .build());
+
+        //When
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+        //Then
+        assertThat(response.getErrors()).isNull();
+        verify(draftCaseDataService).saveUnsubmittedEventData(
+            eq(TEST_CASE_REFERENCE), pcsCaseCaptor.capture(), eq(respondPossessionClaim)
+        );
+        PCSCase savedDraft = pcsCaseCaptor.getValue();
+        assertThat(savedDraft.getPossessionClaimResponse().getDefendantResponses().getCompletedSections())
+            .containsExactly(
+                RespondToClaimSection.START_NOW_AND_DETAILS,
+                RespondToClaimSection.PERSONAL_DETAILS);
+    }
+
+    @Test
     void shouldReturnErrorWhenDraftSaveFails() {
         //Given
         DefendantContactDetails contactDetails = DefendantContactDetails.builder()
@@ -418,6 +469,46 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
         assertThat(response.getData()).isNull();
     }
 
+    @Test
+    void shouldSaveDraftByPartyForLegalRepresentative() {
+        UUID representedPartyId = UUID.randomUUID();
+        when(userInfo.getRoles()).thenReturn(List.of(UserRole.DEFENDANT_SOLICITOR.getRole()));
+        DefendantContactDetails contactDetails = DefendantContactDetails.builder()
+            .party(Party.builder().firstName("Jack").lastName("Smith").build())
+            .build();
+        PCSCase caseData = buildCaseData(PossessionClaimResponse.builder()
+                                             .defendantContactDetails(contactDetails)
+                                             .build());
+
+        when(selectedPartyRetriever.getSelectedPartyId(TEST_CASE_REFERENCE))
+            .thenReturn(Optional.of(representedPartyId));
+
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+        assertThat(response.getErrors()).isNull();
+        verify(draftCaseDataService).saveUnsubmittedEventData(
+            eq(TEST_CASE_REFERENCE), pcsCaseCaptor.capture(), eq(respondPossessionClaim), eq(representedPartyId)
+        );
+    }
+
+    @Test
+    void shouldThrowErrorWhenNoSelectedPartyId() {
+        when(userInfo.getRoles()).thenReturn(List.of(UserRole.DEFENDANT_SOLICITOR.getRole()));
+        DefendantContactDetails contactDetails = DefendantContactDetails.builder()
+            .party(Party.builder().firstName("Jack").lastName("Smith").build())
+            .build();
+        PCSCase caseData = buildCaseData(PossessionClaimResponse.builder()
+                                             .defendantContactDetails(contactDetails)
+                                             .build());
+
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+        assertThat(response.getErrors()).containsExactly(
+            "No selected responding party id for respond to claim"
+        );
+        assertThat(response.getData()).isNull();
+    }
+
     private PCSCase buildCaseData(PossessionClaimResponse possessionClaimResponse) {
         return PCSCase.builder()
             .possessionClaimResponse(possessionClaimResponse)
@@ -425,3 +516,4 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
 
     }
 }
+

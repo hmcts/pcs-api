@@ -8,10 +8,10 @@ import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentWithId;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GeneralApplication;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.Comparator;
@@ -25,13 +25,14 @@ public class GenAppsView {
 
     private final ModelMapper modelMapper;
     private final SecurityContextService securityContextService;
+    private final GenAppVisibilityService genAppVisibilityService;
 
     public void setCaseFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
         UUID currentUserId = securityContextService.getCurrentUserId();
 
         List<ListValue<GeneralApplication>> genApps = pcsCaseEntity.getGenApps().stream()
             .sorted(Comparator.comparing(GenAppEntity::getApplicationSubmittedDate).reversed())
-            .filter(genAppEntity -> isVisibleToUser(genAppEntity, currentUserId))
+            .filter(genAppEntity -> genAppVisibilityService.isGenAppVisibleToUser(genAppEntity, currentUserId))
             .map(this::createListValue)
             .toList();
 
@@ -46,6 +47,7 @@ public class GenAppsView {
             .party(party)
             .submittedOn(genAppEntity.getApplicationSubmittedDate())
             .submissionDocument(getSubmissionDocument(genAppEntity))
+            .supportingDocuments(createSupportingDocumentList(genAppEntity))
             .build();
 
         return new ListValue<>(genAppEntity.getId().toString(), generalApplication);
@@ -76,9 +78,16 @@ public class GenAppsView {
             .orElse(null);
     }
 
-    private boolean isVisibleToUser(GenAppEntity genAppEntity, UUID userId) {
-        return genAppEntity.getWithoutNotice() != VerticalYesNo.YES
-            || userId.equals(genAppEntity.getParty().getIdamId());
+    private List<ListValue<Document>> createSupportingDocumentList(GenAppEntity genAppEntity) {
+        return genAppEntity.getDocuments().stream()
+            .map(documentEntity -> {
+                Document document = modelMapper.map(documentEntity, Document.class);
+                return ListValue.<Document>builder()
+                    .id(documentEntity.getId().toString())
+                    .value(document)
+                    .build();
+            })
+            .toList();
     }
 
 }

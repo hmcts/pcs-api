@@ -39,4 +39,6 @@ public class DraftCaseDataEntity {
 
     private UUID idamUserId;
 
+    private UUID partyId;
+
 }

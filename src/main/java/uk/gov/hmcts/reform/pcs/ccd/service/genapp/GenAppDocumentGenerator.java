@@ -5,26 +5,30 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.docassembly.domain.OutputType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppRequest;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.claim.StatementOfTruthEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseNameFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseReferenceFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentImportService;
+import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentNameService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
+import uk.gov.hmcts.reform.pcs.document.model.Document;
 import uk.gov.hmcts.reform.pcs.document.model.StatementOfTruth;
 import uk.gov.hmcts.reform.pcs.document.model.genapp.GenAppFormPayload;
 import uk.gov.hmcts.reform.pcs.document.service.DocAssemblyService;
-import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 
 import java.time.Clock;
 import java.time.LocalDate;
@@ -46,6 +50,8 @@ public class GenAppDocumentGenerator {
     private final AddressFormatter addressFormatter;
     private final CaseReferenceFormatter caseReferenceFormatter;
     private final CaseNameFormatter caseNameFormatter;
+    private final DocumentNameService documentNameService;
+    private final DocumentImportService documentImportService;
     private final ModelMapper modelMapper;
     private final Clock ukClock;
 
@@ -56,6 +62,8 @@ public class GenAppDocumentGenerator {
                                    AddressFormatter addressFormatter,
                                    CaseReferenceFormatter caseReferenceFormatter,
                                    CaseNameFormatter caseNameFormatter,
+                                   DocumentNameService documentNameService,
+                                   DocumentImportService documentImportService,
                                    ModelMapper modelMapper,
                                    @Qualifier("ukClock") Clock ukClock) {
         this.pcsCaseService = pcsCaseService;
@@ -65,22 +73,48 @@ public class GenAppDocumentGenerator {
         this.addressFormatter = addressFormatter;
         this.caseReferenceFormatter = caseReferenceFormatter;
         this.caseNameFormatter = caseNameFormatter;
+        this.documentNameService = documentNameService;
+        this.documentImportService = documentImportService;
         this.modelMapper = modelMapper;
         this.ukClock = ukClock;
     }
 
-    public String generateSubmissionDocument(long caseReference,
-                                             GenAppRequest citizenGenAppRequest,
-                                             GenAppEntity genAppEntity,
-                                             PartyEntity applicantParty) {
+    public void createSubmissionDocument(long caseReference,
+                                         GenAppEntity genAppEntity) {
+
+        PartyEntity applicantParty = genAppEntity.getParty();
+
+        String documentUrl = generateSubmissionDocument(
+            caseReference,
+            genAppEntity,
+            applicantParty
+        );
+
+        DocumentEntity importedDocumentEntity = documentImportService.addDocumentToCase(
+            caseReference,
+            documentUrl,
+            CaseFileCategory.APPLICATIONS
+        );
+
+        importedDocumentEntity.setGeneralApplication(genAppEntity);
+        genAppEntity.setSubmissionDocument(importedDocumentEntity);
+    }
+
+    private String generateSubmissionDocument(long caseReference,
+                                              GenAppEntity genAppEntity,
+                                              PartyEntity applicantParty) {
 
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
         ClaimEntity mainClaim = pcsCaseEntity.getClaims().getFirst();
         UUID applicantPartyId = applicantParty.getId();
-        String outputFilename = getDocumentFilename(mainClaim, genAppEntity, applicantPartyId);
+        String outputFilename = documentNameService
+            .appendGenAppPostfix(OUTPUT_FILENAME_PREFIX, genAppEntity, mainClaim, applicantPartyId);
 
-        GenAppFormPayload genAppFormPayload
-            = createGenAppFormPayload(caseReference, pcsCaseEntity, mainClaim, citizenGenAppRequest, applicantPartyId);
+        GenAppFormPayload genAppFormPayload = createGenAppFormPayload(caseReference,
+                                                                      pcsCaseEntity,
+                                                                      mainClaim,
+                                                                      genAppEntity,
+                                                                      applicantPartyId);
 
         return docAssemblyService
             .generateDocument(genAppFormPayload, TEMPLATE_ID, OutputType.PDF, outputFilename);
@@ -89,7 +123,7 @@ public class GenAppDocumentGenerator {
     private GenAppFormPayload createGenAppFormPayload(long caseReference,
                                                       PcsCaseEntity pcsCaseEntity,
                                                       ClaimEntity mainClaim,
-                                                      GenAppRequest genAppRequest,
+                                                      GenAppEntity genAppEntity,
                                                       UUID applicantPartyId) {
 
         LocalDate currentUkDate = LocalDate.now(ukClock);
@@ -100,6 +134,8 @@ public class GenAppDocumentGenerator {
         String applicantName = applicantPartyEntity.getFirstName() + " " + applicantPartyEntity.getLastName();
         String formattedPropertyAddress = getFormattedPropertyAddress(pcsCaseEntity);
         String formattedApplicantAddress = getFormattedApplicantAddress(applicantPartyEntity, formattedPropertyAddress);
+
+        StatementOfTruthEntity statementOfTruth = genAppEntity.getStatementOfTruth();
 
         return GenAppFormPayload.builder()
             .caseReference(caseReferenceFormatter.formatCaseReferenceWithDashes(caseReference))
@@ -113,18 +149,28 @@ public class GenAppDocumentGenerator {
                            .emailAddress(applicantPartyEntity.getEmailAddress())
                            .telephoneNumber(applicantPartyEntity.getPhoneNumber())
                            .build())
-            .applicationType(genAppRequest.getApplicationType())
-            .within14Days(genAppRequest.getWithin14Days())
-            .whatOrderWanted(genAppRequest.getWhatOrderWanted())
-            .otherPartiesAgreed(genAppRequest.getOtherPartiesAgreed())
-            .withoutNotice(genAppRequest.getWithoutNotice())
-            .withoutNoticeReason(genAppRequest.getWithoutNoticeReason())
+            .applicationType(genAppEntity.getType())
+            .within14Days(genAppEntity.getWithin14Days())
+            .whatOrderWanted(genAppEntity.getWhatOrderWanted())
+            .otherPartiesAgreed(genAppEntity.getOtherPartiesAgreed())
+            .withoutNotice(genAppEntity.getWithoutNotice())
+            .withoutNoticeReason(genAppEntity.getWithoutNoticeReason())
+            .documentUploadWanted(genAppEntity.getDocumentsUploaded())
+            .uploadedDocuments(getDocumentList(genAppEntity))
             .statementOfTruth(StatementOfTruth.builder()
-                                  .fullName(genAppRequest.getSotFullName())
+                                  .fullName(statementOfTruth != null ? statementOfTruth.getFullName() : null)
                                   .submittedOn(currentUkDate)
                                   .build()
             )
             .build();
+    }
+
+    private List<Document> getDocumentList(GenAppEntity genAppEntity) {
+        List<DocumentEntity> uploadedDocuments = genAppEntity.getDocuments();
+
+        return uploadedDocuments.stream()
+            .map(documentEntity -> Document.builder().filename(documentEntity.getFileName()).build())
+            .toList();
     }
 
     private String buildCaseName(ClaimEntity mainClaim) {
@@ -168,36 +214,6 @@ public class GenAppDocumentGenerator {
 
     private Party toParty(ClaimPartyEntity claimPartyEntity) {
         return modelMapper.map(claimPartyEntity.getParty(), Party.class);
-    }
-
-    private String getDocumentFilename(ClaimEntity mainClaim, GenAppEntity genAppEntity, UUID applicantPartyId) {
-        ClaimPartyEntity applicantClaimParty = getClaimParty(mainClaim, applicantPartyId);
-
-        // Example label: General Application (GA2) - Defendant 1.pdf
-        String applicantLabel = getPartyLabel(applicantClaimParty);
-        String filename = "%s GA%d".formatted(OUTPUT_FILENAME_PREFIX, genAppEntity.getRank());
-        if (applicantLabel != null) {
-            filename += " - " + applicantLabel;
-        }
-
-        return filename;
-    }
-
-    private static ClaimPartyEntity getClaimParty(ClaimEntity claim, UUID partyId) {
-        return claim.getClaimParties().stream()
-            .filter(claimPartyEntity -> partyId.equals(claimPartyEntity.getParty().getId()))
-            .findFirst()
-            .orElseThrow(() -> new PartyNotFoundException("Party not found"));
-    }
-
-    private static String getPartyLabel(ClaimPartyEntity applicantClaimParty) {
-        if (applicantClaimParty.getRole() == PartyRole.CLAIMANT) {
-            return "Claimant %d".formatted(applicantClaimParty.getRank());
-        } else if (applicantClaimParty.getRole() == PartyRole.DEFENDANT) {
-            return "Defendant %d".formatted(applicantClaimParty.getRank());
-        } else {
-            return null;
-        }
     }
 
 }

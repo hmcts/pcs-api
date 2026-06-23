@@ -5,9 +5,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.Payment;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatusCallback;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.PaymentService;
 
@@ -60,8 +63,9 @@ class PaymentCallBackControllerTest {
         verify(paymentService).processPaymentResponse(any(PaymentStatusCallback.class));
     }
 
-    @Test
-    void shouldProcessRequestBody() throws Exception {
+    @ParameterizedTest
+    @EnumSource(PaymentStatus.class)
+    void shouldProcessRequestBody(PaymentStatus status) throws Exception {
         // Given
         String ccdCaseNumber = "123123123123";
         BigDecimal amount = new BigDecimal("123.11");
@@ -69,7 +73,7 @@ class PaymentCallBackControllerTest {
             .serviceRequestReference("SR-123")
             .ccdCaseNumber(ccdCaseNumber)
             .serviceRequestAmount(amount)
-            .serviceRequestStatus("Paid")
+            .serviceRequestStatus(status.getValue())
             .payment(Payment.builder()
                          .paymentReference("123")
                          .paymentAmount(amount)

@@ -56,8 +56,9 @@ properties([
     ),
     choice(
       name: 'PLAYWRIGHT_GREP_TAG',
-      choices: ['@nightly', '@smoke', '@e2e', '@regression'],
-      description: 'Title grep (E2E_TEST_SCOPE). First option is the scheduled default.'
+      choices: ['@nightly', '@smoke', '@regression', '@release'],
+      description: 'Title grep (E2E_TEST_SCOPE). First option is the scheduled default. @release option will run all tests tagged @nightly and also @release'
+
     ),
   ])
 ])
@@ -103,7 +104,8 @@ def validateInputs() {
 }
 
 def handleEnvironmentSetting() {
-  env.E2E_TEST_SCOPE = params.PLAYWRIGHT_GREP_TAG?.trim() ?: '@nightly'
+  def tag = params.PLAYWRIGHT_GREP_TAG?.trim() ?: '@nightly'
+  env.E2E_TEST_SCOPE = (tag == '@release') ? '@nightly|@release' : tag
   env.E2E_SPEC = params.PLAYWRIGHT_SPEC?.trim() ?: ''
   env.ENVIRONMENT = (params.E2E_TARGET_ENV?.trim() ?: 'aat').toLowerCase()
 }

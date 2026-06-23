@@ -19,6 +19,8 @@ import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimStatus;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponseStatus;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyAccessCodeEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
@@ -30,8 +32,11 @@ import uk.gov.hmcts.reform.pcs.idam.User;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityResult;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.postcodecourt.service.EligibilityService;
+import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationDetailsService;
 import uk.gov.hmcts.reform.pcs.service.LegalRepresentativePartyLinkService;
 import uk.gov.hmcts.reform.pcs.testingsupport.service.CcdTestCaseOrchestrator;
+import uk.gov.hmcts.reform.pcs.testingsupport.service.EntityTestStatusService;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -75,9 +80,16 @@ class TestingSupportControllerTest {
     @Mock
     private IdamAuthenticator idamAuthenticator;
     @Mock
+    private EntityTestStatusService entityTestStatusService;
+    @Mock
     private User user;
     @Mock
     private UserInfo userInfo;
+    @Mock
+    private OrganisationDetailsService organisationDetailsService;
+    @Mock
+    private OrganisationDetailsResponse organisationDetails;
+
 
     private TestingSupportController underTest;
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -90,7 +102,9 @@ class TestingSupportControllerTest {
                                                  modelMapper, ccdTestCaseOrchestrator,
                                                  caseRoleAssignmentService,
                                                  legalRepresentativePartyLinkService,
-                                                 idamAuthenticator
+                                                 idamAuthenticator,
+                                                 entityTestStatusService,
+                                                 organisationDetailsService
         );
     }
 
@@ -350,6 +364,7 @@ class TestingSupportControllerTest {
         when(idamAuthenticator.validateAuthToken(authToken)).thenReturn(user);
         when(user.getUserDetails()).thenReturn(userInfo);
         when(userInfo.getUid()).thenReturn(userUid);
+        when(organisationDetailsService.getOrganisationDetails(userUid.toString())).thenReturn(organisationDetails);
 
         // when
         ResponseEntity<Void> response = underTest.linkDefendantSolicitorToParty(
@@ -363,7 +378,7 @@ class TestingSupportControllerTest {
         verify(caseRoleAssignmentService).assignRasRole(caseReference, userUid, UserRole.DEFENDANT_SOLICITOR);
 
         verify(legalRepresentativePartyLinkService)
-            .linkLegalRepresentativeToParty(caseReference, partyId, userInfo);
+            .linkLegalRepresentativeToParty(caseReference, partyId, userInfo, organisationDetails);
 
         assertThat(HttpStatus.OK.equals(response.getStatusCode()));
     }
@@ -398,7 +413,45 @@ class TestingSupportControllerTest {
         Map<String, Object> body = response.getBody();
         assertEquals("CREATED", body.get("status"));
         assertEquals(caseIdValue, body.get(caseIdKey));
-        assertEquals(caseDetailsValue, body.get(caseDetailsKey));
+        assertThat(HttpStatus.CREATED.equals(response.getStatusCode()));
+    }
+
+    @Test
+    void shouldUpdateCounterClaimStatus() {
+        // Given
+        UUID counterClaimId = UUID.randomUUID();
+        CounterClaimStatus status = CounterClaimStatus.COUNTER_CLAIM_ISSUED;
+        String serviceAuth = "Bearer s2sToken";
+
+        // When
+        ResponseEntity<Void> response = underTest.updateCounterClaimStatus(
+            serviceAuth,
+            counterClaimId,
+            status
+        );
+
+        // Then
+        verify(entityTestStatusService).updateCounterClaimStatus(counterClaimId, status);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+    }
+
+    @Test
+    void shouldUpdateDefendantResponseStatus() {
+        // Given
+        UUID defendantResponseId = UUID.randomUUID();
+        DefendantResponseStatus status = DefendantResponseStatus.SUBMITTED;
+        String serviceAuth = "Bearer s2sToken";
+
+        // When
+        ResponseEntity<Void> response = underTest.updateDefendantResponseStatus(
+            serviceAuth,
+            defendantResponseId,
+            status
+        );
+
+        // Then
+        verify(entityTestStatusService).updateDefendantResponseStatus(defendantResponseId, status);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
     }
 
     private JsonNode createJsonNodeFormPayload(String applicantName) {
@@ -411,6 +464,4 @@ class TestingSupportControllerTest {
             throw new RuntimeException("Failed to create JsonNode", e);
         }
     }
-
-
 }

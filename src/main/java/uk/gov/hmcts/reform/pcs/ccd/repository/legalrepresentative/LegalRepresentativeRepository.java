@@ -31,9 +31,45 @@ public interface LegalRepresentativeRepository extends JpaRepository<LegalRepres
         WHERE p.id = :partyId
         AND cplr.active = 'YES'
         """)
-    Optional<LegalRepresentativeEntity> findLegalRepresentativeForParty(@Param("partyId") UUID partyId);
+    Optional<LegalRepresentativeEntity> findByPartyLinkedToLegalRepresentativeAndActive(@Param("partyId") UUID partyId);
 
+    @Query("""
+        SELECT COUNT(lr) > 0
+        FROM LegalRepresentativeEntity lr
+        JOIN lr.claimPartyLegalRepresentativeList cplr
+        JOIN cplr.party p
+        WHERE lr.organisationId = :organisationId
+        AND p.id = :partyId
+        AND cplr.active = 'YES'
+        """)
+    boolean isRepresentativeOrganisationLinkedToPartyAndActive(@Param("organisationId") String organisationId,
+                                                               @Param("partyId") UUID partyId);
 
-    Optional<LegalRepresentativeEntity> findByIdamId(UUID idamUserId);
+    @Query("""
+        SELECT lr
+        FROM LegalRepresentativeEntity lr
+        JOIN lr.claimPartyLegalRepresentativeList cplr
+        JOIN cplr.party p
+        JOIN p.pcsCase pcsCase
+        WHERE pcsCase.caseReference = :caseReference
+        AND cplr.active = 'YES'
+        AND lr.idamId = :idamId
+        """)
+    Optional<LegalRepresentativeEntity> findByIdamId(@Param("idamId") UUID idamId,
+                                                     @Param("caseReference") long caseReference);
+
+    @Query("""
+        SELECT lr
+        FROM LegalRepresentativeEntity lr
+        JOIN lr.claimPartyLegalRepresentativeList cplr
+        JOIN cplr.party p
+        JOIN p.pcsCase pcsCase
+        WHERE pcsCase.caseReference = :caseReference
+        AND cplr.active = 'YES'
+        AND lr.organisationId = :organisationId
+        """)
+    Optional<LegalRepresentativeEntity> findByOrganisationId(@Param("organisationId") String organisationId,
+                                                             @Param("caseReference") long caseReference);
+
 
 }

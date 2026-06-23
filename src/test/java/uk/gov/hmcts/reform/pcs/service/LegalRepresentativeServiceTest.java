@@ -39,37 +39,13 @@ class LegalRepresentativeServiceTest {
     void shouldReturnOptionalEmptyWhenIdamIdIsNotLegalRep() {
         // Given
         UUID idamId = UUID.randomUUID();
-        when(legalRepresentativeRepository.findByIdamId(idamId)).thenReturn(Optional.empty());
+        when(legalRepresentativeRepository.findByIdamId(idamId, CASE_REFERENCE)).thenReturn(Optional.empty());
 
         // When
         Optional<DynamicList> dynamicListOptional = underTest.getRepresentedPartiesDynamicList(idamId, CASE_REFERENCE);
 
         // Then
         assertThat(dynamicListOptional).isEmpty();
-    }
-
-    @Test
-    void shouldReturnDynamicListWithNoItemsWhenNoPartiesRepesentedOnCase() {
-        // Given
-        UUID idamId = UUID.randomUUID();
-
-        PcsCaseEntity otherCaseEntity = PcsCaseEntity.builder().caseReference(9876L).build();
-        PartyEntity otherCasePartyEntity = PartyEntity.builder().pcsCase(otherCaseEntity).build();
-        ClaimPartyLegalRepresentativeEntity otherCaseClaimPartyEntity = ClaimPartyLegalRepresentativeEntity.builder()
-            .party(otherCasePartyEntity)
-            .build();
-        LegalRepresentativeEntity legalRepEntity = LegalRepresentativeEntity.builder()
-            .claimPartyLegalRepresentativeList(List.of(otherCaseClaimPartyEntity))
-            .build();
-
-        when(legalRepresentativeRepository.findByIdamId(idamId)).thenReturn(Optional.of(legalRepEntity));
-
-        // When
-        Optional<DynamicList> dynamicListOptional = underTest.getRepresentedPartiesDynamicList(idamId, CASE_REFERENCE);
-
-        // Then
-        assertThat(dynamicListOptional)
-            .hasValueSatisfying(dynamicList -> assertThat(dynamicList.getListItems()).isEmpty());
     }
 
     @Test
@@ -92,7 +68,8 @@ class LegalRepresentativeServiceTest {
             .claimPartyLegalRepresentativeList(List.of(caseClaimPartyEntity))
             .build();
 
-        when(legalRepresentativeRepository.findByIdamId(idamId)).thenReturn(Optional.of(legalRepEntity));
+        when(legalRepresentativeRepository.findByIdamId(idamId, CASE_REFERENCE))
+            .thenReturn(Optional.of(legalRepEntity));
 
         // When
         Optional<DynamicList> dynamicListOptional = underTest.getRepresentedPartiesDynamicList(idamId, CASE_REFERENCE);
@@ -110,6 +87,5 @@ class LegalRepresentativeServiceTest {
                     .containsExactly(expectedListValue)
             );
     }
-
 
 }

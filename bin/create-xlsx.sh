@@ -8,6 +8,9 @@ if [ -z "$env" ]; then
   echo "No environment specified, defaulting to the local naming convention."
 fi
 
+# Authenticate with Azure Container Registry
+env AZURE_CONFIG_DIR=/opt/jenkins/.azure-nonprod az acr login --name hmctsprod --subscription DCD-CNP-PROD
+
 for case_dir in "$run_dir"/build/definitions/*/; do
   case_type=$(basename "$case_dir")
 

@@ -69,23 +69,23 @@ public class PostcodeNotAssignedToCourt implements CcdPageConfiguration {
                 """
                 <ul class="govuk-list govuk-list--bullet">
                     <li class="govuk-list govuk-!-font-size-19">
-                        for rent or mortgage arrears claims in England use the %s.
+                        for rent or mortgage arrears claims in England, use the %s
                     </li>
                     <li class="govuk-list govuk-!-font-size-19">
-                        for other types of claims in England, fill in form N5 and the correct particulars of claim form.
+                        for other claim types in England, fill in form N5 and the correct particulars of claim form
                     </li>
                     <li class="govuk-list govuk-!-font-size-19">
                         for claims in Wales, use form N5 Wales and the correct particulars of claim form
                     </li>
                     <li class="govuk-list govuk-!-font-size-19">
-                        for claims in Scotland, use your %s.
+                        for claims in Scotland, use your %s
                     </li>
                     <li class="govuk-list govuk-!-font-size-19">
                         for claims in Northern Ireland, use the
                         <a href="https://www.nidirect.gov.uk/articles/enforcement-civil-court-orders-northern-ireland"
                         rel="noreferrer noopener" target="_blank" class="govuk-link"
                         aria-label="Go to Enforcement of Judgments Office website (opens in new tab)">
-                        Enforcement of Judgments Office (EJO) (opens in new tab)</a>.
+                        Enforcement of Judgments Office (EJO) (opens in new tab)</a>
                     </li>
                 </ul>
                 """.formatted(PCOL_LINK, LOCAL_SHERIFF_OFFICE_LINK),
@@ -124,8 +124,7 @@ public class PostcodeNotAssignedToCourt implements CcdPageConfiguration {
     private static final String LOCAL_SHERIFF_OFFICE_LINK = """
         <a href="https://www.scotcourts.gov.uk/home" rel="noreferrer noopener" target="_blank"
         class="govuk-link" aria-label="Go to Scottish Courts website (opens in new tab)">
-        local sheriff court (opens in new tab)</a>
-        """;
+        local sheriff court (opens in new tab)</a>""";
 
     private static final String FOOTER = """
             <div class="govuk-warning-text" role="alert" aria-labelledby="warning-message">
