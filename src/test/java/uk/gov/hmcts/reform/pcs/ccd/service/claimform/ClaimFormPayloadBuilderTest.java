@@ -443,7 +443,7 @@ class ClaimFormPayloadBuilderTest {
             ClaimFormPayload payload = builder.build(pcsCase);
 
             assertThat(payload.getGrounds()).extracting(ClaimFormGround::getNameAndNumber)
-                .containsExactly("Rent arrears or breach of the tenancy (ground 1): Rent arrears");
+                .containsExactly("Rent arrears (ground 1)");
             assertThat(payload.getGroundsWithReasons()).isEmpty();
         }
 
@@ -462,11 +462,11 @@ class ClaimFormPayloadBuilderTest {
             ClaimFormPayload payload = builder.build(pcsCase);
 
             assertThat(payload.getGrounds()).extracting(ClaimFormGround::getNameAndNumber)
-                .containsExactly("Rent arrears or breach of the tenancy (ground 1): Breach of the tenancy");
+                .containsExactly("Breach of the tenancy (ground 1)");
             assertThat(payload.getGroundsWithReasons()).singleElement()
                 .satisfies(row -> {
                     assertThat(row.getNameAndNumber())
-                        .isEqualTo("Rent arrears or breach of the tenancy (ground 1): Breach of the tenancy");
+                        .isEqualTo("Breach of the tenancy (ground 1)");
                     assertThat(row.getReasonFreeText()).isEqualTo("kept a dog despite a no-pets clause");
                 });
         }
@@ -488,10 +488,10 @@ class ClaimFormPayloadBuilderTest {
 
             assertThat(payload.getGrounds()).extracting(ClaimFormGround::getNameAndNumber)
                 .containsExactlyInAnyOrder(
-                    "Rent arrears or breach of the tenancy (ground 1): Rent arrears",
-                    "Rent arrears or breach of the tenancy (ground 1): Breach of the tenancy");
+                    "Rent arrears (ground 1)",
+                    "Breach of the tenancy (ground 1)");
             assertThat(payload.getGroundsWithReasons()).extracting(ClaimFormGround::getNameAndNumber)
-                .containsExactly("Rent arrears or breach of the tenancy (ground 1): Breach of the tenancy");
+                .containsExactly("Breach of the tenancy (ground 1)");
         }
 
         @Test

@@ -88,9 +88,17 @@ final class ClaimFormFormatter {
     }
 
     // Ground 1 is a parent checkbox whose children are "Rent arrears" / "Breach of the tenancy"; the
-    // form names each "Rent arrears or breach of the tenancy (ground 1): <child>".
+    // form names each child "<child> (ground 1)", e.g. "Rent arrears (ground 1)".
     static String formatRentArrearsOrBreachLabel(ClaimGroundEntity ground, RentArrearsOrBreachOfTenancy child) {
-        return formatGroundLabel(ground) + ": " + child.getLabel();
+        return child.getLabel() + " " + groundNumberSuffix(ground);
+    }
+
+    // The "(ground N)" suffix taken from the parent ground label, so the number stays single-sourced
+    // in the SecureOrFlexibleDiscretionaryGrounds enum.
+    private static String groundNumberSuffix(ClaimGroundEntity ground) {
+        String parentLabel = formatGroundLabel(ground);
+        int open = parentLabel.lastIndexOf('(');
+        return open >= 0 ? parentLabel.substring(open) : "";
     }
 
     // Wales estate management (s.160) is a parent checkbox whose children are the specific grounds
