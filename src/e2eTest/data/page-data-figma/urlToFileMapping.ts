@@ -30,7 +30,7 @@ export default {
   'resumePossessionClaimlanguageUsed': 'claimLanguageUsed',
   'resumePossessionClaimcompletingYourClaim': 'completingYourClaim',
   'resumePossessionClaimstatementOfTruth': 'statementOfTruth',
-  'confirm': 'confirm',
+  'resumePossessionClaim/confirm': 'confirm',
   'createPossessionClaimpostcodeNotAssignedToCourt': 'postcodeNotAssignedToCourt',
   'resumePossessionClaimsuspensionToBuyDemotionOfTenancyActs': 'suspensionToBuyDemotionOfTenancyActs',
   'resumePossessionClaimsuspensionOfRightToBuyHousingActOptions': 'suspensionOfRightToBuyHousingActOptions',

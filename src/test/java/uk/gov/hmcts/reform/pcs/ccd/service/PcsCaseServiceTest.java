@@ -44,6 +44,7 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
@@ -423,6 +424,21 @@ class PcsCaseServiceTest {
 
         // Then
         assertThat(pcsCaseEntity.getCaseFlags()).isEmpty();
+    }
+
+    @Test
+    void shouldSetClaimIssuedDate() {
+        // Given
+        PcsCaseEntity pcsCaseEntity = stubFindCase();
+        ClaimEntity claimEntity = ClaimEntity.builder().build();
+        when(pcsCaseEntity.getClaims()).thenReturn(List.of(claimEntity));
+
+        // When
+        underTest.setCaseIssuedDate(CASE_REFERENCE);
+
+        // Then
+        verify(pcsCaseRepository).findByCaseReference(CASE_REFERENCE);
+        verify(claimService).setClaimIssuedDate(claimEntity);
     }
 
     @Test
