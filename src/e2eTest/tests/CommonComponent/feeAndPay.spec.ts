@@ -164,7 +164,7 @@ test.describe('[Common Component Fee And Pay] @nightly @CC @feeAndPay' , async (
   });
 });
 
-test.describe('[Common Component Fee And Pay Refund and Remission] @nightly @CC @feeAndPay' , async () => {
+test.describe('[Common Component Fee And Pay Refund and Remission] @release @CC @feeAndPay' , async () => {
   test('Fee And Pay - Remission Process', async ({ page, context }) => {
     await performAction('clickPayNowLink', serviceRequest.payNowLink);
     await performAction('selectPaymentTypePBA', {
@@ -218,6 +218,7 @@ test.describe('[Common Component Fee And Pay Refund and Remission] @nightly @CC 
     await performAction('requestRefund');
     await performValidation('mainHeader', serviceRequest.refundSubmittedHeader);
     await performAction('signOut');
+    await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
     await performAction('login', { email: refundAndRemission.approverEmail, password: process.env.IDAM_PCS_USER_PASSWORD });
     await performAction('clickButton', home.globalSearchTab);
     await performAction('searchByCaseReference', process.env.CASE_NUMBER);
