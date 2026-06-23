@@ -84,7 +84,8 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
                 .showCondition(ShowConditions.NEVER_SHOW)
                 .grant(Permission.CRUD, UserRole.PCS_SOLICITOR)
                 .showSummary()
-                .endButtonLabel("${endButtonLabel}");
+                .endButtonLabel("${endButtonLabel}")
+                .publishToCamunda();
 
         SavingPageBuilder savingPageBuilder = savingPageBuilderFactory.create(eventBuilder, resumePossessionClaim);
         resumePossessionClaimConfigurer.configurePages(savingPageBuilder);
