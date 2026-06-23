@@ -696,5 +696,5 @@ public class PCSCase {
     private List<ListValue<Party>> allLinkedDefendants;
 
     @JsonUnwrapped
-    private GroupAccessFields<AccessProfile> organisationPolicy;
+    private GroupAccessFields<AccessProfile> groupAccessFields;
 }
