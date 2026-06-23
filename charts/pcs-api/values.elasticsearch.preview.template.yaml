@@ -1,7 +1,8 @@
 ccd:
   elasticsearch:
+    minimumMasterNodes: 1
     persistence:
-      enabled: true
+      enabled: false
     volumeClaimTemplate:
       resources:
         requests:
