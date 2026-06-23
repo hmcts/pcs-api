@@ -72,7 +72,7 @@ public class PaymentController {
         return ResponseEntity.status(HttpStatus.CREATED).body(createPaymentResponse);
     }
 
-    @GetMapping(path = "card-payment/{paymentReference}/status", produces = APPLICATION_JSON_VALUE)
+    @GetMapping(path = "card-payment/{internalReference}/status", produces = APPLICATION_JSON_VALUE)
     @Operation(summary = "Get status of a card payment")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Payment status found"),
@@ -82,9 +82,9 @@ public class PaymentController {
     })
     public ResponseEntity<CardPaymentStatusResponse> getCardPaymentStatus(
         @RequestHeader(value = SERVICE_AUTHORIZATION) String s2sToken,
-        @PathVariable("paymentReference") String paymentReference) {
+        @PathVariable("internalReference") String internalReference) {
 
-        CardPaymentStatusResponse statusResponse = paymentService.getPaymentStatus(paymentReference);
+        CardPaymentStatusResponse statusResponse = paymentService.getPaymentStatus(internalReference);
 
         return ResponseEntity.ok(statusResponse);
     }

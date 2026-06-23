@@ -11,6 +11,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.quality.Strictness;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.LegalRepresentativeRepository;
@@ -22,6 +23,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.withSettings;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState.GEN_APP_ISSUED;
 
 @ExtendWith(MockitoExtension.class)
 class GenAppVisibilityServiceTest {
@@ -40,14 +42,30 @@ class GenAppVisibilityServiceTest {
 
     @ParameterizedTest
     @NullSource
+    @EnumSource(value = GenAppState.class, mode = EnumSource.Mode.EXCLUDE, names = "GEN_APP_ISSUED")
+    void shouldTreatGenAppsWithNoticeAsVisible(GenAppState state) {
+        // Given
+        GenAppEntity genAppEntity = mock(GenAppEntity.class);
+        when(genAppEntity.getState()).thenReturn(state);
+
+        // When
+        boolean genAppVisibleToUser = underTest.isGenAppVisibleToUser(genAppEntity, CURRENT_USER_ID);
+
+        // Then
+        assertThat(genAppVisibleToUser).isFalse();
+    }
+
+    @ParameterizedTest
+    @NullSource
     @EnumSource(value = VerticalYesNo.class, names = {"NO"})
     void shouldTreatGenAppsWithNoticeAsVisible(VerticalYesNo isWithoutNotice) {
         // Given
-        GenAppEntity genAppEntity1 = mock(GenAppEntity.class);
-        when(genAppEntity1.getWithoutNotice()).thenReturn(isWithoutNotice);
+        GenAppEntity genAppEntity = mock(GenAppEntity.class);
+        when(genAppEntity.getState()).thenReturn(GEN_APP_ISSUED);
+        when(genAppEntity.getWithoutNotice()).thenReturn(isWithoutNotice);
 
         // When
-        boolean genAppVisibleToUser = underTest.isGenAppVisibleToUser(genAppEntity1, CURRENT_USER_ID);
+        boolean genAppVisibleToUser = underTest.isGenAppVisibleToUser(genAppEntity, CURRENT_USER_ID);
 
         // Then
         assertThat(genAppVisibleToUser).isTrue();
@@ -59,10 +77,11 @@ class GenAppVisibilityServiceTest {
                                                              boolean isLegalRepresentativeLinkedToPartyAndActive,
                                                              boolean expectedIsVisible) {
         // Given
-        GenAppEntity genAppEntity1 = mock(GenAppEntity.class);
+        GenAppEntity genAppEntity = mock(GenAppEntity.class);
         PartyEntity applicantParty = mock(PartyEntity.class, withSettings().strictness(Strictness.LENIENT));
-        when(genAppEntity1.getWithoutNotice()).thenReturn(VerticalYesNo.YES);
-        when(genAppEntity1.getParty()).thenReturn(applicantParty);
+        when(genAppEntity.getState()).thenReturn(GEN_APP_ISSUED);
+        when(genAppEntity.getWithoutNotice()).thenReturn(VerticalYesNo.YES);
+        when(genAppEntity.getParty()).thenReturn(applicantParty);
 
         UUID applicantPartyId = UUID.randomUUID();
         when(applicantParty.getId()).thenReturn(applicantPartyId);
@@ -73,7 +92,7 @@ class GenAppVisibilityServiceTest {
                 .thenReturn(isLegalRepresentativeLinkedToPartyAndActive);
 
         // When
-        boolean genAppVisibleToUser = underTest.isGenAppVisibleToUser(genAppEntity1, CURRENT_USER_ID);
+        boolean genAppVisibleToUser = underTest.isGenAppVisibleToUser(genAppEntity, CURRENT_USER_ID);
 
         // Then
         assertThat(genAppVisibleToUser).isEqualTo(expectedIsVisible);

@@ -8,7 +8,8 @@ import { expect, test } from '@utils/test-fixtures';
 import { createCaseApiData, submitCaseApiData } from '@data/api-data';
 import { getCaseTypeId } from '@utils/common/caseType.utils';
 import { VERY_LONG_TIMEOUT } from 'playwright.config';
-import { cancelPayment, confirmYourPayment, enterPaymentDetails, serviceRequest } from '@data/page-data';
+import { cancelPayment, caseSummary, confirmYourPayment, enterPaymentDetails, serviceRequest } from '@data/page-data';
+import { history } from '@data/page-data/history.page.data';
 
 test.beforeEach(async ({ page }) => {
   initializeExecutor(page);
@@ -28,7 +29,7 @@ test.afterEach(async () => {
   }
 });
 
-test.describe('[Common Component Fee And Pay] @nightly @CC @caseFlags' , async () => {
+test.describe('[Common Component Fee And Pay] @nightly @CC @feeAndPay' , async () => {
   test('Fee And Pay - Pay by account PBA', async () => {
     await performAction('clickPayNowLink', serviceRequest.payNowLink);
     await performAction('selectPaymentTypePBA', {
@@ -42,9 +43,17 @@ test.describe('[Common Component Fee And Pay] @nightly @CC @caseFlags' , async (
       confirmButton: serviceRequest.confirmPaymentButton,
     });
     await performValidation('mainHeader', serviceRequest.paymentSuccessMainHeader);
+    await performAction('verifyStatusInHistoryAndSummaryTab', {
+      serviceReqLink: serviceRequest.viewServiceRequestsLink,
+      serviceReqTab: caseSummary.servieRequestTab,
+      historyTab: caseSummary.HistoryTab,
+      status: serviceRequest.paidStatus,
+      endState: history.endStateTableHeader,
+      historyStatus: history.caseIssuedTableHeader
+    });
   });
 
-  test('Fee And Pay - Pay by Card @nightly @feeAndPay', async () => {
+  test('Fee And Pay - Pay by Card', async () => {
     await performAction('clickPayNowLink', serviceRequest.payNowLink);
     await performAction('selectPaymentByCard', {
       amountLabel: serviceRequest.amountToPayLabel,
@@ -68,9 +77,17 @@ test.describe('[Common Component Fee And Pay] @nightly @CC @caseFlags' , async (
     await performValidation('mainHeader', confirmYourPayment.mainHeader);
     await performAction('clickButton', confirmYourPayment.confirmButton);
     await performValidation('mainHeader', serviceRequest.paymentSuccessMainHeader);
+    await performAction('verifyStatusInHistoryAndSummaryTab', {
+      serviceReqLink: serviceRequest.returnToServiceRequestLink,
+      serviceReqTab: caseSummary.servieRequestTab,
+      historyTab: caseSummary.HistoryTab,
+      status: serviceRequest.paidStatus,
+      endState: history.endStateTableHeader,
+      historyStatus: history.caseIssuedTableHeader
+    });
   });
 
-  test('Fee And Pay - Cancel Payment from You Card Details Page @nightly @feeAndPay', async () => {
+  test('Fee And Pay - Cancel Payment from You Card Details Page', async () => {
     await performAction('clickPayNowLink', serviceRequest.payNowLink);
     await performAction('selectPaymentByCard', {
       amountLabel: serviceRequest.amountToPayLabel,
@@ -80,9 +97,18 @@ test.describe('[Common Component Fee And Pay] @nightly @CC @caseFlags' , async (
     await performValidation('mainHeader', enterPaymentDetails.mainHeader);
     await performAction('clickButton', enterPaymentDetails.cancelPaymentButton);
     await performValidation('mainHeader', cancelPayment.mainHeader);
+    await performAction('clickButton', cancelPayment.continueButton);
+    await performAction('verifyStatusInHistoryAndSummaryTab', {
+      serviceReqLink: cancelPayment.returnServiceReqLink,
+      serviceReqTab: caseSummary.servieRequestTab,
+      historyTab: caseSummary.HistoryTab,
+      status: serviceRequest.notPaidStatus,
+      endState: history.endStateTableHeader,
+      historyStatus: history.pendingCaseIssuedTableHeader
+    });
   });
 
-  test('Fee And Pay - Cancel Payment from Confirm Card Details Page @nightly @feeAndPay', async () => {
+  test('Fee And Pay - Cancel Payment from Confirm Card Details Page', async () => {
     await performAction('clickPayNowLink', serviceRequest.payNowLink);
     await performAction('selectPaymentByCard', {
       amountLabel: serviceRequest.amountToPayLabel,
@@ -106,5 +132,14 @@ test.describe('[Common Component Fee And Pay] @nightly @CC @caseFlags' , async (
     await performValidation('mainHeader', confirmYourPayment.mainHeader);
     await performAction('clickButton', confirmYourPayment.cancelPaymentButton);
     await performValidation('mainHeader', cancelPayment.mainHeader);
+    await performAction('clickButton', cancelPayment.continueButton);
+    await performAction('verifyStatusInHistoryAndSummaryTab', {
+      serviceReqLink: cancelPayment.returnServiceReqLink,
+      serviceReqTab: caseSummary.servieRequestTab,
+      historyTab: caseSummary.HistoryTab,
+      status: serviceRequest.notPaidStatus,
+      endState: history.endStateTableHeader,
+      historyStatus: history.pendingCaseIssuedTableHeader
+    });
   });
 });

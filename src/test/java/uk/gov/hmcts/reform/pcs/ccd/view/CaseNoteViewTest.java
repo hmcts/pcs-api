@@ -6,7 +6,6 @@ import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CaseNote;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseNoteEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 
 import java.time.Instant;
@@ -45,13 +44,8 @@ class CaseNoteViewTest {
             .build();
         List<CaseNoteEntity> caseNoteEntities = new ArrayList<>();
         caseNoteEntities.add(caseNoteEntity);
-        ClaimEntity claimEntity = ClaimEntity.builder()
-            .caseNotes(caseNoteEntities)
-            .build();
-        List<ClaimEntity> claimEntities = new ArrayList<>();
-        claimEntities.add(claimEntity);
         PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
-            .claims(claimEntities)
+            .caseNotes(caseNoteEntities)
             .build();
 
         PCSCase pcsCase = PCSCase.builder().build();
@@ -91,13 +85,8 @@ class CaseNoteViewTest {
                 .build();
         List<CaseNoteEntity> caseNoteEntities = new ArrayList<>();
         caseNoteEntities.add(caseNoteEntity);
-        ClaimEntity claimEntity = ClaimEntity.builder()
-                .caseNotes(caseNoteEntities)
-                .build();
-        List<ClaimEntity> claimEntities = new ArrayList<>();
-        claimEntities.add(claimEntity);
         PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
-                .claims(claimEntities)
+                .caseNotes(caseNoteEntities)
                 .build();
 
         PCSCase pcsCase = PCSCase.builder().build();
