@@ -201,12 +201,12 @@ public class ClaimEntity {
     @Column(updatable = false, nullable = false)
     private LocalDateTime claimSubmittedDate;
 
+    private LocalDateTime claimIssuedDate;
+
     @Builder.Default
     @OneToMany(mappedBy = "claim", cascade = ALL, orphanRemoval = true)
     @JsonManagedReference
     private List<FeePaymentEntity> feePayments = new ArrayList<>();
-
-    private LocalDateTime claimIssuedDate;
 
     public void addFeePayment(FeePaymentEntity feePayment) {
         feePayments.add(feePayment);
