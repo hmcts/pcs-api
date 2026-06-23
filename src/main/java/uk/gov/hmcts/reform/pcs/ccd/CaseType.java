@@ -80,6 +80,30 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
         builder.searchResultFields()
             .caseReferenceField();
 
+        builder.accessType("create-cases")
+            .organisationProfileId("LOCALAUTH_PROFILE")
+            .accessMandatory(true)
+            .accessDefault(true)
+            .display(false);
+
+        builder.accessType("prof-org-access")
+            .organisationProfileId("LOCALAUTH_PROFILE")
+            .accessMandatory(false)
+            .accessDefault(false)
+            .display(true)
+            .description("Can manage all cases associated with this organisation");
+
+        builder.accessTypeRole("create-cases")
+            .organisationProfileId("LOCALAUTH_PROFILE")
+            .organisationalRoleName("[SOLICITOR]");
+        builder.accessTypeRole("prof-org-access")
+            .organisationProfileId("LOCALAUTH_PROFILE")
+            .groupRoleName("[SOLICITOR]")
+            .caseAssignedRoleField("professional-user")
+            .groupAccessEnabled(false)
+            .caseAccessGroupIdTemplate("pcs:pcs:prof-org-access:solicitor:$ORGID$");
+
+
         buildCaseListView(builder);
 
         builder.tab("nextSteps", "Next steps")
