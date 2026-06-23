@@ -24,7 +24,7 @@ import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 import java.time.Instant;
 import java.util.UUID;
 
-import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.DELETE_DRAFT_CLAIM;
+import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.deleteDraftClaim;
 
 @Component
 @AllArgsConstructor
@@ -39,7 +39,7 @@ public class DeleteDraftClaim implements CCDConfig<PCSCase, State, UserRole> {
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         Event.EventBuilder<PCSCase, UserRole, State> eventBuilder =
             configBuilder
-                .decentralisedEvent(DELETE_DRAFT_CLAIM.id(), this::submit)
+                .decentralisedEvent(deleteDraftClaim.name(), this::submit)
                 .forStates(State.AWAITING_SUBMISSION_TO_HMCTS, State.PENDING_CASE_ISSUED)
                 .name("Delete draft claim")
                 .showCondition(draftClaimStateCondition())
