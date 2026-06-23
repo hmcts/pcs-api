@@ -29,7 +29,6 @@ import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
-import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimStatus;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponseStatus;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
@@ -431,7 +430,6 @@ public class TestingSupportController {
         entityTestStatusService.updateDefendantResponseStatus(defendantResponseId, status);
         return ResponseEntity.ok().build();
     }
-
     @GetMapping("/fee-payment-info/{caseReference}")
     public ResponseEntity<List<FeePaymentEntity>> getFeePaymentInfo(
         @Parameter(
@@ -464,4 +462,6 @@ public class TestingSupportController {
             return ResponseEntity.internalServerError().build();
         }
     }
+
+
 }
