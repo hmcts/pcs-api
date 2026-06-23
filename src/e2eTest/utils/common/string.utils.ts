@@ -143,4 +143,10 @@ const newFilename =
 
 return newFilename;
 
+/* convert string for ex RENT_ARREARS to Rent Arrears */
+export function formatCaseStateText(input: string): string {
+  return input
+    .toLowerCase()
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, c => c.toUpperCase());
 }

@@ -122,6 +122,7 @@ export class ActionRegistry {
     ['addCaseNotes', new CreateCaseAction()],
     ['validateCaseFileViewFolders', new CreateCaseAction()],
     ['validateCaseFileViewIndividualFolder', new CreateCaseAction()],
+    ['validateCaseListTable', new CreateCaseAction()],
     ['selectPaymentTypePBA', new FeeAndPayAction()],
     ['selectPaymentByCard', new FeeAndPayAction()],
     ['enterPaymentDetails', new FeeAndPayAction()],
