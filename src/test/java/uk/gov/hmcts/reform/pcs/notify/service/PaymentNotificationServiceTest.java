@@ -34,7 +34,10 @@ class PaymentNotificationServiceTest {
 
     @BeforeEach
     void setUp() {
-        underTest = new PaymentNotificationService(notificationService, counterClaimRepository);
+        underTest = new PaymentNotificationService(
+            notificationService,
+            counterClaimRepository
+        );
     }
 
     @Test
@@ -48,7 +51,6 @@ class PaymentNotificationServiceTest {
         when(counterClaim.getParty()).thenReturn(defendant);
 
         PcsCaseEntity pcsCase = mock(PcsCaseEntity.class);
-        when(counterClaim.getPcsCase()).thenReturn(pcsCase);
 
         DefendantResponseEntity defendantResponse = mock(DefendantResponseEntity.class);
         when(defendantResponse.getParty()).thenReturn(defendant);
@@ -59,7 +61,7 @@ class PaymentNotificationServiceTest {
         underTest.sendCounterClaimPaymentSuccessNotification(counterClaimId);
 
         verify(notificationService)
-            .sendDefendantResponseCounterclaimPaymentSuccessEmailNotification(defendantResponse);
+            .sendDefendantResponseCounterclaimPaymentSuccessEmailNotification(defendantResponse, feePayment);
     }
 
     @Test
@@ -100,7 +102,6 @@ class PaymentNotificationServiceTest {
         when(counterClaim.getParty()).thenReturn(defendant);
 
         PcsCaseEntity pcsCase = mock(PcsCaseEntity.class);
-        when(counterClaim.getPcsCase()).thenReturn(pcsCase);
 
         when(counterClaimRepository.findById(counterClaimId)).thenReturn(Optional.of(counterClaim));
         when(pcsCase.getDefendantResponses()).thenReturn(List.of());
