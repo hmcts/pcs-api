@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="https://www.omg.org/spec/DMN/20191111/MODEL/" xmlns:camunda="http://camunda.org/schema/1.0/dmn" xmlns:biodi="http://bpmn.io/schema/dmn/biodi/2.0" xmlns:dmndi="https://www.omg.org/spec/DMN/20191111/DMNDI/" xmlns:dc="http://www.omg.org/spec/DMN/20180521/DC/" id="wa-initiation-definition" name="DRD" namespace="http://camunda.org/schema/1.0/dmn" exporter="Camunda Modeler" exporterVersion="5.48.0">
+  <decision id="wa-task-initiation-st_cic-criminalinjuriescompensation" name="Task initiation DMN" camunda:historyTimeToLive="P90D">
+    <decisionTable id="DecisionTable_0jtevuc" hitPolicy="COLLECT">
+      <input id="Input_1" label="Event Id" camunda:inputVariable="eventId">
+        <inputExpression id="InputExpression_1" typeRef="string">
+          <text></text>
+        </inputExpression>
+      </input>
+      <input id="InputClause_0gxli97" label="Post event state" biodi:width="268" camunda:inputVariable="postEventState">
+        <inputExpression id="LiteralExpression_0dijl5x" typeRef="string">
+          <text></text>
+        </inputExpression>
+      </input>
+      <output id="Output_1" label="Task Id" name="taskId" typeRef="string" biodi:width="320" />
+      <output id="OutputClause_0p5fhhd" label="Task Name" name="name" typeRef="string" biodi:width="362" />
+      <output id="OutputClause_165p3r3" label="Delay Until" name="delayUntil" typeRef="json" biodi:width="507" />
+      <output id="OutputClause_0i6c6c2" label="Working Days Allowed" name="workingDaysAllowed" typeRef="integer" />
+      <output id="OutputClause_10rno4c" label="Process Categories Identifiers" name="processCategories" typeRef="string" biodi:width="300" />
+      <output id="OutputClause_1wziqr5" label="Work Type" name="workType" typeRef="string" />
+      <output id="OutputClause_09b12hk" label="Role Category" name="roleCategory" typeRef="string" />
+      <rule id="DecisionRule_0in26ix">
+        <inputEntry id="UnaryTests_1mtpy0d">
+          <text>"resumePossessionClaim"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0pzaled">
+          <text>"PENDING_CASE_ISSUED" </text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_0yp6gfj">
+          <text>"addCaseNote"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_11crul1">
+          <text>"Add case notes (test)"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0j4vwvw">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0h32jop">
+          <text>1</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1p20qkn">
+          <text>"Processing"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0te3ddw">
+          <text>"routine_work"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_19ua141">
+          <text>"ADMIN"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_0a60ato">
+        <inputEntry id="UnaryTests_1xpf6el">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0g03afo">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_0d5n54q">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0284di0">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_12e10iu">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0323tnf">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1vpcgnu">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1la360e">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0vgfaf9">
+          <text></text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_1rvkjkh">
+        <inputEntry id="UnaryTests_17av78h">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_093wyty">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_07j8b9l">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1vy9h31">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0jedhub">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1ypqwwq">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_044uy1o">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1vhb4m7">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0l8w8cu">
+          <text></text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_0g1qchi">
+        <inputEntry id="UnaryTests_122k3nu">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1nts3e0">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_17dwgar">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1ms6m1x">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_13k7klt">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1cc7wox">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_19nk06d">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0fesddq">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_102ab4w">
+          <text></text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_1fuajcp">
+        <inputEntry id="UnaryTests_0kmy45q">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0sgxbm8">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_01x86w7">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_07s4pt2">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_09mpjq7">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_00xyfat">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0zx2aje">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0znk8e5">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1t4xsi4">
+          <text></text>
+        </outputEntry>
+      </rule>
+    </decisionTable>
+  </decision>
+  <dmndi:DMNDI>
+    <dmndi:DMNDiagram id="DMNDiagram_0b2rkcb">
+      <dmndi:DMNShape id="DMNShape_0wc7glt" dmnElementRef="wa-task-initiation-st_cic-criminalinjuriescompensation">
+        <dc:Bounds height="80" width="180" x="150" y="80" />
+      </dmndi:DMNShape>
+    </dmndi:DMNDiagram>
+  </dmndi:DMNDI>
+</definitions>
