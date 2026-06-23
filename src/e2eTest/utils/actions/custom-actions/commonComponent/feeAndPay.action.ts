@@ -200,7 +200,6 @@ export class FeeAndPayAction implements IAction {
     await performValidation('mainHeader', serviceRequest.refundApprovedHeader);
     await performAction('clickLink', serviceRequest.returnToCaseLink);
     await performAction('clickTab', caseSummary.servieRequestTab);
-    await page.getByLabel(caseSummary.servieRequestTab).getByText(serviceRequest.refundsTab).click();
     await expect(page.getByRole('cell', { name: serviceRequest.approvedStatus, exact: true })).toBeVisible();
   }
 
