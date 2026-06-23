@@ -44,13 +44,13 @@ class PaymentNotificationServiceTest {
     void shouldSendCounterClaimPaymentSuccessEmail() {
         UUID counterClaimId = UUID.randomUUID();
         UUID defendantId = UUID.randomUUID();
+        PcsCaseEntity pcsCase = mock(PcsCaseEntity.class);
 
         CounterClaimEntity counterClaim = mock(CounterClaimEntity.class);
         PartyEntity defendant = mock(PartyEntity.class);
         when(defendant.getId()).thenReturn(defendantId);
         when(counterClaim.getParty()).thenReturn(defendant);
-
-        PcsCaseEntity pcsCase = mock(PcsCaseEntity.class);
+        when(counterClaim.getPcsCase()).thenReturn(pcsCase);
 
         DefendantResponseEntity defendantResponse = mock(DefendantResponseEntity.class);
         when(defendantResponse.getParty()).thenReturn(defendant);
@@ -102,12 +102,12 @@ class PaymentNotificationServiceTest {
     @Test
     void shouldNotSendNotificationWhenNoDefendantResponseFound() {
         UUID counterClaimId = UUID.randomUUID();
+        PcsCaseEntity pcsCase = mock(PcsCaseEntity.class);
 
         CounterClaimEntity counterClaim = mock(CounterClaimEntity.class);
         PartyEntity defendant = mock(PartyEntity.class);
         when(counterClaim.getParty()).thenReturn(defendant);
-
-        PcsCaseEntity pcsCase = mock(PcsCaseEntity.class);
+        when(counterClaim.getPcsCase()).thenReturn(pcsCase);
 
         when(counterClaimRepository.findById(counterClaimId)).thenReturn(Optional.of(counterClaim));
         when(pcsCase.getDefendantResponses()).thenReturn(List.of());

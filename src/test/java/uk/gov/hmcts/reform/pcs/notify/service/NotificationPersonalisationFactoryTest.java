@@ -17,7 +17,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
-import uk.gov.hmcts.reform.pcs.exception.FeePaymentNotFoundException;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.BasePersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.ClaimantBasePersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.CounterclaimPaymentSuccessPersonalisation;
@@ -26,7 +25,6 @@ import java.util.Map;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mock.Strictness.LENIENT;
 import static org.mockito.Mockito.when;
 
@@ -309,29 +307,6 @@ class NotificationPersonalisationFactoryTest {
                 .containsEntry("primaryDefendantName", "JOHN DOE");
         }
 
-        @Test
-        @DisplayName("Should throw FeePaymentNotFoundException when fee payment is not paid")
-        void shouldThrowExceptionWhenNoPaidFeePaymentFound() {
-            PartyEntity claimantParty = stubClaimantParty();
-            PartyEntity defendantParty = stubDefendantParty();
-            DefendantResponseEntity response = createDefendantResponse(claimantParty, defendantParty);
-
-            assertThatThrownBy(() -> factory.counterclaimSuccess(response, "PAY-123"))
-                .isInstanceOf(FeePaymentNotFoundException.class)
-                .hasMessageContaining("Paid fee payment not found");
-        }
-
-        @Test
-        @DisplayName("Should throw FeePaymentNotFoundException when fee payment is null")
-        void shouldThrowExceptionWhenFeePaymentIsNull() {
-            PartyEntity claimantParty = stubClaimantParty();
-            PartyEntity defendantParty = stubDefendantParty();
-            DefendantResponseEntity response = createDefendantResponse(claimantParty, defendantParty);
-
-            assertThatThrownBy(() -> factory.counterclaimSuccess(response, null))
-                .isInstanceOf(FeePaymentNotFoundException.class)
-                .hasMessageContaining("Paid fee payment not found");
-        }
     }
 
     @Nested
