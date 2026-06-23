@@ -6,7 +6,7 @@
     "node": ">=18.0.0"
   },
   "scripts": {
-    "test:pr": "yarn playwright test --project chrome --grep '@PR'; EXIT_CODE=$?; allure generate -o ../../e2e-output --clean; tsx ./config/clean-attachments.config.ts; exit $EXIT_CODE",
+    "test:pr": "yarn playwright install && yarn playwright test --project chrome --grep '@PR'; EXIT_CODE=$?; allure generate -o ../../e2e-output --clean; tsx ./config/clean-attachments.config.ts; exit $EXIT_CODE",
     "test:regression": "yarn playwright install && yarn playwright test --project chrome --grep '@regression'; EXIT_CODE=$?; allure generate -o ../../e2e-output --clean; tsx ./config/clean-attachments.config.ts; exit $EXIT_CODE",
     "test:makeAClaim": "yarn playwright install && yarn playwright test --project chrome --grep '@MAC'; EXIT_CODE=$?; allure generate -o ../../e2e-output --clean; tsx ./config/clean-attachments.config.ts; exit $EXIT_CODE",
     "test:commonComponent": "yarn playwright install && yarn playwright test --project chrome --grep '@CC'; EXIT_CODE=$?; allure generate -o ../../e2e-output --clean; tsx ./config/clean-attachments.config.ts; exit $EXIT_CODE",
@@ -21,7 +21,7 @@
     "allure-slack-notify": "tsx ./scripts/allure-slack-notifier.ts"
   },
   "devDependencies": {
-    "@playwright/test": "^1.49.0",
+    "@playwright/test": "^1.58.0",
     "@types/node": "^24.0.0",
     "allure-commandline": "^2.34.1",
     "allure-js-commons": "^3.3.0",
