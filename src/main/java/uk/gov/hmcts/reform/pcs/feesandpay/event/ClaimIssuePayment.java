@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.pcs.feesandpay.event;
 
-import com.github.kagkarlsson.scheduler.SchedulerClient;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -13,21 +12,15 @@ import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.model.AccessCodeTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 
-import java.time.Instant;
-import java.util.UUID;
-
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.claimIssuePayment;
-import static uk.gov.hmcts.reform.pcs.ccd.task.AccessCodeGenerationComponent.ACCESS_CODE_TASK_DESCRIPTOR;
 
 @Component
 @AllArgsConstructor
 @Slf4j
 public class ClaimIssuePayment implements CCDConfig<PCSCase, State, UserRole> {
 
-    private final SchedulerClient schedulerClient;
     private final PcsCaseService pcsCaseService;
 
     @Override
@@ -50,26 +43,10 @@ public class ClaimIssuePayment implements CCDConfig<PCSCase, State, UserRole> {
         PCSCase caseData = eventPayload.caseData();
         long caseReference = eventPayload.caseReference();
         if (caseData.getDateIssued() == null) {
-            log.info("Payment confirmed for case {} - issuing case and scheduling defendant pin pack generation",
-                     caseReference);
+            log.info("Payment confirmed for case {} - issuing case", caseReference);
             pcsCaseService.setCaseIssuedDate(caseReference);
-            // Case issued (status -> CASE_ISSUED): generate the defendant access code pin packs.
-            schedulePinPackGeneration(caseReference);
         }
         return SubmitResponse.<State>builder().state(State.CASE_ISSUED).build();
-    }
-
-    private void schedulePinPackGeneration(long caseReference) {
-        AccessCodeTaskData taskData = AccessCodeTaskData.builder()
-            .caseReference(String.valueOf(caseReference))
-            .build();
-
-        schedulerClient.scheduleIfNotExists(
-            ACCESS_CODE_TASK_DESCRIPTOR
-                .instance(UUID.randomUUID().toString())
-                .data(taskData)
-                .scheduledTo(Instant.now())
-        );
     }
 
 }

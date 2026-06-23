@@ -471,7 +471,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
         }
 
         @Test
-        void shouldNotScheduleAccessCodeTaskOnSubmit() {
+        void shouldScheduleAccessCodeTaskOnSubmit() {
             // Given
             stubFeeService();
 
@@ -489,7 +489,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
             boolean accessCodeScheduled = captor.getAllValues().stream()
                 .anyMatch(task -> task.getTaskInstance().getTaskName()
                     .equals(ACCESS_CODE_TASK_DESCRIPTOR.getTaskName()));
-            assertThat(accessCodeScheduled).isFalse();
+            assertThat(accessCodeScheduled).isTrue();
         }
 
         @Test
