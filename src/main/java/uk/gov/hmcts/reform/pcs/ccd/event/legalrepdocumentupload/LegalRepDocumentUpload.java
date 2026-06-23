@@ -113,8 +113,8 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
 
         return pcsCaseEntity.getGenApps().stream()
             .filter(genApp -> genApp.getType() == mapped)
-            .filter(genApp -> genApp.getWithoutNotice() != null &&
-                genApp.getWithoutNotice().toBoolean())
+            .filter(genApp -> genApp.getWithoutNotice() != null
+                && genApp.getWithoutNotice().toBoolean())
             .map(GenAppEntity::getApplicationSubmittedDate)
             .filter(Objects::nonNull)
             .sorted(Comparator.reverseOrder()) // optional
