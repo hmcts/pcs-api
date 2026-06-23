@@ -201,6 +201,8 @@ public class ClaimEntity {
     @Column(updatable = false, nullable = false)
     private LocalDateTime claimSubmittedDate;
 
+    private LocalDateTime claimIssuedDate;
+
     @OneToOne(mappedBy = "claim", cascade = ALL, orphanRemoval = true)
     @JsonManagedReference
     private FeePaymentEntity feePayment;
@@ -208,8 +210,6 @@ public class ClaimEntity {
     @OneToOne(cascade = ALL, orphanRemoval = true)
     @JoinColumn(name = "claim_form_document_id")
     private DocumentEntity claimFormDocument;
-
-    private LocalDateTime claimIssuedDate;
 
     public void setAsbProhibitedConductEntity(AsbProhibitedConductEntity asbProhibitedConductEntity) {
         if (this.asbProhibitedConductEntity != null) {
