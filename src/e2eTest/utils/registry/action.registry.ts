@@ -120,7 +120,6 @@ export class ActionRegistry {
     ['validateCaseNotesDetails', new CreateCaseAction()],
     ['validateCaseSummaryDetails', new CreateCaseAction()],
     ['addCaseNotes', new CreateCaseAction()],
-    ['validateCaseListTable', new CreateCaseAction()],
     ['selectPaymentTypePBA', new FeeAndPayAction()],
     ['selectPaymentByCard', new FeeAndPayAction()],
     ['enterPaymentDetails', new FeeAndPayAction()],
