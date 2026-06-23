@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.pcs.contract;
 
 import au.com.dius.pact.consumer.dsl.DslPart;
 import au.com.dius.pact.consumer.dsl.PactDslJsonArray;
+import au.com.dius.pact.consumer.dsl.PactDslJsonRootValue;
 import au.com.dius.pact.consumer.dsl.PactDslWithProvider;
 import au.com.dius.pact.consumer.junit5.PactConsumerTestExt;
 import au.com.dius.pact.consumer.junit5.PactTestFor;
@@ -58,6 +59,7 @@ public class LocationReferenceDataApiConsumerTest {
             .headers("ServiceAuthorization", SERVICE_AUTH_TOKEN,
                      "Authorization", AUTHORIZATION_TOKEN)
             .matchQuery("service_code", "AAA3")
+            .matchQuery("court_type_id", String.valueOf(PactDslJsonRootValue.integerType(10)))
             .matchQuery("epimms_id", "123456789")
             .willRespondWith()
             .status(200)
