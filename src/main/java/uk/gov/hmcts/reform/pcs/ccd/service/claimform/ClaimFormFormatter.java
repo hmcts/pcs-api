@@ -4,6 +4,7 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CombinedLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServiceMethod;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsOrBreachOfTenancy;
+import uk.gov.hmcts.reform.pcs.ccd.domain.RentPaymentFrequency;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.ClaimGroundSummary;
@@ -115,7 +116,19 @@ final class ClaimFormFormatter {
     }
 
     static String formatRentFrequency(TenancyLicenceEntity tenancy) {
-        return tenancy.getRentFrequency() == null ? null : tenancy.getRentFrequency().getLabel();
+        RentPaymentFrequency frequency = tenancy.getRentFrequency();
+        if (frequency == null) {
+            return null;
+        }
+        // For "Other" the landlord types the actual cadence (e.g. "every 3 weeks"); show that
+        // verbatim rather than the meaningless "Other" label. Fall back to the label if blank.
+        if (frequency == RentPaymentFrequency.OTHER) {
+            String otherFrequency = tenancy.getOtherRentFrequency();
+            if (otherFrequency != null && !otherFrequency.isBlank()) {
+                return otherFrequency;
+            }
+        }
+        return frequency.getLabel();
     }
 
     // "Defendant 1 details", then "Additional defendant N details" for later defendants.
