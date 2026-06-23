@@ -8,8 +8,6 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DefendantResponseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.feeandpay.FeePaymentRepository;
@@ -68,17 +66,5 @@ public class NotifyController {
         );
 
         return ResponseEntity.ok(responses);
-    }
-
-    private FeePaymentEntity findCounterClaimFeePayment(DefendantResponseEntity defendantResponse) {
-        UUID partyId = defendantResponse.getParty().getId();
-
-        return defendantResponse.getPcsCase().getCounterClaims().stream()
-            .filter(counterClaim -> counterClaim.getParty().getId().equals(partyId))
-            .map(CounterClaimEntity::getId)
-            .map(feePaymentRepository::findByRelatedEntityId)
-            .flatMap(Optional::stream)
-            .findFirst()
-            .orElse(null);
     }
 }

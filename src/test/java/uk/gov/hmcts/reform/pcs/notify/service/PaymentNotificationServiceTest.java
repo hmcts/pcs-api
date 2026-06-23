@@ -6,13 +6,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.CounterClaimRepository;
-import uk.gov.hmcts.reform.pcs.ccd.repository.feeandpay.FeePaymentRepository;
-import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
 
 import java.util.List;
 import java.util.Optional;
@@ -32,9 +29,6 @@ class PaymentNotificationServiceTest {
 
     @Mock
     private CounterClaimRepository counterClaimRepository;
-
-    @Mock
-    private FeePaymentRepository feePaymentRepository;
 
     private PaymentNotificationService underTest;
 
@@ -101,22 +95,6 @@ class PaymentNotificationServiceTest {
         String paymentReference = "PAY-1234";
 
         underTest.sendCounterClaimPaymentSuccessNotification(counterClaimId, paymentReference);
-
-        verifyNoInteractions(notificationService);
-    }
-
-    @Test
-    void shouldNotSendNotificationWhenPaymentStatusIsNotPaid() {
-        UUID counterClaimId = UUID.randomUUID();
-
-        CounterClaimEntity counterClaim = mock(CounterClaimEntity.class);
-        FeePaymentEntity feePayment = mock(FeePaymentEntity.class);
-        when(feePayment.getPaymentStatus()).thenReturn(PaymentStatus.NOT_PAID);
-
-        when(counterClaimRepository.findById(counterClaimId)).thenReturn(Optional.of(counterClaim));
-        when(feePaymentRepository.findByRelatedEntityId(counterClaimId)).thenReturn(Optional.of(feePayment));
-
-        underTest.sendCounterClaimPaymentSuccessNotification(counterClaimId);
 
         verifyNoInteractions(notificationService);
     }
