@@ -82,8 +82,8 @@ class AccessCodeGenerationServiceIT extends AbstractPostgresContainerIT {
         PcsCaseEntity caseEntity = caseCreationHelper.createTestCaseWithMultipleDefendants(
             1781000000000002L, UUID.randomUUID(), UUID.randomUUID());
         List<PartyEntity> defendants = caseCreationHelper.getDefendants(caseEntity);
-        UUID firstDefendantId = defendants.get(0).getId();
-        UUID secondDefendantId = defendants.get(1).getId();
+        final UUID firstDefendantId = defendants.get(0).getId();
+        final UUID secondDefendantId = defendants.get(1).getId();
 
         when(pinPackDocumentGenerator.generatePinPack(any(), any(), any(), anyString()))
             .thenReturn("http://dm-store/documents/ok");
