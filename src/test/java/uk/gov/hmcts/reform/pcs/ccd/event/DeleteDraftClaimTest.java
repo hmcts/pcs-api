@@ -14,6 +14,7 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.model.DeleteDraftClaimTaskData;
+import uk.gov.hmcts.reform.pcs.ccd.page.deletedraftclaim.DeleteDraftClaimConfigurer;
 import uk.gov.hmcts.reform.pcs.ccd.task.DeleteDraftClaimTaskComponent;
 import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
@@ -44,7 +45,8 @@ class DeleteDraftClaimTest extends BaseEventTest {
     void setUp() {
         setEventUnderTest(new DeleteDraftClaim(
             schedulerClient,
-            securityContextService
+            securityContextService,
+            new DeleteDraftClaimConfigurer()
         ));
     }
 
