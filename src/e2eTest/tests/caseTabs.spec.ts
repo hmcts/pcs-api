@@ -8,7 +8,7 @@ import { PageContentValidation } from '@utils/validations/element-validations/pa
 import { caseSummary, home } from '@data/page-data';
 import { addCaseNote } from '@data/page-data-figma';
 import { checkYourAnswersCaseNote } from '@data/page-data/checkYourAnswersCaseNote.page.data';
-import { getCurrentBSTTime } from '@utils/common/string.utils';
+import { formatCaseStateText, getCurrentBSTTime } from '@utils/common/string.utils';
 
 test.beforeEach(async ({ page }, testInfo) => {
   initializeExecutor(page);
@@ -361,6 +361,7 @@ test.describe('[Case tabs - England Journey] @nightly', async () => {
 
   test('Case tabs - CaseList view test @MAC @regression', async () => {
     await performValidation('mainHeader', home.mainHeader);
+    await performAction('filterCaseFromCaseList', formatCaseStateText(caseInfo.state));
     await performAction('validateCaseListTable', {
       createPayload: createCaseApiData.createCasePayload,
       submitPayload: submitCaseApiData.submitCasePayload,
