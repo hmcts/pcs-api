@@ -80,6 +80,12 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
             .withoutNotice(VerticalYesNo.YES)
             .build();
 
+        GenAppEntity generalGenAppNullNotice = GenAppEntity.builder()
+            .type(GenAppType.SOMETHING_ELSE)
+            .applicationSubmittedDate(laterDate)
+            .withoutNotice(null)
+            .build();
+
         GenAppEntity generalGenAppNoticeNo = GenAppEntity.builder()
             .type(GenAppType.SOMETHING_ELSE)
             .applicationSubmittedDate(laterDate)
@@ -98,6 +104,7 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
                                 earlierGenApp,
                                 laterGenApp,
                                 generalGenApp,
+                                generalGenAppNullNotice,
                                 generalGenAppNoticeNo,
                                 generalGenAppWithNullDate))
                             .build());
