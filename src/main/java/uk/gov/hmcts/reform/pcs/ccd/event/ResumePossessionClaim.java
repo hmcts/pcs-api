@@ -21,6 +21,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilderFactory;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
@@ -30,7 +31,6 @@ import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.util.MoneyFormatter;
-import uk.gov.hmcts.reform.pcs.config.SchedulingConfig;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
@@ -69,7 +69,6 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final FeeService feeService;
     private final MoneyFormatter moneyFormatter;
     private final ResumePossessionClaimConfigurer resumePossessionClaimConfigurer;
-    private final SchedulingConfig schedulingConfig;
     private final NotificationService notificationService;
 
     @Override
@@ -180,7 +179,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
 
         draftCaseDataService.deleteUnsubmittedCaseData(caseReference, resumePossessionClaim);
 
-        FeeDetails feeDetails = scheduleCaseIssueFeePayment(caseReference, getResponsiblePartyId(caseReference));
+        FeeDetails feeDetails = scheduleCaseIssueFeePayment(caseReference, getClaimantParty(caseReference));
 
         String caseIssueFee = moneyFormatter.formatFee(feeDetails.getFeeAmount());
         return SubmitResponse.<State>builder()
@@ -189,9 +188,9 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .build();
     }
 
-    private UUID getResponsiblePartyId(long caseReference) {
+    private PartyEntity getClaimantParty(long caseReference) {
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
-        return partyService.getPrimaryClaimantPartyEntity(pcsCaseEntity).getId();
+        return partyService.getPrimaryClaimantPartyEntity(pcsCaseEntity);
     }
 
     private SubmitResponse<State> saveForLater() {
@@ -206,13 +205,14 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .orElse(ClaimantInformation.builder().build());
     }
 
-    private FeeDetails scheduleCaseIssueFeePayment(long caseReference, UUID responsiblePartyId) {
+    private FeeDetails scheduleCaseIssueFeePayment(long caseReference, PartyEntity claimantParty) {
         FeeDetails feeDetails = feeService.getFee(FeeType.CASE_ISSUE_FEE);
         FeesAndPayTaskData taskData = FeesAndPayTaskData.builder()
             .feeDetails(feeDetails)
             .ccdCaseNumber(String.valueOf(caseReference))
             .caseReference(caseReference)
-            .responsiblePartyId(responsiblePartyId)
+            .responsiblePartyId(claimantParty.getId())
+            .responsiblePartyName(partyService.getPartyName(claimantParty))
             .paymentCallbackHandlerType(CLAIM)
             .build();
 
@@ -220,7 +220,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             FEES_AND_PAY_TASK_DESCRIPTOR
                 .instance(UUID.randomUUID().toString())
                 .data(taskData)
-                .scheduledTo(Instant.now().plusSeconds(schedulingConfig.getScheduleFeeCaseIssuedInSeconds()))
+                .scheduledTo(Instant.now())
         );
 
         return feeDetails;
