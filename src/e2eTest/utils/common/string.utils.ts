@@ -132,3 +132,11 @@ Example: "1781518470935861" -> "1781-5184-7093-5861"
 export function formatTheCaseNumber(caseNumber: string): string {
   return caseNumber.replace(/(\d{4})(?=\d)/g, '$1-');
 }
+
+/* convert string for ex RENT_ARREARS to Rent Arrears */
+export function formatCaseStateText(input: string): string {
+  return input
+    .toLowerCase()
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, c => c.toUpperCase());
+}
