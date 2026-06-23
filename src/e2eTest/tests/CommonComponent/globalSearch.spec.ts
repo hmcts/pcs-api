@@ -98,7 +98,7 @@ const runGlobalSearchScenarios = () => {
     await performAction('validateResults');
   });
 
-  test.skip('Search by postcode', async () => {
+  test('Search by postcode', async () => {
     await runFieldSearch(globalSearch.postCodeLabel, globalSearchTestData.postcode);
   });
 
