@@ -84,24 +84,27 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
             .organisationProfileId("LOCALAUTH_PROFILE")
             .accessMandatory(true)
             .accessDefault(true)
-            .display(false);
-
+            .display(false)
+            .liveTo("01/01/2027");
         builder.accessType("prof-org-access")
             .organisationProfileId("LOCALAUTH_PROFILE")
             .accessMandatory(false)
             .accessDefault(false)
             .display(true)
-            .description("Can manage all cases associated with this organisation");
+            .description("Can manage all cases associated with this organisation")
+            .liveTo("01/01/2027");
 
         builder.accessTypeRole("create-cases")
             .organisationProfileId("LOCALAUTH_PROFILE")
-            .organisationalRoleName("[SOLICITOR]");
+            .organisationalRoleName("[SOLICITOR]")
+            .liveTo("01/01/2027");
         builder.accessTypeRole("prof-org-access")
             .organisationProfileId("LOCALAUTH_PROFILE")
             .groupRoleName("[SOLICITOR]")
             .caseAssignedRoleField("professional-user")
             .groupAccessEnabled(false)
-            .caseAccessGroupIdTemplate("pcs:pcs:prof-org-access:solicitor:$ORGID$");
+            .caseAccessGroupIdTemplate("pcs:pcs:prof-org-access:solicitor:$ORGID$")
+            .liveTo("01/01/2027");
 
 
         buildCaseListView(builder);
