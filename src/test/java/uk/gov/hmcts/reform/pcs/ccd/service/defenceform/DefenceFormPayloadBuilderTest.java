@@ -480,10 +480,35 @@ class DefenceFormPayloadBuilderTest {
     }
 
     @Nested
+    class SubmittedDate {
+
+        @Test
+        void mapsSubmittedDateFromPersistedSubmissionTimestamp() {
+            DefendantResponseEntity response = response(LegislativeCountry.ENGLAND);
+            // Stored as UTC; in BST (UTC+1) 23:30 the night before is the next UK calendar day.
+            response.setResponseSubmittedDate(LocalDateTime.of(2026, 7, 15, 23, 30));
+
+            DefenceFormPayload payload = builder.build(response);
+
+            assertThat(payload.getSubmittedOn()).isEqualTo(LocalDate.of(2026, 7, 16));
+        }
+
+        @Test
+        void nullSubmissionTimestampLeavesSubmittedDateUnset() {
+            DefendantResponseEntity response = response(LegislativeCountry.ENGLAND);
+            response.setResponseSubmittedDate(null);
+
+            DefenceFormPayload payload = builder.build(response);
+
+            assertThat(payload.getSubmittedOn()).isNull();
+        }
+    }
+
+    @Nested
     class StatementOfTruth {
 
         @Test
-        void mapsSubmittedDateFromUkClockAndFullName() {
+        void mapsFullName() {
             DefendantResponseEntity response = response(LegislativeCountry.ENGLAND);
             response.setStatementOfTruth(StatementOfTruthEntity.builder()
                 .fullName("Bob Tenant")
@@ -492,19 +517,16 @@ class DefenceFormPayloadBuilderTest {
 
             DefenceFormPayload payload = builder.build(response);
 
-            // The defence is generated now, so the submitted date is the current UK date.
-            assertThat(payload.getSubmittedOn()).isEqualTo(LocalDate.of(2026, 7, 16));
             assertThat(payload.getSotFullName()).isEqualTo("Bob Tenant");
         }
 
         @Test
-        void nullStatementOfTruthLeavesNameAndDateUnset() {
+        void nullStatementOfTruthLeavesNameUnset() {
             DefendantResponseEntity response = response(LegislativeCountry.ENGLAND);
             response.setStatementOfTruth(null);
 
             DefenceFormPayload payload = builder.build(response);
 
-            assertThat(payload.getSubmittedOn()).isNull();
             assertThat(payload.getSotFullName()).isNull();
         }
     }

@@ -37,7 +37,6 @@ import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.math.BigDecimal;
 import java.time.Clock;
-import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.Collection;
 import java.util.EnumMap;
@@ -119,6 +118,13 @@ public class DefenceFormPayloadBuilder {
         Map<PartyAttributeType, PartyAttributeAssertationEntity> assertions = loadAssertions(defendant);
 
         DefenceFormPayload.DefenceFormPayloadBuilder payload = DefenceFormPayload.builder();
+
+        if (response.getResponseSubmittedDate() != null) {
+            // Stored as a UTC timestamp at submission; convert to the UK calendar date so it
+            // reflects when the defendant submitted, not when the PDF happens to be rendered.
+            payload.submittedOn(response.getResponseSubmittedDate().atZone(ZoneOffset.UTC)
+                .withZoneSameInstant(ukClock.getZone()).toLocalDate());
+        }
 
         mapCaseAndParties(claim, pcsCase, defendant, isWales, assertions, payload);
         mapResponse(response, isWales, hasRentArrearsGround, hasOnlyRentArrearsGrounds, assertions, payload);
@@ -308,9 +314,6 @@ public class DefenceFormPayloadBuilder {
         if (statementOfTruth == null) {
             return;
         }
-        // The defence PDF is generated at submission time, so the current UK date is the date the
-        // defendant submitted - same approach as the general-application document.
-        payload.submittedOn(LocalDate.now(ukClock));
         payload.sotFullName(statementOfTruth.getFullName());
     }
 
