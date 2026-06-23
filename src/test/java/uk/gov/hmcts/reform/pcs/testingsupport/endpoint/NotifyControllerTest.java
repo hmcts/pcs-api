@@ -91,7 +91,9 @@ class NotifyControllerTest {
             when(defendantResponseRepository.findById(defendantResponseId))
                 .thenReturn(Optional.of(defendantResponse));
 
-            FeePaymentEntity feePayment = FeePaymentEntity.builder().build();
+            FeePaymentEntity feePayment = FeePaymentEntity.builder()
+                .externalReference("PAY-1234")
+                .build();
             when(feePaymentRepository.findByRelatedEntityId(counterClaim.getId()))
                 .thenReturn(Optional.of(feePayment));
 
@@ -103,7 +105,7 @@ class NotifyControllerTest {
                      .sendDefendantResponseCounterclaimPaymentRequiredEmailNotification(defendantResponse)
             ).thenReturn(response);
             when(notificationService
-                     .sendDefendantResponseCounterclaimPaymentSuccessEmailNotification(defendantResponse, feePayment)
+                     .sendDefendantResponseCounterclaimPaymentSuccessEmailNotification(defendantResponse, "PAY-1234")
             ).thenReturn(response);
             when(notificationService
                      .sendDefendantResponseCounterclaimNoPaymentRequiredEmailNotification(defendantResponse)
@@ -121,7 +123,7 @@ class NotifyControllerTest {
             verify(notificationService)
                 .sendDefendantResponseCounterclaimPaymentRequiredEmailNotification(defendantResponse);
             verify(notificationService)
-                .sendDefendantResponseCounterclaimPaymentSuccessEmailNotification(defendantResponse, feePayment);
+                .sendDefendantResponseCounterclaimPaymentSuccessEmailNotification(defendantResponse, "PAY-1234");
             verify(notificationService)
                 .sendDefendantResponseCounterclaimNoPaymentRequiredEmailNotification(defendantResponse);
         }

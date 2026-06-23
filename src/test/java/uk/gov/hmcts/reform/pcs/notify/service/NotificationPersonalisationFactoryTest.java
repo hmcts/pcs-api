@@ -13,13 +13,11 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.exception.FeePaymentNotFoundException;
-import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.BasePersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.ClaimantBasePersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.CounterclaimPaymentSuccessPersonalisation;
@@ -299,17 +297,13 @@ class NotificationPersonalisationFactoryTest {
             PartyEntity defendantParty = stubDefendantParty();
             DefendantResponseEntity response = createDefendantResponse(claimantParty, defendantParty);
 
-            FeePaymentEntity feePayment = FeePaymentEntity.builder()
-                .paymentStatus(PaymentStatus.PAID)
-                .externalReference("PAY-123")
-                .party(defendantParty)
-                .build();
+            String paymentReference = "PAY-123";
 
-            CounterclaimPaymentSuccessPersonalisation result = factory.counterclaimSuccess(response, feePayment);
+            CounterclaimPaymentSuccessPersonalisation result = factory.counterclaimSuccess(response, paymentReference);
 
             Map<String, Object> map = result.toMap();
             assertThat(map)
-                .containsEntry("paymentReferenceNumber", "PAY-123")
+                .containsEntry("paymentReferenceNumber", paymentReference)
                 .containsEntry("firstName", "John")
                 .containsEntry("claimantName", "JANE SMITH")
                 .containsEntry("primaryDefendantName", "JOHN DOE");
@@ -322,13 +316,7 @@ class NotificationPersonalisationFactoryTest {
             PartyEntity defendantParty = stubDefendantParty();
             DefendantResponseEntity response = createDefendantResponse(claimantParty, defendantParty);
 
-            FeePaymentEntity feePayment = FeePaymentEntity.builder()
-                .paymentStatus(PaymentStatus.NOT_PAID)
-                .externalReference("PAY-123")
-                .party(defendantParty)
-                .build();
-
-            assertThatThrownBy(() -> factory.counterclaimSuccess(response, feePayment))
+            assertThatThrownBy(() -> factory.counterclaimSuccess(response, "PAY-123"))
                 .isInstanceOf(FeePaymentNotFoundException.class)
                 .hasMessageContaining("Paid fee payment not found");
         }

@@ -21,7 +21,7 @@ public class PaymentNotificationService {
     private final CounterClaimRepository counterClaimRepository;
 
     @Transactional
-    public void sendCounterClaimPaymentSuccessNotification(UUID counterClaimId) {
+    public void sendCounterClaimPaymentSuccessNotification(UUID counterClaimId, String paymentReference) {
         CounterClaimEntity counterClaim = counterClaimRepository.findById(counterClaimId)
             .orElseThrow(() -> new IllegalArgumentException("Counter claim not found: " + counterClaimId));
 
@@ -39,6 +39,7 @@ public class PaymentNotificationService {
         }
 
         log.info("Sending counterclaim payment success email case reference {}", pcsCase.getCaseReference());
-        notificationService.sendDefendantResponseCounterclaimPaymentSuccessEmailNotification(defendantResponse);
+        notificationService
+            .sendDefendantResponseCounterclaimPaymentSuccessEmailNotification(defendantResponse, paymentReference);
     }
 }

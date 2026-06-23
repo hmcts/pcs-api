@@ -79,15 +79,14 @@ class CounterClaimPaymentCallbackHandlerTest {
 
         FeesAndPayTaskData taskData = createFeesAndPayTaskData(partyId, counterClaimId);
 
+        String paymentReference = "PAY-123";
         FeePaymentEntity feePaymentEntity = FeePaymentEntity.builder()
             .paymentStatus(PaymentStatus.PAID)
             .taskData("task-data")
+            .externalReference(paymentReference)
             .build();
 
-        PaymentStatusCallback callback = PaymentStatusCallback.builder()
-            .serviceRequestStatus(PaymentStatus.PAID.getValue())
-            .payment(Payment.builder().paymentReference("RC-123").build())
-            .build();
+        PaymentStatusCallback callback = PaymentStatusCallback.builder().build();
 
         when(counterClaimRepository.findById(counterClaimId)).thenReturn(Optional.of(counterClaimEntity));
         when(objectMapper.readValue(anyString(), eq(FeesAndPayTaskData.class))).thenReturn(taskData);
@@ -105,6 +104,7 @@ class CounterClaimPaymentCallbackHandlerTest {
         assertThat(taskInstance.getTaskName()).isEqualTo(COUNTER_CLAIM_ISSUED_TASK_DESCRIPTOR.getTaskName());
         CounterClaimStatusChangeTaskData data = (CounterClaimStatusChangeTaskData) taskInstance.getData();
         assertThat(data.getCounterClaimId()).isEqualTo(counterClaimId);
+        assertThat(data.getPaymentReference()).isEqualTo(paymentReference);
     }
 
     @Test

@@ -58,10 +58,12 @@ class PaymentNotificationServiceTest {
         when(counterClaimRepository.findById(counterClaimId)).thenReturn(Optional.of(counterClaim));
         when(pcsCase.getDefendantResponses()).thenReturn(List.of(defendantResponse));
 
-        underTest.sendCounterClaimPaymentSuccessNotification(counterClaimId);
+        String paymentReference = "PAY-1234";
+
+        underTest.sendCounterClaimPaymentSuccessNotification(counterClaimId, paymentReference);
 
         verify(notificationService)
-            .sendDefendantResponseCounterclaimPaymentSuccessEmailNotification(defendantResponse, feePayment);
+            .sendDefendantResponseCounterclaimPaymentSuccessEmailNotification(defendantResponse, paymentReference);
     }
 
     @Test
@@ -69,7 +71,9 @@ class PaymentNotificationServiceTest {
         UUID counterClaimId = UUID.randomUUID();
         when(counterClaimRepository.findById(counterClaimId)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> underTest.sendCounterClaimPaymentSuccessNotification(counterClaimId))
+        String paymentReference = "PAY-1234";
+
+        assertThatThrownBy(() -> underTest.sendCounterClaimPaymentSuccessNotification(counterClaimId, paymentReference))
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessage("Counter claim not found: " + counterClaimId);
 
@@ -88,7 +92,9 @@ class PaymentNotificationServiceTest {
         when(counterClaim.getParty()).thenReturn(defendant);
         when(counterClaim.getPcsCase()).thenReturn(pcsCase);
 
-        underTest.sendCounterClaimPaymentSuccessNotification(counterClaimId);
+        String paymentReference = "PAY-1234";
+
+        underTest.sendCounterClaimPaymentSuccessNotification(counterClaimId, paymentReference);
 
         verifyNoInteractions(notificationService);
     }
@@ -106,7 +112,9 @@ class PaymentNotificationServiceTest {
         when(counterClaimRepository.findById(counterClaimId)).thenReturn(Optional.of(counterClaim));
         when(pcsCase.getDefendantResponses()).thenReturn(List.of());
 
-        underTest.sendCounterClaimPaymentSuccessNotification(counterClaimId);
+        String paymentReference = "PAY-1234";
+
+        underTest.sendCounterClaimPaymentSuccessNotification(counterClaimId, paymentReference);
 
         verifyNoInteractions(notificationService);
     }

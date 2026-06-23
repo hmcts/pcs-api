@@ -66,7 +66,7 @@ public class CounterClaimPaymentCallbackHandler implements PaymentCallbackStrate
 
             counterClaimEntity.setStatus(CounterClaimState.COUNTER_CLAIM_ISSUED);
             counterClaimEntity.setClaimIssuedDate(LocalDateTime.now(utcClock));
-            scheduleCounterClaimIssuedNotification(counterClaimEntity);
+            scheduleCounterClaimIssuedNotification(counterClaimEntity, feePaymentEntity);
             return;
         }
 
@@ -85,9 +85,11 @@ public class CounterClaimPaymentCallbackHandler implements PaymentCallbackStrate
         }
     }
 
-    private void scheduleCounterClaimIssuedNotification(CounterClaimEntity entity) {
+    private void scheduleCounterClaimIssuedNotification(CounterClaimEntity counterClaimEntity,
+                                                        FeePaymentEntity feePaymentEntity) {
+
         String taskId = UUID.randomUUID().toString();
-        UUID counterClaimId = entity.getId();
+        UUID counterClaimId = counterClaimEntity.getId();
         log.info("Scheduling counter claim issued notification for: {}, with task id: {}", counterClaimId, taskId);
 
         schedulerClient.scheduleIfNotExists(
@@ -95,6 +97,7 @@ public class CounterClaimPaymentCallbackHandler implements PaymentCallbackStrate
                 .instance(taskId)
                 .data(CounterClaimStatusChangeTaskData.builder()
                           .counterClaimId(counterClaimId)
+                          .paymentReference(feePaymentEntity.getExternalReference())
                           .build())
                 .scheduledTo(Instant.now())
         );
