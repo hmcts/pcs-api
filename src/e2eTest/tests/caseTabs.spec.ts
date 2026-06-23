@@ -330,6 +330,15 @@ test.describe('[Case tabs - England Journey] @nightly', async () => {
 
   test('Case tabs - CaseList view test @MAC @regression', async () => {
     await performValidation('mainHeader', home.mainHeader);
+    await performAction('filterCaseFromCaseList', caseInfo.state);
+    await performAction('validateCaseListTable',{
+      createPayload: createCaseApiData.createCasePayload,
+      submitPayload: submitCaseApiData.submitCasePayload,
+    })
+  });
+
+  test('Case tabs - Check for update access of Users @MAC @regression', async () => {
+    await performValidation('mainHeader', home.mainHeader);
     await performAction('validateCaseListTable',{
       createPayload: createCaseApiData.createCasePayload,
       submitPayload: submitCaseApiData.submitCasePayload,
