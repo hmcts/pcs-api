@@ -24,6 +24,7 @@ import uk.gov.hmcts.reform.pcs.ccd.view.AlternativesToPossessionView;
 import uk.gov.hmcts.reform.pcs.ccd.view.AsbProhibitedConductView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseFlagsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseLinkView;
+import uk.gov.hmcts.reform.pcs.ccd.view.CaseListView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseNoteView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseTabView;
 import uk.gov.hmcts.reform.pcs.ccd.view.ClaimGroundsView;
@@ -81,6 +82,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
     private final GenAppsView genAppsView;
     private final CaseFlagsView flagsView;
     private final SearchCriteriaIndexer searchCriteriaIndexer;
+    private final CaseListView caseListView;
 
 
     /**
@@ -91,7 +93,8 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
     public PCSCase getCase(CaseViewRequest<State> request) {
         long caseReference = request.caseRef();
         State state = request.state();
-        PCSCase pcsCase = getSubmittedCase(caseReference);
+        SubmittedCase submittedCase = getSubmittedCase(caseReference);
+        PCSCase pcsCase = submittedCase.pcsCase();
         boolean hasUnsubmittedCaseData = caseHasUnsubmittedData(caseReference, state);
 
         if (hasUnsubmittedCaseData) {
@@ -106,7 +109,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         }
 
         setMarkdownFields(pcsCase, hasUnsubmittedCaseData);
-        enforcementOrderMediator.handleEnforcementRequirements(caseReference, pcsCase);
+        enforcementOrderMediator.handleEnforcementRequirements(submittedCase.pcsCaseEntity(), pcsCase);
 
         caseFieldsView.setCaseFields(pcsCase);
 
@@ -126,7 +129,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         return false;
     }
 
-    private PCSCase getSubmittedCase(long caseReference) {
+    private SubmittedCase getSubmittedCase(long caseReference) {
         PcsCaseEntity pcsCaseEntity = loadCaseData(caseReference);
 
         PCSCase pcsCase = PCSCase.builder()
@@ -134,6 +137,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
             .legislativeCountry(pcsCaseEntity.getLegislativeCountry())
             .caseManagementLocationNumber(pcsCaseEntity.getCaseManagementLocation())
             .dateSubmitted(getClaimSubmittedDate(pcsCaseEntity))
+            .dateIssued(getClaimIssuedDate(pcsCaseEntity))
             .build();
 
         setDerivedProperties(pcsCase, pcsCaseEntity);
@@ -154,14 +158,22 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         caseLinkView.setCaseFields(pcsCase, pcsCaseEntity);
         caseNoteView.setCaseFields(pcsCase, pcsCaseEntity);
         flagsView.setCaseFields(pcsCase, pcsCaseEntity);
+        caseListView.setCaseFields(pcsCase);
 
-        return pcsCase;
+        return new SubmittedCase(pcsCase, pcsCaseEntity);
     }
 
     private LocalDateTime getClaimSubmittedDate(PcsCaseEntity pcsCaseEntity) {
         return pcsCaseEntity.getClaims().stream()
             .findFirst()
             .map(ClaimEntity::getClaimSubmittedDate)
+            .orElse(null);
+    }
+
+    private LocalDateTime getClaimIssuedDate(PcsCaseEntity pcsCaseEntity) {
+        return pcsCaseEntity.getClaims().stream()
+            .findFirst()
+            .map(ClaimEntity::getClaimIssuedDate)
             .orElse(null);
     }
 
@@ -241,6 +253,9 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         return partyEntities.stream()
             .map(entity -> modelMapper.map(entity, Party.class))
             .collect(Collectors.collectingAndThen(Collectors.toList(), ListValueUtils::wrapListItems));
+    }
+
+    private record SubmittedCase(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
     }
 
 }
