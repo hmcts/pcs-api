@@ -2,10 +2,10 @@ import { actionData, actionRecord, IAction } from '@utils/interfaces';
 import { expect, Page } from '@playwright/test';
 import { performAction, performActions, performValidation } from '@utils/controller';
 import { enterPaymentDetails } from '@data/page-data/enterPaymentDetails.page.data';
-import {caseSummary, serviceRequest} from '@data/page-data';
-import {backDateTheCasePaymentApiData} from "@data/api-data/backDateTheCasePayment.api.data";
+import { caseSummary, serviceRequest } from '@data/page-data';
+import { backDateTheCasePaymentApiData } from '@data/api-data/backDateTheCasePayment.api.data';
+import { refundAndRemission } from '@data/user-data/staff.user.data';
 import Axios from "axios";
-import {refundAndRemission} from "@data/user-data/staff.user.data";
 
 export class FeeAndPayAction implements IAction {
   async execute(page: Page, action: string, fieldName: actionData | actionRecord, data?: actionData): Promise<void> {
