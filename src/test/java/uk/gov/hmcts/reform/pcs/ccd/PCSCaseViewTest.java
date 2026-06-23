@@ -27,6 +27,7 @@ import uk.gov.hmcts.reform.pcs.ccd.view.AlternativesToPossessionView;
 import uk.gov.hmcts.reform.pcs.ccd.view.AsbProhibitedConductView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseFlagsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseLinkView;
+import uk.gov.hmcts.reform.pcs.ccd.view.CaseListView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseNoteView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseTabView;
 import uk.gov.hmcts.reform.pcs.ccd.view.ClaimGroundsView;
@@ -124,6 +125,9 @@ class PCSCaseViewTest {
     private CaseFlagsView caseFlagsView;
     @Mock
     private DefendantResponseView defendantResponseView;
+    private SearchCriteriaIndexer searchCriteriaIndexer;
+    @Mock
+    private CaseListView caseListView;
 
     private PCSCaseView underTest;
 
@@ -136,10 +140,9 @@ class PCSCaseViewTest {
                                     caseTitleService, claimView, documentsView, tenancyLicenceView, claimGroundsView,
                                     rentDetailsView, alternativesToPossessionView, asbProhibitedConductView,
                                     rentArrearsView, noticeOfPossessionView,
-                                    statementOfTruthView, caseFieldsView, searchCriteriaIndexer, caseLinkView,
-                                    enforcementOrderMediator,
-                                    caseNoteView, caseTabView, partiesView, genAppsView, caseFlagsView, 
-                                    defendantResponseView
+                                    statementOfTruthView, caseFieldsView, caseLinkView, enforcementOrderMediator,
+                                    caseNoteView, caseTabView, partiesView, genAppsView, caseFlagsView,
+                                    searchCriteriaIndexer, caseListView, defendantResponseView
         );
     }
 
@@ -277,6 +280,19 @@ class PCSCaseViewTest {
     }
 
     @Test
+    void shouldMapDateIssuedFromClaimIssuedDate() {
+        // Given
+        LocalDateTime claimIssuedDate = LocalDateTime.of(2026, 5, 12, 14, 30);
+        when(claimEntity.getClaimIssuedDate()).thenReturn(claimIssuedDate);
+
+        // When
+        PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
+
+        // Then
+        assertThat(pcsCase.getDateIssued()).isEqualTo(claimIssuedDate);
+    }
+
+    @Test
     void shouldSetCaseFieldsInViewHelpers() {
         // When
         PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
@@ -298,6 +314,7 @@ class PCSCaseViewTest {
         verify(defendantResponseView).setCaseFields(pcsCase, pcsCaseEntity);
 
         verify(genAppsView).setCaseFields(pcsCase, pcsCaseEntity);
+        verify(caseListView).setCaseFields(pcsCase);
     }
 
     @Test
