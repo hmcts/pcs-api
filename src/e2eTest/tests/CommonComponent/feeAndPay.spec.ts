@@ -29,7 +29,7 @@ test.afterEach(async () => {
   }
 });
 
-test.describe('[Common Component Fee And Pay] @nightly @CC @caseFlags' , async () => {
+test.describe('[Common Component Fee And Pay] @nightly @CC @feeAndPay' , async () => {
   test('Fee And Pay - Pay by account PBA', async () => {
     await performAction('clickPayNowLink', serviceRequest.payNowLink);
     await performAction('selectPaymentTypePBA', {
@@ -53,7 +53,7 @@ test.describe('[Common Component Fee And Pay] @nightly @CC @caseFlags' , async (
     });
   });
 
-  test('Fee And Pay - Pay by Card @nightly @feeAndPay', async () => {
+  test('Fee And Pay - Pay by Card', async () => {
     await performAction('clickPayNowLink', serviceRequest.payNowLink);
     await performAction('selectPaymentByCard', {
       amountLabel: serviceRequest.amountToPayLabel,
@@ -87,7 +87,7 @@ test.describe('[Common Component Fee And Pay] @nightly @CC @caseFlags' , async (
     });
   });
 
-  test('Fee And Pay - Cancel Payment from You Card Details Page @nightly @feeAndPay', async () => {
+  test('Fee And Pay - Cancel Payment from You Card Details Page', async () => {
     await performAction('clickPayNowLink', serviceRequest.payNowLink);
     await performAction('selectPaymentByCard', {
       amountLabel: serviceRequest.amountToPayLabel,
@@ -108,7 +108,7 @@ test.describe('[Common Component Fee And Pay] @nightly @CC @caseFlags' , async (
     });
   });
 
-  test('Fee And Pay - Cancel Payment from Confirm Card Details Page @nightly @feeAndPay', async () => {
+  test('Fee And Pay - Cancel Payment from Confirm Card Details Page', async () => {
     await performAction('clickPayNowLink', serviceRequest.payNowLink);
     await performAction('selectPaymentByCard', {
       amountLabel: serviceRequest.amountToPayLabel,
