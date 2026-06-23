@@ -27,7 +27,9 @@ import uk.gov.hmcts.reform.pcs.testingsupport.model.TestingSupportPin;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.AccessCodeGenerationService;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseRoleAssignmentService;
+import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.idam.IdamAuthenticator;
 import uk.gov.hmcts.reform.pcs.idam.User;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityResult;
@@ -90,6 +92,10 @@ class TestingSupportControllerTest {
     private OrganisationDetailsService organisationDetailsService;
     @Mock
     private OrganisationDetailsResponse organisationDetails;
+    @Mock
+    private PcsCaseService pcsCaseService;
+    @Mock
+    private AccessCodeGenerationService accessCodeGenerationService;
 
 
     private TestingSupportController underTest;
@@ -105,7 +111,9 @@ class TestingSupportControllerTest {
                                                  legalRepresentativePartyLinkService,
                                                  idamAuthenticator,
                                                  entityTestStatusService,
-                                                 organisationDetailsService
+                                                 organisationDetailsService,
+                                                 pcsCaseService,
+                                                 accessCodeGenerationService
         );
     }
 
@@ -401,6 +409,7 @@ class TestingSupportControllerTest {
             legislativeCountry,
             authToken,
             "s2sToken",
+            false,
             formPayload
         );
 
@@ -411,6 +420,26 @@ class TestingSupportControllerTest {
         assertEquals("CREATED", body.get("status"));
         assertEquals(caseIdValue, body.get(caseIdKey));
         assertThat(HttpStatus.CREATED.equals(response.getStatusCode()));
+    }
+
+    @Test
+    void createPCSCaseViaTestingSupportIssuesAndGeneratesAccessCodesWhenFlagSet() {
+        // given
+        JsonNode formPayload = createJsonNodeFormPayload("John Smith");
+        String idamAuth = "Bearer dummy";
+        long caseReference = 123L;
+        Map<String, Object> caseMap = Map.of("caseId", caseReference, "caseDetails", "abc");
+
+        when(ccdTestCaseOrchestrator.createCase(idamAuth, LegislativeCountry.ENGLAND, formPayload))
+            .thenReturn(caseMap);
+
+        // when
+        underTest.createPCSCaseViaTestingSupport("England", idamAuth, "s2sToken", true, formPayload);
+
+        // then
+        verify(pcsCaseService).allocateCaseManagementLocation(caseReference);
+        verify(pcsCaseService).setCaseIssuedDate(caseReference);
+        verify(accessCodeGenerationService).createAccessCodesForParties(String.valueOf(caseReference), true);
     }
 
     @Test

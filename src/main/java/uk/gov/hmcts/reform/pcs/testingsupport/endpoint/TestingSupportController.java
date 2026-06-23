@@ -36,7 +36,9 @@ import uk.gov.hmcts.reform.pcs.testingsupport.model.TestingSupportPin;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.AccessCodeGenerationService;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseRoleAssignmentService;
+import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.idam.IdamAuthenticator;
 import uk.gov.hmcts.reform.pcs.idam.User;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityResult;
@@ -80,6 +82,8 @@ public class TestingSupportController {
     private final IdamAuthenticator idamAuthenticator;
     private final EntityTestStatusService entityTestStatusService;
     private final OrganisationDetailsService organisationDetailsService;
+    private final PcsCaseService pcsCaseService;
+    private final AccessCodeGenerationService accessCodeGenerationService;
 
     @Operation(
         summary = "Schedule a Hello World task",
@@ -343,11 +347,20 @@ public class TestingSupportController {
         @PathVariable String legislativeCountry,
         @RequestHeader(value = AUTHORIZATION) String authorization,
         @RequestHeader(value = "ServiceAuthorization") String serviceAuthorization,
+        @Parameter(description = "When true, synchronously issue the case (allocate court location, set issued "
+            + "date) and generate the defendant access codes, so a test can read the PIN immediately without "
+            + "driving payment or waiting for the async scheduler.")
+        @RequestParam(defaultValue = "false") boolean issueAndGenerateAccessCodes,
         @RequestBody(required = false) JsonNode payloadMerge
     ) {
         LegislativeCountry country = LegislativeCountry.valueOf(legislativeCountry.toUpperCase());
 
         Map<String, Object> result = ccdTestCaseOrchestrator.createCase(authorization, country, payloadMerge);
+
+        if (issueAndGenerateAccessCodes) {
+            long caseReference = Long.parseLong(String.valueOf(result.get("caseId")));
+            issueCaseAndGenerateAccessCodes(caseReference);
+        }
 
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("status", "CREATED");
@@ -355,6 +368,18 @@ public class TestingSupportController {
         body.put("caseDetails", result.get("caseDetails"));
 
         return ResponseEntity.status(HttpStatus.CREATED).body(body);
+    }
+
+    /**
+     * Test-only shortcut that reproduces, synchronously, what the payment/issue flow does: allocate the court
+     * location, set the issued date, then generate the defendant access codes + pin packs. Lets a functional
+     * test obtain the PIN deterministically without paying or waiting for the db-scheduler. Idempotent with the
+     * scheduler (skips defendants that already have a code).
+     */
+    private void issueCaseAndGenerateAccessCodes(long caseReference) {
+        pcsCaseService.allocateCaseManagementLocation(caseReference);
+        pcsCaseService.setCaseIssuedDate(caseReference);
+        accessCodeGenerationService.createAccessCodesForParties(String.valueOf(caseReference), true);
     }
 
     @PostMapping(
