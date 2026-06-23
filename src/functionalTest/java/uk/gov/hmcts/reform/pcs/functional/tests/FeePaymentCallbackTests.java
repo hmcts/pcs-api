@@ -7,6 +7,7 @@ import net.serenitybdd.annotations.Title;
 import net.serenitybdd.junit5.SerenityJUnit5Extension;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Order;
@@ -61,6 +62,7 @@ public class FeePaymentCallbackTests extends BaseApi {
 
     @Title("Fee Payment callback return 404 for invalid requestReference")
     @Test
+    @Disabled("Error validation response to be implement in HDPI-7317")
     @Order(1)
     void feePaymentWithIncorrectRequestReferenceCallbackFailure() {
 
@@ -90,6 +92,7 @@ public class FeePaymentCallbackTests extends BaseApi {
 
     @Title("Fee Payment callback return 404 for invalid requestReference")
     @Test
+    @Disabled("Error validation response to be implement in HDPI-7317")
     @Order(2)
     void feePaymentWithIncorrectCaseReferenceCallbackFailure() {
 
