@@ -32,6 +32,9 @@ java:
     SPRING_LOGGING_LEVEL_ROOT: "DEBUG"
     ENABLE_TESTING_SUPPORT: true
     DB_SCHEDULER_EXECUTOR_ENABLED: true
+    # Short retry backoff on PR so a transient access-code generation failure recovers within the
+    # functional-test window instead of the 1h default.
+    ACCESS_CODE_BACKOFF_DELAY_SECONDS: 5s
     DOC_ASSEMBLY_URL: http://dg-docassembly-aat.service.core-compute-aat.internal
     IDAM_API_URL: https://idam-api.aat.platform.hmcts.net
     IDAM_S2S_AUTH_URL: http://rpe-service-auth-provider-aat.service.core-compute-aat.internal
