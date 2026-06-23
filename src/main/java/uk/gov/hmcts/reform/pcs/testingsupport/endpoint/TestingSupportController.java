@@ -430,6 +430,7 @@ public class TestingSupportController {
         entityTestStatusService.updateDefendantResponseStatus(defendantResponseId, status);
         return ResponseEntity.ok().build();
     }
+
     @GetMapping("/fee-payment-info/{caseReference}")
     public ResponseEntity<List<FeePaymentEntity>> getFeePaymentInfo(
         @Parameter(
@@ -462,6 +463,4 @@ public class TestingSupportController {
             return ResponseEntity.internalServerError().build();
         }
     }
-
-
 }
