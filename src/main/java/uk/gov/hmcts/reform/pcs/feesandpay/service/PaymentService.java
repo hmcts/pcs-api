@@ -54,6 +54,9 @@ public class PaymentService {
     @Value("${payments.params.hmctsOrgId}")
     private String hmctsOrgId;
 
+    @Value("${payments.api.process-callbacks:true}")
+    private boolean processPaymentCallbacks = true;
+
     public PaymentService(PaymentsClient paymentsClient, PaymentRequestMapper paymentRequestMapper,
         @Qualifier("systemUpdateUserTokenProvider") IdamTokenProvider systemUpdateUserTokenProvider,
         FeePaymentRepository feePaymentRepository, PcsCaseService pcsCaseService, PartyService partyService,
@@ -172,6 +175,14 @@ public class PaymentService {
     @Transactional
     public void processPaymentResponse(PaymentStatusCallback paymentStatusCallback) {
         log.info("PaymentStatusCallback status: {}", paymentStatusCallback.getServiceRequestStatus());
+
+        if (!processPaymentCallbacks) {
+            log.info(
+                "Payment callback processing disabled. Ignoring callback for service request reference: {}",
+                paymentStatusCallback.getServiceRequestReference()
+            );
+            return;
+        }
 
         getFeePaymentEntity(paymentStatusCallback.getServiceRequestReference())
             .ifPresent(

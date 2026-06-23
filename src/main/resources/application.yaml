@@ -261,6 +261,7 @@ payments:
   api:
     url: ${PAYMENT_API_URL:http://localhost:8083/payments}
     callback-url: ${PAY_CALLBACK_URL:http://host.docker.internal:3206/payment-update}
+    process-callbacks: ${PAYMENT_CALLBACK_PROCESSING_ENABLED:true}
   params:
     organisationUrn: Mortgage and Landlord Possession Claims
     hmctsOrgId: ${hmcts.hmctsOrgId}
@@ -271,4 +272,3 @@ core_case_data:
 
 caseApi:
   url: ${CASE_API_URL:http://localhost:3206}
-
