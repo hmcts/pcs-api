@@ -220,8 +220,8 @@ public class ApiSteps {
 
         try {
             return await()
-                .atMost(Duration.ofSeconds(30))
-                .pollInterval(Duration.ofSeconds(2))
+                .atMost(Duration.ofSeconds(15))
+                .pollInterval(Duration.ofMillis(700))
                 .ignoreExceptions()
                 .until(fetchPins, notNullValue());
         } catch (ConditionTimeoutException e) {
@@ -253,8 +253,8 @@ public class ApiSteps {
 
         try {
             return await()
-                .atMost(Duration.ofSeconds(30))
-                .pollInterval(Duration.ofSeconds(2))
+                .atMost(Duration.ofSeconds(15))
+                .pollInterval(Duration.ofMillis(700))
                 .ignoreExceptions()
                 .until(validateCode, notNullValue());
         } catch (ConditionTimeoutException e) {
