@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.location.service;
 
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,6 +21,10 @@ public class LocationReferenceService {
     @Value("${hmc.serviceId}")
     private String serviceCode;
 
+    @Value("${location-reference.court-county-type-id}")
+    @Getter
+    private Integer countyCourtTypeId = 10;
+
     private final LocationReferenceApi locationReferenceApi;
     private final AuthTokenGenerator authTokenGenerator;
     private final IdamTokenProvider systemUpdateUserTokenProvider;
@@ -33,7 +38,7 @@ public class LocationReferenceService {
                   formattedEpimIds, serviceCode);
         return locationReferenceApi.getCourtVenues(systemUpdateUserTokenProvider.getAuthToken(),
                                                    authTokenGenerator.generate(),
-                                                    formattedEpimIds, serviceCode);
+                                                    formattedEpimIds, countyCourtTypeId, serviceCode);
     }
 
     private String formatEpimIds(List<Integer> epimIds) {

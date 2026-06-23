@@ -70,7 +70,7 @@ public class LocationReferenceDataApiConsumerTest {
     @PactTestFor(pactMethod = "getCourtVenueByEpimmsIdAndType")
     void verifyCourtVenueByEpimmsIdAndType() {
         List<CourtVenue> response = locationReferenceApi.getCourtVenues(
-            AUTHORIZATION_TOKEN, SERVICE_AUTH_TOKEN, "123456789", "AAA3"
+            AUTHORIZATION_TOKEN, SERVICE_AUTH_TOKEN, "123456789", 10, "AAA3"
         );
 
         assertThat(response).isNotNull();

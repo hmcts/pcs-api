@@ -32,6 +32,7 @@ public class LocationReferenceServiceTest {
     private static final String SYSTEM_USER_TOKEN = "Bearer system-user-token";
     private static final String BRENTFORD_COURT_EPIM_ID = "36791";
     private static final String LONDON_COURT_EPIM_ID = "20262";
+    private static final int COUNTY_COURT_TYPE_ID = 10;
     private static final String SERVICE_CODE = "AAA3";
     public static final List<@NotNull Integer> EPIM_IDS = List.of(
         Integer.valueOf(BRENTFORD_COURT_EPIM_ID), Integer.valueOf(LONDON_COURT_EPIM_ID));
@@ -68,6 +69,7 @@ public class LocationReferenceServiceTest {
             SYSTEM_USER_TOKEN,
             SERVICE_AUTH_TOKEN,
             BRENTFORD_COURT_EPIM_ID,
+            COUNTY_COURT_TYPE_ID,
             SERVICE_CODE))
             .thenReturn(expectedCourtVenues);
 
@@ -80,6 +82,7 @@ public class LocationReferenceServiceTest {
             SYSTEM_USER_TOKEN,
             SERVICE_AUTH_TOKEN,
             BRENTFORD_COURT_EPIM_ID,
+            COUNTY_COURT_TYPE_ID,
             SERVICE_CODE
         );
     }
@@ -100,6 +103,7 @@ public class LocationReferenceServiceTest {
             SYSTEM_USER_TOKEN,
             SERVICE_AUTH_TOKEN,
             multipleEpimIdsJoined,
+            COUNTY_COURT_TYPE_ID,
             SERVICE_CODE))
                 .thenReturn(expectedCourtVenues);
 
@@ -111,6 +115,7 @@ public class LocationReferenceServiceTest {
             SYSTEM_USER_TOKEN,
             SERVICE_AUTH_TOKEN,
             multipleEpimIdsJoined,
+            COUNTY_COURT_TYPE_ID,
             SERVICE_CODE
         );
     }
@@ -121,6 +126,7 @@ public class LocationReferenceServiceTest {
             SYSTEM_USER_TOKEN,
             SERVICE_AUTH_TOKEN,
             multipleEpimIdsJoined,
+            COUNTY_COURT_TYPE_ID,
             SERVICE_CODE
         )).thenReturn(Collections.emptyList());
 
@@ -133,6 +139,7 @@ public class LocationReferenceServiceTest {
             SYSTEM_USER_TOKEN,
             SERVICE_AUTH_TOKEN,
             multipleEpimIdsJoined,
+            COUNTY_COURT_TYPE_ID,
             SERVICE_CODE
         );
     }
@@ -153,6 +160,7 @@ public class LocationReferenceServiceTest {
             SYSTEM_USER_TOKEN,
             SERVICE_AUTH_TOKEN,
             "425094",
+            COUNTY_COURT_TYPE_ID,
             SERVICE_CODE
         )).thenThrow(new RuntimeException("No matching courts found for LE2 0QB", null));
 
@@ -167,6 +175,7 @@ public class LocationReferenceServiceTest {
             SYSTEM_USER_TOKEN,
             SERVICE_AUTH_TOKEN,
             "425094",
+            COUNTY_COURT_TYPE_ID,
             SERVICE_CODE
         );
     }
