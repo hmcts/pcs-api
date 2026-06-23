@@ -22,7 +22,6 @@ public class HighLevelDataSetupApp extends DataLoaderToDefinitionStore {
     private static final CcdRoleConfig[] CCD_ROLES = {
         new CcdRoleConfig("caseworker-pcs", "PUBLIC"),
         new CcdRoleConfig("caseworker-pcs-solicitor", "PUBLIC"),
-        new CcdRoleConfig("caseworker-divorce-solicitor", "PUBLIC"),
         new CcdRoleConfig("caseworker-ras-validation", "PUBLIC"),
         new CcdRoleConfig("citizen", "PUBLIC"),
         new CcdRoleConfig("caseworker", "PUBLIC"),
@@ -34,7 +33,10 @@ public class HighLevelDataSetupApp extends DataLoaderToDefinitionStore {
         new CcdRoleConfig("fee-paid-judge", "PUBLIC"),
         new CcdRoleConfig("circuit-judge", "PUBLIC"),
         new CcdRoleConfig("leadership-judge", "PUBLIC"),
-        new CcdRoleConfig("pcs-system-update", "PUBLIC")
+        new CcdRoleConfig("pcs-system-update", "PUBLIC"),
+        new CcdRoleConfig("caseworker-caa", "PUBLIC"),
+        new CcdRoleConfig("caseworker-approver", "PUBLIC"),
+        new CcdRoleConfig("pui-case-manager", "PUBLIC")
     };
 
 
