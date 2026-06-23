@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.pcs.ccd.event.dashboard;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.callback.Start;
@@ -12,6 +13,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.DashboardJourneyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.DefendantAccessValidator;
+import uk.gov.hmcts.reform.pcs.config.RequestInterceptor;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 @Component
@@ -26,6 +28,7 @@ public class StartDashboardViewHandler implements Start<PCSCase, State> {
 
     @Override
     public PCSCase start(EventPayload<PCSCase, State> eventPayload) {
+        MDC.put(RequestInterceptor.CASE_ID, String.valueOf(eventPayload.caseReference()));
         long caseReference = eventPayload.caseReference();
         log.debug("DashboardView START invoked for caseReference={}", caseReference);
 

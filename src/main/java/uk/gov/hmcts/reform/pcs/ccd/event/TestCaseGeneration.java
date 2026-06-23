@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.pcs.ccd.event;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StreamUtils;
@@ -22,6 +23,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.testcasesupport.TestCaseSupportException;
 import uk.gov.hmcts.reform.pcs.ccd.testcasesupport.TestCaseSupportHelper;
+import uk.gov.hmcts.reform.pcs.config.RequestInterceptor;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -73,6 +75,7 @@ public class TestCaseGeneration implements CCDConfig<PCSCase, State, UserRole> {
     }
 
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
+        MDC.put(RequestInterceptor.CASE_ID, String.valueOf(eventPayload.caseReference()));
         PCSCase caseData = eventPayload.caseData();
         caseData.setTestCaseSupportFileList(testCaseSupportHelper.getFileList());
         return caseData;

@@ -2,12 +2,14 @@ package uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.callback.Start;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.strategy.RespondPossessionClaimStartEventStrategy;
+import uk.gov.hmcts.reform.pcs.config.RequestInterceptor;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.List;
@@ -31,6 +33,7 @@ public class StartEventHandler implements Start<PCSCase, State> {
     public PCSCase start(EventPayload<PCSCase, State> eventPayload) {
 
         long caseReference = eventPayload.caseReference();
+        MDC.put(RequestInterceptor.CASE_ID, String.valueOf(caseReference));
 
         log.info(
             "RespondPossessionClaim start callback invoked for Case Reference: {}",
