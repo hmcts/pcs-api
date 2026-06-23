@@ -129,8 +129,6 @@ class PaymentServiceTest {
                 .thenReturn(expectedResponse);
             FeesAndPayTaskData feesAndPayTaskData = createFeesAndPayTaskData(feeDetails);
 
-            stubResponsibleParty();
-
             // When
             PaymentServiceResponse result = underTest.createServiceRequest(feesAndPayTaskData);
 
@@ -160,8 +158,6 @@ class PaymentServiceTest {
                 .thenReturn(createPaymentServiceResponse());
             FeesAndPayTaskData feesAndPayTaskData = createFeesAndPayTaskData(feeDetails);
 
-            stubResponsibleParty();
-
             // When
             underTest.createServiceRequest(feesAndPayTaskData);
 
@@ -184,7 +180,6 @@ class PaymentServiceTest {
             setPrivateField(underTest, "objectMapper", mapper);
             FeesAndPayTaskData feesAndPayTaskData = createFeesAndPayTaskData(feeDetails);
             paymentsClientDependencies(feeDetails);
-            stubResponsibleParty();
 
             // When / Then
             assertThatExceptionOfType(PaymentException.class)
@@ -563,6 +558,7 @@ class PaymentServiceTest {
             .caseReference(CASE_REFERENCE)
             .volume(VOLUME)
             .responsiblePartyId(RESPONSIBLE_PARTY_ID)
+            .responsiblePartyName(RESPONSIBLE_PARTY)
             .paymentCallbackHandlerType(CLAIM)
             .build();
     }
