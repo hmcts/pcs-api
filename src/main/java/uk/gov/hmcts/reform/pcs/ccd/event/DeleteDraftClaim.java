@@ -31,8 +31,6 @@ import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.DELETE_DRAFT_CLAIM;
 @Slf4j
 public class DeleteDraftClaim implements CCDConfig<PCSCase, State, UserRole> {
 
-    private static final int DELETE_TASK_DELAY_SECONDS = 1;
-
     private final SchedulerClient schedulerClient;
     private final SecurityContextService securityContextService;
     private final DeleteDraftClaimConfigurer deleteDraftClaimConfigurer;
@@ -78,7 +76,7 @@ public class DeleteDraftClaim implements CCDConfig<PCSCase, State, UserRole> {
             DeleteDraftClaimTaskComponent.DELETE_DRAFT_CLAIM_TASK_DESCRIPTOR
                 .instance(UUID.randomUUID().toString())
                 .data(taskData)
-                .scheduledTo(Instant.now().plusSeconds(DELETE_TASK_DELAY_SECONDS))
+                .scheduledTo(Instant.now())
         );
     }
 

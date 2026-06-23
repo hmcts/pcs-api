@@ -19,6 +19,8 @@ import uk.gov.hmcts.reform.pcs.ccd.task.DeleteDraftClaimTaskComponent;
 import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
+import java.time.Instant;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -69,33 +71,35 @@ class DeleteDraftClaimTest extends BaseEventTest {
     }
 
     @Test
-    void shouldScheduleOrderedDraftClaimDeletionWhenUserSelectsYes() {
+    void shouldScheduleDraftClaimDeletionImmediatelyWhenUserSelectsYes() {
         UserInfo userDetails = mock(UserInfo.class);
         when(securityContextService.getCurrentUserDetails()).thenReturn(userDetails);
         when(userDetails.getUid()).thenReturn(USER_ID);
 
+        Instant beforeSubmit = Instant.now();
         SubmitResponse<State> response = callSubmitHandler(PCSCase.builder()
             .deleteDraftClaim(YesOrNo.YES)
             .build());
+        Instant afterSubmit = Instant.now();
 
-        DeleteDraftClaimTaskData taskData = getCapturedDeleteDraftClaimTaskData();
+        SchedulableInstance<?> scheduledTask = getCapturedDeleteDraftClaimTask();
+        DeleteDraftClaimTaskData taskData = (DeleteDraftClaimTaskData) scheduledTask.getTaskInstance().getData();
         assertThat(taskData.getCaseReference()).isEqualTo(String.valueOf(TEST_CASE_REFERENCE));
         assertThat(taskData.getUserId()).isEqualTo(USER_ID);
+        assertThat(scheduledTask.getNextExecutionTime(afterSubmit))
+            .isBetween(beforeSubmit, afterSubmit);
         assertThat(response.getState()).isEqualTo(State.DELETED);
         assertThat(response.getConfirmationBody()).contains("Case deleted");
     }
 
     @SuppressWarnings("unchecked")
-    private DeleteDraftClaimTaskData getCapturedDeleteDraftClaimTaskData() {
+    private SchedulableInstance<?> getCapturedDeleteDraftClaimTask() {
         ArgumentCaptor<SchedulableInstance<?>> captor = ArgumentCaptor.forClass(SchedulableInstance.class);
         verify(schedulerClient, times(1)).scheduleIfNotExists(captor.capture());
 
         return captor.getAllValues().stream()
             .filter(t -> t.getTaskInstance().getTaskName()
                 .equals(DeleteDraftClaimTaskComponent.DELETE_DRAFT_CLAIM_TASK_DESCRIPTOR.getTaskName()))
-            .map(SchedulableInstance::getTaskInstance)
-            .map(taskInstance -> taskInstance.getData())
-            .map(DeleteDraftClaimTaskData.class::cast)
             .findFirst()
             .orElseThrow(() -> new AssertionError("No delete draft claim task found"));
     }
