@@ -141,6 +141,23 @@ class DocumentNameServiceTest {
         // Then
         assertThat(updatedFilename).isEqualTo(expectedFilename);
     }
+
+    private static Stream<Arguments> defendantResponseNamingScenarios() {
+        return Stream.of(
+            // Party role, original filename, expected updated filename
+            argumentSet("null filename",
+                        PartyRole.DEFENDANT, null, null),
+            argumentSet("no extension, defendant",
+                        PartyRole.DEFENDANT, "sample", "sample - Defendant 3"),
+            argumentSet("with extension, defendant",
+                        PartyRole.DEFENDANT, "sample.pdf", "sample - Defendant 3.pdf"),
+            argumentSet("with extension, claimant",
+                        PartyRole.CLAIMANT, "sample.pdf", "sample - Claimant 3.pdf"),
+            argumentSet("with extension, other party type",
+                        PartyRole.UNDERLESSEE_OR_MORTGAGEE, "sample.pdf", "sample.pdf")
+        );
+    }
+
     private static Stream<Arguments> partyNamingScenarios() {
         return Stream.of(
             // Party role, original filename, expected updated filename
@@ -160,6 +177,7 @@ class DocumentNameServiceTest {
                 PartyRole.UNDERLESSEE_OR_MORTGAGEE, "sample.pdf", "sample.pdf")
         );
     }
+
     @Test
     void shouldThrowPartyNotFoundExceptionWhenPartyNotPartOfTheClaim() {
         // Given

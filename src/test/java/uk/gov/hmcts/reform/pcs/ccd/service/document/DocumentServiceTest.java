@@ -36,7 +36,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DocumentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
@@ -50,7 +49,9 @@ import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -676,6 +677,10 @@ class DocumentServiceTest {
             ListValue.<UploadedDocument>builder().id("2").value(defDoc2).build()
         );
 
+        when(documentNameService.appendDefendantPostfix(eq("file1.pdf"), any(), any()))
+            .thenReturn("file1 - Defendant 2.pdf");
+        when(documentNameService.appendDefendantPostfix(eq("file2.xlsx"), any(), any()))
+            .thenReturn("file2 - Defendant 2.xlsx");
         when(documentRepository.saveAll(anyList())).thenAnswer(inv -> inv.getArgument(0));
 
         // When
@@ -697,7 +702,7 @@ class DocumentServiceTest {
 
         assertThat(entities)
             .extracting(DocumentEntity::getFileName)
-            .containsExactly("file1.pdf", "file2.xlsx");
+            .containsExactly("file1 - Defendant 2.pdf", "file2 - Defendant 2.xlsx");
 
         assertThat(entities)
             .extracting(DocumentEntity::getContentType)
@@ -788,6 +793,8 @@ class DocumentServiceTest {
             ListValue.<UploadedDocument>builder().id("2").value(null).build()
         );
 
+        when(documentNameService.appendDefendantPostfix(eq("file1.pdf"), any(), any()))
+            .thenReturn("file1 - Defendant 1.pdf");
         when(documentRepository.saveAll(anyList())).thenAnswer(inv -> inv.getArgument(0));
 
         // When
