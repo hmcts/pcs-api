@@ -697,4 +697,17 @@ public class PCSCase {
 
     @CCD(access = {DefendantSolicitorAccess.class})
     private List<ListValue<Party>> allLinkedDefendants;
+
+    @CCD
+    private String postCode;
+
+    @CCD
+    private String claimantNames;
+
+    @CCD
+    private String defendantNames;
+
+    @CCD
+    private String dateIssuedString;
+
 }

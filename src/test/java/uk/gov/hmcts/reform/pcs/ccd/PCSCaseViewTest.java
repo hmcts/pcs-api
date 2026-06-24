@@ -27,6 +27,7 @@ import uk.gov.hmcts.reform.pcs.ccd.view.AlternativesToPossessionView;
 import uk.gov.hmcts.reform.pcs.ccd.view.AsbProhibitedConductView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseFlagsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseLinkView;
+import uk.gov.hmcts.reform.pcs.ccd.view.CaseListView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseNoteView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseTabView;
 import uk.gov.hmcts.reform.pcs.ccd.view.ClaimGroundsView;
@@ -121,6 +122,8 @@ class PCSCaseViewTest {
     private CaseFlagsView caseFlagsView;
     @Mock
     private SearchCriteriaIndexer searchCriteriaIndexer;
+    @Mock
+    private CaseListView caseListView;
 
     private PCSCaseView underTest;
 
@@ -135,7 +138,7 @@ class PCSCaseViewTest {
                                     rentArrearsView, noticeOfPossessionView,
                                     statementOfTruthView, caseFieldsView, caseLinkView, enforcementOrderMediator,
                                     caseNoteView, caseTabView, partiesView, genAppsView, caseFlagsView,
-                                    searchCriteriaIndexer
+                                    searchCriteriaIndexer, caseListView
         );
     }
 
@@ -317,6 +320,7 @@ class PCSCaseViewTest {
         verify(caseLinkView).setCaseFields(pcsCase, pcsCaseEntity);
         verify(caseFlagsView).setCaseFields(pcsCase, pcsCaseEntity);
         verify(genAppsView).setCaseFields(pcsCase, pcsCaseEntity);
+        verify(caseListView).setCaseFields(pcsCase);
     }
 
     @Test

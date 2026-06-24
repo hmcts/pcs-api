@@ -24,6 +24,7 @@ import uk.gov.hmcts.reform.pcs.ccd.view.AlternativesToPossessionView;
 import uk.gov.hmcts.reform.pcs.ccd.view.AsbProhibitedConductView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseFlagsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseLinkView;
+import uk.gov.hmcts.reform.pcs.ccd.view.CaseListView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseNoteView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseTabView;
 import uk.gov.hmcts.reform.pcs.ccd.view.ClaimGroundsView;
@@ -81,6 +82,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
     private final GenAppsView genAppsView;
     private final CaseFlagsView flagsView;
     private final SearchCriteriaIndexer searchCriteriaIndexer;
+    private final CaseListView caseListView;
 
 
     /**
@@ -156,6 +158,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         caseLinkView.setCaseFields(pcsCase, pcsCaseEntity);
         caseNoteView.setCaseFields(pcsCase, pcsCaseEntity);
         flagsView.setCaseFields(pcsCase, pcsCaseEntity);
+        caseListView.setCaseFields(pcsCase);
 
         return new SubmittedCase(pcsCase, pcsCaseEntity);
     }
