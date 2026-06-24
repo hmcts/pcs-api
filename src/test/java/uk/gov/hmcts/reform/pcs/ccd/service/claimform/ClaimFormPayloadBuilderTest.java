@@ -721,6 +721,32 @@ class ClaimFormPayloadBuilderTest {
         }
 
         @Test
+        void englandIntroNoGrounds_groundsListShowsNoGroundsAsTheGroundName() {
+            // The No-grounds answer is the selected ground, so "No grounds" shows in the grounds list
+            // as a name-only row (reason stays in whyClaimingPossessionGrounds, not a per-ground row).
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
+            pcsCase.setTenancyLicence(TenancyLicenceEntity.builder()
+                .type(CombinedLicenceType.INTRODUCTORY_TENANCY)
+                .build());
+            ClaimEntity claim = pcsCase.getClaims().getFirst();
+            claim.getClaimGrounds().add(ClaimGroundEntity.builder()
+                .category(ClaimGroundCategory.INTRODUCTORY_DEMOTED_OTHER_NO_GROUNDS)
+                .code("NO_GROUNDS")
+                .reason("test-intro flow")
+                .claim(claim)
+                .build());
+
+            ClaimFormPayload payload = builder.build(pcsCase);
+
+            assertThat(payload.isShowGroundsList()).isTrue();
+            assertThat(payload.getGrounds()).hasSize(1);
+            assertThat(payload.getGrounds().getFirst().getNameAndNumber()).isEqualTo("No grounds");
+            assertThat(payload.getGrounds().getFirst().getReasonFreeText()).isNull();
+            assertThat(payload.getGroundsWithReasons()).isEmpty();
+            assertThat(payload.getHasGroundsYesNo()).isEqualTo("No");
+        }
+
+        @Test
         void englandIntroCombination_absoluteAndOtherReasonsFeedWhyClaimingNotPerGround() {
             // Combination flow: the Absolute and Other answers are the "Why are you claiming
             // possession?" answers (D13), combined; Breach is an "under this ground" answer (D12).
