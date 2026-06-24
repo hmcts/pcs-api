@@ -368,4 +368,44 @@ class DashboardJourneyServiceTest {
             );
     }
 
+    @Test
+    void shouldUseValidatedDefendantPartyWhenCheckingSubmittedResponse() {
+        UUID defendantPartyId = UUID.randomUUID();
+        PartyEntity defendant = PartyEntity.builder().id(defendantPartyId).build();
+
+        when(draftCaseDataService.hasMeaningfulRespondDraft(CASE_REFERENCE, EventId.respondPossessionClaim))
+            .thenReturn(true);
+        when(defendantResponseService.hasSubmittedResponse(CASE_REFERENCE, defendantPartyId)).thenReturn(true);
+
+        DashboardData result = underTest.computeDashboardData(
+            CASE_REFERENCE,
+            PCSCase.builder().build(),
+            PcsCaseEntity.builder().build(),
+            defendant
+        );
+
+        assertThat(ListValueUtils.unwrapListItems(result.getTaskGroups()).get(2).getTasks())
+            .extracting(lv -> lv.getValue().getTemplateId(), lv -> lv.getValue().getStatus())
+            .containsExactly(
+                tuple(DashboardTaskTemplateIds.RESPOND_TO_CLAIM, TaskStatus.COMPLETED),
+                tuple(DashboardTaskTemplateIds.VIEW_RESPONSE, TaskStatus.AVAILABLE)
+            );
+    }
+
+    @Test
+    void shouldPrioritiseSubmittedResponseWhenDraftAlsoExists() {
+        when(draftCaseDataService.hasMeaningfulRespondDraft(CASE_REFERENCE, EventId.respondPossessionClaim))
+            .thenReturn(true);
+        when(defendantResponseService.hasSubmittedResponse(CASE_REFERENCE)).thenReturn(true);
+
+        DashboardData result = underTest.computeDashboardData(CASE_REFERENCE, PCSCase.builder().build());
+
+        assertThat(ListValueUtils.unwrapListItems(result.getTaskGroups()).get(2).getTasks())
+            .extracting(lv -> lv.getValue().getTemplateId(), lv -> lv.getValue().getStatus())
+            .containsExactly(
+                tuple(DashboardTaskTemplateIds.RESPOND_TO_CLAIM, TaskStatus.COMPLETED),
+                tuple(DashboardTaskTemplateIds.VIEW_RESPONSE, TaskStatus.AVAILABLE)
+            );
+    }
+
 }

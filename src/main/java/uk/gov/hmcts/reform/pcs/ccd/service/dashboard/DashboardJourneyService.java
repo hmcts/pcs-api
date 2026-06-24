@@ -71,8 +71,26 @@ public class DashboardJourneyService {
 
         boolean hasDraftResponse = draftCaseDataService.hasMeaningfulRespondDraft(
             caseReference, EventId.respondPossessionClaim);
-        boolean hasSubmittedResponse = defendantResponseService.hasSubmittedResponse(caseReference);
+        boolean hasSubmittedResponse = hasSubmittedResponse(caseReference, defendant);
 
+        return computeDashboardData(
+            caseReference,
+            submittedCaseData,
+            caseEntity,
+            defendant,
+            hasDraftResponse,
+            hasSubmittedResponse
+        );
+    }
+
+    private DashboardData computeDashboardData(
+        long caseReference,
+        PCSCase submittedCaseData,
+        PcsCaseEntity caseEntity,
+        PartyEntity defendant,
+        boolean hasDraftResponse,
+        boolean hasSubmittedResponse
+    ) {
         DashboardContext ctx = new DashboardContext(
             caseReference,
             caseEntity,
@@ -123,6 +141,13 @@ public class DashboardJourneyService {
             .map(e -> e.evaluate(ctx))
             .toList();
         return ListValueUtils.wrapListItems(groups);
+    }
+
+    private boolean hasSubmittedResponse(long caseReference, PartyEntity defendant) {
+        if (defendant != null && defendant.getId() != null) {
+            return defendantResponseService.hasSubmittedResponse(caseReference, defendant.getId());
+        }
+        return defendantResponseService.hasSubmittedResponse(caseReference);
     }
 
     private ResponseStatus getResponseStatus(boolean hasDraft, boolean hasSubmitted) {

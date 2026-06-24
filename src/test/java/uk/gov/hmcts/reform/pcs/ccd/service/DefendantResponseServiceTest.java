@@ -404,6 +404,27 @@ class DefendantResponseServiceTest {
     }
 
     @Test
+    void shouldReturnFalseWhenCheckingSubmittedResponseWithoutPartyId() {
+        boolean hasSubmittedResponse = underTest.hasSubmittedResponse(CASE_REFERENCE, null);
+
+        assertThat(hasSubmittedResponse).isFalse();
+        verify(defendantResponseRepository, never())
+            .existsByClaimPcsCaseCaseReferenceAndPartyId(anyLong(), any());
+    }
+
+    @Test
+    void shouldReturnRepositoryResultWhenCheckingSubmittedResponseForParty() {
+        UUID partyId = UUID.randomUUID();
+        when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyId(CASE_REFERENCE, partyId))
+            .thenReturn(true);
+
+        boolean hasSubmittedResponse = underTest.hasSubmittedResponse(CASE_REFERENCE, partyId);
+
+        assertThat(hasSubmittedResponse).isTrue();
+        verify(defendantResponseRepository).existsByClaimPcsCaseCaseReferenceAndPartyId(CASE_REFERENCE, partyId);
+    }
+
+    @Test
     void shouldPropagateExceptionWhenPartyNotFound() {
         // Given
         when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);

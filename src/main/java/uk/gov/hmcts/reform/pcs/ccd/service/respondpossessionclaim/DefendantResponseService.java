@@ -267,4 +267,11 @@ public class DefendantResponseService {
         }
         return defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(caseReference, userId);
     }
+
+    public boolean hasSubmittedResponse(long caseReference, UUID partyId) {
+        if (partyId == null) {
+            return false;
+        }
+        return defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyId(caseReference, partyId);
+    }
 }
