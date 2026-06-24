@@ -19,7 +19,7 @@ public class LegalRepresentativeDetails {
     private VerticalYesNo useEmailAddress;
 
     @CCD(
-        label = "Defendant’s legal representative's email address",
+        label = "Defendant's legal representative's email address",
         typeOverride = FieldType.Email
     )
     private String emailAddress;
@@ -28,7 +28,7 @@ public class LegalRepresentativeDetails {
     private String originalEmailAddress;
 
     @CCD(
-        label = "Defendant’s legal representative's reference",
+        label = "Defendant's legal representative's reference",
         max = 60
     )
     private String reference;

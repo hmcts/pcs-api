@@ -23,3 +23,5 @@ create table party_legal_rep_org (
 ALTER TABLE legal_representative
   ADD COLUMN organisation_uuid UUID REFERENCES legal_representative_org(id);
 
+CREATE UNIQUE INDEX legal_representative_org_unique_by_organisation_idx
+  ON legal_representative_org(case_id, organisation_id);

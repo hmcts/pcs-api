@@ -372,7 +372,7 @@ public class DraftCaseDataService {
 
         if (draftCaseData.getPartyId() != null) {
             log.info(
-                "Getting unsubmitted draft data: caseReference={}, eventId={}, userId={}, partyId={}",
+                "Getting unsubmitted draft data: caseReference={}, eventId={}, organisationId={}, partyId={}",
                 draftCaseData.getCaseReference(),
                 draftCaseData.getEventId(),
                 draftCaseData.getOrganisationId(),
@@ -395,7 +395,7 @@ public class DraftCaseDataService {
         if (draftCaseData.getPartyId() != null) {
             if (optionalCaseData.isPresent()) {
                 log.debug(
-                    "Found draft case data for caseReference={}, eventId={}, userId={}, partyId={}",
+                    "Found draft case data for caseReference={}, eventId={}, organisationId={}, partyId={}",
                     draftCaseData.getCaseReference(),
                     draftCaseData.getEventId(),
                     draftCaseData.getOrganisationId(),
@@ -403,7 +403,7 @@ public class DraftCaseDataService {
                 );
             } else {
                 log.debug(
-                    "No draft case data found for caseReference={}, eventId={}, userId={}, partyId={}",
+                    "No draft case data found for caseReference={}, eventId={}, organisationId={}, partyId={}",
                     draftCaseData.getCaseReference(),
                     draftCaseData.getEventId(),
                     draftCaseData.getOrganisationId(),
@@ -476,7 +476,7 @@ public class DraftCaseDataService {
 
         if (draftCaseData.getPartyId() != null) {
             log.info(
-                "Checking if draft exists: caseReference={}, eventId={}, userId={}, partyId={}",
+                "Checking if draft exists: caseReference={}, eventId={}, organisationId={}, partyId={}",
                 draftCaseData.getCaseReference(),
                 draftCaseData.getEventId(),
                 draftCaseData.getOrganisationId(),
@@ -495,7 +495,7 @@ public class DraftCaseDataService {
 
         if (draftCaseData.getPartyId() != null) {
             log.debug(
-                "Draft exists check result: caseReference={}, eventId={}, userId={}, partyId={}, exists={}",
+                "Draft exists check result: caseReference={}, eventId={}, organisationId={}, partyId={}, exists={}",
                 draftCaseData.getCaseReference(),
                 draftCaseData.getEventId(),
                 draftCaseData.getOrganisationId(),
@@ -523,7 +523,7 @@ public class DraftCaseDataService {
 
 
         if (draftCaseData.getPartyId() != null) {
-            log.info("Patching draft: caseReference={}, eventId={}, legalRepresentativeOrganisationId={}, partyId={}",
+            log.info("Patching draft: caseReference={}, eventId={}, organisationId={}, partyId={}",
                      draftCaseData.getCaseReference(),
                      draftCaseData.getEventId(),
                      draftCaseData.getOrganisationId(),
