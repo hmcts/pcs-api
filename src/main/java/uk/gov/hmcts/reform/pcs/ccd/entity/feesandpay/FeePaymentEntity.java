@@ -11,7 +11,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
 import lombok.AllArgsConstructor;
@@ -49,7 +48,7 @@ public class FeePaymentEntity {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @OneToOne(fetch = LAZY)
+    @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "possession_claim_id", nullable = false)
     @JsonBackReference
     private ClaimEntity claim;
@@ -64,7 +63,7 @@ public class FeePaymentEntity {
     private LocalDateTime requestDate;
 
     // Service Request Reference from the createRequest
-    private String requestReference;
+    private String serviceRequestReference;
 
     // This is the same as what the user sees - we receive it in the callback so behaves like a correlation id
     private String externalReference;
@@ -88,5 +87,7 @@ public class FeePaymentEntity {
 
     @JdbcTypeCode(SqlTypes.JSON)
     private String taskData;
+
+    private UUID relatedEntityId;
 
 }
