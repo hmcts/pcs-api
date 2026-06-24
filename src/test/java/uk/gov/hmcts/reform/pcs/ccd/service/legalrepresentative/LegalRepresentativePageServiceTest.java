@@ -23,6 +23,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
@@ -350,6 +351,22 @@ class LegalRepresentativePageServiceTest {
     }
 
     @Test
+    void save_WithNoExistingLegalRepOrg_ThrowsException() {
+        // given
+        String orgId = "org";
+        long caseReference = 1L;
+
+        LegalRepresentativeDetails legalRepresentativeDetails = LegalRepresentativeDetails.builder()
+            .build();
+
+        // when / then
+        assertThat(assertThrows(
+            IllegalStateException.class,
+            () -> legalRepresentativePageService.save(orgId, caseReference, legalRepresentativeDetails)
+        )).hasMessage("Cannot find LegalRepresentativeOrganisation");
+    }
+
+    @Test
     void retrieveLegalRepresentativeDetails_WithExistingEmail_UsesEntityEmail() {
         // given
         String organisationId = "org";
@@ -524,6 +541,22 @@ class LegalRepresentativePageServiceTest {
         assertEquals(YesOrNo.NO, actual.getOrganisationAddressFound());
         verify(securityContextService, never()).getCurrentUserDetails();
         verify(addressFormatter, never()).formatMediumAddress(any(AddressUK.class), eq(BR_DELIMITER));
+    }
+
+    @Test
+    void retrieveLegalRepresentativeDetails_WithNoExistingLegalRepOrg_ThrowsException() {
+        // given
+        String orgId = "org";
+        long caseReference = 1L;
+
+        LegalRepresentativeDetails legalRepresentativeDetails = LegalRepresentativeDetails.builder()
+            .build();
+
+        // when / then
+        assertThat(assertThrows(
+            IllegalStateException.class,
+            () -> legalRepresentativePageService.retrieveLegalRepresentativeDetails(orgId, caseReference, legalRepresentativeDetails)
+        )).hasMessage("Cannot find LegalRepresentativeOrganisation");
     }
 
 }

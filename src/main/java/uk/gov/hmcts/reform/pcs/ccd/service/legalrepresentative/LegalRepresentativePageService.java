@@ -36,8 +36,8 @@ public class LegalRepresentativePageService {
             legalRepresentativeOrganisationRepository
                 .findByOrganisationIdAndCaseReference(organisationId, caseReference);
 
-        LegalRepresentativeOrganisationEntity legalRepresentativeOrganisationEntity =
-            legalRepresentativeOrganisation.orElseGet(LegalRepresentativeOrganisationEntity::new);
+        LegalRepresentativeOrganisationEntity legalRepresentativeOrganisationEntity = legalRepresentativeOrganisation
+                .orElseThrow(() -> new IllegalStateException("Cannot find LegalRepresentativeOrganisation"));
 
         if (legalRepresentativeOrganisationEntity.getLegalRepresentativeList().isEmpty()) {
 
@@ -80,7 +80,7 @@ public class LegalRepresentativePageService {
             .findByOrganisationIdAndCaseReference(organisationId, caseReference);
 
         LegalRepresentativeOrganisationEntity legalRepresentativeOrganisation = legalRepOrganisation
-            .orElseGet(() -> LegalRepresentativeOrganisationEntity.builder().build());
+            .orElseThrow(() -> new IllegalStateException("Cannot find LegalRepresentativeOrganisation"));
 
         if (details == null) {
             details = LegalRepresentativeDetails.builder().build();
