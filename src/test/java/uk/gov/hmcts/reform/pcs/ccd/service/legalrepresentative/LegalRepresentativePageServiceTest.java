@@ -555,7 +555,8 @@ class LegalRepresentativePageServiceTest {
         // when / then
         assertThat(assertThrows(
             IllegalStateException.class,
-            () -> legalRepresentativePageService.retrieveLegalRepresentativeDetails(orgId, caseReference, legalRepresentativeDetails)
+            () -> legalRepresentativePageService.retrieveLegalRepresentativeDetails(orgId, caseReference,
+                                                                                    legalRepresentativeDetails)
         )).hasMessage("Cannot find LegalRepresentativeOrganisation");
     }
 

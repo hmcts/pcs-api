@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
@@ -71,13 +72,14 @@ public class NotificationService {
     }
 
     public EmailNotificationResponse sendDefendantResponseCounterclaimPaymentSuccessEmailNotification(
-        DefendantResponseEntity defendantResponse
+        DefendantResponseEntity defendantResponse,
+        FeePaymentEntity feePayment
     ) {
         return sendEmail(
             defendantRecipient(defendantResponse),
             EmailTemplate.COUNTERCLAIM_PAYMENT_SUCCESS,
             NotificationClaimType.COUNTER_CLAIM,
-            notificationPersonalisationFactory.counterclaimSuccess(defendantResponse)
+            notificationPersonalisationFactory.counterclaimSuccess(defendantResponse, feePayment)
         );
     }
 
