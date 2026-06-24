@@ -421,7 +421,7 @@ public class TestingSupportController {
     @PostMapping("/defendant-response/{defendantResponseId}/status")
     public ResponseEntity<Void> updateDefendantResponseStatus(
         @RequestHeader(value = "ServiceAuthorization") String serviceAuthorization,
-        @PathVariable UUID defendantResponseId,
+        @PathVariable Long defendantResponseId,
         @RequestParam DefendantResponseStatus status
     ) {
         entityTestStatusService.updateDefendantResponseStatus(defendantResponseId, status);

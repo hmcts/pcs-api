@@ -29,7 +29,7 @@ public class EntityTestStatusService {
     }
 
     @Transactional
-    public void updateDefendantResponseStatus(UUID defendantResponseId, DefendantResponseStatus newStatus) {
+    public void updateDefendantResponseStatus(Long defendantResponseId, DefendantResponseStatus newStatus) {
         DefendantResponseEntity defendantResponse = defendantResponseRepository.findById(defendantResponseId)
             .orElseThrow(() -> new IllegalArgumentException("Defendant response not found: " + defendantResponseId));
 

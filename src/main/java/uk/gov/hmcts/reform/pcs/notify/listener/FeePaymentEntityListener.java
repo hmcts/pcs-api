@@ -42,7 +42,7 @@ public class FeePaymentEntityListener {
         }
 
         String taskId = UUID.randomUUID().toString();
-        UUID feePaymentId = entity.getId();
+        Long feePaymentId = entity.getId();
         log.info("Scheduling fee payment paid notification for: {}, with task id: {}",
                  feePaymentId,
                  taskId);

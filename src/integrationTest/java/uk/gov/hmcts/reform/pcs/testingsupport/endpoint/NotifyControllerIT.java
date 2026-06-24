@@ -80,7 +80,7 @@ class NotifyControllerIT extends AbstractPostgresContainerIT {
         EmailNotificationResponse mockResponse = new EmailNotificationResponse();
         mockResponse.setTaskId("task-123");
         mockResponse.setStatus(SCHEDULED_STATUS);
-        mockResponse.setNotificationId(UUID.randomUUID());
+        mockResponse.setNotificationId(800L);
 
         when(notificationService.scheduleEmailNotification(
             any(EmailNotificationRequest.class),
@@ -107,21 +107,21 @@ class NotifyControllerIT extends AbstractPostgresContainerIT {
             pcsCase.setCaseReference(1234567890L);
 
             PaymentAgreementEntity paymentAgreement = new PaymentAgreementEntity();
-            paymentAgreement.setId(UUID.randomUUID());
+            paymentAgreement.setId(700L);
 
             DefendantResponseEntity defendantResponse = new DefendantResponseEntity();
             defendantResponse.setParty(party);
             defendantResponse.setPcsCase(pcsCase);
             defendantResponse.setPaymentAgreement(paymentAgreement);
 
-            UUID defendantResponseId = UUID.randomUUID();
+            Long defendantResponseId = 100L;
             when(defendantResponseRepository.findById(defendantResponseId))
                 .thenReturn(Optional.of(defendantResponse));
 
             EmailNotificationResponse response = new EmailNotificationResponse();
             response.setTaskId("task-123");
             response.setStatus(SCHEDULED_STATUS);
-            response.setNotificationId(UUID.randomUUID());
+            response.setNotificationId(800L);
 
             when(notificationService.sendDefendantResponseNoCounterclaimEmailNotification(defendantResponse))
                 .thenReturn(response);
@@ -147,7 +147,7 @@ class NotifyControllerIT extends AbstractPostgresContainerIT {
         @Test
         @DisplayName("Should return 404 when defendant response not found")
         void shouldReturn404WhenDefendantResponseNotFound() throws Exception {
-            UUID defendantResponseId = UUID.randomUUID();
+            Long defendantResponseId = 100L;
 
             when(defendantResponseRepository.findById(defendantResponseId))
                 .thenReturn(Optional.empty());

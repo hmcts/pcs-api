@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-public interface PartyAccessCodeRepository extends JpaRepository<PartyAccessCodeEntity, UUID> {
+public interface PartyAccessCodeRepository extends JpaRepository<PartyAccessCodeEntity, Long> {
 
     Optional<PartyAccessCodeEntity> findByPcsCase_IdAndCode(UUID pcsCaseId, String code);
 
