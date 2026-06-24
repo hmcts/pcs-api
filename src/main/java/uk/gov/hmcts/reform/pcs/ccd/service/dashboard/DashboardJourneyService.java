@@ -71,26 +71,8 @@ public class DashboardJourneyService {
 
         boolean hasDraftResponse = draftCaseDataService.hasMeaningfulRespondDraft(
             caseReference, EventId.respondPossessionClaim);
-        boolean hasSubmittedResponse = hasSubmittedResponse(caseReference, defendant);
+        boolean hasSubmittedResponse = defendantResponseService.hasSubmittedResponse(caseReference);
 
-        return computeDashboardData(
-            caseReference,
-            submittedCaseData,
-            caseEntity,
-            defendant,
-            hasDraftResponse,
-            hasSubmittedResponse
-        );
-    }
-
-    private DashboardData computeDashboardData(
-        long caseReference,
-        PCSCase submittedCaseData,
-        PcsCaseEntity caseEntity,
-        PartyEntity defendant,
-        boolean hasDraftResponse,
-        boolean hasSubmittedResponse
-    ) {
         DashboardContext ctx = new DashboardContext(
             caseReference,
             caseEntity,
@@ -143,13 +125,6 @@ public class DashboardJourneyService {
         return ListValueUtils.wrapListItems(groups);
     }
 
-    private boolean hasSubmittedResponse(long caseReference, PartyEntity defendant) {
-        if (defendant != null && defendant.getId() != null) {
-            return defendantResponseService.hasSubmittedResponse(caseReference, defendant.getId());
-        }
-        return defendantResponseService.hasSubmittedResponse(caseReference);
-    }
-
     private ResponseStatus getResponseStatus(boolean hasDraft, boolean hasSubmitted) {
         if (hasSubmitted) {
             return ResponseStatus.SUBMITTED;
@@ -188,7 +163,7 @@ public class DashboardJourneyService {
                 .toList()
         );
     }
-      
+
 
     /**
      * Entries with a null value are omitted so optional placeholders (for example {@code ctaLink}) can be left out
