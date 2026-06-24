@@ -39,7 +39,7 @@ class ConfirmEvictionTest extends BaseEventTest {
             .build();
 
         try (MockedStatic<TestSupportEnvironment> mocked = mockStatic(TestSupportEnvironment.class)) {
-            mocked.when(TestSupportEnvironment::isDev).thenReturn(true);
+            mocked.when(TestSupportEnvironment::isNonProdTestSupportEnabled).thenReturn(true);
             setEventUnderTest(underTest);
 
             // When
@@ -54,7 +54,7 @@ class ConfirmEvictionTest extends BaseEventTest {
     void shouldNotConfigureDecentralisedWhenNonProdSupportDisabled() {
         try (MockedStatic<TestSupportEnvironment> mocked =
                  Mockito.mockStatic(TestSupportEnvironment.class)) {
-            mocked.when(TestSupportEnvironment::isDev).thenReturn(false);
+            mocked.when(TestSupportEnvironment::isNonProdTestSupportEnabled).thenReturn(false);
 
             clearInvocations(confirmEvictionConfigurer);
 

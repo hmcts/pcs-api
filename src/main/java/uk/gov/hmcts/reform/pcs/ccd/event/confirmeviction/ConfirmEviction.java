@@ -16,7 +16,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.confirmeviction.ConfirmEvictionConfigurer;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.confirmEviction;
-import static uk.gov.hmcts.reform.pcs.ccd.testcasesupport.TestSupportEnvironment.isDev;
+import static uk.gov.hmcts.reform.pcs.ccd.testcasesupport.TestSupportEnvironment.isNonProdTestSupportEnabled;
 
 @Component
 @AllArgsConstructor
@@ -27,7 +27,7 @@ public class ConfirmEviction implements CCDConfig<PCSCase, State, UserRole> {
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
-        if (isDev() && Boolean.parseBoolean(System.getenv().get("ENABLE_ENFORCEMENT"))) {
+        if (isNonProdTestSupportEnabled() && Boolean.parseBoolean(System.getenv().get("ENABLE_ENFORCEMENT"))) {
             log.info("Configuring event: {}", confirmEviction.name());
             configure(configBuilder);
         }

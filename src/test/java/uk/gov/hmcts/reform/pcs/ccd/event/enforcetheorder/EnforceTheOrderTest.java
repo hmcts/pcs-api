@@ -94,7 +94,7 @@ class EnforceTheOrderTest extends BaseEventTest {
     @BeforeEach
     void setUp() {
         mockedEnv = Mockito.mockStatic(TestSupportEnvironment.class);
-        mockedEnv.when(TestSupportEnvironment::isDev).thenReturn(true);
+        mockedEnv.when(TestSupportEnvironment::isNonProdTestSupportEnabled).thenReturn(true);
         when(savingPageBuilderFactory.create(any(Event.EventBuilder.class), eq(EventId.enforceTheOrder)))
                 .thenReturn(savingPageBuilder);
         setEventUnderTest(enforceTheOrder);
@@ -397,7 +397,7 @@ class EnforceTheOrderTest extends BaseEventTest {
 
     @Test
     void shouldNOTConfigurePages() {
-        mockedEnv.when(TestSupportEnvironment::isDev).thenReturn(false);
+        mockedEnv.when(TestSupportEnvironment::isNonProdTestSupportEnabled).thenReturn(false);
         clearInvocations(enforcementPageConfigurer);
         clearInvocations(warrantPageConfigurer);
         clearInvocations(writPageConfigurer);
