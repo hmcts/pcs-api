@@ -5,10 +5,23 @@ import { createCaseApiData, submitCaseApiData } from '@data/api-data';
 import { caseInfo } from '@utils/actions/custom-actions/createCaseAPI.action';
 import { VERY_LONG_TIMEOUT } from 'playwright.config';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
-import { caseSummary, home } from '@data/page-data';
+import { caseSummary, home, user } from '@data/page-data';
 import { addCaseNote } from '@data/page-data-figma';
 import { checkYourAnswersCaseNote } from '@data/page-data/checkYourAnswersCaseNote.page.data';
-import { getCurrentBSTTime } from '@utils/common/string.utils';
+import { formatCaseStateText, getCurrentBSTTime } from '@utils/common/string.utils';
+import { Page, BrowserContext } from '@playwright/test';
+
+async function clearBrowserSession(page: Page, context: BrowserContext): Promise<void> {
+  await context.clearCookies();
+  await page.evaluate(() => {
+    try {
+      localStorage.clear();
+      sessionStorage.clear();
+    } catch {
+      // Ignore if storage is not accessible
+    }
+  });
+}
 
 test.beforeEach(async ({ page }, testInfo) => {
   initializeExecutor(page);
@@ -330,15 +343,20 @@ test.describe('[Case tabs - England Journey] @nightly', async () => {
 
   test('Case tabs - CaseList view test @MAC @regression', async () => {
     await performValidation('mainHeader', home.mainHeader);
-    await performAction('filterCaseFromCaseList', caseInfo.state);
+    await performAction('filterCaseFromCaseList', formatCaseStateText(caseInfo.state));
     await performAction('validateCaseListTable',{
       createPayload: createCaseApiData.createCasePayload,
       submitPayload: submitCaseApiData.submitCasePayload,
     })
   });
 
-  test('Case tabs - Check for update access of Users @MAC @regression', async () => {
-    await performValidation('mainHeader', home.mainHeader);
+  test('Case tabs - Check for update access of Users @MAC @regression', async ({page,context}) => {
+    await clearBrowserSession(page, context);
+    await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}`); 
+    await performAction('login', { email: user.claimantSolicitor.email, password: process.env.IDAM_PCS_USER_PASSWORD });
+    await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/${getCaseTypeId()}/${process.env.CASE_NUMBER}#Summary`);
+    await performValidation('mainHeader', home.caseSummary);
+
     await performAction('validateCaseListTable',{
       createPayload: createCaseApiData.createCasePayload,
       submitPayload: submitCaseApiData.submitCasePayload,
