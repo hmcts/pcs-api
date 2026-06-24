@@ -94,6 +94,8 @@ public class ClaimFormGenerationComponent {
     private void recordGenerationFailure(long caseReference) {
         try {
             claimActivityLogService.logGenerationFailure(caseReference);
+            log.error("Recorded DOCUMENTS_CREATED/FAILURE in claim_activity_log for case {} "
+                      + "after {} failed attempts", caseReference, maxRetries);
         } catch (Exception e) {
             log.error("Failed to record claim form generation failure for case {}", caseReference, e);
         }
