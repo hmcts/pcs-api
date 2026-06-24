@@ -722,9 +722,9 @@ class ClaimFormPayloadBuilderTest {
         }
 
         @Test
-        void englandIntroNoGrounds_groundsListShowsNoGroundsAsTheGroundName() {
-            // The No-grounds answer is the selected ground, so "No grounds" shows in the grounds list
-            // as a name-only row (reason stays in whyClaimingPossessionGrounds, not a per-ground row).
+        void englandIntroNoGrounds_groundsListStaysHiddenAsNoGroundIsSelected() {
+            // "No grounds" is not a selected ground (no checkbox in the journey), so it must not appear
+            // in the grounds list; it only shows as the "(No grounds)" label on the why-claiming row.
             PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
             pcsCase.setTenancyLicence(TenancyLicenceEntity.builder()
                 .type(CombinedLicenceType.INTRODUCTORY_TENANCY)
@@ -739,10 +739,8 @@ class ClaimFormPayloadBuilderTest {
 
             ClaimFormPayload payload = builder.build(pcsCase);
 
-            assertThat(payload.isShowGroundsList()).isTrue();
-            assertThat(payload.getGrounds()).hasSize(1);
-            assertThat(payload.getGrounds().getFirst().getNameAndNumber()).isEqualTo("No grounds");
-            assertThat(payload.getGrounds().getFirst().getReasonFreeText()).isNull();
+            assertThat(payload.isShowGroundsList()).isFalse();
+            assertThat(payload.getGrounds()).isEmpty();
             assertThat(payload.getGroundsWithReasons()).isEmpty();
             assertThat(payload.getHasGroundsYesNo()).isEqualTo("No");
         }

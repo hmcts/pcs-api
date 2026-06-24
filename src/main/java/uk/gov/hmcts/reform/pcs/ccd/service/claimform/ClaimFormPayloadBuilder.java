@@ -167,17 +167,6 @@ public class ClaimFormPayloadBuilder {
             .toList();
     }
 
-    // The No-grounds sentinel(s) rendered as name-only grounds ("No grounds") for the grounds list.
-    private static List<ClaimFormGround> noGroundsSentinelNames(Collection<ClaimGroundEntity> grounds) {
-        if (grounds == null) {
-            return Collections.emptyList();
-        }
-        return grounds.stream()
-            .filter(g -> g.getCategory() == ClaimGroundCategory.INTRODUCTORY_DEMOTED_OTHER_NO_GROUNDS)
-            .map(g -> ClaimFormGround.builder().nameAndNumber(formatGroundLabel(g)).build())
-            .toList();
-    }
-
     // D13 "Why is the claimant claiming possession?": the intro/demoted/other journey asks this general
     // question (rather than "...under this ground?") for the No-grounds, Absolute and Other grounds, so
     // their answers feed this single row. mapGrounds excludes the same grounds from the per-ground D12
@@ -374,14 +363,13 @@ public class ClaimFormPayloadBuilder {
                             ClaimFormPayload.ClaimFormPayloadBuilder payloadBuilder) {
         List<ClaimGroundEntity> grounds = groundsExcludingNoGroundsSentinel(allGrounds);
         if (grounds.isEmpty()) {
-            // The "No grounds" answer is the selected ground, so it shows as a ground name in the
-            // grounds list. Name only: the reason rides whyClaimingPossessionGrounds, not a per-ground
-            // row. A case with no grounds at all has no sentinel, so the list stays hidden.
-            List<ClaimFormGround> noGroundsNames = noGroundsSentinelNames(allGrounds);
-            payloadBuilder.grounds(noGroundsNames);
+            // "No grounds" is not a selected ground — the journey has no checkbox for it, the claimant
+            // just answers "no" to having grounds. So the grounds list stays empty and hidden; the
+            // no-grounds reason rides whyClaimingPossessionGrounds (rendered as "(No grounds)") instead.
+            payloadBuilder.grounds(Collections.emptyList());
             payloadBuilder.groundsWithReasons(Collections.emptyList());
             payloadBuilder.hasGroundsYesNo(VerticalYesNo.NO.getLabel());
-            payloadBuilder.showGroundsList(!noGroundsNames.isEmpty());
+            payloadBuilder.showGroundsList(false);
             payloadBuilder.hasRentArrearsGround(false);
             payloadBuilder.hasAsbGround(false);
             payloadBuilder.hasOtherGround(false);
