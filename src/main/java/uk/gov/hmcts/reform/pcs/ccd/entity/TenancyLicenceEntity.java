@@ -23,7 +23,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.UUID;
 
 @Entity
 @Builder
@@ -35,8 +34,8 @@ import java.util.UUID;
 public class TenancyLicenceEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @OneToOne
     @JoinColumn(name = "case_id")
