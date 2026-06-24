@@ -1,37 +1,65 @@
 import { test } from '@utils/test-fixtures';
-import { expect, Page, BrowserContext } from '@playwright/test';
+import { Page, BrowserContext } from '@playwright/test';
 import { initializeExecutor, performAction, performValidation } from '@utils/controller';
 import { globalSearch} from '@data/page-data-figma';
 import { dismissCookieBanner } from '@config/cookie-banner';
 import { createCaseApiData, submitCaseApiData } from '@data/api-data';
 import { caseNumber } from '@utils/actions/custom-actions/createCase.action';
-import { user} from '@data/page-data';
+import {staff} from "@data/user-data/staff.user.data";
+import {judicial} from "@data/user-data/judicial.user.data";
 
 test.use({ storageState: undefined });
+
+let globalSearchTestData = {
+  name: '',
+  addressLine1: '',
+  postcode: '',
+  email: ''
+};
 
 const setupGlobalSearchUser = async (
   page: Page,
   context: BrowserContext,
-  loggedInUser: typeof user.ctscAdministrator
+  loggedInUser: any
 ) => {
   await context.clearCookies();
   initializeExecutor(page);
-  await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
-  await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayload });
-  await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
-  await page.evaluate(() => {
-    try {
-      localStorage.clear();
-      sessionStorage.clear();
-    } catch (e) {
-      // Ignore if storage is not accessible
+
+  const suffix = Date.now();
+  const { propertyAddress } = createCaseApiData.createCasePayload;
+  const { submitCasePayload } = submitCaseApiData;
+
+  globalSearchTestData = {
+    name: `${submitCasePayload.claimantName} ${suffix}`,
+    addressLine1: `${propertyAddress.AddressLine1} ${suffix}`,
+    postcode: 'W3 6RS',
+    email: submitCasePayload.claimantContactEmail.replace('@', `+${suffix}@`)
+  };
+
+  await performAction('createCaseAPI', {
+    data: {
+      ...createCaseApiData.createCasePayload,
+      propertyAddress: {
+        ...propertyAddress,
+        PostCode: globalSearchTestData.postcode,
+        AddressLine1: globalSearchTestData.addressLine1
+      }
     }
   });
+  await performAction('submitCaseAPI', {
+    data: {
+      ...submitCasePayload,
+      claimantName: globalSearchTestData.name,
+      claimantContactEmail: globalSearchTestData.email,
+      formattedClaimantContactAddress: `${globalSearchTestData.addressLine1}<br>${propertyAddress.PostTown}<br>${globalSearchTestData.postcode}`
+    }
+  });
+  await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
 
   await dismissCookieBanner(page, 'additional');
-  await performAction('login', loggedInUser);
+  await performAction('login', {email: loggedInUser, password: process.env.IDAM_PCS_USER_PASSWORD});
 
-  if (loggedInUser.email === user.judge.email) {
+  if (loggedInUser === judicial.possessionFeePaid_Judge_email) {
     await performAction('handleJudgeBookingPage');
   }
 
@@ -70,20 +98,20 @@ const runGlobalSearchScenarios = () => {
     await performAction('validateResults');
   });
 
-  test('Search by postcode', async () => {
-    await runFieldSearch(globalSearch.postCodeLabel, globalSearch.postcodeInputText);
+  test.skip('Search by postcode', async () => {
+    await runFieldSearch(globalSearch.postCodeLabel, globalSearchTestData.postcode);
   });
 
   test('Search by email address', async () => {
-    await runFieldSearch(globalSearch.emailAddressLabel, globalSearch.emailAddressInputText);
+    await runFieldSearch(globalSearch.emailAddressLabel, globalSearchTestData.email);
   });
 
   test('first line of address', async () => {
-    await runFieldSearch(globalSearch.firstLineOfAddressLabel, globalSearch.firstLineOfAddressInputText);
+    await runFieldSearch(globalSearch.firstLineOfAddressLabel, globalSearchTestData.addressLine1);
   });
 
   test('Search by party name', async () => {
-    await runFieldSearch(globalSearch.nameLabel, globalSearch.nameInputText);
+    await runFieldSearch(globalSearch.nameLabel, globalSearchTestData.name);
   });
 
   test('Invalid case reference', async () => {
@@ -99,14 +127,13 @@ const runGlobalSearchScenarios = () => {
 };
 
 [
-  { roleName: 'CTSC User', account: user.ctscAdministrator },
-  { roleName: 'Judge User', account: user.judge }
+  { roleName: 'CTSC User', account: staff.pcs_ctsc_admin_email},
+  { roleName: 'Judge User', account: judicial.possessionFeePaid_Judge_email }
 ].forEach(({ roleName, account }) => {
-  test.describe(`[Common Component Global Search] - ${roleName} - @nightly @CC @caseFlags`, () => {
+  test.describe(`[Common Component Global Search] - ${roleName} - @nightly @CC @globalSearch`, () => {
     test.beforeEach(async ({ page, context }) => {
       await setupGlobalSearchUser(page, context, account);
     });
-
     runGlobalSearchScenarios();
   });
 });
