@@ -96,6 +96,7 @@ public class RevokeAccessHelper {
                       defendantParty.getId(), caseEntity.getCaseReference());
         }
         partyAccessCodeRepository.deleteByPcsCase_IdAndPartyId(caseEntity.getId(), defendantParty.getId());
+        defendantParty.setIdamId(null);
     }
 
     private boolean representsOtherDefendantsForCase(
