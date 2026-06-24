@@ -188,11 +188,9 @@ public class ClaimFormPayloadBuilder {
             .toList();
     }
 
-    // Bracket label: the Other ground reads "Other grounds" (its journey heading); no-grounds has none.
+    // Bracket label: the Other ground reads "Other grounds" (its journey heading); no-grounds reads
+    // "No grounds" so the row renders "Why is the claimant claiming possession? (No grounds)".
     private static String whyClaimingPossessionGroundName(ClaimGroundEntity ground) {
-        if (ground.getCategory() == ClaimGroundCategory.INTRODUCTORY_DEMOTED_OTHER_NO_GROUNDS) {
-            return null;
-        }
         return "OTHER".equals(ground.getCode()) ? "Other grounds" : formatGroundLabel(ground);
     }
 
@@ -365,6 +363,9 @@ public class ClaimFormPayloadBuilder {
                             ClaimFormPayload.ClaimFormPayloadBuilder payloadBuilder) {
         List<ClaimGroundEntity> grounds = groundsExcludingNoGroundsSentinel(allGrounds);
         if (grounds.isEmpty()) {
+            // "No grounds" is not a selected ground — the journey has no checkbox for it, the claimant
+            // just answers "no" to having grounds. So the grounds list stays empty and hidden; the
+            // no-grounds reason rides whyClaimingPossessionGrounds (rendered as "(No grounds)") instead.
             payloadBuilder.grounds(Collections.emptyList());
             payloadBuilder.groundsWithReasons(Collections.emptyList());
             payloadBuilder.hasGroundsYesNo(VerticalYesNo.NO.getLabel());

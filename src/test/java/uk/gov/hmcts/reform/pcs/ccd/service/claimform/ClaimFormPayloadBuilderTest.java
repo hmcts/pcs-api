@@ -715,9 +715,34 @@ class ClaimFormPayloadBuilderTest {
             ClaimFormPayload payload = builder.build(pcsCase);
 
             assertThat(payload.getWhyClaimingPossessionGrounds()).hasSize(1);
-            assertThat(payload.getWhyClaimingPossessionGrounds().getFirst().getNameAndNumber()).isNull();
+            assertThat(payload.getWhyClaimingPossessionGrounds().getFirst().getNameAndNumber())
+                .isEqualTo("No grounds");
             assertThat(payload.getWhyClaimingPossessionGrounds().getFirst().getReasonFreeText())
                 .isEqualTo("test-intro flow");
+        }
+
+        @Test
+        void englandIntroNoGrounds_groundsListStaysHiddenAsNoGroundIsSelected() {
+            // "No grounds" is not a selected ground (no checkbox in the journey), so it must not appear
+            // in the grounds list; it only shows as the "(No grounds)" label on the why-claiming row.
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
+            pcsCase.setTenancyLicence(TenancyLicenceEntity.builder()
+                .type(CombinedLicenceType.INTRODUCTORY_TENANCY)
+                .build());
+            ClaimEntity claim = pcsCase.getClaims().getFirst();
+            claim.getClaimGrounds().add(ClaimGroundEntity.builder()
+                .category(ClaimGroundCategory.INTRODUCTORY_DEMOTED_OTHER_NO_GROUNDS)
+                .code("NO_GROUNDS")
+                .reason("test-intro flow")
+                .claim(claim)
+                .build());
+
+            ClaimFormPayload payload = builder.build(pcsCase);
+
+            assertThat(payload.isShowGroundsList()).isFalse();
+            assertThat(payload.getGrounds()).isEmpty();
+            assertThat(payload.getGroundsWithReasons()).isEmpty();
+            assertThat(payload.getHasGroundsYesNo()).isEqualTo("No");
         }
 
         @Test
@@ -1030,7 +1055,7 @@ class ClaimFormPayloadBuilderTest {
         }
 
         @Test
-        void otherRentFrequencyRendersTheFreeTextVerbatim() {
+        void otherRentFrequencyRendersLabelWithFreeText() {
             PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
             pcsCase.setTenancyLicence(TenancyLicenceEntity.builder()
                 .type(CombinedLicenceType.ASSURED_TENANCY)
@@ -1039,7 +1064,7 @@ class ClaimFormPayloadBuilderTest {
                 .otherRentFrequency("every 3 weeks")
                 .build());
 
-            assertThat(builder.build(pcsCase).getRentCalculatedDescription()).isEqualTo("every 3 weeks");
+            assertThat(builder.build(pcsCase).getRentCalculatedDescription()).isEqualTo("Other: every 3 weeks");
         }
 
         private static Stream<Arguments> tenancyTypeLabels() {

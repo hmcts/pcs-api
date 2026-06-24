@@ -30,6 +30,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.feeandpay.FeePaymentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.exception.FeePaymentNotFoundException;
 import uk.gov.hmcts.reform.pcs.feesandpay.mapper.PaymentRequestMapper;
@@ -89,6 +90,8 @@ class PaymentServiceTest {
     private FeePaymentRepository feePaymentRepository;
     @Mock
     private PcsCaseService pcsCaseService;
+    @Mock
+    private PartyService partyService;
     @Mock
     private PaymentCallbackStrategyFactory paymentCallbackStrategyFactory;
 
@@ -303,6 +306,7 @@ class PaymentServiceTest {
             FeesAndPayTaskData feesAndPayTaskData = createFeesAndPayTaskData(feeDetails);
             String asString = objectMapper.writeValueAsString(feesAndPayTaskData);
             ClaimEntity claimEntity = new ClaimEntity();
+            stubResponsibleParty();
 
             // When
             underTest.saveNewFeePayment(asString, feesAndPayTaskData, claimEntity, SERVICE_REQUEST_REFERENCE);
@@ -315,6 +319,9 @@ class PaymentServiceTest {
             assertThat(saved.getClaim()).isSameAs(claimEntity);
             assertThat(saved.getServiceRequestReference()).isEqualTo(SERVICE_REQUEST_REFERENCE);
             assertThat(saved.getAmount()).isEqualByComparingTo(CALCULATED_AMOUNT);
+            assertThat(saved.getParty()).isSameAs(
+                partyService.getPartyEntityByEntityId(RESPONSIBLE_PARTY_ID, CASE_REFERENCE)
+            );
         }
 
         @Test
@@ -324,6 +331,7 @@ class PaymentServiceTest {
             FeesAndPayTaskData feesAndPayTaskData = createFeesAndPayTaskData(feeDetails);
             String taskDataJson = objectMapper.writeValueAsString(feesAndPayTaskData);
             ClaimEntity claimEntity = new ClaimEntity();
+            stubResponsibleParty();
 
             // When
             underTest.saveNewFeePayment(taskDataJson, feesAndPayTaskData, claimEntity, SERVICE_REQUEST_REFERENCE);
@@ -335,7 +343,9 @@ class PaymentServiceTest {
 
             assertThat(saved.getTaskData()).isEqualTo(taskDataJson);
             assertThat(saved.getPaymentCallbackHandlerType()).isEqualTo(CLAIM);
-            assertThat(saved.getParty()).isNull();
+            assertThat(saved.getParty()).isSameAs(
+                partyService.getPartyEntityByEntityId(RESPONSIBLE_PARTY_ID, CASE_REFERENCE)
+            );
         }
 
     }
@@ -557,6 +567,14 @@ class PaymentServiceTest {
         return FeeDetails.builder().feeAmount(CALCULATED_AMOUNT)
             .code("FEE123")
             .build();
+    }
+
+    private PartyEntity stubResponsibleParty() {
+        PartyEntity responsiblePartyEntity = mock(PartyEntity.class);
+        when(partyService.getPartyEntityByEntityId(RESPONSIBLE_PARTY_ID, CASE_REFERENCE))
+            .thenReturn(responsiblePartyEntity);
+        lenient().when(partyService.getPartyName(responsiblePartyEntity)).thenReturn(RESPONSIBLE_PARTY);
+        return responsiblePartyEntity;
     }
 
 }
