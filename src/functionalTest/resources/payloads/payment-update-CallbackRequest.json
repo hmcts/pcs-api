@@ -1,0 +1,13 @@
+{
+  "service_request_reference": "${requestReference}",
+  "ccd_case_number": "${caseReference}",
+  "service_request_amount": 40400,
+  "service_request_status": "Paid",
+  "payment": {
+    "payment_amount": 2500,
+    "payment_reference": "RC-1692-2665-9206-3000",
+    "payment_method": "payment by account",
+    "case_reference": "098DC868",
+    "account_number": "PBA0088311"
+  }
+}
