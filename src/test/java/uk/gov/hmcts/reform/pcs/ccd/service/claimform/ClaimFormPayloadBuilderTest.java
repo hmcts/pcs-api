@@ -1030,7 +1030,7 @@ class ClaimFormPayloadBuilderTest {
         }
 
         @Test
-        void otherRentFrequencyRendersTheFreeTextVerbatim() {
+        void otherRentFrequencyRendersLabelWithFreeText() {
             PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
             pcsCase.setTenancyLicence(TenancyLicenceEntity.builder()
                 .type(CombinedLicenceType.ASSURED_TENANCY)
@@ -1039,7 +1039,7 @@ class ClaimFormPayloadBuilderTest {
                 .otherRentFrequency("every 3 weeks")
                 .build());
 
-            assertThat(builder.build(pcsCase).getRentCalculatedDescription()).isEqualTo("every 3 weeks");
+            assertThat(builder.build(pcsCase).getRentCalculatedDescription()).isEqualTo("Other: every 3 weeks");
         }
 
         private static Stream<Arguments> tenancyTypeLabels() {

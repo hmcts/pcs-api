@@ -128,12 +128,12 @@ final class ClaimFormFormatter {
         if (frequency == null) {
             return null;
         }
-        // For "Other" the landlord types the actual cadence (e.g. "every 3 weeks"); show that
-        // verbatim rather than the meaningless "Other" label. Fall back to the label if blank.
+        // For "Other" the landlord types the actual cadence; show it after the label, e.g.
+        // "Other: every 3 weeks" (matching the tenancy-type "Other" format). Bare label if blank.
         if (frequency == RentPaymentFrequency.OTHER) {
             String otherFrequency = tenancy.getOtherRentFrequency();
             if (otherFrequency != null && !otherFrequency.isBlank()) {
-                return otherFrequency;
+                return frequency.getLabel() + ": " + otherFrequency;
             }
         }
         return frequency.getLabel();
