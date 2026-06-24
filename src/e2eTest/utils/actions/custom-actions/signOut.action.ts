@@ -7,6 +7,7 @@ import {LONG_TIMEOUT} from '../../../playwright.config';
 export class signOutAction implements IAction {
   async execute(page: Page, action: string): Promise<void> {
     await performAction('clickButton', home.signOutButton);
+    await page.waitForLoadState('networkidle');
     await page.locator('input#username').waitFor({ state: 'visible', timeout: LONG_TIMEOUT });
   }
 }
