@@ -90,14 +90,14 @@ spring:
           prd-admin:
             provider: idam
             client-id: ${IDAM_CLIENT_ID:pcs-api}
-            client-secret: ${IDAM_CLIENT_SECRET:dummy-secret-for-local}
+            client-secret: ${IDAM_CLIENT_SECRET}
             client-authentication-method: client_secret_post
             authorization-grant-type: password
             scope: openid,profile,roles
           system-user:
             provider: idam
             client-id: ${IDAM_CLIENT_ID:pcs-api}
-            client-secret: ${IDAM_CLIENT_SECRET:dummy-secret-for-local}
+            client-secret: ${IDAM_CLIENT_SECRET}
             client-authentication-method: client_secret_post
             authorization-grant-type: password
             scope: openid,profile,roles
