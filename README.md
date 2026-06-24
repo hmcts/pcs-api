@@ -1,4 +1,4 @@
-# pcs-api
+# pcs-api - PR Trigger
 
 ## Building and deploying the application
 
