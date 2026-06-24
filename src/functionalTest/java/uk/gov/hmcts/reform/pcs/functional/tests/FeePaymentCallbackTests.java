@@ -134,7 +134,7 @@ public class FeePaymentCallbackTests extends BaseApi {
         assertNotNull(payementRefs, "Payment references should not be null");
         assertFalse(payementRefs.isEmpty(), "Payment references should not be empty");
         Map<String,Object> claimantPayment = payementRefs.getFirst();
-        String requestRefernce = claimantPayment.get("requestReference").toString();
+        String requestRefernce = claimantPayment.get("serviceRequestReference").toString();
         System.out.println("Payment Reference: " + requestRefernce);
 
         String paymentUpdateRequestBody = PayloadLoader.load(
