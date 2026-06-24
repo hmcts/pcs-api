@@ -43,17 +43,12 @@ TRUNCATE TABLE
 
 -- ---------------------------------------------------------------------------
 -- address  (referenced by pcs_case.property_address_id, party.address_id,
---           legal_representative.address_id, party.contact_address_id)
+--           legal_representative.address_id)
 -- ---------------------------------------------------------------------------
 -- DROP COLUMN ... CASCADE also drops the inbound FK constraints referencing
 -- address.id. The referencing columns themselves remain and are re-typed below.
 ALTER TABLE address DROP COLUMN id CASCADE;
 ALTER TABLE address ADD COLUMN id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY;
-
--- party.contact_address_id is a dead column (added in V012, never mapped by any
--- entity). DROP COLUMN id CASCADE above already removed its fk_contact_address
--- constraint; drop the now-orphaned column rather than re-typing an unused field.
-ALTER TABLE party DROP COLUMN contact_address_id;
 
 ALTER TABLE pcs_case             ALTER COLUMN property_address_id TYPE BIGINT USING NULL::BIGINT;
 ALTER TABLE party                ALTER COLUMN address_id          TYPE BIGINT USING NULL::BIGINT;
