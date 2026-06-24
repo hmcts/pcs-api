@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
 import uk.gov.hmcts.ccd.sdk.CaseViewRequest;
@@ -26,6 +27,7 @@ import uk.gov.hmcts.reform.pcs.ccd.view.AlternativesToPossessionView;
 import uk.gov.hmcts.reform.pcs.ccd.view.AsbProhibitedConductView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseFlagsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseLinkView;
+import uk.gov.hmcts.reform.pcs.ccd.view.CaseListView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseNoteView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseTabView;
 import uk.gov.hmcts.reform.pcs.ccd.view.ClaimGroundsView;
@@ -55,6 +57,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mock.Strictness.LENIENT;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -119,6 +122,8 @@ class PCSCaseViewTest {
     private CaseFlagsView caseFlagsView;
     @Mock
     private SearchCriteriaIndexer searchCriteriaIndexer;
+    @Mock
+    private CaseListView caseListView;
 
     private PCSCaseView underTest;
 
@@ -133,7 +138,7 @@ class PCSCaseViewTest {
                                     rentArrearsView, noticeOfPossessionView,
                                     statementOfTruthView, caseFieldsView, caseLinkView, enforcementOrderMediator,
                                     caseNoteView, caseTabView, partiesView, genAppsView, caseFlagsView,
-                                    searchCriteriaIndexer
+                                    searchCriteriaIndexer, caseListView
         );
     }
 
@@ -210,6 +215,22 @@ class PCSCaseViewTest {
     }
 
     @Test
+    void shouldNotSetSearchCriteriaForSuffixedCaseType() {
+        // Given a suffixed (non-canonical) case type, e.g. PCS-STAGING or a PR preview type
+        try (MockedStatic<CaseType> caseTypeMock = mockStatic(CaseType.class)) {
+            caseTypeMock.when(CaseType::isSuffixedCaseType).thenReturn(true);
+
+            // When
+            PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
+
+            // Then - the indexer is never invoked and SearchCriteria is left null, so the
+            // decentralised indexer won't write a global_search document for this case type
+            verify(searchCriteriaIndexer, never()).buildSearchCriteria(any(PCSCase.class));
+            assertThat(pcsCase.getSearchCriteria()).isNull();
+        }
+    }
+
+    @Test
     void shouldMapPartyEntity() {
         // Given
         PartyEntity partyEntity = mock(PartyEntity.class);
@@ -255,6 +276,19 @@ class PCSCaseViewTest {
     }
 
     @Test
+    void shouldMapDateIssuedFromClaimIssuedDate() {
+        // Given
+        LocalDateTime claimIssuedDate = LocalDateTime.of(2026, 5, 12, 14, 30);
+        when(claimEntity.getClaimIssuedDate()).thenReturn(claimIssuedDate);
+
+        // When
+        PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
+
+        // Then
+        assertThat(pcsCase.getDateIssued()).isEqualTo(claimIssuedDate);
+    }
+
+    @Test
     void shouldSetCaseFieldsInViewHelpers() {
         // When
         PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
@@ -274,6 +308,7 @@ class PCSCaseViewTest {
         verify(caseLinkView).setCaseFields(pcsCase, pcsCaseEntity);
         verify(caseFlagsView).setCaseFields(pcsCase, pcsCaseEntity);
         verify(genAppsView).setCaseFields(pcsCase, pcsCaseEntity);
+        verify(caseListView).setCaseFields(pcsCase);
     }
 
     @Test
@@ -353,7 +388,7 @@ class PCSCaseViewTest {
         PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
 
         // Then
-        verify(enforcementOrderMediator).handleEnforcementRequirements(CASE_REFERENCE, pcsCase);
+        verify(enforcementOrderMediator).handleEnforcementRequirements(pcsCaseEntity, pcsCase);
     }
 
     private AddressUK stubAddressEntityModelMapper(AddressEntity addressEntity) {

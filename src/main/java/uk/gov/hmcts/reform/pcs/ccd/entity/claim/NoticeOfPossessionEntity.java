@@ -58,4 +58,10 @@ public class NoticeOfPossessionEntity {
 
     private String noticeStatement;
 
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private YesOrNo isAbleToUploadDocument;
+
+    private String unableToUploadReason;
+
 }

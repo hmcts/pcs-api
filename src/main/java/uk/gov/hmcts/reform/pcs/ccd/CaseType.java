@@ -51,6 +51,18 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
             .orElse(base);
     }
 
+    /**
+     * Whether this deployment runs a suffixed case type, e.g. PCS-STAGING or a
+     * per-PR preview type, driven by the CASE_TYPE_SUFFIX env var.
+     */
+    public static boolean isSuffixedCaseType() {
+        return isSuffixed(getenv().get("CASE_TYPE_SUFFIX"));
+    }
+
+    static boolean isSuffixed(String suffix) {
+        return suffix != null && !suffix.isBlank();
+    }
+
     @Override
     public void configure(final ConfigBuilder<PCSCase, State, AccessProfile> builder) {
         builder.setCallbackHost(caseApiUrl);
@@ -68,9 +80,7 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
         builder.searchResultFields()
             .caseReferenceField();
 
-        builder.workBasketResultFields()
-            .caseReferenceField()
-            .field(PCSCase::getPropertyAddress, "Property Address");
+        buildCaseListView(builder);
 
         builder.tab("nextSteps", "Next steps")
             .showCondition(ShowConditions.stateEquals(AWAITING_SUBMISSION_TO_HMCTS))
@@ -243,5 +253,15 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
                 "## Required Documents"
             )
             .field("detailsTab_RequiredDocumentsDetails");
+    }
+
+    private void buildCaseListView(ConfigBuilder<PCSCase, State, AccessProfile> builder) {
+        builder.workBasketResultFields()
+            .field("[CASE_REFERENCE]", "Case number")
+            .field(PCSCase::getDateIssuedString, "Date issued")
+            .field(PCSCase::getClaimantNames, "Claimant names")
+            .field(PCSCase::getDefendantNames, "Defendant names")
+            .field(PCSCase::getPostCode, "Postcode")
+            .field("[STATE]", "State");
     }
 }

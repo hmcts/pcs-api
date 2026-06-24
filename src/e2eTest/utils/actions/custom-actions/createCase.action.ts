@@ -12,7 +12,8 @@ import {
   whatAreYourGroundsForPossession,
   userIneligible,
   whatAreYourGroundsForPossessionWales,
-  addressCheckYourAnswers
+  addressCheckYourAnswers,
+  home
 } from '@data/page-data';
 import {
   claimantType,
@@ -56,7 +57,7 @@ import {MEDIUM_TIMEOUT, VERY_LONG_TIMEOUT} from 'playwright.config';
 import {compareMaps} from '@utils/common/compareMaps.util';
 import {caseInfo} from './createCaseAPI.action';
 import {createCaseApiData} from '@data/api-data';
-import {formatCurrency, formatDate, formatDateTime, formatText, formatWord} from '@utils/common/string.utils';
+import {formatCaseStateText, formatCurrency, formatDate, formatDateTime, formatText, formatWord} from '@utils/common/string.utils';
 export let caseNumber: string;
 export let claimantsName: string;
 export let addressInfo: { buildingStreet: string; townCity: string; engOrWalPostcode: string };
@@ -127,6 +128,7 @@ export class CreateCaseAction implements IAction {
       ['addCaseNotes', () => this.addCaseNotes(fieldName as actionRecord)],
       ['validateCaseNotesDetails', () => this.validateCaseNotesDetails(page, fieldName as actionRecord)],
       ['validateCaseSummaryDetails', () => this.validateCaseSummaryDetails(page, fieldName as actionRecord)],
+      ['validateCaseListTable', () => this.validateCaseListTable(page, fieldName as actionRecord)],
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -525,8 +527,14 @@ export class CreateCaseAction implements IAction {
         ['inputText', noticeDetails.minuteHiddenTextLabel, noticeData.minute],
         ['inputText', noticeDetails.secondHiddenTextLabel, noticeData.second]);
     }
-    if (noticeData.files) {
+    await performAction('clickRadioButton', {
+      question: noticeData.uploadNoticeQuestion,
+      option: noticeData.uploadNoticeOption
+    });
+    if (noticeData.files && noticeData.uploadNoticeOption === 'Yes, I can upload a copy of the notice served') {
       await performAction('uploadFile', noticeData.files);
+    } else {
+      await performAction('inputText', noticeDetails.whyYouCannotUploadHiddenTextLabel, noticeDetails.whyYouCannotUploadHiddenTextInput);
     }
     await performAction('clickButton', noticeDetails.continueButton);
   }
@@ -1271,12 +1279,12 @@ export class CreateCaseAction implements IAction {
         break;
 
       case 'Notice':
-        const serviceMethod = submitPayLoad.notice_NoticeServiceMethod;
+        const serviceMethod = submitPayLoad.notice_ServiceMethod;
         const dateServed =
           serviceMethod === 'FIRST_CLASS_POST'
-            ? submitPayLoad.notice_NoticePostedDate
+            ? submitPayLoad.notice_PostedDate
             : serviceMethod === 'EMAIL'
-              ? submitPayLoad.notice_NoticeEmailSentDateTime
+              ? submitPayLoad.notice_EmailSentDateTime
               : null;
 
         if (dateServed) {
@@ -1290,12 +1298,12 @@ export class CreateCaseAction implements IAction {
         break;
 
       case 'Notice Case details':
-        const serviceMethodCaseDetails = submitPayLoad.notice_NoticeServiceMethod;
+        const serviceMethodCaseDetails = submitPayLoad.notice_ServiceMethod;
         const dateServedCaseDetails =
           serviceMethodCaseDetails === 'FIRST_CLASS_POST'
-            ? submitPayLoad.notice_NoticePostedDate
+            ? submitPayLoad.notice_PostedDate
             : serviceMethodCaseDetails === 'EMAIL'
-              ? submitPayLoad.notice_NoticeEmailSentDateTime
+              ? submitPayLoad.notice_EmailSentDateTime
               : null;
         const methodOfService = serviceMethodCaseDetails === 'FIRST_CLASS_POST' ? 'By first class post or other service which provides for delivery on the next business day' : serviceMethodCaseDetails === 'EMAIL' ? 'By Email' : null;
         caseSummary.set('Has notice been served?',formatWord(submitPayLoad.noticeServed));
@@ -1309,15 +1317,19 @@ export class CreateCaseAction implements IAction {
 
           caseSummary.set('Date and time notice served (if applicable)', formattedDate);
         }
+        caseSummary.set('Are you able to upload a copy of the notice you served?', formatWord(submitPayLoad.notice_AbleToUploadDocument));
+        if (submitPayLoad.notice_AbleToUploadDocument === 'No') {
+          caseSummary.set('Details of why you cannot upload a copy', submitPayLoad.notice_UnableToUploadReason);
+        }
         break;
 
       case 'Notice Case details Wales':
-        const serviceMethodCaseDetailsWales = submitPayLoad.notice_NoticeServiceMethod;
+        const serviceMethodCaseDetailsWales = submitPayLoad.notice_ServiceMethod;
         const dateServedCaseDetailsWales =
           serviceMethodCaseDetailsWales === 'FIRST_CLASS_POST'
-            ? submitPayLoad.notice_NoticePostedDate
+            ? submitPayLoad.notice_PostedDate
             : serviceMethodCaseDetailsWales === 'EMAIL'
-              ? submitPayLoad.notice_NoticeEmailSentDateTime
+              ? submitPayLoad.notice_EmailSentDateTime
               : null;
         const methodOfServiceWales = serviceMethodCaseDetailsWales === 'FIRST_CLASS_POST' ? 'By first class post or other service which provides for delivery on the next business day' : serviceMethodCaseDetailsWales === 'EMAIL' ? 'By Email' : null;
         caseSummary.set('Has notice been served?', formatWord(submitPayLoad.walesNoticeServed));
@@ -1331,6 +1343,10 @@ export class CreateCaseAction implements IAction {
               : formatDateTime(dateServedCaseDetailsWales);
 
           caseSummary.set('Date and time notice served (if applicable)', formattedDate);
+        }
+        caseSummary.set('Are you able to upload a copy of the notice you served?', formatWord(submitPayLoad.notice_AbleToUploadDocument));
+        if (submitPayLoad.notice_AbleToUploadDocument === 'No') {
+          caseSummary.set('Details of why you cannot upload a copy', submitPayLoad.notice_UnableToUploadReason);
         }
         break;
 
@@ -1554,4 +1570,100 @@ export class CreateCaseAction implements IAction {
     const tdLocator = page.locator(`//span[text()="${tableHeader}"]/ancestor::tr[1]/child::td`);
     return ((await tdLocator.textContent()) || '').trim();
   }
+
+  public async validateCaseListTable(page: Page, caseList: actionRecord){
+    let submitPayLoad = caseList.submitPayload as Record<string, any>;
+    let createPayLoad = caseList.createPayload as Record<string, any>;
+    const mainTable = page.locator('#search-result thead');
+    await expect(mainTable).toBeVisible({ timeout: MEDIUM_TIMEOUT, visible: true });
+    const tHeader = mainTable.locator('th');
+
+    const headers = await tHeader.allTextContents();
+
+    const cleanedHeaders = headers
+      .map(h => h.replace(/\u200B/g, '').replace(/\s*▼\s*/, '').trim())
+      .filter(Boolean);
+    expect(cleanedHeaders, 'validating  case list table header').toEqual(home.caseListTableHeader);
+    const userInputArray: string[] = [caseInfo.fid, submitPayLoad.claimantName, await this.getDefendantClaimDetails(submitPayLoad), createPayLoad.propertyAddress.PostCode as string, formatCaseStateText(caseInfo.state)];
+    const caseValueRetrieved = await this.findCasePagination(page, caseInfo.fid);
+    expect(caseValueRetrieved, 'validating  case list table header').toEqual(userInputArray);
+  }
+
+  private async findCasePagination(page: Page,caseNumber:string): Promise<string[]>{
+
+    const nextButton = page.locator('.pagination-next');
+    const rows = page.locator('#search-result tbody tr');
+    let pageNumber = 1;
+
+    while (true) {
+      await expect(rows.first()).toBeVisible();
+      const rowCount = await rows.count();
+
+      for (let i = 0; i < rowCount; i++) {
+        const row = rows.nth(i);
+        const rowText = await row.innerText();
+        if (rowText.includes(caseNumber)) {
+          console.log(`Case number "${caseNumber}" found on page ${pageNumber}, row ${i + 1}`);
+          const cells = row.locator('td');
+          const values = await cells.allTextContents();
+          const formattedTexts = values
+            .map(h => h.replace(/\u200B/g, '').trim())
+            .filter(Boolean);
+            return formattedTexts; 
+        }
+      }
+
+      const hasNextButton = await nextButton.count() > 0;
+      const nextButtonState = await nextButton.getAttribute('class');
+
+      if (!hasNextButton || nextButtonState?.includes('disabled')) {
+        throw new Error(
+          `Case number ${caseNumber} was not found after checking ${pageNumber} page(s).`
+        );
+      }
+      await nextButton.click();
+      await page.waitForLoadState();
+      await page.locator('.spinner-container').waitFor({ state: 'detached' });
+      pageNumber++;
+    }
+  }
+
+  private async getDefendantClaimDetails(defendantsDetails: actionRecord): Promise<string> {
+
+    let originalDefendantDetails: string[] = [];
+    const payLoad = defendantsDetails as Record<string, any>;
+    if (payLoad.defendant1.nameKnown === 'YES') {
+      originalDefendantDetails.push(
+        `${payLoad.defendant1.lastName}`
+      );
+    } else {
+      originalDefendantDetails.push(
+        `persons unknown`
+      );
+    }
+
+    if (payLoad.addAnotherDefendant === 'YES') {
+
+      for (const defendant of payLoad.additionalDefendants) {
+        if (defendant.value.nameKnown === 'YES') {
+          originalDefendantDetails.push(`${defendant.value.lastName}`);
+        } else {
+          originalDefendantDetails.push(
+            `persons unknown`
+          );
+        }
+      }
+    }
+
+    let defendantText: string;
+
+    if (originalDefendantDetails.length > 2) {
+      defendantText = `${originalDefendantDetails[0]}, ${originalDefendantDetails[1]} and Others`;
+    } else {
+      defendantText = originalDefendantDetails.join(', ');
+    }
+    return defendantText;
+
+  }
+
 }

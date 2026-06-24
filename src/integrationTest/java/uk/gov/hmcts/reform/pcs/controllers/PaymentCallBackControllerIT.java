@@ -88,9 +88,9 @@ public class PaymentCallBackControllerIT extends AbstractPostgresContainerIT {
         ClaimPartyEntity claimPartyEntity = claimEntity.getClaimParties().getFirst();
         UUID claimantPartyId = claimPartyEntity.getParty().getId();
 
-        feesAndPayTaskData = Instancio.create(FeesAndPayTaskData.class);
-        feesAndPayTaskData.toBuilder()
+        feesAndPayTaskData = Instancio.create(FeesAndPayTaskData.class).toBuilder()
             .caseReference(CASE_REFERENCE)
+            .ccdCaseNumber(String.valueOf(CASE_REFERENCE))
             .paymentCallbackHandlerType(PaymentCallbackHandlerType.CLAIM)
             .responsiblePartyId(claimantPartyId)
             .build();
@@ -117,10 +117,10 @@ public class PaymentCallBackControllerIT extends AbstractPostgresContainerIT {
             .andExpect(status().isNoContent());
 
         // Then
-        Optional<FeePaymentEntity> byServiceRequestReference = feePaymentRepository
+        Optional<FeePaymentEntity> byRequestReference = feePaymentRepository
             .findByServiceRequestReference(serviceCaseReference);
-        assertThat(byServiceRequestReference.isPresent()).isTrue();
-        FeePaymentEntity feePaymentEntity = byServiceRequestReference.get();
+        assertThat(byRequestReference.isPresent()).isTrue();
+        FeePaymentEntity feePaymentEntity = byRequestReference.get();
         assertThat(feePaymentEntity.getPaymentStatus()).isEqualTo(PaymentStatus.PAID);
     }
 

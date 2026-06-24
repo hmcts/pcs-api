@@ -10,7 +10,6 @@ import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.model.CounterClaimStatusChangeTaskData;
-import uk.gov.hmcts.reform.pcs.ccd.task.CounterClaimIssuedNotificationTaskComponent;
 import uk.gov.hmcts.reform.pcs.ccd.task.PendingCounterClaimIssuedNotificationTaskComponent;
 
 import java.time.Instant;
@@ -41,9 +40,8 @@ public class CounterClaimEntityListener {
             return;
         }
 
-        switch (entity.getStatus()) {
-            case PENDING_COUNTER_CLAIM_ISSUED -> schedulePendingCounterClaimIssuedNotification(entity);
-            case COUNTER_CLAIM_ISSUED -> scheduleCounterClaimIssuedNotification(entity);
+        if (entity.getStatus() == CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED) {
+            schedulePendingCounterClaimIssuedNotification(entity);
         }
     }
 
@@ -64,18 +62,4 @@ public class CounterClaimEntityListener {
         );
     }
 
-    private void scheduleCounterClaimIssuedNotification(CounterClaimEntity entity) {
-        String taskId = UUID.randomUUID().toString();
-        UUID counterClaimId = entity.getId();
-        log.info("Scheduling counter claim issued notification for: {}, with task id: {}", counterClaimId, taskId);
-
-        schedulerClient.scheduleIfNotExists(
-            CounterClaimIssuedNotificationTaskComponent.COUNTER_CLAIM_ISSUED_TASK_DESCRIPTOR
-                .instance(taskId)
-                .data(CounterClaimStatusChangeTaskData.builder()
-                          .counterClaimId(counterClaimId)
-                          .build())
-                .scheduledTo(Instant.now())
-        );
-    }
 }
