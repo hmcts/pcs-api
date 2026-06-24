@@ -25,9 +25,6 @@ import java.util.List;
 @Getter
 public class SchedulingConfig {
 
-    @Value("${db-scheduler.start-interval-seconds:5}")
-    private int scheduleFeeCaseIssuedInSeconds = 5;
-
     /**
      * SchedulerClient bean is always on and this is  used to schedule jobs, but does NOT execute them.
      * Keep active everywhere where job scheduling is needed.
