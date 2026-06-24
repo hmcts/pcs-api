@@ -715,7 +715,8 @@ class ClaimFormPayloadBuilderTest {
             ClaimFormPayload payload = builder.build(pcsCase);
 
             assertThat(payload.getWhyClaimingPossessionGrounds()).hasSize(1);
-            assertThat(payload.getWhyClaimingPossessionGrounds().getFirst().getNameAndNumber()).isNull();
+            assertThat(payload.getWhyClaimingPossessionGrounds().getFirst().getNameAndNumber())
+                .isEqualTo("No grounds");
             assertThat(payload.getWhyClaimingPossessionGrounds().getFirst().getReasonFreeText())
                 .isEqualTo("test-intro flow");
         }

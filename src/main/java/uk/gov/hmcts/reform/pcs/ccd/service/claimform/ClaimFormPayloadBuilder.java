@@ -199,11 +199,9 @@ public class ClaimFormPayloadBuilder {
             .toList();
     }
 
-    // Bracket label: the Other ground reads "Other grounds" (its journey heading); no-grounds has none.
+    // Bracket label: the Other ground reads "Other grounds" (its journey heading); no-grounds reads
+    // "No grounds" so the row renders "Why is the claimant claiming possession? (No grounds)".
     private static String whyClaimingPossessionGroundName(ClaimGroundEntity ground) {
-        if (ground.getCategory() == ClaimGroundCategory.INTRODUCTORY_DEMOTED_OTHER_NO_GROUNDS) {
-            return null;
-        }
         return "OTHER".equals(ground.getCode()) ? "Other grounds" : formatGroundLabel(ground);
     }
 
