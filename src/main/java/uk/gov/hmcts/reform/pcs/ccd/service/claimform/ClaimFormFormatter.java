@@ -4,6 +4,7 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CombinedLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServiceMethod;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsOrBreachOfTenancy;
+import uk.gov.hmcts.reform.pcs.ccd.domain.RentPaymentFrequency;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.ClaimGroundSummary;
@@ -87,9 +88,17 @@ final class ClaimFormFormatter {
     }
 
     // Ground 1 is a parent checkbox whose children are "Rent arrears" / "Breach of the tenancy"; the
-    // form names each "Rent arrears or breach of the tenancy (ground 1): <child>".
+    // form names each child "<child> (ground 1)", e.g. "Rent arrears (ground 1)".
     static String formatRentArrearsOrBreachLabel(ClaimGroundEntity ground, RentArrearsOrBreachOfTenancy child) {
-        return formatGroundLabel(ground) + ": " + child.getLabel();
+        return child.getLabel() + " " + groundNumberSuffix(ground);
+    }
+
+    // The "(ground N)" suffix taken from the parent ground label, so the number stays single-sourced
+    // in the SecureOrFlexibleDiscretionaryGrounds enum.
+    private static String groundNumberSuffix(ClaimGroundEntity ground) {
+        String parentLabel = formatGroundLabel(ground);
+        int open = parentLabel.lastIndexOf('(');
+        return open >= 0 ? parentLabel.substring(open) : "";
     }
 
     // Wales estate management (s.160) is a parent checkbox whose children are the specific grounds
@@ -115,7 +124,19 @@ final class ClaimFormFormatter {
     }
 
     static String formatRentFrequency(TenancyLicenceEntity tenancy) {
-        return tenancy.getRentFrequency() == null ? null : tenancy.getRentFrequency().getLabel();
+        RentPaymentFrequency frequency = tenancy.getRentFrequency();
+        if (frequency == null) {
+            return null;
+        }
+        // For "Other" the landlord types the actual cadence (e.g. "every 3 weeks"); show that
+        // verbatim rather than the meaningless "Other" label. Fall back to the label if blank.
+        if (frequency == RentPaymentFrequency.OTHER) {
+            String otherFrequency = tenancy.getOtherRentFrequency();
+            if (otherFrequency != null && !otherFrequency.isBlank()) {
+                return otherFrequency;
+            }
+        }
+        return frequency.getLabel();
     }
 
     // "Defendant 1 details", then "Additional defendant N details" for later defendants.

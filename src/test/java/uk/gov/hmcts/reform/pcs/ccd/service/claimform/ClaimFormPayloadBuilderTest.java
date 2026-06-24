@@ -443,7 +443,7 @@ class ClaimFormPayloadBuilderTest {
             ClaimFormPayload payload = builder.build(pcsCase);
 
             assertThat(payload.getGrounds()).extracting(ClaimFormGround::getNameAndNumber)
-                .containsExactly("Rent arrears or breach of the tenancy (ground 1): Rent arrears");
+                .containsExactly("Rent arrears (ground 1)");
             assertThat(payload.getGroundsWithReasons()).isEmpty();
         }
 
@@ -462,11 +462,11 @@ class ClaimFormPayloadBuilderTest {
             ClaimFormPayload payload = builder.build(pcsCase);
 
             assertThat(payload.getGrounds()).extracting(ClaimFormGround::getNameAndNumber)
-                .containsExactly("Rent arrears or breach of the tenancy (ground 1): Breach of the tenancy");
+                .containsExactly("Breach of the tenancy (ground 1)");
             assertThat(payload.getGroundsWithReasons()).singleElement()
                 .satisfies(row -> {
                     assertThat(row.getNameAndNumber())
-                        .isEqualTo("Rent arrears or breach of the tenancy (ground 1): Breach of the tenancy");
+                        .isEqualTo("Breach of the tenancy (ground 1)");
                     assertThat(row.getReasonFreeText()).isEqualTo("kept a dog despite a no-pets clause");
                 });
         }
@@ -488,10 +488,10 @@ class ClaimFormPayloadBuilderTest {
 
             assertThat(payload.getGrounds()).extracting(ClaimFormGround::getNameAndNumber)
                 .containsExactlyInAnyOrder(
-                    "Rent arrears or breach of the tenancy (ground 1): Rent arrears",
-                    "Rent arrears or breach of the tenancy (ground 1): Breach of the tenancy");
+                    "Rent arrears (ground 1)",
+                    "Breach of the tenancy (ground 1)");
             assertThat(payload.getGroundsWithReasons()).extracting(ClaimFormGround::getNameAndNumber)
-                .containsExactly("Rent arrears or breach of the tenancy (ground 1): Breach of the tenancy");
+                .containsExactly("Breach of the tenancy (ground 1)");
         }
 
         @Test
@@ -1029,6 +1029,19 @@ class ClaimFormPayloadBuilderTest {
             assertThat(builder.build(pcsCase).getTenancyTypeLabel()).isEqualTo("Other: Lifetime tenancy");
         }
 
+        @Test
+        void otherRentFrequencyRendersTheFreeTextVerbatim() {
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.ENGLAND);
+            pcsCase.setTenancyLicence(TenancyLicenceEntity.builder()
+                .type(CombinedLicenceType.ASSURED_TENANCY)
+                .rentAmount(new BigDecimal("125.00"))
+                .rentFrequency(RentPaymentFrequency.OTHER)
+                .otherRentFrequency("every 3 weeks")
+                .build());
+
+            assertThat(builder.build(pcsCase).getRentCalculatedDescription()).isEqualTo("every 3 weeks");
+        }
+
         private static Stream<Arguments> tenancyTypeLabels() {
             return Stream.of(
                 Arguments.argumentSet("England assured", LegislativeCountry.ENGLAND,
@@ -1053,7 +1066,8 @@ class ClaimFormPayloadBuilderTest {
                 Arguments.argumentSet("weekly", RentPaymentFrequency.WEEKLY, "Weekly"),
                 Arguments.argumentSet("fortnightly", RentPaymentFrequency.FORTNIGHTLY, "Fortnightly"),
                 Arguments.argumentSet("monthly", RentPaymentFrequency.MONTHLY, "Monthly"),
-                Arguments.argumentSet("other", RentPaymentFrequency.OTHER, "Other")
+                Arguments.argumentSet("other (blank free text falls back to label)",
+                    RentPaymentFrequency.OTHER, "Other")
             );
         }
 
