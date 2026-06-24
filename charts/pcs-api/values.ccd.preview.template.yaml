@@ -20,6 +20,7 @@ java:
     ELASTIC_SEARCH_HOSTS: "http://{{ .Release.Name }}-es-master:9200"
     CCD_DATA_STORE_URL: http://${SERVICE_NAME}-ccd-data-store-api
     CASE_DOCUMENT_AM_URL: http://${SERVICE_NAME}-cdam
+    ENABLE_ENFORCEMENT: "true"
   secrets:
     PCS_DB_PASSWORD:
       secretRef: "{{ .Values.global.postgresSecret }}"
