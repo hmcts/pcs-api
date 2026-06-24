@@ -49,7 +49,12 @@ export class ActionGenAppsRegistry {
     ['selectApplicant', new GenAppsAction()],
     ['confirmDocumentToUpload', new GenAppsAction()],
     ['uploadFilesGenApps', new GenAppsAction()],
-
+    ['verifyApplicationSubmitted', new GenAppsAction()],
+    ['payClaimFeeGenApps', new GenAppsAction()],
+    ['clickPayNowLinkGenApps', new GenAppsAction()],
+    ['inputPaymentDetails', new GenAppsAction()],
+    ['selectPaymentOptions', new GenAppsAction()],
+    ['confirmPaymentGenApps', new GenAppsAction()],
   ]);
 
   static getAction(actionName: string): IAction {

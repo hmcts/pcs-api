@@ -3,8 +3,8 @@ import {caseNumber} from '@utils/actions/custom-actions/createCase.action';
 import {test} from '@utils/test-fixtures';
 import {createCaseApiData, submitCaseApiData} from '@data/api-data';
 import {caseSummary, user} from '@data/page-data';
-import {staff} from '@data/user-data/staff.user.data';
-import {judicialEmails} from '@data/user-data/judicial.user.data';
+import {staff, staffUserEmailsForScope} from '@data/user-data/staff.user.data';
+import {judicialUserEmailsForScope} from '@data/user-data/judicial.user.data';
 import {
   addCommentsForFlag,
   manageCaseFlags,
@@ -23,8 +23,8 @@ import {
   UserTestResult
 } from '@utils/common/userTestResults.utils';
 
-const staffUserEmails = Object.values(staff);
-const judicialUserEmails = Object.values(judicialEmails);
+const staffUserEmails = staffUserEmailsForScope();
+const judicialUserEmails = judicialUserEmailsForScope();
 const ACCESS_CONTROL_TEST_TIMEOUT = 30 * 60 * 1000;
 
 async function clearBrowserSession(page: Page, context: BrowserContext): Promise<void> {
@@ -59,7 +59,7 @@ test.afterEach(async () => {
 test.describe('[Common Component Case Flags] @nightly @CC @caseFlags', async () => {
 
   test('Case Flags - Verify the create and manage case flag menu @smoke', async ({page}) => {
-    await performAction('login', user.ctscAdministrator);
+    await performAction('login', {email: staff.pcs_ctsc_admin_email, password: process.env.IDAM_PCS_USER_PASSWORD});
     await dismissCookieBanner(page, 'analytics');
     await performAction('navigateToCaseSummary');
     await performAction('select', caseSummary.nextStepEventList, caseSummary.createFlagsEvent);
@@ -71,7 +71,7 @@ test.describe('[Common Component Case Flags] @nightly @CC @caseFlags', async () 
     await performAction('clickButton', manageCaseFlags.cancelButton);
   });
   test('Case Flags - Create case level Flag', async ({page}) => {
-    await performAction('login', user.ctscAdministrator);
+    await performAction('login', {email: staff.pcs_ctsc_admin_email, password: process.env.IDAM_PCS_USER_PASSWORD});
     await dismissCookieBanner(page, 'analytics');
     await performAction('navigateToCaseSummary');
     await performAction('select', caseSummary.nextStepEventList, caseSummary.createFlagsEvent);
@@ -128,7 +128,7 @@ test.describe('[Common Component Case Flags] @nightly @CC @caseFlags', async () 
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage case flags');
   });
   test('Case Flags - Create Party Level Case Flag', async ({page}) => {
-    await performAction('login', user.ctscAdministrator);
+    await performAction('login', {email: staff.pcs_ctsc_admin_email, password: process.env.IDAM_PCS_USER_PASSWORD});
     await dismissCookieBanner(page, 'analytics');
     await performAction('navigateToCaseSummary');
     await performAction('select', caseSummary.nextStepEventList, caseSummary.createFlagsEvent);
@@ -192,7 +192,7 @@ test.describe('[Common Component Case Flags] @nightly @CC @caseFlags', async () 
   });
 });
 
-test.describe('[Common Component Case Flags - Access Management] @CC @caseFlags @release', async () => {
+test.describe('[Common Component Case Flags - Access Management] @nightly @caseFlags', async () => {
   test.describe.configure({ retries: 0 });
   test('Staff users can create, manage and view case-level and party-level flags', async ({page, context}) => {
     test.setTimeout(ACCESS_CONTROL_TEST_TIMEOUT);
@@ -246,7 +246,7 @@ test.describe('[Common Component Case Flags - Access Management] @CC @caseFlags 
     logUserTestResultsAndAssert('JUDICIAL USER RESULTS', results);
   });
 
-  test('Solicitor user cannot view, create or manage case-level and party-level flags', async ({page, context}) => {
+  test('Solicitor user cannot view, create or manage case-level and party-level flags @CC', async ({page, context}) => {
     const {email, password} = user.claimantSolicitor;
     await performAction('login', {email, password});
     await dismissCookieBanner(page, 'analytics');
@@ -259,7 +259,7 @@ test.describe('[Common Component Case Flags - Access Management] @CC @caseFlags 
     await clearBrowserSession(page, context);
   });
 
-  test('User with Caseworker IDAM role without AM roles cannot view, create or manage case-level and party-level flags', async ({page, context}) => {
+  test('User with Caseworker IDAM role without AM roles cannot view, create or manage case-level and party-level flags @CC', async ({page, context}) => {
     const {email, password} = user.caseworker;
     await performAction('login', {email, password});
     await dismissCookieBanner(page, 'analytics');
