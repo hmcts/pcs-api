@@ -203,9 +203,15 @@ public class ClaimEntity {
 
     private LocalDateTime claimIssuedDate;
 
-    @OneToOne(mappedBy = "claim", cascade = ALL, orphanRemoval = true)
+    @Builder.Default
+    @OneToMany(mappedBy = "claim", cascade = ALL, orphanRemoval = true)
     @JsonManagedReference
-    private FeePaymentEntity feePayment;
+    private List<FeePaymentEntity> feePayments = new ArrayList<>();
+
+    public void addFeePayment(FeePaymentEntity feePayment) {
+        feePayments.add(feePayment);
+        feePayment.setClaim(this);
+    }
 
     public void setAsbProhibitedConductEntity(AsbProhibitedConductEntity asbProhibitedConductEntity) {
         if (this.asbProhibitedConductEntity != null) {
