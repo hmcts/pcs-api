@@ -88,6 +88,7 @@ public class CounterClaimSubmitConfirmationService {
             .ccdCaseNumber(String.valueOf(caseReference))
             .caseReference(caseReference)
             .responsiblePartyId(responsibleParty.getId())
+            .responsiblePartyName(partyService.getPartyName(responsibleParty))
             .paymentCallbackHandlerType(COUNTER_CLAIM_ISSUE)
             .relatedEntityId(counterClaimEntity.getId())
             .build();

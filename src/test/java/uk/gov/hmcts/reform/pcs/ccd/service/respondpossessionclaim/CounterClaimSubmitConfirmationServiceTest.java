@@ -150,8 +150,11 @@ class CounterClaimSubmitConfirmationServiceTest {
             .version(1)
             .build();
 
+        String currentUserPartyName = "Current user party name";
+
         when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
         when(partyService.getPartyEntityByIdamId(USER_ID, CASE_REFERENCE)).thenReturn(partyEntity);
+        when(partyService.getPartyName(partyEntity)).thenReturn(currentUserPartyName);
         when(counterClaimFeeCalculator.resolveFeeType(counterClaim)).thenReturn(FeeType.COUNTER_CLAIM_RANGED);
         when(counterClaimFeeCalculator.resolveFeeLookupAmountInPounds(counterClaim))
             .thenReturn(new BigDecimal("2500.00"));
@@ -169,6 +172,7 @@ class CounterClaimSubmitConfirmationServiceTest {
         assertThat(taskData.getCcdCaseNumber()).isEqualTo(String.valueOf(CASE_REFERENCE));
         assertThat(taskData.getCaseReference()).isEqualTo(CASE_REFERENCE);
         assertThat(taskData.getResponsiblePartyId()).isEqualTo(PARTY_ID);
+        assertThat(taskData.getResponsiblePartyName()).isEqualTo(currentUserPartyName);
         assertThat(taskData.getPaymentCallbackHandlerType()).isEqualTo(COUNTER_CLAIM_ISSUE);
         assertThat(taskData.getRelatedEntityId()).isEqualTo(COUNTER_CLAIM_ID);
 
