@@ -13,12 +13,9 @@
 --   party_attribute_assertion.evidence_document_id (document),
 --   case_notification.provider_notification_id (Gov Notify), draft.draft_case_data
 --   idam_user_id / party_id.
-
--- ===========================================================================
--- 0. Clear-down (whole case graph cascades from pcs_case; draft is separate)
--- ===========================================================================
-TRUNCATE TABLE pcs_case CASCADE;
-TRUNCATE TABLE draft.draft_case_data CASCADE;
+--
+-- Clear-down is performed once in V128 (single TRUNCATE of every case-data table,
+-- reference tables excluded); all tables below are already empty here.
 
 -- ===========================================================================
 -- 1. Primary-key swaps: uuid -> bigint identity
