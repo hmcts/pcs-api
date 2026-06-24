@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task;
 
 import org.springframework.stereotype.Component;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.Task;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.TaskGroup;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.TaskGroupId;
@@ -39,9 +40,12 @@ public class DocumentsTaskGroupEvaluator implements TaskGroupEvaluator {
     }
 
     private boolean hasDocuments(DashboardContext ctx) {
+        // The defendant access code pin pack is a postal letter, not a case-viewable document, so it is
+        // excluded here (matching its exclusion from the case file view) and never enables "View documents".
         return ctx != null
             && ctx.caseEntity() != null
             && ctx.caseEntity().getDocuments() != null
-            && !ctx.caseEntity().getDocuments().isEmpty();
+            && ctx.caseEntity().getDocuments().stream()
+                .anyMatch(document -> document.getType() != DocumentType.DEFENDANT_ACCESS_CODE);
     }
 }

@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task;
 
 import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.Task;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.TaskGroup;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.TaskGroupId;
@@ -41,6 +42,18 @@ class DocumentsTaskGroupEvaluatorTest {
     void shouldMarkViewDocumentsAsNotAvailableWhenCaseHasNoDocuments() {
         PcsCaseEntity caseEntity = PcsCaseEntity.builder()
             .documents(List.of())
+            .build();
+
+        TaskGroup taskGroup = underTest.evaluate(new DashboardContext(100L, caseEntity, null, false, false));
+
+        assertTaskStatuses(taskGroup, TaskStatus.NOT_AVAILABLE);
+    }
+
+    @Test
+    void shouldMarkViewDocumentsAsNotAvailableWhenOnlyDocumentIsDefendantAccessCodePinPack() {
+        PcsCaseEntity caseEntity = PcsCaseEntity.builder()
+            .documents(List.of(
+                DocumentEntity.builder().type(DocumentType.DEFENDANT_ACCESS_CODE).build()))
             .build();
 
         TaskGroup taskGroup = underTest.evaluate(new DashboardContext(100L, caseEntity, null, false, false));
