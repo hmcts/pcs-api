@@ -238,6 +238,9 @@ access-code:
     backoff-delay-seconds: ${ACCESS_CODE_BACKOFF_DELAY_SECONDS:3600s}
 
 claim-form:
+  # TEMP/DEMO ONLY: when true, claim-form generation throws so the scheduler failure path
+  # (scheduled_tasks retries + claim_activity_log FAILURE row) can be demonstrated. Default off.
+  force-failure: ${CLAIM_FORM_FORCE_FAILURE:false}
   request:
     max-retries: ${CLAIM_FORM_MAX_RETRIES:5}
     backoff-delay-seconds: ${CLAIM_FORM_BACKOFF_DELAY_SECONDS:3600s}

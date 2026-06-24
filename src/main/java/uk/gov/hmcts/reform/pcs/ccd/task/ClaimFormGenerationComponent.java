@@ -32,17 +32,22 @@ public class ClaimFormGenerationComponent {
     private final ClaimActivityLogService claimActivityLogService;
     private final int maxRetries;
     private final Duration backoffDelay;
+    // TEMP/DEMO ONLY: forces the failure path so scheduled_tasks retries and the
+    // claim_activity_log FAILURE row can be demonstrated on a PR pod. Default off.
+    private final boolean forceFailure;
 
     public ClaimFormGenerationComponent(
         ClaimFormService claimFormService,
         ClaimActivityLogService claimActivityLogService,
         @Value("${claim-form.request.max-retries}") int maxRetries,
-        @Value("${claim-form.request.backoff-delay-seconds}") Duration backoffDelay
+        @Value("${claim-form.request.backoff-delay-seconds}") Duration backoffDelay,
+        @Value("${claim-form.force-failure:false}") boolean forceFailure
     ) {
         this.claimFormService = claimFormService;
         this.claimActivityLogService = claimActivityLogService;
         this.maxRetries = maxRetries;
         this.backoffDelay = backoffDelay;
+        this.forceFailure = forceFailure;
     }
 
     /**
@@ -62,6 +67,11 @@ public class ClaimFormGenerationComponent {
                 log.debug("Starting claim form generation for case: {}", caseReference);
 
                 try {
+                    if (forceFailure) {
+                        // TEMP/DEMO ONLY (CLAIM_FORM_FORCE_FAILURE=true): exercise the failure path.
+                        throw new IllegalStateException(
+                            "Forced claim form generation failure for demo (CLAIM_FORM_FORCE_FAILURE)");
+                    }
                     claimFormService.generateAndAttach(caseReference);
                     log.info("Claim form generated and attached for case {}", caseReference);
                     return new CompletionHandler.OnCompleteRemove<>();
