@@ -8,8 +8,28 @@ import { expect, test } from '@utils/test-fixtures';
 import { createCaseApiData, submitCaseApiData } from '@data/api-data';
 import { getCaseTypeId } from '@utils/common/caseType.utils';
 import { VERY_LONG_TIMEOUT } from 'playwright.config';
-import { cancelPayment, caseSummary, confirmYourPayment, enterPaymentDetails, serviceRequest } from '@data/page-data';
+import {
+  cancelPayment,
+  caseSummary,
+  confirmYourPayment,
+  enterPaymentDetails, home,
+  serviceRequest
+} from '@data/page-data';
 import { history } from '@data/page-data/history.page.data';
+import {BrowserContext, Page} from "@playwright/test";
+import {refundAndRemission} from "@data/user-data/staff.user.data";
+
+async function clearBrowserSession(page: Page, context: BrowserContext): Promise<void> {
+  await context.clearCookies();
+  await page.evaluate(() => {
+    try {
+      localStorage.clear();
+      sessionStorage.clear();
+    } catch {
+      // Ignore if storage is not accessible
+    }
+  });
+}
 
 test.beforeEach(async ({ page }) => {
   initializeExecutor(page);
@@ -29,7 +49,7 @@ test.afterEach(async () => {
   }
 });
 
-test.describe('[Common Component Fee And Pay] @nightly @CC @caseFlags' , async () => {
+test.describe('[Common Component Fee And Pay] @nightly @CC @feeAndPay' , async () => {
   test('Fee And Pay - Pay by account PBA', async () => {
     await performAction('clickPayNowLink', serviceRequest.payNowLink);
     await performAction('selectPaymentTypePBA', {
@@ -53,7 +73,7 @@ test.describe('[Common Component Fee And Pay] @nightly @CC @caseFlags' , async (
     });
   });
 
-  test('Fee And Pay - Pay by Card @nightly @feeAndPay', async () => {
+  test('Fee And Pay - Pay by Card', async () => {
     await performAction('clickPayNowLink', serviceRequest.payNowLink);
     await performAction('selectPaymentByCard', {
       amountLabel: serviceRequest.amountToPayLabel,
@@ -87,7 +107,7 @@ test.describe('[Common Component Fee And Pay] @nightly @CC @caseFlags' , async (
     });
   });
 
-  test('Fee And Pay - Cancel Payment from You Card Details Page @nightly @feeAndPay', async () => {
+  test('Fee And Pay - Cancel Payment from You Card Details Page', async () => {
     await performAction('clickPayNowLink', serviceRequest.payNowLink);
     await performAction('selectPaymentByCard', {
       amountLabel: serviceRequest.amountToPayLabel,
@@ -108,7 +128,7 @@ test.describe('[Common Component Fee And Pay] @nightly @CC @caseFlags' , async (
     });
   });
 
-  test('Fee And Pay - Cancel Payment from Confirm Card Details Page @nightly @feeAndPay', async () => {
+  test('Fee And Pay - Cancel Payment from Confirm Card Details Page', async () => {
     await performAction('clickPayNowLink', serviceRequest.payNowLink);
     await performAction('selectPaymentByCard', {
       amountLabel: serviceRequest.amountToPayLabel,
@@ -141,5 +161,96 @@ test.describe('[Common Component Fee And Pay] @nightly @CC @caseFlags' , async (
       endState: history.endStateTableHeader,
       historyStatus: history.pendingCaseIssuedTableHeader
     });
+  });
+});
+
+test.describe('[Common Component Fee And Pay Refund and Remission] @release @CC @feeAndPay' , async () => {
+  test('Fee And Pay - Remission Process', async ({ page, context }) => {
+    await performAction('clickPayNowLink', serviceRequest.payNowLink);
+    await performAction('selectPaymentTypePBA', {
+      amountLabel: serviceRequest.amountToPayLabel,
+      expectedAmount: serviceRequest.amount404,
+      payByOption: serviceRequest.payByAccountRadioOption,
+      pbaLabel: serviceRequest.selectPBALabel,
+      pbaValue: serviceRequest.pbaIndex1,
+      referenceLabel: serviceRequest.pbaReferenceLable,
+      referenceText: serviceRequest.pbaReferenceInputText,
+      confirmButton: serviceRequest.confirmPaymentButton,
+    });
+    await performValidation('mainHeader', serviceRequest.paymentSuccessMainHeader);
+    await clearBrowserSession(page, context);
+    //The Refund button is enabled only when the payment is at least 6 days old.
+    //Therefore, the following API is used to backdate a payment made today.
+    await performAction('backDateTheCasePaymentAPI');
+    await performAction('login', { email: refundAndRemission.requesterEmail, password: process.env.IDAM_PCS_USER_PASSWORD });
+    await performAction('clickButton', home.globalSearchTab);
+    await performAction('searchByCaseReference', process.env.CASE_NUMBER);
+    await performAction('requestRemission');
+    await performValidation('mainHeader', serviceRequest.refundSubmittedHeader);
+    await performAction('signOut');
+    await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
+    await performAction('login', { email: refundAndRemission.approverEmail, password: process.env.IDAM_PCS_USER_PASSWORD });
+    await performAction('clickButton', home.globalSearchTab);
+    await performAction('searchByCaseReference', process.env.CASE_NUMBER);
+    await performAction('approveRefund');
+  });
+
+  test('Fee And Pay - Refund Process', async ({ page, context }) => {
+    await performAction('clickPayNowLink', serviceRequest.payNowLink);
+    await performAction('selectPaymentTypePBA', {
+      amountLabel: serviceRequest.amountToPayLabel,
+      expectedAmount: serviceRequest.amount404,
+      payByOption: serviceRequest.payByAccountRadioOption,
+      pbaLabel: serviceRequest.selectPBALabel,
+      pbaValue: serviceRequest.pbaIndex1,
+      referenceLabel: serviceRequest.pbaReferenceLable,
+      referenceText: serviceRequest.pbaReferenceInputText,
+      confirmButton: serviceRequest.confirmPaymentButton,
+    });
+    await performValidation('mainHeader', serviceRequest.paymentSuccessMainHeader);
+    await clearBrowserSession(page, context);
+    //The Refund button is enabled only when the payment is at least 6 days old.
+    //Therefore, the following API is used to backdate a payment made today.
+    await performAction('backDateTheCasePaymentAPI');
+    await performAction('login', { email: refundAndRemission.requesterEmail, password: process.env.IDAM_PCS_USER_PASSWORD });
+    await performAction('clickButton', home.globalSearchTab);
+    await performAction('searchByCaseReference', process.env.CASE_NUMBER);
+    await performAction('requestRefund');
+    await performValidation('mainHeader', serviceRequest.refundSubmittedHeader);
+    await performAction('signOut');
+    await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
+    await performAction('login', { email: refundAndRemission.approverEmail, password: process.env.IDAM_PCS_USER_PASSWORD });
+    await performAction('clickButton', home.globalSearchTab);
+    await performAction('searchByCaseReference', process.env.CASE_NUMBER);
+    await performAction('approveRefund');
+  });
+
+  test('Fee And Pay - Refund Reject Process', async ({ page, context }) => {
+    await performAction('clickPayNowLink', serviceRequest.payNowLink);
+    await performAction('selectPaymentTypePBA', {
+      amountLabel: serviceRequest.amountToPayLabel,
+      expectedAmount: serviceRequest.amount404,
+      payByOption: serviceRequest.payByAccountRadioOption,
+      pbaLabel: serviceRequest.selectPBALabel,
+      pbaValue: serviceRequest.pbaIndex1,
+      referenceLabel: serviceRequest.pbaReferenceLable,
+      referenceText: serviceRequest.pbaReferenceInputText,
+      confirmButton: serviceRequest.confirmPaymentButton,
+    });
+    await performValidation('mainHeader', serviceRequest.paymentSuccessMainHeader);
+    await clearBrowserSession(page, context);
+    //The Refund button is enabled only when the payment is at least 6 days old.
+    //Therefore, the following API is used to backdate a payment made today.
+    await performAction('backDateTheCasePaymentAPI');
+    await performAction('login', { email: refundAndRemission.requesterEmail, password: process.env.IDAM_PCS_USER_PASSWORD });
+    await performAction('clickButton', home.globalSearchTab);
+    await performAction('searchByCaseReference', process.env.CASE_NUMBER);
+    await performAction('requestRefund');
+    await performValidation('mainHeader', serviceRequest.refundSubmittedHeader);
+    await performAction('signOut');
+    await performAction('login', { email: refundAndRemission.approverEmail, password: process.env.IDAM_PCS_USER_PASSWORD });
+    await performAction('clickButton', home.globalSearchTab);
+    await performAction('searchByCaseReference', process.env.CASE_NUMBER);
+    await performAction('rejectRefund');
   });
 });
