@@ -213,6 +213,7 @@ During test execution, temporary users are automatically created and tracked in 
 Update ./config/global-setup.config with list of roles for which temporary users needs to be created along with the key/name to
 identify them.
 
+
 ### Running with Wiremock in local environment
 
 The docker-compose-wiremock.yml in the project root will start wiremock with mappings
