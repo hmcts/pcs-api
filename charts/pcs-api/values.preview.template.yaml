@@ -7,6 +7,7 @@ java:
   keyVaults:
     pcs:
       secrets:
+        - name: app-insights-connection-string
         - name: pcs-api-s2s-secret
           alias: PCS_API_S2S_SECRET
         - name: govnotify-test-key
@@ -39,6 +40,7 @@ java:
     CCD_SDK_DECENTRALISED: "true"
     PAYMENTS_API_URL: http://payment-api-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal
     PAY_CALLBACK_URL: https://${SERVICE_NAME}.preview.platform.hmcts.net/payment-update
+    PCS_FRONTEND_URL: ${PCS_FRONTEND_URL}
   secrets:
     PCS_DB_PASSWORD:
       secretRef: "{{ .Values.global.postgresSecret }}"
