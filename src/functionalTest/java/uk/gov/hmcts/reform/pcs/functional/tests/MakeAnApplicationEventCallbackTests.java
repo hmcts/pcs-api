@@ -75,3 +75,19 @@ public class MakeAnApplicationEventCallbackTests extends BaseApi {
             "/responses/makeAnApplication-startEventCallbackResponse.json");
     }
 }
+
+@Title("makeAnApplication submit event callback test - returns 200")
+@Test
+@Order(2)
+void makeAnApplicationSubmitEventCallbackTest() {
+    apiSteps.aRequestIsPreparedWithAppropriateValues();
+    apiSteps.theRequestContainsAValidIdamToken();
+    apiSteps.theRequestContainsAValidServiceTokenFor(PCS_FRONTEND);
+    apiSteps.theRequestContainsTheQueryParameter("eventId", "makeAnApplication");
+    apiSteps.theRequestContainsARequestBody("/requests/makeAnApplication-submitEventCallbackRequest.json");
+
+    apiSteps.aCallIsSubmittedToTheEndpointUsingPOSTRequest("/callbacks/about-to-submit-callback");
+
+    apiSteps.checkStatusCodeIs(200);
+    apiSteps.theResponseBodyMatchesTheExpectedResponse("/responses/makeAnApplication-submitEventCallbackResponse.json");
+}
