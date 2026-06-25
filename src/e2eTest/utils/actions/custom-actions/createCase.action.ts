@@ -1,5 +1,5 @@
 import {actionData, actionRecord, IAction} from '@utils/interfaces';
-import {expect, Page} from '@playwright/test';
+import test, {expect, Page} from '@playwright/test';
 import {getCaseTypeId} from '@utils/common/caseType.utils';
 import {performAction, performActions, performValidation} from '@utils/controller';
 import {
@@ -53,7 +53,7 @@ import {
   checkingNoticeWales,
   addCaseNote,
 } from '@data/page-data-figma';
-import {MEDIUM_TIMEOUT, VERY_LONG_TIMEOUT} from 'playwright.config';
+import {MEDIUM_TIMEOUT, SHORT_TIMEOUT, VERY_LONG_TIMEOUT} from 'playwright.config';
 import {compareMaps} from '@utils/common/compareMaps.util';
 import {caseInfo} from './createCaseAPI.action';
 import {createCaseApiData} from '@data/api-data';
@@ -129,6 +129,7 @@ export class CreateCaseAction implements IAction {
       ['validateCaseNotesDetails', () => this.validateCaseNotesDetails(page, fieldName as actionRecord)],
       ['validateCaseSummaryDetails', () => this.validateCaseSummaryDetails(page, fieldName as actionRecord)],
       ['validateCaseListTable', () => this.validateCaseListTable(page, fieldName as actionRecord)],
+      ['validateTabAccess', () => this.validateTabAccess(page, fieldName as actionRecord)],
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -1664,6 +1665,16 @@ export class CreateCaseAction implements IAction {
     }
     return defendantText;
 
+  }
+
+  public async validateTabAccess(page: Page, tab: actionRecord) {
+    await test.step(`Tab access check for user "${tab.user}"`, async () => {
+      const tabLoc = page.locator('div.mat-tab-label-content');
+      await expect(tabLoc.first()).toBeVisible({timeout : SHORT_TIMEOUT});
+      const tabs = await tabLoc.allTextContents();
+      expect(tab.tabs).toEqual(tabs);
+
+    });
   }
 
 }

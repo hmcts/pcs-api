@@ -4,7 +4,7 @@ import { initializeExecutor, performAction, performValidation } from '@utils/con
 import { caseInfo } from '@utils/actions/custom-actions/createCaseAPI.action';
 import { VERY_LONG_TIMEOUT } from 'playwright.config';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
-import { home } from '@data/page-data';
+import { home, user } from '@data/page-data';
 import { createCaseApiWalesData } from '@data/api-data/createCaseWales.api.data';
 import { submitCaseApiDataWales } from '@data/api-data/submitCaseWales.api.data';
 
@@ -12,7 +12,7 @@ test.beforeEach(async ({ page }, testInfo) => {
   initializeExecutor(page);
   await performAction('createCaseAPI', { data: createCaseApiWalesData.createCasePayload });
   await performAction('submitCaseAPI', { data: submitCaseApiDataWales.submitCasePayloadCaseSummary });
-  await performAction('getCaseAPI', 'Claim Submission Time');
+  await performAction('getCaseAPI', {req:'Claim Submission Time',email: user.defendantSolicitor.email, password: user.defendantSolicitor.password});
   await performAction('fetchCurrentUserAPI', 'Claimant');
 
   await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/${getCaseTypeId()}/${process.env.CASE_NUMBER}#Summary`);

@@ -9,46 +9,34 @@ import { caseSummary, home, user } from '@data/page-data';
 import { addCaseNote } from '@data/page-data-figma';
 import { checkYourAnswersCaseNote } from '@data/page-data/checkYourAnswersCaseNote.page.data';
 import { formatCaseStateText, getCurrentBSTTime } from '@utils/common/string.utils';
-import { Page, BrowserContext } from '@playwright/test';
-
-async function clearBrowserSession(page: Page, context: BrowserContext): Promise<void> {
-  await context.clearCookies();
-  await page.evaluate(() => {
-    try {
-      localStorage.clear();
-      sessionStorage.clear();
-    } catch {
-      // Ignore if storage is not accessible
-    }
-  });
-}
 
 test.beforeEach(async ({ page }, testInfo) => {
   initializeExecutor(page);
   if (testInfo.title.includes('Summary')) {
     await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
     await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayloadCaseSummary });
-    await performAction('getCaseAPI', 'Claim Submission Time');
+    await performAction('getCaseAPI', {req:'Claim Submission Time',email: user.defendantSolicitor.email, password: user.defendantSolicitor.password});
     await performAction('fetchCurrentUserAPI', 'Claimant');
   } else if (testInfo.title.includes('Details')) {
     await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
     await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayloadCaseDetails });
-    await performAction('getCaseAPI', 'Claim Submission Time');
+    await performAction('getCaseAPI', {req:'Claim Submission Time',email: user.defendantSolicitor.email, password: user.defendantSolicitor.password});
     await performAction('fetchCurrentUserAPI', 'Claimant');
   } else if (testInfo.title.includes('Notes')) {
     await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
     await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayloadCaseDetails });
-    await performAction('getCaseAPI', 'Claim Submission Time');
+    await performAction('getCaseAPI', {req:'Claim Submission Time',email: user.defendantSolicitor.email, password: user.defendantSolicitor.password});
     await performAction('fetchCurrentUserAPI', 'Claimant');
   } else if (testInfo.title.includes('CaseList')) {
     await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
     await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayload });
-    await performAction('getCaseAPI', 'Claim Submission Time');
+    await performAction('getCaseAPI', {req:'Claim Submission Time',email: user.defendantSolicitor.email, password: user.defendantSolicitor.password});
     await performAction('fetchCurrentUserAPI', 'Claimant');
   } else {
     await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
     await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayloadCaseTab });
-    await performAction('getCaseAPI', 'Link Solicitor');
+    await performAction('getCaseAPI', {req:'Link Solicitor',email: user.defendantSolicitor.email, password: user.defendantSolicitor.password});
+    //await performAction('getCaseAPI', 'Link Solicitor');
     await performAction('fetchCurrentUserAPI', 'Defendant');
   }
 
@@ -344,19 +332,6 @@ test.describe('[Case tabs - England Journey] @nightly', async () => {
   test('Case tabs - CaseList view test @MAC @regression', async () => {
     await performValidation('mainHeader', home.mainHeader);
     await performAction('filterCaseFromCaseList', formatCaseStateText(caseInfo.state));
-    await performAction('validateCaseListTable',{
-      createPayload: createCaseApiData.createCasePayload,
-      submitPayload: submitCaseApiData.submitCasePayload,
-    })
-  });
-
-  test('Case tabs - Check for update access of Users @MAC @regression', async ({page,context}) => {
-    await clearBrowserSession(page, context);
-    await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}`); 
-    await performAction('login', { email: user.claimantSolicitor.email, password: process.env.IDAM_PCS_USER_PASSWORD });
-    await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/${getCaseTypeId()}/${process.env.CASE_NUMBER}#Summary`);
-    await performValidation('mainHeader', home.caseSummary);
-
     await performAction('validateCaseListTable',{
       createPayload: createCaseApiData.createCasePayload,
       submitPayload: submitCaseApiData.submitCasePayload,

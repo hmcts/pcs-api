@@ -1,7 +1,7 @@
 import Axios from 'axios';
 import { actionData, actionRecord, IAction } from '@utils/interfaces';
 import { Page } from '@playwright/test';
-import { createCaseApiData, createCaseEventTokenApiData, submitCaseApiData, submitCaseEventTokenApiData, caseUserRoleDeletionApiData, enforceOrderEventTokenApiData, enforceWarrantApiData, getCaseApiData } from '@data/api-data';
+import { createCaseApiData, createCaseEventTokenApiData, submitCaseApiData, submitCaseEventTokenApiData, caseUserRoleDeletionApiData, enforceOrderEventTokenApiData, enforceWarrantApiData, getCaseApiData, submitCaseEventTokenDynamicApiData, createCaseEventTokenDynamicApiData } from '@data/api-data';
 import { user } from '@data/user-data';
 import { caseNumber } from './createCase.action';
 import { performAction } from '@utils/controller';
@@ -19,7 +19,9 @@ export class CreateCaseAPIAction implements IAction {
       ['deleteCaseRole', () => this.deleteCaseRole(fieldName)],
       ['enforceCaseAPI', () => this.enforceCaseAPI(fieldName)],
       ['fetchCurrentUserAPI', () => this.fetchCurrentUserAPI(fieldName)],
-      ['getCaseAPI', () => this.getCaseAPI(fieldName)],
+      ['getCaseAPI', () => this.getCaseAPI(fieldName as actionRecord)],
+      ['createCaseAPIDynamicUsers', () => this.createCaseAPIDynamicUsers(fieldName as actionRecord)],
+      ['submitCaseAPIDynamicUsers', () => this.submitCaseAPIDynamicUsers(fieldName as actionRecord)],
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -172,15 +174,15 @@ export class CreateCaseAPIAction implements IAction {
     }
   }
 
-  private async getCaseAPI(getDetails: actionData): Promise<void> {
-    const getCaseApi = Axios.create(createCaseEventTokenApiData.createCaseEventTokenApiInstance());
+  private async getCaseAPI(getDetails: actionRecord): Promise<void> {
+    const getCaseApi = Axios.create(createCaseEventTokenDynamicApiData.createCaseEventTokenApiInstance());
     try {
       const createResponse = await getCaseApi.get(getCaseApiData.getCaseApiEndPoint());
-      if (typeof getDetails === 'string' && getDetails === 'Claim Submission Time') {
+      if (typeof getDetails.req === 'string' && getDetails.req === 'Claim Submission Time') {
         process.env.Submission_TIME = formatDateTimeBST(createResponse.data.last_state_modified_on);
         console.log(`\n✅ The claim was submitted on "${process.env.Submission_TIME}"`)
       } else {
-        await this.generateSolicitorAccessToken();
+        await this.generateSolicitorAccessToken(getDetails.email as string, getDetails.password as string);
         const allDefendants = createResponse.data.data.allDefendants;
         const defendantIds = allDefendants.map((d: any) => d.id);
         if (defendantIds.length === 0) throw new Error(`No Defendants ID retrieved and the status is ${createResponse.status}`);
@@ -188,7 +190,7 @@ export class CreateCaseAPIAction implements IAction {
         for (const defendantId of defendantIds) {
           process.env.Defendant_ID = defendantId;
 
-          await performAction('linkSolicitorAPI');
+          await performAction('linkSolicitorAPI',getDetails.email as string);
         }
         console.log(`\n✅ GET DEFENDANT ID SUCCESSFUL : STATUS ${createResponse.status}`);
       }    
@@ -214,11 +216,11 @@ export class CreateCaseAPIAction implements IAction {
 
   }
 
-  private async generateSolicitorAccessToken(): Promise<void> {
+  private async generateSolicitorAccessToken(email:string,password:string): Promise<void> {
     const { IdamUtils } = await import('@hmcts/playwright-common');
     process.env.SOLICITOR_ACCESS_TOKEN = await new IdamUtils().generateIdamToken({
-      username: user.defendantSolicitor.email,
-      password: user.defendantSolicitor.password,
+      username: email,
+      password: password,
       grantType: 'password',
       clientId: 'pcs-api',
       clientSecret: process.env.PCS_API_IDAM_SECRET as string,
@@ -264,10 +266,10 @@ export class CreateCaseAPIAction implements IAction {
   }
 
   private async createCaseAPIDynamicUsers(caseData: actionRecord): Promise<void> {
-    await this.getAccessToken(caseData.userName as string, caseData.password as string);
-    const createCaseApi = Axios.create(createCaseEventTokenApiData.createCaseEventTokenApiInstance());
+    await this.getAccessToken(caseData.email as string, caseData.password as string);
+    const createCaseApi = Axios.create(createCaseEventTokenDynamicApiData.createCaseEventTokenApiInstance());
     try {
-      process.env.CREATE_EVENT_TOKEN = (await createCaseApi.get(createCaseEventTokenApiData.createCaseEventTokenApiEndPoint)).data.token;
+      process.env.CREATE_EVENT_TOKEN = (await createCaseApi.get(createCaseEventTokenDynamicApiData.createCaseEventTokenApiEndPoint)).data.token;
       const createCasePayloadData = typeof caseData === "object" && "data" in caseData ? caseData.data : caseData;
 
       const createResponse = await createCaseApi.post(createCaseApiData.createCaseApiEndPoint, {
@@ -299,11 +301,12 @@ export class CreateCaseAPIAction implements IAction {
     }
   }
 
-  private async submitCaseAPIDynamicUsers(caseData: actionData): Promise<void> {
-    const submitCaseApi = Axios.create(submitCaseEventTokenApiData.submitCaseEventTokenApiInstance());
+  private async submitCaseAPIDynamicUsers(caseData: actionRecord): Promise<void> {
+    await this.getAccessToken(caseData.email as string, caseData.password as string);
+    const submitCaseApi = Axios.create(submitCaseEventTokenDynamicApiData.submitCaseEventTokenApiInstance());
     let submitCasePayloadData;
     try {
-      process.env.SUBMIT_EVENT_TOKEN = (await submitCaseApi.get(submitCaseEventTokenApiData.submitCaseEventTokenApiEndPoint())).data.token;
+      process.env.SUBMIT_EVENT_TOKEN = (await submitCaseApi.get(submitCaseEventTokenDynamicApiData.submitCaseEventTokenApiEndPoint())).data.token;
       submitCasePayloadData = typeof caseData === "object" && "data" in caseData ? caseData.data : caseData;
       const submitResponse = await submitCaseApi.post(submitCaseApiData.submitCaseApiEndPoint(), {
         data: submitCasePayloadData,
