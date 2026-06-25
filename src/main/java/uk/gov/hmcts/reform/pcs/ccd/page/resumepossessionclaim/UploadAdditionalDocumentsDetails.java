@@ -46,7 +46,6 @@ public class UploadAdditionalDocumentsDetails implements CcdPageConfiguration {
                    <p class="govuk-body govuk-!-font-size-19">Give your document a name that explains what it is.</p>
                    """
             )
-
             .mandatory(PCSCase::getAdditionalDocuments)
             .label("uploadAdditionalDocuments-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
@@ -63,14 +62,14 @@ public class UploadAdditionalDocumentsDetails implements CcdPageConfiguration {
             .build();
     }
 
-    public List<String> validateDocumentDescription(
-        List<ListValue<AdditionalDocument>> additionalDocs,
+    private List<String> validateDocumentDescription(
+        List<ListValue<AdditionalDocument>> additionalDocuments,
         String sectionLabel) {
 
         List<String> validationErrors = new ArrayList<>();
 
-        for (int i = 0; i < additionalDocs.size(); i++) {
-            String docDescription = additionalDocs.get(i).getValue().getDescription();
+        for (int i = 0; i < additionalDocuments.size(); i++) {
+            String docDescription = additionalDocuments.get(i).getValue().getDescription();
             String sectionHint = "Additional document %d".formatted(i + 1) + "'s " + sectionLabel;
             validationErrors.addAll(textAreaValidationService.validateSingleTextArea(
                 docDescription, sectionHint, TextAreaValidationService.EXTRA_SHORT_TEXT_LIMIT)
