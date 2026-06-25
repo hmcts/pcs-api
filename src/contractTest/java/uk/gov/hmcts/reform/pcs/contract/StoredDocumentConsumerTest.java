@@ -58,7 +58,7 @@ public class StoredDocumentConsumerTest {
         return newJsonBody(body ->
                                body.stringType("classification", "PUBLIC")
                                    .stringType("createdBy", USER_ID)
-                                   .stringType("createdOn", "2026-06-16T12:00:00Z")
+                                   .stringType("createdOn", "2024-01-01T12:00:00Z")
                                    .object(
                                        "_links", links ->
                                            links.object(
