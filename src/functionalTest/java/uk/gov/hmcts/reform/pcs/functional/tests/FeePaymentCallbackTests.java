@@ -25,8 +25,7 @@ import uk.gov.hmcts.reform.pcs.functional.testutils.PayloadLoader;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.*;
 
 @Slf4j
 @Tag("Functional1")
@@ -68,14 +67,10 @@ public class FeePaymentCallbackTests extends BaseApi {
         System.out.println("Case Reference: " + caseReference);
         apiSteps.requestIsPreparedWithAppropriateValues();
 
-        List<Map<String,Object>> payementRefs =  apiSteps.getFeePaymentDetailsForCaseReference(caseReference);
+        List<Map<String,Object>> paymentRefs =  apiSteps.getFeePaymentDetailsForCaseReference(caseReference);
 
-        System.out.println("payement refs count : " + payementRefs);
-        assertNotNull(payementRefs, "Payment references should not be null");
-        assertFalse(payementRefs.isEmpty(), "Payment references should not be empty");
-        Map<String,Object> claimantPayment = payementRefs.getFirst();
-        String requestRefernce = claimantPayment.get("requestReference").toString();
-        System.out.println("Payment Reference: " + requestRefernce);
+        assertNotNull(paymentRefs, "Payment references should not be null");
+        assertFalse(paymentRefs.isEmpty(), "Payment references should not be empty");
 
         String paymentUpdateRequestBody = PayloadLoader.load(
             "/payloads/payment-update-CallbackRequest.json",
@@ -98,19 +93,18 @@ public class FeePaymentCallbackTests extends BaseApi {
         System.out.println("Case Reference: " + caseReference);
         apiSteps.requestIsPreparedWithAppropriateValues();
 
-        List<Map<String,Object>> payementRefs =  apiSteps.getFeePaymentDetailsForCaseReference(caseReference);
+        List<Map<String,Object>> paymentRefs =  apiSteps.getFeePaymentDetailsForCaseReference(caseReference);
 
-        System.out.println("payement refs count : " + payementRefs);
-        assertNotNull(payementRefs, "Payment references should not be null");
-        assertFalse(payementRefs.isEmpty(), "Payment references should not be empty");
-        Map<String,Object> claimantPayment = payementRefs.getFirst();
-        String requestRefernce = claimantPayment.get("requestReference").toString();
-        System.out.println("Payment Reference: " + requestRefernce);
+        assertNotNull(paymentRefs, "Payment references should not be null");
+        assertFalse(paymentRefs.isEmpty(), "Payment references should not be empty");
+        Map<String,Object> claimantPayment = paymentRefs.getFirst();
+        String requestReference = claimantPayment.get("requestReference").toString();
 
         String paymentUpdateRequestBody = PayloadLoader.load(
             "/payloads/payment-update-CallbackRequest.json",
             Map.of("caseReference", "1234123412341234",
-                   "requestReference", requestRefernce)
+                   "requestReference", requestReference
+            )
         );
         apiSteps.requestIsPreparedWithAppropriateValues();
         apiSteps.theRequestContainsValidServiceToken(TestConstants.PCS_API);
@@ -121,30 +115,105 @@ public class FeePaymentCallbackTests extends BaseApi {
 
     @Title("Fee Payment callback return 200 on success")
     @Test
-    @Order(2)
+    @Order(3)
     void feePaymentCallbackSuccess() {
-
+        caseReference = apiSteps.ccdCaseIsCreated("england");
         System.out.println("Case Reference: " + caseReference);
         apiSteps.requestIsPreparedWithAppropriateValues();
 
-        List<Map<String,Object>> payementRefs =  apiSteps.getFeePaymentDetailsForCaseReference(caseReference);
+        List<Map<String,Object>> paymentRefs =  apiSteps.getFeePaymentDetailsForCaseReference(caseReference);
 
-        System.out.println("payement refs count : " + payementRefs);
-        assertNotNull(payementRefs, "Payment references should not be null");
-        assertFalse(payementRefs.isEmpty(), "Payment references should not be empty");
-        Map<String,Object> claimantPayment = payementRefs.getFirst();
-        String requestRefernce = claimantPayment.get("serviceRequestReference").toString();
-        System.out.println("Payment Reference: " + requestRefernce);
+        assertNotNull(paymentRefs, "Payment references should not be null");
+        assertFalse(paymentRefs.isEmpty(), "Payment references should not be empty");
+        Map<String,Object> claimantPayment = paymentRefs.getFirst();
+        String requestReference = claimantPayment.get("serviceRequestReference").toString();
+        System.out.println("Payment Reference: " + requestReference);
 
         String paymentUpdateRequestBody = PayloadLoader.load(
             "/payloads/payment-update-CallbackRequest.json",
-            Map.of("caseReference",  caseReference,
-                   "requestReference", requestRefernce)
+            Map.of("caseReference", caseReference,
+                   "requestReference", requestReference,
+                   "status", "Paid")
         );
         apiSteps.requestIsPreparedWithAppropriateValues();
         apiSteps.theRequestContainsValidServiceToken(TestConstants.PCS_API);
         apiSteps.theRequestContainsBody(paymentUpdateRequestBody);
         apiSteps.callIsSubmittedToTheEndpoint("PaymentUpdate", "PUT");
         apiSteps.checkStatusCode(204);
+
+        List<Map<String,Object>> paymentRefsPostCallback =  apiSteps.getFeePaymentDetailsForCaseReference(caseReference);
+        Map<String,Object> paymentDetails = paymentRefsPostCallback.getFirst();;
+
+        String paymentStatus = paymentDetails.get("paymentStatus").toString();
+        Double paymentAmount = (Double) paymentDetails.get("amount");
+        assertEquals("PAID",paymentStatus);
+        assertEquals(404.00 ,paymentAmount);
+    }
+
+    @Title("Fee Payment callback return 200 on success with payment status Not paid")
+    @Test
+    @Order(4)
+    void feePaymentCallbackSuccessWithStatusNotPaid() {
+        caseReference = apiSteps.ccdCaseIsCreated("england");
+        System.out.println("Case Reference: " + caseReference);
+        apiSteps.requestIsPreparedWithAppropriateValues();
+
+        List<Map<String,Object>> paymentRefs =  apiSteps.getFeePaymentDetailsForCaseReference(caseReference);
+
+        assertNotNull(paymentRefs, "Payment references should not be null");
+        assertFalse(paymentRefs.isEmpty(), "Payment references should not be empty");
+        Map<String,Object> claimantPayment = paymentRefs.getFirst();
+        String requestReference = claimantPayment.get("serviceRequestReference").toString();
+
+        String paymentUpdateRequestBody = PayloadLoader.load(
+            "/payloads/payment-update-CallbackRequest.json",
+            Map.of("caseReference", caseReference,
+                   "requestReference", requestReference,
+                   "status", "Not paid")
+        );
+        apiSteps.requestIsPreparedWithAppropriateValues();
+        apiSteps.theRequestContainsValidServiceToken(TestConstants.PCS_API);
+        apiSteps.theRequestContainsBody(paymentUpdateRequestBody);
+        apiSteps.callIsSubmittedToTheEndpoint("PaymentUpdate", "PUT");
+        apiSteps.checkStatusCode(204);
+
+        List<Map<String,Object>> paymentRefsPostCallback =  apiSteps.getFeePaymentDetailsForCaseReference(caseReference);
+        Map<String,Object> paymentDetails = paymentRefsPostCallback.getFirst();;
+
+        String paymentStatus = paymentDetails.get("paymentStatus").toString();
+        assertEquals("NOT_PAID",paymentStatus);
+    }
+
+    @Title("Fee Payment callback return 200 on success with payment status Partially paid")
+    @Test
+    @Order(4)
+    void feePaymentCallbackSuccessWithStatusPartiallyPaid() {
+        caseReference = apiSteps.ccdCaseIsCreated("england");
+        System.out.println("Case Reference: " + caseReference);
+        apiSteps.requestIsPreparedWithAppropriateValues();
+
+        List<Map<String,Object>> paymentRefs =  apiSteps.getFeePaymentDetailsForCaseReference(caseReference);
+        assertNotNull(paymentRefs, "Payment references should not be null");
+        assertFalse(paymentRefs.isEmpty(), "Payment references should not be empty");
+        Map<String,Object> claimantPayment = paymentRefs.getFirst();
+        String requestReference = claimantPayment.get("serviceRequestReference").toString();
+
+        String paymentUpdateRequestBody = PayloadLoader.load(
+            "/payloads/payment-update-CallbackRequest.json",
+            Map.of("caseReference", caseReference,
+                   "requestReference", requestReference,
+                   "status", "Partially paid")
+        );
+        apiSteps.requestIsPreparedWithAppropriateValues();
+        apiSteps.theRequestContainsValidServiceToken(TestConstants.PCS_API);
+        apiSteps.theRequestContainsBody(paymentUpdateRequestBody);
+        apiSteps.callIsSubmittedToTheEndpoint("PaymentUpdate", "PUT");
+        apiSteps.checkStatusCode(204);
+
+        List<Map<String,Object>> paymentRefsPostCallback =  apiSteps.getFeePaymentDetailsForCaseReference(caseReference);
+        Map<String,Object> paymentDetails = paymentRefsPostCallback.getFirst();;
+
+        String paymentStatus = paymentDetails.get("paymentStatus").toString();
+        assertEquals("PARTIALLY_PAID",paymentStatus);
     }
 }

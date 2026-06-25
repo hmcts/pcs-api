@@ -2,7 +2,7 @@
   "service_request_reference": "${requestReference}",
   "ccd_case_number": "${caseReference}",
   "service_request_amount": 40400,
-  "service_request_status": "Paid",
+  "service_request_status": "${status}",
   "payment": {
     "payment_amount": 2500,
     "payment_reference": "RC-1692-2665-9206-3000",
