@@ -33,7 +33,6 @@ import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
 
 import java.io.IOException;
 import java.util.Optional;
-import java.util.UUID;
 
 @Slf4j
 @Service
@@ -86,8 +85,8 @@ public class PaymentService {
         FeeDto feeDto = paymentRequestMapper.toFeeDto(feesAndPayTaskData.getFeeDetails(),
                                                       feesAndPayTaskData.getVolume());
         CasePaymentRequestDto casePaymentRequest = paymentRequestMapper.toCasePaymentRequest(
-            getResponsiblePartyName(feesAndPayTaskData));
-        log.info("casePaymentRequest: {}", casePaymentRequest);
+            feesAndPayTaskData.getResponsiblePartyName());
+
         long caseReference = feesAndPayTaskData.getCaseReference();
         CreateServiceRequestDTO requestDto = CreateServiceRequestDTO.builder()
             .callBackUrl(callbackUrl)
@@ -153,14 +152,6 @@ public class PaymentService {
             .build();
     }
 
-    private String getResponsiblePartyName(FeesAndPayTaskData feesAndPayTaskData) {
-        UUID responsiblePartyId = feesAndPayTaskData.getResponsiblePartyId();
-        long caseReference = feesAndPayTaskData.getCaseReference();
-
-        PartyEntity responsibleParty = partyService.getPartyEntityByEntityId(responsiblePartyId, caseReference);
-        return partyService.getPartyName(responsibleParty);
-    }
-
     private String writeAsString(FeesAndPayTaskData feesAndPayTaskData) {
         try {
             return objectMapper.writeValueAsString(feesAndPayTaskData);
@@ -204,8 +195,13 @@ public class PaymentService {
                                   ClaimEntity claimEntity, String serviceRequestReference) {
         log.info("Saving New Fee Payment for the case: {} with serviceRequestReference: {}",
                  feesAndPayTaskData.getCaseReference(), serviceRequestReference);
+        PartyEntity responsibleParty = partyService.getPartyEntityByEntityId(
+            feesAndPayTaskData.getResponsiblePartyId(),
+            feesAndPayTaskData.getCaseReference()
+        );
         FeePaymentEntity feePaymentEntity = FeePaymentEntity.builder()
             .claim(claimEntity)
+            .party(responsibleParty)
             .serviceRequestReference(serviceRequestReference)
             .amount(feesAndPayTaskData.getFeeDetails().getFeeAmount())
             .paymentCallbackHandlerType(feesAndPayTaskData.getPaymentCallbackHandlerType())

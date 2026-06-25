@@ -478,6 +478,21 @@ class PcsCaseServiceTest {
         assertThat(pcsCaseEntity.getCaseFlags()).isEmpty();
     }
 
+    @Test
+    void shouldSetClaimIssuedDate() {
+        // Given
+        PcsCaseEntity pcsCaseEntity = stubFindCase();
+        ClaimEntity claimEntity = ClaimEntity.builder().build();
+        when(pcsCaseEntity.getClaims()).thenReturn(List.of(claimEntity));
+
+        // When
+        underTest.setCaseIssuedDate(CASE_REFERENCE);
+
+        // Then
+        verify(pcsCaseRepository).findByCaseReference(CASE_REFERENCE);
+        verify(claimService).setClaimIssuedDate(claimEntity);
+    }
+
     private Flags createFlags(List<ListValue<FlagDetail>> flagDetails) {
 
         return Flags.builder()
