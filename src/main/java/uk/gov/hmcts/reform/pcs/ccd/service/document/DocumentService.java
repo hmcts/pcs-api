@@ -24,6 +24,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.E
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.WalesDocuments;
+import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -282,19 +283,31 @@ public class DocumentService {
             return Collections.emptyList();
         }
 
+        if (pcsCase.getClaims().isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        ClaimEntity mainClaim = pcsCase.getClaims().getFirst();
+
         List<DocumentEntity> documentEntities = defendantDocuments.stream()
             .map(ListValue::getValue)
             .filter(Objects::nonNull)
-            .map(defDoc -> DocumentEntity.builder()
-                .pcsCase(pcsCase)
-                .party(party)
-                .defendantResponse(defendantResponse)
-                .url(defDoc.getDocument().getUrl())
-                .fileName(defDoc.getDocument().getFilename())
-                .binaryUrl(defDoc.getDocument().getBinaryUrl())
-                .contentType(defDoc.getContentType())
-                .size(defDoc.getSizeInBytes())
-                .build())
+            .map(defDoc -> {
+                String originalFilename = defDoc.getDocument().getFilename();
+                String updatedFilename = documentNameService
+                    .appendDefendantPostfix(originalFilename, mainClaim, party.getId());
+
+                return DocumentEntity.builder()
+                    .pcsCase(pcsCase)
+                    .party(party)
+                    .defendantResponse(defendantResponse)
+                    .url(defDoc.getDocument().getUrl())
+                    .fileName(updatedFilename)
+                    .binaryUrl(defDoc.getDocument().getBinaryUrl())
+                    .contentType(defDoc.getContentType())
+                    .size(defDoc.getSizeInBytes())
+                    .build();
+            })
             .toList();
 
         List<DocumentEntity> saved = documentRepository.saveAll(documentEntities);
