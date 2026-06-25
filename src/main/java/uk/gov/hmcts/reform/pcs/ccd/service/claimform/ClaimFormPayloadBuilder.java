@@ -513,20 +513,26 @@ public class ClaimFormPayloadBuilder {
     // via showRequiredDocumentsSection; England claims never capture these so the getters return null.
     private void mapRequiredDocuments(ClaimEntity claim,
                                       ClaimFormPayload.ClaimFormPayloadBuilder payloadBuilder) {
+        // Show the "why not uploaded" row only when the claimant answered No AND gave a reason -
+        // otherwise the bold question renders above an empty row (HDPI-6478). Mirrors the
+        // isNo && isPopulated gating used for the pre-action-protocol reason above.
         VerticalYesNo epc = claim.getEnergyPerformanceCertificateProvided();
+        String epcReason = claim.getNoEnergyPerformanceCertificateReason();
         payloadBuilder.epcUploadedYesNo(toLabel(epc));
-        payloadBuilder.showEpcNotUploadedReason(isNo(epc));
-        payloadBuilder.epcNotUploadedReason(claim.getNoEnergyPerformanceCertificateReason());
+        payloadBuilder.showEpcNotUploadedReason(isNo(epc) && isPopulated(epcReason));
+        payloadBuilder.epcNotUploadedReason(epcReason);
 
         VerticalYesNo gas = claim.getGasSafetyReportProvided();
+        String gasReason = claim.getNoGasSafetyReportReason();
         payloadBuilder.gasSafetyUploadedYesNo(toLabel(gas));
-        payloadBuilder.showGasSafetyNotUploadedReason(isNo(gas));
-        payloadBuilder.gasSafetyNotUploadedReason(claim.getNoGasSafetyReportReason());
+        payloadBuilder.showGasSafetyNotUploadedReason(isNo(gas) && isPopulated(gasReason));
+        payloadBuilder.gasSafetyNotUploadedReason(gasReason);
 
         VerticalYesNo eicr = claim.getElectricalInstallationConditionProvided();
+        String eicrReason = claim.getNoElectricalInstallationConditionReason();
         payloadBuilder.eicrUploadedYesNo(toLabel(eicr));
-        payloadBuilder.showEicrNotUploadedReason(isNo(eicr));
-        payloadBuilder.eicrNotUploadedReason(claim.getNoElectricalInstallationConditionReason());
+        payloadBuilder.showEicrNotUploadedReason(isNo(eicr) && isPopulated(eicrReason));
+        payloadBuilder.eicrNotUploadedReason(eicrReason);
     }
 
     private void mapRentArrears(RentArrearsEntity rent,

@@ -43,7 +43,6 @@ class ClaimViewTest {
     @BeforeEach
     void setUp() {
         pcsCase = PCSCase.builder().build();
-
         underTest = new ClaimView();
     }
 
@@ -164,10 +163,10 @@ class ClaimViewTest {
         // Given
         when(pcsCaseEntity.getClaims()).thenReturn(List.of(claimEntity));
         when(pcsCaseEntity.getDocuments()).thenReturn(List.of(
-            documentEntity(DocumentType.ENERGY_PERFORMANCE_CERTIFICATE, "epc.pdf"),
-            documentEntity(DocumentType.GAS_SAFETY_REPORT, "gas.pdf"),
-            documentEntity(DocumentType.ELECTRICAL_INSTALLATION_CONDITION, "eicr.pdf"),
-            documentEntity(DocumentType.OTHER, "other.pdf")
+            documentEntity(DocumentType.ENERGY_PERFORMANCE_CERTIFICATE, "epc.pdf", null),
+            documentEntity(DocumentType.GAS_SAFETY_CERTIFICATE, "gas.pdf", null),
+            documentEntity(DocumentType.EICR_REPORT, "eicr.pdf", null),
+            documentEntity(DocumentType.OTHER, "other.pdf", null)
         ));
 
         // When
@@ -175,6 +174,7 @@ class ClaimViewTest {
 
         // Then
         WalesDocuments requiredDocumentsWales = pcsCase.getRequiredDocumentsWales();
+
         assertSingleDocument(requiredDocumentsWales.getEnergyPerformance(), "epc.pdf");
         assertSingleDocument(requiredDocumentsWales.getGasSafetyReport(), "gas.pdf");
         assertSingleDocument(requiredDocumentsWales.getElectricalInstallation(), "eicr.pdf");
@@ -185,8 +185,8 @@ class ClaimViewTest {
         // Given
         when(pcsCaseEntity.getClaims()).thenReturn(List.of(claimEntity));
         when(pcsCaseEntity.getDocuments()).thenReturn(List.of(
-            documentEntity(DocumentType.OTHER, "other.pdf"),
-            documentEntity(DocumentType.RENT_STATEMENT, "rent-statement.pdf")
+            documentEntity(DocumentType.OTHER, "other.pdf", null),
+            documentEntity(DocumentType.RENT_STATEMENT, "rent-statement.pdf", null)
         ));
 
         // When
@@ -197,6 +197,29 @@ class ClaimViewTest {
         assertThat(requiredDocumentsWales.getEnergyPerformance()).isEmpty();
         assertThat(requiredDocumentsWales.getGasSafetyReport()).isEmpty();
         assertThat(requiredDocumentsWales.getElectricalInstallation()).isEmpty();
+    }
+
+    @Test
+    void shouldNotIncludeAdditionalDocumentUploaded() {
+        // Given
+        when(pcsCaseEntity.getClaims()).thenReturn(List.of(claimEntity));
+        when(pcsCaseEntity.getDocuments()).thenReturn(List.of(
+                documentEntity(DocumentType.ENERGY_PERFORMANCE_CERTIFICATE, "1.pdf", null),
+                documentEntity(DocumentType.ENERGY_PERFORMANCE_CERTIFICATE, "1a.pdf", "Add doc 1a"),
+                documentEntity(DocumentType.GAS_SAFETY_CERTIFICATE, "2.pdf", null),
+                documentEntity(DocumentType.GAS_SAFETY_CERTIFICATE, "2a.pdf", "Add doc 2a"),
+                documentEntity(DocumentType.EICR_REPORT, "3.pdf", null),
+                documentEntity(DocumentType.EICR_REPORT, "3a.pdf", "Add doc 3a")
+        ));
+
+        // When
+        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+
+        // Then
+        WalesDocuments requiredDocumentsWales = pcsCase.getRequiredDocumentsWales();
+        assertThat(requiredDocumentsWales.getEnergyPerformance()).hasSize(1);
+        assertThat(requiredDocumentsWales.getGasSafetyReport()).hasSize(1);
+        assertThat(requiredDocumentsWales.getElectricalInstallation()).hasSize(1);
     }
 
     @Test
@@ -241,10 +264,11 @@ class ClaimViewTest {
         );
     }
 
-    private static DocumentEntity documentEntity(DocumentType documentType, String fileName) {
+    private static DocumentEntity documentEntity(DocumentType documentType, String fileName, String description) {
         return DocumentEntity.builder()
             .id(documentId(fileName))
             .type(documentType)
+            .description(description)
             .url("http://dm-store/documents/" + fileName)
             .binaryUrl("http://dm-store/documents/" + fileName + "/binary")
             .fileName(fileName)
@@ -269,5 +293,4 @@ class ClaimViewTest {
                 assertThat(document.getCategoryId()).isEqualTo("category-" + fileName);
             });
     }
-
 }
