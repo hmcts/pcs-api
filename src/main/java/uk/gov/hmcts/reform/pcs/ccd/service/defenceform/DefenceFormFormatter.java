@@ -18,8 +18,7 @@ final class DefenceFormFormatter {
     private DefenceFormFormatter() {
     }
 
-    // The income/expense/debt rows read "... every: <value>", so the value must be the period noun
-    // ("Week"/"Month") the citizen picked, not the enum label ("Weekly"/"Monthly").
+    // Rows read "... every: <value>", so render the period noun (Week/Month), not the enum label.
     static String formatFrequency(RecurrenceFrequency frequency) {
         if (frequency == null) {
             return null;

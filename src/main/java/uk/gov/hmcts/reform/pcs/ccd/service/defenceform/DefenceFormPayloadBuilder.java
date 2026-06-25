@@ -38,6 +38,8 @@ import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.math.BigDecimal;
 import java.time.Clock;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.Collection;
 import java.util.EnumMap;
@@ -116,24 +118,16 @@ public class DefenceFormPayloadBuilder {
         boolean hasOnlyRentArrearsGrounds =
             !grounds.isEmpty() && grounds.stream().allMatch(DefenceFormPayloadBuilder::isRentArrears);
 
-        // The "Did the claimant give you notice?" question is only asked of the defendant when the
-        // claimant served notice; if not, the CUI journey skips it, so keep the row off the form.
-        boolean claimantServedNotice = claim.getNoticeOfPossession() != null
-            && claim.getNoticeOfPossession().getNoticeServed() == YesOrNo.YES;
-
         Map<PartyAttributeType, PartyAttributeAssertationEntity> assertions = loadAssertions(defendant);
 
         DefenceFormPayload.DefenceFormPayloadBuilder payload = DefenceFormPayload.builder();
 
         if (response.getResponseSubmittedDate() != null) {
-            // Stored as a UTC timestamp at submission; convert to the UK calendar date so it
-            // reflects when the defendant submitted, not when the PDF happens to be rendered.
-            payload.submittedOn(response.getResponseSubmittedDate().atZone(ZoneOffset.UTC)
-                .withZoneSameInstant(ukClock.getZone()).toLocalDate());
+            payload.submittedOn(toUkDate(response.getResponseSubmittedDate()));
         }
 
         mapCaseAndParties(claim, pcsCase, defendant, isWales, assertions, payload);
-        mapResponse(response, isWales, claimantServedNotice, hasRentArrearsGround, hasOnlyRentArrearsGrounds,
+        mapResponse(response, isWales, claimantServedNotice(claim), hasRentArrearsGround, hasOnlyRentArrearsGrounds,
             assertions, payload);
         mapPaymentAgreement(response.getPaymentAgreement(), hasRentArrearsGround, payload);
         mapHouseholdCircumstances(response.getHouseholdCircumstances(), payload);
@@ -155,10 +149,7 @@ public class DefenceFormPayloadBuilder {
         payload.caseName(caseNameFormatter.formatCaseName(toDomainParties(claimants), toDomainParties(defendants)));
 
         if (claim.getClaimIssuedDate() != null) {
-            // Stored as a UTC timestamp; convert to the UK calendar date so a claim issued just
-            // after midnight BST shows the correct day rather than the previous one.
-            payload.issueDateSealed(claim.getClaimIssuedDate().atZone(ZoneOffset.UTC)
-                .withZoneSameInstant(ukClock.getZone()).toLocalDate());
+            payload.issueDateSealed(toUkDate(claim.getClaimIssuedDate()));
         }
 
         if (!claimants.isEmpty()) {
@@ -189,8 +180,7 @@ public class DefenceFormPayloadBuilder {
 
         var startDateConfirmation = response.getTenancyStartDateConfirmation();
         String startDateValue = assertedValue(assertions, PartyAttributeType.TENANCY_START_DATE);
-        // When the claimant gave no start date the defendant supplies one via the "unknown" journey
-        // branch, which never captures a confirmation. Show that date instead of a blank confirmation.
+        // Claimant gave no start date: defendant supplied one with no confirmation (the "unknown" branch).
         boolean defendantProvidedStartDate = startDateConfirmation == null && isPopulated(startDateValue);
         payload.showStartDateConfirmation(startDateConfirmation != null);
         payload.tenancyStartDateConfirmation(toLabel(startDateConfirmation));
@@ -277,20 +267,7 @@ public class DefenceFormPayloadBuilder {
 
         payload.showIncomeExpenseSection(isYes(household.getShareIncomeExpenseDetails()));
         mapRegularIncome(household.getRegularIncomeEntity(), payload);
-
-        // The "have you applied for UC?" answer isn't persisted, so infer it: an application date is
-        // only captured when the defendant said yes, so its presence means yes and its absence means no.
-        // The question is only asked when UC isn't already a current income, so suppress it for
-        // defendants who receive UC rather than render a contradictory "No".
-        boolean appliedForUniversalCredit = household.getUcApplicationDate() != null;
-        RegularIncomeEntity regularIncome = household.getRegularIncomeEntity();
-        boolean universalCreditIsCurrentIncome = regularIncome != null
-            && regularIncome.getItems().stream()
-                .anyMatch(item -> item.getIncomeType() == IncomeType.UNIVERSAL_CREDIT);
-        payload.showAppliedForUniversalCredit(!universalCreditIsCurrentIncome);
-        payload.appliedForUniversalCredit(appliedForUniversalCredit ? "Yes" : "No");
-        payload.showUcApplicationDate(appliedForUniversalCredit);
-        payload.ucApplicationDate(formatLongDate(household.getUcApplicationDate()));
+        mapUniversalCreditApplication(household, payload);
 
         payload.priorityDebts(toLabel(household.getPriorityDebts()));
         payload.showDebtDetails(isYes(household.getPriorityDebts()));
@@ -326,6 +303,32 @@ public class DefenceFormPayloadBuilder {
 
         payload.showMoneyFromElsewhere(byType.containsKey(IncomeType.MONEY_FROM_ELSEWHERE));
         payload.moneyFromElsewhereDetails(regularIncome.getOtherIncomeDetails());
+    }
+
+    // The "applied for UC?" answer isn't persisted: an application date is only captured on yes, so
+    // its presence is the answer. The question isn't asked of defendants who already receive UC.
+    private void mapUniversalCreditApplication(HouseholdCircumstancesEntity household,
+                                               DefenceFormPayload.DefenceFormPayloadBuilder payload) {
+        boolean applied = household.getUcApplicationDate() != null;
+        payload.showAppliedForUniversalCredit(!universalCreditIsCurrentIncome(household));
+        payload.appliedForUniversalCredit(applied ? "Yes" : "No");
+        payload.showUcApplicationDate(applied);
+        payload.ucApplicationDate(formatLongDate(household.getUcApplicationDate()));
+    }
+
+    private static boolean universalCreditIsCurrentIncome(HouseholdCircumstancesEntity household) {
+        RegularIncomeEntity income = household.getRegularIncomeEntity();
+        return income != null && income.getItems().stream()
+            .anyMatch(item -> item.getIncomeType() == IncomeType.UNIVERSAL_CREDIT);
+    }
+
+    private static boolean claimantServedNotice(ClaimEntity claim) {
+        return claim.getNoticeOfPossession() != null
+            && claim.getNoticeOfPossession().getNoticeServed() == YesOrNo.YES;
+    }
+
+    private LocalDate toUkDate(LocalDateTime utcTimestamp) {
+        return utcTimestamp.atZone(ZoneOffset.UTC).withZoneSameInstant(ukClock.getZone()).toLocalDate();
     }
 
     private void mapStatementOfTruth(StatementOfTruthEntity statementOfTruth,
