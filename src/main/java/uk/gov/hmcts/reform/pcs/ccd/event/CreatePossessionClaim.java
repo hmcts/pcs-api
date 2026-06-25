@@ -69,6 +69,9 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
         PCSCase caseData = eventPayload.caseData();
 
         applyCaseIssueFeeAmount(caseData);
+        // TEST (HDPI-6973): force a fee value that is NOT present in the Welsh dictionary,
+        // to confirm whether interpolated ${feeAmount} label text gets translated. Revert after testing.
+        caseData.setFeeAmount("£123.45");
         return caseData;
     }
 
