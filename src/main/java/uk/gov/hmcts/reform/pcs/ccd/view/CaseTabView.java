@@ -43,9 +43,10 @@ public class CaseTabView {
     private final CaseDetailsTabView caseDetailsTabView;
 
     public void setCaseTabFields(PCSCase pcsCase) {
+        boolean isSubmitted = pcsCase.getDateSubmitted() != null;
         CasePartiesTab casePartiesTab = buildCasePartiesTab(pcsCase);
         SummaryTab summaryTab = caseSummaryTabView.buildSummaryTab(pcsCase);
-        CaseDetailsTab detailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase);
+        CaseDetailsTab detailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase, isSubmitted);
         pcsCase.setCasePartiesTab(casePartiesTab);
         pcsCase.setSummaryTab(summaryTab);
         pcsCase.setCaseDetailsTab(detailsTab);
