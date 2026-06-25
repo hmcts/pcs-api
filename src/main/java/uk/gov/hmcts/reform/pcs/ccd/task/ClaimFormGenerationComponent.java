@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.pcs.ccd.model.ClaimFormTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimActivityLogService;
 import uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimFormService;
+import uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimFormStageException;
 
 import java.time.Duration;
 
@@ -32,6 +33,8 @@ public class ClaimFormGenerationComponent {
     private static final String MDC_TASK_NAME = "taskName";
     private static final String MDC_TERMINAL_FAILURE = "terminalFailure";
     private static final String MDC_FAILURE_REASON = "failureReason";
+    private static final String MDC_FAILURE_STAGE = "failureStage";
+    private static final String UNKNOWN_STAGE = "UNKNOWN";
 
     public static final TaskDescriptor<ClaimFormTaskData> CLAIM_FORM_TASK_DESCRIPTOR =
         TaskDescriptor.of(CLAIM_FORM_GENERATION_TASK_NAME, ClaimFormTaskData.class);
@@ -80,10 +83,13 @@ public class ClaimFormGenerationComponent {
                     // Only the final (terminal) attempt is logged - intermediate retries are tracked by
                     // db-scheduler in scheduled_tasks.consecutive_failures and stay out of the app logs.
                     if (isFinalAttempt(attempt)) {
+                        String failureStage = e instanceof ClaimFormStageException stageException
+                            ? stageException.getStage().name() : UNKNOWN_STAGE;
                         MDC.put(MDC_TERMINAL_FAILURE, "true");
+                        MDC.put(MDC_FAILURE_STAGE, failureStage);
                         MDC.put(MDC_FAILURE_REASON, String.valueOf(e.getMessage()));
-                        log.error("Claim form generation permanently failed for case {} after {} "
-                                  + "attempts: {}", caseReference, attempt, e.getMessage(), e);
+                        log.error("Claim form generation permanently failed for case {} at stage {} after {} "
+                                  + "attempts: {}", caseReference, failureStage, attempt, e.getMessage(), e);
                         recordGenerationFailure(caseReference);
                     }
                     throw e;
@@ -92,6 +98,7 @@ public class ClaimFormGenerationComponent {
                     MDC.remove(MDC_TASK_NAME);
                     MDC.remove(MDC_TERMINAL_FAILURE);
                     MDC.remove(MDC_FAILURE_REASON);
+                    MDC.remove(MDC_FAILURE_STAGE);
                 }
             });
     }
