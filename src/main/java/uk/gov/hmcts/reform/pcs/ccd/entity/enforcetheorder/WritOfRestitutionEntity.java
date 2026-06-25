@@ -21,7 +21,6 @@ import org.hibernate.annotations.CreationTimestamp;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 
 import java.time.Instant;
-import java.util.UUID;
 
 @Entity
 @Table(name = "enf_writ_of_restitution")
@@ -33,8 +32,8 @@ import java.util.UUID;
 public class WritOfRestitutionEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "enf_case_id", nullable = false)

@@ -8,7 +8,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.feeandpay.FeePaymentRepository;
 import uk.gov.hmcts.reform.pcs.exception.FeePaymentNotFoundException;
 
-import java.util.UUID;
 
 @Slf4j
 @Service
@@ -19,7 +18,7 @@ public class FeePaymentNotificationService {
     private final FeePaymentRepository feePaymentRepository;
 
     @Transactional
-    public void sendClaimantPaidCaseIssuedNotification(UUID feePaymentId) {
+    public void sendClaimantPaidCaseIssuedNotification(Long feePaymentId) {
         FeePaymentEntity feePayment = feePaymentRepository.findById(feePaymentId)
             .orElseThrow(() -> new FeePaymentNotFoundException("Fee payment not found: " + feePaymentId));
 

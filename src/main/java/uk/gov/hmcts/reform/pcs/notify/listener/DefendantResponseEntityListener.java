@@ -47,7 +47,7 @@ public class DefendantResponseEntityListener {
 
     private void scheduleDefendantResponseSubmittedNotification(DefendantResponseEntity defendantResponse) {
         String taskId = UUID.randomUUID().toString();
-        UUID defendantResponseId = defendantResponse.getId();
+        Long defendantResponseId = defendantResponse.getId();
         log.info("Scheduling defendant response submitted notification for: {}, with task id: {}",
                  defendantResponseId,
                  taskId);

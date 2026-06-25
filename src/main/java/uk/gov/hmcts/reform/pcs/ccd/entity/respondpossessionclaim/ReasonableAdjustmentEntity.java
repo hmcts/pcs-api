@@ -21,7 +21,6 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 
-import java.util.UUID;
 
 @Entity
 @Table(name = "reasonable_adjustments")
@@ -33,8 +32,8 @@ import java.util.UUID;
 public class ReasonableAdjustmentEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "defendant_response_id")

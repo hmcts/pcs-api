@@ -294,7 +294,7 @@ class TestingSupportControllerTest {
 
         List<PartyAccessCodeEntity> accessCodes = new ArrayList<>();
         PartyAccessCodeEntity accessCode1 = PartyAccessCodeEntity.builder()
-            .id(UUID.randomUUID())
+            .id(900L)
             .code(accessCodeString)
             .partyId(partyCode)
             .build();
@@ -438,7 +438,7 @@ class TestingSupportControllerTest {
     @Test
     void shouldUpdateDefendantResponseStatus() {
         // Given
-        UUID defendantResponseId = UUID.randomUUID();
+        Long defendantResponseId = 100L;
         DefendantResponseStatus status = DefendantResponseStatus.SUBMITTED;
         String serviceAuth = "Bearer s2sToken";
 

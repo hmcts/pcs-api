@@ -18,8 +18,6 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 
-import java.util.UUID;
-
 @Builder
 @Getter
 @Setter
@@ -30,8 +28,8 @@ import java.util.UUID;
 public class AsbProhibitedConductEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @OneToOne
     @JsonBackReference

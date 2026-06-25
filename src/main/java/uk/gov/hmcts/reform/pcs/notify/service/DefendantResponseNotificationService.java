@@ -12,6 +12,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantRespon
 
 import java.util.UUID;
 
+
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -22,7 +23,7 @@ public class DefendantResponseNotificationService {
     private final CounterClaimRepository counterClaimRepository;
 
     @Transactional
-    public void sendDefendantResponseReceived(UUID defendantResponseId) {
+    public void sendDefendantResponseReceived(Long defendantResponseId) {
         DefendantResponseEntity defendantResponse = defendantResponseRepository.findById(defendantResponseId)
             .orElseThrow(() -> new IllegalArgumentException("Defendant response not found: " + defendantResponseId));
 
@@ -30,7 +31,7 @@ public class DefendantResponseNotificationService {
     }
 
     @Transactional
-    public void sendEmailNotificationForNoCounterClaim(UUID defendantResponseId) {
+    public void sendEmailNotificationForNoCounterClaim(Long defendantResponseId) {
         DefendantResponseEntity defendantResponse = defendantResponseRepository.findById(defendantResponseId)
             .orElseThrow(() -> new IllegalArgumentException("Defendant response not found: " + defendantResponseId));
 
@@ -44,7 +45,7 @@ public class DefendantResponseNotificationService {
     }
 
     @Transactional
-    public void sendDefendantEmailNotificationForCounterclaim(UUID defendantResponseId) {
+    public void sendDefendantEmailNotificationForCounterclaim(Long defendantResponseId) {
         DefendantResponseEntity defendantResponse = defendantResponseRepository.findById(defendantResponseId)
             .orElseThrow(() -> new IllegalArgumentException("Defendant response not found: " + defendantResponseId));
 

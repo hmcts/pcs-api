@@ -59,7 +59,7 @@ class EntityTestStatusServiceTest {
 
     @Test
     void shouldUpdateDefendantResponseStatus() {
-        UUID defendantResponseId = UUID.randomUUID();
+        Long defendantResponseId = 100L;
         DefendantResponseEntity defendantResponse = new DefendantResponseEntity();
         defendantResponse.setId(defendantResponseId);
         defendantResponse.setStatus(DefendantResponseStatus.CREATED);
@@ -75,7 +75,7 @@ class EntityTestStatusServiceTest {
 
     @Test
     void shouldThrowExceptionWhenDefendantResponseNotFound() {
-        UUID defendantResponseId = UUID.randomUUID();
+        Long defendantResponseId = 100L;
         when(defendantResponseRepository.findById(defendantResponseId)).thenReturn(Optional.empty());
 
         assertThrows(

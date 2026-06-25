@@ -14,7 +14,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantRespon
 import uk.gov.hmcts.reform.pcs.ccd.model.DefendantResponseStatusChangeTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.task.DefendantResponseSubmittedNotificationTaskComponent;
 
-import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -44,7 +43,7 @@ class DefendantResponseEntityListenerTest {
 
     @Test
     void shouldScheduleNotificationOnPostPersistWhenStatusIsSubmitted() {
-        UUID defendantResponseId = UUID.randomUUID();
+        Long defendantResponseId = 100L;
         DefendantResponseEntity entity = mock(DefendantResponseEntity.class);
         when(entity.getStatus()).thenReturn(DefendantResponseStatus.SUBMITTED);
         when(entity.getId()).thenReturn(defendantResponseId);
@@ -86,7 +85,7 @@ class DefendantResponseEntityListenerTest {
 
     @Test
     void shouldScheduleNotificationOnPostUpdateWhenStatusChangesToSubmitted() {
-        UUID defendantResponseId = UUID.randomUUID();
+        Long defendantResponseId = 100L;
         DefendantResponseEntity entity = mock(DefendantResponseEntity.class);
         when(entity.getStatus()).thenReturn(DefendantResponseStatus.SUBMITTED);
         when(entity.getPreviousStatus()).thenReturn(DefendantResponseStatus.CREATED);
