@@ -113,11 +113,13 @@ class ClaimFormGenerationComponentTest {
     }
 
     @Test
-    @DisplayName("Final attempt records the failure once before rethrowing")
+    @DisplayName("Final attempt (maxRetries + 1) records the failure once before rethrowing")
     void finalAttemptRecordsFailure() {
         ClaimFormTaskData data = ClaimFormTaskData.builder().caseReference("999").build();
         when(taskInstance.getData()).thenReturn(data);
-        execution.consecutiveFailures = maxRetries - 1;
+        // MaxRetriesFailureHandler runs maxRetries + 1 executions; the terminal one is attempt
+        // maxRetries + 1, i.e. consecutiveFailures == maxRetries.
+        execution.consecutiveFailures = maxRetries;
         when(executionContext.getExecution()).thenReturn(execution);
         doThrow(mock(RuntimeException.class)).when(claimFormService).generateAndAttach(999L);
 
@@ -129,11 +131,29 @@ class ClaimFormGenerationComponentTest {
     }
 
     @Test
+    @DisplayName("Second-to-last attempt (maxRetries) does NOT record - guards against double-recording")
+    void secondToLastAttemptDoesNotRecordFailure() {
+        ClaimFormTaskData data = ClaimFormTaskData.builder().caseReference("999").build();
+        when(taskInstance.getData()).thenReturn(data);
+        // attempt == maxRetries (consecutiveFailures == maxRetries - 1): a retry still follows, so this
+        // is not the terminal execution. Using >= here previously double-recorded the failure (HDPI-6478).
+        execution.consecutiveFailures = maxRetries - 1;
+        when(executionContext.getExecution()).thenReturn(execution);
+        doThrow(mock(RuntimeException.class)).when(claimFormService).generateAndAttach(999L);
+
+        CustomTask<ClaimFormTaskData> task = component.claimFormGenerationTask();
+
+        assertThatThrownBy(() -> task.execute(taskInstance, executionContext))
+            .isInstanceOf(RuntimeException.class);
+        verify(claimActivityLogService, never()).logGenerationFailure(anyLong());
+    }
+
+    @Test
     @DisplayName("A failure while logging the failure does not mask the original exception")
     void loggingFailureDoesNotMaskOriginalException() {
         ClaimFormTaskData data = ClaimFormTaskData.builder().caseReference("999").build();
         when(taskInstance.getData()).thenReturn(data);
-        execution.consecutiveFailures = maxRetries - 1;
+        execution.consecutiveFailures = maxRetries;
         when(executionContext.getExecution()).thenReturn(execution);
         doThrow(new RuntimeException("generation failed")).when(claimFormService).generateAndAttach(999L);
         doThrow(new RuntimeException("log write failed")).when(claimActivityLogService).logGenerationFailure(999L);
@@ -150,7 +170,7 @@ class ClaimFormGenerationComponentTest {
     void finalAttemptLogsTerminalErrorWithDimensions() {
         ClaimFormTaskData data = ClaimFormTaskData.builder().caseReference("999").build();
         when(taskInstance.getData()).thenReturn(data);
-        execution.consecutiveFailures = maxRetries - 1;
+        execution.consecutiveFailures = maxRetries;
         when(executionContext.getExecution()).thenReturn(execution);
         doThrow(new RuntimeException("docassembly 500")).when(claimFormService).generateAndAttach(999L);
 
