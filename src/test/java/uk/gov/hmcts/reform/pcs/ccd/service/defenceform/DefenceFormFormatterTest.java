@@ -24,7 +24,8 @@ class DefenceFormFormatterTest {
 
     @Test
     void formatsRecurrenceFrequency() {
-        assertThat(formatFrequency(RecurrenceFrequency.WEEKLY)).isEqualTo("Weekly");
+        assertThat(formatFrequency(RecurrenceFrequency.WEEKLY)).isEqualTo("Week");
+        assertThat(formatFrequency(RecurrenceFrequency.MONTHLY)).isEqualTo("Month");
         assertThat(formatFrequency(null)).isNull();
     }
 

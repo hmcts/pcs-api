@@ -121,6 +121,8 @@ public class DefenceFormPayload implements FormPayload {
     private List<DefenceFormAmountRow> income;
     private boolean showMoneyFromElsewhere;
     private String moneyFromElsewhereDetails;
+    private boolean showAppliedForUniversalCredit;
+    private String appliedForUniversalCredit;
     private boolean showUcApplicationDate;
     private String ucApplicationDate;
     private String priorityDebts;

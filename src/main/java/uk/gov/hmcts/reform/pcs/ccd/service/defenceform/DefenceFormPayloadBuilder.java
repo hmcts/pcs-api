@@ -278,7 +278,18 @@ public class DefenceFormPayloadBuilder {
         payload.showIncomeExpenseSection(isYes(household.getShareIncomeExpenseDetails()));
         mapRegularIncome(household.getRegularIncomeEntity(), payload);
 
-        payload.showUcApplicationDate(household.getUcApplicationDate() != null);
+        // The "have you applied for UC?" answer isn't persisted, so infer it: an application date is
+        // only captured when the defendant said yes, so its presence means yes and its absence means no.
+        // The question is only asked when UC isn't already a current income, so suppress it for
+        // defendants who receive UC rather than render a contradictory "No".
+        boolean appliedForUniversalCredit = household.getUcApplicationDate() != null;
+        RegularIncomeEntity regularIncome = household.getRegularIncomeEntity();
+        boolean universalCreditIsCurrentIncome = regularIncome != null
+            && regularIncome.getItems().stream()
+                .anyMatch(item -> item.getIncomeType() == IncomeType.UNIVERSAL_CREDIT);
+        payload.showAppliedForUniversalCredit(!universalCreditIsCurrentIncome);
+        payload.appliedForUniversalCredit(appliedForUniversalCredit ? "Yes" : "No");
+        payload.showUcApplicationDate(appliedForUniversalCredit);
         payload.ucApplicationDate(formatLongDate(household.getUcApplicationDate()));
 
         payload.priorityDebts(toLabel(household.getPriorityDebts()));

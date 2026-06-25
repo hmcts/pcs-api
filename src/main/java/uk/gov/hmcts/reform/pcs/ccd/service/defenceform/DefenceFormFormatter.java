@@ -18,8 +18,16 @@ final class DefenceFormFormatter {
     private DefenceFormFormatter() {
     }
 
+    // The income/expense/debt rows read "... every: <value>", so the value must be the period noun
+    // ("Week"/"Month") the citizen picked, not the enum label ("Weekly"/"Monthly").
     static String formatFrequency(RecurrenceFrequency frequency) {
-        return frequency == null ? null : frequency.getLabel();
+        if (frequency == null) {
+            return null;
+        }
+        return switch (frequency) {
+            case WEEKLY -> "Week";
+            case MONTHLY -> "Month";
+        };
     }
 
     // Long date from an ISO date string (as stored in tenancy/notice assertions). Null-safe.

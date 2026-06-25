@@ -427,7 +427,7 @@ class DefenceFormPayloadBuilderTest {
             DefenceFormAmountRow incomeRow = payload.getIncome().getFirst();
             assertThat(incomeRow.getLabel()).isEqualTo("Income from all jobs you do");
             assertThat(incomeRow.getAmount()).isEqualTo("£1,500.00");
-            assertThat(incomeRow.getFrequency()).isEqualTo("Monthly");
+            assertThat(incomeRow.getFrequency()).isEqualTo("Month");
 
             assertThat(payload.isShowMoneyFromElsewhere()).isTrue();
             assertThat(payload.getMoneyFromElsewhereDetails()).isEqualTo("Cash gifts");
@@ -438,6 +438,53 @@ class DefenceFormPayloadBuilderTest {
             assertThat(payload.getExpenses()).hasSize(1);
             assertThat(payload.getExpenses().getFirst().getLabel()).isEqualTo("Other");
             assertThat(payload.getExpenses().getFirst().getAmount()).isEqualTo("£25.00");
+        }
+
+        @Test
+        void infersAppliedForUcYesWhenApplicationDatePresent() {
+            HouseholdCircumstancesEntity household = HouseholdCircumstancesEntity.builder()
+                .ucApplicationDate(LocalDate.of(2026, 6, 5))
+                .build();
+            DefendantResponseEntity response = response(LegislativeCountry.ENGLAND);
+            response.setHouseholdCircumstances(household);
+
+            DefenceFormPayload payload = builder.build(response);
+
+            assertThat(payload.isShowAppliedForUniversalCredit()).isTrue();
+            assertThat(payload.getAppliedForUniversalCredit()).isEqualTo("Yes");
+            assertThat(payload.isShowUcApplicationDate()).isTrue();
+            assertThat(payload.getUcApplicationDate()).isEqualTo("5 June 2026");
+        }
+
+        @Test
+        void infersAppliedForUcNoWhenNoApplicationDate() {
+            HouseholdCircumstancesEntity household = HouseholdCircumstancesEntity.builder().build();
+            DefendantResponseEntity response = response(LegislativeCountry.ENGLAND);
+            response.setHouseholdCircumstances(household);
+
+            DefenceFormPayload payload = builder.build(response);
+
+            assertThat(payload.isShowAppliedForUniversalCredit()).isTrue();
+            assertThat(payload.getAppliedForUniversalCredit()).isEqualTo("No");
+            assertThat(payload.isShowUcApplicationDate()).isFalse();
+        }
+
+        @Test
+        void hidesAppliedForUcQuestionWhenUcIsCurrentIncome() {
+            // A defendant who already receives UC is never asked whether they applied, so the
+            // question must not render a contradictory "No" alongside their UC income row.
+            RegularIncomeEntity income = RegularIncomeEntity.builder().build();
+            income.addItem(RegularIncomeItemEntity.builder()
+                .incomeType(IncomeType.UNIVERSAL_CREDIT).amount(new BigDecimal("400.00"))
+                .frequency(RecurrenceFrequency.MONTHLY).build());
+            HouseholdCircumstancesEntity household = HouseholdCircumstancesEntity.builder().build();
+            household.setRegularIncomeEntity(income);
+            DefendantResponseEntity response = response(LegislativeCountry.ENGLAND);
+            response.setHouseholdCircumstances(household);
+
+            DefenceFormPayload payload = builder.build(response);
+
+            assertThat(payload.isShowAppliedForUniversalCredit()).isFalse();
         }
 
         @Test
