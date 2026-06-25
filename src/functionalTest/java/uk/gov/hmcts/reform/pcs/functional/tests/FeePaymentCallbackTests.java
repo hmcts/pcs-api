@@ -25,7 +25,9 @@ import uk.gov.hmcts.reform.pcs.functional.testutils.PayloadLoader;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @Slf4j
 @Tag("Functional1")
@@ -141,13 +143,13 @@ public class FeePaymentCallbackTests extends BaseApi {
         apiSteps.callIsSubmittedToTheEndpoint("PaymentUpdate", "PUT");
         apiSteps.checkStatusCode(204);
 
-        List<Map<String,Object>> paymentRefsPostCallback =  apiSteps.getFeePaymentDetailsForCaseReference(caseReference);
-        Map<String,Object> paymentDetails = paymentRefsPostCallback.getFirst();;
+        List<Map<String,Object>> paymentsRefsUpdates =  apiSteps.getFeePaymentDetailsForCaseReference(caseReference);
+        Map<String,Object> paymentDetails = paymentsRefsUpdates.getFirst();;
 
         String paymentStatus = paymentDetails.get("paymentStatus").toString();
         Double paymentAmount = (Double) paymentDetails.get("amount");
         assertEquals("PAID",paymentStatus);
-        assertEquals(404.00 ,paymentAmount);
+        assertEquals(404.00,paymentAmount);
     }
 
     @Title("Fee Payment callback return 200 on success with payment status Not paid")
@@ -177,8 +179,8 @@ public class FeePaymentCallbackTests extends BaseApi {
         apiSteps.callIsSubmittedToTheEndpoint("PaymentUpdate", "PUT");
         apiSteps.checkStatusCode(204);
 
-        List<Map<String,Object>> paymentRefsPostCallback =  apiSteps.getFeePaymentDetailsForCaseReference(caseReference);
-        Map<String,Object> paymentDetails = paymentRefsPostCallback.getFirst();;
+        List<Map<String,Object>> paymentRefUpdates =  apiSteps.getFeePaymentDetailsForCaseReference(caseReference);
+        Map<String,Object> paymentDetails = paymentRefUpdates.getFirst();;
 
         String paymentStatus = paymentDetails.get("paymentStatus").toString();
         assertEquals("NOT_PAID",paymentStatus);
@@ -210,8 +212,8 @@ public class FeePaymentCallbackTests extends BaseApi {
         apiSteps.callIsSubmittedToTheEndpoint("PaymentUpdate", "PUT");
         apiSteps.checkStatusCode(204);
 
-        List<Map<String,Object>> paymentRefsPostCallback =  apiSteps.getFeePaymentDetailsForCaseReference(caseReference);
-        Map<String,Object> paymentDetails = paymentRefsPostCallback.getFirst();;
+        List<Map<String,Object>> paymentRefUpdates =  apiSteps.getFeePaymentDetailsForCaseReference(caseReference);
+        Map<String,Object> paymentDetails = paymentRefUpdates.getFirst();;
 
         String paymentStatus = paymentDetails.get("paymentStatus").toString();
         assertEquals("PARTIALLY_PAID",paymentStatus);
