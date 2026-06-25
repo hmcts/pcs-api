@@ -19,10 +19,9 @@ public interface PartyLegalRepresentativeOrganisationRepository
         SELECT plro
         FROM PartyLegalRepresentativeOrganisationEntity plro
         JOIN plro.party p
-        JOIN plro.legalRepresentativeOrganisation lro
         JOIN p.pcsCase pcsCase
         WHERE p.id = :partyId
-        AND lro.id = :legalRepresentativeOrganisationId
+        AND plro.legalRepresentativeOrganisation.id = :legalRepresentativeOrganisationId
         AND pcsCase.caseReference = :caseReference
         AND plro.active = 'YES'
         """)
