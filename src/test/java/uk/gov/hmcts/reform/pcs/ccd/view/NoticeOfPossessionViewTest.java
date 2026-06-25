@@ -10,6 +10,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.CanUploadNoticeServedDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServedDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -143,7 +144,7 @@ class NoticeOfPossessionViewTest {
         assertThat(noticeServedDetails)
             .usingRecursiveComparison()
             .isEqualTo(NoticeServedDetails.builder()
-                    .noticeDocuments(List.of())
+                    .documents(List.of())
                     .build());
     }
 
@@ -161,8 +162,8 @@ class NoticeOfPossessionViewTest {
         verify(pcsCase).setNoticeServedDetails(noticeServedDetailsCaptor.capture());
 
         NoticeServedDetails noticeServedDetails = noticeServedDetailsCaptor.getValue();
-        assertThat(noticeServedDetails.getNoticeServiceMethod()).isEqualTo(FIRST_CLASS_POST);
-        assertThat(noticeServedDetails.getNoticePostedDate()).isSameAs(postedDate);
+        assertThat(noticeServedDetails.getServiceMethod()).isEqualTo(FIRST_CLASS_POST);
+        assertThat(noticeServedDetails.getPostedDate()).isSameAs(postedDate);
     }
 
     @Test
@@ -179,8 +180,8 @@ class NoticeOfPossessionViewTest {
         verify(pcsCase).setNoticeServedDetails(noticeServedDetailsCaptor.capture());
 
         NoticeServedDetails noticeServedDetails = noticeServedDetailsCaptor.getValue();
-        assertThat(noticeServedDetails.getNoticeServiceMethod()).isEqualTo(DELIVERED_PERMITTED_PLACE);
-        assertThat(noticeServedDetails.getNoticeDeliveredDate()).isSameAs(deliveredDate);
+        assertThat(noticeServedDetails.getServiceMethod()).isEqualTo(DELIVERED_PERMITTED_PLACE);
+        assertThat(noticeServedDetails.getDeliveredDate()).isSameAs(deliveredDate);
     }
 
     @Test
@@ -200,9 +201,9 @@ class NoticeOfPossessionViewTest {
         verify(pcsCase).setNoticeServedDetails(noticeServedDetailsCaptor.capture());
 
         NoticeServedDetails noticeServedDetails = noticeServedDetailsCaptor.getValue();
-        assertThat(noticeServedDetails.getNoticeServiceMethod()).isEqualTo(PERSONALLY_HANDED);
-        assertThat(noticeServedDetails.getNoticeHandedOverDateTime()).isSameAs(handedOverDateTime);
-        assertThat(noticeServedDetails.getNoticePersonName()).isEqualTo(recipientName);
+        assertThat(noticeServedDetails.getServiceMethod()).isEqualTo(PERSONALLY_HANDED);
+        assertThat(noticeServedDetails.getHandedOverDateTime()).isSameAs(handedOverDateTime);
+        assertThat(noticeServedDetails.getPersonName()).isEqualTo(recipientName);
     }
 
     @Test
@@ -222,9 +223,9 @@ class NoticeOfPossessionViewTest {
         verify(pcsCase).setNoticeServedDetails(noticeServedDetailsCaptor.capture());
 
         NoticeServedDetails noticeServedDetails = noticeServedDetailsCaptor.getValue();
-        assertThat(noticeServedDetails.getNoticeServiceMethod()).isEqualTo(EMAIL);
-        assertThat(noticeServedDetails.getNoticeEmailSentDateTime()).isSameAs(emailSentDateTime);
-        assertThat(noticeServedDetails.getNoticeEmailAddress()).isEqualTo(emailExplanation);
+        assertThat(noticeServedDetails.getServiceMethod()).isEqualTo(EMAIL);
+        assertThat(noticeServedDetails.getEmailSentDateTime()).isSameAs(emailSentDateTime);
+        assertThat(noticeServedDetails.getEmailAddress()).isEqualTo(emailExplanation);
     }
 
     @Test
@@ -242,8 +243,8 @@ class NoticeOfPossessionViewTest {
         verify(pcsCase).setNoticeServedDetails(noticeServedDetailsCaptor.capture());
 
         NoticeServedDetails noticeServedDetails = noticeServedDetailsCaptor.getValue();
-        assertThat(noticeServedDetails.getNoticeServiceMethod()).isEqualTo(OTHER_ELECTRONIC);
-        assertThat(noticeServedDetails.getNoticeOtherElectronicDateTime()).isSameAs(otherElectronicDateTime);
+        assertThat(noticeServedDetails.getServiceMethod()).isEqualTo(OTHER_ELECTRONIC);
+        assertThat(noticeServedDetails.getOtherElectronicDateTime()).isSameAs(otherElectronicDateTime);
     }
 
     @Test
@@ -263,9 +264,9 @@ class NoticeOfPossessionViewTest {
         verify(pcsCase).setNoticeServedDetails(noticeServedDetailsCaptor.capture());
 
         NoticeServedDetails noticeServedDetails = noticeServedDetailsCaptor.getValue();
-        assertThat(noticeServedDetails.getNoticeServiceMethod()).isEqualTo(OTHER);
-        assertThat(noticeServedDetails.getNoticeOtherDateTime()).isSameAs(otherDateTime);
-        assertThat(noticeServedDetails.getNoticeOtherExplanation()).isEqualTo(otherExplanation);
+        assertThat(noticeServedDetails.getServiceMethod()).isEqualTo(OTHER);
+        assertThat(noticeServedDetails.getOtherDateTime()).isSameAs(otherDateTime);
+        assertThat(noticeServedDetails.getOtherExplanation()).isEqualTo(otherExplanation);
     }
 
     @Test
@@ -292,11 +293,45 @@ class NoticeOfPossessionViewTest {
         verify(pcsCase).setNoticeServedDetails(noticeServedDetailsCaptor.capture());
 
         NoticeServedDetails noticeServedDetails = noticeServedDetailsCaptor.getValue();
-        assertThat(noticeServedDetails.getNoticeServiceMethod()).isEqualTo(FIRST_CLASS_POST);
-        assertThat(noticeServedDetails.getNoticePostedDate()).isSameAs(postedDate);
-        List<ListValue<Document>> noticeDocuments = noticeServedDetails.getNoticeDocuments();
+        assertThat(noticeServedDetails.getServiceMethod()).isEqualTo(FIRST_CLASS_POST);
+        assertThat(noticeServedDetails.getPostedDate()).isSameAs(postedDate);
+        List<ListValue<Document>> noticeDocuments = noticeServedDetails.getDocuments();
         assertThat(noticeDocuments).hasSize(1);
         assertThat(noticeDocuments.getFirst().getId()).isEqualTo(noticeDocumentId.toString());
+    }
+
+    @Test
+    void shouldSetAbleToLoadDocumentReasonToYesIfUnableToUploadDocument() {
+        // Given
+        when(noticeOfPossessionEntity.getServingMethod()).thenReturn(FIRST_CLASS_POST);
+        when(noticeOfPossessionEntity.getIsAbleToUploadDocument()).thenReturn(YesOrNo.YES);
+
+        // When
+        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+
+        // Then
+        verify(pcsCase).setNoticeServedDetails(noticeServedDetailsCaptor.capture());
+
+        NoticeServedDetails noticeServedDetails = noticeServedDetailsCaptor.getValue();
+        assertThat(noticeServedDetails.getAbleToUploadDocument()).isEqualTo(CanUploadNoticeServedDocument.Yes);
+    }
+
+    @Test
+    void shouldSetAbleToLoadDocumentReasonToNoIfAbleToUploadDocument() {
+        // Given
+        when(noticeOfPossessionEntity.getServingMethod()).thenReturn(FIRST_CLASS_POST);
+        when(noticeOfPossessionEntity.getIsAbleToUploadDocument()).thenReturn(YesOrNo.NO);
+        when(noticeOfPossessionEntity.getUnableToUploadReason()).thenReturn("some reason");
+
+        // When
+        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+
+        // Then
+        verify(pcsCase).setNoticeServedDetails(noticeServedDetailsCaptor.capture());
+
+        NoticeServedDetails noticeServedDetails = noticeServedDetailsCaptor.getValue();
+        assertThat(noticeServedDetails.getAbleToUploadDocument()).isEqualTo(CanUploadNoticeServedDocument.No);
+        assertThat(noticeServedDetails.getUnableToUploadReason()).isEqualTo("some reason");
     }
 
     @Test
@@ -315,7 +350,7 @@ class NoticeOfPossessionViewTest {
         verify(pcsCase).setNoticeServedDetails(noticeServedDetailsCaptor.capture());
 
         NoticeServedDetails noticeServedDetails = noticeServedDetailsCaptor.getValue();
-        List<ListValue<Document>> noticeDocuments = noticeServedDetails.getNoticeDocuments();
+        List<ListValue<Document>> noticeDocuments = noticeServedDetails.getDocuments();
         assertThat(noticeDocuments).isEmpty();
     }
 
@@ -352,7 +387,7 @@ class NoticeOfPossessionViewTest {
         verify(pcsCase).setNoticeServedDetails(noticeServedDetailsCaptor.capture());
 
         NoticeServedDetails noticeServedDetails = noticeServedDetailsCaptor.getValue();
-        List<ListValue<Document>> noticeDocuments = noticeServedDetails.getNoticeDocuments();
+        List<ListValue<Document>> noticeDocuments = noticeServedDetails.getDocuments();
         assertThat(noticeDocuments).hasSize(1);
         assertThat(noticeDocuments.getFirst().getId()).isEqualTo(noticeDocumentId.toString());
     }
