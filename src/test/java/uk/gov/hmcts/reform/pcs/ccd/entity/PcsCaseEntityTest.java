@@ -53,4 +53,20 @@ class PcsCaseEntityTest {
         verify(genAppEntity3).setPcsCase(underTest);
     }
 
+    @Test
+    void shouldContinueGenAppCaseLevelRankFromExistingApplications() {
+        // Given
+        for (int i = 0; i < 5; i++) {
+            underTest.getGenApps().add(mock(GenAppEntity.class));
+        }
+        GenAppEntity genAppEntity = mock(GenAppEntity.class);
+
+        // When
+        underTest.addGenApp(genAppEntity);
+
+        // Then
+        verify(genAppEntity).setRank(6);
+        verify(genAppEntity).setPcsCase(underTest);
+    }
+
 }
