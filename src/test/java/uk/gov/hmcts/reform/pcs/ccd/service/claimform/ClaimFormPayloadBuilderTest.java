@@ -1543,6 +1543,26 @@ class ClaimFormPayloadBuilderTest {
             assertThat(payload.isShowGasSafetyNotUploadedReason()).isFalse();
             assertThat(payload.isShowEicrNotUploadedReason()).isFalse();
         }
+
+        @Test
+        void hidesNotUploadedReasonWhenAnsweredNoButNoReasonGiven() {
+            // No reason text -> the "why not uploaded" row must not render (else an empty row shows
+            // under the bold question - HDPI-6478). The Yes/No answer still renders.
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.WALES);
+            ClaimEntity claim = pcsCase.getClaims().getFirst();
+            claim.setEnergyPerformanceCertificateProvided(VerticalYesNo.NO);
+            claim.setGasSafetyReportProvided(VerticalYesNo.NO);
+            claim.setElectricalInstallationConditionProvided(VerticalYesNo.NO);
+            // reasons left null/blank
+            claim.setNoElectricalInstallationConditionReason("   ");
+
+            ClaimFormPayload payload = builder.build(pcsCase);
+
+            assertThat(payload.getEicrUploadedYesNo()).isEqualTo("No");
+            assertThat(payload.isShowEpcNotUploadedReason()).isFalse();
+            assertThat(payload.isShowGasSafetyNotUploadedReason()).isFalse();
+            assertThat(payload.isShowEicrNotUploadedReason()).isFalse();
+        }
     }
 
     @Nested
