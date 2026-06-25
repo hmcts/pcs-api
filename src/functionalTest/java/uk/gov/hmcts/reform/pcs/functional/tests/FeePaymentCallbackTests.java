@@ -30,7 +30,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @Slf4j
-@Tag("Functional1")
+@Tag("Functional")
 @ExtendWith(SerenityJUnit5Extension.class)
 @EnabledIfEnvironmentVariable(named = "CCD_ENABLED", matches = "true")
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
