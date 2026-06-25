@@ -8,12 +8,15 @@ import uk.gov.hmcts.ccd.sdk.api.DecentralisedConfigBuilder;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
-import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
+import uk.gov.hmcts.ccd.sdk.type.OrganisationPolicy;
+import uk.gov.hmcts.reform.pcs.LegalRepresentative;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
+import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 
-import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.claimIssuePayment;
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 
 @Component
 @AllArgsConstructor
@@ -26,7 +29,6 @@ public class CaseworkerNoticeOfChange implements CCDConfig<PCSCase, State, UserR
             .decentralisedEvent("caseworkerNoticeOfChange", this::submit)
             .forStates(State.PENDING_CASE_ISSUED, State.CASE_ISSUED)
             .name("Notice of change")
-            .showCondition(ShowConditions.NEVER_SHOW)
             .grant(Permission.CRU, UserRole.ORGANISATION_CASE_ACCESS_ADMINISTRATOR)
             .grant(Permission.CRU, UserRole.PCS_SOLICITOR)
             .grant(Permission.R, UserRole.CITIZEN)
