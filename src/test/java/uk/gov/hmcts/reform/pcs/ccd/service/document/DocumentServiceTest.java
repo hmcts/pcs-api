@@ -34,7 +34,9 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.wales.WalesDocuments;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DocumentRepository;
@@ -50,7 +52,9 @@ import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -727,6 +731,7 @@ class DocumentServiceTest {
         PcsCaseEntity pcsCase = mock(PcsCaseEntity.class);
         PartyEntity party = mock(PartyEntity.class);
         when(response.getId()).thenReturn(UUID.randomUUID());
+        setUpDefendantParty(pcsCase, party, 2);
 
         UploadedDocument defDoc1 = UploadedDocument.builder()
             .document(Document.builder()
@@ -747,6 +752,10 @@ class DocumentServiceTest {
             ListValue.<UploadedDocument>builder().id("2").value(defDoc2).build()
         );
 
+        when(documentNameService.appendDefendantPostfix(eq("file1.pdf"), any(), any()))
+            .thenReturn("file1 - Defendant 2.pdf");
+        when(documentNameService.appendDefendantPostfix(eq("file2.xlsx"), any(), any()))
+            .thenReturn("file2 - Defendant 2.xlsx");
         when(documentRepository.saveAll(anyList())).thenAnswer(inv -> inv.getArgument(0));
 
         // When
@@ -768,7 +777,7 @@ class DocumentServiceTest {
 
         assertThat(entities)
             .extracting(DocumentEntity::getFileName)
-            .containsExactly("file1.pdf", "file2.xlsx");
+            .containsExactly("file1 - Defendant 2.pdf", "file2 - Defendant 2.xlsx");
 
         assertThat(entities)
             .extracting(DocumentEntity::getContentType)
@@ -814,12 +823,38 @@ class DocumentServiceTest {
     }
 
     @Test
+    void shouldReturnEmptyListWhenNoClaimsOnCase() {
+        // Given
+        DefendantResponseEntity response = mock(DefendantResponseEntity.class);
+        PcsCaseEntity pcsCase = mock(PcsCaseEntity.class);
+        PartyEntity party = mock(PartyEntity.class);
+        when(pcsCase.getClaims()).thenReturn(Collections.emptyList());
+
+        UploadedDocument defDoc = UploadedDocument.builder()
+            .document(Document.builder().url("url1").filename("file1.pdf").binaryUrl("bin1").build())
+            .build();
+
+        List<ListValue<UploadedDocument>> uploadedDocs = List.of(
+            ListValue.<UploadedDocument>builder().id("1").value(defDoc).build()
+        );
+
+        // When
+        List<DocumentEntity> result = underTest.createDefendantUploadedDocuments(
+            uploadedDocs, response, pcsCase, party);
+
+        // Then
+        assertThat(result).isEmpty();
+        verify(documentRepository, never()).saveAll(anyList());
+    }
+
+    @Test
     void shouldFilterOutNullValuesFromDefendantEvidenceDocuments() {
         // Given
         DefendantResponseEntity response = mock(DefendantResponseEntity.class);
         PcsCaseEntity pcsCase = mock(PcsCaseEntity.class);
         PartyEntity party = mock(PartyEntity.class);
         when(response.getId()).thenReturn(UUID.randomUUID());
+        setUpDefendantParty(pcsCase, party, 1);
 
         UploadedDocument validDoc = UploadedDocument.builder()
             .document(Document.builder()
@@ -833,6 +868,8 @@ class DocumentServiceTest {
             ListValue.<UploadedDocument>builder().id("2").value(null).build()
         );
 
+        when(documentNameService.appendDefendantPostfix(eq("file1.pdf"), any(), any()))
+            .thenReturn("file1 - Defendant 1.pdf");
         when(documentRepository.saveAll(anyList())).thenAnswer(inv -> inv.getArgument(0));
 
         // When
@@ -842,7 +879,7 @@ class DocumentServiceTest {
         verify(documentRepository).saveAll(documentEntityListCaptor.capture());
         List<DocumentEntity> entities = documentEntityListCaptor.getValue();
         assertThat(entities).hasSize(1);
-        assertThat(entities.getFirst().getFileName()).isEqualTo("file1.pdf");
+        assertThat(entities.getFirst().getFileName()).isEqualTo("file1 - Defendant 1.pdf");
     }
 
     @Test
@@ -852,6 +889,7 @@ class DocumentServiceTest {
         PcsCaseEntity pcsCase = mock(PcsCaseEntity.class);
         PartyEntity party = mock(PartyEntity.class);
         when(response.getId()).thenReturn(UUID.randomUUID());
+        setUpDefendantParty(pcsCase, party, 1);
 
         UploadedDocument defDoc = UploadedDocument.builder()
             .document(Document.builder()
@@ -873,6 +911,26 @@ class DocumentServiceTest {
         assertThat(entities.getFirst().getContentType()).isNull();
         assertThat(entities.getFirst().getSize()).isNull();
     }
+
+    private static void setUpDefendantParty(PcsCaseEntity pcsCase, PartyEntity party, int defendantRank) {
+        UUID defendantId = UUID.randomUUID();
+        when(party.getId()).thenReturn(defendantId);
+
+        PartyEntity claimParty = PartyEntity.builder()
+            .id(defendantId)
+            .build();
+
+        ClaimEntity mainClaim = ClaimEntity.builder()
+            .claimParties(List.of(ClaimPartyEntity.builder()
+                .party(claimParty)
+                .role(PartyRole.DEFENDANT)
+                .rank(defendantRank)
+                .build()))
+            .build();
+
+        when(pcsCase.getClaims()).thenReturn(List.of(mainClaim));
+    }
+
 
     @Test
     void shouldSaveAdditionalDocumentsForPartyAsOtherTypeWithPartyPostfixWhenNoGenAppSelected() {
@@ -1079,6 +1137,18 @@ class DocumentServiceTest {
 
         // Then
         assertThat(actualDocumentType).isNull();
+    }
+
+
+    @ParameterizedTest
+    @MethodSource("additionalDocumentTypeScenarios")
+    void shouldMapAdditionalDocumentTypeToDocumentType(AdditionalDocumentType additionalDocumentType,
+                                                       DocumentType expectedDocumentType) {
+        // When
+        DocumentType actualDocumentType = underTest.mapAdditionalDocumentTypeToDocumentType(additionalDocumentType);
+
+        // Then
+        assertThat(actualDocumentType).isEqualTo(expectedDocumentType);
     }
 
     private static Stream<Arguments> additionalDocumentCategoryScenarios() {
