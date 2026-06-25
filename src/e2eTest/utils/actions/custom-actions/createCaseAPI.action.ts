@@ -193,7 +193,7 @@ export class CreateCaseAPIAction implements IAction {
           await performAction('linkSolicitorAPI',getDetails.email as string);
         }
         console.log(`\n✅ GET DEFENDANT ID SUCCESSFUL : STATUS ${createResponse.status}`);
-      }    
+      }
 
     } catch (error: any) {
       const status = error?.response?.status;

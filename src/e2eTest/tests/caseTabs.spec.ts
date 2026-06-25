@@ -27,6 +27,11 @@ test.beforeEach(async ({ page }, testInfo) => {
     await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayloadCaseDetails });
     await performAction('getCaseAPI', {req:'Claim Submission Time',email: user.defendantSolicitor.email, password: user.defendantSolicitor.password});
     await performAction('fetchCurrentUserAPI', 'Claimant');
+  } else if (testInfo.title.includes('CaseFile')) {
+    await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
+    await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayloadCaseFileView });
+    await performAction('getCaseAPI', 'Claim Submission Time');
+    await performAction('fetchCurrentUserAPI', 'Claimant');
   } else if (testInfo.title.includes('CaseList')) {
     await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
     await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayload });
@@ -41,7 +46,7 @@ test.beforeEach(async ({ page }, testInfo) => {
   }
 
   if (testInfo.title.includes('CaseList')) {
-    await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}/cases`);   
+    await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}/cases`);
 
   } else {
     await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/${getCaseTypeId()}/${process.env.CASE_NUMBER}#Summary`);
@@ -329,10 +334,36 @@ test.describe('[Case tabs - England Journey] @nightly', async () => {
 
   });
 
+  test('Case tabs - CaseFile View test @MAC @regression', async () => {
+    await performValidation('mainHeader', home.caseSummary)
+    await performAction('clickTab', home.caseFileView);
+    await performAction('validateCaseFileViewFolders', home.caseFileFolders);
+    await performAction('validateCaseFileViewIndividualFolder', {
+      folder: 'Property documents',
+      submitPayload: submitCaseApiData.submitCasePayloadCaseFileView,
+    });
+    await performAction('validateCaseFileViewIndividualFolder', {
+      folder: 'Statements of case',
+      submitPayload: submitCaseApiData.submitCasePayloadCaseFileView,
+    });
+    await performAction('validateCaseFileViewIndividualFolder', {
+      folder: 'Evidence',
+      submitPayload: submitCaseApiData.submitCasePayloadCaseFileView,
+    });
+    await performAction('validateCaseFileViewIndividualFolder', {
+      folder: 'Correspondence',
+      submitPayload: submitCaseApiData.submitCasePayloadCaseFileView,
+    });
+    await performAction('validateCaseFileViewIndividualFolder', {
+      folder: 'Uncategorised documents',
+      submitPayload: submitCaseApiData.submitCasePayloadCaseFileView,
+    });
+  });
+
   test('Case tabs - CaseList view test @MAC @regression', async () => {
     await performValidation('mainHeader', home.mainHeader);
     await performAction('filterCaseFromCaseList', formatCaseStateText(caseInfo.state));
-    await performAction('validateCaseListTable',{
+    await performAction('validateCaseListTable', {
       createPayload: createCaseApiData.createCasePayload,
       submitPayload: submitCaseApiData.submitCasePayload,
     })

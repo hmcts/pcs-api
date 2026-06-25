@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.view;
 
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalReasons;
@@ -92,34 +93,37 @@ public class ClaimView {
     }
 
     private static List<ListValue<Document>> getEnergyPerformanceCertificate(PcsCaseEntity pcsCaseEntity) {
-        if (pcsCaseEntity.getDocuments().isEmpty()) {
+        if (CollectionUtils.isEmpty(pcsCaseEntity.getDocuments())) {
             return new ArrayList<>();
         }
 
         return pcsCaseEntity.getDocuments().stream()
             .filter(ClaimView::isEnergyPerformanceCertificate)
+            .filter(DocumentsView::isDescriptionEmpty)
             .map(ClaimView::toDocument)
             .toList();
     }
 
     private static List<ListValue<Document>> getGasSafetyReport(PcsCaseEntity pcsCaseEntity) {
-        if (pcsCaseEntity.getDocuments().isEmpty()) {
+        if (CollectionUtils.isEmpty(pcsCaseEntity.getDocuments())) {
             return new ArrayList<>();
         }
 
         return pcsCaseEntity.getDocuments().stream()
             .filter(ClaimView::isGasSafetyReport)
+            .filter(DocumentsView::isDescriptionEmpty)
             .map(ClaimView::toDocument)
             .toList();
     }
 
     private static List<ListValue<Document>> getElectricalInstallationCondition(PcsCaseEntity pcsCaseEntity) {
-        if (pcsCaseEntity.getDocuments().isEmpty()) {
+        if (CollectionUtils.isEmpty(pcsCaseEntity.getDocuments())) {
             return new ArrayList<>();
         }
 
         return pcsCaseEntity.getDocuments().stream()
             .filter(ClaimView::isElectricalInstallationCondition)
+            .filter(DocumentsView::isDescriptionEmpty)
             .map(ClaimView::toDocument)
             .toList();
     }
@@ -129,16 +133,17 @@ public class ClaimView {
     }
 
     private static boolean isGasSafetyReport(DocumentEntity documentEntity) {
-        return documentEntity.getType() == DocumentType.GAS_SAFETY_REPORT;
+        return documentEntity.getType() == DocumentType.GAS_SAFETY_CERTIFICATE;
     }
 
     private static boolean isElectricalInstallationCondition(DocumentEntity documentEntity) {
-        return documentEntity.getType() == DocumentType.ELECTRICAL_INSTALLATION_CONDITION;
+        return documentEntity.getType() == DocumentType.EICR_REPORT;
     }
 
     private static ListValue<Document> toDocument(DocumentEntity documentEntity) {
         return ListValue.<Document>builder()
-            .value(
+                .id(documentEntity.getId().toString())
+                .value(
                 Document.builder()
                     .url(documentEntity.getUrl())
                     .filename(documentEntity.getFileName())
