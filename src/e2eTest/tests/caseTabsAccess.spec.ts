@@ -50,7 +50,7 @@ users.forEach(({ user, email, password, tabAccess }) => {
   test(`Case tabs Access - Check for update access for user ${user}`, async ({ page, context }) => {
 
     if (user === 'defendantSolicitor') {
-      await performAction('getCaseAPI', { req: 'Link Solicitor', email: email, password: password });
+      await performAction('getCaseAPIDynamic', { req: 'Link Solicitor', email: email, password: password });
     } else if (user === 'claimantSolicitor') {
       await performAction('createCaseAPIDynamicUsers', { data: createCaseApiData.createCasePayload, email: email, password: password });
       await performAction('submitCaseAPIDynamicUsers', { data: submitCaseApiData.submitCasePayloadDefault, email: email, password: password });

@@ -52,6 +52,7 @@ export class ActionRegistry {
     ['submitCaseAPI', new CreateCaseAPIAction()],
     ['deleteCaseRole', new CreateCaseAPIAction()],
     ['getCaseAPI', new CreateCaseAPIAction()],
+    ['getCaseAPIDynamic', new CreateCaseAPIAction()],
     ['linkSolicitorAPI', new LinkSolicitorAPIAction()],
     ['fetchCurrentUserAPI', new CreateCaseAPIAction()],
     ['createCaseAPIDynamicUsers', new CreateCaseAPIAction()],

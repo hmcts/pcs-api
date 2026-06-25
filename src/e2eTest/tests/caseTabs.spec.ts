@@ -15,17 +15,17 @@ test.beforeEach(async ({ page }, testInfo) => {
   if (testInfo.title.includes('Summary')) {
     await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
     await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayloadCaseSummary });
-    await performAction('getCaseAPI', {req:'Claim Submission Time',email: user.defendantSolicitor.email, password: user.defendantSolicitor.password});
+    await performAction('getCaseAPI', 'Claim Submission Time');
     await performAction('fetchCurrentUserAPI', 'Claimant');
   } else if (testInfo.title.includes('Details')) {
     await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
     await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayloadCaseDetails });
-    await performAction('getCaseAPI', {req:'Claim Submission Time',email: user.defendantSolicitor.email, password: user.defendantSolicitor.password});
+    await performAction('getCaseAPI', 'Claim Submission Time');
     await performAction('fetchCurrentUserAPI', 'Claimant');
   } else if (testInfo.title.includes('Notes')) {
     await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
     await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayloadCaseDetails });
-    await performAction('getCaseAPI', {req:'Claim Submission Time',email: user.defendantSolicitor.email, password: user.defendantSolicitor.password});
+    await performAction('getCaseAPI', 'Claim Submission Time');
     await performAction('fetchCurrentUserAPI', 'Claimant');
   } else if (testInfo.title.includes('CaseFile')) {
     await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
@@ -35,13 +35,12 @@ test.beforeEach(async ({ page }, testInfo) => {
   } else if (testInfo.title.includes('CaseList')) {
     await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
     await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayload });
-    await performAction('getCaseAPI', {req:'Claim Submission Time',email: user.defendantSolicitor.email, password: user.defendantSolicitor.password});
+    await performAction('getCaseAPI', 'Claim Submission Time');
     await performAction('fetchCurrentUserAPI', 'Claimant');
   } else {
     await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
     await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayloadCaseTab });
-    await performAction('getCaseAPI', {req:'Link Solicitor',email: user.defendantSolicitor.email, password: user.defendantSolicitor.password});
-    //await performAction('getCaseAPI', 'Link Solicitor');
+    await performAction('getCaseAPI', 'Link Solicitor');
     await performAction('fetchCurrentUserAPI', 'Defendant');
   }
 

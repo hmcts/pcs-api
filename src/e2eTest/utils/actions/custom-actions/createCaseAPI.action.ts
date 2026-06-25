@@ -19,7 +19,8 @@ export class CreateCaseAPIAction implements IAction {
       ['deleteCaseRole', () => this.deleteCaseRole(fieldName)],
       ['enforceCaseAPI', () => this.enforceCaseAPI(fieldName)],
       ['fetchCurrentUserAPI', () => this.fetchCurrentUserAPI(fieldName)],
-      ['getCaseAPI', () => this.getCaseAPI(fieldName as actionRecord)],
+      ['getCaseAPI', () => this.getCaseAPI(fieldName)],
+      ['getCaseAPIDynamic', () => this.getCaseAPIDynamic(fieldName as actionRecord)],
       ['createCaseAPIDynamicUsers', () => this.createCaseAPIDynamicUsers(fieldName as actionRecord)],
       ['submitCaseAPIDynamicUsers', () => this.submitCaseAPIDynamicUsers(fieldName as actionRecord)],
     ]);
@@ -174,7 +175,49 @@ export class CreateCaseAPIAction implements IAction {
     }
   }
 
-  private async getCaseAPI(getDetails: actionRecord): Promise<void> {
+  private async getCaseAPI(getDetails: actionData): Promise<void> {
+    const getCaseApi = Axios.create(createCaseEventTokenApiData.createCaseEventTokenApiInstance());
+    try {
+      const createResponse = await getCaseApi.get(getCaseApiData.getCaseApiEndPoint());
+      if (typeof getDetails === 'string' && getDetails === 'Claim Submission Time') {
+        process.env.Submission_TIME = formatDateTimeBST(createResponse.data.last_state_modified_on);
+        console.log(`\n✅ The claim was submitted on "${process.env.Submission_TIME}"`)
+      } else {
+        await this.generateSolicitorAccessToken(user.defendantSolicitor.email as string,user.defendantSolicitor.password as string);
+        const allDefendants = createResponse.data.data.allDefendants;
+        const defendantIds = allDefendants.map((d: any) => d.id);
+        if (defendantIds.length === 0) throw new Error(`No Defendants ID retrieved and the status is ${createResponse.status}`);
+
+        for (const defendantId of defendantIds) {
+          process.env.Defendant_ID = defendantId;
+
+          await performAction('linkSolicitorAPI',user.defendantSolicitor.email as string);
+        }
+        console.log(`\n✅ GET DEFENDANT ID SUCCESSFUL : STATUS ${createResponse.status}`);
+      }
+
+    } catch (error: any) {
+      const status = error?.response?.status;
+      const responseBody = error?.response?.data;
+
+      console.error("=== ERROR RESPONSE ===");
+      console.error("HTTP Status:", status);
+      console.error("Exception:", responseBody?.exception);
+      console.error("Error:", responseBody?.error);
+      console.error("Message:", responseBody?.message);
+      console.error("Path:", responseBody?.path);
+      console.error("Timestamp:", responseBody?.timestamp);
+      console.error("Full response body:", JSON.stringify(responseBody, null, 2));
+
+      if (!status) {
+        throw new Error('Defendant id not retrieved: no response from server.');
+      }
+      throw new Error(`Retrieving defendant id  failed with status ${status}.Response received is ${responseBody?.message}}`);
+    }
+
+  }
+
+  private async getCaseAPIDynamic(getDetails: actionRecord): Promise<void> {
     const getCaseApi = Axios.create(createCaseEventTokenDynamicApiData.createCaseEventTokenApiInstance());
     try {
       const createResponse = await getCaseApi.get(getCaseApiData.getCaseApiEndPoint());
