@@ -57,6 +57,7 @@ public class PcsNoticeOfChange implements CCDConfig<PCSCase, State, UserRole> {
 
     @Override
     public void configure(ConfigBuilder<PCSCase, State, UserRole> builder) {
+
         var noticeOfChange = builder.noticeOfChange()
             .validate(this::validate)
             .submit(this::submit);
