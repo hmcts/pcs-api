@@ -20,8 +20,6 @@ import org.slf4j.LoggerFactory;
 import uk.gov.hmcts.reform.pcs.ccd.model.ClaimFormTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimActivityLogService;
 import uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimFormService;
-import uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimFormStage;
-import uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimFormStageException;
 
 import java.time.Duration;
 import java.util.List;
@@ -174,8 +172,7 @@ class ClaimFormGenerationComponentTest {
         when(taskInstance.getData()).thenReturn(data);
         execution.consecutiveFailures = maxRetries;
         when(executionContext.getExecution()).thenReturn(execution);
-        doThrow(new ClaimFormStageException(ClaimFormStage.RENDER, new RuntimeException("docassembly 500")))
-            .when(claimFormService).generateAndAttach(999L);
+        doThrow(new RuntimeException("docassembly 500")).when(claimFormService).generateAndAttach(999L);
 
         CustomTask<ClaimFormTaskData> task = component.claimFormGenerationTask();
         assertThatThrownBy(() -> task.execute(taskInstance, executionContext))
@@ -188,12 +185,11 @@ class ClaimFormGenerationComponentTest {
         assertThat(terminalErrors).hasSize(1);
 
         ILoggingEvent event = terminalErrors.getFirst();
-        assertThat(event.getFormattedMessage()).contains("999").contains("docassembly 500").contains("RENDER");
+        assertThat(event.getFormattedMessage()).contains("999").contains("docassembly 500");
         assertThat(event.getMDCPropertyMap())
             .containsEntry("caseReference", "999")
             .containsEntry("taskName", "claim-form-generation-task")
             .containsEntry("terminalFailure", "true")
-            .containsEntry("failureStage", "RENDER")
             .containsEntry("failureReason", "docassembly 500");
 
         // The successful claim_activity_log FAILURE-row write is also logged.
@@ -201,26 +197,6 @@ class ClaimFormGenerationComponentTest {
             .anyMatch(e -> e.getLevel() == Level.ERROR
                 && e.getFormattedMessage()
                     .contains("Recorded DOCUMENTS_CREATED/FAILURE in claim_activity_log for case 999"));
-    }
-
-    @Test
-    @DisplayName("Terminal failure with an unstaged exception reports failureStage=UNKNOWN")
-    void terminalFailureWithUnstagedExceptionReportsUnknownStage() {
-        ClaimFormTaskData data = ClaimFormTaskData.builder().caseReference("999").build();
-        when(taskInstance.getData()).thenReturn(data);
-        execution.consecutiveFailures = maxRetries;
-        when(executionContext.getExecution()).thenReturn(execution);
-        doThrow(new RuntimeException("boom")).when(claimFormService).generateAndAttach(999L);
-
-        CustomTask<ClaimFormTaskData> task = component.claimFormGenerationTask();
-        assertThatThrownBy(() -> task.execute(taskInstance, executionContext))
-            .isInstanceOf(RuntimeException.class);
-
-        assertThat(logAppender.list)
-            .filteredOn(e -> e.getLevel() == Level.ERROR
-                && e.getFormattedMessage().contains("permanently failed"))
-            .singleElement()
-            .satisfies(e -> assertThat(e.getMDCPropertyMap()).containsEntry("failureStage", "UNKNOWN"));
     }
 
     @Test

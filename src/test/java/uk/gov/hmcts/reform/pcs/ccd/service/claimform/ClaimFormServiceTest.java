@@ -69,49 +69,8 @@ class ClaimFormServiceTest {
         doThrow(new RuntimeException("attach failed")).when(persistenceService).attach(CASE_REFERENCE, DM_STORE_URL);
 
         assertThatThrownBy(() -> claimFormService.generateAndAttach(CASE_REFERENCE))
-            .isInstanceOf(ClaimFormStageException.class)
-            .extracting(e -> ((ClaimFormStageException) e).getStage())
-            .isEqualTo(ClaimFormStage.STORE);
+            .isInstanceOf(RuntimeException.class);
 
         verify(documentImportService).deleteDocument(DM_STORE_URL);
-    }
-
-    @Test
-    void tagsPayloadBuildFailureWithPayloadStage() {
-        doThrow(new RuntimeException("db read failed"))
-            .when(persistenceService).buildPayloadIfNotAttached(CASE_REFERENCE);
-
-        assertThatThrownBy(() -> claimFormService.generateAndAttach(CASE_REFERENCE))
-            .isInstanceOf(ClaimFormStageException.class)
-            .extracting(e -> ((ClaimFormStageException) e).getStage())
-            .isEqualTo(ClaimFormStage.PAYLOAD);
-    }
-
-    @Test
-    void tagsRenderFailureWithRenderStageAndDoesNotAttach() {
-        ClaimFormPayload payload = ClaimFormPayload.builder().build();
-        when(persistenceService.buildPayloadIfNotAttached(CASE_REFERENCE)).thenReturn(Optional.of(payload));
-        doThrow(new RuntimeException("docmosis 500")).when(documentGenerator).generate(payload);
-
-        assertThatThrownBy(() -> claimFormService.generateAndAttach(CASE_REFERENCE))
-            .isInstanceOf(ClaimFormStageException.class)
-            .extracting(e -> ((ClaimFormStageException) e).getStage())
-            .isEqualTo(ClaimFormStage.RENDER);
-
-        verify(persistenceService, never()).attach(anyLong(), anyString());
-        verifyNoInteractions(documentImportService);
-    }
-
-    @Test
-    void stageExceptionCarriesUnderlyingCauseAndMessage() {
-        RuntimeException cause = new RuntimeException("docmosis 500");
-        ClaimFormPayload payload = ClaimFormPayload.builder().build();
-        when(persistenceService.buildPayloadIfNotAttached(CASE_REFERENCE)).thenReturn(Optional.of(payload));
-        doThrow(cause).when(documentGenerator).generate(payload);
-
-        assertThatThrownBy(() -> claimFormService.generateAndAttach(CASE_REFERENCE))
-            .isInstanceOf(ClaimFormStageException.class)
-            .hasMessage("docmosis 500")
-            .hasCause(cause);
     }
 }
