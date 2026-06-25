@@ -26,7 +26,7 @@ public class StoredDocumentConsumerTest {
     public V4Pact fetchStoredDocumentPact(PactDslWithProvider builder) {
 
         return builder
-            .given("Stored Document exists and can be retrieved by documentId")
+            .given("A Stored Document exists and can be retrieved by documentId")
             .uponReceiving("GET request for a stored document by id")
             .path("/cases/documents/" + DOCUMENT_ID)
             .method("GET")
