@@ -1,4 +1,4 @@
--- HDPI-7336: Convert internal-only UUID primary keys to BIGINT IDENTITY (batch 2).
+-- Convert internal-only UUID primary keys to BIGINT IDENTITY (batch 2).
 --
 -- Pre-go-live cutover migration: case data is intentionally cleared down and primary
 -- keys are re-typed. NO backfill - only valid before go-live while no live cases exist.
