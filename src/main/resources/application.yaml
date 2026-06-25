@@ -103,13 +103,13 @@ spring:
             scope: openid,profile,roles
         provider:
           idam:
-            token-uri: ${IDAM_API_URL:http://localhost:5062}/o/token
+            token-uri: ${IDAM_API_URL}/o/token
 flyway:
   noop:
     strategy: ${FLYWAY_NOOP_STRATEGY:false}
 idam:
   api:
-    url: ${IDAM_API_URL:http://localhost:5062}
+    url: ${IDAM_API_URL}
   s2s-auth:
     url: ${IDAM_S2S_AUTH_URL:http://localhost:4502}
     totp_secret: ${PCS_API_S2S_SECRET:AAAAAAAAAAAAAAAA}
