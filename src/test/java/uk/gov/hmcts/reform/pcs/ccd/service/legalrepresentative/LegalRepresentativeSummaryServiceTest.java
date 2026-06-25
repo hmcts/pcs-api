@@ -14,7 +14,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativ
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.PartyLegalRepresentativeOrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.DefendantPartyExtractor;
-import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 
 import java.util.List;
 
@@ -26,9 +25,6 @@ class LegalRepresentativeSummaryServiceTest {
 
     @InjectMocks
     private LegalRepresentativeSummaryService legalRepresentativeSummaryService;
-
-    @Mock
-    private OrganisationService organisationService;
 
     @Mock
     private DefendantPartyExtractor defendantPartyExtractor;
@@ -58,8 +54,7 @@ class LegalRepresentativeSummaryServiceTest {
 
     @BeforeEach
     void setUp() {
-        legalRepresentativeSummaryService = new LegalRepresentativeSummaryService(organisationService,
-                                                                                  defendantPartyExtractor);
+        legalRepresentativeSummaryService = new LegalRepresentativeSummaryService(defendantPartyExtractor);
         ReflectionTestUtils.setField(legalRepresentativeSummaryService, "frontendUrl",
                                      "testUrl");
     }
@@ -88,10 +83,8 @@ class LegalRepresentativeSummaryServiceTest {
 
         PCSCase pcsCase = PCSCase.builder().build();
 
-        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(organisationId);
-
         // when
-        legalRepresentativeSummaryService.handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity);
+        legalRepresentativeSummaryService.handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity, organisationId);
 
         // then
         assertThat(pcsCase.getSummaryLegalRepresentativeMarkdown()).isEqualTo(UPDATE_DETAILS_MARKDOWN);
@@ -121,10 +114,8 @@ class LegalRepresentativeSummaryServiceTest {
 
         PCSCase pcsCase = PCSCase.builder().build();
 
-        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(organisationId);
-
         // when
-        legalRepresentativeSummaryService.handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity);
+        legalRepresentativeSummaryService.handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity, organisationId);
 
         // then
         assertThat(pcsCase.getSummaryLegalRepresentativeMarkdown()).isEqualTo(RESPOND_TO_CLAIM_MARKDOWN);
@@ -152,10 +143,8 @@ class LegalRepresentativeSummaryServiceTest {
 
         when(defendantPartyExtractor.summaryScreenSafeExtractDefendants(pcsCaseEntity)).thenReturn(parties);
 
-        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(organisationId);
-
         // when
-        legalRepresentativeSummaryService.handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity);
+        legalRepresentativeSummaryService.handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity, organisationId);
 
         // then
         assertThat(pcsCase.getSummaryLegalRepresentativeMarkdown()).isEmpty();
@@ -184,10 +173,8 @@ class LegalRepresentativeSummaryServiceTest {
 
         PCSCase pcsCase = PCSCase.builder().build();
 
-        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(organisationId);
-
         // when
-        legalRepresentativeSummaryService.handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity);
+        legalRepresentativeSummaryService.handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity, organisationId);
 
         // then
         assertThat(pcsCase.getSummaryLegalRepresentativeMarkdown()).isEmpty();
@@ -216,10 +203,8 @@ class LegalRepresentativeSummaryServiceTest {
 
         PCSCase pcsCase = PCSCase.builder().build();
 
-        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(organisationId);
-
         // when
-        legalRepresentativeSummaryService.handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity);
+        legalRepresentativeSummaryService.handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity, organisationId);
 
         // then
         assertThat(pcsCase.getSummaryLegalRepresentativeMarkdown()).isEmpty();

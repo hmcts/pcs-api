@@ -10,8 +10,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.LegalRepPartySelectionService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.LegalRepForDefendantAccessValidator;
-import uk.gov.hmcts.reform.pcs.reference.service.OrganisationDetailsService;
-import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 
 import java.util.List;
 
@@ -22,9 +21,8 @@ public class LegalRepStartEventStrategy implements RespondPossessionClaimStartEv
 
     private final PcsCaseService pcsCaseService;
     private final LegalRepForDefendantAccessValidator legalRepForDefendantAccessValidator;
-    private final SecurityContextService securityContextService;
     private final LegalRepPartySelectionService legalRepPartySelectionService;
-    private final OrganisationDetailsService organisationDetailsService;
+    private final OrganisationService organisationService;
 
     @Override
     public boolean supports(List<String> roles) {
@@ -33,8 +31,7 @@ public class LegalRepStartEventStrategy implements RespondPossessionClaimStartEv
 
     @Override
     public PCSCase loadDraft(long caseReference, PCSCase pcsCase) {
-        String organisationId = organisationDetailsService
-            .getOrganisationIdentifier(securityContextService.getCurrentUserId().toString());
+        String organisationId = organisationService.getOrganisationIdForCurrentUser();
 
         List<PartyEntity> defendantPartiesLinkedAndActive = loadAndValidateDefendants(caseReference, organisationId);
 

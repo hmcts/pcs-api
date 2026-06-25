@@ -10,7 +10,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.PartyLegalRepresentativeOrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.DefendantPartyExtractor;
-import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 
 import java.util.List;
 import java.util.Optional;
@@ -43,15 +42,15 @@ public class LegalRepresentativeSummaryService {
         </p>
         """;
 
-    private final OrganisationService organisationService;
     private final DefendantPartyExtractor defendantPartyExtractor;
 
     @Value("${frontend.url}")
     private String frontendUrl;
 
-    public void handleLegalRepresentativeSummary(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
+    public void handleLegalRepresentativeSummary(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity,
+                                                 String organisationIdForCurrentUser) {
         Optional<PartyLegalRepresentativeOrganisationEntity> partyLink =
-            isActivelyLinkedToAnyDefendant(pcsCaseEntity);
+            isActivelyLinkedToAnyDefendant(pcsCaseEntity, organisationIdForCurrentUser);
 
         if (partyLink.isPresent()) {
             setLegalRepresentativeFields(pcsCase, partyLink.get());
@@ -74,14 +73,15 @@ public class LegalRepresentativeSummaryService {
     }
 
     private Optional<PartyLegalRepresentativeOrganisationEntity> isActivelyLinkedToAnyDefendant(PcsCaseEntity
-                                                                                                    pcsCaseEntity) {
+                                                                                                    pcsCaseEntity,
+                                                                                                String orgId) {
         List<PartyEntity> defendants = defendantPartyExtractor.summaryScreenSafeExtractDefendants(pcsCaseEntity);
         return defendants.stream()
             .flatMap(partyEntity -> partyEntity.getPartyLegalRepresentativeOrganisationList().stream())
             .filter(claimPartyLegalRepresentative ->
                         claimPartyLegalRepresentative.getLegalRepresentativeOrganisation()
                             .getOrganisationId().equals(
-                                organisationService.getOrganisationIdForCurrentUser())
+                                orgId)
                             && claimPartyLegalRepresentative.getActive().equals(YesOrNo.YES))
             .findFirst();
     }

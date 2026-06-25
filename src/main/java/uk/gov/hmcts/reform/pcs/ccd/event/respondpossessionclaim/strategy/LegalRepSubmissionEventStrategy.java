@@ -14,8 +14,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.ClaimResponseS
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.DefendantResponseService;
 import uk.gov.hmcts.reform.pcs.ccd.util.SelectedPartyRetriever;
 import uk.gov.hmcts.reform.pcs.exception.DraftNotFoundException;
-import uk.gov.hmcts.reform.pcs.reference.service.OrganisationDetailsService;
-import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 
 import java.util.List;
 import java.util.Optional;
@@ -32,8 +31,7 @@ public class LegalRepSubmissionEventStrategy implements RespondPossessionClaimSu
     private final DefendantResponseService defendantResponseService;
     private final SelectedPartyRetriever selectedPartyRetriever;
     private final SubmitResponseFactory submitResponseFactory;
-    private final OrganisationDetailsService organisationDetailsService;
-    private final SecurityContextService securityContextService;
+    private final OrganisationService organisationService;
 
     @Override
     public boolean supports(List<String> roles) {
@@ -48,8 +46,7 @@ public class LegalRepSubmissionEventStrategy implements RespondPossessionClaimSu
             .getCurrentRepresentedPartyId(eventPayload.caseData())
             .orElseThrow(() -> new IllegalStateException("No selected responding party id for respond to claim"));
 
-        String organisationId = organisationDetailsService
-            .getOrganisationIdentifier(securityContextService.getCurrentUserId().toString());
+        String organisationId = organisationService.getOrganisationIdForCurrentUser();
 
         PCSCase draftData = draftCaseDataService
             .getUnsubmittedCaseData(caseReference, respondPossessionClaim, representedPartyId,

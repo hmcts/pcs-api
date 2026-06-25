@@ -9,7 +9,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
-import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -18,23 +17,22 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class DocumentsView {
 
-    private final OrganisationService organisationService;
     private final GenAppVisibilityService genAppVisibilityService;
 
-    public void setCaseFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
-        pcsCase.setAllDocuments(mapAndWrapDocuments(pcsCaseEntity));
+    public void setCaseFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity, String organisationIdForCurrentUser) {
+        pcsCase.setAllDocuments(mapAndWrapDocuments(pcsCaseEntity, organisationIdForCurrentUser));
     }
 
-    private List<ListValue<Document>> mapAndWrapDocuments(PcsCaseEntity pcsCaseEntity) {
+    private List<ListValue<Document>> mapAndWrapDocuments(PcsCaseEntity pcsCaseEntity,
+                                                          String organisationIdForCurrentUser) {
 
         if (pcsCaseEntity.getDocuments().isEmpty()) {
             return List.of();
         }
 
-        String orgId = organisationService.getOrganisationIdForCurrentUser();
-
         return pcsCaseEntity.getDocuments().stream()
-            .filter(documentEntity -> this.isDocumentVisibleToUser(documentEntity, orgId))
+            .filter(documentEntity -> this.isDocumentVisibleToUser(documentEntity,
+                                                                   organisationIdForCurrentUser))
             .map(entity -> ListValue.<Document>builder()
                 .id(entity.getId().toString())
                 .value(Document.builder()

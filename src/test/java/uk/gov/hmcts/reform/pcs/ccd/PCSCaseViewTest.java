@@ -45,6 +45,7 @@ import uk.gov.hmcts.reform.pcs.ccd.view.globalsearch.CaseFieldsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.globalsearch.SearchCriteriaIndexer;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.time.LocalDateTime;
@@ -127,6 +128,8 @@ class PCSCaseViewTest {
     private CaseListView caseListView;
     @Mock
     private LegalRepresentativeSummaryService legalRepresentativeSummaryService;
+    @Mock
+    private OrganisationService organisationService;
 
     private PCSCaseView underTest;
 
@@ -142,7 +145,7 @@ class PCSCaseViewTest {
                                     statementOfTruthView, caseFieldsView, caseLinkView, enforcementOrderMediator,
                                     caseNoteView, caseTabView, partiesView, genAppsView, caseFlagsView,
                                     searchCriteriaIndexer, caseListView,
-                                    legalRepresentativeSummaryService
+                                    legalRepresentativeSummaryService, organisationService
         );
     }
 
@@ -294,13 +297,16 @@ class PCSCaseViewTest {
 
     @Test
     void shouldSetCaseFieldsInViewHelpers() {
+        // Given
+        String orgId = "org";
+        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(orgId);
         // When
         PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
 
         // Then
         verify(partiesView).setCaseFields(pcsCase, pcsCaseEntity);
         verify(claimView).setCaseFields(pcsCase, pcsCaseEntity);
-        verify(documentsView).setCaseFields(pcsCase, pcsCaseEntity);
+        verify(documentsView).setCaseFields(pcsCase, pcsCaseEntity, orgId);
         verify(tenancyLicenceView).setCaseFields(pcsCase, pcsCaseEntity);
         verify(claimGroundsView).setCaseFields(pcsCase, pcsCaseEntity);
         verify(rentDetailsView).setCaseFields(pcsCase, pcsCaseEntity);
@@ -311,8 +317,9 @@ class PCSCaseViewTest {
         verify(statementOfTruthView).setCaseFields(pcsCase, pcsCaseEntity);
         verify(caseLinkView).setCaseFields(pcsCase, pcsCaseEntity);
         verify(caseFlagsView).setCaseFields(pcsCase, pcsCaseEntity);
-        verify(genAppsView).setCaseFields(pcsCase, pcsCaseEntity);
+        verify(genAppsView).setCaseFields(pcsCase, pcsCaseEntity, orgId);
         verify(caseListView).setCaseFields(pcsCase);
+        verify(legalRepresentativeSummaryService).handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity, orgId);
     }
 
     @Test

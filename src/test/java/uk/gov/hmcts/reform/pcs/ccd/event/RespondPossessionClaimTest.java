@@ -47,7 +47,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.PossessionClai
 import uk.gov.hmcts.reform.pcs.ccd.util.SelectedPartyRetriever;
 import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
 import uk.gov.hmcts.reform.pcs.idam.UserInfo;
-import uk.gov.hmcts.reform.pcs.reference.service.OrganisationDetailsService;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.ArrayList;
@@ -117,7 +117,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
     @Mock
     private SubmitResponseFactory submitResponseFactory;
     @Mock
-    private OrganisationDetailsService organisationDetailsService;
+    private OrganisationService organisationService;
 
     @BeforeEach
     void setUp() {
@@ -137,13 +137,12 @@ class RespondPossessionClaimTest extends BaseEventTest {
                                                   defendantResponseRepository),
                     new LegalRepStartEventStrategy(pcsCaseService,
                                                    legalRepForDefendantAccessValidator,
-                                                   securityContextService,
                                                    new LegalRepPartySelectionService(selectedPartyRetriever,
                                                                                      defendantResponseRepository,
                                                                                      draftCaseDataService,
                                                                                      responseMapper,
                                                                                      possessionClaimMerger),
-                                                   organisationDetailsService)
+                                                   organisationService)
             )
         );
 
@@ -154,8 +153,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
                                                         defendantResponseService,
                                                         selectedPartyRetriever,
                                                         submitResponseFactory,
-                                                        organisationDetailsService,
-                                                        securityContextService),
+                                                        organisationService),
 
                     new CitizenSubmissionEventStrategy(draftCaseDataService,
                                                        claimResponseService,
@@ -676,7 +674,6 @@ class RespondPossessionClaimTest extends BaseEventTest {
     @Test
     void shouldReturnRepresentedPartiesOnlyWhenNoPartyContextProvided_ForLegalRepresentativeUser() {
         // given
-        UUID legalRepUserId = UUID.randomUUID();
         UUID representedPartyId = UUID.randomUUID();
         UUID differentPartyId = UUID.randomUUID();
 
@@ -695,8 +692,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
         String orgId = "org";
         String legalRepOrgId = UUID.randomUUID().toString();
 
-        when(securityContextService.getCurrentUserId()).thenReturn(legalRepUserId);
-        when(organisationDetailsService.getOrganisationIdentifier(legalRepUserId.toString())).thenReturn(orgId);
+        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(orgId);
         when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(caseEntity);
         when(legalRepForDefendantAccessValidator.validateAndGetDefendants(caseEntity, orgId))
             .thenReturn(List.of(representedParty, representedParty2));
@@ -730,14 +726,11 @@ class RespondPossessionClaimTest extends BaseEventTest {
         PartyEntity representedParty2 = PartyEntity.builder().id(differentPartyId).build();
         PcsCaseEntity caseEntity = PcsCaseEntity.builder().build();
         String orgId = "org";
-        String legalRepOrgId = UUID.randomUUID().toString();
-
         when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
-        when(organisationDetailsService.getOrganisationIdentifier(legalRepUserId.toString())).thenReturn(orgId);
+        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(orgId);
         when(userInfo.getRoles()).thenReturn(List.of(UserRole.DEFENDANT_SOLICITOR.getRole()));
         when(selectedPartyRetriever.getSelectedPartyId(caseData)).thenReturn(Optional.of(representedPartyId));
         when(responseMapper.mapFrom(caseData, representedParty)).thenReturn(response);
-        when(securityContextService.getCurrentUserId()).thenReturn(legalRepUserId);
         when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(caseEntity);
         when(legalRepForDefendantAccessValidator.validateAndGetDefendants(caseEntity, orgId))
             .thenReturn(List.of(representedParty, representedParty2));
@@ -790,12 +783,11 @@ class RespondPossessionClaimTest extends BaseEventTest {
         String legalRepOrgId = UUID.randomUUID().toString();
         when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
         when(userInfo.getRoles()).thenReturn(List.of(UserRole.DEFENDANT_SOLICITOR.getRole()));
-        when(organisationDetailsService.getOrganisationIdentifier(legalRepUserId.toString())).thenReturn(orgId);
+        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(orgId);
         when(selectedPartyRetriever.getSelectedPartyId(caseData)).thenReturn(Optional.of(representedPartyId));
         when(draftCaseDataService.getUnsubmittedCaseData(TEST_CASE_REFERENCE, respondPossessionClaim,
                                                          representedPartyId, orgId))
             .thenReturn(Optional.of(savedDraft));
-        when(securityContextService.getCurrentUserId()).thenReturn(legalRepUserId);
         when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(caseEntity);
         when(legalRepForDefendantAccessValidator.validateAndGetDefendants(caseEntity, orgId))
             .thenReturn(List.of(representedParty, representedParty2));
@@ -827,7 +819,6 @@ class RespondPossessionClaimTest extends BaseEventTest {
     @Test
     void shouldRejectPartyOutsideRepresentedDefendants_ForLegalRepresentativeUser() {
         // given
-        UUID legalRepUserId = UUID.randomUUID();
         UUID representedPartyId = UUID.randomUUID();
         UUID differentPartyId = UUID.randomUUID();
         UUID thirdPartyId = UUID.randomUUID();
@@ -838,8 +829,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
         String orgId = "org";
         when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
         when(userInfo.getRoles()).thenReturn(List.of(UserRole.DEFENDANT_SOLICITOR.getRole()));
-        when(organisationDetailsService.getOrganisationIdentifier(legalRepUserId.toString())).thenReturn(orgId);
-        when(securityContextService.getCurrentUserId()).thenReturn(legalRepUserId);
+        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(orgId);
         PCSCase caseData = PCSCase.builder()
             .build();
         when(selectedPartyRetriever.getSelectedPartyId(caseData)).thenReturn(Optional.of(differentPartyId));
@@ -856,7 +846,6 @@ class RespondPossessionClaimTest extends BaseEventTest {
     @Test
     void shouldRejectSelectedPartyWhenResponseAlreadySubmitted_ForLegalRepresentativeUser() {
         // given
-        UUID legalRepUserId = UUID.randomUUID();
         UUID representedPartyId = UUID.randomUUID();
         UUID differentPartyId = UUID.randomUUID();
 
@@ -866,8 +855,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
         String orgId = "org";
         when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
         when(userInfo.getRoles()).thenReturn(List.of(UserRole.DEFENDANT_SOLICITOR.getRole()));
-        when(securityContextService.getCurrentUserId()).thenReturn(legalRepUserId);
-        when(organisationDetailsService.getOrganisationIdentifier(legalRepUserId.toString())).thenReturn(orgId);
+        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(orgId);
         PCSCase caseData = PCSCase.builder()
             .build();
         when(selectedPartyRetriever.getSelectedPartyId(caseData)).thenReturn(Optional.of(representedPartyId));
@@ -887,7 +875,6 @@ class RespondPossessionClaimTest extends BaseEventTest {
     @Test
     void shouldInitializeDraftForSingleRepresentedPartyWhenNoDraftExists_ForLegalRepresentativeUser() {
         // given
-        UUID legalRepUserId = UUID.randomUUID();
         UUID representedPartyId = UUID.randomUUID();
 
         PCSCase caseData = PCSCase.builder().build();
@@ -895,13 +882,10 @@ class RespondPossessionClaimTest extends BaseEventTest {
         PartyEntity representedParty = PartyEntity.builder().id(representedPartyId).build();
         PcsCaseEntity caseEntity = PcsCaseEntity.builder().build();
         String orgId = "org";
-        String legalRepOrgId = UUID.randomUUID().toString();
-
         when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
         when(userInfo.getRoles()).thenReturn(List.of(UserRole.DEFENDANT_SOLICITOR.getRole()));
         when(responseMapper.mapFrom(caseData, representedParty)).thenReturn(response);
-        when(securityContextService.getCurrentUserId()).thenReturn(legalRepUserId);
-        when(organisationDetailsService.getOrganisationIdentifier(legalRepUserId.toString())).thenReturn(orgId);
+        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(orgId);
         when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(caseEntity);
         when(legalRepForDefendantAccessValidator.validateAndGetDefendants(caseEntity, orgId))
             .thenReturn(List.of(representedParty));
@@ -925,10 +909,8 @@ class RespondPossessionClaimTest extends BaseEventTest {
     void shouldSubmitLegalRepresentativeDraftForSelectedParty_ForLegalRepresentativeUser() {
         // given
         UUID representedPartyId = UUID.randomUUID();
-        UUID legalRepUserId = UUID.randomUUID();
         when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
         when(userInfo.getRoles()).thenReturn(List.of(UserRole.DEFENDANT_SOLICITOR.getRole()));
-        when(securityContextService.getCurrentUserId()).thenReturn(legalRepUserId);
         DefendantResponses responses = DefendantResponses.builder()
             .tenancyTypeConfirmation(YesNoNotSure.YES)
             .build();
@@ -943,7 +925,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
         String orgId = "org";
         when(selectedPartyRetriever.getCurrentRepresentedPartyId(caseData))
             .thenReturn(Optional.of(representedPartyId));
-        when(organisationDetailsService.getOrganisationIdentifier(legalRepUserId.toString())).thenReturn(orgId);
+        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(orgId);
         when(draftCaseDataService.getUnsubmittedCaseData(TEST_CASE_REFERENCE, respondPossessionClaim,
                                                          representedPartyId, orgId))
             .thenReturn(Optional.of(caseData));
