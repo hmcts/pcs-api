@@ -143,7 +143,9 @@ class NoticeOfPossessionViewTest {
 
         assertThat(noticeServedDetails)
             .usingRecursiveComparison()
-            .isEqualTo(NoticeServedDetails.builder().build());
+            .isEqualTo(NoticeServedDetails.builder()
+                    .documents(List.of())
+                    .build());
     }
 
     @Test
@@ -279,7 +281,7 @@ class NoticeOfPossessionViewTest {
             List.of(
                 DocumentEntity.builder()
                     .id(noticeDocumentId)
-                    .type(DocumentType.NOTICE_FOR_SERVICE_OUT_OF_JURISDICTION)
+                    .type(DocumentType.POSSESSION_NOTICE)
                     .build()
             )
         );
@@ -330,5 +332,63 @@ class NoticeOfPossessionViewTest {
         NoticeServedDetails noticeServedDetails = noticeServedDetailsCaptor.getValue();
         assertThat(noticeServedDetails.getAbleToUploadDocument()).isEqualTo(CanUploadNoticeServedDocument.No);
         assertThat(noticeServedDetails.getUnableToUploadReason()).isEqualTo("some reason");
+    }
+
+    @Test
+    void shouldHandleNullDocument() {
+        // Given
+        LocalDate postedDate = mock(LocalDate.class);
+
+        when(noticeOfPossessionEntity.getServingMethod()).thenReturn(FIRST_CLASS_POST);
+        when(noticeOfPossessionEntity.getNoticeDate()).thenReturn(postedDate);
+        when(pcsCaseEntity.getDocuments()).thenReturn(null);
+
+        // When
+        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+
+        // Then
+        verify(pcsCase).setNoticeServedDetails(noticeServedDetailsCaptor.capture());
+
+        NoticeServedDetails noticeServedDetails = noticeServedDetailsCaptor.getValue();
+        List<ListValue<Document>> noticeDocuments = noticeServedDetails.getDocuments();
+        assertThat(noticeDocuments).isEmpty();
+    }
+
+    @Test
+    void shouldNotIncludeAdditionalDocumentUploaded() {
+        // Given
+        LocalDate postedDate = mock(LocalDate.class);
+        UUID noticeDocumentId = UUID.randomUUID();
+
+        when(noticeOfPossessionEntity.getServingMethod()).thenReturn(FIRST_CLASS_POST);
+        when(noticeOfPossessionEntity.getNoticeDate()).thenReturn(postedDate);
+        when(pcsCaseEntity.getDocuments()).thenReturn(
+                List.of(
+                        DocumentEntity.builder()
+                                .id(noticeDocumentId)
+                                .type(DocumentType.POSSESSION_NOTICE)
+                                .build(),
+                        DocumentEntity.builder()
+                                .id(noticeDocumentId)
+                                .type(DocumentType.POSSESSION_NOTICE)
+                                .description("Additional document uploaded")
+                                .build(),
+                        DocumentEntity.builder()
+                                .id(UUID.randomUUID())
+                                .type(DocumentType.WITNESS_STATEMENT)
+                                .build()
+                )
+        );
+
+        // When
+        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+
+        // Then
+        verify(pcsCase).setNoticeServedDetails(noticeServedDetailsCaptor.capture());
+
+        NoticeServedDetails noticeServedDetails = noticeServedDetailsCaptor.getValue();
+        List<ListValue<Document>> noticeDocuments = noticeServedDetails.getDocuments();
+        assertThat(noticeDocuments).hasSize(1);
+        assertThat(noticeDocuments.getFirst().getId()).isEqualTo(noticeDocumentId.toString());
     }
 }
