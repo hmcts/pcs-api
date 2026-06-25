@@ -41,6 +41,7 @@ import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
@@ -187,7 +188,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
 
         FeeDetails feeDetails = scheduleCaseIssueFeePayment(caseReference, getClaimantParty(caseReference));
 
-        String caseIssueFee = moneyFormatter.formatFee(feeDetails.getFeeAmount());
+        String caseIssueFee = moneyFormatter.formatFee(BigDecimal.valueOf(999.00));
         return SubmitResponse.<State>builder()
             .confirmationBody(getPaymentConfirmationMarkdown(caseIssueFee, caseReference))
             .state(State.PENDING_CASE_ISSUED)
