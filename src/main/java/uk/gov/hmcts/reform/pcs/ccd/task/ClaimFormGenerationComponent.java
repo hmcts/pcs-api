@@ -83,7 +83,7 @@ public class ClaimFormGenerationComponent {
                         MDC.put(MDC_TERMINAL_FAILURE, "true");
                         MDC.put(MDC_FAILURE_REASON, String.valueOf(e.getMessage()));
                         log.error("Claim form generation permanently failed for case {} after {} "
-                                  + "attempts: {}", caseReference, maxRetries, e.getMessage(), e);
+                                  + "attempts: {}", caseReference, attempt, e.getMessage(), e);
                         recordGenerationFailure(caseReference);
                     }
                     throw e;
@@ -96,8 +96,11 @@ public class ClaimFormGenerationComponent {
             });
     }
 
+    // MaxRetriesFailureHandler(maxRetries) runs the task maxRetries + 1 times (1 initial + maxRetries
+    // retries), so the terminal execution is attempt maxRetries + 1. Using >= here would also fire on
+    // the second-to-last attempt, double-recording the failure (HDPI-6478).
     private boolean isFinalAttempt(int attempt) {
-        return attempt >= maxRetries;
+        return attempt > maxRetries;
     }
 
     private void recordGenerationFailure(long caseReference) {
