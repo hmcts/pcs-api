@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.IncomeType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.RegularExpenseType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
@@ -115,6 +116,11 @@ public class DefenceFormPayloadBuilder {
         boolean hasOnlyRentArrearsGrounds =
             !grounds.isEmpty() && grounds.stream().allMatch(DefenceFormPayloadBuilder::isRentArrears);
 
+        // The "Did the claimant give you notice?" question is only asked of the defendant when the
+        // claimant served notice; if not, the CUI journey skips it, so keep the row off the form.
+        boolean claimantServedNotice = claim.getNoticeOfPossession() != null
+            && claim.getNoticeOfPossession().getNoticeServed() == YesOrNo.YES;
+
         Map<PartyAttributeType, PartyAttributeAssertationEntity> assertions = loadAssertions(defendant);
 
         DefenceFormPayload.DefenceFormPayloadBuilder payload = DefenceFormPayload.builder();
@@ -127,7 +133,8 @@ public class DefenceFormPayloadBuilder {
         }
 
         mapCaseAndParties(claim, pcsCase, defendant, isWales, assertions, payload);
-        mapResponse(response, isWales, hasRentArrearsGround, hasOnlyRentArrearsGrounds, assertions, payload);
+        mapResponse(response, isWales, claimantServedNotice, hasRentArrearsGround, hasOnlyRentArrearsGrounds,
+            assertions, payload);
         mapPaymentAgreement(response.getPaymentAgreement(), hasRentArrearsGround, payload);
         mapHouseholdCircumstances(response.getHouseholdCircumstances(), payload);
         mapStatementOfTruth(response.getStatementOfTruth(), payload);
@@ -171,7 +178,7 @@ public class DefenceFormPayloadBuilder {
             payload::hasDefendantAddressLine2, payload::hasDefendantAddressLine3, payload::hasDefendantCounty);
     }
 
-    private void mapResponse(DefendantResponseEntity response, boolean isWales,
+    private void mapResponse(DefendantResponseEntity response, boolean isWales, boolean claimantServedNotice,
                              boolean hasRentArrearsGround, boolean hasOnlyRentArrearsGrounds,
                              Map<PartyAttributeType, PartyAttributeAssertationEntity> assertions,
                              DefenceFormPayload.DefenceFormPayloadBuilder payload) {
@@ -199,6 +206,7 @@ public class DefenceFormPayloadBuilder {
         payload.showWrittenTerms(isWales);
         payload.writtenTerms(toLabel(response.getWrittenTerms()));
 
+        payload.showPossessionNoticeReceived(claimantServedNotice);
         payload.possessionNoticeReceived(toLabel(response.getPossessionNoticeReceived()));
         payload.showNoticeReceivedDate(
             isYes(response.getPossessionNoticeReceived()) && response.getNoticeReceivedDate() != null);

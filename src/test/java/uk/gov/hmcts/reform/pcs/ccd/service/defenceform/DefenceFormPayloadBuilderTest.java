@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.IncomeType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
@@ -19,6 +20,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.claim.NoticeOfPossessionEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.StatementOfTruthEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
@@ -270,6 +272,32 @@ class DefenceFormPayloadBuilderTest {
 
             // A stray date must not render when the defendant didn't say "Yes" to receiving a notice.
             assertThat(payload.isShowNoticeReceivedDate()).isFalse();
+        }
+
+        @Test
+        void showsNoticeQuestionWhenClaimantServedNotice() {
+            DefendantResponseEntity response = response(LegislativeCountry.ENGLAND);
+            response.getClaim().setNoticeOfPossession(
+                NoticeOfPossessionEntity.builder().noticeServed(YesOrNo.YES).build());
+            response.setPossessionNoticeReceived(YesNoNotSure.YES);
+
+            DefenceFormPayload payload = builder.build(response);
+
+            assertThat(payload.isShowPossessionNoticeReceived()).isTrue();
+            assertThat(payload.getPossessionNoticeReceived()).isEqualTo("Yes");
+        }
+
+        @Test
+        void hidesNoticeQuestionWhenClaimantDidNotServeNotice() {
+            // When the claimant didn't serve notice the CUI journey skips the notice pages entirely,
+            // so the "Did the claimant give you notice...?" row must not render on the defence form.
+            DefendantResponseEntity response = response(LegislativeCountry.ENGLAND);
+            response.getClaim().setNoticeOfPossession(
+                NoticeOfPossessionEntity.builder().noticeServed(YesOrNo.NO).build());
+
+            DefenceFormPayload payload = builder.build(response);
+
+            assertThat(payload.isShowPossessionNoticeReceived()).isFalse();
         }
 
         @Test
