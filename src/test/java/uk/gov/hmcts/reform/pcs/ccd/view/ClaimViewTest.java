@@ -40,12 +40,9 @@ class ClaimViewTest {
 
     private ClaimView underTest;
 
-    private UUID documentId;
-
     @BeforeEach
     void setUp() {
         pcsCase = PCSCase.builder().build();
-        documentId = UUID.randomUUID();
         underTest = new ClaimView();
     }
 
@@ -166,10 +163,10 @@ class ClaimViewTest {
         // Given
         when(pcsCaseEntity.getClaims()).thenReturn(List.of(claimEntity));
         when(pcsCaseEntity.getDocuments()).thenReturn(List.of(
-            documentEntity(DocumentType.ENERGY_PERFORMANCE_CERTIFICATE, "epc.pdf", documentId, null),
-            documentEntity(DocumentType.GAS_SAFETY_CERTIFICATE, "gas.pdf", documentId, null),
-            documentEntity(DocumentType.EICR_REPORT, "eicr.pdf", documentId, null),
-            documentEntity(DocumentType.OTHER, "other.pdf", documentId, null)
+            documentEntity(DocumentType.ENERGY_PERFORMANCE_CERTIFICATE, "epc.pdf", null),
+            documentEntity(DocumentType.GAS_SAFETY_CERTIFICATE, "gas.pdf", null),
+            documentEntity(DocumentType.EICR_REPORT, "eicr.pdf", null),
+            documentEntity(DocumentType.OTHER, "other.pdf", null)
         ));
 
         // When
@@ -181,10 +178,6 @@ class ClaimViewTest {
         assertSingleDocument(requiredDocumentsWales.getEnergyPerformance(), "epc.pdf");
         assertSingleDocument(requiredDocumentsWales.getGasSafetyReport(), "gas.pdf");
         assertSingleDocument(requiredDocumentsWales.getElectricalInstallation(), "eicr.pdf");
-
-        assertDocumentId(requiredDocumentsWales.getEnergyPerformance(), documentId);
-        assertDocumentId(requiredDocumentsWales.getGasSafetyReport(), documentId);
-        assertDocumentId(requiredDocumentsWales.getElectricalInstallation(), documentId);
     }
 
     @Test
@@ -192,8 +185,8 @@ class ClaimViewTest {
         // Given
         when(pcsCaseEntity.getClaims()).thenReturn(List.of(claimEntity));
         when(pcsCaseEntity.getDocuments()).thenReturn(List.of(
-            documentEntity(DocumentType.OTHER, "other.pdf",documentId, null),
-            documentEntity(DocumentType.RENT_STATEMENT, "rent-statement.pdf", documentId, null)
+            documentEntity(DocumentType.OTHER, "other.pdf", null),
+            documentEntity(DocumentType.RENT_STATEMENT, "rent-statement.pdf", null)
         ));
 
         // When
@@ -211,12 +204,12 @@ class ClaimViewTest {
         // Given
         when(pcsCaseEntity.getClaims()).thenReturn(List.of(claimEntity));
         when(pcsCaseEntity.getDocuments()).thenReturn(List.of(
-                documentEntity(DocumentType.ENERGY_PERFORMANCE_CERTIFICATE, "1.pdf", UUID.randomUUID(), null),
-                documentEntity(DocumentType.ENERGY_PERFORMANCE_CERTIFICATE, "1a.pdf", UUID.randomUUID(), "Add doc 1a"),
-                documentEntity(DocumentType.GAS_SAFETY_CERTIFICATE, "2.pdf", UUID.randomUUID(), null),
-                documentEntity(DocumentType.GAS_SAFETY_CERTIFICATE, "2a.pdf", UUID.randomUUID(), "Add doc 2a"),
-                documentEntity(DocumentType.EICR_REPORT, "3.pdf", UUID.randomUUID(), null),
-                documentEntity(DocumentType.EICR_REPORT, "3a.pdf", UUID.randomUUID(), "Add doc 3a")
+                documentEntity(DocumentType.ENERGY_PERFORMANCE_CERTIFICATE, "1.pdf", null),
+                documentEntity(DocumentType.ENERGY_PERFORMANCE_CERTIFICATE, "1a.pdf", "Add doc 1a"),
+                documentEntity(DocumentType.GAS_SAFETY_CERTIFICATE, "2.pdf", null),
+                documentEntity(DocumentType.GAS_SAFETY_CERTIFICATE, "2a.pdf", "Add doc 2a"),
+                documentEntity(DocumentType.EICR_REPORT, "3.pdf", null),
+                documentEntity(DocumentType.EICR_REPORT, "3a.pdf", "Add doc 3a")
         ));
 
         // When
@@ -271,10 +264,9 @@ class ClaimViewTest {
         );
     }
 
-    private static DocumentEntity documentEntity(DocumentType documentType, String fileName, UUID documentId,
-                                                 String description) {
+    private static DocumentEntity documentEntity(DocumentType documentType, String fileName, String description) {
         return DocumentEntity.builder()
-            .id(documentId)
+            .id(documentId(fileName))
             .type(documentType)
             .description(description)
             .url("http://dm-store/documents/" + fileName)
@@ -284,22 +276,21 @@ class ClaimViewTest {
             .build();
     }
 
+    private static UUID documentId(String fileName) {
+        return UUID.nameUUIDFromBytes(fileName.getBytes());
+    }
+
     private static void assertSingleDocument(List<ListValue<Document>> documents, String fileName) {
         assertThat(documents)
             .singleElement()
-            .extracting(ListValue::getValue)
-            .satisfies(document -> {
+            .satisfies(listValue -> {
+                // Case File View resolves documents by ListValue id - it must be set (HDPI-7064)
+                assertThat(listValue.getId()).isEqualTo(documentId(fileName).toString());
+                Document document = listValue.getValue();
                 assertThat(document.getFilename()).isEqualTo(fileName);
                 assertThat(document.getUrl()).isEqualTo("http://dm-store/documents/" + fileName);
                 assertThat(document.getBinaryUrl()).isEqualTo("http://dm-store/documents/" + fileName + "/binary");
                 assertThat(document.getCategoryId()).isEqualTo("category-" + fileName);
             });
-    }
-
-    private static void assertDocumentId(List<ListValue<Document>> documents, UUID expectedId) {
-        assertThat(documents)
-            .singleElement()
-            .extracting(ListValue::getId)
-            .isEqualTo(expectedId.toString());
     }
 }
