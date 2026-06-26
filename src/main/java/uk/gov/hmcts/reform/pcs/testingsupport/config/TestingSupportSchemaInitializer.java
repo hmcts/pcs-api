@@ -8,11 +8,11 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
 /**
- * Creates {@code testing_support_pin} at startup when the pin-test-table flag is on. Not a Flyway
+ * Creates {@code testing_support_access_code} at startup when the access-code-test-table flag is on. Not a Flyway
  * migration so the table never exists in production.
  */
 @Component
-@ConditionalOnProperty(name = "pin-test-table.enabled", havingValue = "true")
+@ConditionalOnProperty(name = "access-code-test-table.enabled", havingValue = "true")
 @RequiredArgsConstructor
 @Slf4j
 public class TestingSupportSchemaInitializer {
@@ -20,11 +20,14 @@ public class TestingSupportSchemaInitializer {
     private final JdbcTemplate jdbcTemplate;
 
     @PostConstruct
-    public void createTestingSupportPinTable() {
-        log.info("Ensuring testing_support_pin table exists");
+    public void createTestingSupportAccessCodeTable() {
+        log.info("Ensuring testing_support_access_code table exists");
+
+        // Drop the pre-rename table so the QA access-code endpoint never reads stale rows from it.
+        jdbcTemplate.execute("DROP TABLE IF EXISTS testing_support_pin");
 
         jdbcTemplate.execute("""
-            CREATE TABLE IF NOT EXISTS testing_support_pin (
+            CREATE TABLE IF NOT EXISTS testing_support_access_code (
                 id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
                 case_id        UUID NOT NULL,
                 party_id       UUID,
@@ -34,6 +37,6 @@ public class TestingSupportSchemaInitializer {
             """);
 
         jdbcTemplate.execute(
-            "CREATE INDEX IF NOT EXISTS idx_testing_support_pin_case_id ON testing_support_pin (case_id)");
+            "CREATE INDEX IF NOT EXISTS idx_testing_support_access_code_case_id ON testing_support_access_code (case_id)");
     }
 }

@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.service.genapp;
+package uk.gov.hmcts.reform.pcs.ccd.service.accesscode;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -17,7 +17,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseReferenceFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
-import uk.gov.hmcts.reform.pcs.document.model.PinPackFormPayload;
+import uk.gov.hmcts.reform.pcs.document.model.accesscode.AccessCodeFormPayload;
 import uk.gov.hmcts.reform.pcs.document.service.DocAssemblyService;
 import uk.gov.hmcts.reform.pcs.location.model.CourtVenue;
 import uk.gov.hmcts.reform.pcs.location.service.LocationReferenceService;
@@ -29,13 +29,13 @@ import java.util.List;
 import java.util.stream.Stream;
 
 /**
- * Renders the defendant pin pack (access-code letter) via Doc Assembly / Docmosis, one per defendant.
+ * Renders the defendant access-code letter via Doc Assembly / Docmosis, one per defendant.
  */
 @Service
 @Slf4j
-public class PinPackDocumentGenerator {
+public class AccessCodeFormDocumentGenerator {
 
-    static final String PIN_PACK_TEMPLATE_ID = "CV-PCS-LET-ENG-Defendant-Access-Code.docx";
+    static final String TEMPLATE_ID = "CV-PCS-LET-ENG-Defendant-Access-Code.docx";
     private static final String OUTPUT_FILENAME_PREFIX = "Defendant Access Code";
     private static final String PERSONS_UNKNOWN = "Persons unknown";
 
@@ -48,7 +48,7 @@ public class PinPackDocumentGenerator {
     private final Clock ukClock;
     private final String respondOnlineUrl;
 
-    public PinPackDocumentGenerator(
+    public AccessCodeFormDocumentGenerator(
         DocAssemblyService docAssemblyService,
         LocationReferenceService locationReferenceService,
         @Qualifier("systemUpdateUserTokenProvider") IdamTokenProvider systemUpdateUserTokenProvider,
@@ -56,7 +56,7 @@ public class PinPackDocumentGenerator {
         AddressFormatter addressFormatter,
         CaseReferenceFormatter caseReferenceFormatter,
         @Qualifier("ukClock") Clock ukClock,
-        @Value("${pin-pack.respond-online-url}") String respondOnlineUrl
+        @Value("${access-code-form.respond-online-url}") String respondOnlineUrl
     ) {
         this.docAssemblyService = docAssemblyService;
         this.locationReferenceService = locationReferenceService;
@@ -68,15 +68,15 @@ public class PinPackDocumentGenerator {
         this.respondOnlineUrl = respondOnlineUrl;
     }
 
-    public String generatePinPack(PcsCaseEntity pcsCaseEntity,
-                                  ClaimEntity mainClaim,
-                                  PartyEntity defendant,
-                                  String plaintextAccessCode) {
+    public String generate(PcsCaseEntity pcsCaseEntity,
+                           ClaimEntity mainClaim,
+                           PartyEntity defendant,
+                           String plaintextAccessCode) {
 
         String formattedPropertyAddress = formatAddress(pcsCaseEntity.getPropertyAddress());
         CourtVenue servingCourt = resolveServingCourt(pcsCaseEntity);
 
-        PinPackFormPayload payload = PinPackFormPayload.builder()
+        AccessCodeFormPayload payload = AccessCodeFormPayload.builder()
             .caseReference(caseReferenceFormatter.formatCaseReferenceWithDashes(pcsCaseEntity.getCaseReference()))
             .claimantName(resolveClaimantName(mainClaim))
             .defendantName(resolveDefendantName(defendant))
@@ -90,7 +90,7 @@ public class PinPackDocumentGenerator {
 
         String outputFilename = OUTPUT_FILENAME_PREFIX + " " + defendant.getId();
 
-        return docAssemblyService.generateDocument(payload, PIN_PACK_TEMPLATE_ID, OutputType.PDF, outputFilename);
+        return docAssemblyService.generateDocument(payload, TEMPLATE_ID, OutputType.PDF, outputFilename);
     }
 
     private String resolveClaimantName(ClaimEntity mainClaim) {

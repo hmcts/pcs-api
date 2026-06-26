@@ -9,8 +9,8 @@ import java.util.UUID;
  * Production recorder: no-op, so no plaintext pin is ever captured.
  */
 @Service
-@ConditionalOnProperty(name = "pin-test-table.enabled", havingValue = "false", matchIfMissing = true)
-public class NoOpTestPinRecorder implements TestPinRecorder {
+@ConditionalOnProperty(name = "access-code-test-table.enabled", havingValue = "false", matchIfMissing = true)
+public class NoOpTestAccessCodeRecorder implements TestAccessCodeRecorder {
 
     @Override
     public void record(UUID caseId, UUID partyId, String plaintextCode) {

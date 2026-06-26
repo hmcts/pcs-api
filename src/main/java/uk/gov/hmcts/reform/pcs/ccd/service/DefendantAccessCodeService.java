@@ -15,11 +15,11 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DocumentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyAccessCodeRepository;
-import uk.gov.hmcts.reform.pcs.ccd.service.genapp.PinPackDocumentGenerator;
+import uk.gov.hmcts.reform.pcs.ccd.service.accesscode.AccessCodeFormDocumentGenerator;
 import uk.gov.hmcts.reform.pcs.ccd.util.AccessCodeGenerator;
 import uk.gov.hmcts.reform.pcs.exception.ClaimNotFoundException;
 import uk.gov.hmcts.reform.pcs.service.PartyAccessCodeHashingService;
-import uk.gov.hmcts.reform.pcs.testingsupport.service.TestPinRecorder;
+import uk.gov.hmcts.reform.pcs.testingsupport.service.TestAccessCodeRecorder;
 
 import java.util.List;
 import java.util.Set;
@@ -27,7 +27,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
- * Generates a single defendant's access code and pin pack in its own transaction, so that a failure
+ * Generates a single defendant's access code letter in its own transaction, so that a failure
  * for one defendant does not roll back the others on a 1-v-many case. Failure is recorded to
  * {@code claim_activity_log} only on the final scheduler attempt to avoid a row per retry.
  */
@@ -40,10 +40,10 @@ public class DefendantAccessCodeService {
     private final PartyAccessCodeRepository partyAccessCodeRepo;
     private final AccessCodeGenerator accessCodeGenerator;
     private final PartyAccessCodeHashingService hashingService;
-    private final PinPackDocumentGenerator pinPackDocumentGenerator;
+    private final AccessCodeFormDocumentGenerator accessCodeFormDocumentGenerator;
     private final DocumentRepository documentRepository;
     private final AccessCodeActivityLogService accessCodeActivityLogService;
-    private final TestPinRecorder testPinRecorder;
+    private final TestAccessCodeRecorder testAccessCodeRecorder;
 
     @Transactional(readOnly = true)
     public List<UUID> findDefendantPartyIdsNeedingAccessCode(long caseReference) {
@@ -67,8 +67,8 @@ public class DefendantAccessCodeService {
         try {
             String plaintextAccessCode = accessCodeGenerator.generateAccessCode();
 
-            String documentUrl = pinPackDocumentGenerator
-                .generatePinPack(pcsCaseEntity, mainClaim, defendant, plaintextAccessCode);
+            String documentUrl = accessCodeFormDocumentGenerator
+                .generate(pcsCaseEntity, mainClaim, defendant, plaintextAccessCode);
 
             documentRepository.save(
                 DocumentEntity.builder()
@@ -88,12 +88,12 @@ public class DefendantAccessCodeService {
                     .build()
             );
 
-            testPinRecorder.record(pcsCaseEntity.getId(), defendant.getId(), plaintextAccessCode);
+            testAccessCodeRecorder.record(pcsCaseEntity.getId(), defendant.getId(), plaintextAccessCode);
 
             accessCodeActivityLogService.logSuccess(pcsCaseEntity, defendant, ClaimActivityType.DOCUMENTS_CREATED);
 
         } catch (Exception e) {
-            log.error("Failed to generate pin pack / access code for party {} on case {}",
+            log.error("Failed to generate access-code letter for party {} on case {}",
                       defendant.getId(), pcsCaseEntity.getCaseReference(), e);
             if (finalAttempt) {
                 accessCodeActivityLogService.logFailure(pcsCaseEntity, defendant, ClaimActivityType.DOCUMENTS_CREATED);

@@ -5,7 +5,7 @@ import java.util.UUID;
 /**
  * Captures plaintext access codes for test journeys. No-op in production. Never logs the plaintext.
  */
-public interface TestPinRecorder {
+public interface TestAccessCodeRecorder {
 
     void record(UUID caseId, UUID partyId, String plaintextCode);
 }

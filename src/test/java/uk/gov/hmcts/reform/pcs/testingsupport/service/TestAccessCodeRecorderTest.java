@@ -12,28 +12,28 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 
 @ExtendWith(MockitoExtension.class)
-class TestPinRecorderTest {
+class TestAccessCodeRecorderTest {
 
     @Mock
     private JdbcTemplate jdbcTemplate;
 
     @Test
     void persistingRecorderShouldInsertPlaintextPin() {
-        PersistingTestPinRecorder underTest = new PersistingTestPinRecorder(jdbcTemplate);
+        PersistingTestAccessCodeRecorder underTest = new PersistingTestAccessCodeRecorder(jdbcTemplate);
         UUID caseId = UUID.randomUUID();
         UUID partyId = UUID.randomUUID();
 
         underTest.record(caseId, partyId, "PLAINTEXTPIN1");
 
         verify(jdbcTemplate).update(
-            "INSERT INTO testing_support_pin (case_id, party_id, plaintext_code) VALUES (?, ?, ?)",
+            "INSERT INTO testing_support_access_code (case_id, party_id, plaintext_code) VALUES (?, ?, ?)",
             caseId, partyId, "PLAINTEXTPIN1"
         );
     }
 
     @Test
     void noOpRecorderShouldNotPersistAnything() {
-        NoOpTestPinRecorder underTest = new NoOpTestPinRecorder();
+        NoOpTestAccessCodeRecorder underTest = new NoOpTestAccessCodeRecorder();
 
         underTest.record(UUID.randomUUID(), UUID.randomUUID(), "PLAINTEXTPIN1");
 

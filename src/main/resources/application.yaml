@@ -164,11 +164,11 @@ notify:
 testing-support:
   enabled: ${ENABLE_TESTING_SUPPORT:false}
 
-pin-pack:
+access-code-form:
   respond-online-url: ${RESPOND_ONLINE_URL:http://localhost:3209/access-your-case}
 
-pin-test-table:
-  enabled: ${ENABLE_PIN_TEST_TABLE:${testing-support.enabled:false}}
+access-code-test-table:
+  enabled: ${ENABLE_ACCESS_CODE_TEST_TABLE:${testing-support.enabled:false}}
 
 # Below sets if DB scheduler can execute on the current instance of the API.
 db-scheduler:

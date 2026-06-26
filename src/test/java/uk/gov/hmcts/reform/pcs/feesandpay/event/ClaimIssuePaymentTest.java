@@ -57,7 +57,7 @@ class ClaimIssuePaymentTest extends BaseEventTest {
     }
 
     @Test
-    void shouldScheduleAccessCodePinPackGenerationOnCaseIssued() {
+    void shouldScheduleAccessCodeLetterGenerationOnCaseIssued() {
         callSubmitHandler(PCSCase.builder().build());
 
         ArgumentCaptor<SchedulableInstance<?>> captor = ArgumentCaptor.forClass(SchedulableInstance.class);

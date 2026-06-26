@@ -14,7 +14,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyAccessCodeRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.AccessCodeGenerationService;
-import uk.gov.hmcts.reform.pcs.ccd.service.genapp.PinPackDocumentGenerator;
+import uk.gov.hmcts.reform.pcs.ccd.service.accesscode.AccessCodeFormDocumentGenerator;
 import uk.gov.hmcts.reform.pcs.config.AbstractPostgresContainerIT;
 import uk.gov.hmcts.reform.pcs.idam.IdamUserInfoApi;
 
@@ -41,7 +41,7 @@ class AccessCodeGenerationServiceIT extends AbstractPostgresContainerIT {
     private PartyAccessCodeRepository partyAccessCodeRepository;
 
     @MockitoBean
-    private PinPackDocumentGenerator pinPackDocumentGenerator;
+    private AccessCodeFormDocumentGenerator accessCodeFormDocumentGenerator;
     @MockitoBean
     private AuthTokenGenerator authTokenGenerator;
     @MockitoBean
@@ -60,10 +60,10 @@ class AccessCodeGenerationServiceIT extends AbstractPostgresContainerIT {
         UUID failingDefendantId = defendants.get(0).getId();
         UUID succeedingDefendantId = defendants.get(1).getId();
 
-        when(pinPackDocumentGenerator.generatePinPack(any(), any(),
+        when(accessCodeFormDocumentGenerator.generate(any(), any(),
             argThat(party -> party != null && failingDefendantId.equals(party.getId())), anyString()))
             .thenThrow(new RuntimeException("docmosis down"));
-        when(pinPackDocumentGenerator.generatePinPack(any(), any(),
+        when(accessCodeFormDocumentGenerator.generate(any(), any(),
             argThat(party -> party != null && succeedingDefendantId.equals(party.getId())), anyString()))
             .thenReturn("http://dm-store/documents/ok");
 
@@ -85,7 +85,7 @@ class AccessCodeGenerationServiceIT extends AbstractPostgresContainerIT {
         final UUID firstDefendantId = defendants.get(0).getId();
         final UUID secondDefendantId = defendants.get(1).getId();
 
-        when(pinPackDocumentGenerator.generatePinPack(any(), any(), any(), anyString()))
+        when(accessCodeFormDocumentGenerator.generate(any(), any(), any(), anyString()))
             .thenReturn("http://dm-store/documents/ok");
 
         accessCodeGenerationService.createAccessCodesForParties("1781000000000002", true);

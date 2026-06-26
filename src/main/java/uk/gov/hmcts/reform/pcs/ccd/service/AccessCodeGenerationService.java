@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * Orchestrates defendant access code / pin pack generation for a case. Each defendant is generated
+ * Orchestrates defendant access code / access-code letter generation for a case. Each defendant is generated
  * in its own transaction via {@link DefendantAccessCodeService}, so one defendant's failure does not
  * roll back the others; defendants that already have a code are skipped, making retries idempotent.
  * If any defendant fails, the whole task is failed so the scheduler retries the remaining ones.
@@ -42,7 +42,7 @@ public class AccessCodeGenerationService {
         }
 
         if (!defendantPartyIds.isEmpty()) {
-            log.debug("Generated {} defendant access code pin pack(s) for case {}",
+            log.debug("Generated {} defendant access code access-code letter(s) for case {}",
                       defendantPartyIds.size(), caseReference);
         }
     }

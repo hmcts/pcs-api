@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.document.model;
+package uk.gov.hmcts.reform.pcs.document.model.accesscode;
 
 import lombok.Builder;
 import lombok.Data;
@@ -7,11 +7,11 @@ import uk.gov.hmcts.reform.docassembly.domain.FormPayload;
 import java.time.LocalDate;
 
 /**
- * Docmosis merge-field payload for the defendant pin pack letter. Field names must match the template.
+ * Docmosis merge-field payload for the defendant access-code letter. Field names must match the template.
  */
 @Data
 @Builder
-public class PinPackFormPayload implements FormPayload {
+public class AccessCodeFormPayload implements FormPayload {
 
     private String caseReference;
     private String claimantName;

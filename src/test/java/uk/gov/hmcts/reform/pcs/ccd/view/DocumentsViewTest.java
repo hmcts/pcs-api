@@ -114,10 +114,10 @@ class DocumentsViewTest {
     }
 
     @Test
-    void shouldExcludeDefendantAccessCodePinPackFromCaseFile() {
+    void shouldExcludeDefendantAccessCodeLetterFromCaseFile() {
         DocumentEntity accessCodePack = DocumentEntity.builder()
             .id(UUID.randomUUID())
-            .fileName("pin-pack.pdf")
+            .fileName("access-code-letter.pdf")
             .url("pin-url")
             .type(DocumentType.DEFENDANT_ACCESS_CODE)
             .build();
