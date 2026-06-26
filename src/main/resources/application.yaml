@@ -238,9 +238,12 @@ access-code:
     backoff-delay-seconds: ${ACCESS_CODE_BACKOFF_DELAY_SECONDS:3600s}
 
 claim-form:
+  # DEMO ONLY (throwaway branch): force the generation task to fail so the terminal-failure path can
+  # be observed; max-retries/backoff lowered so the terminal attempt lands in ~30s, not ~15h.
+  force-failure: ${CLAIM_FORM_FORCE_FAILURE:true}
   request:
-    max-retries: ${CLAIM_FORM_MAX_RETRIES:5}
-    backoff-delay-seconds: ${CLAIM_FORM_BACKOFF_DELAY_SECONDS:3600s}
+    max-retries: ${CLAIM_FORM_MAX_RETRIES:3}
+    backoff-delay-seconds: ${CLAIM_FORM_BACKOFF_DELAY_SECONDS:10s}
 
 role-assignment:
   request:

@@ -63,7 +63,7 @@ class ClaimFormGenerationComponentTest {
     @BeforeEach
     void setUp() {
         component = new ClaimFormGenerationComponent(
-            claimFormService, claimActivityLogService, maxRetries, backoffDelay);
+            claimFormService, claimActivityLogService, maxRetries, backoffDelay, false);
 
         componentLogger = (Logger) LoggerFactory.getLogger(ClaimFormGenerationComponent.class);
         logAppender = new ListAppender<>();

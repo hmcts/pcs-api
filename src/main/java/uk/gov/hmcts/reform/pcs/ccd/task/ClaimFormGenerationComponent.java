@@ -40,17 +40,22 @@ public class ClaimFormGenerationComponent {
     private final ClaimActivityLogService claimActivityLogService;
     private final int maxRetries;
     private final Duration backoffDelay;
+    // DEMO ONLY (throwaway branch) - when true the task throws before generating, to exercise the
+    // terminal-failure path end to end. Must never be true on a real branch.
+    private final boolean forceFailure;
 
     public ClaimFormGenerationComponent(
         ClaimFormService claimFormService,
         ClaimActivityLogService claimActivityLogService,
         @Value("${claim-form.request.max-retries}") int maxRetries,
-        @Value("${claim-form.request.backoff-delay-seconds}") Duration backoffDelay
+        @Value("${claim-form.request.backoff-delay-seconds}") Duration backoffDelay,
+        @Value("${claim-form.force-failure:false}") boolean forceFailure
     ) {
         this.claimFormService = claimFormService;
         this.claimActivityLogService = claimActivityLogService;
         this.maxRetries = maxRetries;
         this.backoffDelay = backoffDelay;
+        this.forceFailure = forceFailure;
     }
 
     /**
@@ -72,6 +77,9 @@ public class ClaimFormGenerationComponent {
 
                 try {
                     log.debug("Starting claim form generation for case: {}", caseReference);
+                    if (forceFailure) {
+                        throw new IllegalStateException("Forced claim form generation failure (demo)");
+                    }
                     claimFormService.generateAndAttach(caseReference);
                     log.info("Claim form generated and attached for case {}", caseReference);
                     return new CompletionHandler.OnCompleteRemove<>();
