@@ -15,6 +15,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.service.CcdPaymentStateUpdateService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimFormScheduler;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
@@ -54,12 +55,15 @@ class MakeAClaimPaymentCallbackHandlerTest {
     private PcsCaseService pcsCaseService;
     @Mock
     private ObjectMapper objectMapper;
+    @Mock
+    private ClaimFormScheduler claimFormScheduler;
 
     @InjectMocks
     private MakeAClaimPaymentCallbackHandler underTest;
 
     @Test
-    void shouldSetPartyAllocateCaseManagementLocationAndSubmitPaymentSuccessWhenPaid() throws Exception {
+    void shouldSetPartyAllocateCaseManagementLocationSubmitPaymentSuccessAndScheduleClaimFormWhenPaid()
+        throws Exception {
         // Given
         FeesAndPayTaskData taskData = buildTaskData();
         when(objectMapper.readValue(anyString(), eq(FeesAndPayTaskData.class))).thenReturn(taskData);
@@ -81,7 +85,34 @@ class MakeAClaimPaymentCallbackHandlerTest {
         // Then
         assertThat(feePaymentEntity.getParty()).isSameAs(partyEntity);
         var inOrder = inOrder(pcsCaseService, ccdPaymentStateUpdateService);
+        inOrder.verify(pcsCaseService).allocateCaseManagementLocation(taskData.getCaseReference());
         inOrder.verify(ccdPaymentStateUpdateService).submitPaymentSuccess(taskData.getCaseReference());
+        verify(claimFormScheduler).scheduleClaimFormGeneration(taskData.getCaseReference());
+    }
+
+    @Test
+    void shouldNotSubmitPaymentSuccessWhenCaseManagementLocationAllocationFails() throws Exception {
+        // Given
+        FeesAndPayTaskData taskData = buildTaskData();
+        when(objectMapper.readValue(anyString(), eq(FeesAndPayTaskData.class))).thenReturn(taskData);
+        String taskDataJson = new ObjectMapper().writeValueAsString(taskData);
+
+        PartyEntity partyEntity = PartyEntity.builder().id(UUID.randomUUID()).orgName(RESPONSIBLE_PARTY).build();
+        when(partyService.getPartyEntityByEntityId(RESPONSIBLE_PARTY_ID, CASE_REFERENCE)).thenReturn(partyEntity);
+
+        RuntimeException expectedException = new RuntimeException("Lookup failed");
+        doThrow(expectedException).when(pcsCaseService).allocateCaseManagementLocation(CASE_REFERENCE);
+
+        FeePaymentEntity feePaymentEntity = FeePaymentEntity.builder().taskData(taskDataJson)
+            .paymentStatus(PaymentStatus.PAID).paymentCallbackHandlerType(PaymentCallbackHandlerType.CLAIM).build();
+        PaymentStatusCallback callback = PaymentStatusCallback.builder().ccdCaseNumber(CCD_CASE_NUMBER).build();
+
+        // When
+        Throwable throwable = catchThrowable(() -> underTest.handle(callback, feePaymentEntity));
+
+        // Then
+        assertThat(throwable).isSameAs(expectedException);
+        verify(ccdPaymentStateUpdateService, never()).submitPaymentSuccess(CASE_REFERENCE);
     }
 
     @ParameterizedTest
@@ -130,6 +161,8 @@ class MakeAClaimPaymentCallbackHandlerTest {
         assertThatExceptionOfType(PaymentCallbackException.class)
             .isThrownBy(() -> underTest.handle(callback, feePaymentEntity))
             .withMessageContaining("Unable to process");
+        verifyNoInteractions(ccdPaymentStateUpdateService);
+        verifyNoInteractions(claimFormScheduler);
     }
 
     @Test
@@ -155,6 +188,7 @@ class MakeAClaimPaymentCallbackHandlerTest {
         assertThat(throwable).isEqualTo(expectedException);
         verifyNoInteractions(pcsCaseService);
         verifyNoInteractions(ccdPaymentStateUpdateService);
+        verifyNoInteractions(claimFormScheduler);
     }
 
     private FeesAndPayTaskData buildTaskData() {
