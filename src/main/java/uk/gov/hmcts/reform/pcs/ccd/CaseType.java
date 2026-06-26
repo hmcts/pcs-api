@@ -5,6 +5,7 @@ import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
 import uk.gov.hmcts.ccd.sdk.api.ConfigBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.AccessProfile;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
@@ -100,14 +101,14 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
 
         builder.accessTypeRole("create-cases")
             .organisationProfileId("LOCALAUTH_PROFILE")
-            .organisationalRoleName("[SOLICITOR]")
+            .organisationalRoleName(UserRole.SOLICITOR.getRole())
             .liveTo("01/01/2027");
         builder.accessTypeRole("prof-org-access")
             .organisationProfileId("LOCALAUTH_PROFILE")
-            .groupRoleName("[SOLICITOR]")
-            .caseAssignedRoleField("professional-user")
-            .groupAccessEnabled(false)
-            .caseAccessGroupIdTemplate("pcs:pcs:prof-org-access:solicitor:$ORGID$")
+            .groupRoleName(UserRole.SOLICITOR.getRole())
+            .caseAssignedRoleField(UserRole.PROFESSIONA_USER.getRole())
+            .groupAccessEnabled(true)
+            .caseAccessGroupIdTemplate("PCS:PCS:prof-org-access:solicitor:$ORGID$")
             .liveTo("01/01/2027");
 
 
