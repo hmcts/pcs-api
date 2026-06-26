@@ -9,7 +9,8 @@ import org.springframework.stereotype.Service;
 import java.util.UUID;
 
 /**
- * Non-production recorder that persists plaintext access codes to {@code testing_support_access_code} for the QA pins endpoint.
+ * Non-production recorder that persists plaintext access codes to {@code testing_support_access_code}
+ * for the QA access-code endpoint.
  */
 @Service
 @RequiredArgsConstructor

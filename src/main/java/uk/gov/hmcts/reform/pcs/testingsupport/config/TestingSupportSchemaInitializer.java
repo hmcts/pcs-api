@@ -36,7 +36,7 @@ public class TestingSupportSchemaInitializer {
             )
             """);
 
-        jdbcTemplate.execute(
-            "CREATE INDEX IF NOT EXISTS idx_testing_support_access_code_case_id ON testing_support_access_code (case_id)");
+        jdbcTemplate.execute("CREATE INDEX IF NOT EXISTS idx_testing_support_access_code_case_id "
+            + "ON testing_support_access_code (case_id)");
     }
 }

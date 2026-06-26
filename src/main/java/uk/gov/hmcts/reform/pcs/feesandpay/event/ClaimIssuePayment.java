@@ -50,7 +50,7 @@ public class ClaimIssuePayment implements CCDConfig<PCSCase, State, UserRole> {
         PCSCase caseData = eventPayload.caseData();
         long caseReference = eventPayload.caseReference();
         if (caseData.getDateIssued() == null) {
-            log.info("Payment confirmed for case {} - issuing case and scheduling defendant access-code letter generation",
+            log.info("Payment confirmed for case {} - issuing case and scheduling access-code letter generation",
                      caseReference);
             pcsCaseService.setCaseIssuedDate(caseReference);
             // Case issued (status -> CASE_ISSUED): generate the defendant access code access-code letters.
