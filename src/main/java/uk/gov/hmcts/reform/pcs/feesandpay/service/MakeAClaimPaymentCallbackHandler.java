@@ -30,21 +30,26 @@ public class MakeAClaimPaymentCallbackHandler implements PaymentCallbackStrategy
     private final ClaimRepository claimRepository;
     private final ObjectMapper objectMapper;
     private final Clock utcClock;
+    private final PcsCaseService pcsCaseService;
+    private final ClaimFormScheduler claimFormScheduler;
 
     public MakeAClaimPaymentCallbackHandler(
         CcdPaymentStateUpdateService ccdPaymentStateUpdateService,
         PartyService partyService,
         ClaimRepository claimRepository,
         ObjectMapper objectMapper,
-        @Qualifier("utcClock") Clock utcClock
+        @Qualifier("utcClock") Clock utcClock,
+        PcsCaseService pcsCaseService,
+        ClaimFormScheduler claimFormScheduler
     ) {
         this.ccdPaymentStateUpdateService = ccdPaymentStateUpdateService;
         this.partyService = partyService;
         this.claimRepository = claimRepository;
         this.objectMapper = objectMapper;
         this.utcClock = utcClock;
+        this.pcsCaseService = pcsCaseService;
+        this.claimFormScheduler = claimFormScheduler;
     }
-    private final ClaimFormScheduler claimFormScheduler;
 
     @Override
     public void handle(PaymentStatusCallback paymentStatusCallback, FeePaymentEntity feePaymentEntity) {
@@ -52,7 +57,6 @@ public class MakeAClaimPaymentCallbackHandler implements PaymentCallbackStrategy
         PartyEntity claimParty = getResponsibleParty(feesAndPayTaskData);
         feePaymentEntity.setParty(claimParty);
         if (PaymentStatus.PAID == feePaymentEntity.getPaymentStatus()) {
-            ccdPaymentStateUpdateService.submitPaymentSuccess(feesAndPayTaskData.getCaseReference());
             issueClaim(feePaymentEntity);
             handleSuccessfulPayment(feesAndPayTaskData.getCaseReference());
         } else {
@@ -69,7 +73,7 @@ public class MakeAClaimPaymentCallbackHandler implements PaymentCallbackStrategy
         claim.setClaimIssuedDate(LocalDateTime.now(utcClock));
         claimRepository.save(claim);
     }
-  
+
     private void handleSuccessfulPayment(long caseReference) {
         pcsCaseService.allocateCaseManagementLocation(caseReference);
         ccdPaymentStateUpdateService.submitPaymentSuccess(caseReference);
