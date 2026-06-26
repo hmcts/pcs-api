@@ -7,7 +7,7 @@ import lombok.Data;
 @Data
 @Builder
 @AllArgsConstructor
-public class AccessCodeTaskData {
+public class AccessCodeTaskData implements CaseReferencedTaskData {
 
     private final String caseReference;
 

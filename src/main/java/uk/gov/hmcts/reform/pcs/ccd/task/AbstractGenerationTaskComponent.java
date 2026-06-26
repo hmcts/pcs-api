@@ -1,0 +1,109 @@
+package uk.gov.hmcts.reform.pcs.ccd.task;
+
+import com.github.kagkarlsson.scheduler.task.CompletionHandler;
+import com.github.kagkarlsson.scheduler.task.FailureHandler;
+import com.github.kagkarlsson.scheduler.task.TaskDescriptor;
+import com.github.kagkarlsson.scheduler.task.helper.CustomTask;
+import com.github.kagkarlsson.scheduler.task.helper.Tasks;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
+import uk.gov.hmcts.reform.pcs.ccd.model.CaseReferencedTaskData;
+
+import java.time.Duration;
+
+/**
+ * Shared db-scheduler scaffolding for document-generation tasks (claim form, access-code letter).
+ * Gives both pipelines one uniform retry shape (MaxRetries + ExponentialBackoff), terminal-only ERROR
+ * logging, App Insights MDC dimensions and {@code OnCompleteRemove} cleanup, so a concrete task only
+ * supplies its identity and the work to run — and the two can't drift apart again.
+ */
+public abstract class AbstractGenerationTaskComponent<T extends CaseReferencedTaskData> {
+
+    // MDC keys - the App Insights agent copies these onto the trace/exception telemetry as
+    // customDimensions, so a failure can be found and alerted on by case without parsing messages.
+    private static final String MDC_CASE_REFERENCE = "caseReference";
+    private static final String MDC_TASK_NAME = "taskName";
+    private static final String MDC_TERMINAL_FAILURE = "terminalFailure";
+    private static final String MDC_FAILURE_REASON = "failureReason";
+
+    // Logger named after the concrete subclass, so per-task log filtering/telemetry is preserved.
+    protected final Logger log = LoggerFactory.getLogger(getClass());
+
+    private final int maxRetries;
+    private final Duration backoffDelay;
+
+    protected AbstractGenerationTaskComponent(int maxRetries, Duration backoffDelay) {
+        this.maxRetries = maxRetries;
+        this.backoffDelay = backoffDelay;
+    }
+
+    protected abstract String taskName();
+
+    protected abstract TaskDescriptor<T> taskDescriptor();
+
+    /**
+     * Runs the generation. {@code finalAttempt} is true on the last scheduler attempt so a one-to-many
+     * task can record its per-item failures only once retries are exhausted.
+     */
+    protected abstract void generate(long caseReference, boolean finalAttempt);
+
+    /** Records a permanent (terminal) failure for the whole case. No-op by default. */
+    protected void recordTerminalFailure(long caseReference) {
+        // Overridden by tasks that write a single per-case failure row; one-to-many tasks record
+        // per-item failures inside their own service via the finalAttempt flag instead.
+    }
+
+    protected CustomTask<T> buildTask() {
+        return Tasks.custom(taskDescriptor())
+            .onFailure(new FailureHandler.MaxRetriesFailureHandler<>(
+                maxRetries,
+                new FailureHandler.ExponentialBackoffFailureHandler<>(backoffDelay)))
+            .execute((taskInstance, executionContext) -> {
+                String caseReferenceString = taskInstance.getData().getCaseReference();
+                long caseReference = Long.parseLong(caseReferenceString);
+                int attempt = executionContext.getExecution().consecutiveFailures + 1;
+                boolean finalAttempt = isFinalAttempt(attempt);
+
+                MDC.put(MDC_CASE_REFERENCE, caseReferenceString);
+                MDC.put(MDC_TASK_NAME, taskName());
+                try {
+                    log.debug("Starting {} for case {}", taskName(), caseReference);
+                    generate(caseReference, finalAttempt);
+                    log.info("Completed {} for case {}", taskName(), caseReference);
+                    return new CompletionHandler.OnCompleteRemove<>();
+                } catch (Exception e) {
+                    // Only the terminal attempt is logged at ERROR - intermediate retries are tracked by
+                    // db-scheduler in scheduled_tasks.consecutive_failures and stay out of the app logs.
+                    if (finalAttempt) {
+                        MDC.put(MDC_TERMINAL_FAILURE, "true");
+                        MDC.put(MDC_FAILURE_REASON, String.valueOf(e.getMessage()));
+                        log.error("{} permanently failed for case {} after {} attempts: {}",
+                                  taskName(), caseReference, attempt, e.getMessage(), e);
+                        recordTerminalFailureSafely(caseReference);
+                    }
+                    throw e;
+                } finally {
+                    MDC.remove(MDC_CASE_REFERENCE);
+                    MDC.remove(MDC_TASK_NAME);
+                    MDC.remove(MDC_TERMINAL_FAILURE);
+                    MDC.remove(MDC_FAILURE_REASON);
+                }
+            });
+    }
+
+    // MaxRetriesFailureHandler(maxRetries) runs the task maxRetries + 1 times (1 initial + maxRetries
+    // retries), so the terminal execution is attempt maxRetries + 1. Using >= would also fire on the
+    // second-to-last attempt, double-recording the failure (HDPI-6478).
+    private boolean isFinalAttempt(int attempt) {
+        return attempt > maxRetries;
+    }
+
+    private void recordTerminalFailureSafely(long caseReference) {
+        try {
+            recordTerminalFailure(caseReference);
+        } catch (Exception e) {
+            log.error("Failed to record terminal failure for {} on case {}", taskName(), caseReference, e);
+        }
+    }
+}

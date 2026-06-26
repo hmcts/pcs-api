@@ -93,12 +93,23 @@ public class DefendantAccessCodeService {
             accessCodeActivityLogService.logSuccess(pcsCaseEntity, defendant, ClaimActivityType.DOCUMENTS_CREATED);
 
         } catch (Exception e) {
-            log.error("Failed to generate access-code letter for party {} on case {}",
-                      defendant.getId(), pcsCaseEntity.getCaseReference(), e);
+            // Terminal-only: intermediate retries are tracked in scheduled_tasks; mirror the claim-form
+            // task's logging so both pipelines behave the same.
             if (finalAttempt) {
-                accessCodeActivityLogService.logFailure(pcsCaseEntity, defendant, ClaimActivityType.DOCUMENTS_CREATED);
+                log.error("Access-code letter generation permanently failed for party {} on case {}",
+                          defendant.getId(), pcsCaseEntity.getCaseReference(), e);
+                recordFailureSafely(pcsCaseEntity, defendant);
             }
             throw e;
+        }
+    }
+
+    private void recordFailureSafely(PcsCaseEntity pcsCaseEntity, PartyEntity defendant) {
+        try {
+            accessCodeActivityLogService.logFailure(pcsCaseEntity, defendant, ClaimActivityType.DOCUMENTS_CREATED);
+        } catch (Exception e) {
+            log.error("Failed to record access-code FAILURE for party {} on case {}",
+                      defendant.getId(), pcsCaseEntity.getCaseReference(), e);
         }
     }
 

@@ -10,7 +10,7 @@ import lombok.Data;
 @Data
 @Builder
 @AllArgsConstructor
-public class ClaimFormTaskData {
+public class ClaimFormTaskData implements CaseReferencedTaskData {
 
     private final String caseReference;
 

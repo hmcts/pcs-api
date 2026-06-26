@@ -88,6 +88,7 @@ class ClaimFormGenerationComponentTest {
     void successfulExecutionReturnsOnCompleteRemove() {
         ClaimFormTaskData data = ClaimFormTaskData.builder().caseReference("1234567812345678").build();
         when(taskInstance.getData()).thenReturn(data);
+        when(executionContext.getExecution()).thenReturn(execution); // consecutiveFailures = 0 -> attempt 1
 
         CustomTask<ClaimFormTaskData> task = component.claimFormGenerationTask();
         CompletionHandler<ClaimFormTaskData> result = task.execute(taskInstance, executionContext);
