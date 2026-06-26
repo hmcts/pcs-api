@@ -40,10 +40,15 @@ public class FeePaymentCallbackTests extends BaseApi {
     ApiSteps apiSteps;
     private Long caseReference;
     private static final String caseType = CaseType.getCaseType();
+    private String paymentRequestReference;
 
     @BeforeEach
     void setUp() {
+        apiSteps.requestIsPreparedWithAppropriateValues();
         caseReference = apiSteps.ccdCaseIsCreated("england");
+
+        Map<String,Object> claimantPaymentRef = getClaimantPaymentReference(caseReference);
+        paymentRequestReference = claimantPaymentRef.get("serviceRequestReference").toString();
     }
 
     @AfterAll
@@ -58,7 +63,6 @@ public class FeePaymentCallbackTests extends BaseApi {
     }
 
     Map<String,Object> getClaimantPaymentReference(Long caseReference) {
-        apiSteps.requestIsPreparedWithAppropriateValues();
         List<Map<String,Object>> paymentRefs =  apiSteps.getFeePaymentDetailsForCaseReference(caseReference);
         assertNotNull(paymentRefs, "Payment references should not be null");
         assertFalse(paymentRefs.isEmpty(), "Payment references should not be empty");
@@ -85,8 +89,6 @@ public class FeePaymentCallbackTests extends BaseApi {
     @Test
     @Disabled("Error validation response to be implement in HDPI-7317")
     void feePaymentWithIncorrectCaseReferenceCallbackFailure() {
-        Map<String,Object> claimantPaymentRef = getClaimantPaymentReference(caseReference);
-        String paymentRequestReference = claimantPaymentRef.get("serviceRequestReference").toString();
         String paymentUpdateRequestBody = PayloadLoader.load(
             "/payloads/payment-update-CallbackRequest.json",
             Map.of("caseReference", "1234123412341234",
@@ -103,11 +105,6 @@ public class FeePaymentCallbackTests extends BaseApi {
     @Title("Fee Payment callback return 204 on success")
     @Test
     void feePaymentCallbackSuccess() {
-        caseReference = apiSteps.ccdCaseIsCreated("england");
-        apiSteps.requestIsPreparedWithAppropriateValues();
-
-        Map<String,Object> claimantPaymentRef = getClaimantPaymentReference(caseReference);
-        String paymentRequestReference = claimantPaymentRef.get("serviceRequestReference").toString();
 
         String paymentUpdateRequestBody = PayloadLoader.load(
             "/payloads/payment-update-CallbackRequest.json",
@@ -131,11 +128,6 @@ public class FeePaymentCallbackTests extends BaseApi {
     @Title("Fee Payment callback return 204 on success with payment status Not paid")
     @Test
     void feePaymentCallbackSuccessWithStatusNotPaid() {
-        caseReference = apiSteps.ccdCaseIsCreated("england");
-        apiSteps.requestIsPreparedWithAppropriateValues();
-
-        Map<String,Object> claimantPaymentRef = getClaimantPaymentReference(caseReference);
-        String paymentRequestReference = claimantPaymentRef.get("serviceRequestReference").toString();
 
         String paymentUpdateRequestBody = PayloadLoader.load(
             "/payloads/payment-update-CallbackRequest.json",
@@ -158,19 +150,11 @@ public class FeePaymentCallbackTests extends BaseApi {
     @Title("Fee Payment callback return 204 on success with payment status Partially paid")
     @Test
     void feePaymentCallbackSuccessWithStatusPartiallyPaid() {
-        caseReference = apiSteps.ccdCaseIsCreated("england");
-        apiSteps.requestIsPreparedWithAppropriateValues();
-
-        List<Map<String,Object>> paymentRefs =  apiSteps.getFeePaymentDetailsForCaseReference(caseReference);
-        assertNotNull(paymentRefs, "Payment references should not be null");
-        assertFalse(paymentRefs.isEmpty(), "Payment references should not be empty");
-        Map<String,Object> claimantPayment = paymentRefs.getFirst();
-        String requestReference = claimantPayment.get("serviceRequestReference").toString();
 
         String paymentUpdateRequestBody = PayloadLoader.load(
             "/payloads/payment-update-CallbackRequest.json",
             Map.of("caseReference", caseReference,
-                   "requestReference", requestReference,
+                   "requestReference", paymentRequestReference,
                    "status", "Partially paid")
         );
         apiSteps.requestIsPreparedWithAppropriateValues();
