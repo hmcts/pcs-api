@@ -13,10 +13,14 @@ import uk.gov.hmcts.reform.pcs.ccd.model.CaseReferencedTaskData;
 import java.time.Duration;
 
 /**
- * Shared db-scheduler scaffolding for document-generation tasks (claim form, access-code letter).
- * Gives both pipelines one uniform retry shape (MaxRetries + ExponentialBackoff), terminal-only ERROR
- * logging, App Insights MDC dimensions and {@code OnCompleteRemove} cleanup, so a concrete task only
- * supplies its identity and the work to run — and the two can't drift apart again.
+ * Shared db-scheduler scaffolding for document-generation tasks - the ones that render a document and
+ * record its outcome in the activity log. Provides one uniform retry shape (max retries with
+ * exponential backoff), terminal-only error logging, telemetry dimensions and self-removal on success,
+ * so a concrete task only supplies its identity and the work to run.
+ *
+ * <p>Used by the claim form, access-code letter and defence form generation tasks. Other scheduled
+ * tasks (notifications, role assignment, fees, email) do not extend this - they share only the retry
+ * handler, not the activity-log and telemetry pattern.</p>
  */
 public abstract class AbstractGenerationTaskComponent<T extends CaseReferencedTaskData> {
 
@@ -94,7 +98,7 @@ public abstract class AbstractGenerationTaskComponent<T extends CaseReferencedTa
 
     // MaxRetriesFailureHandler(maxRetries) runs the task maxRetries + 1 times (1 initial + maxRetries
     // retries), so the terminal execution is attempt maxRetries + 1. Using >= would also fire on the
-    // second-to-last attempt, double-recording the failure (HDPI-6478).
+    // second-to-last attempt and double-record the failure.
     private boolean isFinalAttempt(int attempt) {
         return attempt > maxRetries;
     }
