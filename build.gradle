@@ -382,6 +382,8 @@ ext['snakeyaml.version'] = '2.0'
 ext['netty.version'] = nettyVersion
 
 dependencies {
+  implementation group: 'com.github.hmcts', name: 'send-letter-client', version: '5.1.1'
+
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: springFrameworkBootVersion
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-actuator', version: springFrameworkBootVersion
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-aop', version: springFrameworkBootVersion
@@ -443,6 +445,7 @@ dependencies {
     exclude group: 'com.launchdarkly', module: 'launchdarkly-java-server-sdk'
   }
 
+  testImplementation group: 'net.serenity-bdd', name: 'serenity-rest-assured', version: serenityBddVersion
   functionalTestImplementation group: 'net.serenity-bdd', name: 'serenity-rest-assured', version: serenityBddVersion
   functionalTestImplementation group: 'net.serenity-bdd', name: 'serenity-core', version: serenityBddVersion
   functionalTestImplementation group: 'net.serenity-bdd', name: 'serenity-junit5', version: serenityBddVersion
