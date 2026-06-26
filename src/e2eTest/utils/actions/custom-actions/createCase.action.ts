@@ -12,7 +12,8 @@ import {
   whatAreYourGroundsForPossession,
   userIneligible,
   whatAreYourGroundsForPossessionWales,
-  addressCheckYourAnswers
+  addressCheckYourAnswers,
+  home
 } from '@data/page-data';
 import {
   claimantType,
