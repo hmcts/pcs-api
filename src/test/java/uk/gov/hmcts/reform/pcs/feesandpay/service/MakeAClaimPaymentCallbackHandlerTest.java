@@ -17,6 +17,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.service.CcdPaymentStateUpdateService;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimFormScheduler;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
@@ -65,6 +66,7 @@ class MakeAClaimPaymentCallbackHandlerTest {
 
     @Mock
     private Clock utcClock;
+    private ClaimFormScheduler claimFormScheduler;
 
     @InjectMocks
     private MakeAClaimPaymentCallbackHandler underTest;
@@ -107,6 +109,14 @@ class MakeAClaimPaymentCallbackHandlerTest {
 
     @Test
     void shouldStampClaimIssuedDateWhenPaymentIsPaid() throws Exception {
+        var inOrder = inOrder(pcsCaseService, ccdPaymentStateUpdateService);
+        inOrder.verify(pcsCaseService).allocateCaseManagementLocation(taskData.getCaseReference());
+        inOrder.verify(ccdPaymentStateUpdateService).submitPaymentSuccess(taskData.getCaseReference());
+        verify(claimFormScheduler).scheduleClaimFormGeneration(taskData.getCaseReference());
+    }
+
+    @Test
+    void shouldNotSubmitPaymentSuccessWhenCaseManagementLocationAllocationFails() throws Exception {
         // Given
         Instant fixedInstant = LocalDateTime.of(2026, 2, 5, 10, 30).toInstant(ZoneOffset.UTC);
         when(utcClock.instant()).thenReturn(fixedInstant);
@@ -198,6 +208,7 @@ class MakeAClaimPaymentCallbackHandlerTest {
         // Then
         assertThat(claimEntity.getClaimIssuedDate()).isNull();
         verifyNoInteractions(ccdPaymentStateUpdateService);
+        verifyNoInteractions(claimFormScheduler);
     }
 
     @Test
@@ -214,6 +225,8 @@ class MakeAClaimPaymentCallbackHandlerTest {
         assertThatExceptionOfType(PaymentCallbackException.class)
             .isThrownBy(() -> underTest.handle(callback, feePaymentEntity))
             .withMessageContaining("Unable to process");
+        verifyNoInteractions(ccdPaymentStateUpdateService);
+        verifyNoInteractions(claimFormScheduler);
     }
 
     @Test
@@ -240,6 +253,7 @@ class MakeAClaimPaymentCallbackHandlerTest {
         verifyNoInteractions(pcsCaseService);
         verifyNoInteractions(ccdPaymentStateUpdateService);
         verifyNoInteractions(claimRepository);
+        verifyNoInteractions(claimFormScheduler);
     }
 
     private FeesAndPayTaskData buildTaskData() {
