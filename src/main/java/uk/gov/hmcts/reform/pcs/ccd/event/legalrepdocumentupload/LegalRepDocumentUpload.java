@@ -13,6 +13,7 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocumentUploadDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.DocumentUploadCategory;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -114,7 +115,7 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
         return pcsCaseEntity.getGenApps().stream()
             .filter(genApp -> genApp.getType() == mapped)
             .filter(genApp -> genApp.getWithoutNotice() != null
-                && genApp.getWithoutNotice().toBoolean())
+                && genApp.getWithoutNotice() == VerticalYesNo.YES)
             .map(GenAppEntity::getApplicationSubmittedDate)
             .filter(Objects::nonNull)
             .sorted(Comparator.reverseOrder()) // optional
