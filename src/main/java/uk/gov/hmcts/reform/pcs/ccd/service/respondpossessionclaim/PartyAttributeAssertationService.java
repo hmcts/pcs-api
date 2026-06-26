@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 @Slf4j
 @Service
@@ -57,6 +58,13 @@ public class PartyAttributeAssertationService {
         addRentArrearsAssertion(responses, partyEntity, assertions);
 
         repository.saveAll(assertions);
+    }
+
+    public List<PartyAttributeAssertationEntity> getSubmittedAssertionsForParty(UUID partyId) {
+        return repository.findByPartyIdAndStatusOrderByCreatedAtAsc(
+            partyId,
+            PartyAttributeAssertionStatus.SUBMITTED
+        );
     }
 
     /**

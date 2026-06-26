@@ -11,12 +11,14 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEnt
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.HouseholdCircumstancesEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.PaymentAgreementEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.PartyAttributeAssertationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.RegularExpenseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.RegularIncomeEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.RegularIncomeItemEntity;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 import uk.gov.hmcts.reform.pcs.ccd.domain.IncomeType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PartyAttributeType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.RecurrenceFrequency;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.RegularExpenseType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.StatementOfTruthEntity;
@@ -57,7 +59,7 @@ class DefendantResponseReadMapperTest {
 
         DefendantResponseReadMapper underTest = new DefendantResponseReadMapper(mock(AddressMapper.class));
 
-        PossessionClaimResponse response = underTest.toPossessionClaimResponse(entity);
+        PossessionClaimResponse response = underTest.toPossessionClaimResponse(entity, List.of());
 
         assertThat(response.getClaimIssuedDate()).isEqualTo(LocalDate.of(2026, 2, 5));
     }
@@ -153,7 +155,7 @@ class DefendantResponseReadMapperTest {
             .paymentAgreement(payment)
             .build();
 
-        PossessionClaimResponse response = underTest.toPossessionClaimResponse(entity);
+        PossessionClaimResponse response = underTest.toPossessionClaimResponse(entity, List.of());
 
         assertThat(response.getDefendantContactDetails().getParty().getAddress()).isEqualTo(mappedAddress);
         assertThat(response.getDefendantResponses().getPaymentAgreement()).isNotNull();
@@ -196,7 +198,7 @@ class DefendantResponseReadMapperTest {
             .statementOfTruth(StatementOfTruthEntity.builder().fullName("  Jane Doe  ").build())
             .build();
 
-        final PossessionClaimResponse response = underTest.toPossessionClaimResponse(entity);
+        final PossessionClaimResponse response = underTest.toPossessionClaimResponse(entity, List.of());
 
         assertThat(response.getDefendantContactDetails().getParty().getAddress()).isEqualTo(mappedPartyAddress);
         assertThat(response.getDefendantResponses().getContactByEmail()).isEqualTo(VerticalYesNo.YES);
@@ -239,11 +241,48 @@ class DefendantResponseReadMapperTest {
             .householdCircumstances(hc)
             .build();
 
-        final PossessionClaimResponse response = underTest.toPossessionClaimResponse(entity);
+        final PossessionClaimResponse response = underTest.toPossessionClaimResponse(entity, List.of());
         assertThat(response.getDefendantResponses().getHouseholdCircumstances().getUniversalCredit())
             .isEqualTo(YesOrNo.YES);
         assertThat(response.getDefendantResponses().getHouseholdCircumstances().getHasAppliedForUniversalCredit())
             .isNull();
+    }
+
+    @Test
+    void shouldMapPartyAssertionsToDefendantResponses() {
+        final PartyEntity party = mock(PartyEntity.class);
+        when(party.getId()).thenReturn(UUID.randomUUID());
+        when(party.getAddressSameAsProperty()).thenReturn(null);
+        when(party.getAddress()).thenReturn(null);
+        when(party.getContactPreferences()).thenReturn(null);
+        when(party.getDateOfBirth()).thenReturn(null);
+
+        final DefendantResponseEntity entity = DefendantResponseEntity.builder()
+            .party(party)
+            .pcsCase(null)
+            .build();
+
+        final List<PartyAttributeAssertationEntity> assertions = List.of(
+            PartyAttributeAssertationEntity.builder()
+                .attributesName(PartyAttributeType.TENANCY_TYPE)
+                .assertedValue("Corrected tenancy type")
+                .build(),
+            PartyAttributeAssertationEntity.builder()
+                .attributesName(PartyAttributeType.TENANCY_START_DATE)
+                .assertedValue("2020-01-15")
+                .build(),
+            PartyAttributeAssertationEntity.builder()
+                .attributesName(PartyAttributeType.RENT_ARREARS_AMOUNT)
+                .assertedValue("500.00")
+                .build()
+        );
+
+        final PossessionClaimResponse response = new DefendantResponseReadMapper(mock(AddressMapper.class))
+            .toPossessionClaimResponse(entity, assertions);
+
+        assertThat(response.getDefendantResponses().getTenancyType()).isEqualTo("Corrected tenancy type");
+        assertThat(response.getDefendantResponses().getTenancyStartDate()).isEqualTo(LocalDate.of(2020, 1, 15));
+        assertThat(response.getDefendantResponses().getRentArrearsAmount()).isEqualByComparingTo("500.00");
     }
 }
 
