@@ -39,7 +39,6 @@ public class FeePaymentCallbackTests extends BaseApi {
     @Steps
     ApiSteps apiSteps;
     private Long caseReference;
-    private static final String caseType = CaseType.getCaseType();
     private String paymentRequestReference;
 
     @BeforeEach
