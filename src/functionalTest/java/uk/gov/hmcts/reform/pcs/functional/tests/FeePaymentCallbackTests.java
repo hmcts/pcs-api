@@ -46,15 +46,6 @@ public class FeePaymentCallbackTests extends BaseApi {
         caseReference = apiSteps.ccdCaseIsCreated("england");
     }
 
-    Map<String,Object> getClaimantPaymentReference(Long caseReference) {
-        apiSteps.requestIsPreparedWithAppropriateValues();
-        List<Map<String,Object>> paymentRefs =  apiSteps.getFeePaymentDetailsForCaseReference(caseReference);
-        assertNotNull(paymentRefs, "Payment references should not be null");
-        assertFalse(paymentRefs.isEmpty(), "Payment references should not be empty");
-        return paymentRefs.getFirst();
-    }
-
-
     @AfterAll
     void cleanUp() {
         if (caseReference != null) {
@@ -64,6 +55,14 @@ public class FeePaymentCallbackTests extends BaseApi {
                 "[CLAIMANTSOLICITOR]"
             );
         }
+    }
+
+    Map<String,Object> getClaimantPaymentReference(Long caseReference) {
+        apiSteps.requestIsPreparedWithAppropriateValues();
+        List<Map<String,Object>> paymentRefs =  apiSteps.getFeePaymentDetailsForCaseReference(caseReference);
+        assertNotNull(paymentRefs, "Payment references should not be null");
+        assertFalse(paymentRefs.isEmpty(), "Payment references should not be empty");
+        return paymentRefs.getFirst();
     }
 
     @Title("Fee Payment callback return 404 for invalid requestReference")
