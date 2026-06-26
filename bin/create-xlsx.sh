@@ -26,7 +26,7 @@ for case_dir in "$run_dir"/build/definitions/*/; do
 docker run --rm --name "json2xlsx" \
   -v "$run_dir/build/definitions/${case_type}:/tmp/ccd-input" \
   -v "$run_dir/build/definitions:/tmp/ccd-output" \
-  hmctsprod.azurecr.io/ccd/definition-processor:pr-348-b9a81c6 \
+  hmctsprod.azurecr.io/ccd/definition-processor:pr-348-64dd53f \
   json2xlsx -D /tmp/ccd-input -o /tmp/ccd-output/"${ccd_definition_file}"
 
 done
