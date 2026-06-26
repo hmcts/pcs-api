@@ -82,7 +82,6 @@ public class PinPackDocumentGenerator {
             .defendantName(resolveDefendantName(defendant))
             .defendantAddress(resolveDefendantAddress(defendant, formattedPropertyAddress))
             .propertyAddress(formattedPropertyAddress)
-            .respondByPostCourtName(servingCourt != null ? servingCourt.courtName() : null)
             .respondByPostCourtAddress(formatCourtAddress(servingCourt))
             .accessCode(plaintextAccessCode)
             .issuedOn(LocalDate.now(ukClock))
@@ -155,7 +154,10 @@ public class PinPackDocumentGenerator {
         if (court == null) {
             return null;
         }
-        return Stream.of(court.courtAddress(), court.postcode())
+        return Stream.of(court.courtName(), court.courtAddress(), court.postcode())
+            .filter(StringUtils::isNotBlank)
+            .flatMap(part -> Stream.of(part.split(",")))
+            .map(String::trim)
             .filter(StringUtils::isNotBlank)
             .reduce((a, b) -> a + AddressFormatter.NEWLINE_DELIMITER + b)
             .orElse(null);

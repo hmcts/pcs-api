@@ -96,7 +96,7 @@ class PinPackDocumentGeneratorTest {
         when(docAssemblyService.generateDocument(any(), anyString(), any(), anyString())).thenReturn(DOC_URL);
         when(locationReferenceService.getCountyCourts(eq(AUTH_TOKEN), eq(List.of(EPIMS_ID))))
             .thenReturn(List.of(new CourtVenue(EPIMS_ID, 1, "Central London County Court",
-                                               "13-14 Park Crescent", "W1B 1HT")));
+                                               "13-14 Park Crescent, Marylebone", "W1B 1HT")));
     }
 
     @Test
@@ -175,8 +175,8 @@ class PinPackDocumentGeneratorTest {
         underTest.generatePinPack(caseEntity, caseEntity.getClaims().getFirst(), defendant, "PLAINTEXTPIN1");
 
         PinPackFormPayload payload = capturedPayload();
-        assertThat(payload.getRespondByPostCourtName()).isEqualTo("Central London County Court");
-        assertThat(payload.getRespondByPostCourtAddress()).isEqualTo("13-14 Park Crescent\nW1B 1HT");
+        assertThat(payload.getRespondByPostCourtAddress())
+            .isEqualTo("Central London County Court\n13-14 Park Crescent\nMarylebone\nW1B 1HT");
     }
 
     @Test

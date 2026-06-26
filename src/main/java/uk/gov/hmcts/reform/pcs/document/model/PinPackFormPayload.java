@@ -18,7 +18,6 @@ public class PinPackFormPayload implements FormPayload {
     private String defendantName;
     private String defendantAddress;
     private String propertyAddress;
-    private String respondByPostCourtName;
     private String respondByPostCourtAddress;
     private String accessCode;
     private LocalDate issuedOn;
