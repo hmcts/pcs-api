@@ -31,7 +31,8 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.PartyAttributeAssertionRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseNameFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseReferenceFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.service.form.PartyDisplayMapper;
-import uk.gov.hmcts.reform.pcs.document.model.claimform.ClaimFormAddress;
+import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
+import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 import uk.gov.hmcts.reform.pcs.document.model.defenceform.DefenceFormAmountRow;
 import uk.gov.hmcts.reform.pcs.document.model.defenceform.DefenceFormPayload;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
@@ -54,8 +55,8 @@ import static uk.gov.hmcts.reform.pcs.ccd.service.form.FormFieldFormatter.format
 import static uk.gov.hmcts.reform.pcs.ccd.service.form.FormFieldFormatter.isNo;
 import static uk.gov.hmcts.reform.pcs.ccd.service.form.FormFieldFormatter.isPopulated;
 import static uk.gov.hmcts.reform.pcs.ccd.service.form.FormFieldFormatter.isYes;
-import static uk.gov.hmcts.reform.pcs.ccd.service.form.FormFieldFormatter.toFormAddress;
 import static uk.gov.hmcts.reform.pcs.ccd.service.form.FormFieldFormatter.toLabel;
+import static uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter.NEWLINE_DELIMITER;
 
 /**
  * Builds {@link DefenceFormPayload} from a {@link DefendantResponseEntity} and its claim baseline.
@@ -73,6 +74,8 @@ public class DefenceFormPayloadBuilder {
     private final CaseNameFormatter caseNameFormatter;
     private final PartyAttributeAssertionRepository assertionRepository;
     private final ObjectMapper objectMapper;
+    private final AddressMapper addressMapper;
+    private final AddressFormatter addressFormatter;
     private final Clock ukClock;
 
     private static final List<IncomeType> INCOME_ROW_ORDER = List.of(
@@ -99,11 +102,15 @@ public class DefenceFormPayloadBuilder {
                                      CaseNameFormatter caseNameFormatter,
                                      PartyAttributeAssertionRepository assertionRepository,
                                      ObjectMapper objectMapper,
+                                     AddressMapper addressMapper,
+                                     AddressFormatter addressFormatter,
                                      @Qualifier("ukClock") Clock ukClock) {
         this.caseReferenceFormatter = caseReferenceFormatter;
         this.caseNameFormatter = caseNameFormatter;
         this.assertionRepository = assertionRepository;
         this.objectMapper = objectMapper;
+        this.addressMapper = addressMapper;
+        this.addressFormatter = addressFormatter;
         this.ukClock = ukClock;
     }
 
@@ -155,18 +162,11 @@ public class DefenceFormPayloadBuilder {
         if (!claimants.isEmpty()) {
             PartyEntity claimant = claimants.getFirst();
             payload.claimantName(displayName(claimant));
-            ClaimFormAddress claimantAddress = toFormAddress(claimant.getAddress());
-            payload.claimantAddress(claimantAddress);
-            applyAddressFlags(claimantAddress,
-                payload::hasClaimantAddressLine2, payload::hasClaimantAddressLine3, payload::hasClaimantCounty);
+            payload.claimantAddress(formatAddress(claimant.getAddress()));
         }
 
         payload.defendantName(resolveDefendantName(defendant, assertions));
-        ClaimFormAddress defendantAddress =
-            resolveDefendantAddress(defendant, assertions, pcsCase.getPropertyAddress());
-        payload.defendantAddress(defendantAddress);
-        applyAddressFlags(defendantAddress,
-            payload::hasDefendantAddressLine2, payload::hasDefendantAddressLine3, payload::hasDefendantCounty);
+        payload.defendantAddress(resolveDefendantAddress(defendant, assertions, pcsCase.getPropertyAddress()));
     }
 
     private void mapResponse(DefendantResponseEntity response, boolean isWales, boolean claimantServedNotice,
@@ -384,28 +384,27 @@ public class DefenceFormPayloadBuilder {
     }
 
     // disputed address assertion, else the party address, else the property address (same-as-property defendant)
-    private ClaimFormAddress resolveDefendantAddress(
+    private String resolveDefendantAddress(
         PartyEntity defendant, Map<PartyAttributeType, PartyAttributeAssertationEntity> assertions,
         AddressEntity propertyAddress) {
         String assertedAddress = assertedValue(assertions, PartyAttributeType.CORRESPONDENCE_ADDRESS);
         if (isPopulated(assertedAddress)) {
             try {
-                return toFormAddress(objectMapper.readValue(assertedAddress, AddressUK.class));
+                return addressFormatter.formatFullAddress(
+                    objectMapper.readValue(assertedAddress, AddressUK.class), NEWLINE_DELIMITER);
             } catch (Exception e) {
                 log.error("Failed to parse defendant correspondence address assertion", e);
             }
         }
-        return toFormAddress(defendant.getAddress() != null ? defendant.getAddress() : propertyAddress);
+        return formatAddress(defendant.getAddress() != null ? defendant.getAddress() : propertyAddress);
     }
 
-    private static void applyAddressFlags(ClaimFormAddress address,
-                                          BooleanSetter line2, BooleanSetter line3, BooleanSetter county) {
+    // Single newline-delimited string (blank lines dropped) - the template renders it as one field.
+    private String formatAddress(AddressEntity address) {
         if (address == null) {
-            return;
+            return null;
         }
-        line2.set(isPopulated(address.getAddressLine2()));
-        line3.set(isPopulated(address.getAddressLine3()));
-        county.set(isPopulated(address.getCounty()));
+        return addressFormatter.formatFullAddress(addressMapper.toAddressUK(address), NEWLINE_DELIMITER);
     }
 
     private static String displayName(PartyEntity party) {
@@ -464,11 +463,6 @@ public class DefenceFormPayloadBuilder {
 
     private static List<Party> toDomainParties(List<PartyEntity> parties) {
         return parties.stream().map(PartyDisplayMapper::toDomainParty).toList();
-    }
-
-    @FunctionalInterface
-    private interface BooleanSetter {
-        void set(boolean value);
     }
 
 }

@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Data;
 import uk.gov.hmcts.reform.docassembly.domain.FormPayload;
-import uk.gov.hmcts.reform.pcs.document.model.claimform.ClaimFormAddress;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -41,17 +40,11 @@ public class DefenceFormPayload implements FormPayload {
 
     // ---------- Claimant ----------
     private String claimantName;
-    private ClaimFormAddress claimantAddress;
-    private boolean hasClaimantAddressLine2;
-    private boolean hasClaimantAddressLine3;
-    private boolean hasClaimantCounty;
+    private String claimantAddress;
 
     // ---------- Defendant ----------
     private String defendantName;
-    private ClaimFormAddress defendantAddress;
-    private boolean hasDefendantAddressLine2;
-    private boolean hasDefendantAddressLine3;
-    private boolean hasDefendantCounty;
+    private String defendantAddress;
 
     // ---------- Response to the claim ----------
     private String tenancyTypeConfirmation;

@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.modelmapper.ModelMapper;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.IncomeType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
@@ -35,6 +36,8 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.RegularIncomeIt
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyAttributeAssertionRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseNameFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseReferenceFormatter;
+import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
+import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 import uk.gov.hmcts.reform.pcs.document.model.defenceform.DefenceFormAmountRow;
 import uk.gov.hmcts.reform.pcs.document.model.defenceform.DefenceFormPayload;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
@@ -75,6 +78,8 @@ class DefenceFormPayloadBuilderTest {
             new CaseNameFormatter(),
             assertionRepository,
             new ObjectMapper(),
+            new AddressMapper(new ModelMapper()),
+            new AddressFormatter(),
             UK_CLOCK);
         stubAssertions();
     }
@@ -113,7 +118,7 @@ class DefenceFormPayloadBuilderTest {
         void usesPartyNameAndAddressWhenNotDisputed() {
             DefenceFormPayload payload = builder.build(response(LegislativeCountry.ENGLAND));
             assertThat(payload.getDefendantName()).isEqualTo("Bob Tenant");
-            assertThat(payload.getDefendantAddress().getAddressLine1()).isEqualTo("42 Renters Way");
+            assertThat(payload.getDefendantAddress()).isEqualTo("42 Renters Way\nLondon\nAB1 2CD");
         }
 
         @Test
@@ -126,8 +131,7 @@ class DefenceFormPayloadBuilderTest {
             DefenceFormPayload payload = builder.build(response(LegislativeCountry.ENGLAND));
 
             assertThat(payload.getDefendantName()).isEqualTo("Robert Tennant");
-            assertThat(payload.getDefendantAddress().getAddressLine1()).isEqualTo("9 New Road");
-            assertThat(payload.getDefendantAddress().getPostcode()).isEqualTo("LS1 1AA");
+            assertThat(payload.getDefendantAddress()).isEqualTo("9 New Road\nLeeds\nLS1 1AA");
         }
 
         @Test
@@ -140,7 +144,7 @@ class DefenceFormPayloadBuilderTest {
 
             DefenceFormPayload payload = builder.build(response);
 
-            assertThat(payload.getDefendantAddress().getAddressLine1()).isEqualTo("1 Second Avenue");
+            assertThat(payload.getDefendantAddress()).isEqualTo("1 Second Avenue\nLondon\nAB1 2CD");
         }
 
         @Test
