@@ -1,4 +1,4 @@
-import {actionRecord, IAction} from '@utils/interfaces';
+import {IAction} from '@utils/interfaces';
 import {ClickTabAction} from '@utils/actions/element-actions/clickTab.action';
 import {InputTextAction} from '@utils/actions/element-actions/inputText.action';
 import {CheckAction} from '@utils/actions/element-actions/check.action';
@@ -120,11 +120,15 @@ export class ActionRegistry {
     ['validateCaseNotesDetails', new CreateCaseAction()],
     ['validateCaseSummaryDetails', new CreateCaseAction()],
     ['addCaseNotes', new CreateCaseAction()],
+    ['validateCaseFileViewFolders', new CreateCaseAction()],
+    ['validateCaseFileViewIndividualFolder', new CreateCaseAction()],
+    ['validateCaseListTable', new CreateCaseAction()],
     ['selectPaymentTypePBA', new FeeAndPayAction()],
     ['selectPaymentByCard', new FeeAndPayAction()],
     ['enterPaymentDetails', new FeeAndPayAction()],
     ['verifyStatusInHistoryAndSummaryTab', new FeeAndPayAction()],
     ['clickPayNowLink', new FeeAndPayAction()],
+    ['backDateTheCasePaymentAPI', new FeeAndPayAction()],
     ['whereShouldThisFlagBeAdded', new CaseFlagAction()],
     ['selectFlagType', new CaseFlagAction()],
     ['selectSpecialMeasureForFlag', new CaseFlagAction()],
@@ -145,7 +149,11 @@ export class ActionRegistry {
     ['verifyLinkedCases', new CaseLinking()],
     ['handleJudgeBookingPage', new CaseFlagAction()],
     ['searchResults', new GlobalSearchCaseAction()],
-    ['enterPaymentDetails', new FeeAndPayAction()]
+    ['enterPaymentDetails', new FeeAndPayAction()],
+    ['requestRemission', new FeeAndPayAction()],
+    ['requestRefund', new FeeAndPayAction()],
+    ['approveRefund', new FeeAndPayAction()],
+    ['rejectRefund', new FeeAndPayAction()]
   ]);
 
   static getAction(actionName: string): IAction {

@@ -17,6 +17,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.service.CcdPaymentStateUpdateService;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimFormScheduler;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
@@ -38,8 +39,11 @@ import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -62,9 +66,10 @@ class MakeAClaimPaymentCallbackHandlerTest {
     private ObjectMapper objectMapper;
     @Mock
     private ClaimRepository claimRepository;
-
     @Mock
     private Clock utcClock;
+    @Mock
+    private ClaimFormScheduler claimFormScheduler;
 
     @InjectMocks
     private MakeAClaimPaymentCallbackHandler underTest;
@@ -74,6 +79,64 @@ class MakeAClaimPaymentCallbackHandlerTest {
         Instant defaultInstant = LocalDateTime.of(2020, 1, 1, 0, 0).toInstant(ZoneOffset.UTC);
         lenient().when(utcClock.instant()).thenReturn(defaultInstant);
         lenient().when(utcClock.getZone()).thenReturn(ZoneOffset.UTC);
+    }
+
+    @Test
+    void shouldSetPartyAllocateCaseManagementLocationSubmitPaymentSuccessAndScheduleClaimFormWhenPaid()
+        throws Exception {
+        // Given
+        FeesAndPayTaskData taskData = buildTaskData();
+        when(objectMapper.readValue(anyString(), eq(FeesAndPayTaskData.class))).thenReturn(taskData);
+        String taskDataJson = new ObjectMapper().writeValueAsString(taskData);
+
+        PartyEntity partyEntity = PartyEntity.builder().id(UUID.randomUUID()).orgName(RESPONSIBLE_PARTY).build();
+        when(partyService.getPartyEntityByEntityId(RESPONSIBLE_PARTY_ID, CASE_REFERENCE)).thenReturn(partyEntity);
+
+        ClaimEntity claimEntity = new ClaimEntity();
+        PcsCaseEntity pcsCase = PcsCaseEntity.builder().caseReference(taskData.getCaseReference()).build();
+        claimEntity.setPcsCase(pcsCase);
+        FeePaymentEntity feePaymentEntity = FeePaymentEntity.builder().claim(claimEntity).taskData(taskDataJson)
+            .paymentStatus(PaymentStatus.PAID).paymentCallbackHandlerType(PaymentCallbackHandlerType.CLAIM).build();
+        PaymentStatusCallback callback = PaymentStatusCallback.builder().ccdCaseNumber(CCD_CASE_NUMBER).build();
+
+        // When
+        underTest.handle(callback, feePaymentEntity);
+
+        // Then
+        assertThat(feePaymentEntity.getParty()).isSameAs(partyEntity);
+        var inOrder = inOrder(pcsCaseService, ccdPaymentStateUpdateService);
+        inOrder.verify(pcsCaseService).allocateCaseManagementLocation(taskData.getCaseReference());
+        inOrder.verify(ccdPaymentStateUpdateService).submitPaymentSuccess(taskData.getCaseReference());
+        assertThat(claimEntity.getClaimIssuedDate()).isEqualTo(LocalDateTime.of(2020, 1, 1, 0, 0));
+        verify(claimRepository).save(claimEntity);
+        verify(claimFormScheduler).scheduleClaimFormGeneration(taskData.getCaseReference());
+    }
+
+    @Test
+    void shouldNotSubmitPaymentSuccessWhenCaseManagementLocationAllocationFails() throws Exception {
+        // Given
+        FeesAndPayTaskData taskData = buildTaskData();
+        when(objectMapper.readValue(anyString(), eq(FeesAndPayTaskData.class))).thenReturn(taskData);
+        String taskDataJson = new ObjectMapper().writeValueAsString(taskData);
+
+        PartyEntity partyEntity = PartyEntity.builder().id(UUID.randomUUID()).orgName(RESPONSIBLE_PARTY).build();
+        when(partyService.getPartyEntityByEntityId(RESPONSIBLE_PARTY_ID, CASE_REFERENCE)).thenReturn(partyEntity);
+
+        RuntimeException expectedException = new RuntimeException("Lookup failed");
+        doThrow(expectedException).when(pcsCaseService).allocateCaseManagementLocation(CASE_REFERENCE);
+
+        FeePaymentEntity feePaymentEntity = FeePaymentEntity.builder().taskData(taskDataJson)
+            .paymentStatus(PaymentStatus.PAID).paymentCallbackHandlerType(PaymentCallbackHandlerType.CLAIM).build();
+        PaymentStatusCallback callback = PaymentStatusCallback.builder().ccdCaseNumber(CCD_CASE_NUMBER).build();
+
+        // When
+        Throwable throwable = catchThrowable(() -> underTest.handle(callback, feePaymentEntity));
+
+        // Then
+        assertThat(throwable).isSameAs(expectedException);
+        verify(ccdPaymentStateUpdateService, never()).submitPaymentSuccess(CASE_REFERENCE);
+        verifyNoInteractions(claimRepository);
+        verifyNoInteractions(claimFormScheduler);
     }
 
     @ParameterizedTest
@@ -103,40 +166,7 @@ class MakeAClaimPaymentCallbackHandlerTest {
         verifyNoInteractions(pcsCaseService);
         verifyNoInteractions(ccdPaymentStateUpdateService);
         verifyNoInteractions(claimRepository);
-    }
-
-    @Test
-    void shouldStampClaimIssuedDateWhenPaymentIsPaid() throws Exception {
-        // Given
-        Instant fixedInstant = LocalDateTime.of(2026, 2, 5, 10, 30).toInstant(ZoneOffset.UTC);
-        when(utcClock.instant()).thenReturn(fixedInstant);
-        when(utcClock.getZone()).thenReturn(ZoneOffset.UTC);
-
-        FeesAndPayTaskData taskData = buildTaskData();
-        when(objectMapper.readValue(anyString(), eq(FeesAndPayTaskData.class))).thenReturn(taskData);
-        String taskDataJson = new ObjectMapper().writeValueAsString(taskData);
-
-        PartyEntity partyEntity = PartyEntity.builder().id(RESPONSIBLE_PARTY_ID).orgName(RESPONSIBLE_PARTY).build();
-        when(partyService.getPartyEntityByEntityId(RESPONSIBLE_PARTY_ID, CASE_REFERENCE)).thenReturn(partyEntity);
-
-        ClaimEntity claimEntity = new ClaimEntity();
-        PcsCaseEntity pcsCase = PcsCaseEntity.builder().caseReference(taskData.getCaseReference()).build();
-        claimEntity.setPcsCase(pcsCase);
-
-        FeePaymentEntity feePaymentEntity = FeePaymentEntity.builder()
-            .claim(claimEntity)
-            .taskData(taskDataJson)
-            .paymentStatus(PaymentStatus.PAID)
-            .paymentCallbackHandlerType(PaymentCallbackHandlerType.CLAIM)
-            .build();
-        PaymentStatusCallback callback = PaymentStatusCallback.builder().ccdCaseNumber(CCD_CASE_NUMBER).build();
-
-        // When
-        underTest.handle(callback, feePaymentEntity);
-
-        // Then
-        assertThat(claimEntity.getClaimIssuedDate()).isEqualTo(LocalDateTime.of(2026, 2, 5, 10, 30));
-        verify(ccdPaymentStateUpdateService).submitPaymentSuccess(taskData.getCaseReference());
+        verifyNoInteractions(claimFormScheduler);
     }
 
     @Test
@@ -168,6 +198,7 @@ class MakeAClaimPaymentCallbackHandlerTest {
 
         // Then
         assertThat(claimEntity.getClaimIssuedDate()).isEqualTo(existing);
+        verify(claimRepository, never()).save(claimEntity);
     }
 
     @Test
@@ -198,6 +229,8 @@ class MakeAClaimPaymentCallbackHandlerTest {
         // Then
         assertThat(claimEntity.getClaimIssuedDate()).isNull();
         verifyNoInteractions(ccdPaymentStateUpdateService);
+        verifyNoInteractions(claimRepository);
+        verifyNoInteractions(claimFormScheduler);
     }
 
     @Test
@@ -214,6 +247,8 @@ class MakeAClaimPaymentCallbackHandlerTest {
         assertThatExceptionOfType(PaymentCallbackException.class)
             .isThrownBy(() -> underTest.handle(callback, feePaymentEntity))
             .withMessageContaining("Unable to process");
+        verifyNoInteractions(ccdPaymentStateUpdateService);
+        verifyNoInteractions(claimFormScheduler);
     }
 
     @Test
@@ -240,6 +275,7 @@ class MakeAClaimPaymentCallbackHandlerTest {
         verifyNoInteractions(pcsCaseService);
         verifyNoInteractions(ccdPaymentStateUpdateService);
         verifyNoInteractions(claimRepository);
+        verifyNoInteractions(claimFormScheduler);
     }
 
     private FeesAndPayTaskData buildTaskData() {
