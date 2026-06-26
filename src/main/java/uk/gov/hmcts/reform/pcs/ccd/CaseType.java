@@ -85,6 +85,8 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
             .accessMandatory(true)
             .accessDefault(true)
             .display(false)
+            .hintText("Access to create cases")
+            .displayOrder(1)
             .liveTo("01/01/2027");
         builder.accessType("prof-org-access")
             .organisationProfileId("LOCALAUTH_PROFILE")
@@ -92,6 +94,8 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
             .accessDefault(false)
             .display(true)
             .description("Can manage all cases associated with this organisation")
+            .hintText("Assign to Users to enable access to all cases associated with this organisation")
+            .displayOrder(2)
             .liveTo("01/01/2027");
 
         builder.accessTypeRole("create-cases")
