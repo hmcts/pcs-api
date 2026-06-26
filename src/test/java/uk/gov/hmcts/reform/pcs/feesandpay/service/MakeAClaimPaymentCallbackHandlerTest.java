@@ -15,6 +15,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.service.CcdPaymentStateUpdateService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimFormScheduler;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
@@ -54,12 +55,15 @@ class MakeAClaimPaymentCallbackHandlerTest {
     private PcsCaseService pcsCaseService;
     @Mock
     private ObjectMapper objectMapper;
+    @Mock
+    private ClaimFormScheduler claimFormScheduler;
 
     @InjectMocks
     private MakeAClaimPaymentCallbackHandler underTest;
 
     @Test
-    void shouldSetPartyAllocateCaseManagementLocationAndSubmitPaymentSuccessWhenPaid() throws Exception {
+    void shouldSetPartyAllocateCaseManagementLocationSubmitPaymentSuccessAndScheduleClaimFormWhenPaid()
+        throws Exception {
         // Given
         FeesAndPayTaskData taskData = buildTaskData();
         when(objectMapper.readValue(anyString(), eq(FeesAndPayTaskData.class))).thenReturn(taskData);
@@ -82,6 +86,7 @@ class MakeAClaimPaymentCallbackHandlerTest {
         assertThat(feePaymentEntity.getParty()).isSameAs(partyEntity);
         var inOrder = inOrder(pcsCaseService, ccdPaymentStateUpdateService);
         inOrder.verify(ccdPaymentStateUpdateService).submitPaymentSuccess(taskData.getCaseReference());
+        verify(claimFormScheduler).scheduleClaimFormGeneration(taskData.getCaseReference());
     }
 
     @ParameterizedTest
@@ -130,6 +135,8 @@ class MakeAClaimPaymentCallbackHandlerTest {
         assertThatExceptionOfType(PaymentCallbackException.class)
             .isThrownBy(() -> underTest.handle(callback, feePaymentEntity))
             .withMessageContaining("Unable to process");
+        verifyNoInteractions(ccdPaymentStateUpdateService);
+        verifyNoInteractions(claimFormScheduler);
     }
 
     @Test
@@ -155,6 +162,7 @@ class MakeAClaimPaymentCallbackHandlerTest {
         assertThat(throwable).isEqualTo(expectedException);
         verifyNoInteractions(pcsCaseService);
         verifyNoInteractions(ccdPaymentStateUpdateService);
+        verifyNoInteractions(claimFormScheduler);
     }
 
     private FeesAndPayTaskData buildTaskData() {

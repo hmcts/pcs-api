@@ -105,7 +105,6 @@ public class ResumePossessionClaimConfigurer implements PageConfigurer {
     private final UploadRequiredDocumentsWales uploadRequiredDocumentsWales;
     private final PreActionProtocol preActionProtocol;
     private final WantToUploadDocuments wantToUploadDocuments;
-    private final StatementOfTruth statementOfTruth;
 
     @Override
     public void configurePages(PageBuilder pageBuilder) {
@@ -167,7 +166,7 @@ public class ResumePossessionClaimConfigurer implements PageConfigurer {
             .add(new GeneralApplication())
             .add(new LanguageUsed())
             .add(new CompletingYourClaim())
-            .add(statementOfTruth);
+            .add(new StatementOfTruth());
     }
 
 }
