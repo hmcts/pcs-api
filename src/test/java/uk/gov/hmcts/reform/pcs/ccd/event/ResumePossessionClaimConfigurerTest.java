@@ -161,8 +161,6 @@ class ResumePossessionClaimConfigurerTest {
     @Mock
     private WantToUploadDocuments wantToUploadDocuments;
     @Mock
-    private StatementOfTruth statementOfTruth;
-    @Mock
     private UploadRequiredDocumentsWales uploadRequiredDocumentsWales;
 
     @Test
@@ -237,7 +235,7 @@ class ResumePossessionClaimConfigurerTest {
         verifyAndCount(inOrder, pageBuilder, GeneralApplication.class, verificationCount);
         verifyAndCount(inOrder, pageBuilder, LanguageUsed.class, verificationCount);
         verifyAndCount(inOrder, pageBuilder, CompletingYourClaim.class, verificationCount);
-        verifyAndCount(inOrder, pageBuilder, statementOfTruth, verificationCount);
+        verifyAndCount(inOrder, pageBuilder, StatementOfTruth.class, verificationCount);
 
         int numberOfPages = pageCaptor.getAllValues().size();
         assertThat(verificationCount.get()).isEqualTo(numberOfPages);

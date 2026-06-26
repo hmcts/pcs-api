@@ -7,7 +7,6 @@ import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.service.CcdPaymentStateUpdateService;
-import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimFormScheduler;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
@@ -40,7 +39,6 @@ public class MakeAClaimPaymentCallbackHandler implements PaymentCallbackStrategy
     }
 
     private void handleSuccessfulPayment(long caseReference) {
-        pcsCaseService.allocateCaseManagementLocation(caseReference);
         ccdPaymentStateUpdateService.submitPaymentSuccess(caseReference);
         claimFormScheduler.scheduleClaimFormGeneration(caseReference);
     }
