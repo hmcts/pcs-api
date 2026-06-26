@@ -5,10 +5,12 @@ import { createCaseApiData, submitCaseApiData } from '@data/api-data';
 import { caseInfo } from '@utils/actions/custom-actions/createCaseAPI.action';
 import { VERY_LONG_TIMEOUT } from 'playwright.config';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
-import { caseSummary, home, user } from '@data/page-data';
+import { caseSummary, home } from '@data/page-data';
 import { addCaseNote } from '@data/page-data-figma';
 import { checkYourAnswersCaseNote } from '@data/page-data/checkYourAnswersCaseNote.page.data';
 import { formatCaseStateText, getCurrentBSTTime } from '@utils/common/string.utils';
+import { dismissCookieBanner } from '@config/cookie-banner';
+import { BrowserContext, Page } from '@playwright/test';
 
 test.beforeEach(async ({ page }, testInfo) => {
   initializeExecutor(page);
@@ -91,7 +93,7 @@ test.describe('[Case tabs - England Journey] @nightly', async () => {
     });
   });
 
-  test('Case tabs - Notes tab test @MAC @regression', async () => {
+  test('Case tabs - Notes tab test @MAC @regression', async ({ page, context }) => {
     await performValidation('mainHeader', home.caseSummary)
     await performAction('select', caseSummary.nextStepEventList, caseSummary.addCaseNote);
     await performAction('clickButton', caseSummary.go);
@@ -108,6 +110,17 @@ test.describe('[Case tabs - England Journey] @nightly', async () => {
 
     await performAction('clickButton', checkYourAnswersCaseNote.submitNote);
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Add a case note');
+    await performAction('signOut');
+    await clearBrowserSession(page, context);
+    await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}`);
+    const pages = page.context().pages();
+    const firstTab = pages[0];
+    await firstTab.bringToFront();
+    await dismissCookieBanner(page, 'additional');
+    await performAction('login', { email: 'DDJ.Randell.Lesch@ejudiciary.net', password: process.env.IDAM_PCS_USER_PASSWORD, });
+    await dismissCookieBanner(page, 'analytics');
+    await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/${getCaseTypeId()}/${process.env.CASE_NUMBER}#Summary`);
+    await performValidation('mainHeader', home.caseSummary);
     await performAction('clickTab', home.caseNotes);
     await performAction('validateCaseNotesDetails', {
       createdOn: currentTime.replace(/:\d{2} /, " "),
@@ -368,3 +381,15 @@ test.describe('[Case tabs - England Journey] @nightly', async () => {
     })
   });
 });
+
+async function clearBrowserSession(page: Page, context: BrowserContext): Promise<void> {
+  await context.clearCookies();
+  await page.evaluate(() => {
+    try {
+      localStorage.clear();
+      sessionStorage.clear();
+    } catch {
+      // Ignore if storage is not accessible
+    }
+  });
+}

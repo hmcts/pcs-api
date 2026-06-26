@@ -4,7 +4,7 @@ import { initializeExecutor, performAction, performValidation } from '@utils/con
 import { caseInfo } from '@utils/actions/custom-actions/createCaseAPI.action';
 import { VERY_LONG_TIMEOUT } from 'playwright.config';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
-import { home, user } from '@data/page-data';
+import { home } from '@data/page-data';
 import { createCaseApiWalesData } from '@data/api-data/createCaseWales.api.data';
 import { submitCaseApiDataWales } from '@data/api-data/submitCaseWales.api.data';
 
