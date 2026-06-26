@@ -112,23 +112,69 @@ class DocumentNameServiceTest {
         assertThat(updatedFilename).isEqualTo(expectedFilename);
     }
 
-    private static Stream<Arguments> partyNamingScenarios() {
+    @ParameterizedTest
+    @MethodSource("defendantResponseNamingScenarios")
+    void shouldAddPartyLabelToDefendantResponseDocument(PartyRole partyRole,
+                                                        String originalFilename,
+                                                        String expectedFilename) {
+        // Given
+        UUID applicantPartyId = UUID.randomUUID();
+
+        PartyEntity party1 = PartyEntity.builder()
+            .id(applicantPartyId)
+            .build();
+
+        ClaimPartyEntity claimParty1 = ClaimPartyEntity.builder()
+            .party(party1)
+            .rank(3)
+            .role(partyRole)
+            .build();
+
+        ClaimEntity mainClaim = ClaimEntity.builder()
+            .claimParties(List.of(claimParty1))
+            .build();
+
+        // When
+        String updatedFilename
+            = underTest.appendDefendantPostfix(originalFilename, mainClaim, applicantPartyId);
+
+        // Then
+        assertThat(updatedFilename).isEqualTo(expectedFilename);
+    }
+
+    private static Stream<Arguments> defendantResponseNamingScenarios() {
         return Stream.of(
             // Party role, original filename, expected updated filename
             argumentSet("null filename",
                         PartyRole.DEFENDANT, null, null),
             argumentSet("no extension, defendant",
-                        PartyRole.DEFENDANT, "sample", "sample - Defendant 2"),
+                        PartyRole.DEFENDANT, "sample", "sample - Defendant 3"),
             argumentSet("with extension, defendant",
-                        PartyRole.DEFENDANT, "sample.pdf", "sample - Defendant 2.pdf"),
-            argumentSet("no extension, claimant",
-                        PartyRole.CLAIMANT, "sample", "sample - Claimant 2"),
+                        PartyRole.DEFENDANT, "sample.pdf", "sample - Defendant 3.pdf"),
             argumentSet("with extension, claimant",
-                        PartyRole.CLAIMANT, "sample.pdf", "sample - Claimant 2.pdf"),
-            argumentSet("no extension, other party type",
-                        PartyRole.UNDERLESSEE_OR_MORTGAGEE, "sample", "sample"),
+                        PartyRole.CLAIMANT, "sample.pdf", "sample - Claimant 3.pdf"),
             argumentSet("with extension, other party type",
                         PartyRole.UNDERLESSEE_OR_MORTGAGEE, "sample.pdf", "sample.pdf")
+        );
+    }
+
+    private static Stream<Arguments> partyNamingScenarios() {
+        return Stream.of(
+            // Party role, original filename, expected updated filename
+            argumentSet("null filename",
+                PartyRole.DEFENDANT, null, null),
+            argumentSet("no extension, defendant",
+                PartyRole.DEFENDANT, "sample", "sample - Defendant 2"),
+            argumentSet("with extension, defendant",
+                PartyRole.DEFENDANT, "sample.pdf", "sample - Defendant 2.pdf"),
+            argumentSet("no extension, claimant",
+                PartyRole.CLAIMANT, "sample", "sample - Claimant 2"),
+            argumentSet("with extension, claimant",
+                PartyRole.CLAIMANT, "sample.pdf", "sample - Claimant 2.pdf"),
+            argumentSet("no extension, other party type",
+                PartyRole.UNDERLESSEE_OR_MORTGAGEE, "sample", "sample"),
+            argumentSet("with extension, other party type",
+                PartyRole.UNDERLESSEE_OR_MORTGAGEE, "sample.pdf", "sample.pdf")
         );
     }
 
@@ -157,4 +203,20 @@ class DocumentNameServiceTest {
             .isInstanceOf(PartyNotFoundException.class);
     }
 
+    @Test
+    void shouldThrowPartyNotFoundExceptionWhenPartyNotInClaimForGenApp() {
+        ClaimEntity mainClaim = ClaimEntity.builder().claimParties(List.of()).build();
+        GenAppEntity genAppEntity = GenAppEntity.builder().rank(1).build();
+
+        assertThatThrownBy(() -> underTest.appendGenAppPostfix("file.pdf", genAppEntity, mainClaim, UUID.randomUUID()))
+            .isInstanceOf(PartyNotFoundException.class);
+    }
+
+    @Test
+    void shouldThrowPartyNotFoundExceptionWhenPartyNotInClaimForDefendantPostfix() {
+        ClaimEntity mainClaim = ClaimEntity.builder().claimParties(List.of()).build();
+
+        assertThatThrownBy(() -> underTest.appendDefendantPostfix("file.pdf", mainClaim, UUID.randomUUID()))
+            .isInstanceOf(PartyNotFoundException.class);
+    }
 }
