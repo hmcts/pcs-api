@@ -66,4 +66,14 @@ public class DocumentImportService {
         return documentEntity;
     }
 
+    public void deleteDocument(String documentUrl) {
+        UUID documentId = documentIdExtractor.extractDocumentId(documentUrl);
+        caseDocumentClientApi.deleteDocument(
+            systemUpdateUserTokenProvider.getAuthToken(),
+            authTokenGenerator.generate(),
+            documentId,
+            true
+        );
+    }
+
 }

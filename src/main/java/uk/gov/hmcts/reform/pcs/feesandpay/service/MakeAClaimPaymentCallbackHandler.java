@@ -10,6 +10,8 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.service.CcdPaymentStateUpdateService;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimFormScheduler;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
@@ -28,19 +30,25 @@ public class MakeAClaimPaymentCallbackHandler implements PaymentCallbackStrategy
     private final ClaimRepository claimRepository;
     private final ObjectMapper objectMapper;
     private final Clock utcClock;
+    private final PcsCaseService pcsCaseService;
+    private final ClaimFormScheduler claimFormScheduler;
 
     public MakeAClaimPaymentCallbackHandler(
         CcdPaymentStateUpdateService ccdPaymentStateUpdateService,
         PartyService partyService,
         ClaimRepository claimRepository,
         ObjectMapper objectMapper,
-        @Qualifier("utcClock") Clock utcClock
+        @Qualifier("utcClock") Clock utcClock,
+        PcsCaseService pcsCaseService,
+        ClaimFormScheduler claimFormScheduler
     ) {
         this.ccdPaymentStateUpdateService = ccdPaymentStateUpdateService;
         this.partyService = partyService;
         this.claimRepository = claimRepository;
         this.objectMapper = objectMapper;
         this.utcClock = utcClock;
+        this.pcsCaseService = pcsCaseService;
+        this.claimFormScheduler = claimFormScheduler;
     }
 
     @Override
@@ -49,8 +57,8 @@ public class MakeAClaimPaymentCallbackHandler implements PaymentCallbackStrategy
         PartyEntity claimParty = getResponsibleParty(feesAndPayTaskData);
         feePaymentEntity.setParty(claimParty);
         if (PaymentStatus.PAID == feePaymentEntity.getPaymentStatus()) {
-            ccdPaymentStateUpdateService.submitPaymentSuccess(feesAndPayTaskData.getCaseReference());
             issueClaim(feePaymentEntity);
+            handleSuccessfulPayment(feesAndPayTaskData.getCaseReference());
         } else {
             log.warn("The payment was not successful [{}] for case: {}", feePaymentEntity.getPaymentStatus(),
                      feesAndPayTaskData.getCaseReference());
@@ -64,6 +72,12 @@ public class MakeAClaimPaymentCallbackHandler implements PaymentCallbackStrategy
         }
         claim.setClaimIssuedDate(LocalDateTime.now(utcClock));
         claimRepository.save(claim);
+    }
+
+    private void handleSuccessfulPayment(long caseReference) {
+        pcsCaseService.allocateCaseManagementLocation(caseReference);
+        ccdPaymentStateUpdateService.submitPaymentSuccess(caseReference);
+        claimFormScheduler.scheduleClaimFormGeneration(caseReference);
     }
 
     private FeesAndPayTaskData toFeesAndPayTaskData(String feesAndPayTaskDataAsString) {

@@ -1,5 +1,5 @@
 import {actionData, actionRecord, IAction} from '@utils/interfaces';
-import {expect, Page} from '@playwright/test';
+import {expect, Locator, Page} from '@playwright/test';
 import {getCaseTypeId} from '@utils/common/caseType.utils';
 import {performAction, performActions, performValidation} from '@utils/controller';
 import {
@@ -52,11 +52,11 @@ import {
   checkingNoticeWales,
   addCaseNote,
 } from '@data/page-data-figma';
-import {MEDIUM_TIMEOUT, VERY_LONG_TIMEOUT} from 'playwright.config';
+import {MEDIUM_TIMEOUT, SHORT_TIMEOUT, VERY_LONG_TIMEOUT} from 'playwright.config';
 import {compareMaps} from '@utils/common/compareMaps.util';
 import {caseInfo} from './createCaseAPI.action';
 import {createCaseApiData} from '@data/api-data';
-import {formatCurrency, formatDate, formatDateTime, formatText, formatWord} from '@utils/common/string.utils';
+import {formatCaseStateText, formatCurrency, formatDate, formatDateTime, formatUploadDocName, formatText, formatWord} from '@utils/common/string.utils';
 export let caseNumber: string;
 export let claimantsName: string;
 export let addressInfo: { buildingStreet: string; townCity: string; engOrWalPostcode: string };
@@ -127,6 +127,9 @@ export class CreateCaseAction implements IAction {
       ['addCaseNotes', () => this.addCaseNotes(fieldName as actionRecord)],
       ['validateCaseNotesDetails', () => this.validateCaseNotesDetails(page, fieldName as actionRecord)],
       ['validateCaseSummaryDetails', () => this.validateCaseSummaryDetails(page, fieldName as actionRecord)],
+      ['validateCaseFileViewFolders', () => this.validateCaseFileViewFolders(page, fieldName as actionData)],
+      ['validateCaseFileViewIndividualFolder', () => this.validateCaseFileViewIndividualFolder(page, fieldName as actionRecord)],
+      ['validateCaseListTable', () => this.validateCaseListTable(page, fieldName as actionRecord)],
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -1258,7 +1261,7 @@ export class CreateCaseAction implements IAction {
         caseSummary.set(`How rent is calculated`, formatWord(submitPayLoad.rentDetails_Frequency));
         caseSummary.set(`Daily rate`, formatCurrency(submitPayLoad.rentDetails_CalculatedDailyCharge));
         caseSummary.set(`Previous steps taken to recover rent arrears?`, formatWord(submitPayLoad.rentArrears_RecoveryAttempted));
-        caseSummary.set(`Rent statement`, submitPayLoad.rentArrears_StatementDocuments?.[0]?.value?.document_filename);
+        caseSummary.set(`Rent statement`, formatUploadDocName(submitPayLoad.rentArrears_StatementDocuments?.[0]?.value?.document_filename));
         caseSummary.set(`Rent arrears total at the time of claim issue`, formatCurrency(submitPayLoad.rentArrears_Total));
         caseSummary.set(`Judgment requested for the outstanding arrears?`, formatWord(submitPayLoad.arrearsJudgmentWanted));
         break;
@@ -1271,7 +1274,7 @@ export class CreateCaseAction implements IAction {
         if (submitPayLoad.rentArrears_RecoveryAttempted === 'YES') {
           caseSummary.set(`Details of previous steps taken`, submitPayLoad.rentArrears_RecoveryAttemptDetails);
         }
-        caseSummary.set(`Rent statement`, submitPayLoad.rentArrears_StatementDocuments?.[0]?.value?.document_filename);
+        caseSummary.set(`Rent statement`, formatUploadDocName(submitPayLoad.rentArrears_StatementDocuments?.[0]?.value?.document_filename));
         caseSummary.set(`Rent arrears total at the time of claim issue`, formatCurrency(submitPayLoad.rentArrears_Total));
         caseSummary.set(`Judgment requested for the outstanding arrears?`, formatWord(submitPayLoad.arrearsJudgmentWanted));
         break;
@@ -1467,19 +1470,19 @@ export class CreateCaseAction implements IAction {
         if(submitPayLoad.walesDocs_HasEnergyPerformanceCertificate === 'NO'){
           caseSummary.set(`Why can the claimant not upload a copy of the energy performance certificate?`, submitPayLoad.walesDocs_NoEpcReason);
         } else {
-          caseSummary.set(`Energy performance certificate`, submitPayLoad.walesDocs_EnergyPerformance?.[0]?.value?.document_filename);
+          caseSummary.set(`Energy performance certificate`, formatUploadDocName(submitPayLoad.walesDocs_EnergyPerformance?.[0]?.value?.document_filename));
         }
         caseSummary.set(`Can the claimant upload a copy of the current gas safety report?`, formatWord(submitPayLoad.walesDocs_HasGasSafetyReport));
         if(submitPayLoad.walesDocs_HasGasSafetyReport === 'NO'){
           caseSummary.set(`Why can the claimant not upload a copy of the current gas safety report?`, submitPayLoad.walesDocs_NoGasReportReason);
         }else {
-          caseSummary.set(`Gas safety report`, submitPayLoad.walesDocs_GasSafetyReport  ?.[0]?.value?.document_filename);
+          caseSummary.set(`Gas safety report`, formatUploadDocName(submitPayLoad.walesDocs_GasSafetyReport  ?.[0]?.value?.document_filename));
         }
         caseSummary.set(`Can the claimant upload a copy of the Electrical Installation Condition Report (EICR)?`, formatWord(submitPayLoad.walesDocs_HasElectricalInstallationConditionReport));
         if(submitPayLoad.walesDocs_HasElectricalInstallationConditionReport === 'NO'){
           caseSummary.set(`Why can the claimant not upload a copy of the Electrical Installation Condition Report (EICR)?`, submitPayLoad.walesDocs_NoEicrReason);
         }else {
-          caseSummary.set(`Electrical Installation Condition Report (EICR)`, submitPayLoad.walesDocs_ElectricalInstallation?.[0]?.value?.document_filename);
+          caseSummary.set(`Electrical Installation Condition Report (EICR)`, formatUploadDocName(submitPayLoad.walesDocs_ElectricalInstallation?.[0]?.value?.document_filename));
         }
 
       default:
@@ -1568,4 +1571,200 @@ export class CreateCaseAction implements IAction {
     const tdLocator = page.locator(`//span[text()="${tableHeader}"]/ancestor::tr[1]/child::td`);
     return ((await tdLocator.textContent()) || '').trim();
   }
+
+  public async validateCaseFileViewFolders(page: Page, caseFileView: actionData){
+    let folderLocator = page.locator('button[role="treeitem"]').filter({ visible: true })
+    await expect(async () => {
+      expect(await folderLocator.count()).toBeGreaterThan(0)
+    }).toPass({
+      timeout: SHORT_TIMEOUT,
+    });
+    const folderRetrieved = (await folderLocator.allTextContents()).map(item => item.slice(1));
+    const folder:string[] = caseFileView as string[];
+    expect(folder.every(name => folderRetrieved.some(text => text.includes(name)))).toBeTruthy();
+    
+  }
+
+  public async validateCaseFileViewIndividualFolder(page: Page ,caseFile: actionRecord){
+    
+    const folderName = caseFile.folder as string;
+    let submitPayLoad = caseFile.submitPayload as Record<string, any>;
+    const userInputFiles:string[]= [];
+    switch (folderName) {
+      case 'Property documents':
+        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad.tenancy_TenancyLicenceDocuments);
+        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad.notice_Documents);
+        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad.rentArrears_StatementDocuments);
+        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad.walesDocs_EnergyPerformance);
+        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad.walesDocs_GasSafetyReport);
+        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad.walesDocs_ElectricalInstallation);
+        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad.licenceDocuments);
+        break;
+
+      case 'Statements of case':
+        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad.additionalDocuments, 'Notice for service out of the jurisdiction');
+        break;
+
+      case 'Evidence':
+        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad.additionalDocuments, 'Inspection or report');
+        break;
+
+      case 'Correspondence':
+        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad.additionalDocuments, 'Legal aid certificate');
+        break;
+
+      case 'Uncategorised documents':
+        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad.additionalDocuments, 'Other document');
+        break;
+
+      default:
+        break;
+    }
+
+    const folder = page
+      .locator('button[role="treeitem"]')
+      .filter({ hasText: folderName });
+    let fileLocator = page.locator('button.node.case-file__node').filter({ visible: true })
+    const text = await folder.innerText();
+    const fileCount = Number(text.match(/^\d+/)?.[0] ?? 0);
+
+    if (fileCount === 0) {
+      throw new Error(`For folder "${folderName}" files are not present`);
+    }
+    await folder.click();
+    const actualFileCount = await fileLocator.count();
+
+    expect(actualFileCount, 'File count matching').toEqual(fileCount)
+    const fileArray = this.cleanFilesArray(await fileLocator.allTextContents());
+    
+    expect(userInputFiles.sort(), `validating  upload files for "${folderName}"`).toEqual(fileArray.sort());
+    console.log(`\n✅ The files under section "${folderName}" are \n "${fileArray}"`);
+
+    if ((await folder.getAttribute('aria-expanded')) === 'true') {
+      await folder.click();
+      await expect(folder).toHaveAttribute('aria-expanded', 'false');
+    }
+  }
+
+  public  cleanFilesArray(filesArray: string[]): string[] {
+    const uniqueFiles = [...new Set(filesArray.map(f =>
+      f.replace(/\s+-\s+(?:Claimant|Defendant)\s+\d+/i, '')
+        .replace(/\s+\d{1,2}\s+[A-Za-z]{3}\s+\d{4}\s+\d{2}:\d{2}$/, '')
+        .trim()
+    ))];
+
+    return uniqueFiles;
+  }
+
+  public readDocFilesFromPayLoad(mainArray: string[], subArray: any[], multiDocsLabel?: string) {
+
+    if (subArray && Array.isArray(subArray)) {
+      subArray.forEach(doc => { 
+        if (multiDocsLabel) {
+          const valueLabel = doc.value?.documentType?.valueLabel;
+          const filename = doc.value?.document?.document_filename;
+          if (multiDocsLabel === valueLabel && filename) {
+            mainArray.push(filename);
+          }
+        } else if (doc.value?.document_filename) {
+          mainArray.push(doc.value.document_filename);
+        }
+      });
+    }
+  }
+  public async validateCaseListTable(page: Page, caseList: actionRecord){
+    let submitPayLoad = caseList.submitPayload as Record<string, any>;
+    let createPayLoad = caseList.createPayload as Record<string, any>;
+    const mainTable = page.locator('#search-result thead');
+    await expect(mainTable).toBeVisible({ timeout: MEDIUM_TIMEOUT, visible: true });
+    const tHeader = mainTable.locator('th');
+
+    const headers = await tHeader.allTextContents();
+
+    const cleanedHeaders = headers
+      .map(h => h.replace(/\u200B/g, '').replace(/\s*▼\s*/, '').trim())
+      .filter(Boolean);
+    expect(cleanedHeaders, 'validating  case list table header').toEqual(home.caseListTableHeader);
+    const userInputArray: string[] = [caseInfo.fid, submitPayLoad.claimantName, await this.getDefendantClaimDetails(submitPayLoad), createPayLoad.propertyAddress.PostCode as string, formatCaseStateText(caseInfo.state)];
+    const caseValueRetrieved = await this.findCasePagination(page, caseInfo.fid);
+    expect(caseValueRetrieved, 'validating  case list table header').toEqual(userInputArray);
+  }
+
+  private async findCasePagination(page: Page,caseNumber:string): Promise<string[]>{
+
+    const nextButton = page.locator('.pagination-next');
+    const rows = page.locator('#search-result tbody tr');
+    let pageNumber = 1;
+
+    while (true) {
+      await expect(rows.first()).toBeVisible();
+      const rowCount = await rows.count();
+
+      for (let i = 0; i < rowCount; i++) {
+        const row = rows.nth(i);
+        const rowText = await row.innerText();
+        if (rowText.includes(caseNumber)) {
+          console.log(`Case number "${caseNumber}" found on page ${pageNumber}, row ${i + 1}`);
+          const cells = row.locator('td');
+          const values = await cells.allTextContents();
+          const formattedTexts = values
+            .map(h => h.replace(/\u200B/g, '').trim())
+            .filter(Boolean);
+            return formattedTexts; 
+        }
+      }
+
+      const hasNextButton = await nextButton.count() > 0;
+      const nextButtonState = await nextButton.getAttribute('class');
+
+      if (!hasNextButton || nextButtonState?.includes('disabled')) {
+        throw new Error(
+          `Case number ${caseNumber} was not found after checking ${pageNumber} page(s).`
+        );
+      }
+      await nextButton.click();
+      await page.waitForLoadState();
+      await page.locator('.spinner-container').waitFor({ state: 'detached' });
+      pageNumber++;
+    }
+  }
+
+  private async getDefendantClaimDetails(defendantsDetails: actionRecord): Promise<string> {
+
+    let originalDefendantDetails: string[] = [];
+    const payLoad = defendantsDetails as Record<string, any>;
+    if (payLoad.defendant1.nameKnown === 'YES') {
+      originalDefendantDetails.push(
+        `${payLoad.defendant1.lastName}`
+      );
+    } else {
+      originalDefendantDetails.push(
+        `persons unknown`
+      );
+    }
+
+    if (payLoad.addAnotherDefendant === 'YES') {
+
+      for (const defendant of payLoad.additionalDefendants) {
+        if (defendant.value.nameKnown === 'YES') {
+          originalDefendantDetails.push(`${defendant.value.lastName}`);
+        } else {
+          originalDefendantDetails.push(
+            `persons unknown`
+          );
+        }
+      }
+    }
+
+    let defendantText: string;
+
+    if (originalDefendantDetails.length > 2) {
+      defendantText = `${originalDefendantDetails[0]}, ${originalDefendantDetails[1]} and Others`;
+    } else {
+      defendantText = originalDefendantDetails.join(', ');
+    }
+    return defendantText;
+
+  }
+
 }
