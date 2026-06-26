@@ -104,6 +104,7 @@ public class ResumePossessionClaimConfigurer implements PageConfigurer {
     private final RentArrears rentArrears;
     private final UploadRequiredDocumentsWales uploadRequiredDocumentsWales;
     private final PreActionProtocol preActionProtocol;
+    private final WantToUploadDocuments wantToUploadDocuments;
     private final StatementOfTruth statementOfTruth;
 
     @Override
@@ -161,7 +162,7 @@ public class ResumePossessionClaimConfigurer implements PageConfigurer {
             .add(underlesseeOrMortgageeDetailsPage)
             .add(uploadRequiredDocumentsWales)
             //TO DO will be routed later on correctly using tech debt ticket
-            .add(new WantToUploadDocuments())
+            .add(wantToUploadDocuments)
             .add(uploadAdditionalDocumentsDetails)
             .add(new GeneralApplication())
             .add(new LanguageUsed())

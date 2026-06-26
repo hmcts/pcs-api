@@ -159,6 +159,8 @@ class ResumePossessionClaimConfigurerTest {
     @Mock
     private PreActionProtocol preActionProtocol;
     @Mock
+    private WantToUploadDocuments wantToUploadDocuments;
+    @Mock
     private StatementOfTruth statementOfTruth;
     @Mock
     private UploadRequiredDocumentsWales uploadRequiredDocumentsWales;
@@ -230,7 +232,7 @@ class ResumePossessionClaimConfigurerTest {
         verifyAndCount(inOrder, pageBuilder, UnderlesseeOrMortgageeEntitledToClaimRelief.class, verificationCount);
         verifyAndCount(inOrder, pageBuilder, underlesseeOrMortgageeDetailsPage, verificationCount);
         verifyAndCount(inOrder, pageBuilder, uploadRequiredDocumentsWales, verificationCount);
-        verifyAndCount(inOrder, pageBuilder, WantToUploadDocuments.class, verificationCount);
+        verifyAndCount(inOrder, pageBuilder, wantToUploadDocuments, verificationCount);
         verifyAndCount(inOrder, pageBuilder, uploadAdditionalDocumentsDetails, verificationCount);
         verifyAndCount(inOrder, pageBuilder, GeneralApplication.class, verificationCount);
         verifyAndCount(inOrder, pageBuilder, LanguageUsed.class, verificationCount);
