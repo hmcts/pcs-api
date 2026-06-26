@@ -21,16 +21,13 @@ async function clearBrowserSession(page: Page, context: BrowserContext): Promise
   });
 }
 
-test.use({ storageState: undefined });
-
-
 const userEmail = users.find(
-  user => user.user === 'creator'
+  user => user.user === 'Creator'
 )?.email;
 
 
 const userPassword = users.find(
-  user => user.user === 'creator'
+  user => user.user === 'Creator'
 )?.password;
 
 
@@ -39,19 +36,21 @@ test.beforeEach(async ({ page }) => {
   await performAction('createCaseAPIDynamicUsers', { data: createCaseApiData.createCasePayload, email: userEmail, password: userPassword });
   await performAction('submitCaseAPIDynamicUsers', { data: submitCaseApiData.submitCasePayloadCaseSummary, email: userEmail, password: userPassword });
 });
+
 test.afterEach(async () => {
   if (caseInfo.id) {
     await performAction('deleteCaseRole', '[CLAIMANTSOLICITOR]');
   }
   PageContentValidation.finaliseTest();
 });
+
 test.describe('[Case tabs Access - England Journey] @nightly', async () => {
 users.forEach(({ user, email, password, tabAccess }) => {
-  test(`Case tabs Access - Check for update access for user ${user} @MAC @regression`, async ({ page, context }) => {
+  test(`Case tabs Access - Check for update access for user "${user}" @MAC @regression`, async ({ page, context }) => {
 
-    if (user === 'defendantSolicitor') {
+    if (user === 'Defendant Solicitor') {
       await performAction('getCaseAPIDynamic', { req: 'Link Solicitor', email: email, password: password });
-    } else if (user === 'claimantSolicitor') {
+    } else if (user === 'Claimant Solicitor') {
       await performAction('createCaseAPIDynamicUsers', { data: createCaseApiData.createCasePayload, email: email, password: password });
       await performAction('submitCaseAPIDynamicUsers', { data: submitCaseApiData.submitCasePayloadDefault, email: email, password: password });
     }
