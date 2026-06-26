@@ -110,7 +110,6 @@ test.describe('[Case tabs - England Journey] @nightly', async () => {
 
     await performAction('clickButton', checkYourAnswersCaseNote.submitNote);
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Add a case note');
-    await performAction('signOut');
     await clearBrowserSession(page, context);
     await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}`);
     const pages = page.context().pages();

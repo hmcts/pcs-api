@@ -62,8 +62,6 @@ users.forEach(({ user, email, password, tabAccess }) => {
     await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/${getCaseTypeId()}/${process.env.CASE_NUMBER}#Summary`);
     await performValidation('mainHeader', home.caseSummary);
     await performAction('validateTabAccess', { user: user, tabs: tabAccess });
-    await performAction('signOut')
-    await clearBrowserSession(page, context);
   });
 
 })
