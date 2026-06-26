@@ -91,7 +91,6 @@ public class PartiesView {
     }
 
     private Party toPartialParty(PartyEntity entity) {
-    // private Party toPartialParty(PartyEntity entity, PartyRole role) {
         Party.PartyBuilder builder = Party.builder()
             .firstName(entity.getFirstName())
             .lastName(entity.getLastName())
