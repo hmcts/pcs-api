@@ -142,6 +142,7 @@ location-reference:
   court-county-type-id: ${COURT_COUNTY_TYPE_ID:10}
 
 notify:
+  api-url: ${NOTIFY_URL:http://localhost:8083}
   api-key: ${PCS_NOTIFY_API_KEY:AAAAAAAA-AAAA-AAAA-AAAA-AAAAAAAAAAAA}
   send-email:
     max-retries: ${NOTIFY_SEND_EMAIL_MAX_RETRIES:5}
@@ -163,6 +164,9 @@ notify:
 
 testing-support:
   enabled: ${ENABLE_TESTING_SUPPORT:true}
+
+pin-test-table:
+  enabled: ${ENABLE_PIN_TEST_TABLE:${testing-support.enabled:false}}
 
 # Below sets if DB scheduler can execute on the current instance of the API.
 db-scheduler:
