@@ -13,12 +13,12 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimActivityLogRepository;
 
 /**
- * Records SUCCESS/FAILURE rows to {@code claim_activity_log}.
+ * Records SUCCESS/FAILURE rows to {@code claim_activity_log} for access-code letter generation.
  */
 @Service
 @AllArgsConstructor
 @Slf4j
-public class ClaimActivityLogService {
+public class AccessCodeActivityLogService {
 
     private final ClaimActivityLogRepository claimActivityLogRepository;
 

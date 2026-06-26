@@ -57,7 +57,7 @@ class DefendantAccessCodeServiceTest {
     @Mock
     private DocumentRepository documentRepository;
     @Mock
-    private ClaimActivityLogService claimActivityLogService;
+    private AccessCodeActivityLogService accessCodeActivityLogService;
     @Mock
     private TestPinRecorder testPinRecorder;
 
@@ -77,7 +77,7 @@ class DefendantAccessCodeServiceTest {
             hashingService,
             pinPackDocumentGenerator,
             documentRepository,
-            claimActivityLogService,
+            accessCodeActivityLogService,
             testPinRecorder
         );
         when(accessCodeGenerator.generateAccessCode()).thenCallRealMethod();
@@ -110,9 +110,9 @@ class DefendantAccessCodeServiceTest {
         assertThat(savedCode.getCode()).startsWith("ENC-");
 
         verify(testPinRecorder).record(eq(caseEntity.getId()), eq(partyId), anyString());
-        verify(claimActivityLogService).logSuccess(caseEntity, savedDoc.getParty(),
+        verify(accessCodeActivityLogService).logSuccess(caseEntity, savedDoc.getParty(),
                                                    ClaimActivityType.DOCUMENTS_CREATED);
-        verify(claimActivityLogService, never()).logFailure(any(), any(), any());
+        verify(accessCodeActivityLogService, never()).logFailure(any(), any(), any());
     }
 
     @Test
@@ -127,7 +127,7 @@ class DefendantAccessCodeServiceTest {
             () -> underTest.generateForDefendant(5L, partyId, true));
         assertThat(thrown).hasMessage("docmosis down");
 
-        verify(claimActivityLogService).logFailure(eq(caseEntity), any(PartyEntity.class),
+        verify(accessCodeActivityLogService).logFailure(eq(caseEntity), any(PartyEntity.class),
                                                    eq(ClaimActivityType.DOCUMENTS_CREATED));
         verify(partyAccessCodeRepo, never()).save(any());
         verify(documentRepository, never()).save(any());
@@ -144,7 +144,7 @@ class DefendantAccessCodeServiceTest {
 
         assertThrows(RuntimeException.class, () -> underTest.generateForDefendant(5L, partyId, false));
 
-        verify(claimActivityLogService, never()).logFailure(any(), any(), any());
+        verify(accessCodeActivityLogService, never()).logFailure(any(), any(), any());
     }
 
     @Test

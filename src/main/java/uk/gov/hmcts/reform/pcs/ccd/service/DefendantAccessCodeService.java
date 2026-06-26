@@ -42,7 +42,7 @@ public class DefendantAccessCodeService {
     private final PartyAccessCodeHashingService hashingService;
     private final PinPackDocumentGenerator pinPackDocumentGenerator;
     private final DocumentRepository documentRepository;
-    private final ClaimActivityLogService claimActivityLogService;
+    private final AccessCodeActivityLogService accessCodeActivityLogService;
     private final TestPinRecorder testPinRecorder;
 
     @Transactional(readOnly = true)
@@ -90,13 +90,13 @@ public class DefendantAccessCodeService {
 
             testPinRecorder.record(pcsCaseEntity.getId(), defendant.getId(), plaintextAccessCode);
 
-            claimActivityLogService.logSuccess(pcsCaseEntity, defendant, ClaimActivityType.DOCUMENTS_CREATED);
+            accessCodeActivityLogService.logSuccess(pcsCaseEntity, defendant, ClaimActivityType.DOCUMENTS_CREATED);
 
         } catch (Exception e) {
             log.error("Failed to generate pin pack / access code for party {} on case {}",
                       defendant.getId(), pcsCaseEntity.getCaseReference(), e);
             if (finalAttempt) {
-                claimActivityLogService.logFailure(pcsCaseEntity, defendant, ClaimActivityType.DOCUMENTS_CREATED);
+                accessCodeActivityLogService.logFailure(pcsCaseEntity, defendant, ClaimActivityType.DOCUMENTS_CREATED);
             }
             throw e;
         }

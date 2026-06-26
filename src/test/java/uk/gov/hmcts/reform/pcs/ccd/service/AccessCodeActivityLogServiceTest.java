@@ -20,19 +20,19 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
-class ClaimActivityLogServiceTest {
+class AccessCodeActivityLogServiceTest {
 
     @Mock
     private ClaimActivityLogRepository claimActivityLogRepository;
 
-    private ClaimActivityLogService underTest;
+    private AccessCodeActivityLogService underTest;
 
     @Captor
     private ArgumentCaptor<ClaimActivityLogEntity> captor;
 
     @BeforeEach
     void setUp() {
-        underTest = new ClaimActivityLogService(claimActivityLogRepository);
+        underTest = new AccessCodeActivityLogService(claimActivityLogRepository);
     }
 
     @Test
