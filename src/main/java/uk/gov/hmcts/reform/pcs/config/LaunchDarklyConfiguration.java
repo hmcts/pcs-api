@@ -21,8 +21,6 @@ import java.util.stream.Stream;
 @Slf4j
 public class LaunchDarklyConfiguration {
 
-    private static final String OFFLINE_PLACEHOLDER_KEY = "offline-placeholder";
-
     @Bean(destroyMethod = "close")
     public LDClient ldClient(@Value("${launchdarkly.sdk-key:}") String sdkKey,
                              @Value("${launchdarkly.offline-mode:false}") Boolean offlineMode,
@@ -30,7 +28,8 @@ public class LaunchDarklyConfiguration {
         if (offlineMode || StringUtils.isBlank(sdkKey)) {
             log.warn("Starting LaunchDarkly client in offline mode (offlineMode={}, sdkKeyPresent={}) "
                          + "- serving code defaults", offlineMode, StringUtils.isNotBlank(sdkKey));
-            return new LDClient(OFFLINE_PLACEHOLDER_KEY, new LDConfig.Builder().offline(true).build());
+            // LDClient requires a non-empty SDK key even when offline; this value is never sent anywhere.
+            return new LDClient("offline-placeholder", new LDConfig.Builder().offline(true).build());
         }
 
         LDConfig.Builder builder = new LDConfig.Builder().offline(offlineMode);
