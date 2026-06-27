@@ -22,4 +22,16 @@ class LaunchDarklyConfigurationTest {
             assertThat(client.boolVariation("any-flag", context, false)).isFalse();
         }
     }
+
+    @Test
+    void shouldRunOfflineWhenOfflineModeTrueEvenWithKeyPresent() throws Exception {
+        // LAUNCHDARKLY_OFFLINE=true forces offline regardless of a configured key (used by local/cftlibTest)
+        try (LDClient client = underTest.ldClient("sdk-key-present", true, new String[0])) {
+            assertThat(client.isInitialized()).isTrue();
+
+            LDContext context = LDContext.create("test");
+            assertThat(client.boolVariation("any-flag", context, true)).isTrue();
+            assertThat(client.boolVariation("any-flag", context, false)).isFalse();
+        }
+    }
 }
