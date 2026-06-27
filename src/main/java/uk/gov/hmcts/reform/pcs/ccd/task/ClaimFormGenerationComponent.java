@@ -54,12 +54,13 @@ public class ClaimFormGenerationComponent extends AbstractGenerationTaskComponen
     }
 
     @Override
-    protected void generate(long caseReference, boolean finalAttempt) {
-        claimFormService.generateAndAttach(caseReference);
+    protected void generate(ClaimFormTaskData taskData, boolean finalAttempt) {
+        claimFormService.generateAndAttach(Long.parseLong(taskData.getCaseReference()));
     }
 
     @Override
-    protected void recordTerminalFailure(long caseReference) {
+    protected void recordTerminalFailure(ClaimFormTaskData taskData) {
+        long caseReference = Long.parseLong(taskData.getCaseReference());
         claimActivityLogService.logGenerationFailure(caseReference);
         log.error("Recorded DOCUMENTS_CREATED/FAILURE in claim_activity_log for case {}", caseReference);
     }

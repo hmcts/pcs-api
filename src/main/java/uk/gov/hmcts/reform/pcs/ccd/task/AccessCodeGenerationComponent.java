@@ -51,7 +51,7 @@ public class AccessCodeGenerationComponent extends AbstractGenerationTaskCompone
     }
 
     @Override
-    protected void generate(long caseReference, boolean finalAttempt) {
-        accessCodeGenerationService.createAccessCodesForParties(String.valueOf(caseReference), finalAttempt);
+    protected void generate(AccessCodeTaskData taskData, boolean finalAttempt) {
+        accessCodeGenerationService.createAccessCodesForParties(taskData.getCaseReference(), finalAttempt);
     }
 }

@@ -47,15 +47,16 @@ public abstract class AbstractGenerationTaskComponent<T extends CaseReferencedTa
     protected abstract TaskDescriptor<T> taskDescriptor();
 
     /**
-     * Runs the generation. {@code finalAttempt} is true on the last scheduler attempt so a one-to-many
-     * task can record its per-item failures only once retries are exhausted.
+     * Runs the generation. The whole payload is passed so a task can key its work on whatever it needs
+     * (case reference, defendant response id, ...). {@code finalAttempt} is true on the last scheduler
+     * attempt so a one-to-many task can record its per-item failures only once retries are exhausted.
      */
-    protected abstract void generate(long caseReference, boolean finalAttempt);
+    protected abstract void generate(T taskData, boolean finalAttempt);
 
-    /** Records a permanent (terminal) failure for the whole case. No-op by default. */
-    protected void recordTerminalFailure(long caseReference) {
-        // Overridden by tasks that write a single per-case failure row; one-to-many tasks record
-        // per-item failures inside their own service via the finalAttempt flag instead.
+    /** Records a permanent (terminal) failure. No-op by default. */
+    protected void recordTerminalFailure(T taskData) {
+        // Overridden by tasks that write a failure row; tasks that record per-item failures inside
+        // their own service via the finalAttempt flag leave this as a no-op.
     }
 
     protected CustomTask<T> buildTask() {
@@ -64,16 +65,16 @@ public abstract class AbstractGenerationTaskComponent<T extends CaseReferencedTa
                 maxRetries,
                 new FailureHandler.ExponentialBackoffFailureHandler<>(backoffDelay)))
             .execute((taskInstance, executionContext) -> {
-                String caseReferenceString = taskInstance.getData().getCaseReference();
-                long caseReference = Long.parseLong(caseReferenceString);
+                T taskData = taskInstance.getData();
+                String caseReference = taskData.getCaseReference();
                 int attempt = executionContext.getExecution().consecutiveFailures + 1;
                 boolean finalAttempt = isFinalAttempt(attempt);
 
-                MDC.put(MDC_CASE_REFERENCE, caseReferenceString);
+                MDC.put(MDC_CASE_REFERENCE, caseReference);
                 MDC.put(MDC_TASK_NAME, taskName());
                 try {
                     log.debug("Starting {} for case {}", taskName(), caseReference);
-                    generate(caseReference, finalAttempt);
+                    generate(taskData, finalAttempt);
                     log.info("Completed {} for case {}", taskName(), caseReference);
                     return new CompletionHandler.OnCompleteRemove<>();
                 } catch (Exception e) {
@@ -84,7 +85,7 @@ public abstract class AbstractGenerationTaskComponent<T extends CaseReferencedTa
                         MDC.put(MDC_FAILURE_REASON, String.valueOf(e.getMessage()));
                         log.error("{} permanently failed for case {} after {} attempts: {}",
                                   taskName(), caseReference, attempt, e.getMessage(), e);
-                        recordTerminalFailureSafely(caseReference);
+                        recordTerminalFailureSafely(taskData);
                     }
                     throw e;
                 } finally {
@@ -103,11 +104,12 @@ public abstract class AbstractGenerationTaskComponent<T extends CaseReferencedTa
         return attempt > maxRetries;
     }
 
-    private void recordTerminalFailureSafely(long caseReference) {
+    private void recordTerminalFailureSafely(T taskData) {
         try {
-            recordTerminalFailure(caseReference);
+            recordTerminalFailure(taskData);
         } catch (Exception e) {
-            log.error("Failed to record terminal failure for {} on case {}", taskName(), caseReference, e);
+            log.error("Failed to record terminal failure for {} on case {}",
+                      taskName(), taskData.getCaseReference(), e);
         }
     }
 }
