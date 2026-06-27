@@ -42,7 +42,7 @@ class FeatureToggleServiceTest {
         underTest.isEnabled(FeatureFlag.BULK_PRINT);
 
         LDContext context = contextCaptor.getValue();
-        assertThat(context.getKind().toString()).isEqualTo("service");
+        assertThat(context.getKind().toString()).isEqualTo("user");
         assertThat(context.getKey()).isEqualTo("pcs-api");
         assertThat(context.isAnonymous()).isTrue();
         assertThat(context.getValue("environment").stringValue()).isEqualTo("aat");
