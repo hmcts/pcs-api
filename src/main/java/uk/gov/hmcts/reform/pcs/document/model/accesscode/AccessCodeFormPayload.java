@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.pcs.document.model.accesscode;
 
 import lombok.Builder;
 import lombok.Data;
+import lombok.ToString;
 import uk.gov.hmcts.reform.docassembly.domain.FormPayload;
 
 import java.time.LocalDate;
@@ -19,6 +20,8 @@ public class AccessCodeFormPayload implements FormPayload {
     private String defendantAddress;
     private String propertyAddress;
     private String respondByPostCourtAddress;
+    // Excluded from toString so the plaintext access code can never leak into logs.
+    @ToString.Exclude
     private String accessCode;
     private LocalDate issuedOn;
     private String url;
