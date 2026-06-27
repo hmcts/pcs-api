@@ -17,7 +17,6 @@ import uk.gov.hmcts.reform.pcs.ccd.model.AccessCodeTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 
 import java.time.Instant;
-import java.util.UUID;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.claimIssuePayment;
 import static uk.gov.hmcts.reform.pcs.ccd.task.AccessCodeGenerationComponent.ACCESS_CODE_TASK_DESCRIPTOR;
@@ -66,7 +65,7 @@ public class ClaimIssuePayment implements CCDConfig<PCSCase, State, UserRole> {
 
         schedulerClient.scheduleIfNotExists(
             ACCESS_CODE_TASK_DESCRIPTOR
-                .instance(UUID.randomUUID().toString())
+                .instance(String.valueOf(caseReference))
                 .data(taskData)
                 .scheduledTo(Instant.now())
         );
