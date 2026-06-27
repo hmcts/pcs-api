@@ -10,5 +10,6 @@ import lombok.Data;
 public class AccessCodeTaskData implements CaseReferencedTaskData {
 
     private final String caseReference;
+    private final String defendantPartyId;
 
 }

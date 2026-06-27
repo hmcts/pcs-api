@@ -6,15 +6,16 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.pcs.ccd.model.AccessCodeTaskData;
-import uk.gov.hmcts.reform.pcs.ccd.service.AccessCodeGenerationService;
+import uk.gov.hmcts.reform.pcs.ccd.service.DefendantAccessCodeService;
 
 import java.time.Duration;
+import java.util.UUID;
 
 /**
  * db-scheduler task for defendant access-code letter generation. Retry shape, terminal-only logging
- * and App Insights dimensions all live in {@link AbstractGenerationTaskComponent}. This is one-to-many
- * (one letter per defendant), so per-defendant FAILURE rows are written inside the service on the
- * final attempt rather than as a single per-case row.
+ * and App Insights dimensions all live in {@link AbstractGenerationTaskComponent}. One task is scheduled
+ * per defendant (instance = {@code caseRef:partyId}), so each defendant retries independently and a
+ * per-defendant FAILURE row is written by the service on its own final attempt.
  */
 @Component
 public class AccessCodeGenerationComponent extends AbstractGenerationTaskComponent<AccessCodeTaskData> {
@@ -24,15 +25,15 @@ public class AccessCodeGenerationComponent extends AbstractGenerationTaskCompone
     public static final TaskDescriptor<AccessCodeTaskData> ACCESS_CODE_TASK_DESCRIPTOR =
         TaskDescriptor.of(TASK_NAME, AccessCodeTaskData.class);
 
-    private final AccessCodeGenerationService accessCodeGenerationService;
+    private final DefendantAccessCodeService defendantAccessCodeService;
 
     public AccessCodeGenerationComponent(
-        AccessCodeGenerationService accessCodeGenerationService,
+        DefendantAccessCodeService defendantAccessCodeService,
         @Value("${access-code.request.max-retries}") int maxRetries,
         @Value("${access-code.request.backoff-delay-seconds}") Duration backoffDelay
     ) {
         super(maxRetries, backoffDelay);
-        this.accessCodeGenerationService = accessCodeGenerationService;
+        this.defendantAccessCodeService = defendantAccessCodeService;
     }
 
     @Bean
@@ -52,6 +53,8 @@ public class AccessCodeGenerationComponent extends AbstractGenerationTaskCompone
 
     @Override
     protected void generate(AccessCodeTaskData taskData, boolean finalAttempt) {
-        accessCodeGenerationService.createAccessCodesForParties(taskData.getCaseReference(), finalAttempt);
+        long caseReference = Long.parseLong(taskData.getCaseReference());
+        UUID defendantPartyId = UUID.fromString(taskData.getDefendantPartyId());
+        defendantAccessCodeService.generateForDefendant(caseReference, defendantPartyId, finalAttempt);
     }
 }

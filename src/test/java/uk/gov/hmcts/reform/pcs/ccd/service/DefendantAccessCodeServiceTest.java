@@ -148,6 +148,21 @@ class DefendantAccessCodeServiceTest {
     }
 
     @Test
+    void generateForDefendant_skipsWhenPartyAlreadyHasCode() {
+        UUID partyId = UUID.randomUUID();
+        PcsCaseEntity caseEntity = createCaseWithDefendants(partyId);
+        when(pcsCaseService.loadCase(1L)).thenReturn(caseEntity);
+        when(partyAccessCodeRepo.existsByPcsCase_IdAndPartyId(caseEntity.getId(), partyId)).thenReturn(true);
+
+        underTest.generateForDefendant(1L, partyId, true);
+
+        verify(partyAccessCodeRepo, never()).save(any());
+        verify(documentRepository, never()).save(any());
+        verify(testAccessCodeRecorder, never()).record(any(), any(), anyString());
+        verify(accessCodeActivityLogService, never()).logSuccess(any(), any(), any());
+    }
+
+    @Test
     void findDefendantPartyIdsNeedingAccessCode_skipsDefendantsThatAlreadyHaveCode() {
         UUID p1 = UUID.randomUUID();
         UUID p2 = UUID.randomUUID();

@@ -13,9 +13,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.model.AccessCodeTaskData;
-import uk.gov.hmcts.reform.pcs.ccd.service.AccessCodeGenerationService;
+import uk.gov.hmcts.reform.pcs.ccd.service.DefendantAccessCodeService;
 
 import java.time.Duration;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
@@ -33,7 +34,7 @@ class AccessCodeGenerationComponentTest {
     private AccessCodeGenerationComponent accessCodeGenerationComponent;
 
     @Mock
-    private AccessCodeGenerationService accessCodeGenerationService;
+    private DefendantAccessCodeService defendantAccessCodeService;
 
     @Mock
     private TaskInstance<AccessCodeTaskData> taskInstance;
@@ -51,7 +52,7 @@ class AccessCodeGenerationComponentTest {
     @BeforeEach
     void setUp() {
         accessCodeGenerationComponent = new AccessCodeGenerationComponent(
-            accessCodeGenerationService,
+            defendantAccessCodeService,
             maxRetries,
             backoffDelay
         );
@@ -67,12 +68,14 @@ class AccessCodeGenerationComponentTest {
     }
 
     @Test
-    @DisplayName("Should execute task and call AccessCodeService with case reference")
-    void shouldExecuteTaskAndCallService() {
+    @DisplayName("Should execute task and generate the access code for the task's defendant")
+    void shouldExecuteTaskAndGenerateForDefendant() {
         //Given
-        String caseReference = "123";
+        String caseReference = "1234567812345678";
+        UUID defendantPartyId = UUID.fromString("11111111-1111-1111-1111-111111111111");
         AccessCodeTaskData data = AccessCodeTaskData.builder()
             .caseReference(caseReference)
+            .defendantPartyId(defendantPartyId.toString())
             .build();
 
         when(taskInstance.getData()).thenReturn(data);
@@ -83,27 +86,28 @@ class AccessCodeGenerationComponentTest {
         CompletionHandler<AccessCodeTaskData> result = task.execute(taskInstance, executionContext);
 
         //Then
-        verify(accessCodeGenerationService).createAccessCodesForParties(caseReference, false);
+        verify(defendantAccessCodeService).generateForDefendant(1234567812345678L, defendantPartyId, false);
 
         assertThat(result).isInstanceOf(CompletionHandler.OnCompleteRemove.class);
     }
 
     @Test
-    @DisplayName("Should rethrow exception when service fails")
+    @DisplayName("Should rethrow exception when generation fails")
     void shouldRetryOnFailure() {
         //Given
-        String caseReference = "999";
+        String caseReference = "1234567812345678";
+        UUID defendantPartyId = UUID.fromString("11111111-1111-1111-1111-111111111111");
         AccessCodeTaskData data = AccessCodeTaskData.builder()
             .caseReference(caseReference)
+            .defendantPartyId(defendantPartyId.toString())
             .build();
 
         when(taskInstance.getData()).thenReturn(data);
-
         when(executionContext.getExecution()).thenReturn(execution);
 
         doThrow(mock(RuntimeException.class))
-            .when(accessCodeGenerationService)
-            .createAccessCodesForParties(eq(caseReference), anyBoolean());
+            .when(defendantAccessCodeService)
+            .generateForDefendant(eq(1234567812345678L), eq(defendantPartyId), anyBoolean());
 
         //When
         CustomTask<AccessCodeTaskData> task = accessCodeGenerationComponent.accessCodeGenerationTask();
@@ -112,7 +116,8 @@ class AccessCodeGenerationComponentTest {
         assertThatThrownBy(() -> task.execute(taskInstance, executionContext))
             .isInstanceOf(RuntimeException.class);
 
-        verify(accessCodeGenerationService).createAccessCodesForParties(eq(caseReference), anyBoolean());
+        verify(defendantAccessCodeService).generateForDefendant(eq(1234567812345678L), eq(defendantPartyId),
+                                                                anyBoolean());
     }
 
 }

@@ -9,4 +9,6 @@ import java.util.UUID;
 public interface PartyAccessCodeRepository extends JpaRepository<PartyAccessCodeEntity, UUID> {
 
     List<PartyAccessCodeEntity> findAllByPcsCase_Id(UUID pcsCaseId);
+
+    boolean existsByPcsCase_IdAndPartyId(UUID pcsCaseId, UUID partyId);
 }

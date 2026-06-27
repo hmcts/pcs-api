@@ -14,9 +14,11 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.model.AccessCodeTaskData;
+import uk.gov.hmcts.reform.pcs.ccd.service.DefendantAccessCodeService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 
 import java.time.Instant;
+import java.util.UUID;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.claimIssuePayment;
 import static uk.gov.hmcts.reform.pcs.ccd.task.AccessCodeGenerationComponent.ACCESS_CODE_TASK_DESCRIPTOR;
@@ -28,6 +30,7 @@ public class ClaimIssuePayment implements CCDConfig<PCSCase, State, UserRole> {
 
     private final SchedulerClient schedulerClient;
     private final PcsCaseService pcsCaseService;
+    private final DefendantAccessCodeService defendantAccessCodeService;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -58,17 +61,23 @@ public class ClaimIssuePayment implements CCDConfig<PCSCase, State, UserRole> {
         return SubmitResponse.<State>builder().state(State.CASE_ISSUED).build();
     }
 
+    // One task per defendant (instance = caseRef:partyId), so each defendant generates and retries
+    // independently and scheduleIfNotExists dedupes per defendant - a re-fired payment collapses onto
+    // the same instances instead of scheduling duplicate work.
     private void scheduleAccessCodeFormGeneration(long caseReference) {
-        AccessCodeTaskData taskData = AccessCodeTaskData.builder()
-            .caseReference(String.valueOf(caseReference))
-            .build();
+        for (UUID defendantPartyId : defendantAccessCodeService.findDefendantPartyIdsNeedingAccessCode(caseReference)) {
+            AccessCodeTaskData taskData = AccessCodeTaskData.builder()
+                .caseReference(String.valueOf(caseReference))
+                .defendantPartyId(defendantPartyId.toString())
+                .build();
 
-        schedulerClient.scheduleIfNotExists(
-            ACCESS_CODE_TASK_DESCRIPTOR
-                .instance(String.valueOf(caseReference))
-                .data(taskData)
-                .scheduledTo(Instant.now())
-        );
+            schedulerClient.scheduleIfNotExists(
+                ACCESS_CODE_TASK_DESCRIPTOR
+                    .instance(caseReference + ":" + defendantPartyId)
+                    .data(taskData)
+                    .scheduledTo(Instant.now())
+            );
+        }
     }
 
 }
