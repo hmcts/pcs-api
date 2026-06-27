@@ -390,6 +390,7 @@ dependencies {
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-security', version: springFrameworkBootVersion
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-oauth2-client', version: springFrameworkBootVersion
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-data-jpa', version: springFrameworkBootVersion
+  implementation group: 'com.launchdarkly', name: 'launchdarkly-java-server-sdk', version: '7.8.0'
 
   runtimeOnly group: 'org.flywaydb', name: 'flyway-database-postgresql', version: flywayVersion
 
@@ -440,7 +441,6 @@ dependencies {
     exclude group: 'com.google.guava', module: 'guava'
     exclude group: 'org.apache.poi', module: 'poi-ooxml'
     exclude group: 'org.apache.poi', module: 'poi'
-    exclude group: 'com.launchdarkly', module: 'launchdarkly-java-server-sdk'
   }
 
   functionalTestImplementation group: 'net.serenity-bdd', name: 'serenity-rest-assured', version: serenityBddVersion
