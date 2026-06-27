@@ -91,7 +91,7 @@ class PinPackDocumentGeneratorTest {
         when(systemUpdateUserTokenProvider.getAuthToken()).thenReturn(AUTH_TOKEN);
         when(caseReferenceFormatter.formatCaseReferenceWithDashes(any())).thenReturn("1234-5678-9012-3456");
         when(addressMapper.toAddressUK(propertyAddressEntity)).thenReturn(propertyAddressUk);
-        when(addressFormatter.formatFullAddress(propertyAddressUk, AddressFormatter.NEWLINE_DELIMITER))
+        when(addressFormatter.formatFullAddressWithoutCountry(propertyAddressUk, AddressFormatter.NEWLINE_DELIMITER))
             .thenReturn(PROPERTY_ADDRESS);
         when(docAssemblyService.generateDocument(any(), anyString(), any(), anyString())).thenReturn(DOC_URL);
         when(locationReferenceService.getCountyCourts(eq(AUTH_TOKEN), eq(List.of(EPIMS_ID))))
@@ -147,7 +147,7 @@ class PinPackDocumentGeneratorTest {
         AddressEntity partyAddressEntity = AddressEntity.builder().build();
         AddressUK partyAddressUk = AddressUK.builder().build();
         when(addressMapper.toAddressUK(partyAddressEntity)).thenReturn(partyAddressUk);
-        when(addressFormatter.formatFullAddress(partyAddressUk, AddressFormatter.NEWLINE_DELIMITER))
+        when(addressFormatter.formatFullAddressWithoutCountry(partyAddressUk, AddressFormatter.NEWLINE_DELIMITER))
             .thenReturn(PARTY_ADDRESS);
 
         PartyEntity defendant = PartyEntity.builder()

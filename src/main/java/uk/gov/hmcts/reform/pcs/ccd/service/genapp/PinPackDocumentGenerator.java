@@ -168,6 +168,6 @@ public class PinPackDocumentGenerator {
             return null;
         }
         AddressUK addressUK = addressMapper.toAddressUK(addressEntity);
-        return addressFormatter.formatFullAddress(addressUK, AddressFormatter.NEWLINE_DELIMITER);
+        return addressFormatter.formatFullAddressWithoutCountry(addressUK, AddressFormatter.NEWLINE_DELIMITER);
     }
 }
