@@ -10,7 +10,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class FeatureFlagTest {
 
     @Test
-    void flagKeysAreUniqueNonBlankAndKebabCase() {
+    void shouldHaveUniqueNonBlankKebabCaseKeys() {
         List<String> keys = Arrays.stream(FeatureFlag.values()).map(FeatureFlag::key).toList();
 
         assertThat(keys).doesNotHaveDuplicates();
