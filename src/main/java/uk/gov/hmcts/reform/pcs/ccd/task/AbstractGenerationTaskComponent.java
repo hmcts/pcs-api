@@ -11,6 +11,7 @@ import org.slf4j.MDC;
 import uk.gov.hmcts.reform.pcs.ccd.model.CaseReferencedTaskData;
 
 import java.time.Duration;
+import java.util.Map;
 
 /**
  * Shared db-scheduler scaffolding for document-generation tasks - the ones that render a document and
@@ -59,6 +60,15 @@ public abstract class AbstractGenerationTaskComponent<T extends CaseReferencedTa
         // their own service via the finalAttempt flag leave this as a no-op.
     }
 
+    /**
+     * Extra MDC dimensions a concrete task wants stamped onto its telemetry for the whole execution -
+     * e.g. a per-defendant task adds {@code partyId} so a failure can be traced to the exact defendant
+     * in App Insights, not just the case. Empty by default; values must not contain sensitive data.
+     */
+    protected Map<String, String> additionalMdcDimensions(T taskData) {
+        return Map.of();
+    }
+
     protected CustomTask<T> buildTask() {
         return Tasks.custom(taskDescriptor())
             .onFailure(new FailureHandler.MaxRetriesFailureHandler<>(
@@ -70,8 +80,10 @@ public abstract class AbstractGenerationTaskComponent<T extends CaseReferencedTa
                 int attempt = executionContext.getExecution().consecutiveFailures + 1;
                 boolean finalAttempt = isFinalAttempt(attempt);
 
+                Map<String, String> extraMdc = additionalMdcDimensions(taskData);
                 MDC.put(MDC_CASE_REFERENCE, caseReference);
                 MDC.put(MDC_TASK_NAME, taskName());
+                extraMdc.forEach(MDC::put);
                 try {
                     log.debug("Starting {} for case {}", taskName(), caseReference);
                     generate(taskData, finalAttempt);
@@ -93,6 +105,7 @@ public abstract class AbstractGenerationTaskComponent<T extends CaseReferencedTa
                     MDC.remove(MDC_TASK_NAME);
                     MDC.remove(MDC_TERMINAL_FAILURE);
                     MDC.remove(MDC_FAILURE_REASON);
+                    extraMdc.keySet().forEach(MDC::remove);
                 }
             });
     }

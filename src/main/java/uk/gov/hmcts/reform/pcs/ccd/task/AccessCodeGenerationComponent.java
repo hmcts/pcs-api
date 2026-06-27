@@ -9,6 +9,7 @@ import uk.gov.hmcts.reform.pcs.ccd.model.AccessCodeTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.service.DefendantAccessCodeService;
 
 import java.time.Duration;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -56,5 +57,12 @@ public class AccessCodeGenerationComponent extends AbstractGenerationTaskCompone
         long caseReference = Long.parseLong(taskData.getCaseReference());
         UUID defendantPartyId = UUID.fromString(taskData.getDefendantPartyId());
         defendantAccessCodeService.generateForDefendant(caseReference, defendantPartyId, finalAttempt);
+    }
+
+    // This task is per-defendant, so stamp partyId onto the telemetry too - lets App Insights pinpoint
+    // the exact failing defendant, not just the case. partyId is an opaque UUID, not the access code.
+    @Override
+    protected Map<String, String> additionalMdcDimensions(AccessCodeTaskData taskData) {
+        return Map.of("partyId", taskData.getDefendantPartyId());
     }
 }
