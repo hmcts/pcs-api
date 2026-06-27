@@ -42,8 +42,18 @@ class FeatureToggleServiceTest {
         underTest.isEnabled(FeatureFlag.BULK_PRINT);
 
         LDContext context = contextCaptor.getValue();
+        assertThat(context.getKind().toString()).isEqualTo("service");
         assertThat(context.getKey()).isEqualTo("pcs-api");
+        assertThat(context.isAnonymous()).isTrue();
         assertThat(context.getValue("environment").stringValue()).isEqualTo("aat");
+    }
+
+    @Test
+    void shouldReturnFalseWhenFlagOff() {
+        FeatureToggleService underTest = new FeatureToggleService(ldClient, "aat");
+        when(ldClient.boolVariation(eq(FLAG_KEY), any(LDContext.class), eq(false))).thenReturn(false);
+
+        assertThat(underTest.isEnabled(FeatureFlag.BULK_PRINT)).isFalse();
     }
 
     @Test
@@ -52,6 +62,7 @@ class FeatureToggleServiceTest {
 
         underTest.isEnabled(FeatureFlag.BULK_PRINT);
 
-        verify(ldClient).boolVariation(eq(FLAG_KEY), any(LDContext.class), eq(false));
+        // the per-flag fail-safe default is what LaunchDarkly serves when it cannot evaluate
+        verify(ldClient).boolVariation(eq(FLAG_KEY), any(LDContext.class), eq(FeatureFlag.BULK_PRINT.defaultValue()));
     }
 }
