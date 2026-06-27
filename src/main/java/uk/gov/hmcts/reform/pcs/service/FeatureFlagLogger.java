@@ -5,10 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-/**
- * TEMPORARY diagnostic - logs the bulk-print flag on a timer so it can be flipped in LaunchDarkly
- * and verified live. Remove before merging the bulk-print consumer.
- */
+// TEMPORARY - logs the bulk-print flag every 15s for live LD verification; remove with the consumer.
 @Slf4j
 @Component
 @RequiredArgsConstructor
