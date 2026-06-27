@@ -284,6 +284,51 @@ response for the possession claim fee:
 }
 ```
 
+## Feature flags
+
+We use [LaunchDarkly](https://launchdarkly.com) for feature flags so a feature can be turned on or
+off per environment without a redeploy. The first flag is `bulk-print-enabled`, which will control
+whether generated document packs are posted out.
+
+Flags are kept in one place, the `FeatureFlag` enum, and read through `FeatureToggleService`:
+
+```java
+if (featureToggle.isEnabled(FeatureFlag.BULK_PRINT)) {
+    // ...
+}
+```
+
+Each flag has a key that matches the flag in the LaunchDarkly dashboard, and a default value that is
+used when LaunchDarkly can't be reached.
+
+### Adding a flag
+
+Add a constant to the `FeatureFlag` enum and create the matching flag in LaunchDarkly:
+
+```java
+BULK_PRINT("bulk-print-enabled", false),
+MY_FEATURE("my-feature-enabled", false);
+```
+
+Then gate the code with `featureToggle.isEnabled(FeatureFlag.MY_FEATURE)`.
+
+### Removing a flag
+
+Once a feature is live everywhere and the flag is no longer needed, delete its constant from the
+enum. The compiler will point you at every place it was used, so you can remove the check and keep
+the enabled path. Archive the flag in LaunchDarkly afterwards.
+
+### Configuration
+
+| Variable | Purpose |
+| --- | --- |
+| `LAUNCHDARKLY_SDK_KEY` | SDK key for the LaunchDarkly project (comes from the key vault) |
+| `LAUNCHDARKLY_ENV` | Environment name used for targeting, e.g. `aat`, or the PR name in preview |
+
+If `LAUNCHDARKLY_SDK_KEY` is not set the client starts in offline mode and every flag falls back to
+its default, so the app still runs locally without a key. Local and `cftlibTest` runs set
+`LAUNCHDARKLY_OFFLINE=true` for this reason.
+
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details
