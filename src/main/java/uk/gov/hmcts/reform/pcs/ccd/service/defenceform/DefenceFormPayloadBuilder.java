@@ -277,29 +277,34 @@ public class DefenceFormPayloadBuilder {
 
         Map<RegularExpenseType, RegularExpenseEntity> expensesByType = new EnumMap<>(RegularExpenseType.class);
         household.getRegularExpenses().forEach(expense -> expensesByType.put(expense.getExpenseType(), expense));
-        payload.expenses(EXPENSE_ROW_ORDER.stream()
+        List<DefenceFormAmountRow> expenseRows = EXPENSE_ROW_ORDER.stream()
             .filter(expensesByType::containsKey)
             .map(expensesByType::get)
             .map(expense -> amountRow(expenseLabel(expense.getExpenseType()),
                 expense.getAmount(), formatFrequency(expense.getExpenseFrequency())))
-            .toList());
+            .toList();
+        payload.expenses(expenseRows);
+        payload.showExpenses(!expenseRows.isEmpty());
     }
 
     private void mapRegularIncome(RegularIncomeEntity regularIncome,
                                   DefenceFormPayload.DefenceFormPayloadBuilder payload) {
         if (regularIncome == null) {
             payload.income(List.of());
+            payload.showIncome(false);
             return;
         }
         Map<IncomeType, RegularIncomeItemEntity> byType = new EnumMap<>(IncomeType.class);
         regularIncome.getItems().forEach(item -> byType.put(item.getIncomeType(), item));
 
-        payload.income(INCOME_ROW_ORDER.stream()
+        List<DefenceFormAmountRow> incomeRows = INCOME_ROW_ORDER.stream()
             .filter(byType::containsKey)
             .map(byType::get)
             .map(item -> amountRow(incomeLabel(item.getIncomeType()),
                 item.getAmount(), formatFrequency(item.getFrequency())))
-            .toList());
+            .toList();
+        payload.income(incomeRows);
+        payload.showIncome(!incomeRows.isEmpty());
 
         payload.showMoneyFromElsewhere(byType.containsKey(IncomeType.MONEY_FROM_ELSEWHERE));
         payload.moneyFromElsewhereDetails(regularIncome.getOtherIncomeDetails());

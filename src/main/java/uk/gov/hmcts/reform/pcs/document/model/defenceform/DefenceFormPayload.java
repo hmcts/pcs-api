@@ -111,6 +111,7 @@ public class DefenceFormPayload implements FormPayload {
 
     // ---------- Income & expenses ----------
     private boolean showIncomeExpenseSection;
+    private boolean showIncome;
     private List<DefenceFormAmountRow> income;
     private boolean showMoneyFromElsewhere;
     private String moneyFromElsewhereDetails;
@@ -123,6 +124,7 @@ public class DefenceFormPayload implements FormPayload {
     private String debtTotal;
     private String debtContribution;
     private String debtContributionFrequency;
+    private boolean showExpenses;
     private List<DefenceFormAmountRow> expenses;
 
     // ---------- Additional information ----------

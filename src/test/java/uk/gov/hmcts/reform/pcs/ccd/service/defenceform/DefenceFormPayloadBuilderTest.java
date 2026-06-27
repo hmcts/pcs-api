@@ -439,9 +439,28 @@ class DefenceFormPayloadBuilderTest {
             assertThat(payload.isShowDebtDetails()).isTrue();
             assertThat(payload.getDebtTotal()).isEqualTo("£300.00");
 
+            assertThat(payload.isShowIncome()).isTrue();
             assertThat(payload.getExpenses()).hasSize(1);
             assertThat(payload.getExpenses().getFirst().getLabel()).isEqualTo("Other");
             assertThat(payload.getExpenses().getFirst().getAmount()).isEqualTo("£25.00");
+            assertThat(payload.isShowExpenses()).isTrue();
+        }
+
+        @Test
+        void hidesIncomeAndExpensesRowsWhenNoItemsSelected() {
+            HouseholdCircumstancesEntity household = HouseholdCircumstancesEntity.builder()
+                .shareIncomeExpenseDetails(VerticalYesNo.YES)
+                .build();
+
+            DefendantResponseEntity response = response(LegislativeCountry.ENGLAND);
+            response.setHouseholdCircumstances(household);
+
+            DefenceFormPayload payload = builder.build(response);
+
+            assertThat(payload.getIncome()).isEmpty();
+            assertThat(payload.isShowIncome()).isFalse();
+            assertThat(payload.getExpenses()).isEmpty();
+            assertThat(payload.isShowExpenses()).isFalse();
         }
 
         @Test
