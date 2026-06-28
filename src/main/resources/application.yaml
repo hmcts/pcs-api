@@ -245,7 +245,7 @@ claim-form:
 defence-form:
   request:
     max-retries: ${DEFENCE_FORM_MAX_RETRIES:5}
-    backoff-delay-seconds: ${DEFENCE_FORM_BACKOFF_DELAY_SECONDS:60s}   # [THROWAWAY] 1-min uniform retries for failure-path testing (was 3600s)
+    backoff-delay-seconds: ${DEFENCE_FORM_BACKOFF_DELAY_SECONDS:20s}   # [THROWAWAY] 20s uniform retries for failure-path testing (was 3600s)
 
 role-assignment:
   request:
