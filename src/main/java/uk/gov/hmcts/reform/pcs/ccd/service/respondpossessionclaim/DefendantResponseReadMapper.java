@@ -87,6 +87,7 @@ public class DefendantResponseReadMapper {
             .firstName(party.getFirstName())
             .lastName(party.getLastName())
             .orgName(party.getOrgName())
+            .emailAddress(party.getEmailAddress())
             .phoneNumber(party.getPhoneNumber())
             .phoneNumberProvided(party.getPhoneNumberProvided())
             .dateOfBirth(party.getDateOfBirth())
