@@ -395,7 +395,7 @@ public class DefenceFormPayloadBuilder {
         String assertedAddress = assertedValue(assertions, PartyAttributeType.CORRESPONDENCE_ADDRESS);
         if (isPopulated(assertedAddress)) {
             try {
-                return addressFormatter.formatFullAddress(
+                return addressFormatter.formatFullAddressWithoutCountry(
                     objectMapper.readValue(assertedAddress, AddressUK.class), NEWLINE_DELIMITER);
             } catch (Exception e) {
                 log.error("Failed to parse defendant correspondence address assertion", e);
@@ -404,12 +404,12 @@ public class DefenceFormPayloadBuilder {
         return formatAddress(defendant.getAddress() != null ? defendant.getAddress() : propertyAddress);
     }
 
-    // Single newline-delimited string (blank lines dropped) - the template renders it as one field.
+    // Single newline-delimited string (blank lines dropped, country omitted) - the template renders it as one field.
     private String formatAddress(AddressEntity address) {
         if (address == null) {
             return null;
         }
-        return addressFormatter.formatFullAddress(addressMapper.toAddressUK(address), NEWLINE_DELIMITER);
+        return addressFormatter.formatFullAddressWithoutCountry(addressMapper.toAddressUK(address), NEWLINE_DELIMITER);
     }
 
     private static String displayName(PartyEntity party) {

@@ -126,7 +126,8 @@ class DefenceFormPayloadBuilderTest {
             stubAssertions(
                 jsonAssertion(PartyAttributeType.DEFENDANT_NAME, "{\"firstName\":\"Robert\",\"lastName\":\"Tennant\"}"),
                 jsonAssertion(PartyAttributeType.CORRESPONDENCE_ADDRESS,
-                    "{\"AddressLine1\":\"9 New Road\",\"PostTown\":\"Leeds\",\"PostCode\":\"LS1 1AA\"}"));
+                    "{\"AddressLine1\":\"9 New Road\",\"PostTown\":\"Leeds\",\"PostCode\":\"LS1 1AA\","
+                        + "\"Country\":\"England\"}"));
 
             DefenceFormPayload payload = builder.build(response(LegislativeCountry.ENGLAND));
 
@@ -696,6 +697,8 @@ class DefenceFormPayloadBuilderTest {
     }
 
     private static AddressEntity address(String line1) {
-        return AddressEntity.builder().addressLine1(line1).postTown("London").postcode("AB1 2CD").build();
+        // country is set but must NOT appear in the rendered defence-form address
+        return AddressEntity.builder().addressLine1(line1).postTown("London").postcode("AB1 2CD")
+            .country("England").build();
     }
 }
