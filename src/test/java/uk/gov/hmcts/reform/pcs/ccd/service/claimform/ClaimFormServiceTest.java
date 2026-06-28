@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.claimform;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InOrder;
@@ -38,8 +37,6 @@ class ClaimFormServiceTest {
     @InjectMocks
     private ClaimFormService claimFormService;
 
-    @Disabled("[THROWAWAY] forced failure in ClaimFormService short-circuits render/attach; "
-        + "re-enable when the forced exception is removed")
     @Test
     void buildsThenRendersOutsideTransactionThenAttaches() {
         ClaimFormPayload payload = ClaimFormPayload.builder().build();
@@ -64,19 +61,6 @@ class ClaimFormServiceTest {
         verify(persistenceService, never()).attach(anyLong(), anyString());
     }
 
-    // [THROWAWAY] covers the forced-failure path so the injected exception keeps its coverage; remove with it.
-    @Test
-    void throwawayForcedFailureIsThrown() {
-        ClaimFormPayload payload = ClaimFormPayload.builder().build();
-        when(persistenceService.buildPayloadIfNotAttached(CASE_REFERENCE)).thenReturn(Optional.of(payload));
-
-        assertThatThrownBy(() -> claimFormService.generateAndAttach(CASE_REFERENCE))
-            .isInstanceOf(RuntimeException.class)
-            .hasMessageContaining("FORCED FAILURE");
-    }
-
-    @Disabled("[THROWAWAY] forced failure in ClaimFormService throws before the attach/delete path is reached; "
-        + "re-enable when the forced exception is removed")
     @Test
     void deletesRenderedDocumentWhenAttachFails() {
         ClaimFormPayload payload = ClaimFormPayload.builder().build();

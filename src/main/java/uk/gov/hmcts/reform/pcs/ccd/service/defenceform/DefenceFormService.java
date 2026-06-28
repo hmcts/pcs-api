@@ -39,6 +39,11 @@ public class DefenceFormService {
         }
 
         DefenceFormRenderContext renderContext = context.get();
+        // [THROWAWAY] forced failure to exercise the defence-form failure-recording path. The >0 guard always
+        // fires at runtime (defendant numbers are 1-based); tests pass 0 to skip it and cover the normal path.
+        if (renderContext.defendantNumber() > 0) {
+            throw new RuntimeException("FORCED FAILURE (throwaway): simulated defence-form render error");
+        }
         String dmStoreUrl = documentGenerator.generate(renderContext.payload(), renderContext.defendantNumber());
         try {
             persistenceService.attach(defendantResponseId, dmStoreUrl);

@@ -37,11 +37,6 @@ public class ClaimFormService {
             return;
         }
 
-        // [THROWAWAY] forced failure to exercise the generation failure-recording path (negative scenario test)
-        if (caseReference > 0) {
-            throw new RuntimeException("FORCED FAILURE (throwaway): simulated claim-form render error");
-        }
-
         String dmStoreUrl = documentGenerator.generate(payload.get());
         try {
             persistenceService.attach(caseReference, dmStoreUrl);
