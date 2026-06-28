@@ -81,9 +81,10 @@ class DefenceFormGenerationComponentTest {
     }
 
     @Test
-    @DisplayName("Non-final attempt rethrows without recording a failure row")
+    @DisplayName("Second-to-last attempt (maxRetries) does NOT record - guards against double-recording")
     void nonFinalAttemptRethrowsWithoutRecordingFailure() {
         when(taskInstance.getData()).thenReturn(taskData());
+        execution.consecutiveFailures = maxRetries - 1;
         when(executionContext.getExecution()).thenReturn(execution);
         doThrow(mock(RuntimeException.class)).when(defenceFormService).generateAndAttach(RESPONSE_ID);
 
@@ -99,7 +100,7 @@ class DefenceFormGenerationComponentTest {
     @DisplayName("Final attempt records the failure once against the defendant party before rethrowing")
     void finalAttemptRecordsFailure() {
         when(taskInstance.getData()).thenReturn(taskData());
-        execution.consecutiveFailures = maxRetries - 1;
+        execution.consecutiveFailures = maxRetries;
         when(executionContext.getExecution()).thenReturn(execution);
         doThrow(mock(RuntimeException.class)).when(defenceFormService).generateAndAttach(RESPONSE_ID);
 
@@ -115,7 +116,7 @@ class DefenceFormGenerationComponentTest {
     @DisplayName("A failure while logging the failure does not mask the original exception")
     void loggingFailureDoesNotMaskOriginalException() {
         when(taskInstance.getData()).thenReturn(taskData());
-        execution.consecutiveFailures = maxRetries - 1;
+        execution.consecutiveFailures = maxRetries;
         when(executionContext.getExecution()).thenReturn(execution);
         doThrow(new RuntimeException("generation failed")).when(defenceFormService).generateAndAttach(RESPONSE_ID);
         doThrow(new RuntimeException("log write failed"))

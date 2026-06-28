@@ -68,9 +68,11 @@ public class DefenceFormGenerationComponent {
                     return new CompletionHandler.OnCompleteRemove<>();
                 } catch (Exception e) {
                     int attempt = executionContext.getExecution().consecutiveFailures + 1;
-                    log.error("Defence form generation failed for defendant response: {}. Attempt {}/{}",
-                              data.getDefendantResponseId(), attempt, maxRetries, e);
+                    // Only the terminal attempt is logged + recorded - intermediate retries are silent
+                    // (matches ClaimFormGenerationComponent).
                     if (isFinalAttempt(attempt)) {
+                        log.error("Defence form generation permanently failed for defendant response {} after {} "
+                                  + "attempts: {}", data.getDefendantResponseId(), attempt, e.getMessage(), e);
                         recordGenerationFailure(data);
                     }
                     throw e;
@@ -78,8 +80,10 @@ public class DefenceFormGenerationComponent {
             });
     }
 
+    // Terminal execution is attempt maxRetries + 1 (maxRetries = number of retries after the first attempt).
+    // Using >= would also fire on the second-to-last attempt, double-recording the failure (HDPI-6478).
     private boolean isFinalAttempt(int attempt) {
-        return attempt >= maxRetries;
+        return attempt > maxRetries;
     }
 
     private void recordGenerationFailure(DefenceFormTaskData data) {
