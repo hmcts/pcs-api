@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.IncomeType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
@@ -21,6 +22,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.claim.StatementOfTruthEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ContactPreferencesEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.HouseholdCircumstancesEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.PaymentAgreementEntity;
@@ -39,6 +41,7 @@ import java.time.LocalDateTime;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -83,7 +86,7 @@ public class DefendantResponseReadMapper {
         return Party.builder()
             .firstName(party.getFirstName())
             .lastName(party.getLastName())
-            .emailAddress(party.getEmailAddress())
+            .orgName(party.getOrgName())
             .phoneNumber(party.getPhoneNumber())
             .phoneNumberProvided(party.getPhoneNumberProvided())
             .dateOfBirth(party.getDateOfBirth())
@@ -344,21 +347,38 @@ public class DefendantResponseReadMapper {
         return pcsCase.getCounterClaims().stream()
             .filter(cc -> cc.getParty() != null && partyId.equals(cc.getParty().getId()))
             .findFirst()
-            .map(this::toCounterClaim)
+            .map(cc -> toCounterClaim(cc, pcsCase))
             .orElse(null);
     }
 
-    private CounterClaim toCounterClaim(CounterClaimEntity entity) {
+    private CounterClaim toCounterClaim(CounterClaimEntity entity, PcsCaseEntity pcsCase) {
         return CounterClaim.builder()
             .claimType(entity.getClaimType())
             .isClaimAmountKnown(entity.getIsClaimAmountKnown())
             .claimAmount(entity.getClaimAmount())
             .estimatedMaxClaimAmount(entity.getEstimatedMaxClaimAmount())
             .needHelpWithFees(entity.getNeedHelpWithFees())
+            .appliedForHwf(entity.getAppliedForHwf())
+            .hwfReferenceNumber(entity.getHwfReferenceNumber())
             .counterClaimFor(entity.getCounterClaimFor())
             .counterClaimReasons(entity.getCounterClaimReasons())
             .otherOrderRequestDetails(entity.getOtherOrderRequestDetails())
             .otherOrderRequestFacts(entity.getOtherOrderRequestFacts())
+            .counterClaimAgainst(mapCounterClaimAgainst(entity, pcsCase))
             .build();
+    }
+
+    private List<ListValue<Party>> mapCounterClaimAgainst(CounterClaimEntity entity, PcsCaseEntity pcsCase) {
+        if (entity.getCounterClaimParties() == null || entity.getCounterClaimParties().isEmpty()) {
+            return null;
+        }
+        return entity.getCounterClaimParties().stream()
+            .map(CounterClaimPartyEntity::getParty)
+            .filter(Objects::nonNull)
+            .map(party -> ListValue.<Party>builder()
+                .id(party.getId() != null ? party.getId().toString() : null)
+                .value(toParty(party, pcsCase))
+                .build())
+            .toList();
     }
 }

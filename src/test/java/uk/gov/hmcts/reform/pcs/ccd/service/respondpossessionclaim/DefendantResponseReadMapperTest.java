@@ -2,12 +2,14 @@ package uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim;
 
 import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaim;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.HouseholdCircumstancesEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.PaymentAgreementEntity;
@@ -283,6 +285,72 @@ class DefendantResponseReadMapperTest {
         assertThat(response.getDefendantResponses().getTenancyType()).isEqualTo("Corrected tenancy type");
         assertThat(response.getDefendantResponses().getTenancyStartDate()).isEqualTo(LocalDate.of(2020, 1, 15));
         assertThat(response.getDefendantResponses().getRentArrearsAmount()).isEqualByComparingTo("500.00");
+    }
+
+    @Test
+    void shouldMapCounterClaimAgainstPartiesWhenReadingSubmittedResponse() {
+        final AddressMapper addressMapper = mock(AddressMapper.class);
+        final DefendantResponseReadMapper underTest = new DefendantResponseReadMapper(addressMapper);
+
+        final UUID defendantPartyId = UUID.randomUUID();
+        final UUID claimantPartyId = UUID.randomUUID();
+        final UUID coDefendantPartyId = UUID.randomUUID();
+
+        final PartyEntity defendantParty = PartyEntity.builder()
+            .id(defendantPartyId)
+            .firstName("Jodie")
+            .lastName("Rogan")
+            .build();
+
+        final PartyEntity claimantParty = PartyEntity.builder()
+            .id(claimantPartyId)
+            .orgName("Possession Claims Solicitor Org")
+            .build();
+
+        final PartyEntity coDefendantParty = PartyEntity.builder()
+            .id(coDefendantPartyId)
+            .firstName("Emma")
+            .lastName("Willis")
+            .build();
+
+        final CounterClaimPartyEntity againstClaimant = CounterClaimPartyEntity.builder()
+            .party(claimantParty)
+            .build();
+        final CounterClaimPartyEntity againstCoDefendant = CounterClaimPartyEntity.builder()
+            .party(coDefendantParty)
+            .build();
+
+        final CounterClaimEntity counterClaim = CounterClaimEntity.builder()
+            .party(defendantParty)
+            .counterClaimFor("Repair costs")
+            .build();
+        counterClaim.getCounterClaimParties().add(againstClaimant);
+        counterClaim.getCounterClaimParties().add(againstCoDefendant);
+
+        final PcsCaseEntity pcsCase = PcsCaseEntity.builder()
+            .counterClaims(List.of(counterClaim))
+            .build();
+
+        final DefendantResponseEntity entity = DefendantResponseEntity.builder()
+            .party(defendantParty)
+            .pcsCase(pcsCase)
+            .build();
+
+        final PossessionClaimResponse response = underTest.toPossessionClaimResponse(entity, List.of());
+        final CounterClaim mappedCounterClaim = response.getDefendantResponses().getCounterClaim();
+
+        assertThat(mappedCounterClaim).isNotNull();
+        assertThat(mappedCounterClaim.getCounterClaimAgainst()).hasSize(2);
+        assertThat(mappedCounterClaim.getCounterClaimAgainst().get(0).getId())
+            .isEqualTo(claimantPartyId.toString());
+        assertThat(mappedCounterClaim.getCounterClaimAgainst().get(0).getValue().getOrgName())
+            .isEqualTo("Possession Claims Solicitor Org");
+        assertThat(mappedCounterClaim.getCounterClaimAgainst().get(1).getId())
+            .isEqualTo(coDefendantPartyId.toString());
+        assertThat(mappedCounterClaim.getCounterClaimAgainst().get(1).getValue().getFirstName())
+            .isEqualTo("Emma");
+        assertThat(mappedCounterClaim.getCounterClaimAgainst().get(1).getValue().getLastName())
+            .isEqualTo("Willis");
     }
 }
 
