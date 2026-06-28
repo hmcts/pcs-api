@@ -133,6 +133,25 @@ class AddressFormatterTest {
     }
 
     @Test
+    void shouldFormatFullAddressWithoutCountry() {
+        // Given
+        when(propertyAddress.getAddressLine1()).thenReturn("Address line 1");
+        when(propertyAddress.getAddressLine2()).thenReturn("Address line 2");
+        when(propertyAddress.getAddressLine3()).thenReturn("Address line 3");
+        when(propertyAddress.getPostTown()).thenReturn("Post Town");
+        when(propertyAddress.getPostCode()).thenReturn("Postcode");
+        when(propertyAddress.getCounty()).thenReturn("County");
+        when(propertyAddress.getCountry()).thenReturn("Country");
+
+        // When
+        String result = underTest.formatFullAddressWithoutCountry(propertyAddress, NEWLINE_DELIMITER);
+
+        // Then
+        assertThat(result)
+            .isEqualTo("Address line 1\nAddress line 2\nAddress line 3\nPost Town\nCounty\nPostcode");
+    }
+
+    @Test
     void shouldReturnNullFormattedShortAddressWhenAddressIsNull() {
         // When
         String result = underTest.formatShortAddress(null, COMMA_DELIMITER);
