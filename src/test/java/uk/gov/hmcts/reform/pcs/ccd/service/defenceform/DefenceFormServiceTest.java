@@ -42,16 +42,15 @@ class DefenceFormServiceTest {
     @Test
     void buildsThenRendersOutsideTransactionThenAttaches() {
         DefenceFormPayload payload = DefenceFormPayload.builder().build();
-        // defendantNumber 0 skips the [THROWAWAY] forced failure so the normal render/attach path is covered
-        DefenceFormRenderContext context = new DefenceFormRenderContext(payload, 0);
+        DefenceFormRenderContext context = new DefenceFormRenderContext(payload, 2);
         when(persistenceService.buildContextIfNotAttached(RESPONSE_ID)).thenReturn(Optional.of(context));
-        when(documentGenerator.generate(payload, 0)).thenReturn(DM_STORE_URL);
+        when(documentGenerator.generate(payload, 2)).thenReturn(DM_STORE_URL);
 
         defenceFormService.generateAndAttach(RESPONSE_ID);
 
         InOrder order = inOrder(persistenceService, documentGenerator);
         order.verify(persistenceService).buildContextIfNotAttached(RESPONSE_ID);
-        order.verify(documentGenerator).generate(payload, 0);
+        order.verify(documentGenerator).generate(payload, 2);
         order.verify(persistenceService).attach(RESPONSE_ID, DM_STORE_URL);
     }
 
@@ -65,23 +64,10 @@ class DefenceFormServiceTest {
         verify(persistenceService, never()).attach(any(), anyString());
     }
 
-    // [THROWAWAY] covers the forced-failure path so the injected exception keeps its coverage; remove with it.
-    @Test
-    void throwawayForcedFailureIsThrown() {
-        DefenceFormPayload payload = DefenceFormPayload.builder().build();
-        DefenceFormRenderContext context = new DefenceFormRenderContext(payload, 1);
-        when(persistenceService.buildContextIfNotAttached(RESPONSE_ID)).thenReturn(Optional.of(context));
-
-        assertThatThrownBy(() -> defenceFormService.generateAndAttach(RESPONSE_ID))
-            .isInstanceOf(RuntimeException.class)
-            .hasMessageContaining("FORCED FAILURE");
-    }
-
     @Test
     void deletesRenderedDocumentWhenAttachFails() {
         DefenceFormPayload payload = DefenceFormPayload.builder().build();
-        // defendantNumber 0 skips the [THROWAWAY] forced failure so the attach-failure/delete path is covered
-        DefenceFormRenderContext context = new DefenceFormRenderContext(payload, 0);
+        DefenceFormRenderContext context = new DefenceFormRenderContext(payload, 1);
         when(persistenceService.buildContextIfNotAttached(RESPONSE_ID)).thenReturn(Optional.of(context));
         when(documentGenerator.generate(any(), anyInt())).thenReturn(DM_STORE_URL);
         doThrow(new RuntimeException("attach failed")).when(persistenceService).attach(RESPONSE_ID, DM_STORE_URL);

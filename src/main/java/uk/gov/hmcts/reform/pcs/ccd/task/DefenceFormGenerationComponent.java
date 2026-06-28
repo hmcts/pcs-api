@@ -54,8 +54,7 @@ public class DefenceFormGenerationComponent {
         return Tasks.custom(DEFENCE_FORM_TASK_DESCRIPTOR)
             .onFailure(new FailureHandler.MaxRetriesFailureHandler<>(
                 maxRetries,
-                // [THROWAWAY] rate 1.0 = constant delay (not exponential) so every retry is backoffDelay apart
-                new FailureHandler.ExponentialBackoffFailureHandler<>(backoffDelay, 1.0)
+                new FailureHandler.ExponentialBackoffFailureHandler<>(backoffDelay)
             ))
             .execute((taskInstance, executionContext) -> {
                 DefenceFormTaskData data = taskInstance.getData();
