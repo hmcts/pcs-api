@@ -105,8 +105,6 @@ class ResumePossessionClaimTest extends BaseEventTest {
     private ResumePossessionClaimConfigurer resumePossessionClaimConfigurer;
     @Mock
     private NotificationService notificationService;
-    @Mock
-    private CamundaService camundaService;
 
     @BeforeEach
     void setUp() {
@@ -120,8 +118,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
             pcsCaseService, partyService, securityContextService,
             savingPageBuilderFactory,
             organisationService, schedulerClient, draftCaseDataService, addressFormatter, feeService,
-            moneyFormatter, resumePossessionClaimConfigurer, schedulingConfig, notificationService,
-            camundaService
+            moneyFormatter, resumePossessionClaimConfigurer, schedulingConfig, notificationService
         );
 
         setEventUnderTest(underTest);

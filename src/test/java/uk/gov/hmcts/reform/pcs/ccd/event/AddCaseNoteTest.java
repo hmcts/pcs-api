@@ -6,6 +6,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.reform.pcs.camunda.CamundaService;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.page.addcasenote.AddCaseNoteConfigurer;
@@ -22,6 +23,9 @@ public class AddCaseNoteTest extends BaseEventTest {
 
     @Mock
     private AddCaseNoteConfigurer addCaseNoteConfigurer;
+
+    @Mock
+    private CamundaService camundaService;
 
     @InjectMocks
     private AddCaseNote addCaseNote;

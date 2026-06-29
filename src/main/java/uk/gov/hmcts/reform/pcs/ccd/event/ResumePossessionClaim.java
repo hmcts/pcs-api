@@ -74,7 +74,6 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final ResumePossessionClaimConfigurer resumePossessionClaimConfigurer;
     private final SchedulingConfig schedulingConfig;
     private final NotificationService notificationService;
-    private final CamundaService camundaService;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -171,7 +170,6 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
         PCSCase pcsCase = eventPayload.caseData();
 
         if (pcsCase.getCompletionNextStep() == SUBMIT_AND_PAY_NOW) {
-            camundaService.createTask(eventPayload.caseReference());
             return submitClaim(caseReference, pcsCase);
         } else {
             notificationService.sendClaimantDraftSavedForLater(caseReference, pcsCase);
