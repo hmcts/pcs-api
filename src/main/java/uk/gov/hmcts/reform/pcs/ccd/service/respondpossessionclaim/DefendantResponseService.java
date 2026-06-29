@@ -1,10 +1,12 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponseStatus;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
@@ -12,6 +14,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.StatementOfTruthEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.PartyAttributeAssertationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DefendantResponseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
@@ -21,8 +24,11 @@ import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.time.Clock;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static uk.gov.hmcts.reform.pcs.ccd.util.YesOrNoConverter.toYesOrNo;
 
@@ -47,6 +53,7 @@ public class DefendantResponseService {
     private final PartyRepository partyRepository;
     private final ClaimRepository claimRepository;
     private final DefendantResponseRepository defendantResponseRepository;
+    private final DefendantResponseReadMapper defendantResponseReadMapper;
     private final SecurityContextService securityContextService;
     private final ReasonableAdjustmentsService reasonableAdjustmentsService;
     private final HouseholdCircumstancesService householdCircumstancesService;
@@ -59,6 +66,7 @@ public class DefendantResponseService {
                                     PartyRepository partyRepository,
                                     ClaimRepository claimRepository,
                                     DefendantResponseRepository defendantResponseRepository,
+                                    DefendantResponseReadMapper defendantResponseReadMapper,
                                     SecurityContextService securityContextService,
                                     ReasonableAdjustmentsService reasonableAdjustmentsService,
                                     HouseholdCircumstancesService householdCircumstancesService,
@@ -70,6 +78,7 @@ public class DefendantResponseService {
         this.partyRepository = partyRepository;
         this.claimRepository = claimRepository;
         this.defendantResponseRepository = defendantResponseRepository;
+        this.defendantResponseReadMapper = defendantResponseReadMapper;
         this.securityContextService = securityContextService;
         this.reasonableAdjustmentsService = reasonableAdjustmentsService;
         this.householdCircumstancesService = householdCircumstancesService;
@@ -161,6 +170,7 @@ public class DefendantResponseService {
             buildDefendantResponseEntity(claimRef, partyRef, responses, submittedAt);
 
         buildAndLinkChildEntities(responseEntity, responses);
+        linkStatementOfTruth(responseEntity, responses, partyRef);
 
         buildStatementOfTruth(responses, responseEntity);
 
@@ -217,6 +227,7 @@ public class DefendantResponseService {
             .languageUsed(responses.getLanguageUsed())
             .otherConsiderations(responses.getOtherConsiderations())
             .otherConsiderationsDetails(responses.getOtherConsiderationsDetails())
+            .responseSubmittedDate(LocalDateTime.now(utcClock))
             .build();
 
         //set bidirectional relationship with the pcs case
@@ -248,6 +259,35 @@ public class DefendantResponseService {
         );
     }
 
+    /**
+     * Persists the defendant's statement of truth when they submit their response.
+    */
+    private void linkStatementOfTruth(
+        DefendantResponseEntity defendantResponse,
+        DefendantResponses responses,
+        PartyEntity party
+    ) {
+        if (StringUtils.isBlank(responses.getStatementOfTruthCompletedBy())) {
+            return;
+        }
+
+        String fullName = Stream.of(party.getFirstName(), party.getLastName())
+            .filter(StringUtils::isNotBlank)
+            .collect(Collectors.joining(" "));
+        if (fullName.isBlank()) {
+            fullName = "Defendant";
+        }
+
+        // currently hardcoding YES.
+        defendantResponse.setStatementOfTruth(
+            StatementOfTruthEntity.builder()
+                .accepted(YesOrNo.YES)
+                .fullName(fullName)
+                .completedDate(LocalDateTime.now(utcClock))
+                .build()
+        );
+    }
+
     private void buildStatementOfTruth(DefendantResponses responses, DefendantResponseEntity responseEntity) {
         if (responses.getStatementOfTruth() == null || responses.getStatementOfTruth().getAccepted() == null) {
             return;
@@ -266,5 +306,22 @@ public class DefendantResponseService {
             return false;
         }
         return defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(caseReference, userId);
+    }
+
+    @Transactional(readOnly = true)
+    public PossessionClaimResponse getSubmittedResponse(long caseReference) {
+        UUID userId = securityContextService.getCurrentUserId();
+        if (userId == null) {
+            throw new IllegalStateException("No submitted defendant response for case " + caseReference);
+        }
+
+        DefendantResponseEntity entity = defendantResponseRepository
+            .findWithDetailsByClaimPcsCaseCaseReferenceAndPartyIdamId(caseReference, userId)
+            .orElseThrow(() -> new IllegalStateException("No submitted defendant response for case " + caseReference));
+
+        List<PartyAttributeAssertationEntity> assertions = partyAttributeAssertationService
+            .getSubmittedAssertionsForParty(entity.getParty().getId());
+
+        return defendantResponseReadMapper.toPossessionClaimResponse(entity, assertions);
     }
 }
