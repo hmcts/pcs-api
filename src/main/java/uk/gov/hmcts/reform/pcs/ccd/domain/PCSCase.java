@@ -539,7 +539,6 @@ public class PCSCase {
      * Combined list of all underlessees/mortgagees in the case.
      */
     @CCD(access = {ClaimantAccess.class, DefendantAccess.class})
-    // @CCD(access = ClaimantAccess.class)
     private List<ListValue<Party>> allUnderlesseeOrMortgagees;
 
     @CCD(
