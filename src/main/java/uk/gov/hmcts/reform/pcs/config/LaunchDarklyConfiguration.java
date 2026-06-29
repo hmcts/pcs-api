@@ -24,7 +24,7 @@ public class LaunchDarklyConfiguration {
     @Bean(destroyMethod = "close")
     public LDClient ldClient(@Value("${launchdarkly.sdk-key:}") String sdkKey,
                              @Value("${launchdarkly.offline-mode:false}") Boolean offlineMode,
-                             @Value("${launchdarkly.file:}") String[] flagFiles) {
+                             @Value("${launchdarkly.files:}") String[] flagFiles) {
         if (offlineMode || StringUtils.isBlank(sdkKey)) {
             log.warn("Starting LaunchDarkly client in offline mode (offlineMode={}, sdkKeyPresent={}) "
                          + "- serving code defaults", offlineMode, StringUtils.isNotBlank(sdkKey));

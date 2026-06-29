@@ -241,7 +241,7 @@ launchdarkly:
   sdk-key: ${LAUNCHDARKLY_SDK_KEY:}
   offline-mode: ${LAUNCHDARKLY_OFFLINE:false}
   env: ${LAUNCHDARKLY_ENV:default}
-  file: ${LAUNCHDARKLY_FILE:}
+  files: ${LAUNCHDARKLY_FILES:}
 
 claim-form:
   request:
