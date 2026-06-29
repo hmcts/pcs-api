@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimStatus;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.model.CounterClaimStatusChangeTaskData;
+import uk.gov.hmcts.reform.pcs.ccd.service.counterclaimform.CounterClaimFormScheduler;
 import uk.gov.hmcts.reform.pcs.ccd.task.CounterClaimIssuedNotificationTaskComponent;
 import uk.gov.hmcts.reform.pcs.ccd.task.PendingCounterClaimIssuedNotificationTaskComponent;
 
@@ -22,6 +23,7 @@ import java.util.UUID;
 public class CounterClaimEntityListener {
 
     private final SchedulerClient schedulerClient;
+    private final CounterClaimFormScheduler counterClaimFormScheduler;
 
     @PostLoad
     public void onPostLoad(CounterClaimEntity entity) {
@@ -43,7 +45,10 @@ public class CounterClaimEntityListener {
 
         switch (entity.getStatus()) {
             case PENDING_COUNTER_CLAIM_ISSUED -> schedulePendingCounterClaimIssuedNotification(entity);
-            case COUNTER_CLAIM_ISSUED -> scheduleCounterClaimIssuedNotification(entity);
+            case COUNTER_CLAIM_ISSUED -> {
+                scheduleCounterClaimIssuedNotification(entity);
+                counterClaimFormScheduler.scheduleCounterClaimFormGeneration(entity.getId());
+            }
         }
     }
 

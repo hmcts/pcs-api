@@ -12,6 +12,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimStatus;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.model.CounterClaimStatusChangeTaskData;
+import uk.gov.hmcts.reform.pcs.ccd.service.counterclaimform.CounterClaimFormScheduler;
 import uk.gov.hmcts.reform.pcs.ccd.task.CounterClaimIssuedNotificationTaskComponent;
 import uk.gov.hmcts.reform.pcs.ccd.task.PendingCounterClaimIssuedNotificationTaskComponent;
 
@@ -27,6 +28,9 @@ class CounterClaimEntityListenerTest {
 
     @Mock
     private SchedulerClient schedulerClient;
+
+    @Mock
+    private CounterClaimFormScheduler counterClaimFormScheduler;
 
     @InjectMocks
     private CounterClaimEntityListener underTest;
@@ -127,5 +131,7 @@ class CounterClaimEntityListenerTest {
                      taskInstance.getTaskName());
         CounterClaimStatusChangeTaskData data = (CounterClaimStatusChangeTaskData) taskInstance.getData();
         assertEquals(counterClaimId, data.getCounterClaimId());
+
+        verify(counterClaimFormScheduler).scheduleCounterClaimFormGeneration(counterClaimId);
     }
 }
