@@ -100,6 +100,8 @@ public class TestCaseGeneration implements CCDConfig<PCSCase, State, UserRole> {
 
         if (isWorkAllocationEnabled) {
             camundaService.createTask(eventPayload.caseReference());
+        } else {
+            log.info("WA not enabled");
         }
 
         return SubmitResponse.<State>builder().state(AWAITING_SUBMISSION_TO_HMCTS).build();
