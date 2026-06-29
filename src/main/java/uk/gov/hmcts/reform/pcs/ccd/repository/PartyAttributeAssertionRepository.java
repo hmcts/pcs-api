@@ -14,4 +14,9 @@ public interface PartyAttributeAssertionRepository extends JpaRepository<PartyAt
 
     List<PartyAttributeAssertationEntity> findByPartyIdAndAssertedByAndStatus(
         UUID partyId, PartyAttributeAssertedBy assertedBy, PartyAttributeAssertionStatus status);
+
+    List<PartyAttributeAssertationEntity> findByPartyIdAndStatusOrderByCreatedAtAsc(
+        UUID partyId,
+        PartyAttributeAssertionStatus status
+    );
 }

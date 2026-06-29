@@ -39,9 +39,6 @@ import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.math.BigDecimal;
 import java.time.Clock;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 import java.util.Collection;
 import java.util.EnumMap;
 import java.util.List;
@@ -52,6 +49,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.service.defenceform.DefenceFormFormatt
 import static uk.gov.hmcts.reform.pcs.ccd.service.defenceform.DefenceFormFormatter.formatIsoDate;
 import static uk.gov.hmcts.reform.pcs.ccd.service.form.FormFieldFormatter.formatGbp;
 import static uk.gov.hmcts.reform.pcs.ccd.service.form.FormFieldFormatter.formatLongDate;
+import static uk.gov.hmcts.reform.pcs.ccd.service.form.FormFieldFormatter.formatUkDate;
 import static uk.gov.hmcts.reform.pcs.ccd.service.form.FormFieldFormatter.isNo;
 import static uk.gov.hmcts.reform.pcs.ccd.service.form.FormFieldFormatter.isPopulated;
 import static uk.gov.hmcts.reform.pcs.ccd.service.form.FormFieldFormatter.isYes;
@@ -130,7 +128,7 @@ public class DefenceFormPayloadBuilder {
         DefenceFormPayload.DefenceFormPayloadBuilder payload = DefenceFormPayload.builder();
 
         if (response.getResponseSubmittedDate() != null) {
-            payload.submittedOn(toUkDate(response.getResponseSubmittedDate()));
+            payload.submittedOn(formatUkDate(response.getResponseSubmittedDate(), ukClock));
         }
 
         mapCaseAndParties(claim, pcsCase, defendant, isWales, assertions, payload);
@@ -156,7 +154,7 @@ public class DefenceFormPayloadBuilder {
         payload.caseName(caseNameFormatter.formatCaseName(toDomainParties(claimants), toDomainParties(defendants)));
 
         if (claim.getClaimIssuedDate() != null) {
-            payload.issueDateSealed(toUkDate(claim.getClaimIssuedDate()));
+            payload.issueDateSealed(formatUkDate(claim.getClaimIssuedDate(), ukClock));
         }
 
         if (!claimants.isEmpty()) {
@@ -330,10 +328,6 @@ public class DefenceFormPayloadBuilder {
     private static boolean claimantServedNotice(ClaimEntity claim) {
         return claim.getNoticeOfPossession() != null
             && claim.getNoticeOfPossession().getNoticeServed() == YesOrNo.YES;
-    }
-
-    private LocalDate toUkDate(LocalDateTime utcTimestamp) {
-        return utcTimestamp.atZone(ZoneOffset.UTC).withZoneSameInstant(ukClock.getZone()).toLocalDate();
     }
 
     private void mapStatementOfTruth(StatementOfTruthEntity statementOfTruth,

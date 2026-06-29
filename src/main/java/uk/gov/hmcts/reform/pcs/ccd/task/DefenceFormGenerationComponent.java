@@ -6,6 +6,7 @@ import com.github.kagkarlsson.scheduler.task.TaskDescriptor;
 import com.github.kagkarlsson.scheduler.task.helper.CustomTask;
 import com.github.kagkarlsson.scheduler.task.helper.Tasks;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
@@ -24,6 +25,13 @@ import java.time.Duration;
 @Component
 public class DefenceFormGenerationComponent {
     private static final String DEFENCE_FORM_GENERATION_TASK_NAME = "defence-form-generation-task";
+
+    // MDC keys - the App Insights agent copies these onto the trace/exception telemetry as
+    // customDimensions, so a terminal failure can be found and alerted on by case without parsing messages.
+    private static final String MDC_CASE_REFERENCE = "caseReference";
+    private static final String MDC_TASK_NAME = "taskName";
+    private static final String MDC_TERMINAL_FAILURE = "terminalFailure";
+    private static final String MDC_FAILURE_REASON = "failureReason";
 
     public static final TaskDescriptor<DefenceFormTaskData> DEFENCE_FORM_TASK_DESCRIPTOR =
         TaskDescriptor.of(DEFENCE_FORM_GENERATION_TASK_NAME, DefenceFormTaskData.class);
@@ -58,24 +66,29 @@ public class DefenceFormGenerationComponent {
             ))
             .execute((taskInstance, executionContext) -> {
                 DefenceFormTaskData data = taskInstance.getData();
-                log.debug("Starting defence form generation for defendant response: {}",
-                          data.getDefendantResponseId());
+                MDC.put(MDC_CASE_REFERENCE, data.getCaseReference());
+                MDC.put(MDC_TASK_NAME, DEFENCE_FORM_GENERATION_TASK_NAME);
 
                 try {
                     defenceFormService.generateAndAttach(data.getDefendantResponseId());
-                    log.info("Defence form generated and attached for defendant response {}",
-                             data.getDefendantResponseId());
                     return new CompletionHandler.OnCompleteRemove<>();
                 } catch (Exception e) {
                     int attempt = executionContext.getExecution().consecutiveFailures + 1;
                     // Only the terminal attempt is logged + recorded - intermediate retries are silent
                     // (matches ClaimFormGenerationComponent).
                     if (isFinalAttempt(attempt)) {
+                        MDC.put(MDC_TERMINAL_FAILURE, "true");
+                        MDC.put(MDC_FAILURE_REASON, String.valueOf(e.getMessage()));
                         log.error("Defence form generation permanently failed for defendant response {} after {} "
                                   + "attempts: {}", data.getDefendantResponseId(), attempt, e.getMessage(), e);
                         recordGenerationFailure(data);
                     }
                     throw e;
+                } finally {
+                    MDC.remove(MDC_CASE_REFERENCE);
+                    MDC.remove(MDC_TASK_NAME);
+                    MDC.remove(MDC_TERMINAL_FAILURE);
+                    MDC.remove(MDC_FAILURE_REASON);
                 }
             });
     }
