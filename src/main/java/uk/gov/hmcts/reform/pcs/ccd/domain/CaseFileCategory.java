@@ -11,10 +11,11 @@ public enum CaseFileCategory {
     PROPERTY_DOCUMENTS("propertyDocuments", "Property documents", 2),
     EVIDENCE("evidence", "Evidence", 3),
     HEARING_DOCUMENTS("hearingDocuments", "Hearing documents", 4),
-    ORDERS_AND_NOTICE_OF_HEARINGS("ordersAndNoticeOfHearings", "Orders and notice of hearings", 5),
+    ORDERS_AND_NOTICE_OF_HEARINGS("ordersAndNoticeOfHearings", "Orders and Notice of Hearings", 5),
     APPLICATIONS("applications", "Applications", 6),
     APPEALS("appeals", "Appeals", 7),
-    CORRESPONDENCE("correspondence", "Correspondence", 8);
+    CORRESPONDENCE("correspondence", "Correspondence", 8),
+    UNCATEGORISED_DOCUMENTS("uncategorisedDocuments", "Uncategorised documents", 9);
 
     private final String id;
     private final String label;
