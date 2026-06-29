@@ -17,7 +17,7 @@ plugins {
   id 'jacoco'
   id 'io.spring.dependency-management' version '1.1.7'
   id 'org.springframework.boot' version '3.5.16'
-  id 'com.github.ben-manes.versions' version '0.53.0'
+  id 'com.github.ben-manes.versions' version '0.54.0'
   id 'org.flywaydb.flyway' version "$flywayVersion"
   id 'org.sonarqube' version '7.3.1.8318'
   id 'net.serenity-bdd.serenity-gradle-plugin' version "$serenityBddVersion"
@@ -373,7 +373,7 @@ ext {
   springFrameworkBootVersion = "3.5.16"
   lombokVersion = "1.18.46"
   springSecurityVersion = "7.1.0"
-  pactVersion = "4.6.20"
+  pactVersion = "4.7.3"
   tomcatEmbedVersion = "11.0.23"
   nettyVersion = "4.1.132.Final"
 }
