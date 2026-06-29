@@ -91,17 +91,16 @@ public class TestCaseGeneration implements CCDConfig<PCSCase, State, UserRole> {
         String label = testFilesList.getValue().getLabel();
         if (label.startsWith(MAKE_A_CLAIM_CASE_GENERATOR)) {
             makeAClaimTestCreation(label, caseReference);
+            if (isWorkAllocationEnabled) {
+                camundaService.createTask(eventPayload.caseReference());
+            } else {
+                log.info("WA not enabled");
+            }
             return SubmitResponse.<State>builder().state(PENDING_CASE_ISSUED).build();
         } else if (label.startsWith(ENFORCEMENT_CASE_GENERATOR)) {
             makeAClaimTestCreation("Create-Case-Make-A-Claim-Basic-Case", caseReference);
             enforceTheOrder.submitOrder(caseReference, loadTestPcsCase(label));
             return SubmitResponse.<State>builder().state(CASE_ISSUED).build();
-        }
-
-        if (isWorkAllocationEnabled) {
-            camundaService.createTask(eventPayload.caseReference());
-        } else {
-            log.info("WA not enabled");
         }
 
         return SubmitResponse.<State>builder().state(AWAITING_SUBMISSION_TO_HMCTS).build();
