@@ -128,7 +128,7 @@ class NotifyControllerIT extends AbstractPostgresContainerIT {
             when(notificationService
                      .sendDefendantResponseCounterclaimPaymentRequiredEmailNotification(defendantResponse)
             ).thenReturn(response);
-            when(notificationService.sendDefendantResponseCounterclaimPaymentSuccessEmailNotification(defendantResponse)
+            when(notificationService.sendDefendantResponseCounterclaimPaymentSuccessEmailNotification(any(), any())
             ).thenReturn(response);
             when(notificationService
                      .sendDefendantResponseCounterclaimNoPaymentRequiredEmailNotification(defendantResponse)

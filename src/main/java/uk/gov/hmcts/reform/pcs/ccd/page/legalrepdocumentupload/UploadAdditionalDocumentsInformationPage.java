@@ -18,7 +18,7 @@ public class UploadAdditionalDocumentsInformationPage implements CcdPageConfigur
                             housing association or mortgage provider.
                         </p>
                         <p class="govuk-body">
-                            If your application is 'without notice' (where you have asked us to) consider your
+                            If your application is 'without notice' (where you have asked us to consider your
                             application without testing the other party) we will not share anything with them.
                         </p>
                     </div>
@@ -44,7 +44,7 @@ public class UploadAdditionalDocumentsInformationPage implements CcdPageConfigur
 
                     <p class="govuk-body govuk-!-margin-bottom-0">You can upload the following file types:</p>
                     <ul class="govuk-list govuk-list--bullet">
-                        <li class="govuk-!-font-size-19">DOCS/DOCX(Word)</li>
+                        <li class="govuk-!-font-size-19">DOC/DOCX(Word)</li>
                        <li class="govuk-!-font-size-19">XLS/XLSX(Excel)</li>
                        <li class="govuk-!-font-size-19">PPT/PPTX(PowerPoint)</li>
                        <li class="govuk-!-font-size-19">PDF</li>
