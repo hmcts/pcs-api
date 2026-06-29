@@ -72,6 +72,7 @@ public class CftlibConfig implements CFTLibConfigurer {
 
         roleNames.add("caseworker");
         roleNames.add("caseworker-ras-validation");
+        roleNames.add("caseworker-wa-task-configuration");
 
         lib.createRoles(roleNames.toArray(new String[0]));
     }
