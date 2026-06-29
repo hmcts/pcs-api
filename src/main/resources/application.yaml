@@ -103,13 +103,13 @@ spring:
             scope: openid,profile,roles
         provider:
           idam:
-            token-uri: ${IDAM_API_URL}/o/token
+            token-uri: ${IDAM_API_URL:http://localhost:5062}/o/token
 flyway:
   noop:
     strategy: ${FLYWAY_NOOP_STRATEGY:false}
 idam:
   api:
-    url: ${IDAM_API_URL}
+    url: ${IDAM_API_URL:http://localhost:5062}
   s2s-auth:
     url: ${IDAM_S2S_AUTH_URL:http://localhost:4502}
     totp_secret: ${PCS_API_S2S_SECRET:AAAAAAAAAAAAAAAA}
@@ -236,6 +236,11 @@ access-code:
   request:
     max-retries: ${ACCESS_CODE_MAX_RETRIES:5}
     backoff-delay-seconds: ${ACCESS_CODE_BACKOFF_DELAY_SECONDS:3600s}
+
+claim-form:
+  request:
+    max-retries: ${CLAIM_FORM_MAX_RETRIES:5}
+    backoff-delay-seconds: ${CLAIM_FORM_BACKOFF_DELAY_SECONDS:3600s}
 
 role-assignment:
   request:
