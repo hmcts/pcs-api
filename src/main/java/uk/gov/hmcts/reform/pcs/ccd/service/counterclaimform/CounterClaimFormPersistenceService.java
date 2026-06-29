@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.counterclaimform;
 
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
@@ -21,7 +20,6 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Service
-@Slf4j
 public class CounterClaimFormPersistenceService {
     private final CounterClaimRepository counterClaimRepository;
     private final DocumentRepository documentRepository;
@@ -45,7 +43,6 @@ public class CounterClaimFormPersistenceService {
     public Optional<CounterClaimFormRenderContext> buildContextIfNotAttached(UUID counterClaimId) {
         CounterClaimEntity counterClaim = loadCounterClaim(counterClaimId);
         if (isAlreadyAttached(counterClaimId)) {
-            log.info("Counter claim form already attached for counter claim {}, skipping", counterClaimId);
             return Optional.empty();
         }
         CounterClaimFormPayload payload = payloadBuilder.build(counterClaim);
@@ -56,7 +53,6 @@ public class CounterClaimFormPersistenceService {
     public void attach(UUID counterClaimId, String dmStoreUrl) {
         CounterClaimEntity counterClaim = loadCounterClaim(counterClaimId);
         if (isAlreadyAttached(counterClaimId)) {
-            log.info("Counter claim form already attached for counter claim {}, skipping attach", counterClaimId);
             return;
         }
         PcsCaseEntity pcsCase = counterClaim.getPcsCase();

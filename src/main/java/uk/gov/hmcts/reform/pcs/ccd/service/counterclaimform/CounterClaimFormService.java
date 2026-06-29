@@ -37,7 +37,6 @@ public class CounterClaimFormService {
             deleteOrphanedDocument(counterClaimId, dmStoreUrl);
             throw e;
         }
-        log.info("Generated and attached counter claim form for counter claim {}: {}", counterClaimId, dmStoreUrl);
     }
 
     public long recordGenerationFailure(UUID counterClaimId) {

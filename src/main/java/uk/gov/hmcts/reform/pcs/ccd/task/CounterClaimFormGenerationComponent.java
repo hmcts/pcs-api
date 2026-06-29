@@ -56,11 +56,9 @@ public class CounterClaimFormGenerationComponent {
                 UUID counterClaimId = data.getCounterClaimId();
                 MDC.put(MDC_COUNTER_CLAIM_ID, String.valueOf(counterClaimId));
                 MDC.put(MDC_TASK_NAME, COUNTER_CLAIM_FORM_GENERATION_TASK_NAME);
-                log.debug("Starting counter claim form generation for counter claim {}", counterClaimId);
 
                 try {
                     counterClaimFormService.generateAndAttach(counterClaimId);
-                    log.info("Counter claim form generated and attached for counter claim {}", counterClaimId);
                     return new CompletionHandler.OnCompleteRemove<>();
                 } catch (Exception e) {
                     int attempt = executionContext.getExecution().consecutiveFailures + 1;
