@@ -43,6 +43,7 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.DefendantResponseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
+import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.DefendantResponseReadMapper;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.DefendantResponseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.HouseholdCircumstancesService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.PartyAttributeAssertationService;
@@ -87,6 +88,8 @@ class DefendantResponseServiceTest {
     private ClaimRepository claimRepository;
     @Mock
     private DefendantResponseRepository defendantResponseRepository;
+    @Mock 
+    private DefendantResponseReadMapper defendantResponseReadMapper;
     @Mock
     private SecurityContextService securityContextService;
     @Mock
@@ -125,6 +128,7 @@ class DefendantResponseServiceTest {
             partyRepository,
             claimRepository,
             defendantResponseRepository,
+            defendantResponseReadMapper,
             securityContextService,
             reasonableAdjustmentsService,
             householdCircumstancesService,
@@ -182,6 +186,32 @@ class DefendantResponseServiceTest {
         assertThat(savedResponse.getResponseSubmittedDate()).isEqualTo(LocalDateTime.now(FIXED_UTC_CLOCK));
         verify(pcsCaseEntity).addDefendantResponse(savedResponse);
 
+    }
+
+    @Test
+    void shouldLinkStatementOfTruthWithoutCompletedByWhenStatementOfTruthAcknowledged() {
+        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
+
+        stubPartyLookup();
+        stubClaimLookup();
+        when(partyEntity.getFirstName()).thenReturn("Test");
+        when(partyEntity.getLastName()).thenReturn("Defendant");
+
+        DefendantResponses responses = DefendantResponses.builder()
+            .statementOfTruthCompletedBy("DEFENDANT")
+            .build();
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .defendantResponses(responses)
+            .build();
+
+        underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse);
+
+        verify(defendantResponseRepository).save(responseCaptor.capture());
+        DefendantResponseEntity savedResponse = responseCaptor.getValue();
+
+        assertThat(savedResponse.getStatementOfTruth()).isNotNull();
+        assertThat(savedResponse.getStatementOfTruth().getCompletedBy()).isNull();
+        assertThat(savedResponse.getStatementOfTruth().getFullName()).isEqualTo("Test Defendant");
     }
 
     @Test
