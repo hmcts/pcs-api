@@ -280,6 +280,19 @@ class PCSCaseViewTest {
     }
 
     @Test
+    void shouldMapDateIssuedFromClaimIssuedDate() {
+        // Given
+        LocalDateTime claimIssuedDate = LocalDateTime.of(2026, 5, 12, 14, 30);
+        when(claimEntity.getClaimIssuedDate()).thenReturn(claimIssuedDate);
+
+        // When
+        PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
+
+        // Then
+        assertThat(pcsCase.getDateIssued()).isEqualTo(claimIssuedDate);
+    }
+
+    @Test
     void shouldSetCaseFieldsInViewHelpers() {
         // When
         PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
@@ -299,7 +312,7 @@ class PCSCaseViewTest {
         verify(caseLinkView).setCaseFields(pcsCase, pcsCaseEntity);
         verify(caseFlagsView).setCaseFields(pcsCase, pcsCaseEntity);
         verify(defendantResponseView).setCaseFields(pcsCase, pcsCaseEntity);
-
+        verify(caseListView).setCaseFields(pcsCase);
         verify(genAppsView).setCaseFields(pcsCase, pcsCaseEntity);
     }
 
