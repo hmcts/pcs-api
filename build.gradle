@@ -374,7 +374,7 @@ ext {
   lombokVersion = "1.18.46"
   springSecurityVersion = "7.0.4"
   pactVersion = "4.6.20"
-  tomcatEmbedVersion = "11.0.18"
+  tomcatEmbedVersion = "11.0.23"
   nettyVersion = "4.1.132.Final"
 }
 
