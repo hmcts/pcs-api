@@ -5,11 +5,13 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
 import uk.gov.hmcts.ccd.sdk.CaseViewRequest;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.ccd.sdk.type.SearchCriteria;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
@@ -25,6 +27,7 @@ import uk.gov.hmcts.reform.pcs.ccd.view.AlternativesToPossessionView;
 import uk.gov.hmcts.reform.pcs.ccd.view.AsbProhibitedConductView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseFlagsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseLinkView;
+import uk.gov.hmcts.reform.pcs.ccd.view.CaseListView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseNoteView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseTabView;
 import uk.gov.hmcts.reform.pcs.ccd.view.ClaimGroundsView;
@@ -38,6 +41,7 @@ import uk.gov.hmcts.reform.pcs.ccd.view.RentDetailsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.StatementOfTruthView;
 import uk.gov.hmcts.reform.pcs.ccd.view.TenancyLicenceView;
 import uk.gov.hmcts.reform.pcs.ccd.view.globalsearch.CaseFieldsView;
+import uk.gov.hmcts.reform.pcs.ccd.view.globalsearch.SearchCriteriaIndexer;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
@@ -53,6 +57,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mock.Strictness.LENIENT;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -115,6 +120,10 @@ class PCSCaseViewTest {
     private PartiesView partiesView;
     @Mock
     private CaseFlagsView caseFlagsView;
+    @Mock
+    private SearchCriteriaIndexer searchCriteriaIndexer;
+    @Mock
+    private CaseListView caseListView;
 
     private PCSCaseView underTest;
 
@@ -128,7 +137,8 @@ class PCSCaseViewTest {
                                     rentDetailsView, alternativesToPossessionView, asbProhibitedConductView,
                                     rentArrearsView, noticeOfPossessionView,
                                     statementOfTruthView, caseFieldsView, caseLinkView, enforcementOrderMediator,
-                                    caseNoteView, caseTabView, partiesView, genAppsView, caseFlagsView
+                                    caseNoteView, caseTabView, partiesView, genAppsView, caseFlagsView,
+                                    searchCriteriaIndexer, caseListView
         );
     }
 
@@ -191,6 +201,36 @@ class PCSCaseViewTest {
     }
 
     @Test
+    void shouldSetSearchCriteriaFromIndexer() {
+        // Given
+        SearchCriteria searchCriteria = SearchCriteria.builder().build();
+        when(searchCriteriaIndexer.buildSearchCriteria(any(PCSCase.class))).thenReturn(searchCriteria);
+
+        // When
+        PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
+
+        // Then - indexing is delegated to the indexer and its result is set on the case
+        verify(searchCriteriaIndexer).buildSearchCriteria(pcsCase);
+        assertThat(pcsCase.getSearchCriteria()).isSameAs(searchCriteria);
+    }
+
+    @Test
+    void shouldNotSetSearchCriteriaForSuffixedCaseType() {
+        // Given a suffixed (non-canonical) case type, e.g. PCS-STAGING or a PR preview type
+        try (MockedStatic<CaseType> caseTypeMock = mockStatic(CaseType.class)) {
+            caseTypeMock.when(CaseType::isSuffixedCaseType).thenReturn(true);
+
+            // When
+            PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
+
+            // Then - the indexer is never invoked and SearchCriteria is left null, so the
+            // decentralised indexer won't write a global_search document for this case type
+            verify(searchCriteriaIndexer, never()).buildSearchCriteria(any(PCSCase.class));
+            assertThat(pcsCase.getSearchCriteria()).isNull();
+        }
+    }
+
+    @Test
     void shouldMapPartyEntity() {
         // Given
         PartyEntity partyEntity = mock(PartyEntity.class);
@@ -236,6 +276,19 @@ class PCSCaseViewTest {
     }
 
     @Test
+    void shouldMapDateIssuedFromClaimIssuedDate() {
+        // Given
+        LocalDateTime claimIssuedDate = LocalDateTime.of(2026, 5, 12, 14, 30);
+        when(claimEntity.getClaimIssuedDate()).thenReturn(claimIssuedDate);
+
+        // When
+        PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
+
+        // Then
+        assertThat(pcsCase.getDateIssued()).isEqualTo(claimIssuedDate);
+    }
+
+    @Test
     void shouldSetCaseFieldsInViewHelpers() {
         // When
         PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
@@ -255,6 +308,7 @@ class PCSCaseViewTest {
         verify(caseLinkView).setCaseFields(pcsCase, pcsCaseEntity);
         verify(caseFlagsView).setCaseFields(pcsCase, pcsCaseEntity);
         verify(genAppsView).setCaseFields(pcsCase, pcsCaseEntity);
+        verify(caseListView).setCaseFields(pcsCase);
     }
 
     @Test
@@ -334,7 +388,7 @@ class PCSCaseViewTest {
         PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
 
         // Then
-        verify(enforcementOrderMediator).handleEnforcementRequirements(CASE_REFERENCE, pcsCase);
+        verify(enforcementOrderMediator).handleEnforcementRequirements(pcsCaseEntity, pcsCase);
     }
 
     private AddressUK stubAddressEntityModelMapper(AddressEntity addressEntity) {

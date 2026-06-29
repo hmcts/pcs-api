@@ -12,6 +12,8 @@ import uk.gov.hmcts.reform.pcs.feesandpay.model.CreateCardPaymentRequest;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.CreateCardPaymentResponse;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.PaymentService;
 
+import java.util.UUID;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -56,15 +58,15 @@ class PaymentControllerTest {
     void shouldDelegateRequestToGetCardPaymentStatus() {
         // Given
         CardPaymentStatusResponse paymentStatusResponse = mock(CardPaymentStatusResponse.class);
-        String paymentReference = "CP-123";
+        String internalPaymentReference = UUID.randomUUID().toString();
 
-        when(paymentService.getPaymentStatus(paymentReference))
+        when(paymentService.getPaymentStatus(internalPaymentReference))
             .thenReturn(paymentStatusResponse);
 
         // When
         ResponseEntity<CardPaymentStatusResponse> response = underTest.getCardPaymentStatus(
             S2S_TOKEN,
-            paymentReference
+            internalPaymentReference
         );
 
         // Then

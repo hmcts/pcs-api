@@ -8,7 +8,7 @@ import { PageContentValidation } from '@utils/validations/element-validations/pa
 import { caseSummary, home } from '@data/page-data';
 import { addCaseNote } from '@data/page-data-figma';
 import { checkYourAnswersCaseNote } from '@data/page-data/checkYourAnswersCaseNote.page.data';
-import { getCurrentBSTTime } from '@utils/common/string.utils';
+import { formatCaseStateText, getCurrentBSTTime } from '@utils/common/string.utils';
 
 test.beforeEach(async ({ page }, testInfo) => {
   initializeExecutor(page);
@@ -27,18 +27,34 @@ test.beforeEach(async ({ page }, testInfo) => {
     await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayloadCaseDetails });
     await performAction('getCaseAPI', 'Claim Submission Time');
     await performAction('fetchCurrentUserAPI', 'Claimant');
+  } else if (testInfo.title.includes('CaseFile')) {
+    await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
+    await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayloadCaseFileView });
+    await performAction('getCaseAPI', 'Claim Submission Time');
+    await performAction('fetchCurrentUserAPI', 'Claimant');
+  } else if (testInfo.title.includes('CaseList')) {
+    await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
+    await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayload });
+    await performAction('getCaseAPI', 'Claim Submission Time');
+    await performAction('fetchCurrentUserAPI', 'Claimant');
   } else {
     await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
     await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayloadCaseTab });
     await performAction('getCaseAPI', 'Link Solicitor');
     await performAction('fetchCurrentUserAPI', 'Defendant');
   }
-  await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/${getCaseTypeId()}/${process.env.CASE_NUMBER}#Summary`);
-  await expect(async () => {
-    await page.waitForURL(`${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/${getCaseTypeId()}/${process.env.CASE_NUMBER}#Summary`, { waitUntil: 'domcontentloaded' });
-  }).toPass({
-    timeout: VERY_LONG_TIMEOUT,
-  });
+
+  if (testInfo.title.includes('CaseList')) {
+    await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}/cases`);
+
+  } else {
+    await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/${getCaseTypeId()}/${process.env.CASE_NUMBER}#Summary`);
+    await expect(async () => {
+      await page.waitForURL(`${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/${getCaseTypeId()}/${process.env.CASE_NUMBER}#Summary`, { waitUntil: 'domcontentloaded' });
+    }).toPass({
+      timeout: VERY_LONG_TIMEOUT,
+    });
+  }
 });
 
 test.afterEach(async () => {
@@ -50,6 +66,7 @@ test.afterEach(async () => {
 
 test.describe('[Case tabs - England Journey] @nightly', async () => {
   test('Case tabs - Case parties tab test @MAC @regression', async () => {
+    await performValidation('mainHeader', home.caseSummary)
     await performAction('clickTab', home.caseParties);
     await performAction('validateDefendantDetails', {
       defendant1NameKnown: submitCaseApiData.submitCasePayloadCaseTab.defendant1.nameKnown,
@@ -75,6 +92,7 @@ test.describe('[Case tabs - England Journey] @nightly', async () => {
   });
 
   test('Case tabs - Notes tab test @MAC @regression', async () => {
+    await performValidation('mainHeader', home.caseSummary)
     await performAction('select', caseSummary.nextStepEventList, caseSummary.addCaseNote);
     await performAction('clickButton', caseSummary.go);
     await performValidation('mainHeader', addCaseNote.mainHeader);
@@ -100,6 +118,7 @@ test.describe('[Case tabs - England Journey] @nightly', async () => {
 
   test('Case tabs - Summary tab test @MAC @regression', async () => {
     await performAction('clickTab', home.caseSummary);
+    await performValidation('mainHeader', home.caseSummary)
     await performAction('validateCaseSummaryDetails', {
       defendant1NameKnown: submitCaseApiData.submitCasePayloadCaseSummary.defendant1.nameKnown,
       additionalDefendants: submitCaseApiData.submitCasePayloadCaseSummary.addAnotherDefendant,
@@ -165,6 +184,7 @@ test.describe('[Case tabs - England Journey] @nightly', async () => {
   });
 
   test('Case tabs - Case Details tab test @MAC @regression', async () => {
+    await performValidation('mainHeader', home.caseSummary)
     await performAction('clickTab', home.caseDetails);
     await performAction('validateCaseSummaryDetails', {
       defendant1NameKnown: submitCaseApiData.submitCasePayloadCaseDetails.defendant1.nameKnown,
@@ -311,5 +331,40 @@ test.describe('[Case tabs - England Journey] @nightly', async () => {
       table: 'Underlessee or mortgagee 1'
     });
 
+  });
+
+  test('Case tabs - CaseFile View test @MAC @regression', async () => {
+    await performValidation('mainHeader', home.caseSummary)
+    await performAction('clickTab', home.caseFileView);
+    await performAction('validateCaseFileViewFolders', home.caseFileFolders);
+    await performAction('validateCaseFileViewIndividualFolder', {
+      folder: 'Property documents',
+      submitPayload: submitCaseApiData.submitCasePayloadCaseFileView,
+    });
+    await performAction('validateCaseFileViewIndividualFolder', {
+      folder: 'Statements of case',
+      submitPayload: submitCaseApiData.submitCasePayloadCaseFileView,
+    });
+    await performAction('validateCaseFileViewIndividualFolder', {
+      folder: 'Evidence',
+      submitPayload: submitCaseApiData.submitCasePayloadCaseFileView,
+    });
+    await performAction('validateCaseFileViewIndividualFolder', {
+      folder: 'Correspondence',
+      submitPayload: submitCaseApiData.submitCasePayloadCaseFileView,
+    });
+    await performAction('validateCaseFileViewIndividualFolder', {
+      folder: 'Uncategorised documents',
+      submitPayload: submitCaseApiData.submitCasePayloadCaseFileView,
+    });
+  });
+
+  test('Case tabs - CaseList view test @MAC @regression', async () => {
+    await performValidation('mainHeader', home.mainHeader);
+    await performAction('filterCaseFromCaseList', formatCaseStateText(caseInfo.state));
+    await performAction('validateCaseListTable', {
+      createPayload: createCaseApiData.createCasePayload,
+      submitPayload: submitCaseApiData.submitCasePayload,
+    })
   });
 });

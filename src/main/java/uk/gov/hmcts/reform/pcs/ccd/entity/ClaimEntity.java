@@ -173,11 +173,6 @@ public class ClaimEntity {
     @JsonManagedReference
     private Set<EnforcementOrderEntity> enforcementOrders = new HashSet<>();
 
-    @OneToMany(fetch = LAZY, cascade = ALL, mappedBy = "claim")
-    @Builder.Default
-    @JsonManagedReference
-    private List<CaseNoteEntity> caseNotes = new ArrayList<>();
-
     @OneToOne(cascade = ALL, mappedBy = "claim", orphanRemoval = true)
     @JsonManagedReference
     private AsbProhibitedConductEntity asbProhibitedConductEntity;
@@ -206,11 +201,21 @@ public class ClaimEntity {
     @Column(updatable = false, nullable = false)
     private LocalDateTime claimSubmittedDate;
 
-    @OneToOne(mappedBy = "claim", cascade = ALL, orphanRemoval = true)
-    @JsonManagedReference
-    private FeePaymentEntity feePayment;
-
     private LocalDateTime claimIssuedDate;
+
+    @Builder.Default
+    @OneToMany(mappedBy = "claim", cascade = ALL, orphanRemoval = true)
+    @JsonManagedReference
+    private List<FeePaymentEntity> feePayments = new ArrayList<>();
+
+    public void addFeePayment(FeePaymentEntity feePayment) {
+        feePayments.add(feePayment);
+        feePayment.setClaim(this);
+    }
+
+    @OneToOne(cascade = ALL, orphanRemoval = true)
+    @JoinColumn(name = "claim_form_document_id")
+    private DocumentEntity claimFormDocument;
 
     public void setAsbProhibitedConductEntity(AsbProhibitedConductEntity asbProhibitedConductEntity) {
         if (this.asbProhibitedConductEntity != null) {
@@ -310,8 +315,4 @@ public class ClaimEntity {
             .count();
     }
 
-    public void addCaseNote(CaseNoteEntity caseNote) {
-        caseNotes.add(caseNote);
-        caseNote.setClaim(this);
-    }
 }

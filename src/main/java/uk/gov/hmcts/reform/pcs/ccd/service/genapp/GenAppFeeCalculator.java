@@ -6,10 +6,10 @@ import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
 
-import java.math.BigDecimal;
 import java.util.Optional;
 
 @Service
@@ -18,7 +18,7 @@ public class GenAppFeeCalculator {
 
     private final FeeService feeService;
 
-    public Optional<BigDecimal> getApplicationFee(GenAppRequest genAppRequest) {
+    public Optional<FeeDetails> getApplicationFeeDetails(GenAppRequest genAppRequest) {
 
         boolean paymentNeeded = doesFeeApply(genAppRequest) && !isHwfReferenceProvided(genAppRequest);
 
@@ -38,8 +38,7 @@ public class GenAppFeeCalculator {
             }
         }
 
-        BigDecimal feeAmount = feeService.getFee(feeType).getFeeAmount();
-        return Optional.of(feeAmount);
+        return Optional.of(feeService.getFee(feeType));
     }
 
     private static boolean doesFeeApply(GenAppRequest genAppRequest) {
