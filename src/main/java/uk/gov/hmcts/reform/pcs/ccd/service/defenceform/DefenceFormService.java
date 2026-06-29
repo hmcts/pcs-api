@@ -46,8 +46,6 @@ public class DefenceFormService {
             deleteOrphanedDocument(defendantResponseId, dmStoreUrl);
             throw e;
         }
-        log.info("Generated and attached defence form for defendant response {}: {}",
-                 defendantResponseId, dmStoreUrl);
     }
 
     private void deleteOrphanedDocument(UUID defendantResponseId, String dmStoreUrl) {

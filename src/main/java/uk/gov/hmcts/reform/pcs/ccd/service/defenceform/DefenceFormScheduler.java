@@ -1,7 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.defenceform;
 
 import com.github.kagkarlsson.scheduler.SchedulerClient;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.pcs.ccd.model.DefenceFormTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.task.DefenceFormGenerationComponent;
@@ -17,7 +16,6 @@ import java.util.UUID;
  * no-op.</p>
  */
 @Component
-@Slf4j
 public class DefenceFormScheduler {
 
     private final SchedulerClient schedulerClient;
@@ -33,18 +31,11 @@ public class DefenceFormScheduler {
             .defendantPartyId(defendantPartyId)
             .build();
 
-        boolean scheduled = schedulerClient.scheduleIfNotExists(
+        schedulerClient.scheduleIfNotExists(
             DefenceFormGenerationComponent.DEFENCE_FORM_TASK_DESCRIPTOR
                 .instance(String.valueOf(defendantResponseId))
                 .data(taskData)
                 .scheduledTo(Instant.now())
         );
-
-        if (scheduled) {
-            log.info("Scheduled defence form generation for defendant response {}", defendantResponseId);
-        } else {
-            log.info("Defence form generation already scheduled for defendant response {}, skipping",
-                     defendantResponseId);
-        }
     }
 }

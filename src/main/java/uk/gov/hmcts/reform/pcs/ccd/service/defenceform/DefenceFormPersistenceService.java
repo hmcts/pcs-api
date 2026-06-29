@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.defenceform;
 
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
@@ -28,7 +27,6 @@ import java.util.UUID;
  * idempotency so a re-run never attaches a second form.
  */
 @Service
-@Slf4j
 public class DefenceFormPersistenceService {
 
     private final DefendantResponseRepository defendantResponseRepository;
@@ -50,7 +48,6 @@ public class DefenceFormPersistenceService {
     public Optional<DefenceFormRenderContext> buildContextIfNotAttached(UUID defendantResponseId) {
         DefendantResponseEntity response = loadResponse(defendantResponseId);
         if (response.getSubmissionDocument() != null) {
-            log.info("Defence form already attached for defendant response {}, skipping", defendantResponseId);
             return Optional.empty();
         }
         DefenceFormPayload payload = payloadBuilder.build(response);
@@ -61,7 +58,6 @@ public class DefenceFormPersistenceService {
     public void attach(UUID defendantResponseId, String dmStoreUrl) {
         DefendantResponseEntity response = loadResponse(defendantResponseId);
         if (response.getSubmissionDocument() != null) {
-            log.info("Defence form already attached for defendant response {}, skipping attach", defendantResponseId);
             return;
         }
         PcsCaseEntity pcsCase = response.getPcsCase();

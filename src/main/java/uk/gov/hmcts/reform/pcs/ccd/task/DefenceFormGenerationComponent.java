@@ -68,13 +68,9 @@ public class DefenceFormGenerationComponent {
                 DefenceFormTaskData data = taskInstance.getData();
                 MDC.put(MDC_CASE_REFERENCE, data.getCaseReference());
                 MDC.put(MDC_TASK_NAME, DEFENCE_FORM_GENERATION_TASK_NAME);
-                log.debug("Starting defence form generation for defendant response: {}",
-                          data.getDefendantResponseId());
 
                 try {
                     defenceFormService.generateAndAttach(data.getDefendantResponseId());
-                    log.info("Defence form generated and attached for defendant response {}",
-                             data.getDefendantResponseId());
                     return new CompletionHandler.OnCompleteRemove<>();
                 } catch (Exception e) {
                     int attempt = executionContext.getExecution().consecutiveFailures + 1;
