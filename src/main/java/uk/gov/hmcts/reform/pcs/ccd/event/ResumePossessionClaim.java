@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.pcs.ccd.event;
 import com.github.kagkarlsson.scheduler.SchedulerClient;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
@@ -13,6 +14,7 @@ import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.camunda.CamundaService;
 import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantContactPreferences;
@@ -73,6 +75,10 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final ResumePossessionClaimConfigurer resumePossessionClaimConfigurer;
     private final SchedulingConfig schedulingConfig;
     private final NotificationService notificationService;
+    private final CamundaService camundaService;
+
+    @Value("${feature.wa.enabled}")
+    private boolean isWorkAllocationEnabled;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -84,8 +90,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
                 .showCondition(ShowConditions.NEVER_SHOW)
                 .grant(Permission.CRUD, UserRole.PCS_SOLICITOR)
                 .showSummary()
-                .endButtonLabel("${endButtonLabel}")
-                .publishToCamunda();
+                .endButtonLabel("${endButtonLabel}");
 
         SavingPageBuilder savingPageBuilder = savingPageBuilderFactory.create(eventBuilder, resumePossessionClaim);
         resumePossessionClaimConfigurer.configurePages(savingPageBuilder);
@@ -170,6 +175,11 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
         PCSCase pcsCase = eventPayload.caseData();
 
         if (pcsCase.getCompletionNextStep() == SUBMIT_AND_PAY_NOW) {
+            if (isWorkAllocationEnabled) {
+                camundaService.createTask(eventPayload.caseReference());
+            } else {
+                log.info("WA not enabled");
+            }
             return submitClaim(caseReference, pcsCase);
         } else {
             notificationService.sendClaimantDraftSavedForLater(caseReference, pcsCase);

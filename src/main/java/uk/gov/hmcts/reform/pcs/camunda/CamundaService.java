@@ -31,7 +31,7 @@ public class CamundaService {
         // Required process variables
         // processVariables.put("idempotencyKey", dmnStringValue(idempotencyKey));
         processVariables.put("taskState", dmnStringValue("unconfigured"));
-        processVariables.put("caseTypeId", dmnStringValue("pcs"));
+        processVariables.put("caseTypeId", dmnStringValue("PCS-2012"));
         processVariables.put("dueDate", dmnStringValue(dueDate.format(ISO_LOCAL_DATE_TIME)));
         processVariables.put("workingDaysAllowed", dmnIntegerValue(1));
         processVariables.put("jurisdiction", dmnStringValue("pcs"));
