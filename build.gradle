@@ -372,7 +372,7 @@ ext {
   testcontainersAdditionsVersion = "1.21.4"
   springFrameworkBootVersion = "3.5.13"
   lombokVersion = "1.18.46"
-  springSecurityVersion = "7.0.4"
+  springSecurityVersion = "7.1.0"
   pactVersion = "4.6.20"
   tomcatEmbedVersion = "11.0.18"
   nettyVersion = "4.1.132.Final"
