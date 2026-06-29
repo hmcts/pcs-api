@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.EvidenceDocumentType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.wales.LegalRepDocumentTypeWales;
 
 @Data
 @Builder
@@ -18,9 +18,16 @@ public class LegalRepDocument {
     @CCD(
         label = "Type of document",
         typeOverride = FieldType.FixedList,
-        typeParameterOverride = "EvidenceDocumentType"
+        typeParameterOverride = "LegalRepDocumentType"
     )
-    private EvidenceDocumentType documentType;
+    private LegalRepDocumentType legalRepDocumentType;
+
+    @CCD(
+        label = "Type of document",
+        typeOverride = FieldType.FixedList,
+        typeParameterOverride = "LegalRepDocumentTypeWales"
+    )
+    private LegalRepDocumentTypeWales legalRepDocumentTypeWales;
 
     @CCD(label = "Document")
     private Document document;
