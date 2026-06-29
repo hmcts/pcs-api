@@ -12,7 +12,6 @@ import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.claimIssuePayment;
 
@@ -20,8 +19,6 @@ import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.claimIssuePayment;
 @AllArgsConstructor
 @Slf4j
 public class ClaimIssuePayment implements CCDConfig<PCSCase, State, UserRole> {
-
-    private final PcsCaseService pcsCaseService;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -40,11 +37,6 @@ public class ClaimIssuePayment implements CCDConfig<PCSCase, State, UserRole> {
 
     private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
         log.info("Received: {}", eventPayload);
-        PCSCase caseData = eventPayload.caseData();
-        if (caseData.getDateIssued() == null) {
-            long caseReference = eventPayload.caseReference();
-            pcsCaseService.setCaseIssuedDate(caseReference);
-        }
         return SubmitResponse.<State>builder().state(State.CASE_ISSUED).build();
     }
 
