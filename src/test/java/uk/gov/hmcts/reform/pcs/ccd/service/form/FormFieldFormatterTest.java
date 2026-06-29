@@ -11,12 +11,17 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.document.model.claimform.ClaimFormAddress;
 
 import java.math.BigDecimal;
+import java.time.Clock;
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static uk.gov.hmcts.reform.pcs.ccd.service.form.FormFieldFormatter.formatGbp;
 import static uk.gov.hmcts.reform.pcs.ccd.service.form.FormFieldFormatter.formatLongDate;
+import static uk.gov.hmcts.reform.pcs.ccd.service.form.FormFieldFormatter.formatUkDate;
 import static uk.gov.hmcts.reform.pcs.ccd.service.form.FormFieldFormatter.isNo;
 import static uk.gov.hmcts.reform.pcs.ccd.service.form.FormFieldFormatter.isPopulated;
 import static uk.gov.hmcts.reform.pcs.ccd.service.form.FormFieldFormatter.isYes;
@@ -35,6 +40,16 @@ class FormFieldFormatterTest {
     void formatsLongDate() {
         assertThat(formatLongDate(LocalDate.of(2024, 1, 10))).isEqualTo("10 January 2024");
         assertThat(formatLongDate(null)).isNull();
+    }
+
+    @Test
+    void formatsUkDateFromUtcTimestampAndIsNullSafe() {
+        Clock ukClock = Clock.fixed(Instant.parse("2026-07-16T08:00:00Z"), ZoneId.of("Europe/London"));
+        // 23:30 UTC on 15 July = 00:30 BST on 16 July - the UK calendar day is the 16th.
+        assertThat(formatUkDate(LocalDateTime.of(2026, 7, 15, 23, 30), ukClock)).isEqualTo(LocalDate.of(2026, 7, 16));
+        // Winter (GMT): no offset, same calendar day.
+        assertThat(formatUkDate(LocalDateTime.of(2026, 1, 5, 12, 0), ukClock)).isEqualTo(LocalDate.of(2026, 1, 5));
+        assertThat(formatUkDate(null, ukClock)).isNull();
     }
 
     @Test

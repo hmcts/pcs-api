@@ -8,7 +8,10 @@ import uk.gov.hmcts.reform.pcs.document.model.claimform.ClaimFormAddress;
 
 import java.math.BigDecimal;
 import java.text.NumberFormat;
+import java.time.Clock;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 
@@ -63,6 +66,13 @@ public final class FormFieldFormatter {
     // Long date, e.g. "10 January 2024". Null-safe.
     public static String formatLongDate(LocalDate date) {
         return date == null ? null : date.format(LONG_DATE_FORMAT);
+    }
+
+    // A stored UTC timestamp rendered as the UK calendar date, so a value just after midnight BST
+    // shows the correct day rather than the previous one. Null-safe.
+    public static LocalDate formatUkDate(LocalDateTime utcTimestamp, Clock ukClock) {
+        return utcTimestamp == null ? null
+            : utcTimestamp.atZone(ZoneOffset.UTC).withZoneSameInstant(ukClock.getZone()).toLocalDate();
     }
 
     public static ClaimFormAddress toFormAddress(AddressEntity address) {
