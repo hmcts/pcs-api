@@ -15,7 +15,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
-import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -30,10 +29,6 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class DocumentsViewTest {
 
-    private static final UUID CURRENT_USER_ID = UUID.randomUUID();
-
-    @Mock
-    private SecurityContextService securityContextService;
     @Mock
     private GenAppVisibilityService genAppVisibilityService;
     @Mock
@@ -47,7 +42,7 @@ class DocumentsViewTest {
     void setUp() {
         pcsCase = PCSCase.builder().build();
 
-        underTest = new DocumentsView(securityContextService, genAppVisibilityService);
+        underTest = new DocumentsView(genAppVisibilityService);
     }
 
     @Test
@@ -72,11 +67,12 @@ class DocumentsViewTest {
             .binaryUrl("binary url2")
             .categoryId("category 2")
             .build();
+        String organisationId = "org";
 
         when(pcsCaseEntity.getDocuments()).thenReturn(List.of(entity1, entity2));
 
         // When
-        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+        underTest.setCaseFields(pcsCase, pcsCaseEntity, organisationId);
 
         // Then
         List<ListValue<Document>> allDocuments = pcsCase.getAllDocuments();
@@ -115,26 +111,27 @@ class DocumentsViewTest {
     @Test
     void shouldReturnEmptyListWhenNoDocumentsExist() {
         // Given
+        String organisationId = "org";
         when(pcsCaseEntity.getDocuments()).thenReturn(List.of());
 
         // When
-        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+        underTest.setCaseFields(pcsCase, pcsCaseEntity, organisationId);
 
         // Then
         assertThat(pcsCase.getAllDocuments()).isEmpty();
     }
 
     @Test
-    void shoulFilterGenAppDocumentsBasedOnVisibilitty() {
+    void shouldFilterGenAppDocumentsBasedOnVisibility() {
         // Given
-        when(securityContextService.getCurrentUserId()).thenReturn(CURRENT_USER_ID);
+        String orgId = "org";
 
         GenAppEntity genAppEntity1 = mock(GenAppEntity.class);
-        when(genAppVisibilityService.isGenAppVisibleToUser(genAppEntity1, CURRENT_USER_ID))
+        when(genAppVisibilityService.isGenAppVisibleToUser(genAppEntity1, orgId))
             .thenReturn(true);
 
         GenAppEntity genAppEntity2 = mock(GenAppEntity.class);
-        when(genAppVisibilityService.isGenAppVisibleToUser(genAppEntity2, CURRENT_USER_ID))
+        when(genAppVisibilityService.isGenAppVisibleToUser(genAppEntity2, orgId))
             .thenReturn(false);
 
         UUID document1Id = UUID.randomUUID();
@@ -169,7 +166,7 @@ class DocumentsViewTest {
             List.of(documentEntity1, documentEntity2, documentEntity3, documentEntity4));
 
         // When
-        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+        underTest.setCaseFields(pcsCase, pcsCaseEntity, orgId);
 
         // Then
         List<ListValue<Document>> allDocuments = pcsCase.getAllDocuments();

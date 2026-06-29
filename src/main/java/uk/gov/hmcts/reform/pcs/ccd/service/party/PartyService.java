@@ -121,7 +121,7 @@ public class PartyService {
                 .map(ClaimPartyEntity::getRole)
                 .orElseThrow(() -> new PartyNotFoundException("Party not found on main claim"));
     }
-    
+
     public PartyEntity getPartyEntityById(UUID partyId, long caseReference) {
         return partyRepository.findByIdAndPcsCaseCaseReference(partyId, caseReference)
             .orElseThrow(() -> new IllegalStateException(

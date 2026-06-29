@@ -12,10 +12,6 @@ import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 @AllArgsConstructor
 public class LegalRepresentative {
 
-    private String firstName;
-
-    private String lastName;
-
     private String telephoneNumber;
 
     private String emailAddress;

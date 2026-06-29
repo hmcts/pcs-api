@@ -12,7 +12,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.LegalRepPartySelectionService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.LegalRepForDefendantAccessValidator;
-import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 
 import java.util.List;
 import java.util.UUID;
@@ -37,10 +37,10 @@ class LegalRepStartEventStrategyTest {
     private LegalRepForDefendantAccessValidator legalRepForDefendantAccessValidator;
 
     @Mock
-    private SecurityContextService securityContextService;
+    private LegalRepPartySelectionService legalRepPartySelectionService;
 
     @Mock
-    private LegalRepPartySelectionService legalRepPartySelectionService;
+    private OrganisationService organisationService;
 
     @InjectMocks
     private LegalRepStartEventStrategy underTest;
@@ -77,17 +77,17 @@ class LegalRepStartEventStrategyTest {
         PcsCaseEntity caseEntity = mock(PcsCaseEntity.class);
         PartyEntity defendant = mock(PartyEntity.class);
 
-        UUID userId = UUID.randomUUID();
+        String organisationId = "org";
         List<PartyEntity> defendants = List.of(defendant);
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(caseEntity);
-        when(securityContextService.getCurrentUserId()).thenReturn(userId);
-        when(legalRepForDefendantAccessValidator.validateAndGetDefendants(caseEntity, userId))
+        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(organisationId);
+        when(legalRepForDefendantAccessValidator.validateAndGetDefendants(caseEntity, organisationId))
             .thenReturn(defendants);
 
         when(defendant.getId()).thenReturn(UUID.randomUUID());
 
         when(legalRepPartySelectionService.getDraftCaseData(CASE_REFERENCE, pcsCase,
-                                                            defendant, defendants))
+                                                            defendant, defendants, organisationId))
             .thenReturn(pcsCase);
 
         // when
@@ -98,7 +98,8 @@ class LegalRepStartEventStrategyTest {
 
         verify(legalRepPartySelectionService).validateResponseNotAlreadySubmitted(CASE_REFERENCE, defendant.getId());
 
-        verify(legalRepPartySelectionService).getDraftCaseData(CASE_REFERENCE, pcsCase, defendant, defendants);
+        verify(legalRepPartySelectionService).getDraftCaseData(CASE_REFERENCE, pcsCase, defendant, defendants,
+                                                               organisationId);
     }
 
     @Test
@@ -110,14 +111,14 @@ class LegalRepStartEventStrategyTest {
         PartyEntity defendant1 = mock(PartyEntity.class);
         PartyEntity defendant2 = mock(PartyEntity.class);
 
-        UUID userId = UUID.randomUUID();
+        String organisationId = "org";
         List<PartyEntity> defendants = List.of(defendant1, defendant2);
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(caseEntity);
-        when(securityContextService.getCurrentUserId()).thenReturn(userId);
-        when(legalRepForDefendantAccessValidator.validateAndGetDefendants(caseEntity, userId))
+        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(organisationId);
+        when(legalRepForDefendantAccessValidator.validateAndGetDefendants(caseEntity, organisationId))
             .thenReturn(defendants);
 
-        when(legalRepPartySelectionService.getDraft(pcsCase, defendants, CASE_REFERENCE))
+        when(legalRepPartySelectionService.getDraft(pcsCase, defendants, CASE_REFERENCE, organisationId))
             .thenReturn(pcsCase);
 
         // when
@@ -128,8 +129,7 @@ class LegalRepStartEventStrategyTest {
 
         verify(legalRepPartySelectionService, never()).validateResponseNotAlreadySubmitted(anyLong(), any());
 
-        verify(legalRepPartySelectionService).getDraft(pcsCase, defendants, CASE_REFERENCE);
+        verify(legalRepPartySelectionService).getDraft(pcsCase, defendants, CASE_REFERENCE, organisationId);
     }
-
 
 }

@@ -10,33 +10,30 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
-import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
 public class DocumentsView {
 
-    private final SecurityContextService securityContextService;
     private final GenAppVisibilityService genAppVisibilityService;
 
-    public void setCaseFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
-        pcsCase.setAllDocuments(mapAndWrapDocuments(pcsCaseEntity));
+    public void setCaseFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity, String organisationIdForCurrentUser) {
+        pcsCase.setAllDocuments(mapAndWrapDocuments(pcsCaseEntity, organisationIdForCurrentUser));
     }
 
-    private List<ListValue<Document>> mapAndWrapDocuments(PcsCaseEntity pcsCaseEntity) {
+    private List<ListValue<Document>> mapAndWrapDocuments(PcsCaseEntity pcsCaseEntity,
+                                                          String organisationIdForCurrentUser) {
 
         if (pcsCaseEntity.getDocuments().isEmpty()) {
             return List.of();
         }
 
-        UUID currentUserId = securityContextService.getCurrentUserId();
-
         return pcsCaseEntity.getDocuments().stream()
-            .filter(documentEntity -> this.isDocumentVisibleToUser(documentEntity, currentUserId))
+            .filter(documentEntity -> this.isDocumentVisibleToUser(documentEntity,
+                                                                   organisationIdForCurrentUser))
             .map(entity -> ListValue.<Document>builder()
                 .id(entity.getId().toString())
                 .value(Document.builder()
@@ -53,11 +50,11 @@ public class DocumentsView {
             .collect(Collectors.toList());
     }
 
-    public boolean isDocumentVisibleToUser(DocumentEntity documentEntity, UUID currentUserId) {
+    public boolean isDocumentVisibleToUser(DocumentEntity documentEntity, String orgId) {
         GenAppEntity genAppEntity = documentEntity.getGeneralApplication();
 
         if (genAppEntity != null) {
-            return genAppVisibilityService.isGenAppVisibleToUser(genAppEntity, currentUserId);
+            return genAppVisibilityService.isGenAppVisibleToUser(genAppEntity, orgId);
         } else {
             return true;
         }

@@ -2,19 +2,18 @@ package uk.gov.hmcts.reform.pcs.ccd.service.party;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.junit.jupiter.api.extension.ExtendWith;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyLegalRepresentativeEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeOrganisationEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.PartyLegalRepresentativeOrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
-import uk.gov.hmcts.reform.pcs.reference.service.OrganisationDetailsService;
 
 import java.util.List;
 import java.util.UUID;
@@ -29,74 +28,71 @@ class LegalRepForDefendantAccessValidatorTest {
     private static final long CASE_REFERENCE = 1234567890123456L;
 
     @Mock
-    private OrganisationDetailsService organisationDetailsService;
-    @Mock
     private DefendantPartyExtractor defendantPartyExtractor;
 
     private LegalRepForDefendantAccessValidator underTest;
 
     @BeforeEach
     void setUp() {
-        underTest = new LegalRepForDefendantAccessValidator(organisationDetailsService, defendantPartyExtractor);
+        underTest = new LegalRepForDefendantAccessValidator(defendantPartyExtractor);
     }
 
     @Test
     void shouldReturnDefendantWhenAuthenticatedLegalRepBelongsToLinkedOrganisation() {
-        UUID authenticatedUserId = UUID.randomUUID();
         String organisationId = "ORG-123";
 
         PartyEntity defendant = PartyEntity.builder().build();
-        LegalRepresentativeEntity linkedRepresentative = LegalRepresentativeEntity.builder()
+        LegalRepresentativeOrganisationEntity linkedRepresentative = LegalRepresentativeOrganisationEntity.builder()
             .organisationId(organisationId)
-            .idamId(authenticatedUserId)
             .build();
-        defendant.setClaimPartyLegalRepresentativeList(List.of(
-            ClaimPartyLegalRepresentativeEntity.builder()
+        defendant.setPartyLegalRepresentativeOrganisationList(List.of(
+            PartyLegalRepresentativeOrganisationEntity.builder()
                 .party(defendant)
-                .legalRepresentative(linkedRepresentative)
+                .legalRepresentativeOrganisation(linkedRepresentative)
                 .active(YesOrNo.YES)
                 .build()
         ));
 
         PcsCaseEntity caseEntity = createCaseWithDefendant(defendant);
 
-        when(organisationDetailsService.getOrganisationIdentifier(authenticatedUserId.toString()))
-            .thenReturn(organisationId);
         List<PartyEntity> defendants = List.of(defendant);
         when(defendantPartyExtractor.extractDefendants(caseEntity, CASE_REFERENCE)).thenReturn(defendants);
 
-        List<PartyEntity> result = underTest.validateAndGetDefendants(caseEntity, authenticatedUserId);
+        List<PartyEntity> result = underTest.validateAndGetDefendants(caseEntity, organisationId);
 
         assertThat(result).containsExactly(defendant);
     }
 
     @Test
     void shouldReturnDefendant() {
-        UUID authenticatedUserId = UUID.randomUUID();
-        UUID authenticatedUserIdamId = UUID.randomUUID();
         String organisationId = "ORG-123";
 
         PartyEntity defendant = PartyEntity.builder().build();
-        LegalRepresentativeEntity linkedRepresentative = LegalRepresentativeEntity.builder()
+        LegalRepresentativeOrganisationEntity linkedRepresentative = LegalRepresentativeOrganisationEntity.builder()
             .organisationId(organisationId)
-            .idamId(authenticatedUserIdamId)
             .build();
-        defendant.setClaimPartyLegalRepresentativeList(List.of(
-            ClaimPartyLegalRepresentativeEntity.builder()
+        LegalRepresentativeOrganisationEntity linkedRepresentative2 = LegalRepresentativeOrganisationEntity.builder()
+            .organisationId(organisationId + "1")
+            .build();
+        defendant.setPartyLegalRepresentativeOrganisationList(List.of(
+            PartyLegalRepresentativeOrganisationEntity.builder()
                 .party(defendant)
-                .legalRepresentative(linkedRepresentative)
+                .legalRepresentativeOrganisation(linkedRepresentative2)
+                .active(YesOrNo.NO)
+                .build(),
+            PartyLegalRepresentativeOrganisationEntity.builder()
+                .party(defendant)
+                .legalRepresentativeOrganisation(linkedRepresentative)
                 .active(YesOrNo.YES)
                 .build()
         ));
 
         PcsCaseEntity caseEntity = createCaseWithDefendant(defendant);
 
-        when(organisationDetailsService.getOrganisationIdentifier(authenticatedUserId.toString()))
-            .thenReturn(organisationId);
         List<PartyEntity> defendants = List.of(defendant);
         when(defendantPartyExtractor.extractDefendants(caseEntity, CASE_REFERENCE)).thenReturn(defendants);
 
-        List<PartyEntity> result = underTest.validateAndGetDefendants(caseEntity, authenticatedUserId);
+        List<PartyEntity> result = underTest.validateAndGetDefendants(caseEntity, organisationId);
 
         assertThat(result).containsExactly(defendant);
     }
@@ -106,49 +102,43 @@ class LegalRepForDefendantAccessValidatorTest {
         UUID authenticatedUserId = UUID.randomUUID();
 
         PartyEntity defendant = PartyEntity.builder().build();
-        LegalRepresentativeEntity linkedRepresentative = LegalRepresentativeEntity.builder()
+        LegalRepresentativeOrganisationEntity linkedRepresentative = LegalRepresentativeOrganisationEntity.builder()
             .organisationId("ORG-123")
             .build();
-        defendant.setClaimPartyLegalRepresentativeList(List.of(
-            ClaimPartyLegalRepresentativeEntity.builder()
+        defendant.setPartyLegalRepresentativeOrganisationList(List.of(
+            PartyLegalRepresentativeOrganisationEntity.builder()
                 .party(defendant)
-                .legalRepresentative(linkedRepresentative)
+                .legalRepresentativeOrganisation(linkedRepresentative)
                 .active(YesOrNo.YES)
                 .build()
         ));
 
         PcsCaseEntity caseEntity = createCaseWithDefendant(defendant);
 
-        when(organisationDetailsService.getOrganisationIdentifier(authenticatedUserId.toString()))
-            .thenReturn("ORG-999");
-
-        assertThatThrownBy(() -> underTest.validateAndGetDefendants(caseEntity, authenticatedUserId))
+        assertThatThrownBy(() -> underTest.validateAndGetDefendants(caseEntity, "ORG-999"))
             .isInstanceOf(CaseAccessException.class)
             .hasMessage("User is not linked as a defendant solicitor on this case");
     }
 
     @Test
     void shouldThrowWhenLegalRepIsLinkIsInactive() {
-        UUID authenticatedUserId = UUID.randomUUID();
+        String organisationId = UUID.randomUUID().toString();
 
         PartyEntity defendant = PartyEntity.builder().build();
-        LegalRepresentativeEntity linkedRepresentative = LegalRepresentativeEntity.builder()
+        LegalRepresentativeOrganisationEntity linkedRepresentative = LegalRepresentativeOrganisationEntity.builder()
             .organisationId("ORG-123")
             .build();
-        defendant.setClaimPartyLegalRepresentativeList(List.of(
-            ClaimPartyLegalRepresentativeEntity.builder()
+        defendant.setPartyLegalRepresentativeOrganisationList(List.of(
+            PartyLegalRepresentativeOrganisationEntity.builder()
                 .party(defendant)
-                .legalRepresentative(linkedRepresentative)
+                .legalRepresentativeOrganisation(linkedRepresentative)
                 .active(YesOrNo.NO)
                 .build()
         ));
 
         PcsCaseEntity caseEntity = createCaseWithDefendant(defendant);
 
-        when(organisationDetailsService.getOrganisationIdentifier(authenticatedUserId.toString()))
-            .thenReturn("ORG-123");
-
-        assertThatThrownBy(() -> underTest.validateAndGetDefendants(caseEntity, authenticatedUserId))
+        assertThatThrownBy(() -> underTest.validateAndGetDefendants(caseEntity, organisationId))
             .isInstanceOf(CaseAccessException.class)
             .hasMessage("User is not linked as a defendant solicitor on this case");
     }
@@ -156,28 +146,24 @@ class LegalRepForDefendantAccessValidatorTest {
     @Test
     void shouldThrowWhenAuthenticatedOrganisationIdIsBlankAndUserIdsDoNotMatch() {
         // Given
-        UUID authenticatedUserId = UUID.randomUUID();
-        UUID linkedUserId = UUID.randomUUID();
+        String organisationId = "id";
 
         PartyEntity defendant = PartyEntity.builder().build();
 
-        LegalRepresentativeEntity linkedRepresentative = LegalRepresentativeEntity.builder()
+        LegalRepresentativeOrganisationEntity linkedRepresentative = LegalRepresentativeOrganisationEntity.builder()
             .organisationId("ORG-123")
-            .idamId(linkedUserId)
             .build();
 
-        defendant.setClaimPartyLegalRepresentativeList(List.of(
-            ClaimPartyLegalRepresentativeEntity.builder()
+        defendant.setPartyLegalRepresentativeOrganisationList(List.of(
+            PartyLegalRepresentativeOrganisationEntity.builder()
                 .party(defendant)
-                .legalRepresentative(linkedRepresentative)
+                .legalRepresentativeOrganisation(linkedRepresentative)
                 .active(YesOrNo.YES)
                 .build()
         ));
 
         PcsCaseEntity caseEntity = createCaseWithDefendant(defendant);
 
-        when(organisationDetailsService.getOrganisationIdentifier(authenticatedUserId.toString()))
-            .thenReturn("");
 
         List<PartyEntity> defendants = List.of(defendant);
 
@@ -186,7 +172,7 @@ class LegalRepForDefendantAccessValidatorTest {
 
         // When / Then
         assertThatThrownBy(() ->
-                               underTest.validateAndGetDefendants(caseEntity, authenticatedUserId))
+                               underTest.validateAndGetDefendants(caseEntity, organisationId))
             .isInstanceOf(CaseAccessException.class)
             .hasMessage("User is not linked as a defendant solicitor on this case");
     }
@@ -194,28 +180,23 @@ class LegalRepForDefendantAccessValidatorTest {
     @Test
     void shouldThrowWhenOrganisationIdsDoNotMatchAndUserIdsDiffer() {
         // Given
-        UUID authenticatedUserId = UUID.randomUUID();
-        UUID linkedUserId = UUID.randomUUID();
+        String organisationId = UUID.randomUUID().toString();
 
         PartyEntity defendant = PartyEntity.builder().build();
 
-        LegalRepresentativeEntity linkedRepresentative = LegalRepresentativeEntity.builder()
+        LegalRepresentativeOrganisationEntity linkedRepresentative = LegalRepresentativeOrganisationEntity.builder()
             .organisationId("ORG-123")
-            .idamId(linkedUserId)
             .build();
 
-        defendant.setClaimPartyLegalRepresentativeList(List.of(
-            ClaimPartyLegalRepresentativeEntity.builder()
+        defendant.setPartyLegalRepresentativeOrganisationList(List.of(
+            PartyLegalRepresentativeOrganisationEntity.builder()
                 .party(defendant)
-                .legalRepresentative(linkedRepresentative)
+                .legalRepresentativeOrganisation(linkedRepresentative)
                 .active(YesOrNo.YES)
                 .build()
         ));
 
         PcsCaseEntity caseEntity = createCaseWithDefendant(defendant);
-
-        when(organisationDetailsService.getOrganisationIdentifier(authenticatedUserId.toString()))
-            .thenReturn("ORG-999");
 
         List<PartyEntity> defendants = List.of(defendant);
 
@@ -224,7 +205,7 @@ class LegalRepForDefendantAccessValidatorTest {
 
         // When / Then
         assertThatThrownBy(() ->
-                               underTest.validateAndGetDefendants(caseEntity, authenticatedUserId))
+                               underTest.validateAndGetDefendants(caseEntity, organisationId))
             .isInstanceOf(CaseAccessException.class)
             .hasMessage("User is not linked as a defendant solicitor on this case");
     }
@@ -232,9 +213,9 @@ class LegalRepForDefendantAccessValidatorTest {
     private PcsCaseEntity createCaseWithDefendant(PartyEntity defendant) {
         ClaimEntity claimEntity = ClaimEntity.builder().build();
         claimEntity.getClaimParties().add(ClaimPartyEntity.builder()
-            .party(defendant)
-            .role(PartyRole.DEFENDANT)
-            .build());
+                                              .party(defendant)
+                                              .role(PartyRole.DEFENDANT)
+                                              .build());
 
         return PcsCaseEntity.builder()
             .caseReference(CASE_REFERENCE)

@@ -251,8 +251,6 @@ public class CaseTabView {
         }
 
         return RepresentativeTabDetails.builder()
-            .firstName(legalRepresentative.getFirstName())
-            .lastName(legalRepresentative.getLastName())
             .telephoneNumber(legalRepresentative.getTelephoneNumber())
             .emailAddress(legalRepresentative.getEmailAddress())
             .organisation(organisationTabDetails)
