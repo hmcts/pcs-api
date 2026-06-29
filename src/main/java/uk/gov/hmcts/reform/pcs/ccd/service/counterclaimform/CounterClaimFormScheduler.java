@@ -9,16 +9,9 @@ import uk.gov.hmcts.reform.pcs.ccd.task.CounterClaimFormGenerationComponent;
 import java.time.Instant;
 import java.util.UUID;
 
-/**
- * Schedules the counter-claim-form-generation task once a counter claim has been issued.
- *
- * <p>The counter claim id is the db-scheduler instance id, so {@code scheduleIfNotExists} only
- * inserts on the first call; a re-fire for the same counter claim is a no-op. Runs immediately.</p>
- */
 @Component
 @Slf4j
 public class CounterClaimFormScheduler {
-
     private final SchedulerClient schedulerClient;
 
     public CounterClaimFormScheduler(SchedulerClient schedulerClient) {

@@ -7,19 +7,9 @@ import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentImportService;
 import java.util.Optional;
 import java.util.UUID;
 
-/**
- * Generates the counter claim form and attaches it to the case, where it shows under "Statements of
- * case".
- *
- * <p>Orchestration only: the Docmosis render runs outside any transaction, between a read-only
- * context build and a short write transaction that attaches the document — see
- * {@link CounterClaimFormPersistenceService}. Skips when the counter claim already has a form, so a
- * re-run never creates a second one.</p>
- */
 @Service
 @Slf4j
 public class CounterClaimFormService {
-
     private final CounterClaimFormPersistenceService persistenceService;
     private final CounterClaimFormDocumentGenerator documentGenerator;
     private final DocumentImportService documentImportService;
@@ -48,15 +38,15 @@ public class CounterClaimFormService {
             throw e;
         }
         log.info("Generated and attached counter claim form for counter claim {}: {}", counterClaimId, dmStoreUrl);
-        // TODO HDPI-6865 (AC01): once generated, schedule a bulk-print job (BulkPrintScheduler is greenfield).
     }
 
-    public void recordGenerationFailure(UUID counterClaimId) {
+    public long recordGenerationFailure(UUID counterClaimId) {
         try {
-            persistenceService.recordGenerationFailure(counterClaimId);
+            return persistenceService.recordGenerationFailure(counterClaimId);
         } catch (Exception e) {
             log.error("Failed to record counter claim form generation failure for counter claim {}",
                       counterClaimId, e);
+            return 0L;
         }
     }
 

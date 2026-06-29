@@ -6,6 +6,7 @@ import com.github.kagkarlsson.scheduler.task.TaskDescriptor;
 import com.github.kagkarlsson.scheduler.task.helper.CustomTask;
 import com.github.kagkarlsson.scheduler.task.helper.Tasks;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
@@ -15,15 +16,16 @@ import uk.gov.hmcts.reform.pcs.ccd.service.counterclaimform.CounterClaimFormServ
 import java.time.Duration;
 import java.util.UUID;
 
-/**
- * db-scheduler {@code CustomTask} bean for counter claim form generation. Mirrors
- * {@link DefenceFormGenerationComponent}, with the same retry shape (MaxRetries and
- * ExponentialBackoff) and {@code OnCompleteRemove} cleanup.
- */
 @Slf4j
 @Component
 public class CounterClaimFormGenerationComponent {
     private static final String COUNTER_CLAIM_FORM_GENERATION_TASK_NAME = "counter-claim-form-generation-task";
+
+    private static final String MDC_COUNTER_CLAIM_ID = "counterClaimId";
+    private static final String MDC_CASE_REFERENCE = "caseReference";
+    private static final String MDC_TASK_NAME = "taskName";
+    private static final String MDC_TERMINAL_FAILURE = "terminalFailure";
+    private static final String MDC_FAILURE_REASON = "failureReason";
 
     public static final TaskDescriptor<CounterClaimFormTaskData> COUNTER_CLAIM_FORM_TASK_DESCRIPTOR =
         TaskDescriptor.of(COUNTER_CLAIM_FORM_GENERATION_TASK_NAME, CounterClaimFormTaskData.class);
@@ -42,11 +44,6 @@ public class CounterClaimFormGenerationComponent {
         this.backoffDelay = backoffDelay;
     }
 
-    /**
-     * Renders the counter claim form and attaches it to the case. On success removes its own row
-     * from {@code scheduled_tasks}; on failure retries with exponential backoff up to
-     * {@code maxRetries}.
-     */
     @Bean
     public CustomTask<CounterClaimFormTaskData> counterClaimFormGenerationTask() {
         return Tasks.custom(COUNTER_CLAIM_FORM_TASK_DESCRIPTOR)
@@ -57,6 +54,8 @@ public class CounterClaimFormGenerationComponent {
             .execute((taskInstance, executionContext) -> {
                 CounterClaimFormTaskData data = taskInstance.getData();
                 UUID counterClaimId = data.getCounterClaimId();
+                MDC.put(MDC_COUNTER_CLAIM_ID, String.valueOf(counterClaimId));
+                MDC.put(MDC_TASK_NAME, COUNTER_CLAIM_FORM_GENERATION_TASK_NAME);
                 log.debug("Starting counter claim form generation for counter claim {}", counterClaimId);
 
                 try {
@@ -65,18 +64,27 @@ public class CounterClaimFormGenerationComponent {
                     return new CompletionHandler.OnCompleteRemove<>();
                 } catch (Exception e) {
                     int attempt = executionContext.getExecution().consecutiveFailures + 1;
-                    // Only the terminal attempt is logged + recorded - intermediate retries are silent.
                     if (isFinalAttempt(attempt)) {
-                        log.error("Counter claim form generation permanently failed for counter claim {} after {} "
-                                  + "attempts: {}", counterClaimId, attempt, e.getMessage(), e);
-                        counterClaimFormService.recordGenerationFailure(counterClaimId);
+                        long caseReference = counterClaimFormService.recordGenerationFailure(counterClaimId);
+                        if (caseReference > 0) {
+                            MDC.put(MDC_CASE_REFERENCE, String.valueOf(caseReference));
+                        }
+                        MDC.put(MDC_TERMINAL_FAILURE, "true");
+                        MDC.put(MDC_FAILURE_REASON, String.valueOf(e.getMessage()));
+                        log.error("Counter claim form generation permanently failed for counter claim {} (case {}) "
+                                  + "after {} attempts: {}", counterClaimId, caseReference, attempt, e.getMessage(), e);
                     }
                     throw e;
+                } finally {
+                    MDC.remove(MDC_COUNTER_CLAIM_ID);
+                    MDC.remove(MDC_CASE_REFERENCE);
+                    MDC.remove(MDC_TASK_NAME);
+                    MDC.remove(MDC_TERMINAL_FAILURE);
+                    MDC.remove(MDC_FAILURE_REASON);
                 }
             });
     }
 
-    // Terminal execution is attempt maxRetries + 1 (maxRetries = number of retries after the first attempt).
     private boolean isFinalAttempt(int attempt) {
         return attempt > maxRetries;
     }

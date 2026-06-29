@@ -7,6 +7,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.CounterClaimRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DocumentRepository;
@@ -14,19 +16,13 @@ import uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimActivityLogService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentImportService;
 import uk.gov.hmcts.reform.pcs.document.model.counterclaimform.CounterClaimFormPayload;
 
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
-/**
- * Transactional reads and writes for counter claim form generation, separated from the orchestration
- * in {@link CounterClaimFormService} so the Docmosis render runs outside any transaction. The render
- * context is built in a read-only transaction; the rendered document is attached in a short write
- * transaction. Both phases re-check idempotency so a re-run never attaches a second form.
- */
 @Service
 @Slf4j
 public class CounterClaimFormPersistenceService {
-
     private final CounterClaimRepository counterClaimRepository;
     private final DocumentRepository documentRepository;
     private final CounterClaimFormPayloadBuilder payloadBuilder;
@@ -73,10 +69,11 @@ public class CounterClaimFormPersistenceService {
     }
 
     @Transactional
-    public void recordGenerationFailure(UUID counterClaimId) {
+    public long recordGenerationFailure(UUID counterClaimId) {
         CounterClaimEntity counterClaim = loadCounterClaim(counterClaimId);
-        claimActivityLogService.logGenerationFailure(
-            counterClaim.getPcsCase().getCaseReference(), counterClaim.getParty().getId());
+        long caseReference = counterClaim.getPcsCase().getCaseReference();
+        claimActivityLogService.logGenerationFailure(caseReference, counterClaim.getParty().getId());
+        return caseReference;
     }
 
     private boolean isAlreadyAttached(UUID counterClaimId) {
@@ -89,8 +86,15 @@ public class CounterClaimFormPersistenceService {
                 "No counter claim found for id: " + counterClaimId));
     }
 
-    // TODO HDPI-6865: derive the defendant rank from claim_party.rank for counter_claim.party_id (AC02).
     private static int defendantNumber(CounterClaimEntity counterClaim) {
-        return 1;
+        UUID defendantPartyId = counterClaim.getParty().getId();
+        return counterClaim.getPcsCase().getClaims().stream()
+            .flatMap(claim -> claim.getClaimParties().stream())
+            .filter(claimParty -> claimParty.getRole() == PartyRole.DEFENDANT)
+            .filter(claimParty -> claimParty.getParty().getId().equals(defendantPartyId))
+            .map(ClaimPartyEntity::getRank)
+            .filter(Objects::nonNull)
+            .findFirst()
+            .orElse(1);
     }
 }
