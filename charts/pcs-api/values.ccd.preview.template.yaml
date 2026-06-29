@@ -220,6 +220,19 @@ xui-webapp:
           - system-user-name
           - system-user-password
           - mc-session-secret
+xui-mo-webapp:
+  enabled: true
+  nodejs:
+    imagePullPolicy: Always
+    releaseNameOverride: ${SERVICE_NAME}-xui-mo-webapp
+    image: hmctsprod.azurecr.io/xui/mo-webapp:latest
+    ingressHost: xui-mo-${SERVICE_FQDN}
+    environment:
+      MANAGE_CASE_LINK: https://xui-${SERVICE_FQDN}/cases
+      MANAGE_ORG_LINK: https://xui-mo-${SERVICE_FQDN}
+      SERVICES_CCD_DATA_STORE_API: http://${SERVICE_NAME}-ccd-data-store-api
+      JURISDICTIONS: PCS
+      CASE_TYPES: PCS
 ccd-case-document-am-api:
   enabled: true
   java:

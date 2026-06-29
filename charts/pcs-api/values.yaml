@@ -56,6 +56,8 @@ ccd:
   enabled: false
 xui-webapp:
   enabled: false
+xui-mo-webapp:
+  enabled: false
 wiremock:
   enabled: false
 ccd-case-document-am-api:
