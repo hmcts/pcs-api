@@ -23,7 +23,7 @@ plugins {
   id 'net.serenity-bdd.serenity-gradle-plugin' version "$serenityBddVersion"
   id 'hmcts.ccd.sdk' version '6.7.2'
   id 'com.github.hmcts.rse-cft-lib' version '0.19.2220'
-  id 'io.freefair.lombok' version '9.2.0'
+  id 'io.freefair.lombok' version '9.5.0'
   id 'au.com.dius.pact' version '4.7.3'
   id "com.avast.gradle.docker-compose" version "0.17.21"
   /*
