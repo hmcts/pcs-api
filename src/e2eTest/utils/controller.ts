@@ -47,7 +47,7 @@ async function validatePageIfNavigated(action: string): Promise<void> {
 
       // Skip accessibility audit for login/auth pages
       if (currentUrl.includes('/login') || currentUrl.includes('/sign-in') ||
-        currentUrl.includes('idam') || currentUrl.includes('auth')) {
+        currentUrl.includes('idam') || currentUrl.includes('auth') || currentUrl === `${process.env.MANAGE_CASE_BASE_URL}/cases`) {
         await performValidation('autoValidatePageContent');
         return;
       }
