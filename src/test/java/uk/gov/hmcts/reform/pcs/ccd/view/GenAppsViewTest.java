@@ -17,7 +17,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
-import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -37,8 +36,6 @@ class GenAppsViewTest {
     @Mock
     private ModelMapper modelMapper;
     @Mock
-    private OrganisationService organisationService;
-    @Mock
     private GenAppVisibilityService genAppVisibilityService;
     @Mock
     private PcsCaseEntity pcsCaseEntity;
@@ -49,13 +46,12 @@ class GenAppsViewTest {
 
     @BeforeEach
     void setUp() {
-        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(ORG_ID);
         when(genAppVisibilityService.isGenAppVisibleToUser(isA(GenAppEntity.class), eq(ORG_ID)))
             .thenReturn(true);
 
         pcsCase = PCSCase.builder().build();
 
-        underTest = new GenAppsView(modelMapper, organisationService, genAppVisibilityService);
+        underTest = new GenAppsView(modelMapper, genAppVisibilityService);
     }
 
     @Test
@@ -76,7 +72,7 @@ class GenAppsViewTest {
         when(pcsCaseEntity.getGenApps()).thenReturn(Set.of(genAppEntity1, genAppEntity2, genAppEntity3));
 
         // When
-        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+        underTest.setCaseFields(pcsCase, pcsCaseEntity, ORG_ID);
 
         // Then
         List<ListValue<GeneralApplication>> genApps = pcsCase.getGenApps();
@@ -112,7 +108,7 @@ class GenAppsViewTest {
         when(pcsCaseEntity.getGenApps()).thenReturn(Set.of(genAppEntity1, genAppEntity2, genAppEntity3));
 
         // When
-        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+        underTest.setCaseFields(pcsCase, pcsCaseEntity, ORG_ID);
 
         // Then
         List<ListValue<GeneralApplication>> genApps = pcsCase.getGenApps();
@@ -151,7 +147,7 @@ class GenAppsViewTest {
         when(pcsCaseEntity.getGenApps()).thenReturn(Set.of(genAppEntity1, genAppEntity2));
 
         // When
-        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+        underTest.setCaseFields(pcsCase, pcsCaseEntity, ORG_ID);
 
         // Then
         List<ListValue<GeneralApplication>> genApps = pcsCase.getGenApps();
@@ -187,7 +183,7 @@ class GenAppsViewTest {
         when(pcsCaseEntity.getGenApps()).thenReturn(Set.of(genAppEntity1));
 
         // When
-        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+        underTest.setCaseFields(pcsCase, pcsCaseEntity, ORG_ID);
 
         // Then
         List<ListValue<GeneralApplication>> genApps = pcsCase.getGenApps();
@@ -218,7 +214,7 @@ class GenAppsViewTest {
         genAppEntity.setDocuments(List.of(documentEntity1, documentEntity2));
 
         // When
-        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+        underTest.setCaseFields(pcsCase, pcsCaseEntity, ORG_ID);
 
         // Then
         List<ListValue<GeneralApplication>> genApps = pcsCase.getGenApps();

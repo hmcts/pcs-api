@@ -18,8 +18,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.ClaimResponseS
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.DefendantResponseService;
 import uk.gov.hmcts.reform.pcs.ccd.util.SelectedPartyRetriever;
 import uk.gov.hmcts.reform.pcs.exception.DraftNotFoundException;
-import uk.gov.hmcts.reform.pcs.reference.service.OrganisationDetailsService;
-import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 
 import java.util.List;
 import java.util.Optional;
@@ -56,9 +55,7 @@ class LegalRepSubmissionEventStrategyTest {
     private EventPayload<PCSCase, State> eventPayload;
     private LegalRepSubmissionEventStrategy underTest;
     @Mock
-    private OrganisationDetailsService organisationDetailsService;
-    @Mock
-    private SecurityContextService securityContextService;
+    private OrganisationService organisationService;
 
 
     @BeforeEach
@@ -69,8 +66,7 @@ class LegalRepSubmissionEventStrategyTest {
             defendantResponseService,
             selectedPartyRetriever,
             submitResponseFactory,
-            organisationDetailsService,
-            securityContextService
+            organisationService
         );
     }
 
@@ -78,9 +74,7 @@ class LegalRepSubmissionEventStrategyTest {
     void shouldSubmitLegalRepresentativeDraftForSelectedParty() {
         // given
         UUID representedPartyId = UUID.randomUUID();
-        UUID userId = UUID.randomUUID();
         String organisationId = "org";
-        UUID legalRepOrgId = UUID.randomUUID();
 
         DefendantResponses responses = DefendantResponses.builder()
             .tenancyTypeConfirmation(YesNoNotSure.YES)
@@ -104,8 +98,7 @@ class LegalRepSubmissionEventStrategyTest {
         when(submitResponseFactory.success()).thenReturn(submitResponse);
         when(eventPayload.caseReference()).thenReturn(CASE_REFERENCE);
         when(eventPayload.caseData()).thenReturn(caseData);
-        when(securityContextService.getCurrentUserId()).thenReturn(userId);
-        when(organisationDetailsService.getOrganisationIdentifier(userId.toString())).thenReturn(organisationId);
+        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(organisationId);
 
         // when
         SubmitResponse<State> result = underTest.process(eventPayload);
@@ -158,9 +151,7 @@ class LegalRepSubmissionEventStrategyTest {
     void shouldReturnValidationErrors() {
         // given
         UUID representedPartyId = UUID.randomUUID();
-        UUID userId = UUID.randomUUID();
         String organisationId = "org";
-        UUID legalRepOrgId = UUID.randomUUID();
 
         DefendantResponses responses = DefendantResponses.builder()
             .tenancyTypeConfirmation(YesNoNotSure.YES)
@@ -186,8 +177,7 @@ class LegalRepSubmissionEventStrategyTest {
             .thenReturn(Optional.of(submitResponse));
         when(eventPayload.caseReference()).thenReturn(CASE_REFERENCE);
         when(eventPayload.caseData()).thenReturn(caseData);
-        when(securityContextService.getCurrentUserId()).thenReturn(userId);
-        when(organisationDetailsService.getOrganisationIdentifier(userId.toString())).thenReturn(organisationId);
+        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(organisationId);
 
         // when
         SubmitResponse<State> result = underTest.process(eventPayload);
@@ -207,16 +197,13 @@ class LegalRepSubmissionEventStrategyTest {
     void shouldThrowExceptionWhenNoDraft() {
         // Given
         UUID representedPartyId = UUID.randomUUID();
-        UUID userId = UUID.randomUUID();
         String organisationId = "org";
-        UUID legalRepOrgId = UUID.randomUUID();
         PCSCase caseData = PCSCase.builder()
             .build();
         when(selectedPartyRetriever.getCurrentRepresentedPartyId(caseData)).thenReturn(Optional.of(representedPartyId));
         when(eventPayload.caseReference()).thenReturn(CASE_REFERENCE);
         when(eventPayload.caseData()).thenReturn(caseData);
-        when(securityContextService.getCurrentUserId()).thenReturn(userId);
-        when(organisationDetailsService.getOrganisationIdentifier(userId.toString())).thenReturn(organisationId);
+        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(organisationId);
 
         // When
         assertThatThrownBy(() -> underTest.process(eventPayload))

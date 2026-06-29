@@ -12,7 +12,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GeneralApplication;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
-import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 
 import java.util.Comparator;
 import java.util.List;
@@ -24,15 +23,14 @@ import java.util.UUID;
 public class GenAppsView {
 
     private final ModelMapper modelMapper;
-    private final OrganisationService organisationService;
     private final GenAppVisibilityService genAppVisibilityService;
 
-    public void setCaseFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
-        String orgId = organisationService.getOrganisationIdForCurrentUser();
+    public void setCaseFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity, String organisationIdForCurrentUser) {
 
         List<ListValue<GeneralApplication>> genApps = pcsCaseEntity.getGenApps().stream()
             .sorted(Comparator.comparing(GenAppEntity::getApplicationSubmittedDate).reversed())
-            .filter(genAppEntity -> genAppVisibilityService.isGenAppVisibleToUser(genAppEntity, orgId))
+            .filter(genAppEntity -> genAppVisibilityService.isGenAppVisibleToUser(genAppEntity,
+                                                                                  organisationIdForCurrentUser))
             .map(this::createListValue)
             .toList();
 

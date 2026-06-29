@@ -264,7 +264,7 @@ public class PCSCase {
     private YesOrNo noticeServed;
 
     @JsonUnwrapped(prefix = "notice_")
-    @CCD(access = {ClaimantAccess.class})
+    @CCD(access = {ClaimantAccess.class, CitizenAccess.class})
     private NoticeServedDetails noticeServedDetails;
 
     private String caseTitleMarkdown;
