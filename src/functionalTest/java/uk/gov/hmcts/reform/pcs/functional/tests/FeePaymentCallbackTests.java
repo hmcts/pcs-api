@@ -31,7 +31,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 @Tag("Functional")
 @ExtendWith(SerenityJUnit5Extension.class)
 @EnabledIfEnvironmentVariable(named = "CCD_ENABLED", matches = "true")
-@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class FeePaymentCallbackTests extends BaseApi {
 
@@ -83,7 +82,7 @@ public class FeePaymentCallbackTests extends BaseApi {
         apiSteps.checkStatusCode(404);
     }
 
-    @Title("Fee Payment callback return 404 for invalid requestReference")
+    @Title("Fee Payment callback return 404 for invalid caseReference")
     @Test
     @Disabled("Error validation response to be implement in HDPI-7317")
     void feePaymentWithIncorrectCaseReferenceCallbackFailure() {
@@ -116,11 +115,10 @@ public class FeePaymentCallbackTests extends BaseApi {
         apiSteps.checkStatusCode(204);
 
         Map<String,Object> claimantPaymentRefPostCallback = getClaimantPaymentReference(caseReference);
-
         String paymentStatus = claimantPaymentRefPostCallback.get("paymentStatus").toString();
-        Double paymentAmount = (Double) claimantPaymentRefPostCallback.get("amount");
+        String paymentAmount = claimantPaymentRefPostCallback.get("amount").toString();
         assertEquals("PAID",paymentStatus);
-        assertEquals(404.00,paymentAmount);
+        assertEquals("404.0",paymentAmount);
     }
 
     @Title("Fee Payment callback return 204 on success with payment status Not paid")
