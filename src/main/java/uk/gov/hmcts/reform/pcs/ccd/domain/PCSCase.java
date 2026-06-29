@@ -600,6 +600,9 @@ public class PCSCase {
     @CCD(access = {ClaimantAccess.class, DefendantAccess.class})
     private LocalDateTime dateSubmitted;
 
+    @CCD(access = {ClaimantAccess.class, DefendantAccess.class})
+    private LocalDateTime dateIssued;
+
     @CCD(
         searchable = false
     )
@@ -700,4 +703,16 @@ public class PCSCase {
 
     @CCD(access = {DefendantSolicitorAccess.class})
     private List<ListValue<Party>> allLinkedDefendants;
+
+    @CCD
+    private String postCode;
+
+    @CCD
+    private String claimantNames;
+
+    @CCD
+    private String defendantNames;
+
+    @CCD
+    private String dateIssuedString;
 }
