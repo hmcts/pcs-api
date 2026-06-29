@@ -142,5 +142,8 @@ public class DefendantResponses {
     private RTCStatementOfTruth statementOfTruth;
 
     @CCD
+    private String statementOfTruthCompletedBy;
+
+    @CCD
     private DefendantResponseStatus status;
 }
