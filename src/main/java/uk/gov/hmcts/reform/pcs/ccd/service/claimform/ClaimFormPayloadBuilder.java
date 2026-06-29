@@ -316,6 +316,8 @@ public class ClaimFormPayloadBuilder {
             caseReferenceFormatter.formatCaseReferenceWithDashes(pcsCase.getCaseReference()));
     }
 
+    // Stored as a UTC timestamp; convert to the UK calendar date so a claim issued just
+    // after midnight BST shows the correct day rather than the previous one.
     private LocalDate toUkDate(LocalDateTime utcTimestamp) {
         return utcTimestamp.atZone(ZoneOffset.UTC).withZoneSameInstant(ukClock.getZone()).toLocalDate();
     }
