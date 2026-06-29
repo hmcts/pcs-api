@@ -237,6 +237,12 @@ access-code:
     max-retries: ${ACCESS_CODE_MAX_RETRIES:5}
     backoff-delay-seconds: ${ACCESS_CODE_BACKOFF_DELAY_SECONDS:3600s}
 
+launchdarkly:
+  sdk-key: ${LAUNCHDARKLY_SDK_KEY:}
+  offline-mode: ${LAUNCHDARKLY_OFFLINE:false}
+  env: ${LAUNCHDARKLY_ENV:default}
+  file: ${LAUNCHDARKLY_FILE:}
+
 claim-form:
   request:
     max-retries: ${CLAIM_FORM_MAX_RETRIES:5}
