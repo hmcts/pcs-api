@@ -277,7 +277,6 @@ public class DefendantResponseService {
             .languageUsed(responses.getLanguageUsed())
             .otherConsiderations(responses.getOtherConsiderations())
             .otherConsiderationsDetails(responses.getOtherConsiderationsDetails())
-            .responseSubmittedDate(LocalDateTime.now(utcClock))
             .build();
 
         // link back to the case

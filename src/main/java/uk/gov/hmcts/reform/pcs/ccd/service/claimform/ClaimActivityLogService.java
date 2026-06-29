@@ -40,11 +40,6 @@ public class ClaimActivityLogService {
     }
 
     @Transactional
-    public void logGenerationSuccess(long caseReference, PartyEntity party) {
-        record(pcsCaseService.loadCase(caseReference), party, ClaimActivityStatus.SUCCESS);
-    }
-
-    @Transactional
     public void logGenerationSuccess(PcsCaseEntity pcsCase, PartyEntity party) {
         record(pcsCase, party, ClaimActivityStatus.SUCCESS);
     }

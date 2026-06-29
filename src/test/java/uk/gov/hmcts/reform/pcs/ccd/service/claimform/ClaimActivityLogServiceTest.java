@@ -77,19 +77,6 @@ class ClaimActivityLogServiceTest {
     }
 
     @Test
-    void logsSuccessAgainstTheSuppliedParty() {
-        PcsCaseEntity pcsCase = mock(PcsCaseEntity.class);
-        PartyEntity defendant = mock(PartyEntity.class);
-        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCase);
-
-        claimActivityLogService.logGenerationSuccess(CASE_REFERENCE, defendant);
-
-        ClaimActivityLogEntity saved = captureSaved();
-        assertThat(saved.getStatus()).isEqualTo(ClaimActivityStatus.SUCCESS);
-        assertThat(saved.getParty()).isSameAs(defendant);
-    }
-
-    @Test
     void logsFailureAgainstThePartyResolvedFromId() {
         PcsCaseEntity pcsCase = mock(PcsCaseEntity.class);
         PartyEntity defendant = mock(PartyEntity.class);
