@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -25,8 +25,8 @@ public class CamundaService {
         log.info("Creating task for {}", caseId);
         Map<String, DmnValue<?>> processVariables = new ConcurrentHashMap<>();
 
-        LocalDate dueDate = LocalDate.now().plusDays(1);
-        LocalDate delayUntil = LocalDate.now();
+        LocalDateTime dueDate = LocalDateTime.now().plusDays(1);
+        LocalDateTime delayUntil = LocalDateTime.now();
 
         // Required process variables
         // processVariables.put("idempotencyKey", dmnStringValue(idempotencyKey));
