@@ -29,13 +29,13 @@
     "axios": "^1.15.0",
     "simple-git": "^3.27.0",
     "tsx": "^4.19.2",
-    "typescript": "^5.7.2"
+    "typescript": "^6.0.0"
   },
   "dependencies": {
     "@axe-core/playwright": "^4.10.2",
     "@hmcts/playwright-common": "^1.0.33",
     "oauth4webapi": "^3.5.1",
-    "uuid": "^13.0.0"
+    "uuid": "^14.0.0"
   },
   "resolutions": {
     "lighthouse": "^13.0.0"
