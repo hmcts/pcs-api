@@ -27,11 +27,11 @@ import uk.gov.hmcts.reform.pcs.ccd.view.AlternativesToPossessionView;
 import uk.gov.hmcts.reform.pcs.ccd.view.AsbProhibitedConductView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseFlagsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseLinkView;
-import uk.gov.hmcts.reform.pcs.ccd.view.CaseListView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseNoteView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseTabView;
 import uk.gov.hmcts.reform.pcs.ccd.view.ClaimGroundsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.ClaimView;
+import uk.gov.hmcts.reform.pcs.ccd.view.DefendantResponseView;
 import uk.gov.hmcts.reform.pcs.ccd.view.DocumentsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.GenAppsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.NoticeOfPossessionView;
@@ -109,6 +109,8 @@ class PCSCaseViewTest {
     @Mock
     private CaseFieldsView caseFieldsView;
     @Mock
+    private SearchCriteriaIndexer searchCriteriaIndexer;
+    @Mock
     private EnforcementOrderMediator enforcementOrderMediator;
     @Mock
     private CaseLinkView caseLinkView;
@@ -121,9 +123,7 @@ class PCSCaseViewTest {
     @Mock
     private CaseFlagsView caseFlagsView;
     @Mock
-    private SearchCriteriaIndexer searchCriteriaIndexer;
-    @Mock
-    private CaseListView caseListView;
+    private DefendantResponseView defendantResponseView;
 
     private PCSCaseView underTest;
 
@@ -136,9 +136,10 @@ class PCSCaseViewTest {
                                     caseTitleService, claimView, documentsView, tenancyLicenceView, claimGroundsView,
                                     rentDetailsView, alternativesToPossessionView, asbProhibitedConductView,
                                     rentArrearsView, noticeOfPossessionView,
-                                    statementOfTruthView, caseFieldsView, caseLinkView, enforcementOrderMediator,
-                                    caseNoteView, caseTabView, partiesView, genAppsView, caseFlagsView,
-                                    searchCriteriaIndexer, caseListView
+                                    statementOfTruthView, caseFieldsView, searchCriteriaIndexer, caseLinkView,
+                                    enforcementOrderMediator,
+                                    caseNoteView, caseTabView, partiesView, genAppsView, caseFlagsView, 
+                                    defendantResponseView
         );
     }
 
@@ -276,19 +277,6 @@ class PCSCaseViewTest {
     }
 
     @Test
-    void shouldMapDateIssuedFromClaimIssuedDate() {
-        // Given
-        LocalDateTime claimIssuedDate = LocalDateTime.of(2026, 5, 12, 14, 30);
-        when(claimEntity.getClaimIssuedDate()).thenReturn(claimIssuedDate);
-
-        // When
-        PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
-
-        // Then
-        assertThat(pcsCase.getDateIssued()).isEqualTo(claimIssuedDate);
-    }
-
-    @Test
     void shouldSetCaseFieldsInViewHelpers() {
         // When
         PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
@@ -307,8 +295,9 @@ class PCSCaseViewTest {
         verify(statementOfTruthView).setCaseFields(pcsCase, pcsCaseEntity);
         verify(caseLinkView).setCaseFields(pcsCase, pcsCaseEntity);
         verify(caseFlagsView).setCaseFields(pcsCase, pcsCaseEntity);
+        verify(defendantResponseView).setCaseFields(pcsCase, pcsCaseEntity);
+
         verify(genAppsView).setCaseFields(pcsCase, pcsCaseEntity);
-        verify(caseListView).setCaseFields(pcsCase);
     }
 
     @Test
