@@ -1,21 +1,26 @@
 package uk.gov.hmcts.reform.pcs.feesandpay.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.AllArgsConstructor;
+
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
+import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.service.CcdPaymentStateUpdateService;
+import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimFormScheduler;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatusCallback;
 
 import java.io.IOException;
+import java.time.Clock;
+import java.time.LocalDateTime;
 
-@AllArgsConstructor
 @Component
 @Slf4j
 public class MakeAClaimPaymentCallbackHandler implements PaymentCallbackStrategy {
@@ -23,7 +28,28 @@ public class MakeAClaimPaymentCallbackHandler implements PaymentCallbackStrategy
     private final CcdPaymentStateUpdateService ccdPaymentStateUpdateService;
     private final PartyService partyService;
     private final PcsCaseService pcsCaseService;
+    private final ClaimRepository claimRepository;
     private final ObjectMapper objectMapper;
+    private final Clock utcClock;
+    private final ClaimFormScheduler claimFormScheduler;
+
+    public MakeAClaimPaymentCallbackHandler(
+        CcdPaymentStateUpdateService ccdPaymentStateUpdateService,
+        PartyService partyService,
+        PcsCaseService pcsCaseService,
+        ClaimRepository claimRepository,
+        ObjectMapper objectMapper,
+        ClaimFormScheduler claimFormScheduler,
+        @Qualifier("utcClock") Clock utcClock
+    ) {
+        this.ccdPaymentStateUpdateService = ccdPaymentStateUpdateService;
+        this.partyService = partyService;
+        this.pcsCaseService = pcsCaseService;
+        this.claimRepository = claimRepository;
+        this.objectMapper = objectMapper;
+        this.claimFormScheduler = claimFormScheduler;
+        this.utcClock = utcClock;
+    }
 
     @Override
     public void handle(PaymentStatusCallback paymentStatusCallback, FeePaymentEntity feePaymentEntity) {
@@ -31,12 +57,27 @@ public class MakeAClaimPaymentCallbackHandler implements PaymentCallbackStrategy
         PartyEntity claimParty = getResponsibleParty(feesAndPayTaskData);
         feePaymentEntity.setParty(claimParty);
         if (PaymentStatus.PAID == feePaymentEntity.getPaymentStatus()) {
-            pcsCaseService.allocateCaseManagementLocation(feesAndPayTaskData.getCaseReference());
-            ccdPaymentStateUpdateService.submitPaymentSuccess(feesAndPayTaskData.getCaseReference());
+            handleSuccessfulPayment(feePaymentEntity, feesAndPayTaskData.getCaseReference());
         } else {
             log.warn("The payment was not successful [{}] for case: {}", feePaymentEntity.getPaymentStatus(),
                      feesAndPayTaskData.getCaseReference());
         }
+    }
+
+    private void handleSuccessfulPayment(FeePaymentEntity feePaymentEntity, long caseReference) {
+        pcsCaseService.allocateCaseManagementLocation(caseReference);
+        ccdPaymentStateUpdateService.submitPaymentSuccess(caseReference);
+        issueClaim(feePaymentEntity);
+        claimFormScheduler.scheduleClaimFormGeneration(caseReference);
+    }
+
+    private void issueClaim(FeePaymentEntity feePaymentEntity) {
+        ClaimEntity claim = feePaymentEntity.getClaim();
+        if (claim == null || claim.getClaimIssuedDate() != null) {
+            return;
+        }
+        claim.setClaimIssuedDate(LocalDateTime.now(utcClock));
+        claimRepository.save(claim);
     }
 
     private FeesAndPayTaskData toFeesAndPayTaskData(String feesAndPayTaskDataAsString) {
