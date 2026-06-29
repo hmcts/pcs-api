@@ -2,11 +2,15 @@ package uk.gov.hmcts.reform.pcs.feesandpay.event;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.event.BaseEventTest;
+import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CTSC_ADMIN;
@@ -18,11 +22,15 @@ import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.LEADERSHIP_JUDG
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.WLU_ADMIN;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.WLU_TEAM_LEADER;
 
+@ExtendWith(MockitoExtension.class)
 class ClaimIssuePaymentTest extends BaseEventTest {
+
+    @Mock
+    private PcsCaseService pcsCaseService;
 
     @BeforeEach
     void setUp() {
-        setEventUnderTest(new ClaimIssuePayment());
+        setEventUnderTest(new ClaimIssuePayment(pcsCaseService));
     }
 
     @Test
