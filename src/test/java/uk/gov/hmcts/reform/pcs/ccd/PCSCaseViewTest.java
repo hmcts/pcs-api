@@ -27,6 +27,7 @@ import uk.gov.hmcts.reform.pcs.ccd.view.AlternativesToPossessionView;
 import uk.gov.hmcts.reform.pcs.ccd.view.AsbProhibitedConductView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseFlagsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseLinkView;
+import uk.gov.hmcts.reform.pcs.ccd.view.CaseListView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseNoteView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseTabView;
 import uk.gov.hmcts.reform.pcs.ccd.view.ClaimGroundsView;
@@ -111,9 +112,11 @@ class PCSCaseViewTest {
     @Mock
     private SearchCriteriaIndexer searchCriteriaIndexer;
     @Mock
-    private EnforcementOrderMediator enforcementOrderMediator;
+    private CaseListView caseListView;
     @Mock
     private CaseLinkView caseLinkView;
+    @Mock
+    private EnforcementOrderMediator enforcementOrderMediator;
     @Mock
     private CaseNoteView caseNoteView;
     @Mock
@@ -136,9 +139,9 @@ class PCSCaseViewTest {
                                     caseTitleService, claimView, documentsView, tenancyLicenceView, claimGroundsView,
                                     rentDetailsView, alternativesToPossessionView, asbProhibitedConductView,
                                     rentArrearsView, noticeOfPossessionView,
-                                    statementOfTruthView, caseFieldsView, searchCriteriaIndexer, caseLinkView,
-                                    enforcementOrderMediator,
-                                    caseNoteView, caseTabView, partiesView, genAppsView, caseFlagsView, 
+                                    statementOfTruthView, caseFieldsView, searchCriteriaIndexer, caseListView,
+                                    caseLinkView, enforcementOrderMediator,
+                                    caseNoteView, caseTabView, partiesView, genAppsView, caseFlagsView,
                                     defendantResponseView
         );
     }
