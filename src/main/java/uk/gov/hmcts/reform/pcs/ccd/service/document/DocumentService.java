@@ -24,6 +24,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.E
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.EvidenceOfDefendants;
 import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.wales.LegalRepDocumentTypeWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocument;
+import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocumentUploadDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.WalesDocuments;
@@ -450,5 +452,39 @@ public class DocumentService {
         private Document document;
         private DocumentType type;
         private String description;
+    }
+
+    public List<LegalRepDocument> createLegalRepDocuments(PCSCase pcsCase) {
+        LegalRepDocumentUploadDetails legalRepDocumentUploadDetails = pcsCase.getLegalRepDocumentUploadDetails();
+
+        return legalRepDocumentUploadDetails.getLegalRepDocuments().stream()
+            .map(ListValue::getValue).toList();
+    }
+
+    public DocumentType resolveDocumentType(LegalRepDocument legalRepDoc) {
+        if (legalRepDoc.getLegalRepDocumentTypeWales() != null) {
+            return mapLegalRepDocumentTypeToDocumentType(legalRepDoc.getLegalRepDocumentTypeWales());
+        }
+        return mapLegalRepDocumentTypeToDocumentType(legalRepDoc.getLegalRepDocumentType());
+    }
+
+    public void createDocumentEntitiesFromLegalRepDocuments(
+        List<LegalRepDocument> legalRepDocuments,
+        PcsCaseEntity pcsCaseEntity
+    ) {
+        List<DocumentEntity> documentEntities = legalRepDocuments.stream()
+            .map(legalRepDoc -> DocumentEntity.builder()
+                .pcsCase(pcsCaseEntity)
+                .claim(pcsCaseEntity.getClaims().getFirst())
+                .url(legalRepDoc.getDocument().getUrl())
+                .fileName(legalRepDoc.getDocument().getFilename())
+                .binaryUrl(legalRepDoc.getDocument().getBinaryUrl())
+                .categoryId(legalRepDoc.getDocument().getCategoryId())
+                .description(legalRepDoc.getDescription())
+                .type(resolveDocumentType(legalRepDoc))
+                .build())
+            .toList();
+
+        pcsCaseEntity.addDocuments(documentEntities);
     }
 }
