@@ -3,7 +3,6 @@ package uk.gov.hmcts.reform.pcs.ccd.event;
 import com.github.kagkarlsson.scheduler.SchedulerClient;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
@@ -76,9 +75,6 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final SchedulingConfig schedulingConfig;
     private final NotificationService notificationService;
     private final CamundaService camundaService;
-
-    @Value("${feature.wa.enabled}")
-    private boolean isWorkAllocationEnabled;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -175,11 +171,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
         PCSCase pcsCase = eventPayload.caseData();
 
         if (pcsCase.getCompletionNextStep() == SUBMIT_AND_PAY_NOW) {
-            if (isWorkAllocationEnabled) {
-                camundaService.createTask(eventPayload.caseReference());
-            } else {
-                log.info("WA not enabled");
-            }
+            camundaService.createTask(eventPayload.caseReference());
             return submitClaim(caseReference, pcsCase);
         } else {
             notificationService.sendClaimantDraftSavedForLater(caseReference, pcsCase);

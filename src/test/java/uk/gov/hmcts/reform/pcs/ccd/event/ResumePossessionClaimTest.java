@@ -121,7 +121,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
             savingPageBuilderFactory,
             organisationService, schedulerClient, draftCaseDataService, addressFormatter, feeService,
             moneyFormatter, resumePossessionClaimConfigurer, schedulingConfig, notificationService,
-            camundaService, false
+            camundaService
         );
 
         setEventUnderTest(underTest);
