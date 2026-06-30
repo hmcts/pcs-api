@@ -7,11 +7,11 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
-import uk.gov.hmcts.ccd.sdk.type.DynamicList;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.DynamicRadioList;
+import static uk.gov.hmcts.ccd.sdk.type.FieldType.FixedList;
 
 @Builder
 @Data
@@ -22,9 +22,17 @@ public class DocumentAmendDetails {
 
     @CCD(
         label = "Which folder is the document in?",
-        searchable = false
+        searchable = false,
+        typeOverride = FixedList,
+        typeParameterOverride = "DocumentAmendFolder"
     )
-    private DynamicList selectedFolder;
+    private DocumentAmendFolder selectedFolder;
+
+    @CCD(searchable = false)
+    private String propertyAddressSummary;
+
+    @CCD(searchable = false)
+    private String partyNamesSummary;
 
     @CCD(
         label = "Which document do you want to amend?",

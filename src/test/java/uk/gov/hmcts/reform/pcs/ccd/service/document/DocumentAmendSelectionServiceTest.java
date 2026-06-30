@@ -5,19 +5,19 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.gov.hmcts.ccd.sdk.type.DynamicList;
-import uk.gov.hmcts.ccd.sdk.type.DynamicListElement;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.documentamend.DocumentAmendDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.documentamend.DocumentAmendFolder;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
+import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 
 import java.time.Instant;
 import java.util.List;
@@ -41,18 +41,13 @@ class DocumentAmendSelectionServiceTest {
 
     @BeforeEach
     void setUp() {
-        underTest = new DocumentAmendSelectionService(pcsCaseService);
+        underTest = new DocumentAmendSelectionService(pcsCaseService, new AddressFormatter());
     }
 
     @Test
-    void shouldPopulateFolderDropdownWithCaseFileViewFolders() {
-        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(PcsCaseEntity.builder().build());
-        PCSCase caseData = PCSCase.builder().build();
-
-        underTest.initialise(CASE_REFERENCE, caseData);
-
-        assertThat(caseData.getDocumentAmendDetails().getSelectedFolder().getListItems())
-            .extracting(DynamicListElement::getLabel)
+    void shouldDefineFolderDropdownWithCaseFileViewFolders() {
+        assertThat(DocumentAmendFolder.values())
+            .extracting(DocumentAmendFolder::getLabel)
             .containsExactly(
                 "Statements of case",
                 "Property documents",
@@ -64,6 +59,27 @@ class DocumentAmendSelectionServiceTest {
                 "Correspondence",
                 "Uncategorised documents"
             );
+    }
+
+    @Test
+    void shouldPopulateCompactCaseSummaryFields() {
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(PcsCaseEntity.builder().build());
+        PCSCase caseData = PCSCase.builder()
+            .propertyAddress(uk.gov.hmcts.ccd.sdk.type.AddressUK.builder()
+                .addressLine1("15 Garden Drive")
+                .postTown("Luton")
+                .postCode("LU1 1AB")
+                .build())
+            .claimantNames("Treetops Housing")
+            .defendantNames("Billy Wright")
+            .build();
+
+        underTest.initialise(CASE_REFERENCE, caseData);
+
+        assertThat(caseData.getDocumentAmendDetails().getPropertyAddressSummary())
+            .isEqualTo("15 Garden Drive, Luton, LU1 1AB");
+        assertThat(caseData.getDocumentAmendDetails().getPartyNamesSummary())
+            .isEqualTo("Treetops Housing vs Billy Wright");
     }
 
     @Test
@@ -175,12 +191,18 @@ class DocumentAmendSelectionServiceTest {
         assertThat(caseData.getDocumentAmendDetails().getSelectedDocumentId()).isNull();
     }
 
-    private static DynamicList selectedFolder(CaseFileCategory category) {
-        DynamicListElement selectedFolder = new DynamicListElement(
-            DocumentAmendSelectionService.folderCode(category),
-            category.getLabel()
-        );
-        return new DynamicList(selectedFolder, List.of(selectedFolder));
+    private static DocumentAmendFolder selectedFolder(CaseFileCategory category) {
+        return switch (category) {
+            case STATEMENTS_OF_CASE -> DocumentAmendFolder.STATEMENTS_OF_CASE;
+            case PROPERTY_DOCUMENTS -> DocumentAmendFolder.PROPERTY_DOCUMENTS;
+            case EVIDENCE -> DocumentAmendFolder.EVIDENCE;
+            case HEARING_DOCUMENTS -> DocumentAmendFolder.HEARING_DOCUMENTS;
+            case ORDERS_AND_NOTICE_OF_HEARINGS -> DocumentAmendFolder.ORDERS_AND_NOTICE_OF_HEARINGS;
+            case APPLICATIONS -> DocumentAmendFolder.APPLICATIONS;
+            case APPEALS -> DocumentAmendFolder.APPEALS;
+            case CORRESPONDENCE -> DocumentAmendFolder.CORRESPONDENCE;
+            case UNCATEGORISED_DOCUMENTS -> DocumentAmendFolder.UNCATEGORISED_DOCUMENTS;
+        };
     }
 
     private static DynamicStringList selectedDocument(DocumentEntity document) {

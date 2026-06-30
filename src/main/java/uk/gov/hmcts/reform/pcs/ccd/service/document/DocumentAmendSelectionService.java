@@ -2,8 +2,6 @@ package uk.gov.hmcts.reform.pcs.ccd.service.document;
 
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
-import uk.gov.hmcts.ccd.sdk.type.DynamicList;
-import uk.gov.hmcts.ccd.sdk.type.DynamicListElement;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -13,13 +11,13 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
+import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 
-import java.nio.charset.StandardCharsets;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
+
+import static uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter.COMMA_DELIMITER;
 
 @Service
 public class DocumentAmendSelectionService {
@@ -30,20 +28,20 @@ public class DocumentAmendSelectionService {
         .thenComparing(DocumentEntity::getFileName, Comparator.nullsLast(String::compareToIgnoreCase));
 
     private final PcsCaseService pcsCaseService;
+    private final AddressFormatter addressFormatter;
 
-    public DocumentAmendSelectionService(PcsCaseService pcsCaseService) {
+    public DocumentAmendSelectionService(PcsCaseService pcsCaseService, AddressFormatter addressFormatter) {
         this.pcsCaseService = pcsCaseService;
-    }
-
-    public static UUID folderCode(CaseFileCategory category) {
-        return UUID.nameUUIDFromBytes(category.getId().getBytes(StandardCharsets.UTF_8));
+        this.addressFormatter = addressFormatter;
     }
 
     public void initialise(long caseReference, PCSCase caseData) {
         DocumentAmendDetails details = getOrCreateDetails(caseData);
         PcsCaseEntity pcsCase = pcsCaseService.loadCase(caseReference);
 
-        details.setSelectedFolder(folderList(details.getSelectedFolder()));
+        details.setPropertyAddressSummary(addressFormatter.formatShortAddress(caseData.getPropertyAddress(),
+                                                                              COMMA_DELIMITER));
+        details.setPartyNamesSummary(buildPartyNamesSummary(caseData));
         setDocumentsForCategory(details, pcsCase, CaseFileCategory.STATEMENTS_OF_CASE);
         setDocumentsForCategory(details, pcsCase, CaseFileCategory.PROPERTY_DOCUMENTS);
         setDocumentsForCategory(details, pcsCase, CaseFileCategory.EVIDENCE);
@@ -57,15 +55,11 @@ public class DocumentAmendSelectionService {
 
     public List<String> validateAndStoreSelection(PCSCase caseData) {
         DocumentAmendDetails details = caseData.getDocumentAmendDetails();
-        if (details == null || selectedFolderId(details) == null) {
+        if (details == null || details.getSelectedFolder() == null) {
             return List.of();
         }
 
-        CaseFileCategory selectedFolder = categoryForId(selectedFolderId(details)).orElse(null);
-        if (selectedFolder == null) {
-            return List.of();
-        }
-
+        CaseFileCategory selectedFolder = details.getSelectedFolder().getCategory();
         DynamicStringList selectedDocuments = documentsForCategory(details, selectedFolder);
         details.setSelectedFolderId(selectedFolder.getId());
         details.setSelectedFolderLabel(selectedFolder.getLabel());
@@ -121,16 +115,6 @@ public class DocumentAmendSelectionService {
         return category.getId().equals(document.getCategoryId());
     }
 
-    private DynamicList folderList(DynamicList existingList) {
-        DynamicListElement selected = existingList == null ? null : existingList.getValue();
-        List<DynamicListElement> folders = List.of(CaseFileCategory.values()).stream()
-            .sorted(Comparator.comparing(CaseFileCategory::getDisplayOrder))
-            .map(category -> new DynamicListElement(folderCode(category), category.getLabel()))
-            .toList();
-
-        return new DynamicList(retainSelectedFolder(selected, folders), folders);
-    }
-
     private DynamicStringListElement retainSelectedValue(DynamicStringListElement selected,
                                                          List<DynamicStringListElement> options) {
         if (selected == null || selected.getCode() == null) {
@@ -143,38 +127,15 @@ public class DocumentAmendSelectionService {
             .orElse(null);
     }
 
-    private String selectedFolderId(DocumentAmendDetails details) {
-        if (details.getSelectedFolder() == null || details.getSelectedFolder().getValue() == null) {
-            return null;
-        }
-
-        UUID selectedCode = details.getSelectedFolder().getValue().getCode();
-        return List.of(CaseFileCategory.values()).stream()
-            .filter(category -> folderCode(category).equals(selectedCode))
-            .map(CaseFileCategory::getId)
-            .findFirst()
-            .orElse(null);
-    }
-
-    private DynamicListElement retainSelectedFolder(DynamicListElement selected, List<DynamicListElement> options) {
-        if (selected == null || selected.getCode() == null) {
-            return null;
-        }
-
-        return options.stream()
-            .filter(option -> selected.getCode().equals(option.getCode()))
-            .findFirst()
-            .orElse(null);
-    }
-
-    private Optional<CaseFileCategory> categoryForId(String id) {
-        return List.of(CaseFileCategory.values()).stream()
-            .filter(category -> category.getId().equals(id))
-            .findFirst();
-    }
-
     private boolean isEmpty(DynamicStringList documents) {
         return documents == null || CollectionUtils.isEmpty(documents.getListItems());
+    }
+
+    private String buildPartyNamesSummary(PCSCase caseData) {
+        if (caseData.getClaimantNames() == null || caseData.getDefendantNames() == null) {
+            return null;
+        }
+        return caseData.getClaimantNames() + " vs " + caseData.getDefendantNames();
     }
 
     private DocumentAmendDetails getOrCreateDetails(PCSCase caseData) {

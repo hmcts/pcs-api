@@ -10,6 +10,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.documentamend.DocumentAmendDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.documentamend.DocumentAmendFolder;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentAmendSelectionService;
 
 import java.util.List;
@@ -32,12 +33,15 @@ public class SelectDocumentPage implements CcdPageConfiguration {
         pageBuilder
             .page(PAGE_ID, this::midEvent)
             .pageLabel("Select document")
-            .label(PAGE_ID + "-caption", "### Manage documents: Amend")
             .label(PAGE_ID + "-caseReference", "Case number: ${[CASE_REFERENCE]}")
-            .readonly(PCSCase::getPropertyAddress)
-            .readonly(PCSCase::getClaimantNames)
-            .readonly(PCSCase::getDefendantNames)
+            .label(PAGE_ID + "-propertyAddress", "${documentAmend_PropertyAddressSummary}",
+                   "documentAmend_PropertyAddressSummary!=\"\"")
+            .label(PAGE_ID + "-partyNames", "${documentAmend_PartyNamesSummary}",
+                   "documentAmend_PartyNamesSummary!=\"\"")
+            .label(PAGE_ID + "-separator", "---")
             .complex(PCSCase::getDocumentAmendDetails)
+                .readonly(DocumentAmendDetails::getPropertyAddressSummary, NEVER_SHOW, true)
+                .readonly(DocumentAmendDetails::getPartyNamesSummary, NEVER_SHOW, true)
                 .mandatory(DocumentAmendDetails::getSelectedFolder)
                 .mandatory(DocumentAmendDetails::getStatementsOfCaseDocuments,
                     documentsShowCondition(CaseFileCategory.STATEMENTS_OF_CASE))
@@ -133,7 +137,21 @@ public class SelectDocumentPage implements CcdPageConfiguration {
     }
 
     private String selectedFolderCondition(CaseFileCategory category) {
-        return FIELD_PREFIX + "SelectedFolder=\"" + DocumentAmendSelectionService.folderCode(category) + "\"";
+        return FIELD_PREFIX + "SelectedFolder=\"" + folderForCategory(category).name() + "\"";
+    }
+
+    private DocumentAmendFolder folderForCategory(CaseFileCategory category) {
+        return switch (category) {
+            case STATEMENTS_OF_CASE -> DocumentAmendFolder.STATEMENTS_OF_CASE;
+            case PROPERTY_DOCUMENTS -> DocumentAmendFolder.PROPERTY_DOCUMENTS;
+            case EVIDENCE -> DocumentAmendFolder.EVIDENCE;
+            case HEARING_DOCUMENTS -> DocumentAmendFolder.HEARING_DOCUMENTS;
+            case ORDERS_AND_NOTICE_OF_HEARINGS -> DocumentAmendFolder.ORDERS_AND_NOTICE_OF_HEARINGS;
+            case APPLICATIONS -> DocumentAmendFolder.APPLICATIONS;
+            case APPEALS -> DocumentAmendFolder.APPEALS;
+            case CORRESPONDENCE -> DocumentAmendFolder.CORRESPONDENCE;
+            case UNCATEGORISED_DOCUMENTS -> DocumentAmendFolder.UNCATEGORISED_DOCUMENTS;
+        };
     }
 
     private String emptyFieldId(CaseFileCategory category) {
