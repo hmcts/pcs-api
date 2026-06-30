@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimStatus;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.CounterClaimRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.counterclaimform.CounterClaimFormScheduler;
@@ -45,7 +45,7 @@ public class CounterClaimFormTestingSupportController {
     public ResponseEntity<UUID> issueAndSchedule(@PathVariable UUID counterClaimId) {
         CounterClaimEntity counterClaim = counterClaimRepository.findById(counterClaimId)
             .orElseThrow(() -> new IllegalArgumentException("No counter claim found for id: " + counterClaimId));
-        counterClaim.setStatus(CounterClaimStatus.COUNTER_CLAIM_ISSUED);
+        counterClaim.setStatus(CounterClaimState.COUNTER_CLAIM_ISSUED);
         if (counterClaim.getClaimIssuedDate() == null) {
             counterClaim.setClaimIssuedDate(LocalDateTime.now(utcClock));
         }
