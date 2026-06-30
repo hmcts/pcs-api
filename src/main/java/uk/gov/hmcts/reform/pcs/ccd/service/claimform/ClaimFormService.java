@@ -44,7 +44,6 @@ public class ClaimFormService {
             deleteOrphanedDocument(caseReference, dmStoreUrl);
             throw e;
         }
-        log.info("Generated and attached claim form for case {}: {}", caseReference, dmStoreUrl);
     }
 
     private void deleteOrphanedDocument(long caseReference, String dmStoreUrl) {
