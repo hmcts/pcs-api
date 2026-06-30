@@ -25,7 +25,7 @@
       <output id="OutputClause_04cbxc1" label="Auto Assignable" name="autoAssignable" typeRef="boolean" biodi:width="150" />
       <rule id="DecisionRule_0drowc1">
         <inputEntry id="UnaryTests_04j8b9a">
-          <text>"addCaseNote"</text>
+          <text>"testTaskId"</text>
         </inputEntry>
         <inputEntry id="UnaryTests_025pwnu">
           <text></text>
