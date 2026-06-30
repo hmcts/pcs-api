@@ -609,7 +609,7 @@ public class PCSCase {
 
     @CCD(
         label = "CaseNameHmctsInternal",
-        access = {GlobalSearchAccess.class}
+        access = {GlobalSearchAccess.class, WAAccess.class}
     )
     private String caseNameHmctsInternal;
 
@@ -621,13 +621,13 @@ public class PCSCase {
 
     @CCD(
         label = "CaseManagementLocation",
-        access = {GlobalSearchAccess.class, RasValidationAccess.class}
+        access = {GlobalSearchAccess.class, RasValidationAccess.class, WAAccess.class}
     )
     private CaseLocation caseManagementLocation;
 
     @CCD(
         label = "CaseManagementCategory",
-        access = {GlobalSearchAccess.class}
+        access = {GlobalSearchAccess.class, WAAccess.class}
     )
     private DynamicList caseManagementCategory;
 
