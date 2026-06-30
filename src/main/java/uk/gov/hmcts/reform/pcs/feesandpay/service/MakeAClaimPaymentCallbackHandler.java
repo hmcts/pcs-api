@@ -65,7 +65,6 @@ public class MakeAClaimPaymentCallbackHandler implements PaymentCallbackStrategy
     }
 
     private void handleSuccessfulPayment(FeePaymentEntity feePaymentEntity, long caseReference) {
-        pcsCaseService.allocateCaseManagementLocation(caseReference);
         ccdPaymentStateUpdateService.submitPaymentSuccess(caseReference);
         issueClaim(feePaymentEntity);
         claimFormScheduler.scheduleClaimFormGeneration(caseReference);

@@ -39,9 +39,11 @@ import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -107,33 +109,6 @@ class MakeAClaimPaymentCallbackHandlerTest {
         assertThat(claimEntity.getClaimIssuedDate()).isEqualTo(LocalDateTime.of(2020, 1, 1, 0, 0));
         verify(claimRepository).save(claimEntity);
         verify(claimFormScheduler).scheduleClaimFormGeneration(taskData.getCaseReference());
-    }
-
-    @Test
-    void shouldNotSubmitPaymentSuccessWhenCaseManagementLocationAllocationFails() throws Exception {
-        // Given
-        FeesAndPayTaskData taskData = buildTaskData();
-        when(objectMapper.readValue(anyString(), eq(FeesAndPayTaskData.class))).thenReturn(taskData);
-        String taskDataJson = new ObjectMapper().writeValueAsString(taskData);
-
-        PartyEntity partyEntity = PartyEntity.builder().id(UUID.randomUUID()).orgName(RESPONSIBLE_PARTY).build();
-        when(partyService.getPartyEntityByEntityId(RESPONSIBLE_PARTY_ID, CASE_REFERENCE)).thenReturn(partyEntity);
-
-        RuntimeException expectedException = new RuntimeException("Lookup failed");
-        doThrow(expectedException).when(pcsCaseService).allocateCaseManagementLocation(CASE_REFERENCE);
-
-        FeePaymentEntity feePaymentEntity = FeePaymentEntity.builder().taskData(taskDataJson)
-            .paymentStatus(PaymentStatus.PAID).paymentCallbackHandlerType(PaymentCallbackHandlerType.CLAIM).build();
-        PaymentStatusCallback callback = PaymentStatusCallback.builder().ccdCaseNumber(CCD_CASE_NUMBER).build();
-
-        // When
-        Throwable throwable = catchThrowable(() -> underTest.handle(callback, feePaymentEntity));
-
-        // Then
-        assertThat(throwable).isSameAs(expectedException);
-        verify(ccdPaymentStateUpdateService, never()).submitPaymentSuccess(CASE_REFERENCE);
-        verifyNoInteractions(claimRepository);
-        verifyNoInteractions(claimFormScheduler);
     }
 
     @ParameterizedTest
