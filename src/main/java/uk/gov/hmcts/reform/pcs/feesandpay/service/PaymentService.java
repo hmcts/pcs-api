@@ -118,7 +118,8 @@ public class PaymentService {
             .returnUrl(createCardPaymentRequest.getReturnUrl())
             .build();
 
-        if (feePaymentEntity.getPaymentStatus() != null) {
+        PaymentStatus paymentStatus = feePaymentEntity.getPaymentStatus();
+        if (paymentStatus == PaymentStatus.PAID || paymentStatus == PaymentStatus.PARTIALLY_PAID) {
             throw new IllegalStateException("Service request " + serviceRequestReference
                                                 + " already has a completed status");
         }
@@ -135,7 +136,6 @@ public class PaymentService {
             .nextUrl(govPayCardPaymentResponse.getNextUrl())
             .build();
     }
-
 
     public CardPaymentStatusResponse getPaymentStatus(String internalReference) {
         PaymentDto govPayCardPaymentStatus = paymentsClient.getGovPayCardPaymentStatusWithCallback(
