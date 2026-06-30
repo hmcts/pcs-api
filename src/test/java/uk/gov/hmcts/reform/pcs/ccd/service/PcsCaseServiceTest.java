@@ -493,6 +493,7 @@ class PcsCaseServiceTest {
         verify(claimService).setClaimIssuedDate(claimEntity);
     }
 
+
     private Flags createFlags(List<ListValue<FlagDetail>> flagDetails) {
 
         return Flags.builder()

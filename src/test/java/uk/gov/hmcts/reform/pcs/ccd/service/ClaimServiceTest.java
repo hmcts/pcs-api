@@ -53,6 +53,7 @@ class ClaimServiceTest {
     private static final LocalDateTime TEST_UTC_DATE_TIME = LocalDate.of(2025, 8, 27)
         .atTime(12, 51, 19);
 
+
     @Mock
     private ClaimRepository claimRepository;
     @Mock
@@ -407,7 +408,7 @@ class ClaimServiceTest {
         verify(claimRepository, times(1)).save(claimEntity);
         assertThat(claimEntity.getClaimIssuedDate()).isEqualTo(TEST_UTC_DATE_TIME);
     }
-
+    
     private static Stream<Arguments> claimantTypeScenarios() {
         return Stream.of(
             arguments(ClaimantType.PRIVATE_LANDLORD),
