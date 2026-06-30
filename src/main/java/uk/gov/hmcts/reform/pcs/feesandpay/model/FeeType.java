@@ -9,7 +9,10 @@ public enum FeeType {
     ENFORCEMENT_WARRANT_FEE("enforcementWarrantFee"),
     ENFORCEMENT_WRIT_FEE("enforcementWritFee"),
     GEN_APP_STANDARD_FEE("genAppStandardFee"),
-    GEN_APP_MAX_FEE("genAppMaxFee");
+    GEN_APP_MAX_FEE("genAppMaxFee"),
+    COUNTER_CLAIM_FLAT_FEE("counterClaimFlatFee"),
+    COUNTER_CLAIM_RANGED("counterClaimRanged"),
+    COUNTER_CLAIM("counterClaim");
 
     private final String code;
 

@@ -65,9 +65,11 @@ class CounterClaimIssuedNotificationTaskComponentTest {
     @DisplayName("Should send notification")
     void shouldSendNotification() {
         UUID counterClaimId = UUID.randomUUID();
+        String paymentReference = "PAY-1234";
 
         CounterClaimStatusChangeTaskData taskData = CounterClaimStatusChangeTaskData.builder()
             .counterClaimId(counterClaimId)
+            .paymentReference(paymentReference)
             .build();
         when(taskInstance.getData()).thenReturn(taskData);
 
@@ -77,6 +79,6 @@ class CounterClaimIssuedNotificationTaskComponentTest {
 
         assertThat(completionHandler).isInstanceOf(CompletionHandler.OnCompleteRemove.class);
         verify(counterClaimNotificationService).sendClaimantEmailNotificationCounterClaimIssued(counterClaimId);
-        verify(paymentNotificationService).sendCounterClaimPaymentSuccessNotification(counterClaimId);
+        verify(paymentNotificationService).sendCounterClaimPaymentSuccessNotification(counterClaimId, paymentReference);
     }
 }

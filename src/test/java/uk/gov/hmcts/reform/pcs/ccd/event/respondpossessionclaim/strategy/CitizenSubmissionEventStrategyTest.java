@@ -14,8 +14,9 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
-import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.ClaimResponseService;
-import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.DefendantResponseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.CounterClaimSubmitConfirmationService;
+import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.RespondPossessionClaimSubmitPersistenceResult;
+import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.RespondPossessionClaimSubmitService;
 import uk.gov.hmcts.reform.pcs.exception.DraftNotFoundException;
 
 import java.util.List;
@@ -38,11 +39,11 @@ class CitizenSubmissionEventStrategyTest {
     @Mock
     private DraftCaseDataService draftCaseDataService;
     @Mock
-    private ClaimResponseService claimResponseService;
-    @Mock
-    private DefendantResponseService defendantResponseService;
-    @Mock
     private SubmitResponseFactory submitResponseFactory;
+    @Mock
+    private RespondPossessionClaimSubmitService respondPossessionClaimSubmitService;
+    @Mock
+    private CounterClaimSubmitConfirmationService counterClaimSubmitConfirmationService;
     @Mock
     private EventPayload<PCSCase, State> eventPayload;
 
@@ -52,39 +53,45 @@ class CitizenSubmissionEventStrategyTest {
     void setUp() {
         underTest = new CitizenSubmissionEventStrategy(
             draftCaseDataService,
-            claimResponseService,
-            defendantResponseService,
-            submitResponseFactory
+            submitResponseFactory,
+            respondPossessionClaimSubmitService,
+            counterClaimSubmitConfirmationService
         );
     }
 
     @Test
     void shouldProcessDraft() {
-        // given
         DefendantResponses responses = DefendantResponses.builder()
             .tenancyTypeConfirmation(YesNoNotSure.YES)
             .rentArrearsAmountConfirmation(YesNoNotSure.NO)
             .build();
 
         PCSCase caseData = createDraftSaveCaseData(responses);
+        RespondPossessionClaimSubmitPersistenceResult persistenceResult =
+            new RespondPossessionClaimSubmitPersistenceResult(caseData.getPossessionClaimResponse(), null, false);
 
         stubDraft(caseData);
         when(eventPayload.caseReference()).thenReturn(CASE_REFERENCE);
+        when(respondPossessionClaimSubmitService.persistFinalSubmit(
+            CASE_REFERENCE,
+            caseData.getPossessionClaimResponse()
+        )).thenReturn(persistenceResult);
+        SubmitResponse<State> submitResponse = SubmitResponse.defaultResponse();
+        when(counterClaimSubmitConfirmationService.buildSubmitResponse(CASE_REFERENCE, persistenceResult))
+            .thenReturn(submitResponse);
 
-        // when
         underTest.process(eventPayload);
 
-        // then
-        verify(submitResponseFactory).success();
-        verify(submitResponseFactory).validate(any(), anyLong());
-        verify(claimResponseService).saveDraftData(caseData.getPossessionClaimResponse(), CASE_REFERENCE);
-        verify(defendantResponseService).saveDefendantResponse(CASE_REFERENCE, caseData.getPossessionClaimResponse());
-        verify(draftCaseDataService).deleteUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim);
+        verify(submitResponseFactory).validate(caseData.getPossessionClaimResponse(), CASE_REFERENCE);
+        verify(respondPossessionClaimSubmitService).persistFinalSubmit(
+            CASE_REFERENCE,
+            caseData.getPossessionClaimResponse()
+        );
+        verify(counterClaimSubmitConfirmationService).buildSubmitResponse(CASE_REFERENCE, persistenceResult);
     }
 
     @Test
     void shouldThrowExceptionWhenNoDraftFound() {
-        // given
         DefendantResponses responses = DefendantResponses.builder()
             .tenancyTypeConfirmation(YesNoNotSure.YES)
             .rentArrearsAmountConfirmation(YesNoNotSure.NO)
@@ -96,25 +103,19 @@ class CitizenSubmissionEventStrategyTest {
             .thenReturn(Optional.empty());
         when(eventPayload.caseReference()).thenReturn(CASE_REFERENCE);
 
-        // when
         assertThat(assertThrows(
             DraftNotFoundException.class,
             () -> underTest.process(eventPayload)
         )).hasMessage(String.format("No draft found for this case reference %s, eventId %s, and user ",
                                     CASE_REFERENCE, respondPossessionClaim));
 
-        // then
-        verify(submitResponseFactory, never()).success();
         verify(submitResponseFactory, never()).validate(any(), anyLong());
-        verify(claimResponseService, never()).saveDraftData(caseData.getPossessionClaimResponse(), CASE_REFERENCE);
-        verify(defendantResponseService, never()).saveDefendantResponse(CASE_REFERENCE,
-                                                                        caseData.getPossessionClaimResponse());
-        verify(draftCaseDataService, never()).deleteUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim);
+        verify(respondPossessionClaimSubmitService, never()).persistFinalSubmit(anyLong(), any());
+        verify(counterClaimSubmitConfirmationService, never()).buildSubmitResponse(anyLong(), any());
     }
 
     @Test
     void shouldReturnValidationErrors() {
-        // given
         DefendantResponses responses = DefendantResponses.builder()
             .tenancyTypeConfirmation(YesNoNotSure.YES)
             .rentArrearsAmountConfirmation(YesNoNotSure.NO)
@@ -138,15 +139,10 @@ class CitizenSubmissionEventStrategyTest {
             .thenReturn(Optional.of(submitResponse));
         when(eventPayload.caseReference()).thenReturn(CASE_REFERENCE);
 
-        // when
         underTest.process(eventPayload);
 
-        // then
-        verify(submitResponseFactory, never()).success();
-        verify(claimResponseService, never()).saveDraftData(caseData.getPossessionClaimResponse(), CASE_REFERENCE);
-        verify(defendantResponseService, never()).saveDefendantResponse(CASE_REFERENCE,
-                                                                        caseData.getPossessionClaimResponse());
-        verify(draftCaseDataService, never()).deleteUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim);
+        verify(respondPossessionClaimSubmitService, never()).persistFinalSubmit(anyLong(), any());
+        verify(counterClaimSubmitConfirmationService, never()).buildSubmitResponse(anyLong(), any());
     }
 
     private void stubDraft(PCSCase draft) {
@@ -166,14 +162,11 @@ class CitizenSubmissionEventStrategyTest {
 
     @Test
     void supports_WithCitizenUser_ReturnsTrue() {
-        // when / then
         assertThat(underTest.supports(List.of(UserRole.CITIZEN.getRole()))).isTrue();
     }
 
     @Test
     void supports_WithNonCitizenUser_ReturnsFalse() {
-        // when / then
         assertThat(underTest.supports(List.of(UserRole.DEFENDANT_SOLICITOR.getRole()))).isFalse();
     }
-
 }

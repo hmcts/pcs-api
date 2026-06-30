@@ -71,9 +71,7 @@ public class ClaimFormGenerationComponent {
                 MDC.put(MDC_TASK_NAME, CLAIM_FORM_GENERATION_TASK_NAME);
 
                 try {
-                    log.debug("Starting claim form generation for case: {}", caseReference);
                     claimFormService.generateAndAttach(caseReference);
-                    log.info("Claim form generated and attached for case {}", caseReference);
                     return new CompletionHandler.OnCompleteRemove<>();
                 } catch (Exception e) {
                     int attempt = executionContext.getExecution().consecutiveFailures + 1;
@@ -106,7 +104,6 @@ public class ClaimFormGenerationComponent {
     private void recordGenerationFailure(long caseReference) {
         try {
             claimActivityLogService.logGenerationFailure(caseReference);
-            log.error("Recorded DOCUMENTS_CREATED/FAILURE in claim_activity_log for case {}", caseReference);
         } catch (Exception e) {
             log.error("Failed to record claim form generation failure for case {}", caseReference, e);
         }

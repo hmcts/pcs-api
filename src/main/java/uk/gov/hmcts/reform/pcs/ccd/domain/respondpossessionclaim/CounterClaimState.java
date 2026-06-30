@@ -6,11 +6,10 @@ import uk.gov.hmcts.ccd.sdk.api.HasLabel;
 
 @AllArgsConstructor
 @Getter
-public enum CounterClaimStatus implements HasLabel {
+public enum CounterClaimState implements HasLabel {
 
     PENDING_COUNTER_CLAIM_ISSUED("Pending counter claim issued"),
     COUNTER_CLAIM_ISSUED("Counter claim issued");
 
     private String label;
 }
-
