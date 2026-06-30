@@ -140,7 +140,8 @@ public class DocumentAmendSelectionService {
         if (caseData.getClaimantNames() != null && caseData.getDefendantNames() != null) {
             return caseData.getClaimantNames() + " vs " + caseData.getDefendantNames();
         }
-        if (CollectionUtils.isEmpty(caseData.getAllClaimants()) && CollectionUtils.isEmpty(caseData.getAllDefendants())) {
+        if (CollectionUtils.isEmpty(caseData.getAllClaimants())
+            && CollectionUtils.isEmpty(caseData.getAllDefendants())) {
             return null;
         }
         return caseNameFormatter.formatCaseName(caseData);
