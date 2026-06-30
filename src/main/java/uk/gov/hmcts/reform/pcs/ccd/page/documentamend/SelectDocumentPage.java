@@ -135,8 +135,7 @@ public class SelectDocumentPage implements CcdPageConfiguration {
     }
 
     private String selectedFolderCondition(CaseFileCategory category) {
-        return "(" + FIELD_PREFIX + "SelectedFolder=\"" + category.getLabel() + "\""
-            + " OR " + FIELD_PREFIX + "SelectedFolder=\"" + category.name() + "\")";
+        return FIELD_PREFIX + "SelectedFolder=\"" + category.name() + "\"";
     }
 
     private String emptyFieldId(CaseFileCategory category) {
