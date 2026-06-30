@@ -17,23 +17,19 @@ import static io.restassured.RestAssured.given;
 
 public class StoredDocumentConsumerTest {
 
-    private static final String SERVICE_AUTHORIZATION_HEADER = "Bearer serviceToken";
+    private static final String SERVICE_AUTHORIZATION = "Bearer serviceToken";
     private static final String DOCUMENT_ID = "969983aa-52ae-41bd-8cf3-4aabcc120783";
     private static final String USER_ID = "9a2d861a-6264-4765-9f61-1d403079f71b";
     private static final String APPLICATION = "application/vnd.uk.gov.hmcts.dm.document.v1+hal+json;charset=UTF-8";
 
     @Pact(provider = "dm_store_stored_document_provider", consumer = "pcs_api")
-    public V4Pact fetchStoredDocumentPact(PactDslWithProvider builder) {
-
+    public V4Pact getStoredDocumentPact(PactDslWithProvider builder) {
         return builder
             .given("A Stored Document exists and can be retrieved by documentId")
             .uponReceiving("GET request for a stored document by id")
-            .path("/cases/documents/" + DOCUMENT_ID)
+            .path("/documents/" + DOCUMENT_ID)
             .method("GET")
-            .headers(
-                "Accept", APPLICATION,
-                "ServiceAuthorization", SERVICE_AUTHORIZATION_HEADER
-            )
+            .headers(Map.of("ServiceAuthorization", SERVICE_AUTHORIZATION,"Accept", APPLICATION))
             .willRespondWith()
             .status(200)
             .headers(Map.of("Content-Type", APPLICATION))
@@ -42,14 +38,14 @@ public class StoredDocumentConsumerTest {
     }
 
     @Test
-    @PactTestFor(pactMethod = "fetchStoredDocumentPact")
+    @PactTestFor(pactMethod = "getStoredDocumentPact")
     void shouldFetchStoredDocument() {
 
         given()
             .accept(APPLICATION)
-            .header("ServiceAuthorization", SERVICE_AUTHORIZATION_HEADER)
+            .header("ServiceAuthorization", SERVICE_AUTHORIZATION)
             .when()
-            .get("/cases/documents/" + DOCUMENT_ID)
+            .get("/documents/" + DOCUMENT_ID)
             .then()
             .statusCode(200);
     }
