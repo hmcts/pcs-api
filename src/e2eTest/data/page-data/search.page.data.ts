@@ -8,7 +8,7 @@ export const search =
     caseTypeLabel: 'Case type',
     eventLabel: 'Event',
     caseNumberLabel: 'Case Number',
-    possessionsJurisdiction: 'Civil Possession',
+    possessionsJurisdiction: 'Possession Claims',
     caseType:
       {
         civilPossessions: getCaseTypeName()
