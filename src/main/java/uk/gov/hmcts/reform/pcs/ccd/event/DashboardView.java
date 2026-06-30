@@ -14,6 +14,7 @@ import uk.gov.hmcts.reform.pcs.ccd.event.dashboard.StartDashboardViewHandler;
 import uk.gov.hmcts.reform.pcs.ccd.event.dashboard.SubmitDashboardViewHandler;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.dashboardView;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
 
 @Component
 @Slf4j
@@ -32,7 +33,7 @@ public class DashboardView implements CCDConfig<PCSCase, State, UserRole> {
             .showCondition(ShowConditions.NEVER_SHOW)
             .name("Dashboard view")
             .description("Compute dashboard notifications for case journey")
-            .grant(Permission.R, UserRole.DEFENDANT);
+            .grant(Permission.R, UserRole.DEFENDANT)
+            .grantHistoryOnly(JUDICIAL_HISTORY_ROLES);
     }
 }
-
