@@ -52,10 +52,11 @@ public class CounterClaimIssuedNotificationTaskComponent {
             .execute((taskInstance, executionContext) -> {
                 CounterClaimStatusChangeTaskData taskData = taskInstance.getData();
                 UUID counterClaimId = taskData.getCounterClaimId();
+                String paymentReference = taskData.getPaymentReference();
                 log.info("Processing counter claim issued notification for: {}", counterClaimId);
 
                 counterClaimNotificationService.sendClaimantEmailNotificationCounterClaimIssued(counterClaimId);
-                paymentNotificationService.sendCounterClaimPaymentSuccessNotification(counterClaimId);
+                paymentNotificationService.sendCounterClaimPaymentSuccessNotification(counterClaimId, paymentReference);
                 return new CompletionHandler.OnCompleteRemove<>();
             });
     }
