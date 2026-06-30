@@ -67,10 +67,10 @@ class DocumentAmendSelectionServiceTest {
     }
 
     @Test
-    void shouldPopulateDocumentsForSelectedCategoryAndExcludeWithoutNoticeApplicationDocuments() {
+    void shouldPopulateDocumentsForSelectedCategoryAndIncludeWithoutNoticeApplicationDocuments() {
         DocumentEntity visibleEvidence = document("visible evidence.pdf", EVIDENCE.getId(), null);
-        DocumentEntity hiddenApplicationDocument = document(
-            "hidden application.pdf",
+        DocumentEntity withoutNoticeApplicationDocument = document(
+            "without notice application.pdf",
             APPLICATIONS.getId(),
             GenAppEntity.builder().withoutNotice(VerticalYesNo.YES).build()
         );
@@ -80,7 +80,7 @@ class DocumentAmendSelectionServiceTest {
             GenAppEntity.builder().withoutNotice(VerticalYesNo.NO).build()
         );
         PcsCaseEntity pcsCase = PcsCaseEntity.builder()
-            .documents(List.of(visibleEvidence, hiddenApplicationDocument, visibleApplicationDocument))
+            .documents(List.of(visibleEvidence, withoutNoticeApplicationDocument, visibleApplicationDocument))
             .build();
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCase);
         PCSCase caseData = PCSCase.builder().build();
@@ -93,14 +93,19 @@ class DocumentAmendSelectionServiceTest {
             .containsExactly("visible evidence.pdf");
         assertThat(details.getApplicationsDocuments().getListItems())
             .extracting(DynamicStringListElement::getLabel)
-            .containsExactly("visible application.pdf");
+            .containsExactly("visible application.pdf", "without notice application.pdf");
     }
 
     @Test
-    void shouldShowDocumentsWithNullCategoryUnderUncategorisedDocuments() {
+    void shouldOnlyShowDocumentsWithUncategorisedCategoryUnderUncategorisedDocuments() {
         DocumentEntity uncategorisedDocument = document("loose document.pdf", null, null);
+        DocumentEntity categorisedDocument = document(
+            "uncategorised document.pdf",
+            UNCATEGORISED_DOCUMENTS.getId(),
+            null
+        );
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(PcsCaseEntity.builder()
-            .documents(List.of(uncategorisedDocument))
+            .documents(List.of(uncategorisedDocument, categorisedDocument))
             .build());
         PCSCase caseData = PCSCase.builder().build();
 
@@ -108,7 +113,7 @@ class DocumentAmendSelectionServiceTest {
 
         assertThat(caseData.getDocumentAmendDetails().getUncategorisedDocuments().getListItems())
             .extracting(DynamicStringListElement::getLabel)
-            .containsExactly("loose document.pdf");
+            .containsExactly("uncategorised document.pdf");
         assertThat(caseData.getDocumentAmendDetails().getUncategorisedDocumentsEmpty()).isEqualTo(YesOrNo.NO);
     }
 

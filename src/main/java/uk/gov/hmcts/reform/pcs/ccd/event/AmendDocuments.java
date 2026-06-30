@@ -36,6 +36,10 @@ public class AmendDocuments implements CCDConfig<PCSCase, State, UserRole> {
                 .grant(Permission.CRU, UserRole.CTSC_ADMIN)
                 .grant(Permission.CRU, UserRole.WLU_ADMIN)
                 .grant(Permission.CRU, UserRole.HEARING_CENTRE_ADMIN)
+                .grant(Permission.CRU, UserRole.JUDGE)
+                .grant(Permission.CRU, UserRole.CIRCUIT_JUDGE)
+                .grant(Permission.CRU, UserRole.FEE_PAID_JUDGE)
+                .grant(Permission.CRU, UserRole.LEADERSHIP_JUDGE)
                 .endButtonLabel("Submit");
 
         PageBuilder pageBuilder = new PageBuilder(eventBuilder);

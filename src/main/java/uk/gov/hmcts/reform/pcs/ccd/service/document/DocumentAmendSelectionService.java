@@ -7,7 +7,6 @@ import uk.gov.hmcts.ccd.sdk.type.DynamicListElement;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.documentamend.DocumentAmendDetails;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -104,7 +103,6 @@ public class DocumentAmendSelectionService {
             ? List.of()
             : pcsCase.getDocuments().stream()
                 .filter(Objects::nonNull)
-                .filter(this::isVisibleToCaseworker)
                 .filter(document -> isInCategory(document, category))
                 .sorted(DOCUMENT_ORDER)
                 .map(document -> DynamicStringListElement.builder()
@@ -119,16 +117,7 @@ public class DocumentAmendSelectionService {
             .build();
     }
 
-    private boolean isVisibleToCaseworker(DocumentEntity document) {
-        return document.getGeneralApplication() == null
-            || document.getGeneralApplication().getWithoutNotice() != VerticalYesNo.YES;
-    }
-
     private boolean isInCategory(DocumentEntity document, CaseFileCategory category) {
-        if (category == CaseFileCategory.UNCATEGORISED_DOCUMENTS) {
-            return document.getCategoryId() == null;
-        }
-
         return category.getId().equals(document.getCategoryId());
     }
 
