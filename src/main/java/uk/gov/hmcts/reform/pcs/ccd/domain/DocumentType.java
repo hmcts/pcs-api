@@ -29,6 +29,7 @@ public enum DocumentType implements HasLabel {
     POLICE_REPORT("Police report"),
     CLAIM("Claim"),
     DEFENDANT_RESPONSE("Defendant response"),
+    COUNTERCLAIM("Counterclaim"),
     OTHER("Other document");
 
     private final String label;
