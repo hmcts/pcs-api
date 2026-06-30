@@ -66,7 +66,6 @@ withPipeline(type, product, component) {
       env.CCD_ENABLED = "false"
     }
     // Work Allocation preview (pr-values:wa) — WA pods, Camunda and am-org-role-mapping-service
-    env.WA_ENABLED = true
     env.CAMUNDA_BASE_URL = "https://camunda-pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
     env.TASK_MONITOR_API_URL = "https://wa-task-monitor-pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
     env.TASK_MANAGEMENT_API_URL = "https://wa-task-management-api-pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
