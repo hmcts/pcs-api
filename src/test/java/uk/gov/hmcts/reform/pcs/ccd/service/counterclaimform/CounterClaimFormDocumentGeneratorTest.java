@@ -26,7 +26,7 @@ class CounterClaimFormDocumentGeneratorTest {
     @Test
     void delegatesToDocAssemblyWithPerDefendantFilename() {
         CounterClaimFormPayload payload = CounterClaimFormPayload.builder().build();
-        when(docAssemblyService.generateDocument((payload),
+        when(docAssemblyService.generateDocument(eq(payload),
             eq(CounterClaimFormDocumentGenerator.TEMPLATE_ID),
             eq(OutputType.PDF),
             eq("Counterclaim - Defendant 2")
