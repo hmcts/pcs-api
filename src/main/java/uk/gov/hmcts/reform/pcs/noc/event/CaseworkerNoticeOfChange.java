@@ -8,15 +8,9 @@ import uk.gov.hmcts.ccd.sdk.api.DecentralisedConfigBuilder;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
-import uk.gov.hmcts.ccd.sdk.type.OrganisationPolicy;
-import uk.gov.hmcts.reform.pcs.LegalRepresentative;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
-import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-
-import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 
 @Component
 @AllArgsConstructor
@@ -25,16 +19,21 @@ public class CaseworkerNoticeOfChange implements CCDConfig<PCSCase, State, UserR
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
-        configBuilder
+//        new PageBuilder(
+            configBuilder
             .decentralisedEvent("caseworkerNoticeOfChange", this::submit)
             .forStates(State.PENDING_CASE_ISSUED, State.CASE_ISSUED)
             .name("Notice of change")
-            .grant(Permission.CRU, UserRole.ORGANISATION_CASE_ACCESS_ADMINISTRATOR)
-            .grant(Permission.CRU, UserRole.PCS_SOLICITOR)
-            .grant(Permission.R, UserRole.CITIZEN)
-            .grant(Permission.R, UserRole.DEFENDANT)
-            .grant(Permission.R, UserRole.PCS_CASE_WORKER)
-            .grant(Permission.R, UserRole.DEFENDANT_SOLICITOR);
+            .grant(Permission.CRU, UserRole.ORGANISATION_CASE_ACCESS_ADMINISTRATOR);
+//            .grant(Permission.CRU, UserRole.PCS_SOLICITOR)
+//            .grant(Permission.R, UserRole.PCS_CASE_WORKER)
+//            .grant(Permission.R, UserRole.DEFENDANT_SOLICITOR);
+//            .page("caseworkerNoticeOfChange")
+//            .complex(PCSCase::getDefendant1)
+//            .complex(DefendantDetails::getOrganisationPolicy)
+//            .optional(OrganisationPolicy::getOrgPolicyCaseAssignedRole, NEVER_SHOW, UserRole.DEFENDANT_SOLICITOR)
+//            .optional(OrganisationPolicy::getOrgPolicyReference, NEVER_SHOW)
+//            .done();
     }
 
     private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {

@@ -44,10 +44,10 @@ public class PcsNoticeOfChange implements CCDConfig<PCSCase, State, UserRole> {
 
     static final String FIRST_NAME_QUESTION_ID = "pcs-defendant-first-name";
     static final String LAST_NAME_QUESTION_ID = "pcs-defendant-last-name";
-    static final String CHALLENGE_ID = "NoC";
+    static final String CHALLENGE_ID = "NoCChallenge";
 
     private static final int EXPECTED_ANSWER_COUNT = 2;
-    private static final UserRole CASE_ROLE = UserRole.DEFENDANT;
+    private static final UserRole CASE_ROLE = UserRole.DEFENDANT_SOLICITOR;
 
     private final PcsCaseRepository pcsCaseRepository;
     private final LegalRepresentativeOrganisationRepository legalRepresentativeRepository;

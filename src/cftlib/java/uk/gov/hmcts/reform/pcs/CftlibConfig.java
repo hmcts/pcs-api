@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs;
 
 import io.micrometer.core.instrument.util.IOUtils;
+import org.apache.commons.io.FileUtils;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.ResourceLoader;

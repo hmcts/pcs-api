@@ -5,6 +5,8 @@ import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.ccd.sdk.type.Organisation;
+import uk.gov.hmcts.ccd.sdk.type.OrganisationPolicy;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.LegalRepresentative;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
@@ -20,6 +22,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Component
@@ -44,6 +47,29 @@ public class PartiesView {
         pcsCase.setAllDefendants(mapPartiesByRole(claimParties, PartyRole.DEFENDANT, isCitizen, currentUserId));
         pcsCase.setAllUnderlesseeOrMortgagees(mapPartiesByRole(claimParties, PartyRole.UNDERLESSEE_OR_MORTGAGEE,
                                                                isCitizen, currentUserId));
+
+        pcsCase.getAllDefendants().forEach(def-> initializeOrgPolicy(def.getValue()));
+    }
+
+    private void initializeOrgPolicy(Party party) {
+        party.setOrganisationPolicy(
+            Optional.ofNullable(party.getOrganisationPolicy())
+                .orElseGet(OrganisationPolicy::new)
+        );
+
+        setDefaultOrgPolicyFields(party.getOrganisationPolicy(), UserRole.DEFENDANT_SOLICITOR);
+    }
+
+    private void setDefaultOrgPolicyFields(OrganisationPolicy<UserRole> organisationPolicy, UserRole solicitorRole) {
+        organisationPolicy.setOrgPolicyCaseAssignedRole(
+            Optional.ofNullable(organisationPolicy.getOrgPolicyCaseAssignedRole())
+                .orElse(solicitorRole)
+        );
+
+        organisationPolicy.setOrganisation(
+            Optional.ofNullable(organisationPolicy.getOrganisation())
+                .orElse(new Organisation(null, null))
+        );
     }
 
     private List<ListValue<Party>> mapPartiesByRole(List<ClaimPartyEntity> claimParties, PartyRole role,
