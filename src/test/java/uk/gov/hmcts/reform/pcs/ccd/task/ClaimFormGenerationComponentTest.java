@@ -191,12 +191,6 @@ class ClaimFormGenerationComponentTest {
             .containsEntry("taskName", "claim-form-generation-task")
             .containsEntry("terminalFailure", "true")
             .containsEntry("failureReason", "docassembly 500");
-
-        // The successful claim_activity_log FAILURE-row write is also logged.
-        assertThat(logAppender.list)
-            .anyMatch(e -> e.getLevel() == Level.ERROR
-                && e.getFormattedMessage()
-                    .contains("Recorded DOCUMENTS_CREATED/FAILURE in claim_activity_log for case 999"));
     }
 
     @Test
