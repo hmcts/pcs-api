@@ -213,6 +213,10 @@ public class ClaimEntity {
         feePayment.setClaim(this);
     }
 
+    @OneToOne(cascade = ALL, orphanRemoval = true)
+    @JoinColumn(name = "claim_form_document_id")
+    private DocumentEntity claimFormDocument;
+
     public void setAsbProhibitedConductEntity(AsbProhibitedConductEntity asbProhibitedConductEntity) {
         if (this.asbProhibitedConductEntity != null) {
             this.asbProhibitedConductEntity.setClaim(null);

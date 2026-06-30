@@ -77,6 +77,9 @@ public class DefendantResponses {
     private VerticalYesNo correspondenceAddressConfirmation;
 
     @CCD
+    private VerticalYesNo propertyAddressConfirmation;
+
+    @CCD
     private YesNoNotSure landlordRegistered;
 
     @CCD
@@ -137,6 +140,9 @@ public class DefendantResponses {
 
     @CCD
     private RTCStatementOfTruth statementOfTruth;
+
+    @CCD
+    private String statementOfTruthCompletedBy;
 
     @CCD
     private DefendantResponseStatus status;
