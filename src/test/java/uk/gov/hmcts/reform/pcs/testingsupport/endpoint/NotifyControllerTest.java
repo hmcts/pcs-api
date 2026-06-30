@@ -11,7 +11,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.PaymentAgreementEntity;
@@ -28,6 +27,8 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -91,10 +92,6 @@ class NotifyControllerTest {
             when(defendantResponseRepository.findById(defendantResponseId))
                 .thenReturn(Optional.of(defendantResponse));
 
-            FeePaymentEntity feePayment = FeePaymentEntity.builder().build();
-            when(feePaymentRepository.findByRelatedEntityId(counterClaim.getId()))
-                .thenReturn(Optional.of(feePayment));
-
             EmailNotificationResponse response = createEmailResponse();
 
             when(notificationService.sendDefendantResponseNoCounterclaimEmailNotification(defendantResponse))
@@ -103,7 +100,8 @@ class NotifyControllerTest {
                      .sendDefendantResponseCounterclaimPaymentRequiredEmailNotification(defendantResponse)
             ).thenReturn(response);
             when(notificationService
-                     .sendDefendantResponseCounterclaimPaymentSuccessEmailNotification(defendantResponse, feePayment)
+                     .sendDefendantResponseCounterclaimPaymentSuccessEmailNotification(
+                         eq(defendantResponse), anyString())
             ).thenReturn(response);
             when(notificationService
                      .sendDefendantResponseCounterclaimNoPaymentRequiredEmailNotification(defendantResponse)
@@ -121,7 +119,7 @@ class NotifyControllerTest {
             verify(notificationService)
                 .sendDefendantResponseCounterclaimPaymentRequiredEmailNotification(defendantResponse);
             verify(notificationService)
-                .sendDefendantResponseCounterclaimPaymentSuccessEmailNotification(defendantResponse, feePayment);
+                .sendDefendantResponseCounterclaimPaymentSuccessEmailNotification(eq(defendantResponse), anyString());
             verify(notificationService)
                 .sendDefendantResponseCounterclaimNoPaymentRequiredEmailNotification(defendantResponse);
         }
