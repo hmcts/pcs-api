@@ -120,6 +120,8 @@ public class PaymentCallBackControllerIT extends AbstractPostgresContainerIT {
         Optional<FeePaymentEntity> byRequestReference = feePaymentRepository
             .findByServiceRequestReference(serviceCaseReference);
         assertThat(byRequestReference.isPresent()).isTrue();
+        FeePaymentEntity feePaymentEntity = byRequestReference.get();
+        assertThat(feePaymentEntity.getPaymentStatus()).isEqualTo(PaymentStatus.PAID);
     }
 
     PcsCaseEntity establishTestCase() {
