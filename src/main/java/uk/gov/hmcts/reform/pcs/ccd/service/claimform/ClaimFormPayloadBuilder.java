@@ -32,7 +32,6 @@ import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -56,6 +55,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimFormFormatter.i
 import static uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimFormFormatter.toClaimFormAddress;
 import static uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimFormFormatter.toLabel;
 import static uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimFormFormatter.yesOrNoToVertical;
+import static uk.gov.hmcts.reform.pcs.ccd.service.form.FormFieldFormatter.formatUkDate;
 
 /**
  * Builds {@link ClaimFormPayload} from a {@link PcsCaseEntity}.
@@ -317,14 +317,10 @@ public class ClaimFormPayloadBuilder {
 
     private void mapClaim(ClaimEntity claim, ClaimFormPayload.ClaimFormPayloadBuilder payloadBuilder) {
         if (claim.getClaimSubmittedDate() != null) {
-            payloadBuilder.submittedOn(claim.getClaimSubmittedDate().atZone(ZoneOffset.UTC)
-                .withZoneSameInstant(ukClock.getZone()).toLocalDate());
+            payloadBuilder.submittedOn(formatUkDate(claim.getClaimSubmittedDate(), ukClock));
         }
         if (claim.getClaimIssuedDate() != null) {
-            // Stored as a UTC timestamp; convert to the UK calendar date so a claim issued just
-            // after midnight BST shows the correct day rather than the previous one.
-            payloadBuilder.issueDateSealed(claim.getClaimIssuedDate().atZone(ZoneOffset.UTC)
-                .withZoneSameInstant(ukClock.getZone()).toLocalDate());
+            payloadBuilder.issueDateSealed(formatUkDate(claim.getClaimIssuedDate(), ukClock));
         }
 
         VerticalYesNo preActionFollowed = claim.getPreActionProtocolFollowed();
