@@ -8,6 +8,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.documentamend.DocumentAmendDetails;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.service.CaseNameFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
@@ -23,16 +24,20 @@ import static uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter.COMMA_DELIMITER;
 public class DocumentAmendSelectionService {
 
     private static final String SELECT_DIFFERENT_FOLDER_ERROR = "Select a different folder to continue";
+    private static final String SELECT_DOCUMENT_ERROR = "Select which document you want to amend";
     private static final Comparator<DocumentEntity> DOCUMENT_ORDER = Comparator
         .comparing(DocumentEntity::getSubmittedDate, Comparator.nullsLast(Comparator.reverseOrder()))
         .thenComparing(DocumentEntity::getFileName, Comparator.nullsLast(String::compareToIgnoreCase));
 
     private final PcsCaseService pcsCaseService;
     private final AddressFormatter addressFormatter;
+    private final CaseNameFormatter caseNameFormatter;
 
-    public DocumentAmendSelectionService(PcsCaseService pcsCaseService, AddressFormatter addressFormatter) {
+    public DocumentAmendSelectionService(PcsCaseService pcsCaseService, AddressFormatter addressFormatter,
+                                         CaseNameFormatter caseNameFormatter) {
         this.pcsCaseService = pcsCaseService;
         this.addressFormatter = addressFormatter;
+        this.caseNameFormatter = caseNameFormatter;
     }
 
     public void initialise(long caseReference, PCSCase caseData) {
@@ -74,7 +79,7 @@ public class DocumentAmendSelectionService {
         if (selectedDocument == null || selectedDocument.getCode() == null) {
             details.setSelectedDocumentId(null);
             details.setSelectedDocumentFileName(null);
-            return List.of();
+            return List.of(SELECT_DOCUMENT_ERROR);
         }
 
         details.setSelectedDocumentId(selectedDocument.getCode());
@@ -132,10 +137,13 @@ public class DocumentAmendSelectionService {
     }
 
     private String buildPartyNamesSummary(PCSCase caseData) {
-        if (caseData.getClaimantNames() == null || caseData.getDefendantNames() == null) {
+        if (caseData.getClaimantNames() != null && caseData.getDefendantNames() != null) {
+            return caseData.getClaimantNames() + " vs " + caseData.getDefendantNames();
+        }
+        if (CollectionUtils.isEmpty(caseData.getAllClaimants()) && CollectionUtils.isEmpty(caseData.getAllDefendants())) {
             return null;
         }
-        return caseData.getClaimantNames() + " vs " + caseData.getDefendantNames();
+        return caseNameFormatter.formatCaseName(caseData);
     }
 
     private DocumentAmendDetails getOrCreateDetails(PCSCase caseData) {

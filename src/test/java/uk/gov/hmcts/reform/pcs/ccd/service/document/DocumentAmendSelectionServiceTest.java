@@ -8,12 +8,14 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.documentamend.DocumentAmendDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.documentamend.DocumentAmendFolder;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.service.CaseNameFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
@@ -28,6 +30,7 @@ import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory.APPLICATIONS;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory.EVIDENCE;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory.UNCATEGORISED_DOCUMENTS;
+import static uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils.wrapListItems;
 
 @ExtendWith(MockitoExtension.class)
 class DocumentAmendSelectionServiceTest {
@@ -41,7 +44,7 @@ class DocumentAmendSelectionServiceTest {
 
     @BeforeEach
     void setUp() {
-        underTest = new DocumentAmendSelectionService(pcsCaseService, new AddressFormatter());
+        underTest = new DocumentAmendSelectionService(pcsCaseService, new AddressFormatter(), new CaseNameFormatter());
     }
 
     @Test
@@ -78,6 +81,26 @@ class DocumentAmendSelectionServiceTest {
 
         assertThat(caseData.getDocumentAmendDetails().getPropertyAddressSummary())
             .isEqualTo("15 Garden Drive, Luton, LU1 1AB");
+        assertThat(caseData.getDocumentAmendDetails().getPartyNamesSummary())
+            .isEqualTo("Treetops Housing vs Billy Wright");
+    }
+
+    @Test
+    void shouldPopulatePartyNamesSummaryFromPartyCollectionsWhenSummaryFieldsAreMissing() {
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(PcsCaseEntity.builder().build());
+        PCSCase caseData = PCSCase.builder()
+            .allClaimants(wrapListItems(List.of(Party.builder()
+                .orgName("Treetops Housing")
+                .build())))
+            .allDefendants(wrapListItems(List.of(Party.builder()
+                .firstName("Billy")
+                .lastName("Wright")
+                .nameKnown(VerticalYesNo.YES)
+                .build())))
+            .build();
+
+        underTest.initialise(CASE_REFERENCE, caseData);
+
         assertThat(caseData.getDocumentAmendDetails().getPartyNamesSummary())
             .isEqualTo("Treetops Housing vs Billy Wright");
     }
@@ -173,7 +196,7 @@ class DocumentAmendSelectionServiceTest {
     }
 
     @Test
-    void shouldLeaveMissingDocumentSelectionToExuiMandatoryValidation() {
+    void shouldReturnErrorWhenSelectedFolderHasDocumentsButNoDocumentSelected() {
         DocumentEntity document = document("photo.pdf", EVIDENCE.getId(), null);
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(PcsCaseEntity.builder()
             .documents(List.of(document))
@@ -187,7 +210,7 @@ class DocumentAmendSelectionServiceTest {
 
         List<String> errors = underTest.validateAndStoreSelection(caseData);
 
-        assertThat(errors).isEmpty();
+        assertThat(errors).containsExactly("Select which document you want to amend");
         assertThat(caseData.getDocumentAmendDetails().getSelectedDocumentId()).isNull();
     }
 

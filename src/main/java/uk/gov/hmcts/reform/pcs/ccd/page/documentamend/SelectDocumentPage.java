@@ -10,7 +10,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.documentamend.DocumentAmendDetails;
-import uk.gov.hmcts.reform.pcs.ccd.domain.documentamend.DocumentAmendFolder;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentAmendSelectionService;
 
 import java.util.List;
@@ -137,21 +136,7 @@ public class SelectDocumentPage implements CcdPageConfiguration {
     }
 
     private String selectedFolderCondition(CaseFileCategory category) {
-        return FIELD_PREFIX + "SelectedFolder=\"" + folderForCategory(category).name() + "\"";
-    }
-
-    private DocumentAmendFolder folderForCategory(CaseFileCategory category) {
-        return switch (category) {
-            case STATEMENTS_OF_CASE -> DocumentAmendFolder.STATEMENTS_OF_CASE;
-            case PROPERTY_DOCUMENTS -> DocumentAmendFolder.PROPERTY_DOCUMENTS;
-            case EVIDENCE -> DocumentAmendFolder.EVIDENCE;
-            case HEARING_DOCUMENTS -> DocumentAmendFolder.HEARING_DOCUMENTS;
-            case ORDERS_AND_NOTICE_OF_HEARINGS -> DocumentAmendFolder.ORDERS_AND_NOTICE_OF_HEARINGS;
-            case APPLICATIONS -> DocumentAmendFolder.APPLICATIONS;
-            case APPEALS -> DocumentAmendFolder.APPEALS;
-            case CORRESPONDENCE -> DocumentAmendFolder.CORRESPONDENCE;
-            case UNCATEGORISED_DOCUMENTS -> DocumentAmendFolder.UNCATEGORISED_DOCUMENTS;
-        };
+        return FIELD_PREFIX + "SelectedFolder=\"" + category.getLabel() + "\"";
     }
 
     private String emptyFieldId(CaseFileCategory category) {
