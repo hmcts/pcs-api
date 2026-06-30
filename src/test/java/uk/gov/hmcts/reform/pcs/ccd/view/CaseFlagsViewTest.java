@@ -294,28 +294,4 @@ class CaseFlagsViewTest {
             .build();
     }
 
-    private void setClaimParties(PcsCaseEntity pcsCaseEntity, ClaimPartyEntity... claimParties) {
-        UUID claimId = UUID.randomUUID();
-        ClaimEntity claim = ClaimEntity.builder()
-            .id(claimId)
-            .claimParties(List.of(claimParties))
-            .build();
-
-        for (ClaimPartyEntity claimParty : claimParties) {
-            claimParty.getId().setClaimId(claimId);
-        }
-
-        pcsCaseEntity.setClaims(List.of(claim));
-    }
-
-    private ClaimPartyEntity createClaimParty(PartyEntity partyEntity, PartyRole role) {
-        ClaimPartyId id = new ClaimPartyId();
-        id.setPartyId(partyEntity.getId());
-
-        return ClaimPartyEntity.builder()
-            .id(id)
-            .party(partyEntity)
-            .role(role)
-            .build();
-    }
 }

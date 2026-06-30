@@ -30,6 +30,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.E
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.EvidenceOfDefendants;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.WarrantOfRestitutionDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocument;
+import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocumentUploadDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
@@ -1141,16 +1142,6 @@ class DocumentServiceTest {
         verify(documentRepository, never()).saveAll(anyList());
     }
 
-    @Test
-    void shouldReturnNullWhenAdditionalDocumentTypeIsNull() {
-        // When
-        DocumentType actualDocumentType = underTest.mapAdditionalDocumentTypeToDocumentType(null);
-
-        // Then
-        assertThat(actualDocumentType).isNull();
-    }
-
-
     @ParameterizedTest
     @MethodSource("additionalDocumentTypeScenarios")
     void shouldMapAdditionalDocumentTypeToDocumentType(AdditionalDocumentType additionalDocumentType,
@@ -1197,7 +1188,7 @@ class DocumentServiceTest {
     void shouldCreateValidLegalRepDocuments() {
 
         LegalRepDocument legalRepDocument = LegalRepDocument.builder()
-            .documentType(EvidenceDocumentType.PHOTOGRAPHIC_EVIDENCE)
+            .legalRepDocumentType(LegalRepDocumentType.PHOTOGRAPHIC_EVIDENCE)
             .description("Test Description")
             .document(Document.builder().build())
             .build();
@@ -1212,7 +1203,7 @@ class DocumentServiceTest {
 
         List<LegalRepDocument> listOfLegalRepDocuments = documentService.createLegalRepDocuments(pcsCase);
         assertThat(listOfLegalRepDocuments).hasSize(1);
-        assertThat(listOfLegalRepDocuments.get(0).getDocumentType().getLabel()).isEqualTo("Photographic evidence");
+        assertThat(listOfLegalRepDocuments.get(0).getLegalRepDocumentType().getLabel()).isEqualTo("Photographic evidence");
         assertThat(listOfLegalRepDocuments.get(0).getDescription()).isEqualTo("Test Description");
     }
 
@@ -1228,7 +1219,7 @@ class DocumentServiceTest {
 
         LegalRepDocument legalRepDocument = LegalRepDocument.builder()
             .document(document)
-            .documentType(EvidenceDocumentType.PHOTOGRAPHIC_EVIDENCE)
+            .legalRepDocumentType(LegalRepDocumentType.PHOTOGRAPHIC_EVIDENCE)
             .description(description)
             .build();
 

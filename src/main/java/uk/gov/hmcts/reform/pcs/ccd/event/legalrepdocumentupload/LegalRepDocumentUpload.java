@@ -166,7 +166,6 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
              <h3>What happens next</h3>
             <p class="govuk-body">You do not need to do anything else. We will review the documents.</p>
             """;
-            .build();
     }
 
     @SuppressWarnings("SameParameterValue")

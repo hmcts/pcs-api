@@ -16,6 +16,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.E
 
 import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.DocumentUploadCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocument;
+import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.BaseEventTest;
@@ -244,7 +245,7 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
 
         LegalRepDocument legalRepDocument = LegalRepDocument.builder()
             .document(document)
-            .documentType(EvidenceDocumentType.PHOTOGRAPHIC_EVIDENCE)
+            .legalRepDocumentType(LegalRepDocumentType.PHOTOGRAPHIC_EVIDENCE)
             .description(description)
             .build();
 
@@ -271,7 +272,7 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
         LegalRepDocument legalRepDocument = LegalRepDocument.builder()
             .description("test description")
             .document(null)
-            .documentType(EvidenceDocumentType.PHOTOGRAPHIC_EVIDENCE)
+            .legalRepDocumentType(LegalRepDocumentType.PHOTOGRAPHIC_EVIDENCE)
             .build();
 
         List<LegalRepDocument> legalRepDocList = List.of(legalRepDocument);
@@ -296,7 +297,7 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
         LegalRepDocument validLegalRepDocument = LegalRepDocument.builder()
             .description("test description")
             .document(new Document())
-            .documentType(EvidenceDocumentType.PHOTOGRAPHIC_EVIDENCE)
+            .legalRepDocumentType(LegalRepDocumentType.PHOTOGRAPHIC_EVIDENCE)
             .build();
 
         List<LegalRepDocument> legalRepDocList = Stream.of(nullLegalRepDocument,

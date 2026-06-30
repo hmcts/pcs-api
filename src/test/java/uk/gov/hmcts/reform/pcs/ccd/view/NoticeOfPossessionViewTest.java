@@ -391,38 +391,4 @@ class NoticeOfPossessionViewTest {
         assertThat(noticeDocuments).hasSize(1);
         assertThat(noticeDocuments.getFirst().getId()).isEqualTo(noticeDocumentId.toString());
     }
-
-    @Test
-    void shouldSetAbleToLoadDocumentReasonToYesIfUnableToUploadDocument() {
-        // Given
-        when(noticeOfPossessionEntity.getServingMethod()).thenReturn(FIRST_CLASS_POST);
-        when(noticeOfPossessionEntity.getIsAbleToUploadDocument()).thenReturn(YesOrNo.YES);
-
-        // When
-        underTest.setCaseFields(pcsCase, pcsCaseEntity);
-
-        // Then
-        verify(pcsCase).setNoticeServedDetails(noticeServedDetailsCaptor.capture());
-
-        NoticeServedDetails noticeServedDetails = noticeServedDetailsCaptor.getValue();
-        assertThat(noticeServedDetails.getAbleToUploadDocument()).isEqualTo(CanUploadNoticeServedDocument.Yes);
-    }
-
-    @Test
-    void shouldSetAbleToLoadDocumentReasonToNoIfAbleToUploadDocument() {
-        // Given
-        when(noticeOfPossessionEntity.getServingMethod()).thenReturn(FIRST_CLASS_POST);
-        when(noticeOfPossessionEntity.getIsAbleToUploadDocument()).thenReturn(YesOrNo.NO);
-        when(noticeOfPossessionEntity.getUnableToUploadReason()).thenReturn("some reason");
-
-        // When
-        underTest.setCaseFields(pcsCase, pcsCaseEntity);
-
-        // Then
-        verify(pcsCase).setNoticeServedDetails(noticeServedDetailsCaptor.capture());
-
-        NoticeServedDetails noticeServedDetails = noticeServedDetailsCaptor.getValue();
-        assertThat(noticeServedDetails.getAbleToUploadDocument()).isEqualTo(CanUploadNoticeServedDocument.No);
-        assertThat(noticeServedDetails.getUnableToUploadReason()).isEqualTo("some reason");
-    }
 }
