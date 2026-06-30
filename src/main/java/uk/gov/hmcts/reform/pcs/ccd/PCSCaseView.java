@@ -24,6 +24,7 @@ import uk.gov.hmcts.reform.pcs.ccd.view.AlternativesToPossessionView;
 import uk.gov.hmcts.reform.pcs.ccd.view.AsbProhibitedConductView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseFlagsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseLinkView;
+import uk.gov.hmcts.reform.pcs.ccd.view.CaseListView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseNoteView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseTabView;
 import uk.gov.hmcts.reform.pcs.ccd.view.ClaimGroundsView;
@@ -75,6 +76,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
     private final StatementOfTruthView statementOfTruthView;
     private final CaseFieldsView caseFieldsView;
     private final SearchCriteriaIndexer searchCriteriaIndexer;
+    private final CaseListView caseListView;
     private final CaseLinkView caseLinkView;
     private final EnforcementOrderMediator enforcementOrderMediator;
     private final CaseNoteView caseNoteView;
@@ -137,6 +139,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
             .legislativeCountry(pcsCaseEntity.getLegislativeCountry())
             .caseManagementLocationNumber(pcsCaseEntity.getCaseManagementLocation())
             .dateSubmitted(getClaimSubmittedDate(pcsCaseEntity))
+            .dateIssued(getClaimIssuedDate(pcsCaseEntity))
             .build();
 
         setDerivedProperties(pcsCase, pcsCaseEntity);
@@ -157,6 +160,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         caseLinkView.setCaseFields(pcsCase, pcsCaseEntity);
         caseNoteView.setCaseFields(pcsCase, pcsCaseEntity);
         flagsView.setCaseFields(pcsCase, pcsCaseEntity);
+        caseListView.setCaseFields(pcsCase);
         defendantResponseView.setCaseFields(pcsCase, pcsCaseEntity);
 
         return new SubmittedCase(pcsCase, pcsCaseEntity);
@@ -166,6 +170,13 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         return pcsCaseEntity.getClaims().stream()
             .findFirst()
             .map(ClaimEntity::getClaimSubmittedDate)
+            .orElse(null);
+    }
+
+    private LocalDateTime getClaimIssuedDate(PcsCaseEntity pcsCaseEntity) {
+        return pcsCaseEntity.getClaims().stream()
+            .findFirst()
+            .map(ClaimEntity::getClaimIssuedDate)
             .orElse(null);
     }
 
