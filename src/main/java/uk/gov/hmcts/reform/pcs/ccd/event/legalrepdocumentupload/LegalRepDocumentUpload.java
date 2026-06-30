@@ -14,11 +14,13 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocumentUploadDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.DocumentUploadCategory;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.page.legalrepdocumentupload.LegalRepDocumentUploadConfigurer;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 
@@ -40,6 +42,7 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
 
     private final LegalRepDocumentUploadConfigurer legalRepDocumentUploadConfigurer;
     private final PcsCaseService pcsCaseService;
+    private final DocumentService documentService;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -131,7 +134,31 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
         };
     }
 
-    private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
-        return SubmitResponse.defaultResponse();
+    SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
+        Long caseReference = eventPayload.caseReference();
+        PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
+        PCSCase pcsCase = eventPayload.caseData();
+
+        List<LegalRepDocument> legalRepDocuments = documentService.createLegalRepDocuments(pcsCase);
+
+        boolean isDocumentNull = legalRepDocuments.stream()
+            .anyMatch(doc -> doc == null || doc.getDocument() == null);
+
+        if (isDocumentNull) {
+            return errorResponse("Your files were not submitted. Try again.");
+        }
+
+        documentService.createDocumentEntitiesFromLegalRepDocuments(legalRepDocuments,pcsCaseEntity);
+
+        return SubmitResponse.<State>builder()
+            .build();
     }
+
+    @SuppressWarnings("SameParameterValue")
+    private SubmitResponse<State> errorResponse(String message) {
+        return SubmitResponse.<State>builder()
+            .errors(List.of(message))
+            .build();
+    }
+
 }
