@@ -34,7 +34,7 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimStatus;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponseStatus;
-import uk.gov.hmcts.reform.pcs.testingsupport.model.TestingSupportPin;
+import uk.gov.hmcts.reform.pcs.testingsupport.model.TestingSupportAccessCode;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
@@ -254,8 +254,8 @@ public class TestingSupportController {
         @ApiResponse(responseCode = "404", description = "Case not found"),
         @ApiResponse(responseCode = "500", description = "Internal server error")
     })
-    @GetMapping("/pins/{caseReference}")
-    public ResponseEntity<Map<String, Party>> getPins(
+    @GetMapping({"/access-codes/{caseReference}", "/pins/{caseReference}"})
+    public ResponseEntity<Map<String, Party>> getAccessCodes(
         @Parameter(
             description = "Service-to-Service (S2S) authorization token",
             required = true,
@@ -273,9 +273,9 @@ public class TestingSupportController {
 
             PcsCaseEntity pcsCaseEntity = maybeCase.get();
 
-            List<TestingSupportPin> pins = jdbcTemplate.query(
-                "SELECT party_id, plaintext_code FROM testing_support_pin WHERE case_id = ?",
-                (rs, rowNum) -> new TestingSupportPin(
+            List<TestingSupportAccessCode> pins = jdbcTemplate.query(
+                "SELECT party_id, plaintext_code FROM testing_support_access_code WHERE case_id = ?",
+                (rs, rowNum) -> new TestingSupportAccessCode(
                     rs.getObject("party_id", UUID.class),
                     rs.getString("plaintext_code")
                 ),
@@ -376,7 +376,7 @@ public class TestingSupportController {
 
     /**
      * Test-only shortcut that reproduces, synchronously, what the payment/issue flow does: allocate the court
-     * location, set the issued date, then generate the defendant access codes + pin packs. Lets a functional
+     * location, set the issued date, then generate the defendant access codes + access-code letters. Lets a functional
      * test obtain the PIN deterministically without paying or waiting for the db-scheduler. Idempotent with the
      * scheduler (skips defendants that already have a code).
      */

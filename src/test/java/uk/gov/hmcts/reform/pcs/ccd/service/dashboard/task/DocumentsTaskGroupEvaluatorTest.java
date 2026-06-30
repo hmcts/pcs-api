@@ -50,7 +50,7 @@ class DocumentsTaskGroupEvaluatorTest {
     }
 
     @Test
-    void shouldMarkViewDocumentsAsNotAvailableWhenOnlyDocumentIsDefendantAccessCodePinPack() {
+    void shouldMarkViewDocumentsAsNotAvailableWhenOnlyDocumentIsDefendantAccessCodeLetter() {
         PcsCaseEntity caseEntity = PcsCaseEntity.builder()
             .documents(List.of(
                 DocumentEntity.builder().type(DocumentType.DEFENDANT_ACCESS_CODE).build()))

@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.service.genapp;
+package uk.gov.hmcts.reform.pcs.ccd.service.accesscode;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,7 +22,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseReferenceFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
-import uk.gov.hmcts.reform.pcs.document.model.PinPackFormPayload;
+import uk.gov.hmcts.reform.pcs.document.model.accesscode.AccessCodeFormPayload;
 import uk.gov.hmcts.reform.pcs.document.service.DocAssemblyService;
 import uk.gov.hmcts.reform.pcs.location.model.CourtVenue;
 import uk.gov.hmcts.reform.pcs.location.service.LocationReferenceService;
@@ -44,7 +44,7 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
-class PinPackDocumentGeneratorTest {
+class AccessCodeFormDocumentGeneratorTest {
 
     private static final String AUTH_TOKEN = "Bearer system-token";
     private static final Integer EPIMS_ID = 12345;
@@ -66,7 +66,7 @@ class PinPackDocumentGeneratorTest {
     @Mock
     private CaseReferenceFormatter caseReferenceFormatter;
 
-    private PinPackDocumentGenerator underTest;
+    private AccessCodeFormDocumentGenerator underTest;
 
     @Captor
     private ArgumentCaptor<FormPayload> payloadCaptor;
@@ -77,7 +77,7 @@ class PinPackDocumentGeneratorTest {
     @BeforeEach
     void setUp() {
         Clock ukClock = Clock.fixed(Instant.parse("2026-06-10T10:00:00Z"), ZoneId.of("Europe/London"));
-        underTest = new PinPackDocumentGenerator(
+        underTest = new AccessCodeFormDocumentGenerator(
             docAssemblyService,
             locationReferenceService,
             systemUpdateUserTokenProvider,
@@ -107,7 +107,7 @@ class PinPackDocumentGeneratorTest {
             .build();
         PcsCaseEntity caseEntity = caseWith(defendant);
 
-        underTest.generatePinPack(caseEntity, caseEntity.getClaims().getFirst(), defendant, "PLAINTEXTPIN1");
+        underTest.generate(caseEntity, caseEntity.getClaims().getFirst(), defendant, "PLAINTEXTPIN1");
 
         assertThat(capturedPayload().getDefendantName()).isEqualTo("Persons unknown");
     }
@@ -122,7 +122,7 @@ class PinPackDocumentGeneratorTest {
             .build();
         PcsCaseEntity caseEntity = caseWith(defendant);
 
-        underTest.generatePinPack(caseEntity, caseEntity.getClaims().getFirst(), defendant, "PLAINTEXTPIN1");
+        underTest.generate(caseEntity, caseEntity.getClaims().getFirst(), defendant, "PLAINTEXTPIN1");
 
         assertThat(capturedPayload().getDefendantName()).isEqualTo("John Doe");
     }
@@ -135,9 +135,9 @@ class PinPackDocumentGeneratorTest {
             .build();
         PcsCaseEntity caseEntity = caseWith(defendant);
 
-        underTest.generatePinPack(caseEntity, caseEntity.getClaims().getFirst(), defendant, "PLAINTEXTPIN1");
+        underTest.generate(caseEntity, caseEntity.getClaims().getFirst(), defendant, "PLAINTEXTPIN1");
 
-        PinPackFormPayload payload = capturedPayload();
+        AccessCodeFormPayload payload = capturedPayload();
         assertThat(payload.getDefendantAddress()).isEqualTo(PROPERTY_ADDRESS);
         assertThat(payload.getPropertyAddress()).isEqualTo(PROPERTY_ADDRESS);
     }
@@ -159,7 +159,7 @@ class PinPackDocumentGeneratorTest {
             .build();
         PcsCaseEntity caseEntity = caseWith(defendant);
 
-        underTest.generatePinPack(caseEntity, caseEntity.getClaims().getFirst(), defendant, "PLAINTEXTPIN1");
+        underTest.generate(caseEntity, caseEntity.getClaims().getFirst(), defendant, "PLAINTEXTPIN1");
 
         assertThat(capturedPayload().getDefendantAddress()).isEqualTo(PARTY_ADDRESS);
     }
@@ -172,9 +172,9 @@ class PinPackDocumentGeneratorTest {
             .build();
         PcsCaseEntity caseEntity = caseWith(defendant);
 
-        underTest.generatePinPack(caseEntity, caseEntity.getClaims().getFirst(), defendant, "PLAINTEXTPIN1");
+        underTest.generate(caseEntity, caseEntity.getClaims().getFirst(), defendant, "PLAINTEXTPIN1");
 
-        PinPackFormPayload payload = capturedPayload();
+        AccessCodeFormPayload payload = capturedPayload();
         assertThat(payload.getRespondByPostCourtAddress())
             .isEqualTo("Central London County Court\n13-14 Park Crescent\nMarylebone\nW1B 1HT");
     }
@@ -189,7 +189,7 @@ class PinPackDocumentGeneratorTest {
         caseEntity.setCaseManagementLocation(null);
 
         assertThatThrownBy(() ->
-            underTest.generatePinPack(caseEntity, caseEntity.getClaims().getFirst(), defendant, "PLAINTEXTPIN1"))
+            underTest.generate(caseEntity, caseEntity.getClaims().getFirst(), defendant, "PLAINTEXTPIN1"))
             .isInstanceOf(IllegalStateException.class)
             .hasMessageContaining("case management location")
             .hasMessageContaining("AC06");
@@ -208,7 +208,7 @@ class PinPackDocumentGeneratorTest {
         PcsCaseEntity caseEntity = caseWith(defendant);
 
         assertThatThrownBy(() ->
-            underTest.generatePinPack(caseEntity, caseEntity.getClaims().getFirst(), defendant, "PLAINTEXTPIN1"))
+            underTest.generate(caseEntity, caseEntity.getClaims().getFirst(), defendant, "PLAINTEXTPIN1"))
             .isInstanceOf(IllegalStateException.class)
             .hasMessageContaining("No court venue found")
             .hasMessageContaining("AC06");
@@ -223,19 +223,19 @@ class PinPackDocumentGeneratorTest {
             .build();
         PcsCaseEntity caseEntity = caseWith(defendant);
 
-        String result = underTest.generatePinPack(caseEntity, caseEntity.getClaims().getFirst(),
+        String result = underTest.generate(caseEntity, caseEntity.getClaims().getFirst(),
                                                   defendant, "PLAINTEXTPIN1");
 
         assertThat(result).isEqualTo(DOC_URL);
         assertThat(capturedPayload().getAccessCode()).isEqualTo("PLAINTEXTPIN1");
         assertThat(capturedPayload().getUrl()).isEqualTo(RESPOND_ONLINE_URL);
         verify(docAssemblyService).generateDocument(any(),
-            eq(PinPackDocumentGenerator.PIN_PACK_TEMPLATE_ID), eq(OutputType.PDF), anyString());
+            eq(AccessCodeFormDocumentGenerator.TEMPLATE_ID), eq(OutputType.PDF), anyString());
     }
 
-    private PinPackFormPayload capturedPayload() {
+    private AccessCodeFormPayload capturedPayload() {
         verify(docAssemblyService).generateDocument(payloadCaptor.capture(), anyString(), any(), anyString());
-        return (PinPackFormPayload) payloadCaptor.getValue();
+        return (AccessCodeFormPayload) payloadCaptor.getValue();
     }
 
     private PcsCaseEntity caseWith(PartyEntity defendant) {

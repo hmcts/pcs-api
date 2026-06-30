@@ -400,7 +400,7 @@ public class DocumentService {
                 Optional.of(CaseFileCategory.CORRESPONDENCE);
             case NOTICE_SERVED,
                  POLICE_REPORT,
-                 // Defendant access-code (pin pack) letters aren't shown on the case file
+                 // Defendant access-code (access-code letter) letters aren't shown on the case file
                  DEFENDANT_ACCESS_CODE,
                  OTHER ->
                 Optional.empty();

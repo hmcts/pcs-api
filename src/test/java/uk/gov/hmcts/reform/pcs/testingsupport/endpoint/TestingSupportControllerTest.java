@@ -23,7 +23,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimSta
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponseStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
-import uk.gov.hmcts.reform.pcs.testingsupport.model.TestingSupportPin;
+import uk.gov.hmcts.reform.pcs.testingsupport.model.TestingSupportAccessCode;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
@@ -302,8 +302,8 @@ class TestingSupportControllerTest {
             .parties(Set.of(defendant))
             .build();
 
-        List<TestingSupportPin> pins = new ArrayList<>();
-        pins.add(new TestingSupportPin(partyCode, accessCodeString));
+        List<TestingSupportAccessCode> pins = new ArrayList<>();
+        pins.add(new TestingSupportAccessCode(partyCode, accessCodeString));
 
         when(pcsCaseRepository.findByCaseReference(caseReference))
             .thenReturn(Optional.ofNullable(caseEntity));
@@ -312,7 +312,7 @@ class TestingSupportControllerTest {
             .thenReturn(pins);
 
         // When
-        ResponseEntity<Map<String, Party>> response = underTest.getPins(
+        ResponseEntity<Map<String, Party>> response = underTest.getAccessCodes(
             "ServiceAuthToken", caseReference
         );
 
@@ -334,7 +334,7 @@ class TestingSupportControllerTest {
             .thenReturn(Optional.empty());
 
         // When
-        ResponseEntity<Map<String, Party>> response = underTest.getPins(
+        ResponseEntity<Map<String, Party>> response = underTest.getAccessCodes(
             "ServiceAuthToken", caseReference
         );
 
@@ -351,7 +351,7 @@ class TestingSupportControllerTest {
             .thenThrow(new RuntimeException());
 
         // When
-        ResponseEntity<Map<String, Party>> response = underTest.getPins(
+        ResponseEntity<Map<String, Party>> response = underTest.getAccessCodes(
             "ServiceAuthToken", caseReference
         );
 

@@ -9,10 +9,12 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * Orchestrates defendant access code / pin pack generation for a case. Each defendant is generated
- * in its own transaction via {@link DefendantAccessCodeService}, so one defendant's failure does not
- * roll back the others; defendants that already have a code are skipped, making retries idempotent.
- * If any defendant fails, the whole task is failed so the scheduler retries the remaining ones.
+ * Generates every defendant's access code for a case <b>synchronously</b>, in one call. Used only by
+ * testing-support so a functional test can issue a case and read the PINs immediately; the production
+ * (scheduled) path fans out one task per defendant instead - see {@code AccessCodeGenerationComponent}.
+ * Each defendant is generated in its own transaction via {@link DefendantAccessCodeService}, so one
+ * failure does not roll back the others; defendants that already have a code are skipped. If any
+ * defendant fails, the whole call fails so the caller sees it.
  */
 @Service
 @AllArgsConstructor
@@ -42,7 +44,7 @@ public class AccessCodeGenerationService {
         }
 
         if (!defendantPartyIds.isEmpty()) {
-            log.debug("Generated {} defendant access code pin pack(s) for case {}",
+            log.debug("Generated {} defendant access code access-code letter(s) for case {}",
                       defendantPartyIds.size(), caseReference);
         }
     }

@@ -18,10 +18,10 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DocumentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyAccessCodeRepository;
-import uk.gov.hmcts.reform.pcs.ccd.service.genapp.PinPackDocumentGenerator;
+import uk.gov.hmcts.reform.pcs.ccd.service.accesscode.AccessCodeFormDocumentGenerator;
 import uk.gov.hmcts.reform.pcs.ccd.util.AccessCodeGenerator;
 import uk.gov.hmcts.reform.pcs.service.PartyAccessCodeHashingService;
-import uk.gov.hmcts.reform.pcs.testingsupport.service.TestPinRecorder;
+import uk.gov.hmcts.reform.pcs.testingsupport.service.TestAccessCodeRecorder;
 
 import java.util.Arrays;
 import java.util.List;
@@ -53,13 +53,13 @@ class DefendantAccessCodeServiceTest {
     @Mock
     private PartyAccessCodeHashingService hashingService;
     @Mock(strictness = LENIENT)
-    private PinPackDocumentGenerator pinPackDocumentGenerator;
+    private AccessCodeFormDocumentGenerator accessCodeFormDocumentGenerator;
     @Mock
     private DocumentRepository documentRepository;
     @Mock
     private AccessCodeActivityLogService accessCodeActivityLogService;
     @Mock
-    private TestPinRecorder testPinRecorder;
+    private TestAccessCodeRecorder testAccessCodeRecorder;
 
     private DefendantAccessCodeService underTest;
 
@@ -75,13 +75,13 @@ class DefendantAccessCodeServiceTest {
             partyAccessCodeRepo,
             accessCodeGenerator,
             hashingService,
-            pinPackDocumentGenerator,
+            accessCodeFormDocumentGenerator,
             documentRepository,
             accessCodeActivityLogService,
-            testPinRecorder
+            testAccessCodeRecorder
         );
         when(accessCodeGenerator.generateAccessCode()).thenCallRealMethod();
-        lenient().when(pinPackDocumentGenerator.generatePinPack(any(), any(), any(), anyString()))
+        lenient().when(accessCodeFormDocumentGenerator.generate(any(), any(), any(), anyString()))
             .thenReturn(DOC_URL);
         lenient().when(hashingService.encodeForStorage(anyString()))
             .thenAnswer(invocation -> "ENC-" + invocation.getArgument(0));
@@ -109,7 +109,7 @@ class DefendantAccessCodeServiceTest {
         assertThat(savedCode.getRole()).isEqualTo(PartyRole.DEFENDANT);
         assertThat(savedCode.getCode()).startsWith("ENC-");
 
-        verify(testPinRecorder).record(eq(caseEntity.getId()), eq(partyId), anyString());
+        verify(testAccessCodeRecorder).record(eq(caseEntity.getId()), eq(partyId), anyString());
         verify(accessCodeActivityLogService).logSuccess(caseEntity, savedDoc.getParty(),
                                                    ClaimActivityType.DOCUMENTS_CREATED);
         verify(accessCodeActivityLogService, never()).logFailure(any(), any(), any());
@@ -120,7 +120,7 @@ class DefendantAccessCodeServiceTest {
         UUID partyId = UUID.randomUUID();
         PcsCaseEntity caseEntity = createCaseWithDefendants(partyId);
         when(pcsCaseService.loadCase(5L)).thenReturn(caseEntity);
-        when(pinPackDocumentGenerator.generatePinPack(any(), any(), any(), anyString()))
+        when(accessCodeFormDocumentGenerator.generate(any(), any(), any(), anyString()))
             .thenThrow(new RuntimeException("docmosis down"));
 
         RuntimeException thrown = assertThrows(RuntimeException.class,
@@ -131,7 +131,7 @@ class DefendantAccessCodeServiceTest {
                                                    eq(ClaimActivityType.DOCUMENTS_CREATED));
         verify(partyAccessCodeRepo, never()).save(any());
         verify(documentRepository, never()).save(any());
-        verify(testPinRecorder, never()).record(any(), any(), anyString());
+        verify(testAccessCodeRecorder, never()).record(any(), any(), anyString());
     }
 
     @Test
@@ -139,12 +139,27 @@ class DefendantAccessCodeServiceTest {
         UUID partyId = UUID.randomUUID();
         PcsCaseEntity caseEntity = createCaseWithDefendants(partyId);
         when(pcsCaseService.loadCase(5L)).thenReturn(caseEntity);
-        when(pinPackDocumentGenerator.generatePinPack(any(), any(), any(), anyString()))
+        when(accessCodeFormDocumentGenerator.generate(any(), any(), any(), anyString()))
             .thenThrow(new RuntimeException("docmosis down"));
 
         assertThrows(RuntimeException.class, () -> underTest.generateForDefendant(5L, partyId, false));
 
         verify(accessCodeActivityLogService, never()).logFailure(any(), any(), any());
+    }
+
+    @Test
+    void generateForDefendant_skipsWhenPartyAlreadyHasCode() {
+        UUID partyId = UUID.randomUUID();
+        PcsCaseEntity caseEntity = createCaseWithDefendants(partyId);
+        when(pcsCaseService.loadCase(1L)).thenReturn(caseEntity);
+        when(partyAccessCodeRepo.existsByPcsCase_IdAndPartyId(caseEntity.getId(), partyId)).thenReturn(true);
+
+        underTest.generateForDefendant(1L, partyId, true);
+
+        verify(partyAccessCodeRepo, never()).save(any());
+        verify(documentRepository, never()).save(any());
+        verify(testAccessCodeRecorder, never()).record(any(), any(), anyString());
+        verify(accessCodeActivityLogService, never()).logSuccess(any(), any(), any());
     }
 
     @Test
