@@ -1,5 +1,5 @@
 import {actionData, actionRecord, IAction} from '@utils/interfaces';
-import {expect, Locator, Page} from '@playwright/test';
+import test, {expect, Locator, Page} from '@playwright/test';
 import {getCaseTypeId} from '@utils/common/caseType.utils';
 import {performAction, performActions, performValidation} from '@utils/controller';
 import {
@@ -131,6 +131,7 @@ export class CreateCaseAction implements IAction {
       ['validateCaseFileViewFolders', () => this.validateCaseFileViewFolders(page, fieldName as actionData)],
       ['validateCaseFileViewIndividualFolder', () => this.validateCaseFileViewIndividualFolder(page, fieldName as actionRecord)],
       ['validateCaseListTable', () => this.validateCaseListTable(page, fieldName as actionRecord)],
+      ['validateTabAccess', () => this.validateTabAccess(page, fieldName as actionRecord)],
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -1766,6 +1767,16 @@ export class CreateCaseAction implements IAction {
     }
     return defendantText;
 
+  }
+
+  public async validateTabAccess(page: Page, tab: actionRecord) {
+    await test.step(`Tab access check for user "${tab.user}"`, async () => {
+      const tabLoc = page.locator('div.mat-tab-label-content');
+      await expect(tabLoc.first()).toBeVisible({timeout : SHORT_TIMEOUT});
+      const tabs = await tabLoc.allTextContents();
+      expect(tab.tabs).toEqual(tabs);
+
+    });
   }
 
 }

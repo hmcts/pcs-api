@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.claimform;
 
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
@@ -22,7 +21,6 @@ import java.util.Optional;
  * attaches a second pack.
  */
 @Service
-@Slf4j
 public class ClaimFormPersistenceService {
 
     private final PcsCaseService pcsCaseService;
@@ -44,7 +42,6 @@ public class ClaimFormPersistenceService {
     public Optional<ClaimFormPayload> buildPayloadIfNotAttached(long caseReference) {
         PcsCaseEntity pcsCase = pcsCaseService.loadCase(caseReference);
         if (pcsCase.getClaims().getFirst().getClaimFormDocument() != null) {
-            log.info("Claim form already attached for case {}, skipping", caseReference);
             return Optional.empty();
         }
         return Optional.of(payloadBuilder.build(pcsCase));
@@ -54,7 +51,6 @@ public class ClaimFormPersistenceService {
     public void attach(long caseReference, String dmStoreUrl) {
         ClaimEntity claim = pcsCaseService.loadCase(caseReference).getClaims().getFirst();
         if (claim.getClaimFormDocument() != null) {
-            log.info("Claim form already attached for case {}, skipping attach", caseReference);
             return;
         }
         DocumentEntity document = documentImportService.addDocumentToCase(
