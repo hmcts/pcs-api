@@ -196,7 +196,7 @@ class DocumentAmendSelectionServiceTest {
     }
 
     @Test
-    void shouldReturnErrorWhenSelectedFolderHasDocumentsButNoDocumentSelected() {
+    void shouldLeaveMissingDocumentSelectionToExuiMandatoryValidation() {
         DocumentEntity document = document("photo.pdf", EVIDENCE.getId(), null);
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(PcsCaseEntity.builder()
             .documents(List.of(document))
@@ -210,7 +210,7 @@ class DocumentAmendSelectionServiceTest {
 
         List<String> errors = underTest.validateAndStoreSelection(caseData);
 
-        assertThat(errors).containsExactly("Select which document you want to amend");
+        assertThat(errors).isEmpty();
         assertThat(caseData.getDocumentAmendDetails().getSelectedDocumentId()).isNull();
     }
 

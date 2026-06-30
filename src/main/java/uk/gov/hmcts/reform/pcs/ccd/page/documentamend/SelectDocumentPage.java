@@ -23,7 +23,6 @@ public class SelectDocumentPage implements CcdPageConfiguration {
     private static final String PAGE_ID = "selectDocument";
     private static final String FIELD_PREFIX = "documentAmend_";
     private static final String YES = "=\"Yes\"";
-    private static final String NO = "=\"No\"";
 
     private final DocumentAmendSelectionService documentAmendSelectionService;
 
@@ -128,7 +127,7 @@ public class SelectDocumentPage implements CcdPageConfiguration {
     }
 
     private String documentsShowCondition(CaseFileCategory category) {
-        return selectedFolderCondition(category) + " AND " + emptyFieldId(category) + NO;
+        return selectedFolderCondition(category);
     }
 
     private String noDocumentsShowCondition(CaseFileCategory category) {
@@ -136,7 +135,8 @@ public class SelectDocumentPage implements CcdPageConfiguration {
     }
 
     private String selectedFolderCondition(CaseFileCategory category) {
-        return FIELD_PREFIX + "SelectedFolder=\"" + category.getLabel() + "\"";
+        return "(" + FIELD_PREFIX + "SelectedFolder=\"" + category.getLabel() + "\""
+            + " OR " + FIELD_PREFIX + "SelectedFolder=\"" + category.name() + "\")";
     }
 
     private String emptyFieldId(CaseFileCategory category) {

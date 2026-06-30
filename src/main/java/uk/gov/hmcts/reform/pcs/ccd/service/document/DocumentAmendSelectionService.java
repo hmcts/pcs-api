@@ -24,7 +24,6 @@ import static uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter.COMMA_DELIMITER;
 public class DocumentAmendSelectionService {
 
     private static final String SELECT_DIFFERENT_FOLDER_ERROR = "Select a different folder to continue";
-    private static final String SELECT_DOCUMENT_ERROR = "Select which document you want to amend";
     private static final Comparator<DocumentEntity> DOCUMENT_ORDER = Comparator
         .comparing(DocumentEntity::getSubmittedDate, Comparator.nullsLast(Comparator.reverseOrder()))
         .thenComparing(DocumentEntity::getFileName, Comparator.nullsLast(String::compareToIgnoreCase));
@@ -79,7 +78,7 @@ public class DocumentAmendSelectionService {
         if (selectedDocument == null || selectedDocument.getCode() == null) {
             details.setSelectedDocumentId(null);
             details.setSelectedDocumentFileName(null);
-            return List.of(SELECT_DOCUMENT_ERROR);
+            return List.of();
         }
 
         details.setSelectedDocumentId(selectedDocument.getCode());
