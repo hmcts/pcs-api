@@ -27,6 +27,7 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DocumentAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.GlobalSearchAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.InternalCaseFlagAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.RasValidationAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.WAAccess;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.DashboardData;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.CitizenGenAppRequest;
@@ -118,7 +119,7 @@ public class PCSCase {
 
     @CCD(
         label = "Property address",
-        access = {CitizenAccess.class}
+        access = {CitizenAccess.class, WAAccess.class}
     )
     @External
     private AddressUK propertyAddress;
@@ -184,7 +185,7 @@ public class PCSCase {
     )
     private Integer regionId;
 
-    @CCD(access = {InternalCaseFlagAccess.class},
+    @CCD(access = {InternalCaseFlagAccess.class, WAAccess.class},
         label = "Party")
     private List<ListValue<Party>> parties;
 
@@ -261,7 +262,7 @@ public class PCSCase {
     private YesOrNo noticeServed;
 
     @JsonUnwrapped(prefix = "notice_")
-    @CCD(access = {ClaimantAccess.class})
+    @CCD(access = {ClaimantAccess.class, WAAccess.class})
     private NoticeServedDetails noticeServedDetails;
 
     private String caseTitleMarkdown;
@@ -269,7 +270,7 @@ public class PCSCase {
     @CCD(access = {DefendantAccess.class})
     private DashboardData dashboardData;
 
-    @CCD(access = {CitizenAccess.class})
+    @CCD(access = {CitizenAccess.class, WAAccess.class})
     private LegislativeCountry legislativeCountry;
 
     @CCD(
@@ -343,7 +344,7 @@ public class PCSCase {
     /**
      * Combined list of all defendants in the case (i.e. primary defendant + additional defendants).
      */
-    @CCD(access = {ClaimantAccess.class, CitizenAccess.class})
+    @CCD(access = {ClaimantAccess.class, CitizenAccess.class, WAAccess.class})
     private List<ListValue<Party>> allDefendants;
 
     @JsonUnwrapped(prefix = "tenancy_")
@@ -549,7 +550,7 @@ public class PCSCase {
     private VerticalYesNo isExemptLandlord;
 
     @CCD(
-        access = {DefendantAccess.class},
+        access = {DefendantAccess.class, WAAccess.class},
         searchable = false
     )
     private PossessionClaimResponse possessionClaimResponse;
@@ -574,10 +575,10 @@ public class PCSCase {
     private String formattedDefendantNames;
     private String formattedPropertyAddress;
 
-    @CCD(access = {ClaimantAccess.class, DefendantAccess.class})
+    @CCD(access = {ClaimantAccess.class, DefendantAccess.class, WAAccess.class})
     private List<ListValue<ClaimGroundSummary>> claimGroundSummaries;
 
-    @CCD(access = {ClaimantAccess.class, DefendantAccess.class})
+    @CCD(access = {ClaimantAccess.class, DefendantAccess.class, WAAccess.class})
     private LocalDateTime dateSubmitted;
 
     @CCD(
