@@ -2,7 +2,6 @@ package uk.gov.hmcts.reform.pcs.feesandpay.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -15,7 +14,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.service.CcdPaymentStateUpdateService;
-import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimFormScheduler;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
@@ -27,10 +25,6 @@ import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatusCallback;
 
 import java.math.BigDecimal;
-import java.time.Clock;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -41,7 +35,6 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
-import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -65,21 +58,10 @@ class MakeAClaimPaymentCallbackHandlerTest {
     @Mock
     private ObjectMapper objectMapper;
     @Mock
-    private ClaimRepository claimRepository;
-    @Mock
-    private Clock utcClock;
-    @Mock
     private ClaimFormScheduler claimFormScheduler;
 
     @InjectMocks
     private MakeAClaimPaymentCallbackHandler underTest;
-
-    @BeforeEach
-    void stubUtcClock() {
-        Instant defaultInstant = LocalDateTime.of(2020, 1, 1, 0, 0).toInstant(ZoneOffset.UTC);
-        lenient().when(utcClock.instant()).thenReturn(defaultInstant);
-        lenient().when(utcClock.getZone()).thenReturn(ZoneOffset.UTC);
-    }
 
     @Test
     void shouldSetPartyAllocateCaseManagementLocationSubmitPaymentSuccessAndScheduleClaimFormWhenPaid()
@@ -107,8 +89,6 @@ class MakeAClaimPaymentCallbackHandlerTest {
         var inOrder = inOrder(pcsCaseService, ccdPaymentStateUpdateService);
         inOrder.verify(pcsCaseService).allocateCaseManagementLocation(taskData.getCaseReference());
         inOrder.verify(ccdPaymentStateUpdateService).submitPaymentSuccess(taskData.getCaseReference());
-        assertThat(claimEntity.getClaimIssuedDate()).isEqualTo(LocalDateTime.of(2020, 1, 1, 0, 0));
-        verify(claimRepository).save(claimEntity);
         verify(claimFormScheduler).scheduleClaimFormGeneration(taskData.getCaseReference());
     }
 
@@ -135,7 +115,6 @@ class MakeAClaimPaymentCallbackHandlerTest {
         // Then
         assertThat(throwable).isSameAs(expectedException);
         verify(ccdPaymentStateUpdateService, never()).submitPaymentSuccess(CASE_REFERENCE);
-        verifyNoInteractions(claimRepository);
         verifyNoInteractions(claimFormScheduler);
     }
 
@@ -165,71 +144,6 @@ class MakeAClaimPaymentCallbackHandlerTest {
         assertThat(feePaymentEntity.getParty()).isSameAs(partyEntity);
         verifyNoInteractions(pcsCaseService);
         verifyNoInteractions(ccdPaymentStateUpdateService);
-        verifyNoInteractions(claimRepository);
-        verifyNoInteractions(claimFormScheduler);
-    }
-
-    @Test
-    void shouldNotOverwriteExistingClaimIssuedDate() throws Exception {
-        // Given
-        LocalDateTime existing = LocalDateTime.of(2026, 1, 1, 0, 0);
-        FeesAndPayTaskData taskData = buildTaskData();
-        when(objectMapper.readValue(anyString(), eq(FeesAndPayTaskData.class))).thenReturn(taskData);
-        
-        PartyEntity partyEntity = PartyEntity.builder().id(RESPONSIBLE_PARTY_ID).orgName(RESPONSIBLE_PARTY).build();
-        when(partyService.getPartyEntityByEntityId(RESPONSIBLE_PARTY_ID, CASE_REFERENCE)).thenReturn(partyEntity);
-        
-        ClaimEntity claimEntity = new ClaimEntity();
-        claimEntity.setClaimIssuedDate(existing);
-        PcsCaseEntity pcsCase = PcsCaseEntity.builder().caseReference(taskData.getCaseReference()).build();
-        claimEntity.setPcsCase(pcsCase);
-        
-        String taskDataJson = new ObjectMapper().writeValueAsString(taskData);
-        FeePaymentEntity feePaymentEntity = FeePaymentEntity.builder()
-            .claim(claimEntity)
-            .taskData(taskDataJson)
-            .paymentStatus(PaymentStatus.PAID)
-            .paymentCallbackHandlerType(PaymentCallbackHandlerType.CLAIM)
-            .build();
-        PaymentStatusCallback callback = PaymentStatusCallback.builder().ccdCaseNumber(CCD_CASE_NUMBER).build();
-
-        // When
-        underTest.handle(callback, feePaymentEntity);
-
-        // Then
-        assertThat(claimEntity.getClaimIssuedDate()).isEqualTo(existing);
-        verify(claimRepository, never()).save(claimEntity);
-    }
-
-    @Test
-    void shouldNotStampClaimIssuedDateWhenPaymentIsNotPaid() throws Exception {
-        // Given
-        FeesAndPayTaskData taskData = buildTaskData();
-        when(objectMapper.readValue(anyString(), eq(FeesAndPayTaskData.class))).thenReturn(taskData);
-        String taskDataJson = new ObjectMapper().writeValueAsString(taskData);
-
-        PartyEntity partyEntity = PartyEntity.builder().id(RESPONSIBLE_PARTY_ID).orgName(RESPONSIBLE_PARTY).build();
-        when(partyService.getPartyEntityByEntityId(RESPONSIBLE_PARTY_ID, CASE_REFERENCE)).thenReturn(partyEntity);
-
-        ClaimEntity claimEntity = new ClaimEntity();
-        PcsCaseEntity pcsCase = PcsCaseEntity.builder().caseReference(taskData.getCaseReference()).build();
-        claimEntity.setPcsCase(pcsCase);
-
-        FeePaymentEntity feePaymentEntity = FeePaymentEntity.builder()
-            .claim(claimEntity)
-            .taskData(taskDataJson)
-            .paymentStatus(PaymentStatus.NOT_PAID)
-            .paymentCallbackHandlerType(PaymentCallbackHandlerType.CLAIM)
-            .build();
-        PaymentStatusCallback callback = PaymentStatusCallback.builder().ccdCaseNumber(CCD_CASE_NUMBER).build();
-
-        // When
-        underTest.handle(callback, feePaymentEntity);
-
-        // Then
-        assertThat(claimEntity.getClaimIssuedDate()).isNull();
-        verifyNoInteractions(ccdPaymentStateUpdateService);
-        verifyNoInteractions(claimRepository);
         verifyNoInteractions(claimFormScheduler);
     }
 
@@ -274,7 +188,6 @@ class MakeAClaimPaymentCallbackHandlerTest {
         assertThat(throwable).isEqualTo(expectedException);
         verifyNoInteractions(pcsCaseService);
         verifyNoInteractions(ccdPaymentStateUpdateService);
-        verifyNoInteractions(claimRepository);
         verifyNoInteractions(claimFormScheduler);
     }
 
