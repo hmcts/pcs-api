@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.domain;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import lombok.Builder;
@@ -28,6 +29,8 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DefendantSolicitorAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DocumentAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.GlobalSearchAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.InternalCaseFlagAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.InternalTabAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.PartyVisibleTabAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.RasValidationAccess;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.DashboardData;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
@@ -155,6 +158,7 @@ public class PCSCase {
         typeOverride = Collection,
         label = "Linked cases",
         typeParameterOverride = "CaseLink")
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
     @Builder.Default
     private List<ListValue<CaseLink>> caseLinks = new ArrayList<>();
 
@@ -543,7 +547,8 @@ public class PCSCase {
 
     @CCD(
         searchable = false,
-        label = "Ways to pay"
+        label = "Ways to pay",
+        access = {PartyVisibleTabAccess.class}
     )
     private WaysToPay waysToPay;
 
@@ -659,15 +664,15 @@ public class PCSCase {
     private List<ListValue<GeneralApplication>> genApps;
 
     @JsonUnwrapped(prefix = "casePartiesTab_")
-    @CCD
+    @CCD(access = {PartyVisibleTabAccess.class})
     private CasePartiesTab casePartiesTab;
 
     @JsonUnwrapped(prefix = "summaryTab_")
-    @CCD(searchable = false)
+    @CCD(searchable = false, access = {PartyVisibleTabAccess.class})
     private SummaryTab summaryTab;
 
     @JsonUnwrapped(prefix = "detailsTab_")
-    @CCD
+    @CCD(access = {PartyVisibleTabAccess.class})
     private CaseDetailsTab caseDetailsTab;
 
     @CCD(
@@ -679,6 +684,7 @@ public class PCSCase {
 
     @CCD (
         label = "Note",
+        access = {InternalTabAccess.class},
         typeOverride = Collection,
         typeParameterOverride = "CaseNote")
     List<ListValue<CaseNote>> caseNotes;
@@ -712,5 +718,4 @@ public class PCSCase {
 
     @CCD
     private String dateIssuedString;
-
 }

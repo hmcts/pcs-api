@@ -30,6 +30,7 @@ import java.time.Instant;
 import java.util.UUID;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.createPossessionClaim;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
 
 
 @Slf4j
@@ -56,6 +57,7 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
                 .name("Make a claim")
                 .grant(Permission.CRUD, UserRole.SOLICITOR)
                 .grant(Permission.CRUD, UserRole.PCS_SOLICITOR);
+                .grantHistoryOnly(JUDICIAL_HISTORY_ROLES);
 
         new PageBuilder(eventBuilder)
             .add(new StartTheService())

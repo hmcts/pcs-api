@@ -1,9 +1,12 @@
 package uk.gov.hmcts.reform.pcs.ccd.repository;
 
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 
+
+import java.util.Optional;
 import java.util.UUID;
 
 @Repository
@@ -20,4 +23,12 @@ public interface DefendantResponseRepository extends JpaRepository<DefendantResp
      * @return true if a response exists, false otherwise
      */
     boolean existsByClaimPcsCaseCaseReferenceAndPartyIdamId(Long caseReference, UUID partyIdamId);
+
+    @EntityGraph(attributePaths = {
+        "party"
+    })
+    Optional<DefendantResponseEntity> findWithDetailsByClaimPcsCaseCaseReferenceAndPartyIdamId(
+        Long caseReference,
+        UUID partyIdamId
+    );
 }
