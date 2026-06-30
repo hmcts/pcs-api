@@ -29,6 +29,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.makeanapplication.WhatOrderWanted;
 import uk.gov.hmcts.reform.pcs.ccd.page.makeanapplication.WhichLanguage;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.makeAnApplication;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
 
 @Slf4j
 @Component
@@ -51,6 +52,7 @@ public class MakeAnApplication implements CCDConfig<PCSCase, State, UserRole> {
             .name("Make an application")
             .grant(Permission.CRUD, UserRole.DEFENDANT)
             .grant(Permission.CRUD, UserRole.DEFENDANT_SOLICITOR)
+            .grantHistoryOnly(JUDICIAL_HISTORY_ROLES)
             .endButtonLabel("Submit")
             .showSummary();
 
