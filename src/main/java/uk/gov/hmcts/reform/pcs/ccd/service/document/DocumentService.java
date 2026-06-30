@@ -474,7 +474,6 @@ public class DocumentService {
         List<DocumentEntity> documentEntities = legalRepDocuments.stream()
             .map(legalRepDoc -> DocumentEntity.builder()
                 .pcsCase(pcsCaseEntity)
-                .claim(pcsCaseEntity.getClaims().getFirst())
                 .url(legalRepDoc.getDocument().getUrl())
                 .fileName(legalRepDoc.getDocument().getFilename())
                 .binaryUrl(legalRepDoc.getDocument().getBinaryUrl())
