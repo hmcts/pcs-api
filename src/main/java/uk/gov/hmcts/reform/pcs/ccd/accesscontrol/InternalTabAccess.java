@@ -5,11 +5,10 @@ import uk.gov.hmcts.ccd.sdk.api.HasAccessControl;
 import uk.gov.hmcts.ccd.sdk.api.HasRole;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 
-public class DocumentAccess implements HasAccessControl {
+public class InternalTabAccess implements HasAccessControl {
 
     @Override
     public SetMultimap<HasRole, Permission> getGrants() {
-        return AccessGrants.documentAccess();
+        return AccessGrants.internalReadAccess();
     }
-
 }
