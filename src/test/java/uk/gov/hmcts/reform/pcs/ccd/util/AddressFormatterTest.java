@@ -141,7 +141,6 @@ class AddressFormatterTest {
         when(propertyAddress.getPostTown()).thenReturn("Post Town");
         when(propertyAddress.getPostCode()).thenReturn("Postcode");
         when(propertyAddress.getCounty()).thenReturn("County");
-        when(propertyAddress.getCountry()).thenReturn("Country");
 
         // When
         String result = underTest.formatFullAddressWithoutCountry(propertyAddress, NEWLINE_DELIMITER);

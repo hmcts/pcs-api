@@ -215,6 +215,27 @@ fees:
       channel: default
       event: general application
       keyword: GAOnNotice
+    counterClaimFlatFee:
+      service: other
+      jurisdiction1: civil
+      jurisdiction2: civil
+      channel: default
+      event: issue
+      keyword: AnyOtherRemedy
+    counterClaimRanged:
+      service: civil money claims
+      jurisdiction1: civil
+      jurisdiction2: civil
+      channel: default
+      event: issue
+      keyword: CMCCounterRanged
+    counterClaim:
+      service: civil money claims
+      jurisdiction1: civil
+      jurisdiction2: county court
+      channel: default
+      event: issue
+      keyword: counter-claim
     enforcementWarrantFee: # FEE0380 - County Court
       service: civil money claims
       jurisdiction1: civil
@@ -246,6 +267,11 @@ claim-form:
   request:
     max-retries: ${CLAIM_FORM_MAX_RETRIES:5}
     backoff-delay-seconds: ${CLAIM_FORM_BACKOFF_DELAY_SECONDS:3600s}
+
+defence-form:
+  request:
+    max-retries: ${DEFENCE_FORM_MAX_RETRIES:5}
+    backoff-delay-seconds: ${DEFENCE_FORM_BACKOFF_DELAY_SECONDS:3600s}
 
 role-assignment:
   request:

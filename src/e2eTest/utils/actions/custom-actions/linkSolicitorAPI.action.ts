@@ -2,15 +2,15 @@ import { Page } from '@playwright/test';
 import Axios from 'axios';
 
 
-import { IAction } from '../../interfaces';
+import { actionData, IAction } from '../../interfaces';
 import { linkSolicitorTokenApiData } from '@data/api-data/linkSolicitorEventToken.api.data';
 import { user } from '@data/user-data';
 import { actionRetries, VERY_SHORT_TIMEOUT } from 'playwright.config';
 
 export class LinkSolicitorAPIAction implements IAction {
-  async execute(page: Page, action: string): Promise<void> {
+  async execute(page: Page, action: string,data?: actionData): Promise<void> {
     const actionsMap = new Map<string, () => Promise<void>>([
-      ['linkSolicitorAPI', () => this.linkSolicitorAPI()],
+      ['linkSolicitorAPI', () => this.linkSolicitorAPI(data as string)],
 
     ]);
     const actionToPerform = actionsMap.get(action);
@@ -20,7 +20,7 @@ export class LinkSolicitorAPIAction implements IAction {
     await actionToPerform();
   }
 
-  private async linkSolicitorAPI(): Promise<void> {
+  private async linkSolicitorAPI(userEmail:string): Promise<void> {
     const linkSolicitorApi = Axios.create(
       linkSolicitorTokenApiData.linkSolicitorTokenApiInstance()
     );
@@ -34,7 +34,7 @@ export class LinkSolicitorAPIAction implements IAction {
         );
 
         console.log(`\n✅ LINK SOLICITOR TO DEFENDANT:`);
-        console.log(`Successfully Linked Solicitor: ${user.defendantSolicitor.email} with Defendant with id ${process.env.Defendant_ID}`);
+        console.log(`Successfully Linked Solicitor: ${userEmail} with Defendant with id ${process.env.Defendant_ID}`);
         break;
       } catch (error: any) {
         const status = error?.response?.status;

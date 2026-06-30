@@ -19,8 +19,6 @@ import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimStatus;
-import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponseStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import uk.gov.hmcts.reform.pcs.testingsupport.model.TestingSupportAccessCode;
@@ -39,7 +37,6 @@ import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationDetailsService;
 import uk.gov.hmcts.reform.pcs.service.LegalRepresentativePartyLinkService;
 import uk.gov.hmcts.reform.pcs.testingsupport.service.CcdTestCaseOrchestrator;
-import uk.gov.hmcts.reform.pcs.testingsupport.service.EntityTestStatusService;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -83,8 +80,6 @@ class TestingSupportControllerTest {
     @Mock
     private IdamAuthenticator idamAuthenticator;
     @Mock
-    private EntityTestStatusService entityTestStatusService;
-    @Mock
     private User user;
     @Mock
     private UserInfo userInfo;
@@ -110,7 +105,6 @@ class TestingSupportControllerTest {
                                                  caseRoleAssignmentService,
                                                  legalRepresentativePartyLinkService,
                                                  idamAuthenticator,
-                                                 entityTestStatusService,
                                                  organisationDetailsService,
                                                  pcsCaseService,
                                                  accessCodeGenerationService
@@ -440,44 +434,6 @@ class TestingSupportControllerTest {
         verify(pcsCaseService).allocateCaseManagementLocation(caseReference);
         verify(pcsCaseService).setCaseIssuedDate(caseReference);
         verify(accessCodeGenerationService).createAccessCodesForParties(String.valueOf(caseReference), true);
-    }
-
-    @Test
-    void shouldUpdateCounterClaimStatus() {
-        // Given
-        UUID counterClaimId = UUID.randomUUID();
-        CounterClaimStatus status = CounterClaimStatus.COUNTER_CLAIM_ISSUED;
-        String serviceAuth = "Bearer s2sToken";
-
-        // When
-        ResponseEntity<Void> response = underTest.updateCounterClaimStatus(
-            serviceAuth,
-            counterClaimId,
-            status
-        );
-
-        // Then
-        verify(entityTestStatusService).updateCounterClaimStatus(counterClaimId, status);
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-    }
-
-    @Test
-    void shouldUpdateDefendantResponseStatus() {
-        // Given
-        UUID defendantResponseId = UUID.randomUUID();
-        DefendantResponseStatus status = DefendantResponseStatus.SUBMITTED;
-        String serviceAuth = "Bearer s2sToken";
-
-        // When
-        ResponseEntity<Void> response = underTest.updateDefendantResponseStatus(
-            serviceAuth,
-            defendantResponseId,
-            status
-        );
-
-        // Then
-        verify(entityTestStatusService).updateDefendantResponseStatus(defendantResponseId, status);
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
     }
 
     private JsonNode createJsonNodeFormPayload(String applicantName) {
