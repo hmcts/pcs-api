@@ -709,5 +709,4 @@ public class PCSCase {
 
     @CCD
     private String dateIssuedString;
-
 }
