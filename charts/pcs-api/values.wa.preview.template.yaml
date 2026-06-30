@@ -94,6 +94,7 @@ wa:
       environment:
         ALLOWED_CASE_TYPES: pcs-${CHANGE_ID}
         ALLOWED_JURISDICTIONS: pcs
+        ROLE_ASSIGNMENT_URL: http://am-role-assignment-service-aat.service.core-compute-aat.internal
       keyVaults:
         wa:
           secrets:
