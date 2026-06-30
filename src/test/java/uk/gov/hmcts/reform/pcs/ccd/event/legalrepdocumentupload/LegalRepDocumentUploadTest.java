@@ -6,24 +6,36 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
+import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.EvidenceDocumentType;
+
 import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.DocumentUploadCategory;
+import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocument;
+import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.BaseEventTest;
 import uk.gov.hmcts.reform.pcs.ccd.page.legalrepdocumentupload.LegalRepDocumentUploadConfigurer;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.times;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -34,7 +46,13 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
     private LegalRepDocumentUploadConfigurer legalRepDocumentUploadConfigurer;
 
     @Mock
+    private PcsCaseEntity pcsCaseEntity;
+
+    @Mock
     private PcsCaseService pcsCaseService;
+
+    @Mock
+    private DocumentService documentService;
 
     @InjectMocks
     private LegalRepDocumentUpload legalRepDocumentUpload;
@@ -212,5 +230,86 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
             pcsCaseEntity,
             DocumentUploadCategory.MAIN_CLAIM_OR_COUNTERCLAIM))
             .isEmpty();
+    }
+
+    @Test
+    void shouldUploadLegalRepDocumentCorrectly() {
+        // Given
+        String description = "test description";
+
+        Document document = Document.builder()
+            .filename("test filename")
+            .url("test url")
+            .binaryUrl("test binary url")
+            .build();
+
+        LegalRepDocument legalRepDocument = LegalRepDocument.builder()
+            .document(document)
+            .legalRepDocumentType(LegalRepDocumentType.PHOTOGRAPHIC_EVIDENCE)
+            .description(description)
+            .build();
+
+        List<LegalRepDocument> legalRepDocList = List.of(legalRepDocument);
+
+        PCSCase pcsCase = PCSCase.builder()
+            .build();
+
+        when(documentService.createLegalRepDocuments(pcsCase)).thenReturn(legalRepDocList);
+
+        when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+
+        // When
+        callSubmitHandler(pcsCase);
+
+        // Then
+        verify(documentService, times(1))
+            .createDocumentEntitiesFromLegalRepDocuments(legalRepDocList,pcsCaseEntity);
+    }
+
+    @Test
+    void shouldReturnErrorWhenGetDocumentIsNull() {
+
+        LegalRepDocument legalRepDocument = LegalRepDocument.builder()
+            .description("test description")
+            .document(null)
+            .legalRepDocumentType(LegalRepDocumentType.PHOTOGRAPHIC_EVIDENCE)
+            .build();
+
+        List<LegalRepDocument> legalRepDocList = List.of(legalRepDocument);
+
+        PCSCase pcsCase = PCSCase.builder()
+            .build();
+
+        when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+        when(documentService.createLegalRepDocuments(pcsCase)).thenReturn(legalRepDocList);
+
+        SubmitResponse<State> submitResponse = callSubmitHandler(pcsCase);
+
+        assertThat(submitResponse.getErrors().contains("Your files were not submitted. Try again."));
+    }
+
+
+    @Test
+    void shouldReturnErrorWhenLegalRepDocumentIsNull() {
+        when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+
+        LegalRepDocument nullLegalRepDocument = null;
+        LegalRepDocument validLegalRepDocument = LegalRepDocument.builder()
+            .description("test description")
+            .document(new Document())
+            .legalRepDocumentType(LegalRepDocumentType.PHOTOGRAPHIC_EVIDENCE)
+            .build();
+
+        List<LegalRepDocument> legalRepDocList = Stream.of(nullLegalRepDocument,
+                                                           validLegalRepDocument).toList();
+
+        PCSCase pcsCase = PCSCase.builder()
+            .build();
+
+        when(documentService.createLegalRepDocuments(pcsCase)).thenReturn(legalRepDocList);
+
+        SubmitResponse<State> submitResponse = callSubmitHandler(pcsCase);
+
+        assertThat(submitResponse.getErrors().contains("Your files were not submitted. Try again."));
     }
 }
