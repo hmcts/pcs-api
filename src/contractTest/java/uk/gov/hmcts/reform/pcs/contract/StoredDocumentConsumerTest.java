@@ -33,7 +33,7 @@ public class StoredDocumentConsumerTest {
             .willRespondWith()
             .status(200)
             .headers(Map.of("Content-Type", APPLICATION))
-            .body(buildResponseDsl())
+            .body(responseBody())
             .toPact(V4Pact.class);
     }
 
@@ -50,11 +50,11 @@ public class StoredDocumentConsumerTest {
             .statusCode(200);
     }
 
-    private DslPart buildResponseDsl() {
+    private DslPart responseBody() {
         return newJsonBody(body ->
                                body.stringType("classification", "PUBLIC")
                                    .stringType("createdBy", USER_ID)
-                                   .stringType("createdOn", "2024-01-01T12:00:00Z")
+                                   .stringType("createdOn", "2026-07-01T12:00:00Z")
                                    .object(
                                        "_links", links ->
                                            links.object(
