@@ -72,7 +72,7 @@ public class DefencePackSender {
                 defendant, pcsCase.getPropertyAddress());
             UUID letterId = bulkPrintService.sendPack(
                 pcsCase, defendant, LetterType.DEFENCE_PACK, recipientName, address, candidate.documents());
-            accessCodeActivityLogService.logSuccessInNewTransaction(pcsCase, defendant, packStatus);
+            accessCodeActivityLogService.logSuccess(pcsCase, defendant, packStatus);
             MDC.put(MDC_LETTER_ID, String.valueOf(letterId));
             log.info("Defence pack sent - case: {}, party: {}, status: {}, letterId: {}",
                 pcsCase.getCaseReference(), defendant.getId(), packStatus, letterId);

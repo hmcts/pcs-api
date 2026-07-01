@@ -77,7 +77,7 @@ class DefencePackSenderTest {
         verify(bulkPrintService).sendPack(
             pcsCase, defendant, LetterType.DEFENCE_PACK, "Bob Tenant", address, List.of(defenceForm));
         verify(accessCodeActivityLogService)
-            .logSuccessInNewTransaction(pcsCase, defendant, ClaimActivityType.DEFENCE_PACK_PARTIALLY_SENT);
+            .logSuccess(pcsCase, defendant, ClaimActivityType.DEFENCE_PACK_PARTIALLY_SENT);
     }
 
     @Test
