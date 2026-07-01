@@ -15,6 +15,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseReferenceFormatter;
+import uk.gov.hmcts.reform.pcs.ccd.service.form.RecipientAddressResolver;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 import uk.gov.hmcts.reform.pcs.document.model.accesscode.AccessCodeFormPayload;
@@ -45,6 +46,7 @@ public class AccessCodeFormDocumentGenerator {
     private final AddressMapper addressMapper;
     private final AddressFormatter addressFormatter;
     private final CaseReferenceFormatter caseReferenceFormatter;
+    private final RecipientAddressResolver recipientAddressResolver;
     private final Clock ukClock;
     private final String respondOnlineUrl;
 
@@ -55,6 +57,7 @@ public class AccessCodeFormDocumentGenerator {
         AddressMapper addressMapper,
         AddressFormatter addressFormatter,
         CaseReferenceFormatter caseReferenceFormatter,
+        RecipientAddressResolver recipientAddressResolver,
         @Qualifier("ukClock") Clock ukClock,
         @Value("${access-code-form.respond-online-url}") String respondOnlineUrl
     ) {
@@ -64,6 +67,7 @@ public class AccessCodeFormDocumentGenerator {
         this.addressMapper = addressMapper;
         this.addressFormatter = addressFormatter;
         this.caseReferenceFormatter = caseReferenceFormatter;
+        this.recipientAddressResolver = recipientAddressResolver;
         this.ukClock = ukClock;
         this.respondOnlineUrl = respondOnlineUrl;
     }
@@ -80,7 +84,7 @@ public class AccessCodeFormDocumentGenerator {
             .caseReference(caseReferenceFormatter.formatCaseReferenceWithDashes(pcsCaseEntity.getCaseReference()))
             .claimantName(resolveClaimantName(mainClaim))
             .defendantName(resolveDefendantName(defendant))
-            .defendantAddress(resolveDefendantAddress(defendant, formattedPropertyAddress))
+            .defendantAddress(resolveDefendantAddress(defendant, pcsCaseEntity))
             .propertyAddress(formattedPropertyAddress)
             .respondByPostCourtAddress(formatCourtAddress(servingCourt))
             .accessCode(plaintextAccessCode)
@@ -123,13 +127,9 @@ public class AccessCodeFormDocumentGenerator {
             .orElse(null);
     }
 
-    private String resolveDefendantAddress(PartyEntity defendant, String formattedPropertyAddress) {
-        if (defendant.getAddressKnown() == VerticalYesNo.YES
-            && defendant.getAddressSameAsProperty() != VerticalYesNo.YES
-            && defendant.getAddress() != null) {
-            return formatAddress(defendant.getAddress());
-        }
-        return formattedPropertyAddress;
+    private String resolveDefendantAddress(PartyEntity defendant, PcsCaseEntity pcsCaseEntity) {
+        return formatAddress(recipientAddressResolver.resolvePostalAddress(
+            defendant, PartyRole.DEFENDANT, pcsCaseEntity.getPropertyAddress()));
     }
 
     private CourtVenue resolveServingCourt(PcsCaseEntity pcsCaseEntity) {
