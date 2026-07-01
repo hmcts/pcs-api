@@ -266,6 +266,9 @@ access-code:
 bulk-print:
   schedule: ${BULK_PRINT_SCHEDULE:DAILY|02:00}
 
+send-letter:
+  url: ${SEND_LETTER_URL:http://rpe-send-letter-service-aat.service.core-compute-aat.internal}
+
 launchdarkly:
   sdk-key: ${LAUNCHDARKLY_SDK_KEY:}
   offline-mode: ${LAUNCHDARKLY_OFFLINE:false}
