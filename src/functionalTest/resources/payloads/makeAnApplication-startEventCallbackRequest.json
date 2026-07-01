@@ -1,0 +1,16 @@
+{
+  "event_id": "makeAnApplication",
+  "case_details": {
+    "id": "${caseId}",
+    "case_type_id": "${caseTypeId}",
+    "data": {
+      "legislativeCountry": "England",
+      "propertyAddress": {
+        "AddressLine1": "1",
+        "AddressLine2": "Exton Gardens",
+        "PostTown": "Bournemouth",
+        "PostCode": "BH1 3BP"
+      }
+    }
+  }
+}

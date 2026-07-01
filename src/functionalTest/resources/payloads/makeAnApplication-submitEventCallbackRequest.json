@@ -1,0 +1,16 @@
+{
+  "event_id": "makeAnApplication",
+  "case_details": {
+    "id": "1234567890123456",
+    "case_type_id": "PCS",
+    "jurisdiction": "CIVIL",
+    "case_data": {
+      "xui_genapp_ApplicationType": "SET_ASIDE",
+      "xui_genapp_ShowHwfScreens": "YES",
+      "xui_genapp_StandardFee": "£123",
+      "xui_genapp_MaxFee": "£313",
+      "currentRepresentedPartyId": "bfcfb198-feac-4e61-850a-2de465152b72",
+      "currentRepresentedPartyName": "Jane Doe"
+    }
+  }
+}
