@@ -136,6 +136,48 @@ class DocumentAmendSelectionServiceTest {
     }
 
     @Test
+    void shouldSetOnlySelectedFolderDisplayFlag() {
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(PcsCaseEntity.builder().build());
+        PCSCase caseData = PCSCase.builder()
+            .documentAmendDetails(DocumentAmendDetails.builder()
+                .selectedFolder(selectedFolder(APPLICATIONS))
+                .build())
+            .build();
+
+        underTest.initialise(CASE_REFERENCE, caseData);
+
+        DocumentAmendDetails details = caseData.getDocumentAmendDetails();
+        assertThat(details.getShowApplications()).isEqualTo(YesOrNo.YES);
+        assertThat(details.getShowStatementsOfCase()).isEqualTo(YesOrNo.NO);
+        assertThat(details.getShowPropertyDocuments()).isEqualTo(YesOrNo.NO);
+        assertThat(details.getShowEvidence()).isEqualTo(YesOrNo.NO);
+        assertThat(details.getShowHearingDocuments()).isEqualTo(YesOrNo.NO);
+        assertThat(details.getShowOrdersAndNoticeOfHearings()).isEqualTo(YesOrNo.NO);
+        assertThat(details.getShowAppeals()).isEqualTo(YesOrNo.NO);
+        assertThat(details.getShowCorrespondence()).isEqualTo(YesOrNo.NO);
+        assertThat(details.getShowUncategorisedDocuments()).isEqualTo(YesOrNo.NO);
+    }
+
+    @Test
+    void shouldClearFolderDisplayFlagsWhenNoFolderSelected() {
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(PcsCaseEntity.builder().build());
+        PCSCase caseData = PCSCase.builder().build();
+
+        underTest.initialise(CASE_REFERENCE, caseData);
+
+        DocumentAmendDetails details = caseData.getDocumentAmendDetails();
+        assertThat(details.getShowStatementsOfCase()).isEqualTo(YesOrNo.NO);
+        assertThat(details.getShowPropertyDocuments()).isEqualTo(YesOrNo.NO);
+        assertThat(details.getShowEvidence()).isEqualTo(YesOrNo.NO);
+        assertThat(details.getShowHearingDocuments()).isEqualTo(YesOrNo.NO);
+        assertThat(details.getShowOrdersAndNoticeOfHearings()).isEqualTo(YesOrNo.NO);
+        assertThat(details.getShowApplications()).isEqualTo(YesOrNo.NO);
+        assertThat(details.getShowAppeals()).isEqualTo(YesOrNo.NO);
+        assertThat(details.getShowCorrespondence()).isEqualTo(YesOrNo.NO);
+        assertThat(details.getShowUncategorisedDocuments()).isEqualTo(YesOrNo.NO);
+    }
+
+    @Test
     void shouldOnlyShowDocumentsWithUncategorisedCategoryUnderUncategorisedDocuments() {
         DocumentEntity uncategorisedDocument = document("loose document.pdf", null, null);
         DocumentEntity categorisedDocument = document(
