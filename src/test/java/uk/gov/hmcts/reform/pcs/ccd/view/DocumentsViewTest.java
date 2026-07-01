@@ -3,14 +3,19 @@ package uk.gov.hmcts.reform.pcs.ccd.view;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
@@ -18,6 +23,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -121,6 +127,52 @@ class DocumentsViewTest {
     }
 
     @Test
+    void shouldShowCounterClaimDocumentWhenStateIsIssued() {
+        // Given
+        when(securityContextService.getCurrentUserId()).thenReturn(CURRENT_USER_ID);
+
+        CounterClaimEntity counterClaim = mock(CounterClaimEntity.class);
+        when(counterClaim.getStatus()).thenReturn(CounterClaimState.COUNTER_CLAIM_ISSUED);
+
+        DocumentEntity documentEntity = DocumentEntity.builder()
+            .id(UUID.randomUUID())
+            .url("url1")
+            .counterClaim(counterClaim)
+            .build();
+
+        when(pcsCaseEntity.getDocuments()).thenReturn(List.of(documentEntity));
+
+        // When
+        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+
+        // Then
+        assertThat(pcsCase.getAllDocuments()).hasSize(1);
+    }
+
+    @Test
+    void shouldHideCounterClaimDocumentWhenStateIsNotIssued() {
+        // Given
+        when(securityContextService.getCurrentUserId()).thenReturn(CURRENT_USER_ID);
+
+        CounterClaimEntity counterClaim = mock(CounterClaimEntity.class);
+        when(counterClaim.getStatus()).thenReturn(CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED);
+
+        DocumentEntity documentEntity = DocumentEntity.builder()
+            .id(UUID.randomUUID())
+            .url("url1")
+            .counterClaim(counterClaim)
+            .build();
+
+        when(pcsCaseEntity.getDocuments()).thenReturn(List.of(documentEntity));
+
+        // When
+        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+
+        // Then
+        assertThat(pcsCase.getAllDocuments()).isEmpty();
+    }
+
+    @Test
     void shoulFilterGenAppDocumentsBasedOnVisibilitty() {
         // Given
         when(securityContextService.getCurrentUserId()).thenReturn(CURRENT_USER_ID);
@@ -175,4 +227,27 @@ class DocumentsViewTest {
             .containsExactly("url1", "url3", "url4");
     }
 
+    @ParameterizedTest(name = "[{index}] description={0} => isEmpty={1}")
+    @MethodSource("descriptionProvider")
+    void shouldCheckIfDescriptionIsEmpty(String description, boolean expectedEmpty) {
+        // Given
+        DocumentEntity documentEntity = DocumentEntity.builder()
+                .description(description)
+                .build();
+
+        // When
+        boolean result = DocumentsView.isDescriptionEmpty(documentEntity);
+
+        // Then
+        assertThat(result).isEqualTo(expectedEmpty);
+    }
+
+    private static Stream<Arguments> descriptionProvider() {
+        return Stream.of(
+                Arguments.of(null, true),
+                Arguments.of("", true),
+                Arguments.of("   ", true),
+                Arguments.of("Valid description text", false)
+        );
+    }
 }

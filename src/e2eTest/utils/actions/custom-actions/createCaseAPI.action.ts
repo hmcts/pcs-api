@@ -1,12 +1,13 @@
 import Axios from 'axios';
 import { actionData, actionRecord, IAction } from '@utils/interfaces';
 import { Page } from '@playwright/test';
-import { createCaseApiData, createCaseEventTokenApiData, submitCaseApiData, submitCaseEventTokenApiData, caseUserRoleDeletionApiData, enforceOrderEventTokenApiData, enforceWarrantApiData, getCaseApiData } from '@data/api-data';
+import { createCaseApiData, createCaseEventTokenApiData, submitCaseApiData, submitCaseEventTokenApiData, caseUserRoleDeletionApiData, enforceOrderEventTokenApiData, enforceWarrantApiData, getCaseApiData, submitCaseEventTokenDynamicApiData, createCaseEventTokenDynamicApiData } from '@data/api-data';
 import { user } from '@data/user-data';
 import { caseNumber } from './createCase.action';
 import { performAction } from '@utils/controller';
 import { fetchCurrentUserTokenApiData } from '@data/api-data/fetchCurrentUser.api.data';
 import { formatDateTimeBST } from '@utils/common/string.utils';
+import { IdamUtils } from '@hmcts/playwright-common';
 
 export let caseInfo: { id: string; fid: string; state: string } = { id: '', fid: '', state: '' };
 
@@ -19,6 +20,9 @@ export class CreateCaseAPIAction implements IAction {
       ['enforceCaseAPI', () => this.enforceCaseAPI(fieldName)],
       ['fetchCurrentUserAPI', () => this.fetchCurrentUserAPI(fieldName)],
       ['getCaseAPI', () => this.getCaseAPI(fieldName)],
+      ['getCaseAPIDynamic', () => this.getCaseAPIDynamic(fieldName as actionRecord)],
+      ['createCaseAPIDynamicUsers', () => this.createCaseAPIDynamicUsers(fieldName as actionRecord)],
+      ['submitCaseAPIDynamicUsers', () => this.submitCaseAPIDynamicUsers(fieldName as actionRecord)],
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -179,7 +183,7 @@ export class CreateCaseAPIAction implements IAction {
         process.env.Submission_TIME = formatDateTimeBST(createResponse.data.last_state_modified_on);
         console.log(`\n✅ The claim was submitted on "${process.env.Submission_TIME}"`)
       } else {
-        await this.generateSolicitorAccessToken();
+        await this.generateSolicitorAccessToken(user.defendantSolicitor.email as string,user.defendantSolicitor.password as string);
         const allDefendants = createResponse.data.data.allDefendants;
         const defendantIds = allDefendants.map((d: any) => d.id);
         if (defendantIds.length === 0) throw new Error(`No Defendants ID retrieved and the status is ${createResponse.status}`);
@@ -187,10 +191,10 @@ export class CreateCaseAPIAction implements IAction {
         for (const defendantId of defendantIds) {
           process.env.Defendant_ID = defendantId;
 
-          await performAction('linkSolicitorAPI');
+          await performAction('linkSolicitorAPI',user.defendantSolicitor.email as string);
         }
         console.log(`\n✅ GET DEFENDANT ID SUCCESSFUL : STATUS ${createResponse.status}`);
-      }    
+      }
 
     } catch (error: any) {
       const status = error?.response?.status;
@@ -213,11 +217,53 @@ export class CreateCaseAPIAction implements IAction {
 
   }
 
-  private async generateSolicitorAccessToken(): Promise<void> {
+  private async getCaseAPIDynamic(getDetails: actionRecord): Promise<void> {
+    const getCaseApi = Axios.create(createCaseEventTokenDynamicApiData.createCaseEventTokenApiInstance());
+    try {
+      const createResponse = await getCaseApi.get(getCaseApiData.getCaseApiEndPoint());
+      if (typeof getDetails.req === 'string' && getDetails.req === 'Claim Submission Time') {
+        process.env.Submission_TIME = formatDateTimeBST(createResponse.data.last_state_modified_on);
+        console.log(`\n✅ The claim was submitted on "${process.env.Submission_TIME}"`)
+      } else {
+        await this.generateSolicitorAccessToken(getDetails.email as string, getDetails.password as string);
+        const allDefendants = createResponse.data.data.allDefendants;
+        const defendantIds = allDefendants.map((d: any) => d.id);
+        if (defendantIds.length === 0) throw new Error(`No Defendants ID retrieved and the status is ${createResponse.status}`);
+
+        for (const defendantId of defendantIds) {
+          process.env.Defendant_ID = defendantId;
+
+          await performAction('linkSolicitorAPI',getDetails.email as string);
+        }
+        console.log(`\n✅ GET DEFENDANT ID SUCCESSFUL : STATUS ${createResponse.status}`);
+      }
+
+    } catch (error: any) {
+      const status = error?.response?.status;
+      const responseBody = error?.response?.data;
+
+      console.error("=== ERROR RESPONSE ===");
+      console.error("HTTP Status:", status);
+      console.error("Exception:", responseBody?.exception);
+      console.error("Error:", responseBody?.error);
+      console.error("Message:", responseBody?.message);
+      console.error("Path:", responseBody?.path);
+      console.error("Timestamp:", responseBody?.timestamp);
+      console.error("Full response body:", JSON.stringify(responseBody, null, 2));
+
+      if (!status) {
+        throw new Error('Defendant id not retrieved: no response from server.');
+      }
+      throw new Error(`Retrieving defendant id  failed with status ${status}.Response received is ${responseBody?.message}}`);
+    }
+
+  }
+
+  private async generateSolicitorAccessToken(email:string,password:string): Promise<void> {
     const { IdamUtils } = await import('@hmcts/playwright-common');
     process.env.SOLICITOR_ACCESS_TOKEN = await new IdamUtils().generateIdamToken({
-      username: user.defendantSolicitor.email,
-      password: user.defendantSolicitor.password,
+      username: email,
+      password: password,
       grantType: 'password',
       clientId: 'pcs-api',
       clientSecret: process.env.PCS_API_IDAM_SECRET as string,
@@ -261,4 +307,94 @@ export class CreateCaseAPIAction implements IAction {
     }
 
   }
+
+  private async createCaseAPIDynamicUsers(caseData: actionRecord): Promise<void> {
+    await this.getAccessToken(caseData.email as string, caseData.password as string);
+    const createCaseApi = Axios.create(createCaseEventTokenDynamicApiData.createCaseEventTokenApiInstance());
+    try {
+      process.env.CREATE_EVENT_TOKEN = (await createCaseApi.get(createCaseEventTokenDynamicApiData.createCaseEventTokenApiEndPoint)).data.token;
+      const createCasePayloadData = typeof caseData === "object" && "data" in caseData ? caseData.data : caseData;
+
+      const createResponse = await createCaseApi.post(createCaseApiData.createCaseApiEndPoint, {
+        data: createCasePayloadData,
+        event: { id: createCaseApiData.createCaseEventName },
+        event_token: process.env.CREATE_EVENT_TOKEN,
+      });
+      process.env.CASE_NUMBER = createResponse.data.id;
+      caseInfo.id = createResponse.data.id;
+      caseInfo.fid = createResponse.data.id.replace(/(.{4})(?=.)/g, "$1-");
+      caseInfo.state = createResponse.data.state;
+    } catch (error: any) {
+      const status = error?.response?.status;
+      const responseBody = error?.response?.data;
+
+      console.error("=== ERROR RESPONSE ===");
+      console.error("HTTP Status:", status);
+      console.error("Exception:", responseBody?.exception);
+      console.error("Error:", responseBody?.error);
+      console.error("Message:", responseBody?.message);
+      console.error("Path:", responseBody?.path);
+      console.error("Timestamp:", responseBody?.timestamp);
+      console.error("Full response body:", JSON.stringify(responseBody, null, 2));
+
+      if (!status) {
+        throw new Error(`Case creation failed: no response from server`);
+      }
+      throw new Error(`Case creation failed with status ${status}.Response received is ${responseBody?.message}}`);
+    }
+  }
+
+  private async submitCaseAPIDynamicUsers(caseData: actionRecord): Promise<void> {
+    await this.getAccessToken(caseData.email as string, caseData.password as string);
+    const submitCaseApi = Axios.create(submitCaseEventTokenDynamicApiData.submitCaseEventTokenApiInstance());
+    let submitCasePayloadData;
+    try {
+      process.env.SUBMIT_EVENT_TOKEN = (await submitCaseApi.get(submitCaseEventTokenDynamicApiData.submitCaseEventTokenApiEndPoint())).data.token;
+      submitCasePayloadData = typeof caseData === "object" && "data" in caseData ? caseData.data : caseData;
+      const submitResponse = await submitCaseApi.post(submitCaseApiData.submitCaseApiEndPoint(), {
+        data: submitCasePayloadData,
+        event: { id: submitCaseApiData.submitCaseEventName },
+        event_token: process.env.SUBMIT_EVENT_TOKEN,
+      });
+      caseInfo.id = submitResponse.data.id;
+      caseInfo.fid = submitResponse.data.id.replace(/(.{4})(?=.)/g, "$1-");
+      caseInfo.state = submitResponse.data.state;
+    } catch (error: any) {
+      const status = error?.response?.status;
+      const responseBody = error?.response?.data;
+      if (status === 404) {
+        console.error(submitCasePayloadData);
+        throw new Error(`Submission failed: endpoint not found (404).please check the payload below \n ${error}`);
+      }
+      console.error("=== ERROR RESPONSE ===");
+      console.error("HTTP Status:", status);
+      console.error("Exception:", responseBody?.exception);
+      console.error("Error:", responseBody?.error);
+      console.error("Message:", responseBody?.message);
+      console.error("Path:", responseBody?.path);
+      console.error("Timestamp:", responseBody?.timestamp);
+      console.error("Full response body:", JSON.stringify(responseBody, null, 2));
+
+      if (!status) {
+        throw new Error('Submission failed: no response from server.');
+      }
+      throw new Error(`Submission failed with status ${status}.Response received is ${responseBody?.message}}`);
+    }
+  }
+
+  private  async getAccessToken (userName:string, password: string): Promise<void>  {
+    if (!process.env.IDAM_WEB_URL || !process.env.IDAM_TESTING_SUPPORT_URL) {
+      throw new Error(
+        'IDAM_WEB_URL and IDAM_TESTING_SUPPORT_URL are not set (set ENVIRONMENT to aat|demo|perftest|ithc, preview defaults AAT, or export both URLs)'
+      );
+    }
+    process.env.BEARER_TOKEN_USER = await new IdamUtils().generateIdamToken({
+      username: userName,
+      password: password,
+      grantType: 'password',
+      clientId: 'pcs-api',
+      clientSecret: process.env.PCS_API_IDAM_SECRET as string,
+      scope: 'profile openid roles'
+    });
+  };
 }

@@ -18,6 +18,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -39,6 +40,22 @@ class CaseTypeTest {
 
         // Then
         assertThat(caseType).contains("PCS");
+    }
+
+    @Test
+    void shouldNotBeSuffixedCaseTypeWhenSuffixAbsentOrBlank() {
+        // Canonical PCS (indexed into global search): unset or blank CASE_TYPE_SUFFIX.
+        // The pipeline encodes "canonical" as either unset or an empty string (see Jenkinsfile_CNP).
+        assertThat(CaseType.isSuffixed(null)).isFalse();
+        assertThat(CaseType.isSuffixed("")).isFalse();
+        assertThat(CaseType.isSuffixed("   ")).isFalse();
+    }
+
+    @Test
+    void shouldBeSuffixedCaseTypeWhenSuffixSet() {
+        // Suffixed (e.g. PCS-STAGING, PR previews) -> NOT indexed into global search.
+        assertThat(CaseType.isSuffixed("staging")).isTrue();
+        assertThat(CaseType.isSuffixed("1234")).isTrue();
     }
 
     @Test
@@ -108,6 +125,8 @@ class CaseTypeTest {
         final Tab<PCSCase, AccessProfile> casePartiesTab = casePartiesTabBuilder.build();
         final Tab<PCSCase, AccessProfile> caseFileViewTab = caseFileViewTabBuilder.build();
         final Tab<PCSCase, AccessProfile> caseDetailsTab = caseDetailsTabBuilder.build();
+        final Tab<PCSCase, AccessProfile> caseNotesTab = caseNotesTabBuilder.build();
+        final Tab<PCSCase, AccessProfile> caseFlagsTab = caseFlagsTabBuilder.build();
 
 
         // Then
@@ -123,5 +142,15 @@ class CaseTypeTest {
         assertThat(caseDetailsTab.getFields()).extracting(TabField::getId).contains("detailsTab_ClaimDetails");
         assertThat(summaryTab.getFields()).extracting(TabField::getId)
             .contains("summaryTab_OccupationContractOrLicenceDetails");
+        assertThat(summaryTab.getForRoles()).containsExactlyInAnyOrder(CaseType.PARTY_VISIBLE_TAB_ROLES);
+        assertThat(casePartiesTab.getForRoles()).containsExactlyInAnyOrder(CaseType.PARTY_VISIBLE_TAB_ROLES);
+        assertThat(caseDetailsTab.getForRoles()).containsExactlyInAnyOrder(CaseType.PARTY_VISIBLE_TAB_ROLES);
+        assertThat(caseFileViewTab.getForRoles()).containsExactlyInAnyOrder(CaseType.PARTY_VISIBLE_TAB_ROLES);
+        assertThat(serviceRequestTab.getForRoles()).containsExactlyInAnyOrder(CaseType.PARTY_VISIBLE_TAB_ROLES);
+        assertThat(caseHistoryTab.getForRoles()).containsExactlyInAnyOrder(CaseType.INTERNAL_TAB_ROLES);
+        assertThat(caseLinksTab.getForRoles()).containsExactlyInAnyOrder(CaseType.INTERNAL_TAB_ROLES);
+        assertThat(caseNotesTab.getForRoles()).containsExactlyInAnyOrder(CaseType.INTERNAL_TAB_ROLES);
+        assertThat(caseFlagsTab.getForRoles()).containsExactlyInAnyOrder(CaseType.INTERNAL_TAB_ROLES);
+        verify(builder).omitHistoryForRoles(CaseType.NON_INTERNAL_HISTORY_ROLES);
     }
 }

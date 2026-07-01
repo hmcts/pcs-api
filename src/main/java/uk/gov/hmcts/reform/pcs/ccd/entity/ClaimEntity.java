@@ -201,11 +201,21 @@ public class ClaimEntity {
     @Column(updatable = false, nullable = false)
     private LocalDateTime claimSubmittedDate;
 
-    @OneToOne(mappedBy = "claim", cascade = ALL, orphanRemoval = true)
-    @JsonManagedReference
-    private FeePaymentEntity feePayment;
-
     private LocalDateTime claimIssuedDate;
+
+    @Builder.Default
+    @OneToMany(mappedBy = "claim", cascade = ALL, orphanRemoval = true)
+    @JsonManagedReference
+    private List<FeePaymentEntity> feePayments = new ArrayList<>();
+
+    public void addFeePayment(FeePaymentEntity feePayment) {
+        feePayments.add(feePayment);
+        feePayment.setClaim(this);
+    }
+
+    @OneToOne(cascade = ALL, orphanRemoval = true)
+    @JoinColumn(name = "claim_form_document_id")
+    private DocumentEntity claimFormDocument;
 
     public void setAsbProhibitedConductEntity(AsbProhibitedConductEntity asbProhibitedConductEntity) {
         if (this.asbProhibitedConductEntity != null) {

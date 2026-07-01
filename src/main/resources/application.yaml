@@ -90,14 +90,14 @@ spring:
           prd-admin:
             provider: idam
             client-id: ${IDAM_CLIENT_ID:pcs-api}
-            client-secret: ${IDAM_CLIENT_SECRET:dummy-secret-for-local}
+            client-secret: ${IDAM_CLIENT_SECRET}
             client-authentication-method: client_secret_post
             authorization-grant-type: password
             scope: openid,profile,roles
           system-user:
             provider: idam
             client-id: ${IDAM_CLIENT_ID:pcs-api}
-            client-secret: ${IDAM_CLIENT_SECRET:dummy-secret-for-local}
+            client-secret: ${IDAM_CLIENT_SECRET}
             client-authentication-method: client_secret_post
             authorization-grant-type: password
             scope: openid,profile,roles
@@ -209,6 +209,27 @@ fees:
       channel: default
       event: general application
       keyword: GAOnNotice
+    counterClaimFlatFee:
+      service: other
+      jurisdiction1: civil
+      jurisdiction2: civil
+      channel: default
+      event: issue
+      keyword: AnyOtherRemedy
+    counterClaimRanged:
+      service: civil money claims
+      jurisdiction1: civil
+      jurisdiction2: civil
+      channel: default
+      event: issue
+      keyword: CMCCounterRanged
+    counterClaim:
+      service: civil money claims
+      jurisdiction1: civil
+      jurisdiction2: county court
+      channel: default
+      event: issue
+      keyword: counter-claim
     enforcementWarrantFee: # FEE0380 - County Court
       service: civil money claims
       jurisdiction1: civil
@@ -236,6 +257,16 @@ access-code:
   request:
     max-retries: ${ACCESS_CODE_MAX_RETRIES:5}
     backoff-delay-seconds: ${ACCESS_CODE_BACKOFF_DELAY_SECONDS:3600s}
+
+claim-form:
+  request:
+    max-retries: ${CLAIM_FORM_MAX_RETRIES:5}
+    backoff-delay-seconds: ${CLAIM_FORM_BACKOFF_DELAY_SECONDS:3600s}
+
+defence-form:
+  request:
+    max-retries: ${DEFENCE_FORM_MAX_RETRIES:5}
+    backoff-delay-seconds: ${DEFENCE_FORM_BACKOFF_DELAY_SECONDS:3600s}
 
 role-assignment:
   request:
