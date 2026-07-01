@@ -66,7 +66,7 @@ public class ClaimPackCandidateService {
         for (PartyEntity defendant : partiesByRole(claim, PartyRole.DEFENDANT)) {
             DocumentEntity accessCode = accessCodeDocument(pcsCase, defendant);
             if (accessCode == null) {
-                log.info("Claim pack held for case {} defendant {} - awaiting access code",
+                log.debug("Claim pack held for case {} defendant {} - awaiting access code",
                     pcsCase.getId(), defendant.getId());
             } else if (!alreadySent(activityLog, defendant, ClaimActivityType.DEFENDANT_PACK_SENT)) {
                 candidates.add(new PackCandidate(PartyRole.DEFENDANT, defendant, List.of(claimForm, accessCode)));
