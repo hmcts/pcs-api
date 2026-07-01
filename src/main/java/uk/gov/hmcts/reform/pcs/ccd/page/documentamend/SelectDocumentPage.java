@@ -23,6 +23,7 @@ public class SelectDocumentPage implements CcdPageConfiguration {
     private static final String PAGE_ID = "selectDocument";
     private static final String FIELD_PREFIX = "documentAmend_";
     private static final String YES = "=\"Yes\"";
+    private static final String NO = "=\"No\"";
 
     private final DocumentAmendSelectionService documentAmendSelectionService;
 
@@ -42,56 +43,56 @@ public class SelectDocumentPage implements CcdPageConfiguration {
                 .readonly(DocumentAmendDetails::getPartyNamesSummary, NEVER_SHOW, true)
                 .mandatory(DocumentAmendDetails::getSelectedFolder)
                 .mandatory(DocumentAmendDetails::getStatementsOfCaseDocuments,
-                    documentsShowCondition(CaseFileCategory.STATEMENTS_OF_CASE))
+                    documentsShowCondition(CaseFileCategory.STATEMENTS_OF_CASE), true)
                 .label("statementsOfCaseNoDocumentsQuestion", "Which document do you want to amend?",
                     noDocumentsShowCondition(CaseFileCategory.STATEMENTS_OF_CASE))
                 .label("statementsOfCaseNoDocuments", noDocumentsMessage(CaseFileCategory.STATEMENTS_OF_CASE),
                     noDocumentsShowCondition(CaseFileCategory.STATEMENTS_OF_CASE))
                 .mandatory(DocumentAmendDetails::getPropertyDocuments,
-                    documentsShowCondition(CaseFileCategory.PROPERTY_DOCUMENTS))
+                    documentsShowCondition(CaseFileCategory.PROPERTY_DOCUMENTS), true)
                 .label("propertyDocumentsNoDocumentsQuestion", "Which document do you want to amend?",
                     noDocumentsShowCondition(CaseFileCategory.PROPERTY_DOCUMENTS))
                 .label("propertyDocumentsNoDocuments", noDocumentsMessage(CaseFileCategory.PROPERTY_DOCUMENTS),
                     noDocumentsShowCondition(CaseFileCategory.PROPERTY_DOCUMENTS))
                 .mandatory(DocumentAmendDetails::getEvidenceDocuments,
-                    documentsShowCondition(CaseFileCategory.EVIDENCE))
+                    documentsShowCondition(CaseFileCategory.EVIDENCE), true)
                 .label("evidenceNoDocumentsQuestion", "Which document do you want to amend?",
                     noDocumentsShowCondition(CaseFileCategory.EVIDENCE))
                 .label("evidenceNoDocuments", noDocumentsMessage(CaseFileCategory.EVIDENCE),
                     noDocumentsShowCondition(CaseFileCategory.EVIDENCE))
                 .mandatory(DocumentAmendDetails::getHearingDocuments,
-                    documentsShowCondition(CaseFileCategory.HEARING_DOCUMENTS))
+                    documentsShowCondition(CaseFileCategory.HEARING_DOCUMENTS), true)
                 .label("hearingDocumentsNoDocumentsQuestion", "Which document do you want to amend?",
                     noDocumentsShowCondition(CaseFileCategory.HEARING_DOCUMENTS))
                 .label("hearingDocumentsNoDocuments", noDocumentsMessage(CaseFileCategory.HEARING_DOCUMENTS),
                     noDocumentsShowCondition(CaseFileCategory.HEARING_DOCUMENTS))
                 .mandatory(DocumentAmendDetails::getOrdersAndNoticeOfHearingsDocuments,
-                    documentsShowCondition(CaseFileCategory.ORDERS_AND_NOTICE_OF_HEARINGS))
+                    documentsShowCondition(CaseFileCategory.ORDERS_AND_NOTICE_OF_HEARINGS), true)
                 .label("ordersAndNoticeOfHearingsNoDocumentsQuestion", "Which document do you want to amend?",
                     noDocumentsShowCondition(CaseFileCategory.ORDERS_AND_NOTICE_OF_HEARINGS))
                 .label("ordersAndNoticeOfHearingsNoDocuments",
                     noDocumentsMessage(CaseFileCategory.ORDERS_AND_NOTICE_OF_HEARINGS),
                     noDocumentsShowCondition(CaseFileCategory.ORDERS_AND_NOTICE_OF_HEARINGS))
                 .mandatory(DocumentAmendDetails::getApplicationsDocuments,
-                    documentsShowCondition(CaseFileCategory.APPLICATIONS))
+                    documentsShowCondition(CaseFileCategory.APPLICATIONS), true)
                 .label("applicationsNoDocumentsQuestion", "Which document do you want to amend?",
                     noDocumentsShowCondition(CaseFileCategory.APPLICATIONS))
                 .label("applicationsNoDocuments", noDocumentsMessage(CaseFileCategory.APPLICATIONS),
                     noDocumentsShowCondition(CaseFileCategory.APPLICATIONS))
                 .mandatory(DocumentAmendDetails::getAppealsDocuments,
-                    documentsShowCondition(CaseFileCategory.APPEALS))
+                    documentsShowCondition(CaseFileCategory.APPEALS), true)
                 .label("appealsNoDocumentsQuestion", "Which document do you want to amend?",
                     noDocumentsShowCondition(CaseFileCategory.APPEALS))
                 .label("appealsNoDocuments", noDocumentsMessage(CaseFileCategory.APPEALS),
                     noDocumentsShowCondition(CaseFileCategory.APPEALS))
                 .mandatory(DocumentAmendDetails::getCorrespondenceDocuments,
-                    documentsShowCondition(CaseFileCategory.CORRESPONDENCE))
+                    documentsShowCondition(CaseFileCategory.CORRESPONDENCE), true)
                 .label("correspondenceNoDocumentsQuestion", "Which document do you want to amend?",
                     noDocumentsShowCondition(CaseFileCategory.CORRESPONDENCE))
                 .label("correspondenceNoDocuments", noDocumentsMessage(CaseFileCategory.CORRESPONDENCE),
                     noDocumentsShowCondition(CaseFileCategory.CORRESPONDENCE))
                 .mandatory(DocumentAmendDetails::getUncategorisedDocuments,
-                    documentsShowCondition(CaseFileCategory.UNCATEGORISED_DOCUMENTS))
+                    documentsShowCondition(CaseFileCategory.UNCATEGORISED_DOCUMENTS), true)
                 .label("uncategorisedDocumentsNoDocumentsQuestion", "Which document do you want to amend?",
                     noDocumentsShowCondition(CaseFileCategory.UNCATEGORISED_DOCUMENTS))
                 .label("uncategorisedDocumentsNoDocuments",
@@ -127,7 +128,7 @@ public class SelectDocumentPage implements CcdPageConfiguration {
     }
 
     private String documentsShowCondition(CaseFileCategory category) {
-        return selectedFolderCondition(category);
+        return selectedFolderCondition(category) + " AND " + emptyFieldId(category) + NO;
     }
 
     private String noDocumentsShowCondition(CaseFileCategory category) {

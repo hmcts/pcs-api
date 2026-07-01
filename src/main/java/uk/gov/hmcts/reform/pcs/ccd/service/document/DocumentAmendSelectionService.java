@@ -195,4 +195,5 @@ public class DocumentAmendSelectionService {
             case UNCATEGORISED_DOCUMENTS -> details.setUncategorisedDocumentsEmpty(empty);
         }
     }
+
 }
