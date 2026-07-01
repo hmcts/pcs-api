@@ -23,6 +23,7 @@ public class SelectDocumentPage implements CcdPageConfiguration {
     private static final String PAGE_ID = "selectDocument";
     private static final String FIELD_PREFIX = "documentAmend_";
     private static final String YES = "=\"Yes\"";
+    private static final String NO = "=\"No\"";
 
     private final DocumentAmendSelectionService documentAmendSelectionService;
 
@@ -106,6 +107,15 @@ public class SelectDocumentPage implements CcdPageConfiguration {
                 .readonly(DocumentAmendDetails::getAppealsEmpty, NEVER_SHOW, true)
                 .readonly(DocumentAmendDetails::getCorrespondenceEmpty, NEVER_SHOW, true)
                 .readonly(DocumentAmendDetails::getUncategorisedDocumentsEmpty, NEVER_SHOW, true)
+                .readonly(DocumentAmendDetails::getShowStatementsOfCase, NEVER_SHOW, true)
+                .readonly(DocumentAmendDetails::getShowPropertyDocuments, NEVER_SHOW, true)
+                .readonly(DocumentAmendDetails::getShowEvidence, NEVER_SHOW, true)
+                .readonly(DocumentAmendDetails::getShowHearingDocuments, NEVER_SHOW, true)
+                .readonly(DocumentAmendDetails::getShowOrdersAndNoticeOfHearings, NEVER_SHOW, true)
+                .readonly(DocumentAmendDetails::getShowApplications, NEVER_SHOW, true)
+                .readonly(DocumentAmendDetails::getShowAppeals, NEVER_SHOW, true)
+                .readonly(DocumentAmendDetails::getShowCorrespondence, NEVER_SHOW, true)
+                .readonly(DocumentAmendDetails::getShowUncategorisedDocuments, NEVER_SHOW, true)
                 .readonly(DocumentAmendDetails::getSelectedFolderId, NEVER_SHOW, true)
                 .readonly(DocumentAmendDetails::getSelectedFolderLabel, NEVER_SHOW, true)
                 .readonly(DocumentAmendDetails::getSelectedDocumentId, NEVER_SHOW, true)
@@ -127,7 +137,7 @@ public class SelectDocumentPage implements CcdPageConfiguration {
     }
 
     private String documentsShowCondition(CaseFileCategory category) {
-        return selectedFolderCondition(category);
+        return selectedFolderCondition(category) + " AND " + emptyFieldId(category) + NO;
     }
 
     private String noDocumentsShowCondition(CaseFileCategory category) {
@@ -135,7 +145,7 @@ public class SelectDocumentPage implements CcdPageConfiguration {
     }
 
     private String selectedFolderCondition(CaseFileCategory category) {
-        return FIELD_PREFIX + "SelectedFolder=\"" + category.name() + "\"";
+        return showFieldId(category) + YES;
     }
 
     private String emptyFieldId(CaseFileCategory category) {
@@ -149,6 +159,20 @@ public class SelectDocumentPage implements CcdPageConfiguration {
             case APPEALS -> FIELD_PREFIX + "AppealsEmpty";
             case CORRESPONDENCE -> FIELD_PREFIX + "CorrespondenceEmpty";
             case UNCATEGORISED_DOCUMENTS -> FIELD_PREFIX + "UncategorisedDocumentsEmpty";
+        };
+    }
+
+    private String showFieldId(CaseFileCategory category) {
+        return switch (category) {
+            case STATEMENTS_OF_CASE -> FIELD_PREFIX + "ShowStatementsOfCase";
+            case PROPERTY_DOCUMENTS -> FIELD_PREFIX + "ShowPropertyDocuments";
+            case EVIDENCE -> FIELD_PREFIX + "ShowEvidence";
+            case HEARING_DOCUMENTS -> FIELD_PREFIX + "ShowHearingDocuments";
+            case ORDERS_AND_NOTICE_OF_HEARINGS -> FIELD_PREFIX + "ShowOrdersAndNoticeOfHearings";
+            case APPLICATIONS -> FIELD_PREFIX + "ShowApplications";
+            case APPEALS -> FIELD_PREFIX + "ShowAppeals";
+            case CORRESPONDENCE -> FIELD_PREFIX + "ShowCorrespondence";
+            case UNCATEGORISED_DOCUMENTS -> FIELD_PREFIX + "ShowUncategorisedDocuments";
         };
     }
 
