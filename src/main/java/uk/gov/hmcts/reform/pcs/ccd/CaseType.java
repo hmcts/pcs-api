@@ -28,7 +28,7 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
     private static final String CASE_TYPE_DESCRIPTION = "Possession Case Type";
     private static final String JURISDICTION_ID = "PCS";
     private static final String JURISDICTION_NAME = "Possession Claims";
-    private static final String JURISDICTION_DESCRIPTION = "Civil Possession Jurisdiction";
+    private static final String JURISDICTION_DESCRIPTION = "Possession Claims Jurisdiction";
     static final AccessProfile[] PARTY_VISIBLE_TAB_ROLES = {
         AccessProfile.CITIZEN,
         AccessProfile.DEFENDANT,
