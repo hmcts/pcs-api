@@ -819,7 +819,7 @@ class DefendantResponseServiceTest {
 
         UploadedDocument defDoc = UploadedDocument.builder()
             .document(Document.builder()
-                .url("url1").filename("file1.pdf").binaryUrl("bin1").categoryId("cat1").build())
+                          .url("url1").filename("file1.pdf").binaryUrl("bin1").categoryId("cat1").build())
             .contentType("application/pdf")
             .sizeInBytes(135529L)
             .build();
