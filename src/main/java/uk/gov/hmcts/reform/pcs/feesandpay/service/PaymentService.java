@@ -17,10 +17,8 @@ import uk.gov.hmcts.reform.payments.response.PaymentServiceResponse;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.feeandpay.FeePaymentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
-import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.exception.FeePaymentNotFoundException;
 import uk.gov.hmcts.reform.pcs.feesandpay.mapper.PaymentRequestMapper;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.CardPaymentStatusResponse;
@@ -43,7 +41,6 @@ public class PaymentService {
     private final IdamTokenProvider systemUpdateUserTokenProvider;
     private final FeePaymentRepository feePaymentRepository;
     private final PcsCaseService pcsCaseService;
-    private final PartyService partyService;
     private final PaymentCallbackStrategyFactory paymentCallbackStrategyFactory;
     private final ObjectMapper objectMapper;
 
@@ -55,14 +52,13 @@ public class PaymentService {
 
     public PaymentService(PaymentsClient paymentsClient, PaymentRequestMapper paymentRequestMapper,
         @Qualifier("systemUpdateUserTokenProvider") IdamTokenProvider systemUpdateUserTokenProvider,
-        FeePaymentRepository feePaymentRepository, PcsCaseService pcsCaseService, PartyService partyService,
+        FeePaymentRepository feePaymentRepository, PcsCaseService pcsCaseService,
         PaymentCallbackStrategyFactory paymentCallbackStrategyFactory, ObjectMapper objectMapper) {
         this.paymentsClient = paymentsClient;
         this.paymentRequestMapper = paymentRequestMapper;
         this.systemUpdateUserTokenProvider = systemUpdateUserTokenProvider;
         this.feePaymentRepository = feePaymentRepository;
         this.pcsCaseService = pcsCaseService;
-        this.partyService = partyService;
         this.paymentCallbackStrategyFactory = paymentCallbackStrategyFactory;
         this.objectMapper = objectMapper;
     }
@@ -122,7 +118,8 @@ public class PaymentService {
             .returnUrl(createCardPaymentRequest.getReturnUrl())
             .build();
 
-        if (feePaymentEntity.getPaymentStatus() != null) {
+        PaymentStatus paymentStatus = feePaymentEntity.getPaymentStatus();
+        if (paymentStatus == PaymentStatus.PAID || paymentStatus == PaymentStatus.PARTIALLY_PAID) {
             throw new IllegalStateException("Service request " + serviceRequestReference
                                                 + " already has a completed status");
         }
@@ -139,7 +136,6 @@ public class PaymentService {
             .nextUrl(govPayCardPaymentResponse.getNextUrl())
             .build();
     }
-
 
     public CardPaymentStatusResponse getPaymentStatus(String internalReference) {
         PaymentDto govPayCardPaymentStatus = paymentsClient.getGovPayCardPaymentStatusWithCallback(
@@ -195,13 +191,9 @@ public class PaymentService {
                                   ClaimEntity claimEntity, String serviceRequestReference) {
         log.info("Saving New Fee Payment for the case: {} with serviceRequestReference: {}",
                  feesAndPayTaskData.getCaseReference(), serviceRequestReference);
-        PartyEntity responsibleParty = partyService.getPartyEntityByEntityId(
-            feesAndPayTaskData.getResponsiblePartyId(),
-            feesAndPayTaskData.getCaseReference()
-        );
+
         FeePaymentEntity feePaymentEntity = FeePaymentEntity.builder()
             .claim(claimEntity)
-            .party(responsibleParty)
             .serviceRequestReference(serviceRequestReference)
             .amount(feesAndPayTaskData.getFeeDetails().getFeeAmount())
             .paymentCallbackHandlerType(feesAndPayTaskData.getPaymentCallbackHandlerType())
