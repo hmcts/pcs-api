@@ -162,7 +162,7 @@ notify:
     general-application-received: e5daba0d-5c66-4c76-9e0f-06646200dc89
 
 testing-support:
-  enabled: ${ENABLE_TESTING_SUPPORT:true}
+  enabled: ${ENABLE_TESTING_SUPPORT:false}
 
 # Below sets if DB scheduler can execute on the current instance of the API.
 db-scheduler:
