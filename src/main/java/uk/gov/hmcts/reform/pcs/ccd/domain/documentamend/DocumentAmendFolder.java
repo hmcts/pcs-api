@@ -24,20 +24,4 @@ public enum DocumentAmendFolder implements HasLabel {
         this.category = category;
         this.label = category.getLabel();
     }
-
-    public static DocumentAmendFolder from(String value) {
-        if (value == null) {
-            return null;
-        }
-
-        for (DocumentAmendFolder folder : values()) {
-            if (folder.name().equals(value)
-                || folder.getLabel().equals(value)
-                || folder.getCategory().getId().equals(value)) {
-                return folder;
-            }
-        }
-
-        return null;
-    }
 }
