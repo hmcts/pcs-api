@@ -21,7 +21,6 @@ import uk.gov.hmcts.reform.pcs.document.model.accesscode.AccessCodeFormPayload;
 import uk.gov.hmcts.reform.pcs.document.service.DocAssemblyService;
 import uk.gov.hmcts.reform.pcs.location.model.CourtVenue;
 import uk.gov.hmcts.reform.pcs.location.service.LocationReferenceService;
-import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
 
 import java.time.Clock;
 import java.time.LocalDate;
@@ -41,7 +40,6 @@ public class AccessCodeFormDocumentGenerator {
 
     private final DocAssemblyService docAssemblyService;
     private final LocationReferenceService locationReferenceService;
-    private final IdamTokenProvider systemUpdateUserTokenProvider;
     private final AddressMapper addressMapper;
     private final AddressFormatter addressFormatter;
     private final CaseReferenceFormatter caseReferenceFormatter;
@@ -51,7 +49,6 @@ public class AccessCodeFormDocumentGenerator {
     public AccessCodeFormDocumentGenerator(
         DocAssemblyService docAssemblyService,
         LocationReferenceService locationReferenceService,
-        @Qualifier("systemUpdateUserTokenProvider") IdamTokenProvider systemUpdateUserTokenProvider,
         AddressMapper addressMapper,
         AddressFormatter addressFormatter,
         CaseReferenceFormatter caseReferenceFormatter,
@@ -60,7 +57,6 @@ public class AccessCodeFormDocumentGenerator {
     ) {
         this.docAssemblyService = docAssemblyService;
         this.locationReferenceService = locationReferenceService;
-        this.systemUpdateUserTokenProvider = systemUpdateUserTokenProvider;
         this.addressMapper = addressMapper;
         this.addressFormatter = addressFormatter;
         this.caseReferenceFormatter = caseReferenceFormatter;
@@ -140,8 +136,7 @@ public class AccessCodeFormDocumentGenerator {
                     + "; cannot resolve respond-by-post court (AC06)");
         }
 
-        String authToken = systemUpdateUserTokenProvider.getAuthToken();
-        List<CourtVenue> venues = locationReferenceService.getCountyCourts(authToken, List.of(epimsId));
+        List<CourtVenue> venues = locationReferenceService.getCourtVenues(List.of(epimsId));
         if (venues == null || venues.isEmpty()) {
             throw new IllegalStateException(
                 "No court venue found for epimsId " + epimsId + " on case " + pcsCaseEntity.getCaseReference()

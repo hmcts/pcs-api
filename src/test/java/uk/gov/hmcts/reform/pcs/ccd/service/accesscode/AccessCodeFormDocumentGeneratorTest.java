@@ -26,7 +26,6 @@ import uk.gov.hmcts.reform.pcs.document.model.accesscode.AccessCodeFormPayload;
 import uk.gov.hmcts.reform.pcs.document.service.DocAssemblyService;
 import uk.gov.hmcts.reform.pcs.location.model.CourtVenue;
 import uk.gov.hmcts.reform.pcs.location.service.LocationReferenceService;
-import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
 
 import java.time.Clock;
 import java.time.Instant;
@@ -46,7 +45,6 @@ import static org.mockito.Mockito.when;
 @MockitoSettings(strictness = Strictness.LENIENT)
 class AccessCodeFormDocumentGeneratorTest {
 
-    private static final String AUTH_TOKEN = "Bearer system-token";
     private static final Integer EPIMS_ID = 12345;
     private static final String DOC_URL = "http://dm-store/documents/pin";
     private static final String PROPERTY_ADDRESS = "1 Property Street\nLondon\nAB1 2CD";
@@ -57,8 +55,6 @@ class AccessCodeFormDocumentGeneratorTest {
     private DocAssemblyService docAssemblyService;
     @Mock
     private LocationReferenceService locationReferenceService;
-    @Mock
-    private IdamTokenProvider systemUpdateUserTokenProvider;
     @Mock
     private AddressMapper addressMapper;
     @Mock
@@ -80,7 +76,6 @@ class AccessCodeFormDocumentGeneratorTest {
         underTest = new AccessCodeFormDocumentGenerator(
             docAssemblyService,
             locationReferenceService,
-            systemUpdateUserTokenProvider,
             addressMapper,
             addressFormatter,
             caseReferenceFormatter,
@@ -88,15 +83,14 @@ class AccessCodeFormDocumentGeneratorTest {
             RESPOND_ONLINE_URL
         );
 
-        when(systemUpdateUserTokenProvider.getAuthToken()).thenReturn(AUTH_TOKEN);
         when(caseReferenceFormatter.formatCaseReferenceWithDashes(any())).thenReturn("1234-5678-9012-3456");
         when(addressMapper.toAddressUK(propertyAddressEntity)).thenReturn(propertyAddressUk);
         when(addressFormatter.formatFullAddressWithoutCountry(propertyAddressUk, AddressFormatter.NEWLINE_DELIMITER))
             .thenReturn(PROPERTY_ADDRESS);
         when(docAssemblyService.generateDocument(any(), anyString(), any(), anyString())).thenReturn(DOC_URL);
-        when(locationReferenceService.getCountyCourts(eq(AUTH_TOKEN), eq(List.of(EPIMS_ID))))
-            .thenReturn(List.of(new CourtVenue(EPIMS_ID, 1, "Central London County Court",
-                                               "13-14 Park Crescent, Marylebone", "W1B 1HT")));
+        when(locationReferenceService.getCourtVenues(eq(List.of(EPIMS_ID))))
+            .thenReturn(List.of(courtVenue("Central London County Court",
+                                           "13-14 Park Crescent, Marylebone", "W1B 1HT")));
     }
 
     @Test
@@ -198,7 +192,7 @@ class AccessCodeFormDocumentGeneratorTest {
 
     @Test
     void shouldThrowWhenLocationReferenceReturnsNoVenue() {
-        when(locationReferenceService.getCountyCourts(eq(AUTH_TOKEN), eq(List.of(EPIMS_ID))))
+        when(locationReferenceService.getCourtVenues(eq(List.of(EPIMS_ID))))
             .thenReturn(List.of());
 
         PartyEntity defendant = PartyEntity.builder()
@@ -255,5 +249,19 @@ class AccessCodeFormDocumentGeneratorTest {
             .propertyAddress(propertyAddressEntity)
             .claims(List.of(mainClaim))
             .build();
+    }
+
+    // Builds a CourtVenue with only the fields the letter uses (court name, address, postcode);
+    // every other field of the rd-location-ref-api record is left null.
+    private CourtVenue courtVenue(String courtName, String courtAddress, String postcode) {
+        return new CourtVenue(
+            null, null, null, null, null, null, null, null, null, null,
+            courtAddress,
+            postcode,
+            null, null, null, null, null, null, null, null,
+            courtName,
+            null, null, null, null, null, null, null, null, null,
+            null, null, null, null, null, null, null, null
+        );
     }
 }

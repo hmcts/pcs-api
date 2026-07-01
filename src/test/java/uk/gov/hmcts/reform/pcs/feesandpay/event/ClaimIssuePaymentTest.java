@@ -17,6 +17,7 @@ import uk.gov.hmcts.reform.pcs.ccd.event.BaseEventTest;
 import uk.gov.hmcts.reform.pcs.ccd.model.AccessCodeTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.service.DefendantAccessCodeService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimFormScheduler;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -48,6 +49,8 @@ class ClaimIssuePaymentTest extends BaseEventTest {
 
     @Mock
     private PcsCaseService pcsCaseService;
+    @Mock
+    private ClaimFormScheduler claimFormScheduler;
 
     @Mock
     private DefendantAccessCodeService defendantAccessCodeService;
@@ -143,5 +146,15 @@ class ClaimIssuePaymentTest extends BaseEventTest {
         assertThat(configuredEvent.getGrants().get(LEADERSHIP_JUDGE)).contains(Permission.R);
         assertThat(configuredEvent.getGrants().get(WLU_ADMIN)).contains(Permission.R);
         assertThat(configuredEvent.getGrants().get(WLU_TEAM_LEADER)).contains(Permission.R);
+    }
+
+    @Test
+    void shouldSetCaseIssuedStateOnSubmit() {
+        PCSCase pcsCase = PCSCase.builder().build();
+
+        SubmitResponse<State> response = callSubmitHandler(pcsCase);
+
+        assertThat(response.getState()).isEqualTo(State.CASE_ISSUED);
+        verify(claimFormScheduler).scheduleClaimFormGeneration(anyLong());
     }
 }
