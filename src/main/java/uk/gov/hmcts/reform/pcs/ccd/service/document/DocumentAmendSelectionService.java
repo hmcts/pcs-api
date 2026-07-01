@@ -2,6 +2,8 @@ package uk.gov.hmcts.reform.pcs.ccd.service.document;
 
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+import uk.gov.hmcts.ccd.sdk.type.DynamicList;
+import uk.gov.hmcts.ccd.sdk.type.DynamicListElement;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -10,8 +12,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseNameFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
-import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
-import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 
 import java.util.Comparator;
@@ -64,7 +64,7 @@ public class DocumentAmendSelectionService {
         }
 
         CaseFileCategory selectedFolder = details.getSelectedFolder().getCategory();
-        DynamicStringList selectedDocuments = documentsForCategory(details, selectedFolder);
+        DynamicList selectedDocuments = documentsForCategory(details, selectedFolder);
         details.setSelectedFolderId(selectedFolder.getId());
         details.setSelectedFolderLabel(selectedFolder.getLabel());
 
@@ -74,43 +74,43 @@ public class DocumentAmendSelectionService {
             return List.of(SELECT_DIFFERENT_FOLDER_ERROR);
         }
 
-        DynamicStringListElement selectedDocument = selectedDocuments.getValue();
+        DynamicListElement selectedDocument = selectedDocuments.getValue();
         if (selectedDocument == null || selectedDocument.getCode() == null) {
             details.setSelectedDocumentId(null);
             details.setSelectedDocumentFileName(null);
             return List.of();
         }
 
-        details.setSelectedDocumentId(selectedDocument.getCode());
+        details.setSelectedDocumentId(selectedDocument.getCode().toString());
         details.setSelectedDocumentFileName(selectedDocument.getLabel());
         return List.of();
     }
 
     private void setDocumentsForCategory(DocumentAmendDetails details, PcsCaseEntity pcsCase,
                                          CaseFileCategory category) {
-        DynamicStringList documents = documentList(pcsCase, category, documentsForCategory(details, category));
+        DynamicList documents = documentList(pcsCase, category, documentsForCategory(details, category));
         applyDocumentsForCategory(details, category, documents);
         setEmptyForCategory(details, category, YesOrNo.from(isEmpty(documents)));
     }
 
-    private DynamicStringList documentList(PcsCaseEntity pcsCase, CaseFileCategory category,
-                                           DynamicStringList existingList) {
-        DynamicStringListElement selected = existingList == null ? null : existingList.getValue();
+    private DynamicList documentList(PcsCaseEntity pcsCase, CaseFileCategory category,
+                                     DynamicList existingList) {
+        DynamicListElement selected = existingList == null ? null : existingList.getValue();
 
-        List<DynamicStringListElement> documents = CollectionUtils.isEmpty(pcsCase.getDocuments())
+        List<DynamicListElement> documents = CollectionUtils.isEmpty(pcsCase.getDocuments())
             ? List.of()
             : pcsCase.getDocuments().stream()
                 .filter(Objects::nonNull)
                 .filter(document -> isInCategory(document, category))
                 .sorted(DOCUMENT_ORDER)
-                .map(document -> DynamicStringListElement.builder()
-                    .code(document.getId().toString())
+                .map(document -> DynamicListElement.builder()
+                    .code(document.getId())
                     .label(document.getFileName())
                     .build())
                 .toList();
 
-        return DynamicStringList.builder()
-            .value(retainSelectedValue(selected, documents))
+        return DynamicList.builder()
+            .value(selectedValue(selected, documents))
             .listItems(documents)
             .build();
     }
@@ -119,8 +119,8 @@ public class DocumentAmendSelectionService {
         return category.getId().equals(document.getCategoryId());
     }
 
-    private DynamicStringListElement retainSelectedValue(DynamicStringListElement selected,
-                                                         List<DynamicStringListElement> options) {
+    private DynamicListElement retainSelectedValue(DynamicListElement selected,
+                                                  List<DynamicListElement> options) {
         if (selected == null || selected.getCode() == null) {
             return null;
         }
@@ -131,7 +131,16 @@ public class DocumentAmendSelectionService {
             .orElse(null);
     }
 
-    private boolean isEmpty(DynamicStringList documents) {
+    private DynamicListElement selectedValue(DynamicListElement selected,
+                                             List<DynamicListElement> options) {
+        DynamicListElement retainedSelectedValue = retainSelectedValue(selected, options);
+        if (retainedSelectedValue != null) {
+            return retainedSelectedValue;
+        }
+        return options.isEmpty() ? null : DynamicListElement.EMPTY;
+    }
+
+    private boolean isEmpty(DynamicList documents) {
         return documents == null || CollectionUtils.isEmpty(documents.getListItems());
     }
 
@@ -153,7 +162,7 @@ public class DocumentAmendSelectionService {
         return caseData.getDocumentAmendDetails();
     }
 
-    private DynamicStringList documentsForCategory(DocumentAmendDetails details, CaseFileCategory category) {
+    private DynamicList documentsForCategory(DocumentAmendDetails details, CaseFileCategory category) {
         return switch (category) {
             case STATEMENTS_OF_CASE -> details.getStatementsOfCaseDocuments();
             case PROPERTY_DOCUMENTS -> details.getPropertyDocuments();
@@ -168,7 +177,7 @@ public class DocumentAmendSelectionService {
     }
 
     private void applyDocumentsForCategory(DocumentAmendDetails details, CaseFileCategory category,
-                                           DynamicStringList documents) {
+                                           DynamicList documents) {
         switch (category) {
             case STATEMENTS_OF_CASE -> details.setStatementsOfCaseDocuments(documents);
             case PROPERTY_DOCUMENTS -> details.setPropertyDocuments(documents);

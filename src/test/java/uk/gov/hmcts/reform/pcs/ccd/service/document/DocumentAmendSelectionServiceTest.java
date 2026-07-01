@@ -1,10 +1,14 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.document;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.ccd.sdk.type.DynamicList;
+import uk.gov.hmcts.ccd.sdk.type.DynamicListElement;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -17,8 +21,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseNameFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
-import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
-import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 
 import java.time.Instant;
@@ -86,6 +88,29 @@ class DocumentAmendSelectionServiceTest {
     }
 
     @Test
+    void shouldSerialiseDocumentAmendFieldsWithGeneratedCcdFieldIds() throws JsonProcessingException {
+        DynamicList applicationsDocuments = DynamicList.builder()
+            .value(DynamicListElement.EMPTY)
+            .listItems(List.of(DynamicListElement.builder()
+                .code(UUID.randomUUID())
+                .label("application.pdf")
+                .build()))
+            .build();
+        PCSCase caseData = PCSCase.builder()
+            .documentAmendDetails(DocumentAmendDetails.builder()
+                .applicationsDocuments(applicationsDocuments)
+                .applicationsEmpty(YesOrNo.NO)
+                .build())
+            .build();
+
+        String serialisedCaseData = new ObjectMapper().writeValueAsString(caseData);
+
+        assertThat(serialisedCaseData).contains("\"documentAmend_ApplicationsDocuments\"");
+        assertThat(serialisedCaseData).contains("\"documentAmend_ApplicationsEmpty\"");
+        assertThat(serialisedCaseData).doesNotContain("documentAmend_applicationsDocuments");
+    }
+
+    @Test
     void shouldPopulatePartyNamesSummaryFromPartyCollectionsWhenSummaryFieldsAreMissing() {
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(PcsCaseEntity.builder().build());
         PCSCase caseData = PCSCase.builder()
@@ -128,11 +153,13 @@ class DocumentAmendSelectionServiceTest {
 
         DocumentAmendDetails details = caseData.getDocumentAmendDetails();
         assertThat(details.getEvidenceDocuments().getListItems())
-            .extracting(DynamicStringListElement::getLabel)
+            .extracting(DynamicListElement::getLabel)
             .containsExactly("visible evidence.pdf");
         assertThat(details.getApplicationsDocuments().getListItems())
-            .extracting(DynamicStringListElement::getLabel)
+            .extracting(DynamicListElement::getLabel)
             .containsExactly("visible application.pdf", "without notice application.pdf");
+        assertThat(details.getApplicationsDocuments().getValue()).isNotNull();
+        assertThat(details.getApplicationsDocuments().getValue().getCode()).isNull();
     }
 
     @Test
@@ -151,7 +178,7 @@ class DocumentAmendSelectionServiceTest {
         underTest.initialise(CASE_REFERENCE, caseData);
 
         assertThat(caseData.getDocumentAmendDetails().getUncategorisedDocuments().getListItems())
-            .extracting(DynamicStringListElement::getLabel)
+            .extracting(DynamicListElement::getLabel)
             .containsExactly("uncategorised document.pdf");
         assertThat(caseData.getDocumentAmendDetails().getUncategorisedDocumentsEmpty()).isEqualTo(YesOrNo.NO);
     }
@@ -170,6 +197,29 @@ class DocumentAmendSelectionServiceTest {
 
         assertThat(errors).containsExactly("Select a different folder to continue");
         assertThat(caseData.getDocumentAmendDetails().getSelectedDocumentId()).isNull();
+    }
+
+    @Test
+    void shouldTreatEmptyDocumentSelectionAsNoSelection() {
+        DocumentEntity document = document("photo.pdf", EVIDENCE.getId(), null);
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(PcsCaseEntity.builder()
+            .documents(List.of(document))
+            .build());
+        PCSCase caseData = PCSCase.builder()
+            .documentAmendDetails(DocumentAmendDetails.builder()
+                .selectedFolder(selectedFolder(EVIDENCE))
+                .evidenceDocuments(DynamicList.builder()
+                    .value(DynamicListElement.EMPTY)
+                    .build())
+                .build())
+            .build();
+        underTest.initialise(CASE_REFERENCE, caseData);
+
+        List<String> errors = underTest.validateAndStoreSelection(caseData);
+
+        assertThat(errors).isEmpty();
+        assertThat(caseData.getDocumentAmendDetails().getSelectedDocumentId()).isNull();
+        assertThat(caseData.getDocumentAmendDetails().getSelectedDocumentFileName()).isNull();
     }
 
     @Test
@@ -228,13 +278,13 @@ class DocumentAmendSelectionServiceTest {
         };
     }
 
-    private static DynamicStringList selectedDocument(DocumentEntity document) {
-        DynamicStringListElement selectedDocument = DynamicStringListElement.builder()
-            .code(document.getId().toString())
+    private static DynamicList selectedDocument(DocumentEntity document) {
+        DynamicListElement selectedDocument = DynamicListElement.builder()
+            .code(document.getId())
             .label(document.getFileName())
             .build();
 
-        return DynamicStringList.builder()
+        return DynamicList.builder()
             .value(selectedDocument)
             .listItems(List.of(selectedDocument))
             .build();
