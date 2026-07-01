@@ -6,6 +6,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimActivityLogRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.bulkprint.ClaimPackSender;
+import uk.gov.hmcts.reform.pcs.ccd.service.bulkprint.DefencePackSender;
 import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -20,6 +21,8 @@ class BulkPrintGenerationComponentTest {
     private ClaimActivityLogRepository claimActivityLogRepository;
     @Mock
     private ClaimPackSender claimPackSender;
+    @Mock
+    private DefencePackSender defencePackSender;
 
     @Test
     void buildsTaskWithNightlyDefaultSchedule() {
@@ -34,6 +37,6 @@ class BulkPrintGenerationComponentTest {
 
     private BulkPrintGenerationComponent componentWithSchedule(String schedule) {
         return new BulkPrintGenerationComponent(
-            featureToggleService, claimActivityLogRepository, claimPackSender, schedule);
+            featureToggleService, claimActivityLogRepository, claimPackSender, defencePackSender, schedule);
     }
 }

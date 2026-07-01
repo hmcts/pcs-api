@@ -12,6 +12,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.ClaimActivityStatus;
 import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.ClaimActivityType;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimActivityLogRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.bulkprint.ClaimPackSender;
+import uk.gov.hmcts.reform.pcs.ccd.service.bulkprint.DefencePackSender;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
@@ -33,15 +34,18 @@ public class BulkPrintGenerationComponent {
     private final FeatureToggleService featureToggleService;
     private final ClaimActivityLogRepository claimActivityLogRepository;
     private final ClaimPackSender claimPackSender;
+    private final DefencePackSender defencePackSender;
     private final String schedule;
 
     public BulkPrintGenerationComponent(FeatureToggleService featureToggleService,
                                         ClaimActivityLogRepository claimActivityLogRepository,
                                         ClaimPackSender claimPackSender,
+                                        DefencePackSender defencePackSender,
                                         @Value("${bulk-print.schedule}") String schedule) {
         this.featureToggleService = featureToggleService;
         this.claimActivityLogRepository = claimActivityLogRepository;
         this.claimPackSender = claimPackSender;
+        this.defencePackSender = defencePackSender;
         this.schedule = schedule;
     }
 
@@ -60,7 +64,10 @@ public class BulkPrintGenerationComponent {
             List<UUID> caseIds = claimActivityLogRepository.findCaseIdsByActivityTypeAndStatus(
                 ClaimActivityType.DOCUMENTS_CREATED, ClaimActivityStatus.SUCCESS);
             log.info("Bulk print sweep starting for {} candidate cases", caseIds.size());
-            caseIds.forEach(claimPackSender::sendClaimPacks);
+            caseIds.forEach(caseId -> {
+                claimPackSender.sendClaimPacks(caseId);
+                defencePackSender.sendDefencePacks(caseId);
+            });
         } finally {
             MDC.remove(MDC_TASK_NAME);
         }
