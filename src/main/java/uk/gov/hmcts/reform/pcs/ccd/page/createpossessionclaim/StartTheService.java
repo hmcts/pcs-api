@@ -36,7 +36,7 @@ public class StartTheService implements CcdPageConfiguration {
                    + "using Possession Claim Online (PCOL) or by using a claim form with the relevant particulars "
                    + "of claim form.</p>"
                    + "<p class=\"" + BODY + "\">This service is also available "
-                   + "<a href=\"javascript:void(0)\" class=\"" + LINK + "\">in Welsh (Cymraeg)</a>.</p>"
+                   + "<a class=\"language govuk-js-link " + LINK + "\">in Welsh (Cymraeg)</a>.</p>"
             )
             .label("feePaymentWithAmount",
             "<p class=\"" + BODY + "\">The claim fee is ${feeAmount}. "
