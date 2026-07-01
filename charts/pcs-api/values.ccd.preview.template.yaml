@@ -233,6 +233,7 @@ xui-mo-webapp:
       SERVICES_CCD_DATA_STORE_API: http://${SERVICE_NAME}-ccd-data-store-api
       JURISDICTIONS: PCS
       CASE_TYPES: PCS
+      FEATURE_OGD_UPDATE_REFRESH_USER_ENABLED: true
 ccd-case-document-am-api:
   enabled: true
   java:
