@@ -7,9 +7,11 @@ import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
@@ -63,9 +65,14 @@ public class DocumentsView {
 
         if (genAppEntity != null) {
             return genAppVisibilityService.isGenAppVisibleToUser(genAppEntity, currentUserId);
-        } else {
-            return true;
         }
+
+        CounterClaimEntity counterClaim = documentEntity.getCounterClaim();
+        if (counterClaim != null) {
+            return counterClaim.getStatus() == CounterClaimState.COUNTER_CLAIM_ISSUED;
+        }
+
+        return true;
     }
 
     private boolean isExcludedFromCaseFile(DocumentEntity documentEntity) {
