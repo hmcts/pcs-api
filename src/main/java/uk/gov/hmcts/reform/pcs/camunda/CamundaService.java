@@ -34,7 +34,7 @@ public class CamundaService {
         processVariables.put("caseTypeId", dmnStringValue("PCS-2012"));
         processVariables.put("dueDate", dmnStringValue(dueDate.format(ISO_LOCAL_DATE_TIME)));
         processVariables.put("workingDaysAllowed", dmnIntegerValue(1));
-        processVariables.put("jurisdiction", dmnStringValue("pcs"));
+        processVariables.put("jurisdiction", dmnStringValue("PCS"));
         processVariables.put("name", dmnStringValue("Test Task"));
         processVariables.put("taskId", dmnStringValue("testTaskId"));
         processVariables.put("caseId", dmnStringValue(caseId.toString()));
