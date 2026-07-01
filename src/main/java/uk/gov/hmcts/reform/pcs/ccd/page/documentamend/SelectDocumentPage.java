@@ -30,15 +30,9 @@ public class SelectDocumentPage implements CcdPageConfiguration {
         pageBuilder
             .page(PAGE_ID, this::midEvent)
             .pageLabel("Select document")
-            .label(PAGE_ID + "-caseReference", "Case number: ${[CASE_REFERENCE]}")
-            .label(PAGE_ID + "-propertyAddress", "${documentAmend_PropertyAddressSummary}",
-                   "documentAmend_PropertyAddressSummary!=\"\"")
-            .label(PAGE_ID + "-partyNames", "${documentAmend_PartyNamesSummary}",
-                   "documentAmend_PartyNamesSummary!=\"\"")
             .label(PAGE_ID + "-separator", "---")
             .complex(PCSCase::getDocumentAmendDetails)
                 .readonly(DocumentAmendDetails::getPropertyAddressSummary, NEVER_SHOW, true)
-                .readonly(DocumentAmendDetails::getPartyNamesSummary, NEVER_SHOW, true)
                 .mandatory(DocumentAmendDetails::getSelectedFolder)
                 .mandatory(DocumentAmendDetails::getStatementsOfCaseDocuments,
                     documentsShowCondition(CaseFileCategory.STATEMENTS_OF_CASE), true)
