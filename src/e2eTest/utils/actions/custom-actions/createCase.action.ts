@@ -55,7 +55,7 @@ import {
 } from '@data/page-data-figma';
 import {MEDIUM_TIMEOUT, SHORT_TIMEOUT, VERY_LONG_TIMEOUT} from 'playwright.config';
 import {compareMaps} from '@utils/common/compareMaps.util';
-import {caseInfo} from './createCaseAPI.action';
+import {caseInfo, defendantUserDetails} from './createCaseAPI.action';
 import {createCaseApiData} from '@data/api-data';
 import {formatCaseStateText, formatCurrency, formatDate, formatDateTime, formatUploadDocName, formatText, formatWord} from '@utils/common/string.utils';
 export let caseNumber: string;
@@ -1583,15 +1583,16 @@ export class CreateCaseAction implements IAction {
     });
     const folderRetrieved = (await folderLocator.allTextContents()).map(item => item.slice(1));
     const folder:string[] = caseFileView as string[];
-    expect(folder.every(name => folderRetrieved.some(text => text.includes(name)))).toBeTruthy();
-    
+
+    const missingFolders = folder.filter(name => !folderRetrieved.some(text => text.includes(name)));
+    expect(missingFolders, `Missing folders: ${missingFolders.join(", ")}`).toHaveLength(0);    
   }
 
   public async validateCaseFileViewIndividualFolder(page: Page ,caseFile: actionRecord){
     
     const folderName = caseFile.folder as string;
     let submitPayLoad = caseFile.submitPayload as Record<string, any>;
-    const userInputFiles:string[]= [];
+    let userInputFiles:string[]= [];
     switch (folderName) {
       case 'Property documents':
         this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad.tenancy_TenancyLicenceDocuments);
@@ -1618,6 +1619,11 @@ export class CreateCaseAction implements IAction {
       case 'Uncategorised documents':
         this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad.additionalDocuments, 'Other document');
         break;
+      
+      case 'Applications':
+        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad.xui_genapp_UploadedDocuments, 'All Files');
+        userInputFiles=this.cleanGenAppFilesArray(userInputFiles,defendantUserDetails.length);
+        break;
 
       default:
         break;
@@ -1637,8 +1643,7 @@ export class CreateCaseAction implements IAction {
     const actualFileCount = await fileLocator.count();
 
     expect(actualFileCount, 'File count matching').toEqual(fileCount)
-    const fileArray = this.cleanFilesArray(await fileLocator.allTextContents());
-    
+    const fileArray = this.cleanFilesArray(await fileLocator.allTextContents());    
     expect(userInputFiles.sort(), `validating  upload files for "${folderName}"`).toEqual(fileArray.sort());
     console.log(`\n✅ The files under section "${folderName}" are \n "${fileArray}"`);
 
@@ -1661,14 +1666,17 @@ export class CreateCaseAction implements IAction {
   public readDocFilesFromPayLoad(mainArray: string[], subArray: any[], multiDocsLabel?: string) {
 
     if (subArray && Array.isArray(subArray)) {
-      subArray.forEach(doc => { 
-        if (multiDocsLabel) {
+      subArray.forEach(doc => {
+        if (multiDocsLabel && multiDocsLabel !== 'All Files') {
           const valueLabel = doc.value?.documentType?.valueLabel;
           const filename = doc.value?.document?.document_filename;
           if (multiDocsLabel === valueLabel && filename) {
             mainArray.push(filename);
           }
-        } else if (doc.value?.document_filename) {
+        } else if (multiDocsLabel && multiDocsLabel === 'All Files') {
+          mainArray.push(doc.value.document.document_filename)
+        }
+        else if (doc.value?.document_filename) {
           mainArray.push(doc.value.document_filename);
         }
       });
@@ -1778,5 +1786,24 @@ export class CreateCaseAction implements IAction {
 
     });
   }
+
+ 
+  public cleanGenAppFilesArray(filesArray: string[], defendantCount: number) : string[] {
+  const result: string[] = [];
+
+  for (let i = 1; i <= defendantCount; i++) {
+    for (const file of filesArray) {
+      result.push(
+        file.replace(/\.pdf$/i, ` GA${i}.pdf`)
+      );
+    }
+
+    result.push(`General Application GA${i}.pdf`);
+  }
+
+  return result;
+}
+
+
 
 }

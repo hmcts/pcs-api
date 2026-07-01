@@ -681,8 +681,8 @@ export const submitCaseApiData = {
     claimantProvidePhoneNumber: 'NO',
     defendant1: {
       nameKnown: 'YES',
-      firstName: 'peter',
-      lastName: 'parker',
+      firstName: 'John',
+      lastName: 'Doe',
       addressKnown: 'NO',
       addressSameAsPossession: null,
       correspondenceAddress: {
@@ -696,6 +696,28 @@ export const submitCaseApiData = {
       }
     },
     addAnotherDefendant: 'NO',
+    additionalDefendants: [
+      {
+        value: {
+          nameKnown: 'YES',
+          firstName: 'Peter',
+          lastName: 'Parker',
+          addressKnown: 'YES',
+          addressSameAsPossession: 'YES'
+        },
+        id: null
+      },
+      {
+        value: {
+          nameKnown: 'YES',
+          firstName: 'Jen',
+          lastName: 'Parker',
+          addressKnown: 'YES',
+          addressSameAsPossession: 'YES'
+        },
+        id: null
+      },
+    ],
     tenancy_TypeOfTenancyLicence: 'ASSURED_TENANCY',
     tenancy_TenancyLicenceDate: '2013-01-01',
     tenancy_HasCopyOfTenancyLicence: 'YES',
