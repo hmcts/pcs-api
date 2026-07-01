@@ -91,7 +91,7 @@ class PartiesViewTest {
         otherParty.setAddress(addressEntity);
         otherParty.setAddressKnown(VerticalYesNo.YES);
         when(modelMapper.map(addressEntity, AddressUK.class)).thenReturn(
-            AddressUK.builder().AddressLine1("1 Other Street").build()
+            AddressUK.builder().addressLine1("1 Other Street").build()
         );
 
         ClaimPartyEntity claimParty = buildClaimPartyEntity(otherParty, PartyRole.DEFENDANT);
