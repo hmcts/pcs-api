@@ -9,6 +9,7 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.ClaimantAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DefendantAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.InternalCaseFlagAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.RasValidationAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.WAAccess;
 
 /**
  * All possible PCS case states.
@@ -20,21 +21,23 @@ public enum State {
 
     @CCD(
         label = "Awaiting Submission to HMCTS",
-        access = {ClaimantAccess.class, CitizenAccess.class, RasValidationAccess.class},
+        access = {ClaimantAccess.class, CitizenAccess.class, RasValidationAccess.class, WAAccess.class},
         hint = "${caseTitleMarkdown}"
     )
     AWAITING_SUBMISSION_TO_HMCTS,
 
     @CCD(
         label = "Pending Case Issued",
-        access = {ClaimantAccess.class, CitizenAccess.class,  RasValidationAccess.class, InternalCaseFlagAccess.class},
+        access = {ClaimantAccess.class, CitizenAccess.class,  RasValidationAccess.class, InternalCaseFlagAccess.class,
+            WAAccess.class},
         hint = "${caseTitleMarkdown}"
     )
     PENDING_CASE_ISSUED,
 
     @CCD(
         label = "Case Issued",
-        access = {CaseworkerReadAccess.class, ClaimantAccess.class, DefendantAccess.class, RasValidationAccess.class},
+        access = {CaseworkerReadAccess.class, ClaimantAccess.class, DefendantAccess.class, RasValidationAccess.class,
+            WAAccess.class},
         hint = "${caseTitleMarkdown}"
     )
     CASE_ISSUED

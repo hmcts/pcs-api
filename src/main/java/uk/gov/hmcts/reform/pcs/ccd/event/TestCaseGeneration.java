@@ -91,6 +91,7 @@ public class TestCaseGeneration implements CCDConfig<PCSCase, State, UserRole> {
             enforceTheOrder.submitOrder(caseReference, loadTestPcsCase(label));
             return SubmitResponse.<State>builder().state(CASE_ISSUED).build();
         }
+
         return SubmitResponse.<State>builder().state(AWAITING_SUBMISSION_TO_HMCTS).build();
     }
 
