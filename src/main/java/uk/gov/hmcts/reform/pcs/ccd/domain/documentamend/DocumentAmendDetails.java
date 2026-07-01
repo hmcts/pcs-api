@@ -125,33 +125,6 @@ public class DocumentAmendDetails {
     private YesOrNo uncategorisedDocumentsEmpty;
 
     @CCD(searchable = false)
-    private YesOrNo showStatementsOfCase;
-
-    @CCD(searchable = false)
-    private YesOrNo showPropertyDocuments;
-
-    @CCD(searchable = false)
-    private YesOrNo showEvidence;
-
-    @CCD(searchable = false)
-    private YesOrNo showHearingDocuments;
-
-    @CCD(searchable = false)
-    private YesOrNo showOrdersAndNoticeOfHearings;
-
-    @CCD(searchable = false)
-    private YesOrNo showApplications;
-
-    @CCD(searchable = false)
-    private YesOrNo showAppeals;
-
-    @CCD(searchable = false)
-    private YesOrNo showCorrespondence;
-
-    @CCD(searchable = false)
-    private YesOrNo showUncategorisedDocuments;
-
-    @CCD(searchable = false)
     private String selectedFolderId;
 
     @CCD(searchable = false)

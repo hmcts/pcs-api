@@ -55,7 +55,6 @@ public class DocumentAmendSelectionService {
         setDocumentsForCategory(details, pcsCase, CaseFileCategory.APPEALS);
         setDocumentsForCategory(details, pcsCase, CaseFileCategory.CORRESPONDENCE);
         setDocumentsForCategory(details, pcsCase, CaseFileCategory.UNCATEGORISED_DOCUMENTS);
-        setSelectedFolderDisplayFlags(details);
     }
 
     public List<String> validateAndStoreSelection(PCSCase caseData) {
@@ -195,31 +194,5 @@ public class DocumentAmendSelectionService {
             case CORRESPONDENCE -> details.setCorrespondenceEmpty(empty);
             case UNCATEGORISED_DOCUMENTS -> details.setUncategorisedDocumentsEmpty(empty);
         }
-    }
-
-    private void setSelectedFolderDisplayFlags(DocumentAmendDetails details) {
-        CaseFileCategory selectedCategory = details.getSelectedFolder() == null
-            ? null
-            : details.getSelectedFolder().getCategory();
-
-        details.setShowStatementsOfCase(showSelectedFolder(selectedCategory, CaseFileCategory.STATEMENTS_OF_CASE));
-        details.setShowPropertyDocuments(showSelectedFolder(selectedCategory, CaseFileCategory.PROPERTY_DOCUMENTS));
-        details.setShowEvidence(showSelectedFolder(selectedCategory, CaseFileCategory.EVIDENCE));
-        details.setShowHearingDocuments(showSelectedFolder(selectedCategory, CaseFileCategory.HEARING_DOCUMENTS));
-        details.setShowOrdersAndNoticeOfHearings(showSelectedFolder(
-            selectedCategory,
-            CaseFileCategory.ORDERS_AND_NOTICE_OF_HEARINGS
-        ));
-        details.setShowApplications(showSelectedFolder(selectedCategory, CaseFileCategory.APPLICATIONS));
-        details.setShowAppeals(showSelectedFolder(selectedCategory, CaseFileCategory.APPEALS));
-        details.setShowCorrespondence(showSelectedFolder(selectedCategory, CaseFileCategory.CORRESPONDENCE));
-        details.setShowUncategorisedDocuments(showSelectedFolder(
-            selectedCategory,
-            CaseFileCategory.UNCATEGORISED_DOCUMENTS
-        ));
-    }
-
-    private YesOrNo showSelectedFolder(CaseFileCategory selectedCategory, CaseFileCategory category) {
-        return YesOrNo.from(category == selectedCategory);
     }
 }
