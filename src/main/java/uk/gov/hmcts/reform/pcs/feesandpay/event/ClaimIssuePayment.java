@@ -13,6 +13,7 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimFormScheduler;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.claimIssuePayment;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
@@ -23,6 +24,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUD
 public class ClaimIssuePayment implements CCDConfig<PCSCase, State, UserRole> {
 
     private final PcsCaseService pcsCaseService;
+    private final ClaimFormScheduler claimFormScheduler;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -54,6 +56,7 @@ public class ClaimIssuePayment implements CCDConfig<PCSCase, State, UserRole> {
         if (caseData.getDateIssued() == null) {
             long caseReference = eventPayload.caseReference();
             pcsCaseService.setCaseIssuedDate(caseReference);
+            claimFormScheduler.scheduleClaimFormGeneration(caseReference);
         }
         return SubmitResponse.<State>builder().state(State.CASE_ISSUED).build();
     }

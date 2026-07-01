@@ -138,7 +138,7 @@ hmc:
   serviceId: ${HMC_SERVICE_ID:AAA3}
 
 location-reference:
-  api-url: ${LOCATION_REF_URL:http://localhost:8089}
+  api-url: ${LOCATION_REF_URL:http://localhost:8083}
   court-county-type-id: ${COURT_COUNTY_TYPE_ID:10}
 
 notify:
