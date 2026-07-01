@@ -2,10 +2,15 @@ export const judicial = {
   possessionFeePaid_Judge_email: 'DDJ.Randell.Lesch@ejudiciary.net',
   //possession_Leadership_Salaried_Judge_email: 'ChiefICCJudge.Nichols@ejudiciary.net',
   //possession_Circuit_Salaried_Judge_email: 'HHJ.Steven.Harper@ejudiciary.net',
-  //possession_Salaried_Salaried_Judge_email: 'DDJ.Carrie.Cruz@ejudiciary.net'
+  possession_Circuit_Judge_FeePaid_Judge_email: 'HHJ.Test.McGinn@judicialofficeelinkssw.onmicrosoft.com',
+  // possession_Salaried_Salaried_Judge_email: 'DDJ.Carrie.Cruz@ejudiciary.net'
 } as const;
 export const judicialNightly: readonly string[] = [
-  judicial.possessionFeePaid_Judge_email
+  judicial.possessionFeePaid_Judge_email,
+  // judicial.possession_Leadership_Salaried_Judge_email,
+  // judicial.possession_Circuit_Salaried_Judge_email,
+  judicial.possession_Circuit_Judge_FeePaid_Judge_email
+  // judicial.possession_Salaried_Salaried_Judge_email
 ];
 
 export const judicialFull: readonly string[] = Object.values(judicial);
