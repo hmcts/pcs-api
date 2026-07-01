@@ -154,6 +154,6 @@ export function formatCaseStateText(input: string): string {
 
 export function randomPostcode()
 {
-  const postcodes = ['W3 6RS', 'W3 6RT', 'CF61 1ZH', 'SW111PD', 'SY132LH'];
+  const postcodes = ['W3 6RS', 'W3 6RT', 'CF61 1ZH'];
   return postcodes[Math.floor(Math.random() * postcodes.length)];
 }
