@@ -69,7 +69,7 @@ public class LaunchDarklyConfiguration {
         if (Files.exists(flagFile)) {
             return Optional.of(flagFile);
         }
-        log.debug("Could not find LaunchDarkly flag file defined by {}", file);
+        log.warn("Could not find LaunchDarkly flag file defined by {}", file);
         return Optional.empty();
     }
 }
