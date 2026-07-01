@@ -27,6 +27,17 @@ public class AccessCodeActivityLogService {
     }
 
     /**
+     * Records SUCCESS in its own transaction (REQUIRES_NEW) so the row commits immediately after a bulk-print
+     * letter is posted. This preserves the durable dedup key: a later rollback of the caller's per-case
+     * transaction cannot erase the SUCCESS and cause an already-posted pack to be re-sent on the next sweep.
+     */
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void logSuccessInNewTransaction(PcsCaseEntity pcsCase, PartyEntity party,
+                                           ClaimActivityType activityType) {
+        save(pcsCase, party, activityType, ClaimActivityStatus.SUCCESS);
+    }
+
+    /**
      * Uses REQUIRES_NEW so the failure row survives a rollback in the caller's transaction.
      */
     @Transactional(propagation = Propagation.REQUIRES_NEW)

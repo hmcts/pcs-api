@@ -79,7 +79,8 @@ class ClaimPackSenderTest {
 
         verify(bulkPrintService).sendPack(pcsCase, recipient,
             LetterType.CLAIMANT_CLAIM_PACK, "Acme Ltd", addressUk, List.of());
-        verify(accessCodeActivityLogService).logSuccess(pcsCase, recipient, ClaimActivityType.CLAIMANT_PACK_SENT);
+        verify(accessCodeActivityLogService)
+            .logSuccessInNewTransaction(pcsCase, recipient, ClaimActivityType.CLAIMANT_PACK_SENT);
         verify(accessCodeActivityLogService, never()).logFailure(any(), any(), any());
     }
 

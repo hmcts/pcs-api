@@ -74,7 +74,7 @@ public class ClaimPackSender {
             AddressUK address = resolveAddress(recipient, role, pcsCase.getPropertyAddress());
             UUID letterId = bulkPrintService.sendPack(
                 pcsCase, recipient, letterType, recipientName, address, candidate.documents());
-            accessCodeActivityLogService.logSuccess(pcsCase, recipient, packSentType);
+            accessCodeActivityLogService.logSuccessInNewTransaction(pcsCase, recipient, packSentType);
             MDC.put(MDC_LETTER_ID, String.valueOf(letterId));
             log.info("Claim pack sent - case: {}, party: {}, letterType: {}, letterId: {}",
                 pcsCase.getCaseReference(), recipient.getId(), letterType, letterId);
