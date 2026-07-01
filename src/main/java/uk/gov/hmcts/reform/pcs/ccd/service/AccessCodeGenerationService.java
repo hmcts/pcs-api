@@ -14,6 +14,7 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.PartyAccessCodeRepository;
 import uk.gov.hmcts.reform.pcs.ccd.util.AccessCodeGenerator;
 import uk.gov.hmcts.reform.pcs.exception.ClaimNotFoundException;
 import uk.gov.hmcts.reform.pcs.service.PartyAccessCodeHashingService;
+import uk.gov.hmcts.reform.pcs.testingsupport.service.TestPinRecorder;
 
 import java.util.List;
 import java.util.Set;
@@ -29,6 +30,7 @@ public class AccessCodeGenerationService {
     private final PcsCaseService pcsCaseService;
     private final AccessCodeGenerator accessCodeGenerator;
     private final PartyAccessCodeHashingService hashingService;
+    private final TestPinRecorder testPinRecorder;
 
     public PartyAccessCodeEntity createPartyAccessCodeEntity(PcsCaseEntity  pcsCaseEntity, UUID partyId) {
         String code = hashingService.encodeForStorage(accessCodeGenerator.generateAccessCode());
@@ -56,6 +58,13 @@ public class AccessCodeGenerationService {
             .filter(d -> !existingPartyIds.contains(d.getId()))
             .map(d -> createPartyAccessCodeEntity(pcsCaseEntity, d.getId()))
             .collect(Collectors.toSet());
+
+        // TODO: This will be replaced/removed by HDPI-5819
+        newCodes.forEach(
+            newCode -> {
+                testPinRecorder.record(pcsCaseEntity.getId(), newCode.getPartyId(), newCode.getCode());
+            }
+        );
 
         if (!newCodes.isEmpty()) {
             partyAccessCodeRepo.saveAll(newCodes);

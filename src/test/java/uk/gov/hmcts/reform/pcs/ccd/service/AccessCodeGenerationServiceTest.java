@@ -17,6 +17,7 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.PartyAccessCodeRepository;
 import uk.gov.hmcts.reform.pcs.ccd.util.AccessCodeGenerator;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.service.PartyAccessCodeHashingService;
+import uk.gov.hmcts.reform.pcs.testingsupport.service.TestPinRecorder;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -48,6 +49,9 @@ class AccessCodeGenerationServiceTest {
     @Mock
     private PartyAccessCodeHashingService hashingService;
 
+    @Mock
+    private TestPinRecorder testPinRecorder;
+
     private AccessCodeGenerationService underTest;
 
     @Captor
@@ -59,7 +63,8 @@ class AccessCodeGenerationServiceTest {
             partyAccessCodeRepo,
             pcsCaseService,
             accessCodeGenerator,
-            hashingService
+            hashingService,
+            testPinRecorder
         );
         when(accessCodeGenerator.generateAccessCode()).thenCallRealMethod();
         lenient().when(hashingService.encodeForStorage(any())).thenAnswer(invocation -> invocation.getArgument(0));
@@ -107,6 +112,9 @@ class AccessCodeGenerationServiceTest {
         assertThat(savedEntity.getCode()).isNotNull()
             .hasSize(12)
             .matches("[ABCDEFGHJKLMNPRSTVWXYZ23456789]{12}");
+
+        // TODO: This will be replaced/removed by HDPI-5819
+        verify(testPinRecorder).record(caseEntity.getId(), partyId, savedEntity.getCode());
     }
 
     @Test
