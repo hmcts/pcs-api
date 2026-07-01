@@ -41,6 +41,7 @@ import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
 import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
+import uk.gov.hmcts.reform.pcs.reference.dto.NameAndAddress;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
@@ -161,7 +162,9 @@ class ResumePossessionClaimTest extends BaseEventTest {
         void shouldSetClaimantNameFromOrganisationServiceWhenAvailable() {
             // Given
             String orgName = "ACME Org Ltd";
-            when(organisationService.getOrganisationNameForCurrentUser()).thenReturn(orgName);
+            String postcode = "MK14 9PJN";
+            NameAndAddress nameAndAddress = new NameAndAddress(orgName, AddressUK.builder().postCode(postcode).build());
+            when(organisationService.getNameAndAddressForCurrentUser()).thenReturn(nameAndAddress);
 
             PCSCase caseData = PCSCase.builder()
                 .propertyAddress(mock(AddressUK.class))
@@ -181,7 +184,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
         @Test
         void shouldSetFlagWhenOrganisationNameNotAvailable() {
             // Given
-            when(organisationService.getOrganisationNameForCurrentUser()).thenReturn(null);
+            when(organisationService.getNameAndAddressForCurrentUser()).thenReturn(null);
 
             PCSCase caseData = PCSCase.builder()
                 .propertyAddress(mock(AddressUK.class))
@@ -203,12 +206,6 @@ class ResumePossessionClaimTest extends BaseEventTest {
             // Given
             String userEmail = "user@test.com";
             when(userDetails.getSub()).thenReturn(userEmail);
-            when(organisationService.getOrganisationNameForCurrentUser()).thenReturn(null);
-
-            AddressUK organisationAddress = mock(AddressUK.class);
-            when(organisationService.getOrganisationAddressForCurrentUser()).thenReturn(organisationAddress);
-            when(addressFormatter.formatMediumAddress(organisationAddress, AddressFormatter.BR_DELIMITER))
-                .thenReturn("formatted org address");
 
             PCSCase caseData = PCSCase.builder()
                 .propertyAddress(mock(AddressUK.class))
@@ -229,10 +226,10 @@ class ResumePossessionClaimTest extends BaseEventTest {
             // Given
             String userEmail = "user@test.com";
             when(userDetails.getSub()).thenReturn(userEmail);
-            when(organisationService.getOrganisationNameForCurrentUser()).thenReturn(null);
-
+            String orgName = "ACME Org Ltd";
             AddressUK organisationAddress = mock(AddressUK.class);
-            when(organisationService.getOrganisationAddressForCurrentUser()).thenReturn(organisationAddress);
+            NameAndAddress nameAndAddress = new NameAndAddress(orgName, organisationAddress);
+            when(organisationService.getNameAndAddressForCurrentUser()).thenReturn(nameAndAddress);
 
             String formattedOrgAddress = "formatted org address";
             when(addressFormatter.formatMediumAddress(organisationAddress, AddressFormatter.BR_DELIMITER))
@@ -260,11 +257,9 @@ class ResumePossessionClaimTest extends BaseEventTest {
             // Given
             String userEmail = "user@test.com";
             when(userDetails.getSub()).thenReturn(userEmail);
-            when(organisationService.getOrganisationNameForCurrentUser()).thenReturn(null);
-
-            when(organisationService.getOrganisationAddressForCurrentUser()).thenReturn(null);
-            when(addressFormatter.formatMediumAddress(null, AddressFormatter.BR_DELIMITER))
-                .thenReturn(null);
+            String orgName = "ACME Org Ltd";
+            NameAndAddress nameAndAddress = new NameAndAddress(orgName, null);
+            when(organisationService.getNameAndAddressForCurrentUser()).thenReturn(nameAndAddress);
 
             PCSCase caseData = PCSCase.builder()
                 .propertyAddress(mock(AddressUK.class))
@@ -335,8 +330,6 @@ class ResumePossessionClaimTest extends BaseEventTest {
                 .thenReturn(hasUnsubmittedData);
 
             when(userDetails.getSub()).thenReturn("user@test.com");
-            when(organisationService.getOrganisationNameForCurrentUser()).thenReturn(null);
-            when(organisationService.getOrganisationAddressForCurrentUser()).thenReturn(null);
             when(addressFormatter.formatMediumAddress(null, AddressFormatter.BR_DELIMITER)).thenReturn(null);
 
             PCSCase caseData = PCSCase.builder()
