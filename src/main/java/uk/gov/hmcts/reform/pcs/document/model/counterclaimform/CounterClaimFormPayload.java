@@ -10,7 +10,20 @@ import java.time.LocalDate;
 @Builder
 public class CounterClaimFormPayload implements FormPayload {
     private String referenceNumber;
+    private String caseName;
     private LocalDate issueDateSealed;
     private LocalDate submittedOn;
+    private String claimingFor;
+    private String claimingSpecificSum;
+    private String claimAmount;
+    private String maximumClaimValue;
+    private String needsHelpWithFees;
+    private String hwfReferenceNumber;
+    private String respondentNames;
+    private String counterClaimFor;
+    private String counterClaimReasons;
+    private String otherOrderRequestDetails;
+    private String otherOrderRequestFacts;
+    private String statementOfTruthName;
 
 }
