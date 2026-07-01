@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.pcs.ccd.domain.documentamend;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -26,6 +27,7 @@ public class DocumentAmendDetails {
         typeOverride = FixedList,
         typeParameterOverride = "DocumentAmendFolder"
     )
+    @JsonDeserialize(using = DocumentAmendFolderDeserializer.class)
     private DocumentAmendFolder selectedFolder;
 
     @CCD(searchable = false)
