@@ -7,7 +7,7 @@ export const createCase =
     jurisdictionLabel: 'Jurisdiction',
     caseTypeLabel: 'Case type',
     eventLabel: 'Event',
-    possessionsJurisdiction: 'Civil Possession',
+    possessionsJurisdiction: 'Possession Claims',
     caseType:
       {
         civilPossessions: getCaseTypeName()
