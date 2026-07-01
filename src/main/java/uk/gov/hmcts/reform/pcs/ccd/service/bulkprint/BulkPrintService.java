@@ -1,19 +1,15 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.bulkprint;
 
-import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.ccd.document.am.feign.CaseDocumentClientApi;
-import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.ClaimActivityType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.service.AccessCodeActivityLogService;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseReferenceFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentIdExtractor;
 import uk.gov.hmcts.reform.pcs.document.model.coversheet.CoversheetPayload;
@@ -34,11 +30,10 @@ import java.util.UUID;
 
 /**
  * Posts one pack to a recipient via the Send Letter Service: renders the address coversheet, prepends it,
- * fetches each document's bytes from CDAM, sends, and records the outcome. Generic across packs — the caller
- * resolves the recipient's name and address.
+ * fetches each document's bytes from CDAM, and sends. Pure — recording the outcome is the caller's job, so
+ * each pack type keeps its own idempotency shape.
  */
 @Service
-@Slf4j
 public class BulkPrintService {
 
     private static final String RECIPIENTS = "recipients";
@@ -51,7 +46,6 @@ public class BulkPrintService {
     private final SendLetterApi sendLetterApi;
     private final AuthTokenGenerator authTokenGenerator;
     private final IdamTokenProvider systemUpdateUserTokenProvider;
-    private final AccessCodeActivityLogService accessCodeActivityLogService;
     private final DocumentIdExtractor documentIdExtractor;
     private final CaseReferenceFormatter caseReferenceFormatter;
 
@@ -62,7 +56,6 @@ public class BulkPrintService {
         SendLetterApi sendLetterApi,
         AuthTokenGenerator authTokenGenerator,
         @Qualifier("systemUpdateUserTokenProvider") IdamTokenProvider systemUpdateUserTokenProvider,
-        AccessCodeActivityLogService accessCodeActivityLogService,
         DocumentIdExtractor documentIdExtractor,
         CaseReferenceFormatter caseReferenceFormatter
     ) {
@@ -72,14 +65,12 @@ public class BulkPrintService {
         this.sendLetterApi = sendLetterApi;
         this.authTokenGenerator = authTokenGenerator;
         this.systemUpdateUserTokenProvider = systemUpdateUserTokenProvider;
-        this.accessCodeActivityLogService = accessCodeActivityLogService;
         this.documentIdExtractor = documentIdExtractor;
         this.caseReferenceFormatter = caseReferenceFormatter;
     }
 
-    public UUID sendPack(PcsCaseEntity pcsCase, PartyEntity recipient, ClaimActivityType packSentType,
-                         LetterType letterType, String recipientName, AddressUK address,
-                         List<DocumentEntity> documents) {
+    public UUID sendPack(PcsCaseEntity pcsCase, PartyEntity recipient, LetterType letterType,
+                         String recipientName, AddressUK address, List<DocumentEntity> documents) {
         requirePostalAddress(address, recipient);
         String caseReference = caseReferenceFormatter.formatCaseReferenceWithDashes(pcsCase.getCaseReference());
 
@@ -90,9 +81,6 @@ public class BulkPrintService {
         LetterV3 letter = new LetterV3(letterType.getCode(), letterDocuments,
             additionalData(caseReference, recipientName, address));
         SendLetterResponse response = sendLetterApi.sendLetter(authTokenGenerator.generate(), letter);
-
-        accessCodeActivityLogService.logSuccess(pcsCase, recipient, packSentType);
-        recordSent(caseReference, recipient, letterType, response.letterId);
         return response.letterId;
     }
 
@@ -147,11 +135,5 @@ public class BulkPrintService {
         if (StringUtils.isNotBlank(value)) {
             recipients.add(value);
         }
-    }
-
-    private void recordSent(String caseReference, PartyEntity recipient, LetterType letterType, UUID letterId) {
-        MDC.put("letterId", String.valueOf(letterId));
-        log.info("Bulk print letter sent - case: {}, party: {}, letterType: {}, letterId: {}",
-            caseReference, recipient.getId(), letterType, letterId);
     }
 }

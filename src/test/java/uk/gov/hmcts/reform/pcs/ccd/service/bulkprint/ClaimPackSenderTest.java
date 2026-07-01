@@ -73,12 +73,13 @@ class ClaimPackSenderTest {
         when(recipientAddressResolver.resolvePostalAddress(recipient, PartyRole.CLAIMANT, pcsCase.getPropertyAddress()))
             .thenReturn(postalAddress);
         when(addressMapper.toAddressUK(postalAddress)).thenReturn(addressUk);
-        when(bulkPrintService.sendPack(any(), any(), any(), any(), any(), any(), any())).thenReturn(UUID.randomUUID());
+        when(bulkPrintService.sendPack(any(), any(), any(), any(), any(), any())).thenReturn(UUID.randomUUID());
 
         underTest.sendClaimPacks(CASE_ID);
 
-        verify(bulkPrintService).sendPack(pcsCase, recipient, ClaimActivityType.CLAIMANT_PACK_SENT,
+        verify(bulkPrintService).sendPack(pcsCase, recipient,
             LetterType.CLAIMANT_CLAIM_PACK, "Acme Ltd", addressUk, List.of());
+        verify(accessCodeActivityLogService).logSuccess(pcsCase, recipient, ClaimActivityType.CLAIMANT_PACK_SENT);
         verify(accessCodeActivityLogService, never()).logFailure(any(), any(), any());
     }
 
@@ -87,7 +88,7 @@ class ClaimPackSenderTest {
         when(pcsCaseRepository.findById(CASE_ID)).thenReturn(Optional.of(pcsCase));
         when(claimPackCandidateService.findClaimPackCandidates(pcsCase))
             .thenReturn(List.of(new PackCandidate(PartyRole.DEFENDANT, recipient, List.of())));
-        when(bulkPrintService.sendPack(any(), any(), any(), any(), any(), any(), any()))
+        when(bulkPrintService.sendPack(any(), any(), any(), any(), any(), any()))
             .thenThrow(new MissingPostalAddressException("no address"));
 
         underTest.sendClaimPacks(CASE_ID);

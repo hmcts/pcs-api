@@ -73,8 +73,11 @@ public class ClaimPackSender {
             String recipientName = recipientAddressResolver.resolveDisplayName(recipient);
             AddressUK address = resolveAddress(recipient, role, pcsCase.getPropertyAddress());
             UUID letterId = bulkPrintService.sendPack(
-                pcsCase, recipient, packSentType, letterType, recipientName, address, candidate.documents());
+                pcsCase, recipient, letterType, recipientName, address, candidate.documents());
+            accessCodeActivityLogService.logSuccess(pcsCase, recipient, packSentType);
             MDC.put(MDC_LETTER_ID, String.valueOf(letterId));
+            log.info("Claim pack sent - case: {}, party: {}, letterType: {}, letterId: {}",
+                pcsCase.getCaseReference(), recipient.getId(), letterType, letterId);
         } catch (MissingPostalAddressException e) {
             recordFailure(pcsCase, recipient, packSentType, e, true);
         } catch (Exception e) {

@@ -14,11 +14,9 @@ import org.springframework.http.ResponseEntity;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.ccd.document.am.feign.CaseDocumentClientApi;
-import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.ClaimActivityType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.service.AccessCodeActivityLogService;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseReferenceFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentIdExtractor;
 import uk.gov.hmcts.reform.pcs.document.model.coversheet.CoversheetPayload;
@@ -34,7 +32,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -59,8 +56,6 @@ class BulkPrintServiceTest {
     @Mock
     private IdamTokenProvider systemUpdateUserTokenProvider;
     @Mock
-    private AccessCodeActivityLogService accessCodeActivityLogService;
-    @Mock
     private DocumentIdExtractor documentIdExtractor;
     @Mock
     private CaseReferenceFormatter caseReferenceFormatter;
@@ -76,8 +71,8 @@ class BulkPrintServiceTest {
     @BeforeEach
     void setUp() {
         underTest = new BulkPrintService(coversheetPayloadBuilder, coversheetDocumentGenerator, caseDocumentClientApi,
-            sendLetterApi, authTokenGenerator, systemUpdateUserTokenProvider, accessCodeActivityLogService,
-            documentIdExtractor, caseReferenceFormatter);
+            sendLetterApi, authTokenGenerator, systemUpdateUserTokenProvider, documentIdExtractor,
+            caseReferenceFormatter);
 
         when(authTokenGenerator.generate()).thenReturn("s2s");
         when(systemUpdateUserTokenProvider.getAuthToken()).thenReturn("user-token");
@@ -91,13 +86,13 @@ class BulkPrintServiceTest {
     }
 
     @Test
-    void sendsPackWithCoversheetPrependedAndLogsSuccess() {
+    void sendsPackWithCoversheetPrependedAndReturnsLetterId() {
         DocumentEntity claimForm = DocumentEntity.builder().documentId(UUID.randomUUID()).build();
         AddressUK address = AddressUK.builder()
             .addressLine1("1 High Street").postTown("London").postCode("W1 1AA").build();
 
-        UUID letterId = underTest.sendPack(pcsCase, recipient, ClaimActivityType.CLAIMANT_PACK_SENT,
-            LetterType.CLAIMANT_CLAIM_PACK, "Jane Doe", address, List.of(claimForm));
+        UUID letterId = underTest.sendPack(
+            pcsCase, recipient, LetterType.CLAIMANT_CLAIM_PACK, "Jane Doe", address, List.of(claimForm));
 
         assertThat(letterId).isEqualTo(LETTER_ID);
         verify(sendLetterApi).sendLetter(eq("s2s"), letterCaptor.capture());
@@ -107,19 +102,16 @@ class BulkPrintServiceTest {
         assertThat(letter.additionalData)
             .containsEntry("caseReference", "1234-5678-9012-3456").containsKey("recipients");
         verify(caseDocumentClientApi, times(2)).getDocumentBinary(eq("user-token"), eq("s2s"), any());
-        verify(accessCodeActivityLogService)
-            .logSuccess(pcsCase, recipient, ClaimActivityType.CLAIMANT_PACK_SENT);
     }
 
     @Test
     void throwsAndSendsNothingWhenNoPostalAddress() {
         AddressUK blank = AddressUK.builder().build();
 
-        assertThatThrownBy(() -> underTest.sendPack(pcsCase, recipient, ClaimActivityType.DEFENDANT_PACK_SENT,
-            LetterType.DEFENDANT_CLAIM_PACK, "Jane Doe", blank, List.of()))
+        assertThatThrownBy(() -> underTest.sendPack(
+            pcsCase, recipient, LetterType.DEFENDANT_CLAIM_PACK, "Jane Doe", blank, List.of()))
             .isInstanceOf(MissingPostalAddressException.class);
 
         verifyNoInteractions(sendLetterApi);
-        verify(accessCodeActivityLogService, never()).logSuccess(any(), any(), any());
     }
 }

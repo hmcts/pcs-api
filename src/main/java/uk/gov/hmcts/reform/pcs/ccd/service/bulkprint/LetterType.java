@@ -11,7 +11,8 @@ import lombok.RequiredArgsConstructor;
 public enum LetterType {
 
     CLAIMANT_CLAIM_PACK("CPC-01-IN1_pcs_api"),
-    DEFENDANT_CLAIM_PACK("CPD-01-IN1_pcs_api");
+    DEFENDANT_CLAIM_PACK("CPD-01-IN1_pcs_api"),
+    DEFENCE_PACK("DEF-01-IN1_pcs_api");
 
     private final String code;
 }
