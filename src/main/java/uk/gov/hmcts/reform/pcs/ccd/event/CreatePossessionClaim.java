@@ -56,7 +56,7 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
                 .showSummary()
                 .name("Make a claim")
                 .grant(Permission.CRUD, UserRole.SOLICITOR)
-                .grant(Permission.CRUD, UserRole.PCS_SOLICITOR);
+                .grant(Permission.CRUD, UserRole.PCS_SOLICITOR)
                 .grantHistoryOnly(JUDICIAL_HISTORY_ROLES);
 
         new PageBuilder(eventBuilder)
