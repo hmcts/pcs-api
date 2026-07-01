@@ -86,7 +86,6 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
     private final CaseFlagsView flagsView;
     private final DefendantResponseView defendantResponseView;
 
-
     /**
      * Invoked by CCD to load PCS cases by reference.
      * @param request encapsulates the CCD case reference and state
@@ -103,7 +102,9 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
             draftCaseDataService
                 .getUnsubmittedCaseData(caseReference, resumePossessionClaim)
                 .ifPresentOrElse(
-                    draft -> caseTabView.setDraftCaseTabFields(pcsCase, draft),
+                    draft -> {
+                        caseTabView.setDraftCaseTabFields(pcsCase, draft);
+                        },
                     () -> caseTabView.setCaseTabFields(pcsCase)
                 );
         } else {
@@ -137,7 +138,8 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         PCSCase pcsCase = PCSCase.builder()
             .propertyAddress(convertAddress(pcsCaseEntity.getPropertyAddress()))
             .legislativeCountry(pcsCaseEntity.getLegislativeCountry())
-            .caseManagementLocationNumber(pcsCaseEntity.getCaseManagementLocation())
+            .caseManagementLocationNumber(pcsCaseEntity.getBaseLocation())
+            .regionId(pcsCaseEntity.getRegionId())
             .dateSubmitted(getClaimSubmittedDate(pcsCaseEntity))
             .dateIssued(getClaimIssuedDate(pcsCaseEntity))
             .build();
