@@ -36,6 +36,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.RegularIncomeIt
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyAttributeAssertionRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseNameFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseReferenceFormatter;
+import uk.gov.hmcts.reform.pcs.ccd.service.form.DefenceCorrespondenceAddressResolver;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 import uk.gov.hmcts.reform.pcs.document.model.defenceform.DefenceFormAmountRow;
@@ -73,13 +74,16 @@ class DefenceFormPayloadBuilderTest {
 
     @BeforeEach
     void setUp() {
+        ObjectMapper objectMapper = new ObjectMapper();
+        AddressMapper addressMapper = new AddressMapper(new ModelMapper());
         builder = new DefenceFormPayloadBuilder(
             new CaseReferenceFormatter(),
             new CaseNameFormatter(),
             assertionRepository,
-            new ObjectMapper(),
-            new AddressMapper(new ModelMapper()),
+            objectMapper,
+            addressMapper,
             new AddressFormatter(),
+            new DefenceCorrespondenceAddressResolver(assertionRepository, objectMapper, addressMapper),
             UK_CLOCK);
         stubAssertions();
     }

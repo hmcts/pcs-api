@@ -20,6 +20,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseReferenceFormatter;
+import uk.gov.hmcts.reform.pcs.ccd.service.form.RecipientAddressResolver;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 import uk.gov.hmcts.reform.pcs.document.model.accesscode.AccessCodeFormPayload;
@@ -79,6 +80,7 @@ class AccessCodeFormDocumentGeneratorTest {
             addressMapper,
             addressFormatter,
             caseReferenceFormatter,
+            new RecipientAddressResolver(),
             ukClock,
             RESPOND_ONLINE_URL
         );

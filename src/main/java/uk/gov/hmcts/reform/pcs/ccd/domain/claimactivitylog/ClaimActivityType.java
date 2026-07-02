@@ -10,7 +10,9 @@ public enum ClaimActivityType implements HasLabel {
 
     DOCUMENTS_CREATED("Documents created"),
     CLAIMANT_PACK_SENT("Claimant pack sent"),
-    DEFENDANT_PACK_SENT("Defendant pack sent");
+    DEFENDANT_PACK_SENT("Defendant pack sent"),
+    DEFENCE_PACK_PARTIALLY_SENT("Defence pack partially sent"),
+    DEFENCE_PACK_SENT("Defence pack sent");
 
     private final String label;
 }
