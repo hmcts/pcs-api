@@ -7,6 +7,7 @@ import { createCaseApiData, submitCaseApiData } from '@data/api-data';
 import { caseNumber } from '@utils/actions/custom-actions/createCase.action';
 import {staff} from "@data/user-data/staff.user.data";
 import {judicial} from "@data/user-data/judicial.user.data";
+import {randomPostcode} from "@utils/common/string.utils";
 
 test.use({ storageState: undefined });
 
@@ -32,7 +33,7 @@ const setupGlobalSearchUser = async (
   globalSearchTestData = {
     name: `${submitCasePayload.claimantName} ${suffix}`,
     addressLine1: `${propertyAddress.AddressLine1} ${suffix}`,
-    postcode: 'W3 6RS',
+    postcode: randomPostcode(),
     email: submitCasePayload.claimantContactEmail.replace('@', `+${suffix}@`)
   };
 
@@ -98,7 +99,7 @@ const runGlobalSearchScenarios = () => {
     await performAction('validateResults');
   });
 
-  test.skip('Search by postcode', async () => {
+  test('Search by postcode', async () => {
     await runFieldSearch(globalSearch.postCodeLabel, globalSearchTestData.postcode);
   });
 
