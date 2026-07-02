@@ -35,6 +35,8 @@ public class DefencePackSender {
     private static final String MDC_LETTER_ID = "letterId";
     private static final String MDC_TERMINAL_FAILURE = "terminalFailure";
     private static final String MDC_FAILURE_REASON = "failureReason";
+    private static final String MDC_DOCUMENT_ID = "documentId";
+    private static final String MDC_DOCUMENT_TYPE = "documentType";
 
     private final PcsCaseRepository pcsCaseRepository;
     private final DefencePackSelector defencePackSelector;
@@ -80,11 +82,9 @@ public class DefencePackSender {
             AddressUK address = resolveAddress(recipient, role, pcsCase.getPropertyAddress());
             UUID letterId = bulkPrintService.sendPack(
                 pcsCase, recipient, LetterType.DEFENCE_PACK, recipientName, address, documents);
-            documents.forEach(document ->
-                accessCodeActivityLogService.recordDocumentSent(pcsCase, recipient, document));
             MDC.put(MDC_LETTER_ID, String.valueOf(letterId));
-            log.info("Defence pack sent - case: {}, party: {}, letterId: {}",
-                pcsCase.getCaseReference(), recipient.getId(), letterId);
+            documents.forEach(document ->
+                recordAndLogDocumentSent(pcsCase, recipient, document, LetterType.DEFENCE_PACK, letterId));
         } catch (MissingPostalAddressException e) {
             recordFailure(pcsCase, recipient, documents, e, true);
         } catch (Exception e) {
@@ -94,9 +94,21 @@ public class DefencePackSender {
             MDC.remove(MDC_PARTY_ID);
             MDC.remove(MDC_LETTER_TYPE);
             MDC.remove(MDC_LETTER_ID);
+            MDC.remove(MDC_DOCUMENT_ID);
+            MDC.remove(MDC_DOCUMENT_TYPE);
             MDC.remove(MDC_TERMINAL_FAILURE);
             MDC.remove(MDC_FAILURE_REASON);
         }
+    }
+
+    private void recordAndLogDocumentSent(PcsCaseEntity pcsCase, PartyEntity recipient, DocumentEntity document,
+                                          LetterType letterType, UUID letterId) {
+        accessCodeActivityLogService.recordDocumentSent(pcsCase, recipient, document);
+        MDC.put(MDC_DOCUMENT_ID, String.valueOf(document.getId()));
+        MDC.put(MDC_DOCUMENT_TYPE, String.valueOf(document.getType()));
+        log.info("Document sent - case: {}, party: {}, documentType: {}, documentId: {}, letterType: {}, letterId: {}",
+            pcsCase.getCaseReference(), recipient.getId(), document.getType(), document.getId(),
+            letterType.getCode(), letterId);
     }
 
     private AddressUK resolveAddress(PartyEntity recipient, PartyRole role, AddressEntity propertyAddress) {
@@ -111,9 +123,23 @@ public class DefencePackSender {
                                Exception cause, boolean terminal) {
         MDC.put(MDC_TERMINAL_FAILURE, String.valueOf(terminal));
         MDC.put(MDC_FAILURE_REASON, String.valueOf(cause.getMessage()));
-        log.error("Defence pack failed - case: {}, party: {}, terminal: {}: {}",
-            pcsCase.getCaseReference(), recipient.getId(), terminal, cause.getMessage(), cause);
         documents.forEach(document ->
-            accessCodeActivityLogService.recordDocumentSendFailure(pcsCase, recipient, document));
+            recordAndLogSendFailure(pcsCase, recipient, document, cause, terminal));
+    }
+
+    private void recordAndLogSendFailure(PcsCaseEntity pcsCase, PartyEntity recipient, DocumentEntity document,
+                                         Exception cause, boolean terminal) {
+        accessCodeActivityLogService.recordDocumentSendFailure(pcsCase, recipient, document);
+        MDC.put(MDC_DOCUMENT_ID, String.valueOf(document.getId()));
+        MDC.put(MDC_DOCUMENT_TYPE, String.valueOf(document.getType()));
+        if (terminal) {
+            log.error("Document send failed (terminal) - case: {}, party: {}, documentType: {}, documentId: {}: {}",
+                pcsCase.getCaseReference(), recipient.getId(), document.getType(), document.getId(),
+                cause.getMessage(), cause);
+        } else {
+            log.warn("Document send failed (will retry) - case: {}, party: {}, documentType: {}, documentId: {}: {}",
+                pcsCase.getCaseReference(), recipient.getId(), document.getType(), document.getId(),
+                cause.getMessage());
+        }
     }
 }
