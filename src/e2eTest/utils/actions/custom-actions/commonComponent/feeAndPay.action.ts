@@ -114,7 +114,6 @@ export class FeeAndPayAction implements IAction {
       console.log('Verification steps skipped as this is NOT working in PREVIEW env. POFCC-229');
     } else {
       console.log('Verifying payment status');
-      await performAction('clickButton', statusDetails.serviceReqLink);
       await performAction('clickTab', statusDetails.historyTab);
       //Implementing retry login because POFCC-238
       const maxRetries = 10;
