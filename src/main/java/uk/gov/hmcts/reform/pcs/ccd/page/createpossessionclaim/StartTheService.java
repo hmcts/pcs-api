@@ -18,7 +18,6 @@ public class StartTheService implements CcdPageConfiguration {
     private static final String HEADING_L = "govuk-heading-l";
     private static final String HEADING_M = "govuk-heading-m";
     private static final String BODY = "govuk-body";
-    private static final String LINK = "govuk-link";
     private static final String LIST_ITEM = "govuk-list govuk-!-font-size-19";
     private static final String PADDING_TOP_0 = "govuk-!-padding-top-0";
 
