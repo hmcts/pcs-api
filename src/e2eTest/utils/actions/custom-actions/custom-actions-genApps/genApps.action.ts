@@ -1,11 +1,12 @@
 import {
+  applicationSubmitted,
   areThereAnyReasonsThatThisApplicationShouldNotBeShared,
-  checkYourAnswersGenApps,
-  chooseAnApplication, doYouWantToUploadDocumentsToSupportDefendantsApplication,
+  chooseAnApplication, confirmGenApps,
+  confirmYourPaymentGenApps, doYouWantToUploadDocumentsToSupportDefendantsApplication,
   hasTheDefendantAskedTheOtherPartiesAgreedToThisApplication,
   haveTheyAlreadyAppliedForHelpWithFees,
   helpPayingTheFee,
-  isTheCourtHearingInTheNext14Days,
+  isTheCourtHearingInTheNext14Days, paymentDetails, serviceRequestGenApps, statementOfTruth,
   uploadDocumentsToSupportDefendantsApplication,
   whatOrderDoYouWantTheCourtToMakeAndWhy,
   whichLanguageDidYouUseToCompleteThisService
@@ -21,7 +22,7 @@ import { selectParty } from '@data/page-data-figma/page-data-genApps-figma/selec
 import { caseInfo } from '../createCaseAPI.action';
 import { createCaseApiData } from '@data/api-data';
 import {performActions} from "@utils/controller";
-import {statementOfTruth} from "@data/page-data-figma";
+import {caseSummary} from "@data/page-data";
 
 
 export const addressInfo = {
@@ -57,6 +58,12 @@ export class GenAppsAction implements IAction {
       ['reviewAndUpdateCYA', () => this.reviewAndUpdateCYA(page, fieldName as actionRecord)],
       ['getDefendantDetails', () => this.getDefendantDetails(fieldName as actionRecord)],
       ['selectApplicant', () => this.selectApplicant(fieldName as actionRecord)],
+      ['verifyApplicationSubmitted', () => this.verifyApplicationSubmitted()],
+      ['payClaimFeeGenApps', () => this.payClaimFeeGenApps()],
+      ['clickPayNowLinkGenApps', () => this.clickPayNowLinkGenApps(page)],
+      ['inputPaymentDetails', () => this.inputPaymentDetails(fieldName as actionRecord)],
+      ['selectPaymentOptions', () => this.selectPaymentOptions(fieldName as actionRecord, page)],
+      ['confirmPaymentGenApps',() => this.confirmPaymentGenApps()]
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) {
@@ -254,6 +261,108 @@ export class GenAppsAction implements IAction {
     await performAction('inputText', sot.label3, sot.input3);
     FieldsStore.delete(sot.question as string);
     await performAction('clickButton', statementOfTruth.continueButton);
+  }
+
+  private async verifyApplicationSubmitted(): Promise<void> {
+    await performValidation('mainHeader', applicationSubmitted.mainHeader);
+    await performValidation('text', {elementType: 'span', text: applicationSubmitted.applicationSubmittedHeader});
+    await performAction('clickButton', applicationSubmitted.closeAndReturnToCaseOverviewButton);
+  }
+
+  private async payClaimFeeGenApps( clickLink?: boolean ) {
+    await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid});
+    await performValidation('text', {
+      elementType: 'paragraph',
+      text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
+    });
+    await performValidation('mainHeader', confirmGenApps.mainHeader);
+    await performValidation('text', {elementType: 'span', text: confirmGenApps.pay123ApplicationFeeParagraph});
+    if (clickLink === true) {
+      await performAction('clickButton', confirmGenApps.payYourApplicationLink);
+    } else {
+      await performAction('clickButton', confirmGenApps.closeAndReturnToCaseDetailsButton);
+    }
+  }
+
+  private async clickPayNowLinkGenApps(page: Page ) {
+    const maxRetries = 10;
+    const amount = String(confirmGenApps.PayAmount);
+    const payNowText = String(confirmGenApps.payNowLink);
+    const partyName= String(confirmGenApps.partyName);
+
+    for (
+      let retryCount = 0;
+      retryCount < maxRetries;
+      retryCount++
+    ) {
+      await performAction('clickTab', caseSummary.servieRequestTab);
+      const row = page.locator('tbody tr')
+        .filter({ hasText: amount })
+        .filter({ hasText: partyName })
+        .nth(1);
+
+      const payNowLocator = row.getByRole('link', { name: payNowText, exact: true });
+      let isPayNowVisible = false;
+      for (let i = 0; i < 10; i++) {
+        isPayNowVisible = await payNowLocator.isVisible();
+        if (isPayNowVisible) {
+          break;
+        }
+        await page.waitForTimeout(500);
+      }
+      if (isPayNowVisible) {
+        await payNowLocator.scrollIntoViewIfNeeded();
+        await payNowLocator.click();
+        return;
+      }
+      await performAction('clickTab', caseSummary.HistoryTab );
+    }
+    throw new Error(
+      `${payNowText} link for amount '${amount}' was not visible after maximum retries`
+    );
+  }
+
+  private async selectPaymentOptions(paymentOptions: actionRecord, page: Page) {
+    const amountLabel = paymentOptions.amountLabel;
+    if (typeof amountLabel === 'string' && amountLabel !== '') {
+      await performValidation('elementToBeVisible', amountLabel);
+    }
+    const expectedAmount = paymentOptions.expectedAmount;
+    if (typeof expectedAmount === 'string' && expectedAmount !== '') {
+      await expect(page.getByText(expectedAmount, {exact: true})).toBeVisible();
+    }
+    await performAction('clickRadioButton', {option: paymentOptions.payByOption});
+      if(paymentOptions.payByOption == serviceRequestGenApps.payByAccountRadioOption) {
+        await performAction('clickRadioButton', {option: paymentOptions.payByOption});
+        await performAction('select', paymentOptions.pbaLabel, paymentOptions.pbaValue);
+        const locator = page.locator('button', {hasText: 'Confirm payment'});
+        await expect(locator).toBeDisabled();
+        await performAction('inputText', paymentOptions.referenceLabel, paymentOptions.referenceText);
+        await page.click('body');
+        await expect(locator).toBeEnabled();
+      }
+      await performAction('clickButton', paymentOptions.button);
+}
+
+  private async inputPaymentDetails(inputDetails: actionRecord) {
+    await performActions(
+      'Enter details',
+      ['inputText', paymentDetails.cardNumberTextLabel, inputDetails.cardNumber],
+      ['inputText', paymentDetails.monthTextLabel, inputDetails.month],
+      ['inputText', paymentDetails.yearTextLabel, inputDetails.year],
+      ['inputText', paymentDetails.nameOnCardTextLabel, inputDetails.nameOnCard],
+      ['inputText', paymentDetails.cardSecurityCodeTextLabel, inputDetails.cardSecurityCode],
+      ['inputText', paymentDetails.addressLine1TextLabel, inputDetails.addressLine1],
+      ['inputText', paymentDetails.townOrCityTextLabel, inputDetails.townOrCity],
+      ['inputText', paymentDetails.postcodeTextLabel, inputDetails.postcode],
+      ['inputText', paymentDetails.emailTextLabel, inputDetails.email]
+    );
+    await performAction('clickButton', paymentDetails.continueButton);
+  }
+
+  private async confirmPaymentGenApps() {
+    await performValidation('mainHeader', confirmYourPaymentGenApps.mainHeader);
+    await performAction('clickButton', confirmYourPaymentGenApps.confirmPaymentButton);
   }
 
   private async inputErrorValidationGenApp(validationArr: actionRecord) {

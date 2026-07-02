@@ -9,12 +9,9 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
-import uk.gov.hmcts.reform.pcs.exception.FeePaymentNotFoundException;
-import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.BasePersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.ClaimantBasePersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.CounterclaimPaymentSuccessPersonalisation;
@@ -63,16 +60,12 @@ public class NotificationPersonalisationFactory {
         return buildPersonalisation(partyEntity, pcsCaseEntity);
     }
 
-    public CounterclaimPaymentSuccessPersonalisation counterclaimSuccess(DefendantResponseEntity defendantResponse) {
-        FeePaymentEntity defendantFeePayment = defendantResponse.getClaim().getFeePayment();
-        if (defendantFeePayment == null || !defendantFeePayment.getPaymentStatus().equals(PaymentStatus.PAID)) {
-            throw new FeePaymentNotFoundException(
-                "Paid fee payment not found for defendant response: " + defendantResponse.getId());
-        }
+    public CounterclaimPaymentSuccessPersonalisation counterclaimSuccess(DefendantResponseEntity defendantResponse,
+                                                                         String paymentReference) {
 
         return CounterclaimPaymentSuccessPersonalisation.builder()
             .base(forDefendant(defendantResponse))
-            .paymentReferenceNumber(defendantFeePayment.getExternalReference())
+            .paymentReferenceNumber(paymentReference)
             .build();
     }
 

@@ -1,0 +1,38 @@
+{
+  "request": {
+    "urlPath": "/fees-register/fees/lookup",
+    "method": "GET",
+    "queryParameters": {
+      "service": {
+        "equalTo": "civil money claims"
+      },
+      "jurisdiction1": {
+        "equalTo": "civil"
+      },
+      "jurisdiction2": {
+        "equalTo": "civil"
+      },
+      "channel": {
+        "equalTo": "default"
+      },
+      "event": {
+        "equalTo": "issue"
+      },
+      "keyword": {
+        "equalTo": "CMCCounterRanged"
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "code": "FEE0513",
+      "description": "Counter Claim - xxx up to yyy GBP",
+      "version": 2,
+      "fee_amount": 50.00
+    }
+  }
+}
