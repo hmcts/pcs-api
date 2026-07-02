@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.bulkprint;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -58,7 +59,8 @@ class DefencePackSelectorTest {
     }
 
     @Test
-    void sendsDefenceOnlyAsCompleteWhenNoCounterClaim() {
+    @DisplayName("Defence only, complete, when there is no counter-claim")
+    void shouldSelectDefenceOnlyAsCompleteWhenNoCounterClaim() {
         DefencePackCandidate candidate = only(caseWith(List.of(defenceForm)));
 
         assertThat(candidate.documents()).containsExactly(defenceForm);
@@ -66,7 +68,8 @@ class DefencePackSelectorTest {
     }
 
     @Test
-    void sendsDefenceAsPartialWhenCounterClaimPending() {
+    @DisplayName("Defence only, partial, when the counter-claim is pending")
+    void shouldSelectDefenceAsPartialWhenCounterClaimPending() {
         stubCounterClaim(CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED);
 
         DefencePackCandidate candidate = only(caseWith(List.of(defenceForm)));
@@ -76,7 +79,8 @@ class DefencePackSelectorTest {
     }
 
     @Test
-    void bundlesBothAsCompleteWhenCounterClaimIssuedAndDocReady() {
+    @DisplayName("Bundles defence and counter-claim when both are ready")
+    void shouldBundleBothAsCompleteWhenCounterClaimIssuedAndDocReady() {
         stubCounterClaim(CounterClaimState.COUNTER_CLAIM_ISSUED);
 
         DefencePackCandidate candidate = only(caseWith(List.of(defenceForm, counterClaimDoc)));
@@ -86,7 +90,8 @@ class DefencePackSelectorTest {
     }
 
     @Test
-    void completesPartialWithCounterClaimOnlyWhenLaterIssued() {
+    @DisplayName("Completes a partial with the counter-claim when later issued")
+    void shouldCompletePartialWithCounterClaimWhenLaterIssued() {
         stubActivity(ClaimActivityType.DEFENCE_PACK_PARTIALLY_SENT);
         stubCounterClaim(CounterClaimState.COUNTER_CLAIM_ISSUED);
 
@@ -97,7 +102,8 @@ class DefencePackSelectorTest {
     }
 
     @Test
-    void staysPartialWhileCounterClaimStillPending() {
+    @DisplayName("Stays partial while the counter-claim is still pending")
+    void shouldStayPartialWhileCounterClaimStillPending() {
         stubActivity(ClaimActivityType.DEFENCE_PACK_PARTIALLY_SENT);
         stubCounterClaim(CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED);
 
@@ -105,7 +111,8 @@ class DefencePackSelectorTest {
     }
 
     @Test
-    void nothingWhenAlreadySent() {
+    @DisplayName("Returns nothing when already sent")
+    void shouldReturnNothingWhenAlreadySent() {
         stubActivity(ClaimActivityType.DEFENCE_PACK_SENT);
 
         assertThat(underTest.findDefencePackCandidates(caseWith(List.of(defenceForm)))).isEmpty();

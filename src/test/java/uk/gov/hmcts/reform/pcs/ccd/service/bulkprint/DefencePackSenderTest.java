@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.bulkprint;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -53,7 +54,8 @@ class DefencePackSenderTest {
     private final DocumentEntity defenceForm = DocumentEntity.builder().documentId(UUID.randomUUID()).build();
 
     @Test
-    void doesNothingWhenCaseNotFound() {
+    @DisplayName("Does nothing when the case is not found")
+    void shouldDoNothingWhenCaseNotFound() {
         when(pcsCaseRepository.findById(CASE_ID)).thenReturn(Optional.empty());
 
         underTest.sendDefencePacks(CASE_ID);
@@ -62,7 +64,8 @@ class DefencePackSenderTest {
     }
 
     @Test
-    void sendsDefencePackAndRecordsTargetStatus() {
+    @DisplayName("Sends the defence pack and records the target status")
+    void shouldSendDefencePackAndRecordTargetStatus() {
         AddressUK address = AddressUK.builder().addressLine1("42 Renters Way").build();
         when(pcsCaseRepository.findById(CASE_ID)).thenReturn(Optional.of(pcsCase));
         when(defencePackSelector.findDefencePackCandidates(pcsCase)).thenReturn(List.of(
@@ -81,7 +84,8 @@ class DefencePackSenderTest {
     }
 
     @Test
-    void recordsFailureWhenSendThrowsMissingAddress() {
+    @DisplayName("Records a failure when the send throws a missing address")
+    void shouldRecordFailureWhenSendThrowsMissingAddress() {
         when(pcsCaseRepository.findById(CASE_ID)).thenReturn(Optional.of(pcsCase));
         when(defencePackSelector.findDefencePackCandidates(pcsCase)).thenReturn(List.of(
             new DefencePackCandidate(defendant, List.of(defenceForm), ClaimActivityType.DEFENCE_PACK_SENT)));

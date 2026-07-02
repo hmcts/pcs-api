@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.bulkprint;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -32,7 +33,8 @@ class CoversheetProviderTest {
     private CoversheetProvider underTest;
 
     @Test
-    void buildsPayloadGeneratesThenFetchesTheCoversheet() {
+    @DisplayName("Builds the payload, generates then fetches the coversheet")
+    void shouldBuildPayloadGenerateThenFetchCoversheet() {
         AddressUK address = AddressUK.builder().addressLine1("1 High Street").build();
         CoversheetPayload payload = CoversheetPayload.builder().build();
         UUID coversheetId = UUID.randomUUID();

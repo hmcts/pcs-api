@@ -1,6 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.bulkprint;
 
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -8,8 +8,6 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.mockito.junit.jupiter.MockitoSettings;
-import org.mockito.quality.Strictness;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
@@ -33,7 +31,6 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-@MockitoSettings(strictness = Strictness.LENIENT)
 class BulkPrintServiceTest {
 
     private static final UUID LETTER_ID = UUID.randomUUID();
@@ -58,17 +55,15 @@ class BulkPrintServiceTest {
     private final PcsCaseEntity pcsCase = PcsCaseEntity.builder().caseReference(1234567890123456L).build();
     private final PartyEntity recipient = PartyEntity.builder().id(UUID.randomUUID()).build();
 
-    @BeforeEach
-    void setUp() {
+    @Test
+    @DisplayName("Assembles coversheet plus documents and returns the letter id")
+    void shouldAssembleCoversheetPlusDocumentsAndReturnLetterId() {
         when(authTokenGenerator.generate()).thenReturn("s2s");
         when(caseReferenceFormatter.formatCaseReferenceWithDashes(any())).thenReturn("1234-5678-9012-3456");
         when(coversheetProvider.render(any(), any(), any())).thenReturn(new Document("coversheet", 1));
         when(letterDocumentFetcher.fetch(any())).thenReturn(new Document("doc", 1));
         when(sendLetterApi.sendLetter(any(), any(LetterV3.class))).thenReturn(new SendLetterResponse(LETTER_ID));
-    }
 
-    @Test
-    void assemblesCoversheetPlusDocumentsAndReturnsLetterId() {
         DocumentEntity claimForm = DocumentEntity.builder().documentId(UUID.randomUUID()).build();
         AddressUK address = AddressUK.builder()
             .addressLine1("1 High Street").postTown("London").postCode("W1 1AA").build();
@@ -88,7 +83,8 @@ class BulkPrintServiceTest {
     }
 
     @Test
-    void throwsAndSendsNothingWhenNoPostalAddress() {
+    @DisplayName("Throws and sends nothing when the postal address is missing")
+    void shouldThrowAndSendNothingWhenPostalAddressMissing() {
         AddressUK blank = AddressUK.builder().build();
 
         assertThatThrownBy(() -> underTest.sendPack(

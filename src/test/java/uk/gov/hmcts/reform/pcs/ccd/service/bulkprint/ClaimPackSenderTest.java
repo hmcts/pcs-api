@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.bulkprint;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -54,7 +55,8 @@ class ClaimPackSenderTest {
     private final PartyEntity recipient = PartyEntity.builder().id(UUID.randomUUID()).build();
 
     @Test
-    void doesNothingWhenCaseNotFound() {
+    @DisplayName("Does nothing when the case is not found")
+    void shouldDoNothingWhenCaseNotFound() {
         when(pcsCaseRepository.findById(CASE_ID)).thenReturn(Optional.empty());
 
         underTest.sendClaimPacks(CASE_ID);
@@ -63,7 +65,8 @@ class ClaimPackSenderTest {
     }
 
     @Test
-    void resolvesAddressAndSendsClaimantPack() {
+    @DisplayName("Resolves the address and sends the claimant pack")
+    void shouldResolveAddressAndSendClaimantPack() {
         AddressEntity postalAddress = AddressEntity.builder().addressLine1("1 High Street").build();
         AddressUK addressUk = AddressUK.builder().addressLine1("1 High Street").build();
         when(pcsCaseRepository.findById(CASE_ID)).thenReturn(Optional.of(pcsCase));
@@ -84,7 +87,8 @@ class ClaimPackSenderTest {
     }
 
     @Test
-    void recordsFailureWhenSendThrowsMissingAddress() {
+    @DisplayName("Records a failure when the send throws a missing address")
+    void shouldRecordFailureWhenSendThrowsMissingAddress() {
         when(pcsCaseRepository.findById(CASE_ID)).thenReturn(Optional.of(pcsCase));
         when(claimPackSelector.findClaimPackCandidates(pcsCase))
             .thenReturn(List.of(new ClaimPackCandidate(PartyRole.DEFENDANT, recipient, List.of())));

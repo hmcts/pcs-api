@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.bulkprint;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -22,7 +23,8 @@ class CoversheetDocumentGeneratorTest {
     private CoversheetDocumentGenerator underTest;
 
     @Test
-    void rendersCoversheetTemplateAsPdf() {
+    @DisplayName("Renders the coversheet template as a PDF")
+    void shouldRenderCoversheetTemplateAsPdf() {
         CoversheetPayload payload = CoversheetPayload.builder().recipientName("Jane Doe").build();
         when(docAssemblyService.generateDocument(
             payload, "CV-PCS-LET-ENG-Coversheet.docx", OutputType.PDF, "Coversheet"))

@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.task;
 
 import com.github.kagkarlsson.scheduler.task.helper.RecurringTask;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -42,18 +43,21 @@ class BulkPrintScheduledTaskTest {
     private DefencePackSender defencePackSender;
 
     @Test
-    void buildsTaskWithNightlyDefaultSchedule() {
+    @DisplayName("Builds the task with the nightly default schedule")
+    void shouldBuildTaskWithNightlyDefaultSchedule() {
         assertThat(component("DAILY|02:00", null).bulkPrintTask()).isNotNull();
     }
 
     @Test
-    void parsesFixedDelayEnvironmentSchedules() {
+    @DisplayName("Parses fixed-delay environment schedules")
+    void shouldParseFixedDelayEnvironmentSchedules() {
         assertThatCode(() -> component("FIXED_DELAY|60s", null).bulkPrintTask()).doesNotThrowAnyException();
         assertThatCode(() -> component("FIXED_DELAY|600s", null).bulkPrintTask()).doesNotThrowAnyException();
     }
 
     @Test
-    void doesNothingWhenFlagOff() {
+    @DisplayName("Does nothing when the flag is off")
+    void shouldDoNothingWhenFlagOff() {
         when(featureToggleService.isEnabled(FeatureFlag.BULK_PRINT)).thenReturn(false);
 
         runSweep(null);
@@ -62,7 +66,8 @@ class BulkPrintScheduledTaskTest {
     }
 
     @Test
-    void dispatchesBothSendersPerCaseFromFullBacklogWhenNoLookback() {
+    @DisplayName("Dispatches both senders per case from the full backlog when no lookback")
+    void shouldDispatchBothSendersPerCaseWhenNoLookback() {
         UUID caseA = UUID.randomUUID();
         UUID caseB = UUID.randomUUID();
         when(featureToggleService.isEnabled(FeatureFlag.BULK_PRINT)).thenReturn(true);
@@ -80,7 +85,8 @@ class BulkPrintScheduledTaskTest {
     }
 
     @Test
-    void appliesLookbackCutoffWhenConfigured() {
+    @DisplayName("Applies the lookback cutoff when configured")
+    void shouldApplyLookbackCutoffWhenConfigured() {
         UUID caseId = UUID.randomUUID();
         when(featureToggleService.isEnabled(FeatureFlag.BULK_PRINT)).thenReturn(true);
         when(claimActivityLogRepository.findCaseIdsByActivityTypeAndStatusCreatedAfter(

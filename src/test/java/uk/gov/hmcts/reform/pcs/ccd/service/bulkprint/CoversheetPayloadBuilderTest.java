@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.bulkprint;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.document.model.coversheet.CoversheetPayload;
@@ -11,7 +12,8 @@ class CoversheetPayloadBuilderTest {
     private final CoversheetPayloadBuilder underTest = new CoversheetPayloadBuilder();
 
     @Test
-    void mapsAllAddressFieldsAndFlags() {
+    @DisplayName("Maps all address fields and flags")
+    void shouldMapAllAddressFieldsAndFlags() {
         AddressUK address = AddressUK.builder()
             .addressLine1("Flat 2").addressLine2("1 High Street").addressLine3("Northside")
             .postTown("Leeds").county("West Yorkshire").postCode("LS1 1AA").build();
@@ -32,7 +34,8 @@ class CoversheetPayloadBuilderTest {
     }
 
     @Test
-    void unsetsOptionalFlagsWhenLinesBlank() {
+    @DisplayName("Unsets optional flags when lines are blank")
+    void shouldUnsetOptionalFlagsWhenLinesBlank() {
         AddressUK address = AddressUK.builder()
             .addressLine1("1 High Street").postTown("Leeds").postCode("LS1 1AA").build();
 

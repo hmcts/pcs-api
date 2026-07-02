@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.bulkprint;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -41,14 +42,16 @@ class ClaimPackSelectorTest {
     private final DocumentEntity claimForm = document(DocumentType.CLAIM, null);
 
     @Test
-    void returnsNothingWhenNoClaimForm() {
+    @DisplayName("Returns nothing when there is no claim form")
+    void shouldReturnNothingWhenNoClaimForm() {
         PcsCaseEntity pcsCase = caseWith(null, List.of(), List.of(claimParty(claimant, PartyRole.CLAIMANT, 1)));
 
         assertThat(underTest.findClaimPackCandidates(pcsCase)).isEmpty();
     }
 
     @Test
-    void includesClaimantAndReadyDefendant() {
+    @DisplayName("Includes claimant and a defendant whose access code is ready")
+    void shouldIncludeClaimantAndReadyDefendant() {
         DocumentEntity pinA = document(DocumentType.DEFENDANT_ACCESS_CODE, defendantA);
         when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of());
         PcsCaseEntity pcsCase = caseWith(claimForm, List.of(pinA), List.of(
@@ -66,7 +69,8 @@ class ClaimPackSelectorTest {
     }
 
     @Test
-    void excludesClaimantAlreadySent() {
+    @DisplayName("Excludes a claimant already sent")
+    void shouldExcludeClaimantAlreadySent() {
         when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID))
             .thenReturn(List.of(sent(claimant, ClaimActivityType.CLAIMANT_PACK_SENT)));
         PcsCaseEntity pcsCase = caseWith(claimForm, List.of(), List.of(claimParty(claimant, PartyRole.CLAIMANT, 1)));
@@ -75,7 +79,8 @@ class ClaimPackSelectorTest {
     }
 
     @Test
-    void handlesMultipleDefendantsIndependently() {
+    @DisplayName("Handles multiple defendants independently")
+    void shouldHandleMultipleDefendantsIndependently() {
         DocumentEntity pinA = document(DocumentType.DEFENDANT_ACCESS_CODE, defendantA);
         DocumentEntity pinC = document(DocumentType.DEFENDANT_ACCESS_CODE, defendantC);
         when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of(

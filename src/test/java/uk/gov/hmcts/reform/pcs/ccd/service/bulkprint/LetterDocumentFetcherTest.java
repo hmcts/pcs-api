@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.bulkprint;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -33,7 +34,8 @@ class LetterDocumentFetcherTest {
     private LetterDocumentFetcher underTest;
 
     @Test
-    void fetchesDocumentBinaryWithSystemAndS2sAuthAndBase64EncodesIt() {
+    @DisplayName("Fetches a document from CDAM and base64-encodes it")
+    void shouldFetchDocumentFromCdamAndBase64EncodeIt() {
         UUID documentId = UUID.randomUUID();
         when(authTokenGenerator.generate()).thenReturn("s2s");
         when(systemUpdateUserTokenProvider.getAuthToken()).thenReturn("user-token");
