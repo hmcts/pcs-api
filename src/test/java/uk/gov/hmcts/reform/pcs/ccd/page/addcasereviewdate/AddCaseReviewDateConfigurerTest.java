@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.page.addReviewDate;
+package uk.gov.hmcts.reform.pcs.ccd.page.addcasereviewdate;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

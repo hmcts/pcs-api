@@ -11,7 +11,7 @@ import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.page.addReviewDate.AddCaseReviewDateConfigurer;
+import uk.gov.hmcts.reform.pcs.ccd.page.addcasereviewdate.AddCaseReviewDateConfigurer;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseReviewDateService;
 
 import static org.assertj.core.api.Assertions.assertThat;
