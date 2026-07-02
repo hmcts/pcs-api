@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.documentamend.DocumentAmendDetails;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentAmendSelectionService;
+import uk.gov.hmcts.reform.pcs.ccd.util.StringUtils;
 
 import java.util.List;
 
@@ -23,6 +24,8 @@ public class SelectDocumentPage implements CcdPageConfiguration {
     private static final String PAGE_ID = "selectDocument";
     private static final String FIELD_PREFIX = "documentAmend_";
     private static final String YES = "=\"Yes\"";
+    private static final String NO = "=\"No\"";
+    private static final String SELECT_DIFFERENT_FOLDER_ERROR = "Select a different folder to continue";
     private final DocumentAmendSelectionService documentAmendSelectionService;
 
     @Override
@@ -34,6 +37,45 @@ public class SelectDocumentPage implements CcdPageConfiguration {
             .complex(PCSCase::getDocumentAmendDetails)
                 .readonly(DocumentAmendDetails::getPropertyAddressSummary, NEVER_SHOW, true)
                 .mandatory(DocumentAmendDetails::getSelectedFolder)
+                .label("emptyFolderDocumentError", "", NEVER_SHOW)
+                .label("selectedFolderEmptyErrorMessage", "", NEVER_SHOW)
+                .label("emptyFolderDocumentQuestion", "", NEVER_SHOW)
+                .label("statementsOfCaseEmptyFolderError", errorMessage(SELECT_DIFFERENT_FOLDER_ERROR),
+                    emptyFolderErrorShowCondition(CaseFileCategory.STATEMENTS_OF_CASE))
+                .label("statementsOfCaseEmptyFolderQuestion", documentQuestion(),
+                    noDocumentsShowCondition(CaseFileCategory.STATEMENTS_OF_CASE))
+                .label("propertyDocumentsEmptyFolderError", errorMessage(SELECT_DIFFERENT_FOLDER_ERROR),
+                    emptyFolderErrorShowCondition(CaseFileCategory.PROPERTY_DOCUMENTS))
+                .label("propertyDocumentsEmptyFolderQuestion", documentQuestion(),
+                    noDocumentsShowCondition(CaseFileCategory.PROPERTY_DOCUMENTS))
+                .label("evidenceEmptyFolderError", errorMessage(SELECT_DIFFERENT_FOLDER_ERROR),
+                    emptyFolderErrorShowCondition(CaseFileCategory.EVIDENCE))
+                .label("evidenceEmptyFolderQuestion", documentQuestion(),
+                    noDocumentsShowCondition(CaseFileCategory.EVIDENCE))
+                .label("hearingDocumentsEmptyFolderError", errorMessage(SELECT_DIFFERENT_FOLDER_ERROR),
+                    emptyFolderErrorShowCondition(CaseFileCategory.HEARING_DOCUMENTS))
+                .label("hearingDocumentsEmptyFolderQuestion", documentQuestion(),
+                    noDocumentsShowCondition(CaseFileCategory.HEARING_DOCUMENTS))
+                .label("ordersAndNoticeOfHearingsEmptyFolderError", errorMessage(SELECT_DIFFERENT_FOLDER_ERROR),
+                    emptyFolderErrorShowCondition(CaseFileCategory.ORDERS_AND_NOTICE_OF_HEARINGS))
+                .label("ordersAndNoticeOfHearingsEmptyFolderQuestion", documentQuestion(),
+                    noDocumentsShowCondition(CaseFileCategory.ORDERS_AND_NOTICE_OF_HEARINGS))
+                .label("applicationsEmptyFolderError", errorMessage(SELECT_DIFFERENT_FOLDER_ERROR),
+                    emptyFolderErrorShowCondition(CaseFileCategory.APPLICATIONS))
+                .label("applicationsEmptyFolderQuestion", documentQuestion(),
+                    noDocumentsShowCondition(CaseFileCategory.APPLICATIONS))
+                .label("appealsEmptyFolderError", errorMessage(SELECT_DIFFERENT_FOLDER_ERROR),
+                    emptyFolderErrorShowCondition(CaseFileCategory.APPEALS))
+                .label("appealsEmptyFolderQuestion", documentQuestion(),
+                    noDocumentsShowCondition(CaseFileCategory.APPEALS))
+                .label("correspondenceEmptyFolderError", errorMessage(SELECT_DIFFERENT_FOLDER_ERROR),
+                    emptyFolderErrorShowCondition(CaseFileCategory.CORRESPONDENCE))
+                .label("correspondenceEmptyFolderQuestion", documentQuestion(),
+                    noDocumentsShowCondition(CaseFileCategory.CORRESPONDENCE))
+                .label("uncategorisedDocumentsEmptyFolderError", errorMessage(SELECT_DIFFERENT_FOLDER_ERROR),
+                    emptyFolderErrorShowCondition(CaseFileCategory.UNCATEGORISED_DOCUMENTS))
+                .label("uncategorisedDocumentsEmptyFolderQuestion", documentQuestion(),
+                    noDocumentsShowCondition(CaseFileCategory.UNCATEGORISED_DOCUMENTS))
                 .mandatory(DocumentAmendDetails::getStatementsOfCaseDocuments,
                     documentsShowCondition(CaseFileCategory.STATEMENTS_OF_CASE), true)
                 .label("statementsOfCaseNoDocuments", noDocumentsMessage(CaseFileCategory.STATEMENTS_OF_CASE),
@@ -97,16 +139,20 @@ public class SelectDocumentPage implements CcdPageConfiguration {
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(caseData)
-            .errors(errors.isEmpty() ? null : errors)
+            .errorMessageOverride(StringUtils.joinIfNotEmpty("\n", errors))
             .build();
     }
 
     private String documentsShowCondition(CaseFileCategory category) {
-        return selectedFolderCondition(category);
+        return selectedFolderCondition(category) + " AND " + emptyFieldId(category) + NO;
     }
 
     private String noDocumentsShowCondition(CaseFileCategory category) {
         return selectedFolderCondition(category) + " AND " + emptyFieldId(category) + YES;
+    }
+
+    private String emptyFolderErrorShowCondition(CaseFileCategory category) {
+        return noDocumentsShowCondition(category);
     }
 
     private String selectedFolderCondition(CaseFileCategory category) {
@@ -129,5 +175,13 @@ public class SelectDocumentPage implements CcdPageConfiguration {
 
     private String noDocumentsMessage(CaseFileCategory category) {
         return "No documents in '" + category.getLabel() + "'";
+    }
+
+    private String documentQuestion() {
+        return "Which document do you want to amend?";
+    }
+
+    private String errorMessage(String message) {
+        return "<p class=\"govuk-error-message\">" + message + "</p>";
     }
 }

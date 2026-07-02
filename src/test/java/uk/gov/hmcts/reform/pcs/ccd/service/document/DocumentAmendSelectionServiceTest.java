@@ -158,8 +158,7 @@ class DocumentAmendSelectionServiceTest {
         assertThat(details.getApplicationsDocuments().getListItems())
             .extracting(DynamicListElement::getLabel)
             .containsExactly("visible application.pdf", "without notice application.pdf");
-        assertThat(details.getApplicationsDocuments().getValue()).isNotNull();
-        assertThat(details.getApplicationsDocuments().getValue().getCode()).isNull();
+        assertThat(details.getApplicationsDocuments().getValue()).isNull();
     }
 
     @Test
@@ -209,7 +208,6 @@ class DocumentAmendSelectionServiceTest {
             .documentAmendDetails(DocumentAmendDetails.builder()
                 .selectedFolder(selectedFolder(EVIDENCE))
                 .evidenceDocuments(DynamicList.builder()
-                    .value(DynamicListElement.EMPTY)
                     .build())
                 .build())
             .build();

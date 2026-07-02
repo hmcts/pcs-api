@@ -110,7 +110,7 @@ public class DocumentAmendSelectionService {
                 .toList();
 
         return DynamicList.builder()
-            .value(selectedValue(selected, documents))
+            .value(retainSelectedValue(selected, documents))
             .listItems(documents)
             .build();
     }
@@ -126,18 +126,9 @@ public class DocumentAmendSelectionService {
         }
 
         return options.stream()
-            .filter(option -> selected.getCode().equals(option.getCode()))
+            .filter(option -> selected.getCode().toString().equals(option.getCode().toString()))
             .findFirst()
             .orElse(null);
-    }
-
-    private DynamicListElement selectedValue(DynamicListElement selected,
-                                             List<DynamicListElement> options) {
-        DynamicListElement retainedSelectedValue = retainSelectedValue(selected, options);
-        if (retainedSelectedValue != null) {
-            return retainedSelectedValue;
-        }
-        return options.isEmpty() ? null : DynamicListElement.EMPTY;
     }
 
     private boolean isEmpty(DynamicList documents) {
