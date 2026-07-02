@@ -25,9 +25,6 @@ final class AccessGrants {
         DEFENDANT,
         PCS_SOLICITOR,
         JUDGE,
-        FEE_PAID_JUDGE,
-        CIRCUIT_JUDGE,
-        LEADERSHIP_JUDGE,
         HEARING_CENTRE_ADMIN,
         CTSC_ADMIN,
         WLU_ADMIN
