@@ -150,7 +150,7 @@ class GenAppDocumentGeneratorTest {
     }
 
     @Test
-    void shouldCallDocAssemblyWithBaseFilenameAndPdfType() {
+    void shouldCallDocAssemblyWithFilenameAndPdfType() {
         // When
         underTest.createSubmissionDocument(CASE_REFERENCE, genAppEntity);
 
@@ -158,7 +158,7 @@ class GenAppDocumentGeneratorTest {
         ArgumentCaptor<String> filenameCaptor = ArgumentCaptor.forClass(String.class);
         verify(docAssemblyService)
             .generateDocument(any(FormPayload.class), anyString(), eq(OutputType.PDF), filenameCaptor.capture());
-        assertThat(filenameCaptor.getValue()).isEqualTo("General Application");
+        assertThat(filenameCaptor.getValue()).isEqualTo("some modified filename");
     }
 
     @Test

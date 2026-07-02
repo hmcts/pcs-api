@@ -41,7 +41,7 @@ import java.util.stream.Collectors;
 public class GenAppDocumentGenerator {
 
     private static final String TEMPLATE_ID = "CV-PCS-GAP-ENG-Application-Summary.docx";
-    private static final String BASE_OUTPUT_FILENAME = "General Application";
+    private static final String OUTPUT_FILENAME_PREFIX = "General Application";
 
     private final PcsCaseService pcsCaseService;
     private final PartyService partyService;
@@ -95,7 +95,7 @@ public class GenAppDocumentGenerator {
 
         ClaimEntity mainClaim = pcsCaseEntity.getClaims().getFirst();
         String overriddenFilename = documentNameService
-            .appendGenAppPostfix(BASE_OUTPUT_FILENAME + ".pdf", genAppEntity, mainClaim, applicantParty.getId());
+            .appendGenAppPostfix(OUTPUT_FILENAME_PREFIX + ".pdf", genAppEntity, mainClaim, applicantParty.getId());
 
         DocumentEntity importedDocumentEntity = documentImportService.addDocumentToCase(
             caseReference,
@@ -115,6 +115,8 @@ public class GenAppDocumentGenerator {
 
         ClaimEntity mainClaim = pcsCaseEntity.getClaims().getFirst();
         UUID applicantPartyId = applicantParty.getId();
+        String outputFilename = documentNameService
+            .appendGenAppPostfix(OUTPUT_FILENAME_PREFIX, genAppEntity, mainClaim, applicantPartyId);
 
         GenAppFormPayload genAppFormPayload = createGenAppFormPayload(caseReference,
                                                                       pcsCaseEntity,
@@ -123,7 +125,7 @@ public class GenAppDocumentGenerator {
                                                                       applicantPartyId);
 
         return docAssemblyService
-            .generateDocument(genAppFormPayload, TEMPLATE_ID, OutputType.PDF, BASE_OUTPUT_FILENAME);
+            .generateDocument(genAppFormPayload, TEMPLATE_ID, OutputType.PDF, outputFilename);
     }
 
     private GenAppFormPayload createGenAppFormPayload(long caseReference,
