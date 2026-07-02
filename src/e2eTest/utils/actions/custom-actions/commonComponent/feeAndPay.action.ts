@@ -6,6 +6,7 @@ import { caseSummary, serviceRequest } from '@data/page-data';
 import { backDateTheCasePaymentApiData } from '@data/api-data/backDateTheCasePayment.api.data';
 import { refundAndRemission } from '@data/user-data/staff.user.data';
 import Axios from "axios";
+import {getCaseTypeId} from "@utils/common/caseType.utils";
 
 export class FeeAndPayAction implements IAction {
   async execute(page: Page, action: string, fieldName: actionData | actionRecord, data?: actionData): Promise<void> {
@@ -114,7 +115,7 @@ export class FeeAndPayAction implements IAction {
       console.log('Verification steps skipped as this is NOT working in PREVIEW env. POFCC-229');
     } else {
       console.log('Verifying payment status');
-      await performAction('clickTab', statusDetails.historyTab);
+      await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/${getCaseTypeId()}/${process.env.CASE_NUMBER}#History`);
       //Implementing retry login because POFCC-238
       const maxRetries = 10;
       let isStatusUpdated = false;

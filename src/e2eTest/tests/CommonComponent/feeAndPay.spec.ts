@@ -75,9 +75,6 @@ test.describe('[Common Component Fee And Pay] @nightly @CC @feeAndPay' , async (
     await performAction('clickButton', serviceRequest.viewServiceRequestsLink);
     await clearBrowserSession(page, context);
     await performAction('login', { email: refundAndRemission.requesterEmail, password: process.env.IDAM_PCS_USER_PASSWORD });
-    await performAction('clickButton', home.globalSearchTab);
-    await performAction('searchByCaseReference', process.env.CASE_NUMBER);
-    await performAction('clickLink', serviceRequest.viewLink);
     await performAction('verifyStatusInHistoryAndSummaryTab', {
       serviceReqTab: caseSummary.serviceRequestTab,
       historyTab: caseSummary.HistoryTab,
@@ -114,9 +111,6 @@ test.describe('[Common Component Fee And Pay] @nightly @CC @feeAndPay' , async (
     await performAction('clickButton', serviceRequest.returnToServiceRequestLink);
     await clearBrowserSession(page, context);
     await performAction('login', { email: refundAndRemission.requesterEmail, password: process.env.IDAM_PCS_USER_PASSWORD });
-    await performAction('clickButton', home.globalSearchTab);
-    await performAction('searchByCaseReference', process.env.CASE_NUMBER);
-    await performAction('clickLink', serviceRequest.viewLink);
     await performAction('verifyStatusInHistoryAndSummaryTab', {
       serviceReqLink: serviceRequest.returnToServiceRequestLink,
       serviceReqTab: caseSummary.serviceRequestTab,
@@ -141,9 +135,6 @@ test.describe('[Common Component Fee And Pay] @nightly @CC @feeAndPay' , async (
     await performAction('clickButton', serviceRequest.returnToServiceRequestLink);
     await clearBrowserSession(page, context);
     await performAction('login', { email: refundAndRemission.requesterEmail, password: process.env.IDAM_PCS_USER_PASSWORD });
-    await performAction('clickButton', home.globalSearchTab);
-    await performAction('searchByCaseReference', process.env.CASE_NUMBER);
-    await performAction('clickLink', serviceRequest.viewLink);
     await performAction('verifyStatusInHistoryAndSummaryTab', {
       serviceReqLink: cancelPayment.returnServiceReqLink,
       serviceReqTab: caseSummary.serviceRequestTab,
@@ -182,9 +173,6 @@ test.describe('[Common Component Fee And Pay] @nightly @CC @feeAndPay' , async (
     await performAction('clickButton', serviceRequest.returnToServiceRequestLink);
     await clearBrowserSession(page, context);
     await performAction('login', { email: refundAndRemission.requesterEmail, password: process.env.IDAM_PCS_USER_PASSWORD });
-    await performAction('clickButton', home.globalSearchTab);
-    await performAction('searchByCaseReference', process.env.CASE_NUMBER);
-    await performAction('clickLink', serviceRequest.viewLink);
     await performAction('verifyStatusInHistoryAndSummaryTab', {
       serviceReqLink: cancelPayment.returnServiceReqLink,
       serviceReqTab: caseSummary.serviceRequestTab,
