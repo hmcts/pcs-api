@@ -1682,6 +1682,7 @@ export class CreateCaseAction implements IAction {
       });
     }
   }
+
   public async validateCaseListTable(page: Page, caseList: actionRecord){
     let submitPayLoad = caseList.submitPayload as Record<string, any>;
     let createPayLoad = caseList.createPayload as Record<string, any>;
@@ -1786,24 +1787,21 @@ export class CreateCaseAction implements IAction {
 
     });
   }
-
  
-  public cleanGenAppFilesArray(filesArray: string[], defendantCount: number) : string[] {
-  const result: string[] = [];
+  public cleanGenAppFilesArray(filesArray: string[], defendantCount: number): string[] {
+    const result: string[] = [];
 
-  for (let i = 1; i <= defendantCount; i++) {
-    for (const file of filesArray) {
-      result.push(
-        file.replace(/\.pdf$/i, ` GA${i}.pdf`)
-      );
+    for (let i = 1; i <= defendantCount; i++) {
+      for (const file of filesArray) {
+        result.push(
+          file.replace(/\.pdf$/i, ` GA${i}.pdf`)
+        );
+      }
+
+      result.push(`General Application GA${i}.pdf`);
     }
 
-    result.push(`General Application GA${i}.pdf`);
+    return result;
   }
-
-  return result;
-}
-
-
 
 }

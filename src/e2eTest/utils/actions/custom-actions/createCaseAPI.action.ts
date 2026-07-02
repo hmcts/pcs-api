@@ -187,8 +187,7 @@ export class CreateCaseAPIAction implements IAction {
         console.log(`\n✅ The claim was submitted on "${process.env.Submission_TIME}"`)
       } else {
         await this.generateSolicitorAccessToken(user.defendantSolicitor.email as string,user.defendantSolicitor.password as string);
-        const allDefendants = createResponse.data.data.allDefendants;
-        //console.log('all defe :'+JSON.stringify(allDefendants));
+        const allDefendants = createResponse.data.data.allDefendants;        
         const defendantIds = allDefendants.map((d: any) => d.id);
         if (defendantIds.length === 0) throw new Error(`No Defendants ID retrieved and the status is ${createResponse.status}`);
 
