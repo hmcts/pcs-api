@@ -33,6 +33,7 @@ import java.util.stream.Stream;
 
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType;
+import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.legalRepDocumentUpload;
 
@@ -89,6 +90,10 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
         // By default, Main claim is always added
         caseData.getLegalRepDocumentUploadDetails().setShowExistingApplicationPage(validCategoryItems.size() >= 2
                                                                                        ? YesOrNo.YES : YesOrNo.NO);
+
+        boolean isWalesClaim = pcsCaseEntity.getLegislativeCountry() == LegislativeCountry.WALES;
+        caseData.getLegalRepDocumentUploadDetails().setIsWales(isWalesClaim ? YesOrNo.YES : YesOrNo.NO);
+
         return caseData;
     }
 

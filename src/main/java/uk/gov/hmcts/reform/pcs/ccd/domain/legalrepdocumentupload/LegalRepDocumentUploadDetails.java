@@ -35,7 +35,11 @@ public class LegalRepDocumentUploadDetails {
         hint = "Upload a document to the system"
     )
     private List<ListValue<LegalRepDocument>> legalRepDocuments;
+
     @CCD(searchable = false)
     private YesOrNo showExistingApplicationPage;
+
+    @CCD(searchable = false)
+    private  YesOrNo isWales;
 
 }

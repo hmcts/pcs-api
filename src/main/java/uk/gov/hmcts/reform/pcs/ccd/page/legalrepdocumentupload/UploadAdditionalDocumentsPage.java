@@ -5,10 +5,12 @@ import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocumentUploadDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.CcdPage;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 
 @Component
 @AllArgsConstructor
@@ -51,7 +53,12 @@ public class UploadAdditionalDocumentsPage implements CcdPageConfiguration, CcdP
             .label(pageKey + "-line-separator", "---")
             .label(pageKey + "-content", DOCUMENT_DETAILS_CONTENT)
             .complex(PCSCase::getLegalRepDocumentUploadDetails)
-            .mandatory(LegalRepDocumentUploadDetails::getLegalRepDocuments)
+            .readonly(LegalRepDocumentUploadDetails::getIsWales, NEVER_SHOW)
+            .list(LegalRepDocumentUploadDetails::getLegalRepDocuments)
+            .mandatory(LegalRepDocument::getLegalRepDocumentType, "isWales = \"No\"")
+            .mandatory(LegalRepDocument::getLegalRepDocumentTypeWales, "isWales = \"Yes\"")
+            .mandatory(LegalRepDocument::getDocument)
+            .mandatory(LegalRepDocument::getDescription)
             .done()
             .build();
     }
