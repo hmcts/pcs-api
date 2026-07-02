@@ -32,16 +32,12 @@ test.beforeEach(async ({ page, context }) => {
     caseNumbers.push(caseNumber);
     console.log(`Created Case ${i + 1}: ${caseNumber}`);
   }
-
   await context.clearCookies();
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
-
   await dismissCookieBanner(page, 'additional');
   await performAction('login', {email: staff.pcs_ctsc_team_leader_email, password: process.env.IDAM_PCS_USER_PASSWORD});
   await dismissCookieBanner(page, 'analytics');
-
   await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/${getCaseTypeId()}/${process.env.CASE_NUMBER}#Summary`);
-
   await expect(async () => {
     await page.waitForURL(`${process.env.MANAGE_CASE_BASE_URL}/**/**/**/**/**#Summary`);
   }).toPass({
