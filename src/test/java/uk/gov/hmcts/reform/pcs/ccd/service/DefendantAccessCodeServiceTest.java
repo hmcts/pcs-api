@@ -17,6 +17,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DocumentRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentIdExtractor;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyAccessCodeRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.accesscode.AccessCodeFormDocumentGenerator;
 import uk.gov.hmcts.reform.pcs.ccd.util.AccessCodeGenerator;
@@ -56,6 +57,8 @@ class DefendantAccessCodeServiceTest {
     private AccessCodeFormDocumentGenerator accessCodeFormDocumentGenerator;
     @Mock
     private DocumentRepository documentRepository;
+    @Mock(strictness = LENIENT)
+    private DocumentIdExtractor documentIdExtractor;
     @Mock
     private AccessCodeActivityLogService accessCodeActivityLogService;
     @Mock
@@ -77,6 +80,7 @@ class DefendantAccessCodeServiceTest {
             hashingService,
             accessCodeFormDocumentGenerator,
             documentRepository,
+            documentIdExtractor,
             accessCodeActivityLogService,
             testAccessCodeRecorder
         );

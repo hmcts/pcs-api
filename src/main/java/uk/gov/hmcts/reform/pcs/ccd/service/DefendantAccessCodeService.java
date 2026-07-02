@@ -16,6 +16,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DocumentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyAccessCodeRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.accesscode.AccessCodeFormDocumentGenerator;
+import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentIdExtractor;
 import uk.gov.hmcts.reform.pcs.ccd.util.AccessCodeGenerator;
 import uk.gov.hmcts.reform.pcs.exception.ClaimNotFoundException;
 import uk.gov.hmcts.reform.pcs.service.PartyAccessCodeHashingService;
@@ -42,6 +43,7 @@ public class DefendantAccessCodeService {
     private final PartyAccessCodeHashingService hashingService;
     private final AccessCodeFormDocumentGenerator accessCodeFormDocumentGenerator;
     private final DocumentRepository documentRepository;
+    private final DocumentIdExtractor documentIdExtractor;
     private final AccessCodeActivityLogService accessCodeActivityLogService;
     private final TestAccessCodeRecorder testAccessCodeRecorder;
 
@@ -83,6 +85,7 @@ public class DefendantAccessCodeService {
                     .pcsCase(pcsCaseEntity)
                     .party(defendant)
                     .url(documentUrl)
+                    .documentId(documentIdExtractor.extractDocumentId(documentUrl))
                     .type(DocumentType.DEFENDANT_ACCESS_CODE)
                     .build()
             );
