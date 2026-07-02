@@ -479,8 +479,8 @@ public class DocumentService {
                 .binaryUrl(legalRepDoc.getDocument().getBinaryUrl())
                 .description(legalRepDoc.getDescription())
                 .type(resolveDocumentType(legalRepDoc))
-                .categoryId(Optional.of(mapDocumentTypeToCategory(resolveDocumentType(legalRepDoc))
-                                            .map(CaseFileCategory::getId)).toString())
+                .categoryId((mapDocumentTypeToCategory(resolveDocumentType(legalRepDoc))
+                                            .map(CaseFileCategory::getId)).orElse(null))
                 .build())
             .toList();
 
