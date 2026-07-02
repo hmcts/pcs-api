@@ -15,6 +15,14 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CTSC_ADMIN;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CTSC_TEAM_LEADER;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.HEARING_CENTRE_ADMIN;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.HEARING_CENTRE_TEAM_LEADER;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.WLU_ADMIN;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.WLU_TEAM_LEADER;
+
 @Component
 @Slf4j
 @AllArgsConstructor
@@ -31,7 +39,8 @@ public class MaintainLinkCase implements CCDConfig<PCSCase, State, UserRole> {
                             .description("To manage link related cases")
                             .grant(Permission.CRUD, UserRole.CTSC_ADMIN, UserRole.HEARING_CENTRE_ADMIN,
                                    UserRole.CIRCUIT_JUDGE, UserRole.FEE_PAID_JUDGE,
-                                   UserRole.JUDGE, UserRole.LEADERSHIP_JUDGE))
+                                   UserRole.JUDGE, UserRole.LEADERSHIP_JUDGE)
+                            .grantHistoryOnly(JUDICIAL_HISTORY_ROLES))
             .page("maintainCaseLink")
             .pageLabel("Case Link")
             .optional(PCSCase::getCaseLinks, "LinkedCasesComponentLauncher = \"DONOTSHOW\"", null, true)

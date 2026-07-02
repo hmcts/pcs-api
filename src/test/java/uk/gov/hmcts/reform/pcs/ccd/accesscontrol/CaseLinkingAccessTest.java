@@ -9,13 +9,14 @@ import uk.gov.hmcts.ccd.sdk.api.Permission;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.entry;
 
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.AccessProfile.CIRCUIT_JUDGE;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.AccessProfile.CTSC_ADMIN;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.AccessProfile.FEE_PAID_JUDGE;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.AccessProfile.HEARING_CENTRE_ADMIN;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.AccessProfile.JUDGE;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.AccessProfile.LEADERSHIP_JUDGE;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.AccessProfile.PCS_CASE_WORKER;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.AccessProfile.PCS_SOLICITOR;
-import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CIRCUIT_JUDGE;
-import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.FEE_PAID_JUDGE;
-import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.JUDGE;
-import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.LEADERSHIP_JUDGE;
-import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CTSC_ADMIN;
-import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.HEARING_CENTRE_ADMIN;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.AccessProfile.WLU_ADMIN;
 
 
@@ -31,7 +32,12 @@ class CaseLinkingAccessTest {
     @Test
     void shouldGrantCaseLinkingAccess() {
         SetMultimap<HasRole, Permission> grants = underTest.getGrants();
-        assertThat(grants.asMap()).contains(entry(PCS_SOLICITOR, Permission.CRU));
+
+        assertThat(grants.get(PCS_SOLICITOR)).isEmpty();
+        assertThat(grants.get(PCS_CASE_WORKER)).isEmpty();
+        for (UserRole role : AccessGrants.INTERNAL_READ_ROLES) {
+            assertThat(grants.get(role)).contains(Permission.R);
+        }
         assertThat(grants.asMap()).contains(entry(CTSC_ADMIN, Permission.CRU));
         assertThat(grants.asMap()).contains(entry(HEARING_CENTRE_ADMIN, Permission.CRU));
         assertThat(grants.asMap()).contains(entry(CIRCUIT_JUDGE, Permission.CRU));

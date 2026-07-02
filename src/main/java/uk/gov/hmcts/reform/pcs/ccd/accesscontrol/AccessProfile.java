@@ -22,11 +22,10 @@ public enum AccessProfile implements HasRole {
     PCS_CASE_WORKER("caseworker-pcs", Set.of(R)),
     PCS_SOLICITOR("caseworker-pcs-solicitor", CRU),
 
-    JUDGE("judge", Permission.CRU),
-    FEE_PAID_JUDGE("fee-paid-judge", Permission.CRU),
-    CIRCUIT_JUDGE("circuit-judge", Permission.CRU),
-    LEADERSHIP_JUDGE("leadership-judge", Permission.CRU),
-
+    JUDGE("judge", Set.of(R)),
+    FEE_PAID_JUDGE("fee-paid-judge", Set.of(R)),
+    CIRCUIT_JUDGE("circuit-judge", Set.of(R)),
+    LEADERSHIP_JUDGE("leadership-judge", Set.of(R)),
 
     CTSC_ADMIN("ctsc", Permission.CRU),
     HEARING_CENTRE_ADMIN("hearing-centre-admin", Permission.CRU),
