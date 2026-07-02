@@ -9,10 +9,9 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimStatus;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.model.CounterClaimStatusChangeTaskData;
-import uk.gov.hmcts.reform.pcs.ccd.task.CounterClaimIssuedNotificationTaskComponent;
 import uk.gov.hmcts.reform.pcs.ccd.task.PendingCounterClaimIssuedNotificationTaskComponent;
 
 import java.util.UUID;
@@ -34,11 +33,11 @@ class CounterClaimEntityListenerTest {
     @Test
     void shouldSetPreviousStatusOnPostLoad() {
         CounterClaimEntity entity = new CounterClaimEntity();
-        entity.setStatus(CounterClaimStatus.PENDING_COUNTER_CLAIM_ISSUED);
+        entity.setStatus(CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED);
 
         underTest.onPostLoad(entity);
 
-        assertEquals(CounterClaimStatus.PENDING_COUNTER_CLAIM_ISSUED, entity.getPreviousStatus());
+        assertEquals(CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED, entity.getPreviousStatus());
     }
 
     @Test
@@ -46,7 +45,7 @@ class CounterClaimEntityListenerTest {
         UUID counterClaimId = UUID.randomUUID();
         CounterClaimEntity entity = CounterClaimEntity.builder()
             .id(counterClaimId)
-            .status(CounterClaimStatus.PENDING_COUNTER_CLAIM_ISSUED)
+            .status(CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED)
             .build();
 
         underTest.onPostPersist(entity);
@@ -66,7 +65,7 @@ class CounterClaimEntityListenerTest {
     @Test
     void shouldNotScheduleNotificationOnPostPersistWhenStatusIsNotPendingCounterClaimIssued() {
         CounterClaimEntity entity = new CounterClaimEntity();
-        entity.setStatus(CounterClaimStatus.COUNTER_CLAIM_ISSUED);
+        entity.setStatus(CounterClaimState.COUNTER_CLAIM_ISSUED);
 
         underTest.onPostPersist(entity);
 
@@ -76,8 +75,8 @@ class CounterClaimEntityListenerTest {
     @Test
     void shouldDoNothingOnPostUpdateWhenStatusHasNotChanged() {
         CounterClaimEntity entity = new CounterClaimEntity();
-        entity.setStatus(CounterClaimStatus.PENDING_COUNTER_CLAIM_ISSUED);
-        entity.setPreviousStatus(CounterClaimStatus.PENDING_COUNTER_CLAIM_ISSUED);
+        entity.setStatus(CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED);
+        entity.setPreviousStatus(CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED);
 
         underTest.onPostUpdate(entity);
 
@@ -89,8 +88,8 @@ class CounterClaimEntityListenerTest {
         UUID counterClaimId = UUID.randomUUID();
         CounterClaimEntity entity = CounterClaimEntity.builder()
             .id(counterClaimId)
-            .status(CounterClaimStatus.PENDING_COUNTER_CLAIM_ISSUED)
-            .previousStatus(CounterClaimStatus.COUNTER_CLAIM_ISSUED)
+            .status(CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED)
+            .previousStatus(CounterClaimState.COUNTER_CLAIM_ISSUED)
             .build();
 
         underTest.onPostUpdate(entity);
@@ -107,25 +106,4 @@ class CounterClaimEntityListenerTest {
         assertEquals(counterClaimId, data.getCounterClaimId());
     }
 
-    @Test
-    void shouldScheduleIssuedNotificationOnPostUpdateWhenStatusChangesToIssued() {
-        UUID counterClaimId = UUID.randomUUID();
-        CounterClaimEntity entity = CounterClaimEntity.builder()
-            .id(counterClaimId)
-            .status(CounterClaimStatus.COUNTER_CLAIM_ISSUED)
-            .previousStatus(CounterClaimStatus.PENDING_COUNTER_CLAIM_ISSUED)
-            .build();
-
-        underTest.onPostUpdate(entity);
-
-        ArgumentCaptor<SchedulableInstance<?>> taskInstanceCaptor = ArgumentCaptor.forClass(SchedulableInstance.class);
-        verify(schedulerClient).scheduleIfNotExists(taskInstanceCaptor.capture());
-
-        SchedulableInstance<?> schedulableInstance = taskInstanceCaptor.getValue();
-        TaskInstance<?> taskInstance = schedulableInstance.getTaskInstance();
-        assertEquals(CounterClaimIssuedNotificationTaskComponent.COUNTER_CLAIM_ISSUED_TASK_DESCRIPTOR.getTaskName(),
-                     taskInstance.getTaskName());
-        CounterClaimStatusChangeTaskData data = (CounterClaimStatusChangeTaskData) taskInstance.getData();
-        assertEquals(counterClaimId, data.getCounterClaimId());
-    }
 }
