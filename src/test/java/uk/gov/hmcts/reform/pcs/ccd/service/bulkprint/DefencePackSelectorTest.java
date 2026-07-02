@@ -1,18 +1,14 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.bulkprint;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.mockito.junit.jupiter.MockitoSettings;
-import org.mockito.quality.Strictness;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.ClaimActivityStatus;
 import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.ClaimActivityType;
-import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimActivityLogEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
@@ -20,20 +16,17 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
-import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimActivityLogRepository;
-import uk.gov.hmcts.reform.pcs.ccd.repository.CounterClaimRepository;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-@MockitoSettings(strictness = Strictness.LENIENT)
 class DefencePackSelectorTest {
 
     private static final UUID CASE_ID = UUID.randomUUID();
@@ -41,118 +34,133 @@ class DefencePackSelectorTest {
 
     @Mock
     private ClaimActivityLogRepository claimActivityLogRepository;
-    @Mock
-    private CounterClaimRepository counterClaimRepository;
 
     @InjectMocks
     private DefencePackSelector underTest;
 
-    private final PartyEntity defendant = PartyEntity.builder().id(UUID.randomUUID()).build();
-    private final DocumentEntity defenceForm = defenceFormDocument();
-    private final DocumentEntity counterClaimDoc = document(DocumentType.COUNTERCLAIM);
+    private final PartyEntity claimant = party();
+    private final PartyEntity defendant = party();
+    private final PartyEntity coDefendant = party();
+    private final DocumentEntity defenceForm = defenceForm(defendant);
+    private final DocumentEntity counterClaim = counterClaim(defendant);
 
-    @BeforeEach
-    void noActivityOrCounterClaimByDefault() {
+    @Test
+    @DisplayName("Returns nothing when there is no defence form")
+    void shouldReturnNothingWhenNoDefenceForm() {
         when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of());
-        when(counterClaimRepository.findFirstByPcsCaseCaseReferenceAndPartyIdOrderByClaimSubmittedDateDesc(
-            CASE_REF, defendant.getId())).thenReturn(Optional.empty());
+
+        assertThat(underTest.findDefencePackCandidates(caseWith(List.of(), claimant, defendant))).isEmpty();
     }
 
     @Test
-    @DisplayName("Defence only, complete, when there is no counter-claim")
-    void shouldSelectDefenceOnlyAsCompleteWhenNoCounterClaim() {
-        DefencePackCandidate candidate = only(caseWith(List.of(defenceForm)));
+    @DisplayName("Serves the defence form on the responding defendant and the claimant")
+    void shouldServeDefenceOnDefendantAndClaimant() {
+        when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of());
 
-        assertThat(candidate.documents()).containsExactly(defenceForm);
-        assertThat(candidate.targetStatus()).isEqualTo(ClaimActivityType.DEFENCE_PACK_SENT);
+        List<DefencePackCandidate> result =
+            underTest.findDefencePackCandidates(caseWith(List.of(defenceForm), claimant, defendant));
+
+        assertThat(result).hasSize(2);
+        assertThat(candidateFor(result, defendant).role()).isEqualTo(PartyRole.DEFENDANT);
+        assertThat(candidateFor(result, defendant).documents()).containsExactly(defenceForm);
+        assertThat(candidateFor(result, claimant).role()).isEqualTo(PartyRole.CLAIMANT);
+        assertThat(candidateFor(result, claimant).documents()).containsExactly(defenceForm);
     }
 
     @Test
-    @DisplayName("Defence only, partial, when the counter-claim is pending")
-    void shouldSelectDefenceAsPartialWhenCounterClaimPending() {
-        stubCounterClaim(CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED);
+    @DisplayName("Bundles the defence and counter-claim for the defendant and claimant when both are ready")
+    void shouldBundleDefenceAndCounterClaimWhenBothReady() {
+        when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of());
 
-        DefencePackCandidate candidate = only(caseWith(List.of(defenceForm)));
+        List<DefencePackCandidate> result = underTest.findDefencePackCandidates(
+            caseWith(List.of(defenceForm, counterClaim), claimant, defendant));
 
-        assertThat(candidate.documents()).containsExactly(defenceForm);
-        assertThat(candidate.targetStatus()).isEqualTo(ClaimActivityType.DEFENCE_PACK_PARTIALLY_SENT);
+        assertThat(result).hasSize(2);
+        assertThat(candidateFor(result, defendant).documents()).containsExactly(defenceForm, counterClaim);
+        assertThat(candidateFor(result, claimant).documents()).containsExactly(defenceForm, counterClaim);
     }
 
     @Test
-    @DisplayName("Bundles defence and counter-claim when both are ready")
-    void shouldBundleBothAsCompleteWhenCounterClaimIssuedAndDocReady() {
-        stubCounterClaim(CounterClaimState.COUNTER_CLAIM_ISSUED);
+    @DisplayName("Serves the counter-claim on every party, including a co-defendant")
+    void shouldServeCounterClaimOnAllParties() {
+        when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of());
 
-        DefencePackCandidate candidate = only(caseWith(List.of(defenceForm, counterClaimDoc)));
+        List<DefencePackCandidate> result = underTest.findDefencePackCandidates(
+            caseWith(List.of(defenceForm, counterClaim), claimant, defendant, coDefendant));
 
-        assertThat(candidate.documents()).containsExactly(defenceForm, counterClaimDoc);
-        assertThat(candidate.targetStatus()).isEqualTo(ClaimActivityType.DEFENCE_PACK_SENT);
+        assertThat(result).hasSize(3);
+        assertThat(candidateFor(result, defendant).documents()).containsExactly(defenceForm, counterClaim);
+        assertThat(candidateFor(result, claimant).documents()).containsExactly(defenceForm, counterClaim);
+        assertThat(candidateFor(result, coDefendant).documents()).containsExactly(counterClaim);   // no defence form
+        assertThat(candidateFor(result, coDefendant).role()).isEqualTo(PartyRole.DEFENDANT);
     }
 
     @Test
-    @DisplayName("Completes a partial with the counter-claim when later issued")
-    void shouldCompletePartialWithCounterClaimWhenLaterIssued() {
-        stubActivity(ClaimActivityType.DEFENCE_PACK_PARTIALLY_SENT);
-        stubCounterClaim(CounterClaimState.COUNTER_CLAIM_ISSUED);
-
-        DefencePackCandidate candidate = only(caseWith(List.of(defenceForm, counterClaimDoc)));
-
-        assertThat(candidate.documents()).containsExactly(counterClaimDoc);   // second envelope
-        assertThat(candidate.targetStatus()).isEqualTo(ClaimActivityType.DEFENCE_PACK_SENT);
-    }
-
-    @Test
-    @DisplayName("Stays partial while the counter-claim is still pending")
-    void shouldStayPartialWhileCounterClaimStillPending() {
-        stubActivity(ClaimActivityType.DEFENCE_PACK_PARTIALLY_SENT);
-        stubCounterClaim(CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED);
-
-        assertThat(underTest.findDefencePackCandidates(caseWith(List.of(defenceForm)))).isEmpty();
-    }
-
-    @Test
-    @DisplayName("Returns nothing when already sent")
-    void shouldReturnNothingWhenAlreadySent() {
-        stubActivity(ClaimActivityType.DEFENCE_PACK_SENT);
-
-        assertThat(underTest.findDefencePackCandidates(caseWith(List.of(defenceForm)))).isEmpty();
-    }
-
-    private DefencePackCandidate only(PcsCaseEntity pcsCase) {
-        List<DefencePackCandidate> result = underTest.findDefencePackCandidates(pcsCase);
-        assertThat(result).hasSize(1);
-        return result.getFirst();
-    }
-
-    private void stubCounterClaim(CounterClaimState state) {
-        when(counterClaimRepository.findFirstByPcsCaseCaseReferenceAndPartyIdOrderByClaimSubmittedDateDesc(
-            CASE_REF, defendant.getId()))
-            .thenReturn(Optional.of(CounterClaimEntity.builder().party(defendant).status(state).build()));
-    }
-
-    private void stubActivity(ClaimActivityType activityType) {
+    @DisplayName("Sends only the counter-claim when the defence form has already been posted")
+    void shouldSendOnlyUnsentCounterClaimLater() {
         when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of(
-            ClaimActivityLogEntity.builder()
-                .party(defendant).activityType(activityType).status(ClaimActivityStatus.SUCCESS).build()));
+            sent(defendant, defenceForm), sent(claimant, defenceForm)));
+
+        List<DefencePackCandidate> result = underTest.findDefencePackCandidates(
+            caseWith(List.of(defenceForm, counterClaim), claimant, defendant));
+
+        assertThat(result).hasSize(2);
+        assertThat(candidateFor(result, defendant).documents()).containsExactly(counterClaim);
+        assertThat(candidateFor(result, claimant).documents()).containsExactly(counterClaim);
     }
 
-    private PcsCaseEntity caseWith(List<DocumentEntity> documents) {
-        ClaimPartyEntity claimParty = ClaimPartyEntity.builder()
-            .party(defendant).role(PartyRole.DEFENDANT).rank(1).build();
-        ClaimEntity claim = ClaimEntity.builder().claimParties(List.of(claimParty)).build();
+    @Test
+    @DisplayName("Returns nothing when every document has already been sent to every recipient")
+    void shouldReturnNothingWhenAllSent() {
+        when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of(
+            sent(defendant, defenceForm), sent(claimant, defenceForm),
+            sent(defendant, counterClaim), sent(claimant, counterClaim)));
+
+        assertThat(underTest.findDefencePackCandidates(
+            caseWith(List.of(defenceForm, counterClaim), claimant, defendant))).isEmpty();
+    }
+
+    private DefencePackCandidate candidateFor(List<DefencePackCandidate> result, PartyEntity recipient) {
+        return result.stream()
+            .filter(candidate -> candidate.recipient().getId().equals(recipient.getId()))
+            .findFirst()
+            .orElseThrow(() -> new AssertionError("no candidate for recipient " + recipient.getId()));
+    }
+
+    private PcsCaseEntity caseWith(List<DocumentEntity> documents, PartyEntity claimantParty,
+                                   PartyEntity... defendantParties) {
+        List<ClaimPartyEntity> claimParties = new ArrayList<>();
+        claimParties.add(ClaimPartyEntity.builder().party(claimantParty).role(PartyRole.CLAIMANT).rank(1).build());
+        int rank = 1;
+        for (PartyEntity defendantParty : defendantParties) {
+            claimParties.add(
+                ClaimPartyEntity.builder().party(defendantParty).role(PartyRole.DEFENDANT).rank(rank++).build());
+        }
+        ClaimEntity claim = ClaimEntity.builder().claimParties(claimParties).build();
         return PcsCaseEntity.builder()
             .id(CASE_ID).caseReference(CASE_REF).claims(List.of(claim)).documents(documents).build();
     }
 
-    private DocumentEntity defenceFormDocument() {
+    private ClaimActivityLogEntity sent(PartyEntity party, DocumentEntity document) {
+        return ClaimActivityLogEntity.builder()
+            .party(party).document(document)
+            .activityType(ClaimActivityType.DOCUMENT_SENT).status(ClaimActivityStatus.SUCCESS).build();
+    }
+
+    private DocumentEntity defenceForm(PartyEntity owner) {
         return DocumentEntity.builder()
-            .documentId(UUID.randomUUID())
+            .id(UUID.randomUUID())
             .type(DocumentType.DEFENDANT_RESPONSE)
-            .defendantResponse(DefendantResponseEntity.builder().party(defendant).build())
+            .defendantResponse(DefendantResponseEntity.builder().party(owner).build())
             .build();
     }
 
-    private DocumentEntity document(DocumentType type) {
-        return DocumentEntity.builder().documentId(UUID.randomUUID()).type(type).party(defendant).build();
+    private DocumentEntity counterClaim(PartyEntity owner) {
+        return DocumentEntity.builder()
+            .id(UUID.randomUUID()).type(DocumentType.COUNTERCLAIM).party(owner).build();
+    }
+
+    private PartyEntity party() {
+        return PartyEntity.builder().id(UUID.randomUUID()).build();
     }
 }

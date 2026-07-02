@@ -15,12 +15,17 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimActivityLogRepository;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 import static uk.gov.hmcts.reform.pcs.ccd.service.form.PartyDisplayMapper.partiesByRole;
 
 /**
- * Selects the claim-pack recipients for a case — the claimant, plus each defendant whose access code exists —
- * excluding anyone already sent. All-or-nothing on the claim form; per-defendant on the access code.
+ * Selects claim-pack envelopes per recipient. The claim form goes to the claimant and every defendant; each
+ * defendant additionally gets their own access code and is held until it exists. Tracking is per document —
+ * a recipient is sent only the documents that have no {@code DOCUMENT_SENT} success row yet, so a failed
+ * access-code letter self-heals without re-sending the claim form.
  */
 @Service
 @Slf4j
@@ -42,34 +47,43 @@ public class ClaimPackSelector {
             return List.of();
         }
 
-        List<ClaimActivityLogEntity> activityLog = claimActivityLogRepository.findAllByPcsCase_Id(pcsCase.getId());
+        Set<String> sent = sentDocumentKeys(claimActivityLogRepository.findAllByPcsCase_Id(pcsCase.getId()));
         List<ClaimPackCandidate> candidates = new ArrayList<>();
-        addClaimantCandidate(candidates, claim, claimForm, activityLog);
-        addDefendantCandidates(candidates, pcsCase, claim, claimForm, activityLog);
+        addClaimantCandidate(candidates, claim, claimForm, sent);
+        addDefendantCandidates(candidates, pcsCase, claim, claimForm, sent);
         return candidates;
     }
 
     private void addClaimantCandidate(List<ClaimPackCandidate> candidates, ClaimEntity claim,
-                                      DocumentEntity claimForm, List<ClaimActivityLogEntity> activityLog) {
+                                      DocumentEntity claimForm, Set<String> sent) {
         List<PartyEntity> claimants = partiesByRole(claim, PartyRole.CLAIMANT);
         if (claimants.isEmpty()) {
             return;
         }
         PartyEntity claimant = claimants.getFirst();
-        if (!alreadySent(activityLog, claimant, ClaimActivityType.CLAIMANT_PACK_SENT)) {
+        if (!sent.contains(key(claimant, claimForm))) {
             candidates.add(new ClaimPackCandidate(PartyRole.CLAIMANT, claimant, List.of(claimForm)));
         }
     }
 
     private void addDefendantCandidates(List<ClaimPackCandidate> candidates, PcsCaseEntity pcsCase, ClaimEntity claim,
-                                        DocumentEntity claimForm, List<ClaimActivityLogEntity> activityLog) {
+                                        DocumentEntity claimForm, Set<String> sent) {
         for (PartyEntity defendant : partiesByRole(claim, PartyRole.DEFENDANT)) {
             DocumentEntity accessCode = accessCodeDocument(pcsCase, defendant);
             if (accessCode == null) {
                 log.debug("Claim pack held for case {} defendant {} - awaiting access code",
                     pcsCase.getId(), defendant.getId());
-            } else if (!alreadySent(activityLog, defendant, ClaimActivityType.DEFENDANT_PACK_SENT)) {
-                candidates.add(new ClaimPackCandidate(PartyRole.DEFENDANT, defendant, List.of(claimForm, accessCode)));
+                continue;
+            }
+            List<DocumentEntity> unsent = new ArrayList<>();
+            if (!sent.contains(key(defendant, claimForm))) {
+                unsent.add(claimForm);
+            }
+            if (!sent.contains(key(defendant, accessCode))) {
+                unsent.add(accessCode);
+            }
+            if (!unsent.isEmpty()) {
+                candidates.add(new ClaimPackCandidate(PartyRole.DEFENDANT, defendant, unsent));
             }
         }
     }
@@ -86,12 +100,20 @@ public class ClaimPackSelector {
         return document.getParty() != null && document.getParty().getId().equals(party.getId());
     }
 
-    private boolean alreadySent(List<ClaimActivityLogEntity> activityLog, PartyEntity party,
-                                ClaimActivityType packSent) {
-        return activityLog.stream().anyMatch(entry ->
-            entry.getActivityType() == packSent
-                && entry.getStatus() == ClaimActivityStatus.SUCCESS
-                && entry.getParty() != null
-                && entry.getParty().getId().equals(party.getId()));
+    private Set<String> sentDocumentKeys(List<ClaimActivityLogEntity> activityLog) {
+        return activityLog.stream()
+            .filter(entry -> entry.getActivityType() == ClaimActivityType.DOCUMENT_SENT)
+            .filter(entry -> entry.getStatus() == ClaimActivityStatus.SUCCESS)
+            .filter(entry -> entry.getParty() != null && entry.getDocument() != null)
+            .map(entry -> key(entry.getParty().getId(), entry.getDocument().getId()))
+            .collect(Collectors.toSet());
+    }
+
+    private String key(PartyEntity party, DocumentEntity document) {
+        return key(party.getId(), document.getId());
+    }
+
+    private String key(UUID partyId, UUID documentId) {
+        return partyId + ":" + documentId;
     }
 }

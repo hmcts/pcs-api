@@ -69,13 +69,30 @@ class ClaimPackSelectorTest {
     }
 
     @Test
-    @DisplayName("Excludes a claimant already sent")
+    @DisplayName("Excludes a claimant already sent the claim form")
     void shouldExcludeClaimantAlreadySent() {
         when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID))
-            .thenReturn(List.of(sent(claimant, ClaimActivityType.CLAIMANT_PACK_SENT)));
+            .thenReturn(List.of(sent(claimant, claimForm)));
         PcsCaseEntity pcsCase = caseWith(claimForm, List.of(), List.of(claimParty(claimant, PartyRole.CLAIMANT, 1)));
 
         assertThat(underTest.findClaimPackCandidates(pcsCase)).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Re-sends only the access code when the claim form already reached the defendant")
+    void shouldResendOnlyAccessCodeWhenClaimFormAlreadySent() {
+        DocumentEntity pinA = document(DocumentType.DEFENDANT_ACCESS_CODE, defendantA);
+        when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID))
+            .thenReturn(List.of(sent(claimant, claimForm), sent(defendantA, claimForm)));
+        PcsCaseEntity pcsCase = caseWith(claimForm, List.of(pinA), List.of(
+            claimParty(claimant, PartyRole.CLAIMANT, 1),
+            claimParty(defendantA, PartyRole.DEFENDANT, 1)));
+
+        List<ClaimPackCandidate> result = underTest.findClaimPackCandidates(pcsCase);
+
+        assertThat(result).hasSize(1);
+        assertThat(result.getFirst().party()).isEqualTo(defendantA);
+        assertThat(result.getFirst().documents()).containsExactly(pinA);   // claim form not re-sent
     }
 
     @Test
@@ -84,8 +101,8 @@ class ClaimPackSelectorTest {
         DocumentEntity pinA = document(DocumentType.DEFENDANT_ACCESS_CODE, defendantA);
         DocumentEntity pinC = document(DocumentType.DEFENDANT_ACCESS_CODE, defendantC);
         when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of(
-            sent(claimant, ClaimActivityType.CLAIMANT_PACK_SENT),
-            sent(defendantC, ClaimActivityType.DEFENDANT_PACK_SENT)));
+            sent(claimant, claimForm),
+            sent(defendantC, claimForm), sent(defendantC, pinC)));
         PcsCaseEntity pcsCase = caseWith(claimForm, List.of(pinA, pinC), List.of(
             claimParty(claimant, PartyRole.CLAIMANT, 1),
             claimParty(defendantA, PartyRole.DEFENDANT, 1),   // pin, unsent  → included
@@ -112,9 +129,10 @@ class ClaimPackSelectorTest {
         return ClaimPartyEntity.builder().party(party).role(role).rank(rank).build();
     }
 
-    private ClaimActivityLogEntity sent(PartyEntity party, ClaimActivityType activityType) {
+    private ClaimActivityLogEntity sent(PartyEntity party, DocumentEntity document) {
         return ClaimActivityLogEntity.builder()
-            .party(party).activityType(activityType).status(ClaimActivityStatus.SUCCESS).build();
+            .party(party).document(document)
+            .activityType(ClaimActivityType.DOCUMENT_SENT).status(ClaimActivityStatus.SUCCESS).build();
     }
 
     private PartyEntity party() {

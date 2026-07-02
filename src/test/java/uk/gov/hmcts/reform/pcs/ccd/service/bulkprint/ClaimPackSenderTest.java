@@ -9,8 +9,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
-import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.ClaimActivityType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
@@ -53,6 +53,7 @@ class ClaimPackSenderTest {
 
     private final PcsCaseEntity pcsCase = PcsCaseEntity.builder().caseReference(1234567890123456L).build();
     private final PartyEntity recipient = PartyEntity.builder().id(UUID.randomUUID()).build();
+    private final DocumentEntity claimForm = DocumentEntity.builder().id(UUID.randomUUID()).build();
 
     @Test
     @DisplayName("Does nothing when the case is not found")
@@ -65,13 +66,13 @@ class ClaimPackSenderTest {
     }
 
     @Test
-    @DisplayName("Resolves the address and sends the claimant pack")
+    @DisplayName("Resolves the address, sends the claimant pack and records the document sent")
     void shouldResolveAddressAndSendClaimantPack() {
         AddressEntity postalAddress = AddressEntity.builder().addressLine1("1 High Street").build();
         AddressUK addressUk = AddressUK.builder().addressLine1("1 High Street").build();
         when(pcsCaseRepository.findById(CASE_ID)).thenReturn(Optional.of(pcsCase));
         when(claimPackSelector.findClaimPackCandidates(pcsCase))
-            .thenReturn(List.of(new ClaimPackCandidate(PartyRole.CLAIMANT, recipient, List.of())));
+            .thenReturn(List.of(new ClaimPackCandidate(PartyRole.CLAIMANT, recipient, List.of(claimForm))));
         when(recipientAddressResolver.resolveDisplayName(recipient)).thenReturn("Acme Ltd");
         when(recipientAddressResolver.resolvePostalAddress(recipient, PartyRole.CLAIMANT, pcsCase.getPropertyAddress()))
             .thenReturn(postalAddress);
@@ -81,23 +82,22 @@ class ClaimPackSenderTest {
         underTest.sendClaimPacks(CASE_ID);
 
         verify(bulkPrintService).sendPack(pcsCase, recipient,
-            LetterType.CLAIMANT_CLAIM_PACK, "Acme Ltd", addressUk, List.of());
-        verify(accessCodeActivityLogService).logSuccess(pcsCase, recipient, ClaimActivityType.CLAIMANT_PACK_SENT);
-        verify(accessCodeActivityLogService, never()).logFailure(any(), any(), any());
+            LetterType.CLAIMANT_CLAIM_PACK, "Acme Ltd", addressUk, List.of(claimForm));
+        verify(accessCodeActivityLogService).recordDocumentSent(pcsCase, recipient, claimForm);
+        verify(accessCodeActivityLogService, never()).recordDocumentSendFailure(any(), any(), any());
     }
 
     @Test
-    @DisplayName("Records a failure when the send throws a missing address")
+    @DisplayName("Records a document-send failure when the send throws a missing address")
     void shouldRecordFailureWhenSendThrowsMissingAddress() {
         when(pcsCaseRepository.findById(CASE_ID)).thenReturn(Optional.of(pcsCase));
         when(claimPackSelector.findClaimPackCandidates(pcsCase))
-            .thenReturn(List.of(new ClaimPackCandidate(PartyRole.DEFENDANT, recipient, List.of())));
+            .thenReturn(List.of(new ClaimPackCandidate(PartyRole.DEFENDANT, recipient, List.of(claimForm))));
         when(bulkPrintService.sendPack(any(), any(), any(), any(), any(), any()))
             .thenThrow(new MissingPostalAddressException("no address"));
 
         underTest.sendClaimPacks(CASE_ID);
 
-        verify(accessCodeActivityLogService)
-            .logFailure(pcsCase, recipient, ClaimActivityType.DEFENDANT_PACK_SENT);
+        verify(accessCodeActivityLogService).recordDocumentSendFailure(pcsCase, recipient, claimForm);
     }
 }

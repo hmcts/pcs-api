@@ -5,8 +5,8 @@ import org.slf4j.MDC;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
-import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.ClaimActivityType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
@@ -15,11 +15,13 @@ import uk.gov.hmcts.reform.pcs.ccd.service.AccessCodeActivityLogService;
 import uk.gov.hmcts.reform.pcs.ccd.service.form.RecipientAddressResolver;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
  * Sends the claim packs for one case, in a transaction so lazy case data can be read. Each recipient is
  * resolved and posted independently; a failing recipient is logged and skipped, never aborting the case.
+ * Each document in the envelope is recorded as its own {@code DOCUMENT_SENT} row (SUCCESS or FAILURE).
  */
 @Service
 @Slf4j
@@ -64,7 +66,7 @@ public class ClaimPackSender {
         PartyEntity recipient = candidate.party();
         PartyRole role = candidate.recipientType();
         LetterType letterType = letterTypeFor(role);
-        ClaimActivityType packSentType = packSentTypeFor(role);
+        List<DocumentEntity> documents = candidate.documents();
 
         MDC.put(MDC_CASE_REFERENCE, String.valueOf(pcsCase.getCaseReference()));
         MDC.put(MDC_PARTY_ID, String.valueOf(recipient.getId()));
@@ -73,15 +75,16 @@ public class ClaimPackSender {
             String recipientName = recipientAddressResolver.resolveDisplayName(recipient);
             AddressUK address = resolveAddress(recipient, role, pcsCase.getPropertyAddress());
             UUID letterId = bulkPrintService.sendPack(
-                pcsCase, recipient, letterType, recipientName, address, candidate.documents());
-            accessCodeActivityLogService.logSuccess(pcsCase, recipient, packSentType);
+                pcsCase, recipient, letterType, recipientName, address, documents);
+            documents.forEach(document ->
+                accessCodeActivityLogService.recordDocumentSent(pcsCase, recipient, document));
             MDC.put(MDC_LETTER_ID, String.valueOf(letterId));
             log.info("Claim pack sent - case: {}, party: {}, letterType: {}, letterId: {}",
                 pcsCase.getCaseReference(), recipient.getId(), letterType, letterId);
         } catch (MissingPostalAddressException e) {
-            recordFailure(pcsCase, recipient, packSentType, e, true);
+            recordFailure(pcsCase, recipient, documents, e, true);
         } catch (Exception e) {
-            recordFailure(pcsCase, recipient, packSentType, e, false);
+            recordFailure(pcsCase, recipient, documents, e, false);
         } finally {
             MDC.remove(MDC_CASE_REFERENCE);
             MDC.remove(MDC_PARTY_ID);
@@ -97,21 +100,17 @@ public class ClaimPackSender {
         return postalAddress == null ? null : addressMapper.toAddressUK(postalAddress);
     }
 
-    private void recordFailure(PcsCaseEntity pcsCase, PartyEntity recipient, ClaimActivityType packSentType,
+    private void recordFailure(PcsCaseEntity pcsCase, PartyEntity recipient, List<DocumentEntity> documents,
                                Exception cause, boolean terminal) {
         MDC.put(MDC_TERMINAL_FAILURE, String.valueOf(terminal));
         MDC.put(MDC_FAILURE_REASON, String.valueOf(cause.getMessage()));
         log.error("Bulk print failed - case: {}, party: {}, terminal: {}: {}",
             pcsCase.getCaseReference(), recipient.getId(), terminal, cause.getMessage(), cause);
-        accessCodeActivityLogService.logFailure(pcsCase, recipient, packSentType);
+        documents.forEach(document ->
+            accessCodeActivityLogService.recordDocumentSendFailure(pcsCase, recipient, document));
     }
 
     private LetterType letterTypeFor(PartyRole role) {
         return role == PartyRole.CLAIMANT ? LetterType.CLAIMANT_CLAIM_PACK : LetterType.DEFENDANT_CLAIM_PACK;
-    }
-
-    private ClaimActivityType packSentTypeFor(PartyRole role) {
-        return role == PartyRole.CLAIMANT
-            ? ClaimActivityType.CLAIMANT_PACK_SENT : ClaimActivityType.DEFENDANT_PACK_SENT;
     }
 }

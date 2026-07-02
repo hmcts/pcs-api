@@ -1,15 +1,15 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.bulkprint;
 
-import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.ClaimActivityType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 
 import java.util.List;
 
 /**
- * One defence-pack envelope to post to a defendant, plus the pack status it completes to:
- * {@code DEFENCE_PACK_PARTIALLY_SENT} when a counter-claim is still outstanding, else {@code DEFENCE_PACK_SENT}.
+ * One defence-phase envelope to post: the recipient (claimant or a defendant), their role (drives address
+ * resolution), and the unsent defence-side documents for them (defence form and/or counter-claim). Recorded
+ * as one {@code DOCUMENT_SENT} row per document; the coversheet is prepended at send time.
  */
-public record DefencePackCandidate(PartyEntity defendant, List<DocumentEntity> documents,
-                                   ClaimActivityType targetStatus) {
+public record DefencePackCandidate(PartyRole role, PartyEntity recipient, List<DocumentEntity> documents) {
 }

@@ -8,12 +8,14 @@ import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.ClaimActivityStatus;
 import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.ClaimActivityType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimActivityLogEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimActivityLogRepository;
 
 /**
- * Records SUCCESS/FAILURE rows to {@code claim_activity_log} for access-code letter generation.
+ * Records rows to {@code claim_activity_log}: generation outcomes ({@code DOCUMENTS_CREATED}) and, for bulk
+ * print, one {@code DOCUMENT_SENT} row per (recipient, document).
  */
 @Service
 @AllArgsConstructor
@@ -23,7 +25,7 @@ public class AccessCodeActivityLogService {
     private final ClaimActivityLogRepository claimActivityLogRepository;
 
     public void logSuccess(PcsCaseEntity pcsCase, PartyEntity party, ClaimActivityType activityType) {
-        save(pcsCase, party, activityType, ClaimActivityStatus.SUCCESS);
+        save(pcsCase, party, null, activityType, ClaimActivityStatus.SUCCESS);
     }
 
     /**
@@ -31,11 +33,27 @@ public class AccessCodeActivityLogService {
      */
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void logFailure(PcsCaseEntity pcsCase, PartyEntity party, ClaimActivityType activityType) {
-        save(pcsCase, party, activityType, ClaimActivityStatus.FAILURE);
+        save(pcsCase, party, null, activityType, ClaimActivityStatus.FAILURE);
+    }
+
+    /**
+     * A document was posted to a recipient. The (recipient, document) SUCCESS row is the bulk-print dedup key.
+     */
+    public void recordDocumentSent(PcsCaseEntity pcsCase, PartyEntity recipient, DocumentEntity document) {
+        save(pcsCase, recipient, document, ClaimActivityType.DOCUMENT_SENT, ClaimActivityStatus.SUCCESS);
+    }
+
+    /**
+     * A document send to a recipient failed; REQUIRES_NEW so the row survives the caller's rollback.
+     */
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void recordDocumentSendFailure(PcsCaseEntity pcsCase, PartyEntity recipient, DocumentEntity document) {
+        save(pcsCase, recipient, document, ClaimActivityType.DOCUMENT_SENT, ClaimActivityStatus.FAILURE);
     }
 
     private void save(PcsCaseEntity pcsCase,
                       PartyEntity party,
+                      DocumentEntity document,
                       ClaimActivityType activityType,
                       ClaimActivityStatus status) {
 
@@ -43,6 +61,7 @@ public class AccessCodeActivityLogService {
             ClaimActivityLogEntity.builder()
                 .pcsCase(pcsCase)
                 .party(party)
+                .document(document)
                 .activityType(activityType)
                 .status(status)
                 .build()
