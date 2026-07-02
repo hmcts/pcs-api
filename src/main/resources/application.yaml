@@ -265,6 +265,8 @@ access-code:
 
 bulk-print:
   schedule: ${BULK_PRINT_SCHEDULE:DAILY|02:00}
+  # BULK_PRINT_LOOKBACK_HOURS (lower envs only): sweep ignores packs whose documents are older than N hours,
+  # so enabling the flag cannot flood send-letter with the historical backlog. Unset in prod = full backlog.
 
 send-letter:
   url: ${SEND_LETTER_URL:http://rpe-send-letter-service-aat.service.core-compute-aat.internal}

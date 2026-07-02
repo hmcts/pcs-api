@@ -15,11 +15,15 @@ import uk.gov.hmcts.reform.pcs.ccd.service.bulkprint.DefencePackSender;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -39,47 +43,67 @@ class BulkPrintGenerationComponentTest {
 
     @Test
     void buildsTaskWithNightlyDefaultSchedule() {
-        assertThat(componentWithSchedule("DAILY|02:00").bulkPrintTask()).isNotNull();
+        assertThat(component("DAILY|02:00", null).bulkPrintTask()).isNotNull();
     }
 
     @Test
     void parsesFixedDelayEnvironmentSchedules() {
-        assertThatCode(() -> componentWithSchedule("FIXED_DELAY|60s").bulkPrintTask()).doesNotThrowAnyException();
-        assertThatCode(() -> componentWithSchedule("FIXED_DELAY|600s").bulkPrintTask()).doesNotThrowAnyException();
+        assertThatCode(() -> component("FIXED_DELAY|60s", null).bulkPrintTask()).doesNotThrowAnyException();
+        assertThatCode(() -> component("FIXED_DELAY|600s", null).bulkPrintTask()).doesNotThrowAnyException();
     }
 
     @Test
     void doesNothingWhenFlagOff() {
         when(featureToggleService.isEnabled(FeatureFlag.BULK_PRINT)).thenReturn(false);
 
-        runSweep();
+        runSweep(null);
 
         verifyNoInteractions(claimActivityLogRepository, claimPackSender, defencePackSender);
     }
 
     @Test
-    void dispatchesBothSendersPerCaseWhenFlagOn() {
+    void dispatchesBothSendersPerCaseFromFullBacklogWhenNoLookback() {
         UUID caseA = UUID.randomUUID();
         UUID caseB = UUID.randomUUID();
         when(featureToggleService.isEnabled(FeatureFlag.BULK_PRINT)).thenReturn(true);
         when(claimActivityLogRepository.findCaseIdsByActivityTypeAndStatus(
             ClaimActivityType.DOCUMENTS_CREATED, ClaimActivityStatus.SUCCESS)).thenReturn(List.of(caseA, caseB));
 
-        runSweep();
+        runSweep(null);
 
+        verify(claimActivityLogRepository, never())
+            .findCaseIdsByActivityTypeAndStatusCreatedAfter(any(), any(), any());
         verify(claimPackSender).sendClaimPacks(caseA);
         verify(defencePackSender).sendDefencePacks(caseA);
         verify(claimPackSender).sendClaimPacks(caseB);
         verify(defencePackSender).sendDefencePacks(caseB);
     }
 
-    private void runSweep() {
-        RecurringTask<Void> task = componentWithSchedule("DAILY|02:00").bulkPrintTask();
+    @Test
+    void appliesLookbackCutoffWhenConfigured() {
+        UUID caseId = UUID.randomUUID();
+        when(featureToggleService.isEnabled(FeatureFlag.BULK_PRINT)).thenReturn(true);
+        when(claimActivityLogRepository.findCaseIdsByActivityTypeAndStatusCreatedAfter(
+            eq(ClaimActivityType.DOCUMENTS_CREATED), eq(ClaimActivityStatus.SUCCESS), any(LocalDateTime.class)))
+            .thenReturn(List.of(caseId));
+
+        runSweep(24);
+
+        verify(claimActivityLogRepository).findCaseIdsByActivityTypeAndStatusCreatedAfter(
+            eq(ClaimActivityType.DOCUMENTS_CREATED), eq(ClaimActivityStatus.SUCCESS), any(LocalDateTime.class));
+        verify(claimActivityLogRepository, never()).findCaseIdsByActivityTypeAndStatus(any(), any());
+        verify(claimPackSender).sendClaimPacks(caseId);
+        verify(defencePackSender).sendDefencePacks(caseId);
+    }
+
+    private void runSweep(Integer lookbackHours) {
+        RecurringTask<Void> task = component("DAILY|02:00", lookbackHours).bulkPrintTask();
         task.execute(null, null);
     }
 
-    private BulkPrintGenerationComponent componentWithSchedule(String schedule) {
+    private BulkPrintGenerationComponent component(String schedule, Integer lookbackHours) {
         return new BulkPrintGenerationComponent(
-            featureToggleService, claimActivityLogRepository, claimPackSender, defencePackSender, schedule);
+            featureToggleService, claimActivityLogRepository, claimPackSender, defencePackSender,
+            schedule, lookbackHours);
     }
 }

@@ -37,6 +37,7 @@ java:
     LAUNCHDARKLY_ENV: "${SERVICE_NAME}"
     DB_SCHEDULER_EXECUTOR_ENABLED: true
     BULK_PRINT_SCHEDULE: "FIXED_DELAY|60s"
+    BULK_PRINT_LOOKBACK_HOURS: "24"
     DOC_ASSEMBLY_URL: http://dg-docassembly-aat.service.core-compute-aat.internal
     SEND_LETTER_URL: http://rpe-send-letter-service-aat.service.core-compute-aat.internal
     IDAM_API_URL: https://idam-api.aat.platform.hmcts.net
