@@ -23,13 +23,13 @@ import java.util.UUID;
 import static jakarta.persistence.FetchType.LAZY;
 
 @Entity
-@Table(name = "review_date")
+@Table(name = "case_review_date")
 @Setter
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ReviewDateEntity {
+public class CaseReviewDateEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)

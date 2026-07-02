@@ -17,7 +17,7 @@ import java.util.List;
 
 @AllArgsConstructor
 @Component
-public class AddReviewDatePage implements CcdPageConfiguration, CcdPage {
+public class AddCaseReviewDatePage implements CcdPageConfiguration, CcdPage {
 
     private final TextAreaValidationService textAreaValidationService;
 

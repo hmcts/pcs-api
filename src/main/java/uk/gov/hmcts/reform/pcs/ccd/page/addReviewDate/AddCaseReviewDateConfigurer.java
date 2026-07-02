@@ -7,12 +7,12 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageConfigurer;
 
 @Component
 @AllArgsConstructor
-public class AddReviewDateConfigurer implements PageConfigurer {
+public class AddCaseReviewDateConfigurer implements PageConfigurer {
 
-    private final AddReviewDatePage addReviewDatePage;
+    private final AddCaseReviewDatePage addCaseReviewDatePage;
 
     @Override
     public void configurePages(PageBuilder pageBuilder) {
-        pageBuilder.add(addReviewDatePage);
+        pageBuilder.add(addCaseReviewDatePage);
     }
 }

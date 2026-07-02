@@ -13,42 +13,42 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.page.addReviewDate.AddReviewDateConfigurer;
-import uk.gov.hmcts.reform.pcs.ccd.service.ReviewDateService;
+import uk.gov.hmcts.reform.pcs.ccd.page.addReviewDate.AddCaseReviewDateConfigurer;
+import uk.gov.hmcts.reform.pcs.ccd.service.CaseReviewDateService;
 
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
-import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.addReviewDate;
+import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.addCaseReviewDate;
 
 @Component
 @AllArgsConstructor
-public class AddReviewDate implements CCDConfig<PCSCase, State, UserRole> {
+public class AddCaseReviewDate implements CCDConfig<PCSCase, State, UserRole> {
 
-    private final AddReviewDateConfigurer addReviewDateConfigurer;
-    private final ReviewDateService reviewDateService;
+    private final AddCaseReviewDateConfigurer addCaseReviewDateConfigurer;
+    private final CaseReviewDateService caseReviewDateService;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         Event.EventBuilder<PCSCase, UserRole, State> eventBuilder =
             configBuilder
-                .decentralisedEvent(addReviewDate.name(), this::submit)
+                .decentralisedEvent(addCaseReviewDate.name(), this::submit)
                 .forStates(State.PENDING_CASE_ISSUED, State.CASE_ISSUED)
                 .name("Add review date")
                 .grant(Permission.CRUD, UserRole.PCS_SOLICITOR)
                 .grantHistoryOnly(JUDICIAL_HISTORY_ROLES)
                 .showSummary()
                 .endButtonLabel("Submit");
-        addReviewDateConfigurer.configurePages(new PageBuilder(eventBuilder));
+        addCaseReviewDateConfigurer.configurePages(new PageBuilder(eventBuilder));
     }
 
     private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
         Long caseId = eventPayload.caseReference();
         PCSCase caseData = eventPayload.caseData();
         AddressUK propertyAddress = caseData.getPropertyAddress();
-        String address = propertyAddress.getAddressLine1() + " " +
-                propertyAddress.getPostTown() + " " +
-                propertyAddress.getCounty() + " " +
+        String address = propertyAddress.getAddressLine1() + ", " +
+                propertyAddress.getPostTown() + ", " +
+                propertyAddress.getCounty() + ", " +
                 propertyAddress.getPostCode();
-        reviewDateService.addReviewDate(caseId, caseData);
+        caseReviewDateService.addCaseReviewDate(caseId, caseData);
         return SubmitResponse.<State>builder()
             .confirmationBody(getConfirmationBody(caseId.toString(), address, caseData.getCaseNameHmctsInternal()))
             .build();

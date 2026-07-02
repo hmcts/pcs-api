@@ -1,4 +1,4 @@
-CREATE TABLE public.review_date
+CREATE TABLE public.case_review_date
 (
   id UUID PRIMARY KEY,
   case_id UUID REFERENCES pcs_case (id),
@@ -7,4 +7,4 @@ CREATE TABLE public.review_date
   description VARCHAR(500) NOT NULL
 );
 
-CREATE INDEX idx_review_date_case_id ON public.review_date(case_id);
+CREATE INDEX idx_case_review_date_case_id ON public.case_review_date(case_id);
