@@ -13,8 +13,8 @@ import { beforeYouStart } from '@data/page-data/beforeYouStart.page.data';
 import { selectCasesToLink } from '@data/page-data/selectCaseToLink.page.data';
 import { selectCasesToUnLink } from '@data/page-data/selectCasesToUnLink.page.data';
 import { checkYourAnswersCaseLinking } from '@data/page-data/checkYourAnswersCaseLinking.page.data';
-import {dismissCookieBanner} from "@config/cookie-banner";
-import {staff} from "@data/user-data/staff.user.data";
+import {dismissCookieBanner} from '@config/cookie-banner';
+import {staff} from '@data/user-data/staff.user.data';
 
 let caseNumbers: string[] = [];
 

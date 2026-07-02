@@ -12,13 +12,15 @@ import {
   cancelPayment,
   caseSummary,
   confirmYourPayment,
-  enterPaymentDetails, home,
-  serviceRequest, user
+  enterPaymentDetails,
+  home,
+  serviceRequest,
+  user
 } from '@data/page-data';
 import { history } from '@data/page-data/history.page.data';
 import {BrowserContext, Page} from "@playwright/test";
 import {refundAndRemission} from "@data/user-data/staff.user.data";
-import {dismissCookieBanner} from "@config/cookie-banner";
+import {dismissCookieBanner} from '@config/cookie-banner';
 
 test.use({ storageState: undefined });
 

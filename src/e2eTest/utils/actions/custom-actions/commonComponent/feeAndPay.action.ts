@@ -6,7 +6,7 @@ import { caseSummary, serviceRequest } from '@data/page-data';
 import { backDateTheCasePaymentApiData } from '@data/api-data/backDateTheCasePayment.api.data';
 import { refundAndRemission } from '@data/user-data/staff.user.data';
 import Axios from "axios";
-import {getCaseTypeId} from "@utils/common/caseType.utils";
+import {getCaseTypeId} from '@utils/common/caseType.utils';
 
 export class FeeAndPayAction implements IAction {
   async execute(page: Page, action: string, fieldName: actionData | actionRecord, data?: actionData): Promise<void> {
