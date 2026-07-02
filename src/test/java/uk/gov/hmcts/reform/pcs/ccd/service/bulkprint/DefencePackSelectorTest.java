@@ -53,18 +53,19 @@ class DefencePackSelectorTest {
     }
 
     @Test
-    @DisplayName("Serves the defence form on the responding defendant and the claimant")
-    void shouldServeDefenceOnDefendantAndClaimant() {
+    @DisplayName("Serves the defence form on every party, including a co-defendant")
+    void shouldServeDefenceOnAllParties() {
         when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of());
 
-        List<DefencePackCandidate> result =
-            underTest.findDefencePackCandidates(caseWith(List.of(defenceForm), claimant, defendant));
+        List<DefencePackCandidate> result = underTest.findDefencePackCandidates(
+            caseWith(List.of(defenceForm), claimant, defendant, coDefendant));
 
-        assertThat(result).hasSize(2);
+        assertThat(result).hasSize(3);
         assertThat(candidateFor(result, defendant).role()).isEqualTo(PartyRole.DEFENDANT);
         assertThat(candidateFor(result, defendant).documents()).containsExactly(defenceForm);
         assertThat(candidateFor(result, claimant).role()).isEqualTo(PartyRole.CLAIMANT);
         assertThat(candidateFor(result, claimant).documents()).containsExactly(defenceForm);
+        assertThat(candidateFor(result, coDefendant).documents()).containsExactly(defenceForm);
     }
 
     @Test
@@ -81,8 +82,8 @@ class DefencePackSelectorTest {
     }
 
     @Test
-    @DisplayName("Serves the counter-claim on every party, including a co-defendant")
-    void shouldServeCounterClaimOnAllParties() {
+    @DisplayName("Serves the defence form and counter-claim on every party, including a co-defendant")
+    void shouldServeDefenceAndCounterClaimOnAllParties() {
         when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of());
 
         List<DefencePackCandidate> result = underTest.findDefencePackCandidates(
@@ -91,7 +92,7 @@ class DefencePackSelectorTest {
         assertThat(result).hasSize(3);
         assertThat(candidateFor(result, defendant).documents()).containsExactly(defenceForm, counterClaim);
         assertThat(candidateFor(result, claimant).documents()).containsExactly(defenceForm, counterClaim);
-        assertThat(candidateFor(result, coDefendant).documents()).containsExactly(counterClaim);   // no defence form
+        assertThat(candidateFor(result, coDefendant).documents()).containsExactly(defenceForm, counterClaim);
         assertThat(candidateFor(result, coDefendant).role()).isEqualTo(PartyRole.DEFENDANT);
     }
 

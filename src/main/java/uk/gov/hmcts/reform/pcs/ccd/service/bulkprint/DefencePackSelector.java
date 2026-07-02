@@ -24,9 +24,10 @@ import java.util.stream.Collectors;
 import static uk.gov.hmcts.reform.pcs.ccd.service.form.PartyDisplayMapper.partiesByRole;
 
 /**
- * Selects defence-phase envelopes per recipient, best-effort and per document. A defendant's defence form is
- * served on that defendant and the claimant; a counter-claim (present only once issued) is served on every
- * party — claimant and all defendants. Documents ready for the same recipient are grouped into one envelope;
+ * Selects defence-phase envelopes per recipient, best-effort and per document. A defendant's defence form and
+ * any counter-claim (present only once issued) are both served on every party — the claimant and all
+ * defendants; only the access code (claim phase) is party-specific. Documents ready for the same recipient
+ * are grouped into one envelope;
  * a recipient is sent only the documents that have no {@code DOCUMENT_SENT} success row yet, so a late
  * counter-claim simply follows in a later sweep without re-sending anything already posted.
  */
@@ -58,8 +59,7 @@ public class DefencePackSelector {
         for (PartyEntity defendant : defendants) {
             DocumentEntity defenceForm = defenceFormDocument(pcsCase, defendant);
             if (defenceForm != null) {
-                addPending(recipients, documentsByRecipient, defendant, defenceForm);
-                claimants.forEach(claimant -> addPending(recipients, documentsByRecipient, claimant, defenceForm));
+                allParties.forEach(party -> addPending(recipients, documentsByRecipient, party, defenceForm));
             }
             DocumentEntity counterClaimForm = counterClaimDocument(pcsCase, defendant);
             if (counterClaimForm != null) {
