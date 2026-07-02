@@ -14,7 +14,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.documentamend.DocumentAmendDetails;
-import uk.gov.hmcts.reform.pcs.ccd.domain.documentamend.DocumentAmendFolder;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -48,8 +47,8 @@ class DocumentAmendSelectionServiceTest {
 
     @Test
     void shouldDefineFolderDropdownWithCaseFileViewFolders() {
-        assertThat(DocumentAmendFolder.values())
-            .extracting(DocumentAmendFolder::getLabel)
+        assertThat(CaseFileCategory.values())
+            .extracting(CaseFileCategory::getLabel)
             .containsExactly(
                 "Statements of case",
                 "Property documents",
@@ -205,7 +204,7 @@ class DocumentAmendSelectionServiceTest {
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(PcsCaseEntity.builder().build());
         PCSCase caseData = PCSCase.builder()
             .documentAmendDetails(DocumentAmendDetails.builder()
-                .selectedFolder(selectedFolder(UNCATEGORISED_DOCUMENTS))
+                .selectedFolder(UNCATEGORISED_DOCUMENTS)
                 .build())
             .build();
         underTest.initialise(CASE_REFERENCE, caseData);
@@ -229,7 +228,7 @@ class DocumentAmendSelectionServiceTest {
             .build());
         PCSCase caseData = PCSCase.builder()
             .documentAmendDetails(DocumentAmendDetails.builder()
-                .selectedFolder(selectedFolder(EVIDENCE))
+                .selectedFolder(EVIDENCE)
                 .evidenceDocuments(DynamicList.builder()
                     .build())
                 .build())
@@ -251,7 +250,7 @@ class DocumentAmendSelectionServiceTest {
             .build());
         PCSCase caseData = PCSCase.builder()
             .documentAmendDetails(DocumentAmendDetails.builder()
-                .selectedFolder(selectedFolder(EVIDENCE))
+                .selectedFolder(EVIDENCE)
                 .evidenceDocuments(selectedDocument(document))
                 .build())
             .build();
@@ -274,7 +273,7 @@ class DocumentAmendSelectionServiceTest {
             .build());
         PCSCase caseData = PCSCase.builder()
             .documentAmendDetails(DocumentAmendDetails.builder()
-                .selectedFolder(selectedFolder(EVIDENCE))
+                .selectedFolder(EVIDENCE)
                 .build())
             .build();
         underTest.initialise(CASE_REFERENCE, caseData);
@@ -283,20 +282,6 @@ class DocumentAmendSelectionServiceTest {
 
         assertThat(errors).isEmpty();
         assertThat(caseData.getDocumentAmendDetails().getSelectedDocumentId()).isNull();
-    }
-
-    private static DocumentAmendFolder selectedFolder(CaseFileCategory category) {
-        return switch (category) {
-            case STATEMENTS_OF_CASE -> DocumentAmendFolder.STATEMENTS_OF_CASE;
-            case PROPERTY_DOCUMENTS -> DocumentAmendFolder.PROPERTY_DOCUMENTS;
-            case EVIDENCE -> DocumentAmendFolder.EVIDENCE;
-            case HEARING_DOCUMENTS -> DocumentAmendFolder.HEARING_DOCUMENTS;
-            case ORDERS_AND_NOTICE_OF_HEARINGS -> DocumentAmendFolder.ORDERS_AND_NOTICE_OF_HEARINGS;
-            case APPLICATIONS -> DocumentAmendFolder.APPLICATIONS;
-            case APPEALS -> DocumentAmendFolder.APPEALS;
-            case CORRESPONDENCE -> DocumentAmendFolder.CORRESPONDENCE;
-            case UNCATEGORISED_DOCUMENTS -> DocumentAmendFolder.UNCATEGORISED_DOCUMENTS;
-        };
     }
 
     private static DynamicList selectedDocument(DocumentEntity document) {

@@ -8,6 +8,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
+import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
 import uk.gov.hmcts.ccd.sdk.type.DynamicList;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 
@@ -25,10 +26,10 @@ public class DocumentAmendDetails {
         label = "Which folder is the document in?",
         searchable = false,
         typeOverride = FixedList,
-        typeParameterOverride = "DocumentAmendFolder"
+        typeParameterOverride = "CaseFileCategory"
     )
     @JsonProperty("SelectedFolder")
-    private DocumentAmendFolder selectedFolder;
+    private CaseFileCategory selectedFolder;
 
     @CCD(searchable = false)
     @JsonProperty("PropertyAddressSummary")

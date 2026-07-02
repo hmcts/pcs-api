@@ -2,10 +2,11 @@ package uk.gov.hmcts.reform.pcs.ccd.domain;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import uk.gov.hmcts.ccd.sdk.api.HasLabel;
 
 @AllArgsConstructor
 @Getter
-public enum CaseFileCategory {
+public enum CaseFileCategory implements HasLabel {
 
     STATEMENTS_OF_CASE("statementsOfCase", "Statements of case", 1),
     PROPERTY_DOCUMENTS("propertyDocuments", "Property documents", 2),

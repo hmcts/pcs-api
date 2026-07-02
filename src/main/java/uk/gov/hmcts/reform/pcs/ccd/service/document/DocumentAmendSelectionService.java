@@ -52,7 +52,7 @@ public class DocumentAmendSelectionService {
             return List.of();
         }
 
-        CaseFileCategory selectedFolder = details.getSelectedFolder().getCategory();
+        CaseFileCategory selectedFolder = details.getSelectedFolder();
         DynamicList selectedDocuments = documentsForCategory(details, selectedFolder);
         details.setSelectedFolderId(selectedFolder.getId());
         details.setSelectedFolderLabel(selectedFolder.getLabel());
