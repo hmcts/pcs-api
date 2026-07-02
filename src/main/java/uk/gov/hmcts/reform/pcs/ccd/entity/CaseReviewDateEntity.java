@@ -18,7 +18,6 @@ import lombok.Setter;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ReviewReason;
 
 import java.time.LocalDate;
-import java.util.UUID;
 
 import static jakarta.persistence.FetchType.LAZY;
 
@@ -33,7 +32,7 @@ public class CaseReviewDateEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Integer id;
 
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "case_id")

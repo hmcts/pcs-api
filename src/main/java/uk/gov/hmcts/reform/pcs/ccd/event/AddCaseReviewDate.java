@@ -44,10 +44,10 @@ public class AddCaseReviewDate implements CCDConfig<PCSCase, State, UserRole> {
         Long caseId = eventPayload.caseReference();
         PCSCase caseData = eventPayload.caseData();
         AddressUK propertyAddress = caseData.getPropertyAddress();
-        String address = propertyAddress.getAddressLine1() + ", " +
-                propertyAddress.getPostTown() + ", " +
-                propertyAddress.getCounty() + ", " +
-                propertyAddress.getPostCode();
+        String address = propertyAddress.getAddressLine1() + ", "
+            + propertyAddress.getPostTown() + ", "
+            + propertyAddress.getCounty() + ", "
+            + propertyAddress.getPostCode();
         caseReviewDateService.addCaseReviewDate(caseId, caseData);
         return SubmitResponse.<State>builder()
             .confirmationBody(getConfirmationBody(caseId.toString(), address, caseData.getCaseNameHmctsInternal()))
