@@ -1,18 +1,18 @@
-import { actionData, actionRecord, IAction } from '@utils/interfaces';
-import { Page } from '@playwright/test';
-import { performAction, performValidation } from '@utils/controller';
+import {actionData, actionRecord, IAction} from '@utils/interfaces';
+import {Page} from '@playwright/test';
+import {performAction, performValidation} from '@utils/controller';
 import {expect} from "@utils/test-fixtures";
-import {caseSummary, caseList} from "@data/page-data";
-import { getCaseTypeId } from '@utils/common/caseType.utils';
+import {caseList, caseSummary} from "@data/page-data";
+import {getCaseTypeId} from '@utils/common/caseType.utils';
 import {
-  specialMeasureForFlag,
-  whereShouldThisFlagBeAdded,
-  selectFlagType,
   addCommentsForFlag,
-  reviewFlagDetails,
-  viewCaseFlag,
   manageCaseFlags,
-  updateFlagComments
+  reviewFlagDetails,
+  selectFlagType,
+  specialMeasureForFlag,
+  updateFlagComments,
+  viewCaseFlag,
+  whereShouldThisFlagBeAdded
 } from '@data/page-data-figma';
 import {workAccess} from "@data/page-data-figma/page-data-common-component/workAccess.page.data";
 import {createCaseApiData} from "@data/api-data";
@@ -252,7 +252,7 @@ export class CaseFlagAction implements IAction {
   }
 
   private caseFlagsTabLocator(page: Page) {
-    return page.locator('div.mat-tab-label-content', { hasText: viewCaseFlag.caseFlagsTab });
+    return page.locator('div.mat-tab-label-content', {hasText: viewCaseFlag.caseFlagsTab}).first();
   }
 
   private async canViewCaseAndPartyFlag(option: actionData, page: Page): Promise<void> {

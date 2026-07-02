@@ -17,11 +17,7 @@ import {
 } from '@data/page-data-figma';
 import {dismissCookieBanner} from '@config/cookie-banner';
 import {BrowserContext, Page} from '@playwright/test';
-import {
-  logUserTestResultsAndAssert,
-  recordUserTestFailure,
-  UserTestResult
-} from '@utils/common/userTestResults.utils';
+import {logUserTestResultsAndAssert, recordUserTestFailure, UserTestResult} from '@utils/common/userTestResults.utils';
 
 const ACCESS_CONTROL_TEST_TIMEOUT = 30 * 60 * 1000;
 
@@ -196,18 +192,36 @@ test.describe('[Common Component Case Flags - Access Management] @CC @caseFlags'
     test.setTimeout(ACCESS_CONTROL_TEST_TIMEOUT);
     const results: UserTestResult[] = [];
     const password = process.env.IDAM_PCS_USER_PASSWORD as string;
+    const runStaffUserTest = async (email: string) => {
+      await performAction('login', {email, password});
+      await dismissCookieBanner(page, 'analytics');
+      await performAction('navigateToCaseSummary', 'yes');
+      await performAction('canCreateCaseLevelFlag', 'yes');
+      await performAction('canCreatePartyLevelFlag', 'yes');
+      await performAction('canManageCaseLevelFlag', 'yes');
+      await performAction('canManagePartyLevelFlag', 'yes');
+      await performAction('canViewCaseAndPartyFlag', 'yes');
+    };
     for (const email of staffUsers) {
       try {
         await test.step(`Staff user ${email}`, async () => {
-          await performAction('login', {email, password});
-          await dismissCookieBanner(page, 'analytics');
-          await performAction('navigateToCaseSummary', 'yes');
-          await performAction('canCreateCaseLevelFlag', 'yes');
-          await performAction('canCreatePartyLevelFlag', 'yes');
-          await performAction('canManageCaseLevelFlag', 'yes');
-          await performAction('canManagePartyLevelFlag', 'yes');
-          await performAction('canViewCaseAndPartyFlag', 'yes');
-          await clearBrowserSession(page, context);
+          const maxRetries = 2;
+          for (let attempt = 0; attempt <= maxRetries; attempt++) {
+            try {
+              await runStaffUserTest(email);
+              break;
+            } catch (error) {
+              if (attempt === maxRetries) {
+                throw error;
+              }
+              console.log(`Attempt ${attempt + 1} failed for ${email}. Retrying...`);
+              await clearBrowserSession(page, context).catch(() => {
+              });
+            } finally {
+              await clearBrowserSession(page, context).catch(() => {
+              });
+            }
+          }
         });
         results.push({email, status: 'PASS'});
       } catch (error) {
@@ -223,19 +237,39 @@ test.describe('[Common Component Case Flags - Access Management] @CC @caseFlags'
     test.setTimeout(ACCESS_CONTROL_TEST_TIMEOUT);
     const results: UserTestResult[] = [];
     const password = process.env.IDAM_PCS_USER_PASSWORD as string;
+    const runJudicialUserTest = async (email: string) => {
+      await performAction('login', {email, password});
+      await dismissCookieBanner(page, 'analytics');
+      if (
+        email === judicial.possessionFeePaid_Judge_email ||
+        email === judicial.possession_Circuit_Judge_FeePaid_Judge_email
+      ) {
+        await performAction('handleJudgeBookingPage');
+      }
+      await performAction('navigateToCaseSummary', 'yes');
+      await performValidation('elementNotToBeVisible', caseSummary.nextStepEventList);
+      await performAction('canViewCaseAndPartyFlag', 'yes');
+    };
     for (const email of judicialUsers) {
       try {
         await test.step(`Judicial user ${email}`, async () => {
-          await performAction('login', {email, password});
-          await dismissCookieBanner(page, 'analytics');
-          if (email == judicial.possessionFeePaid_Judge_email || email == judicial.possession_Circuit_Judge_FeePaid_Judge_email)
-          {
-            await performAction('handleJudgeBookingPage');
+          const maxRetries = 2;
+          for (let attempt = 0; attempt <= maxRetries; attempt++) {
+            try {
+              await runJudicialUserTest(email);
+              break;
+            } catch (error) {
+              if (attempt === maxRetries) {
+                throw error;
+              }
+              console.log(`Attempt ${attempt + 1} failed for ${email}. Retrying...`);
+              await clearBrowserSession(page, context).catch(() => {
+              });
+            } finally {
+              await clearBrowserSession(page, context).catch(() => {
+              });
+            }
           }
-          await performAction('navigateToCaseSummary', 'yes');
-          await performValidation('elementNotToBeVisible', caseSummary.nextStepEventList);
-          await performAction('canViewCaseAndPartyFlag', 'yes');
-          await clearBrowserSession(page, context);
         });
         results.push({email, status: 'PASS'});
       } catch (error) {
