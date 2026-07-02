@@ -168,7 +168,7 @@ public class PcsCaseEntity {
         caseNote.setPcsCase(this);
     }
 
-    public void addReviewDate(CaseReviewDateEntity reviewDate) {
+    public void addCaseReviewDate(CaseReviewDateEntity reviewDate) {
         reviewDates.add(reviewDate);
         reviewDate.setPcsCase(this);
     }

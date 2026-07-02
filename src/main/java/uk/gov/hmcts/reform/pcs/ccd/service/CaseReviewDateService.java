@@ -23,7 +23,7 @@ public class CaseReviewDateService {
         List<ListValue<ReviewDate>> reviewDates = pcsCase.getReviewDates();
         for (ListValue<ReviewDate> listValue : reviewDates) {
             CaseReviewDateEntity caseReviewDateEntity = createCaseReviewDateEntity(listValue.getValue());
-            pcsCaseEntity.addReviewDate(caseReviewDateEntity);
+            pcsCaseEntity.addCaseReviewDate(caseReviewDateEntity);
         }
         pcsCaseRepository.save(pcsCaseEntity);
     }
