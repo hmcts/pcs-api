@@ -95,7 +95,7 @@ public class GenAppDocumentGenerator {
 
         ClaimEntity mainClaim = pcsCaseEntity.getClaims().getFirst();
         String overriddenFilename = documentNameService
-            .appendGenAppPostfix(BASE_OUTPUT_FILENAME, genAppEntity, mainClaim, applicantParty.getId());
+            .appendGenAppPostfix(BASE_OUTPUT_FILENAME + ".pdf", genAppEntity, mainClaim, applicantParty.getId());
 
         DocumentEntity importedDocumentEntity = documentImportService.addDocumentToCase(
             caseReference,
