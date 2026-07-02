@@ -37,7 +37,7 @@ class ClaimPackSenderTest {
     @Mock
     private PcsCaseRepository pcsCaseRepository;
     @Mock
-    private ClaimPackCandidateService claimPackCandidateService;
+    private ClaimPackSelector claimPackSelector;
     @Mock
     private RecipientAddressResolver recipientAddressResolver;
     @Mock
@@ -59,7 +59,7 @@ class ClaimPackSenderTest {
 
         underTest.sendClaimPacks(CASE_ID);
 
-        verifyNoInteractions(bulkPrintService, claimPackCandidateService);
+        verifyNoInteractions(bulkPrintService, claimPackSelector);
     }
 
     @Test
@@ -67,8 +67,8 @@ class ClaimPackSenderTest {
         AddressEntity postalAddress = AddressEntity.builder().addressLine1("1 High Street").build();
         AddressUK addressUk = AddressUK.builder().addressLine1("1 High Street").build();
         when(pcsCaseRepository.findById(CASE_ID)).thenReturn(Optional.of(pcsCase));
-        when(claimPackCandidateService.findClaimPackCandidates(pcsCase))
-            .thenReturn(List.of(new PackCandidate(PartyRole.CLAIMANT, recipient, List.of())));
+        when(claimPackSelector.findClaimPackCandidates(pcsCase))
+            .thenReturn(List.of(new ClaimPackCandidate(PartyRole.CLAIMANT, recipient, List.of())));
         when(recipientAddressResolver.resolveDisplayName(recipient)).thenReturn("Acme Ltd");
         when(recipientAddressResolver.resolvePostalAddress(recipient, PartyRole.CLAIMANT, pcsCase.getPropertyAddress()))
             .thenReturn(postalAddress);
@@ -86,8 +86,8 @@ class ClaimPackSenderTest {
     @Test
     void recordsFailureWhenSendThrowsMissingAddress() {
         when(pcsCaseRepository.findById(CASE_ID)).thenReturn(Optional.of(pcsCase));
-        when(claimPackCandidateService.findClaimPackCandidates(pcsCase))
-            .thenReturn(List.of(new PackCandidate(PartyRole.DEFENDANT, recipient, List.of())));
+        when(claimPackSelector.findClaimPackCandidates(pcsCase))
+            .thenReturn(List.of(new ClaimPackCandidate(PartyRole.DEFENDANT, recipient, List.of())));
         when(bulkPrintService.sendPack(any(), any(), any(), any(), any(), any()))
             .thenThrow(new MissingPostalAddressException("no address"));
 

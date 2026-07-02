@@ -30,7 +30,7 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
-class BulkPrintGenerationComponentTest {
+class BulkPrintScheduledTaskTest {
 
     @Mock
     private FeatureToggleService featureToggleService;
@@ -101,8 +101,8 @@ class BulkPrintGenerationComponentTest {
         task.execute(null, null);
     }
 
-    private BulkPrintGenerationComponent component(String schedule, Integer lookbackHours) {
-        return new BulkPrintGenerationComponent(
+    private BulkPrintScheduledTask component(String schedule, Integer lookbackHours) {
+        return new BulkPrintScheduledTask(
             featureToggleService, claimActivityLogRepository, claimPackSender, defencePackSender,
             schedule, lookbackHours);
     }

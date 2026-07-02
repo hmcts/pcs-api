@@ -33,20 +33,20 @@ public class ClaimPackSender {
     private static final String MDC_FAILURE_REASON = "failureReason";
 
     private final PcsCaseRepository pcsCaseRepository;
-    private final ClaimPackCandidateService claimPackCandidateService;
+    private final ClaimPackSelector claimPackSelector;
     private final RecipientAddressResolver recipientAddressResolver;
     private final AddressMapper addressMapper;
     private final BulkPrintService bulkPrintService;
     private final AccessCodeActivityLogService accessCodeActivityLogService;
 
     public ClaimPackSender(PcsCaseRepository pcsCaseRepository,
-                           ClaimPackCandidateService claimPackCandidateService,
+                           ClaimPackSelector claimPackSelector,
                            RecipientAddressResolver recipientAddressResolver,
                            AddressMapper addressMapper,
                            BulkPrintService bulkPrintService,
                            AccessCodeActivityLogService accessCodeActivityLogService) {
         this.pcsCaseRepository = pcsCaseRepository;
-        this.claimPackCandidateService = claimPackCandidateService;
+        this.claimPackSelector = claimPackSelector;
         this.recipientAddressResolver = recipientAddressResolver;
         this.addressMapper = addressMapper;
         this.bulkPrintService = bulkPrintService;
@@ -56,11 +56,11 @@ public class ClaimPackSender {
     @Transactional
     public void sendClaimPacks(UUID caseId) {
         pcsCaseRepository.findById(caseId).ifPresent(pcsCase ->
-            claimPackCandidateService.findClaimPackCandidates(pcsCase)
+            claimPackSelector.findClaimPackCandidates(pcsCase)
                 .forEach(candidate -> sendToRecipient(pcsCase, candidate)));
     }
 
-    private void sendToRecipient(PcsCaseEntity pcsCase, PackCandidate candidate) {
+    private void sendToRecipient(PcsCaseEntity pcsCase, ClaimPackCandidate candidate) {
         PartyEntity recipient = candidate.party();
         PartyRole role = candidate.recipientType();
         LetterType letterType = letterTypeFor(role);

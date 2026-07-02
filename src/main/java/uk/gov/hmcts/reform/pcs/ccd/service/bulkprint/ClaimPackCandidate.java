@@ -9,5 +9,5 @@ import java.util.List;
 /**
  * One envelope to post: the recipient and the ordered pack documents. The coversheet is prepended at send time.
  */
-public record PackCandidate(PartyRole recipientType, PartyEntity party, List<DocumentEntity> documents) {
+public record ClaimPackCandidate(PartyRole recipientType, PartyEntity party, List<DocumentEntity> documents) {
 }

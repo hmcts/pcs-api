@@ -17,7 +17,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class CoversheetRendererTest {
+class CoversheetProviderTest {
 
     @Mock
     private CoversheetPayloadBuilder coversheetPayloadBuilder;
@@ -29,7 +29,7 @@ class CoversheetRendererTest {
     private LetterDocumentFetcher letterDocumentFetcher;
 
     @InjectMocks
-    private CoversheetRenderer underTest;
+    private CoversheetProvider underTest;
 
     @Test
     void buildsPayloadGeneratesThenFetchesTheCoversheet() {

@@ -39,7 +39,7 @@ class BulkPrintServiceTest {
     private static final UUID LETTER_ID = UUID.randomUUID();
 
     @Mock
-    private CoversheetRenderer coversheetRenderer;
+    private CoversheetProvider coversheetProvider;
     @Mock
     private LetterDocumentFetcher letterDocumentFetcher;
     @Mock
@@ -62,7 +62,7 @@ class BulkPrintServiceTest {
     void setUp() {
         when(authTokenGenerator.generate()).thenReturn("s2s");
         when(caseReferenceFormatter.formatCaseReferenceWithDashes(any())).thenReturn("1234-5678-9012-3456");
-        when(coversheetRenderer.render(any(), any(), any())).thenReturn(new Document("coversheet", 1));
+        when(coversheetProvider.render(any(), any(), any())).thenReturn(new Document("coversheet", 1));
         when(letterDocumentFetcher.fetch(any())).thenReturn(new Document("doc", 1));
         when(sendLetterApi.sendLetter(any(), any(LetterV3.class))).thenReturn(new SendLetterResponse(LETTER_ID));
     }
@@ -77,7 +77,7 @@ class BulkPrintServiceTest {
             pcsCase, recipient, LetterType.CLAIMANT_CLAIM_PACK, "Jane Doe", address, List.of(claimForm));
 
         assertThat(letterId).isEqualTo(LETTER_ID);
-        verify(coversheetRenderer).render("Jane Doe", address, "1234-5678-9012-3456");
+        verify(coversheetProvider).render("Jane Doe", address, "1234-5678-9012-3456");
         verify(letterDocumentFetcher).fetch(claimForm.getDocumentId());
         verify(sendLetterApi).sendLetter(eq("s2s"), letterCaptor.capture());
         LetterV3 letter = letterCaptor.getValue();
@@ -95,6 +95,6 @@ class BulkPrintServiceTest {
             pcsCase, recipient, LetterType.DEFENDANT_CLAIM_PACK, "Jane Doe", blank, List.of()))
             .isInstanceOf(MissingPostalAddressException.class);
 
-        verifyNoInteractions(coversheetRenderer, letterDocumentFetcher, sendLetterApi);
+        verifyNoInteractions(coversheetProvider, letterDocumentFetcher, sendLetterApi);
     }
 }

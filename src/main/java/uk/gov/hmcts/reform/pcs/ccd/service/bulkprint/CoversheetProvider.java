@@ -11,14 +11,14 @@ import uk.gov.hmcts.reform.sendletter.api.model.v3.Document;
  * build the payload, generate the PDF via Docmosis, then fetch its bytes from CDAM.
  */
 @Service
-public class CoversheetRenderer {
+public class CoversheetProvider {
 
     private final CoversheetPayloadBuilder coversheetPayloadBuilder;
     private final CoversheetDocumentGenerator coversheetDocumentGenerator;
     private final DocumentIdExtractor documentIdExtractor;
     private final LetterDocumentFetcher letterDocumentFetcher;
 
-    public CoversheetRenderer(CoversheetPayloadBuilder coversheetPayloadBuilder,
+    public CoversheetProvider(CoversheetPayloadBuilder coversheetPayloadBuilder,
                               CoversheetDocumentGenerator coversheetDocumentGenerator,
                               DocumentIdExtractor documentIdExtractor,
                               LetterDocumentFetcher letterDocumentFetcher) {

@@ -27,7 +27,7 @@ import java.util.UUID;
  */
 @Slf4j
 @Component
-public class BulkPrintGenerationComponent {
+public class BulkPrintScheduledTask {
 
     private static final String BULK_PRINT_TASK_NAME = "bulk-print-task";
     private static final String MDC_TASK_NAME = "taskName";
@@ -39,7 +39,7 @@ public class BulkPrintGenerationComponent {
     private final String schedule;
     private final Integer lookbackHours;
 
-    public BulkPrintGenerationComponent(FeatureToggleService featureToggleService,
+    public BulkPrintScheduledTask(FeatureToggleService featureToggleService,
                                         ClaimActivityLogRepository claimActivityLogRepository,
                                         ClaimPackSender claimPackSender,
                                         DefencePackSender defencePackSender,

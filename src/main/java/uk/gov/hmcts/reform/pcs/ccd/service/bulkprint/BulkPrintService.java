@@ -20,7 +20,7 @@ import java.util.UUID;
 
 /**
  * Assembles one pack into a Send Letter letter — coversheet first, then the pack documents — and posts it.
- * Rendering the coversheet and fetching document bytes are delegated to {@link CoversheetRenderer} and
+ * Rendering the coversheet and fetching document bytes are delegated to {@link CoversheetProvider} and
  * {@link LetterDocumentFetcher}. Pure: recording the outcome is the caller's job, so each pack type keeps
  * its own idempotency shape.
  */
@@ -30,18 +30,18 @@ public class BulkPrintService {
     private static final String RECIPIENTS = "recipients";
     private static final String CASE_REFERENCE = "caseReference";
 
-    private final CoversheetRenderer coversheetRenderer;
+    private final CoversheetProvider coversheetProvider;
     private final LetterDocumentFetcher letterDocumentFetcher;
     private final SendLetterApi sendLetterApi;
     private final AuthTokenGenerator authTokenGenerator;
     private final CaseReferenceFormatter caseReferenceFormatter;
 
-    public BulkPrintService(CoversheetRenderer coversheetRenderer,
+    public BulkPrintService(CoversheetProvider coversheetProvider,
                             LetterDocumentFetcher letterDocumentFetcher,
                             SendLetterApi sendLetterApi,
                             AuthTokenGenerator authTokenGenerator,
                             CaseReferenceFormatter caseReferenceFormatter) {
-        this.coversheetRenderer = coversheetRenderer;
+        this.coversheetProvider = coversheetProvider;
         this.letterDocumentFetcher = letterDocumentFetcher;
         this.sendLetterApi = sendLetterApi;
         this.authTokenGenerator = authTokenGenerator;
@@ -54,7 +54,7 @@ public class BulkPrintService {
         String caseReference = caseReferenceFormatter.formatCaseReferenceWithDashes(pcsCase.getCaseReference());
 
         List<Document> letterDocuments = new ArrayList<>();
-        letterDocuments.add(coversheetRenderer.render(recipientName, address, caseReference));
+        letterDocuments.add(coversheetProvider.render(recipientName, address, caseReference));
         documents.forEach(document -> letterDocuments.add(letterDocumentFetcher.fetch(document.getDocumentId())));
 
         LetterV3 letter = new LetterV3(letterType.getCode(), letterDocuments,

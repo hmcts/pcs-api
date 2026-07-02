@@ -32,20 +32,20 @@ public class DefencePackSender {
     private static final String MDC_FAILURE_REASON = "failureReason";
 
     private final PcsCaseRepository pcsCaseRepository;
-    private final DefencePackCandidateService defencePackCandidateService;
+    private final DefencePackSelector defencePackSelector;
     private final DefenceCorrespondenceAddressResolver defenceCorrespondenceAddressResolver;
     private final RecipientAddressResolver recipientAddressResolver;
     private final BulkPrintService bulkPrintService;
     private final AccessCodeActivityLogService accessCodeActivityLogService;
 
     public DefencePackSender(PcsCaseRepository pcsCaseRepository,
-                             DefencePackCandidateService defencePackCandidateService,
+                             DefencePackSelector defencePackSelector,
                              DefenceCorrespondenceAddressResolver defenceCorrespondenceAddressResolver,
                              RecipientAddressResolver recipientAddressResolver,
                              BulkPrintService bulkPrintService,
                              AccessCodeActivityLogService accessCodeActivityLogService) {
         this.pcsCaseRepository = pcsCaseRepository;
-        this.defencePackCandidateService = defencePackCandidateService;
+        this.defencePackSelector = defencePackSelector;
         this.defenceCorrespondenceAddressResolver = defenceCorrespondenceAddressResolver;
         this.recipientAddressResolver = recipientAddressResolver;
         this.bulkPrintService = bulkPrintService;
@@ -55,7 +55,7 @@ public class DefencePackSender {
     @Transactional
     public void sendDefencePacks(UUID caseId) {
         pcsCaseRepository.findById(caseId).ifPresent(pcsCase ->
-            defencePackCandidateService.findDefencePackCandidates(pcsCase)
+            defencePackSelector.findDefencePackCandidates(pcsCase)
                 .forEach(candidate -> sendToDefendant(pcsCase, candidate)));
     }
 

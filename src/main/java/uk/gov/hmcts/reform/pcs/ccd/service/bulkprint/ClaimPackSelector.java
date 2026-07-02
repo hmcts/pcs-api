@@ -24,15 +24,15 @@ import static uk.gov.hmcts.reform.pcs.ccd.service.form.PartyDisplayMapper.partie
  */
 @Service
 @Slf4j
-public class ClaimPackCandidateService {
+public class ClaimPackSelector {
 
     private final ClaimActivityLogRepository claimActivityLogRepository;
 
-    public ClaimPackCandidateService(ClaimActivityLogRepository claimActivityLogRepository) {
+    public ClaimPackSelector(ClaimActivityLogRepository claimActivityLogRepository) {
         this.claimActivityLogRepository = claimActivityLogRepository;
     }
 
-    public List<PackCandidate> findClaimPackCandidates(PcsCaseEntity pcsCase) {
+    public List<ClaimPackCandidate> findClaimPackCandidates(PcsCaseEntity pcsCase) {
         if (pcsCase.getClaims().isEmpty()) {
             return List.of();
         }
@@ -43,13 +43,13 @@ public class ClaimPackCandidateService {
         }
 
         List<ClaimActivityLogEntity> activityLog = claimActivityLogRepository.findAllByPcsCase_Id(pcsCase.getId());
-        List<PackCandidate> candidates = new ArrayList<>();
+        List<ClaimPackCandidate> candidates = new ArrayList<>();
         addClaimantCandidate(candidates, claim, claimForm, activityLog);
         addDefendantCandidates(candidates, pcsCase, claim, claimForm, activityLog);
         return candidates;
     }
 
-    private void addClaimantCandidate(List<PackCandidate> candidates, ClaimEntity claim,
+    private void addClaimantCandidate(List<ClaimPackCandidate> candidates, ClaimEntity claim,
                                       DocumentEntity claimForm, List<ClaimActivityLogEntity> activityLog) {
         List<PartyEntity> claimants = partiesByRole(claim, PartyRole.CLAIMANT);
         if (claimants.isEmpty()) {
@@ -57,11 +57,11 @@ public class ClaimPackCandidateService {
         }
         PartyEntity claimant = claimants.getFirst();
         if (!alreadySent(activityLog, claimant, ClaimActivityType.CLAIMANT_PACK_SENT)) {
-            candidates.add(new PackCandidate(PartyRole.CLAIMANT, claimant, List.of(claimForm)));
+            candidates.add(new ClaimPackCandidate(PartyRole.CLAIMANT, claimant, List.of(claimForm)));
         }
     }
 
-    private void addDefendantCandidates(List<PackCandidate> candidates, PcsCaseEntity pcsCase, ClaimEntity claim,
+    private void addDefendantCandidates(List<ClaimPackCandidate> candidates, PcsCaseEntity pcsCase, ClaimEntity claim,
                                         DocumentEntity claimForm, List<ClaimActivityLogEntity> activityLog) {
         for (PartyEntity defendant : partiesByRole(claim, PartyRole.DEFENDANT)) {
             DocumentEntity accessCode = accessCodeDocument(pcsCase, defendant);
@@ -69,7 +69,7 @@ public class ClaimPackCandidateService {
                 log.debug("Claim pack held for case {} defendant {} - awaiting access code",
                     pcsCase.getId(), defendant.getId());
             } else if (!alreadySent(activityLog, defendant, ClaimActivityType.DEFENDANT_PACK_SENT)) {
-                candidates.add(new PackCandidate(PartyRole.DEFENDANT, defendant, List.of(claimForm, accessCode)));
+                candidates.add(new ClaimPackCandidate(PartyRole.DEFENDANT, defendant, List.of(claimForm, accessCode)));
             }
         }
     }

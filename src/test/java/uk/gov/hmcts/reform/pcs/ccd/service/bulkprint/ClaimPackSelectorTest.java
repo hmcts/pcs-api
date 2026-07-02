@@ -24,7 +24,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class ClaimPackCandidateServiceTest {
+class ClaimPackSelectorTest {
 
     private static final UUID CASE_ID = UUID.randomUUID();
 
@@ -32,7 +32,7 @@ class ClaimPackCandidateServiceTest {
     private ClaimActivityLogRepository claimActivityLogRepository;
 
     @InjectMocks
-    private ClaimPackCandidateService underTest;
+    private ClaimPackSelector underTest;
 
     private final PartyEntity claimant = party();
     private final PartyEntity defendantA = party();
@@ -55,7 +55,7 @@ class ClaimPackCandidateServiceTest {
             claimParty(claimant, PartyRole.CLAIMANT, 1),
             claimParty(defendantA, PartyRole.DEFENDANT, 1)));
 
-        List<PackCandidate> result = underTest.findClaimPackCandidates(pcsCase);
+        List<ClaimPackCandidate> result = underTest.findClaimPackCandidates(pcsCase);
 
         assertThat(result).hasSize(2);
         assertThat(result.getFirst().recipientType()).isEqualTo(PartyRole.CLAIMANT);
@@ -87,7 +87,7 @@ class ClaimPackCandidateServiceTest {
             claimParty(defendantB, PartyRole.DEFENDANT, 2),   // no pin       → held
             claimParty(defendantC, PartyRole.DEFENDANT, 3))); // pin, sent    → excluded
 
-        List<PackCandidate> result = underTest.findClaimPackCandidates(pcsCase);
+        List<ClaimPackCandidate> result = underTest.findClaimPackCandidates(pcsCase);
 
         assertThat(result).hasSize(1);
         assertThat(result.getFirst().party()).isEqualTo(defendantA);

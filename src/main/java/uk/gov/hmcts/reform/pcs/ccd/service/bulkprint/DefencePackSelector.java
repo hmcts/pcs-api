@@ -27,12 +27,12 @@ import static uk.gov.hmcts.reform.pcs.ccd.service.form.PartyDisplayMapper.partie
  * partially-sent (counter-claim pending) to sent (complete).
  */
 @Service
-public class DefencePackCandidateService {
+public class DefencePackSelector {
 
     private final ClaimActivityLogRepository claimActivityLogRepository;
     private final CounterClaimRepository counterClaimRepository;
 
-    public DefencePackCandidateService(ClaimActivityLogRepository claimActivityLogRepository,
+    public DefencePackSelector(ClaimActivityLogRepository claimActivityLogRepository,
                                        CounterClaimRepository counterClaimRepository) {
         this.claimActivityLogRepository = claimActivityLogRepository;
         this.counterClaimRepository = counterClaimRepository;

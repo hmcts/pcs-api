@@ -35,7 +35,7 @@ class DefencePackSenderTest {
     @Mock
     private PcsCaseRepository pcsCaseRepository;
     @Mock
-    private DefencePackCandidateService defencePackCandidateService;
+    private DefencePackSelector defencePackSelector;
     @Mock
     private DefenceCorrespondenceAddressResolver defenceCorrespondenceAddressResolver;
     @Mock
@@ -58,14 +58,14 @@ class DefencePackSenderTest {
 
         underTest.sendDefencePacks(CASE_ID);
 
-        verifyNoInteractions(bulkPrintService, defencePackCandidateService);
+        verifyNoInteractions(bulkPrintService, defencePackSelector);
     }
 
     @Test
     void sendsDefencePackAndRecordsTargetStatus() {
         AddressUK address = AddressUK.builder().addressLine1("42 Renters Way").build();
         when(pcsCaseRepository.findById(CASE_ID)).thenReturn(Optional.of(pcsCase));
-        when(defencePackCandidateService.findDefencePackCandidates(pcsCase)).thenReturn(List.of(
+        when(defencePackSelector.findDefencePackCandidates(pcsCase)).thenReturn(List.of(
             new DefencePackCandidate(defendant, List.of(defenceForm), ClaimActivityType.DEFENCE_PACK_PARTIALLY_SENT)));
         when(recipientAddressResolver.resolveDisplayName(defendant)).thenReturn("Bob Tenant");
         when(defenceCorrespondenceAddressResolver.resolveCorrespondenceAddress(defendant, pcsCase.getPropertyAddress()))
@@ -83,7 +83,7 @@ class DefencePackSenderTest {
     @Test
     void recordsFailureWhenSendThrowsMissingAddress() {
         when(pcsCaseRepository.findById(CASE_ID)).thenReturn(Optional.of(pcsCase));
-        when(defencePackCandidateService.findDefencePackCandidates(pcsCase)).thenReturn(List.of(
+        when(defencePackSelector.findDefencePackCandidates(pcsCase)).thenReturn(List.of(
             new DefencePackCandidate(defendant, List.of(defenceForm), ClaimActivityType.DEFENCE_PACK_SENT)));
         when(bulkPrintService.sendPack(any(), any(), any(), any(), any(), any()))
             .thenThrow(new MissingPostalAddressException("no address"));

@@ -33,7 +33,7 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
-class DefencePackCandidateServiceTest {
+class DefencePackSelectorTest {
 
     private static final UUID CASE_ID = UUID.randomUUID();
     private static final long CASE_REF = 1234567890123456L;
@@ -44,7 +44,7 @@ class DefencePackCandidateServiceTest {
     private CounterClaimRepository counterClaimRepository;
 
     @InjectMocks
-    private DefencePackCandidateService underTest;
+    private DefencePackSelector underTest;
 
     private final PartyEntity defendant = PartyEntity.builder().id(UUID.randomUUID()).build();
     private final DocumentEntity defenceForm = defenceFormDocument();
