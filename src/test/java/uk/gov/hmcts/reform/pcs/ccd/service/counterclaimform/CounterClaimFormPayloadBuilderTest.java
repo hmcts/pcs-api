@@ -117,6 +117,22 @@ class CounterClaimFormPayloadBuilderTest {
     }
 
     @Test
+    void respondentNamesReturnsNullWhenEveryPartyYieldsBlankName() {
+        PartyEntity blankParty = PartyEntity.builder().id(UUID.randomUUID()).firstName(" ").lastName("").build();
+        CounterClaimEntity counterClaim = CounterClaimEntity.builder()
+            .id(UUID.randomUUID())
+            .pcsCase(minimalCase(null))
+            .party(PartyEntity.builder().id(UUID.randomUUID()).build())
+            .counterClaimParties(new ArrayList<>(List.of(
+                CounterClaimPartyEntity.builder().party(blankParty).build())))
+            .build();
+
+        CounterClaimFormPayload payload = builder.build(counterClaim);
+
+        assertThat(payload.getRespondentNames()).isNull();
+    }
+
+    @Test
     void respondentNameUsesOrgWhenPresentOtherwiseFullName() {
         PartyEntity org = PartyEntity.builder().id(UUID.randomUUID()).orgName("Acme Ltd").firstName("ignored").build();
         PartyEntity person = PartyEntity.builder().id(UUID.randomUUID()).firstName("Bob").lastName("Smith").build();

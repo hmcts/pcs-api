@@ -44,6 +44,7 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.defenceform.DefenceFormScheduler;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
+import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.CounterClaimService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.DefendantResponseReadMapper;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.DefendantResponseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.HouseholdCircumstancesService;
@@ -107,6 +108,8 @@ class DefendantResponseServiceTest {
     @Mock
     private CounterClaimRepository counterClaimRepository;
     @Mock
+    private CounterClaimService counterClaimService;
+    @Mock
     private DefenceFormScheduler defenceFormScheduler;
     @Mock
     private PartyEntity partyEntity;
@@ -140,6 +143,7 @@ class DefendantResponseServiceTest {
             documentService,
             partyAttributeAssertationService,
             counterClaimRepository,
+            counterClaimService,
             defenceFormScheduler,
             FIXED_UTC_CLOCK
         );
@@ -147,6 +151,13 @@ class DefendantResponseServiceTest {
         // the captured argument, and the citizen path reads the returned entity's id for scheduling.
         lenient().when(defendantResponseRepository.save(any(DefendantResponseEntity.class)))
             .thenAnswer(invocation -> invocation.getArgument(0));
+
+        CounterClaimService realCounterClaimBuilder = new CounterClaimService(
+            null, partyRepository, null, null, null, FIXED_UTC_CLOCK);
+        lenient().when(counterClaimService.buildCounterClaimEntity(
+            any(CounterClaim.class), any(PartyEntity.class), any(LocalDateTime.class)))
+            .thenAnswer(inv -> realCounterClaimBuilder.buildCounterClaimEntity(
+                inv.getArgument(0), inv.getArgument(1), inv.getArgument(2)));
     }
 
     private void stubPartyLookup() {

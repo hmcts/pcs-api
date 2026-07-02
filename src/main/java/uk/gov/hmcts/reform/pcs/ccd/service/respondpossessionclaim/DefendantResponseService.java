@@ -9,10 +9,7 @@ import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaim;
-import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState;
-import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponseStatus;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
@@ -20,7 +17,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.StatementOfTruthEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.PartyAttributeAssertationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
@@ -71,6 +67,7 @@ public class DefendantResponseService {
     private final DocumentService documentService;
     private final PartyAttributeAssertationService partyAttributeAssertationService;
     private final CounterClaimRepository counterClaimRepository;
+    private final CounterClaimService counterClaimService;
     private final DefenceFormScheduler defenceFormScheduler;
     private final Clock utcClock;
 
@@ -86,6 +83,7 @@ public class DefendantResponseService {
                                     DocumentService documentService,
                                     PartyAttributeAssertationService partyAttributeAssertationService,
                                     CounterClaimRepository counterClaimRepository,
+                                    CounterClaimService counterClaimService,
                                     DefenceFormScheduler defenceFormScheduler,
                                     @Qualifier("utcClock") Clock utcClock) {
         this.partyService = partyService;
@@ -100,6 +98,7 @@ public class DefendantResponseService {
         this.documentService = documentService;
         this.partyAttributeAssertationService = partyAttributeAssertationService;
         this.counterClaimRepository = counterClaimRepository;
+        this.counterClaimService = counterClaimService;
         this.defenceFormScheduler = defenceFormScheduler;
         this.utcClock = utcClock;
     }
@@ -346,41 +345,7 @@ public class DefendantResponseService {
             return null;
         }
 
-        boolean claimAmountApplies = cc.getClaimType() != null && cc.getClaimType() != CounterClaimType.SOMETHING_ELSE;
-
-        CounterClaimEntity counterClaimEntity = CounterClaimEntity.builder()
-            .claimType(cc.getClaimType())
-            .isClaimAmountKnown(claimAmountApplies ? cc.getIsClaimAmountKnown() : null)
-            .claimAmount(claimAmountApplies && cc.getIsClaimAmountKnown() == VerticalYesNo.YES
-                             ? cc.getClaimAmount() : null)
-            .estimatedMaxClaimAmount(claimAmountApplies && cc.getIsClaimAmountKnown() == VerticalYesNo.NO
-                                         ? cc.getEstimatedMaxClaimAmount() : null)
-            .counterClaimFor(cc.getCounterClaimFor())
-            .counterClaimReasons(cc.getCounterClaimReasons())
-            .otherOrderRequestDetails(cc.getClaimType() == CounterClaimType.SOMETHING_ELSE
-                                          ? cc.getOtherOrderRequestDetails() : null)
-            .otherOrderRequestFacts(cc.getClaimType() == CounterClaimType.SOMETHING_ELSE
-                                        ? cc.getOtherOrderRequestFacts() : null)
-            .needHelpWithFees(cc.getNeedHelpWithFees())
-            .appliedForHwf(cc.getAppliedForHwf())
-            .hwfReferenceNumber(cc.getHwfReferenceNumber())
-            .status(CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED)
-            .claimSubmittedDate(submittedAt)
-            .party(partyRef)
-            .build();
-
-        if (cc.getCounterClaimAgainst() != null) {
-            counterClaimEntity.getCounterClaimParties().addAll(
-                cc.getCounterClaimAgainst().stream()
-                    .filter(lv -> lv.getId() != null)
-                    .map(lv -> CounterClaimPartyEntity.builder()
-                        .counterClaim(counterClaimEntity)
-                        .party(partyRepository.getReferenceById(UUID.fromString(lv.getId())))
-                        .build())
-                    .toList()
-            );
-        }
-
+        CounterClaimEntity counterClaimEntity = counterClaimService.buildCounterClaimEntity(cc, partyRef, submittedAt);
         claimRef.getPcsCase().addCounterClaim(counterClaimEntity);
 
         return counterClaimRepository.save(counterClaimEntity);
