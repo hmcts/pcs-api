@@ -46,15 +46,9 @@ public class DocumentAmendSelectionService {
         details.setPropertyAddressSummary(addressFormatter.formatShortAddress(caseData.getPropertyAddress(),
                                                                               COMMA_DELIMITER));
         details.setPartyNamesSummary(buildPartyNamesSummary(caseData));
-        setDocumentsForCategory(details, pcsCase, CaseFileCategory.STATEMENTS_OF_CASE);
-        setDocumentsForCategory(details, pcsCase, CaseFileCategory.PROPERTY_DOCUMENTS);
-        setDocumentsForCategory(details, pcsCase, CaseFileCategory.EVIDENCE);
-        setDocumentsForCategory(details, pcsCase, CaseFileCategory.HEARING_DOCUMENTS);
-        setDocumentsForCategory(details, pcsCase, CaseFileCategory.ORDERS_AND_NOTICE_OF_HEARINGS);
-        setDocumentsForCategory(details, pcsCase, CaseFileCategory.APPLICATIONS);
-        setDocumentsForCategory(details, pcsCase, CaseFileCategory.APPEALS);
-        setDocumentsForCategory(details, pcsCase, CaseFileCategory.CORRESPONDENCE);
-        setDocumentsForCategory(details, pcsCase, CaseFileCategory.UNCATEGORISED_DOCUMENTS);
+        for (CaseFileCategory category : CaseFileCategory.values()) {
+            setDocumentsForCategory(details, pcsCase, category);
+        }
     }
 
     public List<String> validateAndStoreSelection(PCSCase caseData) {

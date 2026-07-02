@@ -3,7 +3,11 @@ package uk.gov.hmcts.reform.pcs.ccd.page.documentamend;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
+import uk.gov.hmcts.ccd.sdk.api.FieldCollection.FieldCollectionBuilder;
+import uk.gov.hmcts.ccd.sdk.api.TypedPropertyGetter;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
+import uk.gov.hmcts.ccd.sdk.type.DynamicList;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
@@ -30,7 +34,7 @@ public class SelectDocumentPage implements CcdPageConfiguration {
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
-        pageBuilder
+        FieldCollectionBuilder<DocumentAmendDetails, State, ?> documentAmendPage = pageBuilder
             .page(PAGE_ID, this::midEvent)
             .pageLabel("Select document")
             .label(PAGE_ID + "-separator", "---")
@@ -39,95 +43,35 @@ public class SelectDocumentPage implements CcdPageConfiguration {
                 .mandatory(DocumentAmendDetails::getSelectedFolder)
                 .label("emptyFolderDocumentError", "", NEVER_SHOW)
                 .label("selectedFolderEmptyErrorMessage", "", NEVER_SHOW)
-                .label("emptyFolderDocumentQuestion", "", NEVER_SHOW)
-                .label("statementsOfCaseEmptyFolderError", errorMessage(SELECT_DIFFERENT_FOLDER_ERROR),
-                    emptyFolderErrorShowCondition(CaseFileCategory.STATEMENTS_OF_CASE))
-                .label("statementsOfCaseEmptyFolderQuestion", documentQuestion(),
-                    noDocumentsShowCondition(CaseFileCategory.STATEMENTS_OF_CASE))
-                .label("propertyDocumentsEmptyFolderError", errorMessage(SELECT_DIFFERENT_FOLDER_ERROR),
-                    emptyFolderErrorShowCondition(CaseFileCategory.PROPERTY_DOCUMENTS))
-                .label("propertyDocumentsEmptyFolderQuestion", documentQuestion(),
-                    noDocumentsShowCondition(CaseFileCategory.PROPERTY_DOCUMENTS))
-                .label("evidenceEmptyFolderError", errorMessage(SELECT_DIFFERENT_FOLDER_ERROR),
-                    emptyFolderErrorShowCondition(CaseFileCategory.EVIDENCE))
-                .label("evidenceEmptyFolderQuestion", documentQuestion(),
-                    noDocumentsShowCondition(CaseFileCategory.EVIDENCE))
-                .label("hearingDocumentsEmptyFolderError", errorMessage(SELECT_DIFFERENT_FOLDER_ERROR),
-                    emptyFolderErrorShowCondition(CaseFileCategory.HEARING_DOCUMENTS))
-                .label("hearingDocumentsEmptyFolderQuestion", documentQuestion(),
-                    noDocumentsShowCondition(CaseFileCategory.HEARING_DOCUMENTS))
-                .label("ordersAndNoticeOfHearingsEmptyFolderError", errorMessage(SELECT_DIFFERENT_FOLDER_ERROR),
-                    emptyFolderErrorShowCondition(CaseFileCategory.ORDERS_AND_NOTICE_OF_HEARINGS))
-                .label("ordersAndNoticeOfHearingsEmptyFolderQuestion", documentQuestion(),
-                    noDocumentsShowCondition(CaseFileCategory.ORDERS_AND_NOTICE_OF_HEARINGS))
-                .label("applicationsEmptyFolderError", errorMessage(SELECT_DIFFERENT_FOLDER_ERROR),
-                    emptyFolderErrorShowCondition(CaseFileCategory.APPLICATIONS))
-                .label("applicationsEmptyFolderQuestion", documentQuestion(),
-                    noDocumentsShowCondition(CaseFileCategory.APPLICATIONS))
-                .label("appealsEmptyFolderError", errorMessage(SELECT_DIFFERENT_FOLDER_ERROR),
-                    emptyFolderErrorShowCondition(CaseFileCategory.APPEALS))
-                .label("appealsEmptyFolderQuestion", documentQuestion(),
-                    noDocumentsShowCondition(CaseFileCategory.APPEALS))
-                .label("correspondenceEmptyFolderError", errorMessage(SELECT_DIFFERENT_FOLDER_ERROR),
-                    emptyFolderErrorShowCondition(CaseFileCategory.CORRESPONDENCE))
-                .label("correspondenceEmptyFolderQuestion", documentQuestion(),
-                    noDocumentsShowCondition(CaseFileCategory.CORRESPONDENCE))
-                .label("uncategorisedDocumentsEmptyFolderError", errorMessage(SELECT_DIFFERENT_FOLDER_ERROR),
-                    emptyFolderErrorShowCondition(CaseFileCategory.UNCATEGORISED_DOCUMENTS))
-                .label("uncategorisedDocumentsEmptyFolderQuestion", documentQuestion(),
-                    noDocumentsShowCondition(CaseFileCategory.UNCATEGORISED_DOCUMENTS))
-                .mandatory(DocumentAmendDetails::getStatementsOfCaseDocuments,
-                    documentsShowCondition(CaseFileCategory.STATEMENTS_OF_CASE), true)
-                .label("statementsOfCaseNoDocuments", noDocumentsMessage(CaseFileCategory.STATEMENTS_OF_CASE),
-                    noDocumentsShowCondition(CaseFileCategory.STATEMENTS_OF_CASE))
-                .mandatory(DocumentAmendDetails::getPropertyDocuments,
-                    documentsShowCondition(CaseFileCategory.PROPERTY_DOCUMENTS), true)
-                .label("propertyDocumentsNoDocuments", noDocumentsMessage(CaseFileCategory.PROPERTY_DOCUMENTS),
-                    noDocumentsShowCondition(CaseFileCategory.PROPERTY_DOCUMENTS))
-                .mandatory(DocumentAmendDetails::getEvidenceDocuments,
-                    documentsShowCondition(CaseFileCategory.EVIDENCE), true)
-                .label("evidenceNoDocuments", noDocumentsMessage(CaseFileCategory.EVIDENCE),
-                    noDocumentsShowCondition(CaseFileCategory.EVIDENCE))
-                .mandatory(DocumentAmendDetails::getHearingDocuments,
-                    documentsShowCondition(CaseFileCategory.HEARING_DOCUMENTS), true)
-                .label("hearingDocumentsNoDocuments", noDocumentsMessage(CaseFileCategory.HEARING_DOCUMENTS),
-                    noDocumentsShowCondition(CaseFileCategory.HEARING_DOCUMENTS))
-                .mandatory(DocumentAmendDetails::getOrdersAndNoticeOfHearingsDocuments,
-                    documentsShowCondition(CaseFileCategory.ORDERS_AND_NOTICE_OF_HEARINGS), true)
-                .label("ordersAndNoticeOfHearingsNoDocuments",
-                    noDocumentsMessage(CaseFileCategory.ORDERS_AND_NOTICE_OF_HEARINGS),
-                    noDocumentsShowCondition(CaseFileCategory.ORDERS_AND_NOTICE_OF_HEARINGS))
-                .mandatory(DocumentAmendDetails::getApplicationsDocuments,
-                    documentsShowCondition(CaseFileCategory.APPLICATIONS), true)
-                .label("applicationsNoDocuments", noDocumentsMessage(CaseFileCategory.APPLICATIONS),
-                    noDocumentsShowCondition(CaseFileCategory.APPLICATIONS))
-                .mandatory(DocumentAmendDetails::getAppealsDocuments,
-                    documentsShowCondition(CaseFileCategory.APPEALS), true)
-                .label("appealsNoDocuments", noDocumentsMessage(CaseFileCategory.APPEALS),
-                    noDocumentsShowCondition(CaseFileCategory.APPEALS))
-                .mandatory(DocumentAmendDetails::getCorrespondenceDocuments,
-                    documentsShowCondition(CaseFileCategory.CORRESPONDENCE), true)
-                .label("correspondenceNoDocuments", noDocumentsMessage(CaseFileCategory.CORRESPONDENCE),
-                    noDocumentsShowCondition(CaseFileCategory.CORRESPONDENCE))
-                .mandatory(DocumentAmendDetails::getUncategorisedDocuments,
-                    documentsShowCondition(CaseFileCategory.UNCATEGORISED_DOCUMENTS), true)
-                .label("uncategorisedDocumentsNoDocuments",
-                    noDocumentsMessage(CaseFileCategory.UNCATEGORISED_DOCUMENTS),
-                    noDocumentsShowCondition(CaseFileCategory.UNCATEGORISED_DOCUMENTS))
-                .readonly(DocumentAmendDetails::getStatementsOfCaseEmpty, NEVER_SHOW, true)
-                .readonly(DocumentAmendDetails::getPropertyDocumentsEmpty, NEVER_SHOW, true)
-                .readonly(DocumentAmendDetails::getEvidenceEmpty, NEVER_SHOW, true)
-                .readonly(DocumentAmendDetails::getHearingDocumentsEmpty, NEVER_SHOW, true)
-                .readonly(DocumentAmendDetails::getOrdersAndNoticeOfHearingsEmpty, NEVER_SHOW, true)
-                .readonly(DocumentAmendDetails::getApplicationsEmpty, NEVER_SHOW, true)
-                .readonly(DocumentAmendDetails::getAppealsEmpty, NEVER_SHOW, true)
-                .readonly(DocumentAmendDetails::getCorrespondenceEmpty, NEVER_SHOW, true)
-                .readonly(DocumentAmendDetails::getUncategorisedDocumentsEmpty, NEVER_SHOW, true)
+                .label("emptyFolderDocumentQuestion", "", NEVER_SHOW);
+
+        for (DocumentCategoryField categoryField : DocumentCategoryField.values()) {
+            addCategoryFields(documentAmendPage, categoryField);
+        }
+
+        for (DocumentCategoryField categoryField : DocumentCategoryField.values()) {
+            documentAmendPage.readonly(categoryField.emptyGetter, NEVER_SHOW, true);
+        }
+
+        documentAmendPage
                 .readonly(DocumentAmendDetails::getSelectedFolderId, NEVER_SHOW, true)
                 .readonly(DocumentAmendDetails::getSelectedFolderLabel, NEVER_SHOW, true)
                 .readonly(DocumentAmendDetails::getSelectedDocumentId, NEVER_SHOW, true)
                 .readonly(DocumentAmendDetails::getSelectedDocumentFileName, NEVER_SHOW, true)
             .done();
+    }
+
+    private void addCategoryFields(FieldCollectionBuilder<DocumentAmendDetails, State, ?> page,
+                                   DocumentCategoryField categoryField) {
+        CaseFileCategory category = categoryField.category;
+        page
+            .label(categoryField.idPrefix + "EmptyFolderError", errorMessage(SELECT_DIFFERENT_FOLDER_ERROR),
+                   emptyFolderErrorShowCondition(category))
+            .label(categoryField.idPrefix + "EmptyFolderQuestion", documentQuestion(),
+                   noDocumentsShowCondition(category))
+            .mandatory(categoryField.documentsGetter, documentsShowCondition(category), true)
+            .label(categoryField.idPrefix + "NoDocuments", noDocumentsMessage(category),
+                   noDocumentsShowCondition(category));
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
@@ -183,5 +127,77 @@ public class SelectDocumentPage implements CcdPageConfiguration {
 
     private String errorMessage(String message) {
         return "<p class=\"govuk-error-message\">" + message + "</p>";
+    }
+
+    private enum DocumentCategoryField {
+        STATEMENTS_OF_CASE(
+            CaseFileCategory.STATEMENTS_OF_CASE,
+            "statementsOfCase",
+            DocumentAmendDetails::getStatementsOfCaseDocuments,
+            DocumentAmendDetails::getStatementsOfCaseEmpty
+        ),
+        PROPERTY_DOCUMENTS(
+            CaseFileCategory.PROPERTY_DOCUMENTS,
+            "propertyDocuments",
+            DocumentAmendDetails::getPropertyDocuments,
+            DocumentAmendDetails::getPropertyDocumentsEmpty
+        ),
+        EVIDENCE(
+            CaseFileCategory.EVIDENCE,
+            "evidence",
+            DocumentAmendDetails::getEvidenceDocuments,
+            DocumentAmendDetails::getEvidenceEmpty
+        ),
+        HEARING_DOCUMENTS(
+            CaseFileCategory.HEARING_DOCUMENTS,
+            "hearingDocuments",
+            DocumentAmendDetails::getHearingDocuments,
+            DocumentAmendDetails::getHearingDocumentsEmpty
+        ),
+        ORDERS_AND_NOTICE_OF_HEARINGS(
+            CaseFileCategory.ORDERS_AND_NOTICE_OF_HEARINGS,
+            "ordersAndNoticeOfHearings",
+            DocumentAmendDetails::getOrdersAndNoticeOfHearingsDocuments,
+            DocumentAmendDetails::getOrdersAndNoticeOfHearingsEmpty
+        ),
+        APPLICATIONS(
+            CaseFileCategory.APPLICATIONS,
+            "applications",
+            DocumentAmendDetails::getApplicationsDocuments,
+            DocumentAmendDetails::getApplicationsEmpty
+        ),
+        APPEALS(
+            CaseFileCategory.APPEALS,
+            "appeals",
+            DocumentAmendDetails::getAppealsDocuments,
+            DocumentAmendDetails::getAppealsEmpty
+        ),
+        CORRESPONDENCE(
+            CaseFileCategory.CORRESPONDENCE,
+            "correspondence",
+            DocumentAmendDetails::getCorrespondenceDocuments,
+            DocumentAmendDetails::getCorrespondenceEmpty
+        ),
+        UNCATEGORISED_DOCUMENTS(
+            CaseFileCategory.UNCATEGORISED_DOCUMENTS,
+            "uncategorisedDocuments",
+            DocumentAmendDetails::getUncategorisedDocuments,
+            DocumentAmendDetails::getUncategorisedDocumentsEmpty
+        );
+
+        private final CaseFileCategory category;
+        private final String idPrefix;
+        private final TypedPropertyGetter<DocumentAmendDetails, DynamicList> documentsGetter;
+        private final TypedPropertyGetter<DocumentAmendDetails, YesOrNo> emptyGetter;
+
+        DocumentCategoryField(CaseFileCategory category,
+                              String idPrefix,
+                              TypedPropertyGetter<DocumentAmendDetails, DynamicList> documentsGetter,
+                              TypedPropertyGetter<DocumentAmendDetails, YesOrNo> emptyGetter) {
+            this.category = category;
+            this.idPrefix = idPrefix;
+            this.documentsGetter = documentsGetter;
+            this.emptyGetter = emptyGetter;
+        }
     }
 }
