@@ -64,39 +64,20 @@ class CounterClaimFormPayloadBuilderTest {
         assertThat(payload.getCounterClaimReasons()).isEqualTo("Landlord kept deposit unlawfully");
         assertThat(payload.getOtherOrderRequestDetails()).isEqualTo("Restore quiet enjoyment");
         assertThat(payload.getOtherOrderRequestFacts()).isEqualTo("Landlord entered without notice");
-        assertThat(payload.getStatementOfTruthName()).isEqualTo("Bob Defendant");
-    }
-
-    @Test
-    void statementOfTruthNamePrefersSotFullNameWhenPresent() {
-        PartyEntity defendant = PartyEntity.builder().id(UUID.randomUUID())
-            .firstName("Bob").lastName("Defendant").build();
-        CounterClaimEntity counterClaim = CounterClaimEntity.builder()
-            .id(UUID.randomUUID())
-            .pcsCase(minimalCase(null))
-            .party(defendant)
-            .statementOfTruth(StatementOfTruthEntity.builder().fullName("Robert J Defendant").build())
-            .build();
-
-        CounterClaimFormPayload payload = builder.build(counterClaim);
-
         assertThat(payload.getStatementOfTruthName()).isEqualTo("Robert J Defendant");
     }
 
     @Test
-    void statementOfTruthNameFallsBackToFilingDefendantWhenSotBlank() {
-        PartyEntity defendant = PartyEntity.builder().id(UUID.randomUUID())
-            .firstName("Bob").lastName("Defendant").build();
+    void statementOfTruthNameIsNullWhenStatementOfTruthMissing() {
         CounterClaimEntity counterClaim = CounterClaimEntity.builder()
             .id(UUID.randomUUID())
             .pcsCase(minimalCase(null))
-            .party(defendant)
-            .statementOfTruth(StatementOfTruthEntity.builder().fullName("  ").build())
+            .party(PartyEntity.builder().id(UUID.randomUUID()).firstName("Bob").lastName("Defendant").build())
             .build();
 
         CounterClaimFormPayload payload = builder.build(counterClaim);
 
-        assertThat(payload.getStatementOfTruthName()).isEqualTo("Bob Defendant");
+        assertThat(payload.getStatementOfTruthName()).isNull();
     }
 
     @Test
@@ -181,6 +162,7 @@ class CounterClaimFormPayloadBuilderTest {
             .counterClaimParties(new ArrayList<>(List.of(
                 CounterClaimPartyEntity.builder().party(claimant).build(),
                 CounterClaimPartyEntity.builder().party(respondentOrg).build())))
+            .statementOfTruth(StatementOfTruthEntity.builder().fullName("Robert J Defendant").build())
             .build();
     }
 

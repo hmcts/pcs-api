@@ -81,13 +81,9 @@ public class CounterClaimFormPayloadBuilder {
     }
 
     private String buildStatementOfTruthName(CounterClaimEntity counterClaim) {
-        if (counterClaim.getStatementOfTruth() != null) {
-            String signerName = counterClaim.getStatementOfTruth().getFullName();
-            if (signerName != null && !signerName.isBlank()) {
-                return signerName;
-            }
-        }
-        return formatPartyDisplayName(counterClaim.getParty());
+        return counterClaim.getStatementOfTruth() != null
+            ? counterClaim.getStatementOfTruth().getFullName()
+            : null;
     }
 
     private String formatPartyDisplayName(PartyEntity party) {
