@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.document;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
@@ -43,9 +44,26 @@ public class DocumentImportService {
         return addDocumentToCase(pcsCaseService.loadCase(caseReference), documentUrl, caseFileCategory);
     }
 
+    public DocumentEntity addDocumentToCase(long caseReference,
+                                            String documentUrl,
+                                            CaseFileCategory caseFileCategory,
+                                            String overriddenFilename) {
+
+        return addDocumentToCase(
+            pcsCaseService.loadCase(caseReference), documentUrl, caseFileCategory, overriddenFilename);
+    }
+
     public DocumentEntity addDocumentToCase(PcsCaseEntity pcsCaseEntity,
                                             String documentUrl,
                                             CaseFileCategory caseFileCategory) {
+
+        return addDocumentToCase(pcsCaseEntity, documentUrl, caseFileCategory, null);
+    }
+
+    public DocumentEntity addDocumentToCase(PcsCaseEntity pcsCaseEntity,
+                                            String documentUrl,
+                                            CaseFileCategory caseFileCategory,
+                                            String overriddenFilename) {
 
         UUID documentId = documentIdExtractor.extractDocumentId(documentUrl);
 
@@ -58,8 +76,12 @@ public class DocumentImportService {
             documentId
         );
 
+        String fileName = StringUtils.isNotBlank(overriddenFilename)
+            ? overriddenFilename : documentMetadata.originalDocumentName;
+
         DocumentEntity documentEntity = DocumentEntity.builder()
-            .fileName(documentMetadata.originalDocumentName)
+            .fileName(fileName)
+            .originalFileName(documentMetadata.originalDocumentName)
             .documentId(documentId)
             .url(documentMetadata.links.self.href)
             .binaryUrl(documentMetadata.links.binary.href)

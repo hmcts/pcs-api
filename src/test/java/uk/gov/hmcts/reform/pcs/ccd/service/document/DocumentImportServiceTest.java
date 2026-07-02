@@ -1,6 +1,8 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.document;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -55,44 +57,178 @@ class DocumentImportServiceTest {
                                               authTokenGenerator, documentIdExtractor);
     }
 
-    @Test
-    void shouldAddDocumentToCaseWithMetadata() {
-        // Given
-        UUID documentId = UUID.randomUUID();
-        Document.Links links = createLinks("test url", "test binary url");
-        Document documentMetadata = Document.builder()
-            .originalDocumentName("original filename")
-            .links(links)
-            .build();
+    @Nested
+    @DisplayName("Add document to case reference tests")
+    class AddDocumentToCaseReference {
 
-        when(caseDocumentClientApi.getMetadataForDocument(SYSTEM_AUTH_TOKEN, S2S_AUTH_TOKEN, documentId))
-            .thenReturn(documentMetadata);
+        @Test
+        void shouldAddDocumentToCaseWithMetadata() {
+            // Given
+            UUID documentId = UUID.randomUUID();
+            Document.Links links = createLinks("test url", "test binary url");
+            Document documentMetadata = Document.builder()
+                .originalDocumentName("original filename")
+                .links(links)
+                .build();
 
-        String documentUrl = "some document URL";
-        when(documentIdExtractor.extractDocumentId(documentUrl)).thenReturn(documentId);
+            when(caseDocumentClientApi.getMetadataForDocument(SYSTEM_AUTH_TOKEN, S2S_AUTH_TOKEN, documentId))
+                .thenReturn(documentMetadata);
 
-        PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
-        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+            String documentUrl = "some document URL";
+            when(documentIdExtractor.extractDocumentId(documentUrl)).thenReturn(documentId);
 
-        // When
-        DocumentEntity returnedDocumentEntity = underTest.addDocumentToCase(
-            CASE_REFERENCE,
-            documentUrl,
-            CaseFileCategory.HEARING_DOCUMENTS
-        );
+            PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
+            when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
 
-        // Then
-        verify(pcsCaseEntity).addDocuments(documentEntityListCaptor.capture());
-        assertThat(documentEntityListCaptor.getValue()).hasSize(1);
+            // When
+            DocumentEntity returnedDocumentEntity = underTest.addDocumentToCase(
+                CASE_REFERENCE,
+                documentUrl,
+                CaseFileCategory.HEARING_DOCUMENTS
+            );
 
-        DocumentEntity addedDocumentEntity = documentEntityListCaptor.getValue().getFirst();
-        assertThat(addedDocumentEntity).isSameAs(returnedDocumentEntity);
+            // Then
+            verify(pcsCaseEntity).addDocuments(documentEntityListCaptor.capture());
+            assertThat(documentEntityListCaptor.getValue()).hasSize(1);
 
-        assertThat(addedDocumentEntity.getFileName()).isEqualTo("original filename");
-        assertThat(addedDocumentEntity.getDocumentId()).isEqualTo(documentId);
-        assertThat(addedDocumentEntity.getUrl()).isEqualTo("test url");
-        assertThat(addedDocumentEntity.getBinaryUrl()).isEqualTo("test binary url");
-        assertThat(addedDocumentEntity.getCategoryId()).isEqualTo(CaseFileCategory.HEARING_DOCUMENTS.getId());
+            DocumentEntity addedDocumentEntity = documentEntityListCaptor.getValue().getFirst();
+            assertThat(addedDocumentEntity).isSameAs(returnedDocumentEntity);
+
+            assertThat(addedDocumentEntity.getFileName()).isEqualTo("original filename");
+            assertThat(addedDocumentEntity.getOriginalFileName()).isEqualTo("original filename");
+            assertThat(addedDocumentEntity.getDocumentId()).isEqualTo(documentId);
+            assertThat(addedDocumentEntity.getUrl()).isEqualTo("test url");
+            assertThat(addedDocumentEntity.getBinaryUrl()).isEqualTo("test binary url");
+            assertThat(addedDocumentEntity.getCategoryId()).isEqualTo(CaseFileCategory.HEARING_DOCUMENTS.getId());
+        }
+
+        @Test
+        void shouldAddDocumentToCaseWithFilenameOverride() {
+            // Given
+            UUID documentId = UUID.randomUUID();
+            Document.Links links = createLinks("test url", "test binary url");
+            Document documentMetadata = Document.builder()
+                .originalDocumentName("original filename")
+                .links(links)
+                .build();
+
+            when(caseDocumentClientApi.getMetadataForDocument(SYSTEM_AUTH_TOKEN, S2S_AUTH_TOKEN, documentId))
+                .thenReturn(documentMetadata);
+
+            String documentUrl = "some document URL";
+            when(documentIdExtractor.extractDocumentId(documentUrl)).thenReturn(documentId);
+
+            PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
+            when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+
+            // When
+            DocumentEntity returnedDocumentEntity = underTest.addDocumentToCase(
+                CASE_REFERENCE,
+                documentUrl,
+                CaseFileCategory.HEARING_DOCUMENTS,
+                "overridden-filename.pdf"
+            );
+
+            // Then
+            verify(pcsCaseEntity).addDocuments(documentEntityListCaptor.capture());
+            assertThat(documentEntityListCaptor.getValue()).hasSize(1);
+
+            DocumentEntity addedDocumentEntity = documentEntityListCaptor.getValue().getFirst();
+            assertThat(addedDocumentEntity).isSameAs(returnedDocumentEntity);
+
+            assertThat(addedDocumentEntity.getFileName()).isEqualTo("overridden-filename.pdf");
+            assertThat(addedDocumentEntity.getOriginalFileName()).isEqualTo("original filename");
+            assertThat(addedDocumentEntity.getDocumentId()).isEqualTo(documentId);
+            assertThat(addedDocumentEntity.getUrl()).isEqualTo("test url");
+            assertThat(addedDocumentEntity.getBinaryUrl()).isEqualTo("test binary url");
+            assertThat(addedDocumentEntity.getCategoryId()).isEqualTo(CaseFileCategory.HEARING_DOCUMENTS.getId());
+        }
+    }
+
+    @Nested
+    @DisplayName("Add document to PcsCaseEntity tests")
+    class AddDocumentToPcsCaseEntity {
+
+        @Test
+        void shouldAddDocumentToCaseWithMetadata() {
+            // Given
+            UUID documentId = UUID.randomUUID();
+            Document.Links links = createLinks("test url", "test binary url");
+            Document documentMetadata = Document.builder()
+                .originalDocumentName("original filename")
+                .links(links)
+                .build();
+
+            when(caseDocumentClientApi.getMetadataForDocument(SYSTEM_AUTH_TOKEN, S2S_AUTH_TOKEN, documentId))
+                .thenReturn(documentMetadata);
+
+            String documentUrl = "some document URL";
+            when(documentIdExtractor.extractDocumentId(documentUrl)).thenReturn(documentId);
+
+            PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
+
+            // When
+            DocumentEntity returnedDocumentEntity = underTest.addDocumentToCase(
+                pcsCaseEntity,
+                documentUrl,
+                CaseFileCategory.HEARING_DOCUMENTS
+            );
+
+            // Then
+            verify(pcsCaseEntity).addDocuments(documentEntityListCaptor.capture());
+            assertThat(documentEntityListCaptor.getValue()).hasSize(1);
+
+            DocumentEntity addedDocumentEntity = documentEntityListCaptor.getValue().getFirst();
+            assertThat(addedDocumentEntity).isSameAs(returnedDocumentEntity);
+
+            assertThat(addedDocumentEntity.getFileName()).isEqualTo("original filename");
+            assertThat(addedDocumentEntity.getOriginalFileName()).isEqualTo("original filename");
+            assertThat(addedDocumentEntity.getDocumentId()).isEqualTo(documentId);
+            assertThat(addedDocumentEntity.getUrl()).isEqualTo("test url");
+            assertThat(addedDocumentEntity.getBinaryUrl()).isEqualTo("test binary url");
+            assertThat(addedDocumentEntity.getCategoryId()).isEqualTo(CaseFileCategory.HEARING_DOCUMENTS.getId());
+        }
+
+        @Test
+        void shouldAddDocumentToCaseWithFilenameOverride() {
+            // Given
+            UUID documentId = UUID.randomUUID();
+            Document.Links links = createLinks("test url", "test binary url");
+            Document documentMetadata = Document.builder()
+                .originalDocumentName("original filename")
+                .links(links)
+                .build();
+
+            when(caseDocumentClientApi.getMetadataForDocument(SYSTEM_AUTH_TOKEN, S2S_AUTH_TOKEN, documentId))
+                .thenReturn(documentMetadata);
+
+            String documentUrl = "some document URL";
+            when(documentIdExtractor.extractDocumentId(documentUrl)).thenReturn(documentId);
+
+            PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
+
+            // When
+            DocumentEntity returnedDocumentEntity = underTest.addDocumentToCase(
+                pcsCaseEntity,
+                documentUrl,
+                CaseFileCategory.HEARING_DOCUMENTS,
+                "overridden-filename.pdf"
+            );
+
+            // Then
+            verify(pcsCaseEntity).addDocuments(documentEntityListCaptor.capture());
+            assertThat(documentEntityListCaptor.getValue()).hasSize(1);
+
+            DocumentEntity addedDocumentEntity = documentEntityListCaptor.getValue().getFirst();
+            assertThat(addedDocumentEntity).isSameAs(returnedDocumentEntity);
+
+            assertThat(addedDocumentEntity.getFileName()).isEqualTo("overridden-filename.pdf");
+            assertThat(addedDocumentEntity.getOriginalFileName()).isEqualTo("original filename");
+            assertThat(addedDocumentEntity.getDocumentId()).isEqualTo(documentId);
+            assertThat(addedDocumentEntity.getUrl()).isEqualTo("test url");
+            assertThat(addedDocumentEntity.getBinaryUrl()).isEqualTo("test binary url");
+            assertThat(addedDocumentEntity.getCategoryId()).isEqualTo(CaseFileCategory.HEARING_DOCUMENTS.getId());
+        }
     }
 
     @Test
