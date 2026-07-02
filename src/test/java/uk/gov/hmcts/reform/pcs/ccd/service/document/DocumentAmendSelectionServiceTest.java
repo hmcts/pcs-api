@@ -12,14 +12,12 @@ import uk.gov.hmcts.ccd.sdk.type.DynamicListElement;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.documentamend.DocumentAmendDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.documentamend.DocumentAmendFolder;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.service.CaseNameFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 
@@ -32,7 +30,6 @@ import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory.APPLICATIONS;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory.EVIDENCE;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory.UNCATEGORISED_DOCUMENTS;
-import static uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils.wrapListItems;
 
 @ExtendWith(MockitoExtension.class)
 class DocumentAmendSelectionServiceTest {
@@ -46,7 +43,7 @@ class DocumentAmendSelectionServiceTest {
 
     @BeforeEach
     void setUp() {
-        underTest = new DocumentAmendSelectionService(pcsCaseService, new AddressFormatter(), new CaseNameFormatter());
+        underTest = new DocumentAmendSelectionService(pcsCaseService, new AddressFormatter());
     }
 
     @Test
@@ -67,7 +64,7 @@ class DocumentAmendSelectionServiceTest {
     }
 
     @Test
-    void shouldPopulateCompactCaseSummaryFields() {
+    void shouldPopulatePropertyAddressSummary() {
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(PcsCaseEntity.builder().build());
         PCSCase caseData = PCSCase.builder()
             .propertyAddress(uk.gov.hmcts.ccd.sdk.type.AddressUK.builder()
@@ -75,16 +72,12 @@ class DocumentAmendSelectionServiceTest {
                 .postTown("Luton")
                 .postCode("LU1 1AB")
                 .build())
-            .claimantNames("Treetops Housing")
-            .defendantNames("Billy Wright")
             .build();
 
         underTest.initialise(CASE_REFERENCE, caseData);
 
         assertThat(caseData.getDocumentAmendDetails().getPropertyAddressSummary())
             .isEqualTo("15 Garden Drive, Luton, LU1 1AB");
-        assertThat(caseData.getDocumentAmendDetails().getPartyNamesSummary())
-            .isEqualTo("Treetops Housing vs Billy Wright");
     }
 
     @Test
@@ -108,26 +101,6 @@ class DocumentAmendSelectionServiceTest {
         assertThat(serialisedCaseData).contains("\"documentAmend_ApplicationsDocuments\"");
         assertThat(serialisedCaseData).contains("\"documentAmend_ApplicationsEmpty\"");
         assertThat(serialisedCaseData).doesNotContain("documentAmend_applicationsDocuments");
-    }
-
-    @Test
-    void shouldPopulatePartyNamesSummaryFromPartyCollectionsWhenSummaryFieldsAreMissing() {
-        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(PcsCaseEntity.builder().build());
-        PCSCase caseData = PCSCase.builder()
-            .allClaimants(wrapListItems(List.of(Party.builder()
-                .orgName("Treetops Housing")
-                .build())))
-            .allDefendants(wrapListItems(List.of(Party.builder()
-                .firstName("Billy")
-                .lastName("Wright")
-                .nameKnown(VerticalYesNo.YES)
-                .build())))
-            .build();
-
-        underTest.initialise(CASE_REFERENCE, caseData);
-
-        assertThat(caseData.getDocumentAmendDetails().getPartyNamesSummary())
-            .isEqualTo("Treetops Housing vs Billy Wright");
     }
 
     @Test
@@ -162,15 +135,15 @@ class DocumentAmendSelectionServiceTest {
     }
 
     @Test
-    void shouldOnlyShowDocumentsWithUncategorisedCategoryUnderUncategorisedDocuments() {
-        DocumentEntity uncategorisedDocument = document("loose document.pdf", null, null);
+    void shouldExcludeDocumentsWithNullCategoryIdFromUncategorisedDocuments() {
+        DocumentEntity nullCategoryDocument = document("loose document.pdf", null, null);
         DocumentEntity categorisedDocument = document(
             "uncategorised document.pdf",
             UNCATEGORISED_DOCUMENTS.getId(),
             null
         );
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(PcsCaseEntity.builder()
-            .documents(List.of(uncategorisedDocument, categorisedDocument))
+            .documents(List.of(nullCategoryDocument, categorisedDocument))
             .build());
         PCSCase caseData = PCSCase.builder().build();
 
@@ -180,6 +153,51 @@ class DocumentAmendSelectionServiceTest {
             .extracting(DynamicListElement::getLabel)
             .containsExactly("uncategorised document.pdf");
         assertThat(caseData.getDocumentAmendDetails().getUncategorisedDocumentsEmpty()).isEqualTo(YesOrNo.NO);
+    }
+
+    @Test
+    void shouldOrderDocumentsBySubmittedDateDescendingThenFileNameWithNullDatesLast() {
+        DocumentEntity older = document(
+            "b older evidence.pdf",
+            EVIDENCE.getId(),
+            null,
+            Instant.parse("2026-01-01T10:00:00Z")
+        );
+        DocumentEntity newerA = document(
+            "a newer evidence.pdf",
+            EVIDENCE.getId(),
+            null,
+            Instant.parse("2026-01-02T10:00:00Z")
+        );
+        DocumentEntity newerB = document(
+            "b newer evidence.pdf",
+            EVIDENCE.getId(),
+            null,
+            Instant.parse("2026-01-02T10:00:00Z")
+        );
+        DocumentEntity nullDate = document("null date evidence.pdf", EVIDENCE.getId(), null, null);
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(PcsCaseEntity.builder()
+            .documents(List.of(older, nullDate, newerB, newerA))
+            .build());
+        PCSCase caseData = PCSCase.builder().build();
+
+        underTest.initialise(CASE_REFERENCE, caseData);
+
+        assertThat(caseData.getDocumentAmendDetails().getEvidenceDocuments().getListItems())
+            .extracting(DynamicListElement::getLabel)
+            .containsExactly(
+                "a newer evidence.pdf",
+                "b newer evidence.pdf",
+                "b older evidence.pdf",
+                "null date evidence.pdf"
+            );
+    }
+
+    @Test
+    void shouldReturnNoErrorsWhenDocumentAmendDetailsIsNull() {
+        List<String> errors = underTest.validateAndStoreSelection(PCSCase.builder().build());
+
+        assertThat(errors).isEmpty();
     }
 
     @Test
@@ -195,7 +213,12 @@ class DocumentAmendSelectionServiceTest {
         List<String> errors = underTest.validateAndStoreSelection(caseData);
 
         assertThat(errors).containsExactly("Select a different folder to continue");
+        assertThat(caseData.getDocumentAmendDetails().getSelectedFolderId())
+            .isEqualTo(UNCATEGORISED_DOCUMENTS.getId());
+        assertThat(caseData.getDocumentAmendDetails().getSelectedFolderLabel())
+            .isEqualTo(UNCATEGORISED_DOCUMENTS.getLabel());
         assertThat(caseData.getDocumentAmendDetails().getSelectedDocumentId()).isNull();
+        assertThat(caseData.getDocumentAmendDetails().getSelectedDocumentFileName()).isNull();
     }
 
     @Test
@@ -289,12 +312,17 @@ class DocumentAmendSelectionServiceTest {
     }
 
     private static DocumentEntity document(String fileName, String categoryId, GenAppEntity generalApplication) {
+        return document(fileName, categoryId, generalApplication, Instant.now());
+    }
+
+    private static DocumentEntity document(String fileName, String categoryId, GenAppEntity generalApplication,
+                                           Instant submittedDate) {
         return DocumentEntity.builder()
             .id(UUID.randomUUID())
             .fileName(fileName)
             .categoryId(categoryId)
             .generalApplication(generalApplication)
-            .submittedDate(Instant.now())
+            .submittedDate(submittedDate)
             .build();
     }
 }

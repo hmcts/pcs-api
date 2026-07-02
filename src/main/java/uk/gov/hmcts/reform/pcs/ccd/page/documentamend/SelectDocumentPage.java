@@ -20,6 +20,7 @@ import uk.gov.hmcts.reform.pcs.ccd.util.StringUtils;
 import java.util.List;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
+import static uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentAmendSelectionService.SELECT_DIFFERENT_FOLDER_ERROR;
 
 @AllArgsConstructor
 @Component
@@ -29,7 +30,6 @@ public class SelectDocumentPage implements CcdPageConfiguration {
     private static final String FIELD_PREFIX = "documentAmend_";
     private static final String YES = "=\"Yes\"";
     private static final String NO = "=\"No\"";
-    private static final String SELECT_DIFFERENT_FOLDER_ERROR = "Select a different folder to continue";
     private final DocumentAmendSelectionService documentAmendSelectionService;
 
     @Override
@@ -66,7 +66,7 @@ public class SelectDocumentPage implements CcdPageConfiguration {
         CaseFileCategory category = categoryField.category;
         page
             .label(categoryField.idPrefix + "EmptyFolderError", errorMessage(SELECT_DIFFERENT_FOLDER_ERROR),
-                   emptyFolderErrorShowCondition(category))
+                   noDocumentsShowCondition(category))
             .label(categoryField.idPrefix + "EmptyFolderQuestion", documentQuestion(),
                    noDocumentsShowCondition(category))
             .mandatory(categoryField.documentsGetter, documentsShowCondition(category), true)
@@ -93,10 +93,6 @@ public class SelectDocumentPage implements CcdPageConfiguration {
 
     private String noDocumentsShowCondition(CaseFileCategory category) {
         return selectedFolderCondition(category) + " AND " + emptyFieldId(category) + YES;
-    }
-
-    private String emptyFolderErrorShowCondition(CaseFileCategory category) {
-        return noDocumentsShowCondition(category);
     }
 
     private String selectedFolderCondition(CaseFileCategory category) {

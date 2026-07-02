@@ -34,10 +34,6 @@ public class DocumentAmendDetails {
     @JsonProperty("PropertyAddressSummary")
     private String propertyAddressSummary;
 
-    @CCD(searchable = false)
-    @JsonProperty("PartyNamesSummary")
-    private String partyNamesSummary;
-
     @CCD(
         label = "Which document do you want to amend?",
         searchable = false,
