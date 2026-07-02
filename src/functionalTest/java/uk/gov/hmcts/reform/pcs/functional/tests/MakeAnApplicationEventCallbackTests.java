@@ -74,20 +74,27 @@ public class MakeAnApplicationEventCallbackTests extends BaseApi {
         apiSteps.theResponseBodyMatchesTheExpectedResponse(
             "/responses/makeAnApplication-startEventCallbackResponse.json");
     }
-}
 
-@Title("makeAnApplication submit event callback test - returns 200")
-@Test
-@Order(2)
-void makeAnApplicationSubmitEventCallbackTest() {
-    apiSteps.aRequestIsPreparedWithAppropriateValues();
-    apiSteps.theRequestContainsAValidIdamToken();
-    apiSteps.theRequestContainsAValidServiceTokenFor(PCS_FRONTEND);
-    apiSteps.theRequestContainsTheQueryParameter("eventId", "makeAnApplication");
-    apiSteps.theRequestContainsARequestBody("/requests/makeAnApplication-submitEventCallbackRequest.json");
+    @Title("makeAnApplication submit event callback test - returns 200")
+    @Test
+    @Order(2)
+    void makeAnApplicationSubmitEventCallbackTest() {
+        String submitApplicationRequestBody = PayloadLoader.load(
+            "/payloads/makeAnApplication-submitEventCallbackRequest.json",
+            Map.of("caseTypeId", caseType, "caseId", caseReference)
+        );
 
-    apiSteps.aCallIsSubmittedToTheEndpointUsingPOSTRequest("/callbacks/about-to-submit-callback");
+        apiSteps.requestIsPreparedWithAppropriateValues();
+        apiSteps.theRequestContainsValidIdamToken(PcsIdamTokenClient.UserType.solicitorUser);
+        apiSteps.theRequestContainsValidServiceToken(TestConstants.PCS_FRONTEND);
+        apiSteps.theRequestContainsIdempotencyKeyHeader();
+        apiSteps.theRequestContainsTheQueryParameter("eventId", "makeAnApplication");
+        apiSteps.theRequestContainsBody(submitApplicationRequestBody);
 
-    apiSteps.checkStatusCodeIs(200);
-    apiSteps.theResponseBodyMatchesTheExpectedResponse("/responses/makeAnApplication-submitEventCallbackResponse.json");
+        apiSteps.callIsSubmittedToTheEndpoint("SubmitEventCallback", "POST");
+        apiSteps.checkStatusCode(200);
+
+        apiSteps.theResponseBodyMatchesTheExpectedResponse(
+            "/responses/makeAnApplication-submitEventCallbackResponse.json");
+    }
 }

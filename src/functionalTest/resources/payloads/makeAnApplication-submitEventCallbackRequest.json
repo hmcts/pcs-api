@@ -1,16 +1,39 @@
 {
   "event_id": "makeAnApplication",
   "case_details": {
-    "id": "1234567890123456",
-    "case_type_id": "PCS",
-    "jurisdiction": "CIVIL",
-    "case_data": {
-      "xui_genapp_ApplicationType": "SET_ASIDE",
-      "xui_genapp_ShowHwfScreens": "YES",
-      "xui_genapp_StandardFee": "£123",
-      "xui_genapp_MaxFee": "£313",
-      "currentRepresentedPartyId": "bfcfb198-feac-4e61-850a-2de465152b72",
-      "currentRepresentedPartyName": "Jane Doe"
+    "id": "${caseId}",
+    "case_type_id": "${caseTypeId}",
+    "data": {
+      "legislativeCountry": "England",
+      "propertyAddress": {
+        "AddressLine1": "1",
+        "AddressLine2": "Exton Gardens",
+        "AddressLine3": "70 Knyveton Road",
+        "PostTown": "Bournemouth",
+        "PostCode": "BH1 3BP",
+        "Country": "England"
+      },
+      "userPcqIdSet": "No",
+      "parties": [],
+      "caseLinks": [],
+      "allDefendants": [],
+      "allClaimants": [],
+      "allDocuments": [],
+      "xui_genapp_ApplicationType": "ADJOURN",
+      "xui_genapp_Within14Days": "NO",
+      "xui_genapp_NeedHwf": "NO",
+      "xui_genapp_AppliedForHwf": "NO",
+      "xui_genapp_OtherPartiesAgreed": "YES",
+      "xui_genapp_WithoutNotice": "NO",
+      "xui_genapp_HasSupportingDocuments": "NO",
+      "xui_genapp_LanguageUsed": "ENGLISH",
+      "xui_genapp_WhatOrderWanted": "Please adjourn the upcoming hearing.",
+      "xui_genapp_SotFullName": "John Doe",
+      "xui_genapp_SotFirmName": "Solicitors R Us",
+      "xui_genapp_SotPositionHeld": "Partner",
+      "xui_genapp_AgreementDefendantLegalRep": [
+        "AGREED"
+      ]
     }
   }
 }
