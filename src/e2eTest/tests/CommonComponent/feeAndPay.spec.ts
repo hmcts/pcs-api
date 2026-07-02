@@ -65,7 +65,7 @@ test.describe('[Common Component Fee And Pay] @nightly @CC @feeAndPay' , async (
     await performValidation('mainHeader', serviceRequest.paymentSuccessMainHeader);
     await performAction('verifyStatusInHistoryAndSummaryTab', {
       serviceReqLink: serviceRequest.viewServiceRequestsLink,
-      serviceReqTab: caseSummary.servieRequestTab,
+      serviceReqTab: caseSummary.serviceRequestTab,
       historyTab: caseSummary.HistoryTab,
       status: serviceRequest.paidStatus,
       endState: history.endStateTableHeader,
@@ -99,7 +99,7 @@ test.describe('[Common Component Fee And Pay] @nightly @CC @feeAndPay' , async (
     await performValidation('mainHeader', serviceRequest.paymentSuccessMainHeader);
     await performAction('verifyStatusInHistoryAndSummaryTab', {
       serviceReqLink: serviceRequest.returnToServiceRequestLink,
-      serviceReqTab: caseSummary.servieRequestTab,
+      serviceReqTab: caseSummary.serviceRequestTab,
       historyTab: caseSummary.HistoryTab,
       status: serviceRequest.paidStatus,
       endState: history.endStateTableHeader,
@@ -120,7 +120,7 @@ test.describe('[Common Component Fee And Pay] @nightly @CC @feeAndPay' , async (
     await performAction('clickButton', cancelPayment.continueButton);
     await performAction('verifyStatusInHistoryAndSummaryTab', {
       serviceReqLink: cancelPayment.returnServiceReqLink,
-      serviceReqTab: caseSummary.servieRequestTab,
+      serviceReqTab: caseSummary.serviceRequestTab,
       historyTab: caseSummary.HistoryTab,
       status: serviceRequest.notPaidStatus,
       endState: history.endStateTableHeader,
@@ -155,7 +155,7 @@ test.describe('[Common Component Fee And Pay] @nightly @CC @feeAndPay' , async (
     await performAction('clickButton', cancelPayment.continueButton);
     await performAction('verifyStatusInHistoryAndSummaryTab', {
       serviceReqLink: cancelPayment.returnServiceReqLink,
-      serviceReqTab: caseSummary.servieRequestTab,
+      serviceReqTab: caseSummary.serviceRequestTab,
       historyTab: caseSummary.HistoryTab,
       status: serviceRequest.notPaidStatus,
       endState: history.endStateTableHeader,
