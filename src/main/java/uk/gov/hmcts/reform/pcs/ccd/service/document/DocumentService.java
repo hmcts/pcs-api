@@ -480,9 +480,13 @@ public class DocumentService {
                     .map(CaseFileCategory::getId)
                     .orElse(null);
 
+                String url = legalRepDoc.getDocument().getUrl();
+
                 return DocumentEntity.builder()
                 .pcsCase(pcsCaseEntity)
-                .url(legalRepDoc.getDocument().getUrl())
+                .claim(getMainClaim(pcsCaseEntity))
+                .documentId(documentIdExtractor.extractDocumentId(url))
+                .url(url)
                 .fileName(legalRepDoc.getDocument().getFilename())
                 .binaryUrl(legalRepDoc.getDocument().getBinaryUrl())
                 .description(legalRepDoc.getDescription())
