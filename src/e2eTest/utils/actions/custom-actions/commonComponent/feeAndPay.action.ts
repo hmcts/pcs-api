@@ -84,7 +84,7 @@ export class FeeAndPayAction implements IAction {
       retryCount < maxRetries;
       retryCount++
     ) {
-      await performAction('clickTab', caseSummary.servieRequestTab);
+      await performAction('clickTab', caseSummary.serviceRequestTab);
       const payNowLocator = page.getByText(payNowText,{ exact: true });
       let isPayNowVisible = false;
       for (let i = 0; i < 10; i++) {
@@ -150,7 +150,7 @@ export class FeeAndPayAction implements IAction {
 
   private async navigateToServiceRequestReview(page: Page): Promise<void> {
     await performAction('clickLink', serviceRequest.viewLink);
-    await performAction('clickTab', caseSummary.servieRequestTab);
+    await performAction('clickTab', caseSummary.serviceRequestTab);
     await page.getByRole('link', { name: serviceRequest.reviewLink }).first().click();
   }
 
@@ -188,7 +188,7 @@ export class FeeAndPayAction implements IAction {
 
   private async navigateToRefundsReview(page: Page): Promise<void> {
     await performAction('clickLink', serviceRequest.viewLink);
-    await performAction('clickTab', caseSummary.servieRequestTab);
+    await performAction('clickTab', caseSummary.serviceRequestTab);
     await page.locator('ccpay-refund-status').getByRole('link', { name: serviceRequest.reviewLink }).click();
   }
 
@@ -199,7 +199,7 @@ export class FeeAndPayAction implements IAction {
     await performAction('clickButton', serviceRequest.submitButton);
     await performValidation('mainHeader', serviceRequest.refundApprovedHeader);
     await performAction('clickLink', serviceRequest.returnToCaseLink);
-    await performAction('clickTab', caseSummary.servieRequestTab);
+    await performAction('clickTab', caseSummary.serviceRequestTab);
     await expect(page.getByRole('cell', { name: serviceRequest.approvedStatus, exact: true })).toBeVisible();
   }
 
@@ -211,7 +211,7 @@ export class FeeAndPayAction implements IAction {
     await performAction('clickButton', serviceRequest.submitButton);
     await performValidation('mainHeader', serviceRequest.refundRejectedHeader);
     await performAction('clickLink', serviceRequest.returnToCaseLink);
-    await performAction('clickTab', caseSummary.servieRequestTab);
+    await performAction('clickTab', caseSummary.serviceRequestTab);
     await expect(page.getByRole('cell', { name: serviceRequest.rejectedStatus, exact: true })).toBeVisible();
   }
 }

@@ -17,10 +17,12 @@ public interface LocationReferenceApi {
     String COURT_VENUES_ENDPOINT = "/refdata/location/court-venues";
 
     @GetMapping(COURT_VENUES_ENDPOINT)
-    List<CourtVenue> getCountyCourts(
+    List<CourtVenue> getCourtVenues(
         @RequestHeader(AUTHORIZATION) String authorisation,
         @RequestHeader(SERVICE_AUTHORIZATION) String serviceAuthorization,
         @RequestParam(name = "epimms_id", required = false) String epimmsId,
-        @RequestParam(name = "court_type_id", required = false) Integer courTypeId
+        @RequestParam(name = "court_type_id", required = false) Integer courTypeId,
+        @RequestParam(name = "service_code", required = false) String serviceCode
     );
+
 }
