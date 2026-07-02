@@ -472,15 +472,24 @@ public class DocumentService {
         PcsCaseEntity pcsCaseEntity
     ) {
         List<DocumentEntity> documentEntities = legalRepDocuments.stream()
-            .map(legalRepDoc -> DocumentEntity.builder()
+            .map(legalRepDoc -> {
+
+                DocumentType resolvedDocumentType = resolveDocumentType(legalRepDoc);
+
+                String categoryId = mapDocumentTypeToCategory(resolvedDocumentType)
+                    .map(CaseFileCategory::getId)
+                    .orElse(null);
+
+                return DocumentEntity.builder()
                 .pcsCase(pcsCaseEntity)
                 .url(legalRepDoc.getDocument().getUrl())
                 .fileName(legalRepDoc.getDocument().getFilename())
                 .binaryUrl(legalRepDoc.getDocument().getBinaryUrl())
-                .categoryId(legalRepDoc.getDocument().getCategoryId())
                 .description(legalRepDoc.getDescription())
-                .type(resolveDocumentType(legalRepDoc))
-                .build())
+                .type(resolvedDocumentType)
+                .categoryId(categoryId)
+                .build();
+            })
             .toList();
 
         pcsCaseEntity.addDocuments(documentEntities);
