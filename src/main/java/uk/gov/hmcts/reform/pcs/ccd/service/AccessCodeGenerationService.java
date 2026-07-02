@@ -44,8 +44,8 @@ public class AccessCodeGenerationService {
         }
 
         if (!defendantPartyIds.isEmpty()) {
-            log.debug("Generated {} defendant access code access-code letter(s) for case {}",
-                      defendantPartyIds.size(), caseReference);
+            log.debug("Generated {} defendant access-code letter(s) for parties {} on case {}",
+                      defendantPartyIds.size(), defendantPartyIds, caseReference);
         }
     }
 }

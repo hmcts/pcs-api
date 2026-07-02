@@ -40,7 +40,7 @@ public class DocumentsTaskGroupEvaluator implements TaskGroupEvaluator {
     }
 
     private boolean hasDocuments(DashboardContext ctx) {
-        // The defendant access code access-code letter is a postal letter, not a case-viewable document, so it is
+        // The defendant access-code letter is a postal letter, not a case-viewable document, so it is
         // excluded here (matching its exclusion from the case file view) and never enables "View documents".
         return ctx != null
             && ctx.caseEntity() != null

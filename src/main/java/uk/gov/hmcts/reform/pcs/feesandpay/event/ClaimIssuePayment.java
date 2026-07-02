@@ -68,7 +68,7 @@ public class ClaimIssuePayment implements CCDConfig<PCSCase, State, UserRole> {
                      + "access-code letter generation", caseReference);
             pcsCaseService.setCaseIssuedDate(caseReference);
             claimFormScheduler.scheduleClaimFormGeneration(caseReference);
-            // Case issued (status -> CASE_ISSUED): generate the defendant access code access-code letters.
+            // Case issued (status -> CASE_ISSUED): generate the defendant access-code letters.
             scheduleAccessCodeFormGeneration(caseReference);
         }
         return SubmitResponse.<State>builder().state(State.CASE_ISSUED).build();
