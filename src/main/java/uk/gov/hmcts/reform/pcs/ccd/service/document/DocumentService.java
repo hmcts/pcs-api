@@ -305,19 +305,31 @@ public class DocumentService {
             return Collections.emptyList();
         }
 
+        if (pcsCase.getClaims().isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        ClaimEntity mainClaim = pcsCase.getClaims().getFirst();
+
         List<DocumentEntity> documentEntities = defendantDocuments.stream()
             .map(ListValue::getValue)
             .filter(Objects::nonNull)
-            .map(defDoc -> DocumentEntity.builder()
-                .pcsCase(pcsCase)
-                .party(party)
-                .defendantResponse(defendantResponse)
-                .url(defDoc.getDocument().getUrl())
-                .fileName(defDoc.getDocument().getFilename())
-                .binaryUrl(defDoc.getDocument().getBinaryUrl())
-                .contentType(defDoc.getContentType())
-                .size(defDoc.getSizeInBytes())
-                .build())
+            .map(defDoc -> {
+                String originalFilename = defDoc.getDocument().getFilename();
+                String updatedFilename = documentNameService
+                    .appendDefendantPostfix(originalFilename, mainClaim, party.getId());
+
+                return DocumentEntity.builder()
+                    .pcsCase(pcsCase)
+                    .party(party)
+                    .defendantResponse(defendantResponse)
+                    .url(defDoc.getDocument().getUrl())
+                    .fileName(updatedFilename)
+                    .binaryUrl(defDoc.getDocument().getBinaryUrl())
+                    .contentType(defDoc.getContentType())
+                    .size(defDoc.getSizeInBytes())
+                    .build();
+            })
             .toList();
 
         List<DocumentEntity> saved = documentRepository.saveAll(documentEntities);
@@ -339,6 +351,8 @@ public class DocumentService {
             return Collections.emptyList();
         }
 
+        ClaimEntity claim = pcsCase.getClaims().getFirst();
+
         List<DocumentEntity> documentEntities = counterClaimDocuments.stream()
             .map(ListValue::getValue)
             .filter(Objects::nonNull)
@@ -347,10 +361,13 @@ public class DocumentService {
                 .party(party)
                 .counterClaim(counterClaim)
                 .url(ccDoc.getDocument().getUrl())
-                .fileName(ccDoc.getDocument().getFilename())
+                .fileName(documentNameService.appendCounterClaimDocumentName(
+                    ccDoc.getDocument().getFilename(), claim, party.getId()))
                 .binaryUrl(ccDoc.getDocument().getBinaryUrl())
                 .contentType(ccDoc.getContentType())
                 .size(ccDoc.getSizeInBytes())
+                .type(DocumentType.DOCUMENTS_SUPPORTING_A_COUNTERCLAIM)
+                .categoryId(CaseFileCategory.STATEMENTS_OF_CASE.getId())
                 .build())
             .toList();
 
@@ -364,7 +381,7 @@ public class DocumentService {
 
     private Optional<CaseFileCategory> mapDocumentTypeToCategory(DocumentType documentType) {
         return switch (documentType) {
-            case NOTICE_FOR_SERVICE_OUT_OF_JURISDICTION ->
+            case NOTICE_FOR_SERVICE_OUT_OF_JURISDICTION, CLAIM, DEFENDANT_RESPONSE ->
                 Optional.of(CaseFileCategory.STATEMENTS_OF_CASE);
             case RENT_STATEMENT,
                  TENANCY_AGREEMENT,
@@ -387,6 +404,9 @@ public class DocumentService {
                 Optional.of(CaseFileCategory.CORRESPONDENCE);
             case NOTICE_SERVED,
                  POLICE_REPORT,
+                 DOCUMENTS_SUPPORTING_A_COUNTERCLAIM,
+                 GAS_SAFETY_REPORT,
+                 ELECTRICAL_INSTALLATION_CONDITION,
                  OTHER ->
                 Optional.empty();
         };
