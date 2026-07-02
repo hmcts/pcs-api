@@ -36,9 +36,10 @@ public class CreateCaseLink implements CCDConfig<PCSCase, State, UserRole> {
                             .forStates(State.PENDING_CASE_ISSUED, State.CASE_ISSUED)
                             .name("Link cases")
                             .description("To link related cases")
-                            .grant(Permission.CRU, UserRole.CTSC_ADMIN, UserRole.HEARING_CENTRE_ADMIN,
-                                   UserRole.CIRCUIT_JUDGE, UserRole.FEE_PAID_JUDGE,
-                                   UserRole.JUDGE, UserRole.LEADERSHIP_JUDGE)
+                            .grant(Permission.CRU,
+                                   UserRole.CTSC_ADMIN,
+                                   UserRole.HEARING_CENTRE_ADMIN,
+                                   UserRole.JUDGE)
                             .grantHistoryOnly(JUDICIAL_HISTORY_ROLES))
 
             .page("createCaseLink")

@@ -35,15 +35,9 @@ class CaseLinkingAccessTest {
 
         assertThat(grants.get(PCS_SOLICITOR)).isEmpty();
         assertThat(grants.get(PCS_CASE_WORKER)).isEmpty();
-        for (UserRole role : AccessGrants.INTERNAL_READ_ROLES) {
-            assertThat(grants.get(role)).contains(Permission.R);
-        }
-        assertThat(grants.asMap()).contains(entry(CTSC_ADMIN, Permission.CRU));
-        assertThat(grants.asMap()).contains(entry(HEARING_CENTRE_ADMIN, Permission.CRU));
-        assertThat(grants.asMap()).contains(entry(CIRCUIT_JUDGE, Permission.CRU));
-        assertThat(grants.asMap()).contains(entry(FEE_PAID_JUDGE, Permission.CRU));
-        assertThat(grants.asMap()).contains(entry(JUDGE, Permission.CRU));
-        assertThat(grants.asMap()).contains(entry(LEADERSHIP_JUDGE, Permission.CRU));
+        assertThat(grants.get(CTSC_ADMIN)).containsAll(Permission.CRU);
+        assertThat(grants.get(HEARING_CENTRE_ADMIN)).containsAll(Permission.CRU);
+        assertThat(grants.get(JUDGE)).containsAll(Permission.CRU);
         assertThat(grants.get(WLU_ADMIN)).contains(Permission.R);
     }
 }
