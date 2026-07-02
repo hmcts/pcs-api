@@ -43,7 +43,7 @@ public class StoredDocumentConsumerTest {
 
         given()
             .accept(APPLICATION)
-            .header("ServiceAuthorization", SERVICE_AUTHORIZATION)
+            .header("ServiceAuthorization",SERVICE_AUTHORIZATION)
             .when()
             .get("/documents/" + DOCUMENT_ID)
             .then()
