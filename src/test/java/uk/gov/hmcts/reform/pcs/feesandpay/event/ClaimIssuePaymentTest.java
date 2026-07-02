@@ -11,8 +11,11 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.event.BaseEventTest;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimFormScheduler;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.verify;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CTSC_ADMIN;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CTSC_TEAM_LEADER;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.HEARING_CENTRE_ADMIN;
@@ -27,10 +30,12 @@ class ClaimIssuePaymentTest extends BaseEventTest {
 
     @Mock
     private PcsCaseService pcsCaseService;
+    @Mock
+    private ClaimFormScheduler claimFormScheduler;
 
     @BeforeEach
     void setUp() {
-        setEventUnderTest(new ClaimIssuePayment(pcsCaseService));
+        setEventUnderTest(new ClaimIssuePayment(pcsCaseService, claimFormScheduler));
     }
 
     @Test
@@ -52,5 +57,6 @@ class ClaimIssuePaymentTest extends BaseEventTest {
         SubmitResponse<State> response = callSubmitHandler(pcsCase);
 
         assertThat(response.getState()).isEqualTo(State.CASE_ISSUED);
+        verify(claimFormScheduler).scheduleClaimFormGeneration(anyLong());
     }
 }
