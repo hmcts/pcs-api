@@ -5,10 +5,12 @@
   },
   "response": {
     "status": 200,
-    "headers": { "Content-Type": "application/json" },
+    "headers": {
+      "Content-Type": "application/json"
+    },
     "jsonBody": {
-      "renditionOutputLocation": "http://localhost:8083/cases/documents/11111111-2222-3333-4444-555555555555",
-      "hashToken": "stub-hash-token"
-    }
+      "renditionOutputLocation": "http://localhost:8083/documents/{{randomValue type='UUID'}}"
+    },
+    "transformers": ["response-template"]
   }
 }

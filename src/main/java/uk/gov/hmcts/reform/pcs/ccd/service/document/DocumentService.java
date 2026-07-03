@@ -407,6 +407,8 @@ public class DocumentService {
                 Optional.of(CaseFileCategory.CORRESPONDENCE);
             case NOTICE_SERVED,
                  POLICE_REPORT,
+                 // Defendant access-code letters aren't shown on the case file
+                 DEFENDANT_ACCESS_CODE,
                  DOCUMENTS_SUPPORTING_A_COUNTERCLAIM,
                  GAS_SAFETY_REPORT,
                  ELECTRICAL_INSTALLATION_CONDITION,
