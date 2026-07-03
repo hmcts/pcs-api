@@ -275,4 +275,3 @@ export class CaseFlagAction implements IAction {
     await performValidation('mainHeader', caseList.mainHeader);
   }
 }
-
