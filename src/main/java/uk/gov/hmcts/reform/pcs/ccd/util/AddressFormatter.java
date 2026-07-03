@@ -34,24 +34,6 @@ public class AddressFormatter {
     }
 
     /**
-     * Formats an {@link AddressUK} with the mandatory address fields, (address line 1, post-town, county and postcode).
-     * @param address The address to format
-     * @param delimiter The delimiter with which to join each part of the address
-     * @return A formatted address String
-     */
-    public String formatShortAddressWithCounty(AddressUK address, String delimiter) {
-        Objects.requireNonNull(delimiter, "Delimiter must not be null");
-
-        if (address == null) {
-            return null;
-        }
-
-        return Stream.of(address.getAddressLine1(), address.getPostTown(), address.getCounty(), address.getPostCode())
-            .filter(StringUtils::isNotBlank)
-            .collect(Collectors.joining(delimiter));
-    }
-
-    /**
      * Formats an {@link AddressUK} with the main address fields, (address line 1, address line 2,
      * post-town and postcode).
      * @param address The address to format

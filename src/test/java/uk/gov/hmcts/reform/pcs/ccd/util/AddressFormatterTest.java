@@ -51,29 +51,6 @@ class AddressFormatterTest {
     }
 
     @ParameterizedTest
-    @MethodSource("shortAddressCountyCommaScenarios")
-    void shouldFormatShortAddressCountyWithComma(String addressLine1,
-                                           String postTown,
-                                           String county,
-                                           String postcode,
-                                           String expectedFormattedAddress) {
-        // Given
-        when(propertyAddress.getAddressLine1()).thenReturn(addressLine1);
-        when(propertyAddress.getAddressLine2()).thenReturn("should be ignored");
-        when(propertyAddress.getAddressLine3()).thenReturn("should be ignored");
-        when(propertyAddress.getPostTown()).thenReturn(postTown);
-        when(propertyAddress.getPostCode()).thenReturn(postcode);
-        when(propertyAddress.getCounty()).thenReturn(county);
-        when(propertyAddress.getCountry()).thenReturn("should be ignored");
-
-        // When
-        String result = underTest.formatShortAddressWithCounty(propertyAddress, COMMA_DELIMITER);
-
-        // Then
-        assertThat(result).isEqualTo(expectedFormattedAddress);
-    }
-
-    @ParameterizedTest
     @MethodSource("mediumAddressBRScenarios")
     void shouldFormatMediumAddressWithBR(String addressLine1,
                                          String addressLine2,
@@ -255,37 +232,6 @@ class AddressFormatterTest {
                       "123 Main Street, SW1A 1AA"),
             arguments("123 Main Street", "London", null,
                       "123 Main Street, London")
-        );
-    }
-
-    private static Stream<Arguments> shortAddressCountyCommaScenarios() {
-        return Stream.of(
-            arguments("123 Main Street", "London", "Greater London", "SW1A 1AA",
-                      "123 Main Street, London, Greater London, SW1A 1AA"),
-            arguments("", "London", "Greater London", "SW1A 1AA",
-                      "London, Greater London, SW1A 1AA"),
-            arguments("123 Main Street", "", "Greater London", "SW1A 1AA",
-                      "123 Main Street, Greater London, SW1A 1AA"),
-            arguments("123 Main Street", "London", "Greater London", "",
-                      "123 Main Street, London, Greater London"),
-            arguments(" ", "London", "Greater London", "SW1A 1AA",
-                      "London, Greater London, SW1A 1AA"),
-            arguments("123 Main Street", " ", "Greater London", "SW1A 1AA",
-                      "123 Main Street, Greater London, SW1A 1AA"),
-            arguments("123 Main Street", "London", "Greater London", " ",
-                      "123 Main Street, London, Greater London"),
-            arguments(null, "London", "Greater London", "SW1A 1AA",
-                      "London, Greater London, SW1A 1AA"),
-            arguments("123 Main Street", null, "Greater London", "SW1A 1AA",
-                      "123 Main Street, Greater London, SW1A 1AA"),
-            arguments("123 Main Street", "London", "Greater London", null,
-                      "123 Main Street, London, Greater London"),
-            arguments("123 Main Street", "London", " ", "SW1A 1AA",
-                      "123 Main Street, London, SW1A 1AA"),
-            arguments("123 Main Street", "London", "", "SW1A 1AA",
-                      "123 Main Street, London, SW1A 1AA"),
-            arguments("123 Main Street", "London", null, "SW1A 1AA",
-                      "123 Main Street, London, SW1A 1AA")
         );
     }
 

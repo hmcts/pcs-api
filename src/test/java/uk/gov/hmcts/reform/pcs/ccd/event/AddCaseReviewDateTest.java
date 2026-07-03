@@ -46,7 +46,7 @@ public class AddCaseReviewDateTest extends BaseEventTest {
             .propertyAddress(address)
             .build();
 
-        when(addressFormatter.formatShortAddressWithCounty(address, AddressFormatter.COMMA_DELIMITER))
+        when(addressFormatter.formatMediumAddress(address, AddressFormatter.COMMA_DELIMITER))
             .thenReturn("address");
 
         // When
@@ -66,7 +66,7 @@ public class AddCaseReviewDateTest extends BaseEventTest {
             .caseNameHmctsInternal("Claimant v Defendant")
             .build();
 
-        when(addressFormatter.formatShortAddressWithCounty(address, AddressFormatter.COMMA_DELIMITER))
+        when(addressFormatter.formatMediumAddress(address, AddressFormatter.COMMA_DELIMITER))
             .thenReturn("address");
 
         // When
