@@ -34,7 +34,7 @@ public class AddressFormatter {
     }
 
     /**
-     * Formats an {@link AddressUK} with the mandatory address fields, (address line 1, post-town and postcode).
+     * Formats an {@link AddressUK} with the mandatory address fields, (address line 1, post-town, county and postcode).
      * @param address The address to format
      * @param delimiter The delimiter with which to join each part of the address
      * @return A formatted address String
