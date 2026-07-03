@@ -564,6 +564,7 @@ tasks.withType(CftlibExec).configureEach {
 
 cftlibTest {
   environment 'ENABLE_TESTING_SUPPORT', 'true'
+  environment 'DB_SCHEDULER_POLLING_INTERVAL_SECONDS', '2'
 
   // To match the fake document URLs returned by the shared Wiremock
   environment 'CCD_DOCUMENT_URL_PATTERN', 'https://docstore/document/[A-Za-z0-9-]+.*'

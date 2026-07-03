@@ -178,7 +178,7 @@ pin-test-table:
 db-scheduler:
   enabled: false # This disables the autoconfiguration of DB Scheduler. Always off.
   executor-enabled: ${DB_SCHEDULER_EXECUTOR_ENABLED:true}
-  polling-interval-seconds: 10
+  polling-interval-seconds: ${DB_SCHEDULER_POLLING_INTERVAL_SECONDS:10}
   threads: 10
 
 doc_assembly:

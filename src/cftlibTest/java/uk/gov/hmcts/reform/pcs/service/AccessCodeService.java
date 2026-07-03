@@ -36,7 +36,7 @@ public class AccessCodeService {
 
     public List<PartyAccessCode> waitForAccessCodes(long caseReference) {
         return Awaitility.await()
-            .atMost(Duration.ofSeconds(15))
+            .atMost(Duration.ofSeconds(30))
             .pollInterval(Duration.ofMillis(500))
             .ignoreExceptions()
             .until(() -> getAccessCodesForCase(caseReference), not(empty()));
