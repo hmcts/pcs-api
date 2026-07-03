@@ -40,7 +40,8 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
         AccessProfile.LEADERSHIP_JUDGE,
         AccessProfile.HEARING_CENTRE_ADMIN,
         AccessProfile.CTSC_ADMIN,
-        AccessProfile.WLU_ADMIN
+        AccessProfile.WLU_ADMIN,
+        AccessProfile.BAILIFF_ADMIN
     };
     static final AccessProfile[] INTERNAL_TAB_ROLES = {
         AccessProfile.JUDGE,
@@ -49,7 +50,8 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
         AccessProfile.LEADERSHIP_JUDGE,
         AccessProfile.HEARING_CENTRE_ADMIN,
         AccessProfile.CTSC_ADMIN,
-        AccessProfile.WLU_ADMIN
+        AccessProfile.WLU_ADMIN,
+        AccessProfile.BAILIFF_ADMIN
     };
     static final AccessProfile[] NON_INTERNAL_HISTORY_ROLES = nonInternalHistoryRoles();
 

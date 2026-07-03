@@ -15,6 +15,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.changecasestate.ChangeCaseStatePage;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerRoles.CASEWORKER_ROLES;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.changeCaseState;
 import static uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter.COMMA_DELIMITER;
@@ -30,6 +31,7 @@ public class ChangeCaseState implements CCDConfig<PCSCase, State, UserRole> {
         Event.EventBuilder<PCSCase, UserRole, State> eventBuilder = configBuilder
             .decentralisedEvent(changeCaseState.name(), this::submit)
             .forStates(
+                State.CASE_ISSUED,
                 State.JUDICIAL_REFERRAL,
                 State.HEARING_READINESS,
                 State.PREPARE_FOR_HEARING_CONDUCT_HEARING,
@@ -40,6 +42,7 @@ public class ChangeCaseState implements CCDConfig<PCSCase, State, UserRole> {
                 State.BREATHING_SPACE
             )
             .name("Change case state")
+            .grant(Permission.CRUD, CASEWORKER_ROLES)
             .grant(Permission.CRUD, UserRole.PCS_CASE_WORKER)
             .grantHistoryOnly(JUDICIAL_HISTORY_ROLES)
             .showSummary()
@@ -63,11 +66,9 @@ public class ChangeCaseState implements CCDConfig<PCSCase, State, UserRole> {
         return """
             ---
             <div class="govuk-panel govuk-panel--confirmation govuk-!-padding-top-3 govuk-!-padding-bottom-3">
-            <span class="govuk-panel__title govuk-!-font-size-36">Case state changed</span>
-            <div class="govuk-panel__body">
-                Case number: %s<br>
-                Property address: %s
-            </div>
+            <span class="govuk-panel__title govuk-!-font-size-36">Case state changed</span><br>
+            <span class="govuk-panel__body">Case number: %s</span><br>
+            <span class="govuk-panel__body">Property address: %s</span>
             </div>
 
             <h3 class="govuk-heading-s">What happens next</h3>
