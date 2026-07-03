@@ -138,7 +138,7 @@ hmc:
   serviceId: ${HMC_SERVICE_ID:AAA3}
 
 location-reference:
-  api-url: ${LOCATION_REF_URL:http://localhost:8089}
+  api-url: ${LOCATION_REF_URL:http://localhost:8083}
   court-county-type-id: ${COURT_COUNTY_TYPE_ID:10}
 
 notify:
@@ -163,6 +163,12 @@ notify:
 
 testing-support:
   enabled: ${ENABLE_TESTING_SUPPORT:false}
+
+access-code-form:
+  respond-online-url: ${RESPOND_ONLINE_URL:http://localhost:3209/access-your-case}
+
+access-code-test-table:
+  enabled: ${ENABLE_ACCESS_CODE_TEST_TABLE:${testing-support.enabled:false}}
 
 # Below sets if DB scheduler can execute on the current instance of the API.
 db-scheduler:
@@ -209,6 +215,27 @@ fees:
       channel: default
       event: general application
       keyword: GAOnNotice
+    counterClaimFlatFee:
+      service: other
+      jurisdiction1: civil
+      jurisdiction2: civil
+      channel: default
+      event: issue
+      keyword: AnyOtherRemedy
+    counterClaimRanged:
+      service: civil money claims
+      jurisdiction1: civil
+      jurisdiction2: civil
+      channel: default
+      event: issue
+      keyword: CMCCounterRanged
+    counterClaim:
+      service: civil money claims
+      jurisdiction1: civil
+      jurisdiction2: county court
+      channel: default
+      event: issue
+      keyword: counter-claim
     enforcementWarrantFee: # FEE0380 - County Court
       service: civil money claims
       jurisdiction1: civil
@@ -232,7 +259,6 @@ fees:
     backoff-delay-seconds: ${FEES_AND_PAY_TASK_BACKOFF_DELAY_SECONDS:600s}
 
 access-code:
-  hash-pins-enabled: ${HASH_PINS_ENABLED:false}
   request:
     max-retries: ${ACCESS_CODE_MAX_RETRIES:5}
     backoff-delay-seconds: ${ACCESS_CODE_BACKOFF_DELAY_SECONDS:3600s}
@@ -241,6 +267,11 @@ claim-form:
   request:
     max-retries: ${CLAIM_FORM_MAX_RETRIES:5}
     backoff-delay-seconds: ${CLAIM_FORM_BACKOFF_DELAY_SECONDS:3600s}
+
+defence-form:
+  request:
+    max-retries: ${DEFENCE_FORM_MAX_RETRIES:5}
+    backoff-delay-seconds: ${DEFENCE_FORM_BACKOFF_DELAY_SECONDS:3600s}
 
 role-assignment:
   request:

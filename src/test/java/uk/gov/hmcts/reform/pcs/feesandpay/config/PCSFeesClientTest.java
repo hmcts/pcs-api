@@ -164,6 +164,35 @@ class PCSFeesClientTest {
     }
 
     @Test
+    void shouldUseProvidedAmountOrVolumeOverrideWhenPresent() {
+        BigDecimal claimAmountInPounds = new BigDecimal("2500.00");
+        when(feesConfiguration.getLookup(FeeType.COUNTER_CLAIM_RANGED)).thenReturn(lookUpReferenceData);
+        when(feesApi.lookupFee(
+            eq(SERVICE),
+            eq(JURISDICTION_1),
+            eq(JURISDICTION_2),
+            eq(CHANNEL),
+            eq(EVENT),
+            isNull(),
+            eq(claimAmountInPounds),
+            eq(KEYWORD)
+        )).thenReturn(feeLookupResponseDto);
+
+        underTest.lookupFee(FeeType.COUNTER_CLAIM_RANGED, claimAmountInPounds);
+
+        verify(feesApi).lookupFee(
+            eq(SERVICE),
+            eq(JURISDICTION_1),
+            eq(JURISDICTION_2),
+            eq(CHANNEL),
+            eq(EVENT),
+            isNull(),
+            eq(claimAmountInPounds),
+            eq(KEYWORD)
+        );
+    }
+
+    @Test
     void shouldReturnFeeLookupResponseDtoWithCorrectStructure() {
         // Given
         when(feesConfiguration.getLookup(FeeType.CASE_ISSUE_FEE)).thenReturn(lookUpReferenceData);

@@ -7,8 +7,6 @@ import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.service.CcdPaymentStateUpdateService;
-import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
-import uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimFormScheduler;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
@@ -23,34 +21,28 @@ public class MakeAClaimPaymentCallbackHandler implements PaymentCallbackStrategy
 
     private final CcdPaymentStateUpdateService ccdPaymentStateUpdateService;
     private final PartyService partyService;
-    private final PcsCaseService pcsCaseService;
     private final ObjectMapper objectMapper;
-    private final ClaimFormScheduler claimFormScheduler;
 
     @Override
     public void handle(PaymentStatusCallback paymentStatusCallback, FeePaymentEntity feePaymentEntity) {
-        FeesAndPayTaskData feesAndPayTaskData = toFeesAndPayTaskData(feePaymentEntity.getTaskData());
+        FeesAndPayTaskData feesAndPayTaskData = toFeesAndPayTaskData(feePaymentEntity);
         PartyEntity claimParty = getResponsibleParty(feesAndPayTaskData);
         feePaymentEntity.setParty(claimParty);
         if (PaymentStatus.PAID == feePaymentEntity.getPaymentStatus()) {
-            handleSuccessfulPayment(feesAndPayTaskData.getCaseReference());
+            ccdPaymentStateUpdateService.submitPaymentSuccess(feesAndPayTaskData.getCaseReference());
         } else {
             log.warn("The payment was not successful [{}] for case: {}", feePaymentEntity.getPaymentStatus(),
                      feesAndPayTaskData.getCaseReference());
         }
     }
 
-    private void handleSuccessfulPayment(long caseReference) {
-        pcsCaseService.allocateCaseManagementLocation(caseReference);
-        ccdPaymentStateUpdateService.submitPaymentSuccess(caseReference);
-        claimFormScheduler.scheduleClaimFormGeneration(caseReference);
-    }
-
-    private FeesAndPayTaskData toFeesAndPayTaskData(String feesAndPayTaskDataAsString) {
+    private FeesAndPayTaskData toFeesAndPayTaskData(FeePaymentEntity feePaymentEntity) {
+        String taskData = feePaymentEntity.getTaskData();
         try {
-            return objectMapper.readValue(feesAndPayTaskDataAsString, FeesAndPayTaskData.class);
+            log.info("Reading taskdata for {} to FeesAndPayTaskData: {}", feePaymentEntity.getId(), taskData);
+            return objectMapper.readValue(taskData, FeesAndPayTaskData.class);
         } catch (IOException e) {
-            throw new PaymentCallbackException("Unable to process: " + feesAndPayTaskDataAsString, e);
+            throw new PaymentCallbackException("Unable to process: " + taskData, e);
         }
     }
 
