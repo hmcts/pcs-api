@@ -24,12 +24,9 @@ import java.util.stream.Collectors;
 import static uk.gov.hmcts.reform.pcs.ccd.service.form.PartyDisplayMapper.partiesByRole;
 
 /**
- * Selects defence-phase envelopes per recipient, best-effort and per document. A defendant's defence form and
- * any counter-claim (present only once issued) are both served on every party — the claimant and all
- * defendants; only the access code (claim phase) is party-specific. Documents ready for the same recipient
- * are grouped into one envelope;
- * a recipient is sent only the documents that have no {@code DOCUMENT_SENT} success row yet, so a late
- * counter-claim simply follows in a later sweep without re-sending anything already posted.
+ * Selects defence-phase envelopes per recipient. Each party (claimant and defendants) gets the defence form
+ * and any issued counter-claim; only documents without a {@code DOCUMENT_SENT} success row are included, so a
+ * late counter-claim follows in a later sweep without re-sending.
  */
 @Service
 public class DefencePackSelector {

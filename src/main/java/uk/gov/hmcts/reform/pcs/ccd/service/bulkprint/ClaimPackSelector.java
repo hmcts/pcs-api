@@ -22,10 +22,9 @@ import java.util.stream.Collectors;
 import static uk.gov.hmcts.reform.pcs.ccd.service.form.PartyDisplayMapper.partiesByRole;
 
 /**
- * Selects claim-pack envelopes per recipient. The claim form goes to the claimant and every defendant; each
- * defendant additionally gets their own access code and is held until it exists. Tracking is per document —
- * a recipient is sent only the documents that have no {@code DOCUMENT_SENT} success row yet, so a failed
- * access-code letter self-heals without re-sending the claim form.
+ * Selects claim-pack envelopes per recipient. The claim form goes to the claimant and every defendant, each of
+ * whom also gets their own access code once it exists; only documents without a {@code DOCUMENT_SENT} success
+ * row are included, so a failed access-code letter self-heals without re-sending the claim form.
  */
 @Service
 @Slf4j

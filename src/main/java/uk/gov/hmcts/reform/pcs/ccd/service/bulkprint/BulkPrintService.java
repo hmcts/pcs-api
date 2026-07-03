@@ -20,13 +20,8 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * Assembles one pack into a Send Letter letter and posts it. The coversheet and pack documents are merged
- * into a single PDF — coversheet first — so Send Letter's per-document duplicate checksum reflects the whole
- * letter: genuinely different packs to the same recipient (claim / defence / counter-claim) no longer collide
- * on the identical coversheet, while an exact retry produces identical bytes and is still de-duplicated.
- * Rendering the coversheet and fetching document bytes are delegated to {@link CoversheetProvider} and
- * {@link LetterDocumentFetcher}; merging to {@link PdfMerger}. Pure: recording the outcome is the caller's
- * job, so each pack type keeps its own idempotency shape.
+ * Assembles one pack — coversheet then documents, merged into a single PDF by {@link PdfMerger} — into a
+ * Send Letter letter and posts it. Recording the outcome is the caller's job.
  */
 @Service
 public class BulkPrintService {

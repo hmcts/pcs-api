@@ -1,9 +1,9 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.bulkprint;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
@@ -50,8 +50,14 @@ class DefencePackSenderTest {
     @Mock
     private AccessCodeActivityLogService accessCodeActivityLogService;
 
-    @InjectMocks
     private DefencePackSender underTest;
+
+    @BeforeEach
+    void setUp() {
+        underTest = new DefencePackSender(pcsCaseRepository, defencePackSelector, defenceCorrespondenceAddressResolver,
+            recipientAddressResolver, addressMapper, bulkPrintService,
+            new PackSendRecorder(accessCodeActivityLogService));
+    }
 
     private final PcsCaseEntity pcsCase = PcsCaseEntity.builder().caseReference(1234567890123456L).build();
     private final PartyEntity defendant = PartyEntity.builder().id(UUID.randomUUID()).build();

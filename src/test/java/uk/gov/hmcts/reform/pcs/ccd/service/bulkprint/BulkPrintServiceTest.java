@@ -84,8 +84,6 @@ class BulkPrintServiceTest {
         verify(sendLetterApi).sendLetter(eq("s2s"), letterCaptor.capture());
         LetterV3 letter = letterCaptor.getValue();
         assertThat(letter.type).isEqualTo("CPC-01-IN1_pcs_api");
-        // One merged document (coversheet + claim form) so Send Letter's per-document checksum reflects
-        // the whole letter and different packs to one recipient stay distinct.
         assertThat(letter.documents).singleElement()
             .extracting(document -> document.content)
             .isEqualTo(Base64.getEncoder().encodeToString(mergedBytes));
