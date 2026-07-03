@@ -163,7 +163,13 @@ notify:
     general-application-received: e5daba0d-5c66-4c76-9e0f-06646200dc89
 
 testing-support:
-  enabled: ${ENABLE_TESTING_SUPPORT:true}
+  enabled: ${ENABLE_TESTING_SUPPORT:false}
+
+access-code-form:
+  respond-online-url: ${RESPOND_ONLINE_URL:http://localhost:3209/access-your-case}
+
+access-code-test-table:
+  enabled: ${ENABLE_ACCESS_CODE_TEST_TABLE:${testing-support.enabled:false}}
 
 pin-test-table:
   enabled: ${ENABLE_PIN_TEST_TABLE:${testing-support.enabled:false}}
@@ -257,7 +263,6 @@ fees:
     backoff-delay-seconds: ${FEES_AND_PAY_TASK_BACKOFF_DELAY_SECONDS:600s}
 
 access-code:
-  hash-pins-enabled: ${HASH_PINS_ENABLED:false}
   request:
     max-retries: ${ACCESS_CODE_MAX_RETRIES:5}
     backoff-delay-seconds: ${ACCESS_CODE_BACKOFF_DELAY_SECONDS:3600s}

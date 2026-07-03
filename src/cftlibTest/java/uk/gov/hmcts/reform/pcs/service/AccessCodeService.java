@@ -68,9 +68,9 @@ public class AccessCodeService {
 
         return jdbcTemplate.query(
             """
-                SELECT tsp.party_id, tsp.plaintext_code
-                FROM testing_support_pin tsp
-                JOIN pcs_case pcs on pcs.id = tsp.case_id
+                SELECT tsac.party_id, tsac.plaintext_code
+                FROM testing_support_access_code tsac
+                JOIN pcs_case pcs on pcs.id = tsac.case_id
                 WHERE pcs.case_reference = :caseReference
                 """,
             namedParameters,

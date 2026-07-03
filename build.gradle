@@ -546,6 +546,7 @@ tasks.withType(CftlibExec).configureEach {
     logger.quiet("Attaching Mockito Java agent for inline mocking")
   }
 
+  environment 'ENABLE_TESTING_SUPPORT', 'true'
   environment 'RSE_LIB_ADDITIONAL_DATABASES', 'pcs'
   environment 'PCS_DB_USER_NAME', 'postgres'
   environment 'PCS_DB_PASSWORD', 'postgres'
@@ -562,6 +563,8 @@ tasks.withType(CftlibExec).configureEach {
 }
 
 cftlibTest {
+  environment 'ENABLE_TESTING_SUPPORT', 'true'
+
   // To match the fake document URLs returned by the shared Wiremock
   environment 'CCD_DOCUMENT_URL_PATTERN', 'https://docstore/document/[A-Za-z0-9-]+.*'
 

@@ -3,90 +3,49 @@ package uk.gov.hmcts.reform.pcs.ccd.service;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.PartyAccessCodeEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
-import uk.gov.hmcts.reform.pcs.ccd.repository.PartyAccessCodeRepository;
-import uk.gov.hmcts.reform.pcs.ccd.util.AccessCodeGenerator;
-import uk.gov.hmcts.reform.pcs.exception.ClaimNotFoundException;
-import uk.gov.hmcts.reform.pcs.service.PartyAccessCodeHashingService;
-import uk.gov.hmcts.reform.pcs.testingsupport.service.TestPinRecorder;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
+/**
+ * Generates every defendant's access code for a case <b>synchronously</b>, in one call. Used only by
+ * testing-support so a functional test can issue a case and read the PINs immediately; the production
+ * (scheduled) path fans out one task per defendant instead - see {@code AccessCodeGenerationComponent}.
+ * Each defendant is generated in its own transaction via {@link DefendantAccessCodeService}, so one
+ * failure does not roll back the others; defendants that already have a code are skipped. If any
+ * defendant fails, the whole call fails so the caller sees it.
+ */
 @Service
 @AllArgsConstructor
 @Slf4j
 public class AccessCodeGenerationService {
 
-    private final PartyAccessCodeRepository partyAccessCodeRepo;
-    private final PcsCaseService pcsCaseService;
-    private final AccessCodeGenerator accessCodeGenerator;
-    private final PartyAccessCodeHashingService hashingService;
-    private final TestPinRecorder testPinRecorder;
+    private final DefendantAccessCodeService defendantAccessCodeService;
 
-    public PartyAccessCodeEntity createPartyAccessCodeEntity(PcsCaseEntity  pcsCaseEntity, UUID partyId) {
-        String code = hashingService.encodeForStorage(accessCodeGenerator.generateAccessCode());
+    public void createAccessCodesForParties(String caseReference, boolean finalAttempt) {
+        long caseReferenceNumber = Long.parseLong(caseReference);
 
-        return PartyAccessCodeEntity.builder()
-            .partyId(partyId)
-            .pcsCase(pcsCaseEntity)
-            .code(code)
-            .role(PartyRole.DEFENDANT)
-            .build();
-    }
+        List<UUID> defendantPartyIds =
+            defendantAccessCodeService.findDefendantPartyIdsNeedingAccessCode(caseReferenceNumber);
 
-    @Transactional
-    public void createAccessCodesForParties(String caseReference) {
-        PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(Long.parseLong(caseReference));
-
-        Set<UUID> existingPartyIds = partyAccessCodeRepo.findAllByPcsCase_Id(pcsCaseEntity.getId())
-            .stream()
-            .map(PartyAccessCodeEntity::getPartyId)
-            .collect(Collectors.toSet());
-
-        List<PartyEntity> defendants = getMainClaimDefendants(pcsCaseEntity);
-
-        Set<PartyAccessCodeEntity> newCodes = defendants.stream()
-            .filter(d -> !existingPartyIds.contains(d.getId()))
-            .map(d -> createPartyAccessCodeEntity(pcsCaseEntity, d.getId()))
-            .collect(Collectors.toSet());
-
-        // TODO: This will be replaced/removed by HDPI-5819
-        newCodes.forEach(
-            newCode -> {
-                testPinRecorder.record(pcsCaseEntity.getId(), newCode.getPartyId(), newCode.getCode());
+        List<UUID> failedDefendantPartyIds = new ArrayList<>();
+        for (UUID defendantPartyId : defendantPartyIds) {
+            try {
+                defendantAccessCodeService.generateForDefendant(caseReferenceNumber, defendantPartyId, finalAttempt);
+            } catch (Exception e) {
+                failedDefendantPartyIds.add(defendantPartyId);
             }
-        );
-
-        if (!newCodes.isEmpty()) {
-            partyAccessCodeRepo.saveAll(newCodes);
-            log.debug("Created {} new access codes for case {}", newCodes.size(), caseReference);
         }
-    }
 
-    private static List<PartyEntity> getMainClaimDefendants(PcsCaseEntity pcsCaseEntity) {
-        ClaimEntity mainClaim = getMainClaim(pcsCaseEntity);
+        if (!failedDefendantPartyIds.isEmpty()) {
+            throw new IllegalStateException("Access code generation failed for defendants "
+                + failedDefendantPartyIds + " on case " + caseReference);
+        }
 
-        return mainClaim.getClaimParties()
-            .stream()
-            .filter(claimPartyEntity -> PartyRole.DEFENDANT == claimPartyEntity.getRole())
-            .map(ClaimPartyEntity::getParty)
-            .toList();
-    }
-
-    // TODO: Will be refactored as part of HDPI-3232
-    private static ClaimEntity getMainClaim(PcsCaseEntity pcsCaseEntity) {
-        return pcsCaseEntity.getClaims()
-            .stream()
-            .findFirst()
-            .orElseThrow(() -> new ClaimNotFoundException(pcsCaseEntity.getCaseReference()));
+        if (!defendantPartyIds.isEmpty()) {
+            log.debug("Generated {} defendant access-code letter(s) for parties {} on case {}",
+                      defendantPartyIds.size(), defendantPartyIds, caseReference);
+        }
     }
 }
