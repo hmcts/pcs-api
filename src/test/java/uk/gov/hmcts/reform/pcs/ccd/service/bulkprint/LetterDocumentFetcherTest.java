@@ -65,6 +65,20 @@ class LetterDocumentFetcherTest {
     }
 
     @Test
+    @DisplayName("Throws when the download is empty")
+    void shouldThrowWhenDownloadIsEmpty() {
+        UUID documentId = UUID.randomUUID();
+        when(authTokenGenerator.generate()).thenReturn("s2s");
+        when(systemUpdateUserTokenProvider.getAuthToken()).thenReturn("user-token");
+        when(caseDocumentClientApi.getDocumentBinary("user-token", "s2s", documentId))
+            .thenReturn(ResponseEntity.ok(new ByteArrayResource(new byte[0])));
+
+        assertThatThrownBy(() -> underTest.fetchBytes(documentId))
+            .isInstanceOf(IllegalStateException.class)
+            .hasMessageContaining("no content");
+    }
+
+    @Test
     @DisplayName("Returns the bytes when they match the Content-Length")
     void shouldReturnBytesWhenContentLengthMatches() {
         UUID documentId = UUID.randomUUID();

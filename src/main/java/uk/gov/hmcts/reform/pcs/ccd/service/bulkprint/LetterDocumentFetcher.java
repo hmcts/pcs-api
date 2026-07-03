@@ -41,7 +41,10 @@ public class LetterDocumentFetcher {
             documentId
         );
         byte[] content = readAllBytes(response.getBody());
-        // Reject a truncated download rather than posting a partial PDF (Content-Length is -1 when unknown).
+        // Reject an empty or truncated download rather than posting a blank/partial PDF.
+        if (content.length == 0) {
+            throw new IllegalStateException("Document " + documentId + " download returned no content");
+        }
         long expectedLength = response.getHeaders().getContentLength();
         if (expectedLength >= 0 && expectedLength != content.length) {
             throw new IllegalStateException("Document " + documentId + " truncated: expected " + expectedLength
