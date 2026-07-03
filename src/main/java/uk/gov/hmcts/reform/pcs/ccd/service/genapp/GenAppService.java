@@ -143,6 +143,7 @@ public class GenAppService {
                     .generalApplication(genAppEntity)
                     .url(uploadedDocument.getDocument().getUrl())
                     .fileName(updatedFilename)
+                    .originalFileName(originalFilename)
                     .binaryUrl(uploadedDocument.getDocument().getBinaryUrl())
                     .categoryId(CaseFileCategory.APPLICATIONS.getId())
                     .type(uploadedDocument.getDocumentType() != null
