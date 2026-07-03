@@ -24,6 +24,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -100,6 +101,24 @@ class BulkPrintScheduledTaskTest {
         verify(claimActivityLogRepository, never()).findCaseIdsByActivityTypeAndStatus(any(), any());
         verify(claimPackSender).sendClaimPacks(caseId);
         verify(defencePackSender).sendDefencePacks(caseId);
+    }
+
+    @Test
+    @DisplayName("Isolates a failing case so the sweep continues with the rest")
+    void shouldIsolateFailingCaseAndContinue() {
+        UUID failingCase = UUID.randomUUID();
+        UUID healthyCase = UUID.randomUUID();
+        when(featureToggleService.isEnabled(FeatureFlag.BULK_PRINT)).thenReturn(true);
+        when(claimActivityLogRepository.findCaseIdsByActivityTypeAndStatus(
+            ClaimActivityType.DOCUMENTS_CREATED, ClaimActivityStatus.SUCCESS))
+            .thenReturn(List.of(failingCase, healthyCase));
+        doThrow(new RuntimeException("boom")).when(claimPackSender).sendClaimPacks(failingCase);
+
+        assertThatCode(() -> runSweep(null)).doesNotThrowAnyException();
+
+        verify(defencePackSender, never()).sendDefencePacks(failingCase);
+        verify(claimPackSender).sendClaimPacks(healthyCase);
+        verify(defencePackSender).sendDefencePacks(healthyCase);
     }
 
     private void runSweep(Integer lookbackHours) {

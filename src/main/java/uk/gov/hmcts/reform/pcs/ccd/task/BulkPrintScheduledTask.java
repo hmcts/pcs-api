@@ -68,12 +68,20 @@ public class BulkPrintScheduledTask {
             List<UUID> caseIds = discoverCandidateCases();
             log.info("Bulk print sweep starting for {} candidate cases (lookbackHours={})",
                 caseIds.size(), lookbackHours);
-            caseIds.forEach(caseId -> {
-                claimPackSender.sendClaimPacks(caseId);
-                defencePackSender.sendDefencePacks(caseId);
-            });
+            caseIds.forEach(this::sendPacksForCase);
         } finally {
             MDC.remove(MDC_TASK_NAME);
+        }
+    }
+
+    // Isolate each case: a failure discovering or sending one case's packs is logged and skipped, so one bad
+    // case never aborts the sweep for the rest. Per-recipient failures are already handled inside the senders.
+    private void sendPacksForCase(UUID caseId) {
+        try {
+            claimPackSender.sendClaimPacks(caseId);
+            defencePackSender.sendDefencePacks(caseId);
+        } catch (Exception e) {
+            log.error("Bulk print sweep failed for case {}; continuing with remaining cases", caseId, e);
         }
     }
 
