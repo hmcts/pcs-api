@@ -55,6 +55,7 @@ const setupGlobalSearchUser = async (
       formattedClaimantContactAddress: `${globalSearchTestData.addressLine1}<br>${propertyAddress.PostTown}<br>${globalSearchTestData.postcode}`
     }
   });
+
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
 
   await dismissCookieBanner(page, 'additional');
