@@ -8,6 +8,7 @@ import { getCaseTypeId } from '@utils/common/caseType.utils';
 import { caseList, caseSummary } from '@data/page-data';
 import { beforeYouStart } from '@data/page-data/beforeYouStart.page.data';
 import { checkYourAnswersCaseLinking } from '@data/page-data/checkYourAnswersCaseLinking.page.data';
+import { workAccess } from '@data/page-data-figma';
 let caseNumbers: string[] = [];
 
 export class CaseLinking implements IAction {
@@ -19,7 +20,8 @@ export class CaseLinking implements IAction {
       ['navigateToCaseSummary', () => this.navigateToCaseSummary(fieldName as actionRecord)],
       ['canLinkCases', () => this.canLinkCases(fieldName as actionRecord, page)],
       ['canManageCases', () => this.canManageCases(fieldName as actionRecord, page)],
-      ['canViewLinkedCases', () => this.canViewLinkedCases(fieldName as actionRecord, page)]
+      ['canViewLinkedCases', () => this.canViewLinkedCases(fieldName as actionRecord, page)],
+      ['handleJudgeBookingPage', () => this.handleJudgeBookingPage(page)]
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -146,6 +148,14 @@ export class CaseLinking implements IAction {
     } else {
       await expect(linkedCasesTab).not.toBeVisible();
     }
+  }
+
+  private async handleJudgeBookingPage(page: Page): Promise<void> {
+    await performValidation('mainHeader', workAccess.mainHeader);
+    await expect(page.getByRole('radio', { name: workAccess.viewTasksAndCasesOption, exact: true })).toBeVisible();
+    await page.getByRole('radio', { name: workAccess.viewTasksAndCasesOption, exact: true }).check();
+    await page.getByRole('button', { name: workAccess.continueButton, exact: true }).click();
+    await performValidation('mainHeader', caseList.mainHeader);
   }
 
   public async createCases(count: number): Promise<string[]> {

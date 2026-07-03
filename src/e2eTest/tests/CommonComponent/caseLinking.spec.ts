@@ -12,7 +12,7 @@ import { selectCasesToLink } from '@data/page-data/selectCaseToLink.page.data';
 import { selectCasesToUnLink } from '@data/page-data/selectCasesToUnLink.page.data';
 import { checkYourAnswersCaseLinking } from '@data/page-data/checkYourAnswersCaseLinking.page.data';
 import { dismissCookieBanner } from '@config/cookie-banner';
-import { CaseLinking } from '@utils/actions/custom-actions/commonComponent/caseLinking.action'; 
+import { CaseLinking } from '@utils/actions/custom-actions/commonComponent/caseLinking.action';
 import { staff } from '@data/user-data/staff.user.data';
 import { judicial } from '@data/user-data/judicial.user.data';
 
@@ -90,6 +90,7 @@ test.describe('[Common Component Case Linking - Access Management] @nightly @cas
   test('Judicial users can create, manage and view case linking  @CC @caseLinking', async ({page, context}) => {
      await performAction('login', {email: judicial.possessionFeePaid_Judge_email, password: process.env.IDAM_PCS_USER_PASSWORD});
      await dismissCookieBanner(page, 'analytics');
+     await performAction('handleJudgeBookingPage');
      await performAction('navigateToCaseSummary', 'yes');
      await performAction('canLinkCases', 'yes');
      await performAction('canManageCases', 'yes');
@@ -114,7 +115,7 @@ test.describe('[Common Component Case Linking - Access Management] @nightly @cas
     await performAction('canManageCases', 'no');
     await performAction('canViewLinkedCases', 'no');
   });
-  
+
   test('WLUTeamLead user cannot view, create or manage case linking @CC @nightly @caseLinking', async ({ page, context }) => {
    await performAction('login', {email: staff.pcs_wlu_team_leader_ca_email, password: process.env.IDAM_PCS_USER_PASSWORD});
     await dismissCookieBanner(page, 'analytics');
