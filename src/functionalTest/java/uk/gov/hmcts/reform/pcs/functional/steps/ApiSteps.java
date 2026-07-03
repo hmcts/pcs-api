@@ -175,6 +175,15 @@ public class ApiSteps {
 
     @Step("a case for {0} is created")
     public Long ccdCaseIsCreated(String legislativeCountry) {
+        return createCase(legislativeCountry, false);
+    }
+
+    @Step("a case for {0} is created, issued and access codes generated")
+    public Long ccdCaseIsCreatedAndIssued(String legislativeCountry) {
+        return createCase(legislativeCountry, true);
+    }
+
+    private Long createCase(String legislativeCountry, boolean issueAndGenerateAccessCodes) {
         final int maxAttempts = 3;
 
         for (int attempt = 1; attempt <= maxAttempts; attempt++) {
@@ -184,6 +193,7 @@ public class ApiSteps {
                 .header(TestConstants.AUTHORIZATION, "Bearer " + solicitorUserIdamToken)
                 .header(TestConstants.SERVICE_AUTHORIZATION, pcsApiS2sToken)
                 .pathParam("legislativeCountry", legislativeCountry)
+                .queryParam("issueAndGenerateAccessCodes", issueAndGenerateAccessCodes)
                 .when()
                 .post(Endpoints.CreateTestCase.getResource());
 
