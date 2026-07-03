@@ -37,8 +37,11 @@ public class AccessCodeActivityLogService {
     }
 
     /**
-     * A document was posted to a recipient. The (recipient, document) SUCCESS row is the bulk-print dedup key.
+     * A document was posted to a recipient. The (recipient, document) SUCCESS row is the bulk-print dedup key,
+     * so it commits in its own transaction: the post is irreversible, and the send runs outside any caller
+     * transaction.
      */
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void recordDocumentSent(PcsCaseEntity pcsCase, PartyEntity recipient, DocumentEntity document) {
         save(pcsCase, recipient, document, ClaimActivityType.DOCUMENT_SENT, ClaimActivityStatus.SUCCESS);
     }

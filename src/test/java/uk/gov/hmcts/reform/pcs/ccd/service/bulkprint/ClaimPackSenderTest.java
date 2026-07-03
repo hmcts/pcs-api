@@ -6,21 +6,13 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.mockito.junit.jupiter.MockitoSettings;
-import org.mockito.quality.Strictness;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
-import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
-import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.AccessCodeActivityLogService;
-import uk.gov.hmcts.reform.pcs.ccd.service.form.RecipientAddressResolver;
-import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -30,19 +22,12 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-@MockitoSettings(strictness = Strictness.LENIENT)
 class ClaimPackSenderTest {
 
     private static final UUID CASE_ID = UUID.randomUUID();
 
     @Mock
-    private PcsCaseRepository pcsCaseRepository;
-    @Mock
-    private ClaimPackSelector claimPackSelector;
-    @Mock
-    private RecipientAddressResolver recipientAddressResolver;
-    @Mock
-    private AddressMapper addressMapper;
+    private PackRecipientResolver packRecipientResolver;
     @Mock
     private BulkPrintService bulkPrintService;
     @Mock
@@ -50,44 +35,37 @@ class ClaimPackSenderTest {
 
     private ClaimPackSender underTest;
 
-    @BeforeEach
-    void setUp() {
-        underTest = new ClaimPackSender(pcsCaseRepository, claimPackSelector, recipientAddressResolver,
-            addressMapper, bulkPrintService, new PackSendRecorder(accessCodeActivityLogService));
-    }
-
     private final PcsCaseEntity pcsCase = PcsCaseEntity.builder().caseReference(1234567890123456L).build();
     private final PartyEntity recipient = PartyEntity.builder().id(UUID.randomUUID()).build();
     private final DocumentEntity claimForm = DocumentEntity.builder().id(UUID.randomUUID()).build();
+    private final AddressUK address = AddressUK.builder().addressLine1("1 High Street").build();
 
-    @Test
-    @DisplayName("Does nothing when the case is not found")
-    void shouldDoNothingWhenCaseNotFound() {
-        when(pcsCaseRepository.findById(CASE_ID)).thenReturn(Optional.empty());
-
-        underTest.sendClaimPacks(CASE_ID);
-
-        verifyNoInteractions(bulkPrintService, claimPackSelector);
+    @BeforeEach
+    void setUp() {
+        underTest = new ClaimPackSender(packRecipientResolver, bulkPrintService,
+            new PackSendRecorder(accessCodeActivityLogService));
     }
 
     @Test
-    @DisplayName("Resolves the address, sends the claimant pack and records the document sent")
-    void shouldResolveAddressAndSendClaimantPack() {
-        AddressEntity postalAddress = AddressEntity.builder().addressLine1("1 High Street").build();
-        AddressUK addressUk = AddressUK.builder().addressLine1("1 High Street").build();
-        when(pcsCaseRepository.findById(CASE_ID)).thenReturn(Optional.of(pcsCase));
-        when(claimPackSelector.findClaimPackCandidates(pcsCase))
-            .thenReturn(List.of(new ClaimPackCandidate(PartyRole.CLAIMANT, recipient, List.of(claimForm))));
-        when(recipientAddressResolver.resolveDisplayName(recipient)).thenReturn("Acme Ltd");
-        when(recipientAddressResolver.resolvePostalAddress(recipient, PartyRole.CLAIMANT, pcsCase.getPropertyAddress()))
-            .thenReturn(postalAddress);
-        when(addressMapper.toAddressUK(postalAddress)).thenReturn(addressUk);
+    @DisplayName("Does nothing when there are no recipients")
+    void shouldDoNothingWhenNoRecipients() {
+        when(packRecipientResolver.resolveClaimRecipients(CASE_ID)).thenReturn(List.of());
+
+        underTest.sendClaimPacks(CASE_ID);
+
+        verifyNoInteractions(bulkPrintService, accessCodeActivityLogService);
+    }
+
+    @Test
+    @DisplayName("Posts each resolved recipient and records the document sent")
+    void shouldPostResolvedRecipientAndRecordDocumentSent() {
+        when(packRecipientResolver.resolveClaimRecipients(CASE_ID)).thenReturn(List.of(resolvedRecipient()));
         when(bulkPrintService.sendPack(any(), any(), any(), any(), any(), any())).thenReturn(UUID.randomUUID());
 
         underTest.sendClaimPacks(CASE_ID);
 
         verify(bulkPrintService).sendPack(pcsCase, recipient,
-            LetterType.CLAIMANT_CLAIM_PACK, "Acme Ltd", addressUk, List.of(claimForm));
+            LetterType.CLAIMANT_CLAIM_PACK, "Acme Ltd", address, List.of(claimForm));
         verify(accessCodeActivityLogService).recordDocumentSent(pcsCase, recipient, claimForm);
         verify(accessCodeActivityLogService, never()).recordDocumentSendFailure(any(), any(), any());
     }
@@ -95,14 +73,17 @@ class ClaimPackSenderTest {
     @Test
     @DisplayName("Records a document-send failure when the send throws a missing address")
     void shouldRecordFailureWhenSendThrowsMissingAddress() {
-        when(pcsCaseRepository.findById(CASE_ID)).thenReturn(Optional.of(pcsCase));
-        when(claimPackSelector.findClaimPackCandidates(pcsCase))
-            .thenReturn(List.of(new ClaimPackCandidate(PartyRole.DEFENDANT, recipient, List.of(claimForm))));
+        when(packRecipientResolver.resolveClaimRecipients(CASE_ID)).thenReturn(List.of(resolvedRecipient()));
         when(bulkPrintService.sendPack(any(), any(), any(), any(), any(), any()))
             .thenThrow(new MissingPostalAddressException("no address"));
 
         underTest.sendClaimPacks(CASE_ID);
 
         verify(accessCodeActivityLogService).recordDocumentSendFailure(pcsCase, recipient, claimForm);
+    }
+
+    private ResolvedRecipient resolvedRecipient() {
+        return new ResolvedRecipient(pcsCase, recipient, LetterType.CLAIMANT_CLAIM_PACK, List.of(claimForm),
+            "Acme Ltd", address);
     }
 }
