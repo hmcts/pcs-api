@@ -75,14 +75,17 @@ public class BulkPrintScheduledTask {
         }
     }
 
-    // Isolate each case: a failure discovering or sending one case's packs is logged and skipped, so one bad
-    // case never aborts the sweep for the rest. Per-recipient failures are already handled inside the senders.
+    // Claim and defence are independent; isolate each so one failing never stops the other or the sweep.
     private void sendPacksForCase(UUID caseId) {
+        sendPhase(caseId, "claim pack", () -> claimPackSender.sendClaimPacks(caseId));
+        sendPhase(caseId, "defence pack", () -> defencePackSender.sendDefencePacks(caseId));
+    }
+
+    private void sendPhase(UUID caseId, String phase, Runnable send) {
         try {
-            claimPackSender.sendClaimPacks(caseId);
-            defencePackSender.sendDefencePacks(caseId);
+            send.run();
         } catch (Exception e) {
-            log.error("Bulk print sweep failed for case {}; continuing with remaining cases", caseId, e);
+            log.error("Bulk print {} send failed for case {}; continuing", phase, caseId, e);
         }
     }
 

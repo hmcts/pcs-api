@@ -104,8 +104,8 @@ class BulkPrintScheduledTaskTest {
     }
 
     @Test
-    @DisplayName("Isolates a failing case so the sweep continues with the rest")
-    void shouldIsolateFailingCaseAndContinue() {
+    @DisplayName("A claim-pack failure isolates to that phase; defence and other cases still run")
+    void shouldIsolateFailingPhaseAndContinue() {
         UUID failingCase = UUID.randomUUID();
         UUID healthyCase = UUID.randomUUID();
         when(featureToggleService.isEnabled(FeatureFlag.BULK_PRINT)).thenReturn(true);
@@ -116,7 +116,7 @@ class BulkPrintScheduledTaskTest {
 
         assertThatCode(() -> runSweep(null)).doesNotThrowAnyException();
 
-        verify(defencePackSender, never()).sendDefencePacks(failingCase);
+        verify(defencePackSender).sendDefencePacks(failingCase);
         verify(claimPackSender).sendClaimPacks(healthyCase);
         verify(defencePackSender).sendDefencePacks(healthyCase);
     }

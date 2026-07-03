@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.pcs.ccd.service.bulkprint;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.io.Resource;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.ccd.document.am.feign.CaseDocumentClientApi;
@@ -33,12 +34,19 @@ public class LetterDocumentFetcher {
     }
 
     public byte[] fetchBytes(UUID documentId) {
-        Resource resource = caseDocumentClientApi.getDocumentBinary(
+        ResponseEntity<Resource> response = caseDocumentClientApi.getDocumentBinary(
             systemUpdateUserTokenProvider.getAuthToken(),
             authTokenGenerator.generate(),
             documentId
-        ).getBody();
-        return readAllBytes(resource);
+        );
+        byte[] content = readAllBytes(response.getBody());
+        // Reject a truncated download rather than posting a partial PDF (Content-Length is -1 when unknown).
+        long expectedLength = response.getHeaders().getContentLength();
+        if (expectedLength >= 0 && expectedLength != content.length) {
+            throw new IllegalStateException("Document " + documentId + " truncated: expected " + expectedLength
+                + " bytes but read " + content.length);
+        }
+        return content;
     }
 
     private byte[] readAllBytes(Resource resource) {
