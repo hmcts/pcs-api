@@ -15,11 +15,11 @@ public enum CaseStateOption implements HasLabel {
 
     JUDICIAL_REFERRAL("Judicial Referral"),
     HEARING_READINESS("Hearing Readiness"),
-    PREPARE_FOR_HEARING_CONDUCT_HEARING	("Prepare For Hearing Conduct Hearing"),
+    PREPARE_FOR_HEARING_CONDUCT_HEARING("Prepare For Hearing Conduct Hearing"),
     DECISION_OUTCOME("Decision Outcome"),
     CASE_PROGRESSION("Case Progression"),
-    ALL_FINAL_ORDERS_ISSUED	("All Final Orders"),
-    CASE_STAYED	("Case Stayed"),
+    ALL_FINAL_ORDERS_ISSUED("All Final Orders"),
+    CASE_STAYED("Case Stayed"),
     BREATHING_SPACE("Breathing space");
 
     private final String label;

@@ -72,7 +72,8 @@ public class ChangeCaseState implements CCDConfig<PCSCase, State, UserRole> {
             </div>
 
             <h3 class="govuk-heading-s">What happens next</h3>
-            <p class="govuk-body govuk-!-margin-bottom-6">The case will progress according to the state it has been changed to.</p>
+            <p class="govuk-body govuk-!-margin-bottom-6">The case will progress according to the state it has been
+            changed to.</p>
             """.formatted(caseReference, address);
     }
 }
