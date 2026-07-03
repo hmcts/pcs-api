@@ -10,6 +10,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
+import uk.gov.hmcts.reform.pcs.ccd.service.FileUploadValidationService;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
 import java.time.Clock;
@@ -23,11 +24,14 @@ public class TenancyLicenceDetailsPage implements CcdPageConfiguration {
 
     private final Clock ukClock;
     private final TextAreaValidationService textAreaValidationService;
+    private final FileUploadValidationService fileUploadValidationService;
 
     public TenancyLicenceDetailsPage(@Qualifier("ukClock") Clock ukClock,
-                                TextAreaValidationService textAreaValidationService) {
+                                TextAreaValidationService textAreaValidationService,
+                                FileUploadValidationService fileUploadValidationService) {
         this.ukClock = ukClock;
         this.textAreaValidationService = textAreaValidationService;
+        this.fileUploadValidationService = fileUploadValidationService;
     }
 
     @Override
@@ -100,6 +104,14 @@ public class TenancyLicenceDetailsPage implements CcdPageConfiguration {
                     ? caseData.getTenancyLicenceDetails().getReasonsForNoTenancyLicenceDocuments() : null,
                 TenancyLicenceDetails.REASONS_FOR_NO_TENANCY_LICENCE_DOCUMENTS_LABEL,
                 TextAreaValidationService.MEDIUM_TEXT_LIMIT
+            )
+        );
+
+        // Validate uploaded documents for disallowed file types
+        validationErrors.addAll(
+            fileUploadValidationService.validateDocuments(
+                caseData.getTenancyLicenceDetails() != null
+                    ? caseData.getTenancyLicenceDetails().getTenancyLicenceDocuments() : null
             )
         );
 
