@@ -11,16 +11,13 @@ import uk.gov.hmcts.ccd.sdk.api.noc.NocAnswersResponse;
 import uk.gov.hmcts.ccd.sdk.api.noc.NocOrganisation;
 import uk.gov.hmcts.ccd.sdk.api.noc.NocSubmissionResponse;
 import uk.gov.hmcts.ccd.sdk.api.noc.NocSubmitContext;
-import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeOrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
-import uk.gov.hmcts.reform.pcs.ccd.model.NocAccessChangeAction;
 import uk.gov.hmcts.reform.pcs.ccd.model.NocAccessChangeTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.LegalRepresentativeOrganisationRepository;
@@ -28,7 +25,6 @@ import uk.gov.hmcts.reform.pcs.ccd.task.NocAccessChangeTaskComponent;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationDetailsService;
-import uk.gov.hmcts.reform.pcs.service.LegalRepresentativePartyLinkService;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -37,6 +33,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+
+import static uk.gov.hmcts.ccd.sdk.api.noc.NocError.ANSWERS_NOT_IDENTIFY_LITIGANT;
 
 @Component
 @RequiredArgsConstructor
@@ -51,7 +49,6 @@ public class PcsNoticeOfChange implements CCDConfig<PCSCase, State, UserRole> {
 
     private final PcsCaseRepository pcsCaseRepository;
     private final LegalRepresentativeOrganisationRepository legalRepresentativeRepository;
-    private final LegalRepresentativePartyLinkService legalRepresentativePartyLinkService;
     private final OrganisationDetailsService organisationDetailsService;
     private final SchedulerClient schedulerClient;
 
@@ -90,15 +87,15 @@ public class PcsNoticeOfChange implements CCDConfig<PCSCase, State, UserRole> {
         }
 
         PartyEntity matchedParty = matches.getFirst();
-        UUID currentUserId = currentUserId(context);
+        OrganisationDetailsResponse organisation = organisationDetailsService.getOrganisationDetails(context.userId());
+
         if (legalRepresentativeRepository.isRepresentativeOrganisationLinkedToPartyAndActive(
-            currentUserId.toString(),
+            organisation.getOrganisationIdentifier(),
             matchedParty.getId()
         )) {
             return NocAnswersResponse.requestingOrgAlreadyRepresentsParty();
         }
 
-        OrganisationDetailsResponse organisation = organisationDetailsService.getOrganisationDetails(context.userId());
         return NocAnswersResponse.verified(new NocOrganisation(
             organisation.getOrganisationIdentifier(),
             organisation.getName()
@@ -114,23 +111,13 @@ public class PcsNoticeOfChange implements CCDConfig<PCSCase, State, UserRole> {
         PcsCaseEntity pcsCase = loadCase(request.caseId());
         PartyEntity matchedParty = matchingDefendants(pcsCase, request).getFirst();
         UUID currentUserId = currentUserId(context);
-        Optional<LegalRepresentativeOrganisationEntity> incumbent = legalRepresentativeRepository
-            .findByOrganisationIdAndCaseReference(currentUserId.toString(), pcsCase.getCaseReference());
-        NocAccessChangePlan accessChangePlan = planAccessChanges(
-            pcsCase,
-            matchedParty,
-            incumbent,
-            currentUserId,
-            context.userId()
-        );
-
         OrganisationDetailsResponse organisationDetails = organisationDetailsService.getOrganisationDetails(
             currentUserId.toString());
 
-        legalRepresentativePartyLinkService.linkLegalRepresentativeToParty(
-            pcsCase.getCaseReference(),
-            matchedParty.getId().toString(),
-            currentUserId,
+        NocAccessChangePlan accessChangePlan = planAccessChanges(
+            pcsCase,
+            matchedParty,
+            context.userId(),
             organisationDetails
         );
 
@@ -142,55 +129,30 @@ public class PcsNoticeOfChange implements CCDConfig<PCSCase, State, UserRole> {
     private NocAccessChangePlan planAccessChanges(
         PcsCaseEntity pcsCase,
         PartyEntity matchedParty,
-        Optional<LegalRepresentativeOrganisationEntity> incumbent,
-        UUID currentUserId,
-        String currentUserIdString
+        String currentUserIdString,
+        OrganisationDetailsResponse organisationDetailsResponse
     ) {
         List<NocAccessChangeTaskData> changes = new ArrayList<>();
         if (!legalRepresentativeRepository.isRepresentativeOrganisationLinkedToPartyAndActive(
-            currentUserId.toString(),
+            organisationDetailsResponse.getOrganisationIdentifier(),
             matchedParty.getId()
         )) {
-            changes.add(accessChange(pcsCase.getCaseReference(), currentUserIdString, NocAccessChangeAction.GRANT));
+            changes.add(accessChange(pcsCase.getCaseReference(), currentUserIdString, organisationDetailsResponse, matchedParty.getId()));
         }
-
-//        incumbent
-//            .filter(representation -> shouldRevokeIncumbent(representation, pcsCase, matchedParty, currentUserId))
-//            .map(LegalRepresentativeEntity::getIdamId)
-//            .map(UUID::toString)
-//            .map(userId -> accessChange(pcsCase.getCaseReference(), userId, NocAccessChangeAction.REVOKE))
-//            .ifPresent(changes::add);
-
         return new NocAccessChangePlan(changes);
-    }
-
-    private boolean shouldRevokeIncumbent(
-        LegalRepresentativeOrganisationEntity incumbent,
-        PcsCaseEntity pcsCase,
-        PartyEntity matchedParty,
-        UUID currentUserId
-    ) {
-
-        return false;
-//        UUID previousUserId = incumbent.getIdamId();
-//        return previousUserId != null
-//            && !previousUserId.equals(currentUserId)
-//            && !legalRepresentativeRepository.isRepresentativeOrganisationLinkedToPartyAndActive(
-//                incumbent.getId(),
-//                pcsCase.getCaseReference(),
-//                matchedParty.getId()
-//            );
     }
 
     private NocAccessChangeTaskData accessChange(
         long caseReference,
         String userId,
-        NocAccessChangeAction action
+        OrganisationDetailsResponse organisationDetailsResponse,
+        UUID partyId
     ) {
         return NocAccessChangeTaskData.builder()
             .caseReference(String.valueOf(caseReference))
+            .organisationDetailsResponse(organisationDetailsResponse)
             .userId(userId)
-            .action(action)
+            .partyId(partyId.toString())
             .build();
     }
 
@@ -204,8 +166,7 @@ public class PcsNoticeOfChange implements CCDConfig<PCSCase, State, UserRole> {
     }
 
     private String taskId(NocAccessChangeTaskData change) {
-        return "noc-%s-%s-%s".formatted(
-            change.getAction().name().toLowerCase(),
+        return "noc-%s-%s".formatted(
             change.getCaseReference(),
             change.getUserId()
         );
@@ -254,11 +215,11 @@ public class PcsNoticeOfChange implements CCDConfig<PCSCase, State, UserRole> {
 
     private Optional<NocAnswersResponse> validateMatches(List<PartyEntity> matches) {
         if (matches.isEmpty()) {
-            return Optional.of(NocAnswersResponse.answersNotMatchedAnyLitigant());
+            return Optional.of(NocAnswersResponse.invalid("ANSWERS_NOT_MATCHED_ANY_LITIGANT", "We cannot find a defendant matching this name. Enter their name exactly as it appears on any documents received from the court"));
         }
 
         if (matches.size() > 1) {
-            return Optional.of(NocAnswersResponse.answersNotIdentifyLitigant());
+            return Optional.of(NocAnswersResponse.invalid(ANSWERS_NOT_IDENTIFY_LITIGANT, "A notice of change cannot be completed for this defendant as there is more than one defendant with the same name on this case. Contact the issuing court for help."));
         }
 
         return Optional.empty();
@@ -288,17 +249,6 @@ public class PcsNoticeOfChange implements CCDConfig<PCSCase, State, UserRole> {
 
     private UUID currentUserId(NocSubmitContext context) {
         return UUID.fromString(context.userId());
-    }
-
-    private UserInfo userInfo(NocSubmitContext context) {
-        return new UserInfo(
-            context.email(),
-            context.userId(),
-            context.name(),
-            context.givenName(),
-            context.familyName(),
-            context.roles()
-        );
     }
 
     private record NocAccessChangePlan(List<NocAccessChangeTaskData> changes) {

@@ -350,7 +350,6 @@ public class PCSCase {
      */
     @CCD(access = {ClaimantAccess.class, CitizenAccess.class, InternalCaseFlagAccess.class, AcaSystemUserAccess.class})
     private List<ListValue<Party>> allDefendants;
-    //
 
     @JsonUnwrapped(prefix = "tenancy_")
     @CCD
