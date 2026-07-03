@@ -40,6 +40,7 @@ public class DocumentsView {
 
         return pcsCaseEntity.getDocuments().stream()
             .filter(documentEntity -> this.isDocumentVisibleToUser(documentEntity, currentUserId))
+            .filter(this::isNotInCaseDetailsTab)
             .map(entity -> ListValue.<Document>builder()
                 .id(entity.getId().toString())
                 .value(Document.builder()
@@ -83,4 +84,25 @@ public class DocumentsView {
         return ObjectUtils.isEmpty(documentEntity.getDescription())
                 || documentEntity.getDescription().trim().isEmpty();
     }
+
+    private boolean isNotInCaseDetailsTab(DocumentEntity documentEntity) {
+        List<DocumentType> caseDetailsDocuments = List.of(
+            DocumentType.TENANCY_AGREEMENT,
+            DocumentType.POSSESSION_NOTICE,
+            DocumentType.RENT_STATEMENT,
+            DocumentType.ENERGY_PERFORMANCE_CERTIFICATE,
+            DocumentType.EICR_REPORT,
+            DocumentType.GAS_SAFETY_CERTIFICATE,
+            DocumentType.OCCUPATION_LICENCE
+        );
+
+        DocumentType type = documentEntity.getType();
+        if (type == null || !caseDetailsDocuments.contains(type)) {
+            return true;
+        }
+
+        // Is not an additional document
+        return !isDescriptionEmpty(documentEntity);
+    }
+
 }
