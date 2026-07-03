@@ -62,6 +62,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractGroundsForPossessi
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -541,7 +542,7 @@ public class PCSCase {
     /**
      * Combined list of all underlessees/mortgagees in the case.
      */
-    @CCD(access = ClaimantAccess.class)
+    @CCD(access = {ClaimantAccess.class, DefendantAccess.class})
     private List<ListValue<Party>> allUnderlesseeOrMortgagees;
 
     @CCD(
@@ -551,7 +552,7 @@ public class PCSCase {
     )
     private WaysToPay waysToPay;
 
-    @CCD
+    @CCD(access = {ClaimantAccess.class, DefendantAccess.class})
     private StatementOfTruthDetails statementOfTruth;
 
     @CCD(searchable = false)
@@ -603,6 +604,9 @@ public class PCSCase {
 
     @CCD(access = {ClaimantAccess.class, DefendantAccess.class})
     private LocalDateTime dateSubmitted;
+
+    @CCD(access = {ClaimantAccess.class, DefendantAccess.class}, label = "Date claim issued")
+    private LocalDate claimIssueDate;
 
     @CCD(access = {ClaimantAccess.class, DefendantAccess.class})
     private LocalDateTime dateIssued;

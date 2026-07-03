@@ -6,6 +6,7 @@ import { caseSummary, serviceRequest } from '@data/page-data';
 import { backDateTheCasePaymentApiData } from '@data/api-data/backDateTheCasePayment.api.data';
 import { refundAndRemission } from '@data/user-data/staff.user.data';
 import Axios from "axios";
+import {getCaseTypeId} from '@utils/common/caseType.utils';
 
 export class FeeAndPayAction implements IAction {
   async execute(page: Page, action: string, fieldName: actionData | actionRecord, data?: actionData): Promise<void> {
@@ -84,7 +85,7 @@ export class FeeAndPayAction implements IAction {
       retryCount < maxRetries;
       retryCount++
     ) {
-      await performAction('clickTab', caseSummary.servieRequestTab);
+      await performAction('clickTab', caseSummary.serviceRequestTab);
       const payNowLocator = page.getByText(payNowText,{ exact: true });
       let isPayNowVisible = false;
       for (let i = 0; i < 10; i++) {
@@ -114,8 +115,7 @@ export class FeeAndPayAction implements IAction {
       console.log('Verification steps skipped as this is NOT working in PREVIEW env. POFCC-229');
     } else {
       console.log('Verifying payment status');
-      await performAction('clickButton', statusDetails.serviceReqLink);
-      await performAction('clickTab', statusDetails.historyTab);
+      await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/${getCaseTypeId()}/${process.env.CASE_NUMBER}#History`);
       //Implementing retry login because POFCC-238
       const maxRetries = 10;
       let isStatusUpdated = false;
@@ -150,7 +150,7 @@ export class FeeAndPayAction implements IAction {
 
   private async navigateToServiceRequestReview(page: Page): Promise<void> {
     await performAction('clickLink', serviceRequest.viewLink);
-    await performAction('clickTab', caseSummary.servieRequestTab);
+    await performAction('clickTab', caseSummary.serviceRequestTab);
     await page.getByRole('link', { name: serviceRequest.reviewLink }).first().click();
   }
 
@@ -188,7 +188,7 @@ export class FeeAndPayAction implements IAction {
 
   private async navigateToRefundsReview(page: Page): Promise<void> {
     await performAction('clickLink', serviceRequest.viewLink);
-    await performAction('clickTab', caseSummary.servieRequestTab);
+    await performAction('clickTab', caseSummary.serviceRequestTab);
     await page.locator('ccpay-refund-status').getByRole('link', { name: serviceRequest.reviewLink }).click();
   }
 
@@ -199,7 +199,7 @@ export class FeeAndPayAction implements IAction {
     await performAction('clickButton', serviceRequest.submitButton);
     await performValidation('mainHeader', serviceRequest.refundApprovedHeader);
     await performAction('clickLink', serviceRequest.returnToCaseLink);
-    await performAction('clickTab', caseSummary.servieRequestTab);
+    await performAction('clickTab', caseSummary.serviceRequestTab);
     await expect(page.getByRole('cell', { name: serviceRequest.approvedStatus, exact: true })).toBeVisible();
   }
 
@@ -211,7 +211,7 @@ export class FeeAndPayAction implements IAction {
     await performAction('clickButton', serviceRequest.submitButton);
     await performValidation('mainHeader', serviceRequest.refundRejectedHeader);
     await performAction('clickLink', serviceRequest.returnToCaseLink);
-    await performAction('clickTab', caseSummary.servieRequestTab);
+    await performAction('clickTab', caseSummary.serviceRequestTab);
     await expect(page.getByRole('cell', { name: serviceRequest.rejectedStatus, exact: true })).toBeVisible();
   }
 }
