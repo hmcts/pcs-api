@@ -13,6 +13,16 @@
         "attributes": {
         },
         "authorisations": []
+      },
+      {
+        "roleType": "CASE",
+        "roleName": "idam:caseworker-pcs-solicitor",
+        "grantType": "SPECIFIC",
+        "roleCategory": "PROFESSIONAL",
+        "classification": "RESTRICTED",
+        "readOnly": false,
+        "attributes": { "caseType": "PCS", "jurisdiction": "PCS" },
+        "authorisations": []
       }
     ]
   }

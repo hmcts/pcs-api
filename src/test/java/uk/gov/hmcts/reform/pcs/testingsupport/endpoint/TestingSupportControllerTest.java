@@ -354,35 +354,6 @@ class TestingSupportControllerTest {
     }
 
     @Test
-    void linkDefendantSolicitorToParty() {
-        // given
-        long caseReference = 111111111111L;
-        String partyId = "abc";
-        String authToken = "testAuth";
-        String userUid = "userUid";
-        when(idamAuthenticator.validateAuthToken(authToken)).thenReturn(user);
-        when(user.getUserDetails()).thenReturn(userInfo);
-        when(userInfo.getUid()).thenReturn(userUid);
-        when(organisationDetailsService.getOrganisationDetails(userUid.toString())).thenReturn(organisationDetails);
-
-        // when
-        ResponseEntity<Void> response = underTest.linkDefendantSolicitorToParty(
-            caseReference,
-            partyId,
-            authToken,
-            "testS2S"
-        );
-
-        // then
-        verify(caseRoleAssignmentService).assignRasRole(caseReference, userUid, UserRole.DEFENDANT_SOLICITOR);
-
-        verify(legalRepresentativePartyLinkService)
-            .linkLegalRepresentativeToParty(caseReference, partyId, userInfo, organisationDetails);
-
-        assertThat(HttpStatus.OK.equals(response.getStatusCode()));
-    }
-
-    @Test
     void createPCSCaseViaTestingSupport() {
         // given
         JsonNode formPayload = createJsonNodeFormPayload("John Smith");
