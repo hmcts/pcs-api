@@ -66,9 +66,8 @@ class ClaimFormPersistenceServiceIT extends AbstractPostgresContainerIT {
     @DisplayName("rolls back the attached document when the DOCUMENTS_CREATED write fails")
     void documentRolledBackWhenActivityLogWriteFails() {
         long caseReference = 1781000000000011L;
-        PcsCaseEntity caseEntity = caseCreationHelper.createTestCaseWithParty(
+        final PcsCaseEntity caseEntity = caseCreationHelper.createTestCaseWithParty(
             caseReference, UUID.randomUUID(), PartyRole.CLAIMANT);
-        UUID claimId = caseEntity.getClaims().getFirst().getId();
         when(documentImportService.addDocumentToCase(eq(caseReference), anyString(), any()))
             .thenReturn(DocumentEntity.builder().documentId(UUID.randomUUID()).build());
         doThrow(new RuntimeException("activity log write failed"))
@@ -76,6 +75,7 @@ class ClaimFormPersistenceServiceIT extends AbstractPostgresContainerIT {
 
         assertThrows(RuntimeException.class, () -> claimFormPersistenceService.attach(caseReference, DM_STORE_URL));
 
+        UUID claimId = caseEntity.getClaims().getFirst().getId();
         assertThat(claimRepository.findById(claimId).orElseThrow().getClaimFormDocument())
             .as("the document write must roll back with the failed activity-log write")
             .isNull();
@@ -85,14 +85,14 @@ class ClaimFormPersistenceServiceIT extends AbstractPostgresContainerIT {
     @DisplayName("attaches the document and records generation success in the same unit")
     void attachesDocumentAndRecordsGenerationSuccess() {
         long caseReference = 1781000000000012L;
-        PcsCaseEntity caseEntity = caseCreationHelper.createTestCaseWithParty(
+        final PcsCaseEntity caseEntity = caseCreationHelper.createTestCaseWithParty(
             caseReference, UUID.randomUUID(), PartyRole.CLAIMANT);
-        UUID claimId = caseEntity.getClaims().getFirst().getId();
         when(documentImportService.addDocumentToCase(eq(caseReference), anyString(), any()))
             .thenReturn(DocumentEntity.builder().documentId(UUID.randomUUID()).build());
 
         claimFormPersistenceService.attach(caseReference, DM_STORE_URL);
 
+        UUID claimId = caseEntity.getClaims().getFirst().getId();
         assertThat(claimRepository.findById(claimId).orElseThrow().getClaimFormDocument()).isNotNull();
         verify(claimActivityLogService).logGenerationSuccess(caseReference);
     }
