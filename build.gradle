@@ -562,7 +562,7 @@ tasks.withType(CftlibExec).configureEach { CftlibExec task ->
 
 
 def normalizeAatEnvFile = {
-  def hash = '1657438f080948a29a330542724d5a13'
+  def hash = '<insert-aat-env-hash-here>'
   def envFile = layout.buildDirectory.file("cftlib/.aat-env-${hash}").get().asFile
   envFile.parentFile.mkdirs()
 
