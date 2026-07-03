@@ -57,7 +57,11 @@ public class DocumentsView {
             .collect(Collectors.toList());
     }
 
-    private boolean isDocumentVisibleToUser(DocumentEntity documentEntity, UUID currentUserId) {
+    public boolean isDocumentVisibleToUser(DocumentEntity documentEntity, UUID currentUserId) {
+        if (isExcludedFromCaseFile(documentEntity)) {
+            return false;
+        }
+
         GenAppEntity genAppEntity = documentEntity.getGeneralApplication();
 
         if (genAppEntity != null) {
@@ -70,6 +74,10 @@ public class DocumentsView {
         }
 
         return true;
+    }
+
+    private boolean isExcludedFromCaseFile(DocumentEntity documentEntity) {
+        return documentEntity.getType() == DocumentType.DEFENDANT_ACCESS_CODE;
     }
 
     public static boolean isDescriptionEmpty(DocumentEntity documentEntity) {

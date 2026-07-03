@@ -116,6 +116,30 @@ class DocumentsViewTest {
     }
 
     @Test
+    void shouldExcludeDefendantAccessCodeLetterFromCaseFile() {
+        DocumentEntity accessCodePack = DocumentEntity.builder()
+            .id(UUID.randomUUID())
+            .fileName("access-code-letter.pdf")
+            .url("pin-url")
+            .type(DocumentType.DEFENDANT_ACCESS_CODE)
+            .build();
+
+        DocumentEntity visibleDocument = DocumentEntity.builder()
+            .id(UUID.randomUUID())
+            .fileName("claim.pdf")
+            .url("claim-url")
+            .categoryId("category")
+            .build();
+
+        when(pcsCaseEntity.getDocuments()).thenReturn(List.of(accessCodePack, visibleDocument));
+
+        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+
+        assertThat(pcsCase.getAllDocuments()).singleElement()
+            .satisfies(document -> assertThat(document.getValue().getFilename()).isEqualTo("claim.pdf"));
+    }
+
+    @Test
     void shouldReturnEmptyListWhenNoDocumentsExist() {
         // Given
         when(pcsCaseEntity.getDocuments()).thenReturn(List.of());
