@@ -25,7 +25,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.E
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.WalesDocuments;
-import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -350,6 +349,8 @@ public class DocumentService {
             return Collections.emptyList();
         }
 
+        ClaimEntity claim = pcsCase.getClaims().getFirst();
+
         List<DocumentEntity> documentEntities = counterClaimDocuments.stream()
             .map(ListValue::getValue)
             .filter(Objects::nonNull)
@@ -358,11 +359,13 @@ public class DocumentService {
                 .party(party)
                 .counterClaim(counterClaim)
                 .url(ccDoc.getDocument().getUrl())
-                .fileName(ccDoc.getDocument().getFilename())
+                .fileName(documentNameService.appendCounterClaimDocumentName(
+                    ccDoc.getDocument().getFilename(), claim, party.getId()))
                 .binaryUrl(ccDoc.getDocument().getBinaryUrl())
                 .contentType(ccDoc.getContentType())
                 .size(ccDoc.getSizeInBytes())
-                .categoryId(DEFAULT_CATEGORY_ID)
+                .type(DocumentType.DOCUMENTS_SUPPORTING_A_COUNTERCLAIM)
+                .categoryId(CaseFileCategory.STATEMENTS_OF_CASE.getId())
                 .build())
             .toList();
 
@@ -376,7 +379,7 @@ public class DocumentService {
 
     private Optional<CaseFileCategory> mapDocumentTypeToCategory(DocumentType documentType) {
         return switch (documentType) {
-            case NOTICE_FOR_SERVICE_OUT_OF_JURISDICTION, CLAIM ->
+            case NOTICE_FOR_SERVICE_OUT_OF_JURISDICTION, CLAIM, DEFENDANT_RESPONSE ->
                 Optional.of(CaseFileCategory.STATEMENTS_OF_CASE);
             case RENT_STATEMENT,
                  TENANCY_AGREEMENT,
@@ -399,6 +402,11 @@ public class DocumentService {
                 Optional.of(CaseFileCategory.CORRESPONDENCE);
             case NOTICE_SERVED,
                  POLICE_REPORT,
+                 // Defendant access-code letters aren't shown on the case file
+                 DEFENDANT_ACCESS_CODE,
+                 DOCUMENTS_SUPPORTING_A_COUNTERCLAIM,
+                 GAS_SAFETY_REPORT,
+                 ELECTRICAL_INSTALLATION_CONDITION,
                  OTHER ->
                 Optional.empty();
         };

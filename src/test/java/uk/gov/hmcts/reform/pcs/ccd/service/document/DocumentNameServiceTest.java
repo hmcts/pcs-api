@@ -158,6 +158,56 @@ class DocumentNameServiceTest {
         );
     }
 
+    @ParameterizedTest
+    @MethodSource("counterClaimNamingScenarios")
+    void shouldAddPartyLabelToCounterClaimDocument(PartyRole partyRole,
+                                                   String originalFilename,
+                                                   String expectedFilename) {
+        // Given
+        UUID partyId = UUID.randomUUID();
+
+        PartyEntity party1 = PartyEntity.builder()
+            .id(partyId)
+            .build();
+
+        ClaimPartyEntity claimParty1 = ClaimPartyEntity.builder()
+            .party(party1)
+            .rank(2)
+            .role(partyRole)
+            .build();
+
+        ClaimEntity mainClaim = ClaimEntity.builder()
+            .claimParties(List.of(claimParty1))
+            .build();
+
+        // When
+        String updatedFilename
+            = underTest.appendCounterClaimDocumentName(originalFilename, mainClaim, partyId);
+
+        // Then
+        assertThat(updatedFilename).isEqualTo(expectedFilename);
+    }
+
+    private static Stream<Arguments> counterClaimNamingScenarios() {
+        return Stream.of(
+            // Party role, original filename, expected updated filename
+            argumentSet("null filename",
+                        PartyRole.DEFENDANT, null, null),
+            argumentSet("no extension, defendant",
+                        PartyRole.DEFENDANT, "sample", "sample - Defendant 2"),
+            argumentSet("with extension, defendant",
+                        PartyRole.DEFENDANT, "sample.pdf", "sample - Defendant 2.pdf"),
+            argumentSet("no extension, claimant",
+                        PartyRole.CLAIMANT, "sample", "sample - Claimant 2"),
+            argumentSet("with extension, claimant",
+                        PartyRole.CLAIMANT, "sample.pdf", "sample - Claimant 2.pdf"),
+            argumentSet("no extension, other party type",
+                        PartyRole.UNDERLESSEE_OR_MORTGAGEE, "sample", "sample"),
+            argumentSet("with extension, other party type",
+                        PartyRole.UNDERLESSEE_OR_MORTGAGEE, "sample.pdf", "sample.pdf")
+        );
+    }
+
     private static Stream<Arguments> partyNamingScenarios() {
         return Stream.of(
             // Party role, original filename, expected updated filename
@@ -217,6 +267,14 @@ class DocumentNameServiceTest {
         ClaimEntity mainClaim = ClaimEntity.builder().claimParties(List.of()).build();
 
         assertThatThrownBy(() -> underTest.appendDefendantPostfix("file.pdf", mainClaim, UUID.randomUUID()))
+            .isInstanceOf(PartyNotFoundException.class);
+    }
+
+    @Test
+    void shouldThrowPartyNotFoundExceptionWhenPartyNotInClaimForCounterClaim() {
+        ClaimEntity mainClaim = ClaimEntity.builder().claimParties(List.of()).build();
+
+        assertThatThrownBy(() -> underTest.appendCounterClaimDocumentName("file.pdf", mainClaim, UUID.randomUUID()))
             .isInstanceOf(PartyNotFoundException.class);
     }
 }
