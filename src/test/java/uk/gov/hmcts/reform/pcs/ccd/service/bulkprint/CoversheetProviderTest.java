@@ -9,7 +9,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentIdExtractor;
 import uk.gov.hmcts.reform.pcs.document.model.coversheet.CoversheetPayload;
-import uk.gov.hmcts.reform.sendletter.api.model.v3.Document;
 
 import java.util.UUID;
 
@@ -33,21 +32,21 @@ class CoversheetProviderTest {
     private CoversheetProvider underTest;
 
     @Test
-    @DisplayName("Builds the payload, generates then fetches the coversheet")
+    @DisplayName("Builds the payload, generates then fetches the coversheet bytes")
     void shouldBuildPayloadGenerateThenFetchCoversheet() {
         AddressUK address = AddressUK.builder().addressLine1("1 High Street").build();
         CoversheetPayload payload = CoversheetPayload.builder().build();
         UUID coversheetId = UUID.randomUUID();
-        Document coversheet = new Document("coversheet", 1);
+        byte[] coversheet = "coversheet".getBytes();
 
         when(coversheetPayloadBuilder.build("Jane Doe", address, "1234-5678-9012-3456")).thenReturn(payload);
         when(coversheetDocumentGenerator.generate(payload)).thenReturn("http://dm-store/documents/cover");
         when(documentIdExtractor.extractDocumentId("http://dm-store/documents/cover")).thenReturn(coversheetId);
-        when(letterDocumentFetcher.fetch(coversheetId)).thenReturn(coversheet);
+        when(letterDocumentFetcher.fetchBytes(coversheetId)).thenReturn(coversheet);
 
-        Document result = underTest.render("Jane Doe", address, "1234-5678-9012-3456");
+        byte[] result = underTest.render("Jane Doe", address, "1234-5678-9012-3456");
 
         assertThat(result).isSameAs(coversheet);
-        verify(letterDocumentFetcher).fetch(coversheetId);
+        verify(letterDocumentFetcher).fetchBytes(coversheetId);
     }
 }

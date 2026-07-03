@@ -6,21 +6,18 @@ import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.ccd.document.am.feign.CaseDocumentClientApi;
 import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
-import uk.gov.hmcts.reform.sendletter.api.model.v3.Document;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
-import java.util.Base64;
 import java.util.UUID;
 
 /**
- * Fetches a stored document from CDAM and returns it as a base64 Send Letter {@link Document}. Authenticates
- * as the system user (CDAM needs a user token) plus S2S, so it is safe to call from the scheduled sweep.
+ * Fetches a stored document's bytes from CDAM. Authenticates as the system user (CDAM needs a user token)
+ * plus S2S, so it is safe to call from the scheduled sweep. The bytes are merged into the letter PDF by
+ * {@link PdfMerger} rather than sent as a separate Send Letter document.
  */
 @Service
 public class LetterDocumentFetcher {
-
-    private static final int SINGLE_COPY = 1;
 
     private final CaseDocumentClientApi caseDocumentClientApi;
     private final AuthTokenGenerator authTokenGenerator;
@@ -35,13 +32,13 @@ public class LetterDocumentFetcher {
         this.systemUpdateUserTokenProvider = systemUpdateUserTokenProvider;
     }
 
-    public Document fetch(UUID documentId) {
+    public byte[] fetchBytes(UUID documentId) {
         Resource resource = caseDocumentClientApi.getDocumentBinary(
             systemUpdateUserTokenProvider.getAuthToken(),
             authTokenGenerator.generate(),
             documentId
         ).getBody();
-        return new Document(Base64.getEncoder().encodeToString(readAllBytes(resource)), SINGLE_COPY);
+        return readAllBytes(resource);
     }
 
     private byte[] readAllBytes(Resource resource) {
