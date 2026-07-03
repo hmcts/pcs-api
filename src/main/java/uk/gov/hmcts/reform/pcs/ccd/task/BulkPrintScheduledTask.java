@@ -17,6 +17,7 @@ import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.UUID;
 
@@ -90,7 +91,9 @@ public class BulkPrintScheduledTask {
             return claimActivityLogRepository.findCaseIdsByActivityTypeAndStatus(
                 ClaimActivityType.DOCUMENTS_CREATED, ClaimActivityStatus.SUCCESS);
         }
-        LocalDateTime cutoff = LocalDateTime.now().minusHours(lookbackHours);
+        // UTC to match the DB's timestamp storage; using the JVM's local zone (e.g. BST) would shift the
+        // cutoff by the offset and drop or include the wrong cases.
+        LocalDateTime cutoff = LocalDateTime.now(ZoneOffset.UTC).minusHours(lookbackHours);
         return claimActivityLogRepository.findCaseIdsByActivityTypeAndStatusCreatedAfter(
             ClaimActivityType.DOCUMENTS_CREATED, ClaimActivityStatus.SUCCESS, cutoff);
     }

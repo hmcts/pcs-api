@@ -269,7 +269,9 @@ bulk-print:
   # so enabling the flag cannot flood send-letter with the historical backlog. Unset in prod = full backlog.
 
 send-letter:
-  url: ${SEND_LETTER_URL:http://rpe-send-letter-service-aat.service.core-compute-aat.internal}
+  # Default to localhost so a higher environment fails loudly if SEND_LETTER_URL is not set, rather than
+  # silently posting to AAT.
+  url: ${SEND_LETTER_URL:http://localhost:8485}
 
 logging:
   level:
