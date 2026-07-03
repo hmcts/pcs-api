@@ -531,9 +531,11 @@ tasks.named('integration') {
   }
 }
 
-tasks.withType(CftlibExec).configureEach {
+tasks.withType(CftlibExec).configureEach { CftlibExec task ->
   group = 'ccd tasks'
-  authMode = AuthMode.Local
+  if (task.name != 'bootWithCCD') {
+    authMode = AuthMode.Local
+  }
 
   //Attach mockito agent for inline mocking to remove warning in logs
   classpath += configurations.mockitoAgentConfig
@@ -556,6 +558,52 @@ tasks.withType(CftlibExec).configureEach {
   environment 'CASE_DOCUMENT_S2S_AUTHORISED_SERVICES', 'ccd_case_document_am_api,ccd_gw,xui_webapp,ccd_data,pcs_frontend,pcs_api'
   environment 'DATA_STORE_S2S_AUTHORISED_SERVICES', 'ccd_data,ccd_gw,pcs_frontend,pcs_api'
   environment 'CCD_S2S-AUTHORISED_SERVICES_CASE_USER_ROLES', 'aac_manage_case_assignment,pcs_api'
+}
+
+
+def normalizeAatEnvFile = {
+  def hash = '1657438f080948a29a330542724d5a13'
+  def envFile = layout.buildDirectory.file("cftlib/.aat-env-${hash}").get().asFile
+  envFile.parentFile.mkdirs()
+
+  if (!envFile.exists()) {
+    def proc = ['az', 'keyvault', 'secret', 'show', '--vault-name', 'rse-cft-lib', '--name', 'aat-env', '--query', 'value', '-o', 'tsv'].execute()
+    proc.waitFor()
+    if (proc.exitValue() != 0) {
+      logger.warn('Could not fetch aat-env from rse-cft-lib vault (az login / access required)')
+      return
+    }
+    envFile.text = proc.text.trim().split(/\s+/).findAll { it.contains('=') }.join('\n')
+    return
+  }
+
+  def tokens = envFile.text.trim().split(/\s+/).findAll { it.contains('=') }
+  if (tokens.size() > 1) {
+    envFile.text = tokens.join('\n')
+  }
+}
+
+bootWithCCD {
+  authMode = AuthMode.AAT
+
+  doFirst normalizeAatEnvFile
+
+  def pcsApiIdamEnvVars = [
+    'PCS_API_S2S_SECRET',
+    'IDAM_CLIENT_SECRET',
+    'PCS_IDAM_SYSTEM_USERNAME',
+    'PCS_IDAM_SYSTEM_PASSWORD',
+    'PCS_PRD_ADMIN_USERNAME',
+    'PCS_PRD_ADMIN_PASSWORD',
+    'IDAM_PCS_USER_PASSWORD',
+    'PCS_SOLICITOR_AUTOMATION_UID',
+  ]
+  pcsApiIdamEnvVars.each { String name ->
+    def value = System.getenv(name)
+    if (value != null) {
+      environment name, value
+    }
+  }
 }
 
 tasks.register('highLevelDataSetup', JavaExec) {
