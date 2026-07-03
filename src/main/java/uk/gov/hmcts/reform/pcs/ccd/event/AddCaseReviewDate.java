@@ -46,7 +46,7 @@ public class AddCaseReviewDate implements CCDConfig<PCSCase, State, UserRole> {
         PCSCase caseData = eventPayload.caseData();
         caseReviewDateService.addCaseReviewDate(caseId, caseData);
         String address = addressFormatter
-            .formatShortAddress(caseData.getPropertyAddress(), AddressFormatter.COMMA_DELIMITER);
+            .formatShortAddressWithCounty(caseData.getPropertyAddress(), AddressFormatter.COMMA_DELIMITER);
         return SubmitResponse.<State>builder()
             .confirmationBody(getConfirmationBody(caseId, address, caseData.getCaseNameHmctsInternal()))
             .build();
