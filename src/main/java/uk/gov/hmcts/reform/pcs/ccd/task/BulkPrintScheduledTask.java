@@ -6,6 +6,7 @@ import com.github.kagkarlsson.scheduler.task.schedule.Schedules;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.ClaimActivityStatus;
@@ -54,6 +55,8 @@ public class BulkPrintScheduledTask {
     }
 
     @Bean
+    @ConditionalOnProperty(prefix = "bulk-print", name = "executor-enabled",
+        havingValue = "true", matchIfMissing = true)
     public RecurringTask<Void> bulkPrintTask() {
         return Tasks.recurring(BULK_PRINT_TASK_NAME, Schedules.parseSchedule(schedule))
             .execute((taskInstance, executionContext) -> runSweep());

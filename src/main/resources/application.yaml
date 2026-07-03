@@ -265,6 +265,10 @@ access-code:
 
 bulk-print:
   schedule: ${BULK_PRINT_SCHEDULE:DAILY|02:00}
+  # Registers the recurring sweep only where enabled, so it can run on a dedicated worker pod rather than the
+  # request-serving API pods. Independent of db-scheduler.executor-enabled, which keeps generation tasks on
+  # the API pods untouched. Default true = registered as before.
+  executor-enabled: ${BULK_PRINT_EXECUTOR_ENABLED:true}
   # BULK_PRINT_LOOKBACK_HOURS (lower envs only): sweep ignores packs whose documents are older than N hours,
   # so enabling the flag cannot flood send-letter with the historical backlog. Unset in prod = full backlog.
 
