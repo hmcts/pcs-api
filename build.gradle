@@ -543,6 +543,7 @@ tasks.withType(CftlibExec).configureEach {
     logger.quiet("Attaching Mockito Java agent for inline mocking")
   }
 
+  environment 'ENABLE_TESTING_SUPPORT', 'true'
   environment 'RSE_LIB_ADDITIONAL_DATABASES', 'pcs'
   environment 'PCS_DB_USER_NAME', 'postgres'
   environment 'PCS_DB_PASSWORD', 'postgres'

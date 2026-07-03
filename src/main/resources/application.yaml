@@ -162,7 +162,7 @@ notify:
     general-application-received: e5daba0d-5c66-4c76-9e0f-06646200dc89
 
 testing-support:
-  enabled: ${ENABLE_TESTING_SUPPORT:true}
+  enabled: ${ENABLE_TESTING_SUPPORT:false}
 
 access-code-form:
   respond-online-url: ${RESPOND_ONLINE_URL:http://localhost:3209/access-your-case}
