@@ -13,10 +13,12 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.addcasereviewdate.AddCaseReviewDateConfigurer;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseReviewDateService;
+import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class AddCaseReviewDateTest extends BaseEventTest {
@@ -25,6 +27,8 @@ public class AddCaseReviewDateTest extends BaseEventTest {
     private AddCaseReviewDateConfigurer addCaseReviewDateConfigurer;
     @Mock
     private CaseReviewDateService caseReviewDateService;
+    @Mock
+    private AddressFormatter addressFormatter;
 
     @InjectMocks
     private AddCaseReviewDate addCaseReviewDate;
@@ -37,16 +41,13 @@ public class AddCaseReviewDateTest extends BaseEventTest {
     @Test
     void shouldConfigurePages() {
         // Given
+        AddressUK address = AddressUK.builder().build();
         PCSCase pcsCase = PCSCase.builder()
-            .propertyAddress(
-                AddressUK.builder()
-                    .addressLine1("addressLine1")
-                    .county("county")
-                    .postTown("Town")
-                    .postCode("postCode")
-                    .build()
-            )
+            .propertyAddress(address)
             .build();
+
+        when(addressFormatter.formatShortAddress(address, AddressFormatter.COMMA_DELIMITER))
+            .thenReturn("address");
 
         // When
         callSubmitHandler(pcsCase);
@@ -59,17 +60,14 @@ public class AddCaseReviewDateTest extends BaseEventTest {
     @Test
     void shouldCallCaseReviewDateServiceOnSubmit() {
         // Given
+        AddressUK address = AddressUK.builder().build();
         PCSCase pcsCase = PCSCase.builder()
-            .propertyAddress(
-                AddressUK.builder()
-                    .addressLine1("addressLine1")
-                    .county("county")
-                    .postTown("town")
-                    .postCode("postCode")
-                    .build()
-            )
+            .propertyAddress(address)
             .caseNameHmctsInternal("Claimant v Defendant")
             .build();
+
+        when(addressFormatter.formatShortAddress(address, AddressFormatter.COMMA_DELIMITER))
+            .thenReturn("address");
 
         // When
         SubmitResponse<State> submitResponse = callSubmitHandler(pcsCase);
@@ -82,7 +80,7 @@ public class AddCaseReviewDateTest extends BaseEventTest {
             <div class="govuk-panel govuk-panel--confirmation govuk-!-padding-top-3 govuk-!-padding-bottom-3">
             <span class="govuk-panel__title govuk-!-font-size-36">Review dates added</span><br>
             <span class="govuk-panel__body">Case number #1234</span><br>
-            <span class="govuk-panel__body">addressLine1, town, county, postCode</span><br>
+            <span class="govuk-panel__body">address</span><br>
             <span class="govuk-panel__body">Claimant v Defendant</span><br>
             </div>
 
