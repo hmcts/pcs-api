@@ -16,6 +16,7 @@ import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
 @AllArgsConstructor
 public class ReviewDate {
 
+    @CCD(ignore = true)
     public static final String DESCRIPTION_LABEL = "Description of review";
 
     @CCD(

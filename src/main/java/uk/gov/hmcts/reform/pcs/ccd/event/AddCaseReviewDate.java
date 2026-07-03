@@ -15,6 +15,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.addcasereviewdate.AddCaseReviewDateConfigurer;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseReviewDateService;
+import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.addCaseReviewDate;
@@ -25,6 +26,7 @@ public class AddCaseReviewDate implements CCDConfig<PCSCase, State, UserRole> {
 
     private final AddCaseReviewDateConfigurer addCaseReviewDateConfigurer;
     private final CaseReviewDateService caseReviewDateService;
+    private final AddressFormatter addressFormatter;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -33,7 +35,7 @@ public class AddCaseReviewDate implements CCDConfig<PCSCase, State, UserRole> {
                 .decentralisedEvent(addCaseReviewDate.name(), this::submit)
                 .forStates(State.PENDING_CASE_ISSUED, State.CASE_ISSUED)
                 .name("Add review date")
-                .grant(Permission.CRUD, UserRole.PCS_SOLICITOR)
+                .grant(Permission.CRUD, UserRole.CTSC_ADMIN, UserRole.HEARING_CENTRE_ADMIN, UserRole.WLU_ADMIN)
                 .grantHistoryOnly(JUDICIAL_HISTORY_ROLES)
                 .showSummary()
                 .endButtonLabel("Submit");
@@ -43,18 +45,15 @@ public class AddCaseReviewDate implements CCDConfig<PCSCase, State, UserRole> {
     private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
         Long caseId = eventPayload.caseReference();
         PCSCase caseData = eventPayload.caseData();
-        AddressUK propertyAddress = caseData.getPropertyAddress();
-        String address = propertyAddress.getAddressLine1() + ", "
-            + propertyAddress.getPostTown() + ", "
-            + propertyAddress.getCounty() + ", "
-            + propertyAddress.getPostCode();
         caseReviewDateService.addCaseReviewDate(caseId, caseData);
+        String address = addressFormatter
+            .formatShortAddress(caseData.getPropertyAddress(), AddressFormatter.COMMA_DELIMITER);
         return SubmitResponse.<State>builder()
-            .confirmationBody(getConfirmationBody(caseId.toString(), address, caseData.getCaseNameHmctsInternal()))
+            .confirmationBody(getConfirmationBody(caseId, address, caseData.getCaseNameHmctsInternal()))
             .build();
     }
 
-    private String getConfirmationBody(String caseId, String address, String caseName) {
+    private String getConfirmationBody(Long caseId, String address, String caseName) {
         return """
             ---
             <div class="govuk-panel govuk-panel--confirmation govuk-!-padding-top-3 govuk-!-padding-bottom-3">

@@ -16,7 +16,7 @@ import java.util.List;
 public class CaseReviewDateService {
 
     private final PcsCaseService pcsCaseService;
-    private PcsCaseRepository pcsCaseRepository;
+    private final PcsCaseRepository pcsCaseRepository;
 
     public void addCaseReviewDate(long caseReference, PCSCase pcsCase) {
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
