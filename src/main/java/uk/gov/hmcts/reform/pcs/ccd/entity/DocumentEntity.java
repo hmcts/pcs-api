@@ -64,9 +64,6 @@ public class DocumentEntity {
 
     private String url;
 
-    // The filename before any modifications are added for Gen Apps, parties etc
-    private String originalFileName;
-
     private String fileName;
 
     private String binaryUrl;
@@ -87,7 +84,7 @@ public class DocumentEntity {
 
     @CreationTimestamp
     private Instant submittedDate;
-
+  
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "claim_id")
     private ClaimEntity claim;

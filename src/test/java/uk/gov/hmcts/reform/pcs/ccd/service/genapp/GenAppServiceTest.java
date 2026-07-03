@@ -384,7 +384,6 @@ class GenAppServiceTest {
         assertThat(documentEntityListCaptor.getValue()).hasSize(1);
         DocumentEntity documentEntity = documentEntityListCaptor.getValue().getFirst();
         assertThat(documentEntity.getFileName()).isEqualTo(modifiedFilename);
-        assertThat(documentEntity.getOriginalFileName()).isEqualTo(originalFilename);
         assertThat(documentEntity.getUrl()).isEqualTo("test url");
         assertThat(documentEntity.getBinaryUrl()).isEqualTo("test binary url");
         assertThat(documentEntity.getType()).isEqualTo(expectedDocumentType);

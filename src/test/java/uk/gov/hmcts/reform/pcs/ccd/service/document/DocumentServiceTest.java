@@ -170,16 +170,12 @@ class DocumentServiceTest {
 
         assertThat(capturedEntities)
             .extracting(DocumentEntity::getFileName)
-            .containsExactly("file-WITNESS_STATEMENT - Claimant 1.pdf",
+            .containsExactlyInAnyOrder("file-WITNESS_STATEMENT - Claimant 1.pdf",
                     "file-RENT_STATEMENT - Claimant 1.pdf");
 
         assertThat(capturedEntities)
-            .extracting(DocumentEntity::getOriginalFileName)
-            .containsExactly("file-WITNESS_STATEMENT.pdf", "file-RENT_STATEMENT.pdf");
-
-        assertThat(capturedEntities)
             .extracting(DocumentEntity::getType)
-            .containsExactly(DocumentType.WITNESS_STATEMENT, DocumentType.RENT_STATEMENT);
+            .containsExactlyInAnyOrder(DocumentType.WITNESS_STATEMENT, DocumentType.RENT_STATEMENT);
     }
 
     @ParameterizedTest
@@ -1021,7 +1017,6 @@ class DocumentServiceTest {
         assertThat(entity.getCategoryId()).isEqualTo(CaseFileCategory.APPLICATIONS.getId());
         assertThat(entity.getGeneralApplication()).isSameAs(selectedGenApp);
         assertThat(entity.getFileName()).isEqualTo("file-new GA1 - Defendant 1.pdf");
-        assertThat(entity.getOriginalFileName()).isEqualTo("file-new.pdf");
     }
 
     @Test

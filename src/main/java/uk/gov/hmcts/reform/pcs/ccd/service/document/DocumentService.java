@@ -23,8 +23,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.EvidenceDocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.EvidenceOfDefendants;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
-import uk.gov.hmcts.reform.pcs.ccd.domain.wales.WalesDocuments;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.WalesDocuments;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -182,30 +182,24 @@ public class DocumentService {
             List<DocumentHolder> documents) {
 
         return documents.stream()
-                .map(holder -> {
-                    String originalFileName = holder.getDocument().getFilename();
-                    String fileName = StringUtils.isNotBlank(holder.overriddenFilename)
-                        ? holder.overriddenFilename : originalFileName;
-                    return DocumentEntity.builder()
-                            .url(holder.getDocument().getUrl())
-                            .documentId(documentIdExtractor.extractDocumentId(holder.getDocument().getUrl()))
-                            .fileName(fileName)
-                            .originalFileName(originalFileName)
-                            .binaryUrl(holder.getDocument().getBinaryUrl())
-                            .categoryId(mapDocumentTypeToCategory(holder.getType())
-                                            .map(CaseFileCategory::getId)
-                                            .orElse(null))
-                            .type(holder.getType())
-                            .description(StringUtils.isEmpty(holder.getDescription()) ? null : holder.getDescription())
-                            .build();
-                })
+                .map(holder -> DocumentEntity.builder()
+                        .url(holder.getDocument().getUrl())
+                        .documentId(documentIdExtractor.extractDocumentId(holder.getDocument().getUrl()))
+                        .fileName(holder.getDocument().getFilename())
+                        .binaryUrl(holder.getDocument().getBinaryUrl())
+                        .categoryId(mapDocumentTypeToCategory(holder.getType())
+                                        .map(CaseFileCategory::getId)
+                                        .orElse(null))
+                        .type(holder.getType())
+                        .description(StringUtils.isEmpty(holder.getDescription()) ? null : holder.getDescription())
+                        .build())
                 .toList();
     }
 
     private void applyClaimFilename(List<DocumentHolder> allDocuments) {
         allDocuments.forEach(dh -> {
             String uploadedFilename = dh.getDocument().getFilename();
-            dh.setOverriddenFilename(FilenameUtils.getBaseName(uploadedFilename) + " - " + CLAIMANT_1
+            dh.getDocument().setFilename(FilenameUtils.getBaseName(uploadedFilename) + " - " + CLAIMANT_1
                     + "." + FilenameUtils.getExtension(uploadedFilename));
         });
 
@@ -237,7 +231,7 @@ public class DocumentService {
         };
     }
 
-    public void linkAdditionalDocumentsToCase(
+    public List<DocumentEntity> linkAdditionalDocumentsToCase(
         List<ListValue<UploadedDocument>> uploadedDocuments,
         PcsCaseEntity pcsCase,
         PartyEntity party,
@@ -245,7 +239,7 @@ public class DocumentService {
     ) {
         if (CollectionUtils.isEmpty(uploadedDocuments)) {
             log.info("No additional documents to save for case {}", pcsCase.getCaseReference());
-            return;
+            return Collections.emptyList();
         }
 
         Set<String> existingUrls = pcsCase.getDocuments().stream()
@@ -273,7 +267,6 @@ public class DocumentService {
                     .generalApplication(selectedGenApp)
                     .url(uploaded.getDocument().getUrl())
                     .fileName(renamed)
-                    .originalFileName(originalFilename)
                     .binaryUrl(uploaded.getDocument().getBinaryUrl())
                     .contentType(uploaded.getContentType())
                     .size(uploaded.getSizeInBytes())
@@ -286,12 +279,13 @@ public class DocumentService {
         if (documentEntities.isEmpty()) {
             log.info("All additional documents for case {} already persisted; nothing to save",
                 pcsCase.getCaseReference());
-            return;
+            return Collections.emptyList();
         }
 
         List<DocumentEntity> saved = documentRepository.saveAll(documentEntities);
         log.info("Saved {} additional documents for case {} and party {}",
             saved.size(), pcsCase.getCaseReference(), party.getId());
+        return saved;
     }
 
     private static ClaimEntity getMainClaim(PcsCaseEntity pcsCase) {
@@ -331,7 +325,6 @@ public class DocumentService {
                     .defendantResponse(defendantResponse)
                     .url(defDoc.getDocument().getUrl())
                     .fileName(updatedFilename)
-                    .originalFileName(originalFilename)
                     .binaryUrl(defDoc.getDocument().getBinaryUrl())
                     .contentType(defDoc.getContentType())
                     .size(defDoc.getSizeInBytes())
@@ -363,23 +356,19 @@ public class DocumentService {
         List<DocumentEntity> documentEntities = counterClaimDocuments.stream()
             .map(ListValue::getValue)
             .filter(Objects::nonNull)
-            .map(ccDoc -> {
-                String originalFilename = ccDoc.getDocument().getFilename();
-                return DocumentEntity.builder()
-                    .pcsCase(pcsCase)
-                    .party(party)
-                    .counterClaim(counterClaim)
-                    .url(ccDoc.getDocument().getUrl())
-                    .fileName(documentNameService.appendCounterClaimDocumentName(
-                        originalFilename, claim, party.getId()))
-                    .originalFileName(originalFilename)
-                    .binaryUrl(ccDoc.getDocument().getBinaryUrl())
-                    .contentType(ccDoc.getContentType())
-                    .size(ccDoc.getSizeInBytes())
-                    .type(DocumentType.DOCUMENTS_SUPPORTING_A_COUNTERCLAIM)
-                    .categoryId(CaseFileCategory.STATEMENTS_OF_CASE.getId())
-                    .build();
-            })
+            .map(ccDoc -> DocumentEntity.builder()
+                .pcsCase(pcsCase)
+                .party(party)
+                .counterClaim(counterClaim)
+                .url(ccDoc.getDocument().getUrl())
+                .fileName(documentNameService.appendCounterClaimDocumentName(
+                    ccDoc.getDocument().getFilename(), claim, party.getId()))
+                .binaryUrl(ccDoc.getDocument().getBinaryUrl())
+                .contentType(ccDoc.getContentType())
+                .size(ccDoc.getSizeInBytes())
+                .type(DocumentType.DOCUMENTS_SUPPORTING_A_COUNTERCLAIM)
+                .categoryId(CaseFileCategory.STATEMENTS_OF_CASE.getId())
+                .build())
             .toList();
 
         List<DocumentEntity> saved = documentRepository.saveAll(documentEntities);
@@ -439,7 +428,6 @@ public class DocumentService {
     private static class DocumentHolder {
         private Document document;
         private DocumentType type;
-        private String overriddenFilename;
         private String description;
     }
 }
