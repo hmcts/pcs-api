@@ -50,7 +50,6 @@ java:
     PAY_CALLBACK_URL: "http://pcs-api-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal/payment-update"
     FLYWAY_NOOP_STRATEGY: "false"
     SPRING_FLYWAY_ENABLED: "true"
-    HASH_PINS_ENABLED: "true"
     LAUNCHDARKLY_ENV: "{{ .Values.global.environment }}"
     CCD_DATA_STORE_URL: "http://ccd-data-store-api-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal"
     CASE_DOCUMENT_AM_URL: "http://ccd-case-document-am-api-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal"

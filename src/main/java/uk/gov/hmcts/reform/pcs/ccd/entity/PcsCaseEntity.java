@@ -59,6 +59,7 @@ public class PcsCaseEntity {
     private ClaimantType claimantType;
 
     private Integer caseManagementLocation;
+    private Integer baseLocation;
 
     private Boolean preActionProtocolCompleted;
 
@@ -107,6 +108,8 @@ public class PcsCaseEntity {
         orphanRemoval = true)
     @Builder.Default
     private List<CaseLinkEntity> caseLinks = new ArrayList<>();
+
+    private Integer regionId;
 
     @OneToMany(mappedBy = "pcsCase", cascade = ALL, orphanRemoval = true)
     @Builder.Default

@@ -16,6 +16,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.model.AccessCodeTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.service.DefendantAccessCodeService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimFormScheduler;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -32,6 +33,7 @@ public class ClaimIssuePayment implements CCDConfig<PCSCase, State, UserRole> {
     private final SchedulerClient schedulerClient;
     private final PcsCaseService pcsCaseService;
     private final DefendantAccessCodeService defendantAccessCodeService;
+    private final ClaimFormScheduler claimFormScheduler;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -62,10 +64,11 @@ public class ClaimIssuePayment implements CCDConfig<PCSCase, State, UserRole> {
         PCSCase caseData = eventPayload.caseData();
         long caseReference = eventPayload.caseReference();
         if (caseData.getDateIssued() == null) {
-            log.info("Payment confirmed for case {} - issuing case and scheduling access-code letter generation",
-                     caseReference);
+            log.info("Payment confirmed for case {} - issuing case and scheduling claim-form and "
+                     + "access-code letter generation", caseReference);
             pcsCaseService.setCaseIssuedDate(caseReference);
-            // Case issued (status -> CASE_ISSUED): generate the defendant access code access-code letters.
+            claimFormScheduler.scheduleClaimFormGeneration(caseReference);
+            // Case issued (status -> CASE_ISSUED): generate the defendant access-code letters.
             scheduleAccessCodeFormGeneration(caseReference);
         }
         return SubmitResponse.<State>builder().state(State.CASE_ISSUED).build();
