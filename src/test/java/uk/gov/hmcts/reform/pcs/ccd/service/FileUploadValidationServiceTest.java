@@ -115,6 +115,41 @@ class FileUploadValidationServiceTest {
     }
 
     @Nested
+    @DisplayName("validateDocumentGroups Method Tests")
+    class ValidateDocumentGroupsTests {
+
+        @Test
+        @DisplayName("Should return the error once when any group contains a blocked file")
+        void shouldReturnErrorOnceWhenAnyGroupBlocked() {
+            List<String> errors = fileUploadValidationService.validateDocumentGroups(
+                documentsWithFilenames("epc.pdf"),
+                documentsWithFilenames("gas.mp3"),
+                documentsWithFilenames("eicr.mp4"));
+
+            assertThat(errors).containsExactly(DISALLOWED_FILE_TYPE_ERROR);
+        }
+
+        @Test
+        @DisplayName("Should return no error when all groups contain allowed files")
+        void shouldReturnNoErrorWhenAllGroupsAllowed() {
+            List<String> errors = fileUploadValidationService.validateDocumentGroups(
+                documentsWithFilenames("epc.pdf"),
+                documentsWithFilenames("gas.pdf"),
+                documentsWithFilenames("eicr.pdf"));
+
+            assertThat(errors).isEmpty();
+        }
+
+        @Test
+        @DisplayName("Should handle null groups")
+        void shouldHandleNullGroups() {
+            List<String> errors = fileUploadValidationService.validateDocumentGroups(null, null);
+
+            assertThat(errors).isEmpty();
+        }
+    }
+
+    @Nested
     @DisplayName("validateAdditionalDocuments Method Tests")
     class ValidateAdditionalDocumentsTests {
 

@@ -6,21 +6,26 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
+import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.WalesDocuments;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
+import uk.gov.hmcts.reform.pcs.ccd.service.FileUploadValidationService;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.verify;
+import static uk.gov.hmcts.reform.pcs.ccd.service.FileUploadValidationService.DISALLOWED_FILE_TYPE_ERROR;
+import static uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils.wrapListItems;
 
 @ExtendWith(MockitoExtension.class)
 class UploadRequiredDocumentsWalesTest extends BasePageTest {
@@ -40,7 +45,8 @@ class UploadRequiredDocumentsWalesTest extends BasePageTest {
                 .build();
         }).when(textAreaValidationService).createValidationResponse(any(), anyList());
 
-        setPageUnderTest(new UploadRequiredDocumentsWales(textAreaValidationService));
+        setPageUnderTest(new UploadRequiredDocumentsWales(
+            textAreaValidationService, new FileUploadValidationService()));
     }
 
     @Test
@@ -77,5 +83,49 @@ class UploadRequiredDocumentsWalesTest extends BasePageTest {
                 && f.maxCharacters == 500)
         );
 
+    }
+
+    @Test
+    void shouldReturnErrorWhenARequiredDocumentIsDisallowedFileType() {
+        // Given
+        PCSCase caseData = PCSCase.builder()
+            .requiredDocumentsWales(
+                WalesDocuments.builder()
+                    .energyPerformance(wrapListItems(List.of(
+                        Document.builder().filename("epc.pdf").build())))
+                    .gasSafetyReport(wrapListItems(List.of(
+                        Document.builder().filename("gas-report.mpg").build())))
+                    .build()
+            )
+            .build();
+
+        // When
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+        // Then
+        assertThat(response.getErrors()).containsExactly(DISALLOWED_FILE_TYPE_ERROR);
+    }
+
+    @Test
+    void shouldNotReturnErrorWhenAllRequiredDocumentsAreAllowedFileTypes() {
+        // Given
+        PCSCase caseData = PCSCase.builder()
+            .requiredDocumentsWales(
+                WalesDocuments.builder()
+                    .energyPerformance(wrapListItems(List.of(
+                        Document.builder().filename("epc.pdf").build())))
+                    .gasSafetyReport(wrapListItems(List.of(
+                        Document.builder().filename("gas-report.pdf").build())))
+                    .electricalInstallation(wrapListItems(List.of(
+                        Document.builder().filename("eicr.pdf").build())))
+                    .build()
+            )
+            .build();
+
+        // When
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+        // Then
+        assertThat(response.getErrors()).isNull();
     }
 }

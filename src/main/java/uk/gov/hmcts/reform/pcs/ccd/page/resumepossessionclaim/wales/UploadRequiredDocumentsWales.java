@@ -10,6 +10,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.WalesDocuments;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
+import uk.gov.hmcts.reform.pcs.ccd.service.FileUploadValidationService;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
 import java.util.List;
@@ -24,6 +25,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.wales.WalesDocuments.NO_GAS_SAF
 public class UploadRequiredDocumentsWales implements CcdPageConfiguration {
 
     private final TextAreaValidationService textAreaValidationService;
+    private final FileUploadValidationService fileUploadValidationService;
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -93,6 +95,12 @@ public class UploadRequiredDocumentsWales implements CcdPageConfiguration {
                 TextAreaValidationService.MEDIUM_TEXT_LIMIT
             )
         );
+
+        WalesDocuments requiredDocumentsWales = caseData.getRequiredDocumentsWales();
+        validationErrors.addAll(fileUploadValidationService.validateDocumentGroups(
+            requiredDocumentsWales.getEnergyPerformance(),
+            requiredDocumentsWales.getGasSafetyReport(),
+            requiredDocumentsWales.getElectricalInstallation()));
 
         return textAreaValidationService.createValidationResponse(caseData, validationErrors);
     }

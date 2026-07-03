@@ -35,6 +35,20 @@ public class FileUploadValidationService {
         return hasBlockedFile ? List.of(DISALLOWED_FILE_TYPE_ERROR) : List.of();
     }
 
+    /**
+     * Validates several document lists together, returning the disallowed-file-type error at most once
+     * even when more than one list contains a blocked file.
+     */
+    @SafeVarargs
+    public final List<String> validateDocumentGroups(List<ListValue<Document>>... documentGroups) {
+        for (List<ListValue<Document>> documents : documentGroups) {
+            if (!validateDocuments(documents).isEmpty()) {
+                return List.of(DISALLOWED_FILE_TYPE_ERROR);
+            }
+        }
+        return List.of();
+    }
+
     public List<String> validateAdditionalDocuments(List<ListValue<AdditionalDocument>> additionalDocuments) {
         if (CollectionUtils.isEmpty(additionalDocuments)) {
             return List.of();
