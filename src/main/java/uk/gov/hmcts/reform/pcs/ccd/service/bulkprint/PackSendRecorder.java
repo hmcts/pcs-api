@@ -36,8 +36,8 @@ public class PackSendRecorder {
         this.accessCodeActivityLogService = accessCodeActivityLogService;
     }
 
-    public void send(PcsCaseEntity pcsCase, PartyEntity recipient, LetterType letterType,
-                     List<DocumentEntity> documents, Supplier<UUID> sendAction) {
+    public void sendAndRecord(PcsCaseEntity pcsCase, PartyEntity recipient, LetterType letterType,
+                              List<DocumentEntity> documents, Supplier<UUID> sendAction) {
         MDC.put(MDC_CASE_REFERENCE, String.valueOf(pcsCase.getCaseReference()));
         MDC.put(MDC_PARTY_ID, String.valueOf(recipient.getId()));
         MDC.put(MDC_LETTER_TYPE, letterType.name());

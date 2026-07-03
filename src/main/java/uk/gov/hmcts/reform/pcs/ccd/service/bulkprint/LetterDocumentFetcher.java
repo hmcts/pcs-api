@@ -9,6 +9,7 @@ import uk.gov.hmcts.reform.ccd.document.am.feign.CaseDocumentClientApi;
 import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.util.UUID;
 
@@ -50,8 +51,8 @@ public class LetterDocumentFetcher {
     }
 
     private byte[] readAllBytes(Resource resource) {
-        try {
-            return resource.getInputStream().readAllBytes();
+        try (InputStream inputStream = resource.getInputStream()) {
+            return inputStream.readAllBytes();
         } catch (IOException e) {
             throw new UncheckedIOException("Failed to read document content for bulk print", e);
         }

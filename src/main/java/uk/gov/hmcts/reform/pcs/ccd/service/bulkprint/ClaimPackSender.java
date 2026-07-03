@@ -30,7 +30,7 @@ public class ClaimPackSender {
     }
 
     private void post(ResolvedRecipient resolved) {
-        packSendRecorder.send(resolved.pcsCase(), resolved.recipient(), resolved.letterType(),
+        packSendRecorder.sendAndRecord(resolved.pcsCase(), resolved.recipient(), resolved.letterType(),
             resolved.documents(),
             () -> bulkPrintService.sendPack(resolved.pcsCase(), resolved.recipient(), resolved.letterType(),
                 resolved.recipientName(), resolved.address(), resolved.documents()));
