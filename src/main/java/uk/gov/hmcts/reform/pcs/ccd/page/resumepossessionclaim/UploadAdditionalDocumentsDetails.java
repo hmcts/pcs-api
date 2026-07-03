@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
+import uk.gov.hmcts.reform.pcs.ccd.service.FileUploadValidationService;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 import uk.gov.hmcts.reform.pcs.ccd.util.StringUtils;
 
@@ -22,6 +23,7 @@ import java.util.List;
 public class UploadAdditionalDocumentsDetails implements CcdPageConfiguration {
 
     private final TextAreaValidationService textAreaValidationService;
+    private final FileUploadValidationService fileUploadValidationService;
     private static final String DESCRIPTION_LABEL = "short description";
 
     @Override
@@ -55,6 +57,8 @@ public class UploadAdditionalDocumentsDetails implements CcdPageConfiguration {
         PCSCase caseData = details.getData();
 
         List<String> errors = validateDocumentDescription(caseData.getAdditionalDocuments(), DESCRIPTION_LABEL);
+
+        errors.addAll(fileUploadValidationService.validateAdditionalDocuments(caseData.getAdditionalDocuments()));
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .errorMessageOverride(StringUtils.joinIfNotEmpty("\n", errors))

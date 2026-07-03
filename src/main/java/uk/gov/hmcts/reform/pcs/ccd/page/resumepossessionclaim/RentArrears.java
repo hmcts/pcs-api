@@ -12,6 +12,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsSection;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
+import uk.gov.hmcts.reform.pcs.ccd.service.FileUploadValidationService;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
 import java.util.List;
@@ -21,6 +22,7 @@ import java.util.List;
 public class RentArrears implements CcdPageConfiguration {
 
     private final TextAreaValidationService textAreaValidationService;
+    private final FileUploadValidationService fileUploadValidationService;
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -92,6 +94,10 @@ public class RentArrears implements CcdPageConfiguration {
             caseData.getRentArrears().getRecoveryAttemptDetails(),
             RECOVERY_ATTEMPT_DETAILS_LABEL,
             TextAreaValidationService.MEDIUM_TEXT_LIMIT
+        );
+
+        validationErrors.addAll(
+            fileUploadValidationService.validateDocuments(caseData.getRentArrears().getStatementDocuments())
         );
 
         return textAreaValidationService.createValidationResponse(caseData, validationErrors);
