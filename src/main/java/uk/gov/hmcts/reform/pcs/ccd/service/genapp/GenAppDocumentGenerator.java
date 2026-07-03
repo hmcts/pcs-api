@@ -84,24 +84,16 @@ public class GenAppDocumentGenerator {
 
         PartyEntity applicantParty = genAppEntity.getParty();
 
-        PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
-
         String documentUrl = generateSubmissionDocument(
             caseReference,
-            pcsCaseEntity,
             genAppEntity,
             applicantParty
         );
 
-        ClaimEntity mainClaim = pcsCaseEntity.getClaims().getFirst();
-        String overriddenFilename = documentNameService
-            .appendGenAppPostfix(OUTPUT_FILENAME_PREFIX + ".pdf", genAppEntity, mainClaim, applicantParty.getId());
-
         DocumentEntity importedDocumentEntity = documentImportService.addDocumentToCase(
             caseReference,
             documentUrl,
-            CaseFileCategory.APPLICATIONS,
-            overriddenFilename
+            CaseFileCategory.APPLICATIONS
         );
 
         importedDocumentEntity.setGeneralApplication(genAppEntity);
@@ -109,10 +101,10 @@ public class GenAppDocumentGenerator {
     }
 
     private String generateSubmissionDocument(long caseReference,
-                                              PcsCaseEntity pcsCaseEntity,
                                               GenAppEntity genAppEntity,
                                               PartyEntity applicantParty) {
 
+        PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
         ClaimEntity mainClaim = pcsCaseEntity.getClaims().getFirst();
         UUID applicantPartyId = applicantParty.getId();
         String outputFilename = documentNameService

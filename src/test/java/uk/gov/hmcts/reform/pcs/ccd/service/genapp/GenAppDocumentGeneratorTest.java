@@ -61,7 +61,6 @@ class GenAppDocumentGeneratorTest {
     private static final long CASE_REFERENCE = 1234L;
     private static final LocalDate FIXED_CURRENT_DATE = LocalDate.of(2026, 4, 27);
     private static final String CREATED_DOCUMENT_URL = "created document url";
-    private static final String MODIFIED_FILENAME = "some modified filename";
 
     @Mock
     private PcsCaseService pcsCaseService;
@@ -105,7 +104,7 @@ class GenAppDocumentGeneratorTest {
     void setUp() {
         stubUKClock();
         stubCaseData();
-        stubDocumentNameService();
+        stubDocumentNameService("some modified filename");
         stubDocumentGenerationAndImport();
 
         when(genAppEntity.getParty()).thenReturn(applicantPartyEntity);
@@ -150,7 +149,11 @@ class GenAppDocumentGeneratorTest {
     }
 
     @Test
-    void shouldCallDocAssemblyWithFilenameAndPdfType() {
+    void shouldCallDocAssemblyWithModfiedFilenameAndPdfType() {
+        // Given
+        String expectedModifiedFilename = "expected modified filename.pdf";
+        stubDocumentNameService(expectedModifiedFilename);
+
         // When
         underTest.createSubmissionDocument(CASE_REFERENCE, genAppEntity);
 
@@ -158,7 +161,7 @@ class GenAppDocumentGeneratorTest {
         ArgumentCaptor<String> filenameCaptor = ArgumentCaptor.forClass(String.class);
         verify(docAssemblyService)
             .generateDocument(any(FormPayload.class), anyString(), eq(OutputType.PDF), filenameCaptor.capture());
-        assertThat(filenameCaptor.getValue()).isEqualTo("some modified filename");
+        assertThat(filenameCaptor.getValue()).isEqualTo(expectedModifiedFilename);
     }
 
     @Test
@@ -427,8 +430,7 @@ class GenAppDocumentGeneratorTest {
         // Given
         DocumentEntity documentEntity = mock(DocumentEntity.class);
         when(documentImportService
-                 .addDocumentToCase(CASE_REFERENCE, CREATED_DOCUMENT_URL,
-                                    CaseFileCategory.APPLICATIONS, MODIFIED_FILENAME))
+                 .addDocumentToCase(CASE_REFERENCE, CREATED_DOCUMENT_URL, CaseFileCategory.APPLICATIONS))
             .thenReturn(documentEntity);
 
         // When
@@ -436,8 +438,7 @@ class GenAppDocumentGeneratorTest {
 
         // Then
         verify(documentImportService)
-            .addDocumentToCase(CASE_REFERENCE, CREATED_DOCUMENT_URL,
-                               CaseFileCategory.APPLICATIONS, MODIFIED_FILENAME);
+            .addDocumentToCase(CASE_REFERENCE, CREATED_DOCUMENT_URL, CaseFileCategory.APPLICATIONS);
         verify(genAppEntity).setSubmissionDocument(documentEntity);
         verify(documentEntity).setGeneralApplication(genAppEntity);
     }
@@ -460,10 +461,10 @@ class GenAppDocumentGeneratorTest {
             .thenReturn(formattedApplicantAddress);
     }
 
-    private void stubDocumentNameService() {
+    private void stubDocumentNameService(String modifiedFilename) {
         when(documentNameService
                  .appendGenAppPostfix(anyString(), any(GenAppEntity.class), any(ClaimEntity.class), any(UUID.class)))
-            .thenReturn(GenAppDocumentGeneratorTest.MODIFIED_FILENAME);
+            .thenReturn(modifiedFilename);
     }
 
     private void stubDocumentGenerationAndImport() {
@@ -472,8 +473,7 @@ class GenAppDocumentGeneratorTest {
 
         DocumentEntity documentEntity = mock(DocumentEntity.class);
         when(documentImportService
-                 .addDocumentToCase(CASE_REFERENCE, CREATED_DOCUMENT_URL,
-                                    CaseFileCategory.APPLICATIONS, MODIFIED_FILENAME))
+                 .addDocumentToCase(CASE_REFERENCE, CREATED_DOCUMENT_URL, CaseFileCategory.APPLICATIONS))
             .thenReturn(documentEntity);
     }
 
