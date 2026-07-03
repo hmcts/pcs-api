@@ -2,7 +2,8 @@ package uk.gov.hmcts.reform.pcs.ccd.domain.documentamend;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -20,6 +21,7 @@ import static uk.gov.hmcts.ccd.sdk.type.FieldType.FixedList;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(Include.NON_NULL)
+@JsonNaming(PropertyNamingStrategies.UpperCamelCaseStrategy.class)
 public class DocumentAmendDetails {
 
     @CCD(
@@ -28,11 +30,9 @@ public class DocumentAmendDetails {
         typeOverride = FixedList,
         typeParameterOverride = "CaseFileCategory"
     )
-    @JsonProperty("SelectedFolder")
     private CaseFileCategory selectedFolder;
 
     @CCD(searchable = false)
-    @JsonProperty("PropertyAddressSummary")
     private String propertyAddressSummary;
 
     @CCD(
@@ -40,7 +40,6 @@ public class DocumentAmendDetails {
         searchable = false,
         typeOverride = DynamicRadioList
     )
-    @JsonProperty("StatementsOfCaseDocuments")
     private DynamicList statementsOfCaseDocuments;
 
     @CCD(
@@ -48,7 +47,6 @@ public class DocumentAmendDetails {
         searchable = false,
         typeOverride = DynamicRadioList
     )
-    @JsonProperty("PropertyDocuments")
     private DynamicList propertyDocuments;
 
     @CCD(
@@ -56,7 +54,6 @@ public class DocumentAmendDetails {
         searchable = false,
         typeOverride = DynamicRadioList
     )
-    @JsonProperty("EvidenceDocuments")
     private DynamicList evidenceDocuments;
 
     @CCD(
@@ -64,7 +61,6 @@ public class DocumentAmendDetails {
         searchable = false,
         typeOverride = DynamicRadioList
     )
-    @JsonProperty("HearingDocuments")
     private DynamicList hearingDocuments;
 
     @CCD(
@@ -72,7 +68,6 @@ public class DocumentAmendDetails {
         searchable = false,
         typeOverride = DynamicRadioList
     )
-    @JsonProperty("OrdersAndNoticeOfHearingsDocuments")
     private DynamicList ordersAndNoticeOfHearingsDocuments;
 
     @CCD(
@@ -80,7 +75,6 @@ public class DocumentAmendDetails {
         searchable = false,
         typeOverride = DynamicRadioList
     )
-    @JsonProperty("ApplicationsDocuments")
     private DynamicList applicationsDocuments;
 
     @CCD(
@@ -88,7 +82,6 @@ public class DocumentAmendDetails {
         searchable = false,
         typeOverride = DynamicRadioList
     )
-    @JsonProperty("AppealsDocuments")
     private DynamicList appealsDocuments;
 
     @CCD(
@@ -96,7 +89,6 @@ public class DocumentAmendDetails {
         searchable = false,
         typeOverride = DynamicRadioList
     )
-    @JsonProperty("CorrespondenceDocuments")
     private DynamicList correspondenceDocuments;
 
     @CCD(
@@ -104,58 +96,44 @@ public class DocumentAmendDetails {
         searchable = false,
         typeOverride = DynamicRadioList
     )
-    @JsonProperty("UncategorisedDocuments")
     private DynamicList uncategorisedDocuments;
 
     @CCD(searchable = false)
-    @JsonProperty("StatementsOfCaseEmpty")
     private YesOrNo statementsOfCaseEmpty;
 
     @CCD(searchable = false)
-    @JsonProperty("PropertyDocumentsEmpty")
     private YesOrNo propertyDocumentsEmpty;
 
     @CCD(searchable = false)
-    @JsonProperty("EvidenceEmpty")
     private YesOrNo evidenceEmpty;
 
     @CCD(searchable = false)
-    @JsonProperty("HearingDocumentsEmpty")
     private YesOrNo hearingDocumentsEmpty;
 
     @CCD(searchable = false)
-    @JsonProperty("OrdersAndNoticeOfHearingsEmpty")
     private YesOrNo ordersAndNoticeOfHearingsEmpty;
 
     @CCD(searchable = false)
-    @JsonProperty("ApplicationsEmpty")
     private YesOrNo applicationsEmpty;
 
     @CCD(searchable = false)
-    @JsonProperty("AppealsEmpty")
     private YesOrNo appealsEmpty;
 
     @CCD(searchable = false)
-    @JsonProperty("CorrespondenceEmpty")
     private YesOrNo correspondenceEmpty;
 
     @CCD(searchable = false)
-    @JsonProperty("UncategorisedDocumentsEmpty")
     private YesOrNo uncategorisedDocumentsEmpty;
 
     @CCD(searchable = false)
-    @JsonProperty("SelectedFolderId")
     private String selectedFolderId;
 
     @CCD(searchable = false)
-    @JsonProperty("SelectedFolderLabel")
     private String selectedFolderLabel;
 
     @CCD(searchable = false)
-    @JsonProperty("SelectedDocumentId")
     private String selectedDocumentId;
 
     @CCD(searchable = false)
-    @JsonProperty("SelectedDocumentFileName")
     private String selectedDocumentFileName;
 }
