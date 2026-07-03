@@ -43,7 +43,6 @@ public class ChangeCaseState implements CCDConfig<PCSCase, State, UserRole> {
             )
             .name("Change case state")
             .grant(Permission.CRUD, CASEWORKER_ROLES)
-            .grant(Permission.CRUD, UserRole.PCS_CASE_WORKER)
             .grantHistoryOnly(JUDICIAL_HISTORY_ROLES)
             .showSummary()
             .endButtonLabel("Submit");
