@@ -85,6 +85,8 @@ class CreatePossessionClaimTest extends CftlibTest {
     @Order(2)
     void resumePossessionClaim() {
         PCSCase caseData = PCSCase.builder()
+            .caseManagementLocationNumber(20262)
+            .regionId(1)
             .tenancyLicenceDetails(TenancyLicenceDetails.builder()
                                        .typeOfTenancyLicence(TenancyLicenceType.ASSURED_TENANCY)
                                        .build())
