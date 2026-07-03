@@ -5,7 +5,6 @@ import com.google.common.collect.SetMultimap;
 import uk.gov.hmcts.ccd.sdk.api.HasRole;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 
-import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.BAILIFF_ADMIN;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CIRCUIT_JUDGE;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CITIZEN;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CLAIMANT_SOLICITOR;
@@ -33,8 +32,7 @@ final class AccessGrants {
         LEADERSHIP_JUDGE,
         HEARING_CENTRE_ADMIN,
         CTSC_ADMIN,
-        WLU_ADMIN,
-        BAILIFF_ADMIN
+        WLU_ADMIN
     };
 
     static final UserRole[] INTERNAL_READ_ROLES = {
@@ -44,8 +42,7 @@ final class AccessGrants {
         LEADERSHIP_JUDGE,
         HEARING_CENTRE_ADMIN,
         CTSC_ADMIN,
-        WLU_ADMIN,
-        BAILIFF_ADMIN
+        WLU_ADMIN
     };
 
     private AccessGrants() {

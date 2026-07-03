@@ -45,7 +45,6 @@ public enum UserRole implements HasRole {
     LEADERSHIP_JUDGE("leadership-judge", Set.of(R), RAS),
     CIRCUIT_JUDGE("circuit-judge", Set.of(R), RAS),
     JUDGE("judge", Set.of(R), RAS),
-    BAILIFF_ADMIN("bailiff-admin", Permission.CRU, RAS),
     SYSTEM_USER("pcs-system-update", Permission.CRU, IDAM);
 
 
