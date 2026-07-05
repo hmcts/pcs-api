@@ -1,14 +1,19 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.bulkprint;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.ClaimActivityStatus;
 import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.ClaimActivityType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.PackDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.PackDocumentRef;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimActivityLogEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
@@ -31,6 +36,9 @@ class ClaimPackSelectorTest {
 
     @Mock
     private ClaimActivityLogRepository claimActivityLogRepository;
+
+    @Spy
+    private SentPackDocuments sentPackDocuments = new SentPackDocuments(new ObjectMapper());
 
     @InjectMocks
     private ClaimPackSelector underTest;
@@ -130,9 +138,15 @@ class ClaimPackSelectorTest {
     }
 
     private ClaimActivityLogEntity sent(PartyEntity party, DocumentEntity document) {
-        return ClaimActivityLogEntity.builder()
-            .party(party).document(document)
-            .activityType(ClaimActivityType.DOCUMENT_SENT).status(ClaimActivityStatus.SUCCESS).build();
+        try {
+            String details = new ObjectMapper().writeValueAsString(PackDetails.sent(
+                LetterType.CLAIMANT_CLAIM_PACK, List.of(new PackDocumentRef(document.getId(), document.getType()))));
+            return ClaimActivityLogEntity.builder()
+                .party(party).details(details)
+                .activityType(ClaimActivityType.PACK_SENT).status(ClaimActivityStatus.SUCCESS).build();
+        } catch (JsonProcessingException e) {
+            throw new IllegalStateException(e);
+        }
     }
 
     private PartyEntity party() {

@@ -13,16 +13,15 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.ClaimActivityType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.GenerationDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.PackDetails;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimActivityLogEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimActivityLogRepository;
 
 /**
- * Records rows to {@code claim_activity_log}: generation outcomes ({@code DOCUMENTS_CREATED}, with the
- * created document on success and {@link GenerationDetails} on failure) and, for bulk print, one
- * {@code DOCUMENT_SENT} row per (recipient, document) plus one {@code PACK_SENT}/{@code PACK_FAILED} row
- * per (recipient, pack) carrying {@link PackDetails}.
+ * Records rows to {@code claim_activity_log}: generation outcomes ({@code DOCUMENTS_CREATED}, with
+ * {@link GenerationDetails} on failure) and, for bulk print, one {@code PACK_SENT}/{@code PACK_FAILED}
+ * row per (recipient, pack) carrying {@link PackDetails}. Document relationships are not stored here —
+ * they live on the document table and its owning pointers.
  */
 @Service
 @AllArgsConstructor
@@ -33,15 +32,7 @@ public class AccessCodeActivityLogService {
     private final ObjectMapper objectMapper;
 
     public void logSuccess(PcsCaseEntity pcsCase, PartyEntity party, ClaimActivityType activityType) {
-        save(pcsCase, party, null, activityType, ClaimActivityStatus.SUCCESS, null);
-    }
-
-    /**
-     * Generation success carrying the document that was created, so the row is self-describing.
-     */
-    public void logSuccess(PcsCaseEntity pcsCase, PartyEntity party, DocumentEntity document,
-                           ClaimActivityType activityType) {
-        save(pcsCase, party, document, activityType, ClaimActivityStatus.SUCCESS, null);
+        save(pcsCase, party, activityType, ClaimActivityStatus.SUCCESS, null);
     }
 
     /**
@@ -49,7 +40,7 @@ public class AccessCodeActivityLogService {
      */
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void logFailure(PcsCaseEntity pcsCase, PartyEntity party, ClaimActivityType activityType) {
-        save(pcsCase, party, null, activityType, ClaimActivityStatus.FAILURE, null);
+        save(pcsCase, party, activityType, ClaimActivityStatus.FAILURE, null);
     }
 
     /**
@@ -59,47 +50,30 @@ public class AccessCodeActivityLogService {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void logFailure(PcsCaseEntity pcsCase, PartyEntity party, ClaimActivityType activityType,
                            GenerationDetails details) {
-        save(pcsCase, party, null, activityType, ClaimActivityStatus.FAILURE, details);
+        save(pcsCase, party, activityType, ClaimActivityStatus.FAILURE, details);
     }
 
     /**
-     * A document was posted to a recipient. The (recipient, document) SUCCESS row is the bulk-print dedup key,
-     * so it commits in its own transaction: the post is irreversible, and the send runs outside any caller
-     * transaction.
-     */
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void recordDocumentSent(PcsCaseEntity pcsCase, PartyEntity recipient, DocumentEntity document) {
-        save(pcsCase, recipient, document, ClaimActivityType.DOCUMENT_SENT, ClaimActivityStatus.SUCCESS, null);
-    }
-
-    /**
-     * A document send to a recipient failed; REQUIRES_NEW so the row survives the caller's rollback.
-     */
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void recordDocumentSendFailure(PcsCaseEntity pcsCase, PartyEntity recipient, DocumentEntity document) {
-        save(pcsCase, recipient, document, ClaimActivityType.DOCUMENT_SENT, ClaimActivityStatus.FAILURE, null);
-    }
-
-    /**
-     * One pack dispatch to a recipient succeeded; {@link PackDetails} records the pack type and contents.
-     * REQUIRES_NEW for the same reason as {@link #recordDocumentSent}: the post is irreversible.
+     * One pack dispatch to a recipient succeeded; {@link PackDetails} records the pack type and contents
+     * and is the bulk-print dedup source, so it commits in its own transaction: the post is irreversible,
+     * and the send runs outside any caller transaction.
      */
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void recordPackSent(PcsCaseEntity pcsCase, PartyEntity recipient, PackDetails details) {
-        save(pcsCase, recipient, null, ClaimActivityType.PACK_SENT, ClaimActivityStatus.SUCCESS, details);
+        save(pcsCase, recipient, ClaimActivityType.PACK_SENT, ClaimActivityStatus.SUCCESS, details);
     }
 
     /**
      * One pack dispatch to a recipient failed; {@link PackDetails} carries failureReason + terminal.
+     * REQUIRES_NEW so the row survives the caller's rollback.
      */
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void recordPackFailed(PcsCaseEntity pcsCase, PartyEntity recipient, PackDetails details) {
-        save(pcsCase, recipient, null, ClaimActivityType.PACK_FAILED, ClaimActivityStatus.FAILURE, details);
+        save(pcsCase, recipient, ClaimActivityType.PACK_FAILED, ClaimActivityStatus.FAILURE, details);
     }
 
     private void save(PcsCaseEntity pcsCase,
                       PartyEntity party,
-                      DocumentEntity document,
                       ClaimActivityType activityType,
                       ClaimActivityStatus status,
                       ActivityDetails details) {
@@ -108,7 +82,6 @@ public class AccessCodeActivityLogService {
             ClaimActivityLogEntity.builder()
                 .pcsCase(pcsCase)
                 .party(party)
-                .document(document)
                 .activityType(activityType)
                 .status(status)
                 .details(toJson(details))

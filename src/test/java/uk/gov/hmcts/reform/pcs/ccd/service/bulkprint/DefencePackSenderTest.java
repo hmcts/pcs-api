@@ -7,6 +7,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.PackDetails;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
@@ -16,6 +17,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -68,8 +70,7 @@ class DefencePackSenderTest {
 
         verify(bulkPrintService).sendPack(pcsCase, defendant, LetterType.DEFENCE_PACK, "Bob Tenant", address,
             List.of(defenceForm, counterClaim));
-        verify(accessCodeActivityLogService).recordDocumentSent(pcsCase, defendant, defenceForm);
-        verify(accessCodeActivityLogService).recordDocumentSent(pcsCase, defendant, counterClaim);
+        verify(accessCodeActivityLogService).recordPackSent(eq(pcsCase), eq(defendant), any(PackDetails.class));
     }
 
     @Test
@@ -83,6 +84,6 @@ class DefencePackSenderTest {
 
         underTest.sendDefencePacks(CASE_ID);
 
-        verify(accessCodeActivityLogService).recordDocumentSendFailure(pcsCase, defendant, defenceForm);
+        verify(accessCodeActivityLogService).recordPackFailed(eq(pcsCase), eq(defendant), any(PackDetails.class));
     }
 }

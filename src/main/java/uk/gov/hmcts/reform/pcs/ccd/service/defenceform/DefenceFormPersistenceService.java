@@ -68,7 +68,7 @@ public class DefenceFormPersistenceService {
         // Both sides are independent FK columns (no mappedBy): the document-side link is what
         // DefencePackSelector matches on, so without it the defence pack is never dispatched.
         document.setDefendantResponse(response);
-        claimActivityLogService.logGenerationSuccess(pcsCase, response.getParty(), document);
+        claimActivityLogService.logGenerationSuccess(pcsCase, response.getParty());
     }
 
     private DefendantResponseEntity loadResponse(UUID defendantResponseId) {

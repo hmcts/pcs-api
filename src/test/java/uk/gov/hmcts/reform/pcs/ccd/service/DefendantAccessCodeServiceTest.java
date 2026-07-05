@@ -98,8 +98,6 @@ class DefendantAccessCodeServiceTest {
         PcsCaseEntity caseEntity = createCaseWithDefendants(partyId);
         when(pcsCaseService.loadCase(1L)).thenReturn(caseEntity);
 
-        when(documentRepository.save(any(DocumentEntity.class))).thenAnswer(inv -> inv.getArgument(0));
-
         underTest.generateForDefendant(1L, partyId, true);
 
         verify(documentRepository).save(documentCaptor.capture());
@@ -117,7 +115,7 @@ class DefendantAccessCodeServiceTest {
         assertThat(savedCode.getCode()).startsWith("ENC-");
 
         verify(testAccessCodeRecorder).record(eq(caseEntity.getId()), eq(partyId), anyString());
-        verify(accessCodeActivityLogService).logSuccess(caseEntity, savedDoc.getParty(), savedDoc,
+        verify(accessCodeActivityLogService).logSuccess(caseEntity, savedDoc.getParty(),
                                                    ClaimActivityType.DOCUMENTS_CREATED);
         verify(accessCodeActivityLogService, never()).logFailure(any(), any(), any(), any());
     }
@@ -167,7 +165,7 @@ class DefendantAccessCodeServiceTest {
         verify(partyAccessCodeRepo, never()).save(any());
         verify(documentRepository, never()).save(any());
         verify(testAccessCodeRecorder, never()).record(any(), any(), anyString());
-        verify(accessCodeActivityLogService, never()).logSuccess(any(), any(), any(), any());
+        verify(accessCodeActivityLogService, never()).logSuccess(any(), any(), any());
     }
 
     @Test

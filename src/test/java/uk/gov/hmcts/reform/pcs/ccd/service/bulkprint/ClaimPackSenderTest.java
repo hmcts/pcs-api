@@ -7,6 +7,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.PackDetails;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
@@ -16,6 +17,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -66,8 +68,8 @@ class ClaimPackSenderTest {
 
         verify(bulkPrintService).sendPack(pcsCase, recipient,
             LetterType.CLAIMANT_CLAIM_PACK, "Acme Ltd", address, List.of(claimForm));
-        verify(accessCodeActivityLogService).recordDocumentSent(pcsCase, recipient, claimForm);
-        verify(accessCodeActivityLogService, never()).recordDocumentSendFailure(any(), any(), any());
+        verify(accessCodeActivityLogService).recordPackSent(eq(pcsCase), eq(recipient), any(PackDetails.class));
+        verify(accessCodeActivityLogService, never()).recordPackFailed(any(), any(), any());
     }
 
     @Test
@@ -79,7 +81,7 @@ class ClaimPackSenderTest {
 
         underTest.sendClaimPacks(CASE_ID);
 
-        verify(accessCodeActivityLogService).recordDocumentSendFailure(pcsCase, recipient, claimForm);
+        verify(accessCodeActivityLogService).recordPackFailed(eq(pcsCase), eq(recipient), any(PackDetails.class));
     }
 
     private ResolvedRecipient resolvedRecipient() {

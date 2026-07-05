@@ -15,7 +15,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.FailureReason;
 import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.GenerationDetails;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimActivityLogEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
@@ -54,16 +53,14 @@ class ClaimActivityLogServiceTest {
     @Test
     void logsDocumentsCreatedSuccessAgainstTheClaimantParty() {
         PartyEntity claimant = mock(PartyEntity.class);
-        DocumentEntity document = mock(DocumentEntity.class);
         stubCaseWithClaimant(claimant);
 
-        claimActivityLogService.logGenerationSuccess(CASE_REFERENCE, document);
+        claimActivityLogService.logGenerationSuccess(CASE_REFERENCE);
 
         ClaimActivityLogEntity saved = captureSaved();
         assertThat(saved.getActivityType()).isEqualTo(ClaimActivityType.DOCUMENTS_CREATED);
         assertThat(saved.getStatus()).isEqualTo(ClaimActivityStatus.SUCCESS);
         assertThat(saved.getParty()).isSameAs(claimant);
-        assertThat(saved.getDocument()).isSameAs(document);
     }
 
     @Test
@@ -85,7 +82,7 @@ class ClaimActivityLogServiceTest {
         when(pcsCase.getClaims()).thenReturn(List.of(claim));
         when(claim.getClaimParties()).thenReturn(List.of());
 
-        claimActivityLogService.logGenerationSuccess(CASE_REFERENCE, mock(DocumentEntity.class));
+        claimActivityLogService.logGenerationSuccess(CASE_REFERENCE);
 
         assertThat(captureSaved().getParty()).isNull();
     }

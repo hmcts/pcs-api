@@ -9,7 +9,7 @@ import java.util.List;
 /**
  * One defence-phase envelope to post: the recipient (claimant or a defendant), their role (drives address
  * resolution), and the unsent defence-side documents for them (defence form and/or counter-claim). Recorded
- * as one {@code DOCUMENT_SENT} row per document; the coversheet is prepended at send time.
+ * in one {@code PACK_SENT} row for the dispatch; the coversheet is prepended at send time.
  */
 public record DefencePackCandidate(PartyRole role, PartyEntity recipient, List<DocumentEntity> documents) {
 }

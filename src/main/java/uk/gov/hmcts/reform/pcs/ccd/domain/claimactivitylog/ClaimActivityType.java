@@ -9,7 +9,6 @@ import uk.gov.hmcts.ccd.sdk.api.HasLabel;
 public enum ClaimActivityType implements HasLabel {
 
     DOCUMENTS_CREATED("Documents created"),
-    DOCUMENT_SENT("Document sent"), // one row per (recipient, document); status SUCCESS = sent, FAILURE = send failed
     PACK_SENT("Pack sent"),     // one row per (recipient, pack) dispatch; PackDetails in the details column
     PACK_FAILED("Pack failed"); // dispatch attempt failed; PackDetails carries failureReason + terminal
 

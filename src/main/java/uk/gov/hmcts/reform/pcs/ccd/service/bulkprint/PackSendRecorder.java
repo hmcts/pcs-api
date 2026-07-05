@@ -17,9 +17,10 @@ import java.util.function.Supplier;
 
 /**
  * Runs one recipient's send and records the outcome, shared by both pack senders. Sets the MDC context,
- * invokes the send, and writes a {@code DOCUMENT_SENT} row per document (the current dedup key) plus one
- * pack-grained {@code PACK_SENT}/{@code PACK_FAILED} row per dispatch — SUCCESS, or FAILURE (terminal for
- * a missing address, retryable otherwise, so it self-heals on the next sweep).
+ * invokes the send, and writes one pack-grained {@code PACK_SENT}/{@code PACK_FAILED} row per dispatch —
+ * SUCCESS with the documents it carried (the bulk-print dedup source), or FAILURE (terminal for a missing
+ * address, retryable otherwise, so it self-heals on the next sweep). Per-document detail goes to the app
+ * log / App Insights only.
  */
 @Service
 @Slf4j
@@ -31,8 +32,6 @@ public class PackSendRecorder {
     private static final String MDC_LETTER_ID = "letterId";
     private static final String MDC_TERMINAL_FAILURE = "terminalFailure";
     private static final String MDC_FAILURE_REASON = "failureReason";
-    private static final String MDC_DOCUMENT_ID = "documentId";
-    private static final String MDC_DOCUMENT_TYPE = "documentType";
 
     private final AccessCodeActivityLogService accessCodeActivityLogService;
 
@@ -48,9 +47,9 @@ public class PackSendRecorder {
         try {
             UUID letterId = sendAction.get();
             MDC.put(MDC_LETTER_ID, String.valueOf(letterId));
-            documents.forEach(document -> recordDocumentSent(pcsCase, recipient, document, letterType, letterId));
             accessCodeActivityLogService.recordPackSent(pcsCase, recipient,
                 PackDetails.sent(letterType, packDocumentRefs(documents)));
+            documents.forEach(document -> logDocumentSent(pcsCase, recipient, document, letterType, letterId));
         } catch (MissingPostalAddressException e) {
             recordFailure(pcsCase, recipient, letterType, documents, e, true);
         } catch (Exception e) {
@@ -60,8 +59,6 @@ public class PackSendRecorder {
             MDC.remove(MDC_PARTY_ID);
             MDC.remove(MDC_LETTER_TYPE);
             MDC.remove(MDC_LETTER_ID);
-            MDC.remove(MDC_DOCUMENT_ID);
-            MDC.remove(MDC_DOCUMENT_TYPE);
             MDC.remove(MDC_TERMINAL_FAILURE);
             MDC.remove(MDC_FAILURE_REASON);
         }
@@ -71,9 +68,24 @@ public class PackSendRecorder {
                                List<DocumentEntity> documents, Exception cause, boolean terminal) {
         MDC.put(MDC_TERMINAL_FAILURE, String.valueOf(terminal));
         MDC.put(MDC_FAILURE_REASON, String.valueOf(cause.getMessage()));
-        documents.forEach(document -> recordDocumentSendFailure(pcsCase, recipient, document, cause, terminal));
         accessCodeActivityLogService.recordPackFailed(pcsCase, recipient,
             PackDetails.failed(letterType, packDocumentRefs(documents), FailureReasons.from(cause)));
+        if (terminal) {
+            log.error("Pack send failed (terminal) - case: {}, party: {}, letterType: {}, documents: {}: {}",
+                pcsCase.getCaseReference(), recipient.getId(), letterType.getCode(),
+                documentSummary(documents), cause.getMessage(), cause);
+        } else {
+            log.warn("Pack send failed (will retry) - case: {}, party: {}, letterType: {}, documents: {}: {}",
+                pcsCase.getCaseReference(), recipient.getId(), letterType.getCode(),
+                documentSummary(documents), cause.getMessage());
+        }
+    }
+
+    private void logDocumentSent(PcsCaseEntity pcsCase, PartyEntity recipient, DocumentEntity document,
+                                 LetterType letterType, UUID letterId) {
+        log.info("Document sent - case: {}, party: {}, documentType: {}, documentId: {}, letterType: {}, letterId: {}",
+            pcsCase.getCaseReference(), recipient.getId(), document.getType(), document.getId(),
+            letterType.getCode(), letterId);
     }
 
     private List<PackDocumentRef> packDocumentRefs(List<DocumentEntity> documents) {
@@ -82,29 +94,10 @@ public class PackSendRecorder {
             .toList();
     }
 
-    private void recordDocumentSent(PcsCaseEntity pcsCase, PartyEntity recipient, DocumentEntity document,
-                                    LetterType letterType, UUID letterId) {
-        accessCodeActivityLogService.recordDocumentSent(pcsCase, recipient, document);
-        MDC.put(MDC_DOCUMENT_ID, String.valueOf(document.getId()));
-        MDC.put(MDC_DOCUMENT_TYPE, String.valueOf(document.getType()));
-        log.info("Document sent - case: {}, party: {}, documentType: {}, documentId: {}, letterType: {}, letterId: {}",
-            pcsCase.getCaseReference(), recipient.getId(), document.getType(), document.getId(),
-            letterType.getCode(), letterId);
-    }
-
-    private void recordDocumentSendFailure(PcsCaseEntity pcsCase, PartyEntity recipient, DocumentEntity document,
-                                           Exception cause, boolean terminal) {
-        accessCodeActivityLogService.recordDocumentSendFailure(pcsCase, recipient, document);
-        MDC.put(MDC_DOCUMENT_ID, String.valueOf(document.getId()));
-        MDC.put(MDC_DOCUMENT_TYPE, String.valueOf(document.getType()));
-        if (terminal) {
-            log.error("Document send failed (terminal) - case: {}, party: {}, documentType: {}, documentId: {}: {}",
-                pcsCase.getCaseReference(), recipient.getId(), document.getType(), document.getId(),
-                cause.getMessage(), cause);
-        } else {
-            log.warn("Document send failed (will retry) - case: {}, party: {}, documentType: {}, documentId: {}: {}",
-                pcsCase.getCaseReference(), recipient.getId(), document.getType(), document.getId(),
-                cause.getMessage());
-        }
+    private String documentSummary(List<DocumentEntity> documents) {
+        return documents.stream()
+            .map(document -> String.valueOf(document.getType()))
+            .reduce((a, b) -> a + ", " + b)
+            .orElse("none");
     }
 }

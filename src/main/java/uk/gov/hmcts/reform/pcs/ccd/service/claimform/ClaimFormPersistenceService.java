@@ -57,6 +57,6 @@ public class ClaimFormPersistenceService {
             caseReference, dmStoreUrl, CaseFileCategory.STATEMENTS_OF_CASE);
         document.setType(DocumentType.CLAIM);
         claim.setClaimFormDocument(document);
-        claimActivityLogService.logGenerationSuccess(caseReference, document);
+        claimActivityLogService.logGenerationSuccess(caseReference);
     }
 }

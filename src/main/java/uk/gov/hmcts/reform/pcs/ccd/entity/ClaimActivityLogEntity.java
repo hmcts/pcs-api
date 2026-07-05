@@ -48,17 +48,11 @@ public class ClaimActivityLogEntity {
     @JoinColumn(name = "party_id")
     private PartyEntity party;
 
-    @ManyToOne(fetch = LAZY)
-    @JoinColumn(name = "document_id")
-    private DocumentEntity document;
-
     @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @Column(name = "activity_type", nullable = false)
     private ClaimActivityType activityType;
 
     @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @Column(name = "status", nullable = false)
     private ClaimActivityStatus status;
 

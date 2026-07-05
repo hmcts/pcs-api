@@ -2,9 +2,6 @@ package uk.gov.hmcts.reform.pcs.ccd.service.bulkprint;
 
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
-import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.ClaimActivityStatus;
-import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.ClaimActivityType;
-import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimActivityLogEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -25,16 +22,19 @@ import static uk.gov.hmcts.reform.pcs.ccd.service.form.PartyDisplayMapper.partie
 
 /**
  * Selects defence-phase envelopes per recipient. Each party (claimant and defendants) gets the defence form
- * and any issued counter-claim; only documents without a {@code DOCUMENT_SENT} success row are included, so a
- * late counter-claim follows in a later sweep without re-sending.
+ * and any issued counter-claim; only documents not covered by a {@code PACK_SENT} success row are included,
+ * so a late counter-claim follows in a later sweep without re-sending.
  */
 @Service
 public class DefencePackSelector {
 
     private final ClaimActivityLogRepository claimActivityLogRepository;
+    private final SentPackDocuments sentPackDocuments;
 
-    public DefencePackSelector(ClaimActivityLogRepository claimActivityLogRepository) {
+    public DefencePackSelector(ClaimActivityLogRepository claimActivityLogRepository,
+                               SentPackDocuments sentPackDocuments) {
         this.claimActivityLogRepository = claimActivityLogRepository;
+        this.sentPackDocuments = sentPackDocuments;
     }
 
     public List<DefencePackCandidate> findDefencePackCandidates(PcsCaseEntity pcsCase) {
@@ -42,7 +42,8 @@ public class DefencePackSelector {
             return List.of();
         }
         ClaimEntity claim = pcsCase.getClaims().getFirst();
-        Set<String> sent = sentDocumentKeys(claimActivityLogRepository.findAllByPcsCase_Id(pcsCase.getId()));
+        Set<String> sent =
+            sentPackDocuments.sentDocumentKeys(claimActivityLogRepository.findAllByPcsCase_Id(pcsCase.getId()));
 
         List<PartyEntity> claimants = partiesByRole(claim, PartyRole.CLAIMANT);
         List<PartyEntity> defendants = partiesByRole(claim, PartyRole.DEFENDANT);
@@ -107,20 +108,7 @@ public class DefencePackSelector {
             && document.getDefendantResponse().getParty().getId().equals(defendant.getId());
     }
 
-    private Set<String> sentDocumentKeys(List<ClaimActivityLogEntity> activityLog) {
-        return activityLog.stream()
-            .filter(entry -> entry.getActivityType() == ClaimActivityType.DOCUMENT_SENT)
-            .filter(entry -> entry.getStatus() == ClaimActivityStatus.SUCCESS)
-            .filter(entry -> entry.getParty() != null && entry.getDocument() != null)
-            .map(entry -> key(entry.getParty().getId(), entry.getDocument().getId()))
-            .collect(Collectors.toSet());
-    }
-
     private String key(PartyEntity party, DocumentEntity document) {
-        return key(party.getId(), document.getId());
-    }
-
-    private String key(UUID partyId, UUID documentId) {
-        return partyId + ":" + documentId;
+        return SentPackDocuments.key(party.getId(), document.getId());
     }
 }

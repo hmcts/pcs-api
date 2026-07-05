@@ -82,7 +82,7 @@ public class DefendantAccessCodeService {
             String documentUrl = accessCodeFormDocumentGenerator
                 .generate(pcsCaseEntity, mainClaim, defendant, plaintextAccessCode);
 
-            DocumentEntity accessCodeDocument = documentRepository.save(
+            documentRepository.save(
                 DocumentEntity.builder()
                     .pcsCase(pcsCaseEntity)
                     .party(defendant)
@@ -103,8 +103,7 @@ public class DefendantAccessCodeService {
 
             testAccessCodeRecorder.record(pcsCaseEntity.getId(), defendant.getId(), plaintextAccessCode);
 
-            accessCodeActivityLogService.logSuccess(pcsCaseEntity, defendant, accessCodeDocument,
-                                                    ClaimActivityType.DOCUMENTS_CREATED);
+            accessCodeActivityLogService.logSuccess(pcsCaseEntity, defendant, ClaimActivityType.DOCUMENTS_CREATED);
 
         } catch (Exception e) {
             // Terminal-only: intermediate retries are tracked in scheduled_tasks; mirror the claim-form
