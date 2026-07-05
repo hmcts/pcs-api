@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.service.bulkprint;
+package uk.gov.hmcts.reform.pcs.ccd.service.coversheet;
 
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.docassembly.domain.OutputType;

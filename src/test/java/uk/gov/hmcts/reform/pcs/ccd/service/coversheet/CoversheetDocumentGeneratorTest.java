@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.service.bulkprint;
+package uk.gov.hmcts.reform.pcs.ccd.service.coversheet;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
