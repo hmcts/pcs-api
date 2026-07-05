@@ -518,6 +518,8 @@ project.tasks.named("generateCCDConfig") {
   environment 'PCS_DB_PASSWORD', 'postgres'
   environment 'DB_PORT', '6432'
   environment 'LAUNCHDARKLY_OFFLINE', 'true'
+  environment 'ENABLE_TESTING_SUPPORT', 'false'
+  environment 'DB_SCHEDULER_EXECUTOR_ENABLED', 'false'
 }
 
 // Gradle 7.x issue, workaround from: https://github.com/gradle/gradle/issues/17236#issuecomment-894768083
@@ -555,6 +557,7 @@ tasks.withType(CftlibExec).configureEach {
   environment 'SPRING_PROFILES_ACTIVE', 'dev'
   // No LaunchDarkly key for local/cftlibTest - run the client offline so it serves code defaults
   environment 'LAUNCHDARKLY_OFFLINE', 'true'
+  environment 'ENABLE_TESTING_SUPPORT', 'true'
   environment 'IDAM_CLIENT_SECRET', 'dummy-secret-for-local'
   environment 'XUI_JURISDICTIONS', 'PCS'
   environment 'XUI_DOCUMENTS_API_V2', 'http://ccd-case-document-am-api-aat.service.core-compute-aat.internal'
