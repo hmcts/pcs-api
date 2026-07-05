@@ -32,7 +32,8 @@ class AccessCodeActivityLogServiceTest {
 
     @BeforeEach
     void setUp() {
-        underTest = new AccessCodeActivityLogService(claimActivityLogRepository);
+        underTest = new AccessCodeActivityLogService(claimActivityLogRepository,
+                                                     new com.fasterxml.jackson.databind.ObjectMapper());
     }
 
     @Test

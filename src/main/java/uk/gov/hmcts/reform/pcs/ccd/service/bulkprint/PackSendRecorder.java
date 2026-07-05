@@ -3,6 +3,9 @@ package uk.gov.hmcts.reform.pcs.ccd.service.bulkprint;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
 import org.springframework.stereotype.Service;
+import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.FailureReasons;
+import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.PackDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.PackDocumentRef;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
@@ -13,9 +16,10 @@ import java.util.UUID;
 import java.util.function.Supplier;
 
 /**
- * Runs one recipient's send and records the outcome per document, shared by both pack senders. Sets the MDC
- * context, invokes the send, and writes a {@code DOCUMENT_SENT} row per document — SUCCESS, or FAILURE
- * (terminal for a missing address, retryable otherwise, so it self-heals on the next sweep).
+ * Runs one recipient's send and records the outcome, shared by both pack senders. Sets the MDC context,
+ * invokes the send, and writes a {@code DOCUMENT_SENT} row per document (the current dedup key) plus one
+ * pack-grained {@code PACK_SENT}/{@code PACK_FAILED} row per dispatch — SUCCESS, or FAILURE (terminal for
+ * a missing address, retryable otherwise, so it self-heals on the next sweep).
  */
 @Service
 @Slf4j
@@ -45,10 +49,12 @@ public class PackSendRecorder {
             UUID letterId = sendAction.get();
             MDC.put(MDC_LETTER_ID, String.valueOf(letterId));
             documents.forEach(document -> recordDocumentSent(pcsCase, recipient, document, letterType, letterId));
+            accessCodeActivityLogService.recordPackSent(pcsCase, recipient,
+                PackDetails.sent(letterType, packDocumentRefs(documents)));
         } catch (MissingPostalAddressException e) {
-            recordFailure(pcsCase, recipient, documents, e, true);
+            recordFailure(pcsCase, recipient, letterType, documents, e, true);
         } catch (Exception e) {
-            recordFailure(pcsCase, recipient, documents, e, false);
+            recordFailure(pcsCase, recipient, letterType, documents, e, false);
         } finally {
             MDC.remove(MDC_CASE_REFERENCE);
             MDC.remove(MDC_PARTY_ID);
@@ -61,11 +67,19 @@ public class PackSendRecorder {
         }
     }
 
-    private void recordFailure(PcsCaseEntity pcsCase, PartyEntity recipient, List<DocumentEntity> documents,
-                               Exception cause, boolean terminal) {
+    private void recordFailure(PcsCaseEntity pcsCase, PartyEntity recipient, LetterType letterType,
+                               List<DocumentEntity> documents, Exception cause, boolean terminal) {
         MDC.put(MDC_TERMINAL_FAILURE, String.valueOf(terminal));
         MDC.put(MDC_FAILURE_REASON, String.valueOf(cause.getMessage()));
         documents.forEach(document -> recordDocumentSendFailure(pcsCase, recipient, document, cause, terminal));
+        accessCodeActivityLogService.recordPackFailed(pcsCase, recipient,
+            PackDetails.failed(letterType, packDocumentRefs(documents), FailureReasons.from(cause)));
+    }
+
+    private List<PackDocumentRef> packDocumentRefs(List<DocumentEntity> documents) {
+        return documents.stream()
+            .map(document -> new PackDocumentRef(document.getId(), document.getType()))
+            .toList();
     }
 
     private void recordDocumentSent(PcsCaseEntity pcsCase, PartyEntity recipient, DocumentEntity document,

@@ -9,6 +9,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.ClaimActivityType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.GenerationDetails;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyAccessCodeEntity;
@@ -97,6 +98,8 @@ class DefendantAccessCodeServiceTest {
         PcsCaseEntity caseEntity = createCaseWithDefendants(partyId);
         when(pcsCaseService.loadCase(1L)).thenReturn(caseEntity);
 
+        when(documentRepository.save(any(DocumentEntity.class))).thenAnswer(inv -> inv.getArgument(0));
+
         underTest.generateForDefendant(1L, partyId, true);
 
         verify(documentRepository).save(documentCaptor.capture());
@@ -114,9 +117,9 @@ class DefendantAccessCodeServiceTest {
         assertThat(savedCode.getCode()).startsWith("ENC-");
 
         verify(testAccessCodeRecorder).record(eq(caseEntity.getId()), eq(partyId), anyString());
-        verify(accessCodeActivityLogService).logSuccess(caseEntity, savedDoc.getParty(),
+        verify(accessCodeActivityLogService).logSuccess(caseEntity, savedDoc.getParty(), savedDoc,
                                                    ClaimActivityType.DOCUMENTS_CREATED);
-        verify(accessCodeActivityLogService, never()).logFailure(any(), any(), any());
+        verify(accessCodeActivityLogService, never()).logFailure(any(), any(), any(), any());
     }
 
     @Test
@@ -132,7 +135,8 @@ class DefendantAccessCodeServiceTest {
         assertThat(thrown).hasMessage("docmosis down");
 
         verify(accessCodeActivityLogService).logFailure(eq(caseEntity), any(PartyEntity.class),
-                                                   eq(ClaimActivityType.DOCUMENTS_CREATED));
+                                                   eq(ClaimActivityType.DOCUMENTS_CREATED),
+                                                   any(GenerationDetails.class));
         verify(partyAccessCodeRepo, never()).save(any());
         verify(documentRepository, never()).save(any());
         verify(testAccessCodeRecorder, never()).record(any(), any(), anyString());
@@ -148,7 +152,7 @@ class DefendantAccessCodeServiceTest {
 
         assertThrows(RuntimeException.class, () -> underTest.generateForDefendant(5L, partyId, false));
 
-        verify(accessCodeActivityLogService, never()).logFailure(any(), any(), any());
+        verify(accessCodeActivityLogService, never()).logFailure(any(), any(), any(), any());
     }
 
     @Test
@@ -163,7 +167,7 @@ class DefendantAccessCodeServiceTest {
         verify(partyAccessCodeRepo, never()).save(any());
         verify(documentRepository, never()).save(any());
         verify(testAccessCodeRecorder, never()).record(any(), any(), anyString());
-        verify(accessCodeActivityLogService, never()).logSuccess(any(), any(), any());
+        verify(accessCodeActivityLogService, never()).logSuccess(any(), any(), any(), any());
     }
 
     @Test

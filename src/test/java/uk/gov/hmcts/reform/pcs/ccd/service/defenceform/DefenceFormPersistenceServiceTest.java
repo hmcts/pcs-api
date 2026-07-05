@@ -91,7 +91,9 @@ class DefenceFormPersistenceServiceTest {
 
         assertThat(document.getType()).isEqualTo(DocumentType.DEFENDANT_RESPONSE);
         assertThat(response.getSubmissionDocument()).isSameAs(document);
-        verify(claimActivityLogService).logGenerationSuccess(pcsCase, defendant);
+        // Document-side link is what DefencePackSelector matches on — without it no defence pack dispatches
+        assertThat(document.getDefendantResponse()).isSameAs(response);
+        verify(claimActivityLogService).logGenerationSuccess(pcsCase, defendant, document);
     }
 
     @Test

@@ -16,6 +16,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.GenerationDetails;
 import org.slf4j.LoggerFactory;
 import uk.gov.hmcts.reform.pcs.ccd.model.ClaimFormTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimActivityLogService;
@@ -26,7 +27,9 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -109,7 +112,7 @@ class ClaimFormGenerationComponentTest {
         assertThatThrownBy(() -> task.execute(taskInstance, executionContext))
             .isInstanceOf(RuntimeException.class);
         verify(claimFormService).generateAndAttach(999L);
-        verify(claimActivityLogService, never()).logGenerationFailure(anyLong());
+        verify(claimActivityLogService, never()).logGenerationFailure(anyLong(), any(GenerationDetails.class));
     }
 
     @Test
@@ -127,7 +130,7 @@ class ClaimFormGenerationComponentTest {
 
         assertThatThrownBy(() -> task.execute(taskInstance, executionContext))
             .isInstanceOf(RuntimeException.class);
-        verify(claimActivityLogService).logGenerationFailure(999L);
+        verify(claimActivityLogService).logGenerationFailure(eq(999L), any(GenerationDetails.class));
     }
 
     @Test
@@ -145,7 +148,7 @@ class ClaimFormGenerationComponentTest {
 
         assertThatThrownBy(() -> task.execute(taskInstance, executionContext))
             .isInstanceOf(RuntimeException.class);
-        verify(claimActivityLogService, never()).logGenerationFailure(anyLong());
+        verify(claimActivityLogService, never()).logGenerationFailure(anyLong(), any(GenerationDetails.class));
     }
 
     @Test
@@ -156,7 +159,8 @@ class ClaimFormGenerationComponentTest {
         execution.consecutiveFailures = maxRetries;
         when(executionContext.getExecution()).thenReturn(execution);
         doThrow(new RuntimeException("generation failed")).when(claimFormService).generateAndAttach(999L);
-        doThrow(new RuntimeException("log write failed")).when(claimActivityLogService).logGenerationFailure(999L);
+        doThrow(new RuntimeException("log write failed"))
+            .when(claimActivityLogService).logGenerationFailure(eq(999L), any(GenerationDetails.class));
 
         CustomTask<ClaimFormTaskData> task = component.claimFormGenerationTask();
 

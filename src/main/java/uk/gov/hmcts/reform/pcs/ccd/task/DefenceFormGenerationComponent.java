@@ -10,6 +10,9 @@ import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.FailureReasons;
+import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.GenerationDetails;
 import uk.gov.hmcts.reform.pcs.ccd.model.DefenceFormTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimActivityLogService;
 import uk.gov.hmcts.reform.pcs.ccd.service.defenceform.DefenceFormService;
@@ -81,7 +84,7 @@ public class DefenceFormGenerationComponent {
                         MDC.put(MDC_FAILURE_REASON, String.valueOf(e.getMessage()));
                         log.error("Defence form generation permanently failed for defendant response {} after {} "
                                   + "attempts: {}", data.getDefendantResponseId(), attempt, e.getMessage(), e);
-                        recordGenerationFailure(data);
+                        recordGenerationFailure(data, e);
                     }
                     throw e;
                 } finally {
@@ -99,10 +102,11 @@ public class DefenceFormGenerationComponent {
         return attempt > maxRetries;
     }
 
-    private void recordGenerationFailure(DefenceFormTaskData data) {
+    private void recordGenerationFailure(DefenceFormTaskData data, Exception cause) {
         try {
             long caseReference = Long.parseLong(data.getCaseReference());
-            claimActivityLogService.logGenerationFailure(caseReference, data.getDefendantPartyId());
+            claimActivityLogService.logGenerationFailure(caseReference, data.getDefendantPartyId(),
+                new GenerationDetails(DocumentType.DEFENDANT_RESPONSE, FailureReasons.from(cause), true));
         } catch (Exception e) {
             log.error("Failed to record defence form generation failure for defendant response {}",
                       data.getDefendantResponseId(), e);

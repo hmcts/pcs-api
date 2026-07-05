@@ -1,12 +1,17 @@
 package uk.gov.hmcts.reform.pcs.ccd.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.ActivityDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.ClaimActivityStatus;
 import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.ClaimActivityType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.GenerationDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.PackDetails;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimActivityLogEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -14,8 +19,10 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimActivityLogRepository;
 
 /**
- * Records rows to {@code claim_activity_log}: generation outcomes ({@code DOCUMENTS_CREATED}) and, for bulk
- * print, one {@code DOCUMENT_SENT} row per (recipient, document).
+ * Records rows to {@code claim_activity_log}: generation outcomes ({@code DOCUMENTS_CREATED}, with the
+ * created document on success and {@link GenerationDetails} on failure) and, for bulk print, one
+ * {@code DOCUMENT_SENT} row per (recipient, document) plus one {@code PACK_SENT}/{@code PACK_FAILED} row
+ * per (recipient, pack) carrying {@link PackDetails}.
  */
 @Service
 @AllArgsConstructor
@@ -23,9 +30,18 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimActivityLogRepository;
 public class AccessCodeActivityLogService {
 
     private final ClaimActivityLogRepository claimActivityLogRepository;
+    private final ObjectMapper objectMapper;
 
     public void logSuccess(PcsCaseEntity pcsCase, PartyEntity party, ClaimActivityType activityType) {
-        save(pcsCase, party, null, activityType, ClaimActivityStatus.SUCCESS);
+        save(pcsCase, party, null, activityType, ClaimActivityStatus.SUCCESS, null);
+    }
+
+    /**
+     * Generation success carrying the document that was created, so the row is self-describing.
+     */
+    public void logSuccess(PcsCaseEntity pcsCase, PartyEntity party, DocumentEntity document,
+                           ClaimActivityType activityType) {
+        save(pcsCase, party, document, activityType, ClaimActivityStatus.SUCCESS, null);
     }
 
     /**
@@ -33,7 +49,17 @@ public class AccessCodeActivityLogService {
      */
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void logFailure(PcsCaseEntity pcsCase, PartyEntity party, ClaimActivityType activityType) {
-        save(pcsCase, party, null, activityType, ClaimActivityStatus.FAILURE);
+        save(pcsCase, party, null, activityType, ClaimActivityStatus.FAILURE, null);
+    }
+
+    /**
+     * Generation failure with {@link GenerationDetails} (which document type, why, terminal); REQUIRES_NEW
+     * so the row survives the caller's rollback.
+     */
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void logFailure(PcsCaseEntity pcsCase, PartyEntity party, ClaimActivityType activityType,
+                           GenerationDetails details) {
+        save(pcsCase, party, null, activityType, ClaimActivityStatus.FAILURE, details);
     }
 
     /**
@@ -43,7 +69,7 @@ public class AccessCodeActivityLogService {
      */
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void recordDocumentSent(PcsCaseEntity pcsCase, PartyEntity recipient, DocumentEntity document) {
-        save(pcsCase, recipient, document, ClaimActivityType.DOCUMENT_SENT, ClaimActivityStatus.SUCCESS);
+        save(pcsCase, recipient, document, ClaimActivityType.DOCUMENT_SENT, ClaimActivityStatus.SUCCESS, null);
     }
 
     /**
@@ -51,14 +77,32 @@ public class AccessCodeActivityLogService {
      */
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void recordDocumentSendFailure(PcsCaseEntity pcsCase, PartyEntity recipient, DocumentEntity document) {
-        save(pcsCase, recipient, document, ClaimActivityType.DOCUMENT_SENT, ClaimActivityStatus.FAILURE);
+        save(pcsCase, recipient, document, ClaimActivityType.DOCUMENT_SENT, ClaimActivityStatus.FAILURE, null);
+    }
+
+    /**
+     * One pack dispatch to a recipient succeeded; {@link PackDetails} records the pack type and contents.
+     * REQUIRES_NEW for the same reason as {@link #recordDocumentSent}: the post is irreversible.
+     */
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void recordPackSent(PcsCaseEntity pcsCase, PartyEntity recipient, PackDetails details) {
+        save(pcsCase, recipient, null, ClaimActivityType.PACK_SENT, ClaimActivityStatus.SUCCESS, details);
+    }
+
+    /**
+     * One pack dispatch to a recipient failed; {@link PackDetails} carries failureReason + terminal.
+     */
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void recordPackFailed(PcsCaseEntity pcsCase, PartyEntity recipient, PackDetails details) {
+        save(pcsCase, recipient, null, ClaimActivityType.PACK_FAILED, ClaimActivityStatus.FAILURE, details);
     }
 
     private void save(PcsCaseEntity pcsCase,
                       PartyEntity party,
                       DocumentEntity document,
                       ClaimActivityType activityType,
-                      ClaimActivityStatus status) {
+                      ClaimActivityStatus status,
+                      ActivityDetails details) {
 
         claimActivityLogRepository.save(
             ClaimActivityLogEntity.builder()
@@ -67,6 +111,7 @@ public class AccessCodeActivityLogService {
                 .document(document)
                 .activityType(activityType)
                 .status(status)
+                .details(toJson(details))
                 .build()
         );
 
@@ -75,5 +120,18 @@ public class AccessCodeActivityLogService {
                   status,
                   pcsCase.getId(),
                   party != null ? " and party " + party.getId() : "");
+    }
+
+    private String toJson(ActivityDetails details) {
+        if (details == null) {
+            return null;
+        }
+        try {
+            return objectMapper.writeValueAsString(details);
+        } catch (JsonProcessingException e) {
+            // Never fail the activity write over its detail payload; the row itself is the important record.
+            log.error("Failed to serialise activity details {}", details, e);
+            return null;
+        }
     }
 }

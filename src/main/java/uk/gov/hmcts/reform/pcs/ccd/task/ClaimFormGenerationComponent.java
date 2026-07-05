@@ -10,6 +10,9 @@ import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.FailureReasons;
+import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.GenerationDetails;
 import uk.gov.hmcts.reform.pcs.ccd.model.ClaimFormTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimActivityLogService;
 import uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimFormService;
@@ -82,7 +85,7 @@ public class ClaimFormGenerationComponent {
                         MDC.put(MDC_FAILURE_REASON, String.valueOf(e.getMessage()));
                         log.error("Claim form generation permanently failed for case {} after {} "
                                   + "attempts: {}", caseReference, attempt, e.getMessage(), e);
-                        recordGenerationFailure(caseReference);
+                        recordGenerationFailure(caseReference, e);
                     }
                     throw e;
                 } finally {
@@ -101,9 +104,10 @@ public class ClaimFormGenerationComponent {
         return attempt > maxRetries;
     }
 
-    private void recordGenerationFailure(long caseReference) {
+    private void recordGenerationFailure(long caseReference, Exception cause) {
         try {
-            claimActivityLogService.logGenerationFailure(caseReference);
+            claimActivityLogService.logGenerationFailure(caseReference,
+                new GenerationDetails(DocumentType.CLAIM, FailureReasons.from(cause), true));
         } catch (Exception e) {
             log.error("Failed to record claim form generation failure for case {}", caseReference, e);
         }

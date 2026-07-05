@@ -82,7 +82,7 @@ class ClaimFormPersistenceServiceTest {
 
         assertThat(document.getType()).isEqualTo(DocumentType.CLAIM);
         verify(claim).setClaimFormDocument(document);
-        verify(claimActivityLogService).logGenerationSuccess(CASE_REFERENCE);
+        verify(claimActivityLogService).logGenerationSuccess(CASE_REFERENCE, document);
     }
 
     @Test

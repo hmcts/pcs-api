@@ -62,6 +62,11 @@ public class ClaimActivityLogEntity {
     @Column(name = "status", nullable = false)
     private ClaimActivityStatus status;
 
+    // ActivityDetails serialised to JSON; shape discriminated by activityType (same idiom as fee_payment.task_data)
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "details")
+    private String details;
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;

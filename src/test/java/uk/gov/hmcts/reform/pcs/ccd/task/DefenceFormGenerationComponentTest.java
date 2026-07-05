@@ -16,6 +16,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.GenerationDetails;
 import org.slf4j.LoggerFactory;
 import uk.gov.hmcts.reform.pcs.ccd.model.DefenceFormTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimActivityLogService;
@@ -28,6 +29,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -129,7 +131,8 @@ class DefenceFormGenerationComponentTest {
         assertThatThrownBy(() -> task.execute(taskInstance, executionContext))
             .isInstanceOf(RuntimeException.class);
         verify(defenceFormService).generateAndAttach(RESPONSE_ID);
-        verify(claimActivityLogService).logGenerationFailure(1234567812345678L, PARTY_ID);
+        verify(claimActivityLogService)
+            .logGenerationFailure(eq(1234567812345678L), eq(PARTY_ID), any(GenerationDetails.class));
     }
 
     @Test
@@ -139,8 +142,8 @@ class DefenceFormGenerationComponentTest {
         execution.consecutiveFailures = maxRetries;
         when(executionContext.getExecution()).thenReturn(execution);
         doThrow(new RuntimeException("generation failed")).when(defenceFormService).generateAndAttach(RESPONSE_ID);
-        doThrow(new RuntimeException("log write failed"))
-            .when(claimActivityLogService).logGenerationFailure(1234567812345678L, PARTY_ID);
+        doThrow(new RuntimeException("log write failed")).when(claimActivityLogService)
+            .logGenerationFailure(eq(1234567812345678L), eq(PARTY_ID), any(GenerationDetails.class));
 
         CustomTask<DefenceFormTaskData> task = component.defenceFormGenerationTask();
 

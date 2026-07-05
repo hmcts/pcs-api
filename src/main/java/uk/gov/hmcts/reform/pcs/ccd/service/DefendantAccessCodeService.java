@@ -6,6 +6,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.ClaimActivityType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.FailureReasons;
+import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.GenerationDetails;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyAccessCodeEntity;
@@ -80,7 +82,7 @@ public class DefendantAccessCodeService {
             String documentUrl = accessCodeFormDocumentGenerator
                 .generate(pcsCaseEntity, mainClaim, defendant, plaintextAccessCode);
 
-            documentRepository.save(
+            DocumentEntity accessCodeDocument = documentRepository.save(
                 DocumentEntity.builder()
                     .pcsCase(pcsCaseEntity)
                     .party(defendant)
@@ -101,7 +103,8 @@ public class DefendantAccessCodeService {
 
             testAccessCodeRecorder.record(pcsCaseEntity.getId(), defendant.getId(), plaintextAccessCode);
 
-            accessCodeActivityLogService.logSuccess(pcsCaseEntity, defendant, ClaimActivityType.DOCUMENTS_CREATED);
+            accessCodeActivityLogService.logSuccess(pcsCaseEntity, defendant, accessCodeDocument,
+                                                    ClaimActivityType.DOCUMENTS_CREATED);
 
         } catch (Exception e) {
             // Terminal-only: intermediate retries are tracked in scheduled_tasks; mirror the claim-form
@@ -109,15 +112,16 @@ public class DefendantAccessCodeService {
             if (finalAttempt) {
                 log.error("Access-code letter generation permanently failed for party {} on case {}",
                           defendant.getId(), pcsCaseEntity.getCaseReference(), e);
-                recordFailureSafely(pcsCaseEntity, defendant);
+                recordFailureSafely(pcsCaseEntity, defendant, e);
             }
             throw e;
         }
     }
 
-    private void recordFailureSafely(PcsCaseEntity pcsCaseEntity, PartyEntity defendant) {
+    private void recordFailureSafely(PcsCaseEntity pcsCaseEntity, PartyEntity defendant, Exception cause) {
         try {
-            accessCodeActivityLogService.logFailure(pcsCaseEntity, defendant, ClaimActivityType.DOCUMENTS_CREATED);
+            accessCodeActivityLogService.logFailure(pcsCaseEntity, defendant, ClaimActivityType.DOCUMENTS_CREATED,
+                new GenerationDetails(DocumentType.DEFENDANT_ACCESS_CODE, FailureReasons.from(cause), true));
         } catch (Exception e) {
             log.error("Failed to record access-code FAILURE for party {} on case {}",
                       defendant.getId(), pcsCaseEntity.getCaseReference(), e);
