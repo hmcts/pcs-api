@@ -48,7 +48,10 @@ public class PackSendRecorder {
             UUID letterId = sendAction.get();
             MDC.put(MDC_LETTER_ID, String.valueOf(letterId));
             accessCodeActivityLogService.recordPackSent(pcsCase, recipient,
-                PackDetails.sent(letterType, packDocumentRefs(documents)));
+                PackDetails.sent(letterType, packDocumentRefs(documents), letterId));
+            log.info("Pack sent - case: {}, party: {}, letterType: {}, letterId: {}, documents: {}",
+                pcsCase.getCaseReference(), recipient.getId(), letterType.getCode(), letterId,
+                documentSummary(documents));
             documents.forEach(document -> logDocumentSent(pcsCase, recipient, document, letterType, letterId));
         } catch (MissingPostalAddressException e) {
             recordFailure(pcsCase, recipient, letterType, documents, e, true);

@@ -153,7 +153,8 @@ class DefencePackSelectorTest {
     private ClaimActivityLogEntity sent(PartyEntity party, DocumentEntity document) {
         try {
             String details = new ObjectMapper().writeValueAsString(PackDetails.sent(
-                LetterType.DEFENCE_PACK, List.of(new PackDocumentRef(document.getId(), document.getType()))));
+                LetterType.DEFENCE_PACK, List.of(new PackDocumentRef(document.getId(), document.getType())),
+                UUID.randomUUID()));
             return ClaimActivityLogEntity.builder()
                 .party(party).details(details)
                 .activityType(ClaimActivityType.PACK_SENT).status(ClaimActivityStatus.SUCCESS).build();
