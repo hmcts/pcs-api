@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.domain;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import lombok.Builder;
@@ -27,12 +28,15 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DefendantSolicitorAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DocumentAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.GlobalSearchAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.InternalCaseFlagAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.InternalTabAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.PartyVisibleTabAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.RasValidationAccess;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.DashboardData;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.CitizenGenAppRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GeneralApplication;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.XuiGenAppRequest;
+import uk.gov.hmcts.reform.pcs.ccd.domain.documentupload.DocumentUploadDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredNoArrearsPossessionGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredRentArrearsPossessionGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.ClaimGroundSummary;
@@ -58,6 +62,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractGroundsForPossessi
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -153,6 +158,7 @@ public class PCSCase {
         typeOverride = Collection,
         label = "Linked cases",
         typeParameterOverride = "CaseLink")
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
     @Builder.Default
     private List<ListValue<CaseLink>> caseLinks = new ArrayList<>();
 
@@ -263,7 +269,7 @@ public class PCSCase {
     private YesOrNo noticeServed;
 
     @JsonUnwrapped(prefix = "notice_")
-    @CCD(access = {ClaimantAccess.class})
+    @CCD(access = {ClaimantAccess.class, CitizenAccess.class})
     private NoticeServedDetails noticeServedDetails;
 
     private String caseTitleMarkdown;
@@ -464,6 +470,15 @@ public class PCSCase {
     private WalesDocuments requiredDocumentsWales;
 
     @CCD(
+        access = DefendantAccess.class,
+        searchable = false
+    )
+    private List<ListValue<UploadedDocument>> uploadedAdditionalDocuments;
+
+    @JsonUnwrapped
+    private DocumentUploadDetails documentUploadDetails;
+
+    @CCD(
         label = "Are you planning to make an application at the same time as your claim?",
         hint = "After you’ve submitted your claim, there will be instructions on how to make an application"
     )
@@ -527,16 +542,17 @@ public class PCSCase {
     /**
      * Combined list of all underlessees/mortgagees in the case.
      */
-    @CCD(access = ClaimantAccess.class)
+    @CCD(access = {ClaimantAccess.class, DefendantAccess.class})
     private List<ListValue<Party>> allUnderlesseeOrMortgagees;
 
     @CCD(
         searchable = false,
-        label = "Ways to pay"
+        label = "Ways to pay",
+        access = {PartyVisibleTabAccess.class}
     )
     private WaysToPay waysToPay;
 
-    @CCD
+    @CCD(access = {ClaimantAccess.class, DefendantAccess.class})
     private StatementOfTruthDetails statementOfTruth;
 
     @CCD(searchable = false)
@@ -584,6 +600,12 @@ public class PCSCase {
 
     @CCD(access = {ClaimantAccess.class, DefendantAccess.class})
     private LocalDateTime dateSubmitted;
+
+    @CCD(access = {ClaimantAccess.class, DefendantAccess.class}, label = "Date claim issued")
+    private LocalDate claimIssueDate;
+
+    @CCD(access = {ClaimantAccess.class, DefendantAccess.class})
+    private LocalDateTime dateIssued;
 
     @CCD(
         searchable = false
@@ -645,15 +667,15 @@ public class PCSCase {
     private List<ListValue<GeneralApplication>> genApps;
 
     @JsonUnwrapped(prefix = "casePartiesTab_")
-    @CCD
+    @CCD(access = {PartyVisibleTabAccess.class})
     private CasePartiesTab casePartiesTab;
 
     @JsonUnwrapped(prefix = "summaryTab_")
-    @CCD(searchable = false)
+    @CCD(searchable = false, access = {PartyVisibleTabAccess.class})
     private SummaryTab summaryTab;
 
     @JsonUnwrapped(prefix = "detailsTab_")
-    @CCD
+    @CCD(access = {PartyVisibleTabAccess.class})
     private CaseDetailsTab caseDetailsTab;
 
     @CCD(
@@ -665,6 +687,7 @@ public class PCSCase {
 
     @CCD (
         label = "Note",
+        access = {InternalTabAccess.class},
         typeOverride = Collection,
         typeParameterOverride = "CaseNote")
     List<ListValue<CaseNote>> caseNotes;
@@ -684,4 +707,16 @@ public class PCSCase {
 
     @CCD(access = {DefendantSolicitorAccess.class})
     private List<ListValue<Party>> allLinkedDefendants;
+
+    @CCD
+    private String postCode;
+
+    @CCD
+    private String claimantNames;
+
+    @CCD
+    private String defendantNames;
+
+    @CCD
+    private String dateIssuedString;
 }

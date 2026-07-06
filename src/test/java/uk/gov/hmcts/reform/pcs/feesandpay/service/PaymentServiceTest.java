@@ -30,7 +30,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.feeandpay.FeePaymentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
-import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.exception.FeePaymentNotFoundException;
 import uk.gov.hmcts.reform.pcs.feesandpay.mapper.PaymentRequestMapper;
@@ -91,8 +90,6 @@ class PaymentServiceTest {
     @Mock
     private PcsCaseService pcsCaseService;
     @Mock
-    private PartyService partyService;
-    @Mock
     private PaymentCallbackStrategyFactory paymentCallbackStrategyFactory;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -129,8 +126,6 @@ class PaymentServiceTest {
                 .thenReturn(expectedResponse);
             FeesAndPayTaskData feesAndPayTaskData = createFeesAndPayTaskData(feeDetails);
 
-            stubResponsibleParty();
-
             // When
             PaymentServiceResponse result = underTest.createServiceRequest(feesAndPayTaskData);
 
@@ -160,8 +155,6 @@ class PaymentServiceTest {
                 .thenReturn(createPaymentServiceResponse());
             FeesAndPayTaskData feesAndPayTaskData = createFeesAndPayTaskData(feeDetails);
 
-            stubResponsibleParty();
-
             // When
             underTest.createServiceRequest(feesAndPayTaskData);
 
@@ -184,7 +177,6 @@ class PaymentServiceTest {
             setPrivateField(underTest, "objectMapper", mapper);
             FeesAndPayTaskData feesAndPayTaskData = createFeesAndPayTaskData(feeDetails);
             paymentsClientDependencies(feeDetails);
-            stubResponsibleParty();
 
             // When / Then
             assertThatExceptionOfType(PaymentException.class)
@@ -343,7 +335,6 @@ class PaymentServiceTest {
 
             assertThat(saved.getTaskData()).isEqualTo(taskDataJson);
             assertThat(saved.getPaymentCallbackHandlerType()).isEqualTo(CLAIM);
-            assertThat(saved.getParty()).isNull();
         }
 
     }
@@ -426,8 +417,54 @@ class PaymentServiceTest {
             assertThat(throwable).isInstanceOf(FeePaymentNotFoundException.class);
         }
 
+        @Test
+        void shouldCreatePaymentRequestWhenPreviousPaymentWasNotPaid() {
+            // Given
+            String serviceRequestReference = "SR-1234";
+            final BigDecimal expectedAmount = new BigDecimal("10.99");
+            final String expectedLanguage = "some language";
+            final String expectedReturnUrl = "some return URL";
+            final String expectedPaymentReference = "some payment reference";
+            final String expectedPaymentStatus = "some payment status";
+            final String expectedNextUrl = "some next url";
+
+            CreateCardPaymentRequest cardPaymentRequest = CreateCardPaymentRequest.builder()
+                .amount(expectedAmount)
+                .language(expectedLanguage)
+                .returnUrl(expectedReturnUrl)
+                .build();
+
+            CardPaymentServiceRequestResponse paymentServiceResponse = CardPaymentServiceRequestResponse.builder()
+                .paymentReference(expectedPaymentReference)
+                .status(expectedPaymentStatus)
+                .nextUrl(expectedNextUrl)
+                .build();
+
+            FeePaymentEntity feePaymentEntity = mock(FeePaymentEntity.class);
+            when(feePaymentEntity.getPaymentStatus()).thenReturn(PaymentStatus.NOT_PAID);
+            when(feePaymentRepository.findByServiceRequestReference(serviceRequestReference))
+                .thenReturn(Optional.of(feePaymentEntity));
+            when(paymentsClient.createGovPayCardPaymentRequest(anyString(),
+                                                               anyString(),
+                                                               any(CardPaymentServiceRequestDTO.class)))
+                .thenReturn(paymentServiceResponse);
+
+            // When
+            CreateCardPaymentResponse cardPaymentResponse = underTest.createPaymentRequest(
+                serviceRequestReference,
+                cardPaymentRequest
+            );
+
+            // Then
+            verify(paymentsClient).createGovPayCardPaymentRequest(eq(serviceRequestReference),
+                                                                  eq(SYSTEM_TOKEN),
+                                                                  any(CardPaymentServiceRequestDTO.class));
+            assertThat(cardPaymentResponse.getPaymentReference()).isEqualTo(expectedPaymentReference);
+            assertThat(cardPaymentResponse.getNextUrl()).isEqualTo(expectedNextUrl);
+        }
+
         @ParameterizedTest
-        @EnumSource(PaymentStatus.class)
+        @EnumSource(value = PaymentStatus.class, names = {"PAID", "PARTIALLY_PAID"})
         void shouldThrowExceptionIfServiceRequestAlreadyHasAPaymentStatus(PaymentStatus paymentStatus) {
             // Given
             String serviceRequestReference = "SR-1234";
@@ -471,7 +508,6 @@ class PaymentServiceTest {
 
             // Then
             assertThat(paymentStatusResponse.getStatus()).isEqualTo(expectedStatus);
-
         }
 
     }
@@ -556,6 +592,7 @@ class PaymentServiceTest {
             .caseReference(CASE_REFERENCE)
             .volume(VOLUME)
             .responsiblePartyId(RESPONSIBLE_PARTY_ID)
+            .responsiblePartyName(RESPONSIBLE_PARTY)
             .paymentCallbackHandlerType(CLAIM)
             .build();
     }
@@ -564,13 +601,6 @@ class PaymentServiceTest {
         return FeeDetails.builder().feeAmount(CALCULATED_AMOUNT)
             .code("FEE123")
             .build();
-    }
-
-    private void stubResponsibleParty() {
-        PartyEntity responsiblePartyEntity = mock(PartyEntity.class);
-        when(partyService.getPartyEntityByEntityId(RESPONSIBLE_PARTY_ID, CASE_REFERENCE))
-            .thenReturn(responsiblePartyEntity);
-        when(partyService.getPartyName(responsiblePartyEntity)).thenReturn(RESPONSIBLE_PARTY);
     }
 
 }

@@ -13,13 +13,10 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
-import uk.gov.hmcts.reform.pcs.exception.FeePaymentNotFoundException;
-import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.BasePersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.ClaimantBasePersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.CounterclaimPaymentSuccessPersonalisation;
@@ -28,7 +25,6 @@ import java.util.Map;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mock.Strictness.LENIENT;
 import static org.mockito.Mockito.when;
 
@@ -299,53 +295,18 @@ class NotificationPersonalisationFactoryTest {
             PartyEntity defendantParty = stubDefendantParty();
             DefendantResponseEntity response = createDefendantResponse(claimantParty, defendantParty);
 
-            FeePaymentEntity feePayment = FeePaymentEntity.builder()
-                .paymentStatus(PaymentStatus.PAID)
-                .externalReference("PAY-123")
-                .build();
-            response.getClaim().setFeePayment(feePayment);
+            String paymentReference = "PAY-123";
 
-            CounterclaimPaymentSuccessPersonalisation result = factory.counterclaimSuccess(response);
+            CounterclaimPaymentSuccessPersonalisation result = factory.counterclaimSuccess(response, paymentReference);
 
             Map<String, Object> map = result.toMap();
             assertThat(map)
-                .containsEntry("paymentReferenceNumber", "PAY-123")
+                .containsEntry("paymentReferenceNumber", paymentReference)
                 .containsEntry("firstName", "John")
                 .containsEntry("claimantName", "JANE SMITH")
                 .containsEntry("primaryDefendantName", "JOHN DOE");
         }
 
-        @Test
-        @DisplayName("Should throw FeePaymentNotFoundException when no paid fee payment found")
-        void shouldThrowExceptionWhenNoPaidFeePaymentFound() {
-            PartyEntity claimantParty = stubClaimantParty();
-            PartyEntity defendantParty = stubDefendantParty();
-            DefendantResponseEntity response = createDefendantResponse(claimantParty, defendantParty);
-
-            FeePaymentEntity feePayment = FeePaymentEntity.builder()
-                .paymentStatus(PaymentStatus.NOT_PAID)
-                .externalReference("PAY-123")
-                .build();
-            response.getClaim().setFeePayment(feePayment);
-
-            assertThatThrownBy(() -> factory.counterclaimSuccess(response))
-                .isInstanceOf(FeePaymentNotFoundException.class)
-                .hasMessageContaining("Paid fee payment not found");
-        }
-
-        @Test
-        @DisplayName("Should throw FeePaymentNotFoundException when fee payment is null")
-        void shouldThrowExceptionWhenFeePaymentIsNull() {
-            PartyEntity claimantParty = stubClaimantParty();
-            PartyEntity defendantParty = stubDefendantParty();
-            DefendantResponseEntity response = createDefendantResponse(claimantParty, defendantParty);
-
-            response.getClaim().setFeePayment(null);
-
-            assertThatThrownBy(() -> factory.counterclaimSuccess(response))
-                .isInstanceOf(FeePaymentNotFoundException.class)
-                .hasMessageContaining("Paid fee payment not found");
-        }
     }
 
     @Nested
@@ -386,6 +347,7 @@ class NotificationPersonalisationFactoryTest {
 
     private PartyEntity createParty(String firstName, String lastName) {
         PartyEntity party = new PartyEntity();
+        party.setId(UUID.randomUUID());
         party.setFirstName(firstName);
         party.setLastName(lastName);
         party.setNameKnown(VerticalYesNo.YES);
