@@ -29,6 +29,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -100,10 +101,27 @@ class ClaimFormGenerationComponentTest {
     }
 
     @Test
-    @DisplayName("Non-final attempt rethrows without recording a failure row")
-    void nonFinalAttemptRethrowsWithoutRecordingFailure() {
+    @DisplayName("First attempt records a non-terminal failure row (reason visible immediately)")
+    void firstAttemptRecordsNonTerminalFailure() {
         ClaimFormTaskData data = ClaimFormTaskData.builder().caseReference("999").build();
         when(taskInstance.getData()).thenReturn(data);
+        when(executionContext.getExecution()).thenReturn(execution);   // consecutiveFailures = 0 -> attempt 1
+        doThrow(mock(RuntimeException.class)).when(claimFormService).generateAndAttach(999L);
+
+        CustomTask<ClaimFormTaskData> task = component.claimFormGenerationTask();
+
+        assertThatThrownBy(() -> task.execute(taskInstance, executionContext))
+            .isInstanceOf(RuntimeException.class);
+        verify(claimActivityLogService).logGenerationFailure(eq(999L),
+            argThat((GenerationDetails details) -> !details.terminal()));
+    }
+
+    @Test
+    @DisplayName("Intermediate attempt (not first, not final) rethrows without recording a failure row")
+    void intermediateAttemptRethrowsWithoutRecordingFailure() {
+        ClaimFormTaskData data = ClaimFormTaskData.builder().caseReference("999").build();
+        when(taskInstance.getData()).thenReturn(data);
+        execution.consecutiveFailures = 1;   // attempt 2 - neither first nor final
         when(executionContext.getExecution()).thenReturn(execution);
         doThrow(mock(RuntimeException.class)).when(claimFormService).generateAndAttach(999L);
 

@@ -82,7 +82,8 @@ public class AccessCodeGenerationComponent {
 
                 try {
                     log.debug("Starting access code generation for case: {}", caseReference);
-                    defendantAccessCodeService.generateForDefendant(caseReference, defendantPartyId, finalAttempt);
+                    defendantAccessCodeService.generateForDefendant(caseReference, defendantPartyId,
+                                                                    attempt == 1, finalAttempt);
                     log.info("Access code generated for case {} party {}", caseReference, defendantPartyId);
                     return new CompletionHandler.OnCompleteRemove<>();
                 } catch (Exception e) {

@@ -32,6 +32,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mock.Strictness.LENIENT;
@@ -98,7 +99,7 @@ class DefendantAccessCodeServiceTest {
         PcsCaseEntity caseEntity = createCaseWithDefendants(partyId);
         when(pcsCaseService.loadCase(1L)).thenReturn(caseEntity);
 
-        underTest.generateForDefendant(1L, partyId, true);
+        underTest.generateForDefendant(1L, partyId, false, true);
 
         verify(documentRepository).save(documentCaptor.capture());
         DocumentEntity savedDoc = documentCaptor.getValue();
@@ -129,7 +130,7 @@ class DefendantAccessCodeServiceTest {
             .thenThrow(new RuntimeException("docmosis down"));
 
         RuntimeException thrown = assertThrows(RuntimeException.class,
-            () -> underTest.generateForDefendant(5L, partyId, true));
+            () -> underTest.generateForDefendant(5L, partyId, false, true));
         assertThat(thrown).hasMessage("docmosis down");
 
         verify(accessCodeActivityLogService).logFailure(eq(caseEntity), any(PartyEntity.class),
@@ -141,6 +142,21 @@ class DefendantAccessCodeServiceTest {
     }
 
     @Test
+    void generateForDefendant_firstAttemptFailure_logsNonTerminalFailure() {
+        UUID partyId = UUID.randomUUID();
+        PcsCaseEntity caseEntity = createCaseWithDefendants(partyId);
+        when(pcsCaseService.loadCase(5L)).thenReturn(caseEntity);
+        when(accessCodeFormDocumentGenerator.generate(any(), any(), any(), anyString()))
+            .thenThrow(new RuntimeException("docmosis down"));
+
+        assertThrows(RuntimeException.class, () -> underTest.generateForDefendant(5L, partyId, true, false));
+
+        verify(accessCodeActivityLogService).logFailure(eq(caseEntity), any(PartyEntity.class),
+                                                   eq(ClaimActivityType.DOCUMENTS_CREATED),
+                                                   argThat((GenerationDetails d) -> !d.terminal()));
+    }
+
+    @Test
     void generateForDefendant_nonFinalAttemptFailure_doesNotLogFailure() {
         UUID partyId = UUID.randomUUID();
         PcsCaseEntity caseEntity = createCaseWithDefendants(partyId);
@@ -148,7 +164,7 @@ class DefendantAccessCodeServiceTest {
         when(accessCodeFormDocumentGenerator.generate(any(), any(), any(), anyString()))
             .thenThrow(new RuntimeException("docmosis down"));
 
-        assertThrows(RuntimeException.class, () -> underTest.generateForDefendant(5L, partyId, false));
+        assertThrows(RuntimeException.class, () -> underTest.generateForDefendant(5L, partyId, false, false));
 
         verify(accessCodeActivityLogService, never()).logFailure(any(), any(), any(), any());
     }
@@ -160,7 +176,7 @@ class DefendantAccessCodeServiceTest {
         when(pcsCaseService.loadCase(1L)).thenReturn(caseEntity);
         when(partyAccessCodeRepo.existsByPcsCase_IdAndPartyId(caseEntity.getId(), partyId)).thenReturn(true);
 
-        underTest.generateForDefendant(1L, partyId, true);
+        underTest.generateForDefendant(1L, partyId, false, true);
 
         verify(partyAccessCodeRepo, never()).save(any());
         verify(documentRepository, never()).save(any());

@@ -77,14 +77,18 @@ public class DefenceFormGenerationComponent {
                     return new CompletionHandler.OnCompleteRemove<>();
                 } catch (Exception e) {
                     int attempt = executionContext.getExecution().consecutiveFailures + 1;
-                    // Only the terminal attempt is logged + recorded - intermediate retries are silent
+                    boolean finalAttempt = isFinalAttempt(attempt);
+                    // Only the terminal attempt is logged - intermediate retries are silent
                     // (matches ClaimFormGenerationComponent).
-                    if (isFinalAttempt(attempt)) {
+                    if (finalAttempt) {
                         MDC.put(MDC_TERMINAL_FAILURE, "true");
                         MDC.put(MDC_FAILURE_REASON, String.valueOf(e.getMessage()));
                         log.error("Defence form generation permanently failed for defendant response {} after {} "
                                   + "attempts: {}", data.getDefendantResponseId(), attempt, e.getMessage(), e);
-                        recordGenerationFailure(data, e);
+                    }
+                    // First + terminal rows: reason visible from attempt 1 (terminal:false = retrying)
+                    if (attempt == 1 || finalAttempt) {
+                        recordGenerationFailure(data, e, finalAttempt);
                     }
                     throw e;
                 } finally {
@@ -102,11 +106,11 @@ public class DefenceFormGenerationComponent {
         return attempt > maxRetries;
     }
 
-    private void recordGenerationFailure(DefenceFormTaskData data, Exception cause) {
+    private void recordGenerationFailure(DefenceFormTaskData data, Exception cause, boolean terminal) {
         try {
             long caseReference = Long.parseLong(data.getCaseReference());
             claimActivityLogService.logGenerationFailure(caseReference, data.getDefendantPartyId(),
-                new GenerationDetails(DocumentType.DEFENDANT_RESPONSE, FailureReasons.from(cause), true));
+                new GenerationDetails(DocumentType.DEFENDANT_RESPONSE, FailureReasons.from(cause), terminal));
         } catch (Exception e) {
             log.error("Failed to record defence form generation failure for defendant response {}",
                       data.getDefendantResponseId(), e);

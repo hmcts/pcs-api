@@ -29,6 +29,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
@@ -193,6 +194,21 @@ class DefenceFormGenerationComponentTest {
         assertThat(logAppender.list)
             .noneMatch(e -> e.getLevel() == Level.ERROR
                 && e.getFormattedMessage().contains("permanently failed"));
+    }
+
+    @Test
+    @DisplayName("First attempt records a non-terminal failure row (reason visible immediately)")
+    void firstAttemptRecordsNonTerminalFailure() {
+        when(taskInstance.getData()).thenReturn(taskData());
+        when(executionContext.getExecution()).thenReturn(execution); // consecutiveFailures = 0 -> attempt 1
+        doThrow(new RuntimeException("transient")).when(defenceFormService).generateAndAttach(RESPONSE_ID);
+
+        CustomTask<DefenceFormTaskData> task = component.defenceFormGenerationTask();
+        assertThatThrownBy(() -> task.execute(taskInstance, executionContext))
+            .isInstanceOf(RuntimeException.class);
+
+        verify(claimActivityLogService).logGenerationFailure(eq(1234567812345678L), eq(PARTY_ID),
+            argThat((GenerationDetails details) -> !details.terminal()));
     }
 
     private static DefenceFormTaskData taskData() {

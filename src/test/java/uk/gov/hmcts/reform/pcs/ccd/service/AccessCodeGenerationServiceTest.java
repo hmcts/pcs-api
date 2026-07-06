@@ -39,8 +39,8 @@ class AccessCodeGenerationServiceTest {
 
         underTest.createAccessCodesForParties("1", true);
 
-        verify(defendantAccessCodeService).generateForDefendant(1L, p1, true);
-        verify(defendantAccessCodeService).generateForDefendant(1L, p2, true);
+        verify(defendantAccessCodeService).generateForDefendant(1L, p1, true, true);
+        verify(defendantAccessCodeService).generateForDefendant(1L, p2, true, true);
     }
 
     @Test
@@ -50,7 +50,7 @@ class AccessCodeGenerationServiceTest {
 
         underTest.createAccessCodesForParties("1", false);
 
-        verify(defendantAccessCodeService).generateForDefendant(1L, p1, false);
+        verify(defendantAccessCodeService).generateForDefendant(1L, p1, true, false);
     }
 
     @Test
@@ -59,12 +59,12 @@ class AccessCodeGenerationServiceTest {
         UUID p2 = UUID.randomUUID();
         when(defendantAccessCodeService.findDefendantPartyIdsNeedingAccessCode(1L)).thenReturn(List.of(p1, p2));
         doThrow(new RuntimeException("docmosis down"))
-            .when(defendantAccessCodeService).generateForDefendant(1L, p1, true);
+            .when(defendantAccessCodeService).generateForDefendant(1L, p1, true, true);
 
         assertThrows(IllegalStateException.class, () -> underTest.createAccessCodesForParties("1", true));
 
-        verify(defendantAccessCodeService).generateForDefendant(1L, p1, true);
-        verify(defendantAccessCodeService).generateForDefendant(1L, p2, true);
+        verify(defendantAccessCodeService).generateForDefendant(1L, p1, true, true);
+        verify(defendantAccessCodeService).generateForDefendant(1L, p2, true, true);
     }
 
     @Test
@@ -73,6 +73,6 @@ class AccessCodeGenerationServiceTest {
 
         underTest.createAccessCodesForParties("1", true);
 
-        verify(defendantAccessCodeService, never()).generateForDefendant(anyLong(), any(), anyBoolean());
+        verify(defendantAccessCodeService, never()).generateForDefendant(anyLong(), any(), anyBoolean(), anyBoolean());
     }
 }

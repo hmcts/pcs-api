@@ -63,7 +63,8 @@ public class DefendantAccessCodeService {
     }
 
     @Transactional
-    public void generateForDefendant(long caseReference, UUID defendantPartyId, boolean finalAttempt) {
+    public void generateForDefendant(long caseReference, UUID defendantPartyId,
+                                     boolean firstAttempt, boolean finalAttempt) {
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
 
         // Idempotent: a re-fired payment or a scheduler retry must not mint a second code for a party
@@ -106,21 +107,25 @@ public class DefendantAccessCodeService {
             accessCodeActivityLogService.logSuccess(pcsCaseEntity, defendant, ClaimActivityType.DOCUMENTS_CREATED);
 
         } catch (Exception e) {
-            // Terminal-only: intermediate retries are tracked in scheduled_tasks; mirror the claim-form
-            // task's logging so both pipelines behave the same.
+            // First + terminal recording: the first failure makes the reason visible immediately
+            // (terminal:false = still retrying); intermediate retries stay in scheduled_tasks/logs;
+            // the final attempt writes the terminal row. Mirrors the claim-form task.
             if (finalAttempt) {
                 log.error("Access-code letter generation permanently failed for party {} on case {}",
                           defendant.getId(), pcsCaseEntity.getCaseReference(), e);
-                recordFailureSafely(pcsCaseEntity, defendant, e);
+            }
+            if (firstAttempt || finalAttempt) {
+                recordFailureSafely(pcsCaseEntity, defendant, e, finalAttempt);
             }
             throw e;
         }
     }
 
-    private void recordFailureSafely(PcsCaseEntity pcsCaseEntity, PartyEntity defendant, Exception cause) {
+    private void recordFailureSafely(PcsCaseEntity pcsCaseEntity, PartyEntity defendant, Exception cause,
+                                     boolean terminal) {
         try {
             accessCodeActivityLogService.logFailure(pcsCaseEntity, defendant, ClaimActivityType.DOCUMENTS_CREATED,
-                new GenerationDetails(DocumentType.DEFENDANT_ACCESS_CODE, FailureReasons.from(cause), true));
+                new GenerationDetails(DocumentType.DEFENDANT_ACCESS_CODE, FailureReasons.from(cause), terminal));
         } catch (Exception e) {
             log.error("Failed to record access-code FAILURE for party {} on case {}",
                       defendant.getId(), pcsCaseEntity.getCaseReference(), e);
