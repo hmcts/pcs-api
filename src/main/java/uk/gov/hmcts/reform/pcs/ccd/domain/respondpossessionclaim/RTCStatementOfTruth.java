@@ -19,4 +19,12 @@ public class RTCStatementOfTruth {
     @CCD(max = 100)
     private String fullName;
 
+    @CCD(max = 100)
+    private String nameOfFirm;
+
+    @CCD(max = 100)
+    private String positionHeld;
+
+
+
 }

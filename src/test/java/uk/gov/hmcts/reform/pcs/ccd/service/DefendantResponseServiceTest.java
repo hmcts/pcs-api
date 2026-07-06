@@ -83,7 +83,7 @@ class DefendantResponseServiceTest {
     private ClaimRepository claimRepository;
     @Mock
     private DefendantResponseRepository defendantResponseRepository;
-    @Mock 
+    @Mock
     private DefendantResponseReadMapper defendantResponseReadMapper;
     @Mock
     private SecurityContextService securityContextService;
@@ -200,6 +200,8 @@ class DefendantResponseServiceTest {
         assertThat(savedResponse.getStatementOfTruth()).isNotNull();
         assertThat(savedResponse.getStatementOfTruth().getCompletedBy()).isNull();
         assertThat(savedResponse.getStatementOfTruth().getFullName()).isEqualTo("Test Defendant");
+        assertThat(savedResponse.getStatementOfTruth().getFirmName()).isNull();
+        assertThat(savedResponse.getStatementOfTruth().getPositionHeld()).isNull();
     }
 
     @Test

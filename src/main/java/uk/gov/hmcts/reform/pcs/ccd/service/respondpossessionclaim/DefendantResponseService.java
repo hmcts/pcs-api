@@ -296,6 +296,8 @@ public class DefendantResponseService {
             .accepted(toYesOrNo(responses.getStatementOfTruth().getAccepted()))
             .fullName(responses.getStatementOfTruth().getFullName())
             .completedDate(LocalDateTime.now(utcClock))
+            .positionHeld(responses.getStatementOfTruth().getPositionHeld())
+            .firmName(responses.getStatementOfTruth().getNameOfFirm())
             .build();
         responseEntity.setStatementOfTruth(sot);
     }
