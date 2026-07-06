@@ -144,8 +144,8 @@ export class CaseLinking implements IAction {
     if (option === 'yes') {
       await expect(linkedCasesTab).toBeVisible();
       await performAction('clickTab', caseSummary.linkedCasesTab);
-      await performValidation('text', { elementType: 'subHeading', text: caseSummary.linkedCasesHeader });
-    } else {
+      await expect(page.getByRole('heading', { name: caseSummary.linkedCasesHeader })).toBeVisible();
+      } else {
       await expect(linkedCasesTab).not.toBeVisible();
     }
   }

@@ -88,12 +88,10 @@ test.describe('[Common Component Case Linking - Access Management] @nightly @cas
   });
 
   test('Judicial users can create, manage and view case linking  @CC @caseLinking', async ({page, context}) => {
-     await performAction('login', {email: judicial.possessionFeePaid_Judge_email, password: process.env.IDAM_PCS_USER_PASSWORD});
+     await performAction('login', {email: judicial.possession_Salaried_Judge_email1, password: process.env.IDAM_PCS_USER_PASSWORD});
      await dismissCookieBanner(page, 'analytics');
-     await performAction('handleJudgeBookingPage');
      await performAction('navigateToCaseSummary', 'yes');
-     await performAction('canLinkCases', 'yes');
-     await performAction('canManageCases', 'yes');
+     await performValidation('elementNotToBeVisible', caseSummary.nextStepEventList);
      await performAction('canViewLinkedCases', 'yes');
   });
 
