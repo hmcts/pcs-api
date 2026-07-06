@@ -1,6 +1,6 @@
 export const serviceRequestGenApps = {
   amountToPayLabel: `Amount to pay`,
-  amount123: `£123.00`,
+  amount126: `£126.00`,
   payByAccountRadioOption: `Pay fee using Payment by Account (PBA)`,
   payByCardRadioOption: `Pay by credit or debit card`,
   continueButton: `Continue`,
