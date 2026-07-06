@@ -34,17 +34,20 @@ public enum UserRole implements HasRole {
     HMCTS_JUDICIARY("hmcts-judiciary", Set.of(R), RAS, GS_PROFILE),
     HMCTS_CTSC("hmcts-ctsc", Set.of(R), RAS, GS_PROFILE),
     HMCTS_LEGAL_OPERATIONS("hmcts-legal-operations", Set.of(R), RAS, GS_PROFILE),
-    CTSC_TEAM_LEADER("ctsc-team-leader", Permission.CRU, RAS, AccessProfile.CTSC_ADMIN),
+
     CTSC_ADMIN("ctsc", Permission.CRU, RAS),
+    CTSC_TEAM_LEADER("ctsc-team-leader", Permission.CRU, RAS, AccessProfile.CTSC_ADMIN),
+    HEARING_CENTRE_ADMIN("hearing-centre-admin", Permission.CRU, RAS),
     HEARING_CENTRE_TEAM_LEADER("hearing-centre-team-leader", Permission.CRU, RAS,
                                AccessProfile.HEARING_CENTRE_ADMIN),
-    HEARING_CENTRE_ADMIN("hearing-centre-admin", Permission.CRU, RAS),
-    WLU_TEAM_LEADER("wlu-team-leader", Permission.CRU, RAS, AccessProfile.WLU_ADMIN),
     WLU_ADMIN("wlu-admin", Permission.CRU, RAS),
-    FEE_PAID_JUDGE("fee-paid-judge", Set.of(R), RAS),
-    LEADERSHIP_JUDGE("leadership-judge", Set.of(R), RAS),
-    CIRCUIT_JUDGE("circuit-judge", Set.of(R), RAS),
-    JUDGE("judge", Set.of(R), RAS),
+    WLU_TEAM_LEADER("wlu-team-leader", Permission.CRU, RAS, AccessProfile.WLU_ADMIN),
+
+    JUDGE("judge", Permission.CRU, RAS),
+    FEE_PAID_JUDGE("fee-paid-judge", Permission.CRU, RAS),
+    CIRCUIT_JUDGE("circuit-judge", Permission.CRU, RAS),
+    LEADERSHIP_JUDGE("leadership-judge", Permission.CRU, RAS),
+
     SYSTEM_USER("pcs-system-update", Permission.CRU, IDAM);
 
 

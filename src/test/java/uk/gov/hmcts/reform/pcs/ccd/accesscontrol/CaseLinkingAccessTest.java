@@ -7,8 +7,14 @@ import uk.gov.hmcts.ccd.sdk.api.HasRole;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.PCS_CASE_WORKER;
-import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.PCS_SOLICITOR;
+
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.AccessProfile.CTSC_ADMIN;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.AccessProfile.HEARING_CENTRE_ADMIN;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.AccessProfile.JUDGE;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.AccessProfile.PCS_CASE_WORKER;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.AccessProfile.PCS_SOLICITOR;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.AccessProfile.WLU_ADMIN;
+
 
 class CaseLinkingAccessTest {
 
@@ -25,8 +31,9 @@ class CaseLinkingAccessTest {
 
         assertThat(grants.get(PCS_SOLICITOR)).isEmpty();
         assertThat(grants.get(PCS_CASE_WORKER)).isEmpty();
-        for (UserRole role : AccessGrants.INTERNAL_READ_ROLES) {
-            assertThat(grants.get(role)).contains(Permission.R);
-        }
+        assertThat(grants.get(CTSC_ADMIN)).containsAll(Permission.CRU);
+        assertThat(grants.get(HEARING_CENTRE_ADMIN)).containsAll(Permission.CRU);
+        assertThat(grants.get(JUDGE)).containsAll(Permission.CRU);
+        assertThat(grants.get(WLU_ADMIN)).contains(Permission.R);
     }
 }
