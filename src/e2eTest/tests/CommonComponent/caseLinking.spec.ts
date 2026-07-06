@@ -78,7 +78,7 @@ test.describe('[Common Component Case Linking] @nightly @caseLinking', async () 
 
 test.describe('[Common Component Case Linking - Access Management] @nightly @caseLinking', async () => {
   test.describe.configure({ retries: 0 });
-  test('CTSC Admin users can create, manage and view case linking  @CC @caseLinking', async ({page, context}) => {
+  test('CTSC Admin users can create, manage and view case linking  @CC  @nightly @caseLinking', async ({page, context}) => {
      await performAction('login', {email: staff.pcs_ctsc_team_leader_email, password: process.env.IDAM_PCS_USER_PASSWORD});
      await dismissCookieBanner(page, 'analytics');
      await performAction('navigateToCaseSummary', 'yes');
@@ -87,7 +87,7 @@ test.describe('[Common Component Case Linking - Access Management] @nightly @cas
      await performAction('canViewLinkedCases', 'yes');
   });
 
-  test('Judicial users can create, manage and view case linking  @CC @caseLinking', async ({page, context}) => {
+  test('Judicial users can create, manage and view case linking  @CC @nightly @caseLinking', async ({page, context}) => {
      await performAction('login', {email: judicial.possession_Salaried_Judge_email1, password: process.env.IDAM_PCS_USER_PASSWORD});
      await dismissCookieBanner(page, 'analytics');
      await performAction('navigateToCaseSummary', 'yes');
