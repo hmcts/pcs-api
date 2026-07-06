@@ -59,11 +59,12 @@ public class PcsNoticeOfChangeTest {
 
     private static final long TEST_CASE_REFERENCE = 1L;
 
-    private static final String NO_DEFENDANTS_FOUND_MESSAGE = "We cannot find a defendant matching this name." +
-        " Enter their name exactly as it appears on any documents received from the court";
+    private static final String NO_DEFENDANTS_FOUND_MESSAGE = "We cannot find a defendant matching this name."
+        + " Enter their name exactly as it appears on any documents received from the court";
 
-    private static final String DUPLICATE_DEFENDANT_NAME_MESSAGE = "A notice of change cannot be completed for this " +
-        "defendant as there is more than one defendant with the same name on this case. Contact the issuing court for help.";
+    private static final String DUPLICATE_DEFENDANT_NAME_MESSAGE = "A notice of change cannot be completed for this "
+        + "defendant as there is more than one defendant with the same name on this case. "
+        + "Contact the issuing court for help.";
 
     private PcsNoticeOfChange pcsNoticeOfChange;
 
@@ -91,7 +92,8 @@ public class PcsNoticeOfChangeTest {
 
     @BeforeEach
     void setUp() {
-        pcsNoticeOfChange = new PcsNoticeOfChange(pcsCaseRepository, legalRepresentativeRepository, organisationDetailsService, schedulerClient);
+        pcsNoticeOfChange = new PcsNoticeOfChange(pcsCaseRepository, legalRepresentativeRepository,
+                                                  organisationDetailsService, schedulerClient);
     }
 
     @Test
@@ -166,15 +168,16 @@ public class PcsNoticeOfChangeTest {
         NocAnswer answer = new NocAnswer("", "");
         NocAnswer answer2 = new NocAnswer("", "");
         NocAnswer answer3 = new NocAnswer("", "");
-        NocAnswersRequest nocAnswersRequest = new NocAnswersRequest(TEST_CASE_REFERENCE, List.of(answer, answer2, answer3));
+        NocAnswersRequest nocAnswersRequest = new NocAnswersRequest(TEST_CASE_REFERENCE,
+                                                                    List.of(answer, answer2, answer3));
 
         // when
         NocAnswersResponse actual = pcsNoticeOfChange.validate(null, nocAnswersRequest);
 
         // then
         assertEquals(NocError.ANSWERS_MISMATCH_QUESTIONS.code(), actual.code());
-        assertEquals("The number of provided answers must match the number of questions " +
-                         "- expected 2 answers, received 3", actual.message());
+        assertEquals("The number of provided answers must match the number of questions "
+                         + "- expected 2 answers, received 3", actual.message());
     }
 
     @Test

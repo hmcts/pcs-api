@@ -19,7 +19,7 @@ public class CaseworkerNoticeOfChange implements CCDConfig<PCSCase, State, UserR
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
-            configBuilder
+        configBuilder
             .decentralisedEvent("caseworkerNoticeOfChange", this::submit)
             .forStates(State.PENDING_CASE_ISSUED, State.CASE_ISSUED)
             .name("Notice of change")

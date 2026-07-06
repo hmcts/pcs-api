@@ -5,7 +5,6 @@ import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
-import uk.gov.hmcts.ccd.sdk.type.Organisation;
 import uk.gov.hmcts.ccd.sdk.type.OrganisationPolicy;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.LegalRepresentative;
@@ -48,27 +47,24 @@ public class PartiesView {
         pcsCase.setAllUnderlesseeOrMortgagees(mapPartiesByRole(claimParties, PartyRole.UNDERLESSEE_OR_MORTGAGEE,
                                                                isCitizen, currentUserId));
 
-        pcsCase.getAllDefendants().forEach(def -> initializeOrgPolicy(def.getValue()));
+        Optional.ofNullable(pcsCase.getAllDefendants())
+            .ifPresent(defendants -> defendants
+                .forEach(def -> initialiseOrgPolicy(def.getValue())));
     }
 
-    private void initializeOrgPolicy(Party party) {
+    private void initialiseOrgPolicy(Party party) {
         party.setOrganisationPolicy(
             Optional.ofNullable(party.getOrganisationPolicy())
                 .orElseGet(OrganisationPolicy::new)
         );
 
-        setDefaultOrgPolicyFields(party.getOrganisationPolicy(), UserRole.DEFENDANT_SOLICITOR);
+        setDefaultOrgPolicyFields(party.getOrganisationPolicy());
     }
 
-    private void setDefaultOrgPolicyFields(OrganisationPolicy<UserRole> organisationPolicy, UserRole solicitorRole) {
+    private void setDefaultOrgPolicyFields(OrganisationPolicy<UserRole> organisationPolicy) {
         organisationPolicy.setOrgPolicyCaseAssignedRole(
             Optional.ofNullable(organisationPolicy.getOrgPolicyCaseAssignedRole())
-                .orElse(solicitorRole)
-        );
-
-        organisationPolicy.setOrganisation(
-            Optional.ofNullable(organisationPolicy.getOrganisation())
-                .orElse(new Organisation(null, null))
+                .orElse(UserRole.DEFENDANT_SOLICITOR)
         );
     }
 
