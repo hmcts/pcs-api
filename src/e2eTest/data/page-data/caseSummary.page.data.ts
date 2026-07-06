@@ -12,5 +12,5 @@ export const caseSummary = {
   addCaseNote: 'Add a case note',
   go: "Go",
   HistoryTab: 'History',
-  servieRequestTab: 'Service Request'
+  serviceRequestTab: 'Service Request'
 }

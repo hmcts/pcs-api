@@ -75,7 +75,8 @@ public class AddressFormatter {
     }
 
     /**
-     * Formats an {@link AddressUK} with all address fields except the country.
+     * Formats a full address but omits the country, which England & Wales possession documents do not show.
+     *
      * @param address The address to format
      * @param delimiter The delimiter with which to join each part of the address
      * @return A formatted address String
