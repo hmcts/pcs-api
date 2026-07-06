@@ -73,6 +73,16 @@ class DefenceCorrespondenceAddressResolverTest {
         assertThat(result.getAddressLine1()).isEqualTo("1 Property Street");
     }
 
+    @Test
+    void shouldFallBackWhenAssertionValueIsNotParseableJson() {
+        stubAssertions(jsonAssertion(PartyAttributeType.CORRESPONDENCE_ADDRESS, "not-valid-json"));
+        PartyEntity defendant = defendantWith(AddressEntity.builder().addressLine1("42 Renters Way").build());
+
+        AddressUK result = underTest.resolveCorrespondenceAddress(defendant, propertyAddress);
+
+        assertThat(result.getAddressLine1()).isEqualTo("42 Renters Way");
+    }
+
     private PartyEntity defendantWith(AddressEntity address) {
         return PartyEntity.builder().id(DEFENDANT_ID).address(address).build();
     }

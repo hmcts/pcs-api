@@ -163,6 +163,18 @@ class DefenceFormPayloadBuilderTest {
 
             assertThat(payload.getDefendantName()).doesNotContain("Persons unknown");
         }
+
+        @Test
+        void defendantAddressIsNullWhenNoAddressAvailable() {
+            // No asserted address, no party address and no property address: the field is null, not an NPE.
+            DefendantResponseEntity response = response(LegislativeCountry.ENGLAND);
+            response.getParty().setAddress(null);
+            response.getPcsCase().setPropertyAddress(null);
+
+            DefenceFormPayload payload = builder.build(response);
+
+            assertThat(payload.getDefendantAddress()).isNull();
+        }
     }
 
     @Nested

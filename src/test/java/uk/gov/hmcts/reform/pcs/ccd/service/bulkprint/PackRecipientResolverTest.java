@@ -87,6 +87,24 @@ class PackRecipientResolverTest {
     }
 
     @Test
+    @DisplayName("Resolves a null address when the postal address cannot be resolved")
+    void shouldResolveNullAddressWhenPostalAddressMissing() {
+        when(pcsCaseRepository.findById(CASE_ID)).thenReturn(Optional.of(pcsCase));
+        when(claimPackSelector.findClaimPackCandidates(pcsCase))
+            .thenReturn(List.of(new ClaimPackCandidate(PartyRole.CLAIMANT, claimant, List.of(claimForm))));
+        when(recipientAddressResolver.resolveDisplayName(claimant)).thenReturn("Acme Ltd");
+        when(recipientAddressResolver.resolvePostalAddress(claimant, PartyRole.CLAIMANT, pcsCase.getPropertyAddress()))
+            .thenReturn(null);
+
+        List<ResolvedRecipient> resolved = underTest.resolveClaimRecipients(CASE_ID);
+
+        assertThat(resolved).singleElement().satisfies(recipient -> {
+            assertThat(recipient.recipient()).isEqualTo(claimant);
+            assertThat(recipient.address()).isNull();
+        });
+    }
+
+    @Test
     @DisplayName("Resolves a defendant's defence pack via the correspondence address")
     void shouldResolveDefendantViaCorrespondenceAddress() {
         AddressUK addressUk = AddressUK.builder().addressLine1("42 Renters Way").build();

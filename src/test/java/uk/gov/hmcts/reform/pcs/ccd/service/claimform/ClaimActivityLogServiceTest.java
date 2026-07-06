@@ -75,6 +75,17 @@ class ClaimActivityLogServiceTest {
     }
 
     @Test
+    void logsWithNullDetailsWhenNoGenerationDetailsProvided() {
+        stubCaseWithClaimant(mock(PartyEntity.class));
+
+        claimActivityLogService.logGenerationFailure(CASE_REFERENCE, (GenerationDetails) null);
+
+        ClaimActivityLogEntity saved = captureSaved();
+        assertThat(saved.getStatus()).isEqualTo(ClaimActivityStatus.FAILURE);
+        assertThat(saved.getDetails()).isNull();
+    }
+
+    @Test
     void logsWithNullPartyWhenNoClaimantOnTheCase() {
         PcsCaseEntity pcsCase = mock(PcsCaseEntity.class);
         ClaimEntity claim = mock(ClaimEntity.class);

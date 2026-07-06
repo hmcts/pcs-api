@@ -1,5 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -7,8 +9,11 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.ClaimActivityStatus;
 import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.ClaimActivityType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.FailureReason;
+import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.GenerationDetails;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimActivityLogEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
@@ -17,7 +22,10 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimActivityLogRepository;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class AccessCodeActivityLogServiceTest {
@@ -62,5 +70,21 @@ class AccessCodeActivityLogServiceTest {
         ClaimActivityLogEntity saved = captor.getValue();
         assertThat(saved.getStatus()).isEqualTo(ClaimActivityStatus.FAILURE);
         assertThat(saved.getActivityType()).isEqualTo(ClaimActivityType.DOCUMENTS_CREATED);
+    }
+
+    @Test
+    void shouldStillPersistRowWhenDetailsSerialisationFails() throws Exception {
+        ObjectMapper failingMapper = mock(ObjectMapper.class);
+        when(failingMapper.writeValueAsString(any())).thenThrow(new JsonProcessingException("boom") { });
+        AccessCodeActivityLogService service =
+            new AccessCodeActivityLogService(claimActivityLogRepository, failingMapper);
+        PcsCaseEntity pcsCase = PcsCaseEntity.builder().id(UUID.randomUUID()).build();
+        PartyEntity party = PartyEntity.builder().id(UUID.randomUUID()).build();
+
+        service.logFailure(pcsCase, party, ClaimActivityType.DOCUMENTS_CREATED,
+            new GenerationDetails(DocumentType.CLAIM, FailureReason.UNKNOWN, true));
+
+        verify(claimActivityLogRepository).save(captor.capture());
+        assertThat(captor.getValue().getDetails()).isNull();
     }
 }

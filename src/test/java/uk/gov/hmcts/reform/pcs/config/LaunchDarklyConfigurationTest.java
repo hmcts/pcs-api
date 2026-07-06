@@ -49,4 +49,26 @@ class LaunchDarklyConfigurationTest {
             assertThat(client.boolVariation("bulk-print-enabled", LDContext.create("test"), false)).isTrue();
         }
     }
+
+    @Test
+    void shouldIgnoreBlankAndMissingFlagFilesButUseTheValidOne(@TempDir Path dir) throws Exception {
+        Path flagFile = Files.writeString(dir.resolve("flags.json"),
+            "{ \"flagValues\": { \"bulk-print-enabled\": true } }");
+
+        // blank entries and non-existent paths are filtered out; only the real file drives the data source
+        String[] files = {"", dir.resolve("does-not-exist.json").toString(), flagFile.toString()};
+        try (LDClient client = underTest.ldClient("dummy-key", false, files)) {
+            assertThat(client.boolVariation("bulk-print-enabled", LDContext.create("test"), false)).isTrue();
+        }
+    }
+
+    @Test
+    void shouldBuildLiveClientWithoutDataSourceWhenNoFlagFilesProvided() throws Exception {
+        // key present + not offline + no flag files => no file data source is attached; without a
+        // connection the client stays uninitialised and every evaluation falls back to the passed default
+        try (LDClient client = underTest.ldClient("dummy-key", false, new String[0])) {
+            assertThat(client.isInitialized()).isFalse();
+            assertThat(client.boolVariation("any-flag", LDContext.create("test"), true)).isTrue();
+        }
+    }
 }
