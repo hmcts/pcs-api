@@ -5,7 +5,7 @@ export const startTheService = {
   solicitorsParagraph: `Solicitors or legal representatives must continue to submit claims using Possession Claim Online (PCOL) or by using a claim form with the relevant particulars of claim form.`,
   thisServiceIsAlsoAvailableParagraph: `This service is also available in Welsh (Cymraeg). Select the 'Cymraeg' option in the top right corner of this screen to use this service in Welsh.`,
   //inWelshLink: `in Welsh (Cymraeg)`,
-  theClaimFeeIs404Paragraph: `The claim fee is £415. You can pay by card or through Payment By Account (PBA).`,
+  theClaimFeeIs415Paragraph: `The claim fee is £415. You can pay by card or through Payment By Account (PBA).`,
   yourClaimWillBeSavedParagraph: `Your claim will be saved as you answer the questions, so you’ll be able to close and return to your draft. Before you submit, you must complete a statement of truth. This certifies that you believe the information you’ve provided is true.`,
   subHeader: `What you’ll need`,
   beforeYouStartParagraph: `Before you start, make sure you have the following information:`,
