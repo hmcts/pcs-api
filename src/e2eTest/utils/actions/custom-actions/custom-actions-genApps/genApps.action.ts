@@ -276,7 +276,7 @@ export class GenAppsAction implements IAction {
       text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
     });
     await performValidation('mainHeader', confirmGenApps.mainHeader);
-    await performValidation('text', {elementType: 'span', text: confirmGenApps.pay123ApplicationFeeParagraph});
+    await performValidation('text', {elementType: 'span', text: confirmGenApps.pay126ApplicationFeeParagraph});
     if (clickLink === true) {
       await performAction('clickButton', confirmGenApps.payYourApplicationLink);
     } else {
