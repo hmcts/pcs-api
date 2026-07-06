@@ -222,7 +222,7 @@ class RentArrearsTabDetailsBuilderTest {
 
         // When
         RentArrearsTabDetails rentArrearsDetails = rentArrearsTabDetailsBuilder
-            .buildDetailedRentArrearsTabDetails(pcsCase);
+            .buildDetailedRentArrearsTabDetails(pcsCase, false);
 
         // Then
         assertThat(rentArrearsDetails.getRentAmount()).isEqualTo("£4");
@@ -261,7 +261,7 @@ class RentArrearsTabDetailsBuilderTest {
 
         // When
         RentArrearsTabDetails rentArrearsDetails = rentArrearsTabDetailsBuilder
-            .buildDetailedRentArrearsTabDetails(pcsCase);
+            .buildDetailedRentArrearsTabDetails(pcsCase, false);
 
         // Then
         assertThat(rentArrearsDetails.getRentStatement()).isNull();
@@ -298,7 +298,7 @@ class RentArrearsTabDetailsBuilderTest {
 
         // When
         RentArrearsTabDetails rentArrearsDetails = rentArrearsTabDetailsBuilder
-            .buildDetailedRentArrearsTabDetails(pcsCase);
+            .buildDetailedRentArrearsTabDetails(pcsCase, false);
 
         // Then
         assertThat(rentArrearsDetails.getCalculationFrequency()).isEqualTo("Other");
@@ -312,7 +312,7 @@ class RentArrearsTabDetailsBuilderTest {
 
         // When
         RentArrearsTabDetails rentArrearsDetails = rentArrearsTabDetailsBuilder
-            .buildDetailedRentArrearsTabDetails(pcsCase);
+            .buildDetailedRentArrearsTabDetails(pcsCase, false);
 
         // Then
         assertThat(rentArrearsDetails.getRentAmount()).isEqualTo(" ");
@@ -356,7 +356,7 @@ class RentArrearsTabDetailsBuilderTest {
 
         // When
         RentArrearsTabDetails rentArrearsDetails = rentArrearsTabDetailsBuilder
-            .buildDetailedRentArrearsTabDetails(pcsCase);
+            .buildDetailedRentArrearsTabDetails(pcsCase, false);
 
         // Then
         assertThat(rentArrearsDetails).isNull();
@@ -373,7 +373,7 @@ class RentArrearsTabDetailsBuilderTest {
 
         // When
         RentArrearsTabDetails rentArrearsDetails = rentArrearsTabDetailsBuilder
-            .buildDetailedRentArrearsTabDetails(pcsCase);
+            .buildDetailedRentArrearsTabDetails(pcsCase, false);
 
         // Then
         assertThat(rentArrearsDetails.getRentAmount()).isEqualTo(" ");
@@ -418,11 +418,87 @@ class RentArrearsTabDetailsBuilderTest {
 
         // When
         RentArrearsTabDetails rentArrearsDetails = rentArrearsTabDetailsBuilder
-            .buildDetailedRentArrearsTabDetails(pcsCase);
+            .buildDetailedRentArrearsTabDetails(pcsCase, false);
 
         // Then
         assertThat(rentArrearsDetails.getCalculationFrequency()).isNull();
         assertThat(rentArrearsDetails.getRentFrequency()).isEqualTo("Weekly");
+    }
+
+    @Test
+    void shouldUnsetRentStatementIfCaseIsSubmitted() {
+        // Given
+        List<ListValue<Document>> documents = List.of(
+            ListValue.<Document>builder()
+                .value(Document.builder().build())
+                .build()
+        );
+
+        RentArrearsSection rentArrearsSection = RentArrearsSection.builder()
+            .recoveryAttempted(VerticalYesNo.YES)
+            .recoveryAttemptDetails("recovery details")
+            .total(new BigDecimal("100.00"))
+            .statementDocuments(documents)
+            .build();
+
+        PCSCase pcsCase = PCSCase.builder()
+            .showRentSectionPage(YesOrNo.YES)
+            .rentDetails(
+                RentDetails.builder()
+                    .currentRent(new BigDecimal("4.00"))
+                    .frequency(RentPaymentFrequency.OTHER)
+                    .otherFrequency("Other frequency")
+                    .calculatedDailyCharge(new BigDecimal("3.40"))
+                    .build())
+            .arrearsJudgmentWanted(VerticalYesNo.YES)
+            .rentArrears(rentArrearsSection)
+            .build();
+
+        // When
+        RentArrearsTabDetails rentArrearsDetails = rentArrearsTabDetailsBuilder
+            .buildDetailedRentArrearsTabDetails(pcsCase, true);
+
+        // Then
+        assertThat(rentArrearsDetails.getRentStatement()).isEqualTo(documents);
+        assertThat(rentArrearsSection.getStatementDocuments()).isNull();
+    }
+
+    @Test
+    void shouldNotUnsetRentStatementIfCaseIsInDraft() {
+        // Given
+        List<ListValue<Document>> documents = List.of(
+            ListValue.<Document>builder()
+                .value(Document.builder().build())
+                .build()
+        );
+
+        RentArrearsSection rentArrearsSection = RentArrearsSection.builder()
+            .recoveryAttempted(VerticalYesNo.YES)
+            .recoveryAttemptDetails("recovery details")
+            .total(new BigDecimal("100.00"))
+            .statementDocuments(documents)
+            .build();
+
+        PCSCase pcsCase = PCSCase.builder()
+            .showRentSectionPage(YesOrNo.YES)
+            .rentDetails(
+                RentDetails.builder()
+                    .currentRent(new BigDecimal("4.00"))
+                    .frequency(RentPaymentFrequency.OTHER)
+                    .otherFrequency("Other frequency")
+                    .calculatedDailyCharge(new BigDecimal("3.40"))
+                    .build())
+            .arrearsJudgmentWanted(VerticalYesNo.YES)
+            .rentArrears(rentArrearsSection)
+            .build();
+
+        // When
+        RentArrearsTabDetails rentArrearsDetails = rentArrearsTabDetailsBuilder
+            .buildDetailedRentArrearsTabDetails(pcsCase, false);
+
+        // Then
+        assertThat(rentArrearsDetails.getRentStatement()).isEqualTo(documents);
+        assertThat(rentArrearsSection.getStatementDocuments()).isEqualTo(documents);
     }
 
     private static <T> ListValue<T> listValue(T value) {
