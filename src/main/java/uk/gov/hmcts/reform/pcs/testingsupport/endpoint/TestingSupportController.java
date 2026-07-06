@@ -17,6 +17,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -31,12 +32,13 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
 import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
-import uk.gov.hmcts.reform.pcs.ccd.entity.PartyAccessCodeEntity;
+import uk.gov.hmcts.reform.pcs.testingsupport.model.TestingSupportAccessCode;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.repository.PartyAccessCodeRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.AccessCodeGenerationService;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseRoleAssignmentService;
+import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.idam.IdamAuthenticator;
 import uk.gov.hmcts.reform.pcs.idam.User;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityResult;
@@ -73,13 +75,15 @@ public class TestingSupportController {
     private final Task<Void> helloWorldTask;
     private final EligibilityService eligibilityService;
     private final PcsCaseRepository pcsCaseRepository;
-    private final PartyAccessCodeRepository partyAccessCodeRepository;
+    private final JdbcTemplate jdbcTemplate;
     private final ModelMapper modelMapper;
     private final CcdTestCaseOrchestrator ccdTestCaseOrchestrator;
     private final CaseRoleAssignmentService caseRoleAssignmentService;
     private final LegalRepresentativePartyLinkService legalRepresentativePartyLinkService;
     private final IdamAuthenticator idamAuthenticator;
     private final OrganisationDetailsService organisationDetailsService;
+    private final PcsCaseService pcsCaseService;
+    private final AccessCodeGenerationService accessCodeGenerationService;
 
     @Operation(
         summary = "Schedule a Hello World task",
@@ -246,8 +250,8 @@ public class TestingSupportController {
         @ApiResponse(responseCode = "404", description = "Case not found"),
         @ApiResponse(responseCode = "500", description = "Internal server error")
     })
-    @GetMapping("/pins/{caseReference}")
-    public ResponseEntity<Map<String, Party>> getPins(
+    @GetMapping({"/access-codes/{caseReference}", "/pins/{caseReference}"})
+    public ResponseEntity<Map<String, Party>> getAccessCodes(
         @Parameter(
             description = "Service-to-Service (S2S) authorization token",
             required = true,
@@ -265,7 +269,12 @@ public class TestingSupportController {
 
             PcsCaseEntity pcsCaseEntity = maybeCase.get();
 
-            List<PartyAccessCodeEntity> accessCodes = partyAccessCodeRepository.findAllByPcsCase_Id(
+            List<TestingSupportAccessCode> pins = jdbcTemplate.query(
+                "SELECT party_id, plaintext_code FROM testing_support_access_code WHERE case_id = ?",
+                (rs, rowNum) -> new TestingSupportAccessCode(
+                    rs.getObject("party_id", UUID.class),
+                    rs.getString("plaintext_code")
+                ),
                 pcsCaseEntity.getId()
             );
 
@@ -281,11 +290,11 @@ public class TestingSupportController {
 
             Map<String, Party> minimalPartyMap = new HashMap<>();
 
-            for (var accessCodeObject : accessCodes) {
+            for (var pinObject : pins) {
                 //for each access code return the matching defendant's name and address
 
-                String accessCode = accessCodeObject.getCode();
-                UUID partyId = accessCodeObject.getPartyId();
+                String accessCode = pinObject.plaintextCode();
+                UUID partyId = pinObject.partyId();
 
                 PartyEntity matched = partyByPartyId.get(partyId);
                 if (matched == null) {
@@ -338,11 +347,20 @@ public class TestingSupportController {
         @PathVariable String legislativeCountry,
         @RequestHeader(value = AUTHORIZATION) String authorization,
         @RequestHeader(value = "ServiceAuthorization") String serviceAuthorization,
+        @Parameter(description = "When true, synchronously issue the case (allocate court location, set issued "
+            + "date) and generate the defendant access codes, so a test can read the PIN immediately without "
+            + "driving payment or waiting for the async scheduler.")
+        @RequestParam(defaultValue = "false") boolean issueAndGenerateAccessCodes,
         @RequestBody(required = false) JsonNode payloadMerge
     ) {
         LegislativeCountry country = LegislativeCountry.valueOf(legislativeCountry.toUpperCase());
 
         Map<String, Object> result = ccdTestCaseOrchestrator.createCase(authorization, country, payloadMerge);
+
+        if (issueAndGenerateAccessCodes) {
+            long caseReference = Long.parseLong(String.valueOf(result.get("caseId")));
+            issueCaseAndGenerateAccessCodes(caseReference);
+        }
 
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("status", "CREATED");
@@ -350,6 +368,18 @@ public class TestingSupportController {
         body.put("caseDetails", result.get("caseDetails"));
 
         return ResponseEntity.status(HttpStatus.CREATED).body(body);
+    }
+
+    /**
+     * Test-only shortcut that reproduces, synchronously, what the payment/issue flow does: allocate the court
+     * location, set the issued date, then generate the defendant access codes + access-code letters. Lets a functional
+     * test obtain the PIN deterministically without paying or waiting for the db-scheduler. Idempotent with the
+     * scheduler (skips defendants that already have a code).
+     */
+    private void issueCaseAndGenerateAccessCodes(long caseReference) {
+        pcsCaseService.allocateCaseManagementLocation(caseReference);
+        pcsCaseService.setCaseIssuedDate(caseReference);
+        accessCodeGenerationService.createAccessCodesForParties(String.valueOf(caseReference), true);
     }
 
     @PostMapping(
