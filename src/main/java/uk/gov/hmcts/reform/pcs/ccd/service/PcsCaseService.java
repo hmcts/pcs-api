@@ -101,6 +101,20 @@ public class PcsCaseService {
         pcsCase.setCaseManagementLocationNumber(caseManagementLocation);
     }
 
+    // Entity-based overload for the testing-support issue shortcut, which works from a persisted
+    // case reference (the PCSCase overload runs in-memory during a CCD event).
+    public void allocateCaseManagementLocation(long caseReference) {
+        PcsCaseEntity pcsCaseEntity = loadCase(caseReference);
+        Integer epimsId =
+            postCodeCourtService.getCourtManagementLocation(
+                pcsCaseEntity.getPropertyAddress().getPostcode(),
+                pcsCaseEntity.getLegislativeCountry()
+            );
+        if (epimsId != null) {
+            pcsCaseEntity.setCaseManagementLocation(epimsId);
+        }
+    }
+
     public void allocateRegionId(PCSCase pcsCase) {
         allocateCaseManagementLocation(pcsCase);
         if (pcsCase.getCaseManagementLocationNumber() != null) {

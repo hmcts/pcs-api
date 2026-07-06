@@ -1,8 +1,10 @@
 package uk.gov.hmcts.reform.pcs.audit;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 @Data
 public class Audit {
     @JsonProperty("created_by")

@@ -36,6 +36,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.DefendantCircumstanceTabD
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.DemotionOfTenancyTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.NoticeTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.ProhibitedConductStandardContractTabDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.RequiredDocumentsTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.SuspensionOfRightToBuyTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.TenancyLicenceTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.UnderlesseeOrMortgageInformationTabDetails;
@@ -87,14 +88,14 @@ public class CaseDetailsTabView {
     private final RequiredDocumentsTabDetailsBuilder requiredDocumentsTabDetailsBuilder;
     private final NoticeDetailsBuilder noticeDetailsBuilder;
 
-    public CaseDetailsTab buildCaseDetailsTab(PCSCase pcsCase) {
+    public CaseDetailsTab buildCaseDetailsTab(PCSCase pcsCase, boolean isSubmitted) {
         ClaimTabDetails claimTabDetails = buildClaimTabDetails(pcsCase);
         GroundsForPossessionTabDetails groundsForPossessionTabDetails = buildGroundsForPossessionTabDetails(pcsCase);
-        TenancyLicenceTabDetails tenancyLicenceTabDetails = buildTenancyLicenceTabDetails(pcsCase);
-        NoticeTabDetails noticeTabDetails = noticeDetailsBuilder.buildNoticeTabDetails(pcsCase);
+        TenancyLicenceTabDetails tenancyLicenceTabDetails = buildTenancyLicenceTabDetails(pcsCase, isSubmitted);
+        NoticeTabDetails noticeTabDetails = noticeDetailsBuilder.buildNoticeTabDetails(pcsCase, isSubmitted);
         ActionsTakenTabDetails actionsTakenTabDetails = buildActionsTakenTabDetails(pcsCase);
         RentArrearsTabDetails rentArrearsTabDetails =
-            rentArrearsTabDetailsBuilder.buildDetailedRentArrearsTabDetails(pcsCase);
+            rentArrearsTabDetailsBuilder.buildDetailedRentArrearsTabDetails(pcsCase, isSubmitted);
         ReasonsForPossessionTabDetails reasonsForPossessionTabDetails =
             reasonsForPossessionTabDetailsBuilder.buildDetailsReasonsForPossession(pcsCase);
         ApplicationsTabDetails applicationsTabDetails = buildApplicationsTabDetails(pcsCase);
@@ -108,10 +109,12 @@ public class CaseDetailsTabView {
             buildSuspensionOfRightToBuyTabDetails(pcsCase);
         String dateSubmitted = formatSubmittedDate(pcsCase.getDateSubmitted());
         OccupationContractOrLicenceTabDetails occupationContractLicenceTabDetails =
-            buildOccupationContractLicenceTabDetails(pcsCase);
+            buildOccupationContractLicenceTabDetails(pcsCase, isSubmitted);
         AntisocialAndConductTabDetails antisocialAndConductTabDetails = buildAntisocialAndConductTabDetails(pcsCase);
         ProhibitedConductStandardContractTabDetails prohibitedConductStandardContractTabDetails =
             buildProhibitedConductStandardContractTabDetails(pcsCase);
+        RequiredDocumentsTabDetails requiredDocumentsTabDetails =
+            requiredDocumentsTabDetailsBuilder.buildRequiredDocumentsTabDetails(pcsCase, isSubmitted);
 
         CaseDetailsTab caseDetailsTab = CaseDetailsTab.builder()
             .claimDetails(claimTabDetails)
@@ -132,7 +135,7 @@ public class CaseDetailsTabView {
             .occupationContractLicenceDetails(occupationContractLicenceTabDetails)
             .antisocialAndConductDetails(antisocialAndConductTabDetails)
             .prohibitedConductStandardContractDetails(prohibitedConductStandardContractTabDetails)
-            .requiredDocumentsDetails(requiredDocumentsTabDetailsBuilder.buildRequiredDocumentsTabDetails(pcsCase))
+            .requiredDocumentsDetails(requiredDocumentsTabDetails)
             .build();
 
         if (claimantInformationTabDetails != null) {
@@ -212,7 +215,7 @@ public class CaseDetailsTabView {
             .build();
     }
 
-    private TenancyLicenceTabDetails buildTenancyLicenceTabDetails(PCSCase pcsCase) {
+    private TenancyLicenceTabDetails buildTenancyLicenceTabDetails(PCSCase pcsCase, boolean isSubmitted) {
         if (pcsCase.getLegislativeCountry() != LegislativeCountry.ENGLAND) {
             return null;
         }
@@ -229,6 +232,11 @@ public class CaseDetailsTabView {
         TenancyLicenceType tenancyType = tenancyLicenceDetails.getTypeOfTenancyLicence();
         LocalDate tenancyDate = tenancyLicenceDetails.getTenancyLicenceDate();
         VerticalYesNo hasTenancyLicence = tenancyLicenceDetails.getHasCopyOfTenancyLicence();
+        List<ListValue<Document>> documents = tenancyLicenceDetails.getTenancyLicenceDocuments();
+
+        if (isSubmitted) {
+            tenancyLicenceDetails.setTenancyLicenceDocuments(null);
+        }
 
         return TenancyLicenceTabDetails.builder()
             .typeOfTenancyLicence(tenancyType != null ? tenancyType.getLabel() : NO_ANSWER)
@@ -237,7 +245,7 @@ public class CaseDetailsTabView {
             )
             .tenancyLicenceDate(tenancyDate != null ? tenancyDate.format(DATE_FORMATTER) : NO_ANSWER)
             .hasCopyOfTenancyLicence(hasTenancyLicence != null ? hasTenancyLicence.getLabel() : NO_ANSWER)
-            .tenancyLicenceDocuments(tenancyLicenceDetails.getTenancyLicenceDocuments())
+            .tenancyLicenceDocuments(documents)
             .reasonsForNoTenancyLicenceDocuments(tenancyLicenceDetails.getReasonsForNoTenancyLicenceDocuments())
             .build();
     }
@@ -486,7 +494,10 @@ public class CaseDetailsTabView {
             .build();
     }
 
-    private OccupationContractOrLicenceTabDetails buildOccupationContractLicenceTabDetails(PCSCase pcsCase) {
+    private OccupationContractOrLicenceTabDetails buildOccupationContractLicenceTabDetails(
+        PCSCase pcsCase,
+        boolean isSubmitted
+    ) {
         if (pcsCase.getLegislativeCountry() != LegislativeCountry.WALES) {
             return null;
         }
@@ -503,6 +514,10 @@ public class CaseDetailsTabView {
         OccupationLicenceTypeWales agreementType = occupationLicenceDetailsWales.getOccupationLicenceTypeWales();
         LocalDate startDate = occupationLicenceDetailsWales.getLicenceStartDate();
         List<ListValue<Document>> documents = occupationLicenceDetailsWales.getLicenceDocuments();
+
+        if (isSubmitted) {
+            occupationLicenceDetailsWales.setLicenceDocuments(null);
+        }
 
         return OccupationContractOrLicenceTabDetails.builder()
             .agreementType(agreementType != null ? agreementType.getLabel() : NO_ANSWER)
