@@ -30,10 +30,6 @@ export const staff = {
   pcs_wlu_team_leader_ts_ca_email: 'pcs-wlu-team-leader-ts-ca-01@justice.gov.uk',
 };
 
-export const judicial = {
-  judicialUserEmail: 'DDJ.Randell.Lesch@ejudiciary.net',
-}
-
 export const refundAndRemission = {
   requesterEmail: 'pcs-ctsc-admin-02@justice.gov.uk',
   approverEmail: 'pcs-ctsc-admin-02@hmcts.net',
