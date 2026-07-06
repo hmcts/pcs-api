@@ -24,7 +24,6 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Slf4j
 @Tag("Functional")
@@ -117,8 +116,7 @@ public class FeePaymentCallbackTests extends BaseApi {
         String paymentStatus = claimantPaymentRefPostCallback.get("paymentStatus").toString();
         String paymentAmount = claimantPaymentRefPostCallback.get("amount").toString();
         assertEquals("PAID",paymentStatus);
-        assertTrue(Double.parseDouble(paymentAmount) > 0,
-            "expected a positive fee amount but was " + paymentAmount);
+        assertEquals("415.0",paymentAmount);
     }
 
     @Title("Fee Payment callback return 204 on success with payment status Not paid")
