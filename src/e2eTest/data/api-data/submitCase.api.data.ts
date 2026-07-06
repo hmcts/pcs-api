@@ -1,6 +1,9 @@
 export const submitCaseApiData = {
   submitCaseEventName: 'resumePossessionClaim',
   submitCasePayload: {
+    regionId: "1",
+    caseManagementLocationNumber: "20262",
+    orgNameFound: "Yes",
     legislativeCountry: 'England',
     claimantType: {
       value: {

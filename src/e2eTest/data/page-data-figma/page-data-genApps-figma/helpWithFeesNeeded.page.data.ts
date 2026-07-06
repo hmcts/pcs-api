@@ -3,7 +3,7 @@ export const helpPayingTheFee = {
   doYouNeedHelpPayingTheFeeQuestion: `Does the defendant need help paying the fee for this application?`,
   yesRadioOption: `Yes`,
   noRadioOption: `No`,
-  itUsuallyCostParagraph: `It usually costs £123 to apply. The fee will increase to £313 if:`,
+  itUsuallyCostParagraph: `It usually costs £126 to apply. The fee will increase to £321 if:`,
   youHaveAlreadyToldList: `the defendant has already told the other party that they are making this application, and`,
   theOtherPartyDidNotAgreeList: `the other party did not agree to it (this means that they objected to it)`,
   youSeeFinalApplicationFeeParagraph: `You’ll see the final application fee before you pay.`,
