@@ -16,7 +16,6 @@ import uk.gov.hmcts.reform.pcs.ccd.page.changecasestate.ChangeCaseStatePage;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerRoles.CASEWORKER_ROLES;
-import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.changeCaseState;
 import static uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter.COMMA_DELIMITER;
 
@@ -43,7 +42,8 @@ public class ChangeCaseState implements CCDConfig<PCSCase, State, UserRole> {
             )
             .name("Change case state")
             .grant(Permission.CRUD, CASEWORKER_ROLES)
-            .grantHistoryOnly(JUDICIAL_HISTORY_ROLES)
+            .grantHistoryOnly(UserRole.CIRCUIT_JUDGE, UserRole.FEE_PAID_JUDGE,
+                              UserRole.JUDGE, UserRole.LEADERSHIP_JUDGE)
             .showSummary()
             .endButtonLabel("Submit");
 
