@@ -177,7 +177,7 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
     private void buildCasePartiesTab(ConfigBuilder<PCSCase, State, AccessProfile> builder) {
         builder.tab("caseParties", "Case Parties")
             .forRoles(PARTY_VISIBLE_TAB_ROLES)
-            .label("Case Parties", null, "# Case Parties")
+            .label("Case parties", null, "# Case Parties")
             .field("casePartiesTab_ClaimantDetails")
             .field("casePartiesTab_DefendantOneDetails")
             .field("casePartiesTab_DefendantsDetails");
@@ -237,9 +237,9 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
             .field("detailsTab_AntisocialAndConductDetails")
             .field("detailsTab_ApplicationsDetails")
             .label(
-                "Claimant Details",
+                "Claimant details",
                 "detailsTab_ClaimantInformation!=\"\"",
-                "## Claimant Details"
+                "## Claimant details"
             )
             .field("detailsTab_ClaimantInformation")
             .field("detailsTab_ClaimantAddress")
@@ -247,9 +247,9 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
             .field("detailsTab_ClaimantRegistrationAndLicensingDetails")
             .field("detailsTab_ClaimantCircumstances")
             .label(
-                "Defendant Details",
+                "Defendant details",
                 "detailsTab_DefendantInformationDetails!=\"\"",
-                "## Defendant Details"
+                "## Defendant details"
             )
             .field("detailsTab_DefendantInformationDetails")
             .field("detailsTab_AdditionalDefendants")
