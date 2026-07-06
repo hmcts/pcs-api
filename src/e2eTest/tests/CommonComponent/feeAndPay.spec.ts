@@ -65,7 +65,7 @@ test.describe('[Common Component Fee And Pay] @nightly @CC @feeAndPay' , async (
     await performAction('clickPayNowLink', serviceRequest.payNowLink);
     await performAction('selectPaymentTypePBA', {
       amountLabel: serviceRequest.amountToPayLabel,
-      expectedAmount: serviceRequest.amount404,
+      expectedAmount: serviceRequest.amount415,
       payByOption: serviceRequest.payByAccountRadioOption,
       pbaLabel: serviceRequest.selectPBALabel,
       pbaValue: serviceRequest.pbaIndex1,
@@ -191,7 +191,7 @@ test.describe('[Common Component Fee And Pay Refund and Remission] @release @CC 
     await performAction('clickPayNowLink', serviceRequest.payNowLink);
     await performAction('selectPaymentTypePBA', {
       amountLabel: serviceRequest.amountToPayLabel,
-      expectedAmount: serviceRequest.amount404,
+      expectedAmount: serviceRequest.amount415,
       payByOption: serviceRequest.payByAccountRadioOption,
       pbaLabel: serviceRequest.selectPBALabel,
       pbaValue: serviceRequest.pbaIndex1,
@@ -221,7 +221,7 @@ test.describe('[Common Component Fee And Pay Refund and Remission] @release @CC 
     await performAction('clickPayNowLink', serviceRequest.payNowLink);
     await performAction('selectPaymentTypePBA', {
       amountLabel: serviceRequest.amountToPayLabel,
-      expectedAmount: serviceRequest.amount404,
+      expectedAmount: serviceRequest.amount415,
       payByOption: serviceRequest.payByAccountRadioOption,
       pbaLabel: serviceRequest.selectPBALabel,
       pbaValue: serviceRequest.pbaIndex1,
@@ -251,7 +251,7 @@ test.describe('[Common Component Fee And Pay Refund and Remission] @release @CC 
     await performAction('clickPayNowLink', serviceRequest.payNowLink);
     await performAction('selectPaymentTypePBA', {
       amountLabel: serviceRequest.amountToPayLabel,
-      expectedAmount: serviceRequest.amount404,
+      expectedAmount: serviceRequest.amount415,
       payByOption: serviceRequest.payByAccountRadioOption,
       pbaLabel: serviceRequest.selectPBALabel,
       pbaValue: serviceRequest.pbaIndex1,
