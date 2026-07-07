@@ -5,7 +5,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
-import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocumentWithType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentWithType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState;
@@ -59,7 +59,7 @@ public class DocumentsView {
             .collect(Collectors.toList());
     }
 
-    private List<ListValue<AdditionalDocumentWithType>> mapAndWrapDocumentsWithType(PcsCaseEntity pcsCaseEntity) {
+    private List<ListValue<DocumentWithType>> mapAndWrapDocumentsWithType(PcsCaseEntity pcsCaseEntity) {
 
         if (pcsCaseEntity.getDocuments().isEmpty()) {
             return List.of();
@@ -69,9 +69,9 @@ public class DocumentsView {
 
         return pcsCaseEntity.getDocuments().stream()
             .filter(documentEntity -> this.isDocumentVisibleToUser(documentEntity, currentUserId))
-            .map(entity -> ListValue.<AdditionalDocumentWithType>builder()
+            .map(entity -> ListValue.<DocumentWithType>builder()
                 .id(entity.getId().toString())
-                .value(AdditionalDocumentWithType.builder()
+                .value(DocumentWithType.builder()
                            .document(buildDocumentFromEntity(entity))
                           .type(entity.getType())
                            .build())

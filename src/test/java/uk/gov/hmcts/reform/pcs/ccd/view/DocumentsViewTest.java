@@ -10,7 +10,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
-import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocumentWithType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentWithType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState;
@@ -147,11 +147,11 @@ class DocumentsViewTest {
         underTest.setCaseFields(pcsCase, pcsCaseEntity);
 
         // Then
-        List<ListValue<AdditionalDocumentWithType>> allDocuments = pcsCase.getAllDocumentsWithType();
+        List<ListValue<DocumentWithType>> allDocuments = pcsCase.getAllDocumentsWithType();
         assertThat(allDocuments).hasSize(2);
 
-        ListValue<AdditionalDocumentWithType> document1ListValue = allDocuments.get(0);
-        ListValue<AdditionalDocumentWithType> document2ListValue = allDocuments.get(1);
+        ListValue<DocumentWithType> document1ListValue = allDocuments.get(0);
+        ListValue<DocumentWithType> document2ListValue = allDocuments.get(1);
 
         assertThat(document1ListValue.getId()).isEqualTo(document1Id.toString());
         assertThat(document1ListValue.getValue())

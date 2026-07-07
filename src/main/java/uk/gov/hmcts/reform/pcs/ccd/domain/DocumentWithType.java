@@ -10,7 +10,7 @@ import uk.gov.hmcts.ccd.sdk.type.Document;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class AdditionalDocumentWithType {
+public class DocumentWithType {
 
     private Document document;
 

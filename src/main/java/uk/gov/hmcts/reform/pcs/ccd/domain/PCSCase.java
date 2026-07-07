@@ -587,7 +587,7 @@ public class PCSCase {
     private List<ListValue<Document>> allDocuments;
 
     @CCD(access = DocumentAccess.class)
-    private List<ListValue<AdditionalDocumentWithType>> allDocumentsWithType;
+    private List<ListValue<DocumentWithType>> allDocumentsWithType;
 
     @CCD(
         label = "Case file view",
