@@ -17,7 +17,6 @@ import uk.gov.hmcts.reform.pcs.ccd.util.StringUtils;
 import java.util.List;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
-import static uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentAmendSelectionService.SELECT_DIFFERENT_FOLDER_ERROR;
 
 @AllArgsConstructor
 @Component
@@ -62,13 +61,9 @@ public class SelectDocumentPage implements CcdPageConfiguration {
                                    DocumentCategoryField categoryField) {
         CaseFileCategory category = categoryField.category;
         page
-            .label(categoryField.idPrefix + "EmptyFolderError", errorMessage(SELECT_DIFFERENT_FOLDER_ERROR),
+            .label(categoryField.idPrefix + "EmptyFolderMessage", emptyFolderMessage(category),
                    noDocumentsShowCondition(category))
-            .label(categoryField.idPrefix + "EmptyFolderQuestion", documentQuestion(),
-                   noDocumentsShowCondition(category))
-            .mandatory(categoryField.documentsGetter, documentsShowCondition(category), true)
-            .label(categoryField.idPrefix + "NoDocuments", noDocumentsMessage(category),
-                   noDocumentsShowCondition(category));
+            .mandatory(categoryField.documentsGetter, documentsShowCondition(category), true);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
@@ -110,15 +105,10 @@ public class SelectDocumentPage implements CcdPageConfiguration {
         };
     }
 
-    private String noDocumentsMessage(CaseFileCategory category) {
-        return "No documents in '" + category.getLabel() + "'";
+    private String emptyFolderMessage(CaseFileCategory category) {
+        return "Which document do you want to amend?"
+            + "<br>"
+            + "<span class=\"govuk-!-font-size-16\">No documents in '" + category.getLabel() + "'</span>";
     }
 
-    private String documentQuestion() {
-        return "Which document do you want to amend?";
-    }
-
-    private String errorMessage(String message) {
-        return "<p class=\"govuk-error-message\">" + message + "</p>";
-    }
 }

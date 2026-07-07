@@ -11,6 +11,7 @@ import uk.gov.hmcts.ccd.sdk.type.DynamicList;
 import uk.gov.hmcts.ccd.sdk.type.DynamicListElement;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.documentamend.DocumentAmendDetails;
@@ -143,6 +144,31 @@ class DocumentAmendSelectionServiceTest {
         );
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(PcsCaseEntity.builder()
             .documents(List.of(nullCategoryDocument, categorisedDocument))
+            .build());
+        PCSCase caseData = PCSCase.builder().build();
+
+        underTest.initialise(CASE_REFERENCE, caseData);
+
+        assertThat(caseData.getDocumentAmendDetails().getUncategorisedDocuments().getListItems())
+            .extracting(DynamicListElement::getLabel)
+            .containsExactly("uncategorised document.pdf");
+        assertThat(caseData.getDocumentAmendDetails().getUncategorisedDocumentsEmpty()).isEqualTo(YesOrNo.NO);
+    }
+
+    @Test
+    void shouldExcludeDefendantAccessCodeDocumentsFromUncategorisedDocuments() {
+        DocumentEntity accessCodeDocument = documentWithType(
+            null,
+            UNCATEGORISED_DOCUMENTS.getId(),
+            DocumentType.DEFENDANT_ACCESS_CODE
+        );
+        DocumentEntity visibleDocument = documentWithType(
+            "uncategorised document.pdf",
+            UNCATEGORISED_DOCUMENTS.getId(),
+            DocumentType.OTHER
+        );
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(PcsCaseEntity.builder()
+            .documents(List.of(accessCodeDocument, visibleDocument))
             .build());
         PCSCase caseData = PCSCase.builder().build();
 
@@ -308,6 +334,16 @@ class DocumentAmendSelectionServiceTest {
             .categoryId(categoryId)
             .generalApplication(generalApplication)
             .submittedDate(submittedDate)
+            .build();
+    }
+
+    private static DocumentEntity documentWithType(String fileName, String categoryId, DocumentType type) {
+        return DocumentEntity.builder()
+            .id(UUID.randomUUID())
+            .fileName(fileName)
+            .categoryId(categoryId)
+            .type(type)
+            .submittedDate(Instant.now())
             .build();
     }
 }

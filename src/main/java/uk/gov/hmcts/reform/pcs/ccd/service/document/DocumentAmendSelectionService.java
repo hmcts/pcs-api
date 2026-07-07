@@ -6,6 +6,7 @@ import uk.gov.hmcts.ccd.sdk.type.DynamicList;
 import uk.gov.hmcts.ccd.sdk.type.DynamicListElement;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.documentamend.DocumentAmendDetails;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
@@ -91,6 +92,7 @@ public class DocumentAmendSelectionService {
             : pcsCase.getDocuments().stream()
                 .filter(Objects::nonNull)
                 .filter(document -> isInCategory(document, category))
+                .filter(document -> document.getType() != DocumentType.DEFENDANT_ACCESS_CODE)
                 .sorted(DOCUMENT_ORDER)
                 .map(document -> DynamicListElement.builder()
                     .code(document.getId())
