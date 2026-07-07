@@ -114,7 +114,7 @@ test.describe('[Common Component Case Linking - Access Management] @nightly @cas
     await performAction('canViewLinkedCases', 'yes');
   });
 
-  test('WLUTeamLead user cannot view, create or manage case linking @CC @nightly @caseLinking', async ({ page, context }) => {
+  test('WLU Team Lead user cannot view, create or manage case linking @CC @nightly @caseLinking', async ({ page, context }) => {
    await performAction('login', {email: staff.pcs_wlu_team_leader_ca_email, password: process.env.IDAM_PCS_USER_PASSWORD});
     await dismissCookieBanner(page, 'analytics');
     await performAction('navigateToCaseSummary', 'yes');
