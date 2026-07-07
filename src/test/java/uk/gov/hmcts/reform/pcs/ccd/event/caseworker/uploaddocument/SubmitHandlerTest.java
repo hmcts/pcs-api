@@ -42,6 +42,10 @@ class SubmitHandlerTest {
     void shouldSaveDocument() {
         CaseworkerDocument caseworkerDocument = mock(CaseworkerDocument.class);
 
+        DocumentEntity documentEntity = DocumentEntity.builder().build();
+        when(caseworkerDocumentService.saveNewDocument(caseworkerDocument, CASE_REFERENCE))
+            .thenReturn(documentEntity);
+
         PCSCase caseData = PCSCase.builder()
             .caseworkerDocument(caseworkerDocument)
             .build();
