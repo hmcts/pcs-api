@@ -82,8 +82,8 @@ withPipeline(type, product, component) {
   }
 
   onDemo {
-    setDemoEnvVars()
-    enableHighLevelDataSetup()
+//    setDemoEnvVars()
+//    enableHighLevelDataSetup()
   }
 
   onIthc {
