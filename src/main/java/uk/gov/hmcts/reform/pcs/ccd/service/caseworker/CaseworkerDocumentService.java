@@ -99,6 +99,7 @@ public class CaseworkerDocumentService {
         } else {
             // No Gen App / Counterclaims in this case that could be linked to
             documentFilename = documentNameService.appendPartyPostfix(documentFilename, mainClaim, partyId);
+            caseFileCategory = documentService.mapDocumentTypeToCategory(documentEntity.getType()).orElse(null);
         }
 
         documentEntity.setFileName(documentFilename);
