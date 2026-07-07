@@ -104,7 +104,7 @@ class ClaimPackSelectorTest {
     }
 
     @Test
-    @DisplayName("Handles multiple defendants independently")
+    @DisplayName("Sends to the ready defendant and holds the one whose access code is missing")
     void shouldHandleMultipleDefendantsIndependently() {
         DocumentEntity pinA = document(DocumentType.DEFENDANT_ACCESS_CODE, defendantA);
         DocumentEntity pinC = document(DocumentType.DEFENDANT_ACCESS_CODE, defendantC);
@@ -113,7 +113,7 @@ class ClaimPackSelectorTest {
             sent(defendantC, claimForm), sent(defendantC, pinC)));
         PcsCaseEntity pcsCase = caseWith(claimForm, List.of(pinA, pinC), List.of(
             claimParty(claimant, PartyRole.CLAIMANT, 1),
-            claimParty(defendantA, PartyRole.DEFENDANT, 1),   // pin, unsent  → included
+            claimParty(defendantA, PartyRole.DEFENDANT, 1),   // pin, unsent  → included (ready)
             claimParty(defendantB, PartyRole.DEFENDANT, 2),   // no pin       → held
             claimParty(defendantC, PartyRole.DEFENDANT, 3))); // pin, sent    → excluded
 

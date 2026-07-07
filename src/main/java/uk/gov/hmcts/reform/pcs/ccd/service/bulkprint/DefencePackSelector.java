@@ -58,11 +58,10 @@ public class DefencePackSelector {
             DocumentEntity defenceForm = defenceFormDocument(pcsCase, defendant);
             if (defenceForm != null) {
                 allParties.forEach(party -> addPending(recipients, documentsByRecipient, party, defenceForm));
-
-                DocumentEntity counterClaimForm = counterClaimDocument(pcsCase, defendant);
-                if (counterClaimForm != null) {
-                    allParties.forEach(party -> addPending(recipients, documentsByRecipient, party, counterClaimForm));
-                }
+            }
+            DocumentEntity counterClaimForm = counterClaimDocument(pcsCase, defendant);
+            if (counterClaimForm != null) {
+                allParties.forEach(party -> addPending(recipients, documentsByRecipient, party, counterClaimForm));
             }
         }
 

@@ -61,12 +61,16 @@ class DefencePackSelectorTest {
     }
 
     @Test
-    @DisplayName("Holds the counterclaim when the defence form is not yet generated")
-    void shouldHoldCounterClaimWhenDefenceFormNotYetGenerated() {
+    @DisplayName("Sends the counterclaim on all parties even when the defence form is not yet generated")
+    void shouldSendCounterClaimWhenDefenceFormNotYetGenerated() {
         when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of());
 
-        assertThat(underTest.findDefencePackCandidates(caseWith(List.of(counterClaim), claimant, defendant)))
-            .isEmpty();
+        List<DefencePackCandidate> result =
+            underTest.findDefencePackCandidates(caseWith(List.of(counterClaim), claimant, defendant));
+
+        assertThat(result).hasSize(2);
+        assertThat(candidateFor(result, claimant).documents()).containsExactly(counterClaim);
+        assertThat(candidateFor(result, defendant).documents()).containsExactly(counterClaim);
     }
 
     @Test
