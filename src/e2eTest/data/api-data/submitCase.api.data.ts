@@ -698,7 +698,7 @@ export const submitCaseApiData = {
         PostCode: null
       }
     },
-    addAnotherDefendant: 'NO',
+    addAnotherDefendant: 'YES',
     additionalDefendants: [
       {
         value: {
