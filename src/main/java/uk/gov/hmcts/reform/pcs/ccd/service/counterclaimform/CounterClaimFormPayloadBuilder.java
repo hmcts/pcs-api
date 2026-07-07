@@ -5,10 +5,12 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.claim.StatementOfTruthEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimPartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseNameFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseReferenceFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.service.form.PartyDisplayMapper;
@@ -77,9 +79,11 @@ public class CounterClaimFormPayloadBuilder {
     }
 
     private String buildStatementOfTruthName(CounterClaimEntity counterClaim) {
-        return counterClaim.getStatementOfTruth() != null
-            ? counterClaim.getStatementOfTruth().getFullName()
-            : null;
+        return counterClaim.findAssociatedDefendantResponse()
+            .map(DefendantResponseEntity::getStatementOfTruth)
+            .map(StatementOfTruthEntity::getFullName)
+            .filter(StringUtils::hasText)
+            .orElse(null);
     }
 
     private String formatPartyDisplayName(PartyEntity party) {

@@ -12,6 +12,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimPartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseNameFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseReferenceFormatter;
 import uk.gov.hmcts.reform.pcs.document.model.counterclaimform.CounterClaimFormPayload;
@@ -73,6 +74,55 @@ class CounterClaimFormPayloadBuilderTest {
             .id(UUID.randomUUID())
             .pcsCase(minimalCase(null))
             .party(PartyEntity.builder().id(UUID.randomUUID()).firstName("Bob").lastName("Defendant").build())
+            .build();
+
+        CounterClaimFormPayload payload = builder.build(counterClaim);
+
+        assertThat(payload.getStatementOfTruthName()).isNull();
+    }
+
+    @Test
+    void statementOfTruthNamePicksResponseForThisDefendantWhenCaseHasMultipleDefendants() {
+        PartyEntity thisDefendant = PartyEntity.builder().id(UUID.randomUUID())
+            .firstName("Bob").lastName("Defendant").build();
+        PartyEntity otherDefendant = PartyEntity.builder().id(UUID.randomUUID())
+            .firstName("Charlie").lastName("Other").build();
+
+        PcsCaseEntity pcsCase = minimalCase(null);
+        pcsCase.getDefendantResponses().add(DefendantResponseEntity.builder()
+            .party(otherDefendant)
+            .statementOfTruth(StatementOfTruthEntity.builder().fullName("Charlie Other").build())
+            .build());
+        pcsCase.getDefendantResponses().add(DefendantResponseEntity.builder()
+            .party(thisDefendant)
+            .statementOfTruth(StatementOfTruthEntity.builder().fullName("Robert J Defendant").build())
+            .build());
+
+        CounterClaimEntity counterClaim = CounterClaimEntity.builder()
+            .id(UUID.randomUUID())
+            .pcsCase(pcsCase)
+            .party(thisDefendant)
+            .build();
+
+        CounterClaimFormPayload payload = builder.build(counterClaim);
+
+        assertThat(payload.getStatementOfTruthName()).isEqualTo("Robert J Defendant");
+    }
+
+    @Test
+    void statementOfTruthNameIsNullWhenAssociatedResponseHasNoStatementOfTruth() {
+        PartyEntity defendant = PartyEntity.builder().id(UUID.randomUUID())
+            .firstName("Bob").lastName("Defendant").build();
+
+        PcsCaseEntity pcsCase = minimalCase(null);
+        pcsCase.getDefendantResponses().add(DefendantResponseEntity.builder()
+            .party(defendant)
+            .build());
+
+        CounterClaimEntity counterClaim = CounterClaimEntity.builder()
+            .id(UUID.randomUUID())
+            .pcsCase(pcsCase)
+            .party(defendant)
             .build();
 
         CounterClaimFormPayload payload = builder.build(counterClaim);
@@ -158,6 +208,10 @@ class CounterClaimFormPayloadBuilderTest {
         PartyEntity respondentOrg = PartyEntity.builder().id(UUID.randomUUID()).orgName("Acme Ltd").build();
 
         PcsCaseEntity pcsCase = minimalCase(claimAgainst(claimant, defendant));
+        pcsCase.getDefendantResponses().add(DefendantResponseEntity.builder()
+            .party(defendant)
+            .statementOfTruth(StatementOfTruthEntity.builder().fullName("Robert J Defendant").build())
+            .build());
 
         return CounterClaimEntity.builder()
             .id(UUID.randomUUID())
@@ -178,7 +232,6 @@ class CounterClaimFormPayloadBuilderTest {
             .counterClaimParties(new ArrayList<>(List.of(
                 CounterClaimPartyEntity.builder().party(claimant).build(),
                 CounterClaimPartyEntity.builder().party(respondentOrg).build())))
-            .statementOfTruth(StatementOfTruthEntity.builder().fullName("Robert J Defendant").build())
             .build();
     }
 
