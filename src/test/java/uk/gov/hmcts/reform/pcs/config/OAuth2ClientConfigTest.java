@@ -9,7 +9,10 @@ import org.springframework.security.oauth2.client.OAuth2AuthorizationContext;
 import org.springframework.security.oauth2.client.OAuth2AuthorizeRequest;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
+import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
+import org.springframework.security.oauth2.core.AuthorizationGrantType;
+import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
 import org.springframework.security.oauth2.core.endpoint.OAuth2ParameterNames;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -21,6 +24,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 @ExtendWith(MockitoExtension.class)
 class OAuth2ClientConfigTest {
 
+    private static final AuthorizationGrantType PASSWORD_GRANT = new AuthorizationGrantType("password");
+
     @Mock
     private ClientRegistrationRepository clientRegistrationRepository;
 
@@ -29,9 +34,10 @@ class OAuth2ClientConfigTest {
 
     private OAuth2AuthorizedClientManager authorizedClientManager;
 
+    private final OAuth2ClientConfig config = new OAuth2ClientConfig();
+
     @BeforeEach
     void setUp() {
-        OAuth2ClientConfig config = new OAuth2ClientConfig();
         authorizedClientManager = config.authorizedClientManager(
             clientRegistrationRepository,
             authorizedClientService
@@ -41,6 +47,15 @@ class OAuth2ClientConfigTest {
     @Test
     void shouldCreateAuthorizedClientManagerBean() {
         assertThat(authorizedClientManager).isNotNull();
+    }
+
+    @Test
+    void shouldCreateIdamClientRegistrations() {
+        ClientRegistrationRepository repository =
+            config.clientRegistrationRepository("http://localhost:5062", "pcs-api", "client-secret");
+
+        assertIdamRegistration(repository.findByRegistrationId("system-user"), "system-user");
+        assertIdamRegistration(repository.findByRegistrationId("prd-admin"), "prd-admin");
     }
 
     @Test
@@ -115,5 +130,16 @@ class OAuth2ClientConfigTest {
                 ReflectionTestUtils.getField(authorizedClientManager, "contextAttributesMapper");
         assertThat(mapper).isNotNull();
         return mapper;
+    }
+
+    private void assertIdamRegistration(ClientRegistration registration, String registrationId) {
+        assertThat(registration.getRegistrationId()).isEqualTo(registrationId);
+        assertThat(registration.getClientId()).isEqualTo("pcs-api");
+        assertThat(registration.getClientSecret()).isEqualTo("client-secret");
+        assertThat(registration.getProviderDetails().getTokenUri()).isEqualTo("http://localhost:5062/o/token");
+        assertThat(registration.getClientAuthenticationMethod())
+            .isEqualTo(ClientAuthenticationMethod.CLIENT_SECRET_POST);
+        assertThat(registration.getAuthorizationGrantType()).isEqualTo(PASSWORD_GRANT);
+        assertThat(registration.getScopes()).containsExactlyInAnyOrder("openid", "profile", "roles");
     }
 }
