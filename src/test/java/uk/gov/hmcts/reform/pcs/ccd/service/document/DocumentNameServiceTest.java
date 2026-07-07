@@ -28,7 +28,8 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class DocumentNameServiceTest {
 
-    private static final String TEST_PARTY_LABEL = "Test Party Label";
+    private static final String PARTY_LABEL = "Test Party Label";
+
     @Mock(strictness = LENIENT)
     private PartyService partyService;
 
@@ -50,7 +51,7 @@ class DocumentNameServiceTest {
             .build();
 
         ClaimEntity mainClaim = mock(ClaimEntity.class);
-        when(partyService.getPartyLabel(mainClaim, applicantPartyId)).thenReturn(TEST_PARTY_LABEL);
+        when(partyService.getPartyLabel(mainClaim, applicantPartyId)).thenReturn(PARTY_LABEL);
 
         // When
         String updatedFilename
@@ -64,8 +65,8 @@ class DocumentNameServiceTest {
         return Stream.of(
             // Original filename, expected updated filename
             argumentSet("null filename", null, null),
-            argumentSet("no extension", "sample", "sample GA5 - %s".formatted(TEST_PARTY_LABEL)),
-            argumentSet("with extension", "sample.pdf", "sample GA5 - %s.pdf".formatted(TEST_PARTY_LABEL))
+            argumentSet("no extension", "sample", "sample GA5 - %s".formatted(PARTY_LABEL)),
+            argumentSet("with extension", "sample.pdf", "sample GA5 - %s.pdf".formatted(PARTY_LABEL))
         );
     }
 
@@ -76,7 +77,7 @@ class DocumentNameServiceTest {
         // Given
         UUID applicantPartyId = UUID.randomUUID();
         ClaimEntity mainClaim = mock(ClaimEntity.class);
-        when(partyService.getPartyLabel(mainClaim, applicantPartyId)).thenReturn(TEST_PARTY_LABEL);
+        when(partyService.getPartyLabel(mainClaim, applicantPartyId)).thenReturn(PARTY_LABEL);
 
         // When
         String updatedFilename
@@ -93,7 +94,7 @@ class DocumentNameServiceTest {
         // Given
         UUID applicantPartyId = UUID.randomUUID();
         ClaimEntity mainClaim = mock(ClaimEntity.class);
-        when(partyService.getPartyLabel(mainClaim, applicantPartyId)).thenReturn(TEST_PARTY_LABEL);
+        when(partyService.getPartyLabel(mainClaim, applicantPartyId)).thenReturn(PARTY_LABEL);
 
         // When
         String updatedFilename
@@ -107,19 +108,20 @@ class DocumentNameServiceTest {
         return Stream.of(
             // original filename, expected updated filename
             argumentSet("null filename", null, null),
-            argumentSet("no extension", "sample", "sample - %s".formatted(TEST_PARTY_LABEL)),
-            argumentSet("with extension", "sample.pdf", "sample - %s.pdf".formatted(TEST_PARTY_LABEL))
+            argumentSet("no extension", "sample", "sample - %s".formatted(PARTY_LABEL)),
+            argumentSet("with extension", "sample.pdf", "sample - %s.pdf".formatted(PARTY_LABEL))
         );
     }
 
     @ParameterizedTest
     @MethodSource("counterClaimNamingScenarios")
     void shouldAddPartyLabelToCounterClaimDocument(String originalFilename,
+                                                   String partyLabel,
                                                    String expectedFilename) {
         // Given
         UUID partyId = UUID.randomUUID();
         ClaimEntity mainClaim = mock(ClaimEntity.class);
-        when(partyService.getPartyLabel(mainClaim, partyId)).thenReturn(TEST_PARTY_LABEL);
+        when(partyService.getPartyLabel(mainClaim, partyId)).thenReturn(partyLabel);
 
         // When
         String updatedFilename
@@ -131,10 +133,12 @@ class DocumentNameServiceTest {
 
     private static Stream<Arguments> counterClaimNamingScenarios() {
         return Stream.of(
-            // Original filename, expected updated filename
-            argumentSet("null filename", null, null),
-            argumentSet("no extension", "sample", "sample - %s".formatted(TEST_PARTY_LABEL)),
-            argumentSet("with extension", "sample.pdf", "sample - %s.pdf".formatted(TEST_PARTY_LABEL))
+            // Original filename, party label, expected updated filename
+            argumentSet("null filename", null, PARTY_LABEL, null),
+            argumentSet("no extension", "sample", PARTY_LABEL, "sample - %s".formatted(PARTY_LABEL)),
+            argumentSet("with extension", "sample.pdf", PARTY_LABEL, "sample - %s.pdf".formatted(PARTY_LABEL)),
+            argumentSet("no extension or party label", "sample", null, "sample"),
+            argumentSet("with extension but no party label", "sample.pdf", null, "sample.pdf")
         );
     }
 
@@ -142,8 +146,8 @@ class DocumentNameServiceTest {
         return Stream.of(
             // Original filename, expected updated filename
             argumentSet("null filename", null, null),
-            argumentSet("no extension", "sample", "sample - %s".formatted(TEST_PARTY_LABEL)),
-            argumentSet("with extension", "sample.pdf", "sample - %s.pdf".formatted(TEST_PARTY_LABEL))
+            argumentSet("no extension", "sample", "sample - %s".formatted(PARTY_LABEL)),
+            argumentSet("with extension", "sample.pdf", "sample - %s.pdf".formatted(PARTY_LABEL))
         );
     }
 

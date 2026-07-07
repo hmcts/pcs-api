@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.pcs.ccd.event.caseworker.uploaddocument;
 
-import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -17,6 +16,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.documentupload.CaseworkerDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GeneralApplication;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
@@ -109,6 +109,8 @@ class StartHandlerTest {
 
         CounterClaimEntity counterClaimEntity1 = createCounterClaimEntity(baseDateTime.minusDays(5), claimant1Party);
         CounterClaimEntity counterClaimEntity2 = createCounterClaimEntity(baseDateTime.plusDays(5), defendant4Party);
+        CounterClaimEntity counterClaimEntity3 = createCounterClaimEntity(null, defendant4Party);
+        counterClaimEntity3.setStatus(CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED);
 
         PCSCase caseData = PCSCase.builder()
             .genApps(List.of(
@@ -119,7 +121,8 @@ class StartHandlerTest {
             .legislativeCountry(ENGLAND)
             .build();
 
-        when(pcsCaseEntity.getCounterClaims()).thenReturn(List.of(counterClaimEntity1, counterClaimEntity2));
+        when(pcsCaseEntity.getCounterClaims())
+            .thenReturn(List.of(counterClaimEntity1, counterClaimEntity2, counterClaimEntity3));
 
         // When
         PCSCase result = underTest.start(toEventPayload(caseData));
@@ -197,7 +200,6 @@ class StartHandlerTest {
 
     }
 
-    @NotNull
     private static EventPayload<PCSCase, State> toEventPayload(PCSCase caseData) {
         return new EventPayload<>(TEST_CASE_REFERENCE, caseData, null);
     }

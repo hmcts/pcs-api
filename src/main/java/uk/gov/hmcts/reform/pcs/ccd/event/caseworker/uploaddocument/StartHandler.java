@@ -37,6 +37,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static java.util.Comparator.comparing;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED;
 import static uk.gov.hmcts.reform.pcs.ccd.service.caseworker.CaseworkerDocumentService.COUNTERCLAIM_ID_PREFIX;
 import static uk.gov.hmcts.reform.pcs.ccd.service.caseworker.CaseworkerDocumentService.GEN_APP_ID_PREFIX;
 import static uk.gov.hmcts.reform.pcs.ccd.service.caseworker.CaseworkerDocumentService.NONE_PREFIX;
@@ -120,9 +121,7 @@ public class StartHandler implements Start<PCSCase, State> {
                 String displayLabel = "General Application GA%d".formatted(genApp.getRank());
 
                 LocalDateTime submittedDate = genApp.getSubmittedOn();
-                if (submittedDate != null) {
-                    displayLabel += " - submitted %s".formatted(RELATED_ENTITY_DATE_FORMATTER.format(submittedDate));
-                }
+                displayLabel += " - submitted %s".formatted(RELATED_ENTITY_DATE_FORMATTER.format(submittedDate));
 
                 return RelatedSubmission.builder()
                     .compositeId(GEN_APP_ID_PREFIX + ":" + genAppListValue.getId())
@@ -137,6 +136,7 @@ public class StartHandler implements Start<PCSCase, State> {
                                                                PcsCaseEntity pcsCaseEntity) {
 
         return counterClaims.stream()
+            .filter(counterClaimEntity -> counterClaimEntity.getStatus() != PENDING_COUNTER_CLAIM_ISSUED)
             .map(counterClaimEntity -> {
                 UUID counterclaimPartyId = counterClaimEntity.getParty().getId();
                 String partyLabel = partyService.getPartyLabel(pcsCaseEntity.getMainClaim(), counterclaimPartyId);
@@ -144,9 +144,7 @@ public class StartHandler implements Start<PCSCase, State> {
                 String displayLabel = "Counterclaim - %s".formatted(partyLabel);
 
                 LocalDateTime submittedDate = counterClaimEntity.getClaimSubmittedDate();
-                if (submittedDate != null) {
-                    displayLabel += " - submitted %s".formatted(RELATED_ENTITY_DATE_FORMATTER.format(submittedDate));
-                }
+                displayLabel += " - submitted %s".formatted(RELATED_ENTITY_DATE_FORMATTER.format(submittedDate));
 
                 return RelatedSubmission.builder()
                     .compositeId(COUNTERCLAIM_ID_PREFIX + ":" + counterClaimEntity.getId())

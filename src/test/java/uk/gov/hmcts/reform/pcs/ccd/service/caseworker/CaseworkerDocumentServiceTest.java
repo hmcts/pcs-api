@@ -158,6 +158,35 @@ class CaseworkerDocumentServiceTest {
         assertThat(savedDocumentEntity.getType()).isNull();
     }
 
+    @Test
+    void shouldNotModifyNameOrSetCategoryForUnknownRelatedSubmissionPrefix() {
+        // Given
+        DynamicList relatedPartyList = dynamicListWithSelection(SELECTED_PARTY_ID);
+
+        String originalFilename = "original filename.pdf";
+        Document document = Document.builder()
+            .filename(originalFilename)
+            .build();
+
+        DynamicStringList relatedSubmissionList
+            = dynamicStringListWithSelection("UNKNOWN_PREFIX:" + SELECTED_GEN_APP_ID);
+
+        CaseworkerDocument caseworkerDocument = CaseworkerDocument.builder()
+            .document(document)
+            .showRelatedSubmissionsList(VerticalYesNo.YES)
+            .relatedSubmission(relatedSubmissionList)
+            .relatedParty(relatedPartyList)
+            .build();
+
+        // When
+        underTest.saveNewDocument(caseworkerDocument, CASE_REFERENCE);
+
+        // Then
+        DocumentEntity savedDocumentEntity = getSavedDocumentEntity();
+        assertThat(savedDocumentEntity.getFileName()).isEqualTo(originalFilename);
+        assertThat(savedDocumentEntity.getCategoryId()).isNull();
+    }
+
     @ParameterizedTest
     @MethodSource("documentTypeMappingScenarios")
     void shouldSetDocumentTypeWhenRelatedSubmissionsNotShown(CaseworkerDocumentType caseworkerDocumentType,
