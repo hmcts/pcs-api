@@ -20,6 +20,12 @@ public class FileUploadValidationService {
 
     public static final Set<String> BLOCKED_MEDIA_EXTENSIONS = Set.of("mp3", "m4a", "mp4", "mpeg", "mpg");
     public static final String DISALLOWED_FILE_TYPE_ERROR = "Your upload contains a disallowed file type";
+    public static final String ALLOWED_FILE_TYPE_GUIDANCE =
+        "The selected file must be a DOC/DOT/DOCX/DOTX, XLS/XLT/XLA/XLSX/XLTX/XLSB, "
+        + "PPT/POT/PPS/PPA/PPTX/POTX/PPSX, PDF, TXT/RTF/CSV, JPG/JPEG, PNG, BMP, TIF/TIFF.";
+
+    private static final List<String> DISALLOWED_FILE_TYPE_ERRORS =
+        List.of(DISALLOWED_FILE_TYPE_ERROR, ALLOWED_FILE_TYPE_GUIDANCE);
 
     public List<String> validateDocuments(List<ListValue<Document>> documents) {
         if (CollectionUtils.isEmpty(documents)) {
@@ -32,7 +38,7 @@ public class FileUploadValidationService {
             .map(Document::getFilename)
             .anyMatch(this::isBlocked);
 
-        return hasBlockedFile ? List.of(DISALLOWED_FILE_TYPE_ERROR) : List.of();
+        return hasBlockedFile ? DISALLOWED_FILE_TYPE_ERRORS : List.of();
     }
 
     /**
@@ -43,7 +49,7 @@ public class FileUploadValidationService {
     public final List<String> validateDocumentGroups(List<ListValue<Document>>... documentGroups) {
         for (List<ListValue<Document>> documents : documentGroups) {
             if (!validateDocuments(documents).isEmpty()) {
-                return List.of(DISALLOWED_FILE_TYPE_ERROR);
+                return DISALLOWED_FILE_TYPE_ERRORS;
             }
         }
         return List.of();
@@ -61,7 +67,7 @@ public class FileUploadValidationService {
             .map(Document::getFilename)
             .anyMatch(this::isBlocked);
 
-        return hasBlockedFile ? List.of(DISALLOWED_FILE_TYPE_ERROR) : List.of();
+        return hasBlockedFile ? DISALLOWED_FILE_TYPE_ERRORS : List.of();
     }
 
     private boolean isBlocked(String filename) {

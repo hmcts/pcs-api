@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static uk.gov.hmcts.reform.pcs.ccd.service.FileUploadValidationService.ALLOWED_FILE_TYPE_GUIDANCE;
 import static uk.gov.hmcts.reform.pcs.ccd.service.FileUploadValidationService.DISALLOWED_FILE_TYPE_ERROR;
 import static uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils.wrapListItems;
 
@@ -47,7 +48,7 @@ class FileUploadValidationServiceTest {
         void shouldReturnErrorForBlockedExtension(String filename) {
             List<String> errors = fileUploadValidationService.validateDocuments(documentsWithFilenames(filename));
 
-            assertThat(errors).containsExactly(DISALLOWED_FILE_TYPE_ERROR);
+            assertThat(errors).containsExactly(DISALLOWED_FILE_TYPE_ERROR, ALLOWED_FILE_TYPE_GUIDANCE);
         }
 
         @ParameterizedTest
@@ -58,7 +59,7 @@ class FileUploadValidationServiceTest {
         void shouldTreatBlockedExtensionsCaseInsensitively(String filename) {
             List<String> errors = fileUploadValidationService.validateDocuments(documentsWithFilenames(filename));
 
-            assertThat(errors).containsExactly(DISALLOWED_FILE_TYPE_ERROR);
+            assertThat(errors).containsExactly(DISALLOWED_FILE_TYPE_ERROR, ALLOWED_FILE_TYPE_GUIDANCE);
         }
 
         @ParameterizedTest
@@ -78,7 +79,7 @@ class FileUploadValidationServiceTest {
             List<String> errors = fileUploadValidationService.validateDocuments(
                 documentsWithFilenames("one.mp3", "two.mp4", "valid.pdf"));
 
-            assertThat(errors).containsExactly(DISALLOWED_FILE_TYPE_ERROR);
+            assertThat(errors).containsExactly(DISALLOWED_FILE_TYPE_ERROR, ALLOWED_FILE_TYPE_GUIDANCE);
         }
 
         @Test
@@ -126,7 +127,7 @@ class FileUploadValidationServiceTest {
                 documentsWithFilenames("gas.mp3"),
                 documentsWithFilenames("eicr.mp4"));
 
-            assertThat(errors).containsExactly(DISALLOWED_FILE_TYPE_ERROR);
+            assertThat(errors).containsExactly(DISALLOWED_FILE_TYPE_ERROR, ALLOWED_FILE_TYPE_GUIDANCE);
         }
 
         @Test
@@ -166,7 +167,7 @@ class FileUploadValidationServiceTest {
             List<String> errors =
                 fileUploadValidationService.validateAdditionalDocuments(additionalDocumentsWith("clip.mp4"));
 
-            assertThat(errors).containsExactly(DISALLOWED_FILE_TYPE_ERROR);
+            assertThat(errors).containsExactly(DISALLOWED_FILE_TYPE_ERROR, ALLOWED_FILE_TYPE_GUIDANCE);
         }
 
         @Test
