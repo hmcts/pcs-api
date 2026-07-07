@@ -54,8 +54,7 @@ public class DocumentService {
 
     private static final String CLAIMANT_1 = "Claimant 1";
 
-    public List<DocumentEntity> createAllDocuments(PCSCase pcsCase) {
-
+    public List<DocumentEntity> buildDocumentEntitiesForCase(PCSCase pcsCase) {
         List<DocumentHolder> allDocuments = getPcsCaseDocuments(pcsCase);
 
         if (allDocuments.isEmpty()) {
@@ -64,7 +63,17 @@ public class DocumentService {
 
         applyClaimFilename(allDocuments);
 
-        return documentRepository.saveAll(createDocumentEntities(allDocuments));
+        return createDocumentEntities(allDocuments);
+    }
+
+    public List<DocumentEntity> createAllDocuments(PCSCase pcsCase) {
+        List<DocumentEntity> documentEntities = buildDocumentEntitiesForCase(pcsCase);
+
+        if (documentEntities.isEmpty()) {
+            return List.of();
+        }
+
+        return documentRepository.saveAll(documentEntities);
     }
 
     public List<DocumentEntity> createAllDocuments(EnforcementOrder enforcementOrder) {
