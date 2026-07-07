@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.pcs.ccd;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.ccd.sdk.CaseView;
 import uk.gov.hmcts.ccd.sdk.CaseViewRequest;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
@@ -94,6 +95,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
      * @param request encapsulates the CCD case reference and state
      */
     @Override
+    @Transactional(readOnly = true)
     public PCSCase getCase(CaseViewRequest<State> request) {
         long caseReference = request.caseRef();
         State state = request.state();
