@@ -28,4 +28,6 @@ public class GeneralApplication {
 
     private List<ListValue<Document>> supportingDocuments;
 
+    private Integer rank;
+
 }

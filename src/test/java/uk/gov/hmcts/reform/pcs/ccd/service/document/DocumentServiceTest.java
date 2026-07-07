@@ -47,6 +47,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -1162,8 +1163,8 @@ class DocumentServiceTest {
             Arguments.of(AdditionalDocumentType.POSSESSION_NOTICE, CaseFileCategory.PROPERTY_DOCUMENTS.getId()),
             Arguments.of(AdditionalDocumentType.WITNESS_STATEMENT, CaseFileCategory.EVIDENCE.getId()),
             Arguments.of(AdditionalDocumentType.CERTIFICATE_OF_SERVICE, CaseFileCategory.EVIDENCE.getId()),
-            Arguments.of(AdditionalDocumentType.CORRESPONDENCE_FROM_DEFENDANT, CaseFileCategory.EVIDENCE.getId()),
-            Arguments.of(AdditionalDocumentType.CORRESPONDENCE_FROM_CLAIMANT, CaseFileCategory.EVIDENCE.getId()),
+            Arguments.of(AdditionalDocumentType.CORRESPONDENCE_FROM_DEFENDANT, CaseFileCategory.CORRESPONDENCE.getId()),
+            Arguments.of(AdditionalDocumentType.CORRESPONDENCE_FROM_CLAIMANT, CaseFileCategory.CORRESPONDENCE.getId()),
             Arguments.of(AdditionalDocumentType.PHOTOGRAPHIC_EVIDENCE, CaseFileCategory.EVIDENCE.getId()),
             Arguments.of(AdditionalDocumentType.INSPECTION_OR_REPORT, CaseFileCategory.EVIDENCE.getId()),
             Arguments.of(AdditionalDocumentType.CERTIFICATE_OF_SUITABILITY_AS_LF,
@@ -1185,9 +1186,9 @@ class DocumentServiceTest {
 
         when(counterClaim.getId()).thenReturn(UUID.randomUUID());
         when(party.getId()).thenReturn(partyId);
-        when(documentNameService.appendCounterClaimDocumentName("file1.pdf", claim, partyId))
+        when(documentNameService.appendCounterClaimPostfix("file1.pdf", claim, partyId))
             .thenReturn("file1 - Defendant 1.pdf");
-        when(documentNameService.appendCounterClaimDocumentName("file2.docx", claim, partyId))
+        when(documentNameService.appendCounterClaimPostfix("file2.docx", claim, partyId))
             .thenReturn("file2 - Defendant 1.docx");
 
         UploadedDocument ccDoc1 = UploadedDocument.builder()
@@ -1280,7 +1281,7 @@ class DocumentServiceTest {
 
         when(counterClaim.getId()).thenReturn(UUID.randomUUID());
         when(party.getId()).thenReturn(partyId);
-        when(documentNameService.appendCounterClaimDocumentName("file1.pdf", claim, partyId))
+        when(documentNameService.appendCounterClaimPostfix("file1.pdf", claim, partyId))
             .thenReturn("file1 - Defendant 1.pdf");
 
         UploadedDocument validDoc = UploadedDocument.builder()
@@ -1305,6 +1306,59 @@ class DocumentServiceTest {
         List<DocumentEntity> entities = documentEntityListCaptor.getValue();
         assertThat(entities).hasSize(1);
         assertThat(entities.getFirst().getFileName()).isEqualTo("file1 - Defendant 1.pdf");
+    }
+
+    @ParameterizedTest
+    @MethodSource("documentTypeToCategoryScenarios")
+    void shouldMapDocumentTypeToCategory(DocumentType documentType, CaseFileCategory expectedCaseFileCategory) {
+        // When
+        Optional<CaseFileCategory> optionalCaseFileCategory = underTest.mapDocumentTypeToCategory(documentType);
+
+        // Then
+        if (expectedCaseFileCategory != null) {
+            assertThat(optionalCaseFileCategory).contains(expectedCaseFileCategory);
+        } else {
+            assertThat(optionalCaseFileCategory).isEmpty();
+        }
+    }
+
+    private static Stream<Arguments> documentTypeToCategoryScenarios() {
+        return Stream.of(
+            Arguments.of(DocumentType.ENERGY_PERFORMANCE_CERTIFICATE, CaseFileCategory.PROPERTY_DOCUMENTS),
+            Arguments.of(DocumentType.RENT_STATEMENT, CaseFileCategory.PROPERTY_DOCUMENTS),
+            Arguments.of(DocumentType.OCCUPATION_LICENCE, CaseFileCategory.PROPERTY_DOCUMENTS),
+            Arguments.of(DocumentType.ENERGY_PERFORMANCE_CERTIFICATE, CaseFileCategory.PROPERTY_DOCUMENTS),
+            Arguments.of(DocumentType.GAS_SAFETY_CERTIFICATE, CaseFileCategory.PROPERTY_DOCUMENTS),
+            Arguments.of(DocumentType.EICR_REPORT, CaseFileCategory.PROPERTY_DOCUMENTS),
+            Arguments.of(DocumentType.TENANCY_LICENCE, CaseFileCategory.PROPERTY_DOCUMENTS),
+            Arguments.of(DocumentType.NOTICE_SERVED, null),
+            Arguments.of(DocumentType.WITNESS_STATEMENT, CaseFileCategory.EVIDENCE),
+            Arguments.of(DocumentType.TENANCY_AGREEMENT, CaseFileCategory.PROPERTY_DOCUMENTS),
+            Arguments.of(DocumentType.CERTIFICATE_OF_SERVICE, CaseFileCategory.EVIDENCE),
+            Arguments.of(DocumentType.CORRESPONDENCE_BETWEEN_PARTIES, CaseFileCategory.EVIDENCE),
+            Arguments.of(DocumentType.CORRESPONDENCE_FROM_DEFENDANT, CaseFileCategory.CORRESPONDENCE),
+            Arguments.of(DocumentType.CORRESPONDENCE_FROM_CLAIMANT, CaseFileCategory.CORRESPONDENCE),
+            Arguments.of(DocumentType.POSSESSION_NOTICE, CaseFileCategory.PROPERTY_DOCUMENTS),
+            Arguments.of(DocumentType.NOTICE_FOR_SERVICE_OUT_OF_JURISDICTION, CaseFileCategory.STATEMENTS_OF_CASE),
+            Arguments.of(DocumentType.PHOTOGRAPHIC_EVIDENCE, CaseFileCategory.EVIDENCE),
+            Arguments.of(DocumentType.INSPECTION_OR_REPORT, CaseFileCategory.EVIDENCE),
+            Arguments.of(DocumentType.AMENDED_CLAIM_FORM, CaseFileCategory.STATEMENTS_OF_CASE),
+            Arguments.of(DocumentType.PART_20_COUNTERCLAIM, CaseFileCategory.STATEMENTS_OF_CASE),
+            Arguments.of(DocumentType.CERTIFICATE_OF_SUITABILITY_AS_LF, CaseFileCategory.CORRESPONDENCE),
+            Arguments.of(DocumentType.LEGAL_AID_CERTIFICATE, CaseFileCategory.CORRESPONDENCE),
+            Arguments.of(DocumentType.POLICE_REPORT, null),
+            Arguments.of(DocumentType.CLAIM, CaseFileCategory.STATEMENTS_OF_CASE),
+            Arguments.of(DocumentType.DEFENDANT_ACCESS_CODE, null),
+            Arguments.of(DocumentType.DOCUMENTS_SUPPORTING_A_COUNTERCLAIM, null),
+            Arguments.of(DocumentType.GAS_SAFETY_REPORT, CaseFileCategory.PROPERTY_DOCUMENTS),
+            Arguments.of(DocumentType.ELECTRICAL_INSTALLATION_CONDITION, CaseFileCategory.PROPERTY_DOCUMENTS),
+            Arguments.of(DocumentType.DEFENDANT_RESPONSE, CaseFileCategory.STATEMENTS_OF_CASE),
+            Arguments.of(DocumentType.NOTICE_OF_HEARING, CaseFileCategory.ORDERS_AND_NOTICE_OF_HEARINGS),
+            Arguments.of(DocumentType.WITH_NOTICE_ORDER, CaseFileCategory.ORDERS_AND_NOTICE_OF_HEARINGS),
+            Arguments.of(DocumentType.WITHOUT_NOTICE_ORDER, CaseFileCategory.ORDERS_AND_NOTICE_OF_HEARINGS),
+            Arguments.of(DocumentType.NOTICE_OF_ALLOCATION_TO_TRACK, CaseFileCategory.ORDERS_AND_NOTICE_OF_HEARINGS),
+            Arguments.of(DocumentType.OTHER, null)
+        );
     }
 
     private static Stream<Arguments> requiredDocumentsWalesScenarios() {
