@@ -66,6 +66,38 @@ class CounterClaimFormPayloadBuilderTest {
         assertThat(payload.getOtherOrderRequestDetails()).isEqualTo("Restore quiet enjoyment");
         assertThat(payload.getOtherOrderRequestFacts()).isEqualTo("Landlord entered without notice");
         assertThat(payload.getStatementOfTruthName()).isEqualTo("Robert J Defendant");
+        assertThat(payload.getShowHwfRef()).isTrue();
+        assertThat(payload.getShowRespondentNames()).isTrue();
+        assertThat(payload.getShowOtherOrderSection()).isTrue();
+    }
+
+    @Test
+    void showFlagsAreFalseWhenSourceFieldsAreBlank() {
+        CounterClaimEntity counterClaim = CounterClaimEntity.builder()
+            .id(UUID.randomUUID())
+            .pcsCase(minimalCase(null))
+            .party(PartyEntity.builder().id(UUID.randomUUID()).build())
+            .build();
+
+        CounterClaimFormPayload payload = builder.build(counterClaim);
+
+        assertThat(payload.getShowHwfRef()).isFalse();
+        assertThat(payload.getShowRespondentNames()).isFalse();
+        assertThat(payload.getShowOtherOrderSection()).isFalse();
+    }
+
+    @Test
+    void showOtherOrderSectionIsTrueWhenOnlyOneOtherOrderFieldPopulated() {
+        CounterClaimEntity counterClaim = CounterClaimEntity.builder()
+            .id(UUID.randomUUID())
+            .pcsCase(minimalCase(null))
+            .party(PartyEntity.builder().id(UUID.randomUUID()).build())
+            .otherOrderRequestDetails("Do the repairs")
+            .build();
+
+        CounterClaimFormPayload payload = builder.build(counterClaim);
+
+        assertThat(payload.getShowOtherOrderSection()).isTrue();
     }
 
     @Test

@@ -26,4 +26,7 @@ public class CounterClaimFormPayload implements FormPayload {
     private String otherOrderRequestFacts;
     private String statementOfTruthName;
 
+    private Boolean showHwfRef;
+    private Boolean showRespondentNames;
+    private Boolean showOtherOrderSection;
 }

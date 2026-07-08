@@ -36,6 +36,12 @@ public class CounterClaimFormPayloadBuilder {
             .findFirst()
             .orElse(null);
 
+        String hwfRef = counterClaim.getHwfReferenceNumber();
+        String respondentNames = buildRespondentNames(counterClaim);
+        String otherOrderDetails = counterClaim.getOtherOrderRequestDetails();
+        String otherOrderFacts = counterClaim.getOtherOrderRequestFacts();
+        boolean showOtherOrder = StringUtils.hasText(otherOrderDetails) || StringUtils.hasText(otherOrderFacts);
+
         return CounterClaimFormPayload.builder()
             .referenceNumber(caseReferenceFormatter.formatCaseReferenceWithDashes(
                 counterClaim.getPcsCase().getCaseReference()))
@@ -47,13 +53,16 @@ public class CounterClaimFormPayloadBuilder {
             .claimAmount(formatGbp(counterClaim.getClaimAmount()))
             .maximumClaimValue(formatGbp(counterClaim.getEstimatedMaxClaimAmount()))
             .needsHelpWithFees(toLabel(counterClaim.getNeedHelpWithFees()))
-            .hwfReferenceNumber(counterClaim.getHwfReferenceNumber())
-            .respondentNames(buildRespondentNames(counterClaim))
+            .hwfReferenceNumber(hwfRef)
+            .respondentNames(respondentNames)
             .counterClaimFor(counterClaim.getCounterClaimFor())
             .counterClaimReasons(counterClaim.getCounterClaimReasons())
-            .otherOrderRequestDetails(counterClaim.getOtherOrderRequestDetails())
-            .otherOrderRequestFacts(counterClaim.getOtherOrderRequestFacts())
+            .otherOrderRequestDetails(otherOrderDetails)
+            .otherOrderRequestFacts(otherOrderFacts)
             .statementOfTruthName(buildStatementOfTruthName(counterClaim))
+            .showHwfRef(StringUtils.hasText(hwfRef))
+            .showRespondentNames(StringUtils.hasText(respondentNames))
+            .showOtherOrderSection(showOtherOrder)
             .build();
     }
 
