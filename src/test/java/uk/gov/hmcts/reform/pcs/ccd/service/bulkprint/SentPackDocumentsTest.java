@@ -43,8 +43,8 @@ class SentPackDocumentsTest {
         UUID documentOne = UUID.randomUUID();
         UUID documentTwo = UUID.randomUUID();
         PackDetails details = PackDetails.sent(LetterType.DEFENCE_PACK,
-            List.of(new PackDocumentRef(documentOne, DocumentType.DEFENDANT_RESPONSE),
-                    new PackDocumentRef(documentTwo, DocumentType.COUNTERCLAIM)),
+            List.of(new PackDocumentRef(documentOne, DocumentType.DEFENDANT_RESPONSE, 1, true),
+                    new PackDocumentRef(documentTwo, DocumentType.COUNTERCLAIM, 1, true)),
             UUID.randomUUID());
         ClaimActivityLogEntity row = packRow(party, ClaimActivityType.PACK_SENT,
             ClaimActivityStatus.SUCCESS, objectMapper.writeValueAsString(details));
@@ -61,7 +61,7 @@ class SentPackDocumentsTest {
     void shouldIgnoreNonSuccessRow() throws Exception {
         PartyEntity party = PartyEntity.builder().id(UUID.randomUUID()).build();
         PackDetails details = PackDetails.sent(LetterType.DEFENCE_PACK,
-            List.of(new PackDocumentRef(UUID.randomUUID(), DocumentType.DEFENDANT_RESPONSE)),
+            List.of(new PackDocumentRef(UUID.randomUUID(), DocumentType.DEFENDANT_RESPONSE, 1, true)),
             UUID.randomUUID());
         ClaimActivityLogEntity row = packRow(party, ClaimActivityType.PACK_FAILED,
             ClaimActivityStatus.FAILURE, objectMapper.writeValueAsString(details));

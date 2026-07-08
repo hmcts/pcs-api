@@ -7,10 +7,13 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.PackDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.PackDocumentRef;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.service.AccessCodeActivityLogService;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.function.Supplier;
 
@@ -47,7 +50,7 @@ public class PackSendRecorder {
             UUID letterId = sendAction.get();
             MDC.put(MDC_LETTER_ID, String.valueOf(letterId));
             accessCodeActivityLogService.recordPackSent(pcsCase, recipient,
-                PackDetails.sent(letterType, packDocumentRefs(documents), letterId));
+                PackDetails.sent(letterType, packDocumentRefs(pcsCase, recipient, documents), letterId));
             log.info("Pack sent - case: {}, party: {}, letterType: {}, letterId: {}, documents: {}",
                 pcsCase.getCaseReference(), recipient.getId(), letterType.getCode(), letterId,
                 documentSummary(documents));
@@ -71,7 +74,7 @@ public class PackSendRecorder {
         MDC.put(MDC_TERMINAL_FAILURE, String.valueOf(terminal));
         MDC.put(MDC_FAILURE_REASON, String.valueOf(cause.getMessage()));
         accessCodeActivityLogService.recordPackFailed(pcsCase, recipient,
-            PackDetails.failed(letterType, packDocumentRefs(documents), cause));
+            PackDetails.failed(letterType, packDocumentRefs(pcsCase, recipient, documents), cause));
         if (terminal) {
             log.error("Pack send failed (terminal) - case: {}, party: {}, letterType: {}, documents: {}: {}",
                 pcsCase.getCaseReference(), recipient.getId(), letterType.getCode(),
@@ -90,10 +93,42 @@ public class PackSendRecorder {
             letterType.getCode(), letterId);
     }
 
-    private List<PackDocumentRef> packDocumentRefs(List<DocumentEntity> documents) {
+    private List<PackDocumentRef> packDocumentRefs(PcsCaseEntity pcsCase, PartyEntity recipient,
+                                                   List<DocumentEntity> documents) {
         return documents.stream()
-            .map(document -> new PackDocumentRef(document.getId(), document.getType()))
+            .map(document -> {
+                PartyEntity owner = owningParty(document);
+                Integer defendantNumber = owner == null ? null : resolveDefendantNumber(pcsCase, owner.getId());
+                boolean self = owner != null && owner.getId().equals(recipient.getId());
+                return new PackDocumentRef(document.getId(), document.getType(), defendantNumber, self);
+            })
             .toList();
+    }
+
+    // The party a document belongs to: on the document directly (access code, counter-claim) or via the
+    // defence response (the defence form carries no direct party_id). Null for the case-level claim form.
+    private PartyEntity owningParty(DocumentEntity document) {
+        if (document.getParty() != null) {
+            return document.getParty();
+        }
+        if (document.getDefendantResponse() != null) {
+            return document.getDefendantResponse().getParty();
+        }
+        return null;
+    }
+
+    // The defendant's 1-based number from claim_party.rank (same source as the "Defence - Defendant N" name).
+    private Integer resolveDefendantNumber(PcsCaseEntity pcsCase, UUID partyId) {
+        if (pcsCase.getClaims().isEmpty()) {
+            return null;
+        }
+        return pcsCase.getClaims().getFirst().getClaimParties().stream()
+            .filter(claimParty -> claimParty.getRole() == PartyRole.DEFENDANT)
+            .filter(claimParty -> claimParty.getParty().getId().equals(partyId))
+            .map(ClaimPartyEntity::getRank)
+            .filter(Objects::nonNull)
+            .findFirst()
+            .orElse(null);
     }
 
     private String documentSummary(List<DocumentEntity> documents) {
