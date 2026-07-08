@@ -32,7 +32,7 @@ public class AddCaseReviewDate implements CCDConfig<PCSCase, State, UserRole> {
         Event.EventBuilder<PCSCase, UserRole, State> eventBuilder =
             configBuilder
                 .decentralisedEvent(addCaseReviewDate.name(), this::submit)
-                .forStates(State.PENDING_CASE_ISSUED, State.CASE_ISSUED)
+                .forStates(State.CASE_ISSUED)
                 .name("Add review date")
                 .grant(Permission.CRUD, UserRole.CTSC_ADMIN, UserRole.HEARING_CENTRE_ADMIN, UserRole.WLU_ADMIN)
                 .grantHistoryOnly(JUDICIAL_HISTORY_ROLES)
