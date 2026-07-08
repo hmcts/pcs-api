@@ -115,7 +115,7 @@ public class NoticeServedDetails {
             hint = "Upload a document to the system",
             typeOverride = FieldType.Collection,
             typeParameterOverride = "Document",
-            access = {CaseworkerReadAccess.class}
+            access = {CaseworkerReadAccess.class, DefendantAccess.class, CitizenAccess.class}
     )
     private List<ListValue<Document>> documents;
 
