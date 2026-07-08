@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.pcs.service;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyAccessCodeEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyAccessCodeRepository;
 
 import java.util.Optional;
@@ -29,7 +30,9 @@ class SimplePartyAccessCodeServiceTest {
         PartyAccessCodeRepository repository = mock(PartyAccessCodeRepository.class);
         UUID caseId = UUID.randomUUID();
         PartyAccessCodeEntity entity = PartyAccessCodeEntity.builder()
-            .partyId(UUID.randomUUID())
+            .party(PartyEntity.builder()
+                    .id(UUID.randomUUID())
+                    .build())
             .code(storedCode)
             .build();
         when(repository.findByPcsCase_IdAndCode(caseId, accessCode)).thenReturn(Optional.of(entity));

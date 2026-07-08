@@ -34,7 +34,9 @@ public class AccessCodeGenerationService {
         String code = hashingService.encodeForStorage(accessCodeGenerator.generateAccessCode());
 
         return PartyAccessCodeEntity.builder()
-            .partyId(partyId)
+            .party(PartyEntity.builder()
+                    .id(partyId)
+                    .build())
             .pcsCase(pcsCaseEntity)
             .code(code)
             .role(PartyRole.DEFENDANT)
@@ -47,7 +49,8 @@ public class AccessCodeGenerationService {
 
         Set<UUID> existingPartyIds = partyAccessCodeRepo.findAllByPcsCase_Id(pcsCaseEntity.getId())
             .stream()
-            .map(PartyAccessCodeEntity::getPartyId)
+            .map(PartyAccessCodeEntity::getParty)
+            .map(PartyEntity::getId)
             .collect(Collectors.toSet());
 
         List<PartyEntity> defendants = getMainClaimDefendants(pcsCaseEntity);

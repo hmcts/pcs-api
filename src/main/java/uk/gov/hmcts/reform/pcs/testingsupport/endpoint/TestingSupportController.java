@@ -285,7 +285,7 @@ public class TestingSupportController {
                 //for each access code return the matching defendant's name and address
 
                 String accessCode = accessCodeObject.getCode();
-                UUID partyId = accessCodeObject.getPartyId();
+                UUID partyId = accessCodeObject.getParty().getId();
 
                 PartyEntity matched = partyByPartyId.get(partyId);
                 if (matched == null) {

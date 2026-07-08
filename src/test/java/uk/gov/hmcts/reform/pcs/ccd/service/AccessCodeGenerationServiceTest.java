@@ -75,7 +75,7 @@ class AccessCodeGenerationServiceTest {
         PartyAccessCodeEntity createdEntity = underTest.createPartyAccessCodeEntity(caseEntity, partyId);
 
         // Then
-        assertThat(createdEntity.getPartyId()).isEqualTo(partyId);
+        assertThat(createdEntity.getParty().getId()).isEqualTo(partyId);
         assertThat(createdEntity.getRole()).isEqualTo(PartyRole.DEFENDANT);
         assertThat(createdEntity.getCode()).isNotNull().hasSize(12);
         assertThat(createdEntity.getCode()).matches("[ABCDEFGHJKLMNPRSTVWXYZ23456789]{12}");
@@ -102,7 +102,7 @@ class AccessCodeGenerationServiceTest {
         assertThat(savedEntities).hasSize(1);
 
         PartyAccessCodeEntity savedEntity = savedEntities.getFirst();
-        assertThat(savedEntity.getPartyId()).isEqualTo(partyId);
+        assertThat(savedEntity.getParty().getId()).isEqualTo(partyId);
         assertThat(savedEntity.getRole()).isEqualTo(PartyRole.DEFENDANT);
         assertThat(savedEntity.getCode()).isNotNull()
             .hasSize(12)
@@ -130,7 +130,8 @@ class AccessCodeGenerationServiceTest {
         when(pcsCaseService.loadCase(2L)).thenReturn(caseEntity);
         when(partyAccessCodeRepo.findAllByPcsCase_Id(caseEntity.getId()))
             .thenReturn(List.of(existingCodeEntity));
-        when(existingCodeEntity.getPartyId()).thenReturn(partyId);
+        when(existingCodeEntity.getParty()).thenReturn(mock(PartyEntity.class));
+        when(existingCodeEntity.getParty().getId()).thenReturn(partyId);
 
         // When
         underTest.createAccessCodesForParties("2");
@@ -149,7 +150,8 @@ class AccessCodeGenerationServiceTest {
         PcsCaseEntity caseEntity = createCaseWithDefendants(partyId1, partyId2, partyId3);
 
         PartyAccessCodeEntity existingCode = mock(PartyAccessCodeEntity.class);
-        when(existingCode.getPartyId()).thenReturn(partyId1);
+        when(existingCode.getParty()).thenReturn(mock(PartyEntity.class));
+        when(existingCode.getParty().getId()).thenReturn(partyId1);
 
         when(pcsCaseService.loadCase(3L)).thenReturn(caseEntity);
         when(partyAccessCodeRepo.findAllByPcsCase_Id(caseEntity.getId()))
@@ -164,7 +166,8 @@ class AccessCodeGenerationServiceTest {
         captor.getValue().forEach(savedEntities::add);
 
         assertThat(savedEntities).hasSize(2);
-        assertThat(savedEntities).extracting(PartyAccessCodeEntity::getPartyId)
+        assertThat(savedEntities).extracting(PartyAccessCodeEntity::getParty)
+            .extracting(PartyEntity::getId)
             .containsExactlyInAnyOrder(partyId2, partyId3);
 
         savedEntities.forEach(entity -> {

@@ -296,7 +296,9 @@ class TestingSupportControllerTest {
         PartyAccessCodeEntity accessCode1 = PartyAccessCodeEntity.builder()
             .id(UUID.randomUUID())
             .code(accessCodeString)
-            .partyId(partyCode)
+            .party(PartyEntity.builder()
+                    .id(partyCode)
+                    .build())
             .build();
         accessCodes.add(accessCode1);
 
@@ -364,7 +366,7 @@ class TestingSupportControllerTest {
         when(idamAuthenticator.validateAuthToken(authToken)).thenReturn(user);
         when(user.getUserDetails()).thenReturn(userInfo);
         when(userInfo.getUid()).thenReturn(userUid);
-        when(organisationDetailsService.getOrganisationDetails(userUid.toString())).thenReturn(organisationDetails);
+        when(organisationDetailsService.getOrganisationDetails(userUid)).thenReturn(organisationDetails);
 
         // when
         ResponseEntity<Void> response = underTest.linkDefendantSolicitorToParty(
