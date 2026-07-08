@@ -26,6 +26,7 @@ public class CounterClaimFormPayload implements FormPayload {
     private String otherOrderRequestFacts;
     private String statementOfTruthName;
 
+    private Boolean showCounterClaimDetailsSection;
     private Boolean showClaimingFor;
     private Boolean showClaimingSpecificSum;
     private Boolean showClaimAmount;
@@ -33,6 +34,7 @@ public class CounterClaimFormPayload implements FormPayload {
     private Boolean showNeedsHelpWithFees;
     private Boolean showHwfRef;
     private Boolean showRespondentNames;
+    private Boolean showAboutCounterClaimSection;
     private Boolean showCounterClaimFor;
     private Boolean showCounterClaimReasons;
     private Boolean showOtherOrderSection;

@@ -49,6 +49,16 @@ public class CounterClaimFormPayloadBuilder {
         String otherOrderFacts = counterClaim.getOtherOrderRequestFacts();
         String statementOfTruthName = buildStatementOfTruthName(counterClaim);
         boolean showOtherOrder = StringUtils.hasText(otherOrderDetails) || StringUtils.hasText(otherOrderFacts);
+        boolean showCounterClaimDetails =
+            StringUtils.hasText(claimingFor)
+                || StringUtils.hasText(claimingSpecificSum)
+                || StringUtils.hasText(claimAmount)
+                || StringUtils.hasText(maximumClaimValue)
+                || StringUtils.hasText(needsHelpWithFees)
+                || StringUtils.hasText(hwfRef)
+                || StringUtils.hasText(respondentNames);
+        boolean showAboutCounterClaim =
+            StringUtils.hasText(counterClaimFor) || StringUtils.hasText(counterClaimReasons);
 
         return CounterClaimFormPayload.builder()
             .referenceNumber(caseReferenceFormatter.formatCaseReferenceWithDashes(
@@ -68,6 +78,7 @@ public class CounterClaimFormPayloadBuilder {
             .otherOrderRequestDetails(otherOrderDetails)
             .otherOrderRequestFacts(otherOrderFacts)
             .statementOfTruthName(statementOfTruthName)
+            .showCounterClaimDetailsSection(showCounterClaimDetails)
             .showClaimingFor(StringUtils.hasText(claimingFor))
             .showClaimingSpecificSum(StringUtils.hasText(claimingSpecificSum))
             .showClaimAmount(StringUtils.hasText(claimAmount))
@@ -75,6 +86,7 @@ public class CounterClaimFormPayloadBuilder {
             .showNeedsHelpWithFees(StringUtils.hasText(needsHelpWithFees))
             .showHwfRef(StringUtils.hasText(hwfRef))
             .showRespondentNames(StringUtils.hasText(respondentNames))
+            .showAboutCounterClaimSection(showAboutCounterClaim)
             .showCounterClaimFor(StringUtils.hasText(counterClaimFor))
             .showCounterClaimReasons(StringUtils.hasText(counterClaimReasons))
             .showOtherOrderSection(showOtherOrder)
