@@ -32,7 +32,7 @@ class PartyAccessCodeEndpointTests extends BaseApi {
 
     @BeforeEach
     void setUp() {
-        caseReference = apiSteps.ccdCaseIsCreated("england");
+        caseReference = apiSteps.ccdCaseIsCreatedAndIssued("england");
     }
 
     @AfterEach
