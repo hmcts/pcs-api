@@ -22,7 +22,7 @@ import { selectParty } from '@data/page-data-figma/page-data-genApps-figma/selec
 import { caseInfo } from '../createCaseAPI.action';
 import { createCaseApiData } from '@data/api-data';
 import {performActions} from "@utils/controller";
-import {caseSummary} from "@data/page-data";
+import {caseSummary, home} from "@data/page-data";
 
 
 export const addressInfo = {
@@ -276,7 +276,7 @@ export class GenAppsAction implements IAction {
       text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
     });
     await performValidation('mainHeader', confirmGenApps.mainHeader);
-    await performValidation('text', {elementType: 'span', text: confirmGenApps.pay123ApplicationFeeParagraph});
+    await performValidation('text', {elementType: 'span', text: confirmGenApps.pay126ApplicationFeeParagraph});
     if (clickLink === true) {
       await performAction('clickButton', confirmGenApps.payYourApplicationLink);
     } else {
@@ -295,7 +295,7 @@ export class GenAppsAction implements IAction {
       retryCount < maxRetries;
       retryCount++
     ) {
-      await performAction('clickTab', caseSummary.servieRequestTab);
+      await performAction('clickTab', caseSummary.serviceRequestTab);
       const row = page.locator('tbody tr')
         .filter({ hasText: amount })
         .filter({ hasText: partyName })
@@ -315,7 +315,8 @@ export class GenAppsAction implements IAction {
         await payNowLocator.click();
         return;
       }
-      await performAction('clickTab', caseSummary.HistoryTab );
+      await performAction('clickTab',home.caseSummary );
+      await performValidation('mainHeader', home.caseSummary);
     }
     throw new Error(
       `${payNowText} link for amount '${amount}' was not visible after maximum retries`
