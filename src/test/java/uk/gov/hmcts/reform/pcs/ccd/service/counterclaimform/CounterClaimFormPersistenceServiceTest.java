@@ -142,7 +142,7 @@ class CounterClaimFormPersistenceServiceTest {
         CounterClaimEntity counterClaim = counterClaimFor(defendant, 1);
         when(counterClaimRepository.findById(COUNTER_CLAIM_ID)).thenReturn(Optional.of(counterClaim));
 
-        long caseReference = underTest.recordGenerationFailure(COUNTER_CLAIM_ID, new RuntimeException("boom"));
+        long caseReference = underTest.recordGenerationFailure(COUNTER_CLAIM_ID, new RuntimeException("boom"), false);
 
         assertThat(caseReference).isEqualTo(CASE_REFERENCE);
         verify(claimActivityLogService).logGenerationFailure(eq(CASE_REFERENCE), eq(defendant.getId()),

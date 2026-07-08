@@ -30,6 +30,7 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -99,7 +100,7 @@ class CounterClaimFormGenerationComponentTest {
     }
 
     @Test
-    @DisplayName("Non-final attempt rethrows without recording failure")
+    @DisplayName("Intermediate retry (not first, not final) rethrows without recording failure")
     void nonFinalAttemptRethrowsWithoutRecordingFailure() {
         when(taskInstance.getData()).thenReturn(taskData());
         execution.consecutiveFailures = maxRetries - 1;
@@ -111,7 +112,7 @@ class CounterClaimFormGenerationComponentTest {
         assertThatThrownBy(() -> task.execute(taskInstance, executionContext))
             .isInstanceOf(RuntimeException.class);
         verify(counterClaimFormService).generateAndAttach(COUNTER_CLAIM_ID);
-        verify(counterClaimFormService, never()).recordGenerationFailure(eq(COUNTER_CLAIM_ID), any());
+        verify(counterClaimFormService, never()).recordGenerationFailure(eq(COUNTER_CLAIM_ID), any(), anyBoolean());
     }
 
     @Test
@@ -121,14 +122,32 @@ class CounterClaimFormGenerationComponentTest {
         execution.consecutiveFailures = maxRetries;
         when(executionContext.getExecution()).thenReturn(execution);
         doThrow(mock(RuntimeException.class)).when(counterClaimFormService).generateAndAttach(COUNTER_CLAIM_ID);
-        when(counterClaimFormService.recordGenerationFailure(eq(COUNTER_CLAIM_ID), any())).thenReturn(CASE_REFERENCE);
+        when(counterClaimFormService.recordGenerationFailure(eq(COUNTER_CLAIM_ID), any(), anyBoolean()))
+            .thenReturn(CASE_REFERENCE);
 
         CustomTask<CounterClaimFormTaskData> task = component.counterClaimFormGenerationTask();
 
         assertThatThrownBy(() -> task.execute(taskInstance, executionContext))
             .isInstanceOf(RuntimeException.class);
         verify(counterClaimFormService).generateAndAttach(COUNTER_CLAIM_ID);
-        verify(counterClaimFormService).recordGenerationFailure(eq(COUNTER_CLAIM_ID), any());
+        verify(counterClaimFormService).recordGenerationFailure(eq(COUNTER_CLAIM_ID), any(), eq(true));
+    }
+
+    @Test
+    @DisplayName("First attempt records the failure with terminal=false (early visibility)")
+    void firstAttemptRecordsNonTerminalFailure() {
+        when(taskInstance.getData()).thenReturn(taskData());
+        execution.consecutiveFailures = 0;
+        when(executionContext.getExecution()).thenReturn(execution);
+        doThrow(new RuntimeException("boom")).when(counterClaimFormService).generateAndAttach(COUNTER_CLAIM_ID);
+        when(counterClaimFormService.recordGenerationFailure(eq(COUNTER_CLAIM_ID), any(), anyBoolean()))
+            .thenReturn(CASE_REFERENCE);
+
+        CustomTask<CounterClaimFormTaskData> task = component.counterClaimFormGenerationTask();
+
+        assertThatThrownBy(() -> task.execute(taskInstance, executionContext))
+            .isInstanceOf(RuntimeException.class);
+        verify(counterClaimFormService).recordGenerationFailure(eq(COUNTER_CLAIM_ID), any(), eq(false));
     }
 
     @Test
@@ -139,7 +158,8 @@ class CounterClaimFormGenerationComponentTest {
         when(executionContext.getExecution()).thenReturn(execution);
         doThrow(new RuntimeException("docassembly 500"))
             .when(counterClaimFormService).generateAndAttach(COUNTER_CLAIM_ID);
-        when(counterClaimFormService.recordGenerationFailure(eq(COUNTER_CLAIM_ID), any())).thenReturn(CASE_REFERENCE);
+        when(counterClaimFormService.recordGenerationFailure(eq(COUNTER_CLAIM_ID), any(), anyBoolean()))
+            .thenReturn(CASE_REFERENCE);
 
         CustomTask<CounterClaimFormTaskData> task = component.counterClaimFormGenerationTask();
         assertThatThrownBy(() -> task.execute(taskInstance, executionContext))
@@ -171,7 +191,7 @@ class CounterClaimFormGenerationComponentTest {
         when(executionContext.getExecution()).thenReturn(execution);
         doThrow(new RuntimeException("docassembly 500"))
             .when(counterClaimFormService).generateAndAttach(COUNTER_CLAIM_ID);
-        when(counterClaimFormService.recordGenerationFailure(eq(COUNTER_CLAIM_ID), any())).thenReturn(0L);
+        when(counterClaimFormService.recordGenerationFailure(eq(COUNTER_CLAIM_ID), any(), anyBoolean())).thenReturn(0L);
 
         CustomTask<CounterClaimFormTaskData> task = component.counterClaimFormGenerationTask();
         assertThatThrownBy(() -> task.execute(taskInstance, executionContext))

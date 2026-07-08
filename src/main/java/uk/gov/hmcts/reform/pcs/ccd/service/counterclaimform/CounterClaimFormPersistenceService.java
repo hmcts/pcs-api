@@ -67,11 +67,11 @@ public class CounterClaimFormPersistenceService {
     }
 
     @Transactional
-    public long recordGenerationFailure(UUID counterClaimId, Exception cause) {
+    public long recordGenerationFailure(UUID counterClaimId, Exception cause, boolean terminal) {
         CounterClaimEntity counterClaim = loadCounterClaim(counterClaimId);
         long caseReference = counterClaim.getPcsCase().getCaseReference();
         claimActivityLogService.logGenerationFailure(caseReference, counterClaim.getParty().getId(),
-            new GenerationDetails(DocumentType.COUNTERCLAIM, FailureReasons.from(cause), true));
+            new GenerationDetails(DocumentType.COUNTERCLAIM, FailureReasons.from(cause), terminal));
         return caseReference;
     }
 

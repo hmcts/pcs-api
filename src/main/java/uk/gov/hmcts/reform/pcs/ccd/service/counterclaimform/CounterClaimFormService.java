@@ -33,9 +33,9 @@ public class CounterClaimFormService {
         }
     }
 
-    public long recordGenerationFailure(UUID counterClaimId, Exception cause) {
+    public long recordGenerationFailure(UUID counterClaimId, Exception cause, boolean terminal) {
         try {
-            return persistenceService.recordGenerationFailure(counterClaimId, cause);
+            return persistenceService.recordGenerationFailure(counterClaimId, cause, terminal);
         } catch (RuntimeException e) {
             log.error("Failed to record counter claim form generation failure for counter claim {}",
                       counterClaimId, e);

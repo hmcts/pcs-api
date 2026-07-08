@@ -4,6 +4,7 @@ import feign.FeignException;
 import uk.gov.hmcts.reform.pcs.ccd.service.bulkprint.BulkPrintMergeException;
 import uk.gov.hmcts.reform.pcs.ccd.service.bulkprint.MissingPostalAddressException;
 import uk.gov.hmcts.reform.pcs.document.service.exception.DocAssemblyException;
+import uk.gov.hmcts.reform.pcs.document.service.exception.DocumentStoreException;
 import uk.gov.hmcts.reform.pcs.exception.DocumentDownloadException;
 
 /**
@@ -27,6 +28,9 @@ public final class FailureReasons {
         }
         if (cause instanceof DocumentDownloadException) {
             return FailureReason.DOCUMENT_FETCH_FAILED;
+        }
+        if (cause instanceof DocumentStoreException) {
+            return FailureReason.DOCUMENT_STORE_FAILED;
         }
         if (cause instanceof FeignException) {
             return FailureReason.SEND_LETTER_UNAVAILABLE;

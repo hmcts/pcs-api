@@ -15,6 +15,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doThrow;
@@ -101,19 +102,20 @@ class CounterClaimFormServiceTest {
 
     @Test
     void recordGenerationFailureDelegatesAndReturnsCaseReference() {
-        when(persistenceService.recordGenerationFailure(eq(COUNTER_CLAIM_ID), any())).thenReturn(1234567812345678L);
+        when(persistenceService.recordGenerationFailure(eq(COUNTER_CLAIM_ID), any(), anyBoolean()))
+            .thenReturn(1234567812345678L);
 
-        long caseReference = underTest.recordGenerationFailure(COUNTER_CLAIM_ID, new RuntimeException("boom"));
+        long caseReference = underTest.recordGenerationFailure(COUNTER_CLAIM_ID, new RuntimeException("boom"), true);
 
         assertThat(caseReference).isEqualTo(1234567812345678L);
     }
 
     @Test
     void recordGenerationFailureSwallowsLoggingFailureAndReturnsZero() {
-        when(persistenceService.recordGenerationFailure(eq(COUNTER_CLAIM_ID), any()))
+        when(persistenceService.recordGenerationFailure(eq(COUNTER_CLAIM_ID), any(), anyBoolean()))
             .thenThrow(new RuntimeException("log write failed"));
 
-        long caseReference = underTest.recordGenerationFailure(COUNTER_CLAIM_ID, new RuntimeException("boom"));
+        long caseReference = underTest.recordGenerationFailure(COUNTER_CLAIM_ID, new RuntimeException("boom"), true);
 
         assertThat(caseReference).isZero();
     }
