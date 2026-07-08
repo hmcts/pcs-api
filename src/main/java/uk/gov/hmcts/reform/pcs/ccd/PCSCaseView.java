@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd;
 
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -10,6 +11,7 @@ import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.CaseDetailsTab;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.enforcementorder.EnforcementOrderMediator;
@@ -59,6 +61,7 @@ import static uk.gov.hmcts.reform.pcs.config.ClockConfiguration.UK_ZONE_ID;
 /**
  * Invoked by CCD to load PCS cases under the decentralised model.
  */
+@Slf4j
 @Component
 @AllArgsConstructor
 public class PCSCaseView implements CaseView<PCSCase, State> {
@@ -103,6 +106,10 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         PCSCase pcsCase = submittedCase.pcsCase();
         boolean hasUnsubmittedCaseData = caseHasUnsubmittedData(caseReference, state);
 
+        log.info("getCase diagnostic: noticeServed={}, noticeServedDetails={}",
+            pcsCase.getNoticeServed(),
+            pcsCase.getNoticeServedDetails() != null ? pcsCase.getNoticeServedDetails().getServiceMethod() : "null");
+
         if (hasUnsubmittedCaseData) {
             draftCaseDataService
                 .getUnsubmittedCaseData(caseReference, resumePossessionClaim)
@@ -115,6 +122,11 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         } else {
             caseTabView.setCaseTabFields(pcsCase);
         }
+
+        CaseDetailsTab tab = pcsCase.getCaseDetailsTab();
+        log.info("getCase diagnostic: caseDetailsTab={}, noticeDetails={}",
+            tab != null ? "built" : "null",
+            (tab != null && tab.getNoticeDetails() != null) ? tab.getNoticeDetails().getNoticeServed() : "null");
 
         setMarkdownFields(pcsCase, hasUnsubmittedCaseData);
         enforcementOrderMediator.handleEnforcementRequirements(submittedCase.pcsCaseEntity(), pcsCase);

@@ -92,12 +92,12 @@ public class NoticeOfPossessionView {
 
     private List<ListValue<Document>> getNoticeStatement(PcsCaseEntity pcsCaseEntity) {
         if (CollectionUtils.isEmpty(pcsCaseEntity.getDocuments())) {
-            log.debug("getNoticeStatement: found {} total documents for case, {} match POSSESSION_NOTICE filter",
+            log.info("getNoticeStatement: found {} total documents for case, {} match POSSESSION_NOTICE filter",
                 0, 0);
             return List.of();
         }
 
-        log.debug("getNoticeStatement: found {} total documents for case, {} match POSSESSION_NOTICE filter",
+        log.info("getNoticeStatement: found {} total documents for case, {} match POSSESSION_NOTICE filter",
             pcsCaseEntity.getDocuments().size(),
             pcsCaseEntity.getDocuments().stream().filter(NoticeOfPossessionView::isNoticeStatement).count());
 
