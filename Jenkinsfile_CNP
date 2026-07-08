@@ -82,8 +82,9 @@ withPipeline(type, product, component) {
   }
 
   onDemo {
-    setDemoEnvVars()
-    enableHighLevelDataSetup()
+// disabling new case definition uploads to demo during SIT testing
+//    setDemoEnvVars()
+//    enableHighLevelDataSetup()
   }
 
   onIthc {
