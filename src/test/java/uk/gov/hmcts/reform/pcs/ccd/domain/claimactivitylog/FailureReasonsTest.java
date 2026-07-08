@@ -80,4 +80,21 @@ class FailureReasonsTest {
         assertThat(FailureReasons.from(new RuntimeException("something odd")))
             .isEqualTo(FailureReason.UNKNOWN);
     }
+
+    @Test
+    void mapsNullPointerWithNullMessageToUnknownWithoutCrashing() {
+        // A code bug (NPE) is still classified (as UNKNOWN) and must not crash the classifier on a null message.
+        assertThat(FailureReasons.from(new NullPointerException())).isEqualTo(FailureReason.UNKNOWN);
+    }
+
+    @Test
+    void mapsNullPointerWithMessageToUnknown() {
+        assertThat(FailureReasons.from(new NullPointerException("party.getId() is null")))
+            .isEqualTo(FailureReason.UNKNOWN);
+    }
+
+    @Test
+    void mapsNullCauseToUnknownWithoutCrashing() {
+        assertThat(FailureReasons.from(null)).isEqualTo(FailureReason.UNKNOWN);
+    }
 }

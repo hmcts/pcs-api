@@ -79,6 +79,7 @@ class PackSendRecorderTest {
         assertThat(details.terminal()).isFalse();
         assertThat(details.failureReason()).isEqualTo(FailureReason.UNKNOWN);
         assertThat(details.letterId()).isNull();
+        assertThat(details.errorDetail()).isEqualTo("RuntimeException: send-letter blew up");
     }
 
     @Test
@@ -96,5 +97,6 @@ class PackSendRecorderTest {
         PackDetails details = packDetailsCaptor.getValue();
         assertThat(details.terminal()).isTrue();
         assertThat(details.failureReason()).isEqualTo(FailureReason.MISSING_ADDRESS);
+        assertThat(details.errorDetail()).isEqualTo("MissingPostalAddressException: no usable address");
     }
 }

@@ -11,7 +11,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
-import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.FailureReasons;
 import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.GenerationDetails;
 import uk.gov.hmcts.reform.pcs.ccd.model.ClaimFormTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimActivityLogService;
@@ -111,7 +110,7 @@ public class ClaimFormGenerationComponent {
     private void recordGenerationFailure(long caseReference, Exception cause, boolean terminal) {
         try {
             claimActivityLogService.logGenerationFailure(caseReference,
-                new GenerationDetails(DocumentType.CLAIM, FailureReasons.from(cause), terminal));
+                GenerationDetails.forFailure(DocumentType.CLAIM, cause, terminal));
         } catch (Exception e) {
             log.error("Failed to record claim form generation failure for case {}", caseReference, e);
         }

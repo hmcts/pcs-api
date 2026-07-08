@@ -82,7 +82,7 @@ class AccessCodeActivityLogServiceTest {
         PartyEntity party = PartyEntity.builder().id(UUID.randomUUID()).build();
 
         service.logFailure(pcsCase, party, ClaimActivityType.DOCUMENTS_CREATED,
-            new GenerationDetails(DocumentType.CLAIM, FailureReason.UNKNOWN, true));
+            new GenerationDetails(DocumentType.CLAIM, FailureReason.UNKNOWN, true, "RuntimeException: boom"));
 
         verify(claimActivityLogRepository).save(captor.capture());
         assertThat(captor.getValue().getDetails()).isNull();

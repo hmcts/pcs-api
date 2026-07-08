@@ -11,7 +11,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
-import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.FailureReasons;
 import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.GenerationDetails;
 import uk.gov.hmcts.reform.pcs.ccd.model.DefenceFormTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimActivityLogService;
@@ -110,7 +109,7 @@ public class DefenceFormGenerationComponent {
         try {
             long caseReference = Long.parseLong(data.getCaseReference());
             claimActivityLogService.logGenerationFailure(caseReference, data.getDefendantPartyId(),
-                new GenerationDetails(DocumentType.DEFENDANT_RESPONSE, FailureReasons.from(cause), terminal));
+                GenerationDetails.forFailure(DocumentType.DEFENDANT_RESPONSE, cause, terminal));
         } catch (Exception e) {
             log.error("Failed to record defence form generation failure for defendant response {}",
                       data.getDefendantResponseId(), e);

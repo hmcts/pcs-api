@@ -36,7 +36,7 @@ class ClaimActivityLogServiceTest {
 
     private static final long CASE_REFERENCE = 1234567812345678L;
     private static final GenerationDetails FAILURE_DETAILS =
-        new GenerationDetails(DocumentType.CLAIM, FailureReason.UNKNOWN, true);
+        new GenerationDetails(DocumentType.CLAIM, FailureReason.UNKNOWN, true, "RuntimeException: boom");
 
     @Mock
     private PcsCaseService pcsCaseService;

@@ -3,7 +3,6 @@ package uk.gov.hmcts.reform.pcs.ccd.service.bulkprint;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
 import org.springframework.stereotype.Service;
-import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.FailureReasons;
 import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.PackDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.PackDocumentRef;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
@@ -72,7 +71,7 @@ public class PackSendRecorder {
         MDC.put(MDC_TERMINAL_FAILURE, String.valueOf(terminal));
         MDC.put(MDC_FAILURE_REASON, String.valueOf(cause.getMessage()));
         accessCodeActivityLogService.recordPackFailed(pcsCase, recipient,
-            PackDetails.failed(letterType, packDocumentRefs(documents), FailureReasons.from(cause)));
+            PackDetails.failed(letterType, packDocumentRefs(documents), cause));
         if (terminal) {
             log.error("Pack send failed (terminal) - case: {}, party: {}, letterType: {}, documents: {}: {}",
                 pcsCase.getCaseReference(), recipient.getId(), letterType.getCode(),

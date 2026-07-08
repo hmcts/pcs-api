@@ -6,7 +6,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.ClaimActivityType;
-import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.FailureReasons;
 import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.GenerationDetails;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
@@ -125,7 +124,7 @@ public class DefendantAccessCodeService {
                                      boolean terminal) {
         try {
             accessCodeActivityLogService.logFailure(pcsCaseEntity, defendant, ClaimActivityType.DOCUMENTS_CREATED,
-                new GenerationDetails(DocumentType.DEFENDANT_ACCESS_CODE, FailureReasons.from(cause), terminal));
+                GenerationDetails.forFailure(DocumentType.DEFENDANT_ACCESS_CODE, cause, terminal));
         } catch (Exception e) {
             log.error("Failed to record access-code FAILURE for party {} on case {}",
                       defendant.getId(), pcsCaseEntity.getCaseReference(), e);

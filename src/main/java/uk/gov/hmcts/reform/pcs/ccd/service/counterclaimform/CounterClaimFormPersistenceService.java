@@ -4,7 +4,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
-import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.FailureReasons;
 import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.GenerationDetails;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -71,7 +70,7 @@ public class CounterClaimFormPersistenceService {
         CounterClaimEntity counterClaim = loadCounterClaim(counterClaimId);
         long caseReference = counterClaim.getPcsCase().getCaseReference();
         claimActivityLogService.logGenerationFailure(caseReference, counterClaim.getParty().getId(),
-            new GenerationDetails(DocumentType.COUNTERCLAIM, FailureReasons.from(cause), terminal));
+            GenerationDetails.forFailure(DocumentType.COUNTERCLAIM, cause, terminal));
         return caseReference;
     }
 

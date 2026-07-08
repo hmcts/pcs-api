@@ -17,6 +17,9 @@ public final class FailureReasons {
     }
 
     public static FailureReason from(Throwable cause) {
+        if (cause == null) {
+            return FailureReason.UNKNOWN;
+        }
         if (cause instanceof MissingPostalAddressException) {
             return FailureReason.MISSING_ADDRESS;
         }
