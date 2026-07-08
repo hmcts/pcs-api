@@ -1,7 +1,6 @@
 package uk.gov.hmcts.reform.pcs.functional.tests;
 
 import lombok.extern.slf4j.Slf4j;
-import java.lang.reflect.Field;
 import java.util.Map;
 import java.util.Objects;
 import net.serenitybdd.annotations.Steps;
@@ -17,7 +16,6 @@ import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.TestInstance;
-import io.restassured.specification.RequestSpecification;
 import uk.gov.hmcts.reform.pcs.ccd.CaseType;
 import uk.gov.hmcts.reform.pcs.functional.config.TestConstants;
 import uk.gov.hmcts.reform.pcs.functional.steps.ApiSteps;
@@ -25,7 +23,6 @@ import uk.gov.hmcts.reform.pcs.functional.steps.BaseApi;
 import uk.gov.hmcts.reform.pcs.functional.testutils.PayloadLoader;
 import uk.gov.hmcts.reform.pcs.functional.testutils.PcsIdamTokenClient;
 import uk.gov.hmcts.reform.pcs.functional.testutils.CaseRoleCleanUp;
-import net.serenitybdd.rest.SerenityRest;
 
 @Slf4j
 @Tag("Functional")
@@ -78,19 +75,20 @@ public class MakeAnApplicationEventCallbackTests extends BaseApi {
         apiSteps.callIsSubmittedToTheEndpoint("StartEventCallback", "POST");
         apiSteps.checkStatusCode(200);
 
-        eventToken = SerenityRest.lastResponse().jsonPath().getString("token");
+        // NATIVE FIX 1: Extract the payload token token natively via standard RestAssured options mapping
+        eventToken = net.serenitybdd.rest.SerenityRest.lastResponse().jsonPath().getString("token");
 
         apiSteps.theResponseBodyMatchesTheExpectedResponse(
             "/responses/makeAnApplication-startEventCallbackResponse.json");
 
-        extractedPartyId = SerenityRest.lastResponse().jsonPath().getString("data.currentRepresentedPartyId");
+        extractedPartyId = net.serenitybdd.rest.SerenityRest.lastResponse().jsonPath().getString("data.currentRepresentedPartyId");
         if (extractedPartyId == null) {
-            extractedPartyId = SerenityRest.lastResponse().jsonPath().getString("data.representedPartyNames.list_items[0].code");
+            extractedPartyId = net.serenitybdd.rest.SerenityRest.lastResponse().jsonPath().getString("data.representedPartyNames.list_items[0].code");
         }
 
-        extractedPartyName = SerenityRest.lastResponse().jsonPath().getString("data.currentRepresentedPartyName");
+        extractedPartyName = net.serenitybdd.rest.SerenityRest.lastResponse().jsonPath().getString("data.currentRepresentedPartyName");
         if (extractedPartyName == null) {
-            extractedPartyName = SerenityRest.lastResponse().jsonPath().getString("data.representedPartyNames.list_items[0].label");
+            extractedPartyName = net.serenitybdd.rest.SerenityRest.lastResponse().jsonPath().getString("data.representedPartyNames.list_items[0].label");
         }
     }
 
@@ -112,16 +110,7 @@ public class MakeAnApplicationEventCallbackTests extends BaseApi {
         apiSteps.theRequestContainsValidServiceToken(TestConstants.PCS_FRONTEND);
         apiSteps.theRequestContainsIdempotencyKeyHeader();
 
-        try {
-            Field requestField = ApiSteps.class.getDeclaredField("request");
-            requestField.setAccessible(true);
-            RequestSpecification internalRequest = (RequestSpecification) requestField.get(apiSteps);
-            if (internalRequest != null) {
-                internalRequest.header("Experimental", "true");
-            }
-        } catch (Exception e) {
-            log.warn("Reflection header attachment skipped: ", e);
-        }
+        apiSteps.theRequestContainsThePathParameter("caseId", caseReference.toString());
 
         apiSteps.theRequestContainsBody(submitApplicationRequestBody);
 
