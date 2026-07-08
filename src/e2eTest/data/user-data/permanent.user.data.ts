@@ -11,5 +11,9 @@ export const user = {
   caseworker:  {
     email: 'pcs-caseworker@test.com',
     password: process.env.IDAM_PCS_USER_PASSWORD
+  },
+  staffAdmin:  {
+    email: 'pcs-ctsc-admin-01@justice.gov.uk',
+    password: process.env.IDAM_PCS_USER_PASSWORD
   }
 };
