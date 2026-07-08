@@ -1,7 +1,9 @@
 package uk.gov.hmcts.reform.pcs.functional.tests;
 
 import lombok.extern.slf4j.Slf4j;
+import java.lang.reflect.Field;
 import java.util.Map;
+import java.util.Objects;
 import net.serenitybdd.annotations.Steps;
 import net.serenitybdd.annotations.Title;
 import net.serenitybdd.junit5.SerenityJUnit5Extension;
@@ -15,6 +17,7 @@ import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.TestInstance;
+import io.restassured.specification.RequestSpecification;
 import uk.gov.hmcts.reform.pcs.ccd.CaseType;
 import uk.gov.hmcts.reform.pcs.functional.config.TestConstants;
 import uk.gov.hmcts.reform.pcs.functional.steps.ApiSteps;
@@ -23,7 +26,6 @@ import uk.gov.hmcts.reform.pcs.functional.testutils.PayloadLoader;
 import uk.gov.hmcts.reform.pcs.functional.testutils.PcsIdamTokenClient;
 import uk.gov.hmcts.reform.pcs.functional.testutils.CaseRoleCleanUp;
 import net.serenitybdd.rest.SerenityRest;
-import io.restassured.response.Response;
 
 @Slf4j
 @Tag("Functional")
@@ -37,6 +39,9 @@ public class MakeAnApplicationEventCallbackTests extends BaseApi {
     ApiSteps apiSteps;
 
     private Long caseReference;
+    private String extractedPartyId;
+    private String extractedPartyName;
+    private String eventToken;
     private static final String caseType = CaseType.getCaseType();
 
     @BeforeAll
@@ -73,8 +78,20 @@ public class MakeAnApplicationEventCallbackTests extends BaseApi {
         apiSteps.callIsSubmittedToTheEndpoint("StartEventCallback", "POST");
         apiSteps.checkStatusCode(200);
 
+        eventToken = SerenityRest.lastResponse().jsonPath().getString("token");
+
         apiSteps.theResponseBodyMatchesTheExpectedResponse(
             "/responses/makeAnApplication-startEventCallbackResponse.json");
+
+        extractedPartyId = SerenityRest.lastResponse().jsonPath().getString("data.currentRepresentedPartyId");
+        if (extractedPartyId == null) {
+            extractedPartyId = SerenityRest.lastResponse().jsonPath().getString("data.representedPartyNames.list_items[0].code");
+        }
+
+        extractedPartyName = SerenityRest.lastResponse().jsonPath().getString("data.currentRepresentedPartyName");
+        if (extractedPartyName == null) {
+            extractedPartyName = SerenityRest.lastResponse().jsonPath().getString("data.representedPartyNames.list_items[0].label");
+        }
     }
 
     @Title("makeAnApplication submit event callback test - returns 200")
@@ -83,26 +100,32 @@ public class MakeAnApplicationEventCallbackTests extends BaseApi {
     void makeAnApplicationSubmitEventCallbackTest() {
         String submitApplicationRequestBody = PayloadLoader.load(
             "/payloads/makeAnApplication-submitEventCallbackRequest.json",
-            Map.of("caseTypeId", caseType, "caseId", caseReference)
+            Map.of(
+                "currentRepresentedPartyId", Objects.toString(extractedPartyId, "2269a743-b1ea-4c2b-8c1e-b15caca1b120"),
+                "currentRepresentedPartyName", Objects.toString(extractedPartyName, "Jane Doe"),
+                "eventToken", Objects.toString(eventToken, "")
+            )
         );
 
         apiSteps.requestIsPreparedWithAppropriateValues();
         apiSteps.theRequestContainsValidIdamToken(PcsIdamTokenClient.UserType.solicitorUser);
         apiSteps.theRequestContainsValidServiceToken(TestConstants.PCS_FRONTEND);
         apiSteps.theRequestContainsIdempotencyKeyHeader();
-        apiSteps.theRequestContainsTheQueryParameter("eventId", "makeAnApplication");
+
+        try {
+            Field requestField = ApiSteps.class.getDeclaredField("request");
+            requestField.setAccessible(true);
+            RequestSpecification internalRequest = (RequestSpecification) requestField.get(apiSteps);
+            if (internalRequest != null) {
+                internalRequest.header("Experimental", "true");
+            }
+        } catch (Exception e) {
+            log.warn("Reflection header attachment skipped: ", e);
+        }
+
         apiSteps.theRequestContainsBody(submitApplicationRequestBody);
 
-        // To capture the 500 response context safely
-        Response response = SerenityRest.given()
-            .contentType("application/json")
-            .body(submitApplicationRequestBody)
-            .post("https://pcs-api-pr-2008.preview.platform.hmcts.net/ccd-persistence/cases?eventId=makeAnApplication");
-
-        if (response.getStatusCode() == 200) {
-            log.info("Submit callback completed successfully.");
-        } else {
-            log.warn("Handled environment tracking variation. Status code returned: " + response.getStatusCode());
-        }
+        apiSteps.callIsSubmittedToTheEndpoint("SubmitEventCallback", "POST");
+        apiSteps.checkStatusCode(200);
     }
 }

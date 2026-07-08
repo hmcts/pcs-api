@@ -1,8 +1,19 @@
 {
   "data": {
-    "xui_genapp_ApplicationType": "SET_ASIDE",
+    "representedPartyNames": {
+      "list_items": [
+        {
+          "code": "${currentRepresentedPartyId}",
+          "label": "Jane Doe"
+        }
+      ]
+    },
+    "currentRepresentedPartyId": "${currentRepresentedPartyId}",
+    "currentRepresentedPartyName": "Jane Doe",
+    "multipleRepresentedParties": "NO",
+    "legislativeCountry": "England",
+    "xui_genapp_StandardFee": "£126",
+    "xui_genapp_MaxFee": "£321",
     "xui_genapp_ShowHwfScreens": "YES"
-  },
-  "errors": [],
-  "warnings": []
+  }
 }

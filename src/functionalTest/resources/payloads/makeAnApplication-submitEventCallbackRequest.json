@@ -1,41 +1,29 @@
 {
-  "event_id": "makeAnApplication",
-  "case_details": {
-    "id": "${caseId}",
-    "case_type_id": "${caseTypeId}",
-    "state": "CASE_ISSUED",
-    "security_classification": "PUBLIC",
-    "data": {
-      "legislativeCountry": "England",
-      "propertyAddress": {
-        "AddressLine1": "1",
-        "AddressLine2": "Exton Gardens",
-        "AddressLine3": "70 Knyveton Road",
-        "PostTown": "Bournemouth",
-        "PostCode": "BH1 3BP",
-        "Country": "England"
-      },
-      "userPcqIdSet": "No",
-      "parties": [],
-      "caseLinks": [],
-      "allDefendants": [],
-      "allClaimants": [],
-      "allDocuments": [],
-      "xui_genapp_ApplicationType": "ADJOURN",
-      "xui_genapp_Within14Days": "NO",
-      "xui_genapp_NeedHwf": "NO",
-      "xui_genapp_AppliedForHwf": "NO",
-      "xui_genapp_OtherPartiesAgreed": "YES",
-      "xui_genapp_WithoutNotice": "NO",
-      "xui_genapp_HasSupportingDocuments": "NO",
-      "xui_genapp_LanguageUsed": "ENGLISH",
-      "xui_genapp_WhatOrderWanted": "Please adjourn the upcoming hearing.",
-      "xui_genapp_SotFullName": "John Doe",
-      "xui_genapp_SotFirmName": "Solicitors R Us",
-      "xui_genapp_SotPositionHeld": "Partner",
-      "xui_genapp_AgreementDefendantLegalRep": [
-        "AGREED"
-      ]
-    }
-  }
+  "data": {
+    "xui_genapp_MaxFee": "£321",
+    "xui_genapp_ApplicationType": "SOMETHING_ELSE",
+    "xui_genapp_ShowHwfScreens": "YES",
+    "xui_genapp_StandardFee": "£126",
+    "currentRepresentedPartyId": "${currentRepresentedPartyId}",
+    "currentRepresentedPartyName": "${currentRepresentedPartyName}",
+    "xui_genapp_NeedHwf": "NO",
+    "xui_genapp_OtherPartiesAgreed": "NO",
+    "xui_genapp_WithoutNotice": "NO",
+    "xui_genapp_WhatOrderWanted": "test",
+    "xui_genapp_HasSupportingDocuments": "NO",
+    "xui_genapp_LanguageUsed": "ENGLISH",
+    "xui_genapp_SotFullName": "test",
+    "xui_genapp_SotFirmName": "test",
+    "xui_genapp_AgreementDefendantLegalRep": [
+      "AGREED"
+    ],
+    "xui_genapp_SotPositionHeld": "test"
+  },
+  "event": {
+    "id": "makeAnApplication",
+    "summary": "Submit Application",
+    "description": "Submitting validated application journey fields"
+  },
+  "event_token": "${eventToken}",
+  "ignore_warning": false
 }
