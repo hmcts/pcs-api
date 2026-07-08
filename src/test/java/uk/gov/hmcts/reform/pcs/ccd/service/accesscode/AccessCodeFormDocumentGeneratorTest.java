@@ -188,7 +188,7 @@ class AccessCodeFormDocumentGeneratorTest {
             underTest.generate(caseEntity, caseEntity.getClaims().getFirst(), defendant, "PLAINTEXTPIN1"))
             .isInstanceOf(IllegalStateException.class)
             .hasMessageContaining("case management location")
-            .hasMessageContaining("AC06");
+            .hasMessageContaining("respond-by-post court");
         verify(docAssemblyService, never()).generateDocument(any(), anyString(), any(), anyString());
     }
 
@@ -207,7 +207,7 @@ class AccessCodeFormDocumentGeneratorTest {
             underTest.generate(caseEntity, caseEntity.getClaims().getFirst(), defendant, "PLAINTEXTPIN1"))
             .isInstanceOf(IllegalStateException.class)
             .hasMessageContaining("No court venue found")
-            .hasMessageContaining("AC06");
+            .hasMessageContaining("respond-by-post court");
         verify(docAssemblyService, never()).generateDocument(any(), anyString(), any(), anyString());
     }
 

@@ -133,14 +133,14 @@ public class AccessCodeFormDocumentGenerator {
         if (epimsId == null) {
             throw new IllegalStateException(
                 "No case management location set for case " + pcsCaseEntity.getCaseReference()
-                    + "; cannot resolve respond-by-post court (AC06)");
+                    + "; cannot resolve respond-by-post court");
         }
 
         List<CourtVenue> venues = locationReferenceService.getCourtVenues(List.of(epimsId));
         if (venues == null || venues.isEmpty()) {
             throw new IllegalStateException(
                 "No court venue found for epimsId " + epimsId + " on case " + pcsCaseEntity.getCaseReference()
-                    + "; cannot resolve respond-by-post court (AC06)");
+                    + "; cannot resolve respond-by-post court");
         }
         return venues.getFirst();
     }

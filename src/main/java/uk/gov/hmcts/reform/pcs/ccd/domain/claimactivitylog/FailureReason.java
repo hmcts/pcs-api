@@ -12,7 +12,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum FailureReason {
 
-    /** No case management location / court resolvable (e.g. AC06). Data-fixable, retried until fixed. */
+    /** No case management location / court resolvable. Data-fixable, retried until fixed. */
     NO_COURT_LOCATION(false),
     /** Docmosis / doc-assembly render failed. */
     RENDER_FAILED(false),

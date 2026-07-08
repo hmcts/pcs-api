@@ -32,7 +32,7 @@ public final class FailureReasons {
             return FailureReason.SEND_LETTER_UNAVAILABLE;
         }
         String message = String.valueOf(cause.getMessage());
-        if (message.contains("case management location") || message.contains("AC06")) {
+        if (message.contains("case management location") || message.contains("respond-by-post court")) {
             return FailureReason.NO_COURT_LOCATION;
         }
         if (message.contains("download returned no content") || message.contains("truncated")) {
