@@ -39,6 +39,7 @@ public class CaseworkerUploadDocument implements CCDConfig<PCSCase, State, UserR
             .name("Manage documents: Upload")
             .description("Upload a document to the case")
             .showSummary()
+            .endButtonLabel("Submit")
             .grant(Permission.CRU, CASEWORKER_ROLES);
 
         new PageBuilder(eventBuilder)
