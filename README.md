@@ -306,7 +306,7 @@ environment used for targeting.
 
 ### Local Dev
 
-When running the pcs-api locally, set `LAUNCHDARKLY_OFFLINE` set `true` and optionally specify one or more files
+When running the pcs-api locally, set `LAUNCHDARKLY_OFFLINE` to `true` and optionally specify one or more files
 containing flags values to be used. This is set up by default for cftLibTest and bootWithCcd
 
 With no key the client runs offline and every flag uses its default,
