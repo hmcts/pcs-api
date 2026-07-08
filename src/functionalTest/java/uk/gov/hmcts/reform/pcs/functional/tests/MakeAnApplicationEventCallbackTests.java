@@ -23,6 +23,7 @@ import uk.gov.hmcts.reform.pcs.functional.steps.BaseApi;
 import uk.gov.hmcts.reform.pcs.functional.testutils.PayloadLoader;
 import uk.gov.hmcts.reform.pcs.functional.testutils.PcsIdamTokenClient;
 import uk.gov.hmcts.reform.pcs.functional.testutils.CaseRoleCleanUp;
+import net.serenitybdd.rest.SerenityRest;
 
 @Slf4j
 @Tag("Functional")
@@ -75,20 +76,23 @@ public class MakeAnApplicationEventCallbackTests extends BaseApi {
         apiSteps.callIsSubmittedToTheEndpoint("StartEventCallback", "POST");
         apiSteps.checkStatusCode(200);
 
-        // NATIVE FIX 1: Extract the payload token token natively via standard RestAssured options mapping
-        eventToken = net.serenitybdd.rest.SerenityRest.lastResponse().jsonPath().getString("token");
+        eventToken = SerenityRest.lastResponse().jsonPath().getString("token");
 
         apiSteps.theResponseBodyMatchesTheExpectedResponse(
             "/responses/makeAnApplication-startEventCallbackResponse.json");
 
-        extractedPartyId = net.serenitybdd.rest.SerenityRest.lastResponse().jsonPath().getString("data.currentRepresentedPartyId");
+        extractedPartyId = SerenityRest.lastResponse().jsonPath()
+            .getString("data.currentRepresentedPartyId");
         if (extractedPartyId == null) {
-            extractedPartyId = net.serenitybdd.rest.SerenityRest.lastResponse().jsonPath().getString("data.representedPartyNames.list_items[0].code");
+            extractedPartyId = SerenityRest.lastResponse().jsonPath()
+                .getString("data.representedPartyNames.list_items[0].code");
         }
 
-        extractedPartyName = net.serenitybdd.rest.SerenityRest.lastResponse().jsonPath().getString("data.currentRepresentedPartyName");
+        extractedPartyName = SerenityRest.lastResponse().jsonPath()
+            .getString("data.currentRepresentedPartyName");
         if (extractedPartyName == null) {
-            extractedPartyName = net.serenitybdd.rest.SerenityRest.lastResponse().jsonPath().getString("data.representedPartyNames.list_items[0].label");
+            extractedPartyName = SerenityRest.lastResponse().jsonPath()
+                .getString("data.representedPartyNames.list_items[0].label");
         }
     }
 
@@ -110,8 +114,7 @@ public class MakeAnApplicationEventCallbackTests extends BaseApi {
         apiSteps.theRequestContainsValidServiceToken(TestConstants.PCS_FRONTEND);
         apiSteps.theRequestContainsIdempotencyKeyHeader();
 
-        apiSteps.theRequestContainsThePathParameter("caseId", caseReference.toString());
-
+        apiSteps.theRequestContainsTheQueryParameter("Experimental", "true");
         apiSteps.theRequestContainsBody(submitApplicationRequestBody);
 
         apiSteps.callIsSubmittedToTheEndpoint("SubmitEventCallback", "POST");
