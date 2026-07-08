@@ -65,7 +65,6 @@ export class CaseLinking implements IAction {
   }
   private async navigateToCaseSummary(option: actionData): Promise<void> {
     const summaryUrl = `${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/${getCaseTypeId()}/${process.env.CASE_NUMBER}#Summary`;
-    console.log(summaryUrl);
     await performAction('navigateToUrl', summaryUrl);
 
     if (option === 'no') {
@@ -86,16 +85,13 @@ export class CaseLinking implements IAction {
   }
 
   private async canLinkCases(option: actionData, page: Page): Promise<void> {
-    if (option == 'yes') {
+    if (option === 'yes') {
       await performAction('select', caseSummary.nextStepEventList, caseSummary.linkCaseEvent);
       await performAction('clickButton', caseSummary.go);
       await performValidation('mainHeader', beforeYouStart.mainHeader);
       await performAction('clickButton', beforeYouStart.submitButton);
       await performValidation('mainHeader', selectCasesToLink.mainHeader);
-      //const caseLinking = new CaseLinking();
       caseNumbers = await this.createCases(5);
-      console.log('canLinkCases');
-      console.log(caseNumbers);
       await performAction('selectCasesToLink', {
         caseRefInput: caseNumbers,
         question: selectCasesToLink.whyToLinkQuestion,
