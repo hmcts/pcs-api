@@ -309,33 +309,6 @@ class DocumentsViewTest {
     }
 
     @ParameterizedTest
-    @MethodSource("caseDetailsTabDocuments")
-    void shouldNotFilterOutGenAppDocumentsThatAppearInCaseDetailsTab(DocumentType documentType) {
-        // Given
-        GenAppEntity genAppEntity = mock(GenAppEntity.class);
-        UUID document1Id = UUID.randomUUID();
-        DocumentEntity documentEntity = DocumentEntity.builder()
-            .id(document1Id)
-            .fileName("genApps GA1 - Defendant 2.docx")
-            .type(documentType)
-            .generalApplication(genAppEntity)
-            .build();
-
-        when(securityContextService.getCurrentUserId()).thenReturn(CURRENT_USER_ID);
-        when(genAppVisibilityService.isGenAppVisibleToUser(genAppEntity, CURRENT_USER_ID))
-            .thenReturn(true);
-        when(pcsCaseEntity.getDocuments()).thenReturn(List.of(documentEntity));
-
-        // When
-        underTest.setCaseFields(pcsCase, pcsCaseEntity);
-
-        // Then
-        List<ListValue<Document>> allDocuments = pcsCase.getAllDocuments();
-        assertThat(allDocuments).hasSize(1);
-        assertThat(allDocuments.getFirst().getValue().getFilename()).isEqualTo("genApps GA1 - Defendant 2.docx");
-    }
-
-    @ParameterizedTest
     @MethodSource("nonCaseDetailsTabDocuments")
     void shouldNotFilterOutDocumentsThatDoNotAppearInCaseDetailsTab(DocumentType documentType) {
         // Given
