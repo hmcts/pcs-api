@@ -92,8 +92,6 @@ public class ClaimResponseService {
             log.debug("Updated last name for party ID: {}", party.getId());
         }
 
-        // The defendant has now supplied their name, so it is known - views keyed on
-        // nameKnown would otherwise still show "Persons unknown".
         if (nameNotConfirmed
             && (StringUtils.isNotBlank(defendantContactDetails.getParty().getFirstName())
                 || StringUtils.isNotBlank(defendantContactDetails.getParty().getLastName()))) {
