@@ -90,7 +90,7 @@ public class PartiesView {
     }
 
     private Party toPartialParty(PartyEntity entity) {
-        return Party.builder()
+        Party.PartyBuilder builder = Party.builder()
             .firstName(entity.getFirstName())
             .lastName(entity.getLastName())
             .orgName(entity.getOrgName())

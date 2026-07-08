@@ -58,6 +58,17 @@ class PartiesViewTest {
     }
 
     @Test
+    void shouldNotSetPartyFieldsWhenNoClaimsExist() {
+        when(pcsCaseEntity.getClaims()).thenReturn(List.of());
+
+        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+
+        assertThat(pcsCase.getAllClaimants()).isNull();
+        assertThat(pcsCase.getAllDefendants()).isNull();
+        assertThat(pcsCase.getAllUnderlesseeOrMortgagees()).isNull();
+    }
+
+    @Test
     void shouldMapPartyForCitizenOwnParty()  {
         UUID currentUserId = UUID.randomUUID();
         stubCitizenUser(currentUserId);
