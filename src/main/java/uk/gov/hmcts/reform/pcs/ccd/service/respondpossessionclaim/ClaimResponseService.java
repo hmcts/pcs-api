@@ -132,10 +132,6 @@ public class ClaimResponseService {
             } else {
                 party.setAddress(modelMapper.map(newAddress, AddressEntity.class));
             }
-
-            // The claimant did not know this defendant's address, but the defendant has now
-            // confirmed the property address or supplied their own, so the address is known.
-            // Without this, views keyed on addressKnown would keep showing "Address unknown".
             party.setAddressKnown(VerticalYesNo.YES);
         }
 
