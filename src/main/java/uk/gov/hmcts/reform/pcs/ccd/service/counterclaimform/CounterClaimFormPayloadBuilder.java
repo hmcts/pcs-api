@@ -36,10 +36,18 @@ public class CounterClaimFormPayloadBuilder {
             .findFirst()
             .orElse(null);
 
+        String claimingFor = counterClaim.getClaimType() != null ? counterClaim.getClaimType().getLabel() : null;
+        String claimingSpecificSum = toLabel(counterClaim.getIsClaimAmountKnown());
+        String claimAmount = formatGbp(counterClaim.getClaimAmount());
+        String maximumClaimValue = formatGbp(counterClaim.getEstimatedMaxClaimAmount());
+        String needsHelpWithFees = toLabel(counterClaim.getNeedHelpWithFees());
         String hwfRef = counterClaim.getHwfReferenceNumber();
         String respondentNames = buildRespondentNames(counterClaim);
+        String counterClaimFor = counterClaim.getCounterClaimFor();
+        String counterClaimReasons = counterClaim.getCounterClaimReasons();
         String otherOrderDetails = counterClaim.getOtherOrderRequestDetails();
         String otherOrderFacts = counterClaim.getOtherOrderRequestFacts();
+        String statementOfTruthName = buildStatementOfTruthName(counterClaim);
         boolean showOtherOrder = StringUtils.hasText(otherOrderDetails) || StringUtils.hasText(otherOrderFacts);
 
         return CounterClaimFormPayload.builder()
@@ -48,21 +56,29 @@ public class CounterClaimFormPayloadBuilder {
             .caseName(buildCaseName(mainClaim))
             .issueDateSealed(formatUkDate(counterClaim.getClaimIssuedDate(), ukClock))
             .submittedOn(formatUkDate(counterClaim.getClaimSubmittedDate(), ukClock))
-            .claimingFor(counterClaim.getClaimType() != null ? counterClaim.getClaimType().getLabel() : null)
-            .claimingSpecificSum(toLabel(counterClaim.getIsClaimAmountKnown()))
-            .claimAmount(formatGbp(counterClaim.getClaimAmount()))
-            .maximumClaimValue(formatGbp(counterClaim.getEstimatedMaxClaimAmount()))
-            .needsHelpWithFees(toLabel(counterClaim.getNeedHelpWithFees()))
+            .claimingFor(claimingFor)
+            .claimingSpecificSum(claimingSpecificSum)
+            .claimAmount(claimAmount)
+            .maximumClaimValue(maximumClaimValue)
+            .needsHelpWithFees(needsHelpWithFees)
             .hwfReferenceNumber(hwfRef)
             .respondentNames(respondentNames)
-            .counterClaimFor(counterClaim.getCounterClaimFor())
-            .counterClaimReasons(counterClaim.getCounterClaimReasons())
+            .counterClaimFor(counterClaimFor)
+            .counterClaimReasons(counterClaimReasons)
             .otherOrderRequestDetails(otherOrderDetails)
             .otherOrderRequestFacts(otherOrderFacts)
-            .statementOfTruthName(buildStatementOfTruthName(counterClaim))
+            .statementOfTruthName(statementOfTruthName)
+            .showClaimingFor(StringUtils.hasText(claimingFor))
+            .showClaimingSpecificSum(StringUtils.hasText(claimingSpecificSum))
+            .showClaimAmount(StringUtils.hasText(claimAmount))
+            .showMaximumClaimValue(StringUtils.hasText(maximumClaimValue))
+            .showNeedsHelpWithFees(StringUtils.hasText(needsHelpWithFees))
             .showHwfRef(StringUtils.hasText(hwfRef))
             .showRespondentNames(StringUtils.hasText(respondentNames))
+            .showCounterClaimFor(StringUtils.hasText(counterClaimFor))
+            .showCounterClaimReasons(StringUtils.hasText(counterClaimReasons))
             .showOtherOrderSection(showOtherOrder)
+            .showStatementOfTruthName(StringUtils.hasText(statementOfTruthName))
             .build();
     }
 

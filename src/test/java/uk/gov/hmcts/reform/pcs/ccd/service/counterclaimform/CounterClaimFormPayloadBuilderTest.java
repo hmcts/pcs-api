@@ -66,9 +66,17 @@ class CounterClaimFormPayloadBuilderTest {
         assertThat(payload.getOtherOrderRequestDetails()).isEqualTo("Restore quiet enjoyment");
         assertThat(payload.getOtherOrderRequestFacts()).isEqualTo("Landlord entered without notice");
         assertThat(payload.getStatementOfTruthName()).isEqualTo("Robert J Defendant");
+        assertThat(payload.getShowClaimingFor()).isTrue();
+        assertThat(payload.getShowClaimingSpecificSum()).isTrue();
+        assertThat(payload.getShowClaimAmount()).isTrue();
+        assertThat(payload.getShowMaximumClaimValue()).isTrue();
+        assertThat(payload.getShowNeedsHelpWithFees()).isTrue();
         assertThat(payload.getShowHwfRef()).isTrue();
         assertThat(payload.getShowRespondentNames()).isTrue();
+        assertThat(payload.getShowCounterClaimFor()).isTrue();
+        assertThat(payload.getShowCounterClaimReasons()).isTrue();
         assertThat(payload.getShowOtherOrderSection()).isTrue();
+        assertThat(payload.getShowStatementOfTruthName()).isTrue();
     }
 
     @Test
@@ -81,9 +89,17 @@ class CounterClaimFormPayloadBuilderTest {
 
         CounterClaimFormPayload payload = builder.build(counterClaim);
 
+        assertThat(payload.getShowClaimingFor()).isFalse();
+        assertThat(payload.getShowClaimingSpecificSum()).isFalse();
+        assertThat(payload.getShowClaimAmount()).isFalse();
+        assertThat(payload.getShowMaximumClaimValue()).isFalse();
+        assertThat(payload.getShowNeedsHelpWithFees()).isFalse();
         assertThat(payload.getShowHwfRef()).isFalse();
         assertThat(payload.getShowRespondentNames()).isFalse();
+        assertThat(payload.getShowCounterClaimFor()).isFalse();
+        assertThat(payload.getShowCounterClaimReasons()).isFalse();
         assertThat(payload.getShowOtherOrderSection()).isFalse();
+        assertThat(payload.getShowStatementOfTruthName()).isFalse();
     }
 
     @Test
