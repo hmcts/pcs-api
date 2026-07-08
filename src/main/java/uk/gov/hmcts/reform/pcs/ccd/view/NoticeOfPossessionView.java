@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.pcs.ccd.view;
 
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.ccd.sdk.type.Document;
@@ -21,7 +20,6 @@ import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import java.util.List;
 import java.util.Optional;
 
-@Slf4j
 @Component
 public class NoticeOfPossessionView {
 
@@ -93,14 +91,8 @@ public class NoticeOfPossessionView {
 
     private List<ListValue<Document>> getNoticeStatement(PcsCaseEntity pcsCaseEntity) {
         if (CollectionUtils.isEmpty(pcsCaseEntity.getDocuments())) {
-            log.info("getNoticeStatement: found {} total documents for case, {} match POSSESSION_NOTICE filter",
-                0, 0);
             return List.of();
         }
-
-        log.info("getNoticeStatement: found {} total documents for case, {} match POSSESSION_NOTICE filter",
-            pcsCaseEntity.getDocuments().size(),
-            pcsCaseEntity.getDocuments().stream().filter(NoticeOfPossessionView::isNoticeStatement).count());
 
         return pcsCaseEntity.getDocuments().stream()
             .filter(NoticeOfPossessionView::isNoticeStatement)

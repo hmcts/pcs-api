@@ -89,9 +89,6 @@ public class NoticeDetailsBuilder {
         }
 
         List<ListValue<Document>> documents = noticeServedDetails.getDocuments();
-        if (isSubmitted) {
-            noticeServedDetails.setDocuments(null);
-        }
         noticeTabDetails.setNoticeDocuments(documents);
         noticeTabDetails.setNoticeUploaded(String.valueOf(noticeServedDetails.getAbleToUploadDocument()));
         noticeTabDetails.setReasonsForNoNoticeDocument(noticeServedDetails.getUnableToUploadReason());
