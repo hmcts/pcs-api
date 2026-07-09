@@ -18,6 +18,8 @@ import { judicial } from '@data/user-data/judicial.user.data';
 
 let caseNumbers: string[] = [];
 
+test.use({storageState: undefined});
+
 test.beforeEach(async ({ page, context }) => {
    await context.clearCookies();
   initializeExecutor(page);
