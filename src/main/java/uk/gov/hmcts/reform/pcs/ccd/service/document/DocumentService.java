@@ -479,7 +479,9 @@ public class DocumentService {
 
     public void createDocumentEntitiesFromLegalRepDocuments(
         List<LegalRepDocument> legalRepDocuments,
-        PcsCaseEntity pcsCaseEntity
+        PcsCaseEntity pcsCaseEntity,
+        PartyEntity party,
+        GenAppEntity selectedGenApp
     ) {
         List<DocumentEntity> documentEntities = legalRepDocuments.stream()
             .map(legalRepDoc -> {
@@ -490,14 +492,19 @@ public class DocumentService {
                     .map(CaseFileCategory::getId)
                     .orElse(null);
 
-                String url = legalRepDoc.getDocument().getUrl();
+                ClaimEntity mainClaim = pcsCaseEntity.getClaims().getFirst();
+
+                String originalFilename = legalRepDoc.getDocument().getFilename();
+                String renamed = (selectedGenApp != null)
+                    ? documentNameService.appendGenAppPostfix(
+                    originalFilename, selectedGenApp, mainClaim, party.getId())
+                    : documentNameService.appendPartyPostfix(originalFilename, mainClaim, party.getId());
 
                 return DocumentEntity.builder()
                 .pcsCase(pcsCaseEntity)
-                .claim(getMainClaim(pcsCaseEntity))
-                .documentId(documentIdExtractor.extractDocumentId(url))
-                .url(url)
-                .fileName(legalRepDoc.getDocument().getFilename())
+                .url(legalRepDoc.getDocument().getUrl())
+                .fileName(renamed)
+                .party(party)
                 .binaryUrl(legalRepDoc.getDocument().getBinaryUrl())
                 .description(legalRepDoc.getDescription())
                 .type(resolvedDocumentType)

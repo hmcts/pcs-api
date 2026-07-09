@@ -13,26 +13,34 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 
+import uk.gov.hmcts.reform.pcs.ccd.domain.documentupload.DocumentUploadDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.DocumentUploadCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.BaseEventTest;
 import uk.gov.hmcts.reform.pcs.ccd.page.legalrepdocumentupload.LegalRepDocumentUploadConfigurer;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
+import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
+import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType;
+import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -51,6 +59,15 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
 
     @Mock
     private DocumentService documentService;
+
+    @Mock
+    private PartyService partyService;
+
+    @Mock
+    private SecurityContextService securityContextService;
+
+    @Mock
+    private GenAppVisibilityService genAppVisibilityService;
 
     @InjectMocks
     private LegalRepDocumentUpload legalRepDocumentUpload;
@@ -234,6 +251,8 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
     void shouldUploadLegalRepDocumentCorrectly() {
         // Given
         String description = "test description";
+        UUID selectedId = UUID.randomUUID();
+        UUID currentUserId = UUID.randomUUID();
 
         Document document = Document.builder()
             .filename("test filename")
@@ -247,21 +266,37 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
             .description(description)
             .build();
 
+        DocumentUploadDetails documentUploadDetails = DocumentUploadDetails.builder()
+            .selectedRelatedApplicationId(selectedId.toString())
+            .build();
+
         List<LegalRepDocument> legalRepDocList = List.of(legalRepDocument);
 
         PCSCase pcsCase = PCSCase.builder()
+            .documentUploadDetails(documentUploadDetails)
             .build();
 
-        when(documentService.createLegalRepDocuments(pcsCase)).thenReturn(legalRepDocList);
+        GenAppEntity selectedGenApp = mock(GenAppEntity.class);
+        PartyEntity currentUserParty = mock(PartyEntity.class);
 
+        when(documentService.createLegalRepDocuments(pcsCase)).thenReturn(legalRepDocList);
         when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+
+        when(selectedGenApp.getId()).thenReturn(selectedId);
+        when(pcsCaseEntity.getGenApps()).thenReturn(Set.of(selectedGenApp));
+        List<GenAppEntity> mockGenAppList = List.of(selectedGenApp);
+        when(genAppVisibilityService.getVisibleGenAppsToUser(Set.of(selectedGenApp), currentUserId))
+            .thenReturn(mockGenAppList);
+
+        given(securityContextService.getCurrentUserId()).willReturn(currentUserId);
+        given(partyService.getPartyEntityByIdamId(currentUserId, TEST_CASE_REFERENCE)).willReturn(currentUserParty);
 
         // When
         callSubmitHandler(pcsCase);
 
         // Then
         verify(documentService, times(1))
-            .createDocumentEntitiesFromLegalRepDocuments(legalRepDocList,pcsCaseEntity);
+            .createDocumentEntitiesFromLegalRepDocuments(legalRepDocList,pcsCaseEntity,currentUserParty,selectedGenApp);
     }
 
     @Test

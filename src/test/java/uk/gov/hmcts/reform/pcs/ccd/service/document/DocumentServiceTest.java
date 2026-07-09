@@ -1208,10 +1208,12 @@ class DocumentServiceTest {
     @Test
     void shouldSaveLegalRepDocuments() {
         String description = "test description";
+        String docUrl = "test url";
+        String fileName = "test-filename";
 
         Document document = Document.builder()
-            .filename("test filename")
-            .url("test url")
+            .filename(fileName)
+            .url(docUrl)
             .binaryUrl("test binary url")
             .categoryId(CaseFileCategory.EVIDENCE.getId())
             .build();
@@ -1222,15 +1224,27 @@ class DocumentServiceTest {
             .description(description)
             .build();
 
-        List<LegalRepDocument> legalRepDocList = List.of(legalRepDocument);
-
-        ClaimEntity claim = mock(ClaimEntity.class);
-
         PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
-        when(pcsCaseEntity.getClaims()).thenReturn(List.of(claim));
+        PartyEntity party = mock(PartyEntity.class);
+        UUID partyId = UUID.randomUUID();
+        ClaimEntity mainClaim = mock(ClaimEntity.class);
+
+        final List<LegalRepDocument> legalRepDocList = List.of(legalRepDocument);
+
+        setUpDefendantParty(pcsCaseEntity, party, 2);
+
+        when(pcsCaseEntity.getClaims()).thenReturn(List.of(mainClaim));
+        when(party.getId()).thenReturn(partyId);
+
+        GenAppEntity selectedGenApp = mock(GenAppEntity.class);
+
+        String expectedRenamedFile = fileName + " GA1 - Defendant 2.pdf";
+        when(documentNameService.appendGenAppPostfix(fileName, selectedGenApp, mainClaim, partyId))
+            .thenReturn(expectedRenamedFile);
 
         // When
-        documentService.createDocumentEntitiesFromLegalRepDocuments(legalRepDocList, pcsCaseEntity);
+        documentService.createDocumentEntitiesFromLegalRepDocuments(legalRepDocList, pcsCaseEntity, party,
+                                                                    selectedGenApp);
 
         // Then
         verify(pcsCaseEntity, times(1)).addDocuments(listCaptor.capture());
@@ -1240,8 +1254,8 @@ class DocumentServiceTest {
 
         DocumentEntity documentEntity = capturedDocumentList.getFirst();
 
-        assertThat(documentEntity.getUrl()).isEqualTo("test url");
-        assertThat(documentEntity.getFileName()).isEqualTo("test filename");
+        assertThat(documentEntity.getUrl()).isEqualTo(docUrl);
+        assertThat(documentEntity.getFileName()).isEqualTo(expectedRenamedFile);
         assertThat(documentEntity.getType().getLabel()).isEqualTo("Photographic evidence");
         assertThat(documentEntity.getDescription()).isEqualTo(description);
     }
