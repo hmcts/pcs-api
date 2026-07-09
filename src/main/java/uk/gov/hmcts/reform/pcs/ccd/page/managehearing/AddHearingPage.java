@@ -29,14 +29,13 @@ public class AddHearingPage implements CcdPageConfiguration, CcdPage {
             .page(pageKey, this::midEvent)
             .showCondition("manageHearingOption=\"ADD\"")
             .pageLabel("Add a hearing")
-            .readonly(PCSCase::getCaseManagementLocation, NEVER_SHOW)
+            .readonly(PCSCase::getHearingLocation, NEVER_SHOW)
             .label("separator", "---")
-            .label("hearingLocation",
-                """
-                    <p class="govuk-body govuk-!-font-weight-bold">Hearing location:</p>
-                    <p class="govuk-body>${caseManagementLocation.baseLocation}</p>
-                """
+            .label(
+                "hearingLocationHeading",
+                "<p class=\"govuk-body govuk-!-font-weight-bold\">Hearing location:</p>"
             )
+            .label("hearingLocationbody", "${hearingLocation}")
             .complex(PCSCase::getHearing)
             .mandatory(Hearing::getType)
             .mandatory(Hearing::getOtherHearingType, "hearing_Type=\"OTHER\"")

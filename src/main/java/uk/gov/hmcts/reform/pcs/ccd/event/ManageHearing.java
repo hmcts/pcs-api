@@ -24,6 +24,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.HearingService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicMultiSelectStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
+import uk.gov.hmcts.reform.pcs.location.model.CourtVenue;
 import uk.gov.hmcts.reform.pcs.location.service.LocationReferenceService;
 
 import java.util.ArrayList;
@@ -57,6 +58,7 @@ public class ManageHearing implements CCDConfig<PCSCase, State, UserRole> {
 
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
         PCSCase pcsCase = eventPayload.caseData();
+
         List<DynamicStringListElement> listItems =
             buildPartyListItems(pcsCase.getAllClaimants(), pcsCase.getAllDefendants());
         pcsCase.setPartySelectionList(
@@ -64,6 +66,14 @@ public class ManageHearing implements CCDConfig<PCSCase, State, UserRole> {
                 .listItems(listItems)
                 .build()
         );
+
+        List<Integer> baseLocation = List.of(Integer.parseInt(pcsCase.getCaseManagementLocation().getBaseLocation()));
+        List<CourtVenue> courtVenues = locationReferenceService.getCourtVenues(baseLocation);
+
+        if (!CollectionUtils.isEmpty(courtVenues)) {
+            CourtVenue courtVenue = courtVenues.getFirst();
+            pcsCase.setHearingLocation(courtVenue.courtName());
+        }
 
         if (CollectionUtils.isEmpty(pcsCase.getHearingList())) {
             pcsCase.setManageHearingOption(ManageHearingOption.ADD);
