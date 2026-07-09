@@ -13,12 +13,18 @@ import java.util.Objects;
 import java.util.Set;
 
 /**
- * Service for validating uploaded documents against the disallowed multimedia file types.
+ * Service for validating uploaded documents against the allowed file type allowlist.
+ * Any file whose extension is not in {@link #ALLOWED_FILE_EXTENSIONS} is rejected.
  */
 @Service
 public class FileUploadValidationService {
 
-    public static final Set<String> BLOCKED_MEDIA_EXTENSIONS = Set.of("mp3", "m4a", "mp4", "mpeg", "mpg");
+    public static final Set<String> ALLOWED_FILE_EXTENSIONS = Set.of(
+        "doc", "dot", "docx", "dotx",
+        "xls", "xlt", "xla", "xlsx", "xltx", "xlsb",
+        "ppt", "pot", "pps", "ppa", "pptx", "potx", "ppsx",
+        "pdf", "txt", "rtf", "csv",
+        "jpg", "jpeg", "png", "bmp", "tif", "tiff");
     public static final String DISALLOWED_FILE_TYPE_ERROR = "Your upload contains a disallowed file type";
     public static final String ALLOWED_FILE_TYPE_GUIDANCE =
         "The selected file must be a DOC/DOT/DOCX/DOTX, XLS/XLT/XLA/XLSX/XLTX/XLSB, "
@@ -32,13 +38,13 @@ public class FileUploadValidationService {
             return List.of();
         }
 
-        boolean hasBlockedFile = documents.stream()
+        boolean hasDisallowedFile = documents.stream()
             .map(ListValue::getValue)
             .filter(Objects::nonNull)
             .map(Document::getFilename)
-            .anyMatch(this::isBlocked);
+            .anyMatch(this::isDisallowed);
 
-        return hasBlockedFile ? DISALLOWED_FILE_TYPE_ERRORS : List.of();
+        return hasDisallowedFile ? DISALLOWED_FILE_TYPE_ERRORS : List.of();
     }
 
     /**
@@ -60,18 +66,18 @@ public class FileUploadValidationService {
             return List.of();
         }
 
-        boolean hasBlockedFile = ListValueUtils.unwrapListItems(additionalDocuments).stream()
+        boolean hasDisallowedFile = ListValueUtils.unwrapListItems(additionalDocuments).stream()
             .filter(Objects::nonNull)
             .map(AdditionalDocument::getDocument)
             .filter(Objects::nonNull)
             .map(Document::getFilename)
-            .anyMatch(this::isBlocked);
+            .anyMatch(this::isDisallowed);
 
-        return hasBlockedFile ? DISALLOWED_FILE_TYPE_ERRORS : List.of();
+        return hasDisallowedFile ? DISALLOWED_FILE_TYPE_ERRORS : List.of();
     }
 
-    private boolean isBlocked(String filename) {
-        return BLOCKED_MEDIA_EXTENSIONS.contains(getExtension(filename));
+    private boolean isDisallowed(String filename) {
+        return !ALLOWED_FILE_EXTENSIONS.contains(getExtension(filename));
     }
 
     private String getExtension(String filename) {

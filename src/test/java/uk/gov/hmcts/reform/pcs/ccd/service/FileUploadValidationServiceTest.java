@@ -107,8 +107,30 @@ class FileUploadValidationServiceTest {
         @ValueSource(strings = {
             "noextension", "trailingdot.", "archive.mp3.zip"
         })
-        @DisplayName("Should not block filenames whose final extension is not a blocked type")
-        void shouldNotBlockNonBlockedFinalExtension(String filename) {
+        @DisplayName("Should return error for a missing or non-allowlisted final extension")
+        void shouldReturnErrorForUnrecognisedOrMissingExtension(String filename) {
+            List<String> errors = fileUploadValidationService.validateDocuments(documentsWithFilenames(filename));
+
+            assertThat(errors).containsExactly(DISALLOWED_FILE_TYPE_ERROR, ALLOWED_FILE_TYPE_GUIDANCE);
+        }
+
+        @ParameterizedTest
+        @ValueSource(strings = {
+            "archive.zip", "installer.exe", "clip.mov", "page.html"
+        })
+        @DisplayName("Should return error for any file type outside the allowlist")
+        void shouldReturnErrorForNonAllowlistedTypes(String filename) {
+            List<String> errors = fileUploadValidationService.validateDocuments(documentsWithFilenames(filename));
+
+            assertThat(errors).containsExactly(DISALLOWED_FILE_TYPE_ERROR, ALLOWED_FILE_TYPE_GUIDANCE);
+        }
+
+        @ParameterizedTest
+        @ValueSource(strings = {
+            "REPORT.PDF", "Photo.JPG", "Notice.DOCX", "scan.TIFF"
+        })
+        @DisplayName("Should treat allowed extensions case-insensitively")
+        void shouldAllowAllowedTypesCaseInsensitively(String filename) {
             List<String> errors = fileUploadValidationService.validateDocuments(documentsWithFilenames(filename));
 
             assertThat(errors).isEmpty();
