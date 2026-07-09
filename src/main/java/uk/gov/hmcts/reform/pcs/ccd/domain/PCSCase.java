@@ -719,4 +719,19 @@ public class PCSCase {
 
     @CCD
     private String dateIssuedString;
+
+    @CCD(
+        label = "Do you want to add, edit or cancel a hearing?"
+    )
+    private ManageHearingOption manageHearingOption;
+
+    @JsonUnwrapped(prefix = "hearing_")
+    @CCD
+    private Hearing hearing;
+
+    @CCD
+    private List<ListValue<Hearing>> hearingList;
+
+    @CCD(searchable = false)
+    private YesOrNo showManageHearingPage;
 }
