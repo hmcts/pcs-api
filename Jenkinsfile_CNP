@@ -44,6 +44,9 @@ withPipeline(type, product, component) {
   env.PACT_BROKER_URL = "https://pact-broker.platform.hmcts.net"
   loadVaultSecrets(secrets)
   enableDbMigration('pcs')
+  
+  syncBranchesWithMaster(['ithc', 'perftest'])
+
 
   onPR() {
     enablePactAs([
