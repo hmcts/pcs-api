@@ -7,7 +7,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
-import uk.gov.hmcts.ccd.sdk.type.DynamicList;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 
@@ -19,12 +18,6 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @JsonNaming(PropertyNamingStrategies.UpperCamelCaseStrategy.class)
 public class EnterGenAppRequest {
-
-    @CCD(
-        label = "Which party made the application?",
-        typeOverride = FieldType.DynamicRadioList
-    )
-    private DynamicList applicantParty;
 
     @CCD(label = "What date was the application received?")
     private LocalDate dateReceived;

@@ -103,7 +103,7 @@ class EnterGenAppTest extends BaseEventTest {
         PCSCase result = callStartHandler(caseData);
 
         // Then
-        List<DynamicListElement> listItems = result.getEnterGenAppRequest().getApplicantParty().getListItems();
+        List<DynamicListElement> listItems = result.getApplicantParty().getListItems();
 
         assertThat(listItems).containsExactly(
             DynamicListElement.builder().code(claimantId).label("John Smith - Claimant 1").build(),

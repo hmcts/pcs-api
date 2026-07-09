@@ -26,6 +26,24 @@ class ApplicationDetailsTest extends BasePageTest {
     }
 
     @Test
+    void shouldAcceptValidSomethingElseDetails() {
+        // Given
+        String details = "some categories";
+        PCSCase caseData = PCSCase.builder()
+            .enterGenAppRequest(EnterGenAppRequest.builder()
+                .applicationTypeOption(EnterGenAppType.SOMETHING_ELSE)
+                .somethingElseDetails(details)
+                .build())
+            .build();
+
+        // When
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+        // Then
+        assertThat(response.getErrorMessageOverride()).isNull();
+    }
+
+    @Test
     void shouldRejectSomethingElseDetailsOverCharacterLimit() {
         // Given
         String longText = "a".repeat(MEDIUM_TEXT_LIMIT + 1);

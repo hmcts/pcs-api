@@ -60,7 +60,7 @@ public class EnterGenApp implements CCDConfig<PCSCase, State, UserRole> {
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(eventPayload.caseReference());
         ClaimEntity mainClaim = pcsCaseEntity.getClaims().getFirst();
 
-        caseData.getEnterGenAppRequest().setApplicantParty(buildApplicantPartyList(mainClaim));
+        caseData.setApplicantParty(buildApplicantPartyList(mainClaim));
 
         return caseData;
     }

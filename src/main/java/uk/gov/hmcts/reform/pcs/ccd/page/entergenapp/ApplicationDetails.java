@@ -30,8 +30,8 @@ public class ApplicationDetails implements CcdPageConfiguration {
             .page("applicationDetails", this::midEvent)
             .pageLabel("Application details")
             .label("applicationDetails-lineSeparator", "---")
+            .mandatory(PCSCase::getApplicantParty)
             .complex(PCSCase::getEnterGenAppRequest)
-            .mandatory(EnterGenAppRequest::getApplicantParty)
             .mandatory(EnterGenAppRequest::getDateReceived)
             .mandatory(EnterGenAppRequest::getApplicationTypeOption)
             .mandatory(
