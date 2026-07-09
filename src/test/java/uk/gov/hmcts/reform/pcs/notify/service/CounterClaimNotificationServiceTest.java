@@ -6,13 +6,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.CounterClaimRepository;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -39,23 +36,13 @@ class CounterClaimNotificationServiceTest {
     @Test
     void shouldSendClaimantNotificationWhenCounterClaimIssued() {
         UUID counterClaimId = UUID.randomUUID();
-        UUID partyId = UUID.randomUUID();
-
-        PartyEntity party = mock(PartyEntity.class);
-        when(party.getId()).thenReturn(partyId);
-
         ClaimEntity claim = mock(ClaimEntity.class);
 
         DefendantResponseEntity defendantResponse = mock(DefendantResponseEntity.class);
-        when(defendantResponse.getParty()).thenReturn(party);
         when(defendantResponse.getClaim()).thenReturn(claim);
 
-        PcsCaseEntity pcsCase = mock(PcsCaseEntity.class);
-        when(pcsCase.getDefendantResponses()).thenReturn(List.of(defendantResponse));
-
         CounterClaimEntity counterClaim = mock(CounterClaimEntity.class);
-        when(counterClaim.getParty()).thenReturn(party);
-        when(counterClaim.getPcsCase()).thenReturn(pcsCase);
+        when(counterClaim.findAssociatedDefendantResponse()).thenReturn(Optional.of(defendantResponse));
 
         when(counterClaimRepository.findById(counterClaimId)).thenReturn(Optional.of(counterClaim));
 
@@ -78,24 +65,9 @@ class CounterClaimNotificationServiceTest {
     @Test
     void shouldThrowExceptionWhenAssociatedDefendantResponseNotFound() {
         UUID counterClaimId = UUID.randomUUID();
-        UUID partyId = UUID.randomUUID();
-        UUID otherPartyId = UUID.randomUUID();
-
-        PartyEntity party = mock(PartyEntity.class);
-        when(party.getId()).thenReturn(partyId);
-
-        PartyEntity otherParty = mock(PartyEntity.class);
-        when(otherParty.getId()).thenReturn(otherPartyId);
-
-        DefendantResponseEntity otherDefendantResponse = mock(DefendantResponseEntity.class);
-        when(otherDefendantResponse.getParty()).thenReturn(otherParty);
-
-        PcsCaseEntity pcsCase = mock(PcsCaseEntity.class);
-        when(pcsCase.getDefendantResponses()).thenReturn(List.of(otherDefendantResponse));
 
         CounterClaimEntity counterClaim = mock(CounterClaimEntity.class);
-        when(counterClaim.getParty()).thenReturn(party);
-        when(counterClaim.getPcsCase()).thenReturn(pcsCase);
+        when(counterClaim.findAssociatedDefendantResponse()).thenReturn(Optional.empty());
         when(counterClaim.getId()).thenReturn(counterClaimId);
 
         when(counterClaimRepository.findById(counterClaimId)).thenReturn(Optional.of(counterClaim));
