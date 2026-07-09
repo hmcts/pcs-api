@@ -6,6 +6,7 @@ import com.launchdarkly.sdk.server.integrations.FileData;
 import com.launchdarkly.sdk.server.subsystems.ComponentConfigurer;
 import com.launchdarkly.sdk.server.subsystems.DataSource;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -25,17 +26,16 @@ public class LaunchDarklyConfiguration {
     public LDClient ldClient(@Value("${launchdarkly.sdk-key:}") String sdkKey,
                              @Value("${launchdarkly.offline-mode:false}") Boolean offlineMode,
                              @Value("${launchdarkly.files:}") String[] flagFiles) {
-        if (offlineMode || StringUtils.isBlank(sdkKey)) {
-            log.warn("Starting LaunchDarkly client in offline mode (offlineMode={}, sdkKeyPresent={}) "
-                         + "- serving code defaults", offlineMode, StringUtils.isNotBlank(sdkKey));
-            // LDClient requires a non-empty SDK key even when offline; this value is never sent anywhere.
-            return new LDClient("offline-placeholder", new LDConfig.Builder().offline(true).build());
+        LDConfig.Builder builder = new LDConfig.Builder();
+
+        if (BooleanUtils.isTrue(offlineMode)) {
+            // Use local flag files as the flag datasource if specified, (instead of the remote service),
+            // otherwise set the whole LDClient to offline mode.
+            getExistingFiles(flagFiles).ifPresentOrElse(
+                localFlagFiles -> builder.dataSource(this.getDataSource(localFlagFiles)),
+                () -> builder.offline(true));
         }
 
-        LDConfig.Builder builder = new LDConfig.Builder().offline(offlineMode);
-        getExistingFiles(flagFiles)
-            .map(this::getDataSource)
-            .ifPresent(builder::dataSource);
         LDClient client = new LDClient(sdkKey, builder.build());
         if (!client.isInitialized()) {
             log.warn("LaunchDarkly not initialised at startup - serving code defaults until connected");
@@ -46,6 +46,7 @@ public class LaunchDarklyConfiguration {
     private ComponentConfigurer<DataSource> getDataSource(Path[] flagFilePaths) {
         return FileData.dataSource()
             .filePaths(flagFilePaths)
+            .autoUpdate(true)
             .duplicateKeysHandling(FileData.DuplicateKeysHandling.IGNORE);
     }
 

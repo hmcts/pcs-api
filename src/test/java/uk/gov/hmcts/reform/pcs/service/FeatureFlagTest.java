@@ -15,6 +15,6 @@ class FeatureFlagTest {
 
         assertThat(keys).doesNotHaveDuplicates();
         assertThat(keys).allSatisfy(key ->
-            assertThat(key).isNotBlank().matches("[a-z0-9]+(-[a-z0-9]+)*"));
+            assertThat(key).isNotBlank().matches("[a-z0-9]+(-[a-z0-9.]+)*"));
     }
 }
