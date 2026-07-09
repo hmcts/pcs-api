@@ -7,11 +7,9 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
-import uk.gov.hmcts.reform.pcs.ccd.type.DynamicMultiSelectStringList;
 
 import java.time.LocalDateTime;
 
-import static uk.gov.hmcts.ccd.sdk.type.FieldType.DynamicMultiSelectList;
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.FixedList;
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
 

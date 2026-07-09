@@ -13,7 +13,6 @@ import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
-import uk.gov.hmcts.reform.pcs.ccd.domain.Hearing;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ManageHearingOption;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
@@ -91,8 +90,8 @@ public class ManageHearing implements CCDConfig<PCSCase, State, UserRole> {
             .formatMediumAddress(caseData.getPropertyAddress(), AddressFormatter.COMMA_DELIMITER);
 
         if (
-            caseData.getManageHearingOption() == ManageHearingOption.ADD ||
-                caseData.getShowManageHearingPage() != YesOrNo.YES
+            caseData.getManageHearingOption() == ManageHearingOption.ADD
+                || caseData.getShowManageHearingPage() != YesOrNo.YES
         ) {
             hearingService.addHearing(caseId, caseData);
         }

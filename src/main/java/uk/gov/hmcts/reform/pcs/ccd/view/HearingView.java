@@ -17,7 +17,7 @@ public class HearingView {
     }
 
     private void setHearingFields(PCSCase pcsCase, List<HearingEntity> hearingEntities) {
-        List<ListValue<Hearing>> hearings = hearingEntities.stream().map( hearingEntity -> {
+        List<ListValue<Hearing>> hearings = hearingEntities.stream().map(hearingEntity -> {
             Hearing hearing = Hearing.builder()
                 .type(hearingEntity.getType())
                 .otherHearingType(hearingEntity.getOtherHearingType())

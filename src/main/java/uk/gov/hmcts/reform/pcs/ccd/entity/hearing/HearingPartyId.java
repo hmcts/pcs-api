@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.pcs.ccd.entity.hearing;
 
-import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import lombok.Data;
 
