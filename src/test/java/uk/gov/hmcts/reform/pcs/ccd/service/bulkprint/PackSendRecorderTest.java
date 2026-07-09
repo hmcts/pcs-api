@@ -11,9 +11,12 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.FailureReason;
 import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.PackDetails;
+import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.service.AccessCodeActivityLogService;
 
 import java.util.List;
@@ -61,6 +64,50 @@ class PackSendRecorderTest {
             assertThat(ref.id()).isEqualTo(document.getId());
             assertThat(ref.type()).isEqualTo(DocumentType.DEFENDANT_RESPONSE);
         });
+    }
+
+    @Test
+    @DisplayName("Marks the claim form self=true for the claimant and self=false for a defendant")
+    void shouldResolveClaimFormOwnershipToClaimant() {
+        PartyEntity claimant = PartyEntity.builder().id(UUID.randomUUID()).build();
+        PartyEntity defendant = PartyEntity.builder().id(UUID.randomUUID()).build();
+        ClaimEntity claim = ClaimEntity.builder()
+            .claimParties(List.of(
+                ClaimPartyEntity.builder().party(claimant).role(PartyRole.CLAIMANT).build(),
+                ClaimPartyEntity.builder().party(defendant).role(PartyRole.DEFENDANT).rank(1).build()))
+            .build();
+        PcsCaseEntity caseWithClaim = PcsCaseEntity.builder()
+            .caseReference(1234567890123456L).claims(List.of(claim)).build();
+        DocumentEntity claimForm = DocumentEntity.builder()
+            .id(UUID.randomUUID()).type(DocumentType.CLAIM).build();
+        DocumentEntity accessCode = DocumentEntity.builder()
+            .id(UUID.randomUUID()).type(DocumentType.DEFENDANT_ACCESS_CODE).party(defendant).build();
+
+        underTest.sendAndRecord(caseWithClaim, claimant, LetterType.CLAIMANT_CLAIM_PACK,
+                                List.of(claimForm), () -> UUID.randomUUID());
+        underTest.sendAndRecord(caseWithClaim, defendant, LetterType.DEFENDANT_CLAIM_PACK,
+                                List.of(claimForm, accessCode), () -> UUID.randomUUID());
+
+        verify(accessCodeActivityLogService)
+            .recordPackSent(eq(caseWithClaim), eq(claimant), packDetailsCaptor.capture());
+        assertThat(packDetailsCaptor.getValue().documents()).singleElement().satisfies(ref -> {
+            assertThat(ref.self()).isTrue();
+            assertThat(ref.defendantNumber()).isNull();
+        });
+
+        verify(accessCodeActivityLogService)
+            .recordPackSent(eq(caseWithClaim), eq(defendant), packDetailsCaptor.capture());
+        assertThat(packDetailsCaptor.getValue().documents()).satisfiesExactly(
+            claimRef -> {
+                assertThat(claimRef.type()).isEqualTo(DocumentType.CLAIM);
+                assertThat(claimRef.self()).isFalse();
+                assertThat(claimRef.defendantNumber()).isNull();
+            },
+            accessCodeRef -> {
+                assertThat(accessCodeRef.type()).isEqualTo(DocumentType.DEFENDANT_ACCESS_CODE);
+                assertThat(accessCodeRef.self()).isTrue();
+                assertThat(accessCodeRef.defendantNumber()).isEqualTo(1);
+            });
     }
 
     @Test

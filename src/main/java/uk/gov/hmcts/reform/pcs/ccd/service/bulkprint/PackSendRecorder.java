@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.pcs.ccd.service.bulkprint;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
 import org.springframework.stereotype.Service;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.PackDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.PackDocumentRef;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
@@ -97,7 +98,7 @@ public class PackSendRecorder {
                                                    List<DocumentEntity> documents) {
         return documents.stream()
             .map(document -> {
-                PartyEntity owner = owningParty(document);
+                PartyEntity owner = owningParty(pcsCase, document);
                 Integer defendantNumber = owner == null ? null : resolveDefendantNumber(pcsCase, owner.getId());
                 boolean self = owner != null && owner.getId().equals(recipient.getId());
                 return new PackDocumentRef(document.getId(), document.getType(), defendantNumber, self);
@@ -105,16 +106,31 @@ public class PackSendRecorder {
             .toList();
     }
 
-    // The party a document belongs to: on the document directly (access code, counter-claim) or via the
-    // defence response (the defence form carries no direct party_id). Null for the case-level claim form.
-    private PartyEntity owningParty(DocumentEntity document) {
+    // The party a document belongs to: on the document directly (access code, counter-claim), via the
+    // defence response (the defence form carries no direct party_id), or the main claimant for the claim
+    // form (stored case-level, but it is the claimant's own filing — so their pack gets self=true).
+    private PartyEntity owningParty(PcsCaseEntity pcsCase, DocumentEntity document) {
         if (document.getParty() != null) {
             return document.getParty();
         }
         if (document.getDefendantResponse() != null) {
             return document.getDefendantResponse().getParty();
         }
+        if (document.getType() == DocumentType.CLAIM) {
+            return claimantParty(pcsCase);
+        }
         return null;
+    }
+
+    private PartyEntity claimantParty(PcsCaseEntity pcsCase) {
+        if (pcsCase.getClaims().isEmpty()) {
+            return null;
+        }
+        return pcsCase.getClaims().getFirst().getClaimParties().stream()
+            .filter(claimParty -> claimParty.getRole() == PartyRole.CLAIMANT)
+            .map(ClaimPartyEntity::getParty)
+            .findFirst()
+            .orElse(null);
     }
 
     // The defendant's 1-based number from claim_party.rank (same source as the "Defence - Defendant N" name).
