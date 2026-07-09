@@ -60,7 +60,7 @@ public class ManageHearing implements CCDConfig<PCSCase, State, UserRole> {
 
         List<DynamicStringListElement> listItems =
             buildPartyListItems(pcsCase.getAllClaimants(), pcsCase.getAllDefendants());
-        pcsCase.setPartySelectionList(
+        pcsCase.setPartyMultiSelectionList(
             DynamicMultiSelectStringList.builder()
                 .listItems(listItems)
                 .build()

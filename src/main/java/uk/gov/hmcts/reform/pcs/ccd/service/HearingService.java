@@ -54,7 +54,7 @@ public class HearingService {
         }
 
         if (noticeIssued == VerticalYesNo.YES && isWithoutNotice == VerticalYesNo.YES) {
-            DynamicMultiSelectStringList selectedParties = pcsCase.getPartySelectionList();
+            DynamicMultiSelectStringList selectedParties = pcsCase.getPartyMultiSelectionList();
 
             if (selectedParties != null) {
                 addPartiesToHearingEntity(selectedParties, hearingEntity);

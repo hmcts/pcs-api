@@ -741,5 +741,5 @@ public class PCSCase {
     private String hearingLocation;
 
     @CCD(typeOverride = DynamicMultiSelectList)
-    private DynamicMultiSelectStringList partySelectionList;
+    private DynamicMultiSelectStringList partyMultiSelectionList;
 }

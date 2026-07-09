@@ -60,7 +60,7 @@ public class AddHearingPage implements CcdPageConfiguration, CcdPage {
                 """,
                "hearing_IsWithoutNotice=\"YES\""
             )
-            .mandatory(PCSCase::getPartySelectionList, "hearing_IsWithoutNotice=\"YES\"")
+            .mandatory(PCSCase::getPartyMultiSelectionList, "hearing_IsWithoutNotice=\"YES\"")
             .complex(PCSCase::getHearing)
             .optional(Hearing::getAdditionalInformation)
             .done();
