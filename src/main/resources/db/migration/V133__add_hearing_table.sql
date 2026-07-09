@@ -11,7 +11,7 @@ CREATE TABLE public.hearing
   notes VARCHAR(500) NOT NULL,
   notice_issued YES_NO NOT NULL,
   is_without_notice YES_NO,
-  additional_information VARCHAR(500) NOT NULL
+  additional_information VARCHAR(500)
 );
 
 CREATE INDEX idx_hearing_case_id ON public.hearing(case_id);

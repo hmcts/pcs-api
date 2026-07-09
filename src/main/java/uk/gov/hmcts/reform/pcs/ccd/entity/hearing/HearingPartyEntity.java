@@ -27,12 +27,12 @@ public class HearingPartyEntity {
     @Builder.Default
     private HearingPartyId id = new HearingPartyId();
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @MapsId("hearingId")
     @JsonBackReference
     private HearingEntity hearing;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @MapsId("partyId")
     @JsonBackReference
     private PartyEntity party;

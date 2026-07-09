@@ -29,12 +29,13 @@ public class HearingService {
 
     public void addHearing(long caseReference, PCSCase pcsCase) {
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
-        HearingEntity hearingEntity = createHearingEntity(pcsCase.getHearing());
+        HearingEntity hearingEntity = createHearingEntity(pcsCase);
         pcsCaseEntity.addHearing(hearingEntity);
         pcsCaseRepository.save(pcsCaseEntity);
     }
 
-    private HearingEntity createHearingEntity(Hearing hearing) {
+    private HearingEntity createHearingEntity(PCSCase pcsCase) {
+        Hearing hearing = pcsCase.getHearing();
         HearingType hearingType = hearing.getType();
         VerticalYesNo noticeIssued = hearing.getNoticeIssued();
         VerticalYesNo isWithoutNotice = hearing.getIsWithoutNotice();
@@ -55,7 +56,7 @@ public class HearingService {
         }
 
         if (noticeIssued == VerticalYesNo.YES && isWithoutNotice == VerticalYesNo.YES) {
-            DynamicMultiSelectStringList selectedParties = hearing.getHearingNoticeRecipients();
+            DynamicMultiSelectStringList selectedParties = pcsCase.getPartySelectionList();
 
             if (selectedParties != null) {
                 addPartiesToHearingEntity(selectedParties, hearingEntity);

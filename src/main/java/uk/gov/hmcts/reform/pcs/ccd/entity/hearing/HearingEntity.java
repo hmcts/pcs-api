@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.pcs.ccd.entity.hearing;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -26,8 +27,8 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 import static jakarta.persistence.FetchType.LAZY;
 
@@ -49,10 +50,10 @@ public class HearingEntity {
     @JsonBackReference
     private PcsCaseEntity pcsCase;
 
-    @OneToMany(fetch = LAZY, mappedBy = "hearing")
+    @OneToMany(fetch = LAZY, cascade = CascadeType.ALL, mappedBy = "hearing")
     @Builder.Default
     @JsonManagedReference
-    private Set<HearingPartyEntity> hearingParties = new HashSet<>();
+    private List<HearingPartyEntity> hearingParties = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)
     private HearingType type;

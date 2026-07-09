@@ -128,6 +128,6 @@ public class PartyEntity {
     @OneToMany(fetch = LAZY, mappedBy = "party")
     @Builder.Default
     @JsonManagedReference
-    private Set<HearingPartyEntity> hearingParties = new HashSet<>();
+    private List<HearingPartyEntity> hearingParties = new ArrayList<>();;
 
 }

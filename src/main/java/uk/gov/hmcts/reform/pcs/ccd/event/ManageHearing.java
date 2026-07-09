@@ -24,6 +24,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.HearingService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicMultiSelectStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
+import uk.gov.hmcts.reform.pcs.location.service.LocationReferenceService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,6 +39,7 @@ public class ManageHearing implements CCDConfig<PCSCase, State, UserRole> {
     private final ManageHearingConfigurer manageHearingConfigurer;
     private final AddressFormatter addressFormatter;
     private final HearingService hearingService;
+    private final LocationReferenceService locationReferenceService;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -57,13 +59,9 @@ public class ManageHearing implements CCDConfig<PCSCase, State, UserRole> {
         PCSCase pcsCase = eventPayload.caseData();
         List<DynamicStringListElement> listItems =
             buildPartyListItems(pcsCase.getAllClaimants(), pcsCase.getAllDefendants());
-        pcsCase.setHearing(
-            Hearing.builder()
-                .hearingNoticeRecipients(
-                    DynamicMultiSelectStringList.builder()
-                        .listItems(listItems)
-                        .build()
-                )
+        pcsCase.setPartySelectionList(
+            DynamicMultiSelectStringList.builder()
+                .listItems(listItems)
                 .build()
         );
 
@@ -82,7 +80,10 @@ public class ManageHearing implements CCDConfig<PCSCase, State, UserRole> {
         String address = addressFormatter
             .formatMediumAddress(caseData.getPropertyAddress(), AddressFormatter.COMMA_DELIMITER);
 
-        if (caseData.getManageHearingOption() == ManageHearingOption.ADD) {
+        if (
+            caseData.getManageHearingOption() == ManageHearingOption.ADD ||
+                caseData.getShowManageHearingPage() != YesOrNo.YES
+        ) {
             hearingService.addHearing(caseId, caseData);
         }
 

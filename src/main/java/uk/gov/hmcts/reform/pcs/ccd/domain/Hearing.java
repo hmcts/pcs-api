@@ -72,13 +72,6 @@ public class Hearing {
     private VerticalYesNo isWithoutNotice;
 
     @CCD(
-        label = "Who should receive the hearing notice",
-        hint = "Select all that apply",
-        typeOverride = DynamicMultiSelectList
-    )
-    private DynamicMultiSelectStringList hearingNoticeRecipients;
-
-    @CCD(
         label = ADDITIONAL_INFORMATION_LABEL,
         hint = "This information will be displayed on the hearing notice",
         typeOverride = TextArea
