@@ -36,7 +36,7 @@ public class DashboardViewEventCallbackTests extends BaseApi {
 
     @BeforeEach
     void setUp() {
-        caseReference = apiSteps.ccdCaseIsCreated("england");
+        caseReference = apiSteps.ccdCaseIsCreatedAndIssued("england");
         accessCode = apiSteps.accessCodeIsFetched(caseReference);
     }
 

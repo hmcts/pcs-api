@@ -42,7 +42,7 @@ public class RespondPossessionClaimEventCallbackTests extends BaseApi {
 
     @BeforeAll
     void setUp() {
-        caseReference = apiSteps.ccdCaseIsCreated("england");
+        caseReference = apiSteps.ccdCaseIsCreatedAndIssued("england");
         accessCode = apiSteps.accessCodeIsFetched(caseReference);
     }
 

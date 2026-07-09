@@ -163,7 +163,7 @@ public class DashboardJourneyService {
                 .toList()
         );
     }
-      
+
 
     /**
      * Entries with a null value are omitted so optional placeholders (for example {@code ctaLink}) can be left out

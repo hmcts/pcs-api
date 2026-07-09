@@ -2,7 +2,7 @@ export const serviceRequest = {
   title: `Create a case - HM Courts & Tribunals Service - GOV.UK`,
   payNowLink: `Pay now`,
   amountToPayLabel: `Amount to pay`,
-  amount404: `£404.00`,
+  amount415: `£415.00`,
   payByAccountRadioOption: `Pay fee using Payment by Account (PBA)`,
   payByCardRadioOption: `Pay by credit or debit card`,
   selectPBALabel: `Select a PBA`,
