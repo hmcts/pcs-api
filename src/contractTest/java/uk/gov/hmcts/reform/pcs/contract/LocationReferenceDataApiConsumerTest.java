@@ -58,7 +58,8 @@ public class LocationReferenceDataApiConsumerTest {
             .method(HttpMethod.GET.toString())
             .headers("ServiceAuthorization", SERVICE_AUTH_TOKEN,
                      "Authorization", AUTHORIZATION_TOKEN)
-            .matchQuery("court_type_id", String.valueOf(PactDslJsonRootValue.integerType(17)))
+            .matchQuery("service_code", "AAA3")
+            .matchQuery("court_type_id", String.valueOf(PactDslJsonRootValue.integerType(10)))
             .matchQuery("epimms_id", "123456789")
             .willRespondWith()
             .status(200)
@@ -70,8 +71,8 @@ public class LocationReferenceDataApiConsumerTest {
     @Test
     @PactTestFor(pactMethod = "getCourtVenueByEpimmsIdAndType")
     void verifyCourtVenueByEpimmsIdAndType() {
-        List<CourtVenue> response = locationReferenceApi.getCountyCourts(
-            AUTHORIZATION_TOKEN, SERVICE_AUTH_TOKEN, "123456789", 17
+        List<CourtVenue> response = locationReferenceApi.getCourtVenues(
+            AUTHORIZATION_TOKEN, SERVICE_AUTH_TOKEN, "123456789", 10, "AAA3"
         );
 
         assertThat(response).isNotNull();
@@ -79,8 +80,8 @@ public class LocationReferenceDataApiConsumerTest {
 
         CourtVenue location = response.get(0);
 
-        assertThat(location.epimmsId()).isEqualTo(123456789);
-        assertThat(location.courtVenueId()).isEqualTo(1L);
+        assertThat(location.epimmsId()).isEqualTo("123456789");
+        assertThat(location.courtVenueId()).isEqualTo("1");
         assertThat(location.courtName()).isEqualTo("ABERDEEN TRIBUNAL HEARING CENTRE 1");
     }
 

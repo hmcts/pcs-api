@@ -1,12 +1,17 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.form;
 
+import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.document.model.claimform.ClaimFormAddress;
 
 import java.math.BigDecimal;
 import java.text.NumberFormat;
+import java.time.Clock;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 
@@ -30,11 +35,23 @@ public final class FormFieldFormatter {
         return yesNo == VerticalYesNo.YES;
     }
 
+    public static boolean isYes(YesNoNotSure yesNo) {
+        return yesNo == YesNoNotSure.YES;
+    }
+
     public static boolean isNo(VerticalYesNo yesNo) {
         return yesNo == VerticalYesNo.NO;
     }
 
+    public static boolean isNo(YesNoNotSure yesNo) {
+        return yesNo == YesNoNotSure.NO;
+    }
+
     public static String toLabel(VerticalYesNo yesNo) {
+        return yesNo == null ? null : yesNo.getLabel();
+    }
+
+    public static String toLabel(YesNoNotSure yesNo) {
         return yesNo == null ? null : yesNo.getLabel();
     }
 
@@ -51,6 +68,13 @@ public final class FormFieldFormatter {
         return date == null ? null : date.format(LONG_DATE_FORMAT);
     }
 
+    // A stored UTC timestamp rendered as the UK calendar date, so a value just after midnight BST
+    // shows the correct day rather than the previous one. Null-safe.
+    public static LocalDate formatUkDate(LocalDateTime utcTimestamp, Clock ukClock) {
+        return utcTimestamp == null ? null
+            : utcTimestamp.atZone(ZoneOffset.UTC).withZoneSameInstant(ukClock.getZone()).toLocalDate();
+    }
+
     public static ClaimFormAddress toFormAddress(AddressEntity address) {
         if (address == null) {
             return null;
@@ -62,6 +86,21 @@ public final class FormFieldFormatter {
             .postTown(address.getPostTown())
             .county(address.getCounty())
             .postcode(address.getPostcode())
+            .country(address.getCountry())
+            .build();
+    }
+
+    public static ClaimFormAddress toFormAddress(AddressUK address) {
+        if (address == null) {
+            return null;
+        }
+        return ClaimFormAddress.builder()
+            .addressLine1(address.getAddressLine1())
+            .addressLine2(address.getAddressLine2())
+            .addressLine3(address.getAddressLine3())
+            .postTown(address.getPostTown())
+            .county(address.getCounty())
+            .postcode(address.getPostCode())
             .country(address.getCountry())
             .build();
     }
