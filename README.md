@@ -302,7 +302,14 @@ be reached. The first flag is `bulk-print-enabled`. To add one, add a constant
 one, delete the constant and the compiler points you at every use.
 
 The SDK key comes from the key vault (`LAUNCHDARKLY_SDK_KEY`) and `LAUNCHDARKLY_ENV` sets the
-environment used for targeting. With no key the client runs offline and every flag uses its default,
+environment used for targeting.
+
+### Local Dev
+
+When running the pcs-api locally, set `LAUNCHDARKLY_OFFLINE` to `true` and optionally specify one or more files
+containing flags values to be used. This is set up by default for cftLibTest and bootWithCcd
+
+With no key the client runs offline and every flag uses its default,
 so it still runs locally; local and `cftlibTest` set `LAUNCHDARKLY_OFFLINE=true`.
 
 ## License

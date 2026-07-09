@@ -518,6 +518,7 @@ project.tasks.named("generateCCDConfig") {
   environment 'PCS_DB_PASSWORD', 'postgres'
   environment 'DB_PORT', '6432'
   environment 'LAUNCHDARKLY_OFFLINE', 'true'
+  environment 'LAUNCHDARKLY_SDK_KEY', 'ignored'
   environment 'ENABLE_TESTING_SUPPORT', 'false'
   environment 'DB_SCHEDULER_EXECUTOR_ENABLED', 'false'
 }
@@ -557,6 +558,8 @@ tasks.withType(CftlibExec).configureEach {
   environment 'SPRING_PROFILES_ACTIVE', 'dev'
   // No LaunchDarkly key for local/cftlibTest - run the client offline so it serves code defaults
   environment 'LAUNCHDARKLY_OFFLINE', 'true'
+  environment 'LAUNCHDARKLY_SDK_KEY', 'ignored'
+  environment 'LAUNCHDARKLY_FILES', './featureFlags/flags.json'
   environment 'ENABLE_TESTING_SUPPORT', 'true'
   environment 'IDAM_CLIENT_SECRET', 'dummy-secret-for-local'
   environment 'XUI_JURISDICTIONS', 'PCS'
