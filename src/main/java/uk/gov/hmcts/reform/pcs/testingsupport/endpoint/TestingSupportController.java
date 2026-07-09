@@ -459,7 +459,7 @@ public class TestingSupportController {
     }
 
     @Operation(
-        summary = "Set a party email address and contact pregetence"
+        summary = "Set a party email address and contact preference"
     )
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Email set successfully", content = @Content()),

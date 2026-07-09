@@ -171,9 +171,6 @@ access-code-form:
 access-code-test-table:
   enabled: ${ENABLE_ACCESS_CODE_TEST_TABLE:${testing-support.enabled:false}}
 
-pin-test-table:
-  enabled: ${ENABLE_PIN_TEST_TABLE:${testing-support.enabled:false}}
-
 # Below sets if DB scheduler can execute on the current instance of the API.
 db-scheduler:
   enabled: false # This disables the autoconfiguration of DB Scheduler. Always off.
