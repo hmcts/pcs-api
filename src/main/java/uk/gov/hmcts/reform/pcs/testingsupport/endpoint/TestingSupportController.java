@@ -32,6 +32,8 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
 import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
+import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 import uk.gov.hmcts.reform.pcs.testingsupport.model.TestingSupportAccessCode;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
@@ -84,6 +86,7 @@ public class TestingSupportController {
     private final OrganisationDetailsService organisationDetailsService;
     private final PcsCaseService pcsCaseService;
     private final AccessCodeGenerationService accessCodeGenerationService;
+    private final FeatureToggleService featureToggleService;
 
     @Operation(
         summary = "Schedule a Hello World task",
@@ -393,6 +396,8 @@ public class TestingSupportController {
         content = @Content())
     @ApiResponse(responseCode = "401", description = "Invalid access token",
         content = @Content())
+    @ApiResponse(responseCode = "412", description = "Feature not enabled",
+        content = @Content())
     public ResponseEntity<Void> linkDefendantSolicitorToParty(
         @Parameter(description = "The 12-digit case reference number", required = true)
         @PathVariable long caseReference,
@@ -401,6 +406,13 @@ public class TestingSupportController {
         @RequestHeader(value = AUTHORIZATION) String authorization,
         @RequestHeader(value = "ServiceAuthorization") String serviceAuthorization
     ) {
+
+        if(!this.featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_2)
+            || !this.featureToggleService.isEnabled(FeatureFlag.CUI_RESPOND_TO_CLAIM_LR)) {
+            log.warn("Feature flags are disabled for [{}] [{}]", FeatureFlag.RELEASE_1_DOT_2.key(),
+                     FeatureFlag.CUI_RESPOND_TO_CLAIM_LR.key());
+            return ResponseEntity.status(HttpStatus.PRECONDITION_FAILED).build();
+        }
 
         User user = idamAuthenticator.validateAuthToken(authorization);
         UserInfo userDetails = user.getUserDetails();
