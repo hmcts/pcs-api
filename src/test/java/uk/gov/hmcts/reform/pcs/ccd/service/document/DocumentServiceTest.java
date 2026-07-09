@@ -64,9 +64,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.never;
 
 @ExtendWith(MockitoExtension.class)
 class DocumentServiceTest {
@@ -1203,8 +1200,9 @@ class DocumentServiceTest {
 
         List<LegalRepDocument> listOfLegalRepDocuments = documentService.createLegalRepDocuments(pcsCase);
         assertThat(listOfLegalRepDocuments).hasSize(1);
-        assertThat(listOfLegalRepDocuments.get(0).getLegalRepDocumentType().getLabel()).isEqualTo("Photographic evidence");
-        assertThat(listOfLegalRepDocuments.get(0).getDescription()).isEqualTo("Test Description");
+        assertThat(listOfLegalRepDocuments.getFirst().getLegalRepDocumentType().getLabel())
+            .isEqualTo("Photographic evidence");
+        assertThat(listOfLegalRepDocuments.getFirst().getDescription()).isEqualTo("Test Description");
     }
 
     @Test
@@ -1215,6 +1213,7 @@ class DocumentServiceTest {
             .filename("test filename")
             .url("test url")
             .binaryUrl("test binary url")
+            .categoryId(CaseFileCategory.EVIDENCE.getId())
             .build();
 
         LegalRepDocument legalRepDocument = LegalRepDocument.builder()
@@ -1225,7 +1224,10 @@ class DocumentServiceTest {
 
         List<LegalRepDocument> legalRepDocList = List.of(legalRepDocument);
 
+        ClaimEntity claim = mock(ClaimEntity.class);
+
         PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
+        when(pcsCaseEntity.getClaims()).thenReturn(List.of(claim));
 
         // When
         documentService.createDocumentEntitiesFromLegalRepDocuments(legalRepDocList, pcsCaseEntity);
