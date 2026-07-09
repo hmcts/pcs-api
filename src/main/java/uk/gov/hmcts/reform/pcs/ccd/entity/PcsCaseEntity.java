@@ -26,7 +26,6 @@ import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
@@ -59,6 +58,7 @@ public class PcsCaseEntity {
     private ClaimantType claimantType;
 
     private Integer caseManagementLocation;
+    private Integer baseLocation;
 
     private Boolean preActionProtocolCompleted;
 
@@ -108,6 +108,8 @@ public class PcsCaseEntity {
     @Builder.Default
     private List<CaseLinkEntity> caseLinks = new ArrayList<>();
 
+    private Integer regionId;
+
     @OneToMany(mappedBy = "pcsCase", cascade = ALL, orphanRemoval = true)
     @Builder.Default
     private List<CaseFlagEntity> caseFlags = new ArrayList<>();
@@ -130,7 +132,7 @@ public class PcsCaseEntity {
     }
 
     public void addGenApp(GenAppEntity genApp) {
-        int rank = countNumberOfGenAppsForParty(genApp.getParty()) + 1;
+        int rank = genApps.size() + 1;
         genApp.setRank(rank);
         genApps.add(genApp);
         genApp.setPcsCase(this);
@@ -161,18 +163,6 @@ public class PcsCaseEntity {
     public void addCaseNote(CaseNoteEntity caseNote) {
         caseNotes.add(caseNote);
         caseNote.setPcsCase(this);
-    }
-
-    private int countNumberOfGenAppsForParty(PartyEntity party) {
-        if (party == null || party.getId() == null) {
-            return 0;
-        }
-
-        return (int) genApps.stream()
-            .map(GenAppEntity::getParty)
-            .filter(Objects::nonNull)
-            .filter(genAppParty -> party.getId().equals(genAppParty.getId()))
-            .count();
     }
 
 }
