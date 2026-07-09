@@ -25,7 +25,10 @@ import uk.gov.hmcts.reform.pcs.ccd.page.entergenapp.HearingDate;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 
+import java.util.List;
+
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerRoles.CASEWORKER_ROLES;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.enterGenApp;
 
 @Component
@@ -34,6 +37,7 @@ public class EnterGenApp implements CCDConfig<PCSCase, State, UserRole> {
 
     private final PcsCaseService pcsCaseService;
     private final PartyService partyService;
+    private final ApplicationDetails applicationDetails;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -41,10 +45,11 @@ public class EnterGenApp implements CCDConfig<PCSCase, State, UserRole> {
             .decentralisedEvent(enterGenApp.name(), this::submit, this::start)
             .forStates(State.CASE_ISSUED)
             .name("Enter a general application")
-            .grant(Permission.CRU, CASEWORKER_ROLES);
+            .grant(Permission.CRU, CASEWORKER_ROLES)
+            .grantHistoryOnly(JUDICIAL_HISTORY_ROLES);
 
         new PageBuilder(eventBuilder)
-            .add(new ApplicationDetails())
+            .add(applicationDetails)
             .add(new HearingDate())
             .add(new ApplicationFee());
     }
@@ -61,7 +66,7 @@ public class EnterGenApp implements CCDConfig<PCSCase, State, UserRole> {
     }
 
     private DynamicList buildApplicantPartyList(ClaimEntity mainClaim) {
-        var listItems = mainClaim.getClaimParties().stream()
+        List<DynamicListElement> listItems = mainClaim.getClaimParties().stream()
             .filter(claimPartyEntity -> claimPartyEntity.getRole() == PartyRole.CLAIMANT
                 || claimPartyEntity.getRole() == PartyRole.DEFENDANT)
             .map(claimPartyEntity -> DynamicListElement.builder()
@@ -78,7 +83,7 @@ public class EnterGenApp implements CCDConfig<PCSCase, State, UserRole> {
 
     private String buildPartyDisplayName(PartyEntity partyEntity) {
         if (partyEntity.getNameKnown() == VerticalYesNo.NO) {
-            return "Name not known";
+            return "Person unknown";
         }
         return partyService.getPartyName(partyEntity);
     }

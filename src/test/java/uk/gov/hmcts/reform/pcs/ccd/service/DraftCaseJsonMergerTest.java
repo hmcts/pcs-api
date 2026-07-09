@@ -88,6 +88,7 @@ class DraftCaseJsonMergerTest {
                             "possessionClaimResponse",
                             "enforcementOrder.rawWarrantDetails.vulnerableAdultsChildren",
                             "xuiGenAppRequest",
+                            "enterGenAppRequest",
                             "casePartiesTab",
                             "caseDetailsTab",
                             "summaryTab")

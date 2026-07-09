@@ -9,12 +9,9 @@ import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.DynamicList;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
-import uk.gov.hmcts.ccd.sdk.type.ListValue;
-import uk.gov.hmcts.reform.pcs.ccd.domain.UploadedDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 
 import java.time.LocalDate;
-import java.util.List;
 
 @Builder
 @Data
@@ -35,10 +32,16 @@ public class EnterGenAppRequest {
     @CCD(label = "Which type of application has the applicant made?")
     private EnterGenAppType applicationTypeOption;
 
+    @CCD(
+        label = "Which categories apply?",
+        typeOverride = FieldType.TextArea
+    )
+    private String somethingElseDetails;
+
     @CCD(label = "Is there a hearing for this case in the next 14 days?")
     private VerticalYesNo within14Days;
 
-    @CCD(label = "Have they already applied for help with their application fee?")
+    @CCD(label = "Has the applicant included a Help With Fees reference number on their application")
     private VerticalYesNo appliedForHwf;
 
     @CCD(
@@ -46,21 +49,5 @@ public class EnterGenAppRequest {
         max = 60
     )
     private String hwfReference;
-
-    @CCD(label = "Have the other parties agreed to this application?")
-    private VerticalYesNo otherPartiesAgreed;
-
-    @CCD(label = "Are there any reasons that this application should not be shared with the other parties?")
-    private VerticalYesNo withoutNotice;
-
-    @CCD(label = "Add document")
-    private List<ListValue<UploadedDocument>> uploadedDocuments;
-
-    @CCD(
-        label = "Tell us which categories apply",
-        typeOverride = FieldType.TextArea,
-        max = 500
-    )
-    private String somethingElseDetails;
 
 }
