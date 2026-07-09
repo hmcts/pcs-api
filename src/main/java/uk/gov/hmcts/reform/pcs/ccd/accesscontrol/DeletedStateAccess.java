@@ -14,8 +14,8 @@ public class DeletedStateAccess implements HasAccessControl {
     @Override
     public SetMultimap<HasRole, Permission> getGrants() {
         SetMultimap<HasRole, Permission> grants = HashMultimap.create();
-        grants.put(CLAIMANT_SOLICITOR, Permission.U);
-        grants.put(CREATOR, Permission.U);
+        grants.putAll(CLAIMANT_SOLICITOR, Permission.CRU);
+        grants.putAll(CREATOR, Permission.CRU);
         return grants;
     }
 }
