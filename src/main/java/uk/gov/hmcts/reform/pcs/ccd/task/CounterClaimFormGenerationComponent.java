@@ -62,11 +62,17 @@ public class CounterClaimFormGenerationComponent {
                     return new CompletionHandler.OnCompleteRemove<>();
                 } catch (Exception e) {
                     int attempt = executionContext.getExecution().consecutiveFailures + 1;
-                    if (isFinalAttempt(attempt)) {
-                        long caseReference = counterClaimFormService.recordGenerationFailure(counterClaimId);
+                    boolean finalAttempt = isFinalAttempt(attempt);
+                    long caseReference = 0;
+                    // First + terminal rows: reason visible from attempt 1 (terminal:false = retrying)
+                    if (attempt == 1 || finalAttempt) {
+                        caseReference =
+                            counterClaimFormService.recordGenerationFailure(counterClaimId, e, finalAttempt);
                         if (caseReference > 0) {
                             MDC.put(MDC_CASE_REFERENCE, String.valueOf(caseReference));
                         }
+                    }
+                    if (finalAttempt) {
                         MDC.put(MDC_TERMINAL_FAILURE, "true");
                         MDC.put(MDC_FAILURE_REASON, String.valueOf(e.getMessage()));
                         log.error("Counter claim form generation permanently failed for counter claim {} (case {}) "
