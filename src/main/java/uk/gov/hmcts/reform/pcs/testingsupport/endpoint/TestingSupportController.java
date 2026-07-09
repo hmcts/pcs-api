@@ -407,7 +407,7 @@ public class TestingSupportController {
         @RequestHeader(value = "ServiceAuthorization") String serviceAuthorization
     ) {
 
-        if(!this.featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_2)
+        if (!this.featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_2)
             || !this.featureToggleService.isEnabled(FeatureFlag.CUI_RESPOND_TO_CLAIM_LR)) {
             log.warn("Feature flags are disabled for [{}] [{}]", FeatureFlag.RELEASE_1_DOT_2.key(),
                      FeatureFlag.CUI_RESPOND_TO_CLAIM_LR.key());
