@@ -9,11 +9,9 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageConfigurer;
 @AllArgsConstructor
 public class DeleteCasePageConfigurer implements PageConfigurer {
 
-    private DeleteThisCasePage deleteThisCasePage;
-
     @Override
     public void configurePages(PageBuilder pageBuilder) {
         pageBuilder
-            .add(deleteThisCasePage);
+            .add(new DeleteThisCasePage());
     }
 }
