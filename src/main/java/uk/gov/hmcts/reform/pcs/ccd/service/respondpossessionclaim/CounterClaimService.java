@@ -67,15 +67,17 @@ public class CounterClaimService {
             .orElseThrow(() -> new IllegalStateException("No claim found for case: " + caseReference));
         ClaimEntity claimRef = claimRepository.getReferenceById(claimId);
 
-        CounterClaimEntity counterClaimEntity = buildCounterClaimEntity(counterClaim, partyRef, claimRef);
+        CounterClaimEntity counterClaimEntity = buildCounterClaimEntity(
+            counterClaim, partyRef, LocalDateTime.now(utcClock));
+        counterClaimEntity.setPcsCase(claimRef.getPcsCase());
         CounterClaimEntity savedCounterClaim = counterClaimRepository.save(counterClaimEntity);
         log.info("Saved counterclaim {} for case {}", savedCounterClaim.getId(), caseReference);
         return Optional.of(savedCounterClaim);
     }
 
-    private CounterClaimEntity buildCounterClaimEntity(CounterClaim counterClaim,
-                                                       PartyEntity partyRef,
-                                                       ClaimEntity claimRef) {
+    public CounterClaimEntity buildCounterClaimEntity(CounterClaim counterClaim,
+                                                      PartyEntity partyRef,
+                                                      LocalDateTime submittedAt) {
         boolean claimAmountApplies = counterClaim.getClaimType() != null
             && counterClaim.getClaimType() != CounterClaimType.SOMETHING_ELSE;
 
@@ -96,9 +98,8 @@ public class CounterClaimService {
             .appliedForHwf(counterClaim.getAppliedForHwf())
             .hwfReferenceNumber(counterClaim.getHwfReferenceNumber())
             .status(CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED)
-            .claimSubmittedDate(LocalDateTime.now(utcClock))
+            .claimSubmittedDate(submittedAt)
             .party(partyRef)
-            .pcsCase(claimRef.getPcsCase())
             .build();
 
         if (counterClaim.getCounterClaimAgainst() != null) {
