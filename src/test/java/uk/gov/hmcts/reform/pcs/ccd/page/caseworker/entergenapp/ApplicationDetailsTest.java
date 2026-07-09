@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.page.entergenapp;
+package uk.gov.hmcts.reform.pcs.ccd.page.caseworker.entergenapp;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -7,8 +7,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.EnterGenAppRequest;
-import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.EnterGenAppType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.EnterGenAppRequest;
+import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.EnterGenAppType;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 

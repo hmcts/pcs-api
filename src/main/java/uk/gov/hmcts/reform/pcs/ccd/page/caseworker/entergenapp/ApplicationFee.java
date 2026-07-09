@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.page.entergenapp;
+package uk.gov.hmcts.reform.pcs.ccd.page.caseworker.entergenapp;
 
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;

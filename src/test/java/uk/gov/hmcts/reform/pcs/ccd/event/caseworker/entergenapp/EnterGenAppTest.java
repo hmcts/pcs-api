@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.event.entergenapp;
+package uk.gov.hmcts.reform.pcs.ccd.event.caseworker.entergenapp;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -8,14 +8,14 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.DynamicListElement;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.EnterGenAppRequest;
+import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.EnterGenAppRequest;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.event.BaseEventTest;
-import uk.gov.hmcts.reform.pcs.ccd.page.entergenapp.ApplicationDetails;
+import uk.gov.hmcts.reform.pcs.ccd.page.caseworker.entergenapp.ApplicationDetails;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 
@@ -103,7 +103,7 @@ class EnterGenAppTest extends BaseEventTest {
         PCSCase result = callStartHandler(caseData);
 
         // Then
-        List<DynamicListElement> listItems = result.getApplicantParty().getListItems();
+        List<DynamicListElement> listItems = result.getPartyRadioList().getListItems();
 
         assertThat(listItems).containsExactly(
             DynamicListElement.builder().code(claimantId).label("John Smith - Claimant 1").build(),

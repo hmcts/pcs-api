@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.domain.genapp;
+package uk.gov.hmcts.reform.pcs.ccd.domain.caseworker;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

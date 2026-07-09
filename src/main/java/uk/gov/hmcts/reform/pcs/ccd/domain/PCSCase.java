@@ -31,11 +31,11 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.InternalCaseFlagAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.InternalTabAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.PartyVisibleTabAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.RasValidationAccess;
+import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.EnterGenAppRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.DashboardData;
 import uk.gov.hmcts.reform.pcs.ccd.domain.documentupload.DocumentUploadDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.CitizenGenAppRequest;
-import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.EnterGenAppRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GeneralApplication;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.XuiGenAppRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredNoArrearsPossessionGrounds;
@@ -633,7 +633,7 @@ public class PCSCase {
         searchable = false,
         typeOverride = DynamicRadioList
     )
-    private DynamicList applicantParty;
+    private DynamicList partyRadioList;
 
     @CCD(
         label = "Search Criteria",

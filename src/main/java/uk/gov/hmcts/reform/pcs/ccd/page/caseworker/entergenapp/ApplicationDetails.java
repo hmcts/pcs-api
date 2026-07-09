@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.page.entergenapp;
+package uk.gov.hmcts.reform.pcs.ccd.page.caseworker.entergenapp;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -8,8 +8,8 @@ import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.EnterGenAppRequest;
-import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.EnterGenAppType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.EnterGenAppRequest;
+import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.EnterGenAppType;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
 import java.util.List;
@@ -30,7 +30,7 @@ public class ApplicationDetails implements CcdPageConfiguration {
             .page("applicationDetails", this::midEvent)
             .pageLabel("Application details")
             .label("applicationDetails-lineSeparator", "---")
-            .mandatory(PCSCase::getApplicantParty)
+            .mandatory(PCSCase::getPartyRadioList)
             .complex(PCSCase::getEnterGenAppRequest)
             .mandatory(EnterGenAppRequest::getDateReceived)
             .mandatory(EnterGenAppRequest::getApplicationTypeOption)

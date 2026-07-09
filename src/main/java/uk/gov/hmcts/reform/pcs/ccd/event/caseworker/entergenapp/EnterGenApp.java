@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.event.entergenapp;
+package uk.gov.hmcts.reform.pcs.ccd.event.caseworker.entergenapp;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -19,9 +19,9 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
-import uk.gov.hmcts.reform.pcs.ccd.page.entergenapp.ApplicationDetails;
-import uk.gov.hmcts.reform.pcs.ccd.page.entergenapp.ApplicationFee;
-import uk.gov.hmcts.reform.pcs.ccd.page.entergenapp.HearingDate;
+import uk.gov.hmcts.reform.pcs.ccd.page.caseworker.entergenapp.ApplicationDetails;
+import uk.gov.hmcts.reform.pcs.ccd.page.caseworker.entergenapp.ApplicationFee;
+import uk.gov.hmcts.reform.pcs.ccd.page.caseworker.entergenapp.HearingDate;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 
@@ -60,7 +60,7 @@ public class EnterGenApp implements CCDConfig<PCSCase, State, UserRole> {
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(eventPayload.caseReference());
         ClaimEntity mainClaim = pcsCaseEntity.getClaims().getFirst();
 
-        caseData.setApplicantParty(buildApplicantPartyList(mainClaim));
+        caseData.setPartyRadioList(buildApplicantPartyList(mainClaim));
 
         return caseData;
     }

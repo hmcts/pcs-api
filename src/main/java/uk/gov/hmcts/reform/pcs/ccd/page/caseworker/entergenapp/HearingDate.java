@@ -1,10 +1,10 @@
-package uk.gov.hmcts.reform.pcs.ccd.page.entergenapp;
+package uk.gov.hmcts.reform.pcs.ccd.page.caseworker.entergenapp;
 
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.EnterGenAppRequest;
-import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.EnterGenAppType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.EnterGenAppRequest;
+import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.EnterGenAppType;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.fieldEquals;
 
