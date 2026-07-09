@@ -67,24 +67,13 @@ public class DocumentService {
     }
 
     public List<DocumentEntity> createAllDocuments(PCSCase pcsCase) {
-        List<DocumentEntity> documentEntities = buildDocumentEntitiesForCase(pcsCase);
-
-        if (documentEntities.isEmpty()) {
-            return List.of();
-        }
-
-        return documentRepository.saveAll(documentEntities);
+        return documentRepository.saveAll(buildDocumentEntitiesForCase(pcsCase));
     }
 
     public List<DocumentEntity> createAllDocuments(EnforcementOrder enforcementOrder) {
-
-        List<DocumentHolder> allDocuments = getWarrantOfRestitutionDocuments(enforcementOrder);
-
-        if (allDocuments.isEmpty()) {
-            return List.of();
-        }
-
-        return documentRepository.saveAll(createDocumentEntities(allDocuments));
+        return documentRepository.saveAll(
+            createDocumentEntities(getWarrantOfRestitutionDocuments(enforcementOrder))
+        );
     }
 
     private List<DocumentHolder> getPcsCaseDocuments(PCSCase pcsCase) {

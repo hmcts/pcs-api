@@ -411,13 +411,14 @@ class DocumentServiceTest {
     void shouldReturnEmptyListIfNoDocuments() {
         // Given
         PCSCase pcsCase = mock(PCSCase.class);
+        when(documentRepository.saveAll(anyList())).thenAnswer(invocation -> invocation.getArgument(0));
 
         // When
         List<DocumentEntity> entities = underTest.createAllDocuments(pcsCase);
 
         // Then
         assertThat(entities).isEmpty();
-        verify(documentRepository, never()).saveAll(anyList());
+        verify(documentRepository).saveAll(List.of());
     }
 
 
@@ -497,12 +498,14 @@ class DocumentServiceTest {
                         .additionalDocuments(evidenceDocuments)
                         .build())
                 .build();
+        when(documentRepository.saveAll(anyList())).thenAnswer(invocation -> invocation.getArgument(0));
 
         // When
-        underTest.createAllDocuments(enforcementOrder);
+        List<DocumentEntity> entities = underTest.createAllDocuments(enforcementOrder);
 
         // Then
-        verify(documentRepository, never()).saveAll(List.of());
+        assertThat(entities).isEmpty();
+        verify(documentRepository).saveAll(List.of());
     }
 
     @Test
