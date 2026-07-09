@@ -17,6 +17,7 @@ import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
@@ -25,6 +26,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -95,6 +97,14 @@ class PartiesViewTest {
 
         PartyEntity otherParty = buildParty(UUID.randomUUID(), "John", "Smith", "Org B",
                                             "john@example.com", "07700000002");
+        otherParty.setDateOfBirth(LocalDate.of(1985, 7, 20));
+        AddressEntity addressEntity = AddressEntity.builder().addressLine1("1 Other Street").build();
+        otherParty.setAddress(addressEntity);
+        otherParty.setAddressKnown(VerticalYesNo.YES);
+        when(modelMapper.map(addressEntity, AddressUK.class)).thenReturn(
+            AddressUK.builder().addressLine1("1 Other Street").build()
+        );
+
         ClaimPartyEntity claimParty = buildClaimPartyEntity(otherParty, PartyRole.DEFENDANT);
         when(claimEntity.getClaimParties()).thenReturn(List.of(claimParty));
 
@@ -108,8 +118,10 @@ class PartiesViewTest {
         assertThat(party.getOrgName()).isEqualTo("Org B");
         assertThat(party.getEmailAddress()).isNull();
         assertThat(party.getPhoneNumber()).isNull();
-        assertThat(party.getDateOfBirth()).isNull();
-        assertThat(party.getAddress()).isNull();
+        assertThat(party.getLegalRepresentative()).isNull();
+        assertThat(party.getDateOfBirth()).isEqualTo(LocalDate.of(1985, 7, 20));
+        assertThat(party.getAddress()).isNotNull();
+        assertThat(party.getAddress().getAddressLine1()).isEqualTo("1 Other Street");
     }
 
     @Test
