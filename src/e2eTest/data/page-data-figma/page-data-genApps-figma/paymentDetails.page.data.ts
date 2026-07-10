@@ -10,7 +10,7 @@ export const paymentDetails = {
   nameOnCardTextLabel: `Name On Card`,
   nameOnCardTextInput: `John Doe`,
   cardSecurityCodeTextLabel: `Card security code`,
-  cardSecurityCodeTextInput: `123`,
+  cardSecurityCodeTextInput: `126`,
   billingAddressHeader: `Billing address`,
   addressLine1TextLabel: `Address line 1`,
   addressLine1TextInput: `2 Second Avenue`,

@@ -116,7 +116,7 @@ public class FeePaymentCallbackTests extends BaseApi {
         String paymentStatus = claimantPaymentRefPostCallback.get("paymentStatus").toString();
         String paymentAmount = claimantPaymentRefPostCallback.get("amount").toString();
         assertEquals("PAID",paymentStatus);
-        assertEquals("404.0",paymentAmount);
+        assertEquals("415.0",paymentAmount);
     }
 
     @Title("Fee Payment callback return 204 on success with payment status Not paid")

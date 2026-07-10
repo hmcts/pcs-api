@@ -49,14 +49,17 @@ public class ClaimActivityLogEntity {
     private PartyEntity party;
 
     @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @Column(name = "activity_type", nullable = false)
     private ClaimActivityType activityType;
 
     @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @Column(name = "status", nullable = false)
     private ClaimActivityStatus status;
+
+    // ActivityDetails serialised to JSON; shape discriminated by activityType (same idiom as fee_payment.task_data)
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "details")
+    private String details;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)

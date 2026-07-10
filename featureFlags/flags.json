@@ -1,0 +1,7 @@
+{
+  "flagValues": {
+    "bulk-print-enabled": false,
+    "caseworker-events-enabled": true,
+    "release-1.2-enabled": true
+  }
+}
