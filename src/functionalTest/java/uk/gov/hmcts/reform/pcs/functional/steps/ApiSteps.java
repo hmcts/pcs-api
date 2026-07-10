@@ -105,6 +105,7 @@ public class ApiSteps {
             case "POST" -> request.when().post(resourceAPI.getResource());
             case "GET" -> request.when().get(resourceAPI.getResource());
             case "DELETE" -> request.when().delete(resourceAPI.getResource());
+            case "PUT" -> request.when().put(resourceAPI.getResource());
             default -> throw new IllegalStateException("Unexpected value: " + method.toUpperCase());
         };
     }
@@ -174,6 +175,15 @@ public class ApiSteps {
 
     @Step("a case for {0} is created")
     public Long ccdCaseIsCreated(String legislativeCountry) {
+        return createCase(legislativeCountry, false);
+    }
+
+    @Step("a case for {0} is created, issued and access codes generated")
+    public Long ccdCaseIsCreatedAndIssued(String legislativeCountry) {
+        return createCase(legislativeCountry, true);
+    }
+
+    private Long createCase(String legislativeCountry, boolean issueAndGenerateAccessCodes) {
         final int maxAttempts = 3;
 
         for (int attempt = 1; attempt <= maxAttempts; attempt++) {
@@ -183,6 +193,7 @@ public class ApiSteps {
                 .header(TestConstants.AUTHORIZATION, "Bearer " + solicitorUserIdamToken)
                 .header(TestConstants.SERVICE_AUTHORIZATION, pcsApiS2sToken)
                 .pathParam("legislativeCountry", legislativeCountry)
+                .queryParam("issueAndGenerateAccessCodes", issueAndGenerateAccessCodes)
                 .when()
                 .post(Endpoints.CreateTestCase.getResource());
 
@@ -260,6 +271,41 @@ public class ApiSteps {
         } catch (ConditionTimeoutException e) {
             throw new RuntimeException(
                 "Validate access code failed: " + caseReference, e
+            );
+        }
+    }
+
+    @Step("fee payment info details fetched")
+        public List<Map<String, Object>> getFeePaymentDetailsForCaseReference(Long caseReference) {
+        Callable<List<Map<String, Object>>> getPaymentInfo = () -> {
+            List<Map<String,Object>> paymentDetails = SerenityRest.given()
+                .baseUri(baseUrl)
+                .contentType(ContentType.JSON)
+                .header(TestConstants.SERVICE_AUTHORIZATION, pcsApiS2sToken)
+                .pathParam("caseReference", caseReference)
+                .when()
+                .get(Endpoints.GetPaymentInfoDetails.getResource())
+                .then()
+                .statusCode(200)
+                .extract()
+                .as(new TypeRef<List<Map<String, Object>>>() {
+                });
+
+            if (paymentDetails != null && !paymentDetails.isEmpty()) {
+                return paymentDetails;
+            }
+            return null;
+        };
+
+        try {
+            return await()
+                .atMost(Duration.ofSeconds(15))
+                .pollInterval(Duration.ofMillis(700))
+                .ignoreExceptions()
+                .until(getPaymentInfo, notNullValue());
+        } catch (ConditionTimeoutException e) {
+            throw new RuntimeException(
+                "Error getting payment info details for case reference: " + caseReference, e
             );
         }
     }

@@ -17,6 +17,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
 
 @Component
 @Slf4j
@@ -36,7 +37,8 @@ public class CreateFlags implements CCDConfig<PCSCase, State, UserRole> {
                 .grant(Permission.CRU,
                        UserRole.CTSC_ADMIN,
                        UserRole.HEARING_CENTRE_ADMIN,
-                       UserRole.WLU_ADMIN))
+                       UserRole.WLU_ADMIN)
+                .grantHistoryOnly(JUDICIAL_HISTORY_ROLES))
                 .page("caseworkerCaseFlag")
                 .optional(PCSCase::getCaseFlags, ShowConditions.NEVER_SHOW, true, true)
                 .optional(PCSCase::getParties, ShowConditions.NEVER_SHOW, true, true)

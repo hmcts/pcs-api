@@ -1,5 +1,5 @@
 import {actionData, actionRecord, IAction} from '@utils/interfaces';
-import {expect, Locator, Page} from '@playwright/test';
+import test, {expect, Page} from '@playwright/test';
 import {getCaseTypeId} from '@utils/common/caseType.utils';
 import {performAction, performActions, performValidation} from '@utils/controller';
 import {
@@ -55,7 +55,7 @@ import {
 } from '@data/page-data-figma';
 import {MEDIUM_TIMEOUT, SHORT_TIMEOUT, VERY_LONG_TIMEOUT} from 'playwright.config';
 import {compareMaps} from '@utils/common/compareMaps.util';
-import {caseInfo} from './createCaseAPI.action';
+import {caseInfo, defendantUserDetails} from './createCaseAPI.action';
 import {createCaseApiData} from '@data/api-data';
 import {formatCaseStateText, formatCurrency, formatDate, formatDateTime, formatUploadDocName, formatText, formatWord} from '@utils/common/string.utils';
 export let caseNumber: string;
@@ -131,6 +131,7 @@ export class CreateCaseAction implements IAction {
       ['validateCaseFileViewFolders', () => this.validateCaseFileViewFolders(page, fieldName as actionData)],
       ['validateCaseFileViewIndividualFolder', () => this.validateCaseFileViewIndividualFolder(page, fieldName as actionRecord)],
       ['validateCaseListTable', () => this.validateCaseListTable(page, fieldName as actionRecord)],
+      ['validateTabAccess', () => this.validateTabAccess(page, fieldName as actionRecord)],
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -213,7 +214,7 @@ export class CreateCaseAction implements IAction {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
     await performAction('clickRadioButton', {question:claimType.isThisAClaimAgainstQuestion, option: caseData});
-    if(caseData === claimType.yesRadioOption){    
+    if(caseData === claimType.yesRadioOption){
       await performAction('clickButtonAndVerifyPageNavigation', claimType.continueButton, userIneligible.mainHeader);
     } else {
       await performAction('clickButton', claimType.continueButton);
@@ -769,7 +770,7 @@ export class CreateCaseAction implements IAction {
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
     await performValidation('mainHeader',confirm.makeAClaimDynamicHeader);
     await performValidation('text', {elementType: 'subHeader', text: confirm.makeAPaymentDynamicSubHeader});
-    await performValidation('text', {elementType: 'span', text: confirm.pay404ClaimFeeDynamicParagraph});
+    await performValidation('text', {elementType: 'span', text: confirm.pay415ClaimFeeDynamicParagraph});
     if (params?.clickLink === true) {
       await performAction('clickButton', confirm.payTheClaimFeeDynamicLink);
     }
@@ -950,7 +951,7 @@ export class CreateCaseAction implements IAction {
           defendant.set('Country', submitPayload.defendant1.correspondenceAddress.Country);
         }
         break;
-      
+
       case 'Defendant-Representative':
         const defendantSolicitor = JSON.parse(process.env.Defendant_SOLICITOR || '');
         defendant.set(`Representative’s first name`, defendantSolicitor.displayName);
@@ -963,7 +964,7 @@ export class CreateCaseAction implements IAction {
         defendant.set(`Postcode/Zipcode`, submitPayload.organisationAddress.PostCode);
         defendant.set('Country', submitPayload.organisationAddress.Country)
         break
-    
+
       default:
         break;
     }
@@ -975,14 +976,14 @@ export class CreateCaseAction implements IAction {
       defendant.set(`Defendant’s last name`, `null`);
     }
 
-    
+
     await this.caseTabTableData(page, defendantsDetails.mainTable as string, defendantsDetails.subTable as string );
 
     const misMatchMap = compareMaps(defendant, caseTabMap, {
       name1: 'Defendant',
       name2: 'CaseParties',
     })
-    
+
       if (misMatchMap.size > 0) {
         console.log(`\n❌ Differences found: ${misMatchMap.size}`);
         for (const [key, val] of misMatchMap) {
@@ -996,7 +997,7 @@ export class CreateCaseAction implements IAction {
       } else {
         console.log(`\n✅ Case Parties section "Defendant ${defendantsDetails.subTable}" VALIDATIONS PASSED!\n`);
       }
-    
+
     caseTabMap.clear();
 
   }
@@ -1025,7 +1026,7 @@ export class CreateCaseAction implements IAction {
       name1: 'Claimant',
       name2: 'CaseParties',
     })
-    
+
       if (misMatchMap.size > 0) {
         console.log(`\n❌ Differences found: ${misMatchMap.size}`);
         for (const [key, val] of misMatchMap) {
@@ -1039,7 +1040,7 @@ export class CreateCaseAction implements IAction {
       } else {
         console.log('\n✅ Case Parties (Claimant) VALIDATIONS PASSED!\n');
       }
-    
+
     caseTabMap.clear();
 
   }
@@ -1083,7 +1084,7 @@ export class CreateCaseAction implements IAction {
     let createPayLoad = caseSummarySection.createPayload as Record<string, any>;
     const dateSubmitted = page.locator(`//th[@id="case-viewer-field-label"]/following-sibling::td`);
     expect(await dateSubmitted.textContent()).toEqual(process.env.Submission_TIME);
-    
+
 
     switch (caseSummarySection.section) {
       case 'Defendant details':
@@ -1166,7 +1167,7 @@ export class CreateCaseAction implements IAction {
         if (submitPayLoad.claimantProvidePhoneNumber === 'YES')
           caseSummary.set(`Contact phone number`, submitPayLoad.claimantContactPhoneNumber);
         break;
-      
+
       case 'Claimant registration and licensing':
         caseSummary.set(`Are you an exempt landlord under Part 1 of the Housing (Wales) Act 2014?`, formatWord(submitPayLoad.isExemptLandlord));
         break;
@@ -1189,7 +1190,7 @@ export class CreateCaseAction implements IAction {
         caseSummary.set(`Do you have a copy of the tenancy or licence agreement?`, formatWord(submitPayLoad.tenancy_HasCopyOfTenancyLicence));
         caseSummary.set(`Details of why you do not have a copy`, submitPayLoad.tenancy_ReasonsForNoTenancyLicenceDocuments);
         break;
-      
+
       case 'Occupation contract or licence':
         caseSummary.set(`Occupation contract or licence agreement type`, formatText(submitPayLoad.occupationLicenceTypeWales));
         caseSummary.set(`Occupation contract or licence start date`, formatDate(submitPayLoad.licenceStartDate, 'DD/MM/YYYY'))
@@ -1441,7 +1442,7 @@ export class CreateCaseAction implements IAction {
           }
         }
         break;
-      
+
       case 'Antisocial behaviour and illegal or prohibited conduct':
         caseSummary.set(`Is there actual or threatened antisocial behaviour?`,formatWord(submitPayLoad.walesAntisocialBehaviour));
         if(submitPayLoad.walesAntisocialBehaviour === 'YES'){
@@ -1456,7 +1457,7 @@ export class CreateCaseAction implements IAction {
           caseSummary.set(`Details of other prohibited conduct`, submitPayLoad.walesOtherProhibitedConductDetails);
         }
         break;
-      
+
       case 'Prohibited conduct standard contract':
         caseSummary.set(`Are you seeking an order imposing a prohibited conduct standard contract?`, formatWord(submitPayLoad.prohibitedConductWalesClaim));
         if (submitPayLoad.prohibitedConductWalesClaim === 'YES') {
@@ -1465,7 +1466,7 @@ export class CreateCaseAction implements IAction {
           caseSummary.set(`Why are you making this claim?`, submitPayLoad.prohibitedConductWalesClaimDetails);
         }
         break;
-      
+
       case 'Required Documents':
         caseSummary.set(`Can the claimant upload a copy of the energy performance certificate?`, formatWord(submitPayLoad.walesDocs_HasEnergyPerformanceCertificate));
         if(submitPayLoad.walesDocs_HasEnergyPerformanceCertificate === 'NO'){
@@ -1582,15 +1583,16 @@ export class CreateCaseAction implements IAction {
     });
     const folderRetrieved = (await folderLocator.allTextContents()).map(item => item.slice(1));
     const folder:string[] = caseFileView as string[];
-    expect(folder.every(name => folderRetrieved.some(text => text.includes(name)))).toBeTruthy();
-    
+
+    const missingFolders = folder.filter(name => !folderRetrieved.some(text => text.includes(name)));
+    expect(missingFolders, `Missing folders: ${missingFolders.join(", ")}`).toHaveLength(0);    
   }
 
   public async validateCaseFileViewIndividualFolder(page: Page ,caseFile: actionRecord){
-    
+
     const folderName = caseFile.folder as string;
     let submitPayLoad = caseFile.submitPayload as Record<string, any>;
-    const userInputFiles:string[]= [];
+    let userInputFiles:string[]= [];
     switch (folderName) {
       case 'Property documents':
         this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad.tenancy_TenancyLicenceDocuments);
@@ -1617,6 +1619,11 @@ export class CreateCaseAction implements IAction {
       case 'Uncategorised documents':
         this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad.additionalDocuments, 'Other document');
         break;
+      
+      case 'Applications':
+        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad.xui_genapp_UploadedDocuments, 'All Files');
+        userInputFiles=this.cleanGenAppFilesArray(userInputFiles,defendantUserDetails.length);
+        break;
 
       default:
         break;
@@ -1636,8 +1643,7 @@ export class CreateCaseAction implements IAction {
     const actualFileCount = await fileLocator.count();
 
     expect(actualFileCount, 'File count matching').toEqual(fileCount)
-    const fileArray = this.cleanFilesArray(await fileLocator.allTextContents());
-    
+    const fileArray = this.cleanFilesArray(await fileLocator.allTextContents());    
     expect(userInputFiles.sort(), `validating  upload files for "${folderName}"`).toEqual(fileArray.sort());
     console.log(`\n✅ The files under section "${folderName}" are \n "${fileArray}"`);
 
@@ -1660,19 +1666,23 @@ export class CreateCaseAction implements IAction {
   public readDocFilesFromPayLoad(mainArray: string[], subArray: any[], multiDocsLabel?: string) {
 
     if (subArray && Array.isArray(subArray)) {
-      subArray.forEach(doc => { 
-        if (multiDocsLabel) {
+      subArray.forEach(doc => {
+        if (multiDocsLabel && multiDocsLabel !== 'All Files') {
           const valueLabel = doc.value?.documentType?.valueLabel;
           const filename = doc.value?.document?.document_filename;
           if (multiDocsLabel === valueLabel && filename) {
             mainArray.push(filename);
           }
-        } else if (doc.value?.document_filename) {
+        } else if (multiDocsLabel && multiDocsLabel === 'All Files') {
+          mainArray.push(doc.value.document.document_filename)
+        }
+        else if (doc.value?.document_filename) {
           mainArray.push(doc.value.document_filename);
         }
       });
     }
   }
+
   public async validateCaseListTable(page: Page, caseList: actionRecord){
     let submitPayLoad = caseList.submitPayload as Record<string, any>;
     let createPayLoad = caseList.createPayload as Record<string, any>;
@@ -1711,7 +1721,7 @@ export class CreateCaseAction implements IAction {
           const formattedTexts = values
             .map(h => h.replace(/\u200B/g, '').trim())
             .filter(Boolean);
-            return formattedTexts; 
+            return formattedTexts;
         }
       }
 
@@ -1766,6 +1776,32 @@ export class CreateCaseAction implements IAction {
     }
     return defendantText;
 
+  }
+
+  public async validateTabAccess(page: Page, tab: actionRecord) {
+    await test.step(`Tab access check for user "${tab.user}"`, async () => {
+      const tabLoc = page.locator('div.mat-tab-label-content');
+      await expect(tabLoc.first()).toBeVisible({timeout : SHORT_TIMEOUT});
+      const tabs = await tabLoc.allTextContents();
+      expect(tab.tabs).toEqual(tabs);
+
+    });
+  }
+ 
+  public cleanGenAppFilesArray(filesArray: string[], defendantCount: number): string[] {
+    const result: string[] = [];
+
+    for (let i = 1; i <= defendantCount; i++) {
+      for (const file of filesArray) {
+        result.push(
+          file.replace(/\.pdf$/i, ` GA${i}.pdf`)
+        );
+      }
+
+      result.push(`General Application GA${i}.pdf`);
+    }
+
+    return result;
   }
 
 }

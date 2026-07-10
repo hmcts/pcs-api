@@ -16,6 +16,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.GenerationDetails;
 import org.slf4j.LoggerFactory;
 import uk.gov.hmcts.reform.pcs.ccd.model.ClaimFormTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimActivityLogService;
@@ -26,7 +27,10 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -97,10 +101,27 @@ class ClaimFormGenerationComponentTest {
     }
 
     @Test
-    @DisplayName("Non-final attempt rethrows without recording a failure row")
-    void nonFinalAttemptRethrowsWithoutRecordingFailure() {
+    @DisplayName("First attempt records a non-terminal failure row (reason visible immediately)")
+    void firstAttemptRecordsNonTerminalFailure() {
         ClaimFormTaskData data = ClaimFormTaskData.builder().caseReference("999").build();
         when(taskInstance.getData()).thenReturn(data);
+        when(executionContext.getExecution()).thenReturn(execution);   // consecutiveFailures = 0 -> attempt 1
+        doThrow(mock(RuntimeException.class)).when(claimFormService).generateAndAttach(999L);
+
+        CustomTask<ClaimFormTaskData> task = component.claimFormGenerationTask();
+
+        assertThatThrownBy(() -> task.execute(taskInstance, executionContext))
+            .isInstanceOf(RuntimeException.class);
+        verify(claimActivityLogService).logGenerationFailure(eq(999L),
+            argThat((GenerationDetails details) -> !details.terminal()));
+    }
+
+    @Test
+    @DisplayName("Intermediate attempt (not first, not final) rethrows without recording a failure row")
+    void intermediateAttemptRethrowsWithoutRecordingFailure() {
+        ClaimFormTaskData data = ClaimFormTaskData.builder().caseReference("999").build();
+        when(taskInstance.getData()).thenReturn(data);
+        execution.consecutiveFailures = 1;   // attempt 2 - neither first nor final
         when(executionContext.getExecution()).thenReturn(execution);
         doThrow(mock(RuntimeException.class)).when(claimFormService).generateAndAttach(999L);
 
@@ -109,7 +130,7 @@ class ClaimFormGenerationComponentTest {
         assertThatThrownBy(() -> task.execute(taskInstance, executionContext))
             .isInstanceOf(RuntimeException.class);
         verify(claimFormService).generateAndAttach(999L);
-        verify(claimActivityLogService, never()).logGenerationFailure(anyLong());
+        verify(claimActivityLogService, never()).logGenerationFailure(anyLong(), any(GenerationDetails.class));
     }
 
     @Test
@@ -127,7 +148,7 @@ class ClaimFormGenerationComponentTest {
 
         assertThatThrownBy(() -> task.execute(taskInstance, executionContext))
             .isInstanceOf(RuntimeException.class);
-        verify(claimActivityLogService).logGenerationFailure(999L);
+        verify(claimActivityLogService).logGenerationFailure(eq(999L), any(GenerationDetails.class));
     }
 
     @Test
@@ -145,7 +166,7 @@ class ClaimFormGenerationComponentTest {
 
         assertThatThrownBy(() -> task.execute(taskInstance, executionContext))
             .isInstanceOf(RuntimeException.class);
-        verify(claimActivityLogService, never()).logGenerationFailure(anyLong());
+        verify(claimActivityLogService, never()).logGenerationFailure(anyLong(), any(GenerationDetails.class));
     }
 
     @Test
@@ -156,7 +177,8 @@ class ClaimFormGenerationComponentTest {
         execution.consecutiveFailures = maxRetries;
         when(executionContext.getExecution()).thenReturn(execution);
         doThrow(new RuntimeException("generation failed")).when(claimFormService).generateAndAttach(999L);
-        doThrow(new RuntimeException("log write failed")).when(claimActivityLogService).logGenerationFailure(999L);
+        doThrow(new RuntimeException("log write failed"))
+            .when(claimActivityLogService).logGenerationFailure(eq(999L), any(GenerationDetails.class));
 
         CustomTask<ClaimFormTaskData> task = component.claimFormGenerationTask();
 
@@ -191,12 +213,6 @@ class ClaimFormGenerationComponentTest {
             .containsEntry("taskName", "claim-form-generation-task")
             .containsEntry("terminalFailure", "true")
             .containsEntry("failureReason", "docassembly 500");
-
-        // The successful claim_activity_log FAILURE-row write is also logged.
-        assertThat(logAppender.list)
-            .anyMatch(e -> e.getLevel() == Level.ERROR
-                && e.getFormattedMessage()
-                    .contains("Recorded DOCUMENTS_CREATED/FAILURE in claim_activity_log for case 999"));
     }
 
     @Test

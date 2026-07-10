@@ -62,7 +62,9 @@ public class PartiesView {
 
         //Citizens only see full details for their own party, other party details are partial
         boolean shouldRedact = isCitizen && !isCurrentUser;
-        Party party = shouldRedact ? toPartialParty(partyEntity) : toParty(partyEntity);
+        Party party = shouldRedact
+            ? toPartialParty(partyEntity)
+            : toParty(partyEntity);
 
         return ListValue.<Party>builder()
             .id(claimPartyEntity.getId().getPartyId().toString())
@@ -92,6 +94,11 @@ public class PartiesView {
             .firstName(entity.getFirstName())
             .lastName(entity.getLastName())
             .orgName(entity.getOrgName())
+            .nameKnown(entity.getNameKnown())
+            .address(convertAddress(entity.getAddress()))
+            .addressKnown(entity.getAddressKnown())
+            .addressSameAsProperty(entity.getAddressSameAsProperty())
+            .dateOfBirth(entity.getDateOfBirth())
             .build();
     }
 

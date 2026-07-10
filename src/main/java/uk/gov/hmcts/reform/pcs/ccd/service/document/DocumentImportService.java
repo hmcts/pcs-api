@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.document;
 
+import feign.FeignException;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
@@ -9,6 +10,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.document.service.exception.DocumentStoreException;
 import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
 
 import java.util.List;
@@ -40,17 +42,29 @@ public class DocumentImportService {
     public DocumentEntity addDocumentToCase(long caseReference,
                                             String documentUrl,
                                             CaseFileCategory caseFileCategory) {
+        return addDocumentToCase(pcsCaseService.loadCase(caseReference), documentUrl, caseFileCategory);
+    }
+
+    public DocumentEntity addDocumentToCase(PcsCaseEntity pcsCaseEntity,
+                                            String documentUrl,
+                                            CaseFileCategory caseFileCategory) {
 
         UUID documentId = documentIdExtractor.extractDocumentId(documentUrl);
 
         String authorization = systemUpdateUserTokenProvider.getAuthToken();
         String serviceAuthorization = authTokenGenerator.generate();
 
-        Document documentMetadata = caseDocumentClientApi.getMetadataForDocument(
-            authorization,
-            serviceAuthorization,
-            documentId
-        );
+        Document documentMetadata;
+        try {
+            documentMetadata = caseDocumentClientApi.getMetadataForDocument(
+                authorization,
+                serviceAuthorization,
+                documentId
+            );
+        } catch (FeignException e) {
+            throw new DocumentStoreException(
+                "Failed to retrieve document metadata from CDAM for document " + documentId, e);
+        }
 
         DocumentEntity documentEntity = DocumentEntity.builder()
             .fileName(documentMetadata.originalDocumentName)
@@ -60,7 +74,6 @@ public class DocumentImportService {
             .categoryId(caseFileCategory.getId())
             .build();
 
-        PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
         pcsCaseEntity.addDocuments(List.of(documentEntity));
 
         return documentEntity;

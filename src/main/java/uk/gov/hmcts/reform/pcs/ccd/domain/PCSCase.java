@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.domain;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import lombok.Builder;
@@ -27,6 +28,8 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DefendantSolicitorAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DocumentAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.GlobalSearchAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.InternalCaseFlagAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.InternalTabAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.PartyVisibleTabAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.RasValidationAccess;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.DashboardData;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
@@ -59,6 +62,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractGroundsForPossessi
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -86,6 +90,9 @@ public class PCSCase {
     public static final String NOTE_LABEL = "Note";
     public static final int MIN_MONETARY_AMOUNT = 1;
     public static final int MAX_MONETARY_AMOUNT = 1_000_000_000;
+
+    @CCD(searchable = false)
+    private FeatureFlags featureFlags;
 
     @CCD(
         searchable = false
@@ -154,6 +161,7 @@ public class PCSCase {
         typeOverride = Collection,
         label = "Linked cases",
         typeParameterOverride = "CaseLink")
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
     @Builder.Default
     private List<ListValue<CaseLink>> caseLinks = new ArrayList<>();
 
@@ -537,16 +545,17 @@ public class PCSCase {
     /**
      * Combined list of all underlessees/mortgagees in the case.
      */
-    @CCD(access = ClaimantAccess.class)
+    @CCD(access = {ClaimantAccess.class, DefendantAccess.class})
     private List<ListValue<Party>> allUnderlesseeOrMortgagees;
 
     @CCD(
         searchable = false,
-        label = "Ways to pay"
+        label = "Ways to pay",
+        access = {PartyVisibleTabAccess.class}
     )
     private WaysToPay waysToPay;
 
-    @CCD
+    @CCD(access = {ClaimantAccess.class, DefendantAccess.class})
     private StatementOfTruthDetails statementOfTruth;
 
     @CCD(searchable = false)
@@ -594,6 +603,9 @@ public class PCSCase {
 
     @CCD(access = {ClaimantAccess.class, DefendantAccess.class})
     private LocalDateTime dateSubmitted;
+
+    @CCD(access = {ClaimantAccess.class, DefendantAccess.class}, label = "Date claim issued")
+    private LocalDate claimIssueDate;
 
     @CCD(access = {ClaimantAccess.class, DefendantAccess.class})
     private LocalDateTime dateIssued;
@@ -658,15 +670,15 @@ public class PCSCase {
     private List<ListValue<GeneralApplication>> genApps;
 
     @JsonUnwrapped(prefix = "casePartiesTab_")
-    @CCD
+    @CCD(access = {PartyVisibleTabAccess.class})
     private CasePartiesTab casePartiesTab;
 
     @JsonUnwrapped(prefix = "summaryTab_")
-    @CCD(searchable = false)
+    @CCD(searchable = false, access = {PartyVisibleTabAccess.class})
     private SummaryTab summaryTab;
 
     @JsonUnwrapped(prefix = "detailsTab_")
-    @CCD
+    @CCD(access = {PartyVisibleTabAccess.class})
     private CaseDetailsTab caseDetailsTab;
 
     @CCD(
@@ -678,6 +690,7 @@ public class PCSCase {
 
     @CCD (
         label = "Note",
+        access = {InternalTabAccess.class},
         typeOverride = Collection,
         typeParameterOverride = "CaseNote")
     List<ListValue<CaseNote>> caseNotes;
@@ -709,5 +722,4 @@ public class PCSCase {
 
     @CCD
     private String dateIssuedString;
-
 }

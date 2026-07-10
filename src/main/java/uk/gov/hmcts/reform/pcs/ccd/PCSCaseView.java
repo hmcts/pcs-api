@@ -29,7 +29,9 @@ import uk.gov.hmcts.reform.pcs.ccd.view.CaseNoteView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseTabView;
 import uk.gov.hmcts.reform.pcs.ccd.view.ClaimGroundsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.ClaimView;
+import uk.gov.hmcts.reform.pcs.ccd.view.DefendantResponseView;
 import uk.gov.hmcts.reform.pcs.ccd.view.DocumentsView;
+import uk.gov.hmcts.reform.pcs.ccd.view.FeatureFlagView;
 import uk.gov.hmcts.reform.pcs.ccd.view.GenAppsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.NoticeOfPossessionView;
 import uk.gov.hmcts.reform.pcs.ccd.view.PartiesView;
@@ -42,7 +44,9 @@ import uk.gov.hmcts.reform.pcs.ccd.view.globalsearch.SearchCriteriaIndexer;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -50,6 +54,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.resumePossessionClaim;
+import static uk.gov.hmcts.reform.pcs.config.ClockConfiguration.UK_ZONE_ID;
 
 /**
  * Invoked by CCD to load PCS cases under the decentralised model.
@@ -74,6 +79,8 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
     private final NoticeOfPossessionView noticeOfPossessionView;
     private final StatementOfTruthView statementOfTruthView;
     private final CaseFieldsView caseFieldsView;
+    private final SearchCriteriaIndexer searchCriteriaIndexer;
+    private final CaseListView caseListView;
     private final CaseLinkView caseLinkView;
     private final EnforcementOrderMediator enforcementOrderMediator;
     private final CaseNoteView caseNoteView;
@@ -81,9 +88,8 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
     private final PartiesView partiesView;
     private final GenAppsView genAppsView;
     private final CaseFlagsView flagsView;
-    private final SearchCriteriaIndexer searchCriteriaIndexer;
-    private final CaseListView caseListView;
-
+    private final DefendantResponseView defendantResponseView;
+    private final FeatureFlagView featureFlagView;
 
     /**
      * Invoked by CCD to load PCS cases by reference.
@@ -101,7 +107,9 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
             draftCaseDataService
                 .getUnsubmittedCaseData(caseReference, resumePossessionClaim)
                 .ifPresentOrElse(
-                    draft -> caseTabView.setDraftCaseTabFields(pcsCase, draft),
+                    draft -> {
+                        caseTabView.setDraftCaseTabFields(pcsCase, draft);
+                        },
                     () -> caseTabView.setCaseTabFields(pcsCase)
                 );
         } else {
@@ -135,9 +143,11 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         PCSCase pcsCase = PCSCase.builder()
             .propertyAddress(convertAddress(pcsCaseEntity.getPropertyAddress()))
             .legislativeCountry(pcsCaseEntity.getLegislativeCountry())
-            .caseManagementLocationNumber(pcsCaseEntity.getCaseManagementLocation())
+            .caseManagementLocationNumber(pcsCaseEntity.getBaseLocation())
+            .regionId(pcsCaseEntity.getRegionId())
             .dateSubmitted(getClaimSubmittedDate(pcsCaseEntity))
             .dateIssued(getClaimIssuedDate(pcsCaseEntity))
+            .claimIssueDate(getClaimIssueDateLocal(pcsCaseEntity))
             .build();
 
         setDerivedProperties(pcsCase, pcsCaseEntity);
@@ -159,6 +169,8 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         caseNoteView.setCaseFields(pcsCase, pcsCaseEntity);
         flagsView.setCaseFields(pcsCase, pcsCaseEntity);
         caseListView.setCaseFields(pcsCase);
+        defendantResponseView.setCaseFields(pcsCase, pcsCaseEntity);
+        featureFlagView.setCaseFields(pcsCase);
 
         return new SubmittedCase(pcsCase, pcsCaseEntity);
     }
@@ -174,6 +186,16 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         return pcsCaseEntity.getClaims().stream()
             .findFirst()
             .map(ClaimEntity::getClaimIssuedDate)
+            .orElse(null);
+    }
+
+    private LocalDate getClaimIssueDateLocal(PcsCaseEntity pcsCaseEntity) {
+        return pcsCaseEntity.getClaims().stream()
+            .findFirst()
+            .map(ClaimEntity::getClaimIssuedDate)
+            .map(issued -> issued.atZone(ZoneOffset.UTC)
+                .withZoneSameInstant(UK_ZONE_ID)
+                .toLocalDate())
             .orElse(null);
     }
 
