@@ -36,6 +36,7 @@ import java.util.UUID;
 
 import static uk.gov.hmcts.ccd.sdk.api.noc.NocError.ANSWERS_NOT_IDENTIFY_LITIGANT;
 import static uk.gov.hmcts.ccd.sdk.api.noc.NocError.ANSWERS_NOT_MATCHED_ANY_LITIGANT;
+import static uk.gov.hmcts.ccd.sdk.api.noc.NocError.REQUESTING_ORG_ALREADY_REPRESENTS_PARTY;
 
 @Component
 @RequiredArgsConstructor
@@ -54,6 +55,12 @@ public class PcsNoticeOfChange implements CCDConfig<PCSCase, State, UserRole> {
     private static final String DUPLICATE_DEFENDANT_NAME_MESSAGE = "A notice of change cannot be completed for this "
         + "defendant as there is more than one defendant with the same name on this case."
         + " Contact the issuing court for help.";
+
+    private static final String ORG_ALREADY_REPRESENTS_PARTY_MESSAGE = "Your organisation already has access"
+        + " to this case."
+        + "You or a colleague are already representing this client on this case."
+        + " Contact the issuing court for help.";
+
 
     private final PcsCaseRepository pcsCaseRepository;
     private final LegalRepresentativeRepository legalRepresentativeRepository;
@@ -100,7 +107,8 @@ public class PcsNoticeOfChange implements CCDConfig<PCSCase, State, UserRole> {
             organisation.getOrganisationIdentifier(),
             matchedParty.getId()
         )) {
-            return NocAnswersResponse.requestingOrgAlreadyRepresentsParty();
+            return NocAnswersResponse.invalid(REQUESTING_ORG_ALREADY_REPRESENTS_PARTY.code(),
+                                                          ORG_ALREADY_REPRESENTS_PARTY_MESSAGE);
         }
 
         return NocAnswersResponse.verified(new NocOrganisation(
@@ -110,11 +118,6 @@ public class PcsNoticeOfChange implements CCDConfig<PCSCase, State, UserRole> {
     }
 
     public NocSubmissionResponse submit(NocSubmitContext context, NocAnswersRequest request) {
-        NocAnswersResponse validationResponse = validate(context, request);
-        if (!validationResponse.isValid()) {
-            return NocSubmissionResponse.invalid(validationResponse.code(), validationResponse.message());
-        }
-
         PcsCaseEntity pcsCase = loadCase(request.caseId());
         PartyEntity matchedParty = matchingDefendants(pcsCase, request).getFirst();
         UUID currentUserId = currentUserId(context);
@@ -251,7 +254,7 @@ public class PcsNoticeOfChange implements CCDConfig<PCSCase, State, UserRole> {
     }
 
     private String normalise(String value) {
-        return value == null ? "" : value.trim().replaceAll("\\s+", " ").toLowerCase();
+        return value.trim().replaceAll("\\s+", " ").toLowerCase();
     }
 
     private UUID currentUserId(NocSubmitContext context) {

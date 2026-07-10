@@ -66,6 +66,11 @@ public class PcsNoticeOfChangeTest {
         + "defendant as there is more than one defendant with the same name on this case. "
         + "Contact the issuing court for help.";
 
+    private static final String ORG_ALREADY_REPRESENTS_PARTY_MESSAGE = "Your organisation already has access"
+        + " to this case."
+        + "You or a colleague are already representing this client on this case."
+        + " Contact the issuing court for help.";
+
     private PcsNoticeOfChange pcsNoticeOfChange;
 
     @Mock
@@ -282,6 +287,34 @@ public class PcsNoticeOfChangeTest {
     }
 
     @Test
+    void validate_WithNameNotProvidedForDefendantsOnCase_ReturnErrorAnswerResponse() {
+        // given
+        String firstName = "Dan";
+        String lastName = "Tester";
+        NocAnswer answer = new NocAnswer("pcs-defendant-first-name", firstName);
+        NocAnswer answer2 = new NocAnswer("pcs-defendant-last-name", "");
+        NocAnswersRequest nocAnswersRequest = new NocAnswersRequest(TEST_CASE_REFERENCE, List.of(answer, answer2));
+        PartyEntity party = PartyEntity.builder()
+            .firstName(firstName)
+            .lastName(lastName)
+            .claimParties(Set.of(ClaimPartyEntity.builder()
+                                     .role(PartyRole.DEFENDANT)
+                                     .build()))
+            .build();
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
+            .parties(Set.of(party))
+            .build();
+        when(pcsCaseRepository.findByCaseReference(TEST_CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
+
+        // when
+        NocAnswersResponse actual = pcsNoticeOfChange.validate(null, nocAnswersRequest);
+
+        // then
+        assertEquals(NocError.ANSWERS_NOT_MATCHED_ANY_LITIGANT.code(), actual.code());
+        assertEquals(NO_DEFENDANTS_FOUND_MESSAGE, actual.message());
+    }
+
+    @Test
     void validate_WithMultipleSameNameDefendantsOnCase_ReturnErrorAnswerResponse() {
         // given
         String firstName = "Dan";
@@ -350,7 +383,7 @@ public class PcsNoticeOfChangeTest {
 
         // then
         assertEquals(NocError.REQUESTING_ORG_ALREADY_REPRESENTS_PARTY.code(), actual.code());
-        assertEquals(NocError.REQUESTING_ORG_ALREADY_REPRESENTS_PARTY.message(), actual.message());
+        assertEquals(ORG_ALREADY_REPRESENTS_PARTY_MESSAGE, actual.message());
     }
 
     @Test
@@ -393,10 +426,10 @@ public class PcsNoticeOfChangeTest {
     }
 
     @Test
-    void submit_WithDefendantAlreadyRepresented_ReturnErrorAnswerResponse() {
+    void validate_WithDefendantNotAlreadyRepresentedNormalisesName_ReturnVerifiedAnswerResponse() {
         // given
-        String firstName = "Dan";
-        String lastName = "Tester";
+        String firstName = " DaN ";
+        String lastName = " TeStEr ";
         NocAnswer answer = new NocAnswer("pcs-defendant-first-name", firstName);
         NocAnswer answer2 = new NocAnswer("pcs-defendant-last-name", lastName);
         NocAnswersRequest nocAnswersRequest = new NocAnswersRequest(TEST_CASE_REFERENCE, List.of(answer, answer2));
@@ -414,19 +447,21 @@ public class PcsNoticeOfChangeTest {
             .build();
         String userId = "123";
         String orgId = "org";
+        String orgName = "orgName";
         when(nocSubmitContext.userId()).thenReturn(userId);
         when(pcsCaseRepository.findByCaseReference(TEST_CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
         when(organisationDetailsService.getOrganisationDetails(userId)).thenReturn(organisationDetailsResponse);
         when(organisationDetailsResponse.getOrganisationIdentifier()).thenReturn(orgId);
-        when(legalRepresentativeRepository.isRepresentativeOrganisationLinkedToPartyAndActive(orgId, partyId))
-            .thenReturn(true);
+        when(organisationDetailsResponse.getName()).thenReturn(orgName);
 
         // when
-        NocSubmissionResponse actual = pcsNoticeOfChange.submit(nocSubmitContext, nocAnswersRequest);
+        NocAnswersResponse actual = pcsNoticeOfChange.validate(nocSubmitContext, nocAnswersRequest);
 
         // then
-        assertEquals(NocError.REQUESTING_ORG_ALREADY_REPRESENTS_PARTY.code(), actual.code());
-        assertEquals(NocError.REQUESTING_ORG_ALREADY_REPRESENTS_PARTY.message(), actual.message());
+        assertEquals("Notice of Change answers verified successfully", actual.statusMessage());
+        NocOrganisation organisation = actual.organisation();
+        assertEquals(orgId, organisation.organisationId());
+        assertEquals(orgName, organisation.organisationName());
     }
 
     @Test
@@ -451,13 +486,9 @@ public class PcsNoticeOfChangeTest {
             .caseReference(TEST_CASE_REFERENCE)
             .build();
         String userId = UUID.randomUUID().toString();
-        String orgId = "org";
-        String orgName = "orgName";
         when(nocSubmitContext.userId()).thenReturn(userId);
         when(pcsCaseRepository.findByCaseReference(TEST_CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
         when(organisationDetailsService.getOrganisationDetails(userId)).thenReturn(organisationDetailsResponse);
-        when(organisationDetailsResponse.getOrganisationIdentifier()).thenReturn(orgId);
-        when(organisationDetailsResponse.getName()).thenReturn(orgName);
 
         // when
         NocSubmissionResponse actual = pcsNoticeOfChange.submit(nocSubmitContext, nocAnswersRequest);
