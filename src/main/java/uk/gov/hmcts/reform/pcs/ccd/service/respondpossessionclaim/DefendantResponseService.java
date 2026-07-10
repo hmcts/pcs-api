@@ -329,7 +329,7 @@ public class DefendantResponseService {
             .positionHeld(responses.getStatementOfTruth().getPositionHeld())
             .firmName(responses.getStatementOfTruth().getNameOfFirm())
             .build();
-        if (responses.getStatementOfTruth().getHasLegalRepresentation().equals(VerticalYesNo.YES)){
+        if (VerticalYesNo.YES.equals(responses.getStatementOfTruth().getHasLegalRepresentation())) {
             sot.setCompletedBy(StatementOfTruthCompletedBy.LEGAL_REPRESENTATIVE);
         }
         responseEntity.setStatementOfTruth(sot);
