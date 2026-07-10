@@ -32,7 +32,9 @@ public class AccessCodeGenerationService {
         List<UUID> failedDefendantPartyIds = new ArrayList<>();
         for (UUID defendantPartyId : defendantPartyIds) {
             try {
-                defendantAccessCodeService.generateForDefendant(caseReferenceNumber, defendantPartyId, finalAttempt);
+                // synchronous single-shot: this call is its own first attempt
+                defendantAccessCodeService.generateForDefendant(caseReferenceNumber, defendantPartyId,
+                                                                true, finalAttempt);
             } catch (Exception e) {
                 failedDefendantPartyIds.add(defendantPartyId);
             }
