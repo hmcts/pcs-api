@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DefendantResponseRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.feeandpay.FeePaymentRepository;
 import uk.gov.hmcts.reform.pcs.notify.model.EmailNotificationResponse;
 import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
 
@@ -27,11 +28,14 @@ public class NotifyController {
 
     private final NotificationService notificationService;
     private final DefendantResponseRepository defendantResponseRepository;
+    private final FeePaymentRepository feePaymentRepository;
 
     public NotifyController(NotificationService notificationService,
-                            DefendantResponseRepository defendantResponseRepository) {
+                            DefendantResponseRepository defendantResponseRepository,
+                            FeePaymentRepository feePaymentRepository) {
         this.notificationService = notificationService;
         this.defendantResponseRepository = defendantResponseRepository;
+        this.feePaymentRepository = feePaymentRepository;
     }
 
     @PostMapping(value = "send-defendant-response-emails")
@@ -54,7 +58,10 @@ public class NotifyController {
         List<EmailNotificationResponse> responses = List.of(
             notificationService.sendDefendantResponseNoCounterclaimEmailNotification(defendantResponse),
             notificationService.sendDefendantResponseCounterclaimPaymentRequiredEmailNotification(defendantResponse),
-            notificationService.sendDefendantResponseCounterclaimPaymentSuccessEmailNotification(defendantResponse),
+            notificationService.sendDefendantResponseCounterclaimPaymentSuccessEmailNotification(
+                defendantResponse,
+                "PAY-123"
+            ),
             notificationService.sendDefendantResponseCounterclaimNoPaymentRequiredEmailNotification(defendantResponse)
         );
 

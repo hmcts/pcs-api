@@ -2,7 +2,11 @@ import { actionData, actionRecord, IAction } from '@utils/interfaces';
 import { expect, Page } from '@playwright/test';
 import { performAction, performActions, performValidation } from '@utils/controller';
 import { enterPaymentDetails } from '@data/page-data/enterPaymentDetails.page.data';
-import { caseSummary } from '@data/page-data';
+import { caseSummary, serviceRequest } from '@data/page-data';
+import { backDateTheCasePaymentApiData } from '@data/api-data/backDateTheCasePayment.api.data';
+import { refundAndRemission } from '@data/user-data/staff.user.data';
+import Axios from "axios";
+import {getCaseTypeId} from '@utils/common/caseType.utils';
 
 export class FeeAndPayAction implements IAction {
   async execute(page: Page, action: string, fieldName: actionData | actionRecord, data?: actionData): Promise<void> {
@@ -12,6 +16,11 @@ export class FeeAndPayAction implements IAction {
       ['enterPaymentDetails', () => this.enterPaymentDetails(fieldName as actionRecord)],
       ['clickPayNowLink', () => this.clickPayNowLink(fieldName as actionRecord, page)],
       ['verifyStatusInHistoryAndSummaryTab', () => this.verifyStatusInHistoryAndSummaryTab(fieldName as actionRecord, page)],
+      ['backDateTheCasePaymentAPI', () => this.backDateTheCasePaymentAPI()],
+      ['requestRemission', () => this.requestRemission(page)],
+      ['requestRefund', () => this.requestRefund(page)],
+      ['approveRefund', () => this.approveRefund(page)],
+      ['rejectRefund', () => this.rejectRefund(page)],
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -76,7 +85,7 @@ export class FeeAndPayAction implements IAction {
       retryCount < maxRetries;
       retryCount++
     ) {
-      await performAction('clickTab', caseSummary.servieRequestTab);
+      await performAction('clickTab', caseSummary.serviceRequestTab);
       const payNowLocator = page.getByText(payNowText,{ exact: true });
       let isPayNowVisible = false;
       for (let i = 0; i < 10; i++) {
@@ -99,15 +108,14 @@ export class FeeAndPayAction implements IAction {
   }
 
   private async verifyStatusInHistoryAndSummaryTab(statusDetails: actionRecord, page: Page) {
-    //Verify status only in AAT env as its NOT working in preview 
+    //Verify status only in AAT env as its NOT working in preview
     const currentUrl = process.env.MANAGE_CASE_BASE_URL;
     console.log(process.env.MANAGE_CASE_BASE_URL);
     if (currentUrl && currentUrl.includes('api-pr')) {
       console.log('Verification steps skipped as this is NOT working in PREVIEW env. POFCC-229');
     } else {
       console.log('Verifying payment status');
-      await performAction('clickButton', statusDetails.serviceReqLink);
-      await performAction('clickTab', statusDetails.historyTab);
+      await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/${getCaseTypeId()}/${process.env.CASE_NUMBER}#History`);
       //Implementing retry login because POFCC-238
       const maxRetries = 10;
       let isStatusUpdated = false;
@@ -126,5 +134,84 @@ export class FeeAndPayAction implements IAction {
       const summaryStatusElement = page.locator(`text=${String(statusDetails.status)}`);
       await expect(summaryStatusElement).toBeVisible();
     }
+  }
+  private async backDateTheCasePaymentAPI(): Promise<void> {
+    const backDateApi = Axios.create(backDateTheCasePaymentApiData.backDateTheCasePaymentApiInstance());
+    try {
+      await backDateApi.patch(backDateTheCasePaymentApiData.backDateTheCasePaymentApiEndPoint());
+      console.log(`Back date of the payment sucessful for the case ${process.env.CASE_NUMBER}`);
+    } catch (error: any) {
+      const status = error?.response?.status;
+      const responseBody = error?.response?.data;
+      console.error('Payment back date failed:', { status, responseBody, caseNumber: process.env.CASE_NUMBER });
+      throw new Error(`Payment back date process failed - HTTP ${status ?? 'unknown'}.`);
+    }
+  }
+
+  private async navigateToServiceRequestReview(page: Page): Promise<void> {
+    await performAction('clickLink', serviceRequest.viewLink);
+    await performAction('clickTab', caseSummary.serviceRequestTab);
+    await page.getByRole('link', { name: serviceRequest.reviewLink }).first().click();
+  }
+
+  private async requestRemission(page: Page): Promise<void> {
+    await this.navigateToServiceRequestReview(page);
+    await performAction('clickButton', serviceRequest.addRemissionButton);
+    await performAction('inputText', serviceRequest.remissionCodeLabel, serviceRequest.remissionCodeValue);
+    await performAction('clickButton', serviceRequest.continueButton);
+    await page.getByRole('spinbutton', { name: 'amount' }).fill(serviceRequest.remissionAmountValue);
+    await performAction('clickButton', serviceRequest.continueButton);
+    await performAction('clickButton', serviceRequest.addRemissionButton);
+    await performAction('clickButton', serviceRequest.continueButton);
+    await performAction('inputText', serviceRequest.refundInformationLabel, refundAndRemission.requesterEmail);
+    await performAction('clickButton', serviceRequest.continueButton);
+    await performAction('clickButton', serviceRequest.submitRefundButton);
+  }
+
+  private async selectFeeForRefund(page: Page, feeName: string, refundAmount: string): Promise<void> {
+    const feeRow = page.locator('tr[formarrayname="feesList"]').filter({ hasText: feeName });
+    await feeRow.getByRole('checkbox').check();
+    await feeRow.locator('input[formcontrolname="refund_amount"]').fill(refundAmount);
+  }
+
+  private async requestRefund(page: Page): Promise<void> {
+    await this.navigateToServiceRequestReview(page);
+    await performAction('clickButton', serviceRequest.issueRefundButton);
+    await this.selectFeeForRefund(page, serviceRequest.recoveryOfLandCountyCourtCheckbox, serviceRequest.refundAmountValue);
+    await performAction('clickButton', serviceRequest.continueButton);
+    await page.locator('.govuk-radios__item').filter({ hasText: 'Amended claim' }).locator('input').check();
+    await performAction('clickButton', serviceRequest.continueButton);
+    await performAction('inputText', serviceRequest.refundInformationLabel, refundAndRemission.requesterEmail);
+    await performAction('clickButton', serviceRequest.continueButton);
+    await performAction('clickButton', serviceRequest.submitRefundButton);
+  }
+
+  private async navigateToRefundsReview(page: Page): Promise<void> {
+    await performAction('clickLink', serviceRequest.viewLink);
+    await performAction('clickTab', caseSummary.serviceRequestTab);
+    await page.locator('ccpay-refund-status').getByRole('link', { name: serviceRequest.reviewLink }).click();
+  }
+
+  private async approveRefund(page: Page): Promise<void> {
+    await this.navigateToRefundsReview(page);
+    await performAction('clickButton', serviceRequest.processRefundButton);
+    await page.getByRole('radio', { name: serviceRequest.approveRefundOption, exact: true }).check();
+    await performAction('clickButton', serviceRequest.submitButton);
+    await performValidation('mainHeader', serviceRequest.refundApprovedHeader);
+    await performAction('clickLink', serviceRequest.returnToCaseLink);
+    await performAction('clickTab', caseSummary.serviceRequestTab);
+    await expect(page.getByRole('cell', { name: serviceRequest.approvedStatus, exact: true })).toBeVisible();
+  }
+
+  private async rejectRefund(page: Page): Promise<void> {
+    await this.navigateToRefundsReview(page);
+    await performAction('clickButton', serviceRequest.processRefundButton);
+    await page.getByRole('radio', { name: serviceRequest.rejectRefundOption, exact: true }).check();
+    await page.getByRole('radio', { name: serviceRequest.rejectReasonOption, exact: true }).check();
+    await performAction('clickButton', serviceRequest.submitButton);
+    await performValidation('mainHeader', serviceRequest.refundRejectedHeader);
+    await performAction('clickLink', serviceRequest.returnToCaseLink);
+    await performAction('clickTab', caseSummary.serviceRequestTab);
+    await expect(page.getByRole('cell', { name: serviceRequest.rejectedStatus, exact: true })).toBeVisible();
   }
 }

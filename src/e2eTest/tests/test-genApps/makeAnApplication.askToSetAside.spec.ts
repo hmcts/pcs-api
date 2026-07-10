@@ -72,7 +72,7 @@ test.afterEach(async () => {
 });
 
 test.describe('Make an Application - e2e Journey @nightly', async () => {
-  test('Select an Application - Ask to Set aside @regression @smoke', async () => {
+  test('Select an Application - Ask to Set aside', async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.makeAnApplication);
     await performAction('clickButton', caseSummary.go);
     await performAction('chooseAnApplication', {
@@ -134,7 +134,7 @@ test.describe('Make an Application - e2e Journey @nightly', async () => {
     await performAction('selectPaymentOptions', {
       amountLabel: serviceRequestGenApps.amountToPayLabel,
       payByOption: serviceRequestGenApps.payByAccountRadioOption,
-      expectedAmount: serviceRequestGenApps.amount123,
+      expectedAmount: serviceRequestGenApps.amount126,
       pbaLabel: serviceRequestGenApps.selectPBALabel,
       pbaValue: serviceRequestGenApps.pbaIndex1,
       referenceLabel: serviceRequestGenApps.pbaReferenceLabel,

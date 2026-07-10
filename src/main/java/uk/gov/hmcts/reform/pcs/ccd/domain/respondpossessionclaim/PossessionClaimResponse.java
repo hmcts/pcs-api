@@ -5,11 +5,14 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
+import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DefendantAccess;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 
+import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -35,7 +38,10 @@ public class PossessionClaimResponse {
     )
     private List<ListValue<String>> claimantOrganisations;
 
-    @CCD(access = {DefendantAccess.class})
+    @CCD(access = {CitizenAccess.class}, label = "Address for service")
+    private AddressUK claimantServiceAddress;
+
+    @CCD(access = {CitizenAccess.class})
     private Party claimantEnteredDefendantDetails;
 
     @CCD(access = {DefendantAccess.class})
@@ -46,6 +52,9 @@ public class PossessionClaimResponse {
 
     @CCD(access = {DefendantAccess.class})
     private String currentDefendantPartyId;
+
+    @CCD(access = {CitizenAccess.class}, label = "Date issued")
+    private LocalDate claimIssuedDate;
 
 }
 

@@ -13,10 +13,14 @@ import { beforeYouStart } from '@data/page-data/beforeYouStart.page.data';
 import { selectCasesToLink } from '@data/page-data/selectCaseToLink.page.data';
 import { selectCasesToUnLink } from '@data/page-data/selectCasesToUnLink.page.data';
 import { checkYourAnswersCaseLinking } from '@data/page-data/checkYourAnswersCaseLinking.page.data';
+import {dismissCookieBanner} from '@config/cookie-banner';
+import {staff} from '@data/user-data/staff.user.data';
 
 let caseNumbers: string[] = [];
 
-test.beforeEach(async ({ page }) => {
+test.use({ storageState: undefined });
+
+test.beforeEach(async ({ page, context }) => {
   initializeExecutor(page);
   for (let i = 0; i < 5; i++) {
     await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
@@ -26,9 +30,13 @@ test.beforeEach(async ({ page }) => {
       throw new Error('CASE_NUMBER not set');
     }
     caseNumbers.push(caseNumber);
-    // 🔹 log each case number immediately
     console.log(`Created Case ${i + 1}: ${caseNumber}`);
   }
+  await context.clearCookies();
+  await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
+  await dismissCookieBanner(page, 'additional');
+  await performAction('login', {email: staff.pcs_ctsc_team_leader_email, password: process.env.IDAM_PCS_USER_PASSWORD});
+  await dismissCookieBanner(page, 'analytics');
   await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/${getCaseTypeId()}/${process.env.CASE_NUMBER}#Summary`);
   await expect(async () => {
     await page.waitForURL(`${process.env.MANAGE_CASE_BASE_URL}/**/**/**/**/**#Summary`);
@@ -50,7 +58,7 @@ test.describe('[Common Component Case Linking] @nightly @caseLinking', async () 
     await performAction('select', caseSummary.nextStepEventList, caseSummary.linkCaseEvent);
     await performAction('clickButton', caseSummary.go);
     await performValidation('mainHeader', beforeYouStart.mainHeader);
-    await performAction('clickButton', beforeYouStart.submitButton);
+    await performAction('clickButton', beforeYouStart.saveAndContinueButton);
     await performValidation('mainHeader', selectCasesToLink.mainHeader);
     await performAction('selectCasesToLink', {
       caseRefInput: caseNumbers,
@@ -64,16 +72,16 @@ test.describe('[Common Component Case Linking] @nightly @caseLinking', async () 
       proposeButton: selectCasesToLink.proposeLinkButton
     });
     await performValidation('mainHeader', checkYourAnswersCaseLinking.mainHeader);
-    await performAction('clickButton', checkYourAnswersCaseLinking.submitButton);
+    await performAction('clickButton', checkYourAnswersCaseLinking.saveAndContinueButton);
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Link cases');
     await performAction('select', caseSummary.nextStepEventList, caseSummary.manageCaseEvent);
     await performAction('clickButton', caseSummary.go);
     await performValidation('mainHeader', beforeYouStart.mainHeader);
-    await performAction('clickButton', beforeYouStart.submitButton);
+    await performAction('clickButton', beforeYouStart.saveAndContinueButton);
     await performValidation('mainHeader', selectCasesToUnLink.mainHeader);
     await performAction('selectCasesToUnLink', { caseRefInput: caseNumbers });
     await performValidation('mainHeader', checkYourAnswersCaseLinking.mainHeader);
-    await performAction('clickButton', checkYourAnswersCaseLinking.submitButton);
+    await performAction('clickButton', checkYourAnswersCaseLinking.saveAndContinueButton);
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage case links');
     await performAction('verifyLinkedCases', { caseRefInput: caseNumbers });
   });

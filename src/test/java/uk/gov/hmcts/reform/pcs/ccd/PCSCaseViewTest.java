@@ -32,7 +32,9 @@ import uk.gov.hmcts.reform.pcs.ccd.view.CaseNoteView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseTabView;
 import uk.gov.hmcts.reform.pcs.ccd.view.ClaimGroundsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.ClaimView;
+import uk.gov.hmcts.reform.pcs.ccd.view.DefendantResponseView;
 import uk.gov.hmcts.reform.pcs.ccd.view.DocumentsView;
+import uk.gov.hmcts.reform.pcs.ccd.view.FeatureFlagView;
 import uk.gov.hmcts.reform.pcs.ccd.view.GenAppsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.NoticeOfPossessionView;
 import uk.gov.hmcts.reform.pcs.ccd.view.PartiesView;
@@ -109,9 +111,13 @@ class PCSCaseViewTest {
     @Mock
     private CaseFieldsView caseFieldsView;
     @Mock
-    private EnforcementOrderMediator enforcementOrderMediator;
+    private SearchCriteriaIndexer searchCriteriaIndexer;
+    @Mock
+    private CaseListView caseListView;
     @Mock
     private CaseLinkView caseLinkView;
+    @Mock
+    private EnforcementOrderMediator enforcementOrderMediator;
     @Mock
     private CaseNoteView caseNoteView;
     @Mock
@@ -121,9 +127,9 @@ class PCSCaseViewTest {
     @Mock
     private CaseFlagsView caseFlagsView;
     @Mock
-    private SearchCriteriaIndexer searchCriteriaIndexer;
+    private DefendantResponseView defendantResponseView;
     @Mock
-    private CaseListView caseListView;
+    private FeatureFlagView featureFlagView;
 
     private PCSCaseView underTest;
 
@@ -136,9 +142,10 @@ class PCSCaseViewTest {
                                     caseTitleService, claimView, documentsView, tenancyLicenceView, claimGroundsView,
                                     rentDetailsView, alternativesToPossessionView, asbProhibitedConductView,
                                     rentArrearsView, noticeOfPossessionView,
-                                    statementOfTruthView, caseFieldsView, caseLinkView, enforcementOrderMediator,
+                                    statementOfTruthView, caseFieldsView, searchCriteriaIndexer, caseListView,
+                                    caseLinkView, enforcementOrderMediator,
                                     caseNoteView, caseTabView, partiesView, genAppsView, caseFlagsView,
-                                    searchCriteriaIndexer, caseListView
+                                    defendantResponseView, featureFlagView
         );
     }
 
@@ -307,8 +314,10 @@ class PCSCaseViewTest {
         verify(statementOfTruthView).setCaseFields(pcsCase, pcsCaseEntity);
         verify(caseLinkView).setCaseFields(pcsCase, pcsCaseEntity);
         verify(caseFlagsView).setCaseFields(pcsCase, pcsCaseEntity);
-        verify(genAppsView).setCaseFields(pcsCase, pcsCaseEntity);
+        verify(defendantResponseView).setCaseFields(pcsCase, pcsCaseEntity);
         verify(caseListView).setCaseFields(pcsCase);
+        verify(genAppsView).setCaseFields(pcsCase, pcsCaseEntity);
+        verify(featureFlagView).setCaseFields(pcsCase);
     }
 
     @Test

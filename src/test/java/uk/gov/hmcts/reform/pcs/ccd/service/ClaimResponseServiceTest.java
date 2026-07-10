@@ -73,6 +73,7 @@ class ClaimResponseServiceTest {
                 .contactByPost(VerticalYesNo.NO)
                 .contactByPhone(VerticalYesNo.YES)
                 .contactByText(VerticalYesNo.YES)
+                .propertyAddressConfirmation(VerticalYesNo.YES)
                 .build()
         );
 
@@ -244,6 +245,7 @@ class ClaimResponseServiceTest {
                 .contactByPhone(VerticalYesNo.YES)
                 .contactByText(VerticalYesNo.YES)
                 .contactByPost(VerticalYesNo.YES)
+                .propertyAddressConfirmation(VerticalYesNo.YES)
                 .build()
         );
 
@@ -326,7 +328,10 @@ class ClaimResponseServiceTest {
         // Given
         final PossessionClaimResponse response = buildResponse(
             Party.builder().address(TEST_ADDRESS).build(),
-            DefendantResponses.builder().contactByEmail(VerticalYesNo.YES).build()
+            DefendantResponses.builder()
+                .contactByEmail(VerticalYesNo.YES)
+                .propertyAddressConfirmation(VerticalYesNo.NO)
+                .build()
         );
 
         final AddressEntity addressEntity = new AddressEntity();
@@ -339,6 +344,7 @@ class ClaimResponseServiceTest {
 
         // Then
         assertThat(testParty.getAddress()).isEqualTo(addressEntity);
+        assertThat(testParty.getAddressKnown()).isEqualTo(VerticalYesNo.YES);
     }
 
     @Test
@@ -374,15 +380,12 @@ class ClaimResponseServiceTest {
             DefendantResponses.builder().correspondenceAddressConfirmation(VerticalYesNo.NO).build()
         );
 
-        final AddressEntity addressEntity = new AddressEntity();
         when(securityContextService.getCurrentUserId()).thenReturn(TEST_IDAM_ID);
         when(partyService.getPartyEntityByIdamId(TEST_IDAM_ID, TEST_CASE_REFERENCE)).thenReturn(testParty);
-        when(modelMapper.map(TEST_ADDRESS, AddressEntity.class)).thenReturn(addressEntity);
 
         underTest.saveDraftData(response, TEST_CASE_REFERENCE);
 
         assertThat(testParty.getAddressSameAsProperty()).isEqualTo(VerticalYesNo.NO);
-        assertThat(testParty.getAddress()).isEqualTo(addressEntity);
     }
 
     @Test
@@ -450,6 +453,7 @@ class ClaimResponseServiceTest {
                 .contactByPost(VerticalYesNo.NO)
                 .contactByPhone(VerticalYesNo.YES)
                 .contactByText(VerticalYesNo.YES)
+                .propertyAddressConfirmation(VerticalYesNo.YES)
                 .build()
         );
 
@@ -490,6 +494,7 @@ class ClaimResponseServiceTest {
                 .contactByPhone(VerticalYesNo.YES)
                 .contactByText(VerticalYesNo.YES)
                 .dateOfBirth(dob)
+                .propertyAddressConfirmation(VerticalYesNo.YES)
                 .build()
         );
 
