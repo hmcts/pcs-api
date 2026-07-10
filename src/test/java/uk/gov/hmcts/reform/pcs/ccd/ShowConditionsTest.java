@@ -12,10 +12,12 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.junit.jupiter.params.provider.Arguments.argumentSet;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static org.junit.jupiter.params.provider.EnumSource.Mode.EXCLUDE;
+import static org.junit.jupiter.params.provider.EnumSource.Mode.INCLUDE;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.CASEWORKER_EVENTS;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.RELEASE_1_DOT_2;
 
@@ -81,6 +83,13 @@ class ShowConditionsTest {
 
         // Then
         assertThat(actualShowCondition).isEqualTo(expectedShowCondition);
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = FeatureFlag.class, names = {"RELEASE_1_DOT_2", "CASEWORKER_EVENTS"}, mode = INCLUDE)
+    void shouldNotThrowExceptionForFeatureFlagWithCcdField(FeatureFlag featureFlag) {
+        // When / Then
+        assertThatNoException().isThrownBy(() -> ShowConditions.featureFlagsEnabled(featureFlag));
     }
 
     @ParameterizedTest
