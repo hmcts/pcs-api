@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.event;
 
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
@@ -34,6 +35,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.manageHearing;
 
 @Component
 @AllArgsConstructor
+@Slf4j
 public class ManageHearing implements CCDConfig<PCSCase, State, UserRole> {
 
     private final ManageHearingConfigurer manageHearingConfigurer;
@@ -45,9 +47,9 @@ public class ManageHearing implements CCDConfig<PCSCase, State, UserRole> {
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         Event.EventBuilder<PCSCase, UserRole, State> eventBuilder =
             configBuilder.decentralisedEvent(manageHearing.name(), this::submit, this::start)
-                .forStates(State.PENDING_CASE_ISSUED, State.CASE_ISSUED)
+                .forStates(State.CASE_ISSUED)
                 .name("Manage hearing")
-                .grant(Permission.CRUD, UserRole.PCS_SOLICITOR)
+                .grant(Permission.CRUD, UserRole.CTSC_ADMIN, UserRole.HEARING_CENTRE_ADMIN, UserRole.WLU_ADMIN)
                 .grantHistoryOnly(JUDICIAL_HISTORY_ROLES)
                 .showSummary()
                 .endButtonLabel("Submit");
@@ -67,11 +69,16 @@ public class ManageHearing implements CCDConfig<PCSCase, State, UserRole> {
         );
 
         List<Integer> baseLocation = List.of(Integer.parseInt(pcsCase.getCaseManagementLocation().getBaseLocation()));
-        List<CourtVenue> courtVenues = locationReferenceService.getCourtVenues(baseLocation);
 
-        if (!CollectionUtils.isEmpty(courtVenues)) {
-            CourtVenue courtVenue = courtVenues.getFirst();
-            pcsCase.setHearingLocation(courtVenue.courtName());
+        try {
+            List<CourtVenue> courtVenues = locationReferenceService.getCourtVenues(baseLocation);
+
+            if (!CollectionUtils.isEmpty(courtVenues)) {
+                CourtVenue courtVenue = courtVenues.getFirst();
+                pcsCase.setHearingLocation(courtVenue.courtName());
+            }
+        } catch (Exception e) {
+            log.error("Unable to fetch hearing location for case {}:", eventPayload.caseReference(), e);
         }
 
         if (CollectionUtils.isEmpty(pcsCase.getHearingList())) {

@@ -23,6 +23,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.HearingService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicMultiSelectStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
+import uk.gov.hmcts.reform.pcs.location.model.CourtVenue;
 import uk.gov.hmcts.reform.pcs.location.service.LocationReferenceService;
 
 import java.util.List;
@@ -111,12 +112,16 @@ public class ManageHearingTest extends BaseEventTest {
             .allDefendants(allDefendants)
             .build();
 
+        CourtVenue courtVenue = newCourtVenue("1", "Court name", "1");
+        when(locationReferenceService.getCourtVenues(List.of(1))).thenReturn(List.of(courtVenue));
+
         // When
         PCSCase response = callStartHandler(pcsCase);
 
         // Then
         assertThat(response.getShowManageHearingPage()).isEqualTo(YesOrNo.YES);
         assertThat(response.getManageHearingOption()).isNull();
+        assertThat(response.getHearingLocation()).isEqualTo("Court name");
         DynamicMultiSelectStringList partyMultiSelectionList = response.getPartyMultiSelectionList();
         assertThat(partyMultiSelectionList).isNotNull();
         List<DynamicStringListElement> listItems = partyMultiSelectionList.getListItems();
@@ -317,5 +322,48 @@ public class ManageHearingTest extends BaseEventTest {
 
         // Then
         verify(hearingService, never()).addHearing(1234L, pcsCase);
+    }
+
+    CourtVenue newCourtVenue(String courtVenueId, String siteName, String epimmsId) {
+        return new CourtVenue(
+            courtVenueId,
+            epimmsId,
+            siteName,
+            "1",
+            "London",
+            "Central London County Court",
+            "7",
+            null,
+            null,
+            "YES",
+            "Brentford County Court, Alexandra Road",
+            "TW8 0JJ",
+            "020 1234 5678",
+            null,
+            "",
+            "DX 12345 Brentford",
+            "",
+            "",
+            "Open",
+            null,
+            siteName,
+            siteName,
+            "N",
+            "Y",
+            "",
+            "N",
+            "N",
+            "COURT",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+        );
     }
 }
