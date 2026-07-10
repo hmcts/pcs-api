@@ -390,6 +390,7 @@ dependencies {
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-security', version: springFrameworkBootVersion
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-oauth2-client', version: springFrameworkBootVersion
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-data-jpa', version: springFrameworkBootVersion
+  implementation group: 'com.launchdarkly', name: 'launchdarkly-java-server-sdk', version: '7.14.0'
 
   runtimeOnly group: 'org.flywaydb', name: 'flyway-database-postgresql', version: flywayVersion
 
@@ -406,6 +407,8 @@ dependencies {
   implementation group: 'com.github.hmcts', name: 'idam-java-client', version: '3.0.5'
   implementation group: 'com.github.hmcts', name: 'doc-assembly-client', version: '2.2.0'
   implementation group: 'com.github.hmcts', name: 'ccd-case-document-am-client', version: '1.59.2'
+  implementation group: 'com.github.hmcts', name: 'send-letter-client', version: '5.1.1'
+  implementation group: 'org.apache.pdfbox', name: 'pdfbox', version: '3.0.3'
   implementation(group: 'com.github.hmcts', name: 'fees-java-client', version: '0.1.0') {
     exclude group: 'uk.gov.hmcts.reform', module: 'java-logging'
   }
@@ -442,7 +445,6 @@ dependencies {
     exclude group: 'com.google.guava', module: 'guava'
     exclude group: 'org.apache.poi', module: 'poi-ooxml'
     exclude group: 'org.apache.poi', module: 'poi'
-    exclude group: 'com.launchdarkly', module: 'launchdarkly-java-server-sdk'
   }
 
   functionalTestImplementation group: 'net.serenity-bdd', name: 'serenity-rest-assured', version: serenityBddVersion
@@ -517,6 +519,8 @@ project.tasks.named("generateCCDConfig") {
   environment 'PCS_DB_USER_NAME', 'postgres'
   environment 'PCS_DB_PASSWORD', 'postgres'
   environment 'DB_PORT', '6432'
+  environment 'LAUNCHDARKLY_OFFLINE', 'true'
+  environment 'LAUNCHDARKLY_SDK_KEY', 'ignored'
   environment 'ENABLE_TESTING_SUPPORT', 'false'
   environment 'DB_SCHEDULER_EXECUTOR_ENABLED', 'false'
 }
@@ -555,6 +559,10 @@ tasks.withType(CftlibExec).configureEach {
   environment 'CCD_DECENTRALISED_CASE-TYPE-SERVICE-URLS_PCS', 'http://localhost:3206'
   environment 'SPRING_FLYWAY_ENABLED', 'true'
   environment 'SPRING_PROFILES_ACTIVE', 'dev'
+  // No LaunchDarkly key for local/cftlibTest - run the client offline so it serves code defaults
+  environment 'LAUNCHDARKLY_OFFLINE', 'true'
+  environment 'LAUNCHDARKLY_SDK_KEY', 'ignored'
+  environment 'LAUNCHDARKLY_FILES', './featureFlags/flags.json'
   environment 'ENABLE_TESTING_SUPPORT', 'true'
   environment 'IDAM_CLIENT_SECRET', 'dummy-secret-for-local'
   environment 'XUI_JURISDICTIONS', 'PCS'
