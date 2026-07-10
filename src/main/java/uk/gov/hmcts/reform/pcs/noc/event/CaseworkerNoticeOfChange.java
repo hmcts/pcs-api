@@ -28,7 +28,7 @@ public class CaseworkerNoticeOfChange implements CCDConfig<PCSCase, State, UserR
 
     private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
         log.info("Received: {}", eventPayload);
-        return SubmitResponse.<State>builder().state(State.CASE_ISSUED).build();
+        return SubmitResponse.defaultResponse();
     }
 
 }
