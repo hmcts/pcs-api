@@ -9,6 +9,7 @@ import uk.gov.hmcts.ccd.sdk.api.Event;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
+import uk.gov.hmcts.ccd.sdk.type.TTL;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
@@ -16,6 +17,8 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.deletecase.DeleteCasePageConfigurer;
+
+import java.time.LocalDate;
 
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CLAIMANT_SOLICITOR;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.deleteThisCase;
@@ -50,6 +53,9 @@ public class DeleteThisCase implements CCDConfig<PCSCase, State, UserRole> {
     private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
         PCSCase caseData = eventPayload.caseData();
         if (caseData.getDeleteUnsubmittedClaim().equals(YesOrNo.YES)) {
+            caseData.setTtl(TTL.builder()
+                    .systemTTL(LocalDate.now())
+                    .build());
             return SubmitResponse.<State>builder()
                     .state(State.DELETED)
                     .confirmationBody(CONFIRMATION_BODY)
