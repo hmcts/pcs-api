@@ -19,7 +19,8 @@ import uk.gov.hmcts.reform.pcs.reference.api.RdProfessionalApi;
         "uk.gov.hmcts.reform.pcs",
         "uk.gov.hmcts.ccd.sdk",
         "uk.gov.hmcts.reform.payments.client",
-        "uk.gov.hmcts.reform.ccd.client"
+        "uk.gov.hmcts.reform.ccd.client",
+        "uk.gov.hmcts.reform.sendletter"
     })
 @SuppressWarnings("HideUtilityClassConstructor") // Spring needs a constructor, it's not a utility class
 @EnableFeignClients(
