@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.ccd.sdk.type.DynamicList;
 import uk.gov.hmcts.ccd.sdk.type.DynamicListElement;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
@@ -17,13 +18,17 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.event.BaseEventTest;
 import uk.gov.hmcts.reform.pcs.ccd.page.caseworker.entergenapp.ApplicationDetails;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 
 import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState.GEN_APP_ISSUED;
 
 @ExtendWith(MockitoExtension.class)
 class EnterGenAppTest extends BaseEventTest {
@@ -38,12 +43,14 @@ class EnterGenAppTest extends BaseEventTest {
     private ClaimEntity claimEntity;
     @Mock
     private ApplicationDetails applicationDetails;
+    @Mock
+    private GenAppService genAppService;
 
     private EnterGenApp enterGenApp;
 
     @BeforeEach
     void setUp() {
-        enterGenApp = new EnterGenApp(pcsCaseService, partyService, applicationDetails);
+        enterGenApp = new EnterGenApp(pcsCaseService, partyService, applicationDetails, genAppService);
         setEventUnderTest(enterGenApp);
     }
 
@@ -110,6 +117,35 @@ class EnterGenAppTest extends BaseEventTest {
             DynamicListElement.builder().code(defendant1Id).label("Jane Doe - Defendant 1").build(),
             DynamicListElement.builder().code(defendant2Id).label("Person unknown - Defendant 2").build()
         );
+    }
+
+    @Test
+    void shouldCreateGenAppEntityOnSubmit() {
+        // Given
+        UUID applicantPartyId = UUID.randomUUID();
+        PartyEntity applicantParty = mock(PartyEntity.class);
+
+        when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+        when(partyService.getPartyEntityByEntityId(applicantPartyId, TEST_CASE_REFERENCE))
+            .thenReturn(applicantParty);
+
+        EnterGenAppRequest enterGenAppRequest = EnterGenAppRequest.builder().build();
+
+        DynamicList partyRadioList = DynamicList.builder()
+            .value(DynamicListElement.builder().code(applicantPartyId).build())
+            .build();
+
+        PCSCase caseData = PCSCase.builder()
+            .enterGenAppRequest(enterGenAppRequest)
+            .partyRadioList(partyRadioList)
+            .build();
+
+        // When
+        callSubmitHandler(caseData);
+
+        // Then
+        verify(genAppService)
+            .createGenAppEntity(enterGenAppRequest, pcsCaseEntity, applicantParty, GEN_APP_ISSUED);
     }
 
 }

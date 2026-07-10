@@ -15,6 +15,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
@@ -23,6 +24,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.caseworker.entergenapp.ApplicationDetail
 import uk.gov.hmcts.reform.pcs.ccd.page.caseworker.entergenapp.ApplicationFee;
 import uk.gov.hmcts.reform.pcs.ccd.page.caseworker.entergenapp.HearingDate;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 
 import java.util.List;
@@ -38,6 +40,7 @@ public class EnterGenApp implements CCDConfig<PCSCase, State, UserRole> {
     private final PcsCaseService pcsCaseService;
     private final PartyService partyService;
     private final ApplicationDetails applicationDetails;
+    private final GenAppService genAppService;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -89,6 +92,16 @@ public class EnterGenApp implements CCDConfig<PCSCase, State, UserRole> {
     }
 
     private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
+        long caseReference = eventPayload.caseReference();
+        PCSCase caseData = eventPayload.caseData();
+
+        PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
+        PartyEntity applicantParty = partyService.getPartyEntityByEntityId(
+            caseData.getPartyRadioList().getValueCode(), caseReference);
+
+        genAppService.createGenAppEntity(
+            caseData.getEnterGenAppRequest(), pcsCaseEntity, applicantParty, GenAppState.GEN_APP_ISSUED);
+
         return SubmitResponse.<State>builder().build();
     }
 

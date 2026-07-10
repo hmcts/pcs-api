@@ -22,6 +22,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.UploadedDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.EnterGenAppRequest;
+import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.EnterGenAppType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.CitizenGenAppRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType;
@@ -77,7 +79,7 @@ class GenAppServiceTest {
     private DocumentNameService documentNameService;
     @Mock(strictness = LENIENT)
     private DocumentRepository documentRepository;
-    @Mock
+    @Mock(strictness = LENIENT)
     private Clock utcClock;
     @Mock(strictness = LENIENT)
     private PcsCaseEntity pcsCaseEntity;
@@ -140,6 +142,33 @@ class GenAppServiceTest {
         // Then
         verify(pcsCaseEntity).addGenApp(genAppEntityCaptor.capture());
         assertThat(genAppEntityCaptor.getValue().getType()).isEqualTo(genAppType);
+    }
+
+    @Test
+    void shouldCreateGenAppEntityFromEnterGenAppRequest() {
+        // Given
+        LocalDate dateReceived = LocalDate.of(2025, 1, 15);
+        EnterGenAppRequest enterGenAppRequest = EnterGenAppRequest.builder()
+            .applicationTypeOption(EnterGenAppType.ADJOURN)
+            .dateReceived(dateReceived)
+            .somethingElseDetails("some details")
+            .within14Days(VerticalYesNo.YES)
+            .build();
+
+        // When
+        underTest.createGenAppEntity(enterGenAppRequest, pcsCaseEntity, applicantParty, GEN_APP_ISSUED);
+
+        // Then
+        verify(pcsCaseEntity).addGenApp(genAppEntityCaptor.capture());
+        GenAppEntity genAppEntity = genAppEntityCaptor.getValue();
+        verify(genAppRepository).save(genAppEntity);
+
+        assertThat(genAppEntity.getType()).isEqualTo(GenAppType.ADJOURN);
+        assertThat(genAppEntity.getParty()).isEqualTo(applicantParty);
+        assertThat(genAppEntity.getState()).isEqualTo(GEN_APP_ISSUED);
+        assertThat(genAppEntity.getApplicationReceivedDate()).isEqualTo(dateReceived);
+        assertThat(genAppEntity.getSomethingElseDetails()).isEqualTo("some details");
+        assertThat(genAppEntity.getWithin14Days()).isEqualTo(VerticalYesNo.YES);
     }
 
     @ParameterizedTest
