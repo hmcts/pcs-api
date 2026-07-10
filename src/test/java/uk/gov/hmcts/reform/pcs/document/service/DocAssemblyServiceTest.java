@@ -19,6 +19,7 @@ import uk.gov.hmcts.reform.docassembly.domain.FormPayload;
 import uk.gov.hmcts.reform.docassembly.domain.OutputType;
 import uk.gov.hmcts.reform.docassembly.exception.DocumentGenerationFailedException;
 import uk.gov.hmcts.reform.pcs.document.service.exception.DocAssemblyException;
+import uk.gov.hmcts.reform.pcs.exception.ErrorCode;
 import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -30,6 +31,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.DOC_GENERATION_FAILED;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("DocAssemblyService Tests")
@@ -342,7 +344,7 @@ class DocAssemblyServiceTest {
             @DisplayName("Should not rethrow DocAssemblyException when it's already a DocAssemblyException")
             void shouldNotRethrowDocAssemblyExceptionWhenAlreadyThrown() {
                 final FormPayload formPayload = mock(FormPayload.class);
-                DocAssemblyException originalException = new DocAssemblyException("Original error");
+                DocAssemblyException originalException = new DocAssemblyException(DOC_GENERATION_FAILED);
 
                 when(systemUpdateUserTokenProvider.getAuthToken()).thenThrow(originalException);
 
@@ -354,7 +356,7 @@ class DocAssemblyServiceTest {
                                            OUTPUT_FILENAME
                                        ))
                     .isInstanceOf(DocAssemblyException.class)
-                    .hasMessage("Original error")
+                    .hasMessage(DOC_GENERATION_FAILED.toString())
                     .isSameAs(originalException);
             }
 
