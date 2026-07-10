@@ -9,8 +9,8 @@ import uk.gov.hmcts.ccd.sdk.api.HasLabel;
 public enum ClaimActivityType implements HasLabel {
 
     DOCUMENTS_CREATED("Documents created"),
-    CLAIMANT_PACK_SENT("Claimant pack sent"),
-    DEFENDANT_PACK_SENT("Defendant pack sent");
+    PACK_SENT("Pack sent"),     // one row per (recipient, pack) dispatch; PackDetails in the details column
+    PACK_FAILED("Pack failed"); // dispatch attempt failed; PackDetails carries failureReason + terminal
 
     private final String label;
 }

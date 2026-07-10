@@ -30,6 +30,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.RegularIncomeIt
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyAttributeAssertionRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseNameFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseReferenceFormatter;
+import uk.gov.hmcts.reform.pcs.ccd.service.form.DefenceCorrespondenceAddressResolver;
 import uk.gov.hmcts.reform.pcs.ccd.service.form.PartyDisplayMapper;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
@@ -74,6 +75,7 @@ public class DefenceFormPayloadBuilder {
     private final ObjectMapper objectMapper;
     private final AddressMapper addressMapper;
     private final AddressFormatter addressFormatter;
+    private final DefenceCorrespondenceAddressResolver defenceCorrespondenceAddressResolver;
     private final Clock ukClock;
 
     private static final List<IncomeType> INCOME_ROW_ORDER = List.of(
@@ -102,6 +104,7 @@ public class DefenceFormPayloadBuilder {
                                      ObjectMapper objectMapper,
                                      AddressMapper addressMapper,
                                      AddressFormatter addressFormatter,
+                                     DefenceCorrespondenceAddressResolver defenceCorrespondenceAddressResolver,
                                      @Qualifier("ukClock") Clock ukClock) {
         this.caseReferenceFormatter = caseReferenceFormatter;
         this.caseNameFormatter = caseNameFormatter;
@@ -109,6 +112,7 @@ public class DefenceFormPayloadBuilder {
         this.objectMapper = objectMapper;
         this.addressMapper = addressMapper;
         this.addressFormatter = addressFormatter;
+        this.defenceCorrespondenceAddressResolver = defenceCorrespondenceAddressResolver;
         this.ukClock = ukClock;
     }
 
@@ -164,7 +168,7 @@ public class DefenceFormPayloadBuilder {
         }
 
         payload.defendantName(resolveDefendantName(defendant, assertions));
-        payload.defendantAddress(resolveDefendantAddress(defendant, assertions, pcsCase.getPropertyAddress()));
+        payload.defendantAddress(resolveDefendantAddress(defendant, pcsCase.getPropertyAddress()));
     }
 
     private void mapResponse(DefendantResponseEntity response, boolean isWales, boolean claimantServedNotice,
@@ -382,20 +386,11 @@ public class DefenceFormPayloadBuilder {
         return displayName(defendant);
     }
 
-    // disputed address assertion, else the party address, else the property address (same-as-property defendant)
-    private String resolveDefendantAddress(
-        PartyEntity defendant, Map<PartyAttributeType, PartyAttributeAssertationEntity> assertions,
-        AddressEntity propertyAddress) {
-        String assertedAddress = assertedValue(assertions, PartyAttributeType.CORRESPONDENCE_ADDRESS);
-        if (isPopulated(assertedAddress)) {
-            try {
-                return addressFormatter.formatFullAddressWithoutCountry(
-                    objectMapper.readValue(assertedAddress, AddressUK.class), NEWLINE_DELIMITER);
-            } catch (Exception e) {
-                log.error("Failed to parse defendant correspondence address assertion", e);
-            }
-        }
-        return formatAddress(defendant.getAddress() != null ? defendant.getAddress() : propertyAddress);
+    private String resolveDefendantAddress(PartyEntity defendant, AddressEntity propertyAddress) {
+        AddressUK address =
+            defenceCorrespondenceAddressResolver.resolveCorrespondenceAddress(defendant, propertyAddress);
+        return address == null ? null
+            : addressFormatter.formatFullAddressWithoutCountry(address, NEWLINE_DELIMITER);
     }
 
     // Single newline-delimited string (blank lines dropped, country omitted) - the template renders it as one field.

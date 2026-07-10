@@ -82,6 +82,36 @@ class DocumentNameServiceTest {
         );
     }
 
+    @Test
+    void shouldAddCaseLevelGenAppNumberAndClaimantLabelToGenAppDocument() {
+        // Given
+        UUID applicantPartyId = UUID.randomUUID();
+        GenAppEntity genAppEntity = GenAppEntity.builder()
+            .rank(4)
+            .build();
+
+        PartyEntity claimantParty = PartyEntity.builder()
+            .id(applicantPartyId)
+            .build();
+
+        ClaimPartyEntity claimant = ClaimPartyEntity.builder()
+            .party(claimantParty)
+            .rank(1)
+            .role(PartyRole.CLAIMANT)
+            .build();
+
+        ClaimEntity mainClaim = ClaimEntity.builder()
+            .claimParties(List.of(claimant))
+            .build();
+
+        // When
+        String updatedFilename
+            = underTest.appendGenAppPostfix("General Application.pdf", genAppEntity, mainClaim, applicantPartyId);
+
+        // Then
+        assertThat(updatedFilename).isEqualTo("General Application GA4 - Claimant 1.pdf");
+    }
+
     @ParameterizedTest
     @MethodSource("partyNamingScenarios")
     void shouldAddPartyLabelWithoutGenAppNumber(PartyRole partyRole,
