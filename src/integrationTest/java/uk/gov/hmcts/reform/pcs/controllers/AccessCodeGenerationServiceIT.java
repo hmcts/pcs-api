@@ -65,7 +65,7 @@ class AccessCodeGenerationServiceIT extends AbstractPostgresContainerIT {
             .thenThrow(new RuntimeException("docmosis down"));
         when(accessCodeFormDocumentGenerator.generate(any(), any(),
             argThat(party -> party != null && succeedingDefendantId.equals(party.getId())), anyString()))
-            .thenReturn("http://dm-store/documents/ok");
+            .thenReturn("http://dm-store/documents/11111111-1111-1111-1111-111111111111");
 
         assertThrows(IllegalStateException.class,
             () -> accessCodeGenerationService.createAccessCodesForParties("1781000000000001", true));
@@ -86,7 +86,7 @@ class AccessCodeGenerationServiceIT extends AbstractPostgresContainerIT {
         final UUID secondDefendantId = defendants.get(1).getId();
 
         when(accessCodeFormDocumentGenerator.generate(any(), any(), any(), anyString()))
-            .thenReturn("http://dm-store/documents/ok");
+            .thenReturn("http://dm-store/documents/11111111-1111-1111-1111-111111111111");
 
         accessCodeGenerationService.createAccessCodesForParties("1781000000000002", true);
         accessCodeGenerationService.createAccessCodesForParties("1781000000000002", true);
