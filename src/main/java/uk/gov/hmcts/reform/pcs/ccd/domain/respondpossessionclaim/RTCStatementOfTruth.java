@@ -16,6 +16,9 @@ public class RTCStatementOfTruth {
     @CCD
     private VerticalYesNo accepted;
 
+    @CCD
+    private VerticalYesNo hasLegalRepresentation;
+
     @CCD(max = 100)
     private String fullName;
 

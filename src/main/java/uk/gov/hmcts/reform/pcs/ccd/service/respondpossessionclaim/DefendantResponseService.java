@@ -7,9 +7,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponseStatus;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
+import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthCompletedBy;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.StatementOfTruthEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
@@ -299,6 +301,9 @@ public class DefendantResponseService {
             .positionHeld(responses.getStatementOfTruth().getPositionHeld())
             .firmName(responses.getStatementOfTruth().getNameOfFirm())
             .build();
+        if (responses.getStatementOfTruth().getHasLegalRepresentation().equals(VerticalYesNo.YES)){
+            sot.setCompletedBy(StatementOfTruthCompletedBy.LEGAL_REPRESENTATIVE);
+        }
         responseEntity.setStatementOfTruth(sot);
     }
 
