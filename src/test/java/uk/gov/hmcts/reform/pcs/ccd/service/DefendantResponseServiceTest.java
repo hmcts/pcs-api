@@ -27,6 +27,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PaymentAgreemen
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.RTCStatementOfTruth;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.ReasonableAdjustments;
+import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthCompletedBy;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
@@ -1090,6 +1091,81 @@ class DefendantResponseServiceTest {
         assertThat(saved.getStatementOfTruth().getAccepted()).isEqualTo(YesOrNo.YES);
         assertThat(saved.getStatementOfTruth().getFullName()).isEqualTo("John Doe");
         assertThat(saved.getStatementOfTruth().getCompletedDate()).isEqualTo("2026-04-22T21:00");
+        assertThat(saved.getStatementOfTruth().getCompletedBy()).isNull();
+    }
+
+    @Test
+    void shouldSetCompletedByToLegalRepresentativeWhenHasLegalRepresentationIsYes() {
+        // Given
+        UUID representedPartyId = UUID.randomUUID();
+        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
+        when(partyRepository.findByIdAndPcsCaseCaseReference(representedPartyId, CASE_REFERENCE))
+            .thenReturn(Optional.of(partyEntity));
+        stubClaimLookup();
+
+        DefendantResponses responses = DefendantResponses.builder()
+            .statementOfTruth(RTCStatementOfTruth.builder()
+                .accepted(VerticalYesNo.YES)
+                .fullName("Jane Smith")
+                .nameOfFirm("Smith & Co Solicitors")
+                .positionHeld("Solicitor")
+                .hasLegalRepresentation(VerticalYesNo.YES)
+                .build())
+            .build();
+
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .defendantResponses(responses)
+            .build();
+
+        // When — legal rep path (passes party ID explicitly)
+        underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse, representedPartyId);
+
+        // Then
+        verify(defendantResponseRepository).save(responseCaptor.capture());
+        DefendantResponseEntity saved = responseCaptor.getValue();
+
+        assertThat(saved.getStatementOfTruth()).isNotNull();
+        assertThat(saved.getStatementOfTruth().getCompletedBy())
+            .isEqualTo(StatementOfTruthCompletedBy.LEGAL_REPRESENTATIVE);
+        assertThat(saved.getStatementOfTruth().getAccepted()).isEqualTo(YesOrNo.YES);
+        assertThat(saved.getStatementOfTruth().getFullName()).isEqualTo("Jane Smith");
+        assertThat(saved.getStatementOfTruth().getFirmName()).isEqualTo("Smith & Co Solicitors");
+        assertThat(saved.getStatementOfTruth().getPositionHeld()).isEqualTo("Solicitor");
+        assertThat(saved.getStatementOfTruth().getCompletedDate()).isEqualTo("2026-04-22T21:00");
+    }
+
+    @Test
+    void shouldNotSetCompletedByWhenHasLegalRepresentationIsAbsent() {
+        // Given
+        UUID representedPartyId = UUID.randomUUID();
+        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
+        when(partyRepository.findByIdAndPcsCaseCaseReference(representedPartyId, CASE_REFERENCE))
+            .thenReturn(Optional.of(partyEntity));
+        stubClaimLookup();
+
+        DefendantResponses responses = DefendantResponses.builder()
+            .statementOfTruth(RTCStatementOfTruth.builder()
+                .accepted(VerticalYesNo.YES)
+                .fullName("Jane Smith")
+                .nameOfFirm("Smith & Co Solicitors")
+                .positionHeld("Solicitor")
+                // hasLegalRepresentation intentionally omitted
+                .build())
+            .build();
+
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .defendantResponses(responses)
+            .build();
+
+        // When
+        underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse, representedPartyId);
+
+        // Then
+        verify(defendantResponseRepository).save(responseCaptor.capture());
+        DefendantResponseEntity saved = responseCaptor.getValue();
+
+        assertThat(saved.getStatementOfTruth()).isNotNull();
+        assertThat(saved.getStatementOfTruth().getCompletedBy()).isNull();
     }
 
     @Test
