@@ -131,7 +131,7 @@ public class ManageHearing implements CCDConfig<PCSCase, State, UserRole> {
             listItems.add(
                 DynamicStringListElement.builder()
                   .code(partyId)
-                  .label(formatClaimantListItemLabel(party, i))
+                  .label(formatClaimantListItemLabel(party, i + 1))
                   .build()
             );
         }
@@ -144,7 +144,7 @@ public class ManageHearing implements CCDConfig<PCSCase, State, UserRole> {
             listItems.add(
                 DynamicStringListElement.builder()
                     .code(partyId)
-                    .label(formatDefendantListItemLabel(party, i))
+                    .label(formatDefendantListItemLabel(party, i + 1))
                     .build()
             );
         }

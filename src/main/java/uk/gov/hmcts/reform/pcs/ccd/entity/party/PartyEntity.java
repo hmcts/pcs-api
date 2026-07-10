@@ -27,7 +27,6 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CasePartyFlagEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.hearing.HearingPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyLegalRepresentativeEntity;
 
@@ -124,10 +123,5 @@ public class PartyEntity {
     @Builder.Default
     @Fetch(FetchMode.SUBSELECT)
     private List<CasePartyFlagEntity> defendantFlags = new ArrayList<>();
-
-    @OneToMany(fetch = LAZY, mappedBy = "party")
-    @Builder.Default
-    @JsonManagedReference
-    private List<HearingPartyEntity> hearingParties = new ArrayList<>();
 
 }

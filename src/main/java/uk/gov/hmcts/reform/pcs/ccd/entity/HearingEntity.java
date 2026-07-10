@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.entity.hearing;
+package uk.gov.hmcts.reform.pcs.ccd.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
@@ -23,12 +23,11 @@ import org.hibernate.type.SqlTypes;
 import uk.gov.hmcts.reform.pcs.ccd.domain.HearingNoticeWording;
 import uk.gov.hmcts.reform.pcs.ccd.domain.HearingType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
-import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import static jakarta.persistence.FetchType.LAZY;
 
@@ -49,11 +48,6 @@ public class HearingEntity {
     @JoinColumn(name = "case_id")
     @JsonBackReference
     private PcsCaseEntity pcsCase;
-
-    @OneToMany(fetch = LAZY, cascade = CascadeType.ALL, mappedBy = "hearing")
-    @Builder.Default
-    @JsonManagedReference
-    private List<HearingPartyEntity> hearingParties = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)
     private HearingType type;
@@ -81,13 +75,11 @@ public class HearingEntity {
 
     private String additionalInformation;
 
-    public void addParty(PartyEntity party) {
-        HearingPartyEntity hearingPartyEntity = HearingPartyEntity.builder()
-            .hearing(this)
-            .party(party)
-            .build();
-        hearingParties.add(hearingPartyEntity);
-        party.getHearingParties().add(hearingPartyEntity);
+    @Builder.Default
+    private List<UUID> noticeParties = new ArrayList<>();
+
+    public void addParty(UUID partyId) {
+        noticeParties.add(partyId);
     }
 
 }

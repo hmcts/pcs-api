@@ -7,6 +7,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 
 import java.util.UUID;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -64,6 +65,20 @@ class PcsCaseEntityTest {
 
         verify(genAppEntity3).setRank(1);
         verify(genAppEntity3).setPcsCase(underTest);
+    }
+
+    @Test
+    void shouldAddHearing() {
+        // Given
+        HearingEntity hearingEntity = mock(HearingEntity.class);
+
+        // When
+        underTest.addHearing(hearingEntity);
+
+        // Then
+        assertThat(underTest.getHearings()).hasSize(1);
+        assertThat(underTest.getHearings().getFirst()).isEqualTo(hearingEntity);
+        verify(hearingEntity).setPcsCase(underTest);
     }
 
 }

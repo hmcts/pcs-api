@@ -11,16 +11,8 @@ CREATE TABLE public.hearing
   notes VARCHAR(500) NOT NULL,
   notice_issued YES_NO NOT NULL,
   is_without_notice YES_NO,
-  additional_information VARCHAR(500)
+  additional_information VARCHAR(500),
+  notice_parties UUID[]
 );
 
 CREATE INDEX idx_hearing_case_id ON public.hearing(case_id);
-
-CREATE TABLE public.hearing_party
-(
-  hearing_id INTEGER REFERENCES hearing (id),
-  party_id UUID REFERENCES party (id),
-  primary key (hearing_id, party_id)
-);
-
-CREATE INDEX idx_hearing ON hearing_party(hearing_id);
