@@ -1,7 +1,7 @@
 import Axios from 'axios';
 import { actionData, actionRecord, IAction } from '@utils/interfaces';
 import { Page } from '@playwright/test';
-import { createCaseApiData, createCaseEventTokenApiData, submitCaseApiData, submitCaseEventTokenApiData, caseUserRoleDeletionApiData, enforceOrderEventTokenApiData, enforceWarrantApiData, getCaseApiData, submitCaseEventTokenDynamicApiData, createCaseEventTokenDynamicApiData } from '@data/api-data';
+import { createCaseApiData, createCaseEventTokenApiData, submitCaseApiData, submitCaseEventTokenApiData, caseUserRoleDeletionApiData, enforceOrderEventTokenApiData, enforceWarrantApiData, getCaseApiData, submitCaseEventTokenDynamicApiData, createCaseEventTokenDynamicApiData, makeAnApplicationEventTokenApiData, makeAnApplicationApiData } from '@data/api-data';
 import { user } from '@data/user-data';
 import { caseNumber } from './createCase.action';
 import { performAction } from '@utils/controller';
@@ -10,6 +10,8 @@ import { formatDateTimeBST } from '@utils/common/string.utils';
 import { IdamUtils } from '@hmcts/playwright-common';
 
 export let caseInfo: { id: string; fid: string; state: string } = { id: '', fid: '', state: '' };
+
+export let  defendantUserDetails: { id: string; name: string }[] = [];
 
 export class CreateCaseAPIAction implements IAction {
   async execute(page: Page, action: string, fieldName: actionData | actionRecord, data?: actionData): Promise<void> {
@@ -23,6 +25,7 @@ export class CreateCaseAPIAction implements IAction {
       ['getCaseAPIDynamic', () => this.getCaseAPIDynamic(fieldName as actionRecord)],
       ['createCaseAPIDynamicUsers', () => this.createCaseAPIDynamicUsers(fieldName as actionRecord)],
       ['submitCaseAPIDynamicUsers', () => this.submitCaseAPIDynamicUsers(fieldName as actionRecord)],
+      ['makeAnApplicationAPI', () => this.makeAnApplicationAPI(fieldName)],
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -184,12 +187,23 @@ export class CreateCaseAPIAction implements IAction {
         console.log(`\n✅ The claim was submitted on "${process.env.Submission_TIME}"`)
       } else {
         await this.generateSolicitorAccessToken(user.defendantSolicitor.email as string,user.defendantSolicitor.password as string);
-        const allDefendants = createResponse.data.data.allDefendants;
+        const allDefendants = createResponse.data.data.allDefendants;        
         const defendantIds = allDefendants.map((d: any) => d.id);
         if (defendantIds.length === 0) throw new Error(`No Defendants ID retrieved and the status is ${createResponse.status}`);
 
-        for (const defendantId of defendantIds) {
-          process.env.Defendant_ID = defendantId;
+        for (const defendant of allDefendants) {
+          process.env.Defendant_ID = defendant.id;
+          const defendantName =
+            defendant.value?.nameKnown === 'YES'
+              ? `${defendant.value.firstName} ${defendant.value.lastName}`
+              : '';
+
+          defendantUserDetails.push({
+            id: defendant.id,
+            name: defendantName,
+          });
+
+
 
           await performAction('linkSolicitorAPI',user.defendantSolicitor.email as string);
         }
@@ -397,4 +411,41 @@ export class CreateCaseAPIAction implements IAction {
       scope: 'profile openid roles'
     });
   };
+
+  private async makeAnApplicationAPI(caseData: actionData): Promise<void> {
+    const makeAnApplicationApi = Axios.create(makeAnApplicationEventTokenApiData.makeAnApplicationEventTokenApiInstance());
+    let makeAnApplicationPayloadData = typeof caseData === "object" && "data" in caseData ? caseData.data : caseData;
+    try {
+      process.env.MAA_EVENT_TOKEN = (await makeAnApplicationApi.get(makeAnApplicationEventTokenApiData.makeAnApplicationEventTokenApiEndPoint())).data.token;
+      makeAnApplicationPayloadData = typeof caseData === "object" && "data" in caseData ? caseData.data : caseData;
+      const genAppResponse = await makeAnApplicationApi.post(makeAnApplicationApiData.makeAnApplicationApiEndPoint(), {
+        data: makeAnApplicationPayloadData,
+        event: { id: makeAnApplicationApiData.makeAnApplicationEventName },
+        event_token: process.env.MAA_EVENT_TOKEN,
+      });
+      caseInfo.id = genAppResponse.data.id;
+      caseInfo.fid = genAppResponse.data.id.replace(/(.{4})(?=.)/g, "$1-");
+      caseInfo.state = genAppResponse.data.state;
+    } catch (error: any) {
+      const status = error?.response?.status;
+      const responseBody = error?.response?.data;
+      if (status === 404) {
+        console.error(makeAnApplicationPayloadData);
+        throw new Error(`Make an application failed: endpoint not found (404).please check the payload above \n ${error}`);
+      }
+      console.error("=== ERROR RESPONSE ===");
+      console.error("HTTP Status:", status);
+      console.error("Exception:", responseBody?.exception);
+      console.error("Error:", responseBody?.error);
+      console.error("Message:", responseBody?.message);
+      console.error("Path:", responseBody?.path);
+      console.error("Timestamp:", responseBody?.timestamp);
+      console.error("Full response body:", JSON.stringify(responseBody, null, 2));
+
+      if (!status) {
+        throw new Error('Make an application: no response from server.');
+      }
+      throw new Error(`Make an application failed with status ${status}.Response received is ${responseBody?.message}}`);
+    }
+  }
 }

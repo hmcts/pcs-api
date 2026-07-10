@@ -91,6 +91,9 @@ public class PCSCase {
     public static final int MIN_MONETARY_AMOUNT = 1;
     public static final int MAX_MONETARY_AMOUNT = 1_000_000_000;
 
+    @CCD(searchable = false)
+    private FeatureFlags featureFlags;
+
     @CCD(
         searchable = false
     )
