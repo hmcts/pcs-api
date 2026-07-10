@@ -44,6 +44,9 @@ withPipeline(type, product, component) {
   env.PACT_BROKER_URL = "https://pact-broker.platform.hmcts.net"
   loadVaultSecrets(secrets)
   enableDbMigration('pcs')
+  
+  syncBranchesWithMaster(['ithc', 'perftest'])
+
 
   onPR() {
     enablePactAs([
@@ -68,6 +71,9 @@ withPipeline(type, product, component) {
     }
     else if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "enable_e2e_CC_test").size() > 0) {
       env.E2E_SUITE = "commonComponent"
+    }
+    else if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "enable_e2e_CM_test").size() > 0) {
+      env.E2E_SUITE = "caseManagement"
     }
   }
 
