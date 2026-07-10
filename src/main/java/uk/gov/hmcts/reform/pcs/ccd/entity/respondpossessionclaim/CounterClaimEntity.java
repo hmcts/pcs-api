@@ -37,6 +37,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import static jakarta.persistence.CascadeType.ALL;
@@ -123,4 +124,15 @@ public class CounterClaimEntity {
 
     @Transient
     private CounterClaimState previousStatus;
+
+    public Optional<DefendantResponseEntity> findAssociatedDefendantResponse() {
+        if (party == null || pcsCase == null || pcsCase.getDefendantResponses() == null) {
+            return Optional.empty();
+        }
+        UUID partyId = party.getId();
+        return pcsCase.getDefendantResponses().stream()
+            .filter(response -> response.getParty() != null
+                && partyId.equals(response.getParty().getId()))
+            .findFirst();
+    }
 }

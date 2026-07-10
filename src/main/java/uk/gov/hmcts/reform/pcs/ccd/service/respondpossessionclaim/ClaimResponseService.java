@@ -80,7 +80,7 @@ public class ClaimResponseService {
      */
     private void updatePartyContactDetails(PartyEntity party, DefendantContactDetails defendantContactDetails,
                                            DefendantResponses defendantResponses) {
-        boolean nameNotConfirmed = defendantResponses.getDefendantNameConfirmation() == null;
+        boolean nameNotConfirmed = defendantResponses.getDefendantNameConfirmation() != VerticalYesNo.YES;
 
         if (nameNotConfirmed && StringUtils.isNotBlank(defendantContactDetails.getParty().getFirstName())) {
             party.setFirstName(defendantContactDetails.getParty().getFirstName());
@@ -90,6 +90,12 @@ public class ClaimResponseService {
         if (nameNotConfirmed && StringUtils.isNotBlank(defendantContactDetails.getParty().getLastName())) {
             party.setLastName(defendantContactDetails.getParty().getLastName());
             log.debug("Updated last name for party ID: {}", party.getId());
+        }
+
+        if (nameNotConfirmed
+            && (StringUtils.isNotBlank(defendantContactDetails.getParty().getFirstName())
+                || StringUtils.isNotBlank(defendantContactDetails.getParty().getLastName()))) {
+            party.setNameKnown(VerticalYesNo.YES);
         }
 
         if (defendantContactDetails.getParty().getDateOfBirth() != null) {
@@ -109,10 +115,12 @@ public class ClaimResponseService {
         }
 
         AddressUK newAddress = defendantContactDetails.getParty().getAddress();
-        // Only override the party address when claimant did not provide it
-        // and property address was shown as a fallback for user to confirm or enter a new address
         boolean isFallbackScenario = defendantResponses.getPropertyAddressConfirmation() != null;
-        if (isFallbackScenario && newAddress != null && StringUtils.isNotBlank(newAddress.getAddressLine1())) {
+        boolean disputedCorrespondenceAddress =
+            defendantResponses.getCorrespondenceAddressConfirmation() == VerticalYesNo.NO;
+        boolean hasNewAddress = newAddress != null && StringUtils.isNotBlank(newAddress.getAddressLine1());
+
+        if ((isFallbackScenario || disputedCorrespondenceAddress) && hasNewAddress) {
             AddressEntity existingAddress = party.getAddress();
 
             if (existingAddress != null) {
@@ -126,13 +134,10 @@ public class ClaimResponseService {
             } else {
                 party.setAddress(modelMapper.map(newAddress, AddressEntity.class));
             }
+            party.setAddressKnown(VerticalYesNo.YES);
         }
 
-        // Defendant disagreed with the claim-recorded address and supplied a different one,
-        // so addressSameAsProperty no longer holds. On YES we leave the claim-time value alone:
-        //   claim YES + def YES → property still applies                            ✓
-        //   claim NO  + def YES → claimant-typed (on party.address) still applies   ✓
-        if (defendantResponses.getCorrespondenceAddressConfirmation() == VerticalYesNo.NO) {
+        if (disputedCorrespondenceAddress) {
             party.setAddressSameAsProperty(VerticalYesNo.NO);
         }
     }

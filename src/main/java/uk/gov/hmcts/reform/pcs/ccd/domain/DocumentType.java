@@ -33,6 +33,7 @@ public enum DocumentType implements HasLabel {
     GAS_SAFETY_REPORT("Gas safety report"),
     ELECTRICAL_INSTALLATION_CONDITION("Electrical installation condition"),
     DEFENDANT_RESPONSE("Defendant response"),
+    COUNTERCLAIM("Counterclaim"),
     OTHER("Other document");
 
     private final String label;
