@@ -344,6 +344,7 @@ class ClaimResponseServiceTest {
 
         // Then
         assertThat(testParty.getAddress()).isEqualTo(addressEntity);
+        assertThat(testParty.getAddressKnown()).isEqualTo(VerticalYesNo.YES);
     }
 
     @Test
