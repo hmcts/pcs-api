@@ -138,7 +138,7 @@ hmc:
   serviceId: ${HMC_SERVICE_ID:AAA3}
 
 location-reference:
-  api-url: ${LOCATION_REF_URL:http://localhost:8089}
+  api-url: ${LOCATION_REF_URL:http://localhost:8083}
   court-county-type-id: ${COURT_COUNTY_TYPE_ID:10}
 
 notify:
@@ -162,7 +162,13 @@ notify:
     general-application-received: e5daba0d-5c66-4c76-9e0f-06646200dc89
 
 testing-support:
-  enabled: ${ENABLE_TESTING_SUPPORT:true}
+  enabled: ${ENABLE_TESTING_SUPPORT:false}
+
+access-code-form:
+  respond-online-url: ${RESPOND_ONLINE_URL:http://localhost:3209/access-your-case}
+
+access-code-test-table:
+  enabled: ${ENABLE_ACCESS_CODE_TEST_TABLE:${testing-support.enabled:false}}
 
 # Below sets if DB scheduler can execute on the current instance of the API.
 db-scheduler:
@@ -253,15 +259,44 @@ fees:
     backoff-delay-seconds: ${FEES_AND_PAY_TASK_BACKOFF_DELAY_SECONDS:600s}
 
 access-code:
-  hash-pins-enabled: ${HASH_PINS_ENABLED:false}
   request:
     max-retries: ${ACCESS_CODE_MAX_RETRIES:5}
     backoff-delay-seconds: ${ACCESS_CODE_BACKOFF_DELAY_SECONDS:3600s}
+
+bulk-print:
+  schedule: ${BULK_PRINT_SCHEDULE:DAILY|02:00}
+  # BULK_PRINT_LOOKBACK_HOURS (lower envs only): sweep ignores packs whose documents are older than N hours,
+  # so enabling the flag cannot flood send-letter with the historical backlog. Unset in prod = full backlog.
+
+send-letter:
+  # Default to localhost so a higher environment fails loudly if SEND_LETTER_URL is not set, rather than
+  # silently posting to AAT.
+  url: ${SEND_LETTER_URL:http://localhost:8485}
+
+logging:
+  level:
+    uk.gov.hmcts.reform.pcs.ccd.service.bulkprint: INFO
+
+launchdarkly:
+  sdk-key: ${LAUNCHDARKLY_SDK_KEY:}
+  offline-mode: ${LAUNCHDARKLY_OFFLINE:false}
+  env: ${LAUNCHDARKLY_ENV:default}
+  files: ${LAUNCHDARKLY_FILES:}
 
 claim-form:
   request:
     max-retries: ${CLAIM_FORM_MAX_RETRIES:5}
     backoff-delay-seconds: ${CLAIM_FORM_BACKOFF_DELAY_SECONDS:3600s}
+
+defence-form:
+  request:
+    max-retries: ${DEFENCE_FORM_MAX_RETRIES:5}
+    backoff-delay-seconds: ${DEFENCE_FORM_BACKOFF_DELAY_SECONDS:3600s}
+
+counter-claim-form:
+  request:
+    max-retries: ${COUNTER_CLAIM_FORM_MAX_RETRIES:5}
+    backoff-delay-seconds: ${COUNTER_CLAIM_FORM_BACKOFF_DELAY_SECONDS:3600s}
 
 role-assignment:
   request:
