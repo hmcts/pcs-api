@@ -112,12 +112,16 @@ public class PartiesView {
     }
 
     private Party toPartialParty(PartyEntity entity) {
-        Party.PartyBuilder builder = Party.builder()
+        return Party.builder()
             .firstName(entity.getFirstName())
             .lastName(entity.getLastName())
-            .orgName(entity.getOrgName());
-
-        return builder.build();
+            .orgName(entity.getOrgName())
+            .nameKnown(entity.getNameKnown())
+            .address(convertAddress(entity.getAddress()))
+            .addressKnown(entity.getAddressKnown())
+            .addressSameAsProperty(entity.getAddressSameAsProperty())
+            .dateOfBirth(entity.getDateOfBirth())
+            .build();
     }
 
     private LegalRepresentative buildLegalRepresentative(PartyEntity partyEntity) {

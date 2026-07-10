@@ -24,7 +24,7 @@ export class CaseLinking implements IAction {
       await performAction('clickButton', caseData.proposeButton);
       console.log(`selected Case ${i}: ${caseRefs[i]}`);
     }
-    await performAction('clickButton', selectCasesToLink.submitButton);
+    await performAction('clickButton', selectCasesToLink.saveAndContinueButton);
 
   }
 
@@ -37,7 +37,7 @@ export class CaseLinking implements IAction {
       );
       await selectBox.check();
     }
-    await performAction('clickButton', selectCasesToUnLink.submitButton);;
+    await performAction('clickButton', selectCasesToUnLink.saveAndContinueButton);;
   }
 
   private async verifyLinkedCases(caseData: actionRecord, page: Page) {
