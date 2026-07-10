@@ -123,12 +123,13 @@ public class GenAppService {
     }
 
     public void createGenAppEntity(EnterGenAppRequest enterGenAppRequest,
-                                       PcsCaseEntity pcsCaseEntity,
-                                       PartyEntity applicantParty,
-                                       GenAppState initialState) {
+                                   PcsCaseEntity pcsCaseEntity,
+                                   PartyEntity applicantParty,
+                                   GenAppState initialState) {
 
         GenAppEntity genAppEntity = GenAppEntity.builder()
             .type(enterGenAppRequest.getApplicationTypeOption().getStandardGenAppType())
+            .applicationSubmittedDate(LocalDateTime.now(utcClock))
             .party(applicantParty)
             .applicationReceivedDate(enterGenAppRequest.getDateReceived())
             .within14Days(enterGenAppRequest.getWithin14Days())

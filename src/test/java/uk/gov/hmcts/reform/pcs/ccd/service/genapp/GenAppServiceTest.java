@@ -681,6 +681,21 @@ class GenAppServiceTest {
             verify(genAppRepository).save(genAppEntity);
         }
 
+        @Test
+        void shouldSetApplicationSubmittedDate() {
+            // Given
+            EnterGenAppRequest enterGenAppRequest = EnterGenAppRequest.builder()
+                .applicationTypeOption(EnterGenAppType.SET_ASIDE)
+                .build();
+
+            // When
+            underTest.createGenAppEntity(enterGenAppRequest, pcsCaseEntity, applicantParty, GEN_APP_ISSUED);
+
+            // Then
+            GenAppEntity genAppEntity = getSavedGenAppEntity();
+            assertThat(genAppEntity.getApplicationSubmittedDate()).isEqualTo(TEST_UTC_DATE_TIME);
+        }
+
         @ParameterizedTest
         @EnumSource(EnterGenAppType.class)
         void shouldSetGenAppType(EnterGenAppType enterGenAppType) {
