@@ -72,7 +72,7 @@ public class DefendantResponseReadMapper {
 
     private static String toResponseDocumentId(DefendantResponseEntity entity) {
         return Optional.ofNullable(entity.getSubmissionDocument())
-            .map(document -> document.getId() != null ? document.getId().toString() : null)
+            .map(document -> document.getId().toString())
             .orElse(null);
     }
 
