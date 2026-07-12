@@ -36,6 +36,7 @@ public enum DocumentType implements HasLabel {
     GAS_SAFETY_REPORT("Gas safety report"),
     ELECTRICAL_INSTALLATION_CONDITION("Electrical installation condition"),
     DEFENDANT_RESPONSE("Defendant response"),
+    COUNTERCLAIM("Counterclaim"),
     NOTICE_OF_HEARING("Notice of hearing"),
     WITH_NOTICE_ORDER("With notice order"),
     WITHOUT_NOTICE_ORDER("Without notice order"),

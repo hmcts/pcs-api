@@ -385,7 +385,8 @@ public class DocumentService {
                  CLAIM,
                  DEFENDANT_RESPONSE,
                  AMENDED_CLAIM_FORM,
-                 PART_20_COUNTERCLAIM ->
+                 PART_20_COUNTERCLAIM,
+                 COUNTERCLAIM ->
                 Optional.of(CaseFileCategory.STATEMENTS_OF_CASE);
             case RENT_STATEMENT,
                  TENANCY_AGREEMENT,
