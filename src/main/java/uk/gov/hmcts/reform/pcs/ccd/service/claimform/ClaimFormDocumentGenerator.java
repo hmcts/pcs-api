@@ -17,7 +17,7 @@ import uk.gov.hmcts.reform.pcs.document.service.DocAssemblyService;
 public class ClaimFormDocumentGenerator {
 
     static final String TEMPLATE_ID = "CV-PCS-CLM-ENG-Claim-Pack.docx";
-    static final String OUTPUT_FILENAME = "Claim form";
+    static final String OUTPUT_FILENAME = "Claim - Claimant 1";
 
     private final DocAssemblyService docAssemblyService;
 
