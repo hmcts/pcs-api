@@ -28,6 +28,4 @@ public class RTCStatementOfTruth {
     @CCD(max = 100)
     private String positionHeld;
 
-
-
 }
