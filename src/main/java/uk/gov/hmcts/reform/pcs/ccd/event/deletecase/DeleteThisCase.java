@@ -55,6 +55,7 @@ public class DeleteThisCase implements CCDConfig<PCSCase, State, UserRole> {
         if (caseData.getDeleteUnsubmittedClaim().equals(YesOrNo.YES)) {
             caseData.setTtl(TTL.builder()
                     .systemTTL(LocalDate.now())
+                    .suspended(YesOrNo.NO)
                     .build());
             return SubmitResponse.<State>builder()
                     .state(State.DELETED)
