@@ -8,6 +8,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationDetailsService;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 
 import java.util.List;
 import java.util.UUID;
@@ -19,13 +20,13 @@ import static org.apache.commons.lang3.StringUtils.isNotBlank;
 @AllArgsConstructor
 public class LegalRepForDefendantAccessValidator {
 
-    private final OrganisationDetailsService organisationDetailsService;
+    private final OrganisationService organisationService;
     private final DefendantPartyExtractor defendantPartyExtractor;
 
     public List<PartyEntity> validateAndGetDefendants(PcsCaseEntity caseEntity, UUID authenticatedUserId) {
         long caseReference = caseEntity.getCaseReference();
         List<PartyEntity> defendants = defendantPartyExtractor.extractDefendants(caseEntity, caseReference);
-        String organisationId = organisationDetailsService.getOrganisationIdentifier(authenticatedUserId.toString());
+        String organisationId = organisationService.getOrganisationIdForCurrentUser();
         return findMatchingLinkedDefendants(defendants, authenticatedUserId, organisationId, caseReference);
     }
 

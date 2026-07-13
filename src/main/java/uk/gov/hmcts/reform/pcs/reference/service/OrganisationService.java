@@ -23,6 +23,7 @@ public class OrganisationService {
 
     private final SecurityContextService securityContextService;
     private final OrganisationDetailsService organisationDetailsService;
+    private final CachingOrganisationDetailsService cachingOrganisationDetailsService;
 
     public NameAndAddress getNameAndAddressForCurrentUser() {
         try {
@@ -82,7 +83,7 @@ public class OrganisationService {
                 return null;
             }
 
-            return organisationDetailsService.getOrganisationIdentifier(userId.toString());
+            return cachingOrganisationDetailsService.getOrganisationIdentifier(userId.toString());
 
         } catch (OrganisationDetailsException | SecurityContextException ex) {
             log.error("Error retrieving organisation ID from rd-professional API. Error: {}",
