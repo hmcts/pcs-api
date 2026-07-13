@@ -64,6 +64,7 @@ import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mock.Strictness.LENIENT;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState.GEN_APP_ISSUED;
@@ -93,6 +94,8 @@ class GenAppServiceTest {
     private PartyEntity applicantParty;
     @Captor
     private ArgumentCaptor<GenAppEntity> genAppEntityCaptor;
+    @Captor
+    private ArgumentCaptor<DocumentEntity> documentEntityCaptor;
     @Captor
     private ArgumentCaptor<List<DocumentEntity>> documentEntityListCaptor;
 
@@ -673,7 +676,7 @@ class GenAppServiceTest {
                 .build();
 
             // When
-            underTest.createGenAppEntity(enterGenAppRequest, pcsCaseEntity, applicantParty, GEN_APP_ISSUED);
+            underTest.createGenAppEntity(enterGenAppRequest, null, pcsCaseEntity, applicantParty, GEN_APP_ISSUED);
 
             // Then
             verify(pcsCaseEntity).addGenApp(genAppEntityCaptor.capture());
@@ -690,7 +693,7 @@ class GenAppServiceTest {
                 .build();
 
             // When
-            underTest.createGenAppEntity(enterGenAppRequest, pcsCaseEntity, applicantParty, GEN_APP_ISSUED);
+            underTest.createGenAppEntity(enterGenAppRequest, null, pcsCaseEntity, applicantParty, GEN_APP_ISSUED);
 
             // Then
             GenAppEntity genAppEntity = getSavedGenAppEntity();
@@ -706,7 +709,7 @@ class GenAppServiceTest {
                 .build();
 
             // When
-            underTest.createGenAppEntity(enterGenAppRequest, pcsCaseEntity, applicantParty, GEN_APP_ISSUED);
+            underTest.createGenAppEntity(enterGenAppRequest, null, pcsCaseEntity, applicantParty, GEN_APP_ISSUED);
 
             // Then
             GenAppEntity genAppEntity = getSavedGenAppEntity();
@@ -724,7 +727,7 @@ class GenAppServiceTest {
                 .build();
 
             // When
-            underTest.createGenAppEntity(enterGenAppRequest, pcsCaseEntity, applicantParty, GEN_APP_ISSUED);
+            underTest.createGenAppEntity(enterGenAppRequest, null, pcsCaseEntity, applicantParty, GEN_APP_ISSUED);
 
             // Then
             GenAppEntity genAppEntity = getSavedGenAppEntity();
@@ -740,7 +743,7 @@ class GenAppServiceTest {
                 .build();
 
             // When
-            underTest.createGenAppEntity(enterGenAppRequest, pcsCaseEntity, applicantParty, genAppState);
+            underTest.createGenAppEntity(enterGenAppRequest, null, pcsCaseEntity, applicantParty, genAppState);
 
             // Then
             GenAppEntity genAppEntity = getSavedGenAppEntity();
@@ -757,7 +760,7 @@ class GenAppServiceTest {
                 .build();
 
             // When
-            underTest.createGenAppEntity(enterGenAppRequest, pcsCaseEntity, applicantParty, GEN_APP_ISSUED);
+            underTest.createGenAppEntity(enterGenAppRequest, null, pcsCaseEntity, applicantParty, GEN_APP_ISSUED);
 
             // Then
             GenAppEntity genAppEntity = getSavedGenAppEntity();
@@ -774,7 +777,7 @@ class GenAppServiceTest {
                 .build();
 
             // When
-            underTest.createGenAppEntity(enterGenAppRequest, pcsCaseEntity, applicantParty, GEN_APP_ISSUED);
+            underTest.createGenAppEntity(enterGenAppRequest, null, pcsCaseEntity, applicantParty, GEN_APP_ISSUED);
 
             // Then
             GenAppEntity genAppEntity = getSavedGenAppEntity();
@@ -792,7 +795,7 @@ class GenAppServiceTest {
                 .build();
 
             // When
-            underTest.createGenAppEntity(enterGenAppRequest, pcsCaseEntity, applicantParty, GEN_APP_ISSUED);
+            underTest.createGenAppEntity(enterGenAppRequest, null, pcsCaseEntity, applicantParty, GEN_APP_ISSUED);
 
             // Then
             GenAppEntity genAppEntity = getSavedGenAppEntity();
@@ -811,7 +814,7 @@ class GenAppServiceTest {
                 .build();
 
             // When
-            underTest.createGenAppEntity(enterGenAppRequest, pcsCaseEntity, applicantParty, GEN_APP_ISSUED);
+            underTest.createGenAppEntity(enterGenAppRequest, null, pcsCaseEntity, applicantParty, GEN_APP_ISSUED);
 
             // Then
             GenAppEntity genAppEntity = getSavedGenAppEntity();
@@ -831,12 +834,130 @@ class GenAppServiceTest {
                 .build();
 
             // When
-            underTest.createGenAppEntity(enterGenAppRequest, pcsCaseEntity, applicantParty, GEN_APP_ISSUED);
+            underTest.createGenAppEntity(enterGenAppRequest, null, pcsCaseEntity, applicantParty, GEN_APP_ISSUED);
 
             // Then
             GenAppEntity genAppEntity = getSavedGenAppEntity();
             assertThat(genAppEntity.getAppliedForHwf()).isEqualTo(VerticalYesNo.NO);
             assertThat(genAppEntity.getHelpWithFeesEntity()).isNull();
+        }
+
+        @Test
+        void shouldSaveUploadedGenAppAsSubmissionDocument() {
+            // Given
+            UUID applicantPartyId = UUID.randomUUID();
+            when(applicantParty.getId()).thenReturn(applicantPartyId);
+
+            String renamedFilename = "General Application GA1 - Claimant 1.docx";
+            when(documentNameService.appendGenAppPostfix(eq("General Application.docx"), isA(GenAppEntity.class),
+                                                         eq(mainClaim), eq(applicantPartyId)
+            ))
+                .thenReturn(renamedFilename);
+
+            DocumentEntity savedDocumentEntity = mock(DocumentEntity.class);
+            when(documentRepository.save(isA(DocumentEntity.class))).thenReturn(savedDocumentEntity);
+
+            EnterGenAppRequest enterGenAppRequest = EnterGenAppRequest.builder()
+                .applicationTypeOption(EnterGenAppType.SET_ASIDE)
+                .build();
+
+            Document uploadedGenApp = Document.builder()
+                .filename("my application.docx")
+                .url("test url")
+                .binaryUrl("test binary url")
+                .build();
+
+            // When
+            underTest.createGenAppEntity(enterGenAppRequest, uploadedGenApp, pcsCaseEntity, applicantParty,
+                                          GEN_APP_ISSUED);
+
+            // Then
+            GenAppEntity genAppEntity = getSavedGenAppEntity();
+            assertThat(genAppEntity.getSubmissionDocument()).isEqualTo(savedDocumentEntity);
+
+            verify(documentRepository).save(documentEntityCaptor.capture());
+            DocumentEntity documentEntity = documentEntityCaptor.getValue();
+            assertThat(documentEntity.getFileName()).isEqualTo(renamedFilename);
+            assertThat(documentEntity.getUrl()).isEqualTo("test url");
+            assertThat(documentEntity.getBinaryUrl()).isEqualTo("test binary url");
+            assertThat(documentEntity.getType()).isEqualTo(DocumentType.GENERAL_APPLICATION);
+            assertThat(documentEntity.getCategoryId()).isEqualTo(CaseFileCategory.APPLICATIONS.getId());
+        }
+
+        @Test
+        void shouldNotSaveSubmissionDocumentWhenUploadedGenAppIsNull() {
+            // Given
+            EnterGenAppRequest enterGenAppRequest = EnterGenAppRequest.builder()
+                .applicationTypeOption(EnterGenAppType.SET_ASIDE)
+                .build();
+
+            // When
+            underTest.createGenAppEntity(enterGenAppRequest, null, pcsCaseEntity, applicantParty, GEN_APP_ISSUED);
+
+            // Then
+            GenAppEntity genAppEntity = getSavedGenAppEntity();
+            assertThat(genAppEntity.getSubmissionDocument()).isNull();
+            verify(documentRepository, never()).save(any(DocumentEntity.class));
+        }
+
+        @Test
+        void shouldSaveRelatedEvidenceDocuments() {
+            // Given
+            Document evidenceDocument = Document.builder()
+                .filename("circumstance statement.docx")
+                .url("evidence url")
+                .binaryUrl("evidence binary url")
+                .build();
+
+            UUID applicantPartyId = UUID.randomUUID();
+            when(applicantParty.getId()).thenReturn(applicantPartyId);
+
+            String renamedFilename = "circumstance statement GA1 - Claimant 1.docx";
+            when(documentNameService.appendGenAppPostfix(eq("circumstance statement.docx"), isA(GenAppEntity.class),
+                                                         eq(mainClaim), eq(applicantPartyId)
+            ))
+                .thenReturn(renamedFilename);
+
+            List<DocumentEntity> savedDocumentEntities = List.of(mock(DocumentEntity.class));
+            when(documentRepository.saveAll(anyList())).thenReturn(savedDocumentEntities);
+
+            EnterGenAppRequest enterGenAppRequest = EnterGenAppRequest.builder()
+                .applicationTypeOption(EnterGenAppType.SET_ASIDE)
+                .relatedEvidence(List.of(ListValue.<Document>builder().value(evidenceDocument).build()))
+                .build();
+
+            // When
+            underTest.createGenAppEntity(enterGenAppRequest, null, pcsCaseEntity, applicantParty, GEN_APP_ISSUED);
+
+            // Then
+            GenAppEntity genAppEntity = getSavedGenAppEntity();
+            assertThat(genAppEntity.getDocuments()).isEqualTo(savedDocumentEntities);
+
+            verify(documentRepository).saveAll(documentEntityListCaptor.capture());
+            assertThat(documentEntityListCaptor.getValue()).hasSize(1);
+            DocumentEntity documentEntity = documentEntityListCaptor.getValue().getFirst();
+            assertThat(documentEntity.getFileName()).isEqualTo(renamedFilename);
+            assertThat(documentEntity.getUrl()).isEqualTo("evidence url");
+            assertThat(documentEntity.getBinaryUrl()).isEqualTo("evidence binary url");
+            assertThat(documentEntity.getType()).isEqualTo(DocumentType.OTHER);
+            assertThat(documentEntity.getCategoryId()).isNull();
+        }
+
+        @Test
+        void shouldNotSaveRelatedEvidenceDocumentsWhenListIsNull() {
+            // Given
+            EnterGenAppRequest enterGenAppRequest = EnterGenAppRequest.builder()
+                .applicationTypeOption(EnterGenAppType.SET_ASIDE)
+                .relatedEvidence(null)
+                .build();
+
+            // When
+            underTest.createGenAppEntity(enterGenAppRequest, null, pcsCaseEntity, applicantParty, GEN_APP_ISSUED);
+
+            // Then
+            GenAppEntity genAppEntity = getSavedGenAppEntity();
+            assertThat(genAppEntity.getDocuments()).isEmpty();
+            verify(documentRepository, never()).saveAll(anyList());
         }
 
     }
