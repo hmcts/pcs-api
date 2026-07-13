@@ -2,7 +2,7 @@ import { AxiosRequestConfig } from 'axios';
 
 export const paymentApiData = {
   paymentApiInstance: (): AxiosRequestConfig => ({
-    baseURL: process.env.PCS_API_URL,
+    baseURL: process.env.CASE_API_URL,
     headers: {
       ServiceAuthorization: `Bearer ${process.env.SERVICE_AUTH_TOKEN}`,
       'Content-Type': 'application/json',

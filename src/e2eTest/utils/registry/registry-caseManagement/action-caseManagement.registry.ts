@@ -1,5 +1,6 @@
 import { LoginAction, NavigateToUrlAction, CreateCaseAPIAction } from "@utils/actions/custom-actions";
 import { CaseManagementAction } from "@utils/actions/custom-actions/custom-actions-caseManagement";
+import { ErrorValidationAction } from "@utils/actions/custom-actions/custom-actions-caseManagement/caseManagementErrorValidation.action";
 import { RecordAnswers } from "@utils/actions/custom-actions/custom-actions-genApps/recordAnsweredFields.action";
 import { LinkSolicitorAPIAction } from "@utils/actions/custom-actions/linkSolicitorAPI.action";
 import { CheckAction, ClickButtonAction, ClickRadioButtonAction, ClickTabAction, InputTextAction, SelectAction, UploadFileAction } from "@utils/actions/element-actions";
@@ -34,6 +35,8 @@ export class ActionCMRegistry {
     ['makeAnApplicationAPI', new CreateCaseAPIAction()],
     ['navigateToSummaryPage', new CaseManagementAction()],
     ['selectAnEvent', new CaseManagementAction()],
+    ['errorValidationSelectDocumentPage', new ErrorValidationAction()],
+    ['inputErrorValidation', new CaseManagementAction()],
     
   ]);
 

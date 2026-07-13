@@ -47,7 +47,6 @@ export class CreateCaseAPIAction implements IAction {
       });
       process.env.CASE_NUMBER = createResponse.data.id;
       caseInfo.id = createResponse.data.id;
-      console.log('id:'+caseInfo.id)
       caseInfo.fid = createResponse.data.id.replace(/(.{4})(?=.)/g, "$1-");
       caseInfo.state = createResponse.data.state;
     } catch (error: any) {
@@ -454,12 +453,12 @@ export class CreateCaseAPIAction implements IAction {
 
   private async updatePaymentAPI(): Promise<void> {
     const paymentApi = Axios.create(paymentApiData.paymentApiInstance());
-    const maxRetries = actionRetries;
+    const maxRetries = actionRetries + actionRetries;
     const delayMs = VERY_SHORT_TIMEOUT;
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
         const response = await paymentApi.get(paymentApiData.getFeePaymentInfoApiEndPoint());
-        console.log('payment info'+JSON.stringify(response));
+        //console.log('payment info'+JSON.stringify(response));
         const paymentInfo = response.data;
         console.log('payment info'+JSON.stringify(paymentInfo));
         if (!paymentInfo?.length) {
@@ -470,7 +469,7 @@ export class CreateCaseAPIAction implements IAction {
           paymentApiData.updatePaymentApiEndPoint,
           paymentApiData.paymentUpdatePayload(requestReference)
         );
-        console.log(JSON.stringify(updateResponse));
+        console.log(JSON.stringify(updateResponse.data));
         if (updateResponse.status === 200 || updateResponse.status === 204) {
           return;
         }
@@ -480,6 +479,7 @@ export class CreateCaseAPIAction implements IAction {
       const responseBody = error?.response?.data;
         if (attempt === maxRetries) {
           if (Axios.isAxiosError(error)) {
+            console.error("Full response body:", responseBody);
             throw new Error(`Payment API failed after retries: ${error.response?.status}`);
           }
           console.error("HTTP Status:", status);

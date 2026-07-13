@@ -49,4 +49,54 @@ export class CaseManagementAction implements IAction {
     await performAction('select', caseSummary.nextStepEventList, event.eventType);
     await performAction('clickButton', caseSummary.go);
   }
+
+  private async inputErrorValidation(page: Page, validationArr: actionRecord) {
+  
+  
+        if (Array.isArray(validationArr.inputArray)) {
+          for (const item of validationArr.inputArray) {
+            switch (validationArr.validationType) {
+              
+  
+              case 'radioOptions':
+                await performAction('clickButton', validationArr.button);
+                await performValidation('inputError', !validationArr?.label ? validationArr.question : validationArr.label, item.errMessage);
+                await performValidation('errorMessage', !validationArr?.header ? validationArr.header = 'There is a problem' : validationArr.header, item.errMessage);
+                await performAction('clickRadioButton', { question: validationArr.question, option: validationArr.option });
+                break;
+  
+              case 'checkBox':
+                await performAction('clickButton', validationArr.button);
+                await performValidation('inputError', !validationArr?.label ? validationArr.question : validationArr.label, item.errMessage);
+                await performValidation('errorMessage', !validationArr?.header ? validationArr.header = 'There is a problem' : validationArr.header, item.errMessage);
+                await performAction('check', validationArr.checkBox);
+                break;
+  
+              case 'checkBoxPageLevel':
+                await performAction('clickButton', validationArr.button);
+                await performValidation('errorMessage', !validationArr?.header ? validationArr.header = 'There is a problem' : validationArr.header, item.errMessage);
+                await performAction('check', validationArr.checkBox);
+                break;
+  
+              case 'dropDown':
+                await performAction('clickButton', validationArr.button);
+                await expect(async () => {
+                  await performAction('clickButton', validationArr.button);
+                  await performValidation('errorMessage', !validationArr?.header ? validationArr.header = 'There is a problem' : validationArr.header, item.errMessage);
+                }).toPass({
+                  timeout: VERY_LONG_TIMEOUT,
+                });
+                await performAction('select', validationArr.docType, validationArr.type);
+                break;
+  
+              default:
+                throw new Error(`Validation type :"${validationArr.validationType}" is not valid`);
+            };
+          }
+        }
+      if (validationArr.buttonRemove) {
+        await performAction('removeFile');
+        await page.waitForTimeout(6000);
+      }
+    }
 }

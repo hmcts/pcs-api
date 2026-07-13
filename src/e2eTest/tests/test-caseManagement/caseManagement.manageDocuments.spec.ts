@@ -8,6 +8,7 @@ import { dismissCookieBanner } from '@config/cookie-banner';
 import { initializeCMExecutor, performAction } from '@utils/controller-caseManagement';
 import { getCaseTypeId } from '@utils/common/caseType.utils';
 import { VERY_LONG_TIMEOUT } from 'playwright.config';
+import { selectDocument } from '@data/page-data-figma/page-data-caseManagement-figma';
 
 test.use({ storageState: undefined })
 
@@ -33,17 +34,6 @@ test.beforeEach(async ({ page, context }) => {
   await performAction('login', user.staffAdmin);
   await dismissCookieBanner(page, 'analytics');
   await performAction('navigateToSummaryPage');
-  //  await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/${getCaseTypeId()}/${process.env.CASE_NUMBER}#Summary`);
-  //     await expect(async () => {
-  //       await page.waitForURL(`${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/${getCaseTypeId()}/${process.env.CASE_NUMBER}#Summary`, { waitUntil: 'domcontentloaded' });
-  //     }).toPass({
-  //       timeout: VERY_LONG_TIMEOUT,
-  //     });
-  //     await page.waitForLoadState();
-  //     await page.locator('.spinner-container').waitFor({ state: 'detached' });
-  //     await performValidation('mainHeader', home.caseSummary);
-
-
 });
 
 test.afterEach(async () => {
@@ -57,5 +47,8 @@ test.afterEach(async () => {
 test.describe('Case management - Manage documents e2e Journey @nightly', async () => {
   test('Case management - Manage documents - Amend @CM @regression', async () => {
     await performAction('selectAnEvent', { eventType: caseSummary.manageDocuments.amend });
+    await performValidation('mainHeader', selectDocument.mainHeader);
+    await performAction('errorValidationSelectDocumentPage', selectDocument.errorValidation);
+    await performAction('select', selectDocument.whichFolderQuestion, selectDocument.docFolder);
   });
 });
