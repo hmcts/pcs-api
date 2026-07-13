@@ -27,6 +27,9 @@ import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.DefendantAccessValidator;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.PossessionClaimResponseMapper;
+import uk.gov.hmcts.reform.pcs.ccd.view.CaseDetailsTabView;
+import uk.gov.hmcts.reform.pcs.ccd.view.RentArrearsView;
+import uk.gov.hmcts.reform.pcs.ccd.view.TenancyLicenceView;
 import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
 import uk.gov.hmcts.reform.pcs.exception.DraftNotFoundException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
@@ -69,6 +72,12 @@ class CitizenStartEventStrategyTest {
     private DefendantOnlyDraftBuilder defendantOnlyDraftBuilder;
     @Mock
     private DefendantResponseRepository defendantResponseRepository;
+    @Mock
+    private CaseDetailsTabView caseDetailsTabView;
+    @Mock
+    private TenancyLicenceView tenancyLicenceView;
+    @Mock
+    private RentArrearsView rentArrearsView;
 
     private CitizenStartEventStrategy underTest;
 
@@ -83,7 +92,10 @@ class CitizenStartEventStrategyTest {
             possessionClaimMerger,
             possessionClaimDraftBuilder,
             defendantOnlyDraftBuilder,
-            defendantResponseRepository
+            defendantResponseRepository,
+            caseDetailsTabView,
+            tenancyLicenceView,
+            rentArrearsView
         );
     }
 

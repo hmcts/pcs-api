@@ -51,6 +51,9 @@ import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.DefendantRespo
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.PossessionClaimResponseMapper;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.RespondPossessionClaimSubmitService;
 import uk.gov.hmcts.reform.pcs.ccd.util.SelectedPartyRetriever;
+import uk.gov.hmcts.reform.pcs.ccd.view.CaseDetailsTabView;
+import uk.gov.hmcts.reform.pcs.ccd.view.RentArrearsView;
+import uk.gov.hmcts.reform.pcs.ccd.view.TenancyLicenceView;
 import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.PaymentService;
@@ -136,6 +139,12 @@ class RespondPossessionClaimTest extends BaseEventTest {
 
     @Mock
     private SubmitResponseFactory submitResponseFactory;
+    @Mock
+    private CaseDetailsTabView caseDetailsTabView;
+    @Mock
+    private TenancyLicenceView tenancyLicenceView;
+    @Mock
+    private RentArrearsView rentArrearsView;
 
     @BeforeEach
     void setUp() {
@@ -152,7 +161,10 @@ class RespondPossessionClaimTest extends BaseEventTest {
                                                   possessionClaimMerger,
                                                   possessionClaimDraftBuilder,
                                                   defendantOnlyDraftBuilder,
-                                                  defendantResponseRepository),
+                                                  defendantResponseRepository,
+                                                  caseDetailsTabView,
+                                                  tenancyLicenceView,
+                                                  rentArrearsView),
                     new LegalRepStartEventStrategy(pcsCaseService,
                                                             legalRepForDefendantAccessValidator,
                                                             securityContextService,
@@ -995,4 +1007,3 @@ class RespondPossessionClaimTest extends BaseEventTest {
             .hasMessage("No selected responding party id for respond to claim");
     }
 }
-
