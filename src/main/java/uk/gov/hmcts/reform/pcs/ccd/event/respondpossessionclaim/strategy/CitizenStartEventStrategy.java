@@ -19,6 +19,9 @@ import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.DefendantAccessValidator;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.PossessionClaimResponseMapper;
+import uk.gov.hmcts.reform.pcs.ccd.view.CaseDetailsTabView;
+import uk.gov.hmcts.reform.pcs.ccd.view.RentArrearsView;
+import uk.gov.hmcts.reform.pcs.ccd.view.TenancyLicenceView;
 import uk.gov.hmcts.reform.pcs.exception.DraftNotFoundException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
@@ -41,6 +44,9 @@ public class CitizenStartEventStrategy implements RespondPossessionClaimStartEve
     private final PossessionClaimDraftBuilder possessionClaimDraftBuilder;
     private final DefendantOnlyDraftBuilder defendantOnlyDraftBuilder;
     private final DefendantResponseRepository defendantResponseRepository;
+    private final CaseDetailsTabView caseDetailsTabView;
+    private final TenancyLicenceView tenancyLicenceView;
+    private final RentArrearsView rentArrearsView;
 
     @Override
     public boolean supports(List<String> roles) {
@@ -49,16 +55,20 @@ public class CitizenStartEventStrategy implements RespondPossessionClaimStartEve
 
     @Override
     public PCSCase loadDraft(long caseReference, PCSCase pcsCase) {
+
         PartyEntity defendant = loadAndValidateDefendant(caseReference);
+        PCSCase responseCase;
 
         if (hasSubmittedResponse(caseReference, securityContextService.getCurrentUserId())) {
-            return buildSubmittedResponseCase(pcsCase);
+            responseCase = buildSubmittedResponseCase(pcsCase);
+        } else if (draftCaseDataService.hasUnsubmittedCaseData(caseReference, respondPossessionClaim)) {
+            responseCase = restoreDraft(caseReference, pcsCase, defendant);
+        } else {
+            responseCase = initialiseDraft(caseReference, pcsCase, defendant);
         }
 
-        if (draftCaseDataService.hasUnsubmittedCaseData(caseReference, respondPossessionClaim)) {
-            return restoreDraft(caseReference, pcsCase, defendant);
-        }
-        return initialiseDraft(caseReference, pcsCase, defendant);
+        responseCase = loadCaseDetailsTab(caseReference, responseCase);
+        return responseCase;
     }
 
     private boolean hasSubmittedResponse(long caseReference, UUID userId) {
@@ -107,5 +117,21 @@ public class CitizenStartEventStrategy implements RespondPossessionClaimStartEve
             .build();
 
         return possessionClaimDraftBuilder.buildCaseWithDraft(pcsCase, merged);
+    }
+    private PCSCase loadCaseDetailsTab(long caseReference, PCSCase pcsCase) {
+        PcsCaseEntity caseEntity = pcsCaseService.loadCase(caseReference);
+        tenancyLicenceView.setCaseFields(pcsCase, caseEntity);
+        rentArrearsView.setCaseFields(pcsCase, caseEntity);
+
+        var existingCaseDetailsTab = pcsCase.getCaseDetailsTab();
+        var builtCaseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase, pcsCase.getDateSubmitted() != null);
+        var caseDetailsTab = existingCaseDetailsTab == null ? new uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.CaseDetailsTab()
+            : existingCaseDetailsTab;
+
+        caseDetailsTab.setTenancyLicenceDetails(builtCaseDetailsTab.getTenancyLicenceDetails());
+        caseDetailsTab.setRentArrearsDetails(builtCaseDetailsTab.getRentArrearsDetails());
+
+        pcsCase.setCaseDetailsTab(caseDetailsTab);
+        return pcsCase;
     }
 }

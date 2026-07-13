@@ -5,7 +5,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
-import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentWithType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState;
@@ -29,7 +28,6 @@ public class DocumentsView {
 
     public void setCaseFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
         pcsCase.setAllDocuments(mapAndWrapDocuments(pcsCaseEntity));
-        pcsCase.setAllDocumentsWithType(mapAndWrapDocumentsWithType(pcsCaseEntity));
     }
 
     private List<ListValue<Document>> mapAndWrapDocuments(PcsCaseEntity pcsCaseEntity) {
@@ -58,27 +56,6 @@ public class DocumentsView {
                 .build())
             .collect(Collectors.toList());
     }
-
-    private List<ListValue<DocumentWithType>> mapAndWrapDocumentsWithType(PcsCaseEntity pcsCaseEntity) {
-
-        if (pcsCaseEntity.getDocuments().isEmpty()) {
-            return List.of();
-        }
-
-        UUID currentUserId = securityContextService.getCurrentUserId();
-
-        return pcsCaseEntity.getDocuments().stream()
-            .filter(documentEntity -> this.isDocumentVisibleToUser(documentEntity, currentUserId))
-            .map(entity -> ListValue.<DocumentWithType>builder()
-                .id(entity.getId().toString())
-                .value(DocumentWithType.builder()
-                           .document(buildDocumentFromEntity(entity))
-                          .type(entity.getType())
-                           .build())
-                .build())
-            .collect(Collectors.toList());
-    }
-
 
     public boolean isDocumentVisibleToUser(DocumentEntity documentEntity, UUID currentUserId) {
         if (isExcludedFromCaseFile(documentEntity)) {
@@ -128,19 +105,5 @@ public class DocumentsView {
         // Is not an additional document
         return !isDescriptionEmpty(documentEntity);
     }
-
-    private static Document buildDocumentFromEntity(DocumentEntity documentEntity) {
-        return Document.builder()
-            .filename(documentEntity.getFileName())
-            .url(documentEntity.getUrl())
-            .binaryUrl(documentEntity.getBinaryUrl())
-            .categoryId(documentEntity.getCategoryId())
-            .uploadTimestamp(documentEntity.getSubmittedDate() == null
-                                 ? null
-                                 : documentEntity.getSubmittedDate()
-                .atZone(java.time.ZoneOffset.UTC).toLocalDateTime())
-            .build();
-    }
-
 
 }

@@ -585,12 +585,8 @@ public class PCSCase {
     )
     private DynamicList testCaseSupportFileList;
 
-    @Deprecated
     @CCD(access = DocumentAccess.class)
     private List<ListValue<Document>> allDocuments;
-
-    @CCD(access = DocumentAccess.class)
-    private List<ListValue<DocumentWithType>> allDocumentsWithType;
 
     @CCD(
         label = "Case file view",

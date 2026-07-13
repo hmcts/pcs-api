@@ -10,7 +10,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
-import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentWithType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState;
@@ -117,72 +116,6 @@ class DocumentsViewTest {
     }
 
     @Test
-    void shouldMapDocumentsWithType() {
-        // Given
-        Instant submittedDate = Instant.parse("2026-05-14T09:30:00Z");
-        UUID document1Id = UUID.randomUUID();
-        DocumentEntity entity1 = DocumentEntity.builder()
-            .id(document1Id)
-            .fileName("doc1.pdf")
-            .url("url1")
-            .binaryUrl("binary url1")
-            .categoryId("category 1")
-            .submittedDate(submittedDate)
-            .type(DocumentType.RENT_STATEMENT)
-            .build();
-
-        UUID document2Id = UUID.randomUUID();
-        DocumentEntity entity2 = DocumentEntity.builder()
-            .id(document2Id)
-            .fileName("doc2.pdf")
-            .url("url2")
-            .binaryUrl("binary url2")
-            .categoryId("category 2")
-            .type(DocumentType.TENANCY_AGREEMENT)
-            .build();
-
-        when(pcsCaseEntity.getDocuments()).thenReturn(List.of(entity1, entity2));
-
-        // When
-        underTest.setCaseFields(pcsCase, pcsCaseEntity);
-
-        // Then
-        List<ListValue<DocumentWithType>> allDocuments = pcsCase.getAllDocumentsWithType();
-        assertThat(allDocuments).hasSize(2);
-
-        ListValue<DocumentWithType> document1ListValue = allDocuments.get(0);
-        ListValue<DocumentWithType> document2ListValue = allDocuments.get(1);
-
-        assertThat(document1ListValue.getId()).isEqualTo(document1Id.toString());
-        assertThat(document1ListValue.getValue())
-            .satisfies(
-                document -> {
-                    assertThat(document.getDocument().getFilename()).isEqualTo("doc1.pdf");
-                    assertThat(document.getDocument().getUrl()).isEqualTo("url1");
-                    assertThat(document.getDocument().getBinaryUrl()).isEqualTo("binary url1");
-                    assertThat(document.getDocument().getCategoryId()).isEqualTo("category 1");
-                    assertThat(document.getType()).isEqualTo(DocumentType.RENT_STATEMENT);
-                    assertThat(document.getDocument().getUploadTimestamp())
-                        .isEqualTo(LocalDateTime.of(2026, 5, 14, 9, 30));
-                }
-            );
-
-        assertThat(document2ListValue.getId()).isEqualTo(document2Id.toString());
-        assertThat(document2ListValue.getValue())
-            .satisfies(
-                document -> {
-                    assertThat(document.getDocument().getFilename()).isEqualTo("doc2.pdf");
-                    assertThat(document.getDocument().getUrl()).isEqualTo("url2");
-                    assertThat(document.getDocument().getBinaryUrl()).isEqualTo("binary url2");
-                    assertThat(document.getDocument().getCategoryId()).isEqualTo("category 2");
-                    assertThat(document.getType()).isEqualTo(DocumentType.TENANCY_AGREEMENT);
-                    assertThat(document.getDocument().getUploadTimestamp()).isNull();
-                }
-            );
-
-    }
-
-    @Test
     void shouldExcludeDefendantAccessCodeLetterFromCaseFile() {
         DocumentEntity accessCodePack = DocumentEntity.builder()
             .id(UUID.randomUUID())
@@ -216,7 +149,6 @@ class DocumentsViewTest {
 
         // Then
         assertThat(pcsCase.getAllDocuments()).isEmpty();
-        assertThat(pcsCase.getAllDocumentsWithType()).isEmpty();
     }
 
     @Test
