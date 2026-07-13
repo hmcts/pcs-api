@@ -22,6 +22,10 @@ dependencies:
     version: 1.0.45
     repository: 'oci://hmctsprod.azurecr.io/helm'
     condition: xui-webapp.enabled
+  - name: xui-mo-webapp
+    version: 1.1.26
+    repository: 'oci://hmctsprod.azurecr.io/helm'
+    condition: xui-mo-webapp.enabled
   - name: postgresql
     version: 1.1.1
     repository: 'oci://hmctsprod.azurecr.io/helm'
@@ -34,3 +38,11 @@ dependencies:
     version: 1.7.18
     repository: 'oci://hmctsprod.azurecr.io/helm'
     condition: ccd-case-document-am-api.enabled
+  - name: aac-manage-case-assignment
+    version: ~0.2.20
+    repository: 'oci://hmctsprod.azurecr.io/helm'
+    condition: aac-manage-case-assignment.enabled
+  - name: am-org-role-mapping-service
+    version: 0.0.72
+    repository: 'oci://hmctsprod.azurecr.io/helm'
+    condition: am-org-role-mapping-service.enabled
