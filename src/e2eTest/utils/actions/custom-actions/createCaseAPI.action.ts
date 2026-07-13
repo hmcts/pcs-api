@@ -458,9 +458,7 @@ export class CreateCaseAPIAction implements IAction {
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
         const response = await paymentApi.get(paymentApiData.getFeePaymentInfoApiEndPoint());
-        //console.log('payment info'+JSON.stringify(response));
         const paymentInfo = response.data;
-        console.log('payment info'+JSON.stringify(paymentInfo));
         if (!paymentInfo?.length) {
           throw new Error('No payment information found.');
         }
@@ -469,20 +467,16 @@ export class CreateCaseAPIAction implements IAction {
           paymentApiData.updatePaymentApiEndPoint,
           paymentApiData.paymentUpdatePayload(requestReference)
         );
-        console.log(JSON.stringify(updateResponse.data));
         if (updateResponse.status === 200 || updateResponse.status === 204) {
           return;
         }
         throw new Error(`Payment update failed with status ${updateResponse.status}`);
       } catch (error: any) {
         const status = error?.response?.status;
-      const responseBody = error?.response?.data;
         if (attempt === maxRetries) {
           if (Axios.isAxiosError(error)) {
-            console.error("Full response body:", responseBody);
-            throw new Error(`Payment API failed after retries: ${error.response?.status}`);
+            throw new Error(`Payment API failed after retries: ${status}`);
           }
-          console.error("HTTP Status:", status);
           throw new Error(`Payment API failed unexpectedly after retries.${error}`);
         }
         await new Promise(res => setTimeout(res, delayMs));

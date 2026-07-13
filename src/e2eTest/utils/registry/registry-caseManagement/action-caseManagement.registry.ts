@@ -1,11 +1,11 @@
 import { LoginAction, NavigateToUrlAction, CreateCaseAPIAction } from "@utils/actions/custom-actions";
 import { CaseManagementAction } from "@utils/actions/custom-actions/custom-actions-caseManagement";
 import { ErrorValidationAction } from "@utils/actions/custom-actions/custom-actions-caseManagement/caseManagementErrorValidation.action";
-import { RecordAnswers } from "@utils/actions/custom-actions/custom-actions-genApps/recordAnsweredFields.action";
 import { LinkSolicitorAPIAction } from "@utils/actions/custom-actions/linkSolicitorAPI.action";
 import { CheckAction, ClickButtonAction, ClickRadioButtonAction, ClickTabAction, InputTextAction, SelectAction, UploadFileAction } from "@utils/actions/element-actions";
 import { ClickLinkAction } from "@utils/actions/element-actions/clickLink.action";
 import { ClickSummaryAction } from "@utils/actions/element-actions/clickSummary.action";
+import { RetryOnCallBackError } from "@utils/actions/element-actions/reTryOnCallBackError.action";
 import { IAction } from "@utils/interfaces";
 
 
@@ -35,8 +35,10 @@ export class ActionCMRegistry {
     ['makeAnApplicationAPI', new CreateCaseAPIAction()],
     ['navigateToSummaryPage', new CaseManagementAction()],
     ['selectAnEvent', new CaseManagementAction()],
+    ['selectDocumentToAmend', new CaseManagementAction()],
     ['errorValidationSelectDocumentPage', new ErrorValidationAction()],
     ['inputErrorValidation', new CaseManagementAction()],
+    ['reTryOnCallBackError', new RetryOnCallBackError()],
     
   ]);
 

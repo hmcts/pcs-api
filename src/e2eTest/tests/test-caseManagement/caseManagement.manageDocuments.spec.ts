@@ -1,14 +1,12 @@
 import { createCaseApiData, makeAnApplicationApiData, submitCaseApiData } from '@data/api-data';
 import { initializeExecutor, performValidation } from '@utils/controller';
-import test, { expect } from '@playwright/test';
+import test from '@playwright/test';
 import { caseInfo, defendantUserDetails } from '@utils/actions/custom-actions';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
-import { caseSummary, home, user } from '@data/page-data';
+import { caseSummary, user } from '@data/page-data';
 import { dismissCookieBanner } from '@config/cookie-banner';
 import { initializeCMExecutor, performAction } from '@utils/controller-caseManagement';
-import { getCaseTypeId } from '@utils/common/caseType.utils';
-import { VERY_LONG_TIMEOUT } from 'playwright.config';
-import { selectDocument } from '@data/page-data-figma/page-data-caseManagement-figma';
+import { amendDocumentDetails, selectDocument } from '@data/page-data-figma/page-data-caseManagement-figma';
 
 test.use({ storageState: undefined })
 
@@ -49,6 +47,10 @@ test.describe('Case management - Manage documents e2e Journey @nightly', async (
     await performAction('selectAnEvent', { eventType: caseSummary.manageDocuments.amend });
     await performValidation('mainHeader', selectDocument.mainHeader);
     await performAction('errorValidationSelectDocumentPage', selectDocument.errorValidation);
-    await performAction('select', selectDocument.whichFolderQuestion, selectDocument.docFolder);
+    await performAction('selectDocumentToAmend', {
+      question: selectDocument.whichFolderQuestion, option: selectDocument.docFolderHiddenOption,
+      question1: selectDocument.documentToAmendHiddenQuestion, option1: selectDocument.typeOfDocumentHiddenRadioOption,
+      nextPage: amendDocumentDetails.mainHeader
+    }); 
   });
 });

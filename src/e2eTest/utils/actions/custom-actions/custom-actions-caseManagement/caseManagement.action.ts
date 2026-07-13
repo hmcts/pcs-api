@@ -6,6 +6,7 @@ import { getCaseTypeId } from '@utils/common/caseType.utils';
 import { performAction, performValidation } from '@utils/controller-caseManagement';
 import { VERY_LONG_TIMEOUT } from 'playwright.config';
 import { caseSummary, home } from '@data/page-data';
+import { selectDocument } from '@data/page-data-figma/page-data-caseManagement-figma';
 
 
 export const addressInfo = {
@@ -22,6 +23,8 @@ export class CaseManagementAction implements IAction {
     const actionsMap = new Map<string, () => Promise<void>>([
       ['navigateToSummaryPage', () => this.navigateToSummaryPage(page)],
       ['selectAnEvent', () => this.selectAnEvent(fieldName as actionRecord)],
+      ['selectDocumentToAmend', () => this.selectDocumentToAmend(fieldName as actionRecord)],
+      ['inputErrorValidation', () => this.inputErrorValidation(page, fieldName as actionRecord)],
 
     ]);
     const actionToPerform = actionsMap.get(action);
@@ -32,8 +35,6 @@ export class CaseManagementAction implements IAction {
   }
 
   private async navigateToSummaryPage(page: Page) {
-    console.log(process.env.CASE_NUMBER);
-    console.log(`${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/${getCaseTypeId()}/${process.env.CASE_NUMBER}#Summary`)
     await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/${getCaseTypeId()}/${process.env.CASE_NUMBER}#Summary`);
     await expect(async () => {
       await page.waitForURL(`${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/${getCaseTypeId()}/${process.env.CASE_NUMBER}#Summary`, { waitUntil: 'domcontentloaded' });
@@ -50,6 +51,13 @@ export class CaseManagementAction implements IAction {
     await performAction('clickButton', caseSummary.go);
   }
 
+  private async selectDocumentToAmend(selectDoc: actionRecord){
+    await performAction('select', selectDoc.question, selectDoc.option);
+    await performAction('clickRadioButton', { question: selectDoc.question1, option: selectDoc.option1 });
+    await performAction('reTryOnCallBackError', selectDocument.continueButton, selectDoc.nextPage as string);
+
+  }
+
   private async inputErrorValidation(page: Page, validationArr: actionRecord) {
   
   
@@ -60,7 +68,7 @@ export class CaseManagementAction implements IAction {
   
               case 'radioOptions':
                 await performAction('clickButton', validationArr.button);
-                await performValidation('inputError', !validationArr?.label ? validationArr.question : validationArr.label, item.errMessage);
+                await performValidation('inputError', !validationArr?.label ? validationArr.question : validationArr.label, item.errInlineMessage);
                 await performValidation('errorMessage', !validationArr?.header ? validationArr.header = 'There is a problem' : validationArr.header, item.errMessage);
                 await performAction('clickRadioButton', { question: validationArr.question, option: validationArr.option });
                 break;
@@ -86,7 +94,7 @@ export class CaseManagementAction implements IAction {
                 }).toPass({
                   timeout: VERY_LONG_TIMEOUT,
                 });
-                await performAction('select', validationArr.docType, validationArr.type);
+                await performAction('select', validationArr.dropQn, validationArr.option);
                 break;
   
               default:
