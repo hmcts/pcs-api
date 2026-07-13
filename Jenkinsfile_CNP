@@ -39,7 +39,7 @@ GradleBuilder builder = new GradleBuilder(this, product)
 
 // Shutters the PCS case type across all environments (bakes shutterService() into the generated
 // CCD definition). While shuttered, cases cannot be created, so the e2e suite is not run.
-def shutterService = true
+def shutterService = false
 
 withPipeline(type, product, component) {
   def githubApi = new GithubAPI(this)
