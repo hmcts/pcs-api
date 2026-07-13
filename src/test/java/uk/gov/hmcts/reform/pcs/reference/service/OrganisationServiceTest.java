@@ -9,6 +9,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.exception.OrganisationDetailsException;
 import uk.gov.hmcts.reform.pcs.exception.SecurityContextException;
+import uk.gov.hmcts.reform.pcs.reference.dto.NameAndAddress;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.UUID;
@@ -229,4 +230,69 @@ class OrganisationServiceTest {
         verify(securityContextService).getCurrentUserId();
         verify(organisationDetailsService).getOrganisationAddress(USER_ID.toString());
     }
+
+    @Test
+    void shouldSuccessfullyRetrieveOrganisationNameAndAddressForCurrentUser() {
+        // Given
+        AddressUK orgAddress = AddressUK.builder()
+            .addressLine1("21 Abc").postTown("London").postCode("L2 3FF").build();
+        NameAndAddress nameAndAddress = new NameAndAddress(ORGANISATION_NAME, orgAddress);
+
+        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
+        when(organisationDetailsService.getNameAndAddress(USER_ID.toString()))
+            .thenReturn(nameAndAddress);
+
+        // When
+        NameAndAddress result = organisationService.getNameAndAddressForCurrentUser();
+
+        // Then
+        assertThat(result).isEqualTo(nameAndAddress);
+        verify(securityContextService).getCurrentUserId();
+        verify(organisationDetailsService).getNameAndAddress(USER_ID.toString());
+    }
+
+    @Test
+    void shouldGetNameAndAddressForCurrentUser_ShouldReturnNullWhenUserIdIsNull() {
+        // Given
+        when(securityContextService.getCurrentUserId()).thenReturn(null);
+
+        // When
+        NameAndAddress result = organisationService.getNameAndAddressForCurrentUser();
+
+        // Then
+        assertThat(result).isNull();
+        verify(securityContextService).getCurrentUserId();
+        verify(organisationDetailsService, never()).getNameAndAddress(anyString());
+    }
+
+    @Test
+    void getNameAndAddressForCurrentUser_ShouldReturnNullWhenOrganisationDetailsServiceThrowsException() {
+        // Given
+        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
+        when(organisationDetailsService.getNameAndAddress(USER_ID.toString()))
+            .thenThrow(new RuntimeException("Service unavailable"));
+
+        // When
+        NameAndAddress result = organisationService.getNameAndAddressForCurrentUser();
+
+        // Then
+        assertThat(result).isNull();
+        verify(securityContextService).getCurrentUserId();
+        verify(organisationDetailsService).getNameAndAddress(USER_ID.toString());
+    }
+
+    @Test
+    void getNameAndAddressForCurrentUser_ShouldReturnNullWhenSecurityContextServiceThrowsException() {
+        // Given
+        when(securityContextService.getCurrentUserId())
+            .thenThrow(new RuntimeException("Security context error"));
+
+        // When
+        NameAndAddress result = organisationService.getNameAndAddressForCurrentUser();
+
+        // Then
+        assertThat(result).isNull();
+        verify(organisationDetailsService, never()).getNameAndAddress(anyString());
+    }
+
 }
