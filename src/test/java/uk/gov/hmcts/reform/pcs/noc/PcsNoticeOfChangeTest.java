@@ -37,6 +37,8 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.LegalRepresent
 import uk.gov.hmcts.reform.pcs.ccd.task.NocAccessChangeTaskComponent;
 import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationDetailsService;
+import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.util.Collections;
 import java.util.List;
@@ -71,6 +73,11 @@ public class PcsNoticeOfChangeTest {
         + "You or a colleague are already representing this client on this case."
         + " Contact the issuing court for help.";
 
+    private static final String FEATURE_FLAG_DISABLED_CODE = "feature-disabled";
+
+    private static final String FEATURE_FLAG_DISABLED_MESSAGE = "The Notice of change feature is "
+        + "currently disabled";
+
     private PcsNoticeOfChange pcsNoticeOfChange;
 
     @Mock
@@ -91,6 +98,9 @@ public class PcsNoticeOfChangeTest {
     @Mock
     private OrganisationDetailsResponse organisationDetailsResponse;
 
+    @Mock
+    private FeatureToggleService featureToggleService;
+
     @Captor
     private ArgumentCaptor<SchedulableTaskInstance> taskCaptor;
 
@@ -98,7 +108,7 @@ public class PcsNoticeOfChangeTest {
     @BeforeEach
     void setUp() {
         pcsNoticeOfChange = new PcsNoticeOfChange(pcsCaseRepository, legalRepresentativeRepository,
-                                                  organisationDetailsService, schedulerClient);
+                                                  organisationDetailsService, schedulerClient, featureToggleService);
     }
 
     @Test
@@ -134,7 +144,47 @@ public class PcsNoticeOfChangeTest {
     }
 
     @Test
+    void validate_WithRelease1_2DAndRespondToClaimLrDisabled_ReturnErrorAnswerResponse() {
+        // when
+        NocAnswersResponse actual = pcsNoticeOfChange.validate(null, null);
+
+        // then
+        assertEquals(FEATURE_FLAG_DISABLED_CODE, actual.code());
+        assertEquals(FEATURE_FLAG_DISABLED_MESSAGE, actual.message());
+    }
+
+    @Test
+    void validate_WithRelease1_2DEnabledAndRespondToClaimLrDisabled_ReturnErrorAnswerResponse() {
+        // given
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_2)).thenReturn(true);
+
+        // when
+        NocAnswersResponse actual = pcsNoticeOfChange.validate(null, null);
+
+        // then
+        assertEquals(FEATURE_FLAG_DISABLED_CODE, actual.code());
+        assertEquals(FEATURE_FLAG_DISABLED_MESSAGE, actual.message());
+    }
+
+    @Test
+    void validate_WithRelease1_2Disabled_ReturnErrorAnswerResponse() {
+        // given
+        when(featureToggleService.isEnabled(FeatureFlag.CUI_RESPOND_TO_CLAIM_LR)).thenReturn(true);
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_2)).thenReturn(true);
+
+        // when
+        NocAnswersResponse actual = pcsNoticeOfChange.validate(null, null);
+
+        // then
+        assertEquals(NocAnswersResponse.answersEmpty(), actual);
+    }
+
+    @Test
     void validate_WithNullAnswerRequest_ReturnErrorAnswerResponse() {
+        // given
+        when(featureToggleService.isEnabled(FeatureFlag.CUI_RESPOND_TO_CLAIM_LR)).thenReturn(true);
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_2)).thenReturn(true);
+
         // when
         NocAnswersResponse actual = pcsNoticeOfChange.validate(null, null);
 
@@ -144,6 +194,10 @@ public class PcsNoticeOfChangeTest {
 
     @Test
     void validate_WithNullAnswers_ReturnErrorAnswerResponse() {
+        // given
+        when(featureToggleService.isEnabled(FeatureFlag.CUI_RESPOND_TO_CLAIM_LR)).thenReturn(true);
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_2)).thenReturn(true);
+
         // given
         NocAnswersRequest nocAnswersRequest = new NocAnswersRequest(TEST_CASE_REFERENCE, null);
 
@@ -157,6 +211,9 @@ public class PcsNoticeOfChangeTest {
     @Test
     void validate_WithEmptyAnswers_ReturnErrorAnswerResponse() {
         // given
+        when(featureToggleService.isEnabled(FeatureFlag.CUI_RESPOND_TO_CLAIM_LR)).thenReturn(true);
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_2)).thenReturn(true);
+
         NocAnswersRequest nocAnswersRequest = new NocAnswersRequest(TEST_CASE_REFERENCE, Collections.emptyList());
 
         // when
@@ -170,6 +227,9 @@ public class PcsNoticeOfChangeTest {
     @Test
     void validate_WithAnswersExceedingLimit_ReturnErrorAnswerResponse() {
         // given
+        when(featureToggleService.isEnabled(FeatureFlag.CUI_RESPOND_TO_CLAIM_LR)).thenReturn(true);
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_2)).thenReturn(true);
+
         NocAnswer answer = new NocAnswer("", "");
         NocAnswer answer2 = new NocAnswer("", "");
         NocAnswer answer3 = new NocAnswer("", "");
@@ -188,6 +248,9 @@ public class PcsNoticeOfChangeTest {
     @Test
     void validate_WithNoAnswersForFirstQuestion_ReturnErrorAnswerResponse() {
         // given
+        when(featureToggleService.isEnabled(FeatureFlag.CUI_RESPOND_TO_CLAIM_LR)).thenReturn(true);
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_2)).thenReturn(true);
+
         NocAnswer answer = new NocAnswer("", "");
         NocAnswer answer2 = new NocAnswer("", "");
         NocAnswersRequest nocAnswersRequest = new NocAnswersRequest(TEST_CASE_REFERENCE, List.of(answer, answer2));
@@ -204,6 +267,9 @@ public class PcsNoticeOfChangeTest {
     @Test
     void validate_WithNoAnswersForSecondQuestion_ReturnErrorAnswerResponse() {
         // given
+        when(featureToggleService.isEnabled(FeatureFlag.CUI_RESPOND_TO_CLAIM_LR)).thenReturn(true);
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_2)).thenReturn(true);
+
         NocAnswer answer = new NocAnswer("pcs-defendant-first-name", "");
         NocAnswer answer2 = new NocAnswer("", "");
         NocAnswersRequest nocAnswersRequest = new NocAnswersRequest(TEST_CASE_REFERENCE, List.of(answer, answer2));
@@ -220,6 +286,9 @@ public class PcsNoticeOfChangeTest {
     @Test
     void validate_WithNoPartiesOnCase_ReturnErrorAnswerResponse() {
         // given
+        when(featureToggleService.isEnabled(FeatureFlag.CUI_RESPOND_TO_CLAIM_LR)).thenReturn(true);
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_2)).thenReturn(true);
+
         NocAnswer answer = new NocAnswer("pcs-defendant-first-name", "");
         NocAnswer answer2 = new NocAnswer("pcs-defendant-last-name", "");
         NocAnswersRequest nocAnswersRequest = new NocAnswersRequest(TEST_CASE_REFERENCE, List.of(answer, answer2));
@@ -237,6 +306,9 @@ public class PcsNoticeOfChangeTest {
     @Test
     void validate_WithNoDefendantsOnCase_ReturnErrorAnswerResponse() {
         // given
+        when(featureToggleService.isEnabled(FeatureFlag.CUI_RESPOND_TO_CLAIM_LR)).thenReturn(true);
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_2)).thenReturn(true);
+
         NocAnswer answer = new NocAnswer("pcs-defendant-first-name", "");
         NocAnswer answer2 = new NocAnswer("pcs-defendant-last-name", "");
         NocAnswersRequest nocAnswersRequest = new NocAnswersRequest(TEST_CASE_REFERENCE, List.of(answer, answer2));
@@ -261,6 +333,9 @@ public class PcsNoticeOfChangeTest {
     @Test
     void validate_WithNameNotFoundForDefendantsOnCase_ReturnErrorAnswerResponse() {
         // given
+        when(featureToggleService.isEnabled(FeatureFlag.CUI_RESPOND_TO_CLAIM_LR)).thenReturn(true);
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_2)).thenReturn(true);
+
         String firstName = "Dan";
         String lastName = "Tester";
         NocAnswer answer = new NocAnswer("pcs-defendant-first-name", firstName);
@@ -289,6 +364,9 @@ public class PcsNoticeOfChangeTest {
     @Test
     void validate_WithNameNotProvidedForDefendantsOnCase_ReturnErrorAnswerResponse() {
         // given
+        when(featureToggleService.isEnabled(FeatureFlag.CUI_RESPOND_TO_CLAIM_LR)).thenReturn(true);
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_2)).thenReturn(true);
+
         String firstName = "Dan";
         String lastName = "Tester";
         NocAnswer answer = new NocAnswer("pcs-defendant-first-name", firstName);
@@ -317,6 +395,9 @@ public class PcsNoticeOfChangeTest {
     @Test
     void validate_WithMultipleSameNameDefendantsOnCase_ReturnErrorAnswerResponse() {
         // given
+        when(featureToggleService.isEnabled(FeatureFlag.CUI_RESPOND_TO_CLAIM_LR)).thenReturn(true);
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_2)).thenReturn(true);
+
         String firstName = "Dan";
         String lastName = "Tester";
         NocAnswer answer = new NocAnswer("pcs-defendant-first-name", firstName);
@@ -352,6 +433,9 @@ public class PcsNoticeOfChangeTest {
     @Test
     void validate_WithDefendantAlreadyRepresented_ReturnErrorAnswerResponse() {
         // given
+        when(featureToggleService.isEnabled(FeatureFlag.CUI_RESPOND_TO_CLAIM_LR)).thenReturn(true);
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_2)).thenReturn(true);
+
         String firstName = "Dan";
         String lastName = "Tester";
         NocAnswer answer = new NocAnswer("pcs-defendant-first-name", firstName);
@@ -389,6 +473,9 @@ public class PcsNoticeOfChangeTest {
     @Test
     void validate_WithDefendantNotAlreadyRepresented_ReturnVerifiedAnswerResponse() {
         // given
+        when(featureToggleService.isEnabled(FeatureFlag.CUI_RESPOND_TO_CLAIM_LR)).thenReturn(true);
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_2)).thenReturn(true);
+
         String firstName = "Dan";
         String lastName = "Tester";
         NocAnswer answer = new NocAnswer("pcs-defendant-first-name", firstName);
@@ -428,6 +515,9 @@ public class PcsNoticeOfChangeTest {
     @Test
     void validate_WithDefendantNotAlreadyRepresentedNormalisesName_ReturnVerifiedAnswerResponse() {
         // given
+        when(featureToggleService.isEnabled(FeatureFlag.CUI_RESPOND_TO_CLAIM_LR)).thenReturn(true);
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_2)).thenReturn(true);
+
         String firstName = " DaN ";
         String lastName = " TeStEr ";
         NocAnswer answer = new NocAnswer("pcs-defendant-first-name", firstName);

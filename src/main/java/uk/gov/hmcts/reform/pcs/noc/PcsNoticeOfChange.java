@@ -25,6 +25,8 @@ import uk.gov.hmcts.reform.pcs.ccd.task.NocAccessChangeTaskComponent;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationDetailsService;
+import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -61,11 +63,17 @@ public class PcsNoticeOfChange implements CCDConfig<PCSCase, State, UserRole> {
         + "You or a colleague are already representing this client on this case."
         + " Contact the issuing court for help.";
 
+    private static final String FEATURE_FLAG_DISABLED_CODE = "feature-disabled";
+
+    private static final String FEATURE_FLAG_DISABLED_MESSAGE = "The Notice of change feature is "
+        + "currently disabled";
+
 
     private final PcsCaseRepository pcsCaseRepository;
     private final LegalRepresentativeRepository legalRepresentativeRepository;
     private final OrganisationDetailsService organisationDetailsService;
     private final SchedulerClient schedulerClient;
+    private final FeatureToggleService featureToggleService;
 
     @Override
     public void configure(ConfigBuilder<PCSCase, State, UserRole> builder) {
@@ -88,6 +96,10 @@ public class PcsNoticeOfChange implements CCDConfig<PCSCase, State, UserRole> {
     }
 
     public NocAnswersResponse validate(NocSubmitContext context, NocAnswersRequest request) {
+        if(isFeatureDisabled()) {
+            return NocAnswersResponse.invalid(FEATURE_FLAG_DISABLED_CODE, FEATURE_FLAG_DISABLED_MESSAGE);
+        }
+
         Optional<NocAnswersResponse> validationError = validateRequest(request);
         if (validationError.isPresent()) {
             return validationError.get();
@@ -262,5 +274,11 @@ public class PcsNoticeOfChange implements CCDConfig<PCSCase, State, UserRole> {
     }
 
     private record NocAccessChangePlan(List<NocAccessChangeTaskData> changes) {
+    }
+
+    private boolean isFeatureDisabled() {
+        return !this.featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_2)
+            || !this.featureToggleService.isEnabled(FeatureFlag.CUI_RESPOND_TO_CLAIM_LR);
+
     }
 }
