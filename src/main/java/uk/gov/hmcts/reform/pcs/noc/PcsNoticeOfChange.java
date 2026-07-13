@@ -96,7 +96,7 @@ public class PcsNoticeOfChange implements CCDConfig<PCSCase, State, UserRole> {
     }
 
     public NocAnswersResponse validate(NocSubmitContext context, NocAnswersRequest request) {
-        if(isFeatureDisabled()) {
+        if (isFeatureDisabled()) {
             return NocAnswersResponse.invalid(FEATURE_FLAG_DISABLED_CODE, FEATURE_FLAG_DISABLED_MESSAGE);
         }
 
