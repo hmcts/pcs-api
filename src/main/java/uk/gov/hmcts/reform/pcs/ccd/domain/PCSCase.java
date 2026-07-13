@@ -735,4 +735,11 @@ public class PCSCase {
 
     @CCD
     private String dateIssuedString;
+
+    @CCD(
+        label = "Add document",
+        hint = "Upload a document to the system",
+        searchable = false
+    )
+    private Document uploadSingleDocument;
 }

@@ -2,19 +2,9 @@ package uk.gov.hmcts.reform.pcs.ccd.page.caseworker.entergenapp;
 
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
+import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 
 public class UploadGeneralApplication implements CcdPageConfiguration {
-
-    private static final String PLACEHOLDER_BANNER = """
-        <div class="govuk-notification-banner" role="region"
-        aria-labelledby="govuk-notification-banner-title" data-module="govuk-notification-banner">
-          <div class="govuk-notification-banner__content">
-            <p class="govuk-notification-banner__heading">
-              Placeholder
-            </p>
-          </div>
-        </div>
-        """;
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -22,7 +12,7 @@ public class UploadGeneralApplication implements CcdPageConfiguration {
             .page("uploadGeneralApplication")
             .pageLabel("Upload general application")
             .label("uploadGeneralApplication-lineSeparator", "---")
-            .label("uploadGeneralApplication-placeholder", PLACEHOLDER_BANNER);
+            .mandatory(PCSCase::getUploadSingleDocument);
     }
 
 }

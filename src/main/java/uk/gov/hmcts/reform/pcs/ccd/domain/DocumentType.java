@@ -34,6 +34,7 @@ public enum DocumentType implements HasLabel {
     ELECTRICAL_INSTALLATION_CONDITION("Electrical installation condition"),
     DEFENDANT_RESPONSE("Defendant response"),
     COUNTERCLAIM("Counterclaim"),
+    GENERAL_APPLICATION("General application"),
     OTHER("Other document");
 
     private final String label;
