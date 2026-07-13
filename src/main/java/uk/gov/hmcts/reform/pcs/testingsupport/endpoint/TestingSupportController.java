@@ -49,15 +49,9 @@ import uk.gov.hmcts.reform.pcs.reference.service.OrganisationDetailsService;
 import uk.gov.hmcts.reform.pcs.service.LegalRepresentativePartyLinkService;
 import uk.gov.hmcts.reform.pcs.testingsupport.service.CcdTestCaseOrchestrator;
 
+import java.math.BigDecimal;
 import java.time.Instant;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.Objects;
-import java.util.Collection;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -420,7 +414,7 @@ public class TestingSupportController {
     }
 
     @GetMapping("/fee-payment-info/{caseReference}")
-    public ResponseEntity<List<FeePaymentEntity>> getFeePaymentInfo(
+    public ResponseEntity<List<FeePaymentInfo>> getFeePaymentInfo(
         @Parameter(
             description = "Service-to-Service (S2S) authorization token",
             required = true,
@@ -439,16 +433,38 @@ public class TestingSupportController {
 
             PcsCaseEntity pcsCaseEntity = maybeCase.get();
 
-            List<FeePaymentEntity> feePayments = pcsCaseEntity.getClaims().stream()
-                .map(ClaimEntity::getFeePayments)
-                .filter(Objects::nonNull)
-                .flatMap(Collection::stream)
-                .collect(Collectors.toList());
-            return ResponseEntity.ok(feePayments);
+            List<FeePaymentInfo> feePaymentInfo = new ArrayList<>();
+
+            for (ClaimEntity claim : pcsCaseEntity.getClaims()) {
+                if (claim.getFeePayments() == null) {
+                    continue;
+                }
+
+                for (FeePaymentEntity feePayment : claim.getFeePayments()) {
+                    FeePaymentInfo minimalFeePayment = new FeePaymentInfo(
+                        feePayment.getId(),
+                        feePayment.getExternalReference(),
+                        feePayment.getPaymentStatus(),
+                        feePayment.getAmount()
+                    );
+
+                    feePaymentInfo.add(minimalFeePayment);
+                }
+            }
+
+            return ResponseEntity.ok(feePaymentInfo);
 
         } catch (Exception e) {
             log.error("Failed to get Fee Payment details for case reference {}", caseReference, e);
             return ResponseEntity.internalServerError().build();
         }
+    }
+
+    private record FeePaymentInfo(
+        UUID id,
+        String paymentReference,
+        uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus paymentStatus,
+        BigDecimal amount
+    ) {
     }
 }
