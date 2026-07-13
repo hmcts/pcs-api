@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs;
 
 
+import org.awaitility.Awaitility;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -8,8 +9,10 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.CitizenGenAppRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType;
@@ -24,7 +27,9 @@ import uk.gov.hmcts.reform.pcs.service.CaseCreationService;
 import uk.gov.hmcts.reform.pcs.testingsupport.model.PartyEmail;
 import uk.gov.hmcts.rse.ccd.lib.test.CftlibTest;
 
+import java.time.Duration;
 import java.util.List;
+import java.util.Objects;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -73,6 +78,13 @@ class CitizenMakeAnApplicationTest extends CftlibTest {
     void makeAnApplication() {
         long caseReference = caseCreationService.createMinimalCase(solicitorToken);
 
+        Awaitility.await("Case issued")
+            .atMost(Duration.ofSeconds(120))
+            .pollInterval(Duration.ofMillis(1000))
+            .ignoreExceptions()
+            .until(() -> caseIssued(caseReference));
+
+
         List<PartyAccessCode> partyAccessCodes = accessCodeService.waitForAccessCodes(caseReference);
         PartyAccessCode partyAccessCode = partyAccessCodes.getFirst();
         accessCodeService.linkUserToCase(caseReference, partyAccessCode.getAccessCode(), citizenToken);
@@ -106,6 +118,12 @@ class CitizenMakeAnApplicationTest extends CftlibTest {
         assertThat(sentNotification.getPersonalisation())
             .containsKeys("caseNumber", "claimantName", "firstName", "lastName", "primaryDefendantName");
         assertThat(sentNotification.getReference()).isNotBlank();
+    }
+
+    private boolean caseIssued(long caseReference) {
+        CaseDetails caseDetails = ccdClient.getCaseDetails(caseReference, solicitorToken);
+        return Objects.equals(caseDetails.getState(), State.CASE_ISSUED.name());
+
     }
 
 }
