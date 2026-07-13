@@ -133,6 +133,7 @@ public class GenAppService {
             .party(applicantParty)
             .applicationReceivedDate(enterGenAppRequest.getDateReceived())
             .within14Days(enterGenAppRequest.getWithin14Days())
+            .applicationSubmittedDate(LocalDateTime.now(utcClock))
             .state(initialState)
             .feeAmountReceived(enterGenAppRequest.getFeeAmountReceived())
             .appliedForHwf(enterGenAppRequest.getAppliedForHwf())
