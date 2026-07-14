@@ -382,6 +382,7 @@ ext {
   set('kotlin.version', "1.9.26")
   set('postgresql.version', "42.7.12")
   set('httpcore.version', "4.4.17")
+  set('azure-sdk-bom.version', '1.3.7')
 }
 
 ext['snakeyaml.version'] = '2.0'
@@ -400,7 +401,6 @@ configurations.all {
 }
 
 dependencies {
-  implementation platform("com.azure:azure-sdk-bom:1.3.7")
   implementation enforcedPlatform("io.netty:netty-bom:${nettyVersion}")
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: springFrameworkBootVersion
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-actuator', version: springFrameworkBootVersion
