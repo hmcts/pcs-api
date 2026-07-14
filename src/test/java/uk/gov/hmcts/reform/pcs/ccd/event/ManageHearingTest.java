@@ -119,7 +119,7 @@ public class ManageHearingTest extends BaseEventTest {
         PCSCase response = callStartHandler(pcsCase);
 
         // Then
-        assertThat(response.getShowManageHearingPage()).isEqualTo(YesOrNo.YES);
+        assertThat(response.getShowManageHearingPage()).isEqualTo(VerticalYesNo.YES);
         assertThat(response.getManageHearingOption()).isNull();
         assertThat(response.getHearingLocation()).isEqualTo("Court name");
         DynamicMultiSelectStringList partyMultiSelectionList = response.getPartyMultiSelectionList();
