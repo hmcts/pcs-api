@@ -55,8 +55,9 @@ public class CitizenStartEventStrategy implements RespondPossessionClaimStartEve
 
     @Override
     public PCSCase loadDraft(long caseReference, PCSCase pcsCase) {
+        PcsCaseEntity caseEntity = pcsCaseService.loadCase(caseReference);
 
-        PartyEntity defendant = loadAndValidateDefendant(caseReference);
+        PartyEntity defendant = loadAndValidateDefendant(caseEntity);
         PCSCase responseCase;
 
         if (hasSubmittedResponse(caseReference, securityContextService.getCurrentUserId())) {
@@ -67,7 +68,7 @@ public class CitizenStartEventStrategy implements RespondPossessionClaimStartEve
             responseCase = initialiseDraft(caseReference, pcsCase, defendant);
         }
 
-        responseCase = loadCaseDetailsTab(caseReference, responseCase);
+        responseCase = loadCaseDetailsTab(caseEntity, responseCase);
         return responseCase;
     }
 
@@ -87,8 +88,7 @@ public class CitizenStartEventStrategy implements RespondPossessionClaimStartEve
             .build();
     }
 
-    private PartyEntity loadAndValidateDefendant(long caseReference) {
-        PcsCaseEntity caseEntity = pcsCaseService.loadCase(caseReference);
+    private PartyEntity loadAndValidateDefendant(PcsCaseEntity caseEntity) {
         return accessValidator.validateAndGetDefendant(caseEntity, securityContextService.getCurrentUserId());
     }
 
@@ -119,8 +119,7 @@ public class CitizenStartEventStrategy implements RespondPossessionClaimStartEve
         return possessionClaimDraftBuilder.buildCaseWithDraft(pcsCase, merged);
     }
 
-    private PCSCase loadCaseDetailsTab(long caseReference, PCSCase pcsCase) {
-        PcsCaseEntity caseEntity = pcsCaseService.loadCase(caseReference);
+    private PCSCase loadCaseDetailsTab(PcsCaseEntity caseEntity, PCSCase pcsCase) {
         tenancyLicenceView.setCaseFields(pcsCase, caseEntity);
         rentArrearsView.setCaseFields(pcsCase, caseEntity);
 

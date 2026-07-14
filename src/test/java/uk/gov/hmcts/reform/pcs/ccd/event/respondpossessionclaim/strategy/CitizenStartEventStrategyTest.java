@@ -43,6 +43,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -129,7 +130,7 @@ class CitizenStartEventStrategyTest {
         // Then
         assertThat(result).isNotNull();
         assertThat(result.getPossessionClaimResponse()).isEqualTo(initialResponse);
-        verify(pcsCaseService).loadCase(CASE_REFERENCE);
+        verify(pcsCaseService, atLeastOnce()).loadCase(CASE_REFERENCE);
         verify(accessValidator).validateAndGetDefendant(pcsCaseEntity, defendantUserId);
         verify(responseMapper).mapFrom(any(PCSCase.class), eq(defendantEntity));
         verify(draftCaseDataService).patchUnsubmittedEventData(
@@ -166,6 +167,10 @@ class CitizenStartEventStrategyTest {
             .thenReturn(Optional.of(savedDraft));
         when(possessionClaimMerger.mergeLatestCaseData(caseData, draftResponse, defendantId))
             .thenReturn(draftResponse);
+        when(possessionClaimDraftBuilder.buildCaseWithDraft(caseData, draftResponse))
+            .thenReturn(PCSCase.builder()
+                            .possessionClaimResponse(draftResponse)
+                            .build());
 
         // When
         underTest.loadDraft(CASE_REFERENCE, caseData);
@@ -389,12 +394,16 @@ class CitizenStartEventStrategyTest {
         when(accessValidator.validateAndGetDefendant(pcsCaseEntity, defendantUserId)).thenReturn(matchedDefendant);
         when(responseMapper.buildPartyFromEntity(eq(matchedDefendant), any(PCSCase.class))).thenReturn(originalParty);
         when(possessionClaimMerger.mergeLatestCaseData(caseData, draftResponse, defendantId)).thenReturn(draftResponse);
+        when(possessionClaimDraftBuilder.buildCaseWithDraft(eq(caseData), any(PossessionClaimResponse.class)))
+            .thenReturn(PCSCase.builder()
+                            .possessionClaimResponse(draftResponse)
+                            .build());
 
         // When
         underTest.loadDraft(CASE_REFERENCE, caseData);
 
         // Then
-        verify(pcsCaseService).loadCase(CASE_REFERENCE);
+        verify(pcsCaseService, atLeastOnce()).loadCase(CASE_REFERENCE);
         verify(accessValidator).validateAndGetDefendant(pcsCaseEntity, defendantUserId);
         verify(responseMapper).buildPartyFromEntity(eq(matchedDefendant), any(PCSCase.class));
         verify(possessionClaimDraftBuilder).buildCaseWithDraft(eq(caseData), any(PossessionClaimResponse.class));
