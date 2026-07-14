@@ -66,6 +66,11 @@ public class DocumentService {
         return createDocumentEntities(allDocuments);
     }
 
+    /**
+     * Convenience wrapper that builds and persists document entities for a {@link PCSCase}.
+     * Production code uses {@link #buildDocumentEntitiesForCase(PCSCase)} directly; this overload
+     * remains for tests and callers that need persisted entities in one step.
+     */
     public List<DocumentEntity> createAllDocuments(PCSCase pcsCase) {
         return documentRepository.saveAll(buildDocumentEntitiesForCase(pcsCase));
     }

@@ -89,7 +89,7 @@ public class NoticeOfPossessionView {
             .findFirst();
     }
 
-    private List<ListValue<Document>> getNoticeStatement(PcsCaseEntity pcsCaseEntity) {
+    private static List<ListValue<Document>> getNoticeStatement(PcsCaseEntity pcsCaseEntity) {
         if (CollectionUtils.isEmpty(pcsCaseEntity.getDocuments())) {
             return List.of();
         }
