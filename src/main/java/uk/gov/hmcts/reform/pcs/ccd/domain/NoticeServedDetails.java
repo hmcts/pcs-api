@@ -30,7 +30,8 @@ public class NoticeServedDetails {
 
     // Notice Details fields
     @CCD(
-            label = "How did you serve the notice?"
+            label = "How did you serve the notice?",
+            access = {DefendantAccess.class, CitizenAccess.class}
     )
     private NoticeServiceMethod serviceMethod;
 
@@ -79,26 +80,31 @@ public class NoticeServedDetails {
 
     // Text fields for different service methods
     @CCD(
-            label = "Name of person the document was left with")
+            label = "Name of person the document was left with",
+            access = {DefendantAccess.class, CitizenAccess.class}
+    )
     private String personName;
 
     @CCD(
             label = "What email address was the document sent to?",
             hint = "For example, name@example.com",
-            typeOverride = Email
+            typeOverride = Email,
+            access = {DefendantAccess.class, CitizenAccess.class}
     )
     private String emailAddress;
 
     @CCD(
             hint = "Give details of how the notice was served. You can enter up to 250 characters",
-            typeOverride = TextArea
+            typeOverride = TextArea,
+            access = {DefendantAccess.class, CitizenAccess.class}
     )
     private String otherExplanation;
 
     @CCD(
             label = "Give details of how the notice was served",
             hint = "You can enter up to 250 characters",
-            typeOverride = TextArea
+            typeOverride = TextArea,
+            access = {DefendantAccess.class, CitizenAccess.class}
     )
     private String otherElectronicExplanation;
 
