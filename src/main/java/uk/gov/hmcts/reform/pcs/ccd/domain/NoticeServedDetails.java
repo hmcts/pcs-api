@@ -11,8 +11,8 @@ import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerReadAccess;
-import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
-import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DefendantAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenReadAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DefendantReadAccess;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -31,7 +31,7 @@ public class NoticeServedDetails {
     // Notice Details fields
     @CCD(
             label = "How did you serve the notice?",
-            access = {DefendantAccess.class, CitizenAccess.class}
+            access = {DefendantReadAccess.class, CitizenReadAccess.class}
     )
     private NoticeServiceMethod serviceMethod;
 
@@ -39,49 +39,49 @@ public class NoticeServedDetails {
     @CCD(
             label = "Date the document was posted",
             hint = "For example, 16 4 2021",
-            access = {DefendantAccess.class, CitizenAccess.class}
+            access = {DefendantReadAccess.class, CitizenReadAccess.class}
     )
     private LocalDate postedDate;
 
     @CCD(
             label = "Date the document was delivered",
             hint = "For example, 16 4 2021",
-            access = {DefendantAccess.class, CitizenAccess.class}
+            access = {DefendantReadAccess.class, CitizenReadAccess.class}
     )
     private LocalDate deliveredDate;
 
     @CCD(
             label = "Date and time the document was handed over",
             hint = "For example, 16 4 2021, 11 15",
-            access = {DefendantAccess.class, CitizenAccess.class}
+            access = {DefendantReadAccess.class, CitizenReadAccess.class}
     )
     private LocalDateTime handedOverDateTime;
 
     @CCD(
             label = "Date and time the document was emailed",
             hint = "For example, 16 4 2021, 11 15",
-            access = {DefendantAccess.class, CitizenAccess.class}
+            access = {DefendantReadAccess.class, CitizenReadAccess.class}
     )
     private LocalDateTime emailSentDateTime;
 
     @CCD(
             label = "Date and time the message was sent",
             hint = "For example, 16 4 2021, 11 15",
-            access = {DefendantAccess.class, CitizenAccess.class}
+            access = {DefendantReadAccess.class, CitizenReadAccess.class}
     )
     private LocalDateTime otherElectronicDateTime;
 
     @CCD(
             label = "Date and time the document was served",
             hint = "For example, 16 4 2021, 11 15",
-            access = {DefendantAccess.class, CitizenAccess.class}
+            access = {DefendantReadAccess.class, CitizenReadAccess.class}
     )
     private LocalDateTime otherDateTime;
 
     // Text fields for different service methods
     @CCD(
             label = "Name of person the document was left with",
-            access = {DefendantAccess.class, CitizenAccess.class}
+            access = {DefendantReadAccess.class, CitizenReadAccess.class}
     )
     private String personName;
 
@@ -89,14 +89,14 @@ public class NoticeServedDetails {
             label = "What email address was the document sent to?",
             hint = "For example, name@example.com",
             typeOverride = Email,
-            access = {DefendantAccess.class, CitizenAccess.class}
+            access = {DefendantReadAccess.class, CitizenReadAccess.class}
     )
     private String emailAddress;
 
     @CCD(
             hint = "Give details of how the notice was served. You can enter up to 250 characters",
             typeOverride = TextArea,
-            access = {DefendantAccess.class, CitizenAccess.class}
+            access = {DefendantReadAccess.class, CitizenReadAccess.class}
     )
     private String otherExplanation;
 
@@ -104,7 +104,7 @@ public class NoticeServedDetails {
             label = "Give details of how the notice was served",
             hint = "You can enter up to 250 characters",
             typeOverride = TextArea,
-            access = {DefendantAccess.class, CitizenAccess.class}
+            access = {DefendantReadAccess.class, CitizenReadAccess.class}
     )
     private String otherElectronicExplanation;
 
@@ -121,7 +121,7 @@ public class NoticeServedDetails {
             hint = "Upload a document to the system",
             typeOverride = FieldType.Collection,
             typeParameterOverride = "Document",
-            access = {CaseworkerReadAccess.class, DefendantAccess.class, CitizenAccess.class}
+            access = {CaseworkerReadAccess.class, DefendantReadAccess.class, CitizenReadAccess.class}
     )
     private List<ListValue<Document>> documents;
 
