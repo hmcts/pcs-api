@@ -47,7 +47,7 @@ public class NoticeDetailsBuilder {
                 .build();
 
         if (noticeServed == YesOrNo.YES) {
-            populateNoticeDetails(noticeTabDetails, pcsCase.getNoticeServedDetails(), isSubmitted);
+            populateNoticeDetails(noticeTabDetails, pcsCase.getNoticeServedDetails());
         }
 
         return noticeTabDetails;
@@ -74,15 +74,14 @@ public class NoticeDetailsBuilder {
                 .noticeDate(NO_ANSWER)
                 .build();
 
-        populateNoticeDetails(noticeTabDetails, pcsCase.getNoticeServedDetails(), isSubmitted);
+        populateNoticeDetails(noticeTabDetails, pcsCase.getNoticeServedDetails());
 
         return noticeTabDetails;
     }
 
     private void populateNoticeDetails(
         NoticeTabDetails noticeTabDetails,
-        NoticeServedDetails noticeServedDetails,
-        boolean isSubmitted
+        NoticeServedDetails noticeServedDetails
     ) {
         if (noticeServedDetails == null || noticeServedDetails.getServiceMethod() == null) {
             return;
