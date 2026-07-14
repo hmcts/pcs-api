@@ -5,6 +5,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
 import uk.gov.hmcts.ccd.sdk.type.Document;
@@ -14,11 +15,13 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocument;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static uk.gov.hmcts.reform.pcs.ccd.service.FileUploadValidationService.ALLOWED_FILE_TYPE_GUIDANCE;
 import static uk.gov.hmcts.reform.pcs.ccd.service.FileUploadValidationService.DISALLOWED_FILE_TYPE_ERROR;
-import static uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils.wrapListItems;
+import static uk.gov.hmcts.reform.pcs.ccd.testutil.DocumentTestData.additionalDocumentsWithFilenames;
+import static uk.gov.hmcts.reform.pcs.ccd.testutil.DocumentTestData.documentsWithFilenames;
 
 @DisplayName("FileUploadValidationService Tests")
 class FileUploadValidationServiceTest {
@@ -30,12 +33,8 @@ class FileUploadValidationServiceTest {
         fileUploadValidationService = new FileUploadValidationService();
     }
 
-    private static List<ListValue<Document>> documentsWithFilenames(String... filenames) {
-        List<Document> documents = new ArrayList<>();
-        for (String filename : filenames) {
-            documents.add(Document.builder().filename(filename).build());
-        }
-        return wrapListItems(documents);
+    private static Stream<String> allowedExtensions() {
+        return FileUploadValidationService.ALLOWED_FILE_EXTENSIONS.stream();
     }
 
     @Nested
@@ -65,12 +64,11 @@ class FileUploadValidationServiceTest {
         }
 
         @ParameterizedTest
-        @ValueSource(strings = {
-            "statement.pdf", "photo.jpg", "notice.docx", "data.csv", "scan.tiff"
-        })
-        @DisplayName("Should return no error for allowed file types")
-        void shouldReturnNoErrorForAllowedTypes(String filename) {
-            List<String> errors = fileUploadValidationService.validateDocuments(documentsWithFilenames(filename));
+        @MethodSource("uk.gov.hmcts.reform.pcs.ccd.service.FileUploadValidationServiceTest#allowedExtensions")
+        @DisplayName("Should return no error for every allowed file extension")
+        void shouldReturnNoErrorForAllowedExtensions(String extension) {
+            List<String> errors = fileUploadValidationService.validateDocuments(
+                documentsWithFilenames("document." + extension));
 
             assertThat(errors).isEmpty();
         }
@@ -187,18 +185,11 @@ class FileUploadValidationServiceTest {
     @DisplayName("validateAdditionalDocuments Method Tests")
     class ValidateAdditionalDocumentsTests {
 
-        private List<ListValue<AdditionalDocument>> additionalDocumentsWith(String filename) {
-            AdditionalDocument additionalDocument = AdditionalDocument.builder()
-                .document(Document.builder().filename(filename).build())
-                .build();
-            return List.of(ListValue.<AdditionalDocument>builder().value(additionalDocument).build());
-        }
-
         @Test
         @DisplayName("Should return error when an additional document has a blocked extension")
         void shouldReturnErrorForBlockedAdditionalDocument() {
-            List<String> errors =
-                fileUploadValidationService.validateAdditionalDocuments(additionalDocumentsWith("clip.mp4"));
+            List<String> errors = fileUploadValidationService.validateAdditionalDocuments(
+                additionalDocumentsWithFilenames("clip.mp4"));
 
             assertThat(errors).containsExactly(DISALLOWED_FILE_TYPE_ERROR, ALLOWED_FILE_TYPE_GUIDANCE);
         }
@@ -206,8 +197,8 @@ class FileUploadValidationServiceTest {
         @Test
         @DisplayName("Should return no error for an allowed additional document")
         void shouldReturnNoErrorForAllowedAdditionalDocument() {
-            List<String> errors =
-                fileUploadValidationService.validateAdditionalDocuments(additionalDocumentsWith("statement.pdf"));
+            List<String> errors = fileUploadValidationService.validateAdditionalDocuments(
+                additionalDocumentsWithFilenames("statement.pdf"));
 
             assertThat(errors).isEmpty();
         }

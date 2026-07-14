@@ -6,7 +6,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
-import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CanUploadNoticeServedDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServedDetails;
@@ -29,7 +28,7 @@ import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.doAnswer;
 import static uk.gov.hmcts.reform.pcs.ccd.service.FileUploadValidationService.ALLOWED_FILE_TYPE_GUIDANCE;
 import static uk.gov.hmcts.reform.pcs.ccd.service.FileUploadValidationService.DISALLOWED_FILE_TYPE_ERROR;
-import static uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils.wrapListItems;
+import static uk.gov.hmcts.reform.pcs.ccd.testutil.DocumentTestData.documentsWithFilenames;
 
 @ExtendWith(MockitoExtension.class)
 class NoticeDetailsTest extends BasePageTest {
@@ -105,8 +104,7 @@ class NoticeDetailsTest extends BasePageTest {
                 .noticeServedDetails(NoticeServedDetails.builder()
                         .serviceMethod(NoticeServiceMethod.FIRST_CLASS_POST)
                         .ableToUploadDocument(CanUploadNoticeServedDocument.Yes)
-                        .documents(wrapListItems(List.of(
-                                Document.builder().filename("notice.mpeg").build())))
+                        .documents(documentsWithFilenames("notice.mpeg"))
                         .build())
                 .build();
 
@@ -126,8 +124,7 @@ class NoticeDetailsTest extends BasePageTest {
                         .serviceMethod(NoticeServiceMethod.FIRST_CLASS_POST)
                         .ableToUploadDocument(CanUploadNoticeServedDocument.No)
                         .unableToUploadReason("Unable to upload document")
-                        .documents(wrapListItems(List.of(
-                                Document.builder().filename("notice.mpeg").build())))
+                        .documents(documentsWithFilenames("notice.mpeg"))
                         .build())
                 .build();
 
@@ -146,8 +143,7 @@ class NoticeDetailsTest extends BasePageTest {
                 .noticeServedDetails(NoticeServedDetails.builder()
                         .serviceMethod(NoticeServiceMethod.FIRST_CLASS_POST)
                         .ableToUploadDocument(CanUploadNoticeServedDocument.Yes)
-                        .documents(wrapListItems(List.of(
-                                Document.builder().filename("notice.pdf").build())))
+                        .documents(documentsWithFilenames("notice.pdf"))
                         .build())
                 .build();
 
