@@ -376,14 +376,14 @@ ext {
   pactVersion = "4.7.3"
   tomcatEmbedVersion = "11.0.23"
   nettyVersion = "4.1.136.Final"
-  jacksonVersion = "2.21.5"
-  kotlinVersion = "1.9.26"
-  postgresqlVersion = "42.7.12"
-  httpcoreVersion = "4.4.17"
 }
 
 ext['snakeyaml.version'] = '2.0'
 ext['netty.version'] = nettyVersion
+ext['jackson-bom.version'] = "2.21.5"
+ext['kotlin.version'] = "1.9.26"
+ext['postgresql.version'] = "42.7.12"
+ext['httpcore.version'] = "4.4.17"
 
 dependencies {
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: springFrameworkBootVersion
