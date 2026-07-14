@@ -334,3 +334,5 @@ core_case_data:
 caseApi:
   url: ${CASE_API_URL:http://localhost:3206}
 
+shutter:
+  service: ${SHUTTER_SERVICE:false}
