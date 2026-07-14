@@ -729,6 +729,10 @@ public class PCSCase {
                 + "the details in the future.")
     private YesOrNo deleteUnsubmittedClaim;
 
-    @CCD
+    @JsonProperty("TTL")
+    @CCD(
+        label = "Set up TTL",
+        typeOverride = FieldType.TTL
+    )
     private TTL ttl;
 }
