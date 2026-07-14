@@ -379,7 +379,7 @@ ext {
 
   set('snakeyaml.version', '2.0')
   set('jackson-bom.version', "2.21.5")
-  set('kotlin.version', "1.9.26")
+  set('kotlin.version', "2.3.1")
   set('postgresql.version', "42.7.12")
   set('httpcore.version', "4.4.16")
   set('azure-sdk-bom.version', '1.3.7')
@@ -403,9 +403,9 @@ configurations.all {
     force "org.postgresql:postgresql:42.7.12"
     force "com.fasterxml.jackson.core:jackson-databind:2.21.5"
     force "tools.jackson.core:jackson-databind:3.1.2"
-    force "org.jetbrains.kotlin:kotlin-stdlib:1.9.26"
-    force "org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.9.26"
-    force "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.9.26"
+    force "org.jetbrains.kotlin:kotlin-stdlib:2.3.1"
+    force "org.jetbrains.kotlin:kotlin-stdlib-jdk7:2.3.1"
+    force "org.jetbrains.kotlin:kotlin-stdlib-jdk8:2.3.1"
     force "org.apache.pdfbox:pdfbox:3.0.4"
     force "org.apache.pdfbox:pdfbox-io:3.0.4"
     force "com.azure:azure-core:1.58.1"
