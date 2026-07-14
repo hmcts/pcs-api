@@ -636,6 +636,10 @@ class RespondPossessionClaimTest extends BaseEventTest {
 
         PCSCase caseData = PCSCase.builder().build();
         when(possessionClaimMerger.mergeLatestCaseData(caseData, draftResponse, defendantId)).thenReturn(draftResponse);
+        when(possessionClaimDraftBuilder.buildCaseWithDraft(eq(caseData), any(PossessionClaimResponse.class)))
+            .thenReturn(PCSCase.builder()
+                            .possessionClaimResponse(draftResponse)
+                            .build());
 
         callStartHandler(caseData);
 

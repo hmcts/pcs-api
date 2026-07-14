@@ -129,8 +129,10 @@ public class CitizenStartEventStrategy implements RespondPossessionClaimStartEve
         var caseDetailsTab = existingCaseDetailsTab == null 
             ? new uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.CaseDetailsTab() : existingCaseDetailsTab;
 
-        caseDetailsTab.setTenancyLicenceDetails(builtCaseDetailsTab.getTenancyLicenceDetails());
-        caseDetailsTab.setRentArrearsDetails(builtCaseDetailsTab.getRentArrearsDetails());
+        if (builtCaseDetailsTab != null) {
+            caseDetailsTab.setTenancyLicenceDetails(builtCaseDetailsTab.getTenancyLicenceDetails());
+            caseDetailsTab.setRentArrearsDetails(builtCaseDetailsTab.getRentArrearsDetails());
+        }
 
         pcsCase.setCaseDetailsTab(caseDetailsTab);
         return pcsCase;
