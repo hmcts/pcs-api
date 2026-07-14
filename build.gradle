@@ -375,7 +375,7 @@ ext {
   springSecurityVersion = "7.1.0"
   pactVersion = "4.7.3"
   tomcatEmbedVersion = "11.0.23"
-  nettyVersion = "4.1.132.Final"
+  nettyVersion = "4.1.136.Final"
 }
 
 ext['snakeyaml.version'] = '2.0'
