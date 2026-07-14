@@ -1,10 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
   <!--Please add all the false positives under the below section-->
-<!--  <suppress base="true">-->
-<!--    <cve>CVE-2023-36415</cve>-->
-<!--  </suppress>-->
-
   <suppress base="true">
     <cve>CVE-2026-53914</cve>
     <cve>CVE-2026-54515</cve>
@@ -21,22 +17,5 @@
     <cve>CVE-2026-54291</cve>
     <cve>CVE-2026-33929</cve>
   </suppress>
-
-<!--  <suppress>-->
-<!--    <notes><![CDATA[file name: angus-activation-2.0.3.jar]]> Suppressing false positive on angus activation</notes>-->
-<!--    <packageUrl regex="true">^pkg:maven/org\.eclipse\.angus/angus-activation@.*$</packageUrl>-->
-<!--    <cve>CVE-2025-7962</cve>-->
-<!--  </suppress>-->
-
-<!--  <suppress>-->
-<!--    <notes><![CDATA[-->
-<!--False positive: org.hibernate.validator:hibernate-validator is being incorrectly matched to Nu Html Checker (validator.nu)-->
-<!--via the generic CPE "cpe:2.3:a:validator:validator". This project uses Hibernate Validator (Jakarta Bean Validation RI),-->
-<!--not validator.nu.-->
-<!--]]></notes>-->
-<!--    <packageUrl regex="true">^pkg:maven/org\.hibernate\.validator/hibernate-validator@8\.0\.3\.Final$</packageUrl>-->
-<!--    <cve>CVE-2025-15104</cve>-->
-<!--  </suppress>-->
-
   <!--End of false positives section -->
 </suppressions>
