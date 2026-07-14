@@ -46,8 +46,20 @@ public class FeePaymentService {
             .until(() -> getFeePaymentsForCase(caseReference, paymentType), not(empty()));
     }
 
-    public void makePaymentCallback(long caseReference,
-                                    FeePaymentSummary feePaymentSummary) {
+    public void simulatePayments(long caseReference,
+                                 List<FeePaymentSummary> feePaymentSummaries) {
+
+        feePaymentSummaries.forEach(
+            feePaymentSummary -> {
+                if (feePaymentSummary.getPaymentStatus() != PaymentStatus.PAID) {
+                    makePaymentCallback(caseReference, feePaymentSummary);
+                }
+            }
+        );
+    }
+
+    private void makePaymentCallback(long caseReference,
+                                     FeePaymentSummary feePaymentSummary) {
 
         RestClient restClient = RestClient
             .create(PCS_API_HOST);

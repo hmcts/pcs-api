@@ -2,7 +2,6 @@ package uk.gov.hmcts.reform.pcs;
 
 
 import lombok.extern.slf4j.Slf4j;
-import org.awaitility.Awaitility;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -10,7 +9,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
@@ -21,20 +19,18 @@ import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.client.CcdClient;
 import uk.gov.hmcts.reform.pcs.client.TestingSupportClient;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentCallbackHandlerType;
-import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.model.FeePaymentSummary;
 import uk.gov.hmcts.reform.pcs.model.PartyAccessCode;
 import uk.gov.hmcts.reform.pcs.notification.CapturedNotification;
 import uk.gov.hmcts.reform.pcs.notification.MockNotificationServer;
 import uk.gov.hmcts.reform.pcs.service.AccessCodeService;
 import uk.gov.hmcts.reform.pcs.service.CaseCreationService;
+import uk.gov.hmcts.reform.pcs.service.CaseStateService;
 import uk.gov.hmcts.reform.pcs.service.FeePaymentService;
 import uk.gov.hmcts.reform.pcs.testingsupport.model.PartyEmail;
 import uk.gov.hmcts.rse.ccd.lib.test.CftlibTest;
 
-import java.time.Duration;
 import java.util.List;
-import java.util.Objects;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -52,6 +48,8 @@ class CitizenMakeAnApplicationTest extends CftlibTest {
     private IdamClient idamClient;
     @Autowired
     private CaseCreationService caseCreationService;
+    @Autowired
+    private CaseStateService caseStateService;
     @Autowired
     private FeePaymentService feePaymentService;
     @Autowired
@@ -86,31 +84,12 @@ class CitizenMakeAnApplicationTest extends CftlibTest {
     void makeAnApplication() {
         long caseReference = caseCreationService.createMinimalCase(solicitorToken);
 
-        System.out.println("CONSOLE: Waiting for payment requests for " + caseReference);
-        log.info("Waiting for payment requests for " + caseReference);
-        List<FeePaymentSummary> feePaymentSummaries = feePaymentService.waitForFeePaymentRequests(
-            caseReference,
-            PaymentCallbackHandlerType.CLAIM
-        );
+        List<FeePaymentSummary> feePaymentSummaries
+            = feePaymentService.waitForFeePaymentRequests(caseReference, PaymentCallbackHandlerType.CLAIM);
 
-        System.out.println("Found payment requests: " + feePaymentSummaries);
+        feePaymentService.simulatePayments(caseReference, feePaymentSummaries);
 
-        feePaymentSummaries.forEach(
-            feePaymentSummary -> {
-                if (feePaymentSummary.getPaymentStatus() != PaymentStatus.PAID) {
-                    System.out.println("Making payment callback for : "
-                                           + feePaymentSummary.getServiceRequestReference());
-                    feePaymentService.makePaymentCallback(caseReference, feePaymentSummary);
-                }
-            }
-        );
-
-        Awaitility.await("Case issued")
-            .atMost(Duration.ofSeconds(30))
-            .pollInterval(Duration.ofMillis(1000))
-            .ignoreExceptions()
-            .until(() -> caseIssued(caseReference));
-
+        caseStateService.waitForCaseState(caseReference, State.CASE_ISSUED, solicitorToken);
 
         List<PartyAccessCode> partyAccessCodes = accessCodeService.waitForAccessCodes(caseReference);
         PartyAccessCode partyAccessCode = partyAccessCodes.getFirst();
@@ -145,12 +124,6 @@ class CitizenMakeAnApplicationTest extends CftlibTest {
         assertThat(sentNotification.getPersonalisation())
             .containsKeys("caseNumber", "claimantName", "firstName", "lastName", "primaryDefendantName");
         assertThat(sentNotification.getReference()).isNotBlank();
-    }
-
-    private boolean caseIssued(long caseReference) {
-        CaseDetails caseDetails = ccdClient.getCaseDetails(caseReference, solicitorToken);
-        return Objects.equals(caseDetails.getState(), State.CASE_ISSUED.name());
-
     }
 
 }
