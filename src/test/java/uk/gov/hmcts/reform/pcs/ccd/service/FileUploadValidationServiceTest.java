@@ -5,6 +5,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
@@ -12,6 +13,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocument;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static uk.gov.hmcts.reform.pcs.ccd.service.FileUploadValidationService.ALLOWED_FILE_TYPE_GUIDANCE;
@@ -101,6 +103,15 @@ class FileUploadValidationServiceTest {
             documents.add(ListValue.<Document>builder().value(null).build());
 
             assertThat(fileUploadValidationService.validateDocuments(documents)).isEmpty();
+        }
+
+        @ParameterizedTest
+        @NullAndEmptySource
+        @DisplayName("Should return error when a document filename is null or blank")
+        void shouldReturnErrorForNullOrBlankFilename(String filename) {
+            List<String> errors = fileUploadValidationService.validateDocuments(documentsWithFilenames(filename));
+
+            assertThat(errors).containsExactly(DISALLOWED_FILE_TYPE_ERROR, ALLOWED_FILE_TYPE_GUIDANCE);
         }
 
         @ParameterizedTest
@@ -215,6 +226,34 @@ class FileUploadValidationServiceTest {
                 List.of(ListValue.<AdditionalDocument>builder().value(additionalDocument).build());
 
             assertThat(fileUploadValidationService.validateAdditionalDocuments(documents)).isEmpty();
+        }
+    }
+
+    @Nested
+    @DisplayName("Guidance and allowlist consistency")
+    class GuidanceConsistencyTests {
+
+        @Test
+        @DisplayName("Every allowed extension is mentioned in the user-facing guidance")
+        void everyAllowedExtensionAppearsInGuidance() {
+            String guidance = ALLOWED_FILE_TYPE_GUIDANCE.toLowerCase(Locale.UK);
+
+            assertThat(FileUploadValidationService.ALLOWED_FILE_EXTENSIONS)
+                .allSatisfy(extension -> assertThat(guidance).contains(extension));
+        }
+
+        @Test
+        @DisplayName("Every extension listed in the guidance is in the allowlist")
+        void everyGuidanceExtensionIsAllowed() {
+            String extensionsPart = ALLOWED_FILE_TYPE_GUIDANCE
+                .replaceFirst("(?i)^the selected file must be a\\s*", "")
+                .toLowerCase(Locale.UK);
+
+            for (String token : extensionsPart.split("[,\\s/.]+")) {
+                if (!token.isEmpty()) {
+                    assertThat(FileUploadValidationService.ALLOWED_FILE_EXTENSIONS).contains(token);
+                }
+            }
         }
     }
 }

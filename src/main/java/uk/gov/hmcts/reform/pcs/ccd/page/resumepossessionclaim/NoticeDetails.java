@@ -124,15 +124,21 @@ public class NoticeDetails implements CcdPageConfiguration {
                                                                   CaseDetails<PCSCase, State> detailsBefore) {
         PCSCase caseData = details.getData();
 
-        if (CanUploadNoticeServedDocument.Yes.equals(caseData.getNoticeServedDetails().getAbleToUploadDocument())) {
-            caseData.getNoticeServedDetails().setUnableToUploadReason(null);
+        NoticeServedDetails noticeServedDetails = caseData.getNoticeServedDetails();
+        boolean ableToUploadDocument =
+            CanUploadNoticeServedDocument.Yes.equals(noticeServedDetails.getAbleToUploadDocument());
+
+        if (ableToUploadDocument) {
+            noticeServedDetails.setUnableToUploadReason(null);
         }
 
         List<String> validationErrors = noticeDetailsService.validateNoticeDetails(caseData);
 
-        validationErrors.addAll(
-            fileUploadValidationService.validateDocuments(caseData.getNoticeServedDetails().getDocuments())
-        );
+        if (ableToUploadDocument) {
+            validationErrors.addAll(
+                fileUploadValidationService.validateDocuments(noticeServedDetails.getDocuments())
+            );
+        }
 
         return textAreaValidationService.createValidationResponse(caseData, validationErrors);
     }

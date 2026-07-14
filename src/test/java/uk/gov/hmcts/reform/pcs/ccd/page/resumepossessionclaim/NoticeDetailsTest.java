@@ -118,6 +118,27 @@ class NoticeDetailsTest extends BasePageTest {
     }
 
     @Test
+    void shouldNotValidateDocumentsWhenUnableToUpload() {
+        // Given a stale disallowed upload but the user selected "unable to upload"
+        PCSCase caseData = PCSCase.builder()
+                .noticeServed(YesOrNo.YES)
+                .noticeServedDetails(NoticeServedDetails.builder()
+                        .serviceMethod(NoticeServiceMethod.FIRST_CLASS_POST)
+                        .ableToUploadDocument(CanUploadNoticeServedDocument.No)
+                        .unableToUploadReason("Unable to upload document")
+                        .documents(wrapListItems(List.of(
+                                Document.builder().filename("notice.mpeg").build())))
+                        .build())
+                .build();
+
+        // When
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+        // Then
+        assertThat(response.getErrors()).isNull();
+    }
+
+    @Test
     void shouldNotReturnErrorWhenNoticeDocumentIsAllowedFileType() {
         // Given
         PCSCase caseData = PCSCase.builder()

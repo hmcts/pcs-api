@@ -17,6 +17,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static uk.gov.hmcts.reform.pcs.ccd.service.FileUploadValidationService.ALLOWED_FILE_TYPE_GUIDANCE;
 import static uk.gov.hmcts.reform.pcs.ccd.service.FileUploadValidationService.DISALLOWED_FILE_TYPE_ERROR;
 
 @ExtendWith(MockitoExtension.class)
@@ -87,8 +88,7 @@ class UploadAdditionalDocumentsDetailsTest extends BasePageTest {
 
         // Then
         assertThat(response.getErrorMessageOverride())
-            .isNotNull()
-            .contains(DISALLOWED_FILE_TYPE_ERROR);
+            .isEqualTo(DISALLOWED_FILE_TYPE_ERROR + "\n" + ALLOWED_FILE_TYPE_GUIDANCE);
     }
 
 }
