@@ -880,6 +880,59 @@ class GenAppServiceTest {
             assertThat(genAppEntity.getHelpWithFeesEntity()).isNull();
         }
 
+        @ParameterizedTest
+        @EnumSource(VerticalYesNo.class)
+        void shouldSetAllPartiesAgreeFlag(VerticalYesNo allPartiesAgree) {
+            // Given
+            EnterGenAppRequest enterGenAppRequest = EnterGenAppRequest.builder()
+                .applicationTypeOption(EnterGenAppType.SOMETHING_ELSE)
+                .allPartiesAgree(allPartiesAgree)
+                .build();
+
+            // When
+            underTest.createGenAppEntity(enterGenAppRequest, pcsCaseEntity, applicantParty, GEN_APP_ISSUED);
+
+            // Then
+            GenAppEntity genAppEntity = getSavedGenAppEntity();
+            assertThat(genAppEntity.getOtherPartiesAgreed()).isEqualTo(allPartiesAgree);
+        }
+
+        @ParameterizedTest
+        @EnumSource(VerticalYesNo.class)
+        void shouldSetWithoutNoticeFlagWhenNotAllPartiesAgree(VerticalYesNo withoutNotice) {
+            // Given
+            EnterGenAppRequest enterGenAppRequest = EnterGenAppRequest.builder()
+                .applicationTypeOption(EnterGenAppType.SOMETHING_ELSE)
+                .allPartiesAgree(VerticalYesNo.NO)
+                .withoutNotice(withoutNotice)
+                .build();
+
+            // When
+            underTest.createGenAppEntity(enterGenAppRequest, pcsCaseEntity, applicantParty, GEN_APP_ISSUED);
+
+            // Then
+            GenAppEntity genAppEntity = getSavedGenAppEntity();
+            assertThat(genAppEntity.getWithoutNotice()).isEqualTo(withoutNotice);
+        }
+
+        @ParameterizedTest
+        @EnumSource(VerticalYesNo.class)
+        void shouldNotSetWithoutNoticeFlagWhenAllPartiesAgree(VerticalYesNo withoutNotice) {
+            // Given
+            EnterGenAppRequest enterGenAppRequest = EnterGenAppRequest.builder()
+                .applicationTypeOption(EnterGenAppType.SOMETHING_ELSE)
+                .allPartiesAgree(VerticalYesNo.YES)
+                .withoutNotice(withoutNotice)
+                .build();
+
+            // When
+            underTest.createGenAppEntity(enterGenAppRequest, pcsCaseEntity, applicantParty, GEN_APP_ISSUED);
+
+            // Then
+            GenAppEntity genAppEntity = getSavedGenAppEntity();
+            assertThat(genAppEntity.getWithoutNotice()).isNull();
+        }
+
         @Test
         void shouldSaveUploadedGenAppAsSubmissionDocument() {
             // Given
