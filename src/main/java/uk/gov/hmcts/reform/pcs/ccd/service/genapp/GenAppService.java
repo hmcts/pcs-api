@@ -161,21 +161,23 @@ public class GenAppService {
         }
 
         Document uploadedGenApp = caseData.getUploadSingleDocument();
-        DocumentEntity submissionDocument = createDocumentEntity(uploadedGenApp, pcsCaseEntity,
-                                                                 genAppEntity, applicantParty.getId());
+        DocumentEntity submissionDocument = createSubmissionDocumentEntity(
+            uploadedGenApp, pcsCaseEntity, genAppEntity, applicantParty.getId()
+        );
         genAppEntity.setSubmissionDocument(submissionDocument);
 
         List<DocumentEntity> additionalEvidenceDocuments = createRelatedEvidenceDocumentEntities(
-            enterGenAppRequest.getRelatedEvidence(), pcsCaseEntity, genAppEntity, applicantParty.getId());
+            enterGenAppRequest.getRelatedEvidence(), pcsCaseEntity, genAppEntity, applicantParty.getId()
+        );
         genAppEntity.setDocuments(additionalEvidenceDocuments);
 
         genAppRepository.save(genAppEntity);
     }
 
-    private DocumentEntity createDocumentEntity(Document document,
-                                                PcsCaseEntity pcsCaseEntity,
-                                                GenAppEntity genAppEntity,
-                                                UUID applicantPartyId) {
+    private DocumentEntity createSubmissionDocumentEntity(Document document,
+                                                          PcsCaseEntity pcsCaseEntity,
+                                                          GenAppEntity genAppEntity,
+                                                          UUID applicantPartyId) {
 
         if (document == null) {
             return null;
@@ -187,15 +189,8 @@ public class GenAppService {
         String renamedFilename = documentNameService
             .appendGenAppPostfix(newFileName, genAppEntity, mainClaimEntity, applicantPartyId);
 
-        DocumentEntity documentEntity = DocumentEntity.builder()
-            .pcsCase(pcsCaseEntity)
-            .generalApplication(genAppEntity)
-            .url(document.getUrl())
-            .fileName(renamedFilename)
-            .binaryUrl(document.getBinaryUrl())
-            .categoryId(CaseFileCategory.APPLICATIONS.getId())
-            .type(DocumentType.GENERAL_APPLICATION)
-            .build();
+        DocumentEntity documentEntity = buildDocumentEntity(document, pcsCaseEntity, genAppEntity, renamedFilename,
+            CaseFileCategory.APPLICATIONS.getId(), DocumentType.GENERAL_APPLICATION);
 
         return documentRepository.save(documentEntity);
     }
@@ -216,14 +211,8 @@ public class GenAppService {
                 String renamedFilename = documentNameService
                     .appendGenAppPostfix(document.getFilename(), genAppEntity, mainClaimEntity, applicantPartyId);
 
-                return DocumentEntity.builder()
-                    .pcsCase(pcsCaseEntity)
-                    .generalApplication(genAppEntity)
-                    .url(document.getUrl())
-                    .fileName(renamedFilename)
-                    .binaryUrl(document.getBinaryUrl())
-                    .type(DocumentType.OTHER)
-                    .build();
+                return buildDocumentEntity(document, pcsCaseEntity, genAppEntity, renamedFilename,
+                    null, null);
             })
             .toList();
 
@@ -248,23 +237,33 @@ public class GenAppService {
                 String updatedFilename = documentNameService
                     .appendGenAppPostfix(originalFilename, genAppEntity, mainClaimEntity, applicantPartyId);
 
-                return DocumentEntity.builder()
-                    .pcsCase(pcsCaseEntity)
-                    .generalApplication(genAppEntity)
-                    .url(uploadedDocument.getDocument().getUrl())
-                    .fileName(updatedFilename)
-                    .binaryUrl(uploadedDocument.getDocument().getBinaryUrl())
-                    .categoryId(CaseFileCategory.APPLICATIONS.getId())
-                    .type(uploadedDocument.getDocumentType() != null
-                        ? documentService.mapAdditionalDocumentTypeToDocumentType(uploadedDocument.getDocumentType())
-                        : null)
-                    .contentType(uploadedDocument.getContentType())
-                    .size(uploadedDocument.getSizeInBytes())
-                    .build();
+                DocumentType type = uploadedDocument.getDocumentType() != null
+                    ? documentService.mapAdditionalDocumentTypeToDocumentType(uploadedDocument.getDocumentType())
+                    : null;
+
+                DocumentEntity documentEntity = buildDocumentEntity(uploadedDocument.getDocument(), pcsCaseEntity,
+                    genAppEntity, updatedFilename, CaseFileCategory.APPLICATIONS.getId(), type);
+                documentEntity.setContentType(uploadedDocument.getContentType());
+                documentEntity.setSize(uploadedDocument.getSizeInBytes());
+
+                return documentEntity;
             })
             .toList();
 
         return documentRepository.saveAll(documentEntities);
     }
 
+    private DocumentEntity buildDocumentEntity(Document document, PcsCaseEntity pcsCaseEntity,
+                                               GenAppEntity genAppEntity, String fileName, String categoryId,
+                                               DocumentType type) {
+        return DocumentEntity.builder()
+            .pcsCase(pcsCaseEntity)
+            .generalApplication(genAppEntity)
+            .url(document.getUrl())
+            .fileName(fileName)
+            .binaryUrl(document.getBinaryUrl())
+            .categoryId(categoryId)
+            .type(type)
+            .build();
+    }
 }

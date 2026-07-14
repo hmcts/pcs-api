@@ -982,7 +982,7 @@ class GenAppServiceTest {
             assertThat(documentEntity.getFileName()).isEqualTo(renamedFilename);
             assertThat(documentEntity.getUrl()).isEqualTo("evidence url");
             assertThat(documentEntity.getBinaryUrl()).isEqualTo("evidence binary url");
-            assertThat(documentEntity.getType()).isEqualTo(DocumentType.OTHER);
+            assertThat(documentEntity.getType()).isNull();
             assertThat(documentEntity.getCategoryId()).isNull();
         }
 
