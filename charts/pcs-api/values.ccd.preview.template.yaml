@@ -240,3 +240,43 @@ ccd-case-document-am-api:
         secrets:
           - name: ccd-case-document-am-api-s2s-secret
             alias: CASE_DOCUMENT_AM_API_S2S_SECRET
+
+# LAU's case disposer, pointed at THIS preview environment's CCD database and Elasticsearch.
+# LAU's own scheduled instance can never reach a preview env (the CCD DB is on a private
+# endpoint in the preview VNet and ES is an in-cluster service), so we run their image here
+# instead. Deletes PCS cases whose resolved_ttl is in the past (i.e. deleted via
+# deleteThisCase at least a day earlier). Preview only -- disabled by default in values.yaml.
+caseDisposer:
+  enabled: true
+  image: hmctsprod.azurecr.io/ccd/case-disposer:prod-1b78748-20260713072209
+  schedule: "*/10 * * * *"
+  dbPasswordSecret:
+    name: "{{ .Values.global.postgresSecret }}"
+    key: PASSWORD
+  resources:
+    requests: {memory: "512Mi", cpu: "250m"}
+    limits: {memory: "1024Mi", cpu: "1000m"}
+  environment:
+    DATA_STORE_DB_HOST: '{{ tpl .Values.global.postgresHostname $ }}'
+    DATA_STORE_DB_PORT: "5432"
+    DATA_STORE_DB_NAME: "{{ .Values.global.databaseNamePrefix }}data-store"
+    DATA_STORE_DB_USERNAME: "{{ .Values.global.postgresUsername }}"
+    DATA_STORE_DB_OPTIONS: "?sslmode=require"
+    ELASTIC_SEARCH_DATA_NODES_HOSTS: "http://{{ .Release.Name }}-es-master:9200"
+    DELETE_CASE_TYPES: "PCS"
+    SIMULATED_CASE_TYPES: ""
+    CASE_COLLECTOR_VERSION: "2"
+    DOCUMENT_STORE_HOST: "{{ .Values.global.dmStoreUrl }}"
+    ROLE_ASSIGNMENT_HOST: "{{ .Values.global.amRoleAssignmentServiceUrl }}"
+    LOG_AND_AUDIT_HOST: "http://lau-case-backend-aat.service.core-compute-aat.internal"
+    IDAM_API_URL: "{{ .Values.global.idamApiUrl }}"
+    IDAM_CASE_DISPOSER_SYSTEM_USER_USERNAME: "pcs-solicitor1@test.com"
+    # k8s collapses $$ to $ in env values, so the AAT password Pa$$w0rd is written doubled
+    IDAM_CASE_DISPOSER_SYSTEM_USER_PASSWORD: "Pa$$$$w0rd"
+    IDAM_CASE_DISPOSER_CLIENT_ID: "pcs-frontend"
+    IDAM_CASE_DISPOSER_CLIENT_SECRET: "K5QV4MQRCEMPSL4I"
+    # /testing-support issues a genuinely signed ccd_case_disposer S2S token without checking
+    # the TOTP, so dm-store/RAS/LAU accept our calls without LAU's secret. The key below is
+    # unused but must still be valid base32 for the client to start.
+    IDAM_S2S_URL: "{{ .Values.global.s2sUrl }}/testing-support"
+    IDAM_KEY_CCD_CASE_DISPOSER: "AAAAAAAAAAAAAAAA"

@@ -1,0 +1,47 @@
+{{- if .Values.caseDisposer.enabled }}
+# LAU's ccd-case-disposer, run against this preview environment's own CCD database and
+# Elasticsearch. Preview only: LAU's scheduled instance cannot reach a preview environment
+# (private endpoint DB, in-cluster ES), so we run their image next to the data instead.
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ .Release.Name }}-case-disposer
+  labels:
+    app: {{ .Release.Name }}-case-disposer
+spec:
+  schedule: {{ .Values.caseDisposer.schedule | quote }}
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  startingDeadlineSeconds: 300
+  jobTemplate:
+    spec:
+      backoffLimit: 0
+      template:
+        metadata:
+          labels:
+            app: {{ .Release.Name }}-case-disposer
+        spec:
+          restartPolicy: Never
+          containers:
+            - name: case-disposer
+              image: {{ .Values.caseDisposer.image | quote }}
+              imagePullPolicy: IfNotPresent
+              resources:
+                requests:
+                  memory: {{ .Values.caseDisposer.resources.requests.memory | quote }}
+                  cpu: {{ .Values.caseDisposer.resources.requests.cpu | quote }}
+                limits:
+                  memory: {{ .Values.caseDisposer.resources.limits.memory | quote }}
+                  cpu: {{ .Values.caseDisposer.resources.limits.cpu | quote }}
+              env:
+                {{- range $name, $value := .Values.caseDisposer.environment }}
+                - name: {{ $name }}
+                  value: {{ tpl (toString $value) $ | quote }}
+                {{- end }}
+                - name: DATA_STORE_DB_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ tpl .Values.caseDisposer.dbPasswordSecret.name $ | quote }}
+                      key: {{ .Values.caseDisposer.dbPasswordSecret.key | quote }}
+{{- end }}

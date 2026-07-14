@@ -64,3 +64,5 @@ wiremock:
   enabled: false
 ccd-case-document-am-api:
   enabled: false
+caseDisposer:
+  enabled: false
