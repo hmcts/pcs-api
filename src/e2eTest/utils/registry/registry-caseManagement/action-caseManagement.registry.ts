@@ -36,7 +36,9 @@ export class ActionCMRegistry {
     ['navigateToSummaryPage', new CaseManagementAction()],
     ['selectAnEvent', new CaseManagementAction()],
     ['selectDocumentToAmend', new CaseManagementAction()],
+    ['changeCaseState', new CaseManagementAction()],
     ['errorValidationSelectDocumentPage', new ErrorValidationAction()],
+    ['errorValidationChangeCaseStatePage', new ErrorValidationAction()],
     ['inputErrorValidation', new CaseManagementAction()],
     ['reTryOnCallBackError', new RetryOnCallBackError()],
     

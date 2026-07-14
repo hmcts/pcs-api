@@ -6,7 +6,7 @@ import { getCaseTypeId } from '@utils/common/caseType.utils';
 import { performAction, performValidation } from '@utils/controller-caseManagement';
 import { VERY_LONG_TIMEOUT } from 'playwright.config';
 import { caseSummary, home } from '@data/page-data';
-import { selectDocument } from '@data/page-data-figma/page-data-caseManagement-figma';
+import { changeCaseState, selectDocument } from '@data/page-data-figma/page-data-caseManagement-figma';
 
 
 export const addressInfo = {
@@ -24,6 +24,7 @@ export class CaseManagementAction implements IAction {
       ['navigateToSummaryPage', () => this.navigateToSummaryPage(page)],
       ['selectAnEvent', () => this.selectAnEvent(fieldName as actionRecord)],
       ['selectDocumentToAmend', () => this.selectDocumentToAmend(fieldName as actionRecord)],
+      ['changeCaseState', () => this.changeCaseState(fieldName as actionRecord)],
       ['inputErrorValidation', () => this.inputErrorValidation(page, fieldName as actionRecord)],
 
     ]);
@@ -55,7 +56,11 @@ export class CaseManagementAction implements IAction {
     await performAction('select', selectDoc.question, selectDoc.option);
     await performAction('clickRadioButton', { question: selectDoc.question1, option: selectDoc.option1 });
     await performAction('reTryOnCallBackError', selectDocument.continueButton, selectDoc.nextPage as string);
+  }
 
+  private async changeCaseState(caseState: actionRecord){
+    await performAction('select', caseState.question, caseState.option);
+    await performAction('reTryOnCallBackError', changeCaseState.continueButton, caseState.nextPage as string);
   }
 
   private async inputErrorValidation(page: Page, validationArr: actionRecord) {
