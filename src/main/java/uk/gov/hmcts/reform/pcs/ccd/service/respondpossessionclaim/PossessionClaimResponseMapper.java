@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantContactDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.utils.ClaimantOrgNameListCreator;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 
 import java.util.List;
@@ -28,6 +29,7 @@ import java.util.Optional;
 public class PossessionClaimResponseMapper {
 
     private final AddressMapper addressMapper;
+    private final ClaimantOrgNameListCreator claimantOrgNameListCreator;
 
     /**
      * Maps view-populated PCSCase and matched defendant to PossessionClaimResponse.
@@ -43,7 +45,7 @@ public class PossessionClaimResponseMapper {
         Party claimantEnteredDetails = buildPartyFromEntity(matchedDefendant, pcsCase);
 
         // Extract org names from CLAIMANT-role parties (pre-filtered by PCSCaseView.getPartyMap)
-        List<ListValue<String>> claimantOrgs = extractClaimantOrganisations(pcsCase);
+        List<ListValue<String>> claimantOrgs = claimantOrgNameListCreator.createClaimantOrgNameList(pcsCase);
 
         return PossessionClaimResponse.builder()
             .claimantOrganisations(claimantOrgs)
@@ -111,25 +113,4 @@ public class PossessionClaimResponseMapper {
         }
     }
 
-    /*
-     * Extracts organisation names from claimant parties.
-     * allClaimants is pre-filtered to PartyRole.CLAIMANT by PCSCaseView.
-     * Supports multiple claimants, preserving original party IDs.
-     * Returns ListValue-wrapped strings for CCD collection compatibility.
-     */
-    private List<ListValue<String>> extractClaimantOrganisations(PCSCase pcsCase) {
-        List<ListValue<Party>> allClaimants = pcsCase.getAllClaimants();
-
-        if (allClaimants == null || allClaimants.isEmpty()) {
-            log.warn("No claimant parties found in case, returning empty organisation list");
-            return List.of();
-        }
-
-        return allClaimants.stream()
-            .map(claimant -> ListValue.<String>builder()
-                .id(claimant.getId())
-                .value(claimant.getValue().getOrgName())
-                .build())
-            .toList();
-    }
 }

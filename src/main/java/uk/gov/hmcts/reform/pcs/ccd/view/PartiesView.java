@@ -5,12 +5,15 @@ import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.LegalRepresentative;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyLegalRepresentativeEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
@@ -59,7 +62,9 @@ public class PartiesView {
 
         //Citizens only see full details for their own party, other party details are partial
         boolean shouldRedact = isCitizen && !isCurrentUser;
-        Party party = shouldRedact ? toPartialParty(partyEntity) : toParty(partyEntity);
+        Party party = shouldRedact
+            ? toPartialParty(partyEntity)
+            : toParty(partyEntity);
 
         return ListValue.<Party>builder()
             .id(claimPartyEntity.getId().getPartyId().toString())
@@ -80,6 +85,7 @@ public class PartiesView {
             .phoneNumber(entity.getPhoneNumber())
             .phoneNumberProvided(entity.getPhoneNumberProvided())
             .dateOfBirth(entity.getDateOfBirth())
+            .legalRepresentative(buildLegalRepresentative(entity))
             .build();
     }
 
@@ -88,7 +94,32 @@ public class PartiesView {
             .firstName(entity.getFirstName())
             .lastName(entity.getLastName())
             .orgName(entity.getOrgName())
+            .nameKnown(entity.getNameKnown())
+            .address(convertAddress(entity.getAddress()))
+            .addressKnown(entity.getAddressKnown())
+            .addressSameAsProperty(entity.getAddressSameAsProperty())
+            .dateOfBirth(entity.getDateOfBirth())
             .build();
+    }
+
+    private LegalRepresentative buildLegalRepresentative(PartyEntity partyEntity) {
+        List<ClaimPartyLegalRepresentativeEntity> claimPartyLegalRepresentativeEntities =
+            partyEntity.getClaimPartyLegalRepresentativeList();
+
+        return claimPartyLegalRepresentativeEntities.stream()
+                .filter(legalRepEntity -> legalRepEntity.getActive() == YesOrNo.YES)
+                .map(ClaimPartyLegalRepresentativeEntity::getLegalRepresentative)
+                .map(legalRepEntity -> LegalRepresentative.builder()
+                    .firstName(legalRepEntity.getFirstName())
+                    .lastName(legalRepEntity.getLastName())
+                    .telephoneNumber(legalRepEntity.getPhone())
+                    .emailAddress(legalRepEntity.getEmail())
+                    .organisationName(legalRepEntity.getOrganisationName())
+                    .address(convertAddress(legalRepEntity.getAddress()))
+                    .build()
+                )
+            .findFirst()
+            .orElse(null);
     }
 
     private AddressUK convertAddress(AddressEntity address) {

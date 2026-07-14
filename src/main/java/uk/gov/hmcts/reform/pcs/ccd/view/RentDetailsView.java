@@ -22,7 +22,7 @@ public class RentDetailsView {
             }
 
             RentDetails rentDetails = RentDetails.builder()
-                .currentRent(tenancyLicence.getRentAmount())
+                .currentRent(rentAmount)
                 .frequency(tenancyLicence.getRentFrequency())
                 .otherFrequency(tenancyLicence.getOtherRentFrequency())
                 .dailyCharge(tenancyLicence.getRentPerDay())

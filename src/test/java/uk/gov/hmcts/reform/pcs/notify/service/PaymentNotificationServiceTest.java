@@ -5,14 +5,11 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.CounterClaimRepository;
-import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
 
 import java.util.List;
 import java.util.Optional;
@@ -37,44 +34,36 @@ class PaymentNotificationServiceTest {
 
     @BeforeEach
     void setUp() {
-        underTest = new PaymentNotificationService(notificationService, counterClaimRepository);
+        underTest = new PaymentNotificationService(
+            notificationService,
+            counterClaimRepository
+        );
     }
 
     @Test
     void shouldSendCounterClaimPaymentSuccessEmail() {
         UUID counterClaimId = UUID.randomUUID();
         UUID defendantId = UUID.randomUUID();
+        PcsCaseEntity pcsCase = mock(PcsCaseEntity.class);
 
         CounterClaimEntity counterClaim = mock(CounterClaimEntity.class);
         PartyEntity defendant = mock(PartyEntity.class);
         when(defendant.getId()).thenReturn(defendantId);
         when(counterClaim.getParty()).thenReturn(defendant);
-
-        PcsCaseEntity pcsCase = mock(PcsCaseEntity.class);
         when(counterClaim.getPcsCase()).thenReturn(pcsCase);
-
-        FeePaymentEntity feePayment = mock(FeePaymentEntity.class);
-        when(feePayment.getPaymentStatus()).thenReturn(PaymentStatus.PAID);
-        PartyEntity feePaymentParty = mock(PartyEntity.class);
-        when(feePaymentParty.getId()).thenReturn(defendantId);
-        when(feePayment.getParty()).thenReturn(feePaymentParty);
-
-        ClaimEntity claim = mock(ClaimEntity.class);
-        when(claim.getFeePayment()).thenReturn(feePayment);
-        when(feePayment.getClaim()).thenReturn(claim);
-        when(claim.getPcsCase()).thenReturn(pcsCase);
 
         DefendantResponseEntity defendantResponse = mock(DefendantResponseEntity.class);
         when(defendantResponse.getParty()).thenReturn(defendant);
 
         when(counterClaimRepository.findById(counterClaimId)).thenReturn(Optional.of(counterClaim));
-        when(pcsCase.getClaims()).thenReturn(List.of(claim));
         when(pcsCase.getDefendantResponses()).thenReturn(List.of(defendantResponse));
 
-        underTest.sendCounterClaimPaymentSuccessNotification(counterClaimId);
+        String paymentReference = "PAY-1234";
+
+        underTest.sendCounterClaimPaymentSuccessNotification(counterClaimId, paymentReference);
 
         verify(notificationService)
-            .sendDefendantResponseCounterclaimPaymentSuccessEmailNotification(defendantResponse);
+            .sendDefendantResponseCounterclaimPaymentSuccessEmailNotification(defendantResponse, paymentReference);
     }
 
     @Test
@@ -82,7 +71,9 @@ class PaymentNotificationServiceTest {
         UUID counterClaimId = UUID.randomUUID();
         when(counterClaimRepository.findById(counterClaimId)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> underTest.sendCounterClaimPaymentSuccessNotification(counterClaimId))
+        String paymentReference = "PAY-1234";
+
+        assertThatThrownBy(() -> underTest.sendCounterClaimPaymentSuccessNotification(counterClaimId, paymentReference))
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessage("Counter claim not found: " + counterClaimId);
 
@@ -90,59 +81,20 @@ class PaymentNotificationServiceTest {
     }
 
     @Test
-    void shouldThrowExceptionWhenNoFeePaymentFoundForCounterclaim() {
+    void shouldNotSendNotificationWhenNoFeePaymentFoundForCounterclaim() {
         UUID counterClaimId = UUID.randomUUID();
-        UUID defendantId = UUID.randomUUID();
 
         CounterClaimEntity counterClaim = mock(CounterClaimEntity.class);
-        when(counterClaim.getId()).thenReturn(counterClaimId);
         PartyEntity defendant = mock(PartyEntity.class);
-        // Removed defendant.getId() stubbing as it's not used when feePayment is null
-        // because the stream filter won't find anything to compare it with if feePayment is null
-
         PcsCaseEntity pcsCase = mock(PcsCaseEntity.class);
-
-        ClaimEntity claim = mock(ClaimEntity.class);
-        when(claim.getFeePayment()).thenReturn(null);
 
         when(counterClaimRepository.findById(counterClaimId)).thenReturn(Optional.of(counterClaim));
         when(counterClaim.getParty()).thenReturn(defendant);
         when(counterClaim.getPcsCase()).thenReturn(pcsCase);
-        when(pcsCase.getClaims()).thenReturn(List.of(claim));
 
-        assertThatThrownBy(() -> underTest.sendCounterClaimPaymentSuccessNotification(counterClaimId))
-            .isInstanceOf(IllegalArgumentException.class)
-            .hasMessage("No fee payment found for counterclaim: " + counterClaimId);
+        String paymentReference = "PAY-1234";
 
-        verifyNoInteractions(notificationService);
-    }
-
-    @Test
-    void shouldNotSendNotificationWhenPaymentStatusIsNotPaid() {
-        UUID counterClaimId = UUID.randomUUID();
-        UUID defendantId = UUID.randomUUID();
-
-        CounterClaimEntity counterClaim = mock(CounterClaimEntity.class);
-        PartyEntity defendant = mock(PartyEntity.class);
-        when(defendant.getId()).thenReturn(defendantId);
-        when(counterClaim.getParty()).thenReturn(defendant);
-
-        PcsCaseEntity pcsCase = mock(PcsCaseEntity.class);
-        when(counterClaim.getPcsCase()).thenReturn(pcsCase);
-
-        FeePaymentEntity feePayment = mock(FeePaymentEntity.class);
-        when(feePayment.getPaymentStatus()).thenReturn(PaymentStatus.NOT_PAID);
-        PartyEntity feePaymentParty = mock(PartyEntity.class);
-        when(feePaymentParty.getId()).thenReturn(defendantId);
-        when(feePayment.getParty()).thenReturn(feePaymentParty);
-
-        ClaimEntity claim = mock(ClaimEntity.class);
-        when(claim.getFeePayment()).thenReturn(feePayment);
-
-        when(counterClaimRepository.findById(counterClaimId)).thenReturn(Optional.of(counterClaim));
-        when(pcsCase.getClaims()).thenReturn(List.of(claim));
-
-        underTest.sendCounterClaimPaymentSuccessNotification(counterClaimId);
+        underTest.sendCounterClaimPaymentSuccessNotification(counterClaimId, paymentReference);
 
         verifyNoInteractions(notificationService);
     }
@@ -150,32 +102,19 @@ class PaymentNotificationServiceTest {
     @Test
     void shouldNotSendNotificationWhenNoDefendantResponseFound() {
         UUID counterClaimId = UUID.randomUUID();
-        UUID defendantId = UUID.randomUUID();
+        PcsCaseEntity pcsCase = mock(PcsCaseEntity.class);
 
         CounterClaimEntity counterClaim = mock(CounterClaimEntity.class);
         PartyEntity defendant = mock(PartyEntity.class);
-        when(defendant.getId()).thenReturn(defendantId);
         when(counterClaim.getParty()).thenReturn(defendant);
-
-        PcsCaseEntity pcsCase = mock(PcsCaseEntity.class);
         when(counterClaim.getPcsCase()).thenReturn(pcsCase);
 
-        FeePaymentEntity feePayment = mock(FeePaymentEntity.class);
-        when(feePayment.getPaymentStatus()).thenReturn(PaymentStatus.PAID);
-        PartyEntity feePaymentParty = mock(PartyEntity.class);
-        when(feePaymentParty.getId()).thenReturn(defendantId);
-        when(feePayment.getParty()).thenReturn(feePaymentParty);
-
-        ClaimEntity claim = mock(ClaimEntity.class);
-        when(claim.getFeePayment()).thenReturn(feePayment);
-        when(feePayment.getClaim()).thenReturn(claim);
-        when(claim.getPcsCase()).thenReturn(pcsCase);
-
         when(counterClaimRepository.findById(counterClaimId)).thenReturn(Optional.of(counterClaim));
-        when(pcsCase.getClaims()).thenReturn(List.of(claim));
         when(pcsCase.getDefendantResponses()).thenReturn(List.of());
 
-        underTest.sendCounterClaimPaymentSuccessNotification(counterClaimId);
+        String paymentReference = "PAY-1234";
+
+        underTest.sendCounterClaimPaymentSuccessNotification(counterClaimId, paymentReference);
 
         verifyNoInteractions(notificationService);
     }

@@ -7,7 +7,8 @@ import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
-import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DefendantAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DefendantSolicitorAccess;
 import uk.gov.hmcts.reform.pcs.ccd.annotation.JacksonMoneyGBP;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.UploadedDocument;
@@ -76,6 +77,9 @@ public class DefendantResponses {
     private VerticalYesNo correspondenceAddressConfirmation;
 
     @CCD
+    private VerticalYesNo propertyAddressConfirmation;
+
+    @CCD
     private YesNoNotSure landlordRegistered;
 
     @CCD
@@ -85,44 +89,61 @@ public class DefendantResponses {
     private VerticalYesNo disputeClaim;
 
     @CCD
+    private VerticalYesNo hasSolicitor;
+
+    @CCD
     private String disputeClaimDetails;
 
     @CCD
     private YesNoNotSure landlordLicensed;
 
-    @CCD(access = {CitizenAccess.class})
+    @CCD(access = {DefendantAccess.class})
     private CounterClaim counterClaim;
 
-    @CCD(access = {CitizenAccess.class})
+    @CCD(access = {DefendantAccess.class})
     private ReasonableAdjustments reasonableAdjustments;
 
-    @CCD(access = {CitizenAccess.class})
+    @CCD(access = {DefendantAccess.class})
     private HouseholdCircumstances householdCircumstances;
 
-    @CCD(access = {CitizenAccess.class})
+    @CCD(access = {DefendantAccess.class})
     private PaymentAgreement paymentAgreement;
 
-    @CCD(access = {CitizenAccess.class})
+    @CCD(access = {DefendantAccess.class})
     private List<ListValue<UploadedDocument>> defendantDocuments;
 
-    @CCD(access = {CitizenAccess.class})
+    @CCD(access = {DefendantAccess.class})
     private List<ListValue<UploadedDocument>> counterClaimDocuments;
 
     private LanguageUsed languageUsed;
 
     private EqualityAndDiversityQuestionsChoice equalityAndDiversityQuestionsChoice;
+
     @CCD
     private VerticalYesNo otherConsiderations;
 
     @CCD(max = 6400)
     private String otherConsiderationsDetails;
+
     @CCD
     private VerticalYesNo makeCounterClaim;
 
+    @CCD
+    private VerticalYesNo counterClaimWantToUploadFiles;
+
     @CCD(
-        access = {CitizenAccess.class},
+        access = {DefendantSolicitorAccess.class},
         typeOverride = FieldType.MultiSelectList,
         typeParameterOverride = "RespondToClaimSection"
     )
     private List<RespondToClaimSection> completedSections;
+
+    @CCD
+    private RTCStatementOfTruth statementOfTruth;
+
+    @CCD
+    private String statementOfTruthCompletedBy;
+
+    @CCD
+    private DefendantResponseStatus status;
 }

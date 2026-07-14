@@ -38,6 +38,7 @@ import uk.gov.hmcts.reform.pcs.ccd.view.builder.DefendantInformationTabDetailsBu
 import uk.gov.hmcts.reform.pcs.ccd.view.builder.GroundsBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.view.builder.ReasonsForPossessionTabDetailsBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.view.builder.RentArrearsTabDetailsBuilder;
+import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -50,7 +51,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-public class CaseSummaryTabViewTest {
+class CaseSummaryTabViewTest {
 
     @Mock
     private GroundsBuilder groundsBuilder;
@@ -135,8 +136,8 @@ public class CaseSummaryTabViewTest {
                                        .tenancyLicenceDate(LocalDate.of(2024, 4, 16))
                                        .build())
             .noticeServedDetails(NoticeServedDetails.builder()
-                                     .noticeServiceMethod(NoticeServiceMethod.EMAIL)
-                                     .noticeEmailSentDateTime(LocalDateTime.of(2026, 5, 11, 17, 2))
+                                     .serviceMethod(NoticeServiceMethod.EMAIL)
+                                     .emailSentDateTime(LocalDateTime.of(2026, 5, 11, 17, 2))
                                      .build())
             .build();
 
@@ -159,7 +160,7 @@ public class CaseSummaryTabViewTest {
             ReasonsForPossessionTabDetails.builder()
                 .ground10("Ground 10 reason")
                 .condition1OfSection84A("Condition 1 reason")
-                .additionalReasonsForPossession("Additional reasons")
+                .additionalReasonsDetails("Additional reasons")
                 .build()
         );
 
@@ -171,8 +172,10 @@ public class CaseSummaryTabViewTest {
 
         when(defendantInformationTabDetailsBuilder.buildSummaryDefendantOneDetails(pcsCase)).thenReturn(
             DefendantInformationTabDetails.builder()
+                .nameKnown("Yes")
                 .firstName("Defendant")
                 .lastName("One")
+                .addressKnown("Yes")
                 .addressForService(propertyAddress)
                 .build()
         );
@@ -210,12 +213,14 @@ public class CaseSummaryTabViewTest {
         assertThat(summaryTab.getReasonsForPossession().getGround10()).isEqualTo("Ground 10 reason");
         assertThat(summaryTab.getReasonsForPossession().getCondition1OfSection84A())
             .isEqualTo("Condition 1 reason");
-        assertThat(summaryTab.getReasonsForPossession().getAdditionalReasonsForPossession())
+        assertThat(summaryTab.getReasonsForPossession().getAdditionalReasonsDetails())
             .isEqualTo("Additional reasons");
         assertThat(summaryTab.getDateClaimSubmitted()).isEqualTo("11 January 2026, 5:02:31PM");
         assertThat(summaryTab.getClaimantDetails().getClaimantName()).isEqualTo("Fallback claimant");
+        assertThat(summaryTab.getDefendantDetails().getNameKnown()).isEqualTo("Yes");
         assertThat(summaryTab.getDefendantDetails().getFirstName()).isEqualTo("Defendant");
         assertThat(summaryTab.getDefendantDetails().getLastName()).isEqualTo("One");
+        assertThat(summaryTab.getDefendantDetails().getAddressKnown()).isEqualTo("Yes");
         assertThat(summaryTab.getDefendantDetails().getAddressForService()).isEqualTo(propertyAddress);
         assertThat(summaryTab.getAdditionalDefendants()).hasSize(2);
         assertThat(summaryTab.getAdditionalDefendants().getFirst().getValue().getFirstName()).isEqualTo("Defendant");
@@ -233,7 +238,8 @@ public class CaseSummaryTabViewTest {
         assertThat(summaryTab.getRentArrearsDetails().getDailyRate()).isEqualTo("£12.30");
         assertThat(summaryTab.getRentArrearsDetails().getArrearsTotal()).isEqualTo("£450.75");
         assertThat(summaryTab.getRentArrearsDetails().getJudgmentRequested()).isEqualTo("Yes");
-        assertThat(summaryTab.getTenancyDetails().getAgreementType()).isEqualTo("Licence details");
+        assertThat(summaryTab.getTenancyDetails().getAgreementType()).isEqualTo("Other");
+        assertThat(summaryTab.getTenancyDetails().getAgreementTypeDescription()).isEqualTo("Licence details");
         assertThat(summaryTab.getTenancyDetails().getAgreementStartDate()).isEqualTo("16/04/2024");
         assertThat(summaryTab.getNoticeDetails().getNoticeServedDate()).isEqualTo("11/05/2026, 5:02:00PM");
     }
@@ -336,6 +342,7 @@ public class CaseSummaryTabViewTest {
         assertThat(summaryTab.getAdditionalDefendants()).isNull();
         assertThat(summaryTab.getRentArrearsDetails()).isNull();
         assertThat(summaryTab.getTenancyDetails()).isNull();
+        assertThat(summaryTab.getOccupationContractOrLicenceDetails()).isNull();
         assertThat(summaryTab.getNoticeDetails()).isNull();
     }
 
@@ -360,7 +367,7 @@ public class CaseSummaryTabViewTest {
         // Given
         PCSCase pcsCase = PCSCase.builder()
             .noticeServedDetails(NoticeServedDetails.builder()
-                                     .noticeServiceMethod(NoticeServiceMethod.OTHER)
+                                     .serviceMethod(NoticeServiceMethod.OTHER)
                                      .build())
             .build();
 
@@ -376,7 +383,7 @@ public class CaseSummaryTabViewTest {
         // Given
         PCSCase pcsCase = PCSCase.builder()
             .noticeServedDetails(NoticeServedDetails.builder()
-                                     .noticeEmailSentDateTime(LocalDateTime.of(2026, 5, 11, 17, 2))
+                                     .emailSentDateTime(LocalDateTime.of(2026, 5, 11, 17, 2))
                                      .build())
             .build();
 
@@ -409,6 +416,34 @@ public class CaseSummaryTabViewTest {
 
         // Then
         assertThat(summaryTab.getTenancyDetails().getAgreementType()).isEqualTo("Assured tenancy");
+        assertThat(summaryTab.getTenancyDetails().getAgreementTypeDescription()).isNull();
+        assertThat(summaryTab.getTenancyDetails().getAgreementStartDate()).isNull();
+    }
+
+    @Test
+    void shouldSetTenancyDetailsFromEnglandOtherTenancyLicenceType() {
+        // Given
+        PCSCase pcsCase = PCSCase.builder()
+            .tenancyLicenceDetails(TenancyLicenceDetails.builder()
+                                       .typeOfTenancyLicence(TenancyLicenceType.OTHER)
+                                       .detailsOfOtherTypeOfTenancyLicence("Other tenancy details")
+                                       .build())
+            .build();
+
+        when(groundsBuilder.getGrounds(pcsCase)).thenReturn(null);
+        when(rentArrearsTabDetailsBuilder.buildRentArrearsTabDetails(pcsCase)).thenReturn(null);
+        when(reasonsForPossessionTabDetailsBuilder.buildSummaryReasonsForPossession(pcsCase)).thenReturn(null);
+        when(claimantInformationTabDetailsBuilder.createSummaryClaimantTabDetails(pcsCase)).thenReturn(null);
+        when(defendantInformationTabDetailsBuilder.buildSummaryDefendantOneDetails(pcsCase)).thenReturn(null);
+        when(additionalDefendantInformationTabDetailsBuilder.buildSummaryAdditionalDefendantsDetails(pcsCase))
+            .thenReturn(null);
+
+        // When
+        SummaryTab summaryTab = underTest.buildSummaryTab(pcsCase);
+
+        // Then
+        assertThat(summaryTab.getTenancyDetails().getAgreementType()).isEqualTo("Other");
+        assertThat(summaryTab.getTenancyDetails().getAgreementTypeDescription()).isEqualTo("Other tenancy details");
         assertThat(summaryTab.getTenancyDetails().getAgreementStartDate()).isNull();
     }
 
@@ -423,6 +458,7 @@ public class CaseSummaryTabViewTest {
         PCSCase pcsCase = PCSCase.builder()
             .tenancyLicenceDetails(tenancyLicenceDetails)
             .occupationLicenceDetailsWales(occupationLicenceDetailsWales)
+            .legislativeCountry(LegislativeCountry.WALES)
             .build();
 
         // When
@@ -430,11 +466,12 @@ public class CaseSummaryTabViewTest {
 
         // Then
         assertThat(summaryTab.getTenancyDetails()).isNull();
+        assertThat(summaryTab.getOccupationContractOrLicenceDetails()).isNull();
     }
 
     @ParameterizedTest
     @MethodSource("walesOccupationLicenceTypeLabelScenarios")
-    void shouldSetTenancyDetailsFromWalesOccupationLicenceTypeLabelWhenEnglandTenancyDetailsAreUnavailable(
+    void shouldSetOccupationContractOrLicenceDetailsFromWalesOccupationLicenceTypeLabel(
         TenancyLicenceDetails tenancyLicenceDetails,
         OccupationLicenceTypeWales occupationLicenceType,
         String expectedAgreementType
@@ -446,6 +483,7 @@ public class CaseSummaryTabViewTest {
                                                .occupationLicenceTypeWales(occupationLicenceType)
                                                .licenceStartDate(LocalDate.of(2025, 5, 12))
                                                .build())
+            .legislativeCountry(LegislativeCountry.WALES)
             .build();
 
         when(groundsBuilder.getGrounds(pcsCase)).thenReturn(null);
@@ -460,18 +498,22 @@ public class CaseSummaryTabViewTest {
         SummaryTab summaryTab = underTest.buildSummaryTab(pcsCase);
 
         // Then
-        assertThat(summaryTab.getTenancyDetails().getAgreementType()).isEqualTo(expectedAgreementType);
-        assertThat(summaryTab.getTenancyDetails().getAgreementStartDate()).isEqualTo("12/05/2025");
+        assertThat(summaryTab.getTenancyDetails()).isNull();
+        assertThat(summaryTab.getOccupationContractOrLicenceDetails().getAgreementType())
+            .isEqualTo(expectedAgreementType);
+        assertThat(summaryTab.getOccupationContractOrLicenceDetails().getAgreementTypeDescription()).isNull();
+        assertThat(summaryTab.getOccupationContractOrLicenceDetails().getAgreementStartDate()).isEqualTo("12/05/2025");
     }
 
     @Test
-    void shouldSetTenancyDetailsFromWalesOtherOccupationLicenceType() {
+    void shouldSetOccupationContractOrLicenceDetailsFromWalesOtherOccupationLicenceType() {
         // Given
         PCSCase pcsCase = PCSCase.builder()
             .occupationLicenceDetailsWales(OccupationLicenceDetailsWales.builder()
                                                .occupationLicenceTypeWales(OccupationLicenceTypeWales.OTHER)
                                                .otherLicenceTypeDetails("Other Welsh licence")
                                                .build())
+            .legislativeCountry(LegislativeCountry.WALES)
             .build();
 
         when(groundsBuilder.getGrounds(pcsCase)).thenReturn(null);
@@ -486,8 +528,11 @@ public class CaseSummaryTabViewTest {
         SummaryTab summaryTab = underTest.buildSummaryTab(pcsCase);
 
         // Then
-        assertThat(summaryTab.getTenancyDetails().getAgreementType()).isEqualTo("Other Welsh licence");
-        assertThat(summaryTab.getTenancyDetails().getAgreementStartDate()).isNull();
+        assertThat(summaryTab.getTenancyDetails()).isNull();
+        assertThat(summaryTab.getOccupationContractOrLicenceDetails().getAgreementType()).isEqualTo("Other");
+        assertThat(summaryTab.getOccupationContractOrLicenceDetails().getAgreementTypeDescription())
+            .isEqualTo("Other Welsh licence");
+        assertThat(summaryTab.getOccupationContractOrLicenceDetails().getAgreementStartDate()).isNull();
     }
 
     private static Stream<Arguments> unavailableTenancyDetailsScenarios() {
@@ -534,43 +579,43 @@ public class CaseSummaryTabViewTest {
         return Stream.of(
             Arguments.of(
                 NoticeServedDetails.builder()
-                    .noticeServiceMethod(NoticeServiceMethod.FIRST_CLASS_POST)
-                    .noticePostedDate(LocalDate.of(2026, 5, 11))
+                    .serviceMethod(NoticeServiceMethod.FIRST_CLASS_POST)
+                    .postedDate(LocalDate.of(2026, 5, 11))
                     .build(),
                 "11/05/2026"
             ),
             Arguments.of(
                 NoticeServedDetails.builder()
-                    .noticeServiceMethod(NoticeServiceMethod.DELIVERED_PERMITTED_PLACE)
-                    .noticeDeliveredDate(LocalDate.of(2026, 5, 12))
+                    .serviceMethod(NoticeServiceMethod.DELIVERED_PERMITTED_PLACE)
+                    .deliveredDate(LocalDate.of(2026, 5, 12))
                     .build(),
                 "12/05/2026"
             ),
             Arguments.of(
                 NoticeServedDetails.builder()
-                    .noticeServiceMethod(NoticeServiceMethod.PERSONALLY_HANDED)
-                    .noticeHandedOverDateTime(LocalDateTime.of(2026, 5, 13, 9, 30))
+                    .serviceMethod(NoticeServiceMethod.PERSONALLY_HANDED)
+                    .handedOverDateTime(LocalDateTime.of(2026, 5, 13, 9, 30))
                     .build(),
                 "13/05/2026, 9:30:00AM"
             ),
             Arguments.of(
                 NoticeServedDetails.builder()
-                    .noticeServiceMethod(NoticeServiceMethod.EMAIL)
-                    .noticeEmailSentDateTime(LocalDateTime.of(2026, 5, 14, 17, 2))
+                    .serviceMethod(NoticeServiceMethod.EMAIL)
+                    .emailSentDateTime(LocalDateTime.of(2026, 5, 14, 17, 2))
                     .build(),
                 "14/05/2026, 5:02:00PM"
             ),
             Arguments.of(
                 NoticeServedDetails.builder()
-                    .noticeServiceMethod(NoticeServiceMethod.OTHER_ELECTRONIC)
-                    .noticeOtherElectronicDateTime(LocalDateTime.of(2026, 5, 15, 10, 15))
+                    .serviceMethod(NoticeServiceMethod.OTHER_ELECTRONIC)
+                    .otherElectronicDateTime(LocalDateTime.of(2026, 5, 15, 10, 15))
                     .build(),
                 "15/05/2026, 10:15:00AM"
             ),
             Arguments.of(
                 NoticeServedDetails.builder()
-                    .noticeServiceMethod(NoticeServiceMethod.OTHER)
-                    .noticeOtherDateTime(LocalDateTime.of(2026, 5, 16, 18, 45))
+                    .serviceMethod(NoticeServiceMethod.OTHER)
+                    .otherDateTime(LocalDateTime.of(2026, 5, 16, 18, 45))
                     .build(),
                 "16/05/2026, 6:45:00PM"
             )
@@ -581,12 +626,5 @@ public class CaseSummaryTabViewTest {
         return ListValue.<T>builder()
             .value(value)
             .build();
-    }
-
-    private static ListValue<ClaimGroundSummary> groundSummary(String label, String reason) {
-        return listValue(ClaimGroundSummary.builder()
-                             .label(label)
-                             .reason(reason)
-                             .build());
     }
 }

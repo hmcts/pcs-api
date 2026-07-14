@@ -10,7 +10,7 @@ import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
-import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DefendantAccess;
 import uk.gov.hmcts.reform.pcs.ccd.annotation.JacksonMoneyGBP;
 
 import java.math.BigDecimal;
@@ -43,7 +43,7 @@ public class RentArrearsSection {
         label = "Total rent arrears",
         min = 0,
         typeOverride = FieldType.MoneyGBP,
-        access = {CitizenAccess.class}
+        access = {DefendantAccess.class}
     )
     @JacksonMoneyGBP
     private BigDecimal total;

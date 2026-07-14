@@ -25,24 +25,24 @@ public class MakeAClaimPaymentCallbackHandler implements PaymentCallbackStrategy
 
     @Override
     public void handle(PaymentStatusCallback paymentStatusCallback, FeePaymentEntity feePaymentEntity) {
-        FeesAndPayTaskData feesAndPayTaskData = toFeesAndPayTaskData(feePaymentEntity.getTaskData());
-
+        FeesAndPayTaskData feesAndPayTaskData = toFeesAndPayTaskData(feePaymentEntity);
         PartyEntity claimParty = getResponsibleParty(feesAndPayTaskData);
         feePaymentEntity.setParty(claimParty);
-
         if (PaymentStatus.PAID == feePaymentEntity.getPaymentStatus()) {
             ccdPaymentStateUpdateService.submitPaymentSuccess(feesAndPayTaskData.getCaseReference());
         } else {
             log.warn("The payment was not successful [{}] for case: {}", feePaymentEntity.getPaymentStatus(),
-                     feePaymentEntity.getClaim().getPcsCase().getCaseReference());
+                     feesAndPayTaskData.getCaseReference());
         }
     }
 
-    private FeesAndPayTaskData toFeesAndPayTaskData(String feesAndPayTaskDataAsString) {
+    private FeesAndPayTaskData toFeesAndPayTaskData(FeePaymentEntity feePaymentEntity) {
+        String taskData = feePaymentEntity.getTaskData();
         try {
-            return objectMapper.readValue(feesAndPayTaskDataAsString, FeesAndPayTaskData.class);
+            log.info("Reading taskdata for {} to FeesAndPayTaskData: {}", feePaymentEntity.getId(), taskData);
+            return objectMapper.readValue(taskData, FeesAndPayTaskData.class);
         } catch (IOException e) {
-            throw new PaymentCallbackException("Unable to process: " + feesAndPayTaskDataAsString, e);
+            throw new PaymentCallbackException("Unable to process: " + taskData, e);
         }
     }
 

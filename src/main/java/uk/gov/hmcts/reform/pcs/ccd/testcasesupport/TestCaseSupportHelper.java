@@ -31,6 +31,8 @@ public class TestCaseSupportHelper {
             List<DynamicListElement> listItems = Arrays.stream(resources)
                 .map(Resource::getFilename)
                 .filter(Objects::nonNull)
+                .filter(name -> !name.contains("Enforcement")
+                    || Boolean.parseBoolean(System.getenv().get("ENABLE_ENFORCEMENT")))
                 .distinct()
                 .map(name -> DynamicListElement.builder().code(UUID.nameUUIDFromBytes(name.getBytes()))
                     .label(generateLabelFromFilename(name)).build())

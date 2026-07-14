@@ -56,7 +56,7 @@ class MakeAClaimPaymentCallbackHandlerTest {
 
     @ParameterizedTest
     @MethodSource("paymentStatus")
-    void shouldSetPartyOnEntityAndSubmitPaymentSuccess(PaymentStatus paymentStatus) throws Exception {
+    void shouldHandle(PaymentStatus paymentStatus) throws Exception {
         // Given
         FeesAndPayTaskData taskData = buildTaskData();
         when(objectMapper.readValue(anyString(), eq(FeesAndPayTaskData.class))).thenReturn(taskData);
@@ -98,6 +98,7 @@ class MakeAClaimPaymentCallbackHandlerTest {
         assertThatExceptionOfType(PaymentCallbackException.class)
             .isThrownBy(() -> underTest.handle(callback, feePaymentEntity))
             .withMessageContaining("Unable to process");
+        verifyNoInteractions(ccdPaymentStateUpdateService);
     }
 
     @Test

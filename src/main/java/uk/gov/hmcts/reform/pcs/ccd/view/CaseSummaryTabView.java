@@ -9,6 +9,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.GroundsForPossessionTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.summary.NoticeTabDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.OccupationContractOrLicenceTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.ReasonsForPossessionTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.summary.SummaryTab;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.summary.TenancyTabDetails;
@@ -20,6 +21,7 @@ import uk.gov.hmcts.reform.pcs.ccd.view.builder.DefendantInformationTabDetailsBu
 import uk.gov.hmcts.reform.pcs.ccd.view.builder.GroundsBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.view.builder.ReasonsForPossessionTabDetailsBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.view.builder.RentArrearsTabDetailsBuilder;
+import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -50,6 +52,8 @@ public class CaseSummaryTabView {
         ReasonsForPossessionTabDetails reasonsForPossession =
             reasonsForPossessionTabDetailsBuilder.buildSummaryReasonsForPossession(pcsCase);
         String dateSubmitted = formatSubmittedDate(pcsCase.getDateSubmitted());
+        TenancyTabDetails tenancyDetails = buildTenancyTabDetails(pcsCase);
+        boolean walesClaim = isWalesClaim(pcsCase);
 
         return SummaryTab.builder()
             .repossessedPropertyAddress(pcsCase.getPropertyAddress())
@@ -64,8 +68,28 @@ public class CaseSummaryTabView {
                 additionalDefendantInformationTabDetailsBuilder.buildSummaryAdditionalDefendantsDetails(pcsCase)
             )
             .rentArrearsDetails(rentArrearsTabDetailsBuilder.buildRentArrearsTabDetails(pcsCase))
-            .tenancyDetails(buildTenancyTabDetails(pcsCase))
+            .tenancyDetails(walesClaim ? null : tenancyDetails)
+            .occupationContractOrLicenceDetails(
+                walesClaim ? buildOccupationContractOrLicenceTabDetails(tenancyDetails) : null
+            )
             .noticeDetails(buildNoticeTabDetails(pcsCase))
+            .build();
+    }
+
+    private boolean isWalesClaim(PCSCase pcsCase) {
+        return pcsCase.getLegislativeCountry() == LegislativeCountry.WALES;
+    }
+
+    private OccupationContractOrLicenceTabDetails buildOccupationContractOrLicenceTabDetails(
+        TenancyTabDetails tenancyDetails) {
+        if (tenancyDetails == null) {
+            return null;
+        }
+
+        return OccupationContractOrLicenceTabDetails.builder()
+            .agreementType(tenancyDetails.getAgreementType())
+            .agreementTypeDescription(tenancyDetails.getAgreementTypeDescription())
+            .agreementStartDate(tenancyDetails.getAgreementStartDate())
             .build();
     }
 
@@ -95,6 +119,10 @@ public class CaseSummaryTabView {
         String agreementType = tenancyLicenceDetails != null && tenancyLicenceDetails.getTypeOfTenancyLicence() != null
             ? getAgreementType(tenancyLicenceDetails)
             : getOccupationLicenceAgreementType(occupationLicenceDetailsWales);
+        String agreementTypeDescription = tenancyLicenceDetails != null
+            && tenancyLicenceDetails.getTypeOfTenancyLicence() != null
+            ? getAgreementTypeDescription(tenancyLicenceDetails)
+            : getOccupationLicenceAgreementTypeDescription(occupationLicenceDetailsWales);
         String agreementStartDate = tenancyLicenceDetails != null
             && tenancyLicenceDetails.getTenancyLicenceDate() != null
             ? tenancyLicenceDetails.getTenancyLicenceDate().format(SUMMARY_DATE_FORMATTER)
@@ -102,24 +130,33 @@ public class CaseSummaryTabView {
 
         return TenancyTabDetails.builder()
             .agreementType(agreementType)
+            .agreementTypeDescription(agreementTypeDescription)
             .agreementStartDate(agreementStartDate)
             .build();
     }
 
-    private String getAgreementType(TenancyLicenceDetails tenancyLicenceDetails) {
-        if (tenancyLicenceDetails.getTypeOfTenancyLicence() == TenancyLicenceType.OTHER) {
-            return tenancyLicenceDetails.getDetailsOfOtherTypeOfTenancyLicence();
-        }
+    private String getAgreementTypeDescription(TenancyLicenceDetails tenancyLicenceDetails) {
+        return tenancyLicenceDetails.getTypeOfTenancyLicence() == TenancyLicenceType.OTHER
+            ? tenancyLicenceDetails.getDetailsOfOtherTypeOfTenancyLicence()
+            : null;
+    }
 
+    private String getAgreementType(TenancyLicenceDetails tenancyLicenceDetails) {
         return tenancyLicenceDetails.getTypeOfTenancyLicence().getLabel();
     }
 
     private String getOccupationLicenceAgreementType(OccupationLicenceDetailsWales occupationLicenceDetailsWales) {
-        if (occupationLicenceDetailsWales.getOccupationLicenceTypeWales() == OccupationLicenceTypeWales.OTHER) {
+        return occupationLicenceDetailsWales.getOccupationLicenceTypeWales().getLabel();
+    }
+
+    private String getOccupationLicenceAgreementTypeDescription(
+        OccupationLicenceDetailsWales occupationLicenceDetailsWales) {
+        if (occupationLicenceDetailsWales != null
+            && occupationLicenceDetailsWales.getOccupationLicenceTypeWales() == OccupationLicenceTypeWales.OTHER) {
             return occupationLicenceDetailsWales.getOtherLicenceTypeDetails();
         }
 
-        return occupationLicenceDetailsWales.getOccupationLicenceTypeWales().getLabel();
+        return null;
     }
 
     private String getOccupationLicenceStartDate(OccupationLicenceDetailsWales occupationLicenceDetailsWales) {
@@ -148,18 +185,18 @@ public class CaseSummaryTabView {
             return null;
         }
 
-        NoticeServiceMethod noticeServiceMethod = noticeServedDetails.getNoticeServiceMethod();
+        NoticeServiceMethod noticeServiceMethod = noticeServedDetails.getServiceMethod();
         if (noticeServiceMethod == null) {
             return null;
         }
 
         return switch (noticeServiceMethod) {
-            case FIRST_CLASS_POST -> formatSummaryDate(noticeServedDetails.getNoticePostedDate());
-            case DELIVERED_PERMITTED_PLACE -> formatSummaryDate(noticeServedDetails.getNoticeDeliveredDate());
-            case PERSONALLY_HANDED -> formatSummaryDateTime(noticeServedDetails.getNoticeHandedOverDateTime());
-            case EMAIL -> formatSummaryDateTime(noticeServedDetails.getNoticeEmailSentDateTime());
-            case OTHER_ELECTRONIC -> formatSummaryDateTime(noticeServedDetails.getNoticeOtherElectronicDateTime());
-            case OTHER -> formatSummaryDateTime(noticeServedDetails.getNoticeOtherDateTime());
+            case FIRST_CLASS_POST -> formatSummaryDate(noticeServedDetails.getPostedDate());
+            case DELIVERED_PERMITTED_PLACE -> formatSummaryDate(noticeServedDetails.getDeliveredDate());
+            case PERSONALLY_HANDED -> formatSummaryDateTime(noticeServedDetails.getHandedOverDateTime());
+            case EMAIL -> formatSummaryDateTime(noticeServedDetails.getEmailSentDateTime());
+            case OTHER_ELECTRONIC -> formatSummaryDateTime(noticeServedDetails.getOtherElectronicDateTime());
+            case OTHER -> formatSummaryDateTime(noticeServedDetails.getOtherDateTime());
         };
     }
 

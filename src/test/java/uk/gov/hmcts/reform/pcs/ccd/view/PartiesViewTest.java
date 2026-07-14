@@ -6,11 +6,18 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
+import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.LegalRepresentative;
+import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyLegalRepresentativeEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeEntity;
 import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
@@ -19,6 +26,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -50,6 +58,17 @@ class PartiesViewTest {
     }
 
     @Test
+    void shouldNotSetPartyFieldsWhenNoClaimsExist() {
+        when(pcsCaseEntity.getClaims()).thenReturn(List.of());
+
+        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+
+        assertThat(pcsCase.getAllClaimants()).isNull();
+        assertThat(pcsCase.getAllDefendants()).isNull();
+        assertThat(pcsCase.getAllUnderlesseeOrMortgagees()).isNull();
+    }
+
+    @Test
     void shouldMapPartyForCitizenOwnParty()  {
         UUID currentUserId = UUID.randomUUID();
         stubCitizenUser(currentUserId);
@@ -78,6 +97,14 @@ class PartiesViewTest {
 
         PartyEntity otherParty = buildParty(UUID.randomUUID(), "John", "Smith", "Org B",
                                             "john@example.com", "07700000002");
+        otherParty.setDateOfBirth(LocalDate.of(1985, 7, 20));
+        AddressEntity addressEntity = AddressEntity.builder().addressLine1("1 Other Street").build();
+        otherParty.setAddress(addressEntity);
+        otherParty.setAddressKnown(VerticalYesNo.YES);
+        when(modelMapper.map(addressEntity, AddressUK.class)).thenReturn(
+            AddressUK.builder().addressLine1("1 Other Street").build()
+        );
+
         ClaimPartyEntity claimParty = buildClaimPartyEntity(otherParty, PartyRole.DEFENDANT);
         when(claimEntity.getClaimParties()).thenReturn(List.of(claimParty));
 
@@ -91,8 +118,10 @@ class PartiesViewTest {
         assertThat(party.getOrgName()).isEqualTo("Org B");
         assertThat(party.getEmailAddress()).isNull();
         assertThat(party.getPhoneNumber()).isNull();
-        assertThat(party.getDateOfBirth()).isNull();
-        assertThat(party.getAddress()).isNull();
+        assertThat(party.getLegalRepresentative()).isNull();
+        assertThat(party.getDateOfBirth()).isEqualTo(LocalDate.of(1985, 7, 20));
+        assertThat(party.getAddress()).isNotNull();
+        assertThat(party.getAddress().getAddressLine1()).isEqualTo("1 Other Street");
     }
 
     @Test
@@ -125,10 +154,147 @@ class PartiesViewTest {
             .extracting(lv -> lv.getValue().getFirstName())
             .containsExactly("Bob", "Carol");
 
+        assertThat(pcsCase.getAllDefendants())
+            .extracting(lv -> lv.getValue().getLegalRepresentative())
+            .containsExactly(null, null);
+
         assertThat(pcsCase.getAllUnderlesseeOrMortgagees()).hasSize(2);
         assertThat(pcsCase.getAllUnderlesseeOrMortgagees())
             .extracting(lv -> lv.getValue().getFirstName())
             .containsExactly("Dave", "Eve");
+    }
+
+    @Test
+    void shouldMapLegalRepresentativeIfPresent() {
+        when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
+        when(userInfo.getRoles()).thenReturn(List.of("caseworker-pcs"));
+
+        AddressEntity addressEntity = AddressEntity.builder().build();
+        LegalRepresentativeEntity legalRepresentativeEntity = LegalRepresentativeEntity.builder()
+            .firstName("first")
+            .lastName("last")
+            .phone("phone")
+            .email("email@test.com")
+            .organisationName("org name")
+            .address(addressEntity)
+            .build();
+        ClaimPartyLegalRepresentativeEntity claimPartyLegalRepresentative =
+            ClaimPartyLegalRepresentativeEntity.builder()
+                .legalRepresentative(legalRepresentativeEntity)
+                .active(YesOrNo.YES)
+                .build();
+        PartyEntity defendant = buildParty(UUID.randomUUID(), "Bob", "B", null, null, null);
+        defendant.setClaimPartyLegalRepresentativeList(List.of(claimPartyLegalRepresentative));
+        when(claimEntity.getClaimParties()).thenReturn(List.of(
+            buildClaimPartyEntity(defendant, PartyRole.DEFENDANT)
+        ));
+
+        AddressUK address = AddressUK.builder().build();
+        when(modelMapper.map(addressEntity, AddressUK.class)).thenReturn(address);
+
+        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+
+        assertThat(pcsCase.getAllDefendants()).hasSize(1);
+        LegalRepresentative legalRepresentative = pcsCase.getAllDefendants().getFirst()
+            .getValue().getLegalRepresentative();
+        assertThat(legalRepresentative.getFirstName()).isEqualTo("first");
+        assertThat(legalRepresentative.getLastName()).isEqualTo("last");
+        assertThat(legalRepresentative.getTelephoneNumber()).isEqualTo("phone");
+        assertThat(legalRepresentative.getEmailAddress()).isEqualTo("email@test.com");
+        assertThat(legalRepresentative.getOrganisationName()).isEqualTo("org name");
+        assertThat(legalRepresentative.getAddress()).isEqualTo(address);
+    }
+
+    @Test
+    void shouldNotMapLegalRepresentativeIfNotActive() {
+        when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
+        when(userInfo.getRoles()).thenReturn(List.of("caseworker-pcs"));
+
+        AddressEntity addressEntity = AddressEntity.builder().build();
+        LegalRepresentativeEntity legalRepresentativeEntity = LegalRepresentativeEntity.builder()
+            .firstName("first")
+            .lastName("last")
+            .phone("phone")
+            .email("email@test.com")
+            .organisationName("org name")
+            .address(addressEntity)
+            .build();
+        ClaimPartyLegalRepresentativeEntity claimPartyLegalRepresentative =
+            ClaimPartyLegalRepresentativeEntity.builder()
+                .legalRepresentative(legalRepresentativeEntity)
+                .active(YesOrNo.NO)
+                .build();
+        PartyEntity defendant = buildParty(UUID.randomUUID(), "Bob", "B", null, null, null);
+        defendant.setClaimPartyLegalRepresentativeList(List.of(claimPartyLegalRepresentative));
+        when(claimEntity.getClaimParties()).thenReturn(List.of(
+            buildClaimPartyEntity(defendant, PartyRole.DEFENDANT)
+        ));
+
+        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+
+        assertThat(pcsCase.getAllDefendants()).hasSize(1);
+        LegalRepresentative legalRepresentative = pcsCase.getAllDefendants().getFirst()
+            .getValue().getLegalRepresentative();
+        assertThat(legalRepresentative).isNull();
+    }
+
+    @Test
+    void shouldMapReassignedLegalRepresentative() {
+        when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
+        when(userInfo.getRoles()).thenReturn(List.of("caseworker-pcs"));
+
+        AddressEntity addressEntity1 = AddressEntity.builder().build();
+        LegalRepresentativeEntity legalRepresentativeEntity1 = LegalRepresentativeEntity.builder()
+            .firstName("first")
+            .lastName("last")
+            .phone("phone")
+            .email("email@test.com")
+            .organisationName("org name")
+            .address(addressEntity1)
+            .build();
+        ClaimPartyLegalRepresentativeEntity claimPartyLegalRepresentative1 =
+            ClaimPartyLegalRepresentativeEntity.builder()
+                .legalRepresentative(legalRepresentativeEntity1)
+                .active(YesOrNo.NO)
+                .build();
+
+        AddressEntity addressEntity2 = AddressEntity.builder().build();
+        LegalRepresentativeEntity legalRepresentativeEntity2 = LegalRepresentativeEntity.builder()
+            .firstName("second")
+            .lastName("last2")
+            .phone("phone2")
+            .email("email2@test.com")
+            .organisationName("org name2")
+            .address(addressEntity2)
+            .build();
+        ClaimPartyLegalRepresentativeEntity claimPartyLegalRepresentative2 =
+            ClaimPartyLegalRepresentativeEntity.builder()
+                .legalRepresentative(legalRepresentativeEntity2)
+                .active(YesOrNo.YES)
+                .build();
+
+        PartyEntity defendant = buildParty(UUID.randomUUID(), "Bob", "B", null, null, null);
+        defendant.setClaimPartyLegalRepresentativeList(
+            List.of(claimPartyLegalRepresentative1, claimPartyLegalRepresentative2)
+        );
+        when(claimEntity.getClaimParties()).thenReturn(List.of(
+            buildClaimPartyEntity(defendant, PartyRole.DEFENDANT)
+        ));
+
+        AddressUK address = AddressUK.builder().build();
+        when(modelMapper.map(addressEntity2, AddressUK.class)).thenReturn(address);
+
+        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+
+        assertThat(pcsCase.getAllDefendants()).hasSize(1);
+        LegalRepresentative legalRepresentative = pcsCase.getAllDefendants().getFirst()
+            .getValue().getLegalRepresentative();
+        assertThat(legalRepresentative.getFirstName()).isEqualTo("second");
+        assertThat(legalRepresentative.getLastName()).isEqualTo("last2");
+        assertThat(legalRepresentative.getTelephoneNumber()).isEqualTo("phone2");
+        assertThat(legalRepresentative.getOrganisationName()).isEqualTo("org name2");
+        assertThat(legalRepresentative.getEmailAddress()).isEqualTo("email2@test.com");
+        assertThat(legalRepresentative.getAddress()).isEqualTo(address);
     }
 
     @Test

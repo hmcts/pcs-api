@@ -1,9 +1,12 @@
 export const confirmGenApps = {
   mainHeader: `Make an application`,
-  whatHappensNextHeader: `What happens next`,
-  youDoNotNeedParagraph:  `You do not need to do anything else. We will send the defendant’s application to the judge and we will contact you again when they have made a decision.`,
-  giveFeedbackHeader:`Give feedback about this service`,
-  completeThisSurveyLink: `Complete this short survey to help us improve this service`,
-  closeAndReturnToCaseDetailsButton: `Close and Return to case details`,
+  payYourApplicationLink: `Pay your application fee`,
+  pay126ApplicationFeeParagraph: `Pay £126 application fee`,
+  youMustPayTheFeeParagraph: `You must pay the application fee of £126.`,
+  yourApplicationWillNotProgressParagraph: `Your application will not progress until this fee has been paid.`,
+  payNowLink: `Pay now`,
+  PayAmount : `£126.00`,
+  partyName : `Solicitor PCS`,
+  closeAndReturnToCaseDetailsButton : `Close and Return to case details`
 };
 

@@ -22,6 +22,9 @@ public class RentArrearsTabDetails {
     @CCD(label = "How rent is calculated")
     private String calculationFrequency;
 
+    @CCD(label = "Rent frequency")
+    private String rentFrequency;
+
     @CCD(label = "Frequency")
     private String frequency;
 

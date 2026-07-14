@@ -70,7 +70,7 @@ export function formatDate(dateStr: string, formatType: string): string {
 /* convert string for ex RENT_ARREARS to Rent arrears */
 export function formatText(input: string): string {
   return input
-    .toLowerCase() 
+    .toLowerCase()
     .replace(/_/g, " ")
     .replace(/^\w/, c => c.toUpperCase());
 }
@@ -104,4 +104,56 @@ export function formatDateTime(dateStr: string): string {
   hours = hours === 0 ? 12 : hours; // convert 0 → 12
 
   return `${day}/${month}/${year}, ${hours}:${minutes}:${seconds}${ampm}`;
+}
+
+/* covert 2026-06-03T16:31:23.063194 to 3 June 2026, 5:31:23PM */
+export function formatDateTimeBST(dataTime: string): string {
+  const date = new Date(`${dataTime}Z`);
+
+  return new Intl.DateTimeFormat('en-GB', {
+    timeZone: 'Europe/London',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: true
+  })
+    .format(date)
+    .replace(' at ', ', ')
+    .replace(' am', 'AM')
+    .replace(' pm', 'PM');
+}
+
+/* Formats a numeric case number by inserting a hyphen after every 4 digits.
+Example: "1781518470935861" -> "1781-5184-7093-5861"
+*/
+export function formatTheCaseNumber(caseNumber: string): string {
+  return caseNumber.replace(/(\d{4})(?=\d)/g, '$1-');
+}
+
+/* format document name for eg "rentStatement.pdf" to rentStatement - Claimant 1.pdf */
+export function formatUploadDocName(docName: string): string {
+const fileExtension = docName.lastIndexOf('.');
+const newFilename =
+  fileExtension !== -1
+    ? `${docName.substring(0, fileExtension)} - Claimant 1${docName.substring(fileExtension)}`
+    : `${docName} - Claimant 1`;
+
+return newFilename;
+}
+
+/* convert string for ex RENT_ARREARS to Rent Arrears */
+export function formatCaseStateText(input: string): string {
+  return input
+    .toLowerCase()
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, c => c.toUpperCase());
+}
+
+export function randomPostcode()
+{
+  const postcodes = ['W3 6RS', 'W3 6RT', 'CF61 1ZH'];
+  return postcodes[Math.floor(Math.random() * postcodes.length)];
 }

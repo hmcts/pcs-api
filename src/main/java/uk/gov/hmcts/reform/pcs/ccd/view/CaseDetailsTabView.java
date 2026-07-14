@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.AlternativesToPossession;
@@ -13,8 +14,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantCircumstances;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DemotionOfTenancy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DemotionOfTenancyHousingAct;
-import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServedDetails;
-import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServiceMethod;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.SuspensionOfRightToBuy;
@@ -26,14 +25,18 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredAdditionalOtherGround;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.ClaimGroundSummary;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.IntroductoryDemotedOrOtherGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.ActionsTakenTabDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.AntisocialAndConductTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.ApplicationsTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.CaseDetailsTab;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.ClaimTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.ClaimantCircumstancesTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.ClaimantContactTabDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.ClaimantRegistrationAndLicensingTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.DefendantCircumstanceTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.DemotionOfTenancyTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.NoticeTabDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.ProhibitedConductStandardContractTabDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.RequiredDocumentsTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.SuspensionOfRightToBuyTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.TenancyLicenceTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.UnderlesseeOrMortgageInformationTabDetails;
@@ -41,21 +44,25 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.AdditionalDefendantInforma
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.ClaimantInformationTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.DefendantInformationTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.GroundsForPossessionTabDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.OccupationContractOrLicenceTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.ReasonsForPossessionTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.RentArrearsTabDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.ASBQuestionsDetailsWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.PeriodicContractTermsWales;
 import uk.gov.hmcts.reform.pcs.ccd.view.builder.AdditionalDefendantInformationTabDetailsBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.view.builder.ClaimantInformationTabDetailsBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.view.builder.DefendantInformationTabDetailsBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.view.builder.GroundsBuilder;
+import uk.gov.hmcts.reform.pcs.ccd.view.builder.NoticeDetailsBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.view.builder.ReasonsForPossessionTabDetailsBuilder;
+import uk.gov.hmcts.reform.pcs.ccd.view.builder.RequiredDocumentsTabDetailsBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.view.builder.RentArrearsTabDetailsBuilder;
+import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Locale;
 import java.util.Set;
 
 import static uk.gov.hmcts.reform.pcs.ccd.domain.AlternativesToPossession.DEMOTION_OF_TENANCY;
@@ -64,17 +71,13 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType.ASSURED_TENA
 import static uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType.DEMOTED_TENANCY;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType.INTRODUCTORY_TENANCY;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType.OTHER;
-import static uk.gov.hmcts.reform.pcs.config.ClockConfiguration.UK_ZONE_ID;
+import static uk.gov.hmcts.reform.pcs.ccd.view.CaseDetailsTabUtil.DATE_FORMATTER;
+import static uk.gov.hmcts.reform.pcs.ccd.view.CaseDetailsTabUtil.NO_ANSWER;
+import static uk.gov.hmcts.reform.pcs.ccd.view.CaseDetailsTabUtil.formatSubmittedDate;
 
 @AllArgsConstructor
 @Component
 public class CaseDetailsTabView {
-
-    private static final String NO_ANSWER = " ";
-    private static final DateTimeFormatter DATE_FORMATTER =
-        DateTimeFormatter.ofPattern("d MMMM yyyy", Locale.UK);
-    private static final DateTimeFormatter DATE_TIME_FORMATTER =
-        DateTimeFormatter.ofPattern("d MMMM yyyy, h:mm:ssa", Locale.UK);
 
     private final GroundsBuilder groundsBuilder;
     private final RentArrearsTabDetailsBuilder rentArrearsTabDetailsBuilder;
@@ -82,15 +85,17 @@ public class CaseDetailsTabView {
     private final ClaimantInformationTabDetailsBuilder claimantInformationTabDetailsBuilder;
     private final DefendantInformationTabDetailsBuilder defendantInformationTabDetailsBuilder;
     private final AdditionalDefendantInformationTabDetailsBuilder additionalDefendantInformationTabDetailsBuilder;
+    private final RequiredDocumentsTabDetailsBuilder requiredDocumentsTabDetailsBuilder;
+    private final NoticeDetailsBuilder noticeDetailsBuilder;
 
-    public CaseDetailsTab buildCaseDetailsTab(PCSCase pcsCase) {
+    public CaseDetailsTab buildCaseDetailsTab(PCSCase pcsCase, boolean isSubmitted) {
         ClaimTabDetails claimTabDetails = buildClaimTabDetails(pcsCase);
         GroundsForPossessionTabDetails groundsForPossessionTabDetails = buildGroundsForPossessionTabDetails(pcsCase);
-        TenancyLicenceTabDetails tenancyLicenceTabDetails = buildTenancyLicenceTabDetails(pcsCase);
-        NoticeTabDetails noticeTabDetails = buildNoticeTabDetails(pcsCase);
+        TenancyLicenceTabDetails tenancyLicenceTabDetails = buildTenancyLicenceTabDetails(pcsCase, isSubmitted);
+        NoticeTabDetails noticeTabDetails = noticeDetailsBuilder.buildNoticeTabDetails(pcsCase, isSubmitted);
         ActionsTakenTabDetails actionsTakenTabDetails = buildActionsTakenTabDetails(pcsCase);
         RentArrearsTabDetails rentArrearsTabDetails =
-            rentArrearsTabDetailsBuilder.buildDetailedRentArrearsTabDetails(pcsCase);
+            rentArrearsTabDetailsBuilder.buildDetailedRentArrearsTabDetails(pcsCase, isSubmitted);
         ReasonsForPossessionTabDetails reasonsForPossessionTabDetails =
             reasonsForPossessionTabDetailsBuilder.buildDetailsReasonsForPossession(pcsCase);
         ApplicationsTabDetails applicationsTabDetails = buildApplicationsTabDetails(pcsCase);
@@ -103,6 +108,13 @@ public class CaseDetailsTabView {
         SuspensionOfRightToBuyTabDetails suspensionOfRightToBuyTabDetails =
             buildSuspensionOfRightToBuyTabDetails(pcsCase);
         String dateSubmitted = formatSubmittedDate(pcsCase.getDateSubmitted());
+        OccupationContractOrLicenceTabDetails occupationContractLicenceTabDetails =
+            buildOccupationContractLicenceTabDetails(pcsCase, isSubmitted);
+        AntisocialAndConductTabDetails antisocialAndConductTabDetails = buildAntisocialAndConductTabDetails(pcsCase);
+        ProhibitedConductStandardContractTabDetails prohibitedConductStandardContractTabDetails =
+            buildProhibitedConductStandardContractTabDetails(pcsCase);
+        RequiredDocumentsTabDetails requiredDocumentsTabDetails =
+            requiredDocumentsTabDetailsBuilder.buildRequiredDocumentsTabDetails(pcsCase, isSubmitted);
 
         CaseDetailsTab caseDetailsTab = CaseDetailsTab.builder()
             .claimDetails(claimTabDetails)
@@ -120,12 +132,18 @@ public class CaseDetailsTabView {
             .demotionOfTenancyDetails(demotionOfTenancyTabDetails)
             .suspensionOfRightToBuyDetails(suspensionOfRightToBuyTabDetails)
             .dateClaimSubmitted(dateSubmitted != null ? dateSubmitted : NO_ANSWER)
+            .occupationContractLicenceDetails(occupationContractLicenceTabDetails)
+            .antisocialAndConductDetails(antisocialAndConductTabDetails)
+            .prohibitedConductStandardContractDetails(prohibitedConductStandardContractTabDetails)
+            .requiredDocumentsDetails(requiredDocumentsTabDetails)
             .build();
 
         if (claimantInformationTabDetails != null) {
             caseDetailsTab.setClaimantAddress(getClaimantAddress(pcsCase));
             caseDetailsTab.setClaimantContactDetails(buildClaimantContactTabDetails(pcsCase));
             caseDetailsTab.setClaimantCircumstances(buildClaimantCircumstancesTabDetails(pcsCase));
+            caseDetailsTab
+                .setClaimantRegistrationAndLicensingDetails(buildClaimantRegistrationAndLicensingTabDetails(pcsCase));
         }
 
         if (defendantInformationTabDetails != null) {
@@ -197,7 +215,11 @@ public class CaseDetailsTabView {
             .build();
     }
 
-    private TenancyLicenceTabDetails buildTenancyLicenceTabDetails(PCSCase pcsCase) {
+    private TenancyLicenceTabDetails buildTenancyLicenceTabDetails(PCSCase pcsCase, boolean isSubmitted) {
+        if (pcsCase.getLegislativeCountry() != LegislativeCountry.ENGLAND) {
+            return null;
+        }
+
         TenancyLicenceDetails tenancyLicenceDetails = pcsCase.getTenancyLicenceDetails();
         if (tenancyLicenceDetails == null) {
             return TenancyLicenceTabDetails.builder()
@@ -210,6 +232,11 @@ public class CaseDetailsTabView {
         TenancyLicenceType tenancyType = tenancyLicenceDetails.getTypeOfTenancyLicence();
         LocalDate tenancyDate = tenancyLicenceDetails.getTenancyLicenceDate();
         VerticalYesNo hasTenancyLicence = tenancyLicenceDetails.getHasCopyOfTenancyLicence();
+        List<ListValue<Document>> documents = tenancyLicenceDetails.getTenancyLicenceDocuments();
+
+        if (isSubmitted) {
+            tenancyLicenceDetails.setTenancyLicenceDocuments(null);
+        }
 
         return TenancyLicenceTabDetails.builder()
             .typeOfTenancyLicence(tenancyType != null ? tenancyType.getLabel() : NO_ANSWER)
@@ -218,72 +245,9 @@ public class CaseDetailsTabView {
             )
             .tenancyLicenceDate(tenancyDate != null ? tenancyDate.format(DATE_FORMATTER) : NO_ANSWER)
             .hasCopyOfTenancyLicence(hasTenancyLicence != null ? hasTenancyLicence.getLabel() : NO_ANSWER)
-            .tenancyLicenceDocuments(tenancyLicenceDetails.getTenancyLicenceDocuments())
+            .tenancyLicenceDocuments(documents)
             .reasonsForNoTenancyLicenceDocuments(tenancyLicenceDetails.getReasonsForNoTenancyLicenceDocuments())
             .build();
-    }
-
-    private NoticeTabDetails buildNoticeTabDetails(PCSCase pcsCase) {
-        if (pcsCase.getNoticeServed() == null) {
-            return NoticeTabDetails.builder()
-                .noticeServed(NO_ANSWER)
-                .noticeMethod(NO_ANSWER)
-                .noticeDate(NO_ANSWER)
-                .build();
-        }
-
-        YesOrNo noticeServed = pcsCase.getNoticeServed();
-        NoticeTabDetails noticeTabDetails = NoticeTabDetails.builder()
-            .noticeServed(noticeServed.getValue())
-            .noticeMethod(NO_ANSWER)
-            .noticeDate(NO_ANSWER)
-            .build();
-
-        NoticeServedDetails noticeServedDetails = pcsCase.getNoticeServedDetails();
-        if (noticeServed == YesOrNo.YES && noticeTabDetails != null) {
-            NoticeServiceMethod method = noticeServedDetails.getNoticeServiceMethod();
-            noticeTabDetails.setNoticeDocuments(noticeServedDetails.getNoticeDocuments());
-
-            if (method != null) {
-                noticeTabDetails.setNoticeMethod(method.getLabel());
-                switch (method) {
-                    case FIRST_CLASS_POST -> {
-                        LocalDate date = noticeServedDetails.getNoticePostedDate();
-                        noticeTabDetails.setNoticeDate(date != null ? date.format(DATE_FORMATTER) : NO_ANSWER);
-                    }
-                    case DELIVERED_PERMITTED_PLACE -> {
-                        LocalDate date = noticeServedDetails.getNoticeDeliveredDate();
-                        noticeTabDetails.setNoticeDate(date != null ? date.format(DATE_FORMATTER) : NO_ANSWER);
-                    }
-                    case PERSONALLY_HANDED -> {
-                        LocalDateTime dateTime = noticeServedDetails.getNoticeHandedOverDateTime();
-                        String name = noticeServedDetails.getNoticePersonName();
-                        noticeTabDetails.setNoticeDate(dateTime != null ? formatDateTime(dateTime) : NO_ANSWER);
-                        noticeTabDetails.setNoticePersonName(name != null ? name : NO_ANSWER);
-                    }
-                    case EMAIL -> {
-                        LocalDateTime dateTime = noticeServedDetails.getNoticeEmailSentDateTime();
-                        String emailAddress = noticeServedDetails.getNoticeEmailAddress();
-                        noticeTabDetails.setNoticeDate(dateTime != null ? formatDateTime(dateTime) : NO_ANSWER);
-                        noticeTabDetails.setNoticeEmailAddress(emailAddress != null ? emailAddress : NO_ANSWER);
-                    }
-                    case OTHER_ELECTRONIC -> {
-                        LocalDateTime dateTime = noticeServedDetails.getNoticeOtherElectronicDateTime();
-                        String details = noticeServedDetails.getNoticeOtherElectronicMethodExplanation();
-                        noticeTabDetails.setNoticeDate(dateTime != null ? formatDateTime(dateTime) : NO_ANSWER);
-                        noticeTabDetails.setNoticeOtherElectronicDetails(details != null ? details : NO_ANSWER);
-                    }
-                    case OTHER -> {
-                        LocalDateTime dateTime = noticeServedDetails.getNoticeOtherDateTime();
-                        String explanation = noticeServedDetails.getNoticeOtherExplanation();
-                        noticeTabDetails.setNoticeDate(dateTime != null ? formatDateTime(dateTime) : NO_ANSWER);
-                        noticeTabDetails.setNoticeOtherExplanation(explanation != null ? explanation : NO_ANSWER);
-                    }
-                };
-            }
-        }
-
-        return noticeTabDetails;
     }
 
     private ActionsTakenTabDetails buildActionsTakenTabDetails(PCSCase pcsCase) {
@@ -438,7 +402,7 @@ public class CaseDetailsTabView {
     ) {
         List<ListValue<Party>> underlesseeMortgageParties = pcsCase.getAllUnderlesseeOrMortgagees();
         if (CollectionUtils.isEmpty(underlesseeMortgageParties) || underlesseeMortgageParties.size() < 2) {
-            return null;
+            return List.of();
         }
 
         return underlesseeMortgageParties.stream()
@@ -530,20 +494,132 @@ public class CaseDetailsTabView {
             .build();
     }
 
-    private String formatSubmittedDate(LocalDateTime dateSubmitted) {
-        if (dateSubmitted == null) {
+    private OccupationContractOrLicenceTabDetails buildOccupationContractLicenceTabDetails(
+        PCSCase pcsCase,
+        boolean isSubmitted
+    ) {
+        if (pcsCase.getLegislativeCountry() != LegislativeCountry.WALES) {
             return null;
         }
 
-        LocalDateTime ukDateSubmitted = dateSubmitted
-            .atZone(ZoneId.systemDefault())
-            .withZoneSameInstant(UK_ZONE_ID)
-            .toLocalDateTime();
+        OccupationLicenceDetailsWales occupationLicenceDetailsWales = pcsCase.getOccupationLicenceDetailsWales();
+        if (occupationLicenceDetailsWales == null) {
+            return OccupationContractOrLicenceTabDetails.builder()
+                .agreementType(NO_ANSWER)
+                .agreementStartDate(NO_ANSWER)
+                .documentsPlaceholder(NO_ANSWER)
+                .build();
+        }
 
-        return formatDateTime(ukDateSubmitted);
+        OccupationLicenceTypeWales agreementType = occupationLicenceDetailsWales.getOccupationLicenceTypeWales();
+        LocalDate startDate = occupationLicenceDetailsWales.getLicenceStartDate();
+        List<ListValue<Document>> documents = occupationLicenceDetailsWales.getLicenceDocuments();
+
+        if (isSubmitted) {
+            occupationLicenceDetailsWales.setLicenceDocuments(null);
+        }
+
+        return OccupationContractOrLicenceTabDetails.builder()
+            .agreementType(agreementType != null ? agreementType.getLabel() : NO_ANSWER)
+            .agreementTypeDescription(
+                agreementType == OccupationLicenceTypeWales.OTHER
+                    ? occupationLicenceDetailsWales.getOtherLicenceTypeDetails() : null
+            )
+            .agreementStartDate(startDate != null ? startDate.format(DATE_FORMATTER) : NO_ANSWER)
+            .documents(documents)
+            .documentsPlaceholder(CollectionUtils.isEmpty(documents) ? NO_ANSWER : null)
+            .build();
     }
 
-    private String formatDateTime(LocalDateTime localDateTime) {
-        return localDateTime.format(DATE_TIME_FORMATTER).replace("am", "AM").replace("pm", "PM");
+    private ClaimantRegistrationAndLicensingTabDetails buildClaimantRegistrationAndLicensingTabDetails(
+        PCSCase pcsCase
+    ) {
+        if (pcsCase.getLegislativeCountry() != LegislativeCountry.WALES) {
+            return null;
+        }
+
+        VerticalYesNo isExemptLandlord = pcsCase.getIsExemptLandlord();
+
+        return ClaimantRegistrationAndLicensingTabDetails.builder()
+            .isExemptLandlord(isExemptLandlord != null ? isExemptLandlord.getLabel() : NO_ANSWER)
+            .build();
+    }
+
+    private AntisocialAndConductTabDetails buildAntisocialAndConductTabDetails(PCSCase pcsCase) {
+        if (
+            pcsCase.getLegislativeCountry() != LegislativeCountry.WALES
+                || pcsCase.getShowASBQuestionsPageWales() != YesOrNo.YES
+        ) {
+            return null;
+        }
+
+        ASBQuestionsDetailsWales asbQuestionsDetailsWales = pcsCase.getAsbQuestionsWales();
+        if (asbQuestionsDetailsWales == null) {
+            return AntisocialAndConductTabDetails.builder()
+                .antiSocialBehaviour(NO_ANSWER)
+                .propertyUsedIllegally(NO_ANSWER)
+                .otherProhibitedConduct(NO_ANSWER)
+                .build();
+        }
+
+        VerticalYesNo antiSocialBehaviour = asbQuestionsDetailsWales.getAntisocialBehaviour();
+        VerticalYesNo propertyUsedIllegally = asbQuestionsDetailsWales.getIllegalPurposesUse();
+        VerticalYesNo otherProhibitedConduct = asbQuestionsDetailsWales.getOtherProhibitedConduct();
+        String antiSocialBehaviourDetails = null;
+        String propertyUsedIllegallyDetails = null;
+        String otherProhibitedConductDetails = null;
+
+        if (antiSocialBehaviour == VerticalYesNo.YES) {
+            antiSocialBehaviourDetails = asbQuestionsDetailsWales.getAntisocialBehaviourDetails();
+        }
+
+        if (propertyUsedIllegally == VerticalYesNo.YES) {
+            propertyUsedIllegallyDetails = asbQuestionsDetailsWales.getIllegalPurposesUseDetails();
+        }
+
+        if (otherProhibitedConduct == VerticalYesNo.YES) {
+            otherProhibitedConductDetails = asbQuestionsDetailsWales.getOtherProhibitedConductDetails();
+        }
+
+        return AntisocialAndConductTabDetails.builder()
+            .antiSocialBehaviour(antiSocialBehaviour != null ? antiSocialBehaviour.getLabel() : NO_ANSWER)
+            .propertyUsedIllegally(propertyUsedIllegally != null ? propertyUsedIllegally.getLabel() : NO_ANSWER)
+            .otherProhibitedConduct(otherProhibitedConduct != null ? otherProhibitedConduct.getLabel() : NO_ANSWER)
+            .antiSocialBehaviourDetails(antiSocialBehaviourDetails)
+            .propertyUsedIllegallyDetails(propertyUsedIllegallyDetails)
+            .otherProhibitedConductDetails(otherProhibitedConductDetails)
+            .build();
+    }
+
+    private ProhibitedConductStandardContractTabDetails buildProhibitedConductStandardContractTabDetails(
+        PCSCase pcsCase
+    ) {
+        VerticalYesNo prohibitedConduct = pcsCase.getProhibitedConductWalesClaim();
+        if (pcsCase.getLegislativeCountry() != LegislativeCountry.WALES || prohibitedConduct == null) {
+            return null;
+        }
+
+        ProhibitedConductStandardContractTabDetails prohibitedConductStandardContractTabDetails =
+            ProhibitedConductStandardContractTabDetails.builder()
+                .seekingProhibitedConductStandardContract(prohibitedConduct.getLabel())
+                .build();
+
+        PeriodicContractTermsWales periodicContractTermsWales = pcsCase.getPeriodicContractTermsWales();
+
+        if (periodicContractTermsWales != null && prohibitedConduct == VerticalYesNo.YES) {
+            String prohibitedConductWalesClaimDetails = pcsCase.getProhibitedConductWalesClaimDetails();
+            prohibitedConductStandardContractTabDetails.setWhyMakingClaim(prohibitedConductWalesClaimDetails);
+
+            VerticalYesNo agreedTerms = periodicContractTermsWales.getAgreedTermsOfPeriodicContract();
+            prohibitedConductStandardContractTabDetails
+                .setAgreedTerms(agreedTerms != null ? agreedTerms.getLabel() : NO_ANSWER);
+
+            if (agreedTerms == VerticalYesNo.YES) {
+                prohibitedConductStandardContractTabDetails
+                    .setTermDetails(periodicContractTermsWales.getDetailsOfTerms());
+            }
+        }
+
+        return prohibitedConductStandardContractTabDetails;
     }
 }

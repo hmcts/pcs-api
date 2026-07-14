@@ -4,8 +4,10 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalReasons;
@@ -26,22 +28,31 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.SuspensionOfRightToBuyHousingAct;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.WalesNoticeDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredAdditionalOtherGround;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.ClaimGroundSummary;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.IntroductoryDemotedOrOtherGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.CaseDetailsTab;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.NoticeTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.AdditionalDefendantInformationTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.ClaimantInformationTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.DefendantInformationTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.ReasonsForPossessionTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.RentArrearsTabDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.ASBQuestionsDetailsWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.PeriodicContractTermsWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.WalesDocuments;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.ccd.view.builder.AdditionalDefendantInformationTabDetailsBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.view.builder.ClaimantInformationTabDetailsBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.view.builder.DefendantInformationTabDetailsBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.view.builder.GroundsBuilder;
+import uk.gov.hmcts.reform.pcs.ccd.view.builder.NoticeDetailsBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.view.builder.ReasonsForPossessionTabDetailsBuilder;
+import uk.gov.hmcts.reform.pcs.ccd.view.builder.RequiredDocumentsTabDetailsBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.view.builder.RentArrearsTabDetailsBuilder;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
@@ -56,10 +67,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.AlternativesToPossession.DEMOTION_OF_TENANCY;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.AlternativesToPossession.SUSPENSION_OF_RIGHT_TO_BUY;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType.COMMUNITY_LANDLORD;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType.PROVIDER_OF_SOCIAL_HOUSING;
 
 @ExtendWith(MockitoExtension.class)
-public class CaseDetailsTabViewTest {
+class CaseDetailsTabViewTest {
 
     private final String noAnswer = " ";
 
@@ -81,16 +93,23 @@ public class CaseDetailsTabViewTest {
     @Mock
     private AdditionalDefendantInformationTabDetailsBuilder additionalDefendantInformationTabDetailsBuilder;
 
+    @Mock
+    private NoticeDetailsBuilder noticeDetailsBuilder;
+
+    @Spy
+    private RequiredDocumentsTabDetailsBuilder requiredDocumentsTabDetailsBuilder;
+
     @InjectMocks
     private CaseDetailsTabView caseDetailsTabView;
 
     @Test
-    void shouldSetCaseDetailsTabFields() {
+    void shouldSetCaseDetailsTabFieldsForEngland() {
         AddressUK propertyAddress = AddressUK.builder().postCode("SW1A 1AA").build();
         AddressUK defendantAddress = AddressUK.builder().postCode("E1 1AA").build();
         AddressUK underlesseeAddress = AddressUK.builder().postCode("CV1 1DF").build();
         AddressUK claimantAddress = AddressUK.builder().postCode("L2 3RT").build();
         PCSCase pcsCase = PCSCase.builder()
+            .legislativeCountry(LegislativeCountry.ENGLAND)
             .claimantType(
                 DynamicStringList.builder().value(
                     DynamicStringListElement.builder().code(PROVIDER_OF_SOCIAL_HOUSING.name()).build())
@@ -176,8 +195,8 @@ public class CaseDetailsTabViewTest {
                                        .build())
             .noticeServed(YesOrNo.YES)
             .noticeServedDetails(NoticeServedDetails.builder()
-                                     .noticeServiceMethod(NoticeServiceMethod.EMAIL)
-                                     .noticeEmailSentDateTime(LocalDateTime.of(2026, 5, 11, 17, 2))
+                                     .serviceMethod(NoticeServiceMethod.EMAIL)
+                                     .emailSentDateTime(LocalDateTime.of(2026, 5, 11, 17, 2))
                                      .build())
             .preActionProtocolCompleted(VerticalYesNo.NO)
             .preActionProtocolIncompleteExplanation("preaction explanation")
@@ -222,7 +241,7 @@ public class CaseDetailsTabViewTest {
                 + "Antisocial behaviour: Condition 1 of Section 84A of the Housing Act 1985"
         );
 
-        when(rentArrearsTabDetailsBuilder.buildDetailedRentArrearsTabDetails(pcsCase)).thenReturn(
+        when(rentArrearsTabDetailsBuilder.buildDetailedRentArrearsTabDetails(pcsCase, false)).thenReturn(
             RentArrearsTabDetails.builder()
                 .rentAmount("£100")
                 .calculationFrequency("Every 4 weeks")
@@ -236,7 +255,7 @@ public class CaseDetailsTabViewTest {
             ReasonsForPossessionTabDetails.builder()
                 .ground10("Ground 10 reason")
                 .condition1OfSection84A("Condition 1 reason")
-                .additionalReasonsForPossession("Additional reasons")
+                .additionalReasonsDetails("Additional reasons")
                 .build()
         );
 
@@ -277,8 +296,16 @@ public class CaseDetailsTabViewTest {
                 )
             );
 
+        when(noticeDetailsBuilder.buildNoticeTabDetails(pcsCase, false)).thenReturn(
+            NoticeTabDetails.builder()
+                .noticeServed("Yes")
+                .noticeMethod("By email")
+                .noticeDate("11 May 2026, 5:02:00PM")
+                .build()
+        );
+
         // When
-        CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase);
+        CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase, false);
 
         assertThat(caseDetailsTab.getPropertyAddress()).isEqualTo(propertyAddress);
         assertThat(caseDetailsTab.getGroundsForPossessionDetails().getGrounds())
@@ -290,7 +317,7 @@ public class CaseDetailsTabViewTest {
             .isEqualTo("Ground 10 reason");
         assertThat(caseDetailsTab.getReasonsForPossessionDetails().getCondition1OfSection84A())
             .isEqualTo("Condition 1 reason");
-        assertThat(caseDetailsTab.getReasonsForPossessionDetails().getAdditionalReasonsForPossession())
+        assertThat(caseDetailsTab.getReasonsForPossessionDetails().getAdditionalReasonsDetails())
             .isEqualTo("Additional reasons");
         assertThat(caseDetailsTab.getDateClaimSubmitted()).isEqualTo("11 January 2026, 5:02:31PM");
         assertThat(caseDetailsTab.getClaimantInformation().getClaimantName()).isEqualTo("Claimant");
@@ -364,16 +391,31 @@ public class CaseDetailsTabViewTest {
             .isEqualTo("Yes");
         assertThat(caseDetailsTab.getDefendantCircumstanceDetails().getDefendantCircumstances())
             .isEqualTo("defendant circumstances");
+        assertThat(caseDetailsTab.getAntisocialAndConductDetails()).isNull();
+        assertThat(caseDetailsTab.getClaimantRegistrationAndLicensingDetails()).isNull();
+        assertThat(caseDetailsTab.getProhibitedConductStandardContractDetails()).isNull();
+        assertThat(caseDetailsTab.getRequiredDocumentsDetails()).isNull();
     }
 
     @Test
     void shouldSetCaseDetailsTabFieldsWithNoData() {
+        // Given
         PCSCase pcsCase = PCSCase.builder()
+            .legislativeCountry(LegislativeCountry.ENGLAND)
             .build();
 
-        // When
-        CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase);
+        when(noticeDetailsBuilder.buildNoticeTabDetails(pcsCase, false)).thenReturn(
+            NoticeTabDetails.builder()
+                .noticeServed(noAnswer)
+                .noticeMethod(noAnswer)
+                .noticeDate(noAnswer)
+                .build()
+        );
 
+        // When
+        CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase, false);
+
+        // Then
         assertThat(caseDetailsTab.getPropertyAddress()).isNull();
         assertThat(caseDetailsTab.getGroundsForPossessionDetails().getGrounds()).isEqualTo(noAnswer);
         assertThat(caseDetailsTab.getReasonsForPossessionDetails()).isNull();
@@ -426,10 +468,10 @@ public class CaseDetailsTabViewTest {
             .build();
 
         // When
-        CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase);
+        CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase, false);
 
         // Then
-        assertThat(caseDetailsTab.getMortgageDetails()).isNull();
+        assertThat(caseDetailsTab.getMortgageDetails()).isEmpty();
         assertThat(caseDetailsTab.getMortgageOneDetails().getNameKnown()).isEqualTo("Yes");
         assertThat(caseDetailsTab.getMortgageOneDetails().getName())
             .isEqualTo("underlessee name");
@@ -452,7 +494,7 @@ public class CaseDetailsTabViewTest {
             .build();
 
         // When
-        CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase);
+        CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase, false);
 
         // Then
         assertThat(caseDetailsTab.getMortgageOneDetails().getNameKnown()).isEqualTo(noAnswer);
@@ -463,11 +505,12 @@ public class CaseDetailsTabViewTest {
     void shouldSetPlaceholderValuesIfOnlyAlternativesToPossessionIsSet() {
         // Given
         PCSCase pcsCase = PCSCase.builder()
+            .legislativeCountry(LegislativeCountry.ENGLAND)
             .alternativesToPossession(Set.of(DEMOTION_OF_TENANCY, SUSPENSION_OF_RIGHT_TO_BUY))
             .build();
 
         // When
-        CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase);
+        CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase, false);
 
         // Then
         assertThat(caseDetailsTab.getSuspensionOfRightToBuyDetails().getHousingAct())
@@ -500,7 +543,7 @@ public class CaseDetailsTabViewTest {
             .build();
 
         // When
-        CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase);
+        CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase, false);
 
         assertThat(caseDetailsTab.getGroundsForPossessionDetails().getOtherGroundsDescription())
             .isEqualTo("description");
@@ -526,7 +569,7 @@ public class CaseDetailsTabViewTest {
             .build();
 
         // When
-        CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase);
+        CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase, false);
 
         // Then
         assertThat(caseDetailsTab.getGroundsForPossessionDetails().getOtherGroundsDescription())
@@ -558,7 +601,7 @@ public class CaseDetailsTabViewTest {
         );
 
         // When
-        CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase);
+        CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase, false);
 
         // Then
         assertThat(caseDetailsTab.getClaimantAddress()).isEqualTo(claimantAddress);
@@ -591,7 +634,7 @@ public class CaseDetailsTabViewTest {
         );
 
         // When
-        CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase);
+        CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase, false);
 
         // Then
         assertThat(caseDetailsTab.getClaimantAddress()).isEqualTo(claimantAddress);
@@ -610,7 +653,7 @@ public class CaseDetailsTabViewTest {
         );
 
         // When
-        CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase);
+        CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase, false);
 
         // Then
         assertThat(caseDetailsTab.getClaimantAddress().getAddressLine1()).isEqualTo(noAnswer);
@@ -624,115 +667,6 @@ public class CaseDetailsTabViewTest {
         assertThat(caseDetailsTab.getClaimantCircumstances().getClaimantCircumstancesDetails()).isNull();
     }
 
-    @Test
-    void shouldSetNoticeDetailsForFirstClassPost() {
-        // Given
-        PCSCase pcsCase = PCSCase.builder()
-            .noticeServed(YesOrNo.YES)
-            .noticeServedDetails(NoticeServedDetails.builder()
-                                     .noticeServiceMethod(NoticeServiceMethod.FIRST_CLASS_POST)
-                                     .noticePostedDate(LocalDate.of(2026, 5, 11))
-                                     .build())
-            .build();
-
-        // When
-        CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase);
-
-        // Then
-        assertThat(caseDetailsTab.getNoticeDetails().getNoticeMethod())
-            .isEqualTo(NoticeServiceMethod.FIRST_CLASS_POST.getLabel());
-        assertThat(caseDetailsTab.getNoticeDetails().getNoticeServed()).isEqualTo("Yes");
-        assertThat(caseDetailsTab.getNoticeDetails().getNoticeDate()).isEqualTo("11 May 2026");
-    }
-
-    @Test
-    void shouldSetNoticeDetailsForPermittedPlace() {
-        // Given
-        PCSCase pcsCase = PCSCase.builder()
-            .noticeServed(YesOrNo.YES)
-            .noticeServedDetails(NoticeServedDetails.builder()
-                                     .noticeServiceMethod(NoticeServiceMethod.DELIVERED_PERMITTED_PLACE)
-                                     .noticeDeliveredDate(LocalDate.of(2026, 5, 11))
-                                     .build())
-            .build();
-
-        // When
-        CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase);
-
-        // Then
-        assertThat(caseDetailsTab.getNoticeDetails().getNoticeMethod())
-            .isEqualTo(NoticeServiceMethod.DELIVERED_PERMITTED_PLACE.getLabel());
-        assertThat(caseDetailsTab.getNoticeDetails().getNoticeServed()).isEqualTo("Yes");
-        assertThat(caseDetailsTab.getNoticeDetails().getNoticeDate()).isEqualTo("11 May 2026");
-    }
-
-    @Test
-    void shouldSetNoticeDetailsForPersonallyHanded() {
-        // Given
-        PCSCase pcsCase = PCSCase.builder()
-            .noticeServed(YesOrNo.YES)
-            .noticeServedDetails(NoticeServedDetails.builder()
-                                     .noticeServiceMethod(NoticeServiceMethod.PERSONALLY_HANDED)
-                                     .noticeHandedOverDateTime(LocalDateTime.of(2026, 5, 11, 9, 0, 0))
-                                     .noticePersonName("Notice name")
-                                     .build())
-            .build();
-
-        // When
-        CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase);
-
-        // Then
-        assertThat(caseDetailsTab.getNoticeDetails().getNoticeMethod())
-            .isEqualTo(NoticeServiceMethod.PERSONALLY_HANDED.getLabel());
-        assertThat(caseDetailsTab.getNoticeDetails().getNoticeServed()).isEqualTo("Yes");
-        assertThat(caseDetailsTab.getNoticeDetails().getNoticeDate()).isEqualTo("11 May 2026, 9:00:00AM");
-        assertThat(caseDetailsTab.getNoticeDetails().getNoticePersonName()).isEqualTo("Notice name");
-    }
-
-    @Test
-    void shouldSetNoticeDetailsForOtherElectronic() {
-        // Given
-        PCSCase pcsCase = PCSCase.builder()
-            .noticeServed(YesOrNo.YES)
-            .noticeServedDetails(NoticeServedDetails.builder()
-                                     .noticeServiceMethod(NoticeServiceMethod.OTHER_ELECTRONIC)
-                                     .noticeOtherElectronicDateTime(LocalDateTime.of(2026, 5, 11, 9, 0, 0))
-                                     .noticeOtherElectronicMethodExplanation("explanation")
-                                     .build())
-            .build();
-
-        // When
-        CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase);
-
-        // Then
-        assertThat(caseDetailsTab.getNoticeDetails().getNoticeMethod())
-            .isEqualTo(NoticeServiceMethod.OTHER_ELECTRONIC.getLabel());
-        assertThat(caseDetailsTab.getNoticeDetails().getNoticeServed()).isEqualTo("Yes");
-        assertThat(caseDetailsTab.getNoticeDetails().getNoticeDate()).isEqualTo("11 May 2026, 9:00:00AM");
-        assertThat(caseDetailsTab.getNoticeDetails().getNoticeOtherElectronicDetails())
-            .isEqualTo("explanation");
-    }
-
-    @Test
-    void shouldSetNoticeDetailsForOther() {
-        // Given
-        PCSCase pcsCase = PCSCase.builder()
-            .noticeServed(YesOrNo.YES)
-            .noticeServedDetails(NoticeServedDetails.builder()
-                                     .noticeServiceMethod(NoticeServiceMethod.OTHER)
-                                     .noticeOtherDateTime(LocalDateTime.of(2026, 5, 11, 9, 0, 0))
-                                     .build())
-            .build();
-
-        // When
-        CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase);
-
-        // Then
-        assertThat(caseDetailsTab.getNoticeDetails().getNoticeMethod())
-            .isEqualTo(NoticeServiceMethod.OTHER.getLabel());
-        assertThat(caseDetailsTab.getNoticeDetails().getNoticeServed()).isEqualTo("Yes");
-        assertThat(caseDetailsTab.getNoticeDetails().getNoticeDate()).isEqualTo("11 May 2026, 9:00:00AM");
-    }
 
     @Test
     void shouldDisplaySubmittedDateInUkTimeWhenServerTimezoneIsUtc() {
@@ -745,7 +679,7 @@ public class CaseDetailsTabViewTest {
 
         try {
             // When
-            CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase);
+            CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase, false);
 
             // Then
             assertThat(caseDetailsTab.getDateClaimSubmitted()).isEqualTo("11 July 2026, 6:02:31PM");
@@ -765,7 +699,7 @@ public class CaseDetailsTabViewTest {
 
         try {
             // When
-            CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase);
+            CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase, false);
 
             // Then
             assertThat(caseDetailsTab.getDateClaimSubmitted()).isEqualTo("11 January 2026, 5:02:31PM");
@@ -788,10 +722,548 @@ public class CaseDetailsTabViewTest {
             .build();
 
         // When
-        CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase);
+        CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase, false);
 
         // Then
         assertThat(caseDetailsTab.getTenancyLicenceDetails().getTenancyLicenceDescription()).isNull();
+    }
+
+    @Test
+    void shouldSetCaseDetailsTabFieldsForWales() {
+        AddressUK propertyAddress = AddressUK.builder().postCode("SW1A 1AA").build();
+        AddressUK defendantAddress = AddressUK.builder().postCode("E1 1AA").build();
+        AddressUK underlesseeAddress = AddressUK.builder().postCode("CV1 1DF").build();
+        AddressUK claimantAddress = AddressUK.builder().postCode("L2 3RT").build();
+        PCSCase pcsCase = PCSCase.builder()
+            .legislativeCountry(LegislativeCountry.WALES)
+            .claimantType(
+                DynamicStringList.builder().value(
+                        DynamicStringListElement.builder().code(COMMUNITY_LANDLORD.name()).build())
+                    .build())
+            .claimAgainstTrespassers(VerticalYesNo.YES)
+            .propertyAddress(propertyAddress)
+            .dateSubmitted(LocalDateTime.of(2026, 1, 11, 17, 2, 31))
+            .claimGroundSummaries(List.of(
+                listValue(ClaimGroundSummary.builder()
+                              .label("Rent arrears (ground 10)")
+                              .reason("Ground 10 reason")
+                              .code("ABSOLUTE_GROUNDS")
+                              .build()),
+                listValue(ClaimGroundSummary.builder()
+                              .label("Condition 1 of Section 84A of the Housing Act 1985")
+                              .reason("Condition 1 reason")
+                              .code("ABSOLUTE_GROUNDS")
+                              .build())
+            ))
+            .additionalReasonsForPossession(AdditionalReasons.builder()
+                                                .hasReasons(VerticalYesNo.YES)
+                                                .reasons("Additional reasons")
+                                                .build())
+            .allClaimants(
+                List.of(listValue(
+                    Party.builder()
+                        .orgName("Claimant")
+                        .address(claimantAddress)
+                        .emailAddress("claimant@email.com")
+                        .phoneNumberProvided(VerticalYesNo.YES)
+                        .phoneNumber("phone number")
+                        .build()
+                ))
+            )
+            .claimantCircumstances(
+                ClaimantCircumstances.builder()
+                    .claimantCircumstancesSelect(VerticalYesNo.YES)
+                    .claimantCircumstancesDetails("claimant circumstances")
+                    .build()
+            )
+            .allDefendants(List.of(
+                listValue(Party.builder()
+                              .nameKnown(VerticalYesNo.YES)
+                              .firstName("Defendant")
+                              .lastName("One")
+                              .addressKnown(VerticalYesNo.YES)
+                              .build()),
+                listValue(Party.builder()
+                              .nameKnown(VerticalYesNo.YES)
+                              .firstName("Defendant")
+                              .lastName("Two")
+                              .addressKnown(VerticalYesNo.YES)
+                              .address(defendantAddress)
+                              .build()),
+                listValue(Party.builder()
+                              .nameKnown(VerticalYesNo.NO)
+                              .addressKnown(VerticalYesNo.NO)
+                              .build())
+            ))
+            .defendantCircumstances(
+                DefendantCircumstances.builder()
+                    .hasDefendantCircumstancesInfo(VerticalYesNo.YES)
+                    .defendantCircumstancesInfo("defendant circumstances")
+                    .build()
+            )
+            .rentDetails(RentDetails.builder()
+                             .currentRent(new BigDecimal("100.00"))
+                             .frequency(RentPaymentFrequency.OTHER)
+                             .otherFrequency("Every 4 weeks")
+                             .perDayCorrect(VerticalYesNo.NO)
+                             .amendedDailyCharge(new BigDecimal("12.30"))
+                             .build())
+            .rentArrears(RentArrearsSection.builder()
+                             .total(new BigDecimal("450.75"))
+                             .build())
+            .arrearsJudgmentWanted(VerticalYesNo.YES)
+            .occupationLicenceDetailsWales(
+                OccupationLicenceDetailsWales.builder()
+                    .occupationLicenceTypeWales(OccupationLicenceTypeWales.OTHER)
+                    .otherLicenceTypeDetails("other licence details")
+                    .licenceStartDate(LocalDate.of(2024, 4, 16))
+                    .build()
+            )
+            .walesNoticeDetails(
+                WalesNoticeDetails.builder()
+                    .noticeServed(YesOrNo.YES)
+                    .typeOfNoticeServed("notice type")
+                    .noticeStatement("notice statement")
+                    .build()
+            )
+            .noticeServedDetails(NoticeServedDetails.builder()
+                                     .serviceMethod(NoticeServiceMethod.EMAIL)
+                                     .emailSentDateTime(LocalDateTime.of(2026, 5, 11, 17, 2))
+                                     .build())
+            .preActionProtocolCompleted(VerticalYesNo.NO)
+            .mediationAttempted(VerticalYesNo.YES)
+            .settlementAttempted(VerticalYesNo.YES)
+            .applicationWithClaim(VerticalYesNo.YES)
+            .allUnderlesseeOrMortgagees(List.of(
+                listValue(
+                    Party.builder()
+                        .nameKnown(VerticalYesNo.YES)
+                        .orgName("underlessee name")
+                        .addressKnown(VerticalYesNo.YES)
+                        .address(underlesseeAddress)
+                        .build()
+                )
+            ))
+            .alternativesToPossession(Set.of(DEMOTION_OF_TENANCY, SUSPENSION_OF_RIGHT_TO_BUY))
+            .isExemptLandlord(VerticalYesNo.NO)
+            .showASBQuestionsPageWales(YesOrNo.YES)
+            .asbQuestionsWales(
+                ASBQuestionsDetailsWales.builder()
+                    .antisocialBehaviour(VerticalYesNo.YES)
+                    .antisocialBehaviourDetails("antisocial")
+                    .illegalPurposesUse(VerticalYesNo.YES)
+                    .illegalPurposesUseDetails("illegalPurposesUse")
+                    .otherProhibitedConduct(VerticalYesNo.YES)
+                    .otherProhibitedConductDetails("otherProhibitedConduct")
+                    .build()
+            )
+            .prohibitedConductWalesClaim(VerticalYesNo.YES)
+            .prohibitedConductWalesClaimDetails("prohibitedConductWalesClaim")
+            .periodicContractTermsWales(
+                PeriodicContractTermsWales.builder()
+                    .agreedTermsOfPeriodicContract(VerticalYesNo.YES)
+                    .detailsOfTerms("agreedTermsOfPeriodicContract")
+                    .build()
+            )
+            .requiredDocumentsWales(
+                WalesDocuments.builder()
+                    .hasEnergyPerformanceCertificate(VerticalYesNo.NO)
+                    .hasGasSafetyReport(VerticalYesNo.NO)
+                    .hasElectricalInstallationConditionReport(VerticalYesNo.NO)
+                    .noEpcReason("noEpcReason")
+                    .noGasReportReason("noGasReportReason")
+                    .noEicrReason("noEicrReason")
+                    .build()
+            )
+            .build();
+
+        when(groundsBuilder.getGrounds(pcsCase)).thenReturn(
+            "Rent arrears (ground 10)\n"
+                + "Antisocial behaviour: Condition 1 of Section 84A of the Housing Act 1985"
+        );
+
+        when(rentArrearsTabDetailsBuilder.buildDetailedRentArrearsTabDetails(pcsCase, false)).thenReturn(
+            RentArrearsTabDetails.builder()
+                .rentAmount("£100")
+                .calculationFrequency("Every 4 weeks")
+                .dailyRate("£12.30")
+                .arrearsTotal("£450.75")
+                .judgmentRequested("Yes")
+                .build()
+        );
+
+        when(reasonsForPossessionTabDetailsBuilder.buildDetailsReasonsForPossession(pcsCase)).thenReturn(
+            ReasonsForPossessionTabDetails.builder()
+                .ground10("Ground 10 reason")
+                .condition1OfSection84A("Condition 1 reason")
+                .hasAdditionalReasons("Yes")
+                .additionalReasonsDetails("Additional reasons")
+                .build()
+        );
+
+        when(claimantInformationTabDetailsBuilder.createSummaryClaimantTabDetails(pcsCase)).thenReturn(
+            ClaimantInformationTabDetails.builder()
+                .claimantName("Claimant")
+                .build()
+        );
+
+        when(defendantInformationTabDetailsBuilder.buildDetailedDefendantDetails(pcsCase)).thenReturn(
+            DefendantInformationTabDetails.builder()
+                .nameKnown("Yes")
+                .firstName("Defendant")
+                .lastName("One")
+                .addressKnown("Yes")
+                .addressForService(propertyAddress)
+                .build()
+        );
+
+        when(additionalDefendantInformationTabDetailsBuilder.buildDetailedAdditionalDefendantsDetails(pcsCase))
+            .thenReturn(
+                List.of(
+                    listValue(
+                        AdditionalDefendantInformationTabDetails.builder()
+                            .nameKnown("Yes")
+                            .firstName("Defendant")
+                            .lastName("Two")
+                            .addressKnown("Yes")
+                            .addressForService(defendantAddress)
+                            .build()
+                    ),
+                    listValue(
+                        AdditionalDefendantInformationTabDetails.builder()
+                            .nameKnown("No")
+                            .addressKnown("No")
+                            .build()
+                    )
+                )
+            );
+
+        // When
+        CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase, false);
+
+        // Then
+        assertThat(caseDetailsTab.getPropertyAddress()).isEqualTo(propertyAddress);
+        assertThat(caseDetailsTab.getGroundsForPossessionDetails().getGrounds())
+            .isEqualTo(
+                "Rent arrears (ground 10)\n"
+                    + "Antisocial behaviour: Condition 1 of Section 84A of the Housing Act 1985"
+            );
+        assertThat(caseDetailsTab.getReasonsForPossessionDetails().getGround10())
+            .isEqualTo("Ground 10 reason");
+        assertThat(caseDetailsTab.getReasonsForPossessionDetails().getCondition1OfSection84A())
+            .isEqualTo("Condition 1 reason");
+        assertThat(caseDetailsTab.getReasonsForPossessionDetails().getHasAdditionalReasons()).isEqualTo("Yes");
+        assertThat(caseDetailsTab.getReasonsForPossessionDetails().getAdditionalReasonsDetails())
+            .isEqualTo("Additional reasons");
+        assertThat(caseDetailsTab.getDateClaimSubmitted()).isEqualTo("11 January 2026, 5:02:31PM");
+        assertThat(caseDetailsTab.getClaimantInformation().getClaimantName()).isEqualTo("Claimant");
+        assertThat(caseDetailsTab.getDefendantInformationDetails().getFirstName()).isEqualTo("Defendant");
+        assertThat(caseDetailsTab.getDefendantInformationDetails().getLastName()).isEqualTo("One");
+        assertThat(caseDetailsTab.getDefendantInformationDetails().getAddressForService()).isEqualTo(propertyAddress);
+        assertThat(caseDetailsTab.getAdditionalDefendants()).hasSize(2);
+        assertThat(caseDetailsTab.getAdditionalDefendants().getFirst().getValue().getFirstName())
+            .isEqualTo("Defendant");
+        assertThat(caseDetailsTab.getAdditionalDefendants().getFirst().getValue().getLastName()).isEqualTo("Two");
+        assertThat(caseDetailsTab.getAdditionalDefendants().getFirst().getValue().getAddressForService())
+            .isEqualTo(defendantAddress);
+        assertThat(caseDetailsTab.getAdditionalDefendants().get(1).getValue().getNameKnown())
+            .isEqualTo("No");
+        assertThat(caseDetailsTab.getAdditionalDefendants().get(1).getValue().getAddressKnown())
+            .isEqualTo("No");
+        assertThat(caseDetailsTab.getRentArrearsDetails().getRentAmount()).isEqualTo("£100");
+        assertThat(caseDetailsTab.getRentArrearsDetails().getCalculationFrequency()).isEqualTo("Every 4 weeks");
+        assertThat(caseDetailsTab.getRentArrearsDetails().getDailyRate()).isEqualTo("£12.30");
+        assertThat(caseDetailsTab.getRentArrearsDetails().getArrearsTotal()).isEqualTo("£450.75");
+        assertThat(caseDetailsTab.getRentArrearsDetails().getJudgmentRequested()).isEqualTo("Yes");
+        assertThat(caseDetailsTab.getOccupationContractLicenceDetails().getAgreementType())
+            .isEqualTo("Other");
+        assertThat(caseDetailsTab.getOccupationContractLicenceDetails().getAgreementTypeDescription())
+            .isEqualTo("other licence details");
+        assertThat(caseDetailsTab.getOccupationContractLicenceDetails().getAgreementStartDate())
+            .isEqualTo("16 April 2024");
+        assertThat(caseDetailsTab.getOccupationContractLicenceDetails().getDocumentsPlaceholder()).isEqualTo(noAnswer);
+        assertThat(caseDetailsTab.getOccupationContractLicenceDetails().getDocuments()).isNull();
+        assertThat(caseDetailsTab.getApplicationsDetails().getPlanToMakeGeneralApplication()).isEqualTo("Yes");
+        assertThat(caseDetailsTab.getActionsTakenDetails().getPreactionProtocolFollowed()).isEqualTo("No");
+        assertThat(caseDetailsTab.getActionsTakenDetails().getMediationAttempted()).isEqualTo("Yes");
+        assertThat(caseDetailsTab.getActionsTakenDetails().getSettlementAttempted()).isEqualTo("Yes");
+        assertThat(caseDetailsTab.getMortgageDetails()).isEmpty();
+        assertThat(caseDetailsTab.getMortgageOneDetails().getNameKnown()).isEqualTo("Yes");
+        assertThat(caseDetailsTab.getMortgageOneDetails().getName()).isEqualTo("underlessee name");
+        assertThat(caseDetailsTab.getMortgageOneDetails().getAddressKnown()).isEqualTo("Yes");
+        assertThat(caseDetailsTab.getMortgageOneDetails().getAddress()).isEqualTo(underlesseeAddress);
+        assertThat(caseDetailsTab.getClaimantAddress()).isEqualTo(claimantAddress);
+        assertThat(caseDetailsTab.getClaimantContactDetails().getEmailAddress()).isEqualTo("claimant@email.com");
+        assertThat(caseDetailsTab.getClaimantContactDetails().getPhoneNumberProvided()).isEqualTo("Yes");
+        assertThat(caseDetailsTab.getClaimantContactDetails().getPhoneNumber()).isEqualTo("phone number");
+        assertThat(caseDetailsTab.getClaimantCircumstances().getClaimantCircumstancesGiven()).isEqualTo("Yes");
+        assertThat(caseDetailsTab.getClaimantCircumstances().getClaimantCircumstancesDetails())
+            .isEqualTo("claimant circumstances");
+        assertThat(caseDetailsTab.getDefendantCircumstanceDetails().getDefendantCircumstancesGiven())
+            .isEqualTo("Yes");
+        assertThat(caseDetailsTab.getDefendantCircumstanceDetails().getDefendantCircumstances())
+            .isEqualTo("defendant circumstances");
+        assertThat(caseDetailsTab.getClaimantRegistrationAndLicensingDetails().getIsExemptLandlord())
+            .isEqualTo("No");
+        assertThat(caseDetailsTab.getAntisocialAndConductDetails().getAntiSocialBehaviour()).isEqualTo("Yes");
+        assertThat(caseDetailsTab.getAntisocialAndConductDetails().getAntiSocialBehaviourDetails())
+            .isEqualTo("antisocial");
+        assertThat(caseDetailsTab.getAntisocialAndConductDetails().getPropertyUsedIllegally()).isEqualTo("Yes");
+        assertThat(caseDetailsTab.getAntisocialAndConductDetails().getPropertyUsedIllegallyDetails())
+            .isEqualTo("illegalPurposesUse");
+        assertThat(caseDetailsTab.getAntisocialAndConductDetails().getOtherProhibitedConduct()).isEqualTo("Yes");
+        assertThat(caseDetailsTab.getAntisocialAndConductDetails().getOtherProhibitedConductDetails())
+            .isEqualTo("otherProhibitedConduct");
+        assertThat(
+            caseDetailsTab.getProhibitedConductStandardContractDetails().getSeekingProhibitedConductStandardContract()
+        ).isEqualTo("Yes");
+        assertThat(caseDetailsTab.getProhibitedConductStandardContractDetails().getWhyMakingClaim())
+            .isEqualTo("prohibitedConductWalesClaim");
+        assertThat(caseDetailsTab.getProhibitedConductStandardContractDetails().getAgreedTerms())
+            .isEqualTo("Yes");
+        assertThat(caseDetailsTab.getProhibitedConductStandardContractDetails().getTermDetails())
+            .isEqualTo("agreedTermsOfPeriodicContract");
+        assertThat(caseDetailsTab.getRequiredDocumentsDetails().getHasGasSafetyReport()).isEqualTo("No");
+        assertThat(caseDetailsTab.getRequiredDocumentsDetails().getHasEnergyPerformanceCertificate()).isEqualTo("No");
+        assertThat(caseDetailsTab.getRequiredDocumentsDetails().getHasElectricalInstallationConditionReport())
+            .isEqualTo("No");
+        assertThat(caseDetailsTab.getRequiredDocumentsDetails().getNoGasSafetyReportReason())
+            .isEqualTo("noGasReportReason");
+        assertThat(caseDetailsTab.getRequiredDocumentsDetails().getNoEnergyPerformanceCertificateReason())
+            .isEqualTo("noEpcReason");
+        assertThat(caseDetailsTab.getRequiredDocumentsDetails().getNoElectricalInstallationConditionReportReason())
+            .isEqualTo("noEicrReason");
+        assertThat(caseDetailsTab.getRequiredDocumentsDetails().getGasSafetyReports()).isNull();
+        assertThat(caseDetailsTab.getRequiredDocumentsDetails().getEnergyPerformanceCertificates()).isNull();
+        assertThat(caseDetailsTab.getRequiredDocumentsDetails().getElectricalInstallationReports()).isNull();
+        assertThat(caseDetailsTab.getTenancyLicenceDetails()).isNull();
+    }
+
+    @Test
+    void shouldSetCaseDetailsTabFieldsWithNoDataWales() {
+        // Given
+        PCSCase pcsCase = PCSCase.builder()
+            .legislativeCountry(LegislativeCountry.WALES)
+            .build();
+
+        // When
+        CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase, false);
+
+        // Then
+        assertThat(caseDetailsTab.getOccupationContractLicenceDetails().getAgreementType()).isEqualTo(noAnswer);
+        assertThat(caseDetailsTab.getOccupationContractLicenceDetails().getAgreementStartDate()).isEqualTo(noAnswer);
+        assertThat(caseDetailsTab.getOccupationContractLicenceDetails().getDocumentsPlaceholder()).isEqualTo(noAnswer);
+        assertThat(caseDetailsTab.getOccupationContractLicenceDetails().getDocuments()).isNull();
+
+        assertThat(caseDetailsTab.getAntisocialAndConductDetails()).isNull();
+        assertThat(caseDetailsTab.getProhibitedConductStandardContractDetails()).isNull();
+        assertThat(caseDetailsTab.getClaimantRegistrationAndLicensingDetails()).isNull();
+    }
+
+    @Test
+    void shouldNotSetAgreementTypeDescriptionWhenAgreementTypeIsNotOther() {
+        // Given
+        PCSCase pcsCase = PCSCase.builder()
+            .legislativeCountry(LegislativeCountry.WALES)
+            .occupationLicenceDetailsWales(
+                OccupationLicenceDetailsWales.builder()
+                    .occupationLicenceTypeWales(OccupationLicenceTypeWales.SECURE_CONTRACT)
+                    .otherLicenceTypeDetails("other licence details")
+                    .licenceStartDate(LocalDate.of(2024, 4, 16))
+                    .build()
+            )
+            .build();
+
+        // When
+        CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase, false);
+
+        // Then
+        assertThat(caseDetailsTab.getOccupationContractLicenceDetails().getAgreementTypeDescription()).isNull();
+    }
+
+    @Test
+    void shouldPlaceholderWhenShowASBQuestionsPageWalesIsYesWithNoOtherData() {
+        // Given
+        PCSCase pcsCase = PCSCase.builder()
+            .legislativeCountry(LegislativeCountry.WALES)
+            .showASBQuestionsPageWales(YesOrNo.YES)
+            .build();
+
+        // When
+        CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase, false);
+
+        // Then
+        assertThat(caseDetailsTab.getAntisocialAndConductDetails().getAntiSocialBehaviour()).isEqualTo(noAnswer);
+        assertThat(caseDetailsTab.getAntisocialAndConductDetails().getAntiSocialBehaviourDetails()).isNull();
+        assertThat(caseDetailsTab.getAntisocialAndConductDetails().getPropertyUsedIllegally()).isEqualTo(noAnswer);
+        assertThat(caseDetailsTab.getAntisocialAndConductDetails().getPropertyUsedIllegallyDetails()).isNull();
+        assertThat(caseDetailsTab.getAntisocialAndConductDetails().getOtherProhibitedConduct()).isEqualTo(noAnswer);
+        assertThat(caseDetailsTab.getAntisocialAndConductDetails().getOtherProhibitedConductDetails()).isNull();
+    }
+
+    @Test
+    void shouldNotSetDetailsValuesIfASBQuestionsDetailsWalesAreNo() {
+        // Given
+        PCSCase pcsCase = PCSCase.builder()
+            .legislativeCountry(LegislativeCountry.WALES)
+            .showASBQuestionsPageWales(YesOrNo.YES)
+            .asbQuestionsWales(
+                ASBQuestionsDetailsWales.builder()
+                    .antisocialBehaviour(VerticalYesNo.NO)
+                    .antisocialBehaviourDetails("antisocial")
+                    .illegalPurposesUse(VerticalYesNo.NO)
+                    .illegalPurposesUseDetails("illegalPurposesUse")
+                    .otherProhibitedConduct(VerticalYesNo.NO)
+                    .otherProhibitedConductDetails("otherProhibitedConduct")
+                    .build()
+            )
+            .build();
+
+        // When
+        CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase, false);
+
+        // Then
+        assertThat(caseDetailsTab.getAntisocialAndConductDetails().getAntiSocialBehaviour()).isEqualTo("No");
+        assertThat(caseDetailsTab.getAntisocialAndConductDetails().getAntiSocialBehaviourDetails()).isNull();
+        assertThat(caseDetailsTab.getAntisocialAndConductDetails().getPropertyUsedIllegally()).isEqualTo("No");
+        assertThat(caseDetailsTab.getAntisocialAndConductDetails().getPropertyUsedIllegallyDetails()).isNull();
+        assertThat(caseDetailsTab.getAntisocialAndConductDetails().getOtherProhibitedConduct()).isEqualTo("No");
+        assertThat(caseDetailsTab.getAntisocialAndConductDetails().getOtherProhibitedConductDetails()).isNull();
+    }
+
+    @Test
+    void shouldShowDocumentsInRequiredDocumentsTabDetails() {
+        // Given
+        PCSCase pcsCase = PCSCase.builder()
+                .legislativeCountry(LegislativeCountry.WALES)
+                .requiredDocumentsWales(
+                        WalesDocuments.builder()
+                                .hasEnergyPerformanceCertificate(VerticalYesNo.YES)
+                                .hasGasSafetyReport(VerticalYesNo.YES)
+                                .hasElectricalInstallationConditionReport(VerticalYesNo.YES)
+                                .noEpcReason("noEpcReason")
+                                .noGasReportReason("noGasReportReason")
+                                .noEicrReason("noEicrReason")
+                                .gasSafetyReport(List.of(listValue(Document.builder().build())))
+                                .energyPerformance((List.of(listValue(Document.builder().build()))))
+                                .electricalInstallation((List.of(listValue(Document.builder().build()))))
+                                .build()
+                )
+                .build();
+
+        // When
+        CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase, false);
+
+        // Then
+        assertThat(caseDetailsTab.getRequiredDocumentsDetails().getHasGasSafetyReport()).isEqualTo("Yes");
+        assertThat(caseDetailsTab.getRequiredDocumentsDetails().getHasEnergyPerformanceCertificate()).isEqualTo("Yes");
+        assertThat(caseDetailsTab.getRequiredDocumentsDetails().getHasElectricalInstallationConditionReport())
+                .isEqualTo("Yes");
+        assertThat(caseDetailsTab.getRequiredDocumentsDetails().getNoGasSafetyReportReason()).isNull();
+        assertThat(caseDetailsTab.getRequiredDocumentsDetails().getNoEnergyPerformanceCertificateReason()).isNull();
+        assertThat(caseDetailsTab.getRequiredDocumentsDetails().getNoElectricalInstallationConditionReportReason())
+                .isNull();
+        assertThat(caseDetailsTab.getRequiredDocumentsDetails().getGasSafetyReports()).hasSize(1);
+        assertThat(caseDetailsTab.getRequiredDocumentsDetails().getEnergyPerformanceCertificates()).hasSize(1);
+        assertThat(caseDetailsTab.getRequiredDocumentsDetails().getElectricalInstallationReports()).hasSize(1);
+    }
+
+    @Test
+    void shouldUnsetEnglishDocumentsIfCaseIsSubmitted() {
+        // Given
+        List<ListValue<Document>> tenancyDocuments = List.of(
+            ListValue.<Document>builder().value(Document.builder().build()).build()
+        );
+        TenancyLicenceDetails tenancyLicenceDetails = TenancyLicenceDetails.builder()
+            .typeOfTenancyLicence(TenancyLicenceType.ASSURED_TENANCY)
+            .tenancyLicenceDate(LocalDate.of(2024, 4, 16))
+            .hasCopyOfTenancyLicence(VerticalYesNo.YES)
+            .tenancyLicenceDocuments(tenancyDocuments)
+            .build();
+
+        PCSCase pcsCase = PCSCase.builder()
+            .legislativeCountry(LegislativeCountry.ENGLAND)
+            .tenancyLicenceDetails(tenancyLicenceDetails)
+            .build();
+
+        // When
+        CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase, true);
+
+        // Then
+        assertThat(caseDetailsTab.getTenancyLicenceDetails().getTenancyLicenceDocuments()).isEqualTo(tenancyDocuments);
+        assertThat(tenancyLicenceDetails.getTenancyLicenceDocuments()).isNull();
+    }
+
+    @Test
+    void shouldNotUnsetEnglishDocumentsIfCaseIsInDraft() {
+        // Given
+        List<ListValue<Document>> tenancyDocuments = List.of(
+            ListValue.<Document>builder().value(Document.builder().build()).build()
+        );
+        TenancyLicenceDetails tenancyLicenceDetails = TenancyLicenceDetails.builder()
+            .typeOfTenancyLicence(TenancyLicenceType.ASSURED_TENANCY)
+            .tenancyLicenceDate(LocalDate.of(2024, 4, 16))
+            .hasCopyOfTenancyLicence(VerticalYesNo.YES)
+            .tenancyLicenceDocuments(tenancyDocuments)
+            .build();
+
+        PCSCase pcsCase = PCSCase.builder()
+            .legislativeCountry(LegislativeCountry.ENGLAND)
+            .tenancyLicenceDetails(tenancyLicenceDetails)
+            .build();
+
+        // When
+        CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase, false);
+
+        // Then
+        assertThat(caseDetailsTab.getTenancyLicenceDetails().getTenancyLicenceDocuments()).isEqualTo(tenancyDocuments);
+        assertThat(tenancyLicenceDetails.getTenancyLicenceDocuments()).isEqualTo(tenancyDocuments);
+    }
+
+    @Test
+    void shouldUnsetWelshDocumentsIfCaseIsSubmitted() {
+        // Given
+        List<ListValue<Document>> licenceDocuments = List.of(
+            ListValue.<Document>builder().value(Document.builder().build()).build()
+        );
+        OccupationLicenceDetailsWales occupationLicenceDetailsWales = OccupationLicenceDetailsWales.builder()
+            .licenceDocuments(licenceDocuments)
+            .build();
+
+        PCSCase pcsCase = PCSCase.builder()
+            .legislativeCountry(LegislativeCountry.WALES)
+            .occupationLicenceDetailsWales(occupationLicenceDetailsWales)
+            .build();
+
+        // When
+        CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase, true);
+
+        // Then
+        assertThat(caseDetailsTab.getOccupationContractLicenceDetails().getDocuments()).isEqualTo(licenceDocuments);
+        assertThat(occupationLicenceDetailsWales.getLicenceDocuments()).isNull();
+    }
+
+    @Test
+    void shouldUnsetWelshDocumentsIfCaseIsInDraft() {
+        // Given
+        List<ListValue<Document>> licenceDocuments = List.of(
+            ListValue.<Document>builder().value(Document.builder().build()).build()
+        );
+        OccupationLicenceDetailsWales occupationLicenceDetailsWales = OccupationLicenceDetailsWales.builder()
+            .licenceDocuments(licenceDocuments)
+            .build();
+
+        PCSCase pcsCase = PCSCase.builder()
+            .legislativeCountry(LegislativeCountry.WALES)
+            .occupationLicenceDetailsWales(occupationLicenceDetailsWales)
+            .build();
+
+        // When
+        CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase, false);
+
+        // Then
+        assertThat(caseDetailsTab.getOccupationContractLicenceDetails().getDocuments()).isEqualTo(licenceDocuments);
+        assertThat(occupationLicenceDetailsWales.getLicenceDocuments()).isEqualTo(licenceDocuments);
     }
 
     private static <T> ListValue<T> listValue(T value) {

@@ -15,6 +15,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.DefendantInformationTabDet
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.GroundsForPossessionTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.ReasonsForPossessionTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.RentArrearsTabDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.OccupationContractOrLicenceTabDetails;
 
 import java.util.List;
 
@@ -51,6 +52,9 @@ public class SummaryTab {
 
     @CCD(label = "Tenancy, occupation contract or licence details")
     private TenancyTabDetails tenancyDetails;
+
+    @CCD(label = "Occupation contract or licence details")
+    private OccupationContractOrLicenceTabDetails occupationContractOrLicenceDetails;
 
     @CCD(label = "Notice details")
     private NoticeTabDetails noticeDetails;

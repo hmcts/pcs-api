@@ -89,26 +89,32 @@ To access the swagger documentation for the API, go to http://localhost:3206/swa
 - Set the authentication mode to `AuthMode.AAT` as described above.
 
 #### Generating the CCD definition XLS
+
 We can generate the xlsx spreadsheet by running the script:
+
 ```
-./bin/create-xlsx.sh 
+./bin/create-xlsx.sh
 ```
-This spreadsheet can be found in: /build/definitions/CCD_Definition_PCS_ENVIRONMENT.xlsx 
+
+This spreadsheet can be found in: /build/definitions/CCD_Definition_PCS_ENVIRONMENT.xlsx
 
 You can specify which environment to generate the spreadsheet for by passing it in when calling the script. E.g ./bin/create-xlsx.sh preview.
 
-If you encounter the error: 
+If you encounter the error:
+
 ```
  [{"code":"UNAUTHORIZED","message":"authentication required,}]
 ```
+
 Run:
+
 ```
 az login
 ```
+
 ```
 - az acr login -n hmctsprod
 ```
-
 
 ### Running the tests
 
@@ -277,6 +283,34 @@ response for the possession claim fee:
   }
 }
 ```
+
+## Feature flags
+
+We use [LaunchDarkly](https://launchdarkly.com) for feature flags, so behaviour can be turned on or
+off per environment without a redeploy. Flags live in the `FeatureFlag` enum and are read through
+`FeatureToggleService`:
+
+```java
+if (featureToggle.isEnabled(FeatureFlag.BULK_PRINT)) {
+    // ...
+}
+```
+
+Each flag has a key matching the LaunchDarkly dashboard and a default served when LaunchDarkly can't
+be reached. The first flag is `bulk-print-enabled`. To add one, add a constant
+(`MY_FEATURE("my-feature-enabled", false)`) and create the matching flag in LaunchDarkly; to retire
+one, delete the constant and the compiler points you at every use.
+
+The SDK key comes from the key vault (`LAUNCHDARKLY_SDK_KEY`) and `LAUNCHDARKLY_ENV` sets the
+environment used for targeting.
+
+### Local Dev
+
+When running the pcs-api locally, set `LAUNCHDARKLY_OFFLINE` to `true` and optionally specify one or more files
+containing flags values to be used. This is set up by default for cftLibTest and bootWithCcd
+
+With no key the client runs offline and every flag uses its default,
+so it still runs locally; local and `cftlibTest` set `LAUNCHDARKLY_OFFLINE=true`.
 
 ## License
 

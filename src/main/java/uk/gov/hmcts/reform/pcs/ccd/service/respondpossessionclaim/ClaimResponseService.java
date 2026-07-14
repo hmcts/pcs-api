@@ -18,6 +18,7 @@ import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Supplier;
 
 /**
  * Service for managing defendant contact preferences.
@@ -46,20 +47,29 @@ public class ClaimResponseService {
             throw new IllegalStateException("Current user IDAM ID is null");
         }
 
-        PartyEntity defendant = partyService.getPartyEntityByIdamId(currentUserIdamId, caseReference);
+        saveDraftDataForPartyInternal(dataFromDraftTable, () -> partyService.getPartyEntityByIdamId(currentUserIdamId,
+                                                                                                    caseReference));
+        log.debug("Successfully saved contact preferences for defendant with IDAM ID: {}", currentUserIdamId);
+    }
+
+    public void saveDraftDataForParty(PossessionClaimResponse dataFromDraftTable, long caseReference, UUID partyId) {
+        saveDraftDataForPartyInternal(dataFromDraftTable, () ->  partyService.getPartyEntityById(partyId,
+                                                                                                 caseReference));
+    }
+
+    private void saveDraftDataForPartyInternal(PossessionClaimResponse dataFromDraftTable, Supplier<PartyEntity>
+        partyEntitySupplier) {
+        PartyEntity defendant = partyEntitySupplier.get();
 
         saveContactPreferences(defendant, dataFromDraftTable.getDefendantResponses());
-        updatePartyContactDetails(defendant, dataFromDraftTable.getDefendantContactDetails(),
-                                  dataFromDraftTable.getDefendantResponses());
+        updatePartyContactDetails(defendant, dataFromDraftTable.getDefendantContactDetails(), dataFromDraftTable
+            .getDefendantResponses());
 
-        // Copy dateOfBirth from defendantResponses to party entity if present
         if (dataFromDraftTable.getDefendantResponses() != null
             && dataFromDraftTable.getDefendantResponses().getDateOfBirth() != null) {
             defendant.setDateOfBirth(dataFromDraftTable.getDefendantResponses().getDateOfBirth());
             log.debug("Updated date of birth from defendantResponses for party ID: {}", defendant.getId());
         }
-
-        log.debug("Successfully saved contact preferences for defendant with IDAM ID: {}", currentUserIdamId);
     }
 
     /**
@@ -70,7 +80,7 @@ public class ClaimResponseService {
      */
     private void updatePartyContactDetails(PartyEntity party, DefendantContactDetails defendantContactDetails,
                                            DefendantResponses defendantResponses) {
-        boolean nameNotConfirmed = defendantResponses.getDefendantNameConfirmation() == null;
+        boolean nameNotConfirmed = defendantResponses.getDefendantNameConfirmation() != VerticalYesNo.YES;
 
         if (nameNotConfirmed && StringUtils.isNotBlank(defendantContactDetails.getParty().getFirstName())) {
             party.setFirstName(defendantContactDetails.getParty().getFirstName());
@@ -80,6 +90,12 @@ public class ClaimResponseService {
         if (nameNotConfirmed && StringUtils.isNotBlank(defendantContactDetails.getParty().getLastName())) {
             party.setLastName(defendantContactDetails.getParty().getLastName());
             log.debug("Updated last name for party ID: {}", party.getId());
+        }
+
+        if (nameNotConfirmed
+            && (StringUtils.isNotBlank(defendantContactDetails.getParty().getFirstName())
+                || StringUtils.isNotBlank(defendantContactDetails.getParty().getLastName()))) {
+            party.setNameKnown(VerticalYesNo.YES);
         }
 
         if (defendantContactDetails.getParty().getDateOfBirth() != null) {
@@ -99,12 +115,12 @@ public class ClaimResponseService {
         }
 
         AddressUK newAddress = defendantContactDetails.getParty().getAddress();
-        // Persist the supplied address unless the defendant explicitly confirmed the claim-time
-        // address is correct (YES). null = page not yet visited, NO = defendant supplied a different one.
-        boolean addressUnconfirmedOrChanged =
-            defendantResponses.getCorrespondenceAddressConfirmation() != VerticalYesNo.YES;
+        boolean isFallbackScenario = defendantResponses.getPropertyAddressConfirmation() != null;
+        boolean disputedCorrespondenceAddress =
+            defendantResponses.getCorrespondenceAddressConfirmation() == VerticalYesNo.NO;
+        boolean hasNewAddress = newAddress != null && StringUtils.isNotBlank(newAddress.getAddressLine1());
 
-        if (addressUnconfirmedOrChanged && newAddress != null && StringUtils.isNotBlank(newAddress.getAddressLine1())) {
+        if ((isFallbackScenario || disputedCorrespondenceAddress) && hasNewAddress) {
             AddressEntity existingAddress = party.getAddress();
 
             if (existingAddress != null) {
@@ -118,13 +134,10 @@ public class ClaimResponseService {
             } else {
                 party.setAddress(modelMapper.map(newAddress, AddressEntity.class));
             }
+            party.setAddressKnown(VerticalYesNo.YES);
         }
 
-        // Defendant disagreed with the claim-recorded address and supplied a different one,
-        // so addressSameAsProperty no longer holds. On YES we leave the claim-time value alone:
-        //   claim YES + def YES → property still applies                            ✓
-        //   claim NO  + def YES → claimant-typed (on party.address) still applies   ✓
-        if (defendantResponses.getCorrespondenceAddressConfirmation() == VerticalYesNo.NO) {
+        if (disputedCorrespondenceAddress) {
             party.setAddressSameAsProperty(VerticalYesNo.NO);
         }
     }

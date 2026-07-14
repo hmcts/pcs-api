@@ -1,5 +1,5 @@
 import {actionData, actionRecord, IAction} from '@utils/interfaces';
-import {expect, Page} from '@playwright/test';
+import test, {expect, Page} from '@playwright/test';
 import {getCaseTypeId} from '@utils/common/caseType.utils';
 import {performAction, performActions, performValidation} from '@utils/controller';
 import {
@@ -12,7 +12,8 @@ import {
   whatAreYourGroundsForPossession,
   userIneligible,
   whatAreYourGroundsForPossessionWales,
-  addressCheckYourAnswers
+  addressCheckYourAnswers,
+  home
 } from '@data/page-data';
 import {
   claimantType,
@@ -52,11 +53,11 @@ import {
   checkingNoticeWales,
   addCaseNote,
 } from '@data/page-data-figma';
-import {MEDIUM_TIMEOUT, VERY_LONG_TIMEOUT} from 'playwright.config';
+import {MEDIUM_TIMEOUT, SHORT_TIMEOUT, VERY_LONG_TIMEOUT} from 'playwright.config';
 import {compareMaps} from '@utils/common/compareMaps.util';
-import {caseInfo} from './createCaseAPI.action';
+import {caseInfo, defendantUserDetails} from './createCaseAPI.action';
 import {createCaseApiData} from '@data/api-data';
-import {formatCurrency, formatDate, formatDateTime, formatText, formatWord} from '@utils/common/string.utils';
+import {formatCaseStateText, formatCurrency, formatDate, formatDateTime, formatUploadDocName, formatText, formatWord} from '@utils/common/string.utils';
 export let caseNumber: string;
 export let claimantsName: string;
 export let addressInfo: { buildingStreet: string; townCity: string; engOrWalPostcode: string };
@@ -127,6 +128,10 @@ export class CreateCaseAction implements IAction {
       ['addCaseNotes', () => this.addCaseNotes(fieldName as actionRecord)],
       ['validateCaseNotesDetails', () => this.validateCaseNotesDetails(page, fieldName as actionRecord)],
       ['validateCaseSummaryDetails', () => this.validateCaseSummaryDetails(page, fieldName as actionRecord)],
+      ['validateCaseFileViewFolders', () => this.validateCaseFileViewFolders(page, fieldName as actionData)],
+      ['validateCaseFileViewIndividualFolder', () => this.validateCaseFileViewIndividualFolder(page, fieldName as actionRecord)],
+      ['validateCaseListTable', () => this.validateCaseListTable(page, fieldName as actionRecord)],
+      ['validateTabAccess', () => this.validateTabAccess(page, fieldName as actionRecord)],
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -209,7 +214,7 @@ export class CreateCaseAction implements IAction {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
     await performAction('clickRadioButton', {question:claimType.isThisAClaimAgainstQuestion, option: caseData});
-    if(caseData === claimType.yesRadioOption){    
+    if(caseData === claimType.yesRadioOption){
       await performAction('clickButtonAndVerifyPageNavigation', claimType.continueButton, userIneligible.mainHeader);
     } else {
       await performAction('clickButton', claimType.continueButton);
@@ -525,8 +530,14 @@ export class CreateCaseAction implements IAction {
         ['inputText', noticeDetails.minuteHiddenTextLabel, noticeData.minute],
         ['inputText', noticeDetails.secondHiddenTextLabel, noticeData.second]);
     }
-    if (noticeData.files) {
+    await performAction('clickRadioButton', {
+      question: noticeData.uploadNoticeQuestion,
+      option: noticeData.uploadNoticeOption
+    });
+    if (noticeData.files && noticeData.uploadNoticeOption === 'Yes, I can upload a copy of the notice served') {
       await performAction('uploadFile', noticeData.files);
+    } else {
+      await performAction('inputText', noticeDetails.whyYouCannotUploadHiddenTextLabel, noticeDetails.whyYouCannotUploadHiddenTextInput);
     }
     await performAction('clickButton', noticeDetails.continueButton);
   }
@@ -759,7 +770,7 @@ export class CreateCaseAction implements IAction {
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
     await performValidation('mainHeader',confirm.makeAClaimDynamicHeader);
     await performValidation('text', {elementType: 'subHeader', text: confirm.makeAPaymentDynamicSubHeader});
-    await performValidation('text', {elementType: 'span', text: confirm.pay404ClaimFeeDynamicParagraph});
+    await performValidation('text', {elementType: 'span', text: confirm.pay415ClaimFeeDynamicParagraph});
     if (params?.clickLink === true) {
       await performAction('clickButton', confirm.payTheClaimFeeDynamicLink);
     }
@@ -918,37 +929,61 @@ export class CreateCaseAction implements IAction {
   private async validateDefendantDetails(page: Page, defendantsDetails: actionRecord) {
 
     const defendant = new Map<string, string>();
-    const payLoad = defendantsDetails.payLoad as Record<string, any>;
+    let submitPayload = defendantsDetails.submitPayload as Record<string, any>;
+    let createPayLoad = defendantsDetails.createPayload as Record<string, any>;
+    let section = String(`${defendantsDetails.mainTable}-${defendantsDetails.subTable}`);
+
+    switch (section) {
+      case 'Defendant-Service address':
+        if (submitPayload.defendant1.addressKnown === 'YES' && submitPayload.defendant1.addressSameAsPossession === 'YES') {
+          defendant.set(`Defendant 1’s address for service known?`, formatWord(submitPayload.defendant1.addressKnown));
+          defendant.set(`Building and Street`, createPayLoad.propertyAddress.AddressLine1);
+          defendant.set(`Address Line 2`, createPayLoad.propertyAddress.AddressLine2);
+          defendant.set(`Town or City`, createPayLoad.propertyAddress.PostTown);
+          defendant.set(`Postcode/Zipcode`, createPayLoad.propertyAddress.PostCode);
+          defendant.set('Country', createPayLoad.propertyAddress.Country);
+
+        } else if (submitPayload.defendant1.addressKnown === 'YES' && submitPayload.defendant1.addressSameAsPossession === 'NO') {
+          defendant.set(`Building and Street`, submitPayload.defendant1.correspondenceAddress.AddressLine1);
+          defendant.set(`Address Line 2`, submitPayload.defendant1.correspondenceAddress.AddressLine2);
+          defendant.set(`Town or City`, submitPayload.defendant1.correspondenceAddress.PostTown);
+          defendant.set(`Postcode/Zipcode`, submitPayload.defendant1.correspondenceAddress.PostCode);
+          defendant.set('Country', submitPayload.defendant1.correspondenceAddress.Country);
+        }
+        break;
+
+      case 'Defendant-Representative':
+        const defendantSolicitor = JSON.parse(process.env.Defendant_SOLICITOR || '');
+        defendant.set(`Representative’s first name`, defendantSolicitor.displayName);
+        defendant.set(`Representative’s last name`, defendantSolicitor.surname);
+        defendant.set(`Email address`, defendantSolicitor.email);
+        defendant.set(`Name`, 'Possession Claim Service Org1')
+        defendant.set(`Building and Street`, submitPayload.organisationAddress.AddressLine1);
+        defendant.set(`Address Line 2`, submitPayload.organisationAddress.AddressLine2);
+        defendant.set(`Town or City`, submitPayload.organisationAddress.PostTown);
+        defendant.set(`Postcode/Zipcode`, submitPayload.organisationAddress.PostCode);
+        defendant.set('Country', submitPayload.organisationAddress.Country)
+        break
+
+      default:
+        break;
+    }
     if (defendantsDetails.defendant1NameKnown === 'YES') {
-      defendant.set(`Defendant's first name`, `${payLoad.defendant1.firstName}`);
-      defendant.set(`Defendant's last name`, `${payLoad.defendant1.lastName}`);
+      expect(await this.getTableDataValue(page,`Defendant’s first name`)).toEqual(`${submitPayload.defendant1.firstName}`);
+      expect(await this.getTableDataValue(page,`Defendant’s last name`)).toEqual(`${submitPayload.defendant1.lastName}`);
     } else {
-      defendant.set(`Defendant's first name`, `null`);
-      defendant.set(`Defendant's last name`, `null`);
+      defendant.set(`Defendant’s first name`, `null`);
+      defendant.set(`Defendant’s last name`, `null`);
     }
 
-    if (payLoad.defendant1.addressKnown === 'YES' && payLoad.defendant1.addressSameAsPossession === 'YES') {
-      const address = payLoad.formattedClaimantContactAddress.split('<br>');
-      defendant.set(`Building and Street`, address[0]);
-      defendant.set(`Address Line 2`, address[1]);
-      defendant.set(`Town or City`, address[2]);
-      defendant.set(`Postcode/Zipcode`, address[3]);
-      defendant.set('Country', 'United Kingdom')
 
-    } else if (payLoad.defendant1.addressKnown === 'YES' && payLoad.defendant1.addressSameAsPossession === 'NO') {
-      defendant.set(`Building and Street`, payLoad.defendant1.correspondenceAddress.AddressLine1);
-      defendant.set(`Address Line 2`, payLoad.defendant1.correspondenceAddress.AddressLine2);
-      defendant.set(`Town or City`, payLoad.defendant1.correspondenceAddress.PostTown);
-      defendant.set(`Postcode/Zipcode`, payLoad.defendant1.correspondenceAddress.PostCode);
-      defendant.set('Country', 'United Kingdom')
-    }
-    await this.caseTabTableData(page, defendantsDetails.table as string);
+    await this.caseTabTableData(page, defendantsDetails.mainTable as string, defendantsDetails.subTable as string );
 
     const misMatchMap = compareMaps(defendant, caseTabMap, {
       name1: 'Defendant',
       name2: 'CaseParties',
     })
-    
+
       if (misMatchMap.size > 0) {
         console.log(`\n❌ Differences found: ${misMatchMap.size}`);
         for (const [key, val] of misMatchMap) {
@@ -958,19 +993,19 @@ export class CreateCaseAction implements IAction {
           console.log(`• key: "${String(key)}" → Expected: ${expectedValue} | Actual: ${actualValue}`);
         }
         console.log(`\n**********  END OF FAILURE LIST. ***************`);
-        throw new Error(`Case Parties (Defendant) validations failed for ${misMatchMap.size} ${misMatchMap.size === 1 ? 'item' : 'items'}`);
+        throw new Error(`Case Parties section "Defendant ${defendantsDetails.subTable}" validations failed for ${misMatchMap.size} ${misMatchMap.size === 1 ? 'item' : 'items'}`);
       } else {
-        console.log('\n✅ Case Parties (Defendant) VALIDATION PASSED!\n');
+        console.log(`\n✅ Case Parties section "Defendant ${defendantsDetails.subTable}" VALIDATIONS PASSED!\n`);
       }
-    
+
     caseTabMap.clear();
 
   }
 
-  private async validateClaimantDetails(page: Page, defendantsDetails: actionRecord) {
+  private async validateClaimantDetails(page: Page, claimantDetails: actionRecord) {
 
     const claimant = new Map<string, string>();
-    const payLoad = defendantsDetails.payLoad as Record<string, any>;
+    const payLoad = claimantDetails.submitPayload as Record<string, any>;
 
     claimant.set(`Name`, payLoad.claimantName);
     claimant.set(`Email address`, payLoad.claimantContactEmail);
@@ -985,13 +1020,13 @@ export class CreateCaseAction implements IAction {
       claimant.set(`Postcode/Zipcode`, payLoad.organisationAddress.PostCode);
       claimant.set('Country', payLoad.organisationAddress.Country)
     }
-    await this.caseTabTableData(page, defendantsDetails.table as string);
+    await this.caseTabTableData(page, claimantDetails.table as string);
 
     const misMatchMap = compareMaps(claimant, caseTabMap, {
       name1: 'Claimant',
       name2: 'CaseParties',
     })
-    
+
       if (misMatchMap.size > 0) {
         console.log(`\n❌ Differences found: ${misMatchMap.size}`);
         for (const [key, val] of misMatchMap) {
@@ -1003,9 +1038,9 @@ export class CreateCaseAction implements IAction {
         console.log(`\n**********  END OF FAILURE LIST. ***************`);
         throw new Error(`Case Parties (Claimant) validations failed for ${misMatchMap.size} ${misMatchMap.size === 1 ? 'item' : 'items'}`);
       } else {
-        console.log('\n✅ Case Parties (Claimant) VALIDATION PASSED!\n');
+        console.log('\n✅ Case Parties (Claimant) VALIDATIONS PASSED!\n');
       }
-    
+
     caseTabMap.clear();
 
   }
@@ -1047,27 +1082,32 @@ export class CreateCaseAction implements IAction {
     let caseSummary = new Map<string, string>();
     let submitPayLoad = caseSummarySection.submitPayload as Record<string, any>;
     let createPayLoad = caseSummarySection.createPayload as Record<string, any>;
+    const dateSubmitted = page.locator(`//th[@id="case-viewer-field-label"]/following-sibling::td`);
+    expect(await dateSubmitted.textContent()).toEqual(process.env.Submission_TIME);
+
 
     switch (caseSummarySection.section) {
       case 'Defendant details':
         if (submitPayLoad.defendant1.nameKnown === 'YES') {
+          caseSummary.set(`Defendant 1’s name known?`, formatWord(submitPayLoad.defendant1.nameKnown))
           caseSummary.set(`First name`, submitPayLoad.defendant1.firstName);
           caseSummary.set(`Last name`, submitPayLoad.defendant1.lastName);
         }
         if (submitPayLoad.defendant1.addressKnown === 'YES' && submitPayLoad.defendant1.addressSameAsPossession === 'YES') {
-          const address = submitPayLoad.formattedClaimantContactAddress.split('<br>');
-          caseSummary.set(`Building and Street`, address[0]);
-          caseSummary.set(`Address Line 2`, address[1]);
-          caseSummary.set(`Town or City`, address[2]);
-          caseSummary.set(`Postcode/Zipcode`, address[3]);
-          caseSummary.set('Country', 'United Kingdom')
+          caseSummary.set(`Defendant 1’s address for service known?`, formatWord(submitPayLoad.defendant1.addressKnown));
+          caseSummary.set(`Building and Street`, createPayLoad.propertyAddress.AddressLine1);
+          caseSummary.set(`Address Line 2`, createPayLoad.propertyAddress.AddressLine2);
+          caseSummary.set(`Town or City`, createPayLoad.propertyAddress.PostTown);
+          caseSummary.set(`Postcode/Zipcode`, createPayLoad.propertyAddress.PostCode);
+          caseSummary.set('Country', createPayLoad.propertyAddress.Country);
 
         } else if (submitPayLoad.defendant1.addressKnown === 'YES' && submitPayLoad.defendant1.addressSameAsPossession === 'NO') {
+          caseSummary.set(`Defendant 1’s address for service known?`, formatWord(submitPayLoad.defendant1.addressKnown));
           caseSummary.set(`Building and Street`, submitPayLoad.defendant1.correspondenceAddress.AddressLine1);
           caseSummary.set(`Address Line 2`, submitPayLoad.defendant1.correspondenceAddress.AddressLine2);
           caseSummary.set(`Town or City`, submitPayLoad.defendant1.correspondenceAddress.PostTown);
           caseSummary.set(`Postcode/Zipcode`, submitPayLoad.defendant1.correspondenceAddress.PostCode);
-          caseSummary.set('Country', 'United Kingdom')
+          caseSummary.set('Country', submitPayLoad.defendant1.correspondenceAddress.Country)
         }
         break;
 
@@ -1077,13 +1117,12 @@ export class CreateCaseAction implements IAction {
         caseSummary.set(`Last name`, submitPayLoad.defendant1.lastName);
 
         if (submitPayLoad.defendant1.addressKnown === 'YES' && submitPayLoad.defendant1.addressSameAsPossession === 'YES') {
-          const address = submitPayLoad.formattedClaimantContactAddress.split('<br>');
           caseSummary.set(`Defendant 1’s address for service known?`, formatWord(submitPayLoad.defendant1.addressKnown));
-          caseSummary.set(`Building and Street`, address[0]);
-          caseSummary.set(`Address Line 2`, address[1]);
-          caseSummary.set(`Town or City`, address[2]);
-          caseSummary.set(`Postcode/Zipcode`, address[3]);
-          caseSummary.set('Country', 'United Kingdom')
+          caseSummary.set(`Building and Street`, createPayLoad.propertyAddress.AddressLine1);
+          caseSummary.set(`Address Line 2`, createPayLoad.propertyAddress.AddressLine2);
+          caseSummary.set(`Town or City`, createPayLoad.propertyAddress.PostTown);
+          caseSummary.set(`Postcode/Zipcode`, createPayLoad.propertyAddress.PostCode);
+          caseSummary.set('Country', createPayLoad.propertyAddress.Country);
 
         } else if (submitPayLoad.defendant1.addressKnown === 'YES' && submitPayLoad.defendant1.addressSameAsPossession === 'NO') {
           caseSummary.set(`Defendant 1’s address for service known?`, formatWord(submitPayLoad.defendant1.addressKnown));
@@ -1091,7 +1130,7 @@ export class CreateCaseAction implements IAction {
           caseSummary.set(`Address Line 2`, submitPayLoad.defendant1.correspondenceAddress.AddressLine2);
           caseSummary.set(`Town or City`, submitPayLoad.defendant1.correspondenceAddress.PostTown);
           caseSummary.set(`Postcode/Zipcode`, submitPayLoad.defendant1.correspondenceAddress.PostCode);
-          caseSummary.set('Country', 'United Kingdom')
+          caseSummary.set('Country', submitPayLoad.defendant1.correspondenceAddress.Country)
         }
         break;
 
@@ -1125,7 +1164,12 @@ export class CreateCaseAction implements IAction {
       case 'Claimant contact details':
         caseSummary.set(`Email address for notifications`, submitPayLoad.claimantContactEmail);
         caseSummary.set(`Do you want to provide a phone number for urgent updates about your case?`, formatWord(submitPayLoad.claimantProvidePhoneNumber));
-        caseSummary.set(`Contact phone number`, submitPayLoad.claimantContactPhoneNumber);
+        if (submitPayLoad.claimantProvidePhoneNumber === 'YES')
+          caseSummary.set(`Contact phone number`, submitPayLoad.claimantContactPhoneNumber);
+        break;
+
+      case 'Claimant registration and licensing':
+        caseSummary.set(`Are you an exempt landlord under Part 1 of the Housing (Wales) Act 2014?`, formatWord(submitPayLoad.isExemptLandlord));
         break;
 
       case 'Claimant circumstances':
@@ -1136,23 +1180,33 @@ export class CreateCaseAction implements IAction {
         break;
 
       case 'Tenancy and Occupation':
-        caseSummary.set(`Tenancy, occupation contract or licence agreement type`, (submitPayLoad.tenancy_TypeOfTenancyLicence)
-          .toLowerCase()
-          .replace(/_/g, " ")
-          .replace(/^\w/, (c: string) => c.toUpperCase())
-        );
+        caseSummary.set(`Tenancy, occupation contract or licence agreement type`, formatText(submitPayLoad.tenancy_TypeOfTenancyLicence));
         caseSummary.set(`Tenancy, occupation contract or licence agreement start date`, formatDate(submitPayLoad.tenancy_TenancyLicenceDate, 'DD/MM/YYYY'));
         break;
 
       case 'Tenancy and Occupation Case details':
-        caseSummary.set(`Tenancy, occupation contract or licence agreement type`, (submitPayLoad.tenancy_TypeOfTenancyLicence)
-          .toLowerCase()
-          .replace(/_/g, " ")
-          .replace(/^\w/, (c: string) => c.toUpperCase())
-        );
+        caseSummary.set(`Tenancy, occupation contract or licence agreement type`, formatText(submitPayLoad.tenancy_TypeOfTenancyLicence));
         caseSummary.set(`Tenancy, occupation contract or licence start date`, formatDate(submitPayLoad.tenancy_TenancyLicenceDate, 'DD/MONTH/YYYY'));
         caseSummary.set(`Do you have a copy of the tenancy or licence agreement?`, formatWord(submitPayLoad.tenancy_HasCopyOfTenancyLicence));
         caseSummary.set(`Details of why you do not have a copy`, submitPayLoad.tenancy_ReasonsForNoTenancyLicenceDocuments);
+        break;
+
+      case 'Occupation contract or licence':
+        caseSummary.set(`Occupation contract or licence agreement type`, formatText(submitPayLoad.occupationLicenceTypeWales));
+        caseSummary.set(`Occupation contract or licence start date`, formatDate(submitPayLoad.licenceStartDate, 'DD/MM/YYYY'))
+        break;
+
+      case 'Occupation contract or licence':
+        caseSummary.set(`Occupation contract or licence agreement type`, formatText(submitPayLoad.occupationLicenceTypeWales));
+        caseSummary.set(`Occupation contract or licence start date`, formatDate(submitPayLoad.licenceStartDate, 'DD/MM/YYYY'))
+        break;
+
+      case 'Occupation contract or licence Case details':
+        caseSummary.set(`Occupation contract or licence agreement type`, formatText(submitPayLoad.occupationLicenceTypeWales));
+        caseSummary.set(`Occupation contract or licence start date`, formatDate(submitPayLoad.licenceStartDate, 'DD/MONTH/YYYY'));
+        if (submitPayLoad.licenceDocuments.length === 0) {
+          caseSummary.set('Occupation contract or licence agreement', '');
+        }
         break;
 
       case 'Grounds of possession':
@@ -1162,6 +1216,37 @@ export class CreateCaseAction implements IAction {
               item === "Anti social" ? "Antisocial behaviour" : item
             )
             .join(','));
+        };
+        break;
+
+      case 'Grounds of possession Wales':
+        if (submitPayLoad.showReasonsForGroundsPageWales === 'Yes') {
+          const combinedGrounds = [...submitPayLoad.secureGroundsWales_MandatoryGrounds, ...submitPayLoad.secureGroundsWales_DiscretionaryGrounds]
+          caseSummary.set(`Grounds`, combinedGrounds.map(formatText).
+            map((item: string) => {
+              if (item === "Antisocial behaviour s157") {
+                return "Antisocial behaviour (breach of contract) (section 157)";
+              }
+              if (
+                item === "Rent arrears s157"
+              ) {
+                return "Rent arrears (breach of contract) (section 157)";
+              }
+              if (
+                item === "Landlord notice s186"
+              ) {
+                return "Landlord’s notice in connection with end of fixed term given (section 186)";
+              }
+              if (
+                item === "Estate management grounds s160"
+              ) {
+                return `Estate management grounds (section 160): ${formatText(submitPayLoad.secureGroundsWales_EstateManagementGrounds[0])} (ground A)`;
+              }
+              return item;
+            })
+            .join(',')
+          );
+
         };
         break;
 
@@ -1178,18 +1263,31 @@ export class CreateCaseAction implements IAction {
         caseSummary.set(`How rent is calculated`, formatWord(submitPayLoad.rentDetails_Frequency));
         caseSummary.set(`Daily rate`, formatCurrency(submitPayLoad.rentDetails_CalculatedDailyCharge));
         caseSummary.set(`Previous steps taken to recover rent arrears?`, formatWord(submitPayLoad.rentArrears_RecoveryAttempted));
-        caseSummary.set(`Rent statement`, submitPayLoad.rentArrears_StatementDocuments?.[0]?.value?.document_filename);
+        caseSummary.set(`Rent statement`, formatUploadDocName(submitPayLoad.rentArrears_StatementDocuments?.[0]?.value?.document_filename));
+        caseSummary.set(`Rent arrears total at the time of claim issue`, formatCurrency(submitPayLoad.rentArrears_Total));
+        caseSummary.set(`Judgment requested for the outstanding arrears?`, formatWord(submitPayLoad.arrearsJudgmentWanted));
+        break;
+
+      case 'Rent arrears Case details Wales':
+        caseSummary.set(`Rent amount`, formatCurrency(submitPayLoad.rentDetails_CurrentRent));
+        caseSummary.set(`Rent frequency`, formatWord(submitPayLoad.rentDetails_Frequency));
+        caseSummary.set(`Daily rate`, formatCurrency(submitPayLoad.rentDetails_CalculatedDailyCharge));
+        caseSummary.set(`Previous steps taken to recover rent arrears?`, formatWord(submitPayLoad.rentArrears_RecoveryAttempted));
+        if (submitPayLoad.rentArrears_RecoveryAttempted === 'YES') {
+          caseSummary.set(`Details of previous steps taken`, submitPayLoad.rentArrears_RecoveryAttemptDetails);
+        }
+        caseSummary.set(`Rent statement`, formatUploadDocName(submitPayLoad.rentArrears_StatementDocuments?.[0]?.value?.document_filename));
         caseSummary.set(`Rent arrears total at the time of claim issue`, formatCurrency(submitPayLoad.rentArrears_Total));
         caseSummary.set(`Judgment requested for the outstanding arrears?`, formatWord(submitPayLoad.arrearsJudgmentWanted));
         break;
 
       case 'Notice':
-        const serviceMethod = submitPayLoad.notice_NoticeServiceMethod;
+        const serviceMethod = submitPayLoad.notice_ServiceMethod;
         const dateServed =
           serviceMethod === 'FIRST_CLASS_POST'
-            ? submitPayLoad.notice_NoticePostedDate
+            ? submitPayLoad.notice_PostedDate
             : serviceMethod === 'EMAIL'
-              ? submitPayLoad.notice_NoticeEmailSentDateTime
+              ? submitPayLoad.notice_EmailSentDateTime
               : null;
 
         if (dateServed) {
@@ -1203,12 +1301,12 @@ export class CreateCaseAction implements IAction {
         break;
 
       case 'Notice Case details':
-        const serviceMethodCaseDetails = submitPayLoad.notice_NoticeServiceMethod;
+        const serviceMethodCaseDetails = submitPayLoad.notice_ServiceMethod;
         const dateServedCaseDetails =
           serviceMethodCaseDetails === 'FIRST_CLASS_POST'
-            ? submitPayLoad.notice_NoticePostedDate
+            ? submitPayLoad.notice_PostedDate
             : serviceMethodCaseDetails === 'EMAIL'
-              ? submitPayLoad.notice_NoticeEmailSentDateTime
+              ? submitPayLoad.notice_EmailSentDateTime
               : null;
         const methodOfService = serviceMethodCaseDetails === 'FIRST_CLASS_POST' ? 'By first class post or other service which provides for delivery on the next business day' : serviceMethodCaseDetails === 'EMAIL' ? 'By Email' : null;
         caseSummary.set('Has notice been served?',formatWord(submitPayLoad.noticeServed));
@@ -1221,6 +1319,37 @@ export class CreateCaseAction implements IAction {
               : formatDateTime(dateServedCaseDetails);
 
           caseSummary.set('Date and time notice served (if applicable)', formattedDate);
+        }
+        caseSummary.set('Are you able to upload a copy of the notice you served?', formatWord(submitPayLoad.notice_AbleToUploadDocument));
+        if (submitPayLoad.notice_AbleToUploadDocument === 'No') {
+          caseSummary.set('Details of why you cannot upload a copy', submitPayLoad.notice_UnableToUploadReason);
+        }
+        break;
+
+      case 'Notice Case details Wales':
+        const serviceMethodCaseDetailsWales = submitPayLoad.notice_ServiceMethod;
+        const dateServedCaseDetailsWales =
+          serviceMethodCaseDetailsWales === 'FIRST_CLASS_POST'
+            ? submitPayLoad.notice_PostedDate
+            : serviceMethodCaseDetailsWales === 'EMAIL'
+              ? submitPayLoad.notice_EmailSentDateTime
+              : null;
+        const methodOfServiceWales = serviceMethodCaseDetailsWales === 'FIRST_CLASS_POST' ? 'By first class post or other service which provides for delivery on the next business day' : serviceMethodCaseDetailsWales === 'EMAIL' ? 'By Email' : null;
+        caseSummary.set('Has notice been served?', formatWord(submitPayLoad.walesNoticeServed));
+        caseSummary.set('Type of notice served', submitPayLoad.walesTypeOfNoticeServed);
+        caseSummary.set('Method of service', methodOfServiceWales as string);
+
+        if (dateServedCaseDetailsWales) {
+          const formattedDate =
+            serviceMethodCaseDetailsWales === 'FIRST_CLASS_POST'
+              ? formatDate(dateServedCaseDetailsWales, 'DD/MONTH/YYYY')
+              : formatDateTime(dateServedCaseDetailsWales);
+
+          caseSummary.set('Date and time notice served (if applicable)', formattedDate);
+        }
+        caseSummary.set('Are you able to upload a copy of the notice you served?', formatWord(submitPayLoad.notice_AbleToUploadDocument));
+        if (submitPayLoad.notice_AbleToUploadDocument === 'No') {
+          caseSummary.set('Details of why you cannot upload a copy', submitPayLoad.notice_UnableToUploadReason);
         }
         break;
 
@@ -1247,7 +1376,31 @@ export class CreateCaseAction implements IAction {
         }
         caseSummary.set(`Do you have any additional reasons for possession?`, formatWord(submitPayLoad.additionalReasonsForPossession.hasReasons));
         if (submitPayLoad.additionalReasonsForPossession.hasReasons === 'YES') {
-          caseSummary.set(`Details of additional reasons`, formatWord(submitPayLoad.additionalReasonsForPossession.reasons));
+          caseSummary.set(`Details of additional reasons`, submitPayLoad.additionalReasonsForPossession.reasons);
+        }
+        break;
+      case 'Reasons for possession Wales':
+        if (submitPayLoad.secureGroundsWales_DiscretionaryGrounds?.includes('ESTATE_MANAGEMENT_GROUNDS_S160')) {
+          caseSummary.set(`Reasons for claiming possession under ground A`, submitPayLoad.walesSecureBuildingWorksReason);
+        }
+        if (submitPayLoad.secureGroundsWales_MandatoryGrounds?.includes('LANDLORD_NOTICE_S186')) {
+          caseSummary.set(`Reasons for claiming possession under section 186`, submitPayLoad.walesSecureLandlordNoticeSection186Reason);
+        }
+        if (submitPayLoad.additionalReasonsForPossession.hasReasons === 'YES') {
+          caseSummary.set(`Details of additional reasons`, submitPayLoad.additionalReasonsForPossession.reasons);
+        }
+        break;
+
+      case 'Reasons for possession Case details Wales':
+        if (submitPayLoad.secureGroundsWales_DiscretionaryGrounds?.includes('ESTATE_MANAGEMENT_GROUNDS_S160')) {
+          caseSummary.set(`Reasons for claiming possession under ground A`, submitPayLoad.walesSecureBuildingWorksReason);
+        }
+        if (submitPayLoad.secureGroundsWales_MandatoryGrounds?.includes('LANDLORD_NOTICE_S186')) {
+          caseSummary.set(`Reasons for claiming possession under section 186`, submitPayLoad.walesSecureLandlordNoticeSection186Reason);
+        }
+        caseSummary.set(`Do you have any additional reasons for possession?`, formatWord(submitPayLoad.additionalReasonsForPossession.hasReasons));
+        if (submitPayLoad.additionalReasonsForPossession.hasReasons === 'YES') {
+          caseSummary.set(`Details of additional reasons`, submitPayLoad.additionalReasonsForPossession.reasons);
         }
         break;
 
@@ -1290,6 +1443,50 @@ export class CreateCaseAction implements IAction {
         }
         break;
 
+      case 'Antisocial behaviour and illegal or prohibited conduct':
+        caseSummary.set(`Is there actual or threatened antisocial behaviour?`,formatWord(submitPayLoad.walesAntisocialBehaviour));
+        if(submitPayLoad.walesAntisocialBehaviour === 'YES'){
+          caseSummary.set(`Details of actual or threatened antisocial behaviour`, submitPayLoad.walesAntisocialBehaviourDetails);
+        }
+        caseSummary.set(`Is there actual or threatened use of the premises for illegal purposes?`,formatWord(submitPayLoad.walesIllegalPurposesUse));
+        if(submitPayLoad.walesIllegalPurposesUse === 'YES'){
+          caseSummary.set(`Details of actual or threatened use of the premises for illegal purposes`, submitPayLoad.walesIllegalPurposesUseDetails);
+        }
+        caseSummary.set(`Has there been other prohibited conduct?`,formatWord(submitPayLoad.walesOtherProhibitedConduct));
+        if(submitPayLoad.walesOtherProhibitedConduct === 'YES'){
+          caseSummary.set(`Details of other prohibited conduct`, submitPayLoad.walesOtherProhibitedConductDetails);
+        }
+        break;
+
+      case 'Prohibited conduct standard contract':
+        caseSummary.set(`Are you seeking an order imposing a prohibited conduct standard contract?`, formatWord(submitPayLoad.prohibitedConductWalesClaim));
+        if (submitPayLoad.prohibitedConductWalesClaim === 'YES') {
+          caseSummary.set('Have you and the contract holder agreed terms of the periodic standard contract in addition to those incorporated by statute?', formatWord(submitPayLoad.periodicContractTermsWales.agreedTermsOfPeriodicContract));
+          caseSummary.set(`Details of terms`, submitPayLoad.periodicContractTermsWales.detailsOfTerms);
+          caseSummary.set(`Why are you making this claim?`, submitPayLoad.prohibitedConductWalesClaimDetails);
+        }
+        break;
+
+      case 'Required Documents':
+        caseSummary.set(`Can the claimant upload a copy of the energy performance certificate?`, formatWord(submitPayLoad.walesDocs_HasEnergyPerformanceCertificate));
+        if(submitPayLoad.walesDocs_HasEnergyPerformanceCertificate === 'NO'){
+          caseSummary.set(`Why can the claimant not upload a copy of the energy performance certificate?`, submitPayLoad.walesDocs_NoEpcReason);
+        } else {
+          caseSummary.set(`Energy performance certificate`, formatUploadDocName(submitPayLoad.walesDocs_EnergyPerformance?.[0]?.value?.document_filename));
+        }
+        caseSummary.set(`Can the claimant upload a copy of the current gas safety report?`, formatWord(submitPayLoad.walesDocs_HasGasSafetyReport));
+        if(submitPayLoad.walesDocs_HasGasSafetyReport === 'NO'){
+          caseSummary.set(`Why can the claimant not upload a copy of the current gas safety report?`, submitPayLoad.walesDocs_NoGasReportReason);
+        }else {
+          caseSummary.set(`Gas safety report`, formatUploadDocName(submitPayLoad.walesDocs_GasSafetyReport  ?.[0]?.value?.document_filename));
+        }
+        caseSummary.set(`Can the claimant upload a copy of the Electrical Installation Condition Report (EICR)?`, formatWord(submitPayLoad.walesDocs_HasElectricalInstallationConditionReport));
+        if(submitPayLoad.walesDocs_HasElectricalInstallationConditionReport === 'NO'){
+          caseSummary.set(`Why can the claimant not upload a copy of the Electrical Installation Condition Report (EICR)?`, submitPayLoad.walesDocs_NoEicrReason);
+        }else {
+          caseSummary.set(`Electrical Installation Condition Report (EICR)`, formatUploadDocName(submitPayLoad.walesDocs_ElectricalInstallation?.[0]?.value?.document_filename));
+        }
+
       default:
         break;
     };
@@ -1319,12 +1516,28 @@ export class CreateCaseAction implements IAction {
 
   }
 
-  private async caseTabTableData(page: Page, table: string) {
+  private async caseTabTableData(page: Page, mainTable: string, subTable?: string) {
 
-    const tables = page.locator(`//span[text()="${table}"]/ancestor::div[1]/child::table[@aria-describedby="complex field table"]`);
+    const tableLocator = subTable
+      ? `//span[normalize-space()="${mainTable}"]
+        /ancestor::div[1]
+        //span[normalize-space()="${subTable}"]
+        /ancestor::dl/following-sibling::table[1]`
+      : `//span[normalize-space()="${mainTable}"]
+        /ancestor::div[1]
+        //table[@aria-describedby="complex field table"]`;
+
+
+    const tables = page.locator(tableLocator);
     const tableCount = await tables.count();
 
-    if (tableCount === 0) throw new Error(`the table ${table} not found. Exiting...`);
+    if (tableCount === 0) {
+      throw new Error(
+        `Table ${subTable ? `${mainTable} -> ${subTable}` : mainTable
+        } not found.`
+      );
+    }
+
 
     for (let i = 0; i < tableCount; i++) {
       const table = tables.nth(i);
@@ -1355,4 +1568,240 @@ export class CreateCaseAction implements IAction {
       }
     }
   };
+
+  public async getTableDataValue(page: Page, tableHeader: string): Promise<string> {
+    const tdLocator = page.locator(`//span[text()="${tableHeader}"]/ancestor::tr[1]/child::td`);
+    return ((await tdLocator.textContent()) || '').trim();
+  }
+
+  public async validateCaseFileViewFolders(page: Page, caseFileView: actionData){
+    let folderLocator = page.locator('button[role="treeitem"]').filter({ visible: true })
+    await expect(async () => {
+      expect(await folderLocator.count()).toBeGreaterThan(0)
+    }).toPass({
+      timeout: SHORT_TIMEOUT,
+    });
+    const folderRetrieved = (await folderLocator.allTextContents()).map(item => item.slice(1));
+    const folder:string[] = caseFileView as string[];
+
+    const missingFolders = folder.filter(name => !folderRetrieved.some(text => text.includes(name)));
+    expect(missingFolders, `Missing folders: ${missingFolders.join(", ")}`).toHaveLength(0);    
+  }
+
+  public async validateCaseFileViewIndividualFolder(page: Page ,caseFile: actionRecord){
+
+    const folderName = caseFile.folder as string;
+    let submitPayLoad = caseFile.submitPayload as Record<string, any>;
+    let userInputFiles:string[]= [];
+    switch (folderName) {
+      case 'Property documents':
+        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad.tenancy_TenancyLicenceDocuments);
+        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad.notice_Documents);
+        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad.rentArrears_StatementDocuments);
+        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad.walesDocs_EnergyPerformance);
+        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad.walesDocs_GasSafetyReport);
+        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad.walesDocs_ElectricalInstallation);
+        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad.licenceDocuments);
+        break;
+
+      case 'Statements of case':
+        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad.additionalDocuments, 'Notice for service out of the jurisdiction');
+        break;
+
+      case 'Evidence':
+        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad.additionalDocuments, 'Inspection or report');
+        break;
+
+      case 'Correspondence':
+        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad.additionalDocuments, 'Legal aid certificate');
+        break;
+
+      case 'Uncategorised documents':
+        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad.additionalDocuments, 'Other document');
+        break;
+      
+      case 'Applications':
+        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad.xui_genapp_UploadedDocuments, 'All Files');
+        userInputFiles=this.cleanGenAppFilesArray(userInputFiles,defendantUserDetails.length);
+        break;
+
+      default:
+        break;
+    }
+
+    const folder = page
+      .locator('button[role="treeitem"]')
+      .filter({ hasText: folderName });
+    let fileLocator = page.locator('button.node.case-file__node').filter({ visible: true })
+    const text = await folder.innerText();
+    const fileCount = Number(text.match(/^\d+/)?.[0] ?? 0);
+
+    if (fileCount === 0) {
+      throw new Error(`For folder "${folderName}" files are not present`);
+    }
+    await folder.click();
+    const actualFileCount = await fileLocator.count();
+
+    expect(actualFileCount, 'File count matching').toEqual(fileCount)
+    const fileArray = this.cleanFilesArray(await fileLocator.allTextContents());    
+    expect(userInputFiles.sort(), `validating  upload files for "${folderName}"`).toEqual(fileArray.sort());
+    console.log(`\n✅ The files under section "${folderName}" are \n "${fileArray}"`);
+
+    if ((await folder.getAttribute('aria-expanded')) === 'true') {
+      await folder.click();
+      await expect(folder).toHaveAttribute('aria-expanded', 'false');
+    }
+  }
+
+  public  cleanFilesArray(filesArray: string[]): string[] {
+    const uniqueFiles = [...new Set(filesArray.map(f =>
+      f.replace(/\s+-\s+(?:Claimant|Defendant)\s+\d+/i, '')
+        .replace(/\s+\d{1,2}\s+[A-Za-z]{3}\s+\d{4}\s+\d{2}:\d{2}$/, '')
+        .trim()
+    ))];
+
+    return uniqueFiles;
+  }
+
+  public readDocFilesFromPayLoad(mainArray: string[], subArray: any[], multiDocsLabel?: string) {
+
+    if (subArray && Array.isArray(subArray)) {
+      subArray.forEach(doc => {
+        if (multiDocsLabel && multiDocsLabel !== 'All Files') {
+          const valueLabel = doc.value?.documentType?.valueLabel;
+          const filename = doc.value?.document?.document_filename;
+          if (multiDocsLabel === valueLabel && filename) {
+            mainArray.push(filename);
+          }
+        } else if (multiDocsLabel && multiDocsLabel === 'All Files') {
+          mainArray.push(doc.value.document.document_filename)
+        }
+        else if (doc.value?.document_filename) {
+          mainArray.push(doc.value.document_filename);
+        }
+      });
+    }
+  }
+
+  public async validateCaseListTable(page: Page, caseList: actionRecord){
+    let submitPayLoad = caseList.submitPayload as Record<string, any>;
+    let createPayLoad = caseList.createPayload as Record<string, any>;
+    const mainTable = page.locator('#search-result thead');
+    await expect(mainTable).toBeVisible({ timeout: MEDIUM_TIMEOUT, visible: true });
+    const tHeader = mainTable.locator('th');
+
+    const headers = await tHeader.allTextContents();
+
+    const cleanedHeaders = headers
+      .map(h => h.replace(/\u200B/g, '').replace(/\s*▼\s*/, '').trim())
+      .filter(Boolean);
+    expect(cleanedHeaders, 'validating  case list table header').toEqual(home.caseListTableHeader);
+    const userInputArray: string[] = [caseInfo.fid, submitPayLoad.claimantName, await this.getDefendantClaimDetails(submitPayLoad), createPayLoad.propertyAddress.PostCode as string, formatCaseStateText(caseInfo.state)];
+    const caseValueRetrieved = await this.findCasePagination(page, caseInfo.fid);
+    expect(caseValueRetrieved, 'validating  case list table header').toEqual(userInputArray);
+  }
+
+  private async findCasePagination(page: Page,caseNumber:string): Promise<string[]>{
+
+    const nextButton = page.locator('.pagination-next');
+    const rows = page.locator('#search-result tbody tr');
+    let pageNumber = 1;
+
+    while (true) {
+      await expect(rows.first()).toBeVisible();
+      const rowCount = await rows.count();
+
+      for (let i = 0; i < rowCount; i++) {
+        const row = rows.nth(i);
+        const rowText = await row.innerText();
+        if (rowText.includes(caseNumber)) {
+          console.log(`Case number "${caseNumber}" found on page ${pageNumber}, row ${i + 1}`);
+          const cells = row.locator('td');
+          const values = await cells.allTextContents();
+          const formattedTexts = values
+            .map(h => h.replace(/\u200B/g, '').trim())
+            .filter(Boolean);
+            return formattedTexts;
+        }
+      }
+
+      const hasNextButton = await nextButton.count() > 0;
+      const nextButtonState = await nextButton.getAttribute('class');
+
+      if (!hasNextButton || nextButtonState?.includes('disabled')) {
+        throw new Error(
+          `Case number ${caseNumber} was not found after checking ${pageNumber} page(s).`
+        );
+      }
+      await nextButton.click();
+      await page.waitForLoadState();
+      await page.locator('.spinner-container').waitFor({ state: 'detached' });
+      pageNumber++;
+    }
+  }
+
+  private async getDefendantClaimDetails(defendantsDetails: actionRecord): Promise<string> {
+
+    let originalDefendantDetails: string[] = [];
+    const payLoad = defendantsDetails as Record<string, any>;
+    if (payLoad.defendant1.nameKnown === 'YES') {
+      originalDefendantDetails.push(
+        `${payLoad.defendant1.lastName}`
+      );
+    } else {
+      originalDefendantDetails.push(
+        `persons unknown`
+      );
+    }
+
+    if (payLoad.addAnotherDefendant === 'YES') {
+
+      for (const defendant of payLoad.additionalDefendants) {
+        if (defendant.value.nameKnown === 'YES') {
+          originalDefendantDetails.push(`${defendant.value.lastName}`);
+        } else {
+          originalDefendantDetails.push(
+            `persons unknown`
+          );
+        }
+      }
+    }
+
+    let defendantText: string;
+
+    if (originalDefendantDetails.length > 2) {
+      defendantText = `${originalDefendantDetails[0]}, ${originalDefendantDetails[1]} and Others`;
+    } else {
+      defendantText = originalDefendantDetails.join(', ');
+    }
+    return defendantText;
+
+  }
+
+  public async validateTabAccess(page: Page, tab: actionRecord) {
+    await test.step(`Tab access check for user "${tab.user}"`, async () => {
+      const tabLoc = page.locator('div.mat-tab-label-content');
+      await expect(tabLoc.first()).toBeVisible({timeout : SHORT_TIMEOUT});
+      const tabs = await tabLoc.allTextContents();
+      expect(tab.tabs).toEqual(tabs);
+
+    });
+  }
+ 
+  public cleanGenAppFilesArray(filesArray: string[], defendantCount: number): string[] {
+    const result: string[] = [];
+
+    for (let i = 1; i <= defendantCount; i++) {
+      for (const file of filesArray) {
+        result.push(
+          file.replace(/\.pdf$/i, ` GA${i}.pdf`)
+        );
+      }
+
+      result.push(`General Application GA${i}.pdf`);
+    }
+
+    return result;
+  }
+
 }

@@ -19,22 +19,26 @@ import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimStatus;
-import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponseStatus;
-import uk.gov.hmcts.reform.pcs.ccd.entity.PartyAccessCodeEntity;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
+import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
+import uk.gov.hmcts.reform.pcs.testingsupport.model.TestingSupportAccessCode;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.repository.PartyAccessCodeRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.AccessCodeGenerationService;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseRoleAssignmentService;
+import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.idam.IdamAuthenticator;
 import uk.gov.hmcts.reform.pcs.idam.User;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityResult;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.postcodecourt.service.EligibilityService;
+import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationDetailsService;
 import uk.gov.hmcts.reform.pcs.service.LegalRepresentativePartyLinkService;
 import uk.gov.hmcts.reform.pcs.testingsupport.service.CcdTestCaseOrchestrator;
-import uk.gov.hmcts.reform.pcs.testingsupport.service.EntityTestStatusService;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -66,7 +70,7 @@ class TestingSupportControllerTest {
     @Mock
     private PcsCaseRepository pcsCaseRepository;
     @Mock
-    private PartyAccessCodeRepository partyAccessCodeRepository;
+    private JdbcTemplate jdbcTemplate;
     @Mock
     private CcdTestCaseOrchestrator ccdTestCaseOrchestrator;
     @Mock
@@ -78,11 +82,19 @@ class TestingSupportControllerTest {
     @Mock
     private IdamAuthenticator idamAuthenticator;
     @Mock
-    private EntityTestStatusService entityTestStatusService;
-    @Mock
     private User user;
     @Mock
     private UserInfo userInfo;
+    @Mock
+    private OrganisationDetailsService organisationDetailsService;
+    @Mock
+    private OrganisationDetailsResponse organisationDetails;
+    @Mock
+    private PcsCaseService pcsCaseService;
+    @Mock
+    private AccessCodeGenerationService accessCodeGenerationService;
+    @Mock
+    private FeatureToggleService featureToggleService;
 
     private TestingSupportController underTest;
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -91,12 +103,15 @@ class TestingSupportControllerTest {
     void setUp() {
         underTest = new TestingSupportController(schedulerClient, helloWorldTask,
                                                  eligibilityService,
-                                                 pcsCaseRepository, partyAccessCodeRepository,
+                                                 pcsCaseRepository, jdbcTemplate,
                                                  modelMapper, ccdTestCaseOrchestrator,
                                                  caseRoleAssignmentService,
                                                  legalRepresentativePartyLinkService,
                                                  idamAuthenticator,
-                                                 entityTestStatusService
+                                                 organisationDetailsService,
+                                                 pcsCaseService,
+                                                 accessCodeGenerationService,
+                                                 featureToggleService
         );
     }
 
@@ -261,6 +276,7 @@ class TestingSupportControllerTest {
         verify(eligibilityService).checkEligibility(postcode, country);
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     void shouldReturnPins() {
         // Given
@@ -284,22 +300,17 @@ class TestingSupportControllerTest {
             .parties(Set.of(defendant))
             .build();
 
-        List<PartyAccessCodeEntity> accessCodes = new ArrayList<>();
-        PartyAccessCodeEntity accessCode1 = PartyAccessCodeEntity.builder()
-            .id(UUID.randomUUID())
-            .code(accessCodeString)
-            .partyId(partyCode)
-            .build();
-        accessCodes.add(accessCode1);
+        List<TestingSupportAccessCode> pins = new ArrayList<>();
+        pins.add(new TestingSupportAccessCode(partyCode, accessCodeString));
 
         when(pcsCaseRepository.findByCaseReference(caseReference))
             .thenReturn(Optional.ofNullable(caseEntity));
 
-        when(partyAccessCodeRepository.findAllByPcsCase_Id(caseId))
-            .thenReturn(accessCodes);
+        when(jdbcTemplate.query(anyString(), any(RowMapper.class), any(UUID.class)))
+            .thenReturn(pins);
 
         // When
-        ResponseEntity<Map<String, Party>> response = underTest.getPins(
+        ResponseEntity<Map<String, Party>> response = underTest.getAccessCodes(
             "ServiceAuthToken", caseReference
         );
 
@@ -321,7 +332,7 @@ class TestingSupportControllerTest {
             .thenReturn(Optional.empty());
 
         // When
-        ResponseEntity<Map<String, Party>> response = underTest.getPins(
+        ResponseEntity<Map<String, Party>> response = underTest.getAccessCodes(
             "ServiceAuthToken", caseReference
         );
 
@@ -338,7 +349,7 @@ class TestingSupportControllerTest {
             .thenThrow(new RuntimeException());
 
         // When
-        ResponseEntity<Map<String, Party>> response = underTest.getPins(
+        ResponseEntity<Map<String, Party>> response = underTest.getAccessCodes(
             "ServiceAuthToken", caseReference
         );
 
@@ -356,6 +367,9 @@ class TestingSupportControllerTest {
         when(idamAuthenticator.validateAuthToken(authToken)).thenReturn(user);
         when(user.getUserDetails()).thenReturn(userInfo);
         when(userInfo.getUid()).thenReturn(userUid);
+        when(organisationDetailsService.getOrganisationDetails(userUid.toString())).thenReturn(organisationDetails);
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_2)).thenReturn(true);
+        when(featureToggleService.isEnabled(FeatureFlag.CUI_RESPOND_TO_CLAIM_LR)).thenReturn(true);
 
         // when
         ResponseEntity<Void> response = underTest.linkDefendantSolicitorToParty(
@@ -369,9 +383,50 @@ class TestingSupportControllerTest {
         verify(caseRoleAssignmentService).assignRasRole(caseReference, userUid, UserRole.DEFENDANT_SOLICITOR);
 
         verify(legalRepresentativePartyLinkService)
-            .linkLegalRepresentativeToParty(caseReference, partyId, userInfo);
+            .linkLegalRepresentativeToParty(caseReference, partyId, userInfo, organisationDetails);
 
         assertThat(HttpStatus.OK.equals(response.getStatusCode()));
+    }
+
+    @Test
+    void linkDefendantSolicitorToPartyReleaseFeatureFlagNotSet() {
+        // given
+        long caseReference = 111111111111L;
+        String partyId = "abc";
+        String authToken = "testAuth";
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_2)).thenReturn(false);
+
+        // when
+        ResponseEntity<Void> response = underTest.linkDefendantSolicitorToParty(
+            caseReference,
+            partyId,
+            authToken,
+            "testS2S"
+        );
+
+        // then
+        assertThat(HttpStatus.PRECONDITION_FAILED.equals(response.getStatusCode()));
+    }
+
+    @Test
+    void linkDefendantSolicitorToPartyFeatureFlagNotSet() {
+        // given
+        long caseReference = 111111111111L;
+        String partyId = "abc";
+        String authToken = "testAuth";
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_2)).thenReturn(true);
+        when(featureToggleService.isEnabled(FeatureFlag.CUI_RESPOND_TO_CLAIM_LR)).thenReturn(false);
+
+        // when
+        ResponseEntity<Void> response = underTest.linkDefendantSolicitorToParty(
+            caseReference,
+            partyId,
+            authToken,
+            "testS2S"
+        );
+
+        // then
+        assertThat(HttpStatus.PRECONDITION_FAILED.equals(response.getStatusCode()));
     }
 
     @Test
@@ -395,6 +450,7 @@ class TestingSupportControllerTest {
             legislativeCountry,
             authToken,
             "s2sToken",
+            false,
             formPayload
         );
 
@@ -408,41 +464,23 @@ class TestingSupportControllerTest {
     }
 
     @Test
-    void shouldUpdateCounterClaimStatus() {
-        // Given
-        UUID counterClaimId = UUID.randomUUID();
-        CounterClaimStatus status = CounterClaimStatus.COUNTER_CLAIM_ISSUED;
-        String serviceAuth = "Bearer s2sToken";
+    void createPCSCaseViaTestingSupportIssuesAndGeneratesAccessCodesWhenFlagSet() {
+        // given
+        JsonNode formPayload = createJsonNodeFormPayload("John Smith");
+        String idamAuth = "Bearer dummy";
+        long caseReference = 123L;
+        Map<String, Object> caseMap = Map.of("caseId", caseReference, "caseDetails", "abc");
 
-        // When
-        ResponseEntity<Void> response = underTest.updateCounterClaimStatus(
-            serviceAuth,
-            counterClaimId,
-            status
-        );
+        when(ccdTestCaseOrchestrator.createCase(idamAuth, LegislativeCountry.ENGLAND, formPayload))
+            .thenReturn(caseMap);
 
-        // Then
-        verify(entityTestStatusService).updateCounterClaimStatus(counterClaimId, status);
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-    }
+        // when
+        underTest.createPCSCaseViaTestingSupport("England", idamAuth, "s2sToken", true, formPayload);
 
-    @Test
-    void shouldUpdateDefendantResponseStatus() {
-        // Given
-        UUID defendantResponseId = UUID.randomUUID();
-        DefendantResponseStatus status = DefendantResponseStatus.SUBMITTED;
-        String serviceAuth = "Bearer s2sToken";
-
-        // When
-        ResponseEntity<Void> response = underTest.updateDefendantResponseStatus(
-            serviceAuth,
-            defendantResponseId,
-            status
-        );
-
-        // Then
-        verify(entityTestStatusService).updateDefendantResponseStatus(defendantResponseId, status);
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        // then
+        verify(pcsCaseService).allocateCaseManagementLocation(caseReference);
+        verify(pcsCaseService).setCaseIssuedDate(caseReference);
+        verify(accessCodeGenerationService).createAccessCodesForParties(String.valueOf(caseReference), true);
     }
 
     private JsonNode createJsonNodeFormPayload(String applicantName) {

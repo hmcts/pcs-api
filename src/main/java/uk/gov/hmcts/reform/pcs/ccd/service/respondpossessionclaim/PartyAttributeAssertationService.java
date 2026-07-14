@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 @Slf4j
 @Service
@@ -59,6 +60,13 @@ public class PartyAttributeAssertationService {
         repository.saveAll(assertions);
     }
 
+    public List<PartyAttributeAssertationEntity> getSubmittedAssertionsForParty(UUID partyId) {
+        return repository.findByPartyIdAndStatusOrderByCreatedAtAsc(
+            partyId,
+            PartyAttributeAssertionStatus.SUBMITTED
+        );
+    }
+
     /**
      * Adds a name assertion when disputed or not provided by the claimant.
      * Condition: defendantNameConfirmation is NO (disputed) or null (claimant did not provide a name).
@@ -79,16 +87,18 @@ public class PartyAttributeAssertationService {
     }
 
     /**
-     * Adds a correspondence address assertion when disputed or not provided by the claimant.
-     * Condition: correspondenceAddressConfirmation is NO (disputed) or null (claimant did not provide an address).
+     * Adds a correspondence address assertion
+     * Condition: correspondenceAddressConfirmation is NO (defendant disputes the claimant provided address)
+     * or propertyAddressConfirmation is present (fallback to property address and defendant overrides party address).
      */
     private void addAddressAssertion(DefendantContactDetails defendantContact, DefendantResponses responses,
                                      PartyEntity partyEntity, List<PartyAttributeAssertationEntity> assertions) {
         if (defendantContact == null || defendantContact.getParty() == null) {
             return;
         }
-        VerticalYesNo addressConfirmation = responses.getCorrespondenceAddressConfirmation();
-        if (addressConfirmation == null || addressConfirmation == VerticalYesNo.NO) {
+        boolean disputedClaimantAddress = responses.getCorrespondenceAddressConfirmation() == VerticalYesNo.NO;
+        boolean fallbackScenario = responses.getPropertyAddressConfirmation() != null;
+        if (disputedClaimantAddress || fallbackScenario) {
             AddressUK address = defendantContact.getParty().getAddress();
             if (address != null) {
                 addJsonAssertion(PartyAttributeType.CORRESPONDENCE_ADDRESS, address, partyEntity, assertions);

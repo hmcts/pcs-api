@@ -8,6 +8,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 public class ShowConditions {
 
     public static final String NEVER_SHOW = "[STATE]=\"NEVER_SHOW\"";
+    public static final String ENGLAND = "legislativeCountry=\"England\"";
+    public static final String WALES = "legislativeCountry=\"Wales\"";
 
     public static String stateEquals(State state) {
         return "[STATE]=\"%s\"".formatted(state.name());

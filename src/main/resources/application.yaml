@@ -90,14 +90,14 @@ spring:
           prd-admin:
             provider: idam
             client-id: ${IDAM_CLIENT_ID:pcs-api}
-            client-secret: ${IDAM_CLIENT_SECRET:dummy-secret-for-local}
+            client-secret: ${IDAM_CLIENT_SECRET}
             client-authentication-method: client_secret_post
             authorization-grant-type: password
             scope: openid,profile,roles
           system-user:
             provider: idam
             client-id: ${IDAM_CLIENT_ID:pcs-api}
-            client-secret: ${IDAM_CLIENT_SECRET:dummy-secret-for-local}
+            client-secret: ${IDAM_CLIENT_SECRET}
             client-authentication-method: client_secret_post
             authorization-grant-type: password
             scope: openid,profile,roles
@@ -138,7 +138,7 @@ hmc:
   serviceId: ${HMC_SERVICE_ID:AAA3}
 
 location-reference:
-  api-url: ${LOCATION_REF_URL:http://localhost:8089}
+  api-url: ${LOCATION_REF_URL:http://localhost:8083}
   court-county-type-id: ${COURT_COUNTY_TYPE_ID:10}
 
 notify:
@@ -156,9 +156,19 @@ notify:
     counterclaim-payment-success: 8d726681-78a7-4ed5-9201-4354bb04f8ad
     counterclaim-no-payment-required: a6a6e7ce-e47f-4a85-9d98-cc9c924bdb5e
     make-a-claim-claim-saved-for-later: bf648abe-5a45-4cc2-8d5b-d1e817ace18b
+    make-a-claim-defendant-made-counterclaim: 6f583b02-6857-4207-a7ae-8c73d2310a80
+    make-a-claim-defendant-response-received: 64a6cfbd-9797-4110-9a44-b9b04f1e2c53
+    make-a-claim-claim-issued: 0ea3d807-8ebb-484e-8cd5-72364c9b527f
+    general-application-received: e5daba0d-5c66-4c76-9e0f-06646200dc89
 
 testing-support:
-  enabled: ${ENABLE_TESTING_SUPPORT:true}
+  enabled: ${ENABLE_TESTING_SUPPORT:false}
+
+access-code-form:
+  respond-online-url: ${RESPOND_ONLINE_URL:http://localhost:3209/access-your-case}
+
+access-code-test-table:
+  enabled: ${ENABLE_ACCESS_CODE_TEST_TABLE:${testing-support.enabled:false}}
 
 # Below sets if DB scheduler can execute on the current instance of the API.
 db-scheduler:
@@ -176,7 +186,7 @@ rd-professional:
   api-url: ${RD_PROFESSIONAL_API_URL:http://localhost:8083}
 
 case_document_am:
-  url: ${CASE_DOCUMENT_AM_URL:http://ccd-case-document-am-api-aat.service.core-compute-aat.internal}
+  url: ${CASE_DOCUMENT_AM_URL:http://localhost:4455}
 
 fees:
   api:
@@ -205,6 +215,27 @@ fees:
       channel: default
       event: general application
       keyword: GAOnNotice
+    counterClaimFlatFee:
+      service: other
+      jurisdiction1: civil
+      jurisdiction2: civil
+      channel: default
+      event: issue
+      keyword: AnyOtherRemedy
+    counterClaimRanged:
+      service: civil money claims
+      jurisdiction1: civil
+      jurisdiction2: civil
+      channel: default
+      event: issue
+      keyword: CMCCounterRanged
+    counterClaim:
+      service: civil money claims
+      jurisdiction1: civil
+      jurisdiction2: county court
+      channel: default
+      event: issue
+      keyword: counter-claim
     enforcementWarrantFee: # FEE0380 - County Court
       service: civil money claims
       jurisdiction1: civil
@@ -228,10 +259,44 @@ fees:
     backoff-delay-seconds: ${FEES_AND_PAY_TASK_BACKOFF_DELAY_SECONDS:600s}
 
 access-code:
-  hash-pins-enabled: ${HASH_PINS_ENABLED:false}
   request:
     max-retries: ${ACCESS_CODE_MAX_RETRIES:5}
     backoff-delay-seconds: ${ACCESS_CODE_BACKOFF_DELAY_SECONDS:3600s}
+
+bulk-print:
+  schedule: ${BULK_PRINT_SCHEDULE:DAILY|02:00}
+  # BULK_PRINT_LOOKBACK_HOURS (lower envs only): sweep ignores packs whose documents are older than N hours,
+  # so enabling the flag cannot flood send-letter with the historical backlog. Unset in prod = full backlog.
+
+send-letter:
+  # Default to localhost so a higher environment fails loudly if SEND_LETTER_URL is not set, rather than
+  # silently posting to AAT.
+  url: ${SEND_LETTER_URL:http://localhost:8485}
+
+logging:
+  level:
+    uk.gov.hmcts.reform.pcs.ccd.service.bulkprint: INFO
+
+launchdarkly:
+  sdk-key: ${LAUNCHDARKLY_SDK_KEY:}
+  offline-mode: ${LAUNCHDARKLY_OFFLINE:false}
+  env: ${LAUNCHDARKLY_ENV:default}
+  files: ${LAUNCHDARKLY_FILES:}
+
+claim-form:
+  request:
+    max-retries: ${CLAIM_FORM_MAX_RETRIES:5}
+    backoff-delay-seconds: ${CLAIM_FORM_BACKOFF_DELAY_SECONDS:3600s}
+
+defence-form:
+  request:
+    max-retries: ${DEFENCE_FORM_MAX_RETRIES:5}
+    backoff-delay-seconds: ${DEFENCE_FORM_BACKOFF_DELAY_SECONDS:3600s}
+
+counter-claim-form:
+  request:
+    max-retries: ${COUNTER_CLAIM_FORM_MAX_RETRIES:5}
+    backoff-delay-seconds: ${COUNTER_CLAIM_FORM_BACKOFF_DELAY_SECONDS:3600s}
 
 role-assignment:
   request:
@@ -248,6 +313,11 @@ defendant-response-notification:
     max-retries: ${DEFENDANT_RESPONSE_NOTIFICAITON_MAX_RETRIES:5}
     backoff-delay-seconds: ${DEFENDANT_RESPONSE_NOTIFICAITON_BACKOFF_DELAY_SECONDS:3600s}
 
+fee-payment-notification:
+  request:
+    max-retries: ${FEE_PAYMENT_NOTIFICATION_MAX_RETRIES:5}
+    backoff-delay-seconds: ${FEE_PAYMENT_NOTIFICATION_BACKOFF_DELAY_SECONDS:3600s}
+
 payments:
   api:
     url: ${PAYMENT_API_URL:http://localhost:8083/payments}
@@ -263,3 +333,5 @@ core_case_data:
 caseApi:
   url: ${CASE_API_URL:http://localhost:3206}
 
+shutter:
+  service: ${SHUTTER_SERVICE:false}

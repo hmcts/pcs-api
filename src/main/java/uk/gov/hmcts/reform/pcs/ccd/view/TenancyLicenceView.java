@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.view;
 
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CombinedLicenceType;
@@ -15,6 +16,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.TenancyLicenceEntity;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Component
@@ -28,7 +30,7 @@ public class TenancyLicenceView {
         }
 
         if (pcsCase.getLegislativeCountry() == LegislativeCountry.WALES) {
-            setOccupationLicenceFields(pcsCase, tenancyLicence);
+            setOccupationLicenceFields(pcsCase, tenancyLicence, pcsCaseEntity);
         } else {
             setTenancyLicenceFields(pcsCase, tenancyLicence, pcsCaseEntity);
         }
@@ -50,35 +52,56 @@ public class TenancyLicenceView {
         pcsCase.setTenancyLicenceDetails(tenancyLicenceDetails);
     }
 
-    private static void setOccupationLicenceFields(PCSCase pcsCase, TenancyLicenceEntity tenancyLicence) {
+    private static void setOccupationLicenceFields(PCSCase pcsCase, TenancyLicenceEntity tenancyLicence,
+                                                   PcsCaseEntity pcsCaseEntity) {
         CombinedLicenceType combinedLicenceType = tenancyLicence.getType();
+        List<ListValue<Document>> documents = getOccupationLicenceDocument(pcsCaseEntity);
 
         OccupationLicenceDetailsWales occupationLicence = OccupationLicenceDetailsWales.builder()
             .occupationLicenceTypeWales(OccupationLicenceTypeWales.from(combinedLicenceType))
             .licenceStartDate(tenancyLicence.getStartDate())
             .otherLicenceTypeDetails(tenancyLicence.getOtherTypeDetails())
+            .licenceDocuments(documents)
             .build();
 
         pcsCase.setOccupationLicenceDetailsWales(occupationLicence);
     }
 
     private static List<ListValue<Document>> getTenancyLicenceDocument(PcsCaseEntity pcsCaseEntity) {
-        if (pcsCaseEntity.getDocuments().isEmpty()) {
-            return null;
+        if (CollectionUtils.isEmpty(pcsCaseEntity.getDocuments())) {
+            return new ArrayList<>();
         }
 
         return pcsCaseEntity.getDocuments().stream()
             .filter(TenancyLicenceView::isTenancyLicence)
+            .filter(DocumentsView::isDescriptionEmpty)
             .map(TenancyLicenceView::toDocument)
             .toList();
     }
 
     private static boolean isTenancyLicence(DocumentEntity documentEntity) {
-        return documentEntity.getType() == DocumentType.TENANCY_LICENCE;
+        return documentEntity.getType() == DocumentType.TENANCY_AGREEMENT;
+    }
+
+    private static List<ListValue<Document>> getOccupationLicenceDocument(PcsCaseEntity pcsCaseEntity) {
+        if (CollectionUtils.isEmpty(pcsCaseEntity.getDocuments())) {
+            return new ArrayList<>();
+        }
+
+        return pcsCaseEntity.getDocuments().stream()
+            .filter(TenancyLicenceView::isOccupationLicence)
+            .filter(DocumentsView::isDescriptionEmpty)
+            .map(TenancyLicenceView::toDocument)
+            .toList();
+    }
+
+    private static boolean isOccupationLicence(DocumentEntity documentEntity) {
+        return documentEntity.getType() == DocumentType.OCCUPATION_LICENCE;
     }
 
     private static ListValue<Document> toDocument(DocumentEntity documentEntity) {
         return ListValue.<Document>builder()
+            .id(documentEntity.getId().toString())
             .value(
                 Document.builder()
                     .url(documentEntity.getUrl())

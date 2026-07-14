@@ -7,6 +7,7 @@ import com.github.kagkarlsson.scheduler.event.ExecutionInterceptor;
 import com.github.kagkarlsson.scheduler.event.SchedulerListener;
 import com.github.kagkarlsson.scheduler.serializer.JacksonSerializer;
 import com.github.kagkarlsson.scheduler.task.Task;
+import com.github.kagkarlsson.scheduler.task.helper.RecurringTask;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -24,9 +25,6 @@ import java.util.List;
 @Slf4j
 @Getter
 public class SchedulingConfig {
-
-    @Value("${db-scheduler.start-interval-seconds:5}")
-    private int scheduleFeeCaseIssuedInSeconds = 5;
 
     /**
      * SchedulerClient bean is always on and this is  used to schedule jobs, but does NOT execute them.
@@ -62,11 +60,23 @@ public class SchedulingConfig {
                                            List<ExecutionInterceptor> executionInterceptors) {
         log.info("Starting scheduler");
 
-        var builder = Scheduler.create(dataSource, tasks)
+        // One-time tasks stay as known tasks (scheduled on demand); recurring tasks must additionally be
+        // handed to startTasks() so db-scheduler auto-schedules them on startup.
+        List<Task<?>> oneTimeTasks = tasks.stream()
+            .filter(task -> !(task instanceof RecurringTask))
+            .toList();
+
+        var builder = Scheduler.create(dataSource, oneTimeTasks)
             .threads(threadCount)
             .pollingInterval(Duration.ofSeconds(interval))
             .serializer(new JacksonSerializer(objectMapper))
             .registerShutdownHook();
+
+        for (Task<?> task : tasks) {
+            if (task instanceof RecurringTask<?> recurringTask) {
+                builder.startTasks(recurringTask);
+            }
+        }
 
         schedulerListeners.forEach(builder::addSchedulerListener);
         executionInterceptors.forEach(builder::addExecutionInterceptor);

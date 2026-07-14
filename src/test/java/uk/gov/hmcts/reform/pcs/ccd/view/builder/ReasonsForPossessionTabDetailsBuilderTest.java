@@ -244,8 +244,7 @@ public class ReasonsForPossessionTabDetailsBuilderTest {
         // Then
         assertThat(reasons.getCondition1OfSection84A()).isEqualTo("Condition 1 reason");
         assertThat(reasons.getHasAdditionalReasons()).isNull();
-        assertThat(reasons.getAdditionalReasonsForPossession()).isEqualTo("Additional reason");
-        assertThat(reasons.getAdditionalReasonsDetails()).isNull();
+        assertThat(reasons.getAdditionalReasonsDetails()).isEqualTo("Additional reason");
     }
 
     @Test
@@ -270,7 +269,6 @@ public class ReasonsForPossessionTabDetailsBuilderTest {
         // Then
         assertThat(reasons.getCondition1OfSection84A()).isEqualTo("Condition 1 reason");
         assertThat(reasons.getHasAdditionalReasons()).isEqualTo("Yes");
-        assertThat(reasons.getAdditionalReasonsForPossession()).isNull();
         assertThat(reasons.getAdditionalReasonsDetails()).isEqualTo("Additional reason");
     }
 
@@ -317,8 +315,7 @@ public class ReasonsForPossessionTabDetailsBuilderTest {
             .buildSummaryReasonsForPossession(pcsCase);
 
         // Then
-        assertThat(reasons.getAdditionalReasonsForPossession()).isEqualTo("Additional reason");
-        assertThat(reasons.getAdditionalReasonsDetails()).isNull();
+        assertThat(reasons.getAdditionalReasonsDetails()).isEqualTo("Additional reason");
     }
 
     private static <T> ListValue<T> listValue(T value) {

@@ -29,12 +29,14 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoPreferNotToSay;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponseStatus;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.StatementOfTruthEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.notify.listener.DefendantResponseEntityListener;
 
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -84,6 +86,12 @@ public class DefendantResponseEntity {
     @JsonManagedReference
     private ReasonableAdjustmentEntity reasonableAdjustment;
 
+    // Link to the generated defence PDF. The document is owned by PcsCaseEntity.documents,
+    // so no cascade here; the FK is SET NULL on delete.
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "submission_document_id")
+    private DocumentEntity submissionDocument;
+
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @Column(name = "free_legal_advice")
@@ -98,6 +106,14 @@ public class DefendantResponseEntity {
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @Column(name = "tenancy_type_confirmation")
     private YesNoNotSure tenancyTypeConfirmation;
+
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    @Column(name = "possession_notice_received")
+    private YesNoNotSure possessionNoticeReceived;
+
+    @Column(name = "notice_received_date")
+    private LocalDate noticeReceivedDate;
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
@@ -140,6 +156,11 @@ public class DefendantResponseEntity {
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private VerticalYesNo makeCounterClaim;
+
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    @Column(name = "counter_claim_want_to_upload_files")
+    private VerticalYesNo counterClaimWantToUploadFiles;
 
     @Enumerated(EnumType.STRING)
     private DefendantResponseStatus status;

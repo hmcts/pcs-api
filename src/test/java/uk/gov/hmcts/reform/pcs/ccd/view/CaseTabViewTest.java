@@ -7,6 +7,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.Mock;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.reform.pcs.LegalRepresentative;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DemotionOfTenancy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DemotionOfTenancyHousingAct;
@@ -18,12 +19,14 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.SuspensionOfRightToBuyHousingAct;
 import uk.gov.hmcts.reform.pcs.ccd.domain.UnderlesseeMortgageeDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.ClaimGroundSummary;
-import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.ClaimantTabDetails;
-import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.DefendantTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.CaseDetailsTab;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.parties.ClaimantTabDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.parties.DefendantTabDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.parties.RepresentativeTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.summary.SummaryTab;
 import uk.gov.hmcts.reform.pcs.ccd.view.builder.ClaimGroundSummaryBuilder;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -122,6 +125,7 @@ class CaseTabViewTest {
         assertThat(defendant1TabDetails.getFirstName()).isEqualTo(firstName);
         assertThat(defendant1TabDetails.getLastName()).isEqualTo(lastName);
         assertThat(defendant1TabDetails.getServiceAddress()).isEqualTo(address);
+        assertThat(defendant1TabDetails.getRepresentative()).isNull();
         assertThat(additionalDefendantsTabDetails).isNull();
     }
 
@@ -176,13 +180,164 @@ class CaseTabViewTest {
         assertThat(defendant1TabDetails.getFirstName()).isEqualTo(defendant1FirstName);
         assertThat(defendant1TabDetails.getLastName()).isEqualTo(defendant1LastName);
         assertThat(defendant1TabDetails.getServiceAddress()).isEqualTo(address1);
+        assertThat(defendant1TabDetails.getRepresentative()).isNull();
         assertThat(additionalDefendantsTabDetails).isNotNull();
-        assertThat(additionalDefendantsTabDetails.size()).isEqualTo(1);
+        assertThat(additionalDefendantsTabDetails).hasSize(1);
 
         DefendantTabDetails defendant2TabDetails = additionalDefendantsTabDetails.getFirst().getValue();
         assertThat(defendant2TabDetails.getFirstName()).isEqualTo(defendant2FirstName);
         assertThat(defendant2TabDetails.getLastName()).isEqualTo(defendant2LastName);
         assertThat(defendant2TabDetails.getServiceAddress()).isEqualTo(address2);
+        assertThat(defendant2TabDetails.getRepresentative()).isNull();
+    }
+
+    @Test
+    void shouldSetDefendantRepresentativeIfPresent() {
+        // Given
+        String defendant1FirstName = "defendant1";
+        String defendant1LastName = "one";
+        AddressUK address1 = AddressUK.builder().build();
+        AddressUK address2 = AddressUK.builder().build();
+        LegalRepresentative legalRepresentative1 = LegalRepresentative.builder()
+            .firstName("legal1")
+            .lastName("representative1")
+            .telephoneNumber("telephone1")
+            .emailAddress("rep1@email.com")
+            .organisationName("org1")
+            .address(address2)
+            .build();
+        Party defendant1 = Party.builder()
+            .firstName(defendant1FirstName)
+            .lastName(defendant1LastName)
+            .nameKnown(VerticalYesNo.YES)
+            .address(address1)
+            .legalRepresentative(legalRepresentative1)
+            .build();
+
+        String defendant2FirstName = "defendant2";
+        String defendant2LastName = "two";
+        AddressUK address3 = AddressUK.builder().build();
+        AddressUK address4 = AddressUK.builder().build();
+        LegalRepresentative legalRepresentative2 = LegalRepresentative.builder()
+            .firstName("legal2")
+            .lastName("representative2")
+            .telephoneNumber("telephone2")
+            .emailAddress("rep2@email.com")
+            .organisationName("org2")
+            .address(address4)
+            .build();
+        Party defendant2 = Party.builder()
+            .firstName(defendant2FirstName)
+            .lastName(defendant2LastName)
+            .nameKnown(VerticalYesNo.YES)
+            .address(address3)
+            .legalRepresentative(legalRepresentative2)
+            .build();
+
+        ListValue<Party> defendant1ListValue = ListValue.<Party>builder()
+            .value(defendant1)
+            .build();
+
+        ListValue<Party> defendant2ListValue = ListValue.<Party>builder()
+            .value(defendant2)
+            .build();
+
+        List<ListValue<Party>> defendants = new ArrayList<>();
+        defendants.add(defendant1ListValue);
+        defendants.add(defendant2ListValue);
+
+        PCSCase pcsCase = PCSCase.builder()
+            .allDefendants(defendants)
+            .build();
+
+        // When
+        underTest.setCaseTabFields(pcsCase);
+
+        // Then
+        assertThat(pcsCase.getCasePartiesTab()).isNotNull();
+        DefendantTabDetails defendant1TabDetails = pcsCase.getCasePartiesTab().getDefendantOneDetails();
+        List<ListValue<DefendantTabDetails>> additionalDefendantsTabDetails =
+            pcsCase.getCasePartiesTab().getDefendantsDetails();
+
+        assertThat(defendant1TabDetails.getFirstName()).isEqualTo(defendant1FirstName);
+        assertThat(defendant1TabDetails.getLastName()).isEqualTo(defendant1LastName);
+        assertThat(defendant1TabDetails.getServiceAddress()).isEqualTo(address1);
+
+        RepresentativeTabDetails representativeTabDetails1 = defendant1TabDetails.getRepresentative();
+        assertThat(representativeTabDetails1.getFirstName()).isEqualTo(legalRepresentative1.getFirstName());
+        assertThat(representativeTabDetails1.getLastName()).isEqualTo(legalRepresentative1.getLastName());
+        assertThat(representativeTabDetails1.getTelephoneNumber()).isEqualTo(legalRepresentative1.getTelephoneNumber());
+        assertThat(representativeTabDetails1.getEmailAddress()).isEqualTo(legalRepresentative1.getEmailAddress());
+        assertThat(representativeTabDetails1.getOrganisation().getName())
+            .isEqualTo(legalRepresentative1.getOrganisationName());
+        assertThat(representativeTabDetails1.getOrganisation().getAddress()).isEqualTo(address2);
+
+
+        assertThat(additionalDefendantsTabDetails).isNotNull();
+        assertThat(additionalDefendantsTabDetails).hasSize(1);
+        DefendantTabDetails defendant2TabDetails = additionalDefendantsTabDetails.getFirst().getValue();
+        assertThat(defendant2TabDetails.getFirstName()).isEqualTo(defendant2FirstName);
+        assertThat(defendant2TabDetails.getLastName()).isEqualTo(defendant2LastName);
+        assertThat(defendant2TabDetails.getServiceAddress()).isEqualTo(address3);
+
+        RepresentativeTabDetails representativeTabDetails2 = defendant2TabDetails.getRepresentative();
+        assertThat(representativeTabDetails2.getFirstName()).isEqualTo(legalRepresentative2.getFirstName());
+        assertThat(representativeTabDetails2.getLastName()).isEqualTo(legalRepresentative2.getLastName());
+        assertThat(representativeTabDetails2.getTelephoneNumber()).isEqualTo(legalRepresentative2.getTelephoneNumber());
+        assertThat(representativeTabDetails2.getEmailAddress()).isEqualTo(legalRepresentative2.getEmailAddress());
+        assertThat(representativeTabDetails2.getOrganisation().getName())
+            .isEqualTo(legalRepresentative2.getOrganisationName());
+        assertThat(representativeTabDetails2.getOrganisation().getAddress()).isEqualTo(address4);
+    }
+
+    @Test
+    void shouldNotSetDefendantRepresentativeOrgDetailsIfAddressAndOrgNameAreMissing() {
+        // Given
+        String defendant1FirstName = "defendant1";
+        String defendant1LastName = "one";
+        AddressUK address1 = AddressUK.builder().build();
+        LegalRepresentative legalRepresentative1 = LegalRepresentative.builder()
+            .firstName("legal1")
+            .lastName("representative1")
+            .telephoneNumber("telephone1")
+            .emailAddress("rep1@email.com")
+            .build();
+        Party defendant1 = Party.builder()
+            .firstName(defendant1FirstName)
+            .lastName(defendant1LastName)
+            .nameKnown(VerticalYesNo.YES)
+            .address(address1)
+            .legalRepresentative(legalRepresentative1)
+            .build();
+
+        ListValue<Party> defendant1ListValue = ListValue.<Party>builder()
+            .value(defendant1)
+            .build();
+
+        List<ListValue<Party>> defendants = new ArrayList<>();
+        defendants.add(defendant1ListValue);
+
+        PCSCase pcsCase = PCSCase.builder()
+            .allDefendants(defendants)
+            .build();
+
+        // When
+        underTest.setCaseTabFields(pcsCase);
+
+        // Then
+        assertThat(pcsCase.getCasePartiesTab()).isNotNull();
+        DefendantTabDetails defendant1TabDetails = pcsCase.getCasePartiesTab().getDefendantOneDetails();
+
+        assertThat(defendant1TabDetails.getFirstName()).isEqualTo(defendant1FirstName);
+        assertThat(defendant1TabDetails.getLastName()).isEqualTo(defendant1LastName);
+        assertThat(defendant1TabDetails.getServiceAddress()).isEqualTo(address1);
+
+        RepresentativeTabDetails representativeTabDetails1 = defendant1TabDetails.getRepresentative();
+        assertThat(representativeTabDetails1.getFirstName()).isEqualTo(legalRepresentative1.getFirstName());
+        assertThat(representativeTabDetails1.getLastName()).isEqualTo(legalRepresentative1.getLastName());
+        assertThat(representativeTabDetails1.getTelephoneNumber()).isEqualTo(legalRepresentative1.getTelephoneNumber());
+        assertThat(representativeTabDetails1.getEmailAddress()).isEqualTo(legalRepresentative1.getEmailAddress());
+        assertThat(representativeTabDetails1.getOrganisation()).isNull();
     }
 
     @Test
@@ -287,7 +442,7 @@ class CaseTabViewTest {
         when(caseSummaryTabView.buildSummaryTab(draftCaseData)).thenReturn(
             SummaryTab.builder().build()
         );
-        when(caseDetailsTabView.buildCaseDetailsTab(draftCaseData)).thenReturn(
+        when(caseDetailsTabView.buildCaseDetailsTab(draftCaseData, false)).thenReturn(
             CaseDetailsTab.builder().build()
         );
         when(claimGroundSummaryBuilder.buildClaimGroundSummariesFromDraft(draftCaseData)).thenReturn(List.of());
@@ -303,9 +458,9 @@ class CaseTabViewTest {
         assertThat(summaryTab).isNotNull();
         assertThat(caseDetailsTab).isNotNull();
         verify(caseSummaryTabView, times(1)).buildSummaryTab(draftCaseData);
-        verify(caseDetailsTabView, times(1)).buildCaseDetailsTab(draftCaseData);
+        verify(caseDetailsTabView, times(1)).buildCaseDetailsTab(draftCaseData, false);
         verify(caseSummaryTabView, times(0)).buildSummaryTab(pcsCase);
-        verify(caseDetailsTabView, times(0)).buildCaseDetailsTab(pcsCase);
+        verify(caseDetailsTabView, times(0)).buildCaseDetailsTab(pcsCase, true);
     }
 
     @Test
@@ -343,7 +498,7 @@ class CaseTabViewTest {
         when(caseSummaryTabView.buildSummaryTab(draftCaseData)).thenReturn(
             SummaryTab.builder().build()
         );
-        when(caseDetailsTabView.buildCaseDetailsTab(draftCaseData)).thenReturn(
+        when(caseDetailsTabView.buildCaseDetailsTab(draftCaseData, false)).thenReturn(
             CaseDetailsTab.builder().build()
         );
         when(claimGroundSummaryBuilder.buildClaimGroundSummariesFromDraft(draftCaseData)).thenReturn(draftGrounds);
@@ -365,9 +520,9 @@ class CaseTabViewTest {
         assertThat(summaryTab).isNotNull();
         assertThat(caseDetailsTab).isNotNull();
         verify(caseSummaryTabView, times(1)).buildSummaryTab(draftCaseData);
-        verify(caseDetailsTabView, times(1)).buildCaseDetailsTab(draftCaseData);
+        verify(caseDetailsTabView, times(1)).buildCaseDetailsTab(draftCaseData, false);
         verify(caseSummaryTabView, times(0)).buildSummaryTab(pcsCase);
-        verify(caseDetailsTabView, times(0)).buildCaseDetailsTab(pcsCase);
+        verify(caseDetailsTabView, times(0)).buildCaseDetailsTab(pcsCase, true);
 
         assertThat(draftCaseData.getAllDefendants()).hasSize(2);
         Party firstDefendant = draftCaseData.getAllDefendants().getFirst().getValue();
@@ -407,7 +562,7 @@ class CaseTabViewTest {
         when(caseSummaryTabView.buildSummaryTab(draftCaseData)).thenReturn(
             SummaryTab.builder().build()
         );
-        when(caseDetailsTabView.buildCaseDetailsTab(draftCaseData)).thenReturn(
+        when(caseDetailsTabView.buildCaseDetailsTab(draftCaseData, false)).thenReturn(
             CaseDetailsTab.builder().build()
         );
         when(claimGroundSummaryBuilder.buildClaimGroundSummariesFromDraft(draftCaseData)).thenReturn(List.of());
@@ -425,9 +580,9 @@ class CaseTabViewTest {
         assertThat(summaryTab).isNotNull();
         assertThat(caseDetailsTab).isNotNull();
         verify(caseSummaryTabView, times(1)).buildSummaryTab(draftCaseData);
-        verify(caseDetailsTabView, times(1)).buildCaseDetailsTab(draftCaseData);
+        verify(caseDetailsTabView, times(1)).buildCaseDetailsTab(draftCaseData, false);
         verify(caseSummaryTabView, times(0)).buildSummaryTab(pcsCase);
-        verify(caseDetailsTabView, times(0)).buildCaseDetailsTab(pcsCase);
+        verify(caseDetailsTabView, times(0)).buildCaseDetailsTab(pcsCase, true);
 
         assertThat(draftCaseData.getAllDefendants()).hasSize(1);
         Party defendant = draftCaseData.getAllDefendants().getFirst().getValue();
@@ -457,7 +612,7 @@ class CaseTabViewTest {
         when(caseSummaryTabView.buildSummaryTab(draftCaseData)).thenReturn(
             SummaryTab.builder().build()
         );
-        when(caseDetailsTabView.buildCaseDetailsTab(draftCaseData)).thenReturn(
+        when(caseDetailsTabView.buildCaseDetailsTab(draftCaseData, false)).thenReturn(
             CaseDetailsTab.builder().build()
         );
         when(claimGroundSummaryBuilder.buildClaimGroundSummariesFromDraft(draftCaseData)).thenReturn(List.of());
@@ -475,9 +630,9 @@ class CaseTabViewTest {
         assertThat(summaryTab).isNotNull();
         assertThat(caseDetailsTab).isNotNull();
         verify(caseSummaryTabView, times(1)).buildSummaryTab(draftCaseData);
-        verify(caseDetailsTabView, times(1)).buildCaseDetailsTab(draftCaseData);
+        verify(caseDetailsTabView, times(1)).buildCaseDetailsTab(draftCaseData, false);
         verify(caseSummaryTabView, times(0)).buildSummaryTab(pcsCase);
-        verify(caseDetailsTabView, times(0)).buildCaseDetailsTab(pcsCase);
+        verify(caseDetailsTabView, times(0)).buildCaseDetailsTab(pcsCase, true);
         assertThat(draftCaseData.getAllDefendants()).hasSize(1);
         Party defendant = draftCaseData.getAllDefendants().getFirst().getValue();
         assertThat(defendant.getFirstName()).isEqualTo("Only");
@@ -504,7 +659,7 @@ class CaseTabViewTest {
         when(caseSummaryTabView.buildSummaryTab(draftCaseData)).thenReturn(
             SummaryTab.builder().build()
         );
-        when(caseDetailsTabView.buildCaseDetailsTab(draftCaseData)).thenReturn(
+        when(caseDetailsTabView.buildCaseDetailsTab(draftCaseData, false)).thenReturn(
             CaseDetailsTab.builder().build()
         );
         when(claimGroundSummaryBuilder.buildClaimGroundSummariesFromDraft(draftCaseData)).thenReturn(List.of());
@@ -522,9 +677,9 @@ class CaseTabViewTest {
         assertThat(summaryTab).isNotNull();
         assertThat(caseDetailsTab).isNotNull();
         verify(caseSummaryTabView, times(1)).buildSummaryTab(draftCaseData);
-        verify(caseDetailsTabView, times(1)).buildCaseDetailsTab(draftCaseData);
+        verify(caseDetailsTabView, times(1)).buildCaseDetailsTab(draftCaseData, false);
         verify(caseSummaryTabView, times(0)).buildSummaryTab(pcsCase);
-        verify(caseDetailsTabView, times(0)).buildCaseDetailsTab(pcsCase);
+        verify(caseDetailsTabView, times(0)).buildCaseDetailsTab(pcsCase, true);
 
         assertThat(draftCaseData.getAllDefendants()).isSameAs(existingDefendants);
     }
@@ -554,7 +709,7 @@ class CaseTabViewTest {
         when(caseSummaryTabView.buildSummaryTab(draftCaseData)).thenReturn(
             SummaryTab.builder().build()
         );
-        when(caseDetailsTabView.buildCaseDetailsTab(draftCaseData)).thenReturn(
+        when(caseDetailsTabView.buildCaseDetailsTab(draftCaseData, false)).thenReturn(
             CaseDetailsTab.builder().build()
         );
         when(claimGroundSummaryBuilder.buildClaimGroundSummariesFromDraft(draftCaseData)).thenReturn(List.of());
@@ -570,9 +725,9 @@ class CaseTabViewTest {
         assertThat(summaryTab).isNotNull();
         assertThat(caseDetailsTab).isNotNull();
         verify(caseSummaryTabView, times(1)).buildSummaryTab(draftCaseData);
-        verify(caseDetailsTabView, times(1)).buildCaseDetailsTab(draftCaseData);
+        verify(caseDetailsTabView, times(1)).buildCaseDetailsTab(draftCaseData, false);
         verify(caseSummaryTabView, times(0)).buildSummaryTab(pcsCase);
-        verify(caseDetailsTabView, times(0)).buildCaseDetailsTab(pcsCase);
+        verify(caseDetailsTabView, times(0)).buildCaseDetailsTab(pcsCase, true);
 
         List<ListValue<Party>> allUnderlesseeOrMortgagees = draftCaseData.getAllUnderlesseeOrMortgagees();
         assertThat(allUnderlesseeOrMortgagees).hasSize(2);
@@ -608,7 +763,7 @@ class CaseTabViewTest {
         when(caseSummaryTabView.buildSummaryTab(draftCaseData)).thenReturn(
             SummaryTab.builder().build()
         );
-        when(caseDetailsTabView.buildCaseDetailsTab(draftCaseData)).thenReturn(
+        when(caseDetailsTabView.buildCaseDetailsTab(draftCaseData, false)).thenReturn(
             CaseDetailsTab.builder().build()
         );
         when(claimGroundSummaryBuilder.buildClaimGroundSummariesFromDraft(draftCaseData)).thenReturn(List.of());
@@ -624,9 +779,9 @@ class CaseTabViewTest {
         assertThat(summaryTab).isNotNull();
         assertThat(caseDetailsTab).isNotNull();
         verify(caseSummaryTabView, times(1)).buildSummaryTab(draftCaseData);
-        verify(caseDetailsTabView, times(1)).buildCaseDetailsTab(draftCaseData);
+        verify(caseDetailsTabView, times(1)).buildCaseDetailsTab(draftCaseData, false);
         verify(caseSummaryTabView, times(0)).buildSummaryTab(pcsCase);
-        verify(caseDetailsTabView, times(0)).buildCaseDetailsTab(pcsCase);
+        verify(caseDetailsTabView, times(0)).buildCaseDetailsTab(pcsCase, true);
 
         List<ListValue<Party>> allUnderlesseeOrMortgagees = draftCaseData.getAllUnderlesseeOrMortgagees();
         assertThat(allUnderlesseeOrMortgagees).hasSize(1);
@@ -645,7 +800,7 @@ class CaseTabViewTest {
         when(caseSummaryTabView.buildSummaryTab(draftCaseData)).thenReturn(
             SummaryTab.builder().build()
         );
-        when(caseDetailsTabView.buildCaseDetailsTab(draftCaseData)).thenReturn(
+        when(caseDetailsTabView.buildCaseDetailsTab(draftCaseData, false)).thenReturn(
             CaseDetailsTab.builder().build()
         );
         when(claimGroundSummaryBuilder.buildClaimGroundSummariesFromDraft(draftCaseData)).thenReturn(List.of());
@@ -661,9 +816,9 @@ class CaseTabViewTest {
         assertThat(summaryTab).isNotNull();
         assertThat(caseDetailsTab).isNotNull();
         verify(caseSummaryTabView, times(1)).buildSummaryTab(draftCaseData);
-        verify(caseDetailsTabView, times(1)).buildCaseDetailsTab(draftCaseData);
+        verify(caseDetailsTabView, times(1)).buildCaseDetailsTab(draftCaseData, false);
         verify(caseSummaryTabView, times(0)).buildSummaryTab(pcsCase);
-        verify(caseDetailsTabView, times(0)).buildCaseDetailsTab(pcsCase);
+        verify(caseDetailsTabView, times(0)).buildCaseDetailsTab(pcsCase, true);
 
         List<ListValue<Party>> allUnderlesseeOrMortgagees = draftCaseData.getAllUnderlesseeOrMortgagees();
         assertThat(allUnderlesseeOrMortgagees).isNull();
@@ -684,7 +839,7 @@ class CaseTabViewTest {
         when(caseSummaryTabView.buildSummaryTab(draftCaseData)).thenReturn(
             SummaryTab.builder().build()
         );
-        when(caseDetailsTabView.buildCaseDetailsTab(draftCaseData)).thenReturn(
+        when(caseDetailsTabView.buildCaseDetailsTab(draftCaseData, false)).thenReturn(
             CaseDetailsTab.builder().build()
         );
         when(claimGroundSummaryBuilder.buildClaimGroundSummariesFromDraft(draftCaseData)).thenReturn(List.of());
@@ -700,9 +855,9 @@ class CaseTabViewTest {
         assertThat(summaryTab).isNotNull();
         assertThat(caseDetailsTab).isNotNull();
         verify(caseSummaryTabView, times(1)).buildSummaryTab(draftCaseData);
-        verify(caseDetailsTabView, times(1)).buildCaseDetailsTab(draftCaseData);
+        verify(caseDetailsTabView, times(1)).buildCaseDetailsTab(draftCaseData, false);
         verify(caseSummaryTabView, times(0)).buildSummaryTab(pcsCase);
-        verify(caseDetailsTabView, times(0)).buildCaseDetailsTab(pcsCase);
+        verify(caseDetailsTabView, times(0)).buildCaseDetailsTab(pcsCase, true);
 
         List<ListValue<Party>> allUnderlesseeOrMortgagees = draftCaseData.getAllUnderlesseeOrMortgagees();
         assertThat(allUnderlesseeOrMortgagees).isNull();
@@ -729,7 +884,7 @@ class CaseTabViewTest {
         when(caseSummaryTabView.buildSummaryTab(draftCaseData)).thenReturn(
             SummaryTab.builder().build()
         );
-        when(caseDetailsTabView.buildCaseDetailsTab(draftCaseData)).thenReturn(
+        when(caseDetailsTabView.buildCaseDetailsTab(draftCaseData, false)).thenReturn(
             CaseDetailsTab.builder().build()
         );
         when(claimGroundSummaryBuilder.buildClaimGroundSummariesFromDraft(draftCaseData)).thenReturn(List.of());
@@ -745,9 +900,9 @@ class CaseTabViewTest {
         assertThat(summaryTab).isNotNull();
         assertThat(caseDetailsTab).isNotNull();
         verify(caseSummaryTabView, times(1)).buildSummaryTab(draftCaseData);
-        verify(caseDetailsTabView, times(1)).buildCaseDetailsTab(draftCaseData);
+        verify(caseDetailsTabView, times(1)).buildCaseDetailsTab(draftCaseData, false);
         verify(caseSummaryTabView, times(0)).buildSummaryTab(pcsCase);
-        verify(caseDetailsTabView, times(0)).buildCaseDetailsTab(pcsCase);
+        verify(caseDetailsTabView, times(0)).buildCaseDetailsTab(pcsCase, true);
 
         SuspensionOfRightToBuy suspensionOfRightToBuy = draftCaseData.getSuspensionOfRightToBuy();
         assertThat(suspensionOfRightToBuy.getHousingAct()).isEqualTo(SuspensionOfRightToBuyHousingAct.SECTION_6A_2);
@@ -779,7 +934,7 @@ class CaseTabViewTest {
         when(caseSummaryTabView.buildSummaryTab(draftCaseData)).thenReturn(
             SummaryTab.builder().build()
         );
-        when(caseDetailsTabView.buildCaseDetailsTab(draftCaseData)).thenReturn(
+        when(caseDetailsTabView.buildCaseDetailsTab(draftCaseData, false)).thenReturn(
             CaseDetailsTab.builder().build()
         );
         when(claimGroundSummaryBuilder.buildClaimGroundSummariesFromDraft(draftCaseData)).thenReturn(List.of());
@@ -795,9 +950,9 @@ class CaseTabViewTest {
         assertThat(summaryTab).isNotNull();
         assertThat(caseDetailsTab).isNotNull();
         verify(caseSummaryTabView, times(1)).buildSummaryTab(draftCaseData);
-        verify(caseDetailsTabView, times(1)).buildCaseDetailsTab(draftCaseData);
+        verify(caseDetailsTabView, times(1)).buildCaseDetailsTab(draftCaseData, false);
         verify(caseSummaryTabView, times(0)).buildSummaryTab(pcsCase);
-        verify(caseDetailsTabView, times(0)).buildCaseDetailsTab(pcsCase);
+        verify(caseDetailsTabView, times(0)).buildCaseDetailsTab(pcsCase, true);
 
         SuspensionOfRightToBuy suspensionOfRightToBuy = draftCaseData.getSuspensionOfRightToBuy();
         assertThat(suspensionOfRightToBuy).isNull();
@@ -827,7 +982,7 @@ class CaseTabViewTest {
         when(caseSummaryTabView.buildSummaryTab(draftCaseData)).thenReturn(
             SummaryTab.builder().build()
         );
-        when(caseDetailsTabView.buildCaseDetailsTab(draftCaseData)).thenReturn(
+        when(caseDetailsTabView.buildCaseDetailsTab(draftCaseData, false)).thenReturn(
             CaseDetailsTab.builder().build()
         );
         when(claimGroundSummaryBuilder.buildClaimGroundSummariesFromDraft(draftCaseData)).thenReturn(List.of());
@@ -843,9 +998,9 @@ class CaseTabViewTest {
         assertThat(summaryTab).isNotNull();
         assertThat(caseDetailsTab).isNotNull();
         verify(caseSummaryTabView, times(1)).buildSummaryTab(draftCaseData);
-        verify(caseDetailsTabView, times(1)).buildCaseDetailsTab(draftCaseData);
+        verify(caseDetailsTabView, times(1)).buildCaseDetailsTab(draftCaseData, false);
         verify(caseSummaryTabView, times(0)).buildSummaryTab(pcsCase);
-        verify(caseDetailsTabView, times(0)).buildCaseDetailsTab(pcsCase);
+        verify(caseDetailsTabView, times(0)).buildCaseDetailsTab(pcsCase, true);
 
         SuspensionOfRightToBuy suspensionOfRightToBuy = draftCaseData.getSuspensionOfRightToBuy();
         assertThat(suspensionOfRightToBuy).isNull();
@@ -864,7 +1019,7 @@ class CaseTabViewTest {
         when(caseSummaryTabView.buildSummaryTab(draftCaseData)).thenReturn(
             SummaryTab.builder().build()
         );
-        when(caseDetailsTabView.buildCaseDetailsTab(draftCaseData)).thenReturn(
+        when(caseDetailsTabView.buildCaseDetailsTab(draftCaseData, false)).thenReturn(
             CaseDetailsTab.builder().build()
         );
         when(claimGroundSummaryBuilder.buildClaimGroundSummariesFromDraft(draftCaseData)).thenReturn(List.of());
@@ -880,15 +1035,30 @@ class CaseTabViewTest {
         assertThat(summaryTab).isNotNull();
         assertThat(caseDetailsTab).isNotNull();
         verify(caseSummaryTabView, times(1)).buildSummaryTab(draftCaseData);
-        verify(caseDetailsTabView, times(1)).buildCaseDetailsTab(draftCaseData);
+        verify(caseDetailsTabView, times(1)).buildCaseDetailsTab(draftCaseData, false);
         verify(caseSummaryTabView, times(0)).buildSummaryTab(pcsCase);
-        verify(caseDetailsTabView, times(0)).buildCaseDetailsTab(pcsCase);
+        verify(caseDetailsTabView, times(0)).buildCaseDetailsTab(pcsCase, true);
 
         SuspensionOfRightToBuy suspensionOfRightToBuy = draftCaseData.getSuspensionOfRightToBuy();
         assertThat(suspensionOfRightToBuy).isNull();
 
         DemotionOfTenancy demotionOfTenancy = draftCaseData.getDemotionOfTenancy();
         assertThat(demotionOfTenancy).isNull();
+    }
+
+    @Test
+    void  shouldSetIsSubmittedToTrueWhenDateSubmittedIsSet() {
+        // Given
+        PCSCase pcsCase = PCSCase.builder()
+            .dateSubmitted(LocalDateTime.now())
+            .build();
+
+        // When
+        underTest.setCaseTabFields(pcsCase);
+
+        // Then
+        verify(caseDetailsTabView, times(0)).buildCaseDetailsTab(pcsCase, false);
+        verify(caseDetailsTabView, times(1)).buildCaseDetailsTab(pcsCase, true);
     }
 
     private static <T> ListValue<T> listValue(T value) {

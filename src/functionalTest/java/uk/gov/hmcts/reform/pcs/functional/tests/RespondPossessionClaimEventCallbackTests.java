@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -27,6 +28,7 @@ import uk.gov.hmcts.reform.pcs.functional.testutils.CaseRoleCleanUp;
 @Slf4j
 @Tag("Functional")
 @EnabledIfEnvironmentVariable(named = "CCD_ENABLED", matches = "true")
+@DisabledIfEnvironmentVariable(named = "SHUTTER_SERVICE", matches = "true")
 @ExtendWith(SerenityJUnit5Extension.class)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -42,7 +44,7 @@ public class RespondPossessionClaimEventCallbackTests extends BaseApi {
 
     @BeforeAll
     void setUp() {
-        caseReference = apiSteps.ccdCaseIsCreated("england");
+        caseReference = apiSteps.ccdCaseIsCreatedAndIssued("england");
         accessCode = apiSteps.accessCodeIsFetched(caseReference);
     }
 

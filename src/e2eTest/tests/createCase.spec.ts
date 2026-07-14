@@ -72,8 +72,8 @@ test.afterEach(async () => {
   PageContentValidation.finaliseTest();
 });
 
-test.describe('[Create Case - England] @nightly', async () => {
-  test('England - Assured tenancy with Rent arrears and other possession grounds @PR @MAC', async () => {
+test.describe('[Create Case - England]', async () => {
+  test('England - Assured tenancy with Rent arrears and other possession grounds @PR @MAC @nightly', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcodeTextInput,
       addressIndex: addressDetails.addressIndex
@@ -93,6 +93,7 @@ test.describe('[Create Case - England] @nightly', async () => {
       correspondenceAddress: contactPreferences.yesRadioOption,
       phoneNumber: contactPreferences.noRadioOption
     });
+    await performValidation('mainHeader', defendantDetails.mainHeader); 
     await performAction('addDefendantDetails', {
       nameOption: defendantDetails.yesRadioOption, firstName: defendantDetails.defendantsFirstNameTextInput, lastName: defendantDetails.defendantsLastNameTextInput,
       correspondenceAddressOption: defendantDetails.yesRadioOption, correspondenceAddressSameOption: defendantDetails.noRadioOption, address: defendantDetails.postcodeTextInput,
@@ -145,7 +146,7 @@ test.describe('[Create Case - England] @nightly', async () => {
     await performValidation('mainHeader', noticeDetails.mainHeader);
     await performAction('selectNoticeDetails', {
        howDidYouServeNotice: noticeDetails.byFirstClassPostOrRadioOption,
-       day: '16', month: '07', year: '1985'});
+       day: '16', month: '07', year: '1985', uploadNoticeQuestion: noticeDetails.areYouAbleToUploadQuestion,uploadNoticeOption: noticeDetails.noRadioOption});
     await performValidation('mainHeader', rentDetails.mainHeader);
     await performAction('provideRentDetails', {rentFrequencyOption:'Weekly', rentAmount:'800'});
     await performValidation('mainHeader', rentArrears.mainHeader);
@@ -193,8 +194,8 @@ test.describe('[Create Case - England] @nightly', async () => {
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
   });
 
-  //This test must be run only in the Nightly jobs as it contains an exhaustive test sceanrio for 'Upload additional documents' page
-  test('England - Assured tenancy with Rent arrears and no other mandatory or discretionary possession grounds - Nightly only (Contains exhaustive test scenario)', async () => {
+  //This test must be run only in the Nightly/Release jobs as it contains an exhaustive test sceanrio for 'Upload additional documents' page
+  test('England - Assured tenancy with Rent arrears and no other mandatory or discretionary possession grounds - Nightly/Release only (Contains exhaustive test scenario)', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcodeTextInput,
       addressIndex: addressDetails.addressIndex
@@ -214,6 +215,7 @@ test.describe('[Create Case - England] @nightly', async () => {
       correspondenceAddress: contactPreferences.yesRadioOption,
       phoneNumber: contactPreferences.noRadioOption
     });
+    await performValidation('mainHeader', defendantDetails.mainHeader); 
     await performAction('addDefendantDetails', {
       nameOption: defendantDetails.yesRadioOption, firstName: defendantDetails.defendantsFirstNameTextInput, lastName: defendantDetails.defendantsLastNameTextInput,
       correspondenceAddressOption: defendantDetails.yesRadioOption, correspondenceAddressSameOption: defendantDetails.noRadioOption, address: defendantDetails.postcodeTextInput,
@@ -251,7 +253,7 @@ test.describe('[Create Case - England] @nightly', async () => {
     await performValidation('mainHeader', noticeDetails.mainHeader);
     await performAction('selectNoticeDetails', {
       howDidYouServeNotice: noticeDetails.byFirstClassPostOrRadioOption,
-      day: '16', month: '07', year: '1985', files: 'NoticeDetails.pdf'});
+      day: '16', month: '07', year: '1985', files: 'NoticeDetails.pdf', uploadNoticeQuestion: noticeDetails.areYouAbleToUploadQuestion,uploadNoticeOption: noticeDetails.yesRadioOption});
     await performValidation('mainHeader', rentDetails.mainHeader);
     await performAction('provideRentDetails', {rentFrequencyOption:'Weekly', rentAmount:'800'});
     await performValidation('mainHeader', rentArrears.mainHeader);
@@ -317,7 +319,7 @@ test.describe('[Create Case - England] @nightly', async () => {
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
   });
 
-  test('England - Assured tenancy with No Rent arrears @MAC', async () => {
+  test('England - Assured tenancy with No Rent arrears @MAC @nightly', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcodeTextInput,
       addressIndex: addressDetails.addressIndex
@@ -336,6 +338,7 @@ test.describe('[Create Case - England] @nightly', async () => {
       notifications: contactPreferences.yesRadioOption,
       correspondenceAddress: contactPreferences.yesRadioOption
     });
+    await performValidation('mainHeader', defendantDetails.mainHeader); 
     await performAction('addDefendantDetails', {
       nameOption: defendantDetails.yesRadioOption, firstName: defendantDetails.defendantsFirstNameTextInput, lastName: defendantDetails.defendantsLastNameTextInput,
       correspondenceAddressOption: defendantDetails.yesRadioOption, correspondenceAddressSameOption: defendantDetails.noRadioOption, address: defendantDetails.postcodeTextInput,
@@ -415,7 +418,7 @@ test.describe('[Create Case - England] @nightly', async () => {
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
   });
 
-  test('England - Other tenancy with grounds for possession - Demoted tenancy @MAC', async () => {
+  test('England - Other tenancy with grounds for possession - Demoted tenancy @MAC @nightly', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcodeTextInput,
       addressIndex: addressDetails.addressIndex
@@ -435,6 +438,7 @@ test.describe('[Create Case - England] @nightly', async () => {
       correspondenceAddress: contactPreferences.yesRadioOption,
       phoneNumber: contactPreferences.noRadioOption
     });
+    await performValidation('mainHeader', defendantDetails.mainHeader); 
     await performAction('addDefendantDetails', {
       nameOption: defendantDetails.yesRadioOption, firstName: defendantDetails.defendantsFirstNameTextInput, lastName: defendantDetails.defendantsLastNameTextInput,
       correspondenceAddressOption: defendantDetails.yesRadioOption, correspondenceAddressSameOption: defendantDetails.noRadioOption, address: defendantDetails.postcodeTextInput,
@@ -467,7 +471,7 @@ test.describe('[Create Case - England] @nightly', async () => {
       howDidYouServeNotice: noticeDetails.byPersonallyHandingItToRadioOption,
       explanationLabel: noticeDetails.nameOfPersonTheDocumentWasLeftHiddenTextLabel,
       explanation: noticeDetails.nameOfPersonTheDocumentWasLeftHiddenTextInput,
-      day: '31', month: '01', year: '1962', hour: '10', minute: '55', second: '30'});
+      day: '31', month: '01', year: '1962', hour: '10', minute: '55', second: '30', uploadNoticeQuestion: noticeDetails.areYouAbleToUploadQuestion,uploadNoticeOption: noticeDetails.noRadioOption});
     await performValidation('mainHeader', rentDetails.mainHeader);
     await performAction('provideRentDetails', {rentFrequencyOption:'Weekly', rentAmount:'800'});
     await performValidation('mainHeader', rentArrears.mainHeader);
@@ -521,7 +525,7 @@ test.describe('[Create Case - England] @nightly', async () => {
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
   });
 
-  test('England - Introductory tenancy with grounds for possession - excludes rent arrears @MAC', async () => {
+  test('England - Introductory tenancy with grounds for possession - excludes rent arrears @MAC @nightly', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcodeTextInput,
       addressIndex: addressDetails.addressIndex
@@ -541,6 +545,7 @@ test.describe('[Create Case - England] @nightly', async () => {
       correspondenceAddress: contactPreferences.yesRadioOption,
       phoneNumber: contactPreferences.noRadioOption
     });
+    await performValidation('mainHeader', defendantDetails.mainHeader); 
     await performAction('addDefendantDetails', {
       nameOption: defendantDetails.yesRadioOption, firstName: defendantDetails.defendantsFirstNameTextInput, lastName: defendantDetails.defendantsLastNameTextInput,
       correspondenceAddressOption: defendantDetails.yesRadioOption, correspondenceAddressSameOption: defendantDetails.noRadioOption, address: defendantDetails.postcodeTextInput,
@@ -572,7 +577,7 @@ test.describe('[Create Case - England] @nightly', async () => {
       howDidYouServeNotice: noticeDetails.byPersonallyHandingItToRadioOption,
       explanationLabel: noticeDetails.nameOfPersonTheDocumentWasLeftHiddenTextLabel,
       explanation: noticeDetails.nameOfPersonTheDocumentWasLeftHiddenTextInput,
-      day: '31', month: '01', year: '1962', hour: '10', minute: '55', second: '30'});
+      day: '31', month: '01', year: '1962', hour: '10', minute: '55', second: '30', uploadNoticeQuestion: noticeDetails.areYouAbleToUploadQuestion,uploadNoticeOption: noticeDetails.noRadioOption});
     await performValidation('mainHeader', claimantCircumstances.mainHeader);
     await performAction('selectClaimantCircumstances', {
       circumstanceOption: claimantCircumstances.yesRadioOption,
@@ -610,7 +615,7 @@ test.describe('[Create Case - England] @nightly', async () => {
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
   });
 
-  test('England - Demoted tenancy with no grounds for possession @MAC', async () => {
+  test('England - Demoted tenancy with no grounds for possession @MAC @nightly', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcodeTextInput,
       addressIndex: addressDetails.addressIndex
@@ -630,6 +635,7 @@ test.describe('[Create Case - England] @nightly', async () => {
       correspondenceAddress: contactPreferences.yesRadioOption,
       phoneNumber: contactPreferences.noRadioOption
     });
+    await performValidation('mainHeader', defendantDetails.mainHeader); 
     await performAction('addDefendantDetails', {
       nameOption: defendantDetails.yesRadioOption, firstName: defendantDetails.defendantsFirstNameTextInput, lastName: defendantDetails.defendantsLastNameTextInput,
       correspondenceAddressOption: defendantDetails.yesRadioOption, correspondenceAddressSameOption: defendantDetails.noRadioOption, address: defendantDetails.postcodeTextInput,
@@ -659,7 +665,7 @@ test.describe('[Create Case - England] @nightly', async () => {
       howDidYouServeNotice: noticeDetails.byEmailRadioOption,
       explanationLabel: noticeDetails.explainHowItWasServedByEmailHiddenTextLabel,
       explanation: noticeDetails.explainHowItWasServedByEmailHiddenTextInput,
-      day: '29', month: '02', year: '2000', hour: '16', minute: '01', second: '56'});
+      day: '29', month: '02', year: '2000', hour: '16', minute: '01', second: '56', uploadNoticeQuestion: noticeDetails.areYouAbleToUploadQuestion,uploadNoticeOption: noticeDetails.noRadioOption});
     await performValidation('mainHeader', claimantCircumstances.mainHeader);
     await performAction('selectClaimantCircumstances', {
       circumstanceOption: claimantCircumstances.yesRadioOption,
@@ -708,7 +714,7 @@ test.describe('[Create Case - England] @nightly', async () => {
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
   });
 
-  test('England - Assured tenancy with Rent arrears and no other possession grounds - Demoted tenancy @MAC', async () => {
+  test('England - Assured tenancy with Rent arrears and no other possession grounds - Demoted tenancy @MAC @nightly', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcodeTextInput,
       addressIndex: addressDetails.addressIndex
@@ -728,6 +734,7 @@ test.describe('[Create Case - England] @nightly', async () => {
       correspondenceAddress: contactPreferences.noRadioOption,
       phoneNumber: contactPreferences.yesRadioOption
     });
+    await performValidation('mainHeader', defendantDetails.mainHeader); 
     await performAction('addDefendantDetails', {
       nameOption: defendantDetails.yesRadioOption, firstName: defendantDetails.defendantsFirstNameTextInput, lastName: defendantDetails.defendantsLastNameTextInput,
       correspondenceAddressOption: defendantDetails.yesRadioOption, correspondenceAddressSameOption: defendantDetails.yesRadioOption,
@@ -809,7 +816,7 @@ test.describe('[Create Case - England] @nightly', async () => {
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
   });
 
-  test('England - Flexible tenancy with Rent arrears only @MAC', async () => {
+  test('England - Flexible tenancy with Rent arrears only @MAC @nightly', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcodeTextInput,
       addressIndex: addressDetails.addressIndex
@@ -829,6 +836,7 @@ test.describe('[Create Case - England] @nightly', async () => {
       correspondenceAddress: contactPreferences.yesRadioOption,
       phoneNumber: contactPreferences.noRadioOption
     });
+    await performValidation('mainHeader', defendantDetails.mainHeader); 
     await performAction('addDefendantDetails', {
       nameOption: defendantDetails.noRadioOption,
       correspondenceAddressOption: defendantDetails.noRadioOption,
@@ -909,7 +917,7 @@ test.describe('[Create Case - England] @nightly', async () => {
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
   });
 
-  test('England - Secure tenancy with Rent and other grounds @regression @MAC', async () => {
+  test('England - Secure tenancy with Rent and other grounds @regression @MAC @nightly', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcodeTextInput,
       addressIndex: addressDetails.addressIndex
@@ -929,6 +937,7 @@ test.describe('[Create Case - England] @nightly', async () => {
       correspondenceAddress: contactPreferences.noRadioOption,
       phoneNumber: contactPreferences.yesRadioOption
     });
+    await performValidation('mainHeader', defendantDetails.mainHeader); 
     await performAction('addDefendantDetails', {
       nameOption: defendantDetails.yesRadioOption, firstName: defendantDetails.defendantsFirstNameTextInput, lastName: defendantDetails.defendantsLastNameTextInput,
       correspondenceAddressOption: defendantDetails.yesRadioOption, correspondenceAddressSameOption: defendantDetails.yesRadioOption,
@@ -972,7 +981,7 @@ test.describe('[Create Case - England] @nightly', async () => {
     });
     await performAction('selectNoticeDetails', {
        howDidYouServeNotice: noticeDetails.byOtherElectronicMethodRadioOption,
-      day: '25', month: '02', year: '1970', hour: '22', minute: '45', second: '10'});
+      day: '25', month: '02', year: '1970', hour: '22', minute: '45', second: '10', uploadNoticeQuestion: noticeDetails.areYouAbleToUploadQuestion,uploadNoticeOption: noticeDetails.noRadioOption});
     await performValidation('mainHeader', rentDetails.mainHeader);
     await performAction('provideRentDetails', {rentFrequencyOption: 'Monthly', rentAmount: '1000'});
     await performValidation('mainHeader', rentArrears.mainHeader);
@@ -1031,7 +1040,7 @@ test.describe('[Create Case - England] @nightly', async () => {
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
   });
 
-  test('England - Assured tenancy with ans no to rent arrears question, selects 08/10/11 grounds- routing flow @regression @MAC', async () => {
+  test('England - Assured tenancy with ans no to rent arrears question, selects 08/10/11 grounds- routing flow @regression @MAC @nightly', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcodeTextInput,
       addressIndex: addressDetails.addressIndex
@@ -1051,6 +1060,7 @@ test.describe('[Create Case - England] @nightly', async () => {
       correspondenceAddress: contactPreferences.yesRadioOption,
       phoneNumber: contactPreferences.noRadioOption
     });
+    await performValidation('mainHeader', defendantDetails.mainHeader); 
     await performAction('addDefendantDetails', {
       nameOption: defendantDetails.yesRadioOption, firstName: defendantDetails.defendantsFirstNameTextInput, lastName: defendantDetails.defendantsLastNameTextInput,
       correspondenceAddressOption: defendantDetails.yesRadioOption, correspondenceAddressSameOption: defendantDetails.noRadioOption, address: defendantDetails.postcodeTextInput,
@@ -1084,7 +1094,7 @@ test.describe('[Create Case - England] @nightly', async () => {
       howDidYouServeNotice: noticeDetails.byEmailRadioOption,
       explanationLabel: noticeDetails.explainHowItWasServedByEmailHiddenTextLabel,
       explanation: noticeDetails.explainHowItWasServedByEmailHiddenTextInput,
-      day: '29', month: '02', year: '2000', hour: '16', minute: '01', second: '56'
+      day: '29', month: '02', year: '2000', hour: '16', minute: '01', second: '56', uploadNoticeQuestion: noticeDetails.areYouAbleToUploadQuestion,uploadNoticeOption: noticeDetails.noRadioOption
     });
     await performValidation('mainHeader', rentDetails.mainHeader);
     await performAction('provideRentDetails', {rentFrequencyOption: 'Weekly', rentAmount: '800'});
@@ -1133,7 +1143,7 @@ test.describe('[Create Case - England] @nightly', async () => {
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
   });
 
-  test('England - Flexible tenancy with Breach only @MAC', async () => {
+  test('England - Flexible tenancy with Breach only @MAC @nightly', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcodeTextInput,
       addressIndex: addressDetails.addressIndex
@@ -1153,6 +1163,7 @@ test.describe('[Create Case - England] @nightly', async () => {
       correspondenceAddress: contactPreferences.yesRadioOption,
       phoneNumber: contactPreferences.noRadioOption
     });
+    await performValidation('mainHeader', defendantDetails.mainHeader); 
     await performAction('addDefendantDetails', {
       nameOption: defendantDetails.noRadioOption,
       correspondenceAddressOption: defendantDetails.noRadioOption,
@@ -1185,7 +1196,7 @@ test.describe('[Create Case - England] @nightly', async () => {
     await performAction('selectNoticeDetails', {
       howDidYouServeNotice: noticeDetails.byEmailRadioOption,
       explanationLabel: noticeDetails.explainHowItWasServedByEmailHiddenTextLabel,
-      explanation: noticeDetails.explainHowItWasServedByEmailHiddenTextInput});
+      explanation: noticeDetails.explainHowItWasServedByEmailHiddenTextInput, uploadNoticeQuestion: noticeDetails.areYouAbleToUploadQuestion,uploadNoticeOption: noticeDetails.noRadioOption});
     await performValidation('mainHeader', claimantCircumstances.mainHeader);
     await performAction('selectClaimantCircumstances', {
       circumstanceOption: claimantCircumstances.noRadioOption,

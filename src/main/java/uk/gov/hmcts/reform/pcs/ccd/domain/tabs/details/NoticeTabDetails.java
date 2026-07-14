@@ -19,6 +19,12 @@ public class NoticeTabDetails {
     @CCD(label = "Has notice been served?")
     private String noticeServed;
 
+    @CCD(label = "Type of notice served")
+    private String typeOfNoticeServed;
+
+    @CCD(label = "Statement")
+    private String statement;
+
     @CCD(label = "Date and time notice served (if applicable)")
     private String noticeDate;
 

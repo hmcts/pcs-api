@@ -30,7 +30,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.feeandpay.FeePaymentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
-import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.exception.FeePaymentNotFoundException;
 import uk.gov.hmcts.reform.pcs.feesandpay.mapper.PaymentRequestMapper;
@@ -91,8 +90,6 @@ class PaymentServiceTest {
     @Mock
     private PcsCaseService pcsCaseService;
     @Mock
-    private PartyService partyService;
-    @Mock
     private PaymentCallbackStrategyFactory paymentCallbackStrategyFactory;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -129,8 +126,6 @@ class PaymentServiceTest {
                 .thenReturn(expectedResponse);
             FeesAndPayTaskData feesAndPayTaskData = createFeesAndPayTaskData(feeDetails);
 
-            stubResponsibleParty();
-
             // When
             PaymentServiceResponse result = underTest.createServiceRequest(feesAndPayTaskData);
 
@@ -160,8 +155,6 @@ class PaymentServiceTest {
                 .thenReturn(createPaymentServiceResponse());
             FeesAndPayTaskData feesAndPayTaskData = createFeesAndPayTaskData(feeDetails);
 
-            stubResponsibleParty();
-
             // When
             underTest.createServiceRequest(feesAndPayTaskData);
 
@@ -170,7 +163,7 @@ class PaymentServiceTest {
             verify(feePaymentRepository).save(captor.capture());
             FeePaymentEntity saved = captor.getValue();
 
-            assertThat(saved.getRequestReference()).isEqualTo(SERVICE_REQUEST_REFERENCE);
+            assertThat(saved.getServiceRequestReference()).isEqualTo(SERVICE_REQUEST_REFERENCE);
             assertThat(saved.getAmount()).isEqualByComparingTo(CALCULATED_AMOUNT);
             assertThat(saved.getClaim()).isSameAs(pcsCaseEntity.getClaims().getFirst());
         }
@@ -184,7 +177,6 @@ class PaymentServiceTest {
             setPrivateField(underTest, "objectMapper", mapper);
             FeesAndPayTaskData feesAndPayTaskData = createFeesAndPayTaskData(feeDetails);
             paymentsClientDependencies(feeDetails);
-            stubResponsibleParty();
 
             // When / Then
             assertThatExceptionOfType(PaymentException.class)
@@ -197,24 +189,25 @@ class PaymentServiceTest {
     @DisplayName("Process payment request tests")
     class ProcessPaymentRequestTests {
 
-        @Test
-        void shouldProcessPaymentResponse() {
+        @ParameterizedTest
+        @EnumSource(PaymentStatus.class)
+        void shouldProcessPaymentResponse(PaymentStatus status) {
             // Given
             String requestReference = UUID.randomUUID().toString();
             String paymentReference = UUID.randomUUID().toString();
             Payment payment = Payment.builder().paymentReference(paymentReference).build();
             PaymentStatusCallback paymentStatusCallback = PaymentStatusCallback.builder()
-                .serviceRequestReference(requestReference).serviceRequestStatus(PaymentStatus.PAID.getValue())
+                .serviceRequestReference(requestReference).serviceRequestStatus(status.getValue())
                 .payment(payment).build();
 
             FeePaymentEntity feePaymentEntity = FeePaymentEntity.builder()
-                .paymentStatus(PaymentStatus.PAID)
-                .requestReference(requestReference)
+                .paymentStatus(status)
+                .serviceRequestReference(requestReference)
                 .externalReference(paymentReference)
                 .paymentCallbackHandlerType(CLAIM)
                 .build();
 
-            when(feePaymentRepository.findByRequestReference(requestReference))
+            when(feePaymentRepository.findByServiceRequestReference(requestReference))
                 .thenReturn(Optional.of(feePaymentEntity));
             when(paymentCallbackStrategyFactory.getStrategy(any(PaymentCallbackHandlerType.class)))
                 .thenReturn(mock(MakeAClaimPaymentCallbackHandler.class));
@@ -223,13 +216,13 @@ class PaymentServiceTest {
             underTest.processPaymentResponse(paymentStatusCallback);
 
             // Then
-            verify(feePaymentRepository).findByRequestReference(requestReference);
+            verify(feePaymentRepository).findByServiceRequestReference(requestReference);
             ArgumentCaptor<FeePaymentEntity> feePaymentCaptor = ArgumentCaptor.forClass(FeePaymentEntity.class);
             verify(feePaymentRepository).save(feePaymentCaptor.capture());
             FeePaymentEntity paymentEntity = feePaymentCaptor.getValue();
 
-            assertThat(paymentEntity.getRequestReference()).isEqualTo(requestReference);
-            assertThat(paymentEntity.getPaymentStatus()).isEqualTo(PaymentStatus.PAID);
+            assertThat(paymentEntity.getServiceRequestReference()).isEqualTo(requestReference);
+            assertThat(paymentEntity.getPaymentStatus()).isEqualTo(status);
             assertThat(paymentEntity.getExternalReference()).isEqualTo(paymentReference);
         }
 
@@ -242,13 +235,13 @@ class PaymentServiceTest {
                 .serviceRequestStatus(PaymentStatus.PAID.getValue())
                 .payment(Payment.builder().paymentReference(UUID.randomUUID().toString()).build())
                 .build();
-            when(feePaymentRepository.findByRequestReference(requestReference)).thenReturn(Optional.empty());
+            when(feePaymentRepository.findByServiceRequestReference(requestReference)).thenReturn(Optional.empty());
 
             // When
             underTest.processPaymentResponse(paymentStatusCallback);
 
             // Then
-            verify(feePaymentRepository).findByRequestReference(requestReference);
+            verify(feePaymentRepository).findByServiceRequestReference(requestReference);
             verify(feePaymentRepository, never()).save(any(FeePaymentEntity.class));
         }
 
@@ -262,8 +255,8 @@ class PaymentServiceTest {
                 .serviceRequestReference(requestReference).serviceRequestStatus(PaymentStatus.PAID.getValue())
                 .payment(payment).build();
             FeePaymentEntity feePaymentEntity = FeePaymentEntity.builder().paymentStatus(PaymentStatus.PAID)
-                .requestReference(requestReference).paymentCallbackHandlerType(CLAIM).build();
-            when(feePaymentRepository.findByRequestReference(requestReference))
+                .serviceRequestReference(requestReference).paymentCallbackHandlerType(CLAIM).build();
+            when(feePaymentRepository.findByServiceRequestReference(requestReference))
                 .thenReturn(Optional.of(feePaymentEntity));
             PaymentCallbackStrategy strategy = mock(PaymentCallbackStrategy.class);
             when(paymentCallbackStrategyFactory.getStrategy(CLAIM)).thenReturn(strategy);
@@ -285,9 +278,9 @@ class PaymentServiceTest {
                 .serviceRequestReference(requestReference).serviceRequestStatus(PaymentStatus.PAID.getValue())
                 .payment(payment).build();
             FeePaymentEntity feePaymentEntity = FeePaymentEntity.builder()
-                .paymentStatus(PaymentStatus.PAID).requestReference(requestReference)
+                .paymentStatus(PaymentStatus.PAID).serviceRequestReference(requestReference)
                 .paymentCallbackHandlerType(CLAIM).build();
-            when(feePaymentRepository.findByRequestReference(requestReference))
+            when(feePaymentRepository.findByServiceRequestReference(requestReference))
                 .thenReturn(Optional.of(feePaymentEntity));
             when(paymentCallbackStrategyFactory.getStrategy(CLAIM)).thenReturn(null);
 
@@ -320,7 +313,7 @@ class PaymentServiceTest {
             FeePaymentEntity saved = captor.getValue();
 
             assertThat(saved.getClaim()).isSameAs(claimEntity);
-            assertThat(saved.getRequestReference()).isEqualTo(SERVICE_REQUEST_REFERENCE);
+            assertThat(saved.getServiceRequestReference()).isEqualTo(SERVICE_REQUEST_REFERENCE);
             assertThat(saved.getAmount()).isEqualByComparingTo(CALCULATED_AMOUNT);
         }
 
@@ -342,7 +335,6 @@ class PaymentServiceTest {
 
             assertThat(saved.getTaskData()).isEqualTo(taskDataJson);
             assertThat(saved.getPaymentCallbackHandlerType()).isEqualTo(CLAIM);
-            assertThat(saved.getParty()).isNull();
         }
 
     }
@@ -381,7 +373,7 @@ class PaymentServiceTest {
                                                                any(CardPaymentServiceRequestDTO.class)))
                 .thenReturn(paymentServiceResponse);
 
-            when(feePaymentRepository.findByRequestReference(serviceRequestReference))
+            when(feePaymentRepository.findByServiceRequestReference(serviceRequestReference))
                 .thenReturn(Optional.of(mock(FeePaymentEntity.class)));
 
             // When
@@ -412,7 +404,7 @@ class PaymentServiceTest {
             String serviceRequestReference = "SR-1234";
             CreateCardPaymentRequest cardPaymentRequest = mock(CreateCardPaymentRequest.class);
 
-            when(feePaymentRepository.findByRequestReference(serviceRequestReference))
+            when(feePaymentRepository.findByServiceRequestReference(serviceRequestReference))
                 .thenReturn(Optional.empty());
 
             // When
@@ -425,15 +417,61 @@ class PaymentServiceTest {
             assertThat(throwable).isInstanceOf(FeePaymentNotFoundException.class);
         }
 
+        @Test
+        void shouldCreatePaymentRequestWhenPreviousPaymentWasNotPaid() {
+            // Given
+            String serviceRequestReference = "SR-1234";
+            final BigDecimal expectedAmount = new BigDecimal("10.99");
+            final String expectedLanguage = "some language";
+            final String expectedReturnUrl = "some return URL";
+            final String expectedPaymentReference = "some payment reference";
+            final String expectedPaymentStatus = "some payment status";
+            final String expectedNextUrl = "some next url";
+
+            CreateCardPaymentRequest cardPaymentRequest = CreateCardPaymentRequest.builder()
+                .amount(expectedAmount)
+                .language(expectedLanguage)
+                .returnUrl(expectedReturnUrl)
+                .build();
+
+            CardPaymentServiceRequestResponse paymentServiceResponse = CardPaymentServiceRequestResponse.builder()
+                .paymentReference(expectedPaymentReference)
+                .status(expectedPaymentStatus)
+                .nextUrl(expectedNextUrl)
+                .build();
+
+            FeePaymentEntity feePaymentEntity = mock(FeePaymentEntity.class);
+            when(feePaymentEntity.getPaymentStatus()).thenReturn(PaymentStatus.NOT_PAID);
+            when(feePaymentRepository.findByServiceRequestReference(serviceRequestReference))
+                .thenReturn(Optional.of(feePaymentEntity));
+            when(paymentsClient.createGovPayCardPaymentRequest(anyString(),
+                                                               anyString(),
+                                                               any(CardPaymentServiceRequestDTO.class)))
+                .thenReturn(paymentServiceResponse);
+
+            // When
+            CreateCardPaymentResponse cardPaymentResponse = underTest.createPaymentRequest(
+                serviceRequestReference,
+                cardPaymentRequest
+            );
+
+            // Then
+            verify(paymentsClient).createGovPayCardPaymentRequest(eq(serviceRequestReference),
+                                                                  eq(SYSTEM_TOKEN),
+                                                                  any(CardPaymentServiceRequestDTO.class));
+            assertThat(cardPaymentResponse.getPaymentReference()).isEqualTo(expectedPaymentReference);
+            assertThat(cardPaymentResponse.getNextUrl()).isEqualTo(expectedNextUrl);
+        }
+
         @ParameterizedTest
-        @EnumSource(PaymentStatus.class)
+        @EnumSource(value = PaymentStatus.class, names = {"PAID", "PARTIALLY_PAID"})
         void shouldThrowExceptionIfServiceRequestAlreadyHasAPaymentStatus(PaymentStatus paymentStatus) {
             // Given
             String serviceRequestReference = "SR-1234";
             CreateCardPaymentRequest cardPaymentRequest = mock(CreateCardPaymentRequest.class);
 
             FeePaymentEntity feePaymentEntity = mock(FeePaymentEntity.class);
-            when(feePaymentRepository.findByRequestReference(serviceRequestReference))
+            when(feePaymentRepository.findByServiceRequestReference(serviceRequestReference))
                 .thenReturn(Optional.of(feePaymentEntity));
             when(feePaymentEntity.getPaymentStatus()).thenReturn(paymentStatus);
 
@@ -462,14 +500,14 @@ class PaymentServiceTest {
                 .status(expectedStatus)
                 .build();
 
-            when(paymentsClient.getGovPayCardPaymentStatus(paymentReference, SYSTEM_TOKEN)).thenReturn(paymentDto);
+            when(paymentsClient.getGovPayCardPaymentStatusWithCallback(paymentReference, SYSTEM_TOKEN))
+                .thenReturn(paymentDto);
 
             // When
             CardPaymentStatusResponse paymentStatusResponse = underTest.getPaymentStatus(paymentReference);
 
             // Then
             assertThat(paymentStatusResponse.getStatus()).isEqualTo(expectedStatus);
-
         }
 
     }
@@ -554,6 +592,7 @@ class PaymentServiceTest {
             .caseReference(CASE_REFERENCE)
             .volume(VOLUME)
             .responsiblePartyId(RESPONSIBLE_PARTY_ID)
+            .responsiblePartyName(RESPONSIBLE_PARTY)
             .paymentCallbackHandlerType(CLAIM)
             .build();
     }
@@ -562,13 +601,6 @@ class PaymentServiceTest {
         return FeeDetails.builder().feeAmount(CALCULATED_AMOUNT)
             .code("FEE123")
             .build();
-    }
-
-    private void stubResponsibleParty() {
-        PartyEntity responsiblePartyEntity = mock(PartyEntity.class);
-        when(partyService.getPartyEntityByEntityId(RESPONSIBLE_PARTY_ID, CASE_REFERENCE))
-            .thenReturn(responsiblePartyEntity);
-        when(partyService.getPartyName(responsiblePartyEntity)).thenReturn(RESPONSIBLE_PARTY);
     }
 
 }

@@ -90,7 +90,7 @@ public class ReasonsForPossessionTabDetailsBuilder {
             reasonsForPossession = ReasonsForPossessionTabDetails.builder().build();
         }
 
-        reasonsForPossession.setAdditionalReasonsForPossession(additionalReasonsText);
+        reasonsForPossession.setAdditionalReasonsDetails(additionalReasonsText);
         return reasonsForPossession;
     }
 
