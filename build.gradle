@@ -663,5 +663,5 @@ tasks.withType(Wrapper) {
 }
 
 dependencyManagement {
-  overriddenByDependencyManagement = false
+  overriddenByDependencies = true
 }
