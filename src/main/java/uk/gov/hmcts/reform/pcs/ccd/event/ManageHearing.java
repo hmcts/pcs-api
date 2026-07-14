@@ -14,7 +14,7 @@ import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
-import uk.gov.hmcts.reform.pcs.ccd.domain.ManageHearingOption;
+import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.ManageHearingOption;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
@@ -49,7 +49,7 @@ public class ManageHearing implements CCDConfig<PCSCase, State, UserRole> {
             configBuilder.decentralisedEvent(manageHearing.name(), this::submit, this::start)
                 .forStates(State.CASE_ISSUED)
                 .name("Manage hearing")
-                .grant(Permission.CRUD, UserRole.CTSC_ADMIN, UserRole.HEARING_CENTRE_ADMIN, UserRole.WLU_ADMIN)
+                .grant(Permission.CRUD, UserRole.HEARING_CENTRE_ADMIN)
                 .grantHistoryOnly(JUDICIAL_HISTORY_ROLES)
                 .showSummary()
                 .endButtonLabel("Submit");
@@ -79,12 +79,13 @@ public class ManageHearing implements CCDConfig<PCSCase, State, UserRole> {
             }
         } catch (Exception e) {
             log.error("Unable to fetch hearing location for case {}:", eventPayload.caseReference(), e);
+            pcsCase.setHearingLocation("Unable to retrieve hearing location");
         }
 
         if (CollectionUtils.isEmpty(pcsCase.getHearingList())) {
             pcsCase.setManageHearingOption(ManageHearingOption.ADD);
         } else {
-            pcsCase.setShowManageHearingPage(YesOrNo.YES);
+            pcsCase.setShowManageHearingPage(VerticalYesNo.YES);
         }
 
         return pcsCase;
@@ -98,7 +99,7 @@ public class ManageHearing implements CCDConfig<PCSCase, State, UserRole> {
 
         if (
             caseData.getManageHearingOption() == ManageHearingOption.ADD
-                || caseData.getShowManageHearingPage() != YesOrNo.YES
+                || caseData.getShowManageHearingPage() != VerticalYesNo.YES
         ) {
             hearingService.addHearing(caseId, caseData);
         }

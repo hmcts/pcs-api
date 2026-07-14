@@ -17,8 +17,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
-import uk.gov.hmcts.reform.pcs.ccd.domain.HearingNoticeWording;
-import uk.gov.hmcts.reform.pcs.ccd.domain.HearingType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.HearingNoticeWording;
+import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.HearingType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 
 import java.time.LocalDateTime;
@@ -54,7 +54,7 @@ public class HearingEntity {
     @Enumerated(EnumType.STRING)
     private HearingNoticeWording noticeWording;
 
-    private LocalDateTime date;
+    private LocalDateTime hearingDate;
 
     private Integer durationHours;
 

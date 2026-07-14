@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.domain;
+package uk.gov.hmcts.reform.pcs.ccd.domain.hearing;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 
 import java.time.LocalDateTime;
 
@@ -63,7 +64,7 @@ public class Hearing {
     )
     private String notes;
 
-    @CCD(label = "Does a hearing notice need to be issued")
+    @CCD(label = "Does a hearing notice need to be issued?")
     private VerticalYesNo noticeIssued;
 
     @CCD(label = "Is the hearing without notice?")

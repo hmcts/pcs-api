@@ -12,8 +12,8 @@ import uk.gov.hmcts.ccd.sdk.type.CaseLocation;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
-import uk.gov.hmcts.reform.pcs.ccd.domain.Hearing;
-import uk.gov.hmcts.reform.pcs.ccd.domain.ManageHearingOption;
+import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.Hearing;
+import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.ManageHearingOption;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
@@ -184,6 +184,50 @@ public class ManageHearingTest extends BaseEventTest {
     }
 
     @Test
+    void shouldHandleHearingVenueNotFound() {
+        // Given
+        Party claimant = Party.builder()
+            .orgName("Claimant Name")
+            .build();
+        List<ListValue<Party>> allClaimants = List.of(
+            ListValue.<Party>builder()
+                .id("claimantId")
+                .value(claimant)
+                .build()
+        );
+
+        Party defendant = Party.builder()
+            .nameKnown(VerticalYesNo.YES)
+            .firstName("Defendant")
+            .lastName("One")
+            .build();
+        List<ListValue<Party>> allDefendants = List.of(
+            ListValue.<Party>builder()
+                .id("defendant1Id")
+                .value(defendant)
+                .build()
+        );
+
+        CaseLocation caseLocation = CaseLocation.builder()
+            .baseLocation("1")
+            .build();
+
+        PCSCase pcsCase = PCSCase.builder()
+            .caseManagementLocation(caseLocation)
+            .allClaimants(allClaimants)
+            .allDefendants(allDefendants)
+            .build();
+
+        when(locationReferenceService.getCourtVenues(List.of(1))).thenThrow(new RuntimeException());
+
+        // When
+        PCSCase response = callStartHandler(pcsCase);
+
+        // Then
+        assertThat(response.getHearingLocation()).isEqualTo("Unable to retrieve hearing location");
+    }
+
+    @Test
     void shouldShowDefendantNameAsPersonUnknownIfNameNotKnown() {
         // Given
         Party claimant = Party.builder()
@@ -313,7 +357,7 @@ public class ManageHearingTest extends BaseEventTest {
         PCSCase pcsCase = PCSCase.builder()
             .propertyAddress(address)
             .manageHearingOption(ManageHearingOption.CANCEL)
-            .showManageHearingPage(YesOrNo.YES)
+            .showManageHearingPage(VerticalYesNo.YES)
             .caseNameHmctsInternal("Claimant v Defendant")
             .build();
 

@@ -2,8 +2,8 @@ package uk.gov.hmcts.reform.pcs.ccd.service;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
-import uk.gov.hmcts.reform.pcs.ccd.domain.Hearing;
-import uk.gov.hmcts.reform.pcs.ccd.domain.HearingType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.Hearing;
+import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.HearingType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.HearingEntity;
@@ -36,7 +36,7 @@ public class HearingService {
         HearingEntity hearingEntity = HearingEntity.builder()
             .type(hearingType)
             .noticeWording(hearing.getNoticeWording())
-            .date(hearing.getDate())
+            .hearingDate(hearing.getDate())
             .durationHours(hearing.getDurationHours())
             .durationMinutes(hearing.getDurationMinutes())
             .noticeIssued(noticeIssued)

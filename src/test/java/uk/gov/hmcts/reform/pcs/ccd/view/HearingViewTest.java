@@ -3,9 +3,9 @@ package uk.gov.hmcts.reform.pcs.ccd.view;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
-import uk.gov.hmcts.reform.pcs.ccd.domain.Hearing;
-import uk.gov.hmcts.reform.pcs.ccd.domain.HearingNoticeWording;
-import uk.gov.hmcts.reform.pcs.ccd.domain.HearingType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.Hearing;
+import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.HearingNoticeWording;
+import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.HearingType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.HearingEntity;
@@ -32,7 +32,7 @@ public class HearingViewTest {
             .type(HearingType.OTHER)
             .otherHearingType("other type")
             .noticeWording(HearingNoticeWording.ADJ)
-            .date(LocalDateTime.of(2026, 2, 1, 9, 0, 0))
+            .hearingDate(LocalDateTime.of(2026, 2, 1, 9, 0, 0))
             .durationMinutes(30)
             .durationHours(1)
             .notes("notes")
