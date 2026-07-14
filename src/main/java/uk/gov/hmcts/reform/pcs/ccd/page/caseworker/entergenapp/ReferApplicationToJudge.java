@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.caseworker.entergenapp;
 
+import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
@@ -17,8 +18,10 @@ public class ReferApplicationToJudge implements CcdPageConfiguration {
         pageBuilder
             .page("referApplicationToJudge")
             .pageLabel("Refer without notice application to judge")
-            .showCondition(fieldEquals("enter_genapp_AllPartiesAgree", VerticalYesNo.NO)
-                + " AND " + fieldEquals("enter_genapp_WithoutNotice", VerticalYesNo.YES))
+            .showCondition(ShowConditions.and(
+                fieldEquals("enter_genapp_AllPartiesAgree", VerticalYesNo.NO),
+                fieldEquals("enter_genapp_WithoutNotice", VerticalYesNo.YES))
+            )
             .label("referApplicationToJudge-lineSeparator", "---")
             .label("referApplicationToJudge-message", MESSAGE_TEXT);
     }
