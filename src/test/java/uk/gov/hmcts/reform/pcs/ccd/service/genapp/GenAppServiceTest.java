@@ -22,6 +22,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
+import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.UploadedDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.EnterGenAppRequest;
@@ -676,7 +677,9 @@ class GenAppServiceTest {
                 .build();
 
             // When
-            underTest.createGenAppEntity(enterGenAppRequest, null, pcsCaseEntity, applicantParty, GEN_APP_ISSUED);
+            underTest.createGenAppEntity(
+                PCSCase.builder().enterGenAppRequest(enterGenAppRequest).build(),
+                pcsCaseEntity, applicantParty, GEN_APP_ISSUED);
 
             // Then
             verify(pcsCaseEntity).addGenApp(genAppEntityCaptor.capture());
@@ -692,7 +695,9 @@ class GenAppServiceTest {
                 .build();
 
             // When
-            underTest.createGenAppEntity(enterGenAppRequest,null, pcsCaseEntity, applicantParty, GEN_APP_ISSUED);
+            underTest.createGenAppEntity(
+                PCSCase.builder().enterGenAppRequest(enterGenAppRequest).build(),
+                pcsCaseEntity, applicantParty, GEN_APP_ISSUED);
 
             // Then
             GenAppEntity genAppEntity = getSavedGenAppEntity();
@@ -708,7 +713,9 @@ class GenAppServiceTest {
                 .build();
 
             // When
-            underTest.createGenAppEntity(enterGenAppRequest, null, pcsCaseEntity, applicantParty, GEN_APP_ISSUED);
+            underTest.createGenAppEntity(
+                PCSCase.builder().enterGenAppRequest(enterGenAppRequest).build(),
+                pcsCaseEntity, applicantParty, GEN_APP_ISSUED);
 
             // Then
             GenAppEntity genAppEntity = getSavedGenAppEntity();
@@ -724,7 +731,9 @@ class GenAppServiceTest {
                 .build();
 
             // When
-            underTest.createGenAppEntity(enterGenAppRequest, null, pcsCaseEntity, applicantParty, GEN_APP_ISSUED);
+            underTest.createGenAppEntity(
+                PCSCase.builder().enterGenAppRequest(enterGenAppRequest).build(),
+                pcsCaseEntity, applicantParty, GEN_APP_ISSUED);
 
             // Then
             GenAppEntity genAppEntity = getSavedGenAppEntity();
@@ -742,7 +751,9 @@ class GenAppServiceTest {
                 .build();
 
             // When
-            underTest.createGenAppEntity(enterGenAppRequest, null, pcsCaseEntity, applicantParty, GEN_APP_ISSUED);
+            underTest.createGenAppEntity(
+                PCSCase.builder().enterGenAppRequest(enterGenAppRequest).build(),
+                pcsCaseEntity, applicantParty, GEN_APP_ISSUED);
 
             // Then
             GenAppEntity genAppEntity = getSavedGenAppEntity();
@@ -758,7 +769,9 @@ class GenAppServiceTest {
                 .build();
 
             // When
-            underTest.createGenAppEntity(enterGenAppRequest, null, pcsCaseEntity, applicantParty, genAppState);
+            underTest.createGenAppEntity(
+                PCSCase.builder().enterGenAppRequest(enterGenAppRequest).build(),
+                pcsCaseEntity, applicantParty, genAppState);
 
             // Then
             GenAppEntity genAppEntity = getSavedGenAppEntity();
@@ -775,7 +788,9 @@ class GenAppServiceTest {
                 .build();
 
             // When
-            underTest.createGenAppEntity(enterGenAppRequest, null, pcsCaseEntity, applicantParty, GEN_APP_ISSUED);
+            underTest.createGenAppEntity(
+                PCSCase.builder().enterGenAppRequest(enterGenAppRequest).build(),
+                pcsCaseEntity, applicantParty, GEN_APP_ISSUED);
 
             // Then
             GenAppEntity genAppEntity = getSavedGenAppEntity();
@@ -792,7 +807,9 @@ class GenAppServiceTest {
                 .build();
 
             // When
-            underTest.createGenAppEntity(enterGenAppRequest, null, pcsCaseEntity, applicantParty, GEN_APP_ISSUED);
+            underTest.createGenAppEntity(
+                PCSCase.builder().enterGenAppRequest(enterGenAppRequest).build(),
+                pcsCaseEntity, applicantParty, GEN_APP_ISSUED);
 
             // Then
             GenAppEntity genAppEntity = getSavedGenAppEntity();
@@ -810,7 +827,9 @@ class GenAppServiceTest {
                 .build();
 
             // When
-            underTest.createGenAppEntity(enterGenAppRequest, null, pcsCaseEntity, applicantParty, GEN_APP_ISSUED);
+            underTest.createGenAppEntity(
+                PCSCase.builder().enterGenAppRequest(enterGenAppRequest).build(),
+                pcsCaseEntity, applicantParty, GEN_APP_ISSUED);
 
             // Then
             GenAppEntity genAppEntity = getSavedGenAppEntity();
@@ -829,7 +848,9 @@ class GenAppServiceTest {
                 .build();
 
             // When
-            underTest.createGenAppEntity(enterGenAppRequest, null, pcsCaseEntity, applicantParty, GEN_APP_ISSUED);
+            underTest.createGenAppEntity(
+                PCSCase.builder().enterGenAppRequest(enterGenAppRequest).build(),
+                pcsCaseEntity, applicantParty, GEN_APP_ISSUED);
 
             // Then
             GenAppEntity genAppEntity = getSavedGenAppEntity();
@@ -849,7 +870,9 @@ class GenAppServiceTest {
                 .build();
 
             // When
-            underTest.createGenAppEntity(enterGenAppRequest, null, pcsCaseEntity, applicantParty, GEN_APP_ISSUED);
+            underTest.createGenAppEntity(
+                PCSCase.builder().enterGenAppRequest(enterGenAppRequest).build(),
+                pcsCaseEntity, applicantParty, GEN_APP_ISSUED);
 
             // Then
             GenAppEntity genAppEntity = getSavedGenAppEntity();
@@ -883,8 +906,9 @@ class GenAppServiceTest {
                 .build();
 
             // When
-            underTest.createGenAppEntity(enterGenAppRequest, uploadedGenApp, pcsCaseEntity, applicantParty,
-                                          GEN_APP_ISSUED);
+            underTest.createGenAppEntity(
+                PCSCase.builder().enterGenAppRequest(enterGenAppRequest).uploadSingleDocument(uploadedGenApp).build(),
+                pcsCaseEntity, applicantParty, GEN_APP_ISSUED);
 
             // Then
             GenAppEntity genAppEntity = getSavedGenAppEntity();
@@ -907,7 +931,9 @@ class GenAppServiceTest {
                 .build();
 
             // When
-            underTest.createGenAppEntity(enterGenAppRequest, null, pcsCaseEntity, applicantParty, GEN_APP_ISSUED);
+            underTest.createGenAppEntity(
+                PCSCase.builder().enterGenAppRequest(enterGenAppRequest).build(),
+                pcsCaseEntity, applicantParty, GEN_APP_ISSUED);
 
             // Then
             GenAppEntity genAppEntity = getSavedGenAppEntity();
@@ -942,7 +968,9 @@ class GenAppServiceTest {
                 .build();
 
             // When
-            underTest.createGenAppEntity(enterGenAppRequest, null, pcsCaseEntity, applicantParty, GEN_APP_ISSUED);
+            underTest.createGenAppEntity(
+                PCSCase.builder().enterGenAppRequest(enterGenAppRequest).build(),
+                pcsCaseEntity, applicantParty, GEN_APP_ISSUED);
 
             // Then
             GenAppEntity genAppEntity = getSavedGenAppEntity();
@@ -967,7 +995,9 @@ class GenAppServiceTest {
                 .build();
 
             // When
-            underTest.createGenAppEntity(enterGenAppRequest, null, pcsCaseEntity, applicantParty, GEN_APP_ISSUED);
+            underTest.createGenAppEntity(
+                PCSCase.builder().enterGenAppRequest(enterGenAppRequest).build(),
+                pcsCaseEntity, applicantParty, GEN_APP_ISSUED);
 
             // Then
             GenAppEntity genAppEntity = getSavedGenAppEntity();

@@ -7,6 +7,7 @@ import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.UploadedDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.EnterGenAppRequest;
@@ -127,11 +128,12 @@ public class GenAppService {
         return genAppRepository.save(genAppEntity);
     }
 
-    public void createGenAppEntity(EnterGenAppRequest enterGenAppRequest,
-                                       Document uploadedGenApp,
-                                       PcsCaseEntity pcsCaseEntity,
-                                       PartyEntity applicantParty,
-                                       GenAppState initialState) {
+    public void createGenAppEntity(PCSCase caseData,
+                                   PcsCaseEntity pcsCaseEntity,
+                                   PartyEntity applicantParty,
+                                   GenAppState initialState) {
+
+        EnterGenAppRequest enterGenAppRequest = caseData.getEnterGenAppRequest();
 
         GenAppEntity genAppEntity = GenAppEntity.builder()
             .type(enterGenAppRequest.getApplicationTypeOption().getStandardGenAppType())
@@ -158,6 +160,7 @@ public class GenAppService {
             genAppEntity.setHelpWithFeesEntity(helpWithFeesEntity);
         }
 
+        Document uploadedGenApp = caseData.getUploadSingleDocument();
         DocumentEntity submissionDocument = createDocumentEntity(uploadedGenApp, pcsCaseEntity,
                                                                  genAppEntity, applicantParty.getId());
         genAppEntity.setSubmissionDocument(submissionDocument);
