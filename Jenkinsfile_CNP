@@ -37,6 +37,10 @@ static LinkedHashMap<String, Object> secret(String secretName, String envVar) {
 
 GradleBuilder builder = new GradleBuilder(this, product)
 
+// Shutters the PCS case type across all environments (bakes shutterService() into the generated
+// CCD definition). While shuttered, cases cannot be created, so the e2e suite is not run.
+def shutterService = false
+
 withPipeline(type, product, component) {
   def githubApi = new GithubAPI(this)
   env.IDAM_S2S_AUTH_URL = "http://rpe-service-auth-provider-aat.service.core-compute-aat.internal"
@@ -44,6 +48,9 @@ withPipeline(type, product, component) {
   env.PACT_BROKER_URL = "https://pact-broker.platform.hmcts.net"
   loadVaultSecrets(secrets)
   enableDbMigration('pcs')
+  
+  syncBranchesWithMaster(['ithc', 'perftest'])
+
 
   onPR() {
     enablePactAs([
@@ -81,7 +88,10 @@ withPipeline(type, product, component) {
     ])
     enableHighLevelDataSetup("", true)
     setAatEnvVars()
-    enableE2eTest()
+    // The e2e journeys all create cases, which is blocked while the service is shuttered.
+    if (!shutterService) {
+      enableE2eTest()
+    }
   }
 
   onDemo {
@@ -101,6 +111,8 @@ withPipeline(type, product, component) {
   }
 
   before('highleveldatasetup') {
+    env.SHUTTER_SERVICE = shutterService
+
     onPR{
       env.DEFINITION_STORE_URL_BASE = "https://ccd-definition-store-pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
       env.CASE_API_URL = "https://pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"

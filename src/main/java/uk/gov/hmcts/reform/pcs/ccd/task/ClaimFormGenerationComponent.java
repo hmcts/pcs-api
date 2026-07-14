@@ -10,6 +10,8 @@ import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.GenerationDetails;
 import uk.gov.hmcts.reform.pcs.ccd.model.ClaimFormTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimActivityLogService;
 import uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimFormService;
@@ -75,14 +77,18 @@ public class ClaimFormGenerationComponent {
                     return new CompletionHandler.OnCompleteRemove<>();
                 } catch (Exception e) {
                     int attempt = executionContext.getExecution().consecutiveFailures + 1;
+                    boolean finalAttempt = isFinalAttempt(attempt);
                     // Only the final (terminal) attempt is logged - intermediate retries are tracked by
                     // db-scheduler in scheduled_tasks.consecutive_failures and stay out of the app logs.
-                    if (isFinalAttempt(attempt)) {
+                    if (finalAttempt) {
                         MDC.put(MDC_TERMINAL_FAILURE, "true");
                         MDC.put(MDC_FAILURE_REASON, String.valueOf(e.getMessage()));
                         log.error("Claim form generation permanently failed for case {} after {} "
                                   + "attempts: {}", caseReference, attempt, e.getMessage(), e);
-                        recordGenerationFailure(caseReference);
+                    }
+                    // First + terminal rows: reason visible from attempt 1 (terminal:false = retrying)
+                    if (attempt == 1 || finalAttempt) {
+                        recordGenerationFailure(caseReference, e, finalAttempt);
                     }
                     throw e;
                 } finally {
@@ -101,9 +107,10 @@ public class ClaimFormGenerationComponent {
         return attempt > maxRetries;
     }
 
-    private void recordGenerationFailure(long caseReference) {
+    private void recordGenerationFailure(long caseReference, Exception cause, boolean terminal) {
         try {
-            claimActivityLogService.logGenerationFailure(caseReference);
+            claimActivityLogService.logGenerationFailure(caseReference,
+                GenerationDetails.forFailure(DocumentType.CLAIM, cause, terminal));
         } catch (Exception e) {
             log.error("Failed to record claim form generation failure for case {}", caseReference, e);
         }

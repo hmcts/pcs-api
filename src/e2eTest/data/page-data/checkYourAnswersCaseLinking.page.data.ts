@@ -1,5 +1,5 @@
 export const checkYourAnswersCaseLinking = {
   mainHeader: 'Check your answers',
-  submitButton: 'Submit',
+  saveAndContinueButton: 'Save and continue',
   cancel: 'Cancel'
 };
