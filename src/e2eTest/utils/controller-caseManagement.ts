@@ -1,11 +1,11 @@
 import { Page, test } from '@playwright/test';
 import { actionData, actionRecord, actionTuple } from './interfaces/action.interface';
 import { validationData, validationRecord, validationTuple } from './interfaces/validation.interface';
-import { ValidationRegistry } from './registry/registry-enforcement/validation-enforcement.registry';
 import { AxeUtils } from "@hmcts/playwright-common";
 import { cyaStore } from '@utils/validations/custom-validations/CYA/cyaPage.validation';
 import { logToBrowser } from './test-logger';
 import { ActionCMRegistry } from './registry/registry-caseManagement/action-caseManagement.registry';
+import { ValidationRegistry } from './registry/registry-caseManagement/validation-caseManagement.registry';
 
 let testExecutor: { page: Page };
 let previousUrl: string = '';
