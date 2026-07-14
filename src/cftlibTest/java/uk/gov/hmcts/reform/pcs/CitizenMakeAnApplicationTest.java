@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs;
 
 
+import lombok.extern.slf4j.Slf4j;
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -19,11 +20,15 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.client.CcdClient;
 import uk.gov.hmcts.reform.pcs.client.TestingSupportClient;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentCallbackHandlerType;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
+import uk.gov.hmcts.reform.pcs.model.FeePaymentSummary;
 import uk.gov.hmcts.reform.pcs.model.PartyAccessCode;
 import uk.gov.hmcts.reform.pcs.notification.CapturedNotification;
 import uk.gov.hmcts.reform.pcs.notification.MockNotificationServer;
 import uk.gov.hmcts.reform.pcs.service.AccessCodeService;
 import uk.gov.hmcts.reform.pcs.service.CaseCreationService;
+import uk.gov.hmcts.reform.pcs.service.FeePaymentService;
 import uk.gov.hmcts.reform.pcs.testingsupport.model.PartyEmail;
 import uk.gov.hmcts.rse.ccd.lib.test.CftlibTest;
 
@@ -35,6 +40,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@Slf4j
 class CitizenMakeAnApplicationTest extends CftlibTest {
 
     private static final String CITIZEN_EMAIL_ADDRESS = "test@test.com";
@@ -46,6 +52,8 @@ class CitizenMakeAnApplicationTest extends CftlibTest {
     private IdamClient idamClient;
     @Autowired
     private CaseCreationService caseCreationService;
+    @Autowired
+    private FeePaymentService feePaymentService;
     @Autowired
     private AccessCodeService accessCodeService;
     @Autowired
@@ -78,8 +86,27 @@ class CitizenMakeAnApplicationTest extends CftlibTest {
     void makeAnApplication() {
         long caseReference = caseCreationService.createMinimalCase(solicitorToken);
 
+        System.out.println("CONSOLE: Waiting for payment requests for " + caseReference);
+        log.info("Waiting for payment requests for " + caseReference);
+        List<FeePaymentSummary> feePaymentSummaries = feePaymentService.waitForFeePaymentRequests(
+            caseReference,
+            PaymentCallbackHandlerType.CLAIM
+        );
+
+        System.out.println("Found payment requests: " + feePaymentSummaries);
+
+        feePaymentSummaries.forEach(
+            feePaymentSummary -> {
+                if (feePaymentSummary.getPaymentStatus() != PaymentStatus.PAID) {
+                    System.out.println("Making payment callback for : "
+                                           + feePaymentSummary.getServiceRequestReference());
+                    feePaymentService.makePaymentCallback(caseReference, feePaymentSummary);
+                }
+            }
+        );
+
         Awaitility.await("Case issued")
-            .atMost(Duration.ofSeconds(120))
+            .atMost(Duration.ofSeconds(30))
             .pollInterval(Duration.ofMillis(1000))
             .ignoreExceptions()
             .until(() -> caseIssued(caseReference));

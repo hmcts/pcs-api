@@ -38,7 +38,6 @@ public class AccessCodeService {
         return Awaitility.await()
             .atMost(Duration.ofSeconds(180))
             .pollInterval(Duration.ofMillis(1000))
-            .ignoreExceptions()
             .until(() -> getAccessCodesForCase(caseReference), not(empty()));
     }
 
