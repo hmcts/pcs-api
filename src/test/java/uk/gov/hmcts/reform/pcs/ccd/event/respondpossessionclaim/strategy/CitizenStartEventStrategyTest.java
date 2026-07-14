@@ -8,6 +8,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
@@ -17,6 +18,9 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantContactDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponseStatus;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.CaseDetailsTab;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.TenancyLicenceTabDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.RentArrearsTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.utils.DefendantOnlyDraftBuilder;
@@ -43,7 +47,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -105,6 +108,30 @@ class CitizenStartEventStrategyTest {
         // Given
         UUID defendantUserId = UUID.randomUUID();
         PCSCase caseData = PCSCase.builder().build();
+        List<ListValue<Document>> tenancyDocuments = List.of(
+            ListValue.<Document>builder()
+                .id("9cd980f2-236b-4dc6-bd37-c01e5140e6d5")
+                .value(Document.builder().filename("tenancy-agreement.pdf").build())
+                .build()
+        );
+        List<ListValue<Document>> rentStatements = List.of(
+            ListValue.<Document>builder()
+                .id("9fd92024-e946-4ef1-80ce-1bab7b3a4f15")
+                .value(Document.builder().filename("rent-statement.pdf").build())
+                .build()
+        );
+        TenancyLicenceTabDetails tenancyLicenceDetails = TenancyLicenceTabDetails.builder()
+            .typeOfTenancyLicence("Assured shorthold")
+            .tenancyLicenceDocuments(tenancyDocuments)
+            .build();
+        RentArrearsTabDetails rentArrearsDetails = RentArrearsTabDetails.builder()
+            .rentAmount("1200")
+            .rentStatement(rentStatements)
+            .build();
+        CaseDetailsTab builtCaseDetailsTab = CaseDetailsTab.builder()
+            .tenancyLicenceDetails(tenancyLicenceDetails)
+            .rentArrearsDetails(rentArrearsDetails)
+            .build();
 
         PartyEntity defendantEntity = PartyEntity.builder()
             .idamId(defendantUserId)
@@ -123,6 +150,7 @@ class CitizenStartEventStrategyTest {
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
         when(accessValidator.validateAndGetDefendant(pcsCaseEntity, defendantUserId)).thenReturn(defendantEntity);
         when(responseMapper.mapFrom(any(PCSCase.class), eq(defendantEntity))).thenReturn(initialResponse);
+        when(caseDetailsTabView.buildCaseDetailsTab(any(PCSCase.class), eq(false))).thenReturn(builtCaseDetailsTab);
 
         // When
         PCSCase result = underTest.loadDraft(CASE_REFERENCE, caseData);
@@ -130,9 +158,19 @@ class CitizenStartEventStrategyTest {
         // Then
         assertThat(result).isNotNull();
         assertThat(result.getPossessionClaimResponse()).isEqualTo(initialResponse);
-        verify(pcsCaseService, atLeastOnce()).loadCase(CASE_REFERENCE);
+        assertThat(result.getCaseDetailsTab()).isNotNull();
+        assertThat(result.getCaseDetailsTab().getTenancyLicenceDetails()).isEqualTo(tenancyLicenceDetails);
+        assertThat(result.getCaseDetailsTab().getRentArrearsDetails()).isEqualTo(rentArrearsDetails);
+        assertThat(result.getCaseDetailsTab().getTenancyLicenceDetails().getTenancyLicenceDocuments())
+            .isEqualTo(tenancyDocuments);
+        assertThat(result.getCaseDetailsTab().getRentArrearsDetails().getRentStatement())
+            .isEqualTo(rentStatements);
+        verify(pcsCaseService).loadCase(CASE_REFERENCE);
         verify(accessValidator).validateAndGetDefendant(pcsCaseEntity, defendantUserId);
         verify(responseMapper).mapFrom(any(PCSCase.class), eq(defendantEntity));
+        verify(tenancyLicenceView).setCaseFields(result, pcsCaseEntity);
+        verify(rentArrearsView).setCaseFields(result, pcsCaseEntity);
+        verify(caseDetailsTabView).buildCaseDetailsTab(result, false);
         verify(draftCaseDataService).patchUnsubmittedEventData(
             eq(CASE_REFERENCE), any(PCSCase.class), eq(respondPossessionClaim)
         );
@@ -144,6 +182,31 @@ class CitizenStartEventStrategyTest {
         UUID defendantUserId = UUID.randomUUID();
         UUID defendantId = UUID.randomUUID();
         PCSCase caseData = PCSCase.builder().build();
+
+        List<ListValue<Document>> tenancyDocuments = List.of(
+            ListValue.<Document>builder()
+                .id("9cd980f2-236b-4dc6-bd37-c01e5140e6d5")
+                .value(Document.builder().filename("licence-agreement.pdf").build())
+                .build()
+        );
+        List<ListValue<Document>> rentStatements = List.of(
+            ListValue.<Document>builder()
+                .id("9fd92024-e946-4ef1-80ce-1bab7b3a4f15")
+                .value(Document.builder().filename("arrears-statement.pdf").build())
+                .build()
+        );
+        TenancyLicenceTabDetails tenancyLicenceDetails = TenancyLicenceTabDetails.builder()
+            .typeOfTenancyLicence("Licence")
+            .tenancyLicenceDocuments(tenancyDocuments)
+            .build();
+        RentArrearsTabDetails rentArrearsDetails = RentArrearsTabDetails.builder()
+            .rentAmount("800")
+            .rentStatement(rentStatements)
+            .build();
+        CaseDetailsTab builtCaseDetailsTab = CaseDetailsTab.builder()
+            .tenancyLicenceDetails(tenancyLicenceDetails)
+            .rentArrearsDetails(rentArrearsDetails)
+            .build();
 
         PossessionClaimResponse draftResponse = PossessionClaimResponse.builder()
             .defendantContactDetails(null)
@@ -171,13 +234,25 @@ class CitizenStartEventStrategyTest {
             .thenReturn(PCSCase.builder()
                             .possessionClaimResponse(draftResponse)
                             .build());
+        when(caseDetailsTabView.buildCaseDetailsTab(any(PCSCase.class), eq(false))).thenReturn(builtCaseDetailsTab);
 
         // When
-        underTest.loadDraft(CASE_REFERENCE, caseData);
+        PCSCase result = underTest.loadDraft(CASE_REFERENCE, caseData);
 
         // Then
+        assertThat(result).isNotNull();
+        assertThat(result.getCaseDetailsTab()).isNotNull();
+        assertThat(result.getCaseDetailsTab().getTenancyLicenceDetails()).isEqualTo(tenancyLicenceDetails);
+        assertThat(result.getCaseDetailsTab().getRentArrearsDetails()).isEqualTo(rentArrearsDetails);
+        assertThat(result.getCaseDetailsTab().getTenancyLicenceDetails().getTenancyLicenceDocuments())
+            .isEqualTo(tenancyDocuments);
+        assertThat(result.getCaseDetailsTab().getRentArrearsDetails().getRentStatement())
+            .isEqualTo(rentStatements);
         verify(draftCaseDataService).getUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim);
         verify(possessionClaimDraftBuilder).buildCaseWithDraft(caseData, draftResponse);
+        verify(tenancyLicenceView).setCaseFields(result, pcsCaseEntity);
+        verify(rentArrearsView).setCaseFields(result, pcsCaseEntity);
+        verify(caseDetailsTabView).buildCaseDetailsTab(result, false);
     }
 
     @Test
@@ -403,7 +478,7 @@ class CitizenStartEventStrategyTest {
         underTest.loadDraft(CASE_REFERENCE, caseData);
 
         // Then
-        verify(pcsCaseService, atLeastOnce()).loadCase(CASE_REFERENCE);
+        verify(pcsCaseService).loadCase(CASE_REFERENCE);
         verify(accessValidator).validateAndGetDefendant(pcsCaseEntity, defendantUserId);
         verify(responseMapper).buildPartyFromEntity(eq(matchedDefendant), any(PCSCase.class));
         verify(possessionClaimDraftBuilder).buildCaseWithDraft(eq(caseData), any(PossessionClaimResponse.class));

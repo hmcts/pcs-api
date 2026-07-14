@@ -9,6 +9,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponseStatus;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.CaseDetailsTab;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.utils.DefendantOnlyDraftBuilder;
@@ -125,8 +126,7 @@ public class CitizenStartEventStrategy implements RespondPossessionClaimStartEve
 
         var existingCaseDetailsTab = pcsCase.getCaseDetailsTab();
         var builtCaseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase, pcsCase.getDateSubmitted() != null);
-        var caseDetailsTab = existingCaseDetailsTab == null 
-            ? new uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.CaseDetailsTab() : existingCaseDetailsTab;
+        var caseDetailsTab = existingCaseDetailsTab == null ? new CaseDetailsTab() : existingCaseDetailsTab;
 
         if (builtCaseDetailsTab != null) {
             caseDetailsTab.setTenancyLicenceDetails(builtCaseDetailsTab.getTenancyLicenceDetails());
