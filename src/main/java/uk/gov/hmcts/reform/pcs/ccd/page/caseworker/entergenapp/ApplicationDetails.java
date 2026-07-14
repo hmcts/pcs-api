@@ -1,6 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.caseworker.entergenapp;
 
-import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
@@ -12,17 +12,26 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.EnterGenAppRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.EnterGenAppType;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
+import java.time.Clock;
+import java.time.LocalDate;
 import java.util.List;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.fieldEquals;
 
-@AllArgsConstructor
 @Component
 public class ApplicationDetails implements CcdPageConfiguration {
 
     private static final String SOMETHING_ELSE_DETAILS_LABEL = "Which categories apply";
 
+    private final Clock ukClock;
+
     private final TextAreaValidationService textAreaValidationService;
+
+    public ApplicationDetails(@Qualifier("ukClock") Clock ukClock,
+                                     TextAreaValidationService textAreaValidationService) {
+        this.ukClock = ukClock;
+        this.textAreaValidationService = textAreaValidationService;
+    }
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -44,6 +53,14 @@ public class ApplicationDetails implements CcdPageConfiguration {
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
                                                                   CaseDetails<PCSCase, State> detailsBefore) {
         PCSCase caseData = details.getData();
+        LocalDate dateReceived = caseData.getEnterGenAppRequest().getDateReceived();
+        LocalDate currentDate = LocalDate.now(ukClock);
+
+        if (dateReceived != null && !dateReceived.isBefore(currentDate)) {
+            return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
+                .errorMessageOverride("Date the application was received must be in the past")
+                .build();
+        }
 
         List<String> validationErrors = validateSomethingElseDetails(caseData);
 
