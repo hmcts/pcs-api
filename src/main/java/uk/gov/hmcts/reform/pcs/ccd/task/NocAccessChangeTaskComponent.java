@@ -46,10 +46,9 @@ public class NocAccessChangeTaskComponent {
     @Bean
     public CustomTask<NocAccessChangeTaskData> nocAccessChangeTask() {
         return Tasks.custom(NOC_ACCESS_CHANGE_TASK_DESCRIPTOR)
-            .onFailure(new FailureHandler.MaxRetriesFailureHandler<>(
-                maxRetries,
-                new FailureHandler.ExponentialBackoffFailureHandler<>(backoffDelay)
-            ))
+            .onFailure(FailureHandler.<NocAccessChangeTaskData>maxRetries(maxRetries)
+                           .withBackoff(backoffDelay)
+                           .thenRemove())
             .execute((taskInstance, executionContext) -> {
                 NocAccessChangeTaskData taskData = taskInstance.getData();
                 long caseReference = Long.parseLong(taskData.getCaseReference());

@@ -35,6 +35,7 @@ import uk.gov.hmcts.reform.pcs.ccd.model.NocAccessChangeTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.LegalRepresentativeRepository;
 import uk.gov.hmcts.reform.pcs.ccd.task.NocAccessChangeTaskComponent;
+import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationDetailsService;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
@@ -47,6 +48,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -281,6 +283,22 @@ public class PcsNoticeOfChangeTest {
         assertEquals(NocError.NO_ANSWER_PROVIDED_FOR_QUESTION.code(), actual.code());
         assertEquals("No answer has been provided for question ID 'pcs-defendant-last-name'",
                      actual.message());
+    }
+
+    @Test
+    void validate_WithCaseNotFound_ReturnException() {
+        // given
+        when(featureToggleService.isEnabled(FeatureFlag.CUI_RESPOND_TO_CLAIM_LR)).thenReturn(true);
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_2)).thenReturn(true);
+
+        NocAnswer answer = new NocAnswer("pcs-defendant-first-name", "");
+        NocAnswer answer2 = new NocAnswer("pcs-defendant-last-name", "");
+        NocAnswersRequest nocAnswersRequest = new NocAnswersRequest(TEST_CASE_REFERENCE, List.of(answer, answer2));
+
+        // when / then
+        assertThatThrownBy(() -> pcsNoticeOfChange.validate(nocSubmitContext, nocAnswersRequest))
+            .isInstanceOf(CaseNotFoundException.class)
+            .hasMessage("No case found with reference %s", TEST_CASE_REFERENCE);
     }
 
     @Test
@@ -553,6 +571,23 @@ public class PcsNoticeOfChangeTest {
         assertEquals(orgId, organisation.organisationId());
         assertEquals(orgName, organisation.organisationName());
     }
+
+    @Test
+    void submit_WithCaseNotFound_ThrowsException() {
+        // given
+        String firstName = "Dan";
+        String lastName = "Tester";
+        NocAnswer answer = new NocAnswer("pcs-defendant-first-name", firstName);
+        NocAnswer answer2 = new NocAnswer("pcs-defendant-last-name", lastName);
+        NocAnswersRequest nocAnswersRequest = new NocAnswersRequest(TEST_CASE_REFERENCE, List.of(answer, answer2));
+        String userId = UUID.randomUUID().toString();
+
+        // when / then
+        assertThatThrownBy(() -> pcsNoticeOfChange.submit(nocSubmitContext, nocAnswersRequest))
+            .isInstanceOf(CaseNotFoundException.class)
+            .hasMessage("No case found with reference %s", TEST_CASE_REFERENCE);
+    }
+
 
     @Test
     void submit_WithDefendantNotAlreadyRepresented_SchedulesAccessChangeTask() {

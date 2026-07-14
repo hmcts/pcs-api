@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.task;
 
 import com.github.kagkarlsson.scheduler.task.CompletionHandler;
+import com.github.kagkarlsson.scheduler.task.Execution;
 import com.github.kagkarlsson.scheduler.task.ExecutionContext;
 import com.github.kagkarlsson.scheduler.task.TaskInstance;
 import com.github.kagkarlsson.scheduler.task.helper.CustomTask;
@@ -19,6 +20,7 @@ import java.time.Duration;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -77,5 +79,36 @@ class NocAccessChangeTaskComponentTest {
         verify(legalRepresentativePartyLinkService).linkLegalRepresentativeToParty(1L, partyId,
                                                                                    UUID.fromString(userId),
                                                                                    organisationDetailsResponse);
+    }
+
+    @Test
+    void nocAccessChangeTask_shouldLogErrorAndThrowException_whenServiceFails() {
+        // given
+        String partyId = UUID.randomUUID().toString();
+        String userId = UUID.randomUUID().toString();
+        NocAccessChangeTaskData taskData = NocAccessChangeTaskData.builder()
+            .partyId(partyId)
+            .organisationDetailsResponse(organisationDetailsResponse)
+            .userId(userId)
+            .caseReference("1")
+            .build();
+
+        when(taskInstance.getData()).thenReturn(taskData);
+
+        Execution execution = org.mockito.Mockito.mock(Execution.class);
+        when(executionContext.getExecution()).thenReturn(execution);
+
+        RuntimeException expectedException = new RuntimeException("Database error or service unavailable");
+        when(caseRoleAssignmentService.assignRasRole(1L, userId, UserRole.DEFENDANT_SOLICITOR))
+            .thenThrow(expectedException);
+
+        CustomTask<NocAccessChangeTaskData> task = nocAccessChangeTaskComponent.nocAccessChangeTask();
+
+        // when & then
+        assertThatThrownBy(() -> task.execute(taskInstance, executionContext))
+            .isInstanceOf(RuntimeException.class)
+            .hasMessage("Database error or service unavailable");
+
+        verify(caseRoleAssignmentService).assignRasRole(1L, userId, UserRole.DEFENDANT_SOLICITOR);
     }
 }

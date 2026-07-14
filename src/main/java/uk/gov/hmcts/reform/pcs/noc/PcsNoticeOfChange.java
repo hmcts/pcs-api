@@ -4,7 +4,9 @@ import com.github.kagkarlsson.scheduler.SchedulerClient;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
+import uk.gov.hmcts.ccd.sdk.api.ChallengeQuestion;
 import uk.gov.hmcts.ccd.sdk.api.ConfigBuilder;
+import uk.gov.hmcts.ccd.sdk.api.NoticeOfChange;
 import uk.gov.hmcts.ccd.sdk.api.noc.NocAnswer;
 import uk.gov.hmcts.ccd.sdk.api.noc.NocAnswersRequest;
 import uk.gov.hmcts.ccd.sdk.api.noc.NocAnswersResponse;
@@ -78,11 +80,11 @@ public class PcsNoticeOfChange implements CCDConfig<PCSCase, State, UserRole> {
     @Override
     public void configure(ConfigBuilder<PCSCase, State, UserRole> builder) {
 
-        var noticeOfChange = builder.noticeOfChange()
+        NoticeOfChange.NoticeOfChangeBuilder<PCSCase, UserRole> noticeOfChange = builder.noticeOfChange()
             .validate(this::validate)
             .submit(this::submit);
 
-        var challenge = noticeOfChange.challenge(CHALLENGE_ID);
+        ChallengeQuestion.ChallengeBuilder<PCSCase, UserRole> challenge = noticeOfChange.challenge(CHALLENGE_ID);
         challenge
             .question(FIRST_NAME_QUESTION_ID, "Enter client first name")
             .answer(CASE_ROLE)
