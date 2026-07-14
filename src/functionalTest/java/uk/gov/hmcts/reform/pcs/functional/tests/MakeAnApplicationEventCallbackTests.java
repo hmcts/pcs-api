@@ -2,11 +2,11 @@ package uk.gov.hmcts.reform.pcs.functional.tests;
 
 import lombok.extern.slf4j.Slf4j;
 import java.util.Map;
-import java.util.Objects;
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.interfaces.DecodedJWT;
 import net.serenitybdd.annotations.Steps;
 import net.serenitybdd.annotations.Title;
 import net.serenitybdd.junit5.SerenityJUnit5Extension;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
@@ -22,11 +22,10 @@ import uk.gov.hmcts.reform.pcs.functional.steps.ApiSteps;
 import uk.gov.hmcts.reform.pcs.functional.steps.BaseApi;
 import uk.gov.hmcts.reform.pcs.functional.testutils.PayloadLoader;
 import uk.gov.hmcts.reform.pcs.functional.testutils.PcsIdamTokenClient;
-import uk.gov.hmcts.reform.pcs.functional.testutils.CaseRoleCleanUp;
 import net.serenitybdd.rest.SerenityRest;
 
 @Slf4j
-@Tag("Functional")
+@Tag("Functional_1")
 @EnabledIfEnvironmentVariable(named = "CCD_ENABLED", matches = "true")
 @ExtendWith(SerenityJUnit5Extension.class)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
@@ -37,25 +36,14 @@ public class MakeAnApplicationEventCallbackTests extends BaseApi {
     ApiSteps apiSteps;
 
     private Long caseReference;
-    private String extractedPartyId;
-    private String extractedPartyName;
-    private String eventToken;
-    private static final String caseType = CaseType.getCaseType();
+    private final String caseType = CaseType.getCaseType();
+
+    // Using static class memory so it persists cleanly across both tests
+    private static String savedEventToken;
 
     @BeforeAll
     void setUp() {
-        caseReference = apiSteps.ccdCaseIsCreated("england");
-    }
-
-    @AfterAll
-    void cleanUp() {
-        if (caseReference != null) {
-            CaseRoleCleanUp.cleanUpCaseRole(
-                caseReference.toString(),
-                TestConstants.PCS_SOLICITOR_AUTOMATION_IDAM_UID,
-                "[DEFENDANTSOLICITOR]"
-            );
-        }
+        caseReference = apiSteps.ccdCaseIsCreatedAndIssued("england");
     }
 
     @Title("makeAnApplication start event callback test - returns 200")
@@ -76,36 +64,28 @@ public class MakeAnApplicationEventCallbackTests extends BaseApi {
         apiSteps.callIsSubmittedToTheEndpoint("StartEventCallback", "POST");
         apiSteps.checkStatusCode(200);
 
-        eventToken = SerenityRest.lastResponse().jsonPath().getString("token");
-
         apiSteps.theResponseBodyMatchesTheExpectedResponse(
             "/responses/makeAnApplication-startEventCallbackResponse.json");
 
-        extractedPartyId = SerenityRest.lastResponse().jsonPath()
-            .getString("data.currentRepresentedPartyId");
-        if (extractedPartyId == null) {
-            extractedPartyId = SerenityRest.lastResponse().jsonPath()
-                .getString("data.representedPartyNames.list_items[0].code");
-        }
-
-        extractedPartyName = SerenityRest.lastResponse().jsonPath()
-            .getString("data.currentRepresentedPartyName");
-        if (extractedPartyName == null) {
-            extractedPartyName = SerenityRest.lastResponse().jsonPath()
-                .getString("data.representedPartyNames.list_items[0].label");
-        }
+        savedEventToken = SerenityRest.lastResponse().jsonPath().getString("token");
     }
 
     @Title("makeAnApplication submit event callback test - returns 200")
     @Test
     @Order(2)
     void makeAnApplicationSubmitEventCallbackTest() {
+        DecodedJWT decodedJWT = JWT.decode(savedEventToken);
+        String decodedCaseId = decodedJWT.getClaim("case-id").asString();
+
         String submitApplicationRequestBody = PayloadLoader.load(
             "/payloads/makeAnApplication-submitEventCallbackRequest.json",
             Map.of(
-                "currentRepresentedPartyId", Objects.toString(extractedPartyId, "2269a743-b1ea-4c2b-8c1e-b15caca1b120"),
-                "currentRepresentedPartyName", Objects.toString(extractedPartyName, "Jane Doe"),
-                "eventToken", Objects.toString(eventToken, "")
+                "caseId", String.valueOf(caseReference),
+                "internal_case_id", decodedCaseId,
+                "caseTypeId", caseType,
+                "currentRepresentedPartyId", "5659e6a9-8d00-45b5-a5c3-694e5a593cd3",
+                "currentRepresentedPartyName", "Possession Claims Solicitor Org",
+                "eventToken", savedEventToken
             )
         );
 
@@ -113,8 +93,7 @@ public class MakeAnApplicationEventCallbackTests extends BaseApi {
         apiSteps.theRequestContainsValidIdamToken(PcsIdamTokenClient.UserType.solicitorUser);
         apiSteps.theRequestContainsValidServiceToken(TestConstants.PCS_FRONTEND);
         apiSteps.theRequestContainsIdempotencyKeyHeader();
-
-        apiSteps.theRequestContainsTheQueryParameter("Experimental", "true");
+        apiSteps.theRequestContainsTheQueryParameter("eventId", "makeAnApplication");
         apiSteps.theRequestContainsBody(submitApplicationRequestBody);
 
         apiSteps.callIsSubmittedToTheEndpoint("SubmitEventCallback", "POST");
