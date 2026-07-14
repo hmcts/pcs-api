@@ -118,6 +118,7 @@ public class CitizenStartEventStrategy implements RespondPossessionClaimStartEve
 
         return possessionClaimDraftBuilder.buildCaseWithDraft(pcsCase, merged);
     }
+
     private PCSCase loadCaseDetailsTab(long caseReference, PCSCase pcsCase) {
         PcsCaseEntity caseEntity = pcsCaseService.loadCase(caseReference);
         tenancyLicenceView.setCaseFields(pcsCase, caseEntity);
@@ -125,8 +126,8 @@ public class CitizenStartEventStrategy implements RespondPossessionClaimStartEve
 
         var existingCaseDetailsTab = pcsCase.getCaseDetailsTab();
         var builtCaseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase, pcsCase.getDateSubmitted() != null);
-        var caseDetailsTab = existingCaseDetailsTab == null ? new uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.CaseDetailsTab()
-            : existingCaseDetailsTab;
+        var caseDetailsTab = existingCaseDetailsTab == null 
+            ? new uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.CaseDetailsTab() : existingCaseDetailsTab;
 
         caseDetailsTab.setTenancyLicenceDetails(builtCaseDetailsTab.getTenancyLicenceDetails());
         caseDetailsTab.setRentArrearsDetails(builtCaseDetailsTab.getRentArrearsDetails());
