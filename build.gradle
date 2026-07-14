@@ -388,7 +388,6 @@ ext {
 
 configurations.all {
   resolutionStrategy {
-    failOnVersionConflict()
 
     force "io.netty:netty-all:${nettyVersion}"
     eachDependency { DependencyResolveDetails details ->
