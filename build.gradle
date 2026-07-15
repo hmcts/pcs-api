@@ -401,7 +401,7 @@ configurations.all {
       }
     }
 
-    force "com.fasterxml.jackson.core:jackson-annotations:2.21"
+    force "com.fasterxml.jackson.core:jackson-annotations:2.22"
     force "com.fasterxml.jackson.core:jackson-databind:${jackson2Version}"
     force "tools.jackson.core:jackson-databind:${jackson3Version}"
 
@@ -426,7 +426,7 @@ configurations.all {
 }
 
 dependencies {
-  implementation 'com.fasterxml.jackson.core:jackson-annotations:2.21'
+  implementation 'com.fasterxml.jackson.core:jackson-annotations:2.22'
   implementation enforcedPlatform("com.fasterxml.jackson:jackson-bom:${jackson2Version}")
   implementation enforcedPlatform("tools.jackson:jackson-bom:${jackson3Version}")
 
