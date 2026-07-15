@@ -1,9 +1,9 @@
 export const submitCaseApiData = {
   submitCaseEventName: 'resumePossessionClaim',
   submitCasePayload: {
-    regionId: "1",
-    caseManagementLocationNumber: "20262",
-    orgNameFound: "Yes",
+    regionId: '1',
+    caseManagementLocationNumber: '20262',
+    orgNameFound: 'Yes',
     legislativeCountry: 'England',
     claimantType: {
       value: {
@@ -97,6 +97,8 @@ export const submitCaseApiData = {
     completionNextStep: 'SUBMIT_AND_PAY_NOW'
   },
   submitCasePayloadNoDefendants: {
+    regionId: '1',
+    caseManagementLocationNumber: '20262',
     legislativeCountry: 'England',
     claimantType: {
       value: {
@@ -166,6 +168,8 @@ export const submitCaseApiData = {
     completionNextStep: 'SUBMIT_AND_PAY_NOW'
   },
   submitCasePayloadOnlyMain: {
+    regionId: '1',
+    caseManagementLocationNumber: '20262',
     legislativeCountry: 'England',
     claimantType: {
       value: {
@@ -255,6 +259,8 @@ export const submitCaseApiData = {
     completionNextStep: 'SUBMIT_AND_PAY_NOW'
   },
   submitCasePayloadCaseTab: {
+    regionId: '1',
+    caseManagementLocationNumber: '20262',
     legislativeCountry: 'England',
     orgNameFound: 'Yes',
     claimantType: {
@@ -364,6 +370,8 @@ export const submitCaseApiData = {
     completionNextStep: 'SUBMIT_AND_PAY_NOW'
   },
   submitCasePayloadCaseSummary: {
+    regionId: '1',
+    caseManagementLocationNumber: '20262',
     legislativeCountry: 'England',
     orgNameFound: 'Yes',
     claimantType: {
@@ -492,6 +500,8 @@ export const submitCaseApiData = {
     },
   },
   submitCasePayloadCaseDetails: {
+    regionId: '1',
+    caseManagementLocationNumber: '20262',
     legislativeCountry: 'England',
     orgNameFound: 'Yes',
     claimantType: {
@@ -657,6 +667,8 @@ export const submitCaseApiData = {
     },
   },
   submitCasePayloadCaseFileView: {
+    regionId: '1',
+    caseManagementLocationNumber: '20262',
     orgNameFound: 'Yes',
     claimantName: 'Possession Claims Solicitor Org',
     isClaimantNameCorrect: 'YES',
@@ -908,6 +920,8 @@ export const submitCaseApiData = {
 
   },
   submitCasePayloadDefault: {
+    regionId: '1',
+    caseManagementLocationNumber: '20262',
     legislativeCountry: 'England',
     orgNameFound: 'Yes',
     claimantType: {
