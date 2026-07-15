@@ -29,7 +29,7 @@ public class AddCaseNotePage implements CcdPageConfiguration, CcdPage {
             .page(pageKey, this::midEvent)
             .pageLabel("Case note")
             .label(pageKey + "-line-separator", "---")
-            .mandatory(PCSCase::getNote);
+            .mandatoryWithLabel(PCSCase::getNote, "## " + NOTE_LABEL);
     }
 
     @Override
