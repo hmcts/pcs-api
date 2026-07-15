@@ -378,7 +378,7 @@ ext {
   nettyVersion = "4.1.136.Final"
   postgresVersion = "42.7.12"
   pdfBoxVersion = "3.0.8"
-  jackson2Version = "2.22"
+  jackson2Version = "2.21.4"
   jackson3Version = "3.2.1"
   cucumberVersion = "7.34.4"
 
@@ -426,10 +426,11 @@ configurations.all {
 }
 
 dependencies {
-  implementation enforcedPlatform("io.netty:netty-bom:${nettyVersion}")
   implementation group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: jackson2Version
   implementation enforcedPlatform("com.fasterxml.jackson:jackson-bom:${jackson2Version}")
   implementation enforcedPlatform("tools.jackson:jackson-bom:${jackson3Version}")
+
+  implementation enforcedPlatform("io.netty:netty-bom:${nettyVersion}")
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: springFrameworkBootVersion
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-actuator', version: springFrameworkBootVersion
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-aop', version: springFrameworkBootVersion
