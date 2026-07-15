@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.document;
 
+import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -1209,7 +1210,7 @@ class DocumentServiceTest {
     void shouldSaveLegalRepDocuments() {
         String description = "test description";
         String docUrl = "test url";
-        String fileName = "test-filename";
+        String fileName = "test-filename.pdf";
 
         Document document = Document.builder()
             .filename(fileName)
@@ -1258,6 +1259,7 @@ class DocumentServiceTest {
         assertThat(documentEntity.getFileName()).isEqualTo(expectedRenamedFile);
         assertThat(documentEntity.getType().getLabel()).isEqualTo("Photographic evidence");
         assertThat(documentEntity.getDescription()).isEqualTo(description);
+        assertThat(documentEntity.getGeneralApplication()).isEqualTo(selectedGenApp);
     }
 
     @Test
