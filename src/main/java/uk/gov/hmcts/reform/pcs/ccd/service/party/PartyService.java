@@ -1,7 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.party;
 
-import io.micrometer.common.util.StringUtils;
 import lombok.AllArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
@@ -27,12 +27,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 @Service
 @AllArgsConstructor
 public class PartyService {
+
+    private static final String PERSON_UNKNOWN_NAME = "Person unknown";
 
     private final PartyRepository partyRepository;
     private final AddressMapper addressMapper;
@@ -73,10 +77,29 @@ public class PartyService {
     }
 
     public String getPartyName(PartyEntity partyEntity) {
+        if (partyEntity.getNameKnown() == VerticalYesNo.NO) {
+            return PERSON_UNKNOWN_NAME;
+        }
         if (StringUtils.isNotBlank(partyEntity.getOrgName())) {
             return partyEntity.getOrgName();
         } else {
-            return partyEntity.getFirstName() + " " + partyEntity.getLastName();
+            String partyName = Stream.of(partyEntity.getFirstName(), partyEntity.getLastName())
+                .filter(StringUtils::isNotBlank)
+                .collect(Collectors.joining(" "));
+
+            return !partyName.isBlank() ? partyName : PERSON_UNKNOWN_NAME;
+        }
+    }
+
+    public String getPartyLabel(ClaimEntity mainClaim, UUID partyId) {
+        ClaimPartyEntity applicantClaimParty = getClaimParty(mainClaim, partyId);
+
+        if (applicantClaimParty.getRole() == PartyRole.CLAIMANT) {
+            return "Claimant %d".formatted(applicantClaimParty.getRank());
+        } else if (applicantClaimParty.getRole() == PartyRole.DEFENDANT) {
+            return "Defendant %d".formatted(applicantClaimParty.getRank());
+        } else {
+            return null;
         }
     }
 
@@ -121,7 +144,7 @@ public class PartyService {
                 .map(ClaimPartyEntity::getRole)
                 .orElseThrow(() -> new PartyNotFoundException("Party not found on main claim"));
     }
-    
+
     public PartyEntity getPartyEntityById(UUID partyId, long caseReference) {
         return partyRepository.findByIdAndPcsCaseCaseReference(partyId, caseReference)
             .orElseThrow(() -> new IllegalStateException(
@@ -268,6 +291,13 @@ public class PartyService {
             return contactPreferences.getOverriddenClaimantContactAddress();
         }
         return contactPreferences.getOrganisationAddress();
+    }
+
+    private static ClaimPartyEntity getClaimParty(ClaimEntity claim, UUID partyId) {
+        return claim.getClaimParties().stream()
+            .filter(claimPartyEntity -> partyId.equals(claimPartyEntity.getParty().getId()))
+            .findFirst()
+            .orElseThrow(() -> new PartyNotFoundException("Party not found"));
     }
 
 }

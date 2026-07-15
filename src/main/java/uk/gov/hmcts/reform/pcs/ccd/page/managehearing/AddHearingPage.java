@@ -53,14 +53,8 @@ public class AddHearingPage implements CcdPageConfiguration, CcdPage {
             .mandatory(Hearing::getNoticeIssued)
             .mandatory(Hearing::getIsWithoutNotice, "hearing_NoticeIssued=\"YES\"")
             .done()
-            .label("hearingNoticePartiesLabel",
-                """
-                    <span class="form-label ng-star-inserted">Who should receive the hearing notice?</span>
-                    <span class="form-hint ng-star-inserted">Select all that apply</span>
-                """,
-               "hearing_IsWithoutNotice=\"YES\""
-            )
-            .mandatory(PCSCase::getPartyMultiSelectionList, "hearing_IsWithoutNotice=\"YES\"")
+            .mandatory(PCSCase::getPartyMultiSelectionList, "hearing_IsWithoutNotice=\"YES\"", null,
+                       "Who should receive the hearing notice?", "Select all that apply")
             .complex(PCSCase::getHearing)
             .optional(Hearing::getAdditionalInformation)
             .done();

@@ -12,23 +12,29 @@ import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.DynamicListElement;
 import uk.gov.hmcts.ccd.sdk.type.DynamicMultiSelectList;
-import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.ManageHearingOption;
+import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.page.managehearing.ManageHearingConfigurer;
 import uk.gov.hmcts.reform.pcs.ccd.service.HearingService;
+import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.location.model.CourtVenue;
 import uk.gov.hmcts.reform.pcs.location.service.LocationReferenceService;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.manageHearing;
@@ -42,6 +48,8 @@ public class ManageHearing implements CCDConfig<PCSCase, State, UserRole> {
     private final AddressFormatter addressFormatter;
     private final HearingService hearingService;
     private final LocationReferenceService locationReferenceService;
+    private final PcsCaseService pcsCaseService;
+    private final PartyService partyService;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -58,15 +66,12 @@ public class ManageHearing implements CCDConfig<PCSCase, State, UserRole> {
     }
 
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
+        long caseReference = eventPayload.caseReference();
         PCSCase pcsCase = eventPayload.caseData();
 
-        List<DynamicListElement> listItems =
-            buildPartyListItems(pcsCase.getAllClaimants(), pcsCase.getAllDefendants());
-        pcsCase.setPartyMultiSelectionList(
-            DynamicMultiSelectList.builder()
-                .listItems(listItems)
-                .build()
-        );
+        PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
+
+        pcsCase.setPartyMultiSelectionList(buildPartyList(pcsCaseEntity));
 
         List<Integer> baseLocation = List.of(Integer.parseInt(pcsCase.getCaseManagementLocation().getBaseLocation()));
 
@@ -76,13 +81,17 @@ public class ManageHearing implements CCDConfig<PCSCase, State, UserRole> {
             if (!CollectionUtils.isEmpty(courtVenues)) {
                 CourtVenue courtVenue = courtVenues.getFirst();
                 pcsCase.setHearingLocation(courtVenue.courtName());
+            } else {
+                log.warn("Unable to find hearing location for case {}:", eventPayload.caseReference());
+                pcsCase.setHearingLocation("Unable to find hearing location");
             }
         } catch (Exception e) {
-            log.error("Unable to fetch hearing location for case {}:", eventPayload.caseReference(), e);
+            log.warn("Unable to fetch hearing location for case {}:", eventPayload.caseReference(), e);
             pcsCase.setHearingLocation("Unable to retrieve hearing location");
         }
 
         if (CollectionUtils.isEmpty(pcsCase.getHearingList())) {
+            pcsCase.setShowManageHearingPage(VerticalYesNo.NO);
             pcsCase.setManageHearingOption(ManageHearingOption.ADD);
         } else {
             pcsCase.setShowManageHearingPage(VerticalYesNo.YES);
@@ -125,52 +134,32 @@ public class ManageHearing implements CCDConfig<PCSCase, State, UserRole> {
             """.formatted(caseId, address, caseName);
     }
 
-    private List<DynamicListElement> buildPartyListItems(
-        List<ListValue<Party>> claimants,
-        List<ListValue<Party>> defendants
-    ) {
-        List<DynamicListElement> listItems = new ArrayList<>();
+    private DynamicMultiSelectList buildPartyList(PcsCaseEntity pcsCaseEntity) {
+        ClaimEntity mainClaim = pcsCaseEntity.getMainClaim();
+        Map<PartyRole, List<ClaimPartyEntity>> partyRoleListMap = mainClaim.getClaimParties().stream()
+            .collect(Collectors.groupingBy(ClaimPartyEntity::getRole));
 
-        for (int i = 0; i < claimants.size(); i++) {
-            ListValue<Party> listValue = claimants.get(i);
-            String partyId = listValue.getId();
-            Party party = listValue.getValue();
+        List<DynamicListElement> partyElementList = new ArrayList<>();
 
-            listItems.add(
-                DynamicListElement.builder()
-                  .code(UUID.fromString(partyId))
-                  .label(formatClaimantListItemLabel(party, i + 1))
-                  .build()
-            );
-        }
+        partyRoleListMap.getOrDefault(PartyRole.CLAIMANT, List.of()).stream()
+            .map(claimPartyEntity -> mapToPartyListElement(mainClaim, claimPartyEntity.getParty()))
+            .forEach(partyElementList::add);
 
-        for (int i = 0; i < defendants.size(); i++) {
-            ListValue<Party> listValue = defendants.get(i);
-            String partyId = listValue.getId();
-            Party party = listValue.getValue();
+        partyRoleListMap.getOrDefault(PartyRole.DEFENDANT, List.of()).stream()
+            .map(claimPartyEntity -> mapToPartyListElement(mainClaim, claimPartyEntity.getParty()))
+            .forEach(partyElementList::add);
 
-            listItems.add(
-                DynamicListElement.builder()
-                    .code(UUID.fromString(partyId))
-                    .label(formatDefendantListItemLabel(party, i + 1))
-                    .build()
-            );
-        }
-
-        return listItems;
+        return DynamicMultiSelectList.builder().listItems(partyElementList).build();
     }
 
-    private String formatClaimantListItemLabel(Party claimant, int index) {
-        return claimant.getOrgName() + " - Claimant " + index;
+    private DynamicListElement mapToPartyListElement(ClaimEntity mainClaim, PartyEntity partyEntity) {
+        String partyName = partyService.getPartyName(partyEntity);
+        String partyLabel = partyService.getPartyLabel(mainClaim, partyEntity.getId());
+        String label = ("%s - %s").formatted(partyName, partyLabel);
+        return DynamicListElement.builder()
+            .code(partyEntity.getId())
+            .label(label)
+            .build();
     }
 
-    private String formatDefendantListItemLabel(Party defendant, int index) {
-        String name;
-        if (defendant.getNameKnown() == VerticalYesNo.YES) {
-            name = defendant.getFirstName() + " " + defendant.getLastName();
-        } else {
-            name = "Person unknown";
-        }
-        return name + " - Defendant " + index;
-    }
 }
