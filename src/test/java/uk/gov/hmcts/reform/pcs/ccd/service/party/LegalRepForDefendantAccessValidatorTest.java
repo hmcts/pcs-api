@@ -72,7 +72,6 @@ class LegalRepForDefendantAccessValidatorTest {
 
     @Test
     void shouldReturnDefendant() {
-        UUID authenticatedUserId = UUID.randomUUID();
         UUID authenticatedUserIdamId = UUID.randomUUID();
         String organisationId = "ORG-123";
 
@@ -90,7 +89,7 @@ class LegalRepForDefendantAccessValidatorTest {
         ));
 
         PcsCaseEntity caseEntity = createCaseWithDefendant(defendant);
-
+        UUID authenticatedUserId = UUID.randomUUID();
         when(organisationService.getOrganisationIdForCurrentUser())
             .thenReturn(organisationId);
         List<PartyEntity> defendants = List.of(defendant);
@@ -154,7 +153,6 @@ class LegalRepForDefendantAccessValidatorTest {
     @Test
     void shouldThrowWhenAuthenticatedOrganisationIdIsBlankAndUserIdsDoNotMatch() {
         // Given
-        UUID authenticatedUserId = UUID.randomUUID();
         UUID linkedUserId = UUID.randomUUID();
 
         PartyEntity defendant = PartyEntity.builder().build();
@@ -181,7 +179,7 @@ class LegalRepForDefendantAccessValidatorTest {
 
         when(defendantPartyExtractor.extractDefendants(caseEntity, CASE_REFERENCE))
             .thenReturn(defendants);
-
+        UUID authenticatedUserId = UUID.randomUUID();
         // When / Then
         assertThatThrownBy(() ->
                                underTest.validateAndGetDefendants(caseEntity, authenticatedUserId))
@@ -192,7 +190,6 @@ class LegalRepForDefendantAccessValidatorTest {
     @Test
     void shouldThrowWhenOrganisationIdsDoNotMatchAndUserIdsDiffer() {
         // Given
-        UUID authenticatedUserId = UUID.randomUUID();
         UUID linkedUserId = UUID.randomUUID();
 
         PartyEntity defendant = PartyEntity.builder().build();
@@ -219,7 +216,7 @@ class LegalRepForDefendantAccessValidatorTest {
 
         when(defendantPartyExtractor.extractDefendants(caseEntity, CASE_REFERENCE))
             .thenReturn(defendants);
-
+        UUID authenticatedUserId = UUID.randomUUID();
         // When / Then
         assertThatThrownBy(() ->
                                underTest.validateAndGetDefendants(caseEntity, authenticatedUserId))
