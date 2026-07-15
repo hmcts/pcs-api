@@ -19,7 +19,9 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.type.DynamicListWithValueCode;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
+import uk.gov.hmcts.reform.pcs.config.JacksonConfiguration;
 
 import java.time.Instant;
 import java.util.List;
@@ -101,6 +103,197 @@ class DocumentAmendSelectionServiceTest {
         assertThat(serialisedCaseData).contains("\"documentAmend_ApplicationsDocuments\"");
         assertThat(serialisedCaseData).contains("\"documentAmend_ApplicationsEmpty\"");
         assertThat(serialisedCaseData).doesNotContain("documentAmend_applicationsDocuments");
+    }
+
+    @Test
+    void shouldSerialiseAmendedFileNameFromSelectedDocumentBaseFileNameWhenUnset() throws JsonProcessingException {
+        PCSCase caseData = PCSCase.builder()
+            .documentAmendDetails(DocumentAmendDetails.builder()
+                .selectedDocumentBaseFileName("Local test application")
+                .build())
+            .build();
+
+        String serialisedCaseData = new ObjectMapper().writeValueAsString(caseData);
+
+        assertThat(serialisedCaseData)
+            .contains("\"documentAmend_SelectedDocumentBaseFileName\":\"Local test application\"")
+            .contains("\"documentAmend_AmendedFileName\":\"Local test application\"");
+    }
+
+    @Test
+    void shouldNotDefaultAmendedFileNameWhenUserClearsField() throws JsonProcessingException {
+        PCSCase caseData = PCSCase.builder()
+            .documentAmendDetails(DocumentAmendDetails.builder()
+                .selectedDocumentBaseFileName("Local test application")
+                .amendedFileName("")
+                .build())
+            .build();
+
+        String serialisedCaseData = new ObjectMapper().writeValueAsString(caseData);
+
+        assertThat(serialisedCaseData)
+            .contains("\"documentAmend_SelectedDocumentBaseFileName\":\"Local test application\"")
+            .contains("\"documentAmend_AmendedFileName\":\"\"");
+    }
+
+    @Test
+    void shouldDeserialiseCategoryDocumentFromCcdValueCodeAndValueLabel() throws JsonProcessingException {
+        UUID documentId = UUID.fromString("aae85c47-84ca-4531-a5a8-ba170cfb8742");
+        String json = """
+            {
+              "SelectedFolder": "APPLICATIONS",
+              "ApplicationsDocuments": {
+                "valueCode": "aae85c47-84ca-4531-a5a8-ba170cfb8742",
+                "valueLabel": "Local test application.pdf",
+                "list_items": [
+                  {
+                    "code": "aae85c47-84ca-4531-a5a8-ba170cfb8742",
+                    "label": "Local test application.pdf"
+                  }
+                ]
+              }
+            }
+            """;
+        PCSCase caseData = PCSCase.builder()
+            .documentAmendDetails(new ObjectMapper().readValue(json, DocumentAmendDetails.class))
+            .build();
+        DocumentEntity document = document("Local test application.pdf", APPLICATIONS.getId(), null);
+        document.setId(documentId);
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(PcsCaseEntity.builder()
+            .documents(List.of(document))
+            .build());
+
+        underTest.initialise(CASE_REFERENCE, caseData);
+        List<String> errors = underTest.validateAndStoreSelection(caseData);
+
+        assertThat(errors).isEmpty();
+        assertThat(caseData.getDocumentAmendDetails().getSelectedDocumentId()).isEqualTo(documentId.toString());
+        assertThat(caseData.getDocumentAmendDetails().getSelectedDocumentFileName())
+            .isEqualTo("Local test application.pdf");
+        assertThat(caseData.getDocumentAmendDetails().getSelectedDocumentBaseFileName())
+            .isEqualTo("Local test application");
+        assertThat(caseData.getDocumentAmendDetails().getAmendedFileName()).isEqualTo("Local test application");
+    }
+
+    @Test
+    void shouldDeserialiseSelectedDocumentFromFlattenedExuiCaseData() throws JsonProcessingException {
+        UUID documentId = UUID.fromString("aae85c47-84ca-4531-a5a8-ba170cfb8742");
+        String json = """
+            {
+              "documentAmend_SelectedFolder": "APPLICATIONS",
+              "documentAmend_ApplicationsDocuments": {
+                "value": {
+                  "code": "aae85c47-84ca-4531-a5a8-ba170cfb8742",
+                  "label": "Local test application.pdf"
+                },
+                "list_items": [
+                  {
+                    "code": "aae85c47-84ca-4531-a5a8-ba170cfb8742",
+                    "label": "Local test application.pdf"
+                  }
+                ]
+              }
+            }
+            """;
+        PCSCase caseData = new JacksonConfiguration().getMapper().readValue(json, PCSCase.class);
+        assertThat(caseData.getDocumentAmendDetails()).isNotNull();
+        assertThat(caseData.getDocumentAmendDetails().getSelectedFolder()).isEqualTo(APPLICATIONS);
+        assertThat(caseData.getDocumentAmendDetails().getApplicationsDocuments()).isNotNull();
+        assertThat(caseData.getDocumentAmendDetails().getApplicationsDocuments())
+            .isInstanceOf(DynamicListWithValueCode.class);
+        assertThat(caseData.getDocumentAmendDetails().getApplicationsDocuments().getValue())
+            .isEqualTo(DynamicListElement.builder()
+                .code(documentId)
+                .label("Local test application.pdf")
+                .build());
+        DocumentEntity document = document("Local test application.pdf", APPLICATIONS.getId(), null);
+        document.setId(documentId);
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(PcsCaseEntity.builder()
+            .documents(List.of(document))
+            .build());
+
+        underTest.initialise(CASE_REFERENCE, caseData);
+        List<String> errors = underTest.validateAndStoreSelection(caseData);
+
+        assertThat(errors).isEmpty();
+        assertThat(caseData.getDocumentAmendDetails().getApplicationsDocuments().getValue())
+            .isEqualTo(DynamicListElement.builder()
+                .code(documentId)
+                .label("Local test application.pdf")
+                .build());
+        assertThat(caseData.getDocumentAmendDetails().getSelectedDocumentId()).isEqualTo(documentId.toString());
+        assertThat(caseData.getDocumentAmendDetails().getSelectedDocumentFileName())
+            .isEqualTo("Local test application.pdf");
+        assertThat(caseData.getDocumentAmendDetails().getSelectedDocumentBaseFileName())
+            .isEqualTo("Local test application");
+        assertThat(caseData.getDocumentAmendDetails().getAmendedFileName()).isEqualTo("Local test application");
+    }
+
+    @Test
+    void shouldDeserialiseDynamicListWithValueObject() throws JsonProcessingException {
+        UUID documentId = UUID.fromString("aae85c47-84ca-4531-a5a8-ba170cfb8742");
+        String json = """
+            {
+              "value": {
+                "code": "aae85c47-84ca-4531-a5a8-ba170cfb8742",
+                "label": "Local test application.pdf"
+              },
+              "list_items": [
+                {
+                  "code": "aae85c47-84ca-4531-a5a8-ba170cfb8742",
+                  "label": "Local test application.pdf"
+                }
+              ]
+            }
+            """;
+
+        DynamicListWithValueCode dynamicList = new JacksonConfiguration().getMapper()
+            .readValue(json, DynamicListWithValueCode.class);
+
+        assertThat(dynamicList.getValue()).isEqualTo(DynamicListElement.builder()
+            .code(documentId)
+            .label("Local test application.pdf")
+            .build());
+    }
+
+    @Test
+    void shouldDeserialiseCategoryDocumentFromCcdValueCodeWhenValueIsEmpty() throws JsonProcessingException {
+        UUID documentId = UUID.fromString("aae85c47-84ca-4531-a5a8-ba170cfb8742");
+        String json = """
+            {
+              "SelectedFolder": "APPLICATIONS",
+              "ApplicationsDocuments": {
+                "value": {},
+                "valueCode": "aae85c47-84ca-4531-a5a8-ba170cfb8742",
+                "valueLabel": "Local test application.pdf",
+                "list_items": [
+                  {
+                    "code": "aae85c47-84ca-4531-a5a8-ba170cfb8742",
+                    "label": "Local test application.pdf"
+                  }
+                ]
+              }
+            }
+            """;
+        PCSCase caseData = PCSCase.builder()
+            .documentAmendDetails(new ObjectMapper().readValue(json, DocumentAmendDetails.class))
+            .build();
+        DocumentEntity document = document("Local test application.pdf", APPLICATIONS.getId(), null);
+        document.setId(documentId);
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(PcsCaseEntity.builder()
+            .documents(List.of(document))
+            .build());
+
+        underTest.initialise(CASE_REFERENCE, caseData);
+        List<String> errors = underTest.validateAndStoreSelection(caseData);
+
+        assertThat(errors).isEmpty();
+        assertThat(caseData.getDocumentAmendDetails().getSelectedDocumentId()).isEqualTo(documentId.toString());
+        assertThat(caseData.getDocumentAmendDetails().getSelectedDocumentFileName())
+            .isEqualTo("Local test application.pdf");
+        assertThat(caseData.getDocumentAmendDetails().getSelectedDocumentBaseFileName())
+            .isEqualTo("Local test application");
+        assertThat(caseData.getDocumentAmendDetails().getAmendedFileName()).isEqualTo("Local test application");
     }
 
     @Test
@@ -270,7 +463,7 @@ class DocumentAmendSelectionServiceTest {
 
     @Test
     void shouldPersistSelectedFolderAndDocumentDetails() {
-        DocumentEntity document = document("photo.pdf", EVIDENCE.getId(), null);
+        DocumentEntity document = document("photo.version.1.pdf", EVIDENCE.getId(), null);
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(PcsCaseEntity.builder()
             .documents(List.of(document))
             .build());
@@ -288,7 +481,64 @@ class DocumentAmendSelectionServiceTest {
         assertThat(caseData.getDocumentAmendDetails().getSelectedFolderId()).isEqualTo(EVIDENCE.getId());
         assertThat(caseData.getDocumentAmendDetails().getSelectedFolderLabel()).isEqualTo(EVIDENCE.getLabel());
         assertThat(caseData.getDocumentAmendDetails().getSelectedDocumentId()).isEqualTo(document.getId().toString());
-        assertThat(caseData.getDocumentAmendDetails().getSelectedDocumentFileName()).isEqualTo("photo.pdf");
+        assertThat(caseData.getDocumentAmendDetails().getSelectedDocumentFileName()).isEqualTo("photo.version.1.pdf");
+        assertThat(caseData.getDocumentAmendDetails().getSelectedDocumentBaseFileName()).isEqualTo("photo.version.1");
+        assertThat(caseData.getDocumentAmendDetails().getAmendedFileName()).isEqualTo("photo.version.1");
+    }
+
+    @Test
+    void shouldPopulateAmendedFileNameWhenSelectedDocumentValueOnlyContainsCode() {
+        DocumentEntity document = document("rent statement.pdf", EVIDENCE.getId(), null);
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(PcsCaseEntity.builder()
+            .documents(List.of(document))
+            .build());
+        PCSCase caseData = PCSCase.builder()
+            .documentAmendDetails(DocumentAmendDetails.builder()
+                .selectedFolder(EVIDENCE)
+                .evidenceDocuments(DynamicList.builder()
+                    .value(DynamicListElement.builder()
+                        .code(document.getId())
+                        .build())
+                    .build())
+                .build())
+            .build();
+        underTest.initialise(CASE_REFERENCE, caseData);
+
+        List<String> errors = underTest.validateAndStoreSelection(caseData);
+
+        assertThat(errors).isEmpty();
+        assertThat(caseData.getDocumentAmendDetails().getSelectedDocumentFileName()).isEqualTo("rent statement.pdf");
+        assertThat(caseData.getDocumentAmendDetails().getSelectedDocumentBaseFileName()).isEqualTo("rent statement");
+        assertThat(caseData.getDocumentAmendDetails().getAmendedFileName()).isEqualTo("rent statement");
+    }
+
+    @Test
+    void shouldPopulateAmendedFileNameWhenSelectedDocumentValueOnlyContainsLabel() {
+        DocumentEntity document = document("Local test application.pdf", APPLICATIONS.getId(), null);
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(PcsCaseEntity.builder()
+            .documents(List.of(document))
+            .build());
+        PCSCase caseData = PCSCase.builder()
+            .documentAmendDetails(DocumentAmendDetails.builder()
+                .selectedFolder(APPLICATIONS)
+                .applicationsDocuments(DynamicList.builder()
+                    .value(DynamicListElement.builder()
+                        .label("Local test application.pdf")
+                        .build())
+                    .build())
+                .build())
+            .build();
+        underTest.initialise(CASE_REFERENCE, caseData);
+
+        List<String> errors = underTest.validateAndStoreSelection(caseData);
+
+        assertThat(errors).isEmpty();
+        assertThat(caseData.getDocumentAmendDetails().getSelectedDocumentId()).isEqualTo(document.getId().toString());
+        assertThat(caseData.getDocumentAmendDetails().getSelectedDocumentFileName())
+            .isEqualTo("Local test application.pdf");
+        assertThat(caseData.getDocumentAmendDetails().getSelectedDocumentBaseFileName())
+            .isEqualTo("Local test application");
+        assertThat(caseData.getDocumentAmendDetails().getAmendedFileName()).isEqualTo("Local test application");
     }
 
     @Test

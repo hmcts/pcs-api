@@ -61,19 +61,63 @@ public class DocumentAmendSelectionService {
         if (isEmpty(selectedDocuments)) {
             details.setSelectedDocumentId(null);
             details.setSelectedDocumentFileName(null);
+            details.setSelectedDocumentBaseFileName(null);
+            details.setAmendedFileName(null);
             return List.of(SELECT_DIFFERENT_FOLDER_ERROR);
         }
 
         DynamicListElement selectedDocument = selectedDocuments.getValue();
-        if (selectedDocument == null || selectedDocument.getCode() == null) {
+        if (selectedDocument == null || isBlankSelection(selectedDocument)) {
             details.setSelectedDocumentId(null);
             details.setSelectedDocumentFileName(null);
+            details.setSelectedDocumentBaseFileName(null);
+            details.setAmendedFileName(null);
             return List.of();
         }
 
-        details.setSelectedDocumentId(selectedDocument.getCode().toString());
-        details.setSelectedDocumentFileName(selectedDocument.getLabel());
+        DynamicListElement resolvedDocument = resolveSelectedDocument(selectedDocuments, selectedDocument);
+        String selectedDocumentBaseFileName = baseFileName(resolvedDocument.getLabel());
+        details.setSelectedDocumentId(resolvedDocument.getCode().toString());
+        details.setSelectedDocumentFileName(resolvedDocument.getLabel());
+        details.setSelectedDocumentBaseFileName(selectedDocumentBaseFileName);
+        details.setAmendedFileName(selectedDocumentBaseFileName);
         return List.of();
+    }
+
+    private DynamicListElement resolveSelectedDocument(DynamicList selectedDocuments,
+                                                       DynamicListElement selectedDocument) {
+        if (selectedDocument.getCode() != null && selectedDocument.getLabel() != null) {
+            return selectedDocument;
+        }
+
+        return selectedDocuments.getListItems().stream()
+            .filter(option -> isSelectedOption(selectedDocument, option))
+            .findFirst()
+            .orElse(selectedDocument);
+    }
+
+    private boolean isSelectedOption(DynamicListElement selectedDocument, DynamicListElement option) {
+        if (selectedDocument.getCode() != null && option.getCode() != null
+            && selectedDocument.getCode().toString().equals(option.getCode().toString())) {
+            return true;
+        }
+        return selectedDocument.getLabel() != null && selectedDocument.getLabel().equals(option.getLabel());
+    }
+
+    private boolean isBlankSelection(DynamicListElement selectedDocument) {
+        return selectedDocument.getCode() == null && selectedDocument.getLabel() == null;
+    }
+
+    private String baseFileName(String fileName) {
+        if (fileName == null) {
+            return null;
+        }
+
+        int extensionSeparator = fileName.lastIndexOf('.');
+        if (extensionSeparator <= 0) {
+            return fileName;
+        }
+        return fileName.substring(0, extensionSeparator);
     }
 
     private void setDocumentsForCategory(DocumentAmendDetails details, PcsCaseEntity pcsCase,
@@ -113,11 +157,18 @@ public class DocumentAmendSelectionService {
     private DynamicListElement retainSelectedValue(DynamicListElement selected,
                                                   List<DynamicListElement> options) {
         if (selected == null || selected.getCode() == null) {
-            return null;
+            if (selected == null || selected.getLabel() == null) {
+                return null;
+            }
+            return options.stream()
+                .filter(option -> selected.getLabel().equals(option.getLabel()))
+                .findFirst()
+                .orElse(null);
         }
 
         return options.stream()
-            .filter(option -> selected.getCode().toString().equals(option.getCode().toString()))
+            .filter(option -> selected.getCode().toString().equals(option.getCode().toString())
+                || selected.getLabel() != null && selected.getLabel().equals(option.getLabel()))
             .findFirst()
             .orElse(null);
     }

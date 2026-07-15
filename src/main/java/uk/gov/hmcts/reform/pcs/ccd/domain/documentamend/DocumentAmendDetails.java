@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.pcs.ccd.domain.documentamend;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.AllArgsConstructor;
@@ -12,6 +13,9 @@ import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
 import uk.gov.hmcts.ccd.sdk.type.DynamicList;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.type.DynamicListWithValueCode;
+
+import java.time.LocalDate;
 
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.DynamicRadioList;
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.FixedList;
@@ -36,10 +40,27 @@ public class DocumentAmendDetails {
     private String propertyAddressSummary;
 
     @CCD(
+        label = "File name",
+        hint = "File name should only be edited in exceptional circumstances, for example if it contains profanity",
+        max = 60,
+        searchable = false
+    )
+    private String amendedFileName;
+
+    @CCD(
+        label = "Add an issue date to the file name",
+        hint = "If the document issue date is important, you should add it to the file display name. "
+            + "For example, 16 4 2021",
+        searchable = false
+    )
+    private LocalDate issueDate;
+
+    @CCD(
         label = "Which document do you want to amend?",
         searchable = false,
         typeOverride = DynamicRadioList
     )
+    @JsonDeserialize(as = DynamicListWithValueCode.class)
     private DynamicList statementsOfCaseDocuments;
 
     @CCD(
@@ -47,6 +68,7 @@ public class DocumentAmendDetails {
         searchable = false,
         typeOverride = DynamicRadioList
     )
+    @JsonDeserialize(as = DynamicListWithValueCode.class)
     private DynamicList propertyDocuments;
 
     @CCD(
@@ -54,6 +76,7 @@ public class DocumentAmendDetails {
         searchable = false,
         typeOverride = DynamicRadioList
     )
+    @JsonDeserialize(as = DynamicListWithValueCode.class)
     private DynamicList evidenceDocuments;
 
     @CCD(
@@ -61,6 +84,7 @@ public class DocumentAmendDetails {
         searchable = false,
         typeOverride = DynamicRadioList
     )
+    @JsonDeserialize(as = DynamicListWithValueCode.class)
     private DynamicList hearingDocuments;
 
     @CCD(
@@ -68,6 +92,7 @@ public class DocumentAmendDetails {
         searchable = false,
         typeOverride = DynamicRadioList
     )
+    @JsonDeserialize(as = DynamicListWithValueCode.class)
     private DynamicList ordersAndNoticeOfHearingsDocuments;
 
     @CCD(
@@ -75,6 +100,7 @@ public class DocumentAmendDetails {
         searchable = false,
         typeOverride = DynamicRadioList
     )
+    @JsonDeserialize(as = DynamicListWithValueCode.class)
     private DynamicList applicationsDocuments;
 
     @CCD(
@@ -82,6 +108,7 @@ public class DocumentAmendDetails {
         searchable = false,
         typeOverride = DynamicRadioList
     )
+    @JsonDeserialize(as = DynamicListWithValueCode.class)
     private DynamicList appealsDocuments;
 
     @CCD(
@@ -89,6 +116,7 @@ public class DocumentAmendDetails {
         searchable = false,
         typeOverride = DynamicRadioList
     )
+    @JsonDeserialize(as = DynamicListWithValueCode.class)
     private DynamicList correspondenceDocuments;
 
     @CCD(
@@ -96,6 +124,7 @@ public class DocumentAmendDetails {
         searchable = false,
         typeOverride = DynamicRadioList
     )
+    @JsonDeserialize(as = DynamicListWithValueCode.class)
     private DynamicList uncategorisedDocuments;
 
     @CCD(searchable = false)
@@ -136,4 +165,11 @@ public class DocumentAmendDetails {
 
     @CCD(searchable = false)
     private String selectedDocumentFileName;
+
+    @CCD(searchable = false)
+    private String selectedDocumentBaseFileName;
+
+    public String getAmendedFileName() {
+        return amendedFileName == null ? selectedDocumentBaseFileName : amendedFileName;
+    }
 }

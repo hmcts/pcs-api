@@ -12,7 +12,7 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.page.documentamend.AmendDocumentDetailsPlaceholderPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.documentamend.AmendDocumentDetailsPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.documentamend.SelectDocumentPage;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentAmendSelectionService;
 
@@ -24,27 +24,34 @@ public class AmendDocuments implements CCDConfig<PCSCase, State, UserRole> {
 
     private final DocumentAmendSelectionService documentAmendSelectionService;
     private final SelectDocumentPage selectDocumentPage;
-    private final AmendDocumentDetailsPlaceholderPage amendDocumentDetailsPlaceholderPage;
+    private final AmendDocumentDetailsPage amendDocumentDetailsPage;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         Event.EventBuilder<PCSCase, UserRole, State> eventBuilder =
             configBuilder
                 .decentralisedEvent(amendDocuments.name(), this::submit, this::start)
-                .forStates(State.CASE_ISSUED)
+                .forStates(
+                    State.CASE_ISSUED,
+                    State.JUDICIAL_REFERRAL,
+                    State.HEARING_READINESS,
+                    State.PREPARE_FOR_HEARING_CONDUCT_HEARING,
+                    State.DECISION_OUTCOME,
+                    State.CASE_PROGRESSION,
+                    State.ALL_FINAL_ORDERS_ISSUED,
+                    State.CASE_STAYED,
+                    State.BREATHING_SPACE,
+                    State.CLOSED
+                )
                 .name("Manage documents: Amend")
-                .grant(Permission.CRU, UserRole.CTSC_ADMIN)
-                .grant(Permission.CRU, UserRole.WLU_ADMIN)
+                .grant(Permission.CRU, UserRole.HEARING_CENTRE_TEAM_LEADER)
                 .grant(Permission.CRU, UserRole.HEARING_CENTRE_ADMIN)
-                .grant(Permission.CRU, UserRole.JUDGE)
-                .grant(Permission.CRU, UserRole.CIRCUIT_JUDGE)
-                .grant(Permission.CRU, UserRole.FEE_PAID_JUDGE)
-                .grant(Permission.CRU, UserRole.LEADERSHIP_JUDGE)
-                .endButtonLabel("Submit");
+                .showSummary()
+                .endButtonLabel("Continue");
 
         PageBuilder pageBuilder = new PageBuilder(eventBuilder);
         selectDocumentPage.addTo(pageBuilder);
-        amendDocumentDetailsPlaceholderPage.addTo(pageBuilder);
+        amendDocumentDetailsPage.addTo(pageBuilder);
     }
 
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {

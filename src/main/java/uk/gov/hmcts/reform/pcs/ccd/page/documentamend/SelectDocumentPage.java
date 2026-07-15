@@ -54,6 +54,7 @@ public class SelectDocumentPage implements CcdPageConfiguration {
                 .readonly(DocumentAmendDetails::getSelectedFolderLabel, NEVER_SHOW, true)
                 .readonly(DocumentAmendDetails::getSelectedDocumentId, NEVER_SHOW, true)
                 .readonly(DocumentAmendDetails::getSelectedDocumentFileName, NEVER_SHOW, true)
+                .readonly(DocumentAmendDetails::getSelectedDocumentBaseFileName, NEVER_SHOW, true)
             .done();
     }
 
@@ -79,12 +80,12 @@ public class SelectDocumentPage implements CcdPageConfiguration {
             .build();
     }
 
-    private String documentsShowCondition(CaseFileCategory category) {
-        return selectedFolderCondition(category) + " AND " + emptyFieldId(category) + NO;
-    }
-
     private String noDocumentsShowCondition(CaseFileCategory category) {
         return selectedFolderCondition(category) + " AND " + emptyFieldId(category) + YES;
+    }
+
+    private String documentsShowCondition(CaseFileCategory category) {
+        return selectedFolderCondition(category) + " AND " + emptyFieldId(category) + NO;
     }
 
     private String selectedFolderCondition(CaseFileCategory category) {
