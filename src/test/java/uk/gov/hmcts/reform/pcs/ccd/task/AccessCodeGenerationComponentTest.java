@@ -109,7 +109,7 @@ class AccessCodeGenerationComponentTest {
         CompletionHandler<AccessCodeTaskData> result = task.execute(taskInstance, executionContext);
 
         //Then
-        verify(defendantAccessCodeService).generateForDefendant(1234567812345678L, DEFENDANT_PARTY_ID, false);
+        verify(defendantAccessCodeService).generateForDefendant(1234567812345678L, DEFENDANT_PARTY_ID, true, false);
 
         assertThat(result).isInstanceOf(CompletionHandler.OnCompleteRemove.class);
     }
@@ -121,7 +121,7 @@ class AccessCodeGenerationComponentTest {
         execution.consecutiveFailures = maxRetries;
         when(executionContext.getExecution()).thenReturn(execution);
         doThrow(new RuntimeException("docassembly 500"))
-            .when(defendantAccessCodeService).generateForDefendant(1234567812345678L, DEFENDANT_PARTY_ID, true);
+            .when(defendantAccessCodeService).generateForDefendant(1234567812345678L, DEFENDANT_PARTY_ID, false, true);
 
         CustomTask<AccessCodeTaskData> task = accessCodeGenerationComponent.accessCodeGenerationTask();
         assertThatThrownBy(() -> task.execute(taskInstance, executionContext))
@@ -150,7 +150,7 @@ class AccessCodeGenerationComponentTest {
 
         doThrow(mock(RuntimeException.class))
             .when(defendantAccessCodeService)
-            .generateForDefendant(eq(1234567812345678L), eq(DEFENDANT_PARTY_ID), anyBoolean());
+            .generateForDefendant(eq(1234567812345678L), eq(DEFENDANT_PARTY_ID), anyBoolean(), anyBoolean());
 
         //When
         CustomTask<AccessCodeTaskData> task = accessCodeGenerationComponent.accessCodeGenerationTask();
@@ -160,7 +160,7 @@ class AccessCodeGenerationComponentTest {
             .isInstanceOf(RuntimeException.class);
 
         verify(defendantAccessCodeService).generateForDefendant(eq(1234567812345678L), eq(DEFENDANT_PARTY_ID),
-                                                                anyBoolean());
+                                                                anyBoolean(), anyBoolean());
     }
 
 }
