@@ -20,6 +20,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.caseworker.entergenapp.ApplicationDetail
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
+import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 
 import java.util.List;
 import java.util.UUID;
@@ -45,10 +46,13 @@ class EnterGenAppTest extends BaseEventTest {
     private ApplicationDetails applicationDetails;
     @Mock
     private GenAppService genAppService;
+    @Mock
+    private AddressFormatter addressFormatter;
 
     @BeforeEach
     void setUp() {
-        EnterGenApp enterGenApp = new EnterGenApp(pcsCaseService, partyService, genAppService, applicationDetails);
+        EnterGenApp enterGenApp = new EnterGenApp(pcsCaseService, partyService, genAppService, applicationDetails,
+                                                  addressFormatter);
         setEventUnderTest(enterGenApp);
     }
 
