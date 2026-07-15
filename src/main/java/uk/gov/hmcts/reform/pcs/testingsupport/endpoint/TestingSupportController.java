@@ -461,8 +461,8 @@ public class TestingSupportController {
                 for (FeePaymentEntity feePayment : claim.getFeePayments()) {
                     FeePaymentInfo minimalFeePayment = new FeePaymentInfo(
                         feePayment.getId(),
-                        feePayment.getExternalReference(),
-                        feePayment.getPaymentStatus(),
+                        feePayment.getServiceRequestReference(),
+                        feePayment.getRequestDate(),
                         feePayment.getAmount()
                     );
 
@@ -481,7 +481,7 @@ public class TestingSupportController {
     private record FeePaymentInfo(
         UUID id,
         String paymentReference,
-        uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus paymentStatus,
+        java.time.LocalDateTime paymentStatus,
         BigDecimal amount
     ) {
     }
