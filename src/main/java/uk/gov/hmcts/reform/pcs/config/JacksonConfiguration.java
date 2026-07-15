@@ -32,7 +32,8 @@ public class JacksonConfiguration {
             .configure(ACCEPT_CASE_INSENSITIVE_ENUMS, true)
             .enable(INFER_BUILDER_TYPE_BINDINGS)
             .disable(AUTO_CLOSE_JSON_CONTENT)
-            .defaultPropertyInclusion(JsonInclude.Value.ALL_NON_NULL)
+            .defaultPropertyInclusion(JsonInclude.Value.construct(JsonInclude.Include.NON_NULL,
+                                                                  JsonInclude.Include.NON_NULL))
             .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
             .configure(DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT, true)
             .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
@@ -48,7 +49,8 @@ public class JacksonConfiguration {
     public ObjectMapper draftCaseDataObjectMapper() {
         ObjectMapper mapper = JsonMapper.builder()
             .disable(AUTO_CLOSE_JSON_CONTENT)
-            .defaultPropertyInclusion(JsonInclude.Value.ALL_NON_NULL)
+            .defaultPropertyInclusion(JsonInclude.Value.construct(JsonInclude.Include.NON_NULL,
+                                                                  JsonInclude.Include.NON_NULL))
             .addMixIn(YesOrNo.class, YesOrNoMixin.class)
             .addMixIn(PCSCase.class, DraftCaseDataMixIn.class)
             .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
