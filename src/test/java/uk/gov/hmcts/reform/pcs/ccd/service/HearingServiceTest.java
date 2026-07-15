@@ -6,16 +6,16 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.ccd.sdk.type.DynamicListElement;
+import uk.gov.hmcts.ccd.sdk.type.DynamicMultiSelectList;
+import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.Hearing;
 import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.HearingNoticeWording;
 import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.HearingType;
-import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.HearingEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
-import uk.gov.hmcts.reform.pcs.ccd.type.DynamicMultiSelectStringList;
-import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -54,12 +54,12 @@ public class HearingServiceTest {
             .build();
 
         UUID partyId = UUID.randomUUID();
-        List<DynamicStringListElement> listItems = List.of(
-            DynamicStringListElement.builder()
-                .code(partyId.toString())
+        List<DynamicListElement> listItems = List.of(
+            DynamicListElement.builder()
+                .code(partyId)
                 .build()
         );
-        DynamicMultiSelectStringList partyList = DynamicMultiSelectStringList.builder()
+        DynamicMultiSelectList partyList = DynamicMultiSelectList.builder()
             .value(listItems)
             .build();
 
@@ -114,12 +114,12 @@ public class HearingServiceTest {
             .build();
 
         UUID partyId = UUID.randomUUID();
-        List<DynamicStringListElement> listItems = List.of(
-            DynamicStringListElement.builder()
-                .code(partyId.toString())
+        List<DynamicListElement> listItems = List.of(
+            DynamicListElement.builder()
+                .code(partyId)
                 .build()
         );
-        DynamicMultiSelectStringList partyList = DynamicMultiSelectStringList.builder()
+        DynamicMultiSelectList partyList = DynamicMultiSelectList.builder()
             .value(listItems)
             .build();
 

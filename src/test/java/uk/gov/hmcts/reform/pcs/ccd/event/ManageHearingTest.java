@@ -9,23 +9,24 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.CaseLocation;
+import uk.gov.hmcts.ccd.sdk.type.DynamicListElement;
+import uk.gov.hmcts.ccd.sdk.type.DynamicMultiSelectList;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
-import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.Hearing;
-import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.ManageHearingOption;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.Hearing;
+import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.ManageHearingOption;
 import uk.gov.hmcts.reform.pcs.ccd.page.managehearing.ManageHearingConfigurer;
 import uk.gov.hmcts.reform.pcs.ccd.service.HearingService;
-import uk.gov.hmcts.reform.pcs.ccd.type.DynamicMultiSelectStringList;
-import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.location.model.CourtVenue;
 import uk.gov.hmcts.reform.pcs.location.service.LocationReferenceService;
 
 import java.util.List;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -78,16 +79,18 @@ public class ManageHearingTest extends BaseEventTest {
                 .build()
         );
 
+        UUID claimantId = UUID.randomUUID();
         Party claimant = Party.builder()
             .orgName("Claimant Name")
             .build();
         List<ListValue<Party>> allClaimants = List.of(
             ListValue.<Party>builder()
-                .id("claimantId")
+                .id(claimantId.toString())
                 .value(claimant)
                 .build()
         );
 
+        UUID defendantId = UUID.randomUUID();
         Party defendant = Party.builder()
             .nameKnown(VerticalYesNo.YES)
             .firstName("Defendant")
@@ -95,7 +98,7 @@ public class ManageHearingTest extends BaseEventTest {
             .build();
         List<ListValue<Party>> allDefendants = List.of(
             ListValue.<Party>builder()
-                .id("defendant1Id")
+                .id(defendantId.toString())
                 .value(defendant)
                 .build()
         );
@@ -121,29 +124,31 @@ public class ManageHearingTest extends BaseEventTest {
         assertThat(response.getShowManageHearingPage()).isEqualTo(VerticalYesNo.YES);
         assertThat(response.getManageHearingOption()).isNull();
         assertThat(response.getHearingLocation()).isEqualTo("Court name");
-        DynamicMultiSelectStringList partyMultiSelectionList = response.getPartyMultiSelectionList();
+        DynamicMultiSelectList partyMultiSelectionList = response.getPartyMultiSelectionList();
         assertThat(partyMultiSelectionList).isNotNull();
-        List<DynamicStringListElement> listItems = partyMultiSelectionList.getListItems();
+        List<DynamicListElement> listItems = partyMultiSelectionList.getListItems();
         assertThat(listItems).hasSize(2);
         assertThat(listItems.getFirst().getLabel()).isEqualTo("Claimant Name - Claimant 1");
-        assertThat(listItems.getFirst().getCode()).isEqualTo("claimantId");
+        assertThat(listItems.getFirst().getCode()).isEqualTo(claimantId);
         assertThat(listItems.getLast().getLabel()).isEqualTo("Defendant One - Defendant 1");
-        assertThat(listItems.getLast().getCode()).isEqualTo("defendant1Id");
+        assertThat(listItems.getLast().getCode()).isEqualTo(defendantId);
     }
 
     @Test
     void shouldNotShowManageHearingPageIfHearingDoesNotExists() {
         // Given
+        UUID claimantId = UUID.randomUUID();
         Party claimant = Party.builder()
             .orgName("Claimant Name")
             .build();
         List<ListValue<Party>> allClaimants = List.of(
             ListValue.<Party>builder()
-                .id("claimantId")
+                .id(claimantId.toString())
                 .value(claimant)
                 .build()
         );
 
+        UUID defendantId = UUID.randomUUID();
         Party defendant = Party.builder()
             .nameKnown(VerticalYesNo.YES)
             .firstName("Defendant")
@@ -151,7 +156,7 @@ public class ManageHearingTest extends BaseEventTest {
             .build();
         List<ListValue<Party>> allDefendants = List.of(
             ListValue.<Party>builder()
-                .id("defendant1Id")
+                .id(defendantId.toString())
                 .value(defendant)
                 .build()
         );
@@ -172,14 +177,14 @@ public class ManageHearingTest extends BaseEventTest {
         // Then
         assertThat(response.getShowManageHearingPage()).isNull();
         assertThat(response.getManageHearingOption()).isEqualTo(ManageHearingOption.ADD);
-        DynamicMultiSelectStringList partyMultiSelectionList = response.getPartyMultiSelectionList();
+        DynamicMultiSelectList partyMultiSelectionList = response.getPartyMultiSelectionList();
         assertThat(partyMultiSelectionList).isNotNull();
-        List<DynamicStringListElement> listItems = partyMultiSelectionList.getListItems();
+        List<DynamicListElement> listItems = partyMultiSelectionList.getListItems();
         assertThat(listItems).hasSize(2);
         assertThat(listItems.getFirst().getLabel()).isEqualTo("Claimant Name - Claimant 1");
-        assertThat(listItems.getFirst().getCode()).isEqualTo("claimantId");
+        assertThat(listItems.getFirst().getCode()).isEqualTo(claimantId);
         assertThat(listItems.getLast().getLabel()).isEqualTo("Defendant One - Defendant 1");
-        assertThat(listItems.getLast().getCode()).isEqualTo("defendant1Id");
+        assertThat(listItems.getLast().getCode()).isEqualTo(defendantId);
     }
 
     @Test
@@ -190,7 +195,7 @@ public class ManageHearingTest extends BaseEventTest {
             .build();
         List<ListValue<Party>> allClaimants = List.of(
             ListValue.<Party>builder()
-                .id("claimantId")
+                .id(UUID.randomUUID().toString())
                 .value(claimant)
                 .build()
         );
@@ -202,7 +207,7 @@ public class ManageHearingTest extends BaseEventTest {
             .build();
         List<ListValue<Party>> allDefendants = List.of(
             ListValue.<Party>builder()
-                .id("defendant1Id")
+                .id(UUID.randomUUID().toString())
                 .value(defendant)
                 .build()
         );
@@ -229,16 +234,18 @@ public class ManageHearingTest extends BaseEventTest {
     @Test
     void shouldShowDefendantNameAsPersonUnknownIfNameNotKnown() {
         // Given
+        UUID claimantId = UUID.randomUUID();
         Party claimant = Party.builder()
             .orgName("Claimant Name")
             .build();
         List<ListValue<Party>> allClaimants = List.of(
             ListValue.<Party>builder()
-                .id("claimantId")
+                .id(claimantId.toString())
                 .value(claimant)
                 .build()
         );
 
+        UUID defendantId = UUID.randomUUID();
         Party defendant = Party.builder()
             .nameKnown(VerticalYesNo.NO)
             .firstName("Defendant")
@@ -246,7 +253,7 @@ public class ManageHearingTest extends BaseEventTest {
             .build();
         List<ListValue<Party>> allDefendants = List.of(
             ListValue.<Party>builder()
-                .id("defendant1Id")
+                .id(defendantId.toString())
                 .value(defendant)
                 .build()
         );
@@ -267,14 +274,14 @@ public class ManageHearingTest extends BaseEventTest {
         // Then
         assertThat(response.getShowManageHearingPage()).isNull();
         assertThat(response.getManageHearingOption()).isEqualTo(ManageHearingOption.ADD);
-        DynamicMultiSelectStringList partyMultiSelectionList = response.getPartyMultiSelectionList();
+        DynamicMultiSelectList partyMultiSelectionList = response.getPartyMultiSelectionList();
         assertThat(partyMultiSelectionList).isNotNull();
-        List<DynamicStringListElement> listItems = partyMultiSelectionList.getListItems();
+        List<DynamicListElement> listItems = partyMultiSelectionList.getListItems();
         assertThat(listItems).hasSize(2);
         assertThat(listItems.getFirst().getLabel()).isEqualTo("Claimant Name - Claimant 1");
-        assertThat(listItems.getFirst().getCode()).isEqualTo("claimantId");
+        assertThat(listItems.getFirst().getCode()).isEqualTo(claimantId);
         assertThat(listItems.getLast().getLabel()).isEqualTo("Person unknown - Defendant 1");
-        assertThat(listItems.getLast().getCode()).isEqualTo("defendant1Id");
+        assertThat(listItems.getLast().getCode()).isEqualTo(defendantId);
     }
 
     @Test

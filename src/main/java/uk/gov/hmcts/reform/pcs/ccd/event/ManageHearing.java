@@ -10,24 +10,25 @@ import uk.gov.hmcts.ccd.sdk.api.Event;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
+import uk.gov.hmcts.ccd.sdk.type.DynamicListElement;
+import uk.gov.hmcts.ccd.sdk.type.DynamicMultiSelectList;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
-import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.ManageHearingOption;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.ManageHearingOption;
 import uk.gov.hmcts.reform.pcs.ccd.page.managehearing.ManageHearingConfigurer;
 import uk.gov.hmcts.reform.pcs.ccd.service.HearingService;
-import uk.gov.hmcts.reform.pcs.ccd.type.DynamicMultiSelectStringList;
-import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.location.model.CourtVenue;
 import uk.gov.hmcts.reform.pcs.location.service.LocationReferenceService;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.manageHearing;
@@ -59,10 +60,10 @@ public class ManageHearing implements CCDConfig<PCSCase, State, UserRole> {
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
         PCSCase pcsCase = eventPayload.caseData();
 
-        List<DynamicStringListElement> listItems =
+        List<DynamicListElement> listItems =
             buildPartyListItems(pcsCase.getAllClaimants(), pcsCase.getAllDefendants());
         pcsCase.setPartyMultiSelectionList(
-            DynamicMultiSelectStringList.builder()
+            DynamicMultiSelectList.builder()
                 .listItems(listItems)
                 .build()
         );
@@ -124,11 +125,11 @@ public class ManageHearing implements CCDConfig<PCSCase, State, UserRole> {
             """.formatted(caseId, address, caseName);
     }
 
-    private List<DynamicStringListElement> buildPartyListItems(
+    private List<DynamicListElement> buildPartyListItems(
         List<ListValue<Party>> claimants,
         List<ListValue<Party>> defendants
     ) {
-        List<DynamicStringListElement> listItems = new ArrayList<>();
+        List<DynamicListElement> listItems = new ArrayList<>();
 
         for (int i = 0; i < claimants.size(); i++) {
             ListValue<Party> listValue = claimants.get(i);
@@ -136,8 +137,8 @@ public class ManageHearing implements CCDConfig<PCSCase, State, UserRole> {
             Party party = listValue.getValue();
 
             listItems.add(
-                DynamicStringListElement.builder()
-                  .code(partyId)
+                DynamicListElement.builder()
+                  .code(UUID.fromString(partyId))
                   .label(formatClaimantListItemLabel(party, i + 1))
                   .build()
             );
@@ -149,8 +150,8 @@ public class ManageHearing implements CCDConfig<PCSCase, State, UserRole> {
             Party party = listValue.getValue();
 
             listItems.add(
-                DynamicStringListElement.builder()
-                    .code(partyId)
+                DynamicListElement.builder()
+                    .code(UUID.fromString(partyId))
                     .label(formatDefendantListItemLabel(party, i + 1))
                     .build()
             );

@@ -2,17 +2,15 @@ package uk.gov.hmcts.reform.pcs.ccd.service;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
-import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.Hearing;
-import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.HearingType;
+import uk.gov.hmcts.ccd.sdk.type.DynamicListElement;
+import uk.gov.hmcts.ccd.sdk.type.DynamicMultiSelectList;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.Hearing;
+import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.HearingType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.HearingEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
-import uk.gov.hmcts.reform.pcs.ccd.type.DynamicMultiSelectStringList;
-import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
-
-import java.util.UUID;
 
 @Service
 @AllArgsConstructor
@@ -50,7 +48,7 @@ public class HearingService {
         }
 
         if (noticeIssued == VerticalYesNo.YES && isWithoutNotice == VerticalYesNo.YES) {
-            DynamicMultiSelectStringList selectedParties = pcsCase.getPartyMultiSelectionList();
+            DynamicMultiSelectList selectedParties = pcsCase.getPartyMultiSelectionList();
 
             if (selectedParties != null) {
                 addPartiesToHearingEntity(selectedParties, hearingEntity);
@@ -60,11 +58,10 @@ public class HearingService {
         return hearingEntity;
     }
 
-    private void addPartiesToHearingEntity(DynamicMultiSelectStringList selectedParties, HearingEntity hearingEntity) {
+    private void addPartiesToHearingEntity(DynamicMultiSelectList selectedParties, HearingEntity hearingEntity) {
         selectedParties.getValue()
             .stream()
-            .map(DynamicStringListElement::getCode)
-            .map(UUID::fromString)
+            .map(DynamicListElement::getCode)
             .forEach(hearingEntity::addParty);
     }
 }
