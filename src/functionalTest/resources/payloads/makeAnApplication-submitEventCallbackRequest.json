@@ -1,29 +1,25 @@
 {
   "event_id": "makeAnApplication",
-  "token": "${eventToken}",
   "event_details": {
     "case_type": "PCS",
     "event_name": "makeAnApplication",
-    "event_id": "makeAnApplication"
-  },
+    "event_id": "makeAnApplication"},
   "internal_case_id": "${internalCaseId}",
-  "start_revision": 1,
-  "merge_revision": 1,
+  "start_revision": 2,
+  "merge_revision": 2,
   "case_details": {
     "id": "${caseId}",
     "jurisdiction": "PCS",
-    "state": "CASE_ISSUED",
-    "version": 1,
+    "state": "PENDING_CASE_ISSUED",
+    "version": 2,
     "case_type_id": "PCS",
     "security_classification": "PUBLIC",
     "case_data": {
       "featureFlags": {
         "release1dot2Enabled": "YES",
-        "caseWorkerEventsEnabled": "YES"
-      },
+        "caseWorkerEventsEnabled": "YES"},
       "allClaimants": [
         {
-          "id": "5659e6a9-8d00-45b5-a5c3-694e5a593cd3",
           "value": {
             "orgName": "Possession Claims Solicitor Org",
             "emailAddress": "pcs-solicitor1@test.com",
@@ -32,10 +28,8 @@
               "AddressLine2": "Seventh Floor 102 Petty France",
               "PostTown": "London",
               "PostCode": "SW1H 9AJ",
-              "Country": "United Kingdom"
-            },
-            "phoneNumberProvided": "NO"
-          }
+              "Country": "United Kingdom"},
+            "phoneNumberProvided": "NO"}
         }
       ],
       "propertyAddress": {
@@ -43,14 +37,12 @@
         "PostTown": "London",
         "County": "Greater London",
         "PostCode": "W3 7RX",
-        "Country": "United Kingdom"
-      },
+        "Country": "United Kingdom"},
       "userPcqIdSet": "No",
       "caseManagementLocationNumber": 20262,
       "regionId": 1,
       "parties": [
         {
-          "id": "aaf8cfc5-ef80-474f-b62d-f6fee02505cf",
           "value": {
             "firstName": "Jane",
             "lastName": "Doe",
@@ -64,7 +56,6 @@
           }
         },
         {
-          "id": "5659e6a9-8d00-45b5-a5c3-694e5a593cd3",
           "value": {
             "orgName": "Possession Claims Solicitor Org",
             "emailAddress": "pcs-solicitor1@test.com",
@@ -73,10 +64,8 @@
               "AddressLine2": "Seventh Floor 102 Petty France",
               "PostTown": "London",
               "PostCode": "SW1H 9AJ",
-              "Country": "United Kingdom"
-            },
-            "phoneNumberProvided": "NO"
-          }
+              "Country": "United Kingdom"},
+            "phoneNumberProvided": "NO"}
         }
       ],
       "preActionProtocolCompleted": "NO",
@@ -88,15 +77,12 @@
       "claimantType": {
         "value": {
           "code": "PROVIDER_OF_SOCIAL_HOUSING",
-          "label": "Registered provider of social housing or local authority"
-        },
-        "valueCode": "PROVIDER_OF_SOCIAL_HOUSING"
-      },
+          "label": "Registered provider of social housing or local authority"},
+        "valueCode": "PROVIDER_OF_SOCIAL_HOUSING"},
       "claimAgainstTrespassers": "NO",
       "addAnotherDefendant": "NO",
       "allDefendants": [
         {
-          "id": "aaf8cfc5-ef80-474f-b62d-f6fee02505cf",
           "value": {
             "firstName": "Jane",
             "lastName": "Doe",
@@ -109,8 +95,7 @@
                 "AddressLine2": "Seventh Floor 102 Petty France",
                 "PostTown": "London",
                 "PostCode": "SW1H 9AJ",
-                "Country": "United Kingdom"
-              }
+                "Country": "United Kingdom"}
             }
           }
         }
@@ -119,13 +104,11 @@
       "languageUsed": "ENGLISH",
       "hasDefendantCircumstancesInfo": "NO",
       "alternativesToPossession": [
-        "SUSPENSION_OF_RIGHT_TO_BUY"
-      ],
+        "SUSPENSION_OF_RIGHT_TO_BUY"],
       "suspensionOfRTB_HousingAct": "SECTION_82A_2",
       "suspensionOfRTB_Reason": "Reasons for requesting a suspension order.",
       "additionalReasonsForPossession": {
-        "hasReasons": "NO"
-      },
+        "hasReasons": "NO"},
       "claimantCircumstancesSelect": "NO",
       "wantToUploadDocuments": "NO",
       "walesDocs_EnergyPerformance": [],
@@ -136,12 +119,10 @@
       "statementOfTruth": {
         "completedBy": "LEGAL_REPRESENTATIVE",
         "agreementClaimantLegalRep": [
-          "AGREED"
-        ],
+          "AGREED"],
         "fullNameLegalRep": "John",
         "firmNameLegalRep": "Doe",
-        "positionLegalRep": "Solicitor"
-      },
+        "positionLegalRep": "Solicitor"},
       "allDocuments": [],
       "claimGroundSummaries": [
         {
@@ -151,30 +132,26 @@
             "code": "S84A_CONDITION_1",
             "label": "Condition 1 of Section 84A of the Housing Act 1985",
             "reason": "Antisocial behaviour reasons.",
-            "isRentArrears": "No"
-          }
+            "isRentArrears": "No"}
         }
       ],
       "SearchCriteria": {
         "SearchParties": [
           {
             "value": {
-              "Name": "Jane Doe"
-            }
+              "Name": "Jane Doe"}
           },
           {
             "value": {
               "Name": "Possession Claims Solicitor Org",
               "EmailAddress": "pcs-solicitor1@test.com",
               "AddressLine1": "Ministry Of Justice",
-              "PostCode": "SW1H 9AJ"
-            }
+              "PostCode": "SW1H 9AJ"}
           },
           {
             "value": {
               "AddressLine1": "1 Second Avenue",
-              "PostCode": "W3 7RX"
-            }
+              "PostCode": "W3 7RX"}
           }
         ]
       },
@@ -183,22 +160,18 @@
       "caseNamePublic": "Possession Claims Solicitor Org vs Jane Doe",
       "caseManagementLocation": {
         "region": "1",
-        "baseLocation": "20262"
-      },
+        "baseLocation": "20262"},
       "caseManagementCategory": {
         "value": {
           "code": "2f9b6dcf-45e5-433f-a1bf-bff0d8d8a78a",
-          "label": "Property Possession Claims"
-        },
+          "label": "Property Possession Claims"},
         "list_items": [
           {
             "code": "2f9b6dcf-45e5-433f-a1bf-bff0d8d8a78a",
-            "label": "Property Possession Claims"
-          }
+            "label": "Property Possession Claims"}
         ],
         "valueLabel": "Property Possession Claims",
-        "valueCode": "2f9b6dcf-45e5-433f-a1bf-bff0d8d8a78a"
-      },
+        "valueCode": "2f9b6dcf-45e5-433f-a1bf-bff0d8d8a78a"},
       "genApps": [],
       "casePartiesTab_ClaimantDetails": {
         "name": "Possession Claims Solicitor Org",
@@ -207,10 +180,8 @@
           "AddressLine2": "Seventh Floor 102 Petty France",
           "PostTown": "London",
           "PostCode": "SW1H 9AJ",
-          "Country": "United Kingdom"
-        },
-        "emailAddress": "pcs-solicitor1@test.com"
-      },
+          "Country": "United Kingdom"},
+        "emailAddress": "pcs-solicitor1@test.com"},
       "casePartiesTab_DefendantOneDetails": {
         "firstName": "Jane",
         "lastName": "Doe",
@@ -218,8 +189,7 @@
           "AddressLine1": "1 Second Avenue",
           "PostTown": "London",
           "PostCode": "W3 7RX",
-          "Country": "United Kingdom"
-        },
+          "Country": "United Kingdom"},
         "representative": {
           "organisation": {
             "name": "Possession Claims Solicitor Org",
@@ -228,8 +198,7 @@
               "AddressLine2": "Seventh Floor 102 Petty France",
               "PostTown": "London",
               "PostCode": "SW1H 9AJ",
-              "Country": "United Kingdom"
-            }
+              "Country": "United Kingdom"}
           }
         }
       },
@@ -238,17 +207,13 @@
         "PostTown": "London",
         "County": "Greater London",
         "PostCode": "W3 7RX",
-        "Country": "United Kingdom"
-      },
+        "Country": "United Kingdom"},
       "summaryTab_GroundsForPossession": {
-        "grounds": "Antisocial behaviour: Condition 1 of Section 84A of the Housing Act 1985"
-      },
+        "grounds": "Antisocial behaviour: Condition 1 of Section 84A of the Housing Act 1985"},
       "summaryTab_ReasonsForPossession": {
-        "condition1OfSection84A": "Antisocial behaviour reasons."
-      },
+        "condition1OfSection84A": "Antisocial behaviour reasons."},
       "summaryTab_ClaimantDetails": {
-        "claimantName": "Possession Claims Solicitor Org"
-      },
+        "claimantName": "Possession Claims Solicitor Org"},
       "summaryTab_DefendantDetails": {
         "nameKnown": "Yes",
         "firstName": "Jane",
@@ -259,27 +224,22 @@
           "PostTown": "London",
           "County": "Greater London",
           "PostCode": "W3 7RX",
-          "Country": "United Kingdom"
-        }
+          "Country": "United Kingdom"}
       },
       "summaryTab_TenancyDetails": {
-        "agreementType": "Secure tenancy"
-      },
+        "agreementType": "Secure tenancy"},
       "detailsTab_ClaimDetails": {
         "claimantType": "Registered provider of social housing or local authority",
-        "trespassClaim": "No"
-      },
+        "trespassClaim": "No"},
       "detailsTab_PropertyAddress": {
         "AddressLine1": "1 Second Avenue",
         "PostTown": "London",
         "Country": "Greater London",
         "PostCode": "W3 7RX",
-        "Country": "United Kingdom"
-      },
+        "Country": "United Kingdom"},
       "detailsTab_GroundsForPossessionDetails": {
         "grounds": "Antisocial behaviour: Condition 1 of Section 84A of the Housing Act 1985",
-        "otherGroundsDescription": ""
-      },
+        "otherGroundsDescription": ""},
       "detailsTab_TenancyLicenceDetails": {
         "typeOfTenancyLicence": "Secure tenancy",
         "tenancyLicenceDate": " ",
@@ -289,50 +249,39 @@
       "detailsTab_NoticeDetails": {
         "noticeServed": "No",
         "noticeDate": " ",
-        "noticeMethod": " "
-      },
+        "noticeMethod": " "},
       "detailsTab_ActionsTakenDetails": {
         "preactionProtocolFollowed": "No",
         "mediationAttempted": "No",
-        "settlementAttempted": "No"
-      },
+        "settlementAttempted": "No"},
       "detailsTab_ReasonsForPossessionDetails": {
         "condition1OfSection84A": "Antisocial behaviour reasons.",
-        "hasAdditionalReasons": "No"
-      },
+        "hasAdditionalReasons": "No"},
       "detailsTab_ApplicationsDetails": {
-        "planToMakeGeneralApplication": "No"
-      },
+        "planToMakeGeneralApplication": "No"},
       "detailsTab_ClaimantInformation": {
-        "claimantName": "Possession Claims Solicitor Org"
-      },
+        "claimantName": "Possession Claims Solicitor Org"},
       "detailsTab_ClaimantAddress": {
         "AddressLine1": "Ministry Of Justice",
         "AddressLine2": "Seventh Floor 102 Petty France",
         "PostTown": "London",
         "PostCode": "SW1H 9AJ",
-        "Country": "United Kingdom"
-      },
+        "Country": "United Kingdom"},
       "detailsTab_ClaimantContactDetails": {
         "emailAddress": "pcs-solicitor1@test.com",
-        "phoneNumberProvided": "No"
-      },
+        "phoneNumberProvided": "No"},
       "detailsTab_ClaimantCircumstances": {
-        "claimantCircumstancesGiven": "No"
-      },
+        "claimantCircumstancesGiven": "No"},
       "detailsTab_DefendantInformationDetails": {
         "nameKnown": "Yes",
         "firstName": "Jane",
         "lastName": "Doe",
-        "addressKnown": "No"
-      },
+        "addressKnown": "No"},
       "detailsTab_DefendantCircumstanceDetails": {
-        "defendantCircumstancesGiven": "No"
-      },
+        "defendantCircumstancesGiven": "No"},
       "detailsTab_SuspensionOfRightToBuyDetails": {
         "housingAct": "Section 82A(2) of the Housing Act 1985",
-        "reasons": "Reasons for requesting a suspension order."
-      },
+        "reasons": "Reasons for requesting a suspension order."},
       "caseNotes": [],
       "caseFlags": {},
       "postCode": "W3 7RX",
@@ -342,8 +291,8 @@
       "xui_genapp_ApplicationType": "SOMETHING_ELSE",
       "xui_genapp_ShowHwfScreens": "YES",
       "xui_genapp_StandardFee": "£126",
-      "currentRepresentedPartyId": "${currentRepresentedPartyId}",
-      "currentRepresentedPartyName": "${currentRepresentedPartyName}",
+      "currentRepresentedPartyId": "{currentRepresentedPartyId}",
+      "currentRepresentedPartyName": "Jane Doe",
       "xui_genapp_NeedHwf": "NO",
       "xui_genapp_OtherPartiesAgreed": "NO",
       "xui_genapp_WithoutNotice": "NO",
@@ -353,10 +302,7 @@
       "xui_genapp_SotFullName": "test",
       "xui_genapp_SotFirmName": "test",
       "xui_genapp_AgreementDefendantLegalRep": [
-        "AGREED"
-      ],
-      "xui_genapp_SotPositionHeld": "test"
-    },
-    "revision": 1
-  }
+        "AGREED"],
+      "xui_genapp_SotPositionHeld": "test"},
+    "revision": 2}
 }

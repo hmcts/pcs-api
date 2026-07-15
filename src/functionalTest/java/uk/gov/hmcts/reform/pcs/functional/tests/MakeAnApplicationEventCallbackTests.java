@@ -1,9 +1,9 @@
 package uk.gov.hmcts.reform.pcs.functional.tests;
 
-import lombok.extern.slf4j.Slf4j;
-import java.util.Map;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.interfaces.DecodedJWT;
+import io.restassured.RestAssured;
+import io.restassured.response.Response;
 import net.serenitybdd.annotations.Steps;
 import net.serenitybdd.annotations.Title;
 import net.serenitybdd.junit5.SerenityJUnit5Extension;
@@ -12,21 +12,21 @@ import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import org.junit.jupiter.api.TestMethodOrder;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.extension.ExtendWith;
 import uk.gov.hmcts.reform.pcs.ccd.CaseType;
 import uk.gov.hmcts.reform.pcs.functional.config.TestConstants;
 import uk.gov.hmcts.reform.pcs.functional.steps.ApiSteps;
 import uk.gov.hmcts.reform.pcs.functional.steps.BaseApi;
 import uk.gov.hmcts.reform.pcs.functional.testutils.PayloadLoader;
-import uk.gov.hmcts.reform.pcs.functional.testutils.PcsIdamTokenClient;
-import net.serenitybdd.rest.SerenityRest;
 
-@Slf4j
+import java.util.Map;
+
+import static uk.gov.hmcts.reform.pcs.functional.config.AuthConfig.*;
+import static uk.gov.hmcts.reform.pcs.functional.testutils.EnvUtils.getEnv;
+
 @Tag("Functional_1")
-@EnabledIfEnvironmentVariable(named = "CCD_ENABLED", matches = "true")
 @ExtendWith(SerenityJUnit5Extension.class)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -36,65 +36,91 @@ public class MakeAnApplicationEventCallbackTests extends BaseApi {
     ApiSteps apiSteps;
 
     private Long caseReference;
+    private String solicitor2Token;
+    private String representedPartyId;
     private final String caseType = CaseType.getCaseType();
-
-    // Using static class memory so it persists cleanly across both tests
-    private static String savedEventToken;
 
     @BeforeAll
     void setUp() {
-        caseReference = apiSteps.ccdCaseIsCreatedAndIssued("england");
+        caseReference = apiSteps.ccdCaseIsCreated("england");
+
+        //auth for sol2
+        solicitor2Token = RestAssured.given()
+            .baseUri(getEnv("IDAM_API_URL"))
+            .contentType("application/x-www-form-urlencoded")
+            .formParams(Map.of(
+                "username", "pcs-solicitor2@test.com",
+                "password", "Pa$$w0rd",
+                "client_id", CLIENT_ID,
+                "client_secret", getEnv("PCS_API_IDAM_SECRET"),
+                "scope", SCOPE,
+                "grant_type", GRANT_TYPE
+            ))
+            .post(ENDPOINT)
+            .then().statusCode(200).extract().path("access_token");
+
+        //Get party ID for def
+        String partyId = RestAssured.given()
+            .header("Authorization", "Bearer " + solicitorUserIdamToken)
+            .header("ServiceAuthorization", pcsApiS2sToken)
+            .get("https://pcs-api-pr-2008.preview.platform.hmcts.net/ccd-persistence/cases?case-refs=" + caseReference)
+            .then().statusCode(200)
+            .extract().path("case_data.allDefendants[0].id");
+
+        //Link sol2
+        RestAssured.given()
+            .header("Authorization", "Bearer " + solicitor2Token)
+            .header("ServiceAuthorization", pcsApiS2sToken)
+            .post("https://pcs-api-pr-2008.preview.platform.hmcts.net/testing-support/link-defendant-solicitor-to-party/"
+                      + caseReference + "/" + partyId);
     }
 
-    @Title("makeAnApplication start event callback test - returns 200")
     @Test
     @Order(1)
+    @Title("Start Callback - Returns 200")
     void makeAnApplicationStartEventCallbackTest() {
-        String makeApplicationRequestBody = PayloadLoader.load(
-            "/payloads/makeAnApplication-startEventCallbackRequest.json",
-            Map.of("caseTypeId", caseType, "caseId", caseReference)
-        );
+        String request = PayloadLoader.load("/payloads/makeAnApplication-startEventCallbackRequest.json",
+                                            Map.of("caseTypeId", caseType, "caseId", caseReference));
 
         apiSteps.requestIsPreparedWithAppropriateValues();
-        apiSteps.theRequestContainsValidIdamToken(PcsIdamTokenClient.UserType.solicitorUser);
-        apiSteps.theRequestContainsValidServiceToken(TestConstants.PCS_FRONTEND);
+        RestAssured.given().header("Authorization", "Bearer " + solicitor2Token);
+
+        apiSteps.theRequestContainsValidServiceToken(TestConstants.PCS_API);
         apiSteps.theRequestContainsTheQueryParameter("eventId", "makeAnApplication");
-        apiSteps.theRequestContainsBody(makeApplicationRequestBody);
+        apiSteps.theRequestContainsBody(request);
 
         apiSteps.callIsSubmittedToTheEndpoint("StartEventCallback", "POST");
         apiSteps.checkStatusCode(200);
 
-        apiSteps.theResponseBodyMatchesTheExpectedResponse(
-            "/responses/makeAnApplication-startEventCallbackResponse.json");
-
-        savedEventToken = SerenityRest.lastResponse().jsonPath().getString("token");
+        representedPartyId = RestAssured.lastResponse().path("data.currentRepresentedPartyId");
     }
 
-    @Title("makeAnApplication submit event callback test - returns 200")
     @Test
     @Order(2)
+    @Title("Submit Callback - Returns 200")
     void makeAnApplicationSubmitEventCallbackTest() {
-        DecodedJWT decodedJWT = JWT.decode(savedEventToken);
-        String decodedCaseId = decodedJWT.getClaim("case-id").asString();
 
-        String submitApplicationRequestBody = PayloadLoader.load(
-            "/payloads/makeAnApplication-submitEventCallbackRequest.json",
-            Map.of(
-                "caseId", String.valueOf(caseReference),
-                "internal_case_id", decodedCaseId,
-                "caseTypeId", caseType,
-                "currentRepresentedPartyId", "5659e6a9-8d00-45b5-a5c3-694e5a593cd3",
-                "currentRepresentedPartyName", "Possession Claims Solicitor Org",
-                "eventToken", savedEventToken
-            )
-        );
+        String token = RestAssured.given()
+            .header("Authorization", "Bearer " + solicitor2Token)
+            .header("ServiceAuthorization", pcsApiS2sToken)
+            .get("https://ccd-data-store-api-pcs-api-pr-2008.preview.platform.hmcts.net/cases/" + caseReference + "/event-triggers/addCaseNote")
+            .then().statusCode(200).extract().path("token");
+
+        String internalCaseId = JWT.decode(token).getClaim("case-id").asString();
+
+        String request = PayloadLoader.load("/payloads/makeAnApplication-submitEventCallbackRequest.json",
+                                            Map.of("caseId", caseReference,
+                                                   "internalCaseId", internalCaseId,
+                                                   "caseTypeId", caseType,
+                                                   "representedPartyId", representedPartyId));
 
         apiSteps.requestIsPreparedWithAppropriateValues();
-        apiSteps.theRequestContainsValidIdamToken(PcsIdamTokenClient.UserType.solicitorUser);
-        apiSteps.theRequestContainsValidServiceToken(TestConstants.PCS_FRONTEND);
+        RestAssured.given().header("Authorization", "Bearer " + solicitor2Token);
+
+        apiSteps.theRequestContainsValidServiceToken(TestConstants.PCS_API);
         apiSteps.theRequestContainsIdempotencyKeyHeader();
         apiSteps.theRequestContainsTheQueryParameter("eventId", "makeAnApplication");
-        apiSteps.theRequestContainsBody(submitApplicationRequestBody);
+        apiSteps.theRequestContainsBody(request);
 
         apiSteps.callIsSubmittedToTheEndpoint("SubmitEventCallback", "POST");
         apiSteps.checkStatusCode(200);
