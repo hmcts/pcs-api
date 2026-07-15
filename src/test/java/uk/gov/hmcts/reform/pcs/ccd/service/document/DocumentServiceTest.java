@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.document;
 
-import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
