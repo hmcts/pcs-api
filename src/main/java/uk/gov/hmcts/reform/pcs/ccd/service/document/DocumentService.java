@@ -506,6 +506,7 @@ public class DocumentService {
                 return DocumentEntity.builder()
                 .pcsCase(pcsCaseEntity)
                 .url(legalRepDoc.getDocument().getUrl())
+                .generalApplication(selectedGenApp)
                 .fileName(renamed)
                 .party(party)
                 .binaryUrl(legalRepDoc.getDocument().getBinaryUrl())
