@@ -41,7 +41,7 @@ public class DeleteThisCase implements CCDConfig<PCSCase, State, UserRole> {
             .forStates(State.AWAITING_SUBMISSION_TO_HMCTS, State.PENDING_CASE_ISSUED)
             .name("Delete this claim")
             .showCondition(unissuedClaimStateCondition())
-            .ttlIncrement(0)
+            .ttlIncrement(-1)
             .grant(Permission.CRUD, UserRole.CREATOR)
             .grant(Permission.CRUD, CLAIMANT_SOLICITOR);
 
