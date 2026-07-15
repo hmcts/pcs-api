@@ -113,6 +113,7 @@ ccd:
         ELASTIC_SEARCH_HOSTS: "http://{{ .Release.Name }}-es-master:9200"
         CCD_S2S_AUTHORISED_SERVICES_CASE_USER_ROLES: "aac_manage_case_assignment,pcs_api,pcs_frontend"
         CASE_DOCUMENT_AM_URL: http://${SERVICE_NAME}-cdam
+        ENABLE_CASE_GROUP_ACCESS_FILTERING: true
       ingressHost: ccd-data-store-api-${SERVICE_FQDN}
       autoscaling:
         enabled: false
@@ -342,6 +343,9 @@ am-org-role-mapping-service:
       REFRESH_BULK_ASSIGNMENT_INCLUDE_BOOKINGS: true
       DB_FEATURE_FLAG_ENABLE: st_cic_wa_1_0
       ORM_ENV: pr
+      CCD_DEF_STORE_APP_URL: http://${SERVICE_NAME}-ccd-definition-store
+      PROFESSIONAL_REF_APP_URL: http://rd-professional-api-aat.service.core-compute-aat.internal
+      PROFESSIONAL_SCHEDULING_ENABLED: true
 
 aac-manage-case-assignment:
   enabled: true
