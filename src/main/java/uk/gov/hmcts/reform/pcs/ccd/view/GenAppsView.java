@@ -48,6 +48,7 @@ public class GenAppsView {
             .submittedOn(genAppEntity.getApplicationSubmittedDate())
             .submissionDocument(getSubmissionDocument(genAppEntity))
             .supportingDocuments(createSupportingDocumentList(genAppEntity))
+            .rank(genAppEntity.getRank())
             .build();
 
         return new ListValue<>(genAppEntity.getId().toString(), generalApplication);

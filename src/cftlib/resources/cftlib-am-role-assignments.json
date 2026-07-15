@@ -15,5 +15,22 @@
         "authorisations": []
       }
     ]
+  },
+  {
+    "email": "caseworker@pcs.com",
+    "id": "74e702fa-e20f-3a40-bc1d-d915f0874d00",
+    "roleAssignments": [
+      {
+        "roleType": "ORGANISATION",
+        "roleName": "ctsc-team-leader",
+        "grantType": "STANDARD",
+        "roleCategory": "LEGAL_OPERATIONS",
+        "classification": "PUBLIC",
+        "readOnly": false,
+        "attributes": {
+        },
+        "authorisations": []
+      }
+    ]
   }
 ]
