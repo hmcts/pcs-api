@@ -21,7 +21,9 @@ import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
 @JsonNaming(PropertyNamingStrategies.UpperCamelCaseStrategy.class)
 public class Hearing {
 
+    @CCD(ignore = true)
     public static final String NOTES_LABEL = "Hearing notes";
+    @CCD(ignore = true)
     public static final String ADDITIONAL_INFORMATION_LABEL = "Enter any additional information";
 
     @CCD(label = "Which type of hearing is this?")
