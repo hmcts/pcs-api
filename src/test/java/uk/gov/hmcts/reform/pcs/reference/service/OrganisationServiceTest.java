@@ -33,13 +33,17 @@ class OrganisationServiceTest {
     @Mock
     private OrganisationDetailsService organisationDetailsService;
 
+    @Mock
+    private CachingOrganisationDetailsService cachingOrganisationDetailsService;
+
     private OrganisationService organisationService;
 
     @BeforeEach
     void setUp() {
         organisationService = new OrganisationService(
             securityContextService,
-            organisationDetailsService
+            organisationDetailsService,
+            cachingOrganisationDetailsService
         );
     }
 
@@ -64,13 +68,13 @@ class OrganisationServiceTest {
     @DisplayName("Should successfully retrieve organisation ID for current user")
     void shouldSuccessfullyRetrieveOrganisationIdForCurrentUser() {
         when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
-        when(organisationDetailsService.getOrganisationIdentifier(USER_ID.toString()))
+        when(cachingOrganisationDetailsService.getOrganisationIdentifier(USER_ID.toString()))
             .thenReturn(ORGANISATION_IDENTIFIER);
 
         String result = organisationService.getOrganisationIdForCurrentUser();
 
         assertThat(result).isEqualTo(ORGANISATION_IDENTIFIER);
-        verify(organisationDetailsService).getOrganisationIdentifier(USER_ID.toString());
+        verify(cachingOrganisationDetailsService).getOrganisationIdentifier(USER_ID.toString());
     }
 
     @Test
@@ -79,14 +83,14 @@ class OrganisationServiceTest {
         String result = organisationService.getOrganisationIdForCurrentUser();
 
         assertThat(result).isNull();
-        verify(organisationDetailsService, never()).getOrganisationIdentifier(USER_ID.toString());
+        verify(cachingOrganisationDetailsService, never()).getOrganisationIdentifier(USER_ID.toString());
     }
 
     @Test
     @DisplayName("Should return null when exception thrown")
     void getOrganisationIdForCurrentUser_ShouldReturnNullWhenOrganisationDetailsExceptionThrown() {
         when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
-        when(organisationDetailsService.getOrganisationIdentifier(USER_ID.toString()))
+        when(cachingOrganisationDetailsService.getOrganisationIdentifier(USER_ID.toString()))
             .thenThrow(new OrganisationDetailsException("", null));
 
         String result = organisationService.getOrganisationIdForCurrentUser();
@@ -102,7 +106,7 @@ class OrganisationServiceTest {
         String result = organisationService.getOrganisationIdForCurrentUser();
 
         assertThat(result).isNull();
-        verify(organisationDetailsService, never()).getOrganisationIdentifier(USER_ID.toString());
+        verify(cachingOrganisationDetailsService, never()).getOrganisationIdentifier(USER_ID.toString());
     }
 
     @Test

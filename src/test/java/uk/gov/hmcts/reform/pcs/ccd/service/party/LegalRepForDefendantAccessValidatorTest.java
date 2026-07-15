@@ -15,6 +15,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationDetailsService;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 
 import java.util.List;
 import java.util.UUID;
@@ -29,7 +30,7 @@ class LegalRepForDefendantAccessValidatorTest {
     private static final long CASE_REFERENCE = 1234567890123456L;
 
     @Mock
-    private OrganisationDetailsService organisationDetailsService;
+    private OrganisationService organisationService;
     @Mock
     private DefendantPartyExtractor defendantPartyExtractor;
 
@@ -37,7 +38,7 @@ class LegalRepForDefendantAccessValidatorTest {
 
     @BeforeEach
     void setUp() {
-        underTest = new LegalRepForDefendantAccessValidator(organisationDetailsService, defendantPartyExtractor);
+        underTest = new LegalRepForDefendantAccessValidator(organisationService, defendantPartyExtractor);
     }
 
     @Test
@@ -60,7 +61,7 @@ class LegalRepForDefendantAccessValidatorTest {
 
         PcsCaseEntity caseEntity = createCaseWithDefendant(defendant);
 
-        when(organisationDetailsService.getOrganisationIdentifier(authenticatedUserId.toString()))
+        when(organisationService.getOrganisationIdForCurrentUser())
             .thenReturn(organisationId);
         List<PartyEntity> defendants = List.of(defendant);
         when(defendantPartyExtractor.extractDefendants(caseEntity, CASE_REFERENCE)).thenReturn(defendants);
@@ -91,7 +92,7 @@ class LegalRepForDefendantAccessValidatorTest {
 
         PcsCaseEntity caseEntity = createCaseWithDefendant(defendant);
 
-        when(organisationDetailsService.getOrganisationIdentifier(authenticatedUserId.toString()))
+        when(organisationService.getOrganisationIdForCurrentUser())
             .thenReturn(organisationId);
         List<PartyEntity> defendants = List.of(defendant);
         when(defendantPartyExtractor.extractDefendants(caseEntity, CASE_REFERENCE)).thenReturn(defendants);
@@ -119,7 +120,7 @@ class LegalRepForDefendantAccessValidatorTest {
 
         PcsCaseEntity caseEntity = createCaseWithDefendant(defendant);
 
-        when(organisationDetailsService.getOrganisationIdentifier(authenticatedUserId.toString()))
+        when(organisationService.getOrganisationIdForCurrentUser())
             .thenReturn("ORG-999");
 
         assertThatThrownBy(() -> underTest.validateAndGetDefendants(caseEntity, authenticatedUserId))
@@ -145,7 +146,7 @@ class LegalRepForDefendantAccessValidatorTest {
 
         PcsCaseEntity caseEntity = createCaseWithDefendant(defendant);
 
-        when(organisationDetailsService.getOrganisationIdentifier(authenticatedUserId.toString()))
+        when(organisationService.getOrganisationIdForCurrentUser())
             .thenReturn("ORG-123");
 
         assertThatThrownBy(() -> underTest.validateAndGetDefendants(caseEntity, authenticatedUserId))
@@ -176,7 +177,7 @@ class LegalRepForDefendantAccessValidatorTest {
 
         PcsCaseEntity caseEntity = createCaseWithDefendant(defendant);
 
-        when(organisationDetailsService.getOrganisationIdentifier(authenticatedUserId.toString()))
+        when(organisationService.getOrganisationIdForCurrentUser())
             .thenReturn("");
 
         List<PartyEntity> defendants = List.of(defendant);
@@ -214,7 +215,7 @@ class LegalRepForDefendantAccessValidatorTest {
 
         PcsCaseEntity caseEntity = createCaseWithDefendant(defendant);
 
-        when(organisationDetailsService.getOrganisationIdentifier(authenticatedUserId.toString()))
+        when(organisationService.getOrganisationIdForCurrentUser())
             .thenReturn("ORG-999");
 
         List<PartyEntity> defendants = List.of(defendant);
