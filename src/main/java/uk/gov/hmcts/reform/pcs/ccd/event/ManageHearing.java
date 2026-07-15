@@ -130,7 +130,7 @@ public class ManageHearing implements CCDConfig<PCSCase, State, UserRole> {
 
             <h3>What happens next</h3>
 
-            Work allocation tasks will be created for court staff to complete on the review dates.
+            A hearing notice will be issued if you specified one is needed.
             """.formatted(caseId, address, caseName);
     }
 

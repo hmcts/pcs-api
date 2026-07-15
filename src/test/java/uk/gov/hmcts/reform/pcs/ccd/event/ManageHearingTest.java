@@ -262,7 +262,7 @@ public class ManageHearingTest extends BaseEventTest {
 
                     <h3>What happens next</h3>
 
-                    Work allocation tasks will be created for court staff to complete on the review dates.
+                    A hearing notice will be issued if you specified one is needed.
                     """.formatted(TEST_CASE_REFERENCE)
             );
         }
@@ -297,7 +297,7 @@ public class ManageHearingTest extends BaseEventTest {
 
                     <h3>What happens next</h3>
 
-                    Work allocation tasks will be created for court staff to complete on the review dates.
+                    A hearing notice will be issued if you specified one is needed.
                     """
             );
         }
