@@ -9,7 +9,7 @@ CREATE TABLE public.hearing
   duration_hours INTEGER NOT NULL,
   duration_minutes INTEGER NOT NULL,
   notes VARCHAR(500),
-  notice_issued YES_NO NOT NULL,
+  issue_notice YES_NO NOT NULL,
   is_without_notice YES_NO,
   additional_information VARCHAR(500),
   notice_parties UUID[]

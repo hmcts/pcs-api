@@ -65,7 +65,7 @@ public class Hearing {
     private String notes;
 
     @CCD(label = "Does a hearing notice need to be issued?")
-    private VerticalYesNo noticeIssued;
+    private VerticalYesNo issueNotice;
 
     @CCD(label = "Is the hearing without notice?")
     private VerticalYesNo isWithoutNotice;

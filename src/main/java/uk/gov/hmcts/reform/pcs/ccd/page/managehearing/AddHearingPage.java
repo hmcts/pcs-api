@@ -50,8 +50,8 @@ public class AddHearingPage implements CcdPageConfiguration, CcdPage {
             .mandatory(Hearing::getDurationHours)
             .mandatory(Hearing::getDurationMinutes)
             .optional(Hearing::getNotes)
-            .mandatory(Hearing::getNoticeIssued)
-            .mandatory(Hearing::getIsWithoutNotice, "hearing_NoticeIssued=\"YES\"")
+            .mandatory(Hearing::getIssueNotice)
+            .mandatory(Hearing::getIsWithoutNotice, "hearing_IssueNotice=\"YES\"")
             .done()
             .mandatory(PCSCase::getPartyMultiSelectionList, "hearing_IsWithoutNotice=\"YES\"", null,
                        "Who should receive the hearing notice?", "Select all that apply")

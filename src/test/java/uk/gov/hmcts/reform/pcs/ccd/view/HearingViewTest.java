@@ -36,7 +36,7 @@ public class HearingViewTest {
             .durationMinutes(30)
             .durationHours(1)
             .notes("notes")
-            .noticeIssued(VerticalYesNo.YES)
+            .issueNotice(VerticalYesNo.YES)
             .isWithoutNotice(VerticalYesNo.NO)
             .additionalInformation("additional information")
             .build();
@@ -62,7 +62,7 @@ public class HearingViewTest {
         assertThat(hearing.getDurationMinutes()).isEqualTo(30);
         assertThat(hearing.getDurationHours()).isEqualTo(1);
         assertThat(hearing.getNotes()).isEqualTo("notes");
-        assertThat(hearing.getNoticeIssued()).isEqualTo(VerticalYesNo.YES);
+        assertThat(hearing.getIssueNotice()).isEqualTo(VerticalYesNo.YES);
         assertThat(hearing.getIsWithoutNotice()).isEqualTo(VerticalYesNo.NO);
         assertThat(hearing.getAdditionalInformation()).isEqualTo("additional information");
     }

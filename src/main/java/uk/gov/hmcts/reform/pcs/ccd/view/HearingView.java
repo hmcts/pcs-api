@@ -26,7 +26,7 @@ public class HearingView {
                 .durationHours(hearingEntity.getDurationHours())
                 .durationMinutes(hearingEntity.getDurationMinutes())
                 .notes(hearingEntity.getNotes())
-                .noticeIssued(hearingEntity.getNoticeIssued())
+                .issueNotice(hearingEntity.getIssueNotice())
                 .isWithoutNotice(hearingEntity.getIsWithoutNotice())
                 .additionalInformation(hearingEntity.getAdditionalInformation())
                 .build();

@@ -29,7 +29,7 @@ public class HearingService {
     private HearingEntity createHearingEntity(PCSCase pcsCase) {
         Hearing hearing = pcsCase.getHearing();
         HearingType hearingType = hearing.getType();
-        VerticalYesNo noticeIssued = hearing.getNoticeIssued();
+        VerticalYesNo issueNotice = hearing.getIssueNotice();
         VerticalYesNo isWithoutNotice = hearing.getIsWithoutNotice();
         HearingEntity hearingEntity = HearingEntity.builder()
             .type(hearingType)
@@ -37,7 +37,7 @@ public class HearingService {
             .hearingDate(hearing.getDate())
             .durationHours(hearing.getDurationHours())
             .durationMinutes(hearing.getDurationMinutes())
-            .noticeIssued(noticeIssued)
+            .issueNotice(issueNotice)
             .notes(hearing.getNotes())
             .isWithoutNotice(isWithoutNotice)
             .additionalInformation(hearing.getAdditionalInformation())
@@ -47,7 +47,7 @@ public class HearingService {
             hearingEntity.setOtherHearingType(hearing.getOtherHearingType());
         }
 
-        if (noticeIssued == VerticalYesNo.YES && isWithoutNotice == VerticalYesNo.YES) {
+        if (issueNotice == VerticalYesNo.YES && isWithoutNotice == VerticalYesNo.YES) {
             DynamicMultiSelectList selectedParties = pcsCase.getPartyMultiSelectionList();
 
             if (selectedParties != null) {

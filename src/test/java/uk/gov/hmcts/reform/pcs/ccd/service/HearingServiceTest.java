@@ -48,7 +48,7 @@ public class HearingServiceTest {
             .durationHours(1)
             .durationMinutes(30)
             .notes("notes")
-            .noticeIssued(VerticalYesNo.YES)
+            .issueNotice(VerticalYesNo.YES)
             .isWithoutNotice(VerticalYesNo.YES)
             .additionalInformation("additional information")
             .build();
@@ -90,7 +90,7 @@ public class HearingServiceTest {
         assertThat(hearingEntity.getDurationHours()).isEqualTo(1);
         assertThat(hearingEntity.getDurationMinutes()).isEqualTo(30);
         assertThat(hearingEntity.getNotes()).isEqualTo("notes");
-        assertThat(hearingEntity.getNoticeIssued()).isEqualTo(VerticalYesNo.YES);
+        assertThat(hearingEntity.getIssueNotice()).isEqualTo(VerticalYesNo.YES);
         assertThat(hearingEntity.getIsWithoutNotice()).isEqualTo(VerticalYesNo.YES);
         assertThat(hearingEntity.getAdditionalInformation()).isEqualTo("additional information");
         assertThat(hearingEntity.getNoticeParties()).hasSize(1);
@@ -108,7 +108,7 @@ public class HearingServiceTest {
             .durationHours(1)
             .durationMinutes(30)
             .notes("notes")
-            .noticeIssued(VerticalYesNo.YES)
+            .issueNotice(VerticalYesNo.YES)
             .isWithoutNotice(VerticalYesNo.NO)
             .additionalInformation("additional information")
             .build();
@@ -150,7 +150,7 @@ public class HearingServiceTest {
         assertThat(hearingEntity.getDurationHours()).isEqualTo(1);
         assertThat(hearingEntity.getDurationMinutes()).isEqualTo(30);
         assertThat(hearingEntity.getNotes()).isEqualTo("notes");
-        assertThat(hearingEntity.getNoticeIssued()).isEqualTo(VerticalYesNo.YES);
+        assertThat(hearingEntity.getIssueNotice()).isEqualTo(VerticalYesNo.YES);
         assertThat(hearingEntity.getIsWithoutNotice()).isEqualTo(VerticalYesNo.NO);
         assertThat(hearingEntity.getAdditionalInformation()).isEqualTo("additional information");
         assertThat(hearingEntity.getNoticeParties()).isEmpty();
