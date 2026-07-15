@@ -18,6 +18,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.model.CounterClaimStatusChangeTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.repository.CounterClaimRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.counterclaimform.CounterClaimFormScheduler;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.Payment;
@@ -51,6 +52,8 @@ class CounterClaimPaymentCallbackHandlerTest {
     @Mock
     private SchedulerClient schedulerClient;
     @Mock
+    private CounterClaimFormScheduler counterClaimFormScheduler;
+    @Mock
     private ObjectMapper objectMapper;
     @Captor
     private ArgumentCaptor<SchedulableInstance<CounterClaimStatusChangeTaskData>> taskInstanceCaptor;
@@ -64,6 +67,7 @@ class CounterClaimPaymentCallbackHandlerTest {
     @BeforeEach
     void setUp() {
         underTest = new CounterClaimPaymentCallbackHandler(counterClaimRepository, schedulerClient,
+                                                           counterClaimFormScheduler,
                                                            objectMapper, FIXED_UTC_CLOCK);
     }
 
@@ -105,6 +109,8 @@ class CounterClaimPaymentCallbackHandlerTest {
         CounterClaimStatusChangeTaskData data = (CounterClaimStatusChangeTaskData) taskInstance.getData();
         assertThat(data.getCounterClaimId()).isEqualTo(counterClaimId);
         assertThat(data.getPaymentReference()).isEqualTo(paymentReference);
+
+        verify(counterClaimFormScheduler).scheduleCounterClaimFormGeneration(counterClaimId);
     }
 
     @Test
