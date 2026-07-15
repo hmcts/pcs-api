@@ -50,6 +50,9 @@ test.describe('Case management - Case Worker change case state @nightly', async 
     await performAction('changeCaseState', {
       question: changeCaseState.whichStateYouMovingCaseToQuestion, option: changeCaseState.caseStateHiddenOption,
       nextPage: checkYourAnswersChangeState.mainHeader
-    }); 
+    });
+    await performAction('clickButton', checkYourAnswersChangeState.submitButton);
+    await performAction('confirmCaseStateChange');
+    await performValidation('bannerAlert', 'Case #.* has been updated with event: Change case state');
   });
 });

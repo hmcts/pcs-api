@@ -1,4 +1,5 @@
 export default {
   'amendDocumentsselectDocument': 'selectDocument',
-  'changeCaseStatechangeCaseStatePage': 'changeCaseState'
+  'changeCaseStatechangeCaseStatePage': 'changeCaseState',
+  'changeCaseState/confirm': 'confirmCaseStateChange'
 };

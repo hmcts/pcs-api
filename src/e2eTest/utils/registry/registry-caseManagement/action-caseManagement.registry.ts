@@ -37,6 +37,7 @@ export class ActionCMRegistry {
     ['selectAnEvent', new CaseManagementAction()],
     ['selectDocumentToAmend', new CaseManagementAction()],
     ['changeCaseState', new CaseManagementAction()],
+    ['confirmCaseStateChange', new CaseManagementAction()],
     ['errorValidationSelectDocumentPage', new ErrorValidationAction()],
     ['errorValidationChangeCaseStatePage', new ErrorValidationAction()],
     ['inputErrorValidation', new CaseManagementAction()],

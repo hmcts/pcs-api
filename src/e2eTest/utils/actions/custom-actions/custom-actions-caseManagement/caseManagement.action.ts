@@ -6,7 +6,8 @@ import { getCaseTypeId } from '@utils/common/caseType.utils';
 import { performAction, performValidation } from '@utils/controller-caseManagement';
 import { VERY_LONG_TIMEOUT } from 'playwright.config';
 import { caseSummary, home } from '@data/page-data';
-import { changeCaseState, selectDocument } from '@data/page-data-figma/page-data-caseManagement-figma';
+import { changeCaseState, confirmCaseStateChange, selectDocument } from '@data/page-data-figma/page-data-caseManagement-figma';
+import { caseInfo } from '../createCaseAPI.action';
 
 
 export const addressInfo = {
@@ -25,6 +26,7 @@ export class CaseManagementAction implements IAction {
       ['selectAnEvent', () => this.selectAnEvent(fieldName as actionRecord)],
       ['selectDocumentToAmend', () => this.selectDocumentToAmend(fieldName as actionRecord)],
       ['changeCaseState', () => this.changeCaseState(fieldName as actionRecord)],
+      ['confirmCaseStateChange', () => this.confirmCaseStateChange()],
       ['inputErrorValidation', () => this.inputErrorValidation(page, fieldName as actionRecord)],
 
     ]);
@@ -59,8 +61,28 @@ export class CaseManagementAction implements IAction {
   }
 
   private async changeCaseState(caseState: actionRecord){
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
+    await performValidation('text', {
+      elementType: 'paragraph',
+      text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
+    });
     await performAction('select', caseState.question, caseState.option);
     await performAction('reTryOnCallBackError', changeCaseState.continueButton, caseState.nextPage as string);
+  }
+
+  private async confirmCaseStateChange(): Promise<void> {
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
+    await performValidation('text', {
+      elementType: 'paragraph',
+      text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
+    });
+    await performValidation('text', { elementType: 'inlineText', text: 'Case number: ' + caseInfo.fid });
+    await performValidation('text', {
+      elementType: 'inlineText',
+      text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
+    });
+    await performValidation('mainHeader', confirmCaseStateChange.mainHeader);
+    await performAction('clickButton', confirmCaseStateChange.closeAndReturnToCaseOverviewButton);
   }
 
   private async inputErrorValidation(page: Page, validationArr: actionRecord) {
@@ -69,8 +91,7 @@ export class CaseManagementAction implements IAction {
         if (Array.isArray(validationArr.inputArray)) {
           for (const item of validationArr.inputArray) {
             switch (validationArr.validationType) {
-              
-  
+                
               case 'radioOptions':
                 await performAction('clickButton', validationArr.button);
                 await performValidation('inputError', !validationArr?.label ? validationArr.question : validationArr.label, item.errInlineMessage);
