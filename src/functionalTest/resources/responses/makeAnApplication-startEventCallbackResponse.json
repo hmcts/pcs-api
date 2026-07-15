@@ -1,3 +1,8 @@
 {
-  "data": {}
+  "data": {
+    "legislativeCountry": "England",
+    "xui_genapp_StandardFee": "£126",
+    "xui_genapp_MaxFee": "£321",
+    "xui_genapp_ShowHwfScreens": "YES"
+  }
 }

@@ -291,7 +291,6 @@
       "xui_genapp_ApplicationType": "SOMETHING_ELSE",
       "xui_genapp_ShowHwfScreens": "YES",
       "xui_genapp_StandardFee": "£126",
-      "currentRepresentedPartyId": "{currentRepresentedPartyId}",
       "currentRepresentedPartyName": "Jane Doe",
       "xui_genapp_NeedHwf": "NO",
       "xui_genapp_OtherPartiesAgreed": "NO",

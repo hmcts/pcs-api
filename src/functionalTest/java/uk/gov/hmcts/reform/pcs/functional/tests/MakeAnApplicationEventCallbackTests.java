@@ -22,7 +22,6 @@ import uk.gov.hmcts.reform.pcs.functional.steps.ApiSteps;
 import uk.gov.hmcts.reform.pcs.functional.steps.BaseApi;
 import uk.gov.hmcts.reform.pcs.functional.testutils.PayloadLoader;
 import uk.gov.hmcts.reform.pcs.functional.testutils.PcsIdamTokenClient;
-import net.serenitybdd.rest.SerenityRest;
 
 @Slf4j
 @Tag("Functional_1")
@@ -35,12 +34,12 @@ public class MakeAnApplicationEventCallbackTests extends BaseApi {
     ApiSteps apiSteps;
 
     private Long caseReference;
-    private String representedPartyId;
     private final String caseType = CaseType.getCaseType();
+    private final String caseState = "CASE_ISSUED";
 
     @BeforeAll
     void setUp() {
-        caseReference = apiSteps.ccdCaseIsCreated("england");
+        caseReference = apiSteps.ccdCaseIsCreatedAndIssued("england");
 
         String accessCode = apiSteps.accessCodeIsFetched(caseReference);
         apiSteps.validateAccessCode(caseReference.toString(), accessCode);
@@ -52,7 +51,11 @@ public class MakeAnApplicationEventCallbackTests extends BaseApi {
     void makeAnApplicationStartEventCallbackTest() {
         String makeApplicationRequestBody = PayloadLoader.load(
             "/payloads/makeAnApplication-startEventCallbackRequest.json",
-            Map.of("caseTypeId", caseType, "caseId", caseReference)
+            Map.of(
+                "caseTypeId", caseType,
+                "caseId", caseReference,
+                "caseState", caseState
+            )
         );
 
         apiSteps.requestIsPreparedWithAppropriateValues();
@@ -64,20 +67,18 @@ public class MakeAnApplicationEventCallbackTests extends BaseApi {
         apiSteps.callIsSubmittedToTheEndpoint("StartEventCallback", "POST");
         apiSteps.checkStatusCode(200);
 
-        representedPartyId = SerenityRest.lastResponse().path("data.currentRepresentedPartyId");
-        System.out.println("==================================================");
-        System.out.println("[DEBUG] Captured Party ID: " + representedPartyId);
-        System.out.println("==================================================");
+        apiSteps.theResponseBodyMatchesTheExpectedResponse(
+            "/responses/makeAnApplication-startEventCallbackResponse.json"
+        );
     }
 
     @Title("makeAnApplication submit event callback test - returns 200")
     @Test
     @Order(2)
     void makeAnApplicationSubmitEventCallbackTest() {
-
         String liveCaseNoteToken = RestAssured.given()
             .baseUri("https://ccd-data-store-api-pcs-api-pr-2008.preview.platform.hmcts.net")
-            .header(TestConstants.AUTHORIZATION, "Bearer " + ApiSteps.solicitorUserIdamToken)
+            .header(TestConstants.AUTHORIZATION, "Bearer " + ApiSteps.citizenUserIdamToken)
             .header(TestConstants.SERVICE_AUTHORIZATION, ApiSteps.pcsApiS2sToken)
             .header("Experimental", "True")
             .get("/cases/" + caseReference + "/event-triggers/addCaseNote")
@@ -95,7 +96,7 @@ public class MakeAnApplicationEventCallbackTests extends BaseApi {
                 "caseId", String.valueOf(caseReference),
                 "internalCaseId", decodedCaseId,
                 "caseTypeId", caseType,
-                "representedPartyId", representedPartyId
+                "caseState", "PENDING_CASE_ISSUED"
             )
         );
 
@@ -108,5 +109,9 @@ public class MakeAnApplicationEventCallbackTests extends BaseApi {
 
         apiSteps.callIsSubmittedToTheEndpoint("SubmitEventCallback", "POST");
         apiSteps.checkStatusCode(200);
+
+        apiSteps.theResponseBodyMatchesTheExpectedResponse(
+            "/responses/makeAnApplication-submitEventCallbackResponse.json"
+        );
     }
 }
