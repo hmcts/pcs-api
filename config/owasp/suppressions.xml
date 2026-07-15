@@ -18,5 +18,8 @@
     <cve>CVE-2020-29582</cve>
     <cve>CVE-2026-53914</cve>
   </suppress>
+  <notes><![CDATA[False positive: CVE-2025-7962 affects Angus Mail, not the Angus Activation library.]]></notes>
+  <packageUrl regex="true">^pkg:maven/org\.eclipse\.angus/angus-activation@.*$</packageUrl>
+  <cpe>cpe:/a:eclipse:angus_mail</cpe>
   <!--End of false positives section -->
 </suppressions>
