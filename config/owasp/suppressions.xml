@@ -1,21 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
   <!--Please add all the false positives under the below section-->
-  <suppress base="true">
-    <!-- httpcore 4.4.16 -->
+  <suppress until="2026-08-15">
+    <notes><![CDATA[file name: httpcore 4.4.16]]></notes>
     <cve>CVE-2026-54399</cve>
     <cve>CVE-2026-54428</cve>
-
-    <!-- jackson-databind-2.17.1 -->
+  </suppress>
+  <suppress until="2026-08-15">
+    <notes><![CDATA[jackson-databind-2.17.1]]></notes>
     <cve>CVE-2026-54512</cve>
     <cve>CVE-2026-54513</cve>
     <cve>CVE-2026-54514</cve>
     <cve>CVE-2026-54515</cve>
-
-    <!-- kotlin-stdlib-1.9.25 && kotlin-stdlib-jdk7-1.9.25 && kotlin-stdlib-jdk8-1.9.25 -->
+  </suppress>
+  <suppress until="2026-08-15">
+    <notes><![CDATA[kotlin-stdlib-1.9.25, kotlin-stdlib-jdk7-1.9.25, kotlin-stdlib-jdk8-1.9.25 ]]></notes>
     <cve>CVE-2020-29582</cve>
     <cve>CVE-2026-53914</cve>
-
   </suppress>
   <!--End of false positives section -->
 </suppressions>
