@@ -7,7 +7,6 @@ import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
 import uk.gov.hmcts.ccd.sdk.api.DecentralisedConfigBuilder;
 import uk.gov.hmcts.ccd.sdk.api.Event;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
-import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -17,19 +16,18 @@ import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.SubmitEventHandl
 import uk.gov.hmcts.reform.pcs.ccd.page.respondpossessionclaim.page.RespondToPossessionDraftSavePage;
 
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
-import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.respondPossessionClaim;
 
 @Component
 @Slf4j
-public class RespondPossessionClaim implements CCDConfig<PCSCase, State, UserRole> {
+public class ExtRespondPossessionClaim implements CCDConfig<PCSCase, State, UserRole> {
 
     private final StartEventHandler startEventHandler;
     private final SubmitEventHandler submitEventHandler;
     private final RespondToPossessionDraftSavePage respondToPossessionDraftSavePage;
 
-    public RespondPossessionClaim(@Qualifier("respondToClaimStartEventHandler") StartEventHandler startEventHandler,
-                                  @Qualifier("respondToClaimSubmitEventHandler") SubmitEventHandler submitEventHandler,
-                                  RespondToPossessionDraftSavePage respondToPossessionDraftSavePage) {
+    public ExtRespondPossessionClaim(@Qualifier("respondToClaimStartEventHandler") StartEventHandler startEventHandler,
+                                     @Qualifier("respondToClaimSubmitEventHandler") SubmitEventHandler submitEventHandler,
+                                     RespondToPossessionDraftSavePage respondToPossessionDraftSavePage) {
 
         this.startEventHandler = startEventHandler;
         this.submitEventHandler = submitEventHandler;
@@ -39,12 +37,9 @@ public class RespondPossessionClaim implements CCDConfig<PCSCase, State, UserRol
     @Override
     public void configureDecentralised(final DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         Event.EventBuilder<PCSCase, UserRole, State> eventBuilder = configBuilder
-            .decentralisedEvent(respondPossessionClaim.name(), submitEventHandler, startEventHandler)
-            // TODO: HDPI-3580 - Revert to .forState(State.CASE_ISSUED) once payments flow is implemented
-            // Temporarily enabled for all states to allow testing before case submission/payment
-            .forAllStates()
-            .showCondition(ShowConditions.NEVER_SHOW)
-            .name("Defendant Response Submission")
+            .decentralisedEvent("ext:respondPossessionClaim", submitEventHandler, startEventHandler)
+            .forState(State.CASE_ISSUED)
+            .name("Respond to claim")
             .description("Save defendants response as draft or to a case based on flag")
             .grant(Permission.CRU, UserRole.DEFENDANT)
             .grant(Permission.CRU, UserRole.DEFENDANT_SOLICITOR)

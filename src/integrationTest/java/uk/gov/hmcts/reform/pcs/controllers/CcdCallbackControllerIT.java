@@ -98,7 +98,7 @@ class CcdCallbackControllerIT extends AbstractPostgresContainerIT {
         setAuthenticatedUser(OTHER_USER_ID);
 
         CallbackRequest callbackRequest = CallbackRequest.builder()
-            .eventId("respondPossessionClaim")
+            .eventId("ext:respondPossessionClaim")
             .caseDetails(CaseDetails.builder()
                 .id(CASE_REFERENCE)
                 .caseTypeId(CaseType.getCaseType())
@@ -108,7 +108,7 @@ class CcdCallbackControllerIT extends AbstractPostgresContainerIT {
 
         mockMvc.perform(post("/callbacks/about-to-start")
                 .header(AUTHORIZATION, AUTH_HEADER)
-                .queryParam("eventId", "respondPossessionClaim")
+                .queryParam("eventId", "ext:respondPossessionClaim")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(callbackRequest)))
             .andExpect(status().isForbidden())
