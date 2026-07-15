@@ -63,9 +63,6 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
     private DocumentService documentService;
 
     @Mock
-    private PartyService partyService;
-
-    @Mock
     private SecurityContextService securityContextService;
 
     @Mock

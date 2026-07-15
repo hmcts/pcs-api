@@ -51,7 +51,6 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
     private final LegalRepDocumentUploadConfigurer legalRepDocumentUploadConfigurer;
     private final PcsCaseService pcsCaseService;
     private final DocumentService documentService;
-    private final PartyService partyService;
     private final SecurityContextService securityContextService;
     private final GenAppVisibilityService genAppVisibilityService;
     private final LegalRepForDefendantAccessValidator  legalRepForDefendantAccessValidator;
