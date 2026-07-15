@@ -20,8 +20,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEnt
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.CounterClaimRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
-import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
-import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.math.BigDecimal;
 import java.time.Clock;
@@ -50,15 +48,12 @@ class CounterClaimServiceTest {
         Instant.parse("2026-04-22T21:00:00Z"), ZoneOffset.UTC);
 
     @Mock
-    private PartyService partyService;
-    @Mock
     private PartyRepository partyRepository;
     @Mock
     private ClaimRepository claimRepository;
     @Mock
     private CounterClaimRepository counterClaimRepository;
-    @Mock
-    private SecurityContextService securityContextService;
+
     @Mock
     private PartyEntity partyEntity;
     @Mock
@@ -74,21 +69,15 @@ class CounterClaimServiceTest {
     @BeforeEach
     void setUp() {
         underTest = new CounterClaimService(
-            partyService,
             partyRepository,
             claimRepository,
             counterClaimRepository,
-            securityContextService,
             FIXED_UTC_CLOCK
         );
     }
 
     @Test
     void shouldSaveCounterClaimWithAllFields() {
-        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
-        when(partyService.getPartyEntityByIdamId(USER_ID, CASE_REFERENCE)).thenReturn(partyEntity);
-        when(partyEntity.getId()).thenReturn(PARTY_ID);
-        when(partyRepository.getReferenceById(PARTY_ID)).thenReturn(partyEntity);
         when(claimRepository.findIdByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(CLAIM_ID));
         when(claimRepository.getReferenceById(CLAIM_ID)).thenReturn(claimEntity);
         when(claimEntity.getPcsCase()).thenReturn(pcsCaseEntity);
@@ -108,7 +97,7 @@ class CounterClaimServiceTest {
             .appliedForHwf(VerticalYesNo.NO)
             .build();
 
-        Optional<CounterClaimEntity> saved = underTest.saveCounterClaim(CASE_REFERENCE, counterClaim);
+        Optional<CounterClaimEntity> saved = underTest.saveCounterClaim(CASE_REFERENCE, counterClaim, partyEntity);
 
         verify(counterClaimRepository).save(counterClaimCaptor.capture());
         CounterClaimEntity captured = counterClaimCaptor.getValue();
@@ -121,7 +110,7 @@ class CounterClaimServiceTest {
 
     @Test
     void shouldReturnEmptyWhenCounterClaimIsNull() {
-        assertThat(underTest.saveCounterClaim(CASE_REFERENCE, null)).isEmpty();
+        assertThat(underTest.saveCounterClaim(CASE_REFERENCE, null, partyEntity)).isEmpty();
     }
 
     @Test
@@ -150,7 +139,7 @@ class CounterClaimServiceTest {
             .otherOrderRequestFacts("Landlord did not serve notice")
             .build();
 
-        underTest.saveCounterClaim(CASE_REFERENCE, counterClaim);
+        underTest.saveCounterClaim(CASE_REFERENCE, counterClaim, partyEntity);
 
         verify(counterClaimRepository).save(counterClaimCaptor.capture());
         CounterClaimEntity captured = counterClaimCaptor.getValue();
@@ -175,47 +164,37 @@ class CounterClaimServiceTest {
             ))
             .build();
 
-        underTest.saveCounterClaim(CASE_REFERENCE, counterClaim);
+        underTest.saveCounterClaim(CASE_REFERENCE, counterClaim, partyEntity);
 
         verify(counterClaimRepository).save(counterClaimCaptor.capture());
         assertThat(counterClaimCaptor.getValue().getCounterClaimParties()).hasSize(1);
     }
 
     @Test
-    void shouldThrowWhenCurrentUserIdIsNull() {
-        when(securityContextService.getCurrentUserId()).thenReturn(null);
-
+    void shouldThrowWhenPartyIsNull() {
         CounterClaim counterClaim = CounterClaim.builder()
             .claimType(CounterClaimType.PAYMENT_OR_COMPENSATION)
             .build();
 
-        assertThatThrownBy(() -> underTest.saveCounterClaim(CASE_REFERENCE, counterClaim))
+        assertThatThrownBy(() -> underTest.saveCounterClaim(CASE_REFERENCE, counterClaim, null))
             .isInstanceOf(IllegalStateException.class)
-            .hasMessageContaining("Current user IDAM ID is null");
+            .hasMessageContaining("Defendant party is null for case: " + CASE_REFERENCE);
     }
 
     @Test
     void shouldThrowWhenClaimNotFoundForCase() {
-        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
-        when(partyService.getPartyEntityByIdamId(USER_ID, CASE_REFERENCE)).thenReturn(partyEntity);
-        when(partyEntity.getId()).thenReturn(PARTY_ID);
-        when(partyRepository.getReferenceById(PARTY_ID)).thenReturn(partyEntity);
         when(claimRepository.findIdByCaseReference(CASE_REFERENCE)).thenReturn(Optional.empty());
 
         CounterClaim counterClaim = CounterClaim.builder()
             .claimType(CounterClaimType.PAYMENT_OR_COMPENSATION)
             .build();
 
-        assertThatThrownBy(() -> underTest.saveCounterClaim(CASE_REFERENCE, counterClaim))
+        assertThatThrownBy(() -> underTest.saveCounterClaim(CASE_REFERENCE, counterClaim, partyEntity))
             .isInstanceOf(IllegalStateException.class)
             .hasMessageContaining("No claim found for case");
     }
 
     private void stubSaveDependencies() {
-        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
-        when(partyService.getPartyEntityByIdamId(USER_ID, CASE_REFERENCE)).thenReturn(partyEntity);
-        when(partyEntity.getId()).thenReturn(PARTY_ID);
-        when(partyRepository.getReferenceById(PARTY_ID)).thenReturn(partyEntity);
         when(claimRepository.findIdByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(CLAIM_ID));
         when(claimRepository.getReferenceById(CLAIM_ID)).thenReturn(claimEntity);
         when(claimEntity.getPcsCase()).thenReturn(pcsCaseEntity);

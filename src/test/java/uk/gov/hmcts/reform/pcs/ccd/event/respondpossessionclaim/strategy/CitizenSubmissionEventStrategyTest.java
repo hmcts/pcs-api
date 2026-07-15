@@ -13,16 +13,22 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
+import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.CounterClaimSubmitConfirmationService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.RespondPossessionClaimSubmitPersistenceResult;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.RespondPossessionClaimSubmitService;
 import uk.gov.hmcts.reform.pcs.exception.DraftNotFoundException;
+import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
+import uk.gov.hmcts.reform.pcs.model.JourneyType;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -34,7 +40,9 @@ import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.respondPossessionClaim;
 @ExtendWith(MockitoExtension.class)
 class CitizenSubmissionEventStrategyTest {
 
+    private static final UUID TEST_IDAM_ID = UUID.randomUUID();
     private static final long CASE_REFERENCE = 1234567890L;
+    private static final JourneyType JOURNEY_TYPE = JourneyType.CITIZEN;
 
     @Mock
     private DraftCaseDataService draftCaseDataService;
@@ -45,7 +53,13 @@ class CitizenSubmissionEventStrategyTest {
     @Mock
     private CounterClaimSubmitConfirmationService counterClaimSubmitConfirmationService;
     @Mock
+    private SecurityContextService securityContextService;
+    @Mock
+    private PartyService partyService;
+    @Mock
     private EventPayload<PCSCase, State> eventPayload;
+    @Mock
+    private PartyEntity defendantParty;
 
     private CitizenSubmissionEventStrategy underTest;
 
@@ -55,7 +69,9 @@ class CitizenSubmissionEventStrategyTest {
             draftCaseDataService,
             submitResponseFactory,
             respondPossessionClaimSubmitService,
-            counterClaimSubmitConfirmationService
+            counterClaimSubmitConfirmationService,
+            partyService,
+            securityContextService
         );
     }
 
@@ -67,41 +83,43 @@ class CitizenSubmissionEventStrategyTest {
             .build();
 
         PCSCase caseData = createDraftSaveCaseData(responses);
-        RespondPossessionClaimSubmitPersistenceResult persistenceResult =
-            new RespondPossessionClaimSubmitPersistenceResult(caseData.getPossessionClaimResponse(), null, false);
+        final RespondPossessionClaimSubmitPersistenceResult persistenceResult =
+            new RespondPossessionClaimSubmitPersistenceResult(
+                caseData.getPossessionClaimResponse(), null, false);
 
         stubDraft(caseData);
+        when(securityContextService.getCurrentUserId()).thenReturn(TEST_IDAM_ID);
         when(eventPayload.caseReference()).thenReturn(CASE_REFERENCE);
+        when(partyService.getPartyEntityByIdamId(TEST_IDAM_ID, CASE_REFERENCE)).thenReturn(defendantParty);
         when(respondPossessionClaimSubmitService.persistFinalSubmit(
             CASE_REFERENCE,
-            caseData.getPossessionClaimResponse()
+            caseData.getPossessionClaimResponse(),
+            defendantParty,
+            JOURNEY_TYPE
         )).thenReturn(persistenceResult);
         SubmitResponse<State> submitResponse = SubmitResponse.defaultResponse();
-        when(counterClaimSubmitConfirmationService.buildSubmitResponse(CASE_REFERENCE, persistenceResult))
-            .thenReturn(submitResponse);
+        when(counterClaimSubmitConfirmationService
+                 .buildSubmitResponse(CASE_REFERENCE, persistenceResult, defendantParty)).thenReturn(submitResponse);
 
         underTest.process(eventPayload);
 
         verify(submitResponseFactory).validate(caseData.getPossessionClaimResponse(), CASE_REFERENCE);
         verify(respondPossessionClaimSubmitService).persistFinalSubmit(
             CASE_REFERENCE,
-            caseData.getPossessionClaimResponse()
+            caseData.getPossessionClaimResponse(),
+            defendantParty,
+            JOURNEY_TYPE
         );
-        verify(counterClaimSubmitConfirmationService).buildSubmitResponse(CASE_REFERENCE, persistenceResult);
+        verify(counterClaimSubmitConfirmationService)
+            .buildSubmitResponse(CASE_REFERENCE, persistenceResult, defendantParty);
     }
 
     @Test
     void shouldThrowExceptionWhenNoDraftFound() {
-        DefendantResponses responses = DefendantResponses.builder()
-            .tenancyTypeConfirmation(YesNoNotSure.YES)
-            .rentArrearsAmountConfirmation(YesNoNotSure.NO)
-            .build();
-
-        PCSCase caseData = createDraftSaveCaseData(responses);
-
         when(draftCaseDataService.getUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim))
             .thenReturn(Optional.empty());
         when(eventPayload.caseReference()).thenReturn(CASE_REFERENCE);
+        when(securityContextService.getCurrentUserId()).thenReturn(TEST_IDAM_ID);
 
         assertThat(assertThrows(
             DraftNotFoundException.class,
@@ -110,8 +128,8 @@ class CitizenSubmissionEventStrategyTest {
                                     CASE_REFERENCE, respondPossessionClaim));
 
         verify(submitResponseFactory, never()).validate(any(), anyLong());
-        verify(respondPossessionClaimSubmitService, never()).persistFinalSubmit(anyLong(), any());
-        verify(counterClaimSubmitConfirmationService, never()).buildSubmitResponse(anyLong(), any());
+        verify(respondPossessionClaimSubmitService, never()).persistFinalSubmit(anyLong(), any(), any(), any());
+        verify(counterClaimSubmitConfirmationService, never()).buildSubmitResponse(anyLong(), any(), any());
     }
 
     @Test
@@ -135,14 +153,28 @@ class CitizenSubmissionEventStrategyTest {
             .errors(List.of("error"))
             .build();
 
+        when(securityContextService.getCurrentUserId()).thenReturn(TEST_IDAM_ID);
         when(submitResponseFactory.validate(possessionClaimResponse, CASE_REFERENCE))
             .thenReturn(Optional.of(submitResponse));
         when(eventPayload.caseReference()).thenReturn(CASE_REFERENCE);
 
         underTest.process(eventPayload);
 
-        verify(respondPossessionClaimSubmitService, never()).persistFinalSubmit(anyLong(), any());
-        verify(counterClaimSubmitConfirmationService, never()).buildSubmitResponse(anyLong(), any());
+        verify(respondPossessionClaimSubmitService, never()).persistFinalSubmit(anyLong(), any(), any(), any());
+        verify(counterClaimSubmitConfirmationService, never()).buildSubmitResponse(anyLong(), any(), any());
+    }
+
+    @Test
+    void shouldThrowExceptionWhenCurrentUserIdamIdIsNull() {
+        when(securityContextService.getCurrentUserId()).thenReturn(null);
+
+        assertThatThrownBy(() -> underTest.process(eventPayload))
+            .isInstanceOf(IllegalStateException.class)
+            .hasMessage("Current user IDAM ID is null");
+
+        verify(submitResponseFactory, never()).validate(any(), anyLong());
+        verify(respondPossessionClaimSubmitService, never()).persistFinalSubmit(anyLong(), any(), any(), any());
+        verify(counterClaimSubmitConfirmationService, never()).buildSubmitResponse(anyLong(), any(), any());
     }
 
     private void stubDraft(PCSCase draft) {

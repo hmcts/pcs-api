@@ -55,6 +55,7 @@ import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.PaymentService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
+import uk.gov.hmcts.reform.pcs.model.JourneyType;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -103,8 +104,6 @@ class RespondPossessionClaimTest extends BaseEventTest {
     private RespondToPossessionDraftSavePage respondToPossessionDraftSavePage;
     @Mock
     private CounterClaimService counterClaimService;
-    @Mock
-    private CounterClaimFeeCalculator counterClaimFeeCalculator;
     @Mock
     private PartyService partyService;
     @Mock
@@ -189,14 +188,18 @@ class RespondPossessionClaimTest extends BaseEventTest {
                     draftCaseDataService,
                     submitResponseFactory,
                     submitService,
-                    confirmationService
+                    confirmationService,
+                    partyService,
+                    securityContextService
                 ),
                 new LegalRepSubmissionEventStrategy(
                     draftCaseDataService,
-                    claimResponseService,
-                    defendantResponseService,
                     selectedPartyRetriever,
-                    submitResponseFactory
+                    submitResponseFactory,
+                    partyService,
+                    submitService,
+                    confirmationService,
+                    securityContextService
                 )
             ),
             securityContextService
@@ -394,13 +397,14 @@ class RespondPossessionClaimTest extends BaseEventTest {
 
     @Test
     void shouldNotSaveDraftWhenPossessionClaimResponseIsNull_ForCitizenUser() {
+
+        when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
+        when(securityContextService.getCurrentUserId()).thenReturn(UUID.randomUUID());
+        when(userInfo.getRoles()).thenReturn(List.of(UserRole.CITIZEN.getRole()));
+
         PCSCase caseData = PCSCase.builder()
             .possessionClaimResponse(null)
             .build();
-
-        when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
-        when(userInfo.getRoles()).thenReturn(List.of(UserRole.CITIZEN.getRole()));
-
         callSubmitHandler(caseData);
 
         verify(draftCaseDataService, never()).patchUnsubmittedEventData(
@@ -648,6 +652,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
             .possessionClaimResponse(possessionClaimResponse)
             .build();
 
+        when(securityContextService.getCurrentUserId()).thenReturn(UUID.randomUUID());
         when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
         when(userInfo.getRoles()).thenReturn(List.of(UserRole.CITIZEN.getRole()));
         when(draftCaseDataService.getUnsubmittedCaseData(TEST_CASE_REFERENCE, EventId.respondPossessionClaim))
@@ -684,6 +689,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
             .build();
 
         when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
+        when(securityContextService.getCurrentUserId()).thenReturn(UUID.randomUUID());
         when(userInfo.getRoles()).thenReturn(List.of(UserRole.CITIZEN.getRole()));
         when(draftCaseDataService.getUnsubmittedCaseData(TEST_CASE_REFERENCE, EventId.respondPossessionClaim))
             .thenReturn(Optional.of(caseData));
@@ -943,7 +949,11 @@ class RespondPossessionClaimTest extends BaseEventTest {
     @Test
     void shouldSubmitLegalRepresentativeDraftForSelectedParty_ForLegalRepresentativeUser() {
         // given
+        UUID legalRepUserId = UUID.randomUUID();
         UUID representedPartyId = UUID.randomUUID();
+        PartyEntity representedParty = PartyEntity.builder().id(representedPartyId).build();
+
+        when(securityContextService.getCurrentUserId()).thenReturn(legalRepUserId);
         when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
         when(userInfo.getRoles()).thenReturn(List.of(UserRole.DEFENDANT_SOLICITOR.getRole()));
 
@@ -964,15 +974,15 @@ class RespondPossessionClaimTest extends BaseEventTest {
         when(draftCaseDataService.getUnsubmittedCaseData(TEST_CASE_REFERENCE, respondPossessionClaim,
                                                          representedPartyId))
             .thenReturn(Optional.of(caseData));
+        when(partyService.getPartyEntityById(representedPartyId, TEST_CASE_REFERENCE)).thenReturn(representedParty);
 
         // when
         var response = callSubmitHandler(caseData);
 
         // then
-        verify(claimResponseService).saveDraftDataForParty(possessionClaimResponse, TEST_CASE_REFERENCE,
-                                                           representedPartyId);
-        verify(defendantResponseService).saveDefendantResponse(TEST_CASE_REFERENCE, possessionClaimResponse,
-                                                               representedPartyId);
+        verify(claimResponseService).saveDraftDataForParty(possessionClaimResponse, representedParty);
+        verify(defendantResponseService).saveDefendantResponse(
+            TEST_CASE_REFERENCE, possessionClaimResponse, representedParty, JourneyType.LEGAL_REPRESENTATIVE);
         verify(draftCaseDataService).deleteUnsubmittedCaseData(TEST_CASE_REFERENCE, respondPossessionClaim,
                                                                representedPartyId);
         verify(draftCaseDataService, never()).getUnsubmittedCaseData(TEST_CASE_REFERENCE, respondPossessionClaim);
@@ -981,10 +991,12 @@ class RespondPossessionClaimTest extends BaseEventTest {
     @Test
     void shouldThrowExceptionForNoSelectedParty_ForLegalRepresentativeUser() {
         // given
+        UUID legalRepUserId = UUID.randomUUID();
         PCSCase caseData = PCSCase.builder()
             .possessionClaimResponse(null)
             .build();
 
+        when(securityContextService.getCurrentUserId()).thenReturn(legalRepUserId);
         when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
         when(userInfo.getRoles()).thenReturn(List.of(UserRole.DEFENDANT_SOLICITOR.getRole()));
         when(selectedPartyRetriever.getCurrentRepresentedPartyId(caseData)).thenReturn(Optional.empty());

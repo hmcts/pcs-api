@@ -16,7 +16,6 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.CounterClaimRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
-import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.time.Clock;
 import java.time.LocalDateTime;
@@ -28,47 +27,40 @@ import java.util.UUID;
 @Transactional
 public class CounterClaimService {
 
-    private final PartyService partyService;
     private final PartyRepository partyRepository;
     private final ClaimRepository claimRepository;
     private final CounterClaimRepository counterClaimRepository;
-    private final SecurityContextService securityContextService;
     private final Clock utcClock;
 
-    public CounterClaimService(PartyService partyService,
-                               PartyRepository partyRepository,
+    public CounterClaimService(PartyRepository partyRepository,
                                ClaimRepository claimRepository,
                                CounterClaimRepository counterClaimRepository,
-                               SecurityContextService securityContextService,
                                @Qualifier("utcClock") Clock utcClock) {
-        this.partyService = partyService;
         this.partyRepository = partyRepository;
         this.claimRepository = claimRepository;
         this.counterClaimRepository = counterClaimRepository;
-        this.securityContextService = securityContextService;
         this.utcClock = utcClock;
     }
 
-    public Optional<CounterClaimEntity> saveCounterClaim(long caseReference, CounterClaim counterClaim) {
+    public Optional<CounterClaimEntity> saveCounterClaim(
+        long caseReference,
+        CounterClaim counterClaim,
+        PartyEntity defendantParty
+    ) {
+        if (defendantParty == null) {
+            throw new IllegalStateException("Defendant party is null for case: " + caseReference);
+        }
+
         if (counterClaim == null) {
             return Optional.empty();
         }
-
-        UUID userId = securityContextService.getCurrentUserId();
-        if (userId == null) {
-            throw new IllegalStateException("Current user IDAM ID is null");
-        }
-
-        PartyEntity partyRef = partyRepository.getReferenceById(
-            partyService.getPartyEntityByIdamId(userId, caseReference).getId()
-        );
 
         UUID claimId = claimRepository.findIdByCaseReference(caseReference)
             .orElseThrow(() -> new IllegalStateException("No claim found for case: " + caseReference));
         ClaimEntity claimRef = claimRepository.getReferenceById(claimId);
 
         CounterClaimEntity counterClaimEntity = buildCounterClaimEntity(
-            counterClaim, partyRef, LocalDateTime.now(utcClock));
+            counterClaim, defendantParty, LocalDateTime.now(utcClock));
         counterClaimEntity.setPcsCase(claimRef.getPcsCase());
         CounterClaimEntity savedCounterClaim = counterClaimRepository.save(counterClaimEntity);
         log.info("Saved counterclaim {} for case {}", savedCounterClaim.getId(), caseReference);
