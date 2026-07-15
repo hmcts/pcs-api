@@ -378,7 +378,7 @@ ext {
   nettyVersion = "4.1.136.Final"
   postgresVersion = "42.7.12"
   pdfBoxVersion = "3.0.8"
-  jackson2Version = "2.21.4"
+  jackson2Version = "2.17.1"
   jackson3Version = "3.2.1"
   cucumberVersion = "7.34.4"
 
