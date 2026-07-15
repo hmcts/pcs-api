@@ -376,11 +376,16 @@ ext {
   pactVersion = "4.7.3"
   tomcatEmbedVersion = "11.0.23"
   nettyVersion = "4.1.136.Final"
+  postgresVersion = "42.7.12"
+  pdfBoxVersion = "3.0.8"
+  jackson2Version = "2.17.1"
+  jackson3Version = "3.2.1"
+  cucumberVersion = "7.34.4"
 
   set('netty.version', nettyVersion)
   set('snakeyaml.version', '2.0')
-  set('jackson-bom.version', "2.21.5")
-  set('postgresql.version', "42.7.12")
+  set('jackson-bom.version', jackson3Version)
+  set('postgresql.version', postgresVersion)
   set('httpcore.version', "4.4.16")
 }
 
@@ -395,11 +400,12 @@ configurations.all {
     }
 
     force "org.springframework.boot:spring-boot-starter-validation:3.5.16"
-    force "org.postgresql:postgresql:42.7.12"
-    force "com.fasterxml.jackson.core:jackson-databind:2.21.5"
-    force "tools.jackson.core:jackson-databind:3.1.2"
-    force "org.apache.pdfbox:pdfbox:3.0.4"
-    force "org.apache.pdfbox:pdfbox-io:3.0.4"
+    force "org.postgresql:postgresql:${postgresVersion}"
+    force "com.fasterxml.jackson.core:jackson-databind:${jackson2Version}"
+    force "tools.jackson.core:jackson-databind:${jackson3Version}"
+    force "org.apache.pdfbox:pdfbox:${pdfBoxVersion}"
+    force "org.apache.pdfbox:pdfbox-io:${pdfBoxVersion}"
+    force "io.cucumber:cucumber-core:${cucumberVersion}"
 
     eachDependency { DependencyResolveDetails details ->
       if (details.requested.group == 'org.springframework.boot' && details.requested.name == 'spring-boot-devtools'
@@ -412,6 +418,8 @@ configurations.all {
 
 dependencies {
   implementation enforcedPlatform("io.netty:netty-bom:${nettyVersion}")
+  implementation enforcedPlatform("tools.jackson:jackson-bom:${jackson3Version}")
+  implementation enforcedPlatform("tools.jackson:jackson-bom:${jackson2Version}")
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: springFrameworkBootVersion
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-actuator', version: springFrameworkBootVersion
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-aop', version: springFrameworkBootVersion
@@ -436,7 +444,7 @@ dependencies {
   implementation group: 'com.github.hmcts', name: 'doc-assembly-client', version: '2.2.0'
   implementation group: 'com.github.hmcts', name: 'ccd-case-document-am-client', version: '1.59.2'
   implementation group: 'com.github.hmcts', name: 'send-letter-client', version: '5.1.1'
-  implementation group: 'org.apache.pdfbox', name: 'pdfbox', version: '3.0.3'
+  implementation group: 'org.apache.pdfbox', name: 'pdfbox', version: pdfBoxVersion
   implementation(group: 'com.github.hmcts', name: 'fees-java-client', version: '0.1.0') {
     exclude group: 'uk.gov.hmcts.reform', module: 'java-logging'
   }
@@ -450,7 +458,7 @@ dependencies {
   implementation group: 'org.apache.logging.log4j', name: 'log4j-to-slf4j', version: log4JVersion
   implementation group: 'ch.qos.logback', name: 'logback-classic', version: logbackVersion
   implementation group: 'ch.qos.logback', name: 'logback-core', version: logbackVersion
-  implementation group: 'org.postgresql', name: 'postgresql', version: '42.7.11'
+  implementation group: 'org.postgresql', name: 'postgresql', version: postgresVersion
   implementation group: 'com.github.hmcts', name: 'service-auth-provider-java-client', version: '5.3.4'
   implementation group: 'io.pebbletemplates', name: 'pebble', version: '4.1.2'
   implementation group: 'org.springframework.cloud', name: 'spring-cloud-starter-openfeign', version: '4.3.3'
