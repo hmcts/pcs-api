@@ -13,10 +13,10 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 
-import uk.gov.hmcts.reform.pcs.ccd.domain.documentupload.DocumentUploadDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.DocumentUploadCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocumentType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocumentUploadDetails;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
@@ -25,6 +25,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.legalrepdocumentupload.LegalRepDocumentU
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
+import uk.gov.hmcts.reform.pcs.ccd.service.party.LegalRepForDefendantAccessValidator;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
@@ -39,6 +40,7 @@ import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -68,6 +70,9 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
 
     @Mock
     private GenAppVisibilityService genAppVisibilityService;
+
+    @Mock
+    private LegalRepForDefendantAccessValidator legalRepForDefendantAccessValidator;
 
     @InjectMocks
     private LegalRepDocumentUpload legalRepDocumentUpload;
@@ -266,14 +271,14 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
             .description(description)
             .build();
 
-        DocumentUploadDetails documentUploadDetails = DocumentUploadDetails.builder()
-            .selectedRelatedApplicationId(selectedId.toString())
+        LegalRepDocumentUploadDetails legalRepDocumentUploadDetails = LegalRepDocumentUploadDetails.builder()
+            .selectedLegalRepRelatedApplicationId(selectedId.toString())
             .build();
 
         List<LegalRepDocument> legalRepDocList = List.of(legalRepDocument);
 
         PCSCase pcsCase = PCSCase.builder()
-            .documentUploadDetails(documentUploadDetails)
+            .legalRepDocumentUploadDetails(legalRepDocumentUploadDetails)
             .build();
 
         GenAppEntity selectedGenApp = mock(GenAppEntity.class);
@@ -287,9 +292,9 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
         List<GenAppEntity> mockGenAppList = List.of(selectedGenApp);
         when(genAppVisibilityService.getVisibleGenAppsToUser(Set.of(selectedGenApp), currentUserId))
             .thenReturn(mockGenAppList);
+        when(selectedGenApp.getParty()).thenReturn(currentUserParty);
 
         given(securityContextService.getCurrentUserId()).willReturn(currentUserId);
-        given(partyService.getPartyEntityByIdamId(currentUserId, TEST_CASE_REFERENCE)).willReturn(currentUserParty);
 
         // When
         callSubmitHandler(pcsCase);
@@ -313,8 +318,12 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
         PCSCase pcsCase = PCSCase.builder()
             .build();
 
+        PartyEntity party = mock(PartyEntity.class);
+
         when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
         when(documentService.createLegalRepDocuments(pcsCase)).thenReturn(legalRepDocList);
+        when(legalRepForDefendantAccessValidator.validateAndGetDefendants(pcsCaseEntity, eq(any())))
+            .thenReturn(List.of(party));
 
         SubmitResponse<State> submitResponse = callSubmitHandler(pcsCase);
 
@@ -339,7 +348,11 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
         PCSCase pcsCase = PCSCase.builder()
             .build();
 
+        PartyEntity party = mock(PartyEntity.class);
+
         when(documentService.createLegalRepDocuments(pcsCase)).thenReturn(legalRepDocList);
+        when(legalRepForDefendantAccessValidator.validateAndGetDefendants(pcsCaseEntity, eq(any())))
+            .thenReturn(List.of(party));
 
         SubmitResponse<State> submitResponse = callSubmitHandler(pcsCase);
 
