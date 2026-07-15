@@ -8,18 +8,23 @@
   </suppress>
   <suppress until="2026-08-15">
     <notes><![CDATA[jackson-databind-3.1.1.jar]]></notes>
-    <cve>CVE-2026-54518</cve>
-    <cve>CVE-2026-54516</cve>
-    <cve>CVE-2026-54517</cve>
     <cve>CVE-2026-54512</cve>
     <cve>CVE-2026-54513</cve>
     <cve>CVE-2026-54514</cve>
     <cve>CVE-2026-54515</cve>
+    <cve>CVE-2026-54516</cve>
+    <cve>CVE-2026-54517</cve>
+    <cve>CVE-2026-54518</cve>
   </suppress>
   <suppress until="2026-08-15">
     <notes><![CDATA[kotlin-stdlib-1.9.25/kotlin-stdlib-jdk7-1.9.25/kotlin-stdlib-jdk8-1.9.25 ]]></notes>
     <cve>CVE-2020-29582</cve>
     <cve>CVE-2026-53914</cve>
+  </suppress>
+  <suppress until="2026-08-15">
+    <notes><![CDATA[elasticsearch-java-9.4.2.jar/elasticsearch-rest5-client-9.4.2.jar]]></notes>
+    <cve>CVE-2026-56148</cve>
+    <cve>CVE-2026-56149</cve>
   </suppress>
   <!--End of false positives section -->
 </suppressions>
