@@ -28,7 +28,7 @@ import uk.gov.hmcts.reform.pcs.functional.testutils.PcsIdamTokenClient;
 @ExtendWith(SerenityJUnit5Extension.class)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class MakeAnApplicationEventCallbackTests extends BaseApi {
+public class MakeAnApplicationEventCallbackCitizenTests extends BaseApi {
 
     @Steps
     ApiSteps apiSteps;
