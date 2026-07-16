@@ -1,3 +1,10 @@
+/*
+* Instructions to run:
+* 1) Run "./gradlew cftlibtest"  to populate the cftlibtest database
+* 2) Run this test using "./gradlew test --tests uk.gov.hmcts.reform.pcs.DataTest --rerun"
+* 3) View test results by running "open build/reports/tests/test/index.html"
+* */
+
 package uk.gov.hmcts.reform.pcs;
 
 import org.junit.jupiter.api.AfterAll;
