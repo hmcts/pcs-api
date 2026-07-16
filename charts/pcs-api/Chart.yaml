@@ -31,6 +31,6 @@ dependencies:
     repository: 'oci://hmctsprod.azurecr.io/helm'
     condition: wiremock.enabled
   - name: ccd-case-document-am-api
-    version: 1.7.18
+    version: 1.7.19
     repository: 'oci://hmctsprod.azurecr.io/helm'
     condition: ccd-case-document-am-api.enabled
