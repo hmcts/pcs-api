@@ -1,5 +1,7 @@
 package uk.gov.hmcts.reform.pcs.functional.steps;
 
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.interfaces.DecodedJWT;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;

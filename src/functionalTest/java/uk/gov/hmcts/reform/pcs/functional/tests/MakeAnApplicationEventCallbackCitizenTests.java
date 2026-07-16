@@ -2,9 +2,6 @@ package uk.gov.hmcts.reform.pcs.functional.tests;
 
 import lombok.extern.slf4j.Slf4j;
 import java.util.Map;
-import com.auth0.jwt.JWT;
-import com.auth0.jwt.interfaces.DecodedJWT;
-import io.restassured.RestAssured;
 import net.serenitybdd.annotations.Steps;
 import net.serenitybdd.annotations.Title;
 import net.serenitybdd.junit5.SerenityJUnit5Extension;
