@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="https://www.omg.org/spec/DMN/20191111/MODEL/" xmlns:dmndi="https://www.omg.org/spec/DMN/20191111/DMNDI/" xmlns:dc="http://www.omg.org/spec/DMN/20180521/DC/" xmlns:biodi="http://bpmn.io/schema/dmn/biodi/2.0" xmlns:camunda="http://camunda.org/schema/1.0/dmn" id="wa-completion-definition" name="DRD" namespace="http://camunda.org/schema/1.0/dmn" exporter="Camunda Modeler" exporterVersion="5.23.0">
+  <decision id="wa-task-completion-pcs-pcs" name="Task completion DMN" camunda:historyTimeToLive="P90D">
+    <decisionTable id="DecisionTable_01re27m" hitPolicy="COLLECT">
+      <input id="eventId" label="Event ID" biodi:width="614">
+        <inputExpression id="LiteralExpression_1ngg489" typeRef="string">
+          <text>eventId</text>
+        </inputExpression>
+      </input>
+      <output id="Output_1" label="Task Type" name="taskType" typeRef="string" biodi:width="342" />
+      <output id="OutputClause_1mldd9e" label="Completion Mode" name="completionMode" typeRef="string" />
+      <rule id="DecisionRule_0tn82oz">
+        <inputEntry id="UnaryTests_152sy88">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_1buwwcz">
+          <text>"NewClaimCreateNewHearing"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_11jctvq">
+          <text>"manual"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_0g5ps73">
+        <inputEntry id="UnaryTests_15z5co5">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_11ickbq">
+          <text>"ReviewDefendantResponseAndCounterclaim"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0jq6cdp">
+          <text>"manual"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_1gou0g7">
+        <inputEntry id="UnaryTests_109ezm9">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_0dl587y">
+          <text>"ReviewAdjournGenApp"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_11cyzva">
+          <text>"manual"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_0hzp8fr">
+        <inputEntry id="UnaryTests_0ml9hl2">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_0puv4qb">
+          <text>"ReviewSetAsideGenApp"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0eetkb2">
+          <text>"manual"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_1nocbl1">
+        <inputEntry id="UnaryTests_0f3ly4v">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_14m89nl">
+          <text>"ReviewGenApp"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1v63j0i">
+          <text>"manual"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_1jn4wg2">
+        <inputEntry id="UnaryTests_1lv5t6u">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_16zmccs">
+          <text>"ReviewAdditionalDocumentsClaim"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1e8jb6v">
+          <text>"manual"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_1dds5iu">
+        <inputEntry id="UnaryTests_1tab2dv">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_1n9cn93">
+          <text>"ReviewAdditionalDocumentsGenApp"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1ngkcut">
+          <text>"manual"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_0prz6h5">
+        <inputEntry id="UnaryTests_0wfuyve">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_0xcjmg1">
+          <text>"ReviewAdditionalDocumentsCounterclaim"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_06bm60j">
+          <text>"manual"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_0p08ndn">
+        <inputEntry id="UnaryTests_1ml8wgu">
+          <text>"Approve or reject case flag"</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_0eey7mu">
+          <text>"ReviewCaseFlagRequest"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0y158qz">
+          <text>"Auto"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_07yearp">
+        <inputEntry id="UnaryTests_05hijw2">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_1gtjmdx">
+          <text>"ReviewCaseFlag"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1l8lo4k">
+          <text>"manual"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_005zp1u">
+        <inputEntry id="UnaryTests_0oolkru">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_1va8ub0">
+          <text>"ReviewFailedPayment"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0jq2zpd">
+          <text>"manual"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_0w4a0ls">
+        <inputEntry id="UnaryTests_179yitz">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_1o821ji">
+          <text>"ReviewDateDue"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_04cs363">
+          <text>"manual"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_0qyy4p0">
+        <inputEntry id="UnaryTests_13kv4dc">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_0uhurkv">
+          <text>"TranslateDefendantSubmittedDocument"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1nrawvs">
+          <text>"manual"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_0alv9hf">
+        <inputEntry id="UnaryTests_030jvbk">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_0zukoyw">
+          <text>"TranslateClaimantSubmittedDocument"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_18cbx5r">
+          <text>"manual"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_1h2n0ua">
+        <inputEntry id="UnaryTests_17qenoh">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_1b8dm1n">
+          <text>"TranslateCaseworkerUploadedDocument"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0pxefi9">
+          <text>"manual"</text>
+        </outputEntry>
+      </rule>
+    </decisionTable>
+  </decision>
+  <dmndi:DMNDI>
+    <dmndi:DMNDiagram>
+      <dmndi:DMNShape dmnElementRef="wa-task-completion-pcs-pcs">
+        <dc:Bounds height="80" width="180" x="160" y="80" />
+      </dmndi:DMNShape>
+    </dmndi:DMNDiagram>
+  </dmndi:DMNDI>
+</definitions>

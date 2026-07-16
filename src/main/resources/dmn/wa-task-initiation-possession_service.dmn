@@ -1,0 +1,945 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="https://www.omg.org/spec/DMN/20191111/MODEL/" xmlns:camunda="http://camunda.org/schema/1.0/dmn" xmlns:biodi="http://bpmn.io/schema/dmn/biodi/2.0" xmlns:dmndi="https://www.omg.org/spec/DMN/20191111/DMNDI/" xmlns:dc="http://www.omg.org/spec/DMN/20180521/DC/" id="wa-initiation-definition" name="DRD" namespace="http://camunda.org/schema/1.0/dmn" exporter="Camunda Modeler" exporterVersion="5.23.0">
+  <decision id="wa-task-initiation-pcs-possesions" name="Task initiation DMN" camunda:historyTimeToLive="P90D">
+    <decisionTable id="DecisionTable_0jtevuc" hitPolicy="COLLECT">
+      <input id="Input_1" label="Event Id" camunda:inputVariable="eventId">
+        <inputExpression id="InputExpression_1" typeRef="string">
+          <text></text>
+        </inputExpression>
+      </input>
+      <input id="InputClause_0gxli97" label="Post event state" biodi:width="268" camunda:inputVariable="postEventState">
+        <inputExpression id="LiteralExpression_0dijl5x" typeRef="string">
+          <text></text>
+        </inputExpression>
+      </input>
+      <input id="InputClause_18rl6x4" label="Counterclaim state">
+        <inputExpression id="LiteralExpression_0y39cf1" typeRef="string">
+          <text></text>
+        </inputExpression>
+      </input>
+      <input id="InputClause_0xei6sq" label="Gen app state">
+        <inputExpression id="LiteralExpression_113ja6q" typeRef="string">
+          <text></text>
+        </inputExpression>
+      </input>
+      <input id="InputClause_0f5dq2y">
+        <inputExpression id="LiteralExpression_177behe" typeRef="string">
+          <text></text>
+        </inputExpression>
+      </input>
+      <input id="InputClause_113rn1o" label="Admin Action Required" camunda:inputVariable="adminActionRequired">
+        <inputExpression id="LiteralExpression_0uwx76l" typeRef="boolean">
+          <text>if(additionalData != null and additionalData.Data != null and additionalData.Data.cicCaseAdminActionRequired
+            != null and additionalData.Data.cicCaseAdminActionRequired = ["AdminActionRequired"]) then
+            true
+else
+            false</text>
+        </inputExpression>
+      </input>
+      <input id="InputClause_11t6k59" label="Has Order Due Date" camunda:inputVariable="firstOrderDueDate">
+        <inputExpression id="LiteralExpression_1ylfo9b" typeRef="boolean">
+          <text>if(additionalData.Data.cicCaseFirstOrderDueDate != null and additionalData.Data.cicCaseFirstOrderDueDate != "") then
+  true
+else
+  false</text>
+        </inputExpression>
+      </input>
+      <output id="Output_1" label="Task Id" name="taskId" typeRef="string" biodi:width="320" />
+      <output id="OutputClause_0p5fhhd" label="Task Name" name="name" typeRef="string" biodi:width="362" />
+      <output id="OutputClause_165p3r3" label="Delay Until" name="delayUntil" typeRef="json" biodi:width="507" />
+      <output id="OutputClause_0i6c6c2" label="Working Days Allowed" name="workingDaysAllowed" typeRef="integer" />
+      <output id="OutputClause_10rno4c" label="Process Categories Identifiers" name="processCategories" typeRef="string" biodi:width="300" />
+      <output id="OutputClause_1wziqr5" label="Work Type" name="workType" typeRef="string" />
+      <output id="OutputClause_09b12hk" label="Role Category" name="roleCategory" typeRef="string" />
+      <rule id="DecisionRule_0in26ix">
+        <inputEntry id="UnaryTests_1mtpy0d">
+          <text>"Notify claim"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0pzaled">
+          <text>"Case issued"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0ed245d">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1whjwlc">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_15rwj67">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_058t87a">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1a7i989">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_0yp6gfj">
+          <text>"NewClaimCreateNewHearing"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_11crul1">
+          <text>"New Claim –  Create new hearing"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0j4vwvw">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0h32jop">
+          <text>5</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1p20qkn">
+          <text>"NewClaimCreateNewHearing"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0te3ddw">
+          <text>"decision_making_work"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_19ua141">
+          <text>"ADMIN"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_1hp5ex8">
+        <description>This rule would also be required for when this task is cancelled from a user putting the case in case stayed and then putting it back into case issued state.</description>
+        <inputEntry id="UnaryTests_1ytce70">
+          <text>"Update case state"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0khfdvd">
+          <text>"Case issued"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0ay3z0x">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0zmwpmj">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1eipv7m">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_12mkjkk">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1vwg0ri">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_041uend">
+          <text>"NewClaimCreateNewHearing"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0q695rt">
+          <text>"New Claim –  Create new hearing"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_11pmqzg">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1eqzyp6">
+          <text>5</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_094lztc">
+          <text>"NewClaimCreateNewHearing"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0c8lwp3">
+          <text>"decision_making_work"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1qd7hp5">
+          <text>"ADMIN"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_0cuaabj">
+        <description>Possible process for welsh translation when user selects they have selected completed claim in english and welsh or just welsh    </description>
+        <inputEntry id="UnaryTests_1jnzzpw">
+          <text>Tech team update case state</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1v4n4zf">
+          <text>Case moves from "pending issued" to "Case issued"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0iinfsn">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0skd4hk">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0coljut">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0xgdyhp">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1u5c0og">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_1dct26m">
+          <text>"NewClaimCreateNewHearing"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0rs33z5">
+          <text>"New Claim –  Create new hearing"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0nhrxq1">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_03bdze4">
+          <text>5</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_05f3n17">
+          <text>"NewClaimCreateNewHearing"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1msesso">
+          <text>"decision_making_work"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0s91u75">
+          <text>"ADMIN"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_0v14k8l">
+        <inputEntry id="UnaryTests_125bf6j">
+          <text>"Respond to claim" (Respone and counterclaim submitted)</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0ttsckb">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_09uwuq6">
+          <text>"Pending Case issued (counterclaim)"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0vnmqle">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1hxxdm7">
+          <text>User selects (Help with fees)</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0w9a7qw">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0o17hpk">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_1krqf3d">
+          <text>"Review DefendantResponseAndCounterclaim "</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0jeqot3">
+          <text>"Review Defendant response and counterclaim" </text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0m4quzv">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0ka8htw">
+          <text>5</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1443rue">
+          <text>"Review DefendantResponseAndCounterclaim "</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_050op82">
+          <text>"routine_work"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0n3swhh">
+          <text>"ADMIN"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_0g14gbs">
+        <inputEntry id="UnaryTests_00o2b5b">
+          <text>"Upload Document - Citizen dashboard" (NEED NAME OF EVENT)</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1majuv9">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_00gjequ">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0o0pw8l">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0um36b0">
+          <text>User selects(No, the documents I'm uploading relate to the main claim)</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_03dlwql">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0at260h">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_1p8xxc1">
+          <text>"ReviewAdditionalDocumentsClaim"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0zyv5r0">
+          <text>"Review additional documents - claim"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_12nl4vq">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1ee6iiu">
+          <text>5</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1cpdp9x">
+          <text>"ReviewAdditionalDocumentsClaim"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0ao65z2">
+          <text>"routine_work"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_131xf6i">
+          <text>"ADMIN"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_1ko9g24">
+        <inputEntry id="UnaryTests_0elw9dw">
+          <text>"Upload Document (Defendant LR)", "Upload Document Claimant LR"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1it4om8">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0kptyq0">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0to22tg">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_08lbicp">
+          <text>User selects("Other" for Type of Doc)</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1lmx6qk">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0gat4s3">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_1hvd31a">
+          <text>"ReviewAdditionalDocumentsClaim"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_012rcg2">
+          <text>"Review additional documents - claim"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1u1zz92">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_06rdk4z">
+          <text>5</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_18gy3o2">
+          <text>"ReviewAdditionalDocumentsClaim"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_04g59th">
+          <text>"routine_work"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0x4msl0">
+          <text>"ADMIN"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_0it2mq5">
+        <inputEntry id="UnaryTests_0vtsl9b">
+          <text>"Upload Document - Citizen dashboard" (NEED NAME OF EVENT)</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_03orr3t">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1sgv2be">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_12yrpeg">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_15as37q">
+          <text>User selects("Yes XXX", for Do these documents relate to an existing application?)</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1a4au2m">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1fe5hd2">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_0tn1l82">
+          <text>"ReviewAdditionalDocumentsGenApp"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1okusm3">
+          <text>"Review additional documents – gen app"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_04shcc1">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1k2pywg">
+          <text>5</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_17w6kn5">
+          <text>"ReviewAdditionalDocumentsGenApp"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1l5bwcl">
+          <text>"routine_work"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1tfppsm">
+          <text>"ADMIN"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_1mcvohl">
+        <inputEntry id="UnaryTests_0s9fflp">
+          <text>"Upload Document (Defendant LR)", "Upload Document Claimant LR"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0ymqq27">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_18fy3x7">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0n6d4yc">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_05apa0x">
+          <text>User selects("Yes XXX", for Do these documents relate to an existing application?)</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0slvses">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_09xzb45">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_0lasjl6">
+          <text>"ReviewAdditionalDocumentsGenApp"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0ydbn8u">
+          <text>"Review additional documents – gen app"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0xi72aw">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0qj4yw6">
+          <text>5</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0uvd63b">
+          <text>"ReviewAdditionalDocumentsGenApp"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0fcgywj">
+          <text>"routine_work"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1kbt2ul">
+          <text>"ADMIN"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_1sql6w5">
+        <inputEntry id="UnaryTests_03ha3p6">
+          <text>"Upload Document - Citizen dashboard" (NEED NAME OF EVENT)</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1qjz49o">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1izvczo">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0qe3wjs">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0zd0nv9">
+          <text>User selects("Yes XXX", for Do these documents relate to an existing counterclaim?)</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_10mbfwf">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1akbjnj">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_1jw70bw">
+          <text>"ReviewAdditionalDocumentsCounterclaim"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1vbqict">
+          <text>"Review additional documents – counterclaim"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_13pb6ic">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1dfqm70">
+          <text>5</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_08agza9">
+          <text>"ReviewAdditionalDocumentsCounterclaim"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_19fy30l">
+          <text>"routine_work"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0m5jejt">
+          <text>"ADMIN"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_1ub9q8h">
+        <inputEntry id="UnaryTests_157o2bl">
+          <text>"Upload Document (Defendant LR)", "Upload Document Claimant LR"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0s3jyx2">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1bl8els">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0nqyf5c">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_08ma896">
+          <text>User selects("Yes XXX", for Do these documents relate to an existing counterclaim?)</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1c96gdf">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_02wz0fw">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_0aji7cd">
+          <text>"ReviewAdditionalDocumentsCounterclaim"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1ogxrac">
+          <text>"Review additional documents – counterclaim"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0thfrej">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_10ao60n">
+          <text>5</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1rrdz49">
+          <text>"ReviewAdditionalDocumentsCounterclaim"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0h2uvgf">
+          <text>"routine_work"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0py5k8k">
+          <text>"ADMIN"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_15nwjxc">
+        <inputEntry id="UnaryTests_0my033r">
+          <text>"Submit General Application"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0f94fhz">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0n2730c">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0cbxow2">
+          <text>"Application Issued"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1gmwwnk">
+          <text>User selects("Ask to adjourn the hearing" for Choose an application)</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_01x7rm7">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_112uack">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_0ko7rju">
+          <text>"ReviewAdjournGenApp"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1m51lmn">
+          <text>"Review adjourn gen app"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1ey4adl">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0218qkq">
+          <text>1</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1d4wp2g">
+          <text>"ReviewAdjournGenApp"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_07q2cxa">
+          <text>"applications"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0nkc79b">
+          <text>"ADMIN"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_08h5xfk">
+        <inputEntry id="UnaryTests_116viz4">
+          <text>"Submit General Application"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_07pvozn">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1n9lv3b">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0jm5co7">
+          <text>"Application Issued"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_09lyzbd">
+          <text>User selects("Ask the court to set aside" for Choose an application)</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1nm1wmp">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_019t5mz">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_13titvp">
+          <text>"ReviewSetAsideGenApp"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_04wi9u8">
+          <text>"Review set aside gen app"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1k16xl3">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1jqv8bn">
+          <text>1</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_134uit3">
+          <text>"ReviewSetAsideGenApp"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_13gdyd4">
+          <text>"applications"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0ql60c4">
+          <text>"ADMIN"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_1fhifem">
+        <inputEntry id="UnaryTests_14sfsrw">
+          <text>"Submit General Application"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0edws7w">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1p7i63x">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_19akjrn">
+          <text>"Application Issued"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_09c3xws">
+          <text>User selects("Something else" for Choose an application)</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_13ddb67">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1h293ok">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_0sxrpnz">
+          <text>"ReviewGenApp"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_09f1rx4">
+          <text>"Review gen app"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0hsedgw">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1bbwfnm">
+          <text>1</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1dyc6w2">
+          <text>"ReviewGenApp"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1jloqyg">
+          <text>"applications"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_01rsdhv">
+          <text>"ADMIN"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_1rvkjkh">
+        <inputEntry id="UnaryTests_17av78h">
+          <text>Defendant Submit response, External professional user adding flag via manage cases</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_093wyty">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_03m763x">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_05zws2e">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_02pgpxn">
+          <text>Flag default status is 'Requested'</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0xam2wk">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_00m2z0z">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_07j8b9l">
+          <text>"ReviewCaseFlagRequest"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1vy9h31">
+          <text>"Review Case Flag request"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0jedhub">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1ypqwwq">
+          <text>5</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_044uy1o">
+          <text>"ReviewCaseFlagRequest"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1vhb4m7">
+          <text>"decision_making_work"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0l8w8cu">
+          <text>"ADMIN"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_0g1qchi">
+        <inputEntry id="UnaryTests_122k3nu">
+          <text>Defendant Submit response, External professional user adding flag via manage cases</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1nts3e0">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0yrg7qj">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1d7cws4">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_19okwl3">
+          <text>Flag default status is 'Active'</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0sz8ndk">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_15co6w2">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_17dwgar">
+          <text>"ReviewCaseFlag"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1ms6m1x">
+          <text>"Review Case Flag"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_13k7klt">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1cc7wox">
+          <text>5</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_19nk06d">
+          <text>"ReviewCaseFlag"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0fesddq">
+          <text>"decision_making_work"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_102ab4w">
+          <text>"ADMIN"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_1fuajcp">
+        <inputEntry id="UnaryTests_0kmy45q">
+          <text>"Create Service Request (fee)"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0sgxbm8">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0dqduwd">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1c5gi2b">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_15q6236">
+          <text>Charge back occurs (I.e. payment unsuccessful)</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1bzlnl0">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0cee0hz">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_01x86w7">
+          <text>"ReviewFailedPayment"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_07s4pt2">
+          <text>"Review Failed Payment"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_09mpjq7">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_00xyfat">
+          <text>5</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0zx2aje">
+          <text>"ReviewFailedPayment"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0znk8e5">
+          <text>"error_management"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1t4xsi4">
+          <text>"ADMIN"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_0isk9qq">
+        <inputEntry id="UnaryTests_1aysune">
+          <text>"Add review date"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1r9ux5s">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0w7vg3q">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_11z08sa">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1dfg48s">
+          <text>Date of review is satisfied</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1raum35">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1ajtpek">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_157hb4i">
+          <text>"ReviewDateDue"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1fvvnzg">
+          <text>"Review Date Due"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_10z7tiz">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0mugyct">
+          <text>5</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_066k1zh">
+          <text>"ReviewDateDue"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_05ki3u8">
+          <text>"routine_work"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0o2v98w">
+          <text>"ADMIN"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_11ciltn">
+        <inputEntry id="UnaryTests_0svf6gj">
+          <text>Defendant submits Gen app, counterclaim, response or response and counterclaim</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_05cljls">
+          <text>Submitted</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0xpd2q0">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_00yvysi">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_000po80">
+          <text>User selects claim completed in welsh or english and welsh OR Claimant or defendant had indicated they want to receive communications and documents in Welsh</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0jueu0f">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0xq5wo8">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_0ze6p53">
+          <text>"TranslateDefendantSubmittedDocument"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_007szic">
+          <text>"Translate Defendant Submitted Document"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_18chk1s">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_05c90cq">
+          <text>5</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_06ag8ha">
+          <text>"TranslateDefendantSubmittedDocument"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0sbqhg4">
+          <text>"routine_work"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_132c39s">
+          <text>"ADMIN"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_1dxqrjr">
+        <inputEntry id="UnaryTests_1hv7g4o">
+          <text>Submit Claim</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0x5a2l7">
+          <text>Pending claim issued</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0fbkyvu">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0q0bnhv">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0xs29rz">
+          <text>User selects claim completed in welsh or english and welsh OR Claimant or defendant had indicated they want to receive communications and documents in Welsh</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0eloawb">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1sdw80t">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_0dnh52b">
+          <text>"TranslateClaimantSubmittedDocument"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1mnb7k7">
+          <text>"Translate Claimant Submitted Document"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_13j9uwb">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0l8kaux">
+          <text>5</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0hzaiml">
+          <text>"TranslateClaimantSubmittedDocument"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1k7gj9p">
+          <text>"routine_work"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1hy18ix">
+          <text>"ADMIN"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_1fpu8y9">
+        <inputEntry id="UnaryTests_1dkqy8e">
+          <text>Caseworker uploads document</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_11vn4jx">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1j844jn">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1x1skrz">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0kgujk2">
+          <text>Claimant or defendant had indicated they want to receive communications and documents in Welsh</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_10h9ko3">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0t9tsel">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_1jhvvft">
+          <text>"TranslateCaseworkerUploadedDocument"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0rb35gi">
+          <text>"Translate Caseworker Uploaded Document"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0axmo9h">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0gwfl3l">
+          <text>5</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0szsq6a">
+          <text>"TranslateCaseworkerUploadedDocument"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0s2nosz">
+          <text>"routine_work"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1mxonvy">
+          <text>"ADMIN"</text>
+        </outputEntry>
+      </rule>
+    </decisionTable>
+  </decision>
+  <dmndi:DMNDI>
+    <dmndi:DMNDiagram id="DMNDiagram_0b2rkcb">
+      <dmndi:DMNShape id="DMNShape_0wc7glt" dmnElementRef="wa-task-initiation-pcs-possesions">
+        <dc:Bounds height="80" width="180" x="150" y="80" />
+      </dmndi:DMNShape>
+    </dmndi:DMNDiagram>
+  </dmndi:DMNDI>
+</definitions>

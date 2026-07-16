@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="https://www.omg.org/spec/DMN/20191111/MODEL/" xmlns:dmndi="https://www.omg.org/spec/DMN/20191111/DMNDI/" xmlns:dc="http://www.omg.org/spec/DMN/20180521/DC/" xmlns:biodi="http://bpmn.io/schema/dmn/biodi/2.0" xmlns:modeler="http://camunda.org/schema/modeler/1.0" xmlns:camunda="http://camunda.org/schema/1.0/dmn" id="Definitions_1kep5qz" name="DRD" namespace="http://camunda.org/schema/1.0/dmn" exporter="Camunda Modeler" exporterVersion="5.23.0" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.0.0">
+  <decision id="wa-task-types-pcs-pcs" name="Task Types DMN" camunda:historyTimeToLive="P90D">
+    <decisionTable id="DecisionTable_17knzal" hitPolicy="COLLECT">
+      <input id="Input_1">
+        <inputExpression id="InputExpression_1" typeRef="string">
+          <text></text>
+        </inputExpression>
+      </input>
+      <output id="Output_1" name="taskTypeId" typeRef="string" biodi:width="359" />
+      <output id="OutputClause_0aeuwfu" name="taskTypeName" typeRef="string" biodi:width="489" />
+      <rule id="DecisionRule_1mbc6kw">
+        <inputEntry id="UnaryTests_0f8peco">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_1lx4z40">
+          <text>"NewClaimCreateNewHearing"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_155jus8">
+          <text>"New Claim –  Create new hearing"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_1yu04xb">
+        <inputEntry id="UnaryTests_0yw3ts9">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_00uephk">
+          <text>"ReviewDefendantResponseAndCounterclaim"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_08cjdso">
+          <text>"Review Defendant response and counterclaim"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_18htvgo">
+        <inputEntry id="UnaryTests_1u1uybr">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_0jkufht">
+          <text>"ReviewAdjournGenApp"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_143mfr6">
+          <text>"Review adjourn gen app"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_1los5jg">
+        <inputEntry id="UnaryTests_138ku5a">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_1rnbvlv">
+          <text>"ReviewSetAsideGenApp"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_166o8x8">
+          <text>"Review set aside gen app"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_058e0ch">
+        <inputEntry id="UnaryTests_13r5qvi">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_1i8vy9w">
+          <text>"ReviewGenApp"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0ibp43l">
+          <text>"Review gen app"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_1qe089o">
+        <inputEntry id="UnaryTests_1ifnmnp">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_1c40mlf">
+          <text>"ReviewAdditionalDocumentsClaim"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_12uq76f">
+          <text>"Review additional documents - claim"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_0s8x9ui">
+        <inputEntry id="UnaryTests_1k3d7na">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_1o9i2fb">
+          <text>"ReviewAdditionalDocumentsGenApp"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1w1yxl8">
+          <text>"Review additional documents – gen app"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_1wbpz3c">
+        <inputEntry id="UnaryTests_1o2evz5">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_172iuee">
+          <text>"ReviewAdditionalDocumentsCounterclaim"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1gviy53">
+          <text>"Review additional documents – counterclaim"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_1hwvaeu">
+        <inputEntry id="UnaryTests_1hrfnxx">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_1qge5od">
+          <text>"ReviewCaseFlagRequest"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0cyqx3j">
+          <text>"Review Case Flag request"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_0vfjkfh">
+        <inputEntry id="UnaryTests_15ndz64">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_1tmhf3m">
+          <text>"ReviewCaseFlag"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0gb2eyn">
+          <text>"Review Case Flag"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_1sfru7g">
+        <inputEntry id="UnaryTests_1ogsgbv">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_094ha9h">
+          <text>"ReviewFailedPayment"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_00bga1h">
+          <text>"Review Failed Payment"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_07e82nx">
+        <inputEntry id="UnaryTests_1m5ut7p">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_0sfcfyn">
+          <text>"ReviewDateDue"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0biqpi4">
+          <text>"Review Date Due"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_16fkfjh">
+        <inputEntry id="UnaryTests_03auwdq">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_1ofcj2d">
+          <text>"TranslateDefendantSubmittedDocument"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1g6h5fe">
+          <text>"Translate Defendant Submitted Document"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_10k3wih">
+        <inputEntry id="UnaryTests_0pkm5hm">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_0gz3ien">
+          <text>"TranslateClaimantSubmittedDocument"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1pjz3t7">
+          <text>"Translate Claimant Submitted Document"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_0ioybbk">
+        <inputEntry id="UnaryTests_1kl5185">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_0ff64g7">
+          <text>"TranslateCaseworkerUploadedDocument"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0haimri">
+          <text>"Translate Caseworker Uploaded Document"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_1rb7ro7">
+        <inputEntry id="UnaryTests_1pdvjve">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_1m0mo6l">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1erxuws">
+          <text></text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_1bganmm">
+        <inputEntry id="UnaryTests_197uslg">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_01il25t">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1rbx9wv">
+          <text></text>
+        </outputEntry>
+      </rule>
+    </decisionTable>
+  </decision>
+  <dmndi:DMNDI>
+    <dmndi:DMNDiagram id="DMNDiagram_0j0r28f">
+      <dmndi:DMNShape id="DMNShape_0524hsr" dmnElementRef="wa-task-types-pcs-pcs">
+        <dc:Bounds height="80" width="180" x="150" y="80" />
+      </dmndi:DMNShape>
+    </dmndi:DMNDiagram>
+  </dmndi:DMNDI>
+</definitions>
