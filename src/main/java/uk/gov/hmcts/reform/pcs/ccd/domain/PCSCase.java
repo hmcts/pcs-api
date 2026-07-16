@@ -31,6 +31,7 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.InternalCaseFlagAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.InternalTabAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.PartyVisibleTabAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.RasValidationAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.WAAccess;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.DashboardData;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.CitizenGenAppRequest;
@@ -638,25 +639,25 @@ public class PCSCase {
 
     @CCD(
         label = "CaseNameHmctsInternal",
-        access = {GlobalSearchAccess.class}
+        access = {GlobalSearchAccess.class, WAAccess.class}
     )
     private String caseNameHmctsInternal;
 
     @CCD(
         label = "CaseNamePublic",
-        access = {GlobalSearchAccess.class}
+        access = {GlobalSearchAccess.class, WAAccess.class}
     )
     private String caseNamePublic;
 
     @CCD(
         label = "CaseManagementLocation",
-        access = {GlobalSearchAccess.class, RasValidationAccess.class}
+        access = {GlobalSearchAccess.class, RasValidationAccess.class, WAAccess.class}
     )
     private CaseLocation caseManagementLocation;
 
     @CCD(
         label = "CaseManagementCategory",
-        access = {GlobalSearchAccess.class}
+        access = {GlobalSearchAccess.class, WAAccess.class}
     )
     private DynamicList caseManagementCategory;
 

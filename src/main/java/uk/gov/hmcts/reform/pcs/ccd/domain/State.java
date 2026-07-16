@@ -10,6 +10,7 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DefendantAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.InternalCaseFlagAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.GlobalSearchAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.RasValidationAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.WAAccess;
 
 /**
  * All possible PCS case states.
@@ -29,7 +30,7 @@ public enum State {
     @CCD(
         label = "Pending Case Issued",
         access = {ClaimantAccess.class, CitizenAccess.class,  RasValidationAccess.class,
-            InternalCaseFlagAccess.class, GlobalSearchAccess.class},
+            InternalCaseFlagAccess.class, GlobalSearchAccess.class, WAAccess.class},
         hint = "${caseTitleMarkdown}"
     )
     PENDING_CASE_ISSUED,
@@ -37,7 +38,7 @@ public enum State {
     @CCD(
         label = "Case Issued",
         access = {CaseworkerReadAccess.class, ClaimantAccess.class, DefendantAccess.class, RasValidationAccess.class,
-            GlobalSearchAccess.class},
+            GlobalSearchAccess.class, WAAccess.class},
         hint = "${caseTitleMarkdown}"
     )
     CASE_ISSUED
