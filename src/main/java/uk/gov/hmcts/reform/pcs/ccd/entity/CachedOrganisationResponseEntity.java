@@ -33,4 +33,12 @@ public class CachedOrganisationResponseEntity {
 
     private LocalDateTime lastModifiedDate;
 
+    private String organisationName;
+    private String addressLine1;
+    private String addressLine2;
+    private String addressLine3;
+    private String postTown;
+    private String county;
+    private String country;
+    private String postCode;
 }

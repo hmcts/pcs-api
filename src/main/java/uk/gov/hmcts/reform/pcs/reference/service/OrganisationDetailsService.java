@@ -4,11 +4,9 @@ import feign.FeignException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.pcs.exception.OrganisationDetailsException;
 import uk.gov.hmcts.reform.pcs.reference.api.RdProfessionalApi;
-import uk.gov.hmcts.reform.pcs.reference.dto.NameAndAddress;
 import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
 import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
 
@@ -58,72 +56,5 @@ public class OrganisationDetailsService {
                 userId, ex.getMessage(), ex);
             throw new OrganisationDetailsException("Unexpected error retrieving organisation details", ex);
         }
-    }
-
-    /**
-     * Gets the organisation name for a given user ID (for claimant name population).
-     * @param userId The user ID to get organisation name for
-     * @return Organisation name
-     */
-    public String getOrganisationName(String userId) {
-        OrganisationDetailsResponse details = getOrganisationDetails(userId);
-        return details.getName();
-    }
-
-    /**
-     * Returns the name and address of the organisation in a single call.
-     * @param userId The user ID to get the Name and Address for
-     * @return The NameAndAddress record
-     */
-    public NameAndAddress getNameAndAddress(String userId) {
-        OrganisationDetailsResponse details = getOrganisationDetails(userId);
-        AddressUK organisationAddress = getOrganisationAddress(details);
-        return new NameAndAddress(details.getName(), organisationAddress);
-    }
-
-    /**
-     * Gets the organisation address for a given user ID (for claimant address population).
-     * @param userId The user ID to get organisation address for
-     * @return Organisation address or null if no address information is available
-     */
-    public AddressUK getOrganisationAddress(String userId) {
-
-        OrganisationDetailsResponse organisationDetails = getOrganisationDetails(userId);
-
-        return getOrganisationAddress(organisationDetails);
-    }
-
-    /**
-     * Gets the organisation address extracted from a given organisation details response.
-     * @param organisationDetails The organisation details response get organisation address from
-     * @return Organisation address or null if no address information is available
-     */
-    public AddressUK getOrganisationAddress(OrganisationDetailsResponse organisationDetails) {
-        if (organisationDetails == null || organisationDetails.getContactInformation().isEmpty()) {
-            return null;
-        }
-
-        OrganisationDetailsResponse.ContactInformation contactInfo = organisationDetails
-            .getContactInformation().getFirst();
-
-        return AddressUK.builder()
-            .addressLine1(contactInfo.getAddressLine1())
-            .addressLine2(contactInfo.getAddressLine2())
-            .addressLine3(contactInfo.getAddressLine3())
-            .postTown(contactInfo.getTownCity())
-            .county(contactInfo.getCounty())
-            .country(contactInfo.getCountry())
-            .postCode(contactInfo.getPostCode())
-            .build();
-    }
-
-    /**
-     * Gets the organisation identifier for a given user ID.
-     * @param userId The user ID to get organisation identifier for
-     * @return Organisation identifier
-     */
-    public String getOrganisationIdentifier(String userId) {
-        OrganisationDetailsResponse details = getOrganisationDetails(userId);
-        return details.getOrganisationIdentifier();
     }
 }
