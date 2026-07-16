@@ -13,12 +13,13 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocumentUploadDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.DocumentUploadCategory;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.page.legalrepdocumentupload.LegalRepDocumentUploadConfigurer;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
+import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 
@@ -27,6 +28,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.time.LocalDateTime;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.stream.Stream;
 
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
@@ -40,6 +42,8 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
 
     private final LegalRepDocumentUploadConfigurer legalRepDocumentUploadConfigurer;
     private final PcsCaseService pcsCaseService;
+    private final GenAppVisibilityService genAppVisibilityService;
+    private final SecurityContextService securityContextService;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -64,6 +68,10 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
 
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
 
+        UUID currentUserId = securityContextService.getCurrentUserId();
+        List<GenAppEntity> visibleGenApps =
+            genAppVisibilityService.getVisibleGenAppsToUser(pcsCaseEntity.getGenApps(), currentUserId);
+
         List<DynamicStringListElement> validCategoryItems =
             Arrays.stream(DocumentUploadCategory.values())
                 .flatMap(category -> {
@@ -71,7 +79,7 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
                         return Stream.of(buildCategoryItem(category, null));
                     }
 
-                    return findGenAppDatesForCategory(pcsCaseEntity, category)
+                    return findGenAppDatesForCategory(visibleGenApps, category)
                         .stream()
                         .map(date -> buildCategoryItem(category, date));
                 })
@@ -100,25 +108,19 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
     }
 
     List<LocalDateTime> findGenAppDatesForCategory(
-        PcsCaseEntity pcsCaseEntity,
+        List<GenAppEntity> visibleGenApps,
         DocumentUploadCategory category
     ) {
-        if (pcsCaseEntity.getGenApps() == null) {
-            return List.of();
-        }
-
         GenAppType mapped = mapCategoryToGenAppType(category);
         if (mapped == null) {
             return List.of();
         }
 
-        return pcsCaseEntity.getGenApps().stream()
+        return visibleGenApps.stream()
             .filter(genApp -> genApp.getType() == mapped)
-            .filter(genApp -> genApp.getWithoutNotice() != null
-                && genApp.getWithoutNotice() == VerticalYesNo.YES)
             .map(GenAppEntity::getApplicationSubmittedDate)
             .filter(Objects::nonNull)
-            .sorted(Comparator.reverseOrder()) // optional
+            .sorted(Comparator.reverseOrder())
             .toList();
     }
 
