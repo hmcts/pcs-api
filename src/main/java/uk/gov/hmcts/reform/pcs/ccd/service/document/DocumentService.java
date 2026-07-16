@@ -497,6 +497,7 @@ public class DocumentService {
 
                 ClaimEntity mainClaim = pcsCaseEntity.getClaims().getFirst();
 
+                String documentUrl = legalRepDoc.getDocument().getUrl();
                 String originalFilename = legalRepDoc.getDocument().getFilename();
                 String renamed = (selectedGenApp != null)
                     ? documentNameService.appendGenAppPostfix(
@@ -505,11 +506,14 @@ public class DocumentService {
 
                 return DocumentEntity.builder()
                 .pcsCase(pcsCaseEntity)
-                .url(legalRepDoc.getDocument().getUrl())
+                .url(documentUrl)
+                .documentId(documentIdExtractor.extractDocumentId(documentUrl))
                 .generalApplication(selectedGenApp)
                 .fileName(renamed)
                 .party(party)
                 .binaryUrl(legalRepDoc.getDocument().getBinaryUrl())
+                .contentType(legalRepDoc.getContentType())
+                .size(legalRepDoc.getSizeInBytes())
                 .description(legalRepDoc.getDescription())
                 .type(resolvedDocumentType)
                 .categoryId(categoryId)

@@ -1222,6 +1222,8 @@ class DocumentServiceTest {
             .document(document)
             .legalRepDocumentType(LegalRepDocumentType.PHOTOGRAPHIC_EVIDENCE)
             .description(description)
+            .contentType("application/pdf")
+            .sizeInBytes(123L)
             .build();
 
         PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
@@ -1235,6 +1237,8 @@ class DocumentServiceTest {
 
         when(pcsCaseEntity.getClaims()).thenReturn(List.of(mainClaim));
         when(party.getId()).thenReturn(partyId);
+        UUID expectedDocumentId = UUID.fromString("bf112cdf-76d7-4d15-bb92-cd7c3483a7ef");
+        when(documentIdExtractor.extractDocumentId(docUrl)).thenReturn(expectedDocumentId);
 
         GenAppEntity selectedGenApp = mock(GenAppEntity.class);
 
@@ -1255,9 +1259,12 @@ class DocumentServiceTest {
         DocumentEntity documentEntity = capturedDocumentList.getFirst();
 
         assertThat(documentEntity.getUrl()).isEqualTo(docUrl);
+        assertThat(documentEntity.getDocumentId()).isEqualTo(expectedDocumentId);
         assertThat(documentEntity.getFileName()).isEqualTo(expectedRenamedFile);
         assertThat(documentEntity.getType().getLabel()).isEqualTo("Photographic evidence");
         assertThat(documentEntity.getDescription()).isEqualTo(description);
+        assertThat(documentEntity.getContentType()).isEqualTo("application/pdf");
+        assertThat(documentEntity.getSize()).isEqualTo(123L);
         assertThat(documentEntity.getGeneralApplication()).isEqualTo(selectedGenApp);
     }
 
