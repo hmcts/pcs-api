@@ -39,7 +39,7 @@ public class HearingEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private Long id;
 
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "case_id")
