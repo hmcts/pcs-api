@@ -87,7 +87,7 @@ public class ManageHearing implements CCDConfig<PCSCase, State, UserRole> {
             }
         } catch (Exception e) {
             log.warn("Unable to fetch hearing location for case {}:", eventPayload.caseReference(), e);
-            pcsCase.setHearingLocation("Unable to retrieve hearing location");
+            pcsCase.setHearingLocation("Unable to find hearing location");
         }
 
         if (CollectionUtils.isEmpty(pcsCase.getHearingList())) {
