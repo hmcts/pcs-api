@@ -26,5 +26,9 @@
     <cve>CVE-2026-56148</cve>
     <cve>CVE-2026-56149</cve>
   </suppress>
+  <suppress until="2026-08-15">
+    <notes><![CDATA[angus-activation-2.0.3.jar]]></notes>
+    <cve>CVE-2025-7962</cve>
+  </suppress>
   <!--End of false positives section -->
 </suppressions>
