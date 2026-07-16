@@ -206,7 +206,7 @@ public class ManageHearingTest extends BaseEventTest {
             PCSCase response = callStartHandler(pcsCase);
 
             // Then
-            assertThat(response.getHearingLocation()).isEqualTo("Unable to retrieve hearing location");
+            assertThat(response.getHearingLocation()).isEqualTo("Unable to find hearing location");
         }
 
         @Test
