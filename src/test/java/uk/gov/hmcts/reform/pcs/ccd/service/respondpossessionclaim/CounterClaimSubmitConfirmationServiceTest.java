@@ -25,7 +25,6 @@ import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.PaymentService;
-import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 import uk.gov.hmcts.reform.payments.response.PaymentServiceResponse;
 
 import java.math.BigDecimal;
@@ -60,8 +59,6 @@ class CounterClaimSubmitConfirmationServiceTest {
     private PaymentService paymentService;
     @Mock
     private CounterClaimFeeCalculator counterClaimFeeCalculator;
-    @Mock
-    private SecurityContextService securityContextService;
 
     @Captor
     private ArgumentCaptor<FeesAndPayTaskData> taskDataCaptor;
@@ -76,7 +73,6 @@ class CounterClaimSubmitConfirmationServiceTest {
             feeService,
             paymentService,
             counterClaimFeeCalculator,
-            securityContextService,
             objectMapper
         );
     }
@@ -218,7 +214,6 @@ class CounterClaimSubmitConfirmationServiceTest {
             feeService,
             paymentService,
             counterClaimFeeCalculator,
-            securityContextService,
             failingObjectMapper
         );
         CounterClaimEntity counterClaimEntity = CounterClaimEntity.builder()

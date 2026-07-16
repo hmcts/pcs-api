@@ -48,8 +48,7 @@ public class LegalRepSubmissionEventStrategy implements RespondPossessionClaimSu
     @Transactional
     @Override
     public SubmitResponse<State> process(EventPayload<PCSCase, State> eventPayload) {
-        UUID currentUserIdamId = securityContextService.getCurrentUserId();
-        if (currentUserIdamId == null) {
+        if (securityContextService.getCurrentUserId() == null) {
             log.error("Cannot save contact preferences: current user IDAM ID is null");
             throw new IllegalStateException("Current user IDAM ID is null");
         }

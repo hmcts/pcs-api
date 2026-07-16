@@ -34,7 +34,6 @@ public class CounterClaimSubmitConfirmationService {
     private final FeeService feeService;
     private final PaymentService paymentService;
     private final CounterClaimFeeCalculator counterClaimFeeCalculator;
-    private final SecurityContextService securityContextService;
     private final ObjectMapper objectMapper;
 
     public SubmitResponse<State> buildSubmitResponse(
