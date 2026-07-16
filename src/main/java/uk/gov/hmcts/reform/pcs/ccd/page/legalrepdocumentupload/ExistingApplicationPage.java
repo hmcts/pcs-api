@@ -12,8 +12,8 @@ public class ExistingApplicationPage implements CcdPageConfiguration, CcdPage {
 
     private static final String WITHOUT_NOTICE_APPLICATION_GUIDANCE  = """
                     <p class="govuk-body">
-                        We usually share anything you upload with the other party, for example your landlord, housing
-                        association or mortgage provider.
+                        We usually share anything you upload with the other parties, for example other defendants,
+                        the defendant’s landlord, housing association or mortgage provider.
                     </p>
                      <p class="govuk-body">
                         If your application is 'without notice' (where you have asked us to consider your application
