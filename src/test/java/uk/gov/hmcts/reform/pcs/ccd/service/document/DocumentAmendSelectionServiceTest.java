@@ -15,10 +15,15 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.documentamend.DocumentAmendDetails;
+import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicListWithValueCode;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.config.JacksonConfiguration;
@@ -42,11 +47,14 @@ class DocumentAmendSelectionServiceTest {
     @Mock
     private PcsCaseService pcsCaseService;
 
+    @Mock
+    private PartyService partyService;
+
     private DocumentAmendSelectionService underTest;
 
     @BeforeEach
     void setUp() {
-        underTest = new DocumentAmendSelectionService(pcsCaseService, new AddressFormatter());
+        underTest = new DocumentAmendSelectionService(pcsCaseService, new AddressFormatter(), partyService);
     }
 
     @Test
@@ -329,6 +337,44 @@ class DocumentAmendSelectionServiceTest {
     }
 
     @Test
+    void shouldPopulateRelatedPartyListWithClaimantsFirst() {
+        PartyEntity claimant = PartyEntity.builder().id(UUID.randomUUID()).build();
+        PartyEntity defendant1 = PartyEntity.builder().id(UUID.randomUUID()).build();
+        PartyEntity defendant2 = PartyEntity.builder().id(UUID.randomUUID()).build();
+        ClaimEntity mainClaim = ClaimEntity.builder()
+            .claimParties(List.of(
+                claimParty(PartyRole.DEFENDANT, defendant1),
+                claimParty(PartyRole.CLAIMANT, claimant),
+                claimParty(PartyRole.DEFENDANT, defendant2)
+            ))
+            .build();
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(PcsCaseEntity.builder()
+            .claims(List.of(mainClaim))
+            .build());
+        when(partyService.getPartyName(claimant)).thenReturn("Treetops Housing");
+        when(partyService.getPartyName(defendant1)).thenReturn("Billy Wright");
+        when(partyService.getPartyName(defendant2)).thenReturn("Jane Wright");
+        when(partyService.getPartyLabel(mainClaim, claimant.getId())).thenReturn("Claimant 1");
+        when(partyService.getPartyLabel(mainClaim, defendant1.getId())).thenReturn("Defendant 1");
+        when(partyService.getPartyLabel(mainClaim, defendant2.getId())).thenReturn("Defendant 2");
+
+        PCSCase caseData = PCSCase.builder().build();
+        underTest.initialise(CASE_REFERENCE, caseData);
+
+        assertThat(caseData.getDocumentAmendDetails().getRelatedParty().getListItems())
+            .extracting(DynamicListElement::getCode)
+            .containsExactly(claimant.getId(), defendant1.getId(), defendant2.getId());
+        assertThat(caseData.getDocumentAmendDetails().getRelatedParty().getListItems())
+            .extracting(DynamicListElement::getLabel)
+            .containsExactly(
+                "Treetops Housing - Claimant 1",
+                "Billy Wright - Defendant 1",
+                "Jane Wright - Defendant 2"
+            );
+        assertThat(caseData.getDocumentAmendDetails().getRelatedParty().getValue()).isNull();
+    }
+
+    @Test
     void shouldExcludeDocumentsWithNullCategoryIdFromUncategorisedDocuments() {
         DocumentEntity nullCategoryDocument = document("loose document.pdf", null, null);
         DocumentEntity categorisedDocument = document(
@@ -492,6 +538,45 @@ class DocumentAmendSelectionServiceTest {
     }
 
     @Test
+    void shouldPreselectRelatedPartyWhenSelectedDocumentHasAssociatedParty() {
+        PartyEntity claimant = PartyEntity.builder().id(UUID.randomUUID()).build();
+        PartyEntity defendant = PartyEntity.builder().id(UUID.randomUUID()).build();
+        ClaimEntity mainClaim = ClaimEntity.builder()
+            .claimParties(List.of(
+                claimParty(PartyRole.CLAIMANT, claimant),
+                claimParty(PartyRole.DEFENDANT, defendant)
+            ))
+            .build();
+        DocumentEntity document = document("photo.version.1.pdf", EVIDENCE.getId(), null);
+        document.setParty(defendant);
+        PcsCaseEntity pcsCase = PcsCaseEntity.builder()
+            .claims(List.of(mainClaim))
+            .documents(List.of(document))
+            .build();
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCase);
+        when(partyService.getPartyName(claimant)).thenReturn("Treetops Housing");
+        when(partyService.getPartyName(defendant)).thenReturn("Billy Wright");
+        when(partyService.getPartyLabel(mainClaim, claimant.getId())).thenReturn("Claimant 1");
+        when(partyService.getPartyLabel(mainClaim, defendant.getId())).thenReturn("Defendant 1");
+        PCSCase caseData = PCSCase.builder()
+            .documentAmendDetails(DocumentAmendDetails.builder()
+                .selectedFolder(EVIDENCE)
+                .evidenceDocuments(selectedDocument(document))
+                .build())
+            .build();
+        underTest.initialise(CASE_REFERENCE, caseData);
+
+        List<String> errors = underTest.validateAndStoreSelection(CASE_REFERENCE, caseData);
+
+        assertThat(errors).isEmpty();
+        assertThat(caseData.getDocumentAmendDetails().getRelatedParty().getValue())
+            .isEqualTo(DynamicListElement.builder()
+                .code(defendant.getId())
+                .label("Billy Wright - Defendant 1")
+                .build());
+    }
+
+    @Test
     void shouldPopulateAmendedFileNameWhenSelectedDocumentValueOnlyContainsCode() {
         DocumentEntity document = document("rent statement.pdf", EVIDENCE.getId(), null);
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(PcsCaseEntity.builder()
@@ -599,6 +684,13 @@ class DocumentAmendSelectionServiceTest {
             .categoryId(categoryId)
             .type(type)
             .submittedDate(Instant.now())
+            .build();
+    }
+
+    private static ClaimPartyEntity claimParty(PartyRole role, PartyEntity party) {
+        return ClaimPartyEntity.builder()
+            .role(role)
+            .party(party)
             .build();
     }
 }

@@ -12,6 +12,8 @@ import uk.gov.hmcts.reform.pcs.ccd.page.documentamend.AmendDocumentDetailsPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.documentamend.SelectDocumentPage;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentAmendSelectionService;
 
+import java.time.Clock;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(MockitoExtension.class)
@@ -25,7 +27,7 @@ class AmendDocumentsTest extends BaseEventTest {
         setEventUnderTest(new AmendDocuments(
             documentAmendSelectionService,
             new SelectDocumentPage(documentAmendSelectionService),
-            new AmendDocumentDetailsPage()
+            new AmendDocumentDetailsPage(Clock.systemUTC())
         ));
     }
 

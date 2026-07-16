@@ -172,6 +172,14 @@ public class DocumentAmendDetails {
     @CCD(searchable = false)
     private LocalDate selectedDocumentIssueDate;
 
+    @CCD(
+        label = "Which party does this document relate to?",
+        searchable = false,
+        typeOverride = DynamicRadioList
+    )
+    @JsonDeserialize(as = DynamicListWithValueCode.class)
+    private DynamicList relatedParty;
+
     public String getAmendedFileName() {
         return amendedFileName == null ? selectedDocumentBaseFileName : amendedFileName;
     }

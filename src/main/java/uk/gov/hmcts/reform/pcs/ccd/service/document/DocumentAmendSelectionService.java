@@ -9,14 +9,22 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.documentamend.DocumentAmendDetails;
+import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import static uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter.COMMA_DELIMITER;
 
@@ -30,10 +38,14 @@ public class DocumentAmendSelectionService {
 
     private final PcsCaseService pcsCaseService;
     private final AddressFormatter addressFormatter;
+    private final PartyService partyService;
 
-    public DocumentAmendSelectionService(PcsCaseService pcsCaseService, AddressFormatter addressFormatter) {
+    public DocumentAmendSelectionService(PcsCaseService pcsCaseService,
+                                         AddressFormatter addressFormatter,
+                                         PartyService partyService) {
         this.pcsCaseService = pcsCaseService;
         this.addressFormatter = addressFormatter;
+        this.partyService = partyService;
     }
 
     public void initialise(long caseReference, PCSCase caseData) {
@@ -45,6 +57,7 @@ public class DocumentAmendSelectionService {
         for (CaseFileCategory category : CaseFileCategory.values()) {
             setDocumentsForCategory(details, pcsCase, category);
         }
+        details.setRelatedParty(buildRelatedPartyList(pcsCase, details.getRelatedParty()));
     }
 
     public List<String> validateAndStoreSelection(long caseReference, PCSCase caseData) {
@@ -77,6 +90,7 @@ public class DocumentAmendSelectionService {
         details.setSelectedDocumentBaseFileName(selectedDocumentBaseFileName);
         details.setAmendedFileName(selectedDocumentBaseFileName);
         details.setSelectedDocumentIssueDate(selectedDocumentEntity == null ? null : selectedDocumentEntity.getIssueDate());
+        preselectRelatedParty(details, selectedDocumentEntity);
         return List.of();
     }
 
@@ -86,6 +100,66 @@ public class DocumentAmendSelectionService {
         details.setSelectedDocumentBaseFileName(null);
         details.setAmendedFileName(null);
         details.setSelectedDocumentIssueDate(null);
+        if (details.getRelatedParty() != null) {
+            details.getRelatedParty().setValue(null);
+        }
+    }
+
+    private DynamicList buildRelatedPartyList(PcsCaseEntity pcsCase, DynamicList existingList) {
+        DynamicListElement selected = existingList == null ? null : existingList.getValue();
+        ClaimEntity mainClaim = pcsCase.getMainClaim();
+        if (mainClaim == null || CollectionUtils.isEmpty(mainClaim.getClaimParties())) {
+            return DynamicList.builder()
+                .value(null)
+                .listItems(List.of())
+                .build();
+        }
+
+        Map<PartyRole, List<ClaimPartyEntity>> partiesByRole = mainClaim.getClaimParties().stream()
+            .filter(Objects::nonNull)
+            .collect(Collectors.groupingBy(ClaimPartyEntity::getRole));
+
+        List<DynamicListElement> partyOptions = new ArrayList<>();
+        partiesByRole.getOrDefault(PartyRole.CLAIMANT, List.of()).stream()
+            .map(ClaimPartyEntity::getParty)
+            .filter(Objects::nonNull)
+            .map(party -> mapToPartyListElement(mainClaim, party))
+            .forEach(partyOptions::add);
+
+        partiesByRole.getOrDefault(PartyRole.DEFENDANT, List.of()).stream()
+            .map(ClaimPartyEntity::getParty)
+            .filter(Objects::nonNull)
+            .map(party -> mapToPartyListElement(mainClaim, party))
+            .forEach(partyOptions::add);
+
+        return DynamicList.builder()
+            .value(retainSelectedValue(selected, partyOptions))
+            .listItems(partyOptions)
+            .build();
+    }
+
+    private DynamicListElement mapToPartyListElement(ClaimEntity mainClaim, PartyEntity party) {
+        String partyName = partyService.getPartyName(party);
+        String partyLabel = partyService.getPartyLabel(mainClaim, party.getId());
+        return DynamicListElement.builder()
+            .code(party.getId())
+            .label("%s - %s".formatted(partyName, partyLabel))
+            .build();
+    }
+
+    private void preselectRelatedParty(DocumentAmendDetails details, DocumentEntity selectedDocumentEntity) {
+        if (selectedDocumentEntity == null
+            || selectedDocumentEntity.getParty() == null
+            || selectedDocumentEntity.getParty().getId() == null
+            || details.getRelatedParty() == null) {
+            return;
+        }
+
+        String selectedPartyId = selectedDocumentEntity.getParty().getId().toString();
+        details.getRelatedParty().getListItems().stream()
+            .filter(option -> option.getCode() != null && selectedPartyId.equals(option.getCode().toString()))
+            .findFirst()
+            .ifPresent(details.getRelatedParty()::setValue);
     }
 
     private DocumentEntity resolveSelectedDocumentEntity(long caseReference,

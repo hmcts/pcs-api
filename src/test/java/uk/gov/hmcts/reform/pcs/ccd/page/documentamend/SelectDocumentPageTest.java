@@ -18,6 +18,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentAmendSelectionService;
+import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.config.JacksonConfiguration;
 
@@ -35,10 +36,13 @@ class SelectDocumentPageTest extends BasePageTest {
     @Mock
     private PcsCaseService pcsCaseService;
 
+    @Mock
+    private PartyService partyService;
+
     @BeforeEach
     void setUp() {
         setPageUnderTest(new SelectDocumentPage(
-            new DocumentAmendSelectionService(pcsCaseService, new AddressFormatter())
+            new DocumentAmendSelectionService(pcsCaseService, new AddressFormatter(), partyService)
         ));
     }
 
