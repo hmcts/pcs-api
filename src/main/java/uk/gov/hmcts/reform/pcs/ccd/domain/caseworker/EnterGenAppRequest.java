@@ -19,7 +19,7 @@ import java.time.LocalDate;
 @JsonNaming(PropertyNamingStrategies.UpperCamelCaseStrategy.class)
 public class EnterGenAppRequest {
 
-    @CCD(label = "What date was the application received?")
+    @CCD(label = "What date was the application received?", hint = "For example, 16 4 2021")
     private LocalDate dateReceived;
 
     @CCD(label = "Which type of application has the applicant made?")
