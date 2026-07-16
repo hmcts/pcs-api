@@ -480,8 +480,8 @@ public class TestingSupportController {
 
     private record FeePaymentInfo(
         UUID id,
-        String paymentReference,
-        java.time.LocalDateTime paymentStatus,
+        String serviceRequestReference,
+        java.time.LocalDateTime requestDate,
         BigDecimal amount
     ) {
     }
