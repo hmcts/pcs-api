@@ -101,6 +101,9 @@ class CitizenStartEventStrategyTest {
             tenancyLicenceView,
             rentArrearsView
         );
+
+        lenient().when(caseDetailsTabView.buildCaseDetailsTab(any(PCSCase.class), any(Boolean.class)))
+            .thenReturn(CaseDetailsTab.builder().build());
     }
 
     @Test
