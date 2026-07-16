@@ -14,6 +14,16 @@ public enum ErrorCode {
     META_DATA_FOR_DOCUMENT_ERROR("META_DATA_ERROR",
                                  "Failed to retrieve document metadata from CDAM"),
     MISSING_POSTAL_ADDRESS("MISSING_POSTAL_ADDRESS", "No postal address for party"),
+    DEFENDANT_ACCESS_VALIDATOR("DEFENDANT_ACCESS_VALIDATOR",
+                               "User is not linked as a defendant on this case"),
+    DEFENDANT_PARTY_EXTRACTOR("DEFENDANT_PARTY_EXTRACTOR_01", "No claim found for this case"),
+    DEFENDANT_PARTY_EXTRACTOR_NO_DEFENDANTS("DEFENDANT_PARTY_EXTRACTOR_02",
+                                            "No defendants associated with this case"),
+    LEGAL_REP_FOR_DEFENDANT_ACCESS("LEGAL_REP_FOR_DEFENDANT_ACCESS",
+                                   "User is not linked as a defendant solicitor on this case"),
+    LEGAL_REP_PARTY_SELECTION("LEGAL_REP_PARTY_SELECTION",
+                              "User is not linked as a defendant on this case"),
+
 
 
     TEST_CASE_SUPPORT("", "");

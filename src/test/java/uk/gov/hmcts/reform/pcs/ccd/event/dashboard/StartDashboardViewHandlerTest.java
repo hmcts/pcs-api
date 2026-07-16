@@ -29,6 +29,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.DEFENDANT_ACCESS_VALIDATOR;
 
 @ExtendWith(MockitoExtension.class)
 class StartDashboardViewHandlerTest {
@@ -109,7 +110,7 @@ class StartDashboardViewHandlerTest {
         when(securityContextService.getCurrentUserId()).thenReturn(defendantUserId);
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(caseEntity);
         when(accessValidator.validateAndGetDefendant(caseEntity, defendantUserId))
-            .thenThrow(new CaseAccessException(exceptionMessage));
+            .thenThrow(new CaseAccessException(DEFENDANT_ACCESS_VALIDATOR));
 
         assertThatThrownBy(() -> underTest.start(eventPayload))
             .isInstanceOf(CaseAccessException.class)

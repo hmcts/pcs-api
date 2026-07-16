@@ -16,12 +16,14 @@ import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.PossessionClai
 import uk.gov.hmcts.reform.pcs.ccd.util.SelectedPartyRetriever;
 import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
 import uk.gov.hmcts.reform.pcs.exception.DraftNotFoundException;
+import uk.gov.hmcts.reform.pcs.exception.ErrorCode;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.respondPossessionClaim;
+import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.LEGAL_REP_PARTY_SELECTION;
 
 @Component
 @Slf4j
@@ -73,7 +75,7 @@ public class LegalRepPartySelectionService {
         return parties.stream()
             .filter(party -> party.getId().equals(selectedPartyId))
             .findFirst()
-            .orElseThrow(() -> new CaseAccessException("User is not linked as a defendant on this case"));
+            .orElseThrow(() -> new CaseAccessException(LEGAL_REP_PARTY_SELECTION));
     }
 
     private PCSCase restoreDraft(long caseReference, PCSCase pcsCase, PartyEntity matchedDefendant,

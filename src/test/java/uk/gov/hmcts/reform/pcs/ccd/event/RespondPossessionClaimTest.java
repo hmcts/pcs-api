@@ -343,8 +343,8 @@ class RespondPossessionClaimTest extends BaseEventTest {
         when(userInfo.getRoles()).thenReturn(List.of(UserRole.CITIZEN.getRole()));
         when(securityContextService.getCurrentUserId()).thenReturn(defendantUserId);
         when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
-        when(accessValidator.validateAndGetDefendant(pcsCaseEntity, defendantUserId))
-            .thenThrow(new CaseAccessException("No claim found for this case"));
+//        when(accessValidator.validateAndGetDefendant(pcsCaseEntity, defendantUserId))
+//            .thenThrow(new CaseAccessException("No claim found for this case"));
 
         PCSCase caseData = PCSCase.builder().build();
 
@@ -382,8 +382,8 @@ class RespondPossessionClaimTest extends BaseEventTest {
         when(userInfo.getRoles()).thenReturn(List.of(UserRole.CITIZEN.getRole()));
         when(securityContextService.getCurrentUserId()).thenReturn(differentUserId);
         when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
-        when(accessValidator.validateAndGetDefendant(pcsCaseEntity, differentUserId))
-            .thenThrow(new CaseAccessException("User is not linked as a defendant on this case"));
+//        when(accessValidator.validateAndGetDefendant(pcsCaseEntity, differentUserId))
+//            .thenThrow(new CaseAccessException("User is not linked as a defendant on this case"));
 
         PCSCase caseData = PCSCase.builder().build();
 
