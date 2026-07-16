@@ -1,0 +1,682 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="https://www.omg.org/spec/DMN/20191111/MODEL/" xmlns:dmndi="https://www.omg.org/spec/DMN/20191111/DMNDI/" xmlns:dc="http://www.omg.org/spec/DMN/20180521/DC/" xmlns:biodi="http://bpmn.io/schema/dmn/biodi/2.0" xmlns:camunda="http://camunda.org/schema/1.0/dmn" id="wa-configuration-definition" name="DRD" namespace="http://camunda.org/schema/1.0/dmn" exporter="Camunda Modeler" exporterVersion="5.48.0">
+  <decision id="wa-task-configuration-pcs-pcs" name="Task configuration DMN" camunda:historyTimeToLive="P90D">
+    <decisionTable id="DecisionTable_14cx079" hitPolicy="RULE ORDER">
+      <input id="InputClause_1gxyo7f" label="CCD Case Data" camunda:inputVariable="caseData">
+        <inputExpression id="LiteralExpression_0mra7c4" typeRef="string">
+          <text></text>
+        </inputExpression>
+      </input>
+      <input id="InputClause_00c59gm" label="Task type" biodi:width="405" camunda:inputVariable="taskType">
+        <inputExpression id="LiteralExpression_1ngi22k" typeRef="string">
+          <text>if(taskAttributes != null and taskAttributes.taskType != null) then
+            taskAttributes.taskType
+            else if(taskType != null) then
+            taskType
+            else
+            null</text>
+        </inputExpression>
+      </input>
+      <output id="Output_1" label="Name" name="name" typeRef="string" biodi:width="349" />
+      <output id="OutputClause_021y3bb" label="Value" name="value" typeRef="string" biodi:width="932" />
+      <output id="OutputClause_0tefly7" label="Can Reconfigure?" name="canReconfigure" typeRef="boolean" biodi:width="551" />
+      <rule id="DecisionRule_15d26q3">
+        <inputEntry id="UnaryTests_0ttdvnk">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_17qnsjg">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_1cjtwsm">
+          <text>"caseName"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0qxk186">
+          <text>caseData.caseNameHmctsInternal</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0yq1las">
+          <text>true</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_1mjcc04">
+        <inputEntry id="UnaryTests_18cwczt">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0dkk0gm">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_1bhsx9c">
+          <text>"caseManagementCategory"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0lofdxr">
+          <text>if (caseData.caseManagementCategory !=null and caseData.caseManagementCategory.selectedLabel !=null) then caseData.caseManagementCategory.selectedLabel else "Property Possession Claims"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0sr21w4">
+          <text>true</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_0q4qv9k">
+        <inputEntry id="UnaryTests_0w5bx9l">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1otkpft">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_0bk5dx2">
+          <text>"region"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0w92hli">
+          <text>if(caseData!=null and caseData.caseManagementLocation!=null and caseData.caseManagementLocation.region!=null) then caseData.caseManagementLocation.region else "1"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0nud1yw">
+          <text>true</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_1vtk3id">
+        <description>Location Id</description>
+        <inputEntry id="UnaryTests_1rnxkwz">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_001vqzf">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_08jsjbj">
+          <text>"location"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0kcac7o">
+          <text>if (caseData.caseManagementLocation != null and caseData.caseManagementLocation.baseLocation != null) then caseData.caseManagementLocation.baseLocation else "336559"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0qxf2oq">
+          <text>true</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_165co4p">
+        <description>
+
+Short name</description>
+        <inputEntry id="UnaryTests_1cjvmpi">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0o3zrg4">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_1izav92">
+          <text>"locationName"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0bqzxy2">
+          <text>if (caseData.caseManagementLocation != null and caseData.caseManagementLocation.baseLocation != null and caseData.managingOffice != null) then caseData.managingOffice else "Unable to find location"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0pwyuux">
+          <text>true</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_1qfkcqn">
+        <inputEntry id="UnaryTests_1fzed1e">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1o9uf1g">
+          <text>"ReviewAdjournGenApp","ReviewSetAsideGenApp","TranslateDefendantSubmittedDocument","TranslateClaimantSubmittedDocument","TranslateCaseworkerUploadedDocument"</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_1vuc06b">
+          <text>"majorPriority"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0jvji8s">
+          <text>1000</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_180437s">
+          <text>true</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_0fw3529">
+        <inputEntry id="UnaryTests_1xk9ami">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_12wstqg">
+          <text>"ReviewGenApp"</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_1rnyri8">
+          <text>"majorPriority"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0z9ygcc">
+          <text>2000</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1gk2hla">
+          <text>true</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_0izexy4">
+        <inputEntry id="UnaryTests_1xbxnca">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1flv9uv">
+          <text>"NewClaimCreateNewHearing"</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_1h0974q">
+          <text>"majorPriority"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_01ti60i">
+          <text>3000</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_13o2h0b">
+          <text>true</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_1aao2qb">
+        <inputEntry id="UnaryTests_1b3ow3o">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_13vua6m">
+          <text>"ReviewCaseFlagRequest","ReviewCaseFlag"</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_00tjfk1">
+          <text>"majorPriority"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0kky7o9">
+          <text>4000</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1k8s5lh">
+          <text>true</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_0bqwz76">
+        <inputEntry id="UnaryTests_0f1nsg3">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1v5p69a">
+          <text>"ReviewDefendantResponseAndCounterclaim","ReviewAdditionalDocumentsClaim","ReviewAdditionalDocumentsGenApp","ReviewAdditionalDocumentsCounterclaim"</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_1efq4au">
+          <text>"majorPriority"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0m35msj">
+          <text>5000</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0gwkr13">
+          <text>true</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_09yjx36">
+        <inputEntry id="UnaryTests_0qmpytb">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0l3ndya">
+          <text>"ReviewFailedPayment"</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_0kifz6e">
+          <text>"majorPriority"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1pyxn4u">
+          <text>6000</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0e98jvz">
+          <text>true</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_1s5d9ng">
+        <inputEntry id="UnaryTests_0mmnbzp">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1alk1rv">
+          <text>"ReviewDateDue"</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_1rvvw3r">
+          <text>"majorPriority"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0p791to">
+          <text>7000</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1ty7609">
+          <text>true</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_0uude62">
+        <inputEntry id="UnaryTests_0hlew7o">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0ge5t9c">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_1qbzk71">
+          <text>"minorPriority"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0hen8ss">
+          <text>500</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1ecy2mu">
+          <text>true</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_0kxxk0n">
+        <inputEntry id="UnaryTests_05o7w1h">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1vvu32e">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_1vrth3c">
+          <text>"dueDateNonWorkingCalendar"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1atq5od">
+          <text>"https://www.gov.uk/bank-holidays/england-and-wales.json"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_08asnrh">
+          <text>true</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_1ck3v10">
+        <inputEntry id="UnaryTests_19jcyb6">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1vwwa1a">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_0ngfjor">
+          <text>"dueDateNonWorkingDaysOfWeek"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0kzbwxi">
+          <text>"SATURDAY,SUNDAY"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_01sv3ae">
+          <text>false</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_1uuyxon">
+        <inputEntry id="UnaryTests_0jhl5zg">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0t4gfyx">
+          <text>"ReviewDefendantResponseAndCounterclaim","ReviewAdditionalDocumentsClaim","ReviewAdditionalDocumentsGenApp","ReviewAdditionalDocumentsCounterclaim","ReviewDateDue","TranslateDefendantSubmittedDocument","TranslateClaimantSubmittedDocument","TranslateCaseworkerUploadedDocument"</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_15pmpia">
+          <text>"workType"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0o0w6fc">
+          <text>"routine_work"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0z4f0k6">
+          <text>true</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_00fssfn">
+        <inputEntry id="UnaryTests_1xw5yja">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0v6pdjr">
+          <text>"NewClaimCreateNewHearing","ReviewCaseFlagRequest","ReviewCaseFlag"</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_1p8y8wb">
+          <text>"workType"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0jb068t">
+          <text>"decision_making_work"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_05mitav">
+          <text>true</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_1ebp5ca">
+        <inputEntry id="UnaryTests_0k25j2x">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_03jgyv1">
+          <text>"ReviewAdjournGenApp","ReviewSetAsideGenApp","ReviewGenApp"</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_1knzprs">
+          <text>"workType"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0xfyvm8">
+          <text>"applications"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_06fihsc">
+          <text>true</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_1a0vm4e">
+        <inputEntry id="UnaryTests_1fg88uo">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0bzlp46">
+          <text>"ReviewFailedPayment"</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_1xdz87v">
+          <text>"workType"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0oc19tr">
+          <text>"error_management"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1yrdi10">
+          <text>true</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_0v7suji">
+        <inputEntry id="UnaryTests_01uali5">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_055g5ba">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_1ubz0s5">
+          <text>"roleCategory"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1fkq9e2">
+          <text>"ADMIN"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_03hwx1w">
+          <text>true</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_16g0sse">
+        <inputEntry id="UnaryTests_0v89wdl">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0wj09pe">
+          <text>"NewClaimCreateNewHearing"</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_1x0pkte">
+          <text>"description"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0c8oyby">
+          <text>"List the case on List Assist, create and serve the Notice of Hearing on all parties, and upload a copy of the notice to the digital case file. Only mark the task as complete once all of these steps have been completed."</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1i8mkjf">
+          <text></text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_163bftv">
+        <inputEntry id="UnaryTests_0jad3xs">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1cuepcw">
+          <text>"ReviewDefendantResponseAndCounterclaim"</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_0em2bsa">
+          <text>"description"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1nzw62x">
+          <text>"Review the defendant’s response and counterclaim, check whether any further case action is required, and take the appropriate action before closing the task. Only mark the task as complete once the review is finished and any required action has been completed."</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_07pv3yt">
+          <text>true</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_1fbubru">
+        <inputEntry id="UnaryTests_0mub3at">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1ffvejm">
+          <text>"ReviewAdjournGenApp"</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_0b8f0gh">
+          <text>"description"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0mulsbp">
+          <text>"Review the general application to adjourn the hearing, decide what action is needed, and take the appropriate action. Only mark the task as complete once the application has been reviewed and any required action has been completed."</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0smzs7n">
+          <text>true</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_06lzwv2">
+        <inputEntry id="UnaryTests_1mcz2gy">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0a3bnkb">
+          <text>"ReviewSetAsideGenApp"</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_1whdf9l">
+          <text>"description"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0n1yxlg">
+          <text>"Review the general application to set aside, decide what action is needed, and take the appropriate action. Only mark the task as complete once the application has been reviewed and any required action has been completed."</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1cvv017">
+          <text>true</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_1gx11py">
+        <inputEntry id="UnaryTests_0z5vue6">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0mva7m0">
+          <text>"ReviewGenApp"</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_1c2prjo">
+          <text>"description"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1dfdlvv">
+          <text>"Review the general application, decide what action is needed, and take the appropriate action. Only mark the task as complete once the application has been reviewed and any required action has been completed."</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1777gea">
+          <text>true</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_0kcx6ed">
+        <inputEntry id="UnaryTests_1smjk9i">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1xpgnb1">
+          <text>"ReviewAdditionalDocumentsClaim"</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_0hmuiug">
+          <text>"description"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0mcxu2i">
+          <text>Review the additional documents submitted on the claim, check whether any further case action is required, and take the appropriate action. Only mark the task as complete once the documents have been reviewed and any required action has been completed.</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_14akn1n">
+          <text>true</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_0zpw840">
+        <inputEntry id="UnaryTests_0i9u3p3">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1kieu3i">
+          <text>"ReviewAdditionalDocumentsGenApp"</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_1u9r7ki">
+          <text>"description"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0r3qzf3">
+          <text>"Review the additional documents submitted for the general application, check whether any further case action is required, and take the appropriate action. Only mark the task as complete once the documents have been reviewed and any required action has been completed."</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0yjve17">
+          <text>true</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_0c5clfj">
+        <inputEntry id="UnaryTests_0hj6rya">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1meuqwl">
+          <text>"ReviewAdditionalDocumentsCounterclaim"</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_14fp0l8">
+          <text>"description"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_08d4eii">
+          <text>"Review the additional documents submitted for the counterclaim, check whether any further case action is required, and take the appropriate action. Only mark the task as complete once the documents have been reviewed and any required action has been completed."</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0cbvgxl">
+          <text>true</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_1w1u0qk">
+        <inputEntry id="UnaryTests_06gpfzb">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1dkwkcw">
+          <text>"ReviewCaseFlagRequest"</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_0w7ri5z">
+          <text>"description"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1tfrrr2">
+          <text>"Review the case flag request, decide whether it should be approved or rejected, and record the decision. The task will close when the approval or rejection event is completed."</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1nneo2x">
+          <text>true</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_0xpuwm0">
+        <inputEntry id="UnaryTests_082u1k7">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_05tn0k2">
+          <text>"ReviewCaseFlag"</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_0xzbtrr">
+          <text>"description"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0e3rlfp">
+          <text>"Review the case flags on the case flags tab, check whether any action is required, and take the appropriate action. Only mark the task as complete once the case flags have been reviewed and any required action has been completed."</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1td2ttz">
+          <text>true</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_0kqn35l">
+        <inputEntry id="UnaryTests_1407ezt">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1c1ppbv">
+          <text>"ReviewFailedPayment"</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_0vwfaqi">
+          <text>"description"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0iv9xrr">
+          <text>"Review the failed payment on the service request screen, check whether the payment issue has been resolved or whether further action is required, and take the appropriate action. Only mark the task as complete once the payment issue has been reviewed and any required action has been completed."</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1gcz22e">
+          <text>true</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_1kkgc2h">
+        <inputEntry id="UnaryTests_0z3ahgo">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_08i5wgn">
+          <text>"ReviewDateDue"</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_0olypon">
+          <text>"description"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1z12nyx">
+          <text>"Review the case note about the date due, check whether any follow-up action is required, and take the appropriate action. Only mark the task as complete once the date due has been reviewed and any required action has been completed."</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_08zs40v">
+          <text>true</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_19iwyvw">
+        <inputEntry id="UnaryTests_0bny76q">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_11j26v1">
+          <text>"TranslateDefendantSubmittedDocument"</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_1b1dwgo">
+          <text>"description"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_00q3dwz">
+          <text>"Review the defendant submitted document and arrange translation where required. Upload or record the translated document on the case file and take any further action needed. Only mark the task as complete once the translation has been completed and any required action has been taken."</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1025zq3">
+          <text>true</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_0043dfs">
+        <inputEntry id="UnaryTests_0gx3wyd">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1t9ix6v">
+          <text>"TranslateClaimantSubmittedDocument"</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_19vfho4">
+          <text>"description"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0s86vc9">
+          <text>"Review the claimant submitted document and arrange translation. Email the translated document to the court. Only mark the task as complete once the translation has been completed."</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1xibxd8">
+          <text>true</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_040w30w">
+        <inputEntry id="UnaryTests_0qni5az">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_06ubpzc">
+          <text>"TranslateCaseworkerUploadedDocument"</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_01hf0ce">
+          <text>"description"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0lh3pjt">
+          <text>"Review the caseworker uploaded document and arrange translation. Email the translated document to the court. Only mark the task as complete once the translation has been completed."</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_06wwhml">
+          <text>true</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_10i40qf">
+        <inputEntry id="UnaryTests_1i23a4y">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0lwc3lv">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_1vjkehy">
+          <text>"priorityDateOriginRef"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0569c2e">
+          <text>caseData.dueDate</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0l7zrs4">
+          <text>true</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_0o4vdup">
+        <inputEntry id="UnaryTests_0mn0gpa">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0jyv65c">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_123pc6f">
+          <text>"dueDateOrigin"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0kefczv">
+          <text>now()</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1c4v3cu">
+          <text>false</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_0nk33fy">
+        <inputEntry id="UnaryTests_0ok8nis">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0wc90n1">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_11y0j8a">
+          <text>"dueDateTime"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0z828nf">
+          <text>time("17:00")</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1t9vr9a">
+          <text>false</text>
+        </outputEntry>
+      </rule>
+    </decisionTable>
+  </decision>
+  <dmndi:DMNDI>
+    <dmndi:DMNDiagram id="DMNDiagram_1ifewa3">
+      <dmndi:DMNShape id="DMNShape_0ijg0or" dmnElementRef="wa-task-configuration-pcs-pcs">
+        <dc:Bounds height="80" width="180" x="150" y="80" />
+      </dmndi:DMNShape>
+    </dmndi:DMNDiagram>
+  </dmndi:DMNDI>
+</definitions>
