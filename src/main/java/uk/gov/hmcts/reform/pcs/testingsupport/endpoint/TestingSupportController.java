@@ -29,6 +29,7 @@ import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
@@ -463,7 +464,8 @@ public class TestingSupportController {
                         feePayment.getId(),
                         feePayment.getServiceRequestReference(),
                         feePayment.getRequestDate(),
-                        feePayment.getAmount()
+                        feePayment.getAmount(),
+                        feePayment.getPaymentStatus()
                     );
 
                     feePaymentInfo.add(minimalFeePayment);
@@ -482,7 +484,8 @@ public class TestingSupportController {
         UUID id,
         String serviceRequestReference,
         java.time.LocalDateTime requestDate,
-        BigDecimal amount
+        BigDecimal amount,
+        PaymentStatus paymentStatus
     ) {
     }
 }
