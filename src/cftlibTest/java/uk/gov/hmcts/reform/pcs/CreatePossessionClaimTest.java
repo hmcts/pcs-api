@@ -11,12 +11,19 @@ import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
+import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.CaseResource;
+import uk.gov.hmcts.reform.ccd.client.model.Event;
+import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
+import uk.gov.hmcts.reform.pcs.ccd.CaseType;
+import uk.gov.hmcts.reform.pcs.ccd.service.CaseRoleAssignmentService;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CompletionNextStep;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -25,13 +32,14 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
-import uk.gov.hmcts.reform.pcs.client.CcdClient;
+import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.rse.ccd.lib.test.CftlibTest;
 
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.createPossessionClaim;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.resumePossessionClaim;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
@@ -39,8 +47,11 @@ import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.resumePossessionClaim;
 @TestMethodOrder(OrderAnnotation.class)
 class CreatePossessionClaimTest extends CftlibTest {
 
+    @MockitoBean
+    private CaseRoleAssignmentService caseRoleAssignmentService;
+
     @Autowired
-    private CcdClient ccdClient;
+    private CoreCaseDataApi ccdApi;
 
     @Autowired
     private IdamClient idamClient;
@@ -48,12 +59,14 @@ class CreatePossessionClaimTest extends CftlibTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    private String solicitorToken;
+    private String idamToken;
+    private String s2sToken;
     private Long caseReference;
 
     @BeforeAll
     void setup() {
-        solicitorToken = idamClient.getAccessToken("pcs-solicitor1@test.com", "password");
+        idamToken = idamClient.getAccessToken("pcs-solicitor1@test.com", "password");
+        s2sToken = generateDummyS2SToken("ccd_gw");
     }
 
     @Test
@@ -72,12 +85,12 @@ class CreatePossessionClaimTest extends CftlibTest {
             .legislativeCountry(LegislativeCountry.ENGLAND)
             .build();
 
-        CaseDetails caseDetails = ccdClient.createCase(caseData, solicitorToken);
+        CaseDetails caseDetails = startAndSubmitCreationEvent(createPossessionClaim, caseData);
 
         caseReference = caseDetails.getId();
         assertThat(caseReference).isNotNull();
 
-        CaseDetails retrievedCase = ccdClient.getCaseDetails(caseReference, solicitorToken);
+        CaseDetails retrievedCase = ccdApi.getCase(idamToken, s2sToken, Long.toString(caseReference));
         assertThat(retrievedCase.getState()).isEqualTo(State.AWAITING_SUBMISSION_TO_HMCTS.name());
     }
 
@@ -85,8 +98,6 @@ class CreatePossessionClaimTest extends CftlibTest {
     @Order(2)
     void resumePossessionClaim() {
         PCSCase caseData = PCSCase.builder()
-            .caseManagementLocationNumber(20262)
-            .regionId(1)
             .tenancyLicenceDetails(TenancyLicenceDetails.builder()
                                        .typeOfTenancyLicence(TenancyLicenceType.ASSURED_TENANCY)
                                        .build())
@@ -99,12 +110,11 @@ class CreatePossessionClaimTest extends CftlibTest {
             .completionNextStep(CompletionNextStep.SUBMIT_AND_PAY_NOW)
             .build();
 
-        CaseResource caseResource
-            = ccdClient.updateCase(resumePossessionClaim, caseReference, caseData, solicitorToken);
+        CaseResource caseResource = startAndSubmitUpdateEvent(resumePossessionClaim, caseData);
 
         assertThat(caseResource.getReference()).isNotBlank();
 
-        CaseDetails retrievedCase = ccdClient.getCaseDetails(caseReference, solicitorToken);
+        CaseDetails retrievedCase = ccdApi.getCase(idamToken, s2sToken, Long.toString(caseReference));
 
         TypeReference<List<ListValue<Party>>> partyList = new TypeReference<>() {};
 
@@ -119,6 +129,42 @@ class CreatePossessionClaimTest extends CftlibTest {
                 .containsExactly("Danny");
 
         assertThat(retrievedCase.getState()).isEqualTo(State.PENDING_CASE_ISSUED.name());
+    }
+
+    @SuppressWarnings("SameParameterValue")
+    private CaseDetails startAndSubmitCreationEvent(EventId eventId, PCSCase caseData) {
+        StartEventResponse startEventResponse = ccdApi.startCase(
+            idamToken,
+            s2sToken,
+            CaseType.getCaseType(),
+            eventId.name()
+        );
+
+        CaseDataContent content = CaseDataContent.builder()
+            .data(caseData)
+            .event(Event.builder().id(eventId.name()).build())
+            .eventToken(startEventResponse.getToken())
+            .build();
+
+        return ccdApi.submitCaseCreation(idamToken, s2sToken, CaseType.getCaseType(), content);
+    }
+
+    @SuppressWarnings("SameParameterValue")
+    private CaseResource startAndSubmitUpdateEvent(EventId eventId, PCSCase caseData) {
+        StartEventResponse startEventResponse = ccdApi.startEvent(
+            idamToken,
+            s2sToken,
+            Long.toString(caseReference),
+            eventId.name()
+        );
+
+        CaseDataContent content = CaseDataContent.builder()
+            .data(caseData)
+            .event(Event.builder().id(eventId.name()).build())
+            .eventToken(startEventResponse.getToken())
+            .build();
+
+        return ccdApi.createEvent(idamToken, s2sToken, Long.toString(caseReference), content);
     }
 
 }

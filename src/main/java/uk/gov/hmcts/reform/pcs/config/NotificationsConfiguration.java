@@ -7,13 +7,10 @@ import uk.gov.service.notify.NotificationClient;
 
 @Configuration
 public class NotificationsConfiguration {
-
     @Bean
     public NotificationClient notificationClient(
-        @Value("${notify.api-url}") String baseUrl,
         @Value("${notify.api-key}") String apiKey
     ) {
-        return new NotificationClient(apiKey, baseUrl);
+        return new NotificationClient(apiKey);
     }
-
 }

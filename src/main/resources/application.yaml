@@ -142,7 +142,6 @@ location-reference:
   court-county-type-id: ${COURT_COUNTY_TYPE_ID:10}
 
 notify:
-  api-url: ${NOTIFY_URL:http://localhost:8083}
   api-key: ${PCS_NOTIFY_API_KEY:AAAAAAAA-AAAA-AAAA-AAAA-AAAAAAAAAAAA}
   send-email:
     max-retries: ${NOTIFY_SEND_EMAIL_MAX_RETRIES:5}
@@ -175,7 +174,7 @@ access-code-test-table:
 db-scheduler:
   enabled: false # This disables the autoconfiguration of DB Scheduler. Always off.
   executor-enabled: ${DB_SCHEDULER_EXECUTOR_ENABLED:true}
-  polling-interval-seconds: ${DB_SCHEDULER_POLLING_INTERVAL_SECONDS:10}
+  polling-interval-seconds: 10
   threads: 10
 
 doc_assembly:
