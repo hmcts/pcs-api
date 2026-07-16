@@ -178,7 +178,6 @@ class RespondPossessionClaimTest extends BaseEventTest {
             feeService,
             paymentService,
             feeCalculator,
-            securityContextService,
             objectMapper
         );
 
