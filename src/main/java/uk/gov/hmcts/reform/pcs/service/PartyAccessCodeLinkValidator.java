@@ -13,6 +13,8 @@ import uk.gov.hmcts.reform.pcs.exception.InvalidPartyForAccessCodeException;
 import java.util.List;
 import java.util.UUID;
 
+import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.ACCESS_CODE_ALREADY_IN_USE;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -47,7 +49,7 @@ public class PartyAccessCodeLinkValidator {
         if (partyEntity.getIdamId() != null) {
             log.error("Access code already linked to user - partyId: {}, existingIdamUserId: {}",
                 partyEntity.getId(), partyEntity.getIdamId());
-            throw new AccessCodeAlreadyUsedException("This access code is already linked to a user.");
+            throw new AccessCodeAlreadyUsedException(ACCESS_CODE_ALREADY_IN_USE);
         }
     }
 
@@ -70,7 +72,7 @@ public class PartyAccessCodeLinkValidator {
             log.error(
                 "User already linked to different party - attemptedPartyId: {}, idamUserId: {}, linkedToPartyId: {}",
                 currentPartyId, idamUserId, conflictingPartyId);
-            throw new AccessCodeAlreadyUsedException("This user is already linked to another party in this case.");
+            throw new AccessCodeAlreadyUsedException(ACCESS_CODE_ALREADY_IN_USE);
         }
     }
 }

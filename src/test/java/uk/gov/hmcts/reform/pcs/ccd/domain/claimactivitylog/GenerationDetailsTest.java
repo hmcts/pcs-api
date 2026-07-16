@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog;
 import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.document.service.exception.DocAssemblyException;
+import uk.gov.hmcts.reform.pcs.exception.ErrorCode;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -31,7 +32,7 @@ class GenerationDetailsTest {
     @Test
     void capturesDetailAlongsideAClassifiedReason() {
         GenerationDetails details = GenerationDetails.forFailure(
-            DocumentType.COUNTERCLAIM, new DocAssemblyException("docmosis returned 500"), false);
+            DocumentType.COUNTERCLAIM, new DocAssemblyException(ErrorCode.DOC_GENERATION_FAILED), false);
 
         assertThat(details.failureReason()).isEqualTo(FailureReason.RENDER_FAILED);
         assertThat(details.errorDetail()).isEqualTo("DocAssemblyException: docmosis returned 500");

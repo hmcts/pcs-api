@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.pcs.exception;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.ACCESS_CODE_ALREADY_IN_USE;
 
 class AccessCodeAlreadyUsedExceptionTest {
 
@@ -12,7 +13,7 @@ class AccessCodeAlreadyUsedExceptionTest {
         String message = "Access code already used";
 
         // When
-        AccessCodeAlreadyUsedException exception = new AccessCodeAlreadyUsedException(message);
+        AccessCodeAlreadyUsedException exception = new AccessCodeAlreadyUsedException(ACCESS_CODE_ALREADY_IN_USE);
 
         // Then
         assertThat(exception).isNotNull();
@@ -27,7 +28,8 @@ class AccessCodeAlreadyUsedExceptionTest {
         Throwable cause = new RuntimeException("Root cause");
 
         // When
-        AccessCodeAlreadyUsedException exception = new AccessCodeAlreadyUsedException(message, cause);
+        AccessCodeAlreadyUsedException exception = new AccessCodeAlreadyUsedException(ACCESS_CODE_ALREADY_IN_USE,
+                                                                                      cause);
 
         // Then
         assertThat(exception).isNotNull();
@@ -36,23 +38,13 @@ class AccessCodeAlreadyUsedExceptionTest {
     }
 
     @Test
-    void shouldCreateExceptionWithNullMessage() {
-        // When
-        AccessCodeAlreadyUsedException exception = new AccessCodeAlreadyUsedException((String) null);
-
-        // Then
-        assertThat(exception).isNotNull();
-        assertThat(exception.getMessage()).isNull();
-        assertThat(exception.getCause()).isNull();
-    }
-
-    @Test
     void shouldCreateExceptionWithMessageAndNullCause() {
         // Given
         String message = "Access code already used";
 
         // When
-        AccessCodeAlreadyUsedException exception = new AccessCodeAlreadyUsedException(message, null);
+        AccessCodeAlreadyUsedException exception = new AccessCodeAlreadyUsedException(ACCESS_CODE_ALREADY_IN_USE,
+                                                                                      null);
 
         // Then
         assertThat(exception).isNotNull();
@@ -66,7 +58,7 @@ class AccessCodeAlreadyUsedExceptionTest {
         String message = "";
 
         // When
-        AccessCodeAlreadyUsedException exception = new AccessCodeAlreadyUsedException(message);
+        AccessCodeAlreadyUsedException exception = new AccessCodeAlreadyUsedException(ACCESS_CODE_ALREADY_IN_USE);
 
         // Then
         assertThat(exception).isNotNull();
@@ -82,7 +74,8 @@ class AccessCodeAlreadyUsedExceptionTest {
         Throwable cause = new RuntimeException("Intermediate cause", rootCause);
 
         // When
-        AccessCodeAlreadyUsedException exception = new AccessCodeAlreadyUsedException(message, cause);
+        AccessCodeAlreadyUsedException exception = new AccessCodeAlreadyUsedException(ACCESS_CODE_ALREADY_IN_USE,
+                                                                                      cause);
 
         // Then
         assertThat(exception).isNotNull();

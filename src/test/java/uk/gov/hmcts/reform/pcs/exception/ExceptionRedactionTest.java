@@ -20,7 +20,7 @@ public class ExceptionRedactionTest {
 
     @BeforeEach
     void setUp() {
-        logger = (Logger) LoggerFactory.getLogger(PCSRuntimeException.class);
+        logger = (Logger) LoggerFactory.getLogger(RedactedRuntimeException.class);
         originalLogLevel = logger.getLevel();
     }
 
@@ -44,7 +44,7 @@ public class ExceptionRedactionTest {
         String debugMsg = "Example sensitive failure message";
 
         // When // Then
-        assertThat(ExceptionRedaction.message(PCSRuntimeException.class, code, debugMsg))
+        assertThat(ExceptionRedaction.message(RedactedRuntimeException.class, code, debugMsg))
             .isEqualTo("%s [%s: %s]".formatted("REDACTED", code.internalCode(), code.safeDescription()));
     }
 
@@ -56,7 +56,7 @@ public class ExceptionRedactionTest {
         String debugMsg = "Example sensitive failure message";
 
         // When // Then
-        assertThat(ExceptionRedaction.message(PCSRuntimeException.class, code, debugMsg)).isEqualTo(debugMsg);
+        assertThat(ExceptionRedaction.message(RedactedRuntimeException.class, code, debugMsg)).isEqualTo(debugMsg);
     }
 
     @Test
@@ -68,7 +68,10 @@ public class ExceptionRedactionTest {
         Exception cause = new Exception("This was it");
 
         // When
-        PCSRuntimeException exception = new PCSRuntimeException(code, debugMsg, cause);
+        RedactedRuntimeException exception = new RedactedRuntimeException(code,
+                                                                          RedactionContext.builder()
+                                                                    .value("message", debugMsg).build(),
+                                                                          cause);
 
         // Then
         assertThat(ExceptionRedaction.cause(exception.getClass(), cause)).isNull();
@@ -81,7 +84,7 @@ public class ExceptionRedactionTest {
         Exception cause = new Exception("This was it");
 
         // When // Then
-        assertThat(ExceptionRedaction.cause(PCSRuntimeException.class, cause)).isEqualTo(cause);
+        assertThat(ExceptionRedaction.cause(RedactedRuntimeException.class, cause)).isEqualTo(cause);
     }
 
     @Test
@@ -91,7 +94,7 @@ public class ExceptionRedactionTest {
         Exception cause = new Exception("This was it");
 
         // When // Then
-        assertThat(ExceptionRedaction.stackTrace(PCSRuntimeException.class, cause.getStackTrace()))
+        assertThat(ExceptionRedaction.stackTrace(RedactedRuntimeException.class, cause.getStackTrace()))
             .isEqualTo(new StackTraceElement[0]);
     }
 
@@ -102,7 +105,7 @@ public class ExceptionRedactionTest {
         Exception cause = new Exception("This was it");
 
         // When // Then
-        assertThat(ExceptionRedaction.stackTrace(PCSRuntimeException.class, cause.getStackTrace()))
+        assertThat(ExceptionRedaction.stackTrace(RedactedRuntimeException.class, cause.getStackTrace()))
             .isEqualTo(cause.getStackTrace());
     }
 
@@ -110,14 +113,14 @@ public class ExceptionRedactionTest {
     @MethodSource("levelsDebugAndBelow")
     void shouldDebugEnabled() {
         logger.setLevel(Level.DEBUG);
-        assertThat(ExceptionRedaction.debugEnabled(PCSRuntimeException.class)).isTrue();
+        assertThat(ExceptionRedaction.debugEnabled(RedactedRuntimeException.class)).isTrue();
     }
 
     @ParameterizedTest
     @MethodSource("levelsExceptDebugAndBelow")
      void shouldDebugDisabled(Level level) {
         logger.setLevel(level);
-        assertThat(ExceptionRedaction.debugEnabled(PCSRuntimeException.class)).isFalse();
+        assertThat(ExceptionRedaction.debugEnabled(RedactedRuntimeException.class)).isFalse();
     }
 
     static Stream<Level> levelsDebugAndBelow() {

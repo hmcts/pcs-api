@@ -1,9 +1,9 @@
 package uk.gov.hmcts.reform.pcs.document.service.exception;
 
 import uk.gov.hmcts.reform.pcs.exception.ErrorCode;
-import uk.gov.hmcts.reform.pcs.exception.PCSRuntimeException;
+import uk.gov.hmcts.reform.pcs.exception.RedactedRuntimeException;
 
-public class DocAssemblyException extends PCSRuntimeException {
+public class DocAssemblyException extends RedactedRuntimeException {
 
     public DocAssemblyException(ErrorCode errorCode) {
         super(errorCode);

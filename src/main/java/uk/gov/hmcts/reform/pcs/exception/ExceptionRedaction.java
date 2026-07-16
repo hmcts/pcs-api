@@ -6,7 +6,9 @@ public class ExceptionRedaction {
 
     private static final String REDACTED = "REDACTED";
 
-    private ExceptionRedaction() { }
+    private ExceptionRedaction() {
+
+    }
 
     public static String safeMessage(ErrorCode code) {
         return "%s [%s: %s]".formatted(REDACTED, code.internalCode(), code.safeDescription());

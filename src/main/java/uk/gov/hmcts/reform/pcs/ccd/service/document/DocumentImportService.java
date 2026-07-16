@@ -11,10 +11,14 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.document.service.exception.DocumentStoreException;
+import uk.gov.hmcts.reform.pcs.exception.ErrorCode;
+import uk.gov.hmcts.reform.pcs.exception.RedactionContext;
 import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
 
 import java.util.List;
 import java.util.UUID;
+
+import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.META_DATA_FOR_DOCUMENT_ERROR;
 
 @Service
 public class DocumentImportService {
@@ -62,8 +66,9 @@ public class DocumentImportService {
                 documentId
             );
         } catch (FeignException e) {
-            throw new DocumentStoreException(
-                "Failed to retrieve document metadata from CDAM for document " + documentId, e);
+            RedactionContext redactionContext = RedactionContext.builder()
+                .value("Failed to retrieve document metadata from CDAM for document ", documentId).build();
+            throw new DocumentStoreException(META_DATA_FOR_DOCUMENT_ERROR, redactionContext, e);
         }
 
         DocumentEntity documentEntity = DocumentEntity.builder()

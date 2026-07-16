@@ -2,40 +2,53 @@ package uk.gov.hmcts.reform.pcs.exception;
 
 import java.io.PrintStream;
 import java.io.PrintWriter;
+import java.util.Objects;
 
 import static uk.gov.hmcts.reform.pcs.exception.ExceptionRedaction.cause;
 import static uk.gov.hmcts.reform.pcs.exception.ExceptionRedaction.debugEnabled;
 import static uk.gov.hmcts.reform.pcs.exception.ExceptionRedaction.message;
 import static uk.gov.hmcts.reform.pcs.exception.ExceptionRedaction.stackTrace;
 
-public class PCSRuntimeException extends RuntimeException {
+public class RedactedRuntimeException extends RuntimeException {
 
     private final ErrorCode code;
-    private final String debugMessage;
+    private final RedactionContext context;
     private final Throwable debugCause;
 
-    public PCSRuntimeException(ErrorCode code) {
+    public RedactedRuntimeException(ErrorCode code) {
         this(code, null, null);
     }
 
-    public PCSRuntimeException(ErrorCode code, String debugMessage) {
-        this(code, debugMessage, null);
-    }
-
-    public PCSRuntimeException(ErrorCode code, Throwable debugCause) {
+    public RedactedRuntimeException(ErrorCode code, Throwable debugCause) {
         this(code, null, debugCause);
     }
 
-    public PCSRuntimeException(ErrorCode code, String debugMessage, Throwable debugCause) {
+    public RedactedRuntimeException(ErrorCode code, RedactionContext context) {
+        this(code, context, null);
+    }
+
+    public RedactedRuntimeException(ErrorCode code, RedactionContext context, Throwable debugCause) {
         super(ExceptionRedaction.safeMessage(code), null, false, true);
-        this.code = code;
-        this.debugMessage = debugMessage;
+        this.code = Objects.requireNonNull(code);
+        this.context = context;
         this.debugCause = debugCause;
+    }
+
+    public ErrorCode getCode() {
+        return code;
+    }
+
+    public RedactionContext getContext() {
+        return context;
     }
 
     @Override
     public String getMessage() {
-        return message(getClass(), code, debugMessage);
+        return message(
+            getClass(),
+            code,
+            context == null ? null : context.asDebugString()
+        );
     }
 
     @Override
@@ -63,16 +76,17 @@ public class PCSRuntimeException extends RuntimeException {
         if (debugEnabled(getClass())) {
             super.printStackTrace(stream);
         } else {
-            stream.println(toString());
+            stream.println(this);
         }
     }
 
     @Override
+
     public void printStackTrace(PrintWriter writer) {
         if (debugEnabled(getClass())) {
             super.printStackTrace(writer);
         } else {
-            writer.println(toString());
+            writer.println(this);
         }
     }
 

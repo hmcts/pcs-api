@@ -8,25 +8,25 @@ import static uk.gov.hmcts.reform.pcs.exception.ExceptionRedaction.debugEnabled;
 import static uk.gov.hmcts.reform.pcs.exception.ExceptionRedaction.message;
 import static uk.gov.hmcts.reform.pcs.exception.ExceptionRedaction.stackTrace;
 
-public class PCSException extends Exception {
+public class RedactedException extends Exception {
 
     private final ErrorCode code;
     private final String debugMessage;
     private final Throwable debugCause;
 
-    public PCSException(ErrorCode code) {
+    public RedactedException(ErrorCode code) {
         this(code, null, null);
     }
 
-    public PCSException(ErrorCode code, String debugMessage) {
+    public RedactedException(ErrorCode code, String debugMessage) {
         this(code, debugMessage, null);
     }
 
-    public PCSException(ErrorCode code, Throwable debugCause) {
+    public RedactedException(ErrorCode code, Throwable debugCause) {
         this(code, null, debugCause);
     }
 
-    public PCSException(ErrorCode code, String debugMessage, Throwable debugCause) {
+    public RedactedException(ErrorCode code, String debugMessage, Throwable debugCause) {
         super(ExceptionRedaction.safeMessage(code), null, false, true);
         this.code = code;
         this.debugMessage = debugMessage;

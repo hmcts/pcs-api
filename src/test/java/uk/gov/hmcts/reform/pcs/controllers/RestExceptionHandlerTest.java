@@ -31,6 +31,7 @@ import java.util.Set;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.ACCESS_CODE_ALREADY_IN_USE;
 
 class RestExceptionHandlerTest {
 
@@ -196,7 +197,7 @@ class RestExceptionHandlerTest {
     void shouldHandleAccessCodeAlreadyUsedException() {
         // Given
         String expectedErrorMessage = "Access code already used";
-        AccessCodeAlreadyUsedException exception = new AccessCodeAlreadyUsedException(expectedErrorMessage);
+        AccessCodeAlreadyUsedException exception = new AccessCodeAlreadyUsedException(ACCESS_CODE_ALREADY_IN_USE);
 
         // When
         ResponseEntity<RestExceptionHandler.Error> responseEntity
@@ -213,7 +214,8 @@ class RestExceptionHandlerTest {
         // Given
         String expectedErrorMessage = "Access code already used";
         Throwable cause = new RuntimeException("Root cause");
-        AccessCodeAlreadyUsedException exception = new AccessCodeAlreadyUsedException(expectedErrorMessage, cause);
+        AccessCodeAlreadyUsedException exception = new AccessCodeAlreadyUsedException(ACCESS_CODE_ALREADY_IN_USE,
+                                                                                      cause);
 
         // When
         ResponseEntity<RestExceptionHandler.Error> responseEntity

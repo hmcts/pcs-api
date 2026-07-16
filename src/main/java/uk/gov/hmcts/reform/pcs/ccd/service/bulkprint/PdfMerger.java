@@ -4,6 +4,7 @@ import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.multipdf.PDFMergerUtility;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.springframework.stereotype.Service;
+import uk.gov.hmcts.reform.pcs.exception.ErrorCode;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -31,7 +32,7 @@ public class PdfMerger {
             merged.save(output);
             return output.toByteArray();
         } catch (IOException e) {
-            throw new BulkPrintMergeException("Failed to merge bulk-print PDFs", e);
+            throw new BulkPrintMergeException(ErrorCode.BULK_PRINT_MERGE_ERROR, e);
         }
     }
 }

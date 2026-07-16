@@ -8,7 +8,6 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.ccd.client.model.CaseAssignmentUserRolesResponse;
-import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyAccessCodeEntity;
@@ -19,6 +18,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.CaseRoleAssignmentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.exception.AccessCodeAlreadyUsedException;
 import uk.gov.hmcts.reform.pcs.exception.InvalidAccessCodeException;
+import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 
 import java.util.List;
 import java.util.UUID;
@@ -30,6 +30,7 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.ACCESS_CODE_ALREADY_IN_USE;
 
 @ExtendWith(MockitoExtension.class)
 class PartyAccessCodeLinkServiceTest {
@@ -153,7 +154,7 @@ class PartyAccessCodeLinkServiceTest {
             .thenReturn(defendantEntity);
 
         // validatePartyNotAlreadyLinked throws exception (defendant already has idamUserId)
-        doThrow(new AccessCodeAlreadyUsedException("This access code is already linked to a user."))
+        doThrow(new AccessCodeAlreadyUsedException(ACCESS_CODE_ALREADY_IN_USE))
             .when(validator).validatePartyNotAlreadyLinked(defendantEntity);
 
         // WHEN + THEN
@@ -188,8 +189,7 @@ class PartyAccessCodeLinkServiceTest {
         // validatePartyNotAlreadyLinked passes
         doNothing().when(validator).validatePartyNotAlreadyLinked(defendantEntity2);
         // validateUserNotLinkedToAnotherParty throws exception
-        doThrow(new AccessCodeAlreadyUsedException(
-            "This user ID is already linked to another party in this case."))
+        doThrow(new AccessCodeAlreadyUsedException(ACCESS_CODE_ALREADY_IN_USE))
             .when(validator).validateUserNotLinkedToAnotherParty(
                 allDefendants, partyId2, USER_ID);
 

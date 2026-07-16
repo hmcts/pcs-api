@@ -7,9 +7,13 @@ import uk.gov.hmcts.reform.pcs.ccd.service.bulkprint.MissingPostalAddressExcepti
 import uk.gov.hmcts.reform.pcs.document.service.exception.DocAssemblyException;
 import uk.gov.hmcts.reform.pcs.document.service.exception.DocumentStoreException;
 import uk.gov.hmcts.reform.pcs.exception.DocumentDownloadException;
+import uk.gov.hmcts.reform.pcs.exception.ErrorCode;
+import uk.gov.hmcts.reform.pcs.exception.RedactionContext;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
+import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.BULK_PRINT_MERGE_ERROR;
+import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.META_DATA_FOR_DOCUMENT_ERROR;
 
 class FailureReasonsTest {
 
@@ -21,13 +25,13 @@ class FailureReasonsTest {
 
     @Test
     void mapsRenderFailed() {
-        assertThat(FailureReasons.from(new DocAssemblyException("docmosis 500")))
+        assertThat(FailureReasons.from(new DocAssemblyException(ErrorCode.DOC_GENERATION_UNEXPECTED_ERROR)))
             .isEqualTo(FailureReason.RENDER_FAILED);
     }
 
     @Test
     void mapsMergeFailed() {
-        assertThat(FailureReasons.from(new BulkPrintMergeException("merge", new RuntimeException())))
+        assertThat(FailureReasons.from(new BulkPrintMergeException(BULK_PRINT_MERGE_ERROR, new RuntimeException())))
             .isEqualTo(FailureReason.MERGE_FAILED);
     }
 
@@ -39,7 +43,10 @@ class FailureReasonsTest {
 
     @Test
     void mapsDocumentStoreFailed() {
-        assertThat(FailureReasons.from(new DocumentStoreException("cdam down", new RuntimeException())))
+        RedactionContext redactionContext = RedactionContext.builder()
+            .value("cdam down", "cdam down").build();
+        assertThat(FailureReasons.from(new DocumentStoreException(META_DATA_FOR_DOCUMENT_ERROR,
+                                                                  redactionContext, new RuntimeException())))
             .isEqualTo(FailureReason.DOCUMENT_STORE_FAILED);
     }
 
@@ -47,7 +54,10 @@ class FailureReasonsTest {
     void storeFailureWrappingFeignIsClassifiedAsStoreNotSend() {
         // The store failure wraps a FeignException from CDAM; it must NOT fall through to the
         // FeignException -> SEND_LETTER_UNAVAILABLE catch-all.
-        DocumentStoreException storeFailure = new DocumentStoreException("cdam", mock(FeignException.class));
+        RedactionContext redactionContext = RedactionContext.builder()
+            .value("cdam down", "cdam down").build();
+        DocumentStoreException storeFailure = new DocumentStoreException(META_DATA_FOR_DOCUMENT_ERROR,
+                                                                         redactionContext, mock(FeignException.class));
         assertThat(FailureReasons.from(storeFailure)).isEqualTo(FailureReason.DOCUMENT_STORE_FAILED);
     }
 
