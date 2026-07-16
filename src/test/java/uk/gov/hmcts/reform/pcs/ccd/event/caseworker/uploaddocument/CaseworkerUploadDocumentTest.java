@@ -8,9 +8,13 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
+import uk.gov.hmcts.ccd.sdk.api.Permission;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.event.BaseEventTest;
+
+import java.time.Clock;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -29,7 +33,11 @@ class CaseworkerUploadDocumentTest extends BaseEventTest {
 
     @BeforeEach
     void setUp() {
-        CaseworkerUploadDocument underTest = new CaseworkerUploadDocument(startHandler, submitHandler);
+        CaseworkerUploadDocument underTest = new CaseworkerUploadDocument(
+            startHandler,
+            submitHandler,
+            Clock.systemUTC()
+        );
 
         setEventUnderTest(underTest);
     }
@@ -58,6 +66,12 @@ class CaseworkerUploadDocumentTest extends BaseEventTest {
         // Then
         verify(submitHandler).submit(eventPayloadCaptor.capture());
         assertThat(eventPayloadCaptor.getValue().caseData()).isEqualTo(caseData);
+    }
+
+    @Test
+    void shouldGrantSolicitorsAccessToUploadDocumentsEvent() {
+        assertThat(configuredEvent.getGrants().get(UserRole.PCS_SOLICITOR))
+            .containsExactlyInAnyOrder(Permission.C, Permission.R, Permission.U);
     }
 
 }
