@@ -1,14 +1,20 @@
 package uk.gov.hmcts.reform.pcs.reference.service;
 
+import feign.FeignException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CachedOrganisationResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.CachedOrganisationResponseRepository;
+import uk.gov.hmcts.reform.pcs.exception.OrganisationDetailsException;
+import uk.gov.hmcts.reform.pcs.reference.api.RdProfessionalApi;
 import uk.gov.hmcts.reform.pcs.reference.dto.NameAndAddress;
 import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
+import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -19,26 +25,37 @@ import java.util.function.Supplier;
 @Slf4j
 public class CachingOrganisationDetailsService {
 
-    private final OrganisationDetailsService organisationDetailsService;
     private final CachedOrganisationResponseRepository cachedOrganisationResponseRepository;
     private final int ttlInMinutes;
     private final Supplier<LocalDateTime> localDateTimeSupplier;
+    private final RdProfessionalApi rdProfessionalApi;
+    private final AuthTokenGenerator authTokenGenerator;
+    private final IdamTokenProvider prdAdminTokenProvider;
 
     @Autowired
-    public CachingOrganisationDetailsService(OrganisationDetailsService organisationDetailsService,
-                                             CachedOrganisationResponseRepository cachedOrganisationResponseRepository,
-                                             @Value("${cache.organisationDetails.ttlInMinutes}") int ttlInMinutes) {
-        this(organisationDetailsService, cachedOrganisationResponseRepository, ttlInMinutes, LocalDateTime::now);
+    public CachingOrganisationDetailsService(CachedOrganisationResponseRepository cachedOrganisationResponseRepository,
+                                             @Value("${cache.organisationDetails.ttlInMinutes}") int ttlInMinutes,
+                                             RdProfessionalApi rdProfessionalApi,
+                                             AuthTokenGenerator authTokenGenerator,
+                                             @Qualifier("prdAdminTokenProvider")
+                                                 IdamTokenProvider prdAdminTokenProvider) {
+        this(cachedOrganisationResponseRepository, ttlInMinutes, LocalDateTime::now,
+             rdProfessionalApi, authTokenGenerator, prdAdminTokenProvider);
     }
 
-    public CachingOrganisationDetailsService(OrganisationDetailsService organisationDetailsService,
-                                             CachedOrganisationResponseRepository cachedOrganisationResponseRepository,
+    public CachingOrganisationDetailsService(CachedOrganisationResponseRepository cachedOrganisationResponseRepository,
                                              @Value("${cache.organisationDetails.ttlInMinutes}") int ttlInMinutes,
-                                             Supplier<LocalDateTime> localDateTimeSupplier) {
-        this.organisationDetailsService = organisationDetailsService;
+                                             Supplier<LocalDateTime> localDateTimeSupplier,
+                                             RdProfessionalApi rdProfessionalApi,
+                                             AuthTokenGenerator authTokenGenerator,
+                                             @Qualifier("prdAdminTokenProvider")
+                                             IdamTokenProvider prdAdminTokenProvider) {
         this.cachedOrganisationResponseRepository = cachedOrganisationResponseRepository;
         this.ttlInMinutes = ttlInMinutes;
         this.localDateTimeSupplier = localDateTimeSupplier;
+        this.rdProfessionalApi = rdProfessionalApi;
+        this.authTokenGenerator = authTokenGenerator;
+        this.prdAdminTokenProvider = prdAdminTokenProvider;
     }
 
     public String getOrganisationIdentifier(String userId) {
@@ -67,7 +84,7 @@ public class CachingOrganisationDetailsService {
             cachedOrganisationResponseRepository.findByIdamId(userIdam);
 
         if (cachedResponse.isEmpty()) {
-            OrganisationDetailsResponse response = organisationDetailsService.getOrganisationDetails(userId);
+            OrganisationDetailsResponse response = getOrganisationDetails(userId);
 
             CachedOrganisationResponseEntity newCachedResponse = mapResponseToEntity(userIdam, response);
 
@@ -77,7 +94,7 @@ public class CachingOrganisationDetailsService {
             CachedOrganisationResponseEntity existingCachedResponse = cachedResponse.get();
 
             if (isDataRequiringResync(existingCachedResponse.getLastModifiedDate())) {
-                OrganisationDetailsResponse response = organisationDetailsService.getOrganisationDetails(userId);
+                OrganisationDetailsResponse response = getOrganisationDetails(userId);
                 updateFields(existingCachedResponse, response, userId);
                 cachedOrganisationResponseRepository.save(existingCachedResponse);
                 log.debug("Cached OrganisationDetails response refreshed");
@@ -85,6 +102,38 @@ public class CachingOrganisationDetailsService {
             return existingCachedResponse;
         }
     }
+
+    /**
+     * Retrieves organisation details for a given user ID.
+     * @param userId The user ID to get organisation details for
+     * @return OrganisationDetailsResponse containing organisation information
+     */
+    private OrganisationDetailsResponse getOrganisationDetails(String userId) {
+        try {
+            String s2sToken = authTokenGenerator.generate();
+            String prdAdminToken = prdAdminTokenProvider.getAuthToken();
+
+            OrganisationDetailsResponse details = rdProfessionalApi.getOrganisationDetails(
+                userId, s2sToken, prdAdminToken
+            );
+
+            if (details == null) {
+                log.warn("Organisation details response is null for userId: {}", userId);
+            }
+
+            return details;
+
+        } catch (FeignException ex) {
+            log.error("Feign error retrieving organisation details for userId: {}. Status: {}, Message: {}",
+                      userId, ex.status(), ex.getMessage(), ex);
+            throw new OrganisationDetailsException("Failed to retrieve organisation details", ex);
+        } catch (Exception ex) {
+            log.error("Unexpected error retrieving organisation details for userId: {}. Error: {}",
+                      userId, ex.getMessage(), ex);
+            throw new OrganisationDetailsException("Unexpected error retrieving organisation details", ex);
+        }
+    }
+
 
     private CachedOrganisationResponseEntity mapResponseToEntity(UUID userIdam, OrganisationDetailsResponse response) {
 

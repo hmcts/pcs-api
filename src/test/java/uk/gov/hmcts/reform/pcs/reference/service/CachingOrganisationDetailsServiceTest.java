@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.reference.service;
 
+import feign.FeignException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -8,10 +9,14 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CachedOrganisationResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.CachedOrganisationResponseRepository;
+import uk.gov.hmcts.reform.pcs.exception.OrganisationDetailsException;
+import uk.gov.hmcts.reform.pcs.reference.api.RdProfessionalApi;
 import uk.gov.hmcts.reform.pcs.reference.dto.NameAndAddress;
 import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
+import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -19,10 +24,13 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -31,13 +39,19 @@ import static org.mockito.Mockito.when;
 class CachingOrganisationDetailsServiceTest {
 
     @Mock
-    private OrganisationDetailsService organisationDetailsService;
-
-    @Mock
     private CachedOrganisationResponseRepository cachedOrganisationResponseRepository;
 
     @Mock
     private Supplier<LocalDateTime> localDateTimeSupplier;
+
+    @Mock
+    private RdProfessionalApi rdProfessionalApi;
+
+    @Mock
+    private AuthTokenGenerator authTokenGenerator;
+
+    @Mock
+    private IdamTokenProvider prdAdminTokenProvider;
 
     @Captor
     private ArgumentCaptor<CachedOrganisationResponseEntity> cachedOrganisationResponseEntityCaptor;
@@ -45,14 +59,33 @@ class CachingOrganisationDetailsServiceTest {
     private CachingOrganisationDetailsService cachingOrganisationDetailsService;
 
     private static final int CACHE_TTL_IN_MINUTES = 5;
+    private static final String USER_ID = "dc3f786d-4ad4-4b5d-a79f-6e35a6520ace";
+    private static final String S2S_TOKEN = "test-s2s-token";
+    private static final String PRD_ADMIN_TOKEN = "Bearer test-prd-admin-token";
 
     @BeforeEach
     void setUp() {
-        cachingOrganisationDetailsService = new CachingOrganisationDetailsService(organisationDetailsService,
-                                                                                  cachedOrganisationResponseRepository,
+        cachingOrganisationDetailsService = new CachingOrganisationDetailsService(cachedOrganisationResponseRepository,
                                                                                   CACHE_TTL_IN_MINUTES,
-                                                                                  localDateTimeSupplier);
+                                                                                  localDateTimeSupplier,
+                                                                                  rdProfessionalApi,
+                                                                                  authTokenGenerator,
+                                                                                  prdAdminTokenProvider);
     }
+
+    private void mockOrganisationDetails(OrganisationDetailsResponse expectedResponse) {
+        when(authTokenGenerator.generate()).thenReturn(S2S_TOKEN);
+        when(prdAdminTokenProvider.getAuthToken()).thenReturn(PRD_ADMIN_TOKEN);
+        when(rdProfessionalApi.getOrganisationDetails(anyString(), anyString(), anyString()))
+            .thenReturn(expectedResponse);
+    }
+
+    private void verifyNoCallsForOrganisationDetails() {
+        verify(authTokenGenerator, never()).generate();
+        verify(prdAdminTokenProvider, never()).getAuthToken();
+        verify(rdProfessionalApi, never()).getOrganisationDetails(anyString(), anyString(), anyString());
+    }
+
 
     @Test
     void getOrganisationIdentifier_WithCachedResponseNotFound_SavesNewRecord() {
@@ -84,8 +117,8 @@ class CachingOrganisationDetailsServiceTest {
                                             .build()))
             .build();
 
+        mockOrganisationDetails(response);
         when(cachedOrganisationResponseRepository.findByIdamId(userId)).thenReturn(Optional.empty());
-        when(organisationDetailsService.getOrganisationDetails(userId.toString())).thenReturn(response);
         when(localDateTimeSupplier.get()).thenReturn(now);
 
         // when
@@ -129,7 +162,7 @@ class CachingOrganisationDetailsServiceTest {
 
         // then
         verify(cachedOrganisationResponseRepository, never()).save(any());
-        verify(organisationDetailsService, never()).getOrganisationDetails(any());
+        verifyNoCallsForOrganisationDetails();
 
         assertEquals(orgId, actual);
     }
@@ -171,7 +204,7 @@ class CachingOrganisationDetailsServiceTest {
             .build();
         when(cachedOrganisationResponseRepository.findByIdamId(userId))
             .thenReturn(Optional.of(cachedOrganisationResponseEntity));
-        when(organisationDetailsService.getOrganisationDetails(userId.toString())).thenReturn(response);
+        mockOrganisationDetails(response);
         when(localDateTimeSupplier.get()).thenReturn(now);
 
         // when
@@ -228,8 +261,8 @@ class CachingOrganisationDetailsServiceTest {
                                             .build()))
             .build();
         when(cachedOrganisationResponseRepository.findByIdamId(userId)).thenReturn(Optional.empty());
-        when(organisationDetailsService.getOrganisationDetails(userId.toString())).thenReturn(response);
         when(localDateTimeSupplier.get()).thenReturn(now);
+        mockOrganisationDetails(response);
 
         // when
         NameAndAddress actual = cachingOrganisationDetailsService.getNameAndAddress(userId.toString());
@@ -276,7 +309,7 @@ class CachingOrganisationDetailsServiceTest {
             .build();
 
         when(cachedOrganisationResponseRepository.findByIdamId(userId)).thenReturn(Optional.empty());
-        when(organisationDetailsService.getOrganisationDetails(userId.toString())).thenReturn(response);
+        mockOrganisationDetails(response);
         when(localDateTimeSupplier.get()).thenReturn(now);
 
         // when
@@ -318,7 +351,7 @@ class CachingOrganisationDetailsServiceTest {
 
         // then
         verify(cachedOrganisationResponseRepository, never()).save(any());
-        verify(organisationDetailsService, never()).getOrganisationDetails(any());
+        verifyNoCallsForOrganisationDetails();
 
         assertNotNull(actual);
         assertEquals("Org Name", actual.name());
@@ -364,8 +397,8 @@ class CachingOrganisationDetailsServiceTest {
                                             .build()))
             .build();
         when(cachedOrganisationResponseRepository.findByIdamId(userId)).thenReturn(Optional.of(cachedEntity));
-        when(organisationDetailsService.getOrganisationDetails(userId.toString())).thenReturn(response);
         when(localDateTimeSupplier.get()).thenReturn(now);
+        mockOrganisationDetails(response);
 
         // when
         NameAndAddress actual = cachingOrganisationDetailsService.getNameAndAddress(userId.toString());
@@ -405,8 +438,8 @@ class CachingOrganisationDetailsServiceTest {
             .contactInformation(List.of())
             .build();
         when(cachedOrganisationResponseRepository.findByIdamId(userId)).thenReturn(Optional.of(cachedEntity));
-        when(organisationDetailsService.getOrganisationDetails(userId.toString())).thenReturn(response);
         when(localDateTimeSupplier.get()).thenReturn(now);
+        mockOrganisationDetails(response);
 
         // when
         NameAndAddress actual = cachingOrganisationDetailsService.getNameAndAddress(userId.toString());
@@ -440,7 +473,75 @@ class CachingOrganisationDetailsServiceTest {
 
         // then
         verify(cachedOrganisationResponseRepository, never()).save(any());
-        verify(organisationDetailsService, never()).getOrganisationDetails(any());
+        verifyNoCallsForOrganisationDetails();
         assertEquals("org1", actual);
+    }
+
+    @Test
+    void shouldThrowOrganisationDetailsExceptionWhenFeignClientThrowsException() {
+        // Given
+        RuntimeException runtimeException = new RuntimeException("Feign client error");
+
+        when(authTokenGenerator.generate()).thenReturn(S2S_TOKEN);
+        when(prdAdminTokenProvider.getAuthToken()).thenReturn(PRD_ADMIN_TOKEN);
+        when(rdProfessionalApi.getOrganisationDetails(anyString(), anyString(), anyString()))
+            .thenThrow(runtimeException);
+
+        // When & Then
+        assertThatThrownBy(() -> cachingOrganisationDetailsService.getOrganisationIdentifier(USER_ID))
+            .isInstanceOf(OrganisationDetailsException.class)
+            .hasMessage("Unexpected error retrieving organisation details")
+            .hasCause(runtimeException);
+    }
+
+    @Test
+    void shouldThrowOrganisationDetailsExceptionWhenGeneralExceptionOccurs() {
+        // Given
+        RuntimeException generalException = new RuntimeException("Connection failed");
+
+        when(authTokenGenerator.generate()).thenReturn(S2S_TOKEN);
+        when(prdAdminTokenProvider.getAuthToken()).thenReturn(PRD_ADMIN_TOKEN);
+        when(rdProfessionalApi.getOrganisationDetails(anyString(), anyString(), anyString()))
+            .thenThrow(generalException);
+
+        // When & Then
+        assertThatThrownBy(() -> cachingOrganisationDetailsService.getOrganisationIdentifier(USER_ID))
+            .isInstanceOf(OrganisationDetailsException.class)
+            .hasMessage("Unexpected error retrieving organisation details")
+            .hasCause(generalException);
+    }
+
+    @Test
+    void shouldWrapFeignExceptionAsOrganisationDetailsException() {
+        // Given
+        FeignException feignEx = mock(FeignException.class);
+        when(feignEx.status()).thenReturn(500);
+        when(feignEx.getMessage()).thenReturn("PRD upstream failure");
+
+        when(authTokenGenerator.generate()).thenReturn(S2S_TOKEN);
+        when(prdAdminTokenProvider.getAuthToken()).thenReturn(PRD_ADMIN_TOKEN);
+        when(rdProfessionalApi.getOrganisationDetails(anyString(), anyString(), anyString()))
+            .thenThrow(feignEx);
+
+        // When / Then
+        assertThatThrownBy(() -> cachingOrganisationDetailsService.getOrganisationIdentifier(USER_ID))
+            .isInstanceOf(OrganisationDetailsException.class)
+            .hasMessage("Failed to retrieve organisation details")
+            .hasCause(feignEx);
+
+        verify(rdProfessionalApi).getOrganisationDetails(USER_ID, S2S_TOKEN, PRD_ADMIN_TOKEN);
+    }
+
+    @Test
+    void shouldWrapUnexpectedExceptionAsOrganisationDetailsException() {
+        // Given — anything other than FeignException must hit the generic catch (Exception) branch.
+        RuntimeException unexpected = new RuntimeException("token generator blew up");
+        when(authTokenGenerator.generate()).thenThrow(unexpected);
+
+        // When / Then
+        assertThatThrownBy(() -> cachingOrganisationDetailsService.getOrganisationIdentifier(USER_ID))
+            .isInstanceOf(OrganisationDetailsException.class)
+            .hasMessage("Unexpected error retrieving organisation details")
+            .hasCause(unexpected);
     }
 }
