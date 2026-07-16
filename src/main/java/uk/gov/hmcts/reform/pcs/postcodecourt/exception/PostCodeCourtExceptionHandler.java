@@ -12,7 +12,7 @@ public class PostCodeCourtExceptionHandler {
 
     @ExceptionHandler(InvalidPostCodeException.class)
     public ResponseEntity<Error> handleInvalidPostCodeException(InvalidPostCodeException ex) {
-        log.error("Invalid postcode {}", ex.getMessage(), ex);
+        log.error("Invalid postcode.", ex);
         return ResponseEntity
             .status(HttpStatus.BAD_REQUEST)
             .body(new Error(ex.getMessage()));

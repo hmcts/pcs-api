@@ -142,7 +142,7 @@ public class SendEmailTaskComponent {
                         )
                     );
                 } catch (NotificationClientException e) {
-                    log.error("NotificationClient error sending email: {}", e.getMessage(), e);
+                    log.error("NotificationClient error sending email", e);
 
                     if (isPermanentFailure(e)) {
                         errorHandler.handleSendEmailException(

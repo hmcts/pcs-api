@@ -266,8 +266,7 @@ public class NotificationService {
 
         CaseNotification notification = notificationOpt.get();
         updateNotificationStatus(notification, NotificationStatus.PERMANENT_FAILURE, null);
-        log.error("Email sending failed for notification ID: {}, error: {}",
-                    dbNotificationId, exception.getMessage());
+        log.error("Email sending failed for notification ID: {}", dbNotificationId, exception);
     }
 
     /**
@@ -308,11 +307,8 @@ public class NotificationService {
             return savedNotification;
         } catch (DataAccessException dataAccessException) {
             log.error(
-                "Failed to save Case Notification with Case ID: {}. Reason: {}",
-                toSaveNotification.getPcsCase(),
-                dataAccessException.getMessage(),
-                dataAccessException
-            );
+                "Failed to save Case Notification with Case ID: {}", toSaveNotification.getPcsCase(),
+                dataAccessException);
             throw new NotificationException("Failed to save Case Notification.", dataAccessException);
         }
     }
@@ -371,11 +367,9 @@ public class NotificationService {
             }
 
             notificationRepository.save(notification);
-            log.info("Updated notification status to {} for notification ID: {}",
-                        status, notification.getId());
+            log.info("Updated notification status to {} for notification ID: {}", status, notification.getId());
         } catch (Exception e) {
-            log.error("Error updating notification status to {}: {}",
-                        status, e.getMessage(), e);
+            log.error("Error updating notification status to {}", status, e);
         }
     }
 

@@ -14,12 +14,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.BULK_PRINT_MERGE_ERROR;
 import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.META_DATA_FOR_DOCUMENT_ERROR;
+import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.MISSING_POSTAL_ADDRESS;
 
 class FailureReasonsTest {
 
     @Test
     void mapsMissingAddress() {
-        assertThat(FailureReasons.from(new MissingPostalAddressException("no address")))
+        assertThat(FailureReasons.from(new MissingPostalAddressException(MISSING_POSTAL_ADDRESS,
+                                                                         RedactionContext.empty())))
             .isEqualTo(FailureReason.MISSING_ADDRESS);
     }
 

@@ -81,7 +81,6 @@ public class RedactedRuntimeException extends RuntimeException {
     }
 
     @Override
-
     public void printStackTrace(PrintWriter writer) {
         if (debugEnabled(getClass())) {
             super.printStackTrace(writer);

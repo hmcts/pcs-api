@@ -13,6 +13,7 @@ public enum ErrorCode {
     BULK_PRINT_MERGE_ERROR("BULK_PRINT_MERGE", "Failed to merge bulk-print PDFs"),
     META_DATA_FOR_DOCUMENT_ERROR("META_DATA_ERROR",
                                  "Failed to retrieve document metadata from CDAM"),
+    MISSING_POSTAL_ADDRESS("MISSING_POSTAL_ADDRESS", "No postal address for party"),
 
 
     TEST_CASE_SUPPORT("", "");

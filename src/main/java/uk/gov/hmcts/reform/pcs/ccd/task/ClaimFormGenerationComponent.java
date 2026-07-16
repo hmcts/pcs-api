@@ -83,8 +83,8 @@ public class ClaimFormGenerationComponent {
                     if (finalAttempt) {
                         MDC.put(MDC_TERMINAL_FAILURE, "true");
                         MDC.put(MDC_FAILURE_REASON, String.valueOf(e.getMessage()));
-                        log.error("Claim form generation permanently failed for case {} after {} "
-                                  + "attempts: {}", caseReference, attempt, e.getMessage(), e);
+                        log.error("Claim form generation permanently failed for case {} after {} attempts",
+                                  caseReference, attempt, e);
                     }
                     // First + terminal rows: reason visible from attempt 1 (terminal:false = retrying)
                     if (attempt == 1 || finalAttempt) {

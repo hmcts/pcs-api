@@ -11,7 +11,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.document.service.exception.DocumentStoreException;
-import uk.gov.hmcts.reform.pcs.exception.ErrorCode;
 import uk.gov.hmcts.reform.pcs.exception.RedactionContext;
 import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
 

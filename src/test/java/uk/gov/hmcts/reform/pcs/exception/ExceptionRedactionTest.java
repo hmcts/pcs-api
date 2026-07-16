@@ -19,7 +19,7 @@ public class ExceptionRedactionTest {
     private Logger logger;
 
     @BeforeEach
-    void setUp() {
+    void beforeEach() {
         logger = (Logger) LoggerFactory.getLogger(RedactedRuntimeException.class);
         originalLogLevel = logger.getLevel();
     }
@@ -60,6 +60,18 @@ public class ExceptionRedactionTest {
     }
 
     @Test
+    void testMessageWhenErrorEnabled_ShouldReturnDebugInfo() {
+        // Given
+        logger.setLevel(Level.ERROR);
+        ErrorCode code = ErrorCode.DOC_ASSEMBLY_NO_URL_RETURNED;
+        String debugMsg = "Example sensitive failure message";
+
+        // When // Then
+        assertThat(ExceptionRedaction.message(RedactedRuntimeException.class, code, debugMsg))
+            .isEqualTo("REDACTED [DOC_ASSEMBLY_1: No document URL returned from Doc Assembly service]");
+    }
+
+    @Test
     void debugDisabled_returnsNullCause() {
         // Given
         logger.setLevel(Level.INFO);
@@ -68,8 +80,7 @@ public class ExceptionRedactionTest {
         Exception cause = new Exception("This was it");
 
         // When
-        RedactedRuntimeException exception = new RedactedRuntimeException(code,
-                                                                          RedactionContext.builder()
+        RedactedRuntimeException exception = new RedactedRuntimeException(code, RedactionContext.builder()
                                                                     .value("message", debugMsg).build(),
                                                                           cause);
 

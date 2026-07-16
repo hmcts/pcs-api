@@ -75,8 +75,8 @@ public class CounterClaimFormGenerationComponent {
                     if (finalAttempt) {
                         MDC.put(MDC_TERMINAL_FAILURE, "true");
                         MDC.put(MDC_FAILURE_REASON, String.valueOf(e.getMessage()));
-                        log.error("Counter claim form generation permanently failed for counter claim {} (case {}) "
-                                  + "after {} attempts: {}", counterClaimId, caseReference, attempt, e.getMessage(), e);
+                        log.error("Counter claim form generation failed for {} (case {}) after {} attempts",
+                                  counterClaimId, caseReference, attempt, e);
                     }
                     throw e;
                 } finally {

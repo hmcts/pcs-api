@@ -31,11 +31,7 @@ public class NotificationErrorHandler {
                                             Consumer<NotificationStatusUpdate> statusUpdater) {
         int httpStatusCode = exception.getHttpResult();
 
-        log.error("Failed to send email. Reference ID: {}. Reason: {}",
-                    referenceId,
-                    exception.getMessage(),
-                    exception
-        );
+        log.error("Failed to send email. Reference ID: {}", referenceId, exception);
 
         switch (httpStatusCode) {
             case 400, 403 -> {
@@ -74,14 +70,7 @@ public class NotificationErrorHandler {
      */
     public void handleFetchException(NotificationClientException exception, String notificationId) {
         int httpStatusCode = exception.getHttpResult();
-
-        log.error("Failed to fetch notification. ID: {}. Status Code: {}. Reason: {}",
-                    notificationId,
-                    httpStatusCode,
-                    exception.getMessage(),
-                    exception
-        );
-
+        log.error("Failed to fetch notification. ID: {}. Status Code: {}", notificationId, httpStatusCode, exception);
         throw new NotificationException("Failed to fetch notification, please try again.", exception);
     }
 

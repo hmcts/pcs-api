@@ -15,8 +15,11 @@ public class ExceptionRedaction {
     }
 
     public static String message(Class<?> exceptionClass, ErrorCode code, String debugMessage) {
-        if (debugEnabled(exceptionClass) && debugMessage != null && !debugMessage.isBlank()) {
-            return debugMessage;
+        if (debugEnabled(exceptionClass)) {
+            if (debugMessage != null && !debugMessage.isBlank()) {
+                return debugMessage;
+            }
+            return code.safeDescription();
         }
         return safeMessage(code);
     }

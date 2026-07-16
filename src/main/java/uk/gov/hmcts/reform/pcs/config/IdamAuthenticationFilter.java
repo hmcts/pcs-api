@@ -51,7 +51,7 @@ public class IdamAuthenticationFilter extends OncePerRequestFilter {
             SecurityContextHolder.getContext().setAuthentication(authentication);
             filterChain.doFilter(request, response);
         } catch (InvalidAuthTokenException ex) {
-            log.error("Authorization failed: {}", ex.getMessage(), ex);
+            log.error("Authorization failed", ex);
             response.setStatus(HttpStatus.UNAUTHORIZED.value());
         }
     }

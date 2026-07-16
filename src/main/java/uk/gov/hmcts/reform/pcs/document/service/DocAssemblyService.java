@@ -72,13 +72,13 @@ public class DocAssemblyService {
             return documentUrl;
         } catch (DocumentGenerationFailedException e) {
             // This is the exception thrown by DocAssemblyClient.generateOrder()
-            log.error("Document generation failed: {}", e.getMessage(), e);
+            log.error("Document generation failed.", e);
             throw new DocAssemblyException(ErrorCode.DOC_GENERATION_FAILED, e);
         } catch (DocAssemblyException e) {
             throw e;
         } catch (Exception e) {
             DocAssemblyException exception = new DocAssemblyException(ErrorCode.DOC_GENERATION_UNEXPECTED_ERROR, e);
-            log.error("Unexpected error occurred during document generation: {}", exception.getMessage(), exception);
+            log.error("Unexpected error occurred during document generation.", exception);
             throw exception;
         }
     }
