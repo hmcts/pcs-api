@@ -24,7 +24,7 @@ import uk.gov.hmcts.reform.pcs.functional.testutils.PayloadLoader;
 import uk.gov.hmcts.reform.pcs.functional.testutils.PcsIdamTokenClient;
 
 @Slf4j
-@Tag("Functional_1")
+@Tag("Functional")
 @ExtendWith(SerenityJUnit5Extension.class)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
