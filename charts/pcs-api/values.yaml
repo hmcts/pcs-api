@@ -13,7 +13,7 @@ java:
           alias: PCS_DB_PASSWORD
         - name: pcs-api-s2s-secret
           alias: PCS_API_S2S_SECRET
-        - name: govnotify-test-key
+        - name: gov-notify-key
           alias: PCS_NOTIFY_API_KEY
         - name: hmc-servicebus-connection-string
           alias: HEARINGS_SERVICEBUS_CONNECTION_STRING
