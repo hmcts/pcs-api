@@ -309,4 +309,26 @@ public class ApiSteps {
             );
         }
     }
+
+    @Step("retrieving internal case id from ccd data store")
+    public String getInternalCaseId(Long caseReference) {
+        String dataStoreUrl = System.getenv("DATA_STORE_URL_BASE");
+
+        String liveCaseNoteToken = SerenityRest.given()
+            .baseUri(dataStoreUrl)
+            .header(TestConstants.AUTHORIZATION, "Bearer " + citizenUserIdamToken)
+            .header(TestConstants.SERVICE_AUTHORIZATION, pcsApiS2sToken)
+            .header("Experimental", "True")
+            .pathParam("caseReference", caseReference)
+            .when()
+            .get("/cases/{caseReference}/event-triggers/addCaseNote")
+            .then()
+            .statusCode(200)
+            .extract()
+            .path("token");
+
+        com.auth0.jwt.interfaces.DecodedJWT decodedJWT = com.auth0.jwt.JWT.decode(liveCaseNoteToken);
+        return decodedJWT.getClaim("case-id").asString();
+    }
+
 }

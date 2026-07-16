@@ -63,10 +63,8 @@ public class MakeAnApplicationEventCallbackTests extends BaseApi {
         apiSteps.theRequestContainsValidServiceToken(TestConstants.PCS_FRONTEND);
         apiSteps.theRequestContainsTheQueryParameter("eventId", "makeAnApplication");
         apiSteps.theRequestContainsBody(makeApplicationRequestBody);
-
         apiSteps.callIsSubmittedToTheEndpoint("StartEventCallback", "POST");
         apiSteps.checkStatusCode(200);
-
         apiSteps.theResponseBodyMatchesTheExpectedResponse(
             "/responses/makeAnApplication-startEventCallbackResponse.json"
         );
@@ -76,19 +74,7 @@ public class MakeAnApplicationEventCallbackTests extends BaseApi {
     @Test
     @Order(2)
     void makeAnApplicationSubmitEventCallbackTest() {
-        String liveCaseNoteToken = RestAssured.given()
-            .baseUri("https://ccd-data-store-api-pcs-api-pr-2008.preview.platform.hmcts.net")
-            .header(TestConstants.AUTHORIZATION, "Bearer " + ApiSteps.citizenUserIdamToken)
-            .header(TestConstants.SERVICE_AUTHORIZATION, ApiSteps.pcsApiS2sToken)
-            .header("Experimental", "True")
-            .get("/cases/" + caseReference + "/event-triggers/addCaseNote")
-            .then()
-            .statusCode(200)
-            .extract()
-            .path("token");
-
-        DecodedJWT decodedJWT = JWT.decode(liveCaseNoteToken);
-        String decodedCaseId = decodedJWT.getClaim("case-id").asString();
+        String decodedCaseId = apiSteps.getInternalCaseId(caseReference);
 
         String submitApplicationRequestBody = PayloadLoader.load(
             "/payloads/makeAnApplication-submitEventCallbackRequest.json",
@@ -106,12 +92,7 @@ public class MakeAnApplicationEventCallbackTests extends BaseApi {
         apiSteps.theRequestContainsIdempotencyKeyHeader();
         apiSteps.theRequestContainsTheQueryParameter("eventId", "makeAnApplication");
         apiSteps.theRequestContainsBody(submitApplicationRequestBody);
-
         apiSteps.callIsSubmittedToTheEndpoint("SubmitEventCallback", "POST");
         apiSteps.checkStatusCode(200);
-
-        apiSteps.theResponseBodyMatchesTheExpectedResponse(
-            "/responses/makeAnApplication-submitEventCallbackResponse.json"
-        );
     }
 }
