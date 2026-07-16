@@ -333,5 +333,8 @@ core_case_data:
 caseApi:
   url: ${CASE_API_URL:http://localhost:3206}
 
+camunda:
+  url: ${CAMUNDA_BASE_URL:http://camunda-local-bpm/engine-rest}
+
 shutter:
   service: ${SHUTTER_SERVICE:false}
