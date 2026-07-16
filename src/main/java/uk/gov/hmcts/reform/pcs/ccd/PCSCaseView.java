@@ -101,22 +101,14 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         State state = request.state();
         SubmittedCase submittedCase = getSubmittedCase(caseReference);
         PCSCase pcsCase = submittedCase.pcsCase();
-        boolean hasUnsubmittedCaseData = caseHasUnsubmittedData(caseReference, state);
+        Optional<PCSCase> draftCaseData = getDraftCaseData(caseReference, state);
 
-        if (hasUnsubmittedCaseData) {
-            draftCaseDataService
-                .getUnsubmittedCaseData(caseReference, resumePossessionClaim)
-                .ifPresentOrElse(
-                    draft -> {
-                        caseTabView.setDraftCaseTabFields(pcsCase, draft);
-                        },
-                    () -> caseTabView.setCaseTabFields(pcsCase)
-                );
-        } else {
-            caseTabView.setCaseTabFields(pcsCase);
-        }
+        draftCaseData.ifPresentOrElse(
+            draft -> caseTabView.setDraftCaseTabFields(pcsCase, draft),
+            () -> caseTabView.setCaseTabFields(pcsCase)
+        );
 
-        setMarkdownFields(pcsCase, hasUnsubmittedCaseData);
+        setMarkdownFields(pcsCase, draftCaseData.isPresent());
         enforcementOrderMediator.handleEnforcementRequirements(submittedCase.pcsCaseEntity(), pcsCase);
 
         caseFieldsView.setCaseFields(pcsCase);
@@ -129,12 +121,12 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         return pcsCase;
     }
 
-    private boolean caseHasUnsubmittedData(long caseReference, State state) {
+    private Optional<PCSCase> getDraftCaseData(long caseReference, State state) {
         if (State.AWAITING_SUBMISSION_TO_HMCTS == state) {
-            return draftCaseDataService.hasUnsubmittedCaseData(caseReference, resumePossessionClaim);
+            return draftCaseDataService.getUnsubmittedCaseData(caseReference, resumePossessionClaim);
         }
 
-        return false;
+        return Optional.empty();
     }
 
     private SubmittedCase getSubmittedCase(long caseReference) {
