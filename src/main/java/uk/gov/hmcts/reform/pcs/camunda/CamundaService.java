@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.pcs.ccd.CaseType;
 
+import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -23,6 +24,7 @@ public class CamundaService {
     private static final String CREATE = "createTaskMessage";
     private static final String UNCONFIGURED = "unconfigured";
     private static final String EMPTY_WARNINGS_LIST = "[]";
+    private final Clock utcClock;
 
     public void createTask(
         Long caseId,
@@ -31,8 +33,8 @@ public class CamundaService {
         log.info("Creating task for {}", caseId);
         Map<String, DmnValue<?>> processVariables = new ConcurrentHashMap<>();
 
-        LocalDateTime delayUntil = LocalDateTime.now();
-        LocalDateTime dueDate = LocalDateTime.now().plusDays(taskType.getWorkingDays());
+        LocalDateTime delayUntil = LocalDateTime.now(utcClock);
+        LocalDateTime dueDate = delayUntil.plusDays(taskType.getWorkingDays());
 
         processVariables.put("taskState", dmnStringValue(UNCONFIGURED));
         processVariables.put("caseTypeId", dmnStringValue(CaseType.getCaseType()));

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<definitions xmlns="https://www.omg.org/spec/DMN/20191111/MODEL/" xmlns:camunda="http://camunda.org/schema/1.0/dmn" xmlns:biodi="http://bpmn.io/schema/dmn/biodi/2.0" xmlns:dmndi="https://www.omg.org/spec/DMN/20191111/DMNDI/" xmlns:dc="http://www.omg.org/spec/DMN/20180521/DC/" id="wa-initiation-definition" name="DRD" namespace="http://camunda.org/schema/1.0/dmn" exporter="Camunda Modeler" exporterVersion="5.23.0">
+<definitions xmlns="https://www.omg.org/spec/DMN/20191111/MODEL/" xmlns:camunda="http://camunda.org/schema/1.0/dmn" xmlns:biodi="http://bpmn.io/schema/dmn/biodi/2.0" xmlns:dmndi="https://www.omg.org/spec/DMN/20191111/DMNDI/" xmlns:dc="http://www.omg.org/spec/DMN/20180521/DC/" id="wa-initiation-definition" name="DRD" namespace="http://camunda.org/schema/1.0/dmn" exporter="Camunda Modeler" exporterVersion="5.48.0">
   <decision id="wa-task-initiation-pcs-possesions" name="Task initiation DMN" camunda:historyTimeToLive="P90D">
     <decisionTable id="DecisionTable_0jtevuc" hitPolicy="COLLECT">
       <input id="Input_1" label="Event Id" camunda:inputVariable="eventId">
@@ -56,7 +56,7 @@ else
           <text>"Notify claim"</text>
         </inputEntry>
         <inputEntry id="UnaryTests_0pzaled">
-          <text>"Case issued"</text>
+          <text>"CASE_ISSUED"</text>
         </inputEntry>
         <inputEntry id="UnaryTests_0ed245d">
           <text></text>
@@ -101,7 +101,7 @@ else
           <text>"Update case state"</text>
         </inputEntry>
         <inputEntry id="UnaryTests_0khfdvd">
-          <text>"Case issued"</text>
+          <text>"CASE_ISSUED"</text>
         </inputEntry>
         <inputEntry id="UnaryTests_0ay3z0x">
           <text></text>
@@ -146,7 +146,7 @@ else
           <text>Tech team update case state</text>
         </inputEntry>
         <inputEntry id="UnaryTests_1v4n4zf">
-          <text>Case moves from "pending issued" to "Case issued"</text>
+          <text>"PENDING_CASE_ISSUED to CASE_ISSUED"</text>
         </inputEntry>
         <inputEntry id="UnaryTests_0iinfsn">
           <text></text>
@@ -193,7 +193,7 @@ else
           <text></text>
         </inputEntry>
         <inputEntry id="UnaryTests_09uwuq6">
-          <text>"Pending Case issued (counterclaim)"</text>
+          <text>"PENDING_COUNTER_CLAIM_ISSUED"</text>
         </inputEntry>
         <inputEntry id="UnaryTests_0vnmqle">
           <text></text>
@@ -504,7 +504,7 @@ else
           <text></text>
         </inputEntry>
         <inputEntry id="UnaryTests_0cbxow2">
-          <text>"Application Issued"</text>
+          <text>"GEN_APP_ISSUED"</text>
         </inputEntry>
         <inputEntry id="UnaryTests_1gmwwnk">
           <text>User selects("Ask to adjourn the hearing" for Choose an application)</text>
@@ -548,7 +548,7 @@ else
           <text></text>
         </inputEntry>
         <inputEntry id="UnaryTests_0jm5co7">
-          <text>"Application Issued"</text>
+          <text>"GEN_APP_ISSUED"</text>
         </inputEntry>
         <inputEntry id="UnaryTests_09lyzbd">
           <text>User selects("Ask the court to set aside" for Choose an application)</text>
@@ -850,7 +850,7 @@ else
           <text>Submit Claim</text>
         </inputEntry>
         <inputEntry id="UnaryTests_0x5a2l7">
-          <text>Pending claim issued</text>
+          <text>"PENDING_CASE_ISSUED"</text>
         </inputEntry>
         <inputEntry id="UnaryTests_0fbkyvu">
           <text></text>
