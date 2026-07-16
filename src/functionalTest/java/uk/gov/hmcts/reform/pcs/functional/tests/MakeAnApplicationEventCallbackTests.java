@@ -25,14 +25,12 @@ import uk.gov.hmcts.reform.pcs.functional.testutils.PcsIdamTokenClient;
 @ExtendWith(SerenityJUnit5Extension.class)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class MakeAnApplicationEventCallbackCitizenTests extends BaseApi {
+public class MakeAnApplicationEventCallbackTests extends BaseApi {
 
     @Steps
     ApiSteps apiSteps;
 
     private Long caseReference;
-    private final String caseType = CaseType.getCaseType();
-    private final String caseState = "CASE_ISSUED";
 
     @BeforeAll
     void setUp() {
@@ -42,16 +40,14 @@ public class MakeAnApplicationEventCallbackCitizenTests extends BaseApi {
         apiSteps.validateAccessCode(caseReference.toString(), accessCode);
     }
 
-    @Title("makeAnApplication start event callback test - returns 200")
+    @Title("makeAnApplication start event callback test (citizen user) - returns 200")
     @Test
     @Order(1)
     void makeAnApplicationStartEventCallbackTest() {
         String makeApplicationRequestBody = PayloadLoader.load(
             "/payloads/makeAnApplication-startEventCallbackRequest.json",
             Map.of(
-                "caseTypeId", caseType,
-                "caseId", caseReference,
-                "caseState", caseState
+                "caseId", caseReference
             )
         );
 
@@ -67,7 +63,7 @@ public class MakeAnApplicationEventCallbackCitizenTests extends BaseApi {
         );
     }
 
-    @Title("makeAnApplication submit event callback test - returns 200")
+    @Title("makeAnApplication submit event callback test (citizen user) - returns 200")
     @Test
     @Order(2)
     void makeAnApplicationSubmitEventCallbackTest() {
@@ -77,9 +73,7 @@ public class MakeAnApplicationEventCallbackCitizenTests extends BaseApi {
             "/payloads/makeAnApplication-submitEventCallbackRequest.json",
             Map.of(
                 "caseId", String.valueOf(caseReference),
-                "internalCaseId", decodedCaseId,
-                "caseTypeId", caseType,
-                "caseState", "PENDING_CASE_ISSUED"
+                "internalCaseId", decodedCaseId
             )
         );
 

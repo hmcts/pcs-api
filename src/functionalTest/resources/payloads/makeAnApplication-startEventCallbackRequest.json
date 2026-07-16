@@ -1,8 +1,7 @@
-{
-  "event_id": "makeAnApplication",
+{"event_id": "makeAnApplication",
   "case_details": {
     "id": "${caseId}",
-    "case_type_id": "${caseTypeId}",
+    "case_type_id": "PCS",
     "state": "PENDING_CASE_ISSUED",
     "security_classification": "PUBLIC",
     "data": {

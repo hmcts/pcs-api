@@ -1,5 +1,7 @@
 package uk.gov.hmcts.reform.pcs.functional.steps;
 
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.interfaces.DecodedJWT;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
@@ -327,7 +329,7 @@ public class ApiSteps {
             .extract()
             .path("token");
 
-        com.auth0.jwt.interfaces.DecodedJWT decodedJWT = com.auth0.jwt.JWT.decode(liveCaseNoteToken);
+        DecodedJWT decodedJWT = JWT.decode(liveCaseNoteToken);
         return decodedJWT.getClaim("case-id").asString();
     }
 
