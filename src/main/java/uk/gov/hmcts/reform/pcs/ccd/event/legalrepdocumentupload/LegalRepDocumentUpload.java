@@ -13,7 +13,6 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocumentUploadDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.DocumentUploadCategory;
@@ -31,7 +30,6 @@ import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
 import java.util.Comparator;
 import java.util.stream.Stream;
@@ -77,17 +75,19 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
         }
 
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
+        UUID currentUserId = securityContextService.getCurrentUserId();
 
         List<DynamicStringListElement> validCategoryItems =
             Arrays.stream(DocumentUploadCategory.values())
                 .flatMap(category -> {
                     if (category == DocumentUploadCategory.MAIN_CLAIM_OR_COUNTERCLAIM) {
-                        return Stream.of(buildCategoryItem(category, null));
+                        return Stream.of(buildCategoryItem(category, category.name(), null));
                     }
 
-                    return findGenAppDatesForCategory(pcsCaseEntity, category)
+                    return findGenAppsForCategory(pcsCaseEntity, currentUserId, category)
                         .stream()
-                        .map(date -> buildCategoryItem(category, date));
+                        .map(genApp -> buildCategoryItem(
+                            category, genApp.getId().toString(), genApp.getApplicationSubmittedDate()));
                 })
                 .toList();
 
@@ -109,34 +109,29 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
 
     DynamicStringListElement buildCategoryItem(
         DocumentUploadCategory category,
+        String code,
         LocalDateTime genAppDate
     ) {
         return DynamicStringListElement.builder()
-            .code(category.name())
+            .code(code)
             .label(category.getLabel(genAppDate))
             .build();
     }
 
-    List<LocalDateTime> findGenAppDatesForCategory(
+    List<GenAppEntity> findGenAppsForCategory(
         PcsCaseEntity pcsCaseEntity,
+        UUID currentUserId,
         DocumentUploadCategory category
     ) {
-        if (pcsCaseEntity.getGenApps() == null) {
-            return List.of();
-        }
-
         GenAppType mapped = mapCategoryToGenAppType(category);
         if (mapped == null) {
             return List.of();
         }
 
-        return pcsCaseEntity.getGenApps().stream()
+        return visibleGenAppsForUser(pcsCaseEntity, currentUserId).stream()
             .filter(genApp -> genApp.getType() == mapped)
-            .filter(genApp -> genApp.getWithoutNotice() != null
-                && genApp.getWithoutNotice() == VerticalYesNo.YES)
-            .map(GenAppEntity::getApplicationSubmittedDate)
-            .filter(Objects::nonNull)
-            .sorted(Comparator.reverseOrder()) // optional
+            .filter(genApp -> genApp.getApplicationSubmittedDate() != null)
+            .sorted(Comparator.comparing(GenAppEntity::getApplicationSubmittedDate).reversed())
             .toList();
     }
 
@@ -156,12 +151,16 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
     private GenAppEntity resolveSelectedGenApp(PCSCase caseData, PcsCaseEntity pcsCaseEntity, UUID currentUserId) {
         LegalRepDocumentUploadDetails details = caseData.getLegalRepDocumentUploadDetails();
 
-        if (details == null || details.getSelectedLegalRepRelatedApplicationId() == null) {
+        if (details == null || details.getValidCategories() == null) {
+            return null;
+        }
+        String selectedCode = details.getValidCategories().getValueCode();
+        if (selectedCode == null) {
             return null;
         }
         UUID selectedId;
         try {
-            selectedId = UUID.fromString(details.getSelectedLegalRepRelatedApplicationId());
+            selectedId = UUID.fromString(selectedCode);
         } catch (IllegalArgumentException e) {
             return null;
         }
