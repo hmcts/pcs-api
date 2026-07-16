@@ -7,6 +7,8 @@ import com.github.kagkarlsson.scheduler.task.Task;
 import com.github.kagkarlsson.scheduler.task.TaskInstance;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -15,29 +17,33 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import uk.gov.hmcts.reform.pcs.idam.UserInfo;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
-import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
-import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
-import uk.gov.hmcts.reform.pcs.testingsupport.model.TestingSupportAccessCode;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.ContactPreferencesEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.AccessCodeGenerationService;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseRoleAssignmentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 import uk.gov.hmcts.reform.pcs.idam.IdamAuthenticator;
 import uk.gov.hmcts.reform.pcs.idam.User;
+import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityResult;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.postcodecourt.service.EligibilityService;
 import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationDetailsService;
+import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 import uk.gov.hmcts.reform.pcs.service.LegalRepresentativePartyLinkService;
+import uk.gov.hmcts.reform.pcs.testingsupport.model.PartyEmail;
+import uk.gov.hmcts.reform.pcs.testingsupport.model.TestingSupportAccessCode;
 import uk.gov.hmcts.reform.pcs.testingsupport.service.CcdTestCaseOrchestrator;
 
 import java.time.Instant;
@@ -49,6 +55,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
@@ -61,6 +68,8 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class TestingSupportControllerTest {
 
+    private static final String SERVICE_AUTH_TOKEN = "ServiceAuthToken";
+
     @Mock
     private SchedulerClient schedulerClient;
     @Mock
@@ -71,6 +80,8 @@ class TestingSupportControllerTest {
     private PcsCaseRepository pcsCaseRepository;
     @Mock
     private JdbcTemplate jdbcTemplate;
+    @Mock
+    private PartyRepository partyRepository;
     @Mock
     private CcdTestCaseOrchestrator ccdTestCaseOrchestrator;
     @Mock
@@ -103,7 +114,7 @@ class TestingSupportControllerTest {
     void setUp() {
         underTest = new TestingSupportController(schedulerClient, helloWorldTask,
                                                  eligibilityService,
-                                                 pcsCaseRepository, jdbcTemplate,
+                                                 pcsCaseRepository, jdbcTemplate, partyRepository,
                                                  modelMapper, ccdTestCaseOrchestrator,
                                                  caseRoleAssignmentService,
                                                  legalRepresentativePartyLinkService,
@@ -123,7 +134,8 @@ class TestingSupportControllerTest {
 
         ResponseEntity<String> response = underTest.scheduleHelloWorldTask(5,
                                                                            "Bearer token",
-                                                                           "ServiceAuthToken");
+                                                                           SERVICE_AUTH_TOKEN
+        );
 
         assertThat(response).isNotNull();
         assertThat(response.getStatusCode()).isEqualTo(org.springframework.http.HttpStatus.OK);
@@ -154,7 +166,8 @@ class TestingSupportControllerTest {
 
         ResponseEntity<String> response = underTest.scheduleHelloWorldTask(2,
                                                                            "Bearer token",
-                                                                           "ServiceAuthToken");
+                                                                           SERVICE_AUTH_TOKEN
+        );
 
         assertThat(response).isNotNull();
         assertThat(response.getStatusCode()).isEqualTo(org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR);
@@ -172,7 +185,8 @@ class TestingSupportControllerTest {
         Instant testStartTime = Instant.now();
         ResponseEntity<String> response = underTest.scheduleHelloWorldTask(1,
                                                                            "Bearer token",
-                                                                           "ServiceAuthToken");
+                                                                           SERVICE_AUTH_TOKEN
+        );
 
         assertThat(response).isNotNull();
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
@@ -195,7 +209,8 @@ class TestingSupportControllerTest {
 
         ResponseEntity<String> response = underTest.scheduleHelloWorldTask(3,
                                                                            "DummyId",
-                                                                           "ServiceAuthToken");
+                                                                           SERVICE_AUTH_TOKEN
+        );
 
         assertThat(response).isNotNull();
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
@@ -483,6 +498,81 @@ class TestingSupportControllerTest {
         verify(accessCodeGenerationService).createAccessCodesForParties(String.valueOf(caseReference), true);
     }
 
+    @Nested
+    @DisplayName("Set party email")
+    class SetPartyEmailTests {
+
+        @Test
+        void shouldSetPartyEmail() {
+            // Given
+            UUID partyId = UUID.randomUUID();
+            String emailAddress = "test@test.com";
+            PartyEmail partyEmail = PartyEmail.builder()
+                .partyId(partyId)
+                .emailAddress(emailAddress)
+                .build();
+
+            PartyEntity partyEntity = mock(PartyEntity.class);
+            when(partyRepository.findById(partyId)).thenReturn(Optional.of(partyEntity));
+
+            // When
+            underTest.setPartyEmail(SERVICE_AUTH_TOKEN, partyId, partyEmail);
+
+            // Then
+            ArgumentCaptor<ContactPreferencesEntity> contactPreferencesCaptor
+                = ArgumentCaptor.forClass(ContactPreferencesEntity.class);
+
+            verify(partyEntity).setEmailAddress(emailAddress);
+            verify(partyEntity).setContactPreferences(contactPreferencesCaptor.capture());
+            assertThat(contactPreferencesCaptor.getValue().getContactByEmail()).isEqualTo(VerticalYesNo.YES);
+
+            verify(partyRepository).save(partyEntity);
+        }
+
+        @Test
+        void shouldReturnBadRequestWhenPathParamDoesNotMatchPayloadPartyId() {
+            // Given
+            UUID partyId = UUID.randomUUID();
+            UUID differentPartyId = UUID.randomUUID();
+            String emailAddress = "test@test.com";
+
+            PartyEmail partyEmail = PartyEmail.builder()
+                .partyId(partyId)
+                .emailAddress(emailAddress)
+                .build();
+
+            // When
+            ResponseEntity<String> responseEntity
+                = underTest.setPartyEmail(SERVICE_AUTH_TOKEN, differentPartyId, partyEmail);
+
+            // Then
+            assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        }
+
+        @Test
+        void shouldThrowExceptionWhenPartyIdNotFound() {
+            // Given
+            UUID partyId = UUID.randomUUID();
+            String emailAddress = "test@test.com";
+
+            PartyEmail partyEmail = PartyEmail.builder()
+                .partyId(partyId)
+                .emailAddress(emailAddress)
+                .build();
+
+            when(partyRepository.findById(partyId)).thenReturn(Optional.empty());
+
+            // When
+            Throwable throwable = catchThrowable(
+                () -> underTest.setPartyEmail(SERVICE_AUTH_TOKEN, partyId, partyEmail)
+            );
+
+            // Then
+            assertThat(throwable).isInstanceOf(PartyNotFoundException.class);
+        }
+    }
+
+    @SuppressWarnings("SameParameterValue")
     private JsonNode createJsonNodeFormPayload(String applicantName) {
         try {
             String json = String.format("{\"applicantName\":\"%s\",\"caseNumber\":\"%s\"}",
