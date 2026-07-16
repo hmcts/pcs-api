@@ -78,7 +78,7 @@ public class CachingOrganisationDetailsService {
 
             if (isDataRequiringResync(existingCachedResponse.getLastModifiedDate())) {
                 OrganisationDetailsResponse response = organisationDetailsService.getOrganisationDetails(userId);
-                updateFields(existingCachedResponse, response);
+                updateFields(existingCachedResponse, response, userId);
                 cachedOrganisationResponseRepository.save(existingCachedResponse);
                 log.debug("Cached OrganisationDetails response refreshed");
             }
@@ -110,7 +110,8 @@ public class CachingOrganisationDetailsService {
     }
 
     private void updateFields(CachedOrganisationResponseEntity existingCachedResponse,
-                              OrganisationDetailsResponse response) {
+                              OrganisationDetailsResponse response,
+                              String userId) {
         existingCachedResponse.setOrganisationId(response.getOrganisationIdentifier());
         existingCachedResponse.setOrganisationName(response.getName());
 
@@ -124,6 +125,7 @@ public class CachingOrganisationDetailsService {
             existingCachedResponse.setCountry(contactInfo.getCountry());
             existingCachedResponse.setPostCode(contactInfo.getPostCode());
         } else {
+            log.warn("Organisation address is null or empty for user ID: {}", userId);
             existingCachedResponse.setAddressLine1(null);
             existingCachedResponse.setAddressLine2(null);
             existingCachedResponse.setAddressLine3(null);

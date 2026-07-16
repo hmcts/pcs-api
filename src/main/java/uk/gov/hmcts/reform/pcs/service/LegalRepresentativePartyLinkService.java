@@ -70,7 +70,7 @@ public class LegalRepresentativePartyLinkService {
                                                                                          legalRepresentative);
 
             if (legalRepresentativeLinkedToCase) {
-                backfillOrganisationMetadata(legalRepresentative, user.getUid());
+                backfillOrganisationMetadata(legalRepresentative);
                 legalRepresentative.addParty(defendantPartyEntity);
             } else {
                 legalRepresentative = createNewLegalRepresentative(organisationId,
@@ -144,8 +144,7 @@ public class LegalRepresentativePartyLinkService {
             .or(() -> legalRepresentativeRepository.findByIdamId(userId, caseReference));
     }
 
-    private void backfillOrganisationMetadata(LegalRepresentativeEntity legalRepresentative,
-                                              String userId) {
+    private void backfillOrganisationMetadata(LegalRepresentativeEntity legalRepresentative) {
         if (legalRepresentative.getOrganisationId() == null) {
             legalRepresentative.setOrganisationId(organisationService.getOrganisationIdForCurrentUser());
         }
