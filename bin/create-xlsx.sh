@@ -9,7 +9,7 @@ if [ -z "$env" ]; then
 fi
 
 if [[ -n "$CI" ]]; then
-  # Authenticate with Azure Container Registry
+  # Authenticate with Azure Container Registry 
   env AZURE_CONFIG_DIR=/opt/jenkins/.azure-nonprod az acr login --name hmctsprod --subscription DCD-CNP-PROD
 fi
 
