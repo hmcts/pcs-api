@@ -47,7 +47,7 @@ public class DocumentAmendSelectionService {
         }
     }
 
-    public List<String> validateAndStoreSelection(PCSCase caseData) {
+    public List<String> validateAndStoreSelection(long caseReference, PCSCase caseData) {
         DocumentAmendDetails details = caseData.getDocumentAmendDetails();
         if (details == null || details.getSelectedFolder() == null) {
             return List.of();
@@ -59,29 +59,50 @@ public class DocumentAmendSelectionService {
         details.setSelectedFolderLabel(selectedFolder.getLabel());
 
         if (isEmpty(selectedDocuments)) {
-            details.setSelectedDocumentId(null);
-            details.setSelectedDocumentFileName(null);
-            details.setSelectedDocumentBaseFileName(null);
-            details.setAmendedFileName(null);
+            clearSelectedDocument(details);
             return List.of(SELECT_DIFFERENT_FOLDER_ERROR);
         }
 
         DynamicListElement selectedDocument = selectedDocuments.getValue();
         if (selectedDocument == null || isBlankSelection(selectedDocument)) {
-            details.setSelectedDocumentId(null);
-            details.setSelectedDocumentFileName(null);
-            details.setSelectedDocumentBaseFileName(null);
-            details.setAmendedFileName(null);
+            clearSelectedDocument(details);
             return List.of();
         }
 
         DynamicListElement resolvedDocument = resolveSelectedDocument(selectedDocuments, selectedDocument);
+        DocumentEntity selectedDocumentEntity = resolveSelectedDocumentEntity(caseReference, selectedFolder, resolvedDocument);
         String selectedDocumentBaseFileName = baseFileName(resolvedDocument.getLabel());
         details.setSelectedDocumentId(resolvedDocument.getCode().toString());
         details.setSelectedDocumentFileName(resolvedDocument.getLabel());
         details.setSelectedDocumentBaseFileName(selectedDocumentBaseFileName);
         details.setAmendedFileName(selectedDocumentBaseFileName);
+        details.setSelectedDocumentIssueDate(selectedDocumentEntity == null ? null : selectedDocumentEntity.getIssueDate());
         return List.of();
+    }
+
+    private void clearSelectedDocument(DocumentAmendDetails details) {
+        details.setSelectedDocumentId(null);
+        details.setSelectedDocumentFileName(null);
+        details.setSelectedDocumentBaseFileName(null);
+        details.setAmendedFileName(null);
+        details.setSelectedDocumentIssueDate(null);
+    }
+
+    private DocumentEntity resolveSelectedDocumentEntity(long caseReference,
+                                                         CaseFileCategory selectedFolder,
+                                                         DynamicListElement selectedDocument) {
+        PcsCaseEntity pcsCase = pcsCaseService.loadCase(caseReference);
+        if (CollectionUtils.isEmpty(pcsCase.getDocuments()) || selectedDocument.getCode() == null) {
+            return null;
+        }
+
+        String selectedDocumentId = selectedDocument.getCode().toString();
+        return pcsCase.getDocuments().stream()
+            .filter(Objects::nonNull)
+            .filter(document -> isInCategory(document, selectedFolder))
+            .filter(document -> selectedDocumentId.equals(document.getId().toString()))
+            .findFirst()
+            .orElse(null);
     }
 
     private DynamicListElement resolveSelectedDocument(DynamicList selectedDocuments,

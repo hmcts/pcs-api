@@ -58,6 +58,7 @@ public class CaseworkerDocumentService {
         UUID partyId = caseworkerDocument.getRelatedParty().getValue().getCode();
 
         DocumentEntity documentEntity = createDocumentEntity(document, caseworkerDocumentType);
+        documentEntity.setIssueDate(caseworkerDocument.getIssueDate());
 
         CaseFileCategory caseFileCategory = null;
         String documentFilename = document.getFilename();

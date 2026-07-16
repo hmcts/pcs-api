@@ -55,6 +55,7 @@ public class SelectDocumentPage implements CcdPageConfiguration {
                 .readonly(DocumentAmendDetails::getSelectedDocumentId, NEVER_SHOW, true)
                 .readonly(DocumentAmendDetails::getSelectedDocumentFileName, NEVER_SHOW, true)
                 .readonly(DocumentAmendDetails::getSelectedDocumentBaseFileName, NEVER_SHOW, true)
+                .readonly(DocumentAmendDetails::getSelectedDocumentIssueDate, NEVER_SHOW, true)
             .done();
     }
 
@@ -72,7 +73,7 @@ public class SelectDocumentPage implements CcdPageConfiguration {
         PCSCase caseData = details.getData();
 
         documentAmendSelectionService.initialise(details.getId(), caseData);
-        List<String> errors = documentAmendSelectionService.validateAndStoreSelection(caseData);
+        List<String> errors = documentAmendSelectionService.validateAndStoreSelection(details.getId(), caseData);
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(caseData)

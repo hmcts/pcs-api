@@ -6,7 +6,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.DynamicList;
@@ -20,7 +19,9 @@ import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentAmendSelectionService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
+import uk.gov.hmcts.reform.pcs.config.JacksonConfiguration;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -76,10 +77,12 @@ class SelectDocumentPageTest extends BasePageTest {
     @Test
     void shouldReturnFileDisplayNameInMidEventPayloadForSelectedApplicationDocument() throws JsonProcessingException {
         UUID documentId = UUID.fromString("aae85c47-84ca-4531-a5a8-ba170cfb8742");
+        LocalDate issueDate = LocalDate.of(2026, 4, 16);
         DocumentEntity document = DocumentEntity.builder()
             .id(documentId)
             .fileName("Local test application.pdf")
             .categoryId(APPLICATIONS.getId())
+            .issueDate(issueDate)
             .build();
         when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(PcsCaseEntity.builder()
             .documents(List.of(document))
@@ -97,11 +100,13 @@ class SelectDocumentPageTest extends BasePageTest {
             .build();
 
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
-        String payload = new ObjectMapper().writeValueAsString(response);
+        String payload = new JacksonConfiguration().getMapper().writeValueAsString(response);
 
         assertThat(payload)
             .contains("\"documentAmend_SelectedDocumentFileName\":\"Local test application.pdf\"")
             .contains("\"documentAmend_SelectedDocumentBaseFileName\":\"Local test application\"")
+            .contains("\"documentAmend_SelectedDocumentIssueDate\":\"2026-04-16\"")
+            .contains("\"documentAmend_IssueDate\":\"2026-04-16\"")
             .contains("\"documentAmend_AmendedFileName\":\"Local test application\"");
     }
 }

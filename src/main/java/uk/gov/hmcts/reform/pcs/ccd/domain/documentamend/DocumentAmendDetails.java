@@ -169,7 +169,14 @@ public class DocumentAmendDetails {
     @CCD(searchable = false)
     private String selectedDocumentBaseFileName;
 
+    @CCD(searchable = false)
+    private LocalDate selectedDocumentIssueDate;
+
     public String getAmendedFileName() {
         return amendedFileName == null ? selectedDocumentBaseFileName : amendedFileName;
+    }
+
+    public LocalDate getIssueDate() {
+        return issueDate == null ? selectedDocumentIssueDate : issueDate;
     }
 }

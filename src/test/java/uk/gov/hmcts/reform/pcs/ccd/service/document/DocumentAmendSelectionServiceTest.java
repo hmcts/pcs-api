@@ -24,6 +24,7 @@ import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.config.JacksonConfiguration;
 
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -164,7 +165,7 @@ class DocumentAmendSelectionServiceTest {
             .build());
 
         underTest.initialise(CASE_REFERENCE, caseData);
-        List<String> errors = underTest.validateAndStoreSelection(caseData);
+        List<String> errors = underTest.validateAndStoreSelection(CASE_REFERENCE, caseData);
 
         assertThat(errors).isEmpty();
         assertThat(caseData.getDocumentAmendDetails().getSelectedDocumentId()).isEqualTo(documentId.toString());
@@ -213,7 +214,7 @@ class DocumentAmendSelectionServiceTest {
             .build());
 
         underTest.initialise(CASE_REFERENCE, caseData);
-        List<String> errors = underTest.validateAndStoreSelection(caseData);
+        List<String> errors = underTest.validateAndStoreSelection(CASE_REFERENCE, caseData);
 
         assertThat(errors).isEmpty();
         assertThat(caseData.getDocumentAmendDetails().getApplicationsDocuments().getValue())
@@ -285,7 +286,7 @@ class DocumentAmendSelectionServiceTest {
             .build());
 
         underTest.initialise(CASE_REFERENCE, caseData);
-        List<String> errors = underTest.validateAndStoreSelection(caseData);
+        List<String> errors = underTest.validateAndStoreSelection(CASE_REFERENCE, caseData);
 
         assertThat(errors).isEmpty();
         assertThat(caseData.getDocumentAmendDetails().getSelectedDocumentId()).isEqualTo(documentId.toString());
@@ -413,7 +414,7 @@ class DocumentAmendSelectionServiceTest {
 
     @Test
     void shouldReturnNoErrorsWhenDocumentAmendDetailsIsNull() {
-        List<String> errors = underTest.validateAndStoreSelection(PCSCase.builder().build());
+        List<String> errors = underTest.validateAndStoreSelection(CASE_REFERENCE, PCSCase.builder().build());
 
         assertThat(errors).isEmpty();
     }
@@ -428,7 +429,7 @@ class DocumentAmendSelectionServiceTest {
             .build();
         underTest.initialise(CASE_REFERENCE, caseData);
 
-        List<String> errors = underTest.validateAndStoreSelection(caseData);
+        List<String> errors = underTest.validateAndStoreSelection(CASE_REFERENCE, caseData);
 
         assertThat(errors).containsExactly("Select a different folder to continue");
         assertThat(caseData.getDocumentAmendDetails().getSelectedFolderId())
@@ -454,7 +455,7 @@ class DocumentAmendSelectionServiceTest {
             .build();
         underTest.initialise(CASE_REFERENCE, caseData);
 
-        List<String> errors = underTest.validateAndStoreSelection(caseData);
+        List<String> errors = underTest.validateAndStoreSelection(CASE_REFERENCE, caseData);
 
         assertThat(errors).isEmpty();
         assertThat(caseData.getDocumentAmendDetails().getSelectedDocumentId()).isNull();
@@ -464,6 +465,8 @@ class DocumentAmendSelectionServiceTest {
     @Test
     void shouldPersistSelectedFolderAndDocumentDetails() {
         DocumentEntity document = document("photo.version.1.pdf", EVIDENCE.getId(), null);
+        LocalDate issueDate = LocalDate.of(2026, 4, 16);
+        document.setIssueDate(issueDate);
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(PcsCaseEntity.builder()
             .documents(List.of(document))
             .build());
@@ -475,7 +478,7 @@ class DocumentAmendSelectionServiceTest {
             .build();
         underTest.initialise(CASE_REFERENCE, caseData);
 
-        List<String> errors = underTest.validateAndStoreSelection(caseData);
+        List<String> errors = underTest.validateAndStoreSelection(CASE_REFERENCE, caseData);
 
         assertThat(errors).isEmpty();
         assertThat(caseData.getDocumentAmendDetails().getSelectedFolderId()).isEqualTo(EVIDENCE.getId());
@@ -484,6 +487,8 @@ class DocumentAmendSelectionServiceTest {
         assertThat(caseData.getDocumentAmendDetails().getSelectedDocumentFileName()).isEqualTo("photo.version.1.pdf");
         assertThat(caseData.getDocumentAmendDetails().getSelectedDocumentBaseFileName()).isEqualTo("photo.version.1");
         assertThat(caseData.getDocumentAmendDetails().getAmendedFileName()).isEqualTo("photo.version.1");
+        assertThat(caseData.getDocumentAmendDetails().getSelectedDocumentIssueDate()).isEqualTo(issueDate);
+        assertThat(caseData.getDocumentAmendDetails().getIssueDate()).isEqualTo(issueDate);
     }
 
     @Test
@@ -504,7 +509,7 @@ class DocumentAmendSelectionServiceTest {
             .build();
         underTest.initialise(CASE_REFERENCE, caseData);
 
-        List<String> errors = underTest.validateAndStoreSelection(caseData);
+        List<String> errors = underTest.validateAndStoreSelection(CASE_REFERENCE, caseData);
 
         assertThat(errors).isEmpty();
         assertThat(caseData.getDocumentAmendDetails().getSelectedDocumentFileName()).isEqualTo("rent statement.pdf");
@@ -530,7 +535,7 @@ class DocumentAmendSelectionServiceTest {
             .build();
         underTest.initialise(CASE_REFERENCE, caseData);
 
-        List<String> errors = underTest.validateAndStoreSelection(caseData);
+        List<String> errors = underTest.validateAndStoreSelection(CASE_REFERENCE, caseData);
 
         assertThat(errors).isEmpty();
         assertThat(caseData.getDocumentAmendDetails().getSelectedDocumentId()).isEqualTo(document.getId().toString());
@@ -554,7 +559,7 @@ class DocumentAmendSelectionServiceTest {
             .build();
         underTest.initialise(CASE_REFERENCE, caseData);
 
-        List<String> errors = underTest.validateAndStoreSelection(caseData);
+        List<String> errors = underTest.validateAndStoreSelection(CASE_REFERENCE, caseData);
 
         assertThat(errors).isEmpty();
         assertThat(caseData.getDocumentAmendDetails().getSelectedDocumentId()).isNull();

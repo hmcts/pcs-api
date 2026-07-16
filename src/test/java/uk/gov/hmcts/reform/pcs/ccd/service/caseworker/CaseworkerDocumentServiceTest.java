@@ -463,6 +463,7 @@ class CaseworkerDocumentServiceTest {
             // Then
             DocumentEntity savedDocumentEntity = getSavedDocumentEntity();
             assertThat(savedDocumentEntity.getFileName()).isEqualTo(modifiedFilenameForParty);
+            assertThat(savedDocumentEntity.getIssueDate()).isEqualTo(documentIssueDate);
         }
 
     }
