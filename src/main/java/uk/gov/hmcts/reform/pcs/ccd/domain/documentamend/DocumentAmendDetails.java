@@ -10,10 +10,13 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
+import uk.gov.hmcts.ccd.sdk.type.FieldType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
 import uk.gov.hmcts.ccd.sdk.type.DynamicList;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicListWithValueCode;
+import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 
 import java.time.LocalDate;
 
@@ -179,6 +182,30 @@ public class DocumentAmendDetails {
     )
     @JsonDeserialize(as = DynamicListWithValueCode.class)
     private DynamicList relatedParty;
+
+    @CCD(searchable = false)
+    private VerticalYesNo showRelatedSubmissionsList;
+
+    @CCD(
+        label = "Which open application or counterclaim does this document relate to?",
+        searchable = false,
+        typeOverride = DynamicRadioList
+    )
+    private DynamicStringList relatedSubmission;
+
+    @CCD(
+        label = "Which type of document is this?",
+        searchable = false,
+        typeOverride = FieldType.DynamicList
+    )
+    private DynamicStringList relatedSubmissionsDocumentType;
+
+    @CCD(
+        label = "Which type of document is this?",
+        searchable = false,
+        typeOverride = FieldType.DynamicList
+    )
+    private DynamicStringList standaloneDocumentType;
 
     public String getAmendedFileName() {
         return amendedFileName == null ? selectedDocumentBaseFileName : amendedFileName;

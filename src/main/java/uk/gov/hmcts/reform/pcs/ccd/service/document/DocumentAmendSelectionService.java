@@ -4,27 +4,24 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.ccd.sdk.type.DynamicList;
 import uk.gov.hmcts.ccd.sdk.type.DynamicListElement;
+import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.documentamend.DocumentAmendDetails;
-import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GeneralApplication;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
-import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
+import uk.gov.hmcts.reform.pcs.ccd.service.caseworker.CaseworkerDocumentListService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 import static uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter.COMMA_DELIMITER;
 
@@ -38,14 +35,14 @@ public class DocumentAmendSelectionService {
 
     private final PcsCaseService pcsCaseService;
     private final AddressFormatter addressFormatter;
-    private final PartyService partyService;
+    private final CaseworkerDocumentListService caseworkerDocumentListService;
 
     public DocumentAmendSelectionService(PcsCaseService pcsCaseService,
                                          AddressFormatter addressFormatter,
-                                         PartyService partyService) {
+                                         CaseworkerDocumentListService caseworkerDocumentListService) {
         this.pcsCaseService = pcsCaseService;
         this.addressFormatter = addressFormatter;
-        this.partyService = partyService;
+        this.caseworkerDocumentListService = caseworkerDocumentListService;
     }
 
     public void initialise(long caseReference, PCSCase caseData) {
@@ -57,7 +54,8 @@ public class DocumentAmendSelectionService {
         for (CaseFileCategory category : CaseFileCategory.values()) {
             setDocumentsForCategory(details, pcsCase, category);
         }
-        details.setRelatedParty(buildRelatedPartyList(pcsCase, details.getRelatedParty()));
+        details.setRelatedParty(caseworkerDocumentListService.buildRelatedPartyList(pcsCase, details.getRelatedParty()));
+        setApplicationOrCounterclaimLists(caseData, details, pcsCase);
     }
 
     public List<String> validateAndStoreSelection(long caseReference, PCSCase caseData) {
@@ -105,48 +103,6 @@ public class DocumentAmendSelectionService {
         }
     }
 
-    private DynamicList buildRelatedPartyList(PcsCaseEntity pcsCase, DynamicList existingList) {
-        DynamicListElement selected = existingList == null ? null : existingList.getValue();
-        ClaimEntity mainClaim = pcsCase.getMainClaim();
-        if (mainClaim == null || CollectionUtils.isEmpty(mainClaim.getClaimParties())) {
-            return DynamicList.builder()
-                .value(null)
-                .listItems(List.of())
-                .build();
-        }
-
-        Map<PartyRole, List<ClaimPartyEntity>> partiesByRole = mainClaim.getClaimParties().stream()
-            .filter(Objects::nonNull)
-            .collect(Collectors.groupingBy(ClaimPartyEntity::getRole));
-
-        List<DynamicListElement> partyOptions = new ArrayList<>();
-        partiesByRole.getOrDefault(PartyRole.CLAIMANT, List.of()).stream()
-            .map(ClaimPartyEntity::getParty)
-            .filter(Objects::nonNull)
-            .map(party -> mapToPartyListElement(mainClaim, party))
-            .forEach(partyOptions::add);
-
-        partiesByRole.getOrDefault(PartyRole.DEFENDANT, List.of()).stream()
-            .map(ClaimPartyEntity::getParty)
-            .filter(Objects::nonNull)
-            .map(party -> mapToPartyListElement(mainClaim, party))
-            .forEach(partyOptions::add);
-
-        return DynamicList.builder()
-            .value(retainSelectedValue(selected, partyOptions))
-            .listItems(partyOptions)
-            .build();
-    }
-
-    private DynamicListElement mapToPartyListElement(ClaimEntity mainClaim, PartyEntity party) {
-        String partyName = partyService.getPartyName(party);
-        String partyLabel = partyService.getPartyLabel(mainClaim, party.getId());
-        return DynamicListElement.builder()
-            .code(party.getId())
-            .label("%s - %s".formatted(partyName, partyLabel))
-            .build();
-    }
-
     private void preselectRelatedParty(DocumentAmendDetails details, DocumentEntity selectedDocumentEntity) {
         if (selectedDocumentEntity == null
             || selectedDocumentEntity.getParty() == null
@@ -160,6 +116,30 @@ public class DocumentAmendSelectionService {
             .filter(option -> option.getCode() != null && selectedPartyId.equals(option.getCode().toString()))
             .findFirst()
             .ifPresent(details.getRelatedParty()::setValue);
+    }
+
+    private void setApplicationOrCounterclaimLists(PCSCase caseData, DocumentAmendDetails details,
+                                                  PcsCaseEntity pcsCase) {
+        List<ListValue<GeneralApplication>> genApps = caseData.getGenApps();
+        List<CounterClaimEntity> counterClaims = pcsCase.getCounterClaims();
+        boolean showRelatedSubmissionsList = caseworkerDocumentListService
+            .hasRelatedSubmissions(genApps, counterClaims);
+
+        details.setShowRelatedSubmissionsList(VerticalYesNo.from(showRelatedSubmissionsList));
+        details.setRelatedSubmission(showRelatedSubmissionsList
+            ? caseworkerDocumentListService.buildRelatedSubmissionsList(
+                pcsCase,
+                genApps,
+                counterClaims,
+                details.getRelatedSubmission())
+            : null);
+
+        details.setRelatedSubmissionsDocumentType(caseworkerDocumentListService.buildDocumentTypeList(
+            caseData.getLegislativeCountry(),
+            details.getRelatedSubmissionsDocumentType()));
+        details.setStandaloneDocumentType(caseworkerDocumentListService.buildDocumentTypeList(
+            caseData.getLegislativeCountry(),
+            details.getStandaloneDocumentType()));
     }
 
     private DocumentEntity resolveSelectedDocumentEntity(long caseReference,

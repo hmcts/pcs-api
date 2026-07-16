@@ -41,7 +41,7 @@ public class UploadADocument implements CcdPageConfiguration {
             .label("uploadADocument-lineSeparator", "---")
             .label("uploadADocument-info", INFO_MARKDOWN)
             .complex(PCSCase::getCaseworkerDocument)
-            .readonly(CaseworkerDocument::getShowRelatedSubmissionsList, NEVER_SHOW)
+            .readonly(CaseworkerDocument::getShowRelatedSubmissionsList, NEVER_SHOW, true)
             .mandatory(CaseworkerDocument::getDocument)
             .mandatory(CaseworkerDocument::getRelatedSubmission,
                        ShowConditions.fieldEquals("cwDoc_ShowRelatedSubmissionsList", VerticalYesNo.YES))

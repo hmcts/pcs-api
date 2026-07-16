@@ -24,6 +24,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.caseworker.CaseworkerDocumentListService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
@@ -65,7 +66,7 @@ class StartHandlerTest {
         when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
         when(pcsCaseEntity.getMainClaim()).thenReturn(mainClaim);
 
-        underTest = new StartHandler(pcsCaseService, partyService);
+        underTest = new StartHandler(pcsCaseService, new CaseworkerDocumentListService(partyService));
     }
 
     @ParameterizedTest
@@ -134,10 +135,10 @@ class StartHandlerTest {
 
         assertThat(listItems).map(DynamicStringListElement::getLabel)
             .containsExactly(
-                "General Application GA2 - submitted 14 May 2026",
-                "Counterclaim - Defendant 1 Label - submitted 9 May 2026",
-                "General Application GA1 - submitted 4 May 2026",
-                "Counterclaim - Claimant 1 Label - submitted 29 April 2026",
+                "Gen app GA2 - submitted 14 May 2026",
+                "Counter claim CC1 - submitted 9 May 2026",
+                "Gen app GA1 - submitted 4 May 2026",
+                "Counter claim CC1 - submitted 29 April 2026",
                 "Not related to an application or counterclaim"
         );
 

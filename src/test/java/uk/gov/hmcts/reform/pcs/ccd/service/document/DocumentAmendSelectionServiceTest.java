@@ -9,11 +9,14 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.DynamicList;
 import uk.gov.hmcts.ccd.sdk.type.DynamicListElement;
+import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GeneralApplication;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState;
 import uk.gov.hmcts.reform.pcs.ccd.domain.documentamend.DocumentAmendDetails;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
@@ -22,22 +25,32 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.caseworker.CaseworkerDocumentListService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicListWithValueCode;
+import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.config.JacksonConfiguration;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.documentupload.CaseworkerDocumentType.OCCUPATION_LICENCE;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.documentupload.CaseworkerDocumentType.PART_20_COUNTERCLAIM;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.documentupload.CaseworkerDocumentType.TENANCY_AGREEMENT;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.documentupload.CaseworkerDocumentType.WITNESS_STATEMENT;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory.APPLICATIONS;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory.EVIDENCE;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory.UNCATEGORISED_DOCUMENTS;
+import static uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.ENGLAND;
+import static uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.WALES;
 
 @ExtendWith(MockitoExtension.class)
 class DocumentAmendSelectionServiceTest {
@@ -54,7 +67,11 @@ class DocumentAmendSelectionServiceTest {
 
     @BeforeEach
     void setUp() {
-        underTest = new DocumentAmendSelectionService(pcsCaseService, new AddressFormatter(), partyService);
+        underTest = new DocumentAmendSelectionService(
+            pcsCaseService,
+            new AddressFormatter(),
+            new CaseworkerDocumentListService(partyService)
+        );
     }
 
     @Test
@@ -375,6 +392,87 @@ class DocumentAmendSelectionServiceTest {
     }
 
     @Test
+    void shouldPopulateRelatedSubmissionsListInDescendingDateOrderAndExcludePendingCounterclaims() {
+        LocalDateTime baseDateTime = LocalDateTime.parse("2026-05-04T10:00:00");
+
+        String genAppId = UUID.randomUUID().toString();
+        GeneralApplication genApp = GeneralApplication.builder()
+            .rank(1)
+            .submittedOn(baseDateTime)
+            .build();
+
+        PartyEntity defendant = PartyEntity.builder().id(UUID.randomUUID()).build();
+        ClaimEntity mainClaim = ClaimEntity.builder().build();
+        CounterClaimEntity counterClaim = counterClaim(baseDateTime.plusDays(2), defendant);
+        CounterClaimEntity pendingCounterClaim = counterClaim(baseDateTime.plusDays(3), defendant);
+        pendingCounterClaim.setStatus(CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED);
+
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(PcsCaseEntity.builder()
+            .claims(List.of(mainClaim))
+            .counterClaims(List.of(counterClaim, pendingCounterClaim))
+            .build());
+        when(partyService.getPartyLabel(mainClaim, defendant.getId())).thenReturn("Defendant 1");
+        PCSCase caseData = PCSCase.builder()
+            .genApps(List.of(ListValue.<GeneralApplication>builder().id(genAppId).value(genApp).build()))
+            .legislativeCountry(ENGLAND)
+            .build();
+
+        underTest.initialise(CASE_REFERENCE, caseData);
+
+        DocumentAmendDetails details = caseData.getDocumentAmendDetails();
+        assertThat(details.getShowRelatedSubmissionsList()).isEqualTo(VerticalYesNo.YES);
+        assertThat(details.getRelatedSubmission().getListItems())
+            .extracting(DynamicStringListElement::getLabel)
+            .containsExactly(
+                "Counter claim CC1 - submitted 6 May 2026",
+                "Gen app GA1 - submitted 4 May 2026",
+                "Not related to an application or counterclaim"
+            );
+        assertThat(details.getRelatedSubmission().getListItems())
+            .extracting(DynamicStringListElement::getCode)
+            .containsExactly(
+                "COUNTERCLAIM:%s".formatted(counterClaim.getId()),
+                "GEN_APP:%s".formatted(genAppId),
+                "NONE"
+            );
+    }
+
+    @Test
+    void shouldHideRelatedSubmissionsListAndPopulateEnglandDocumentTypesWhenNoApplicationsOrCounterclaims() {
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(PcsCaseEntity.builder().build());
+        PCSCase caseData = PCSCase.builder()
+            .genApps(List.of())
+            .legislativeCountry(ENGLAND)
+            .build();
+
+        underTest.initialise(CASE_REFERENCE, caseData);
+
+        DocumentAmendDetails details = caseData.getDocumentAmendDetails();
+        assertThat(details.getShowRelatedSubmissionsList()).isEqualTo(VerticalYesNo.NO);
+        assertThat(details.getRelatedSubmission()).isNull();
+        assertThat(details.getStandaloneDocumentType().getListItems())
+            .extracting(DynamicStringListElement::getCode)
+            .contains(WITNESS_STATEMENT.name(), PART_20_COUNTERCLAIM.name(), TENANCY_AGREEMENT.name())
+            .doesNotContain(OCCUPATION_LICENCE.name());
+    }
+
+    @Test
+    void shouldPopulateWalesDocumentTypes() {
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(PcsCaseEntity.builder().build());
+        PCSCase caseData = PCSCase.builder()
+            .genApps(List.of())
+            .legislativeCountry(WALES)
+            .build();
+
+        underTest.initialise(CASE_REFERENCE, caseData);
+
+        assertThat(caseData.getDocumentAmendDetails().getStandaloneDocumentType().getListItems())
+            .extracting(DynamicStringListElement::getCode)
+            .contains(WITNESS_STATEMENT.name(), PART_20_COUNTERCLAIM.name(), OCCUPATION_LICENCE.name())
+            .doesNotContain(TENANCY_AGREEMENT.name());
+    }
+
+    @Test
     void shouldExcludeDocumentsWithNullCategoryIdFromUncategorisedDocuments() {
         DocumentEntity nullCategoryDocument = document("loose document.pdf", null, null);
         DocumentEntity categorisedDocument = document(
@@ -690,6 +788,14 @@ class DocumentAmendSelectionServiceTest {
     private static ClaimPartyEntity claimParty(PartyRole role, PartyEntity party) {
         return ClaimPartyEntity.builder()
             .role(role)
+            .party(party)
+            .build();
+    }
+
+    private static CounterClaimEntity counterClaim(LocalDateTime submittedDate, PartyEntity party) {
+        return CounterClaimEntity.builder()
+            .id(UUID.randomUUID())
+            .claimSubmittedDate(submittedDate)
             .party(party)
             .build();
     }

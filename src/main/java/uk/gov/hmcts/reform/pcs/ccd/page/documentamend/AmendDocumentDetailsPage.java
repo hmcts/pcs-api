@@ -13,6 +13,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.documentamend.DocumentAmendDetails;
 import java.time.Clock;
 import java.time.LocalDate;
 
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
+
 @Component
 public class AmendDocumentDetailsPage implements CcdPageConfiguration {
 
@@ -33,6 +35,20 @@ public class AmendDocumentDetailsPage implements CcdPageConfiguration {
             .label(PAGE_ID + "-separator", "---")
             .complex(PCSCase::getDocumentAmendDetails)
                 .mandatory(DocumentAmendDetails::getAmendedFileName)
+                .readonly(DocumentAmendDetails::getShowRelatedSubmissionsList, NEVER_SHOW, true)
+                .mandatory(
+                    DocumentAmendDetails::getRelatedSubmission,
+                    "documentAmend_ShowRelatedSubmissionsList=\"YES\""
+                )
+                .mandatory(
+                    DocumentAmendDetails::getRelatedSubmissionsDocumentType,
+                    "documentAmend_RelatedSubmission=\"NONE\" "
+                        + "AND documentAmend_ShowRelatedSubmissionsList=\"YES\""
+                )
+                .mandatory(
+                    DocumentAmendDetails::getStandaloneDocumentType,
+                    "documentAmend_ShowRelatedSubmissionsList!=\"YES\""
+                )
                 .optional(DocumentAmendDetails::getIssueDate)
                 .mandatory(DocumentAmendDetails::getRelatedParty)
             .done();
