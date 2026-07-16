@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.ClaimActivityType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.GenerationDetails;
@@ -90,7 +89,6 @@ public class DefendantAccessCodeService {
                     .url(documentUrl)
                     .documentId(documentIdExtractor.extractDocumentId(documentUrl))
                     .type(DocumentType.DEFENDANT_ACCESS_CODE)
-                    .categoryId(CaseFileCategory.UNCATEGORISED_DOCUMENTS.getId())
                     .build()
             );
 

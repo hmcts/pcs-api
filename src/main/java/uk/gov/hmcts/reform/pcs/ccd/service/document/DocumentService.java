@@ -53,7 +53,6 @@ public class DocumentService {
     private final DocumentNameService documentNameService;
 
     private static final String CLAIMANT_1 = "Claimant 1";
-    private static final String DEFAULT_CATEGORY_ID = CaseFileCategory.UNCATEGORISED_DOCUMENTS.getId();
 
     public List<DocumentEntity> createAllDocuments(PCSCase pcsCase) {
 
@@ -188,7 +187,9 @@ public class DocumentService {
                         .documentId(documentIdExtractor.extractDocumentId(holder.getDocument().getUrl()))
                         .fileName(holder.getDocument().getFilename())
                         .binaryUrl(holder.getDocument().getBinaryUrl())
-                        .categoryId(categoryIdFor(holder.getType()))
+                        .categoryId(mapDocumentTypeToCategory(holder.getType())
+                                        .map(CaseFileCategory::getId)
+                                        .orElse(null))
                         .type(holder.getType())
                         .description(StringUtils.isEmpty(holder.getDescription()) ? null : holder.getDescription())
                         .build())
@@ -247,6 +248,8 @@ public class DocumentService {
             .collect(Collectors.toSet());
 
         ClaimEntity mainClaim = getMainClaim(pcsCase);
+        String applicationsCategoryId = CaseFileCategory.APPLICATIONS.getId();
+
         List<DocumentEntity> documentEntities = uploadedDocuments.stream()
             .map(ListValue::getValue)
             .filter(Objects::nonNull)
@@ -268,7 +271,7 @@ public class DocumentService {
                     .contentType(uploaded.getContentType())
                     .size(uploaded.getSizeInBytes())
                     .type(DocumentType.OTHER)
-                    .categoryId(selectedGenApp != null ? CaseFileCategory.APPLICATIONS.getId() : DEFAULT_CATEGORY_ID)
+                    .categoryId(selectedGenApp != null ? applicationsCategoryId : null)
                     .build();
             })
             .toList();
@@ -325,7 +328,6 @@ public class DocumentService {
                     .binaryUrl(defDoc.getDocument().getBinaryUrl())
                     .contentType(defDoc.getContentType())
                     .size(defDoc.getSizeInBytes())
-                    .categoryId(DEFAULT_CATEGORY_ID)
                     .build();
             })
             .toList();
@@ -413,16 +415,6 @@ public class DocumentService {
                  OTHER ->
                 Optional.empty();
         };
-    }
-
-    private String categoryIdFor(DocumentType documentType) {
-        if (documentType == null) {
-            return DEFAULT_CATEGORY_ID;
-        }
-
-        return mapDocumentTypeToCategory(documentType)
-            .map(CaseFileCategory::getId)
-            .orElse(DEFAULT_CATEGORY_ID);
     }
 
     private DocumentType mapEvidenceDocumentTypeToDocumentType(EvidenceDocumentType evidenceDocumentType) {

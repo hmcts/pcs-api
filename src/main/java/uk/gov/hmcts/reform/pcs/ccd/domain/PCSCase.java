@@ -482,9 +482,6 @@ public class PCSCase {
     @JsonUnwrapped
     private DocumentUploadDetails documentUploadDetails;
 
-    @JsonUnwrapped(prefix = "documentAmend_")
-    private DocumentAmendDetails documentAmendDetails;
-
     @CCD(
         label = "Are you planning to make an application at the same time as your claim?",
         hint = "After you’ve submitted your claim, there will be instructions on how to make an application"

@@ -7,7 +7,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.ClaimActivityType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.GenerationDetails;
@@ -105,7 +104,7 @@ class DefendantAccessCodeServiceTest {
         verify(documentRepository).save(documentCaptor.capture());
         DocumentEntity savedDoc = documentCaptor.getValue();
         assertThat(savedDoc.getType()).isEqualTo(DocumentType.DEFENDANT_ACCESS_CODE);
-        assertThat(savedDoc.getCategoryId()).isEqualTo(CaseFileCategory.UNCATEGORISED_DOCUMENTS.getId());
+        assertThat(savedDoc.getCategoryId()).isNull();
         assertThat(savedDoc.getUrl()).isEqualTo(DOC_URL);
         assertThat(savedDoc.getParty().getId()).isEqualTo(partyId);
         assertThat(savedDoc.getPcsCase()).isEqualTo(caseEntity);
