@@ -25,6 +25,10 @@ public class Hearing {
     public static final String NOTES_LABEL = "Hearing notes";
     @CCD(ignore = true)
     public static final String ADDITIONAL_INFORMATION_LABEL = "Enter any additional information";
+    @CCD(ignore = true)
+    public static final String CANCELLATION_REASON_LABEL = "Enter reason for cancellation";
+
+    private Long hearingId;
 
     @CCD(label = "Which type of hearing is this?")
     private HearingType type;
@@ -78,4 +82,13 @@ public class Hearing {
         typeOverride = TextArea
     )
     private String additionalInformation;
+
+    @CCD(
+        label = CANCELLATION_REASON_LABEL,
+        hint = "This will be included in the notice sent to parties, if one is required",
+        typeOverride = TextArea
+    )
+    private String cancellationReason;
+
+    private String hearingSummaryMarkdown;
 }

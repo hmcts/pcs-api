@@ -22,7 +22,7 @@
     "jsonBody": [
       {
         "court_location_id": "123",
-        "court_location_name": "54 HAGLEY ROAD (BIRMINGHAM OFFICES)",
+        "court_name": "54 HAGLEY ROAD (BIRMINGHAM OFFICES)",
         "epims_id": "{{request.query.epimms_id}}",
         "open_for_public": "YES",
         "court_location_category": "North",
@@ -36,7 +36,7 @@
         "phone_number": "B168PE",
         "court_location_code": "",
         "dx_address": "HAGLEY ROAD",
-        "welsh_court_location_name": "",
+        "welsh_court_name": "",
         "welsh_court_address": ""
       }
     ]

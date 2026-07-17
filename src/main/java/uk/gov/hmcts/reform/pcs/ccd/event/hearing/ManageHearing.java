@@ -1,7 +1,8 @@
-package uk.gov.hmcts.reform.pcs.ccd.event;
+package uk.gov.hmcts.reform.pcs.ccd.event.hearing;
 
-import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.BooleanUtils;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
@@ -19,19 +20,23 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.ManageHearingOption;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.HearingEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.page.managehearing.ManageHearingConfigurer;
-import uk.gov.hmcts.reform.pcs.ccd.service.HearingService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.hearing.HearingService;
+import uk.gov.hmcts.reform.pcs.ccd.service.hearing.HearingSummaryRenderer;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
-import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.location.model.CourtVenue;
 import uk.gov.hmcts.reform.pcs.location.service.LocationReferenceService;
 
+import java.time.Clock;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -40,16 +45,36 @@ import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUD
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.manageHearing;
 
 @Component
-@AllArgsConstructor
 @Slf4j
 public class ManageHearing implements CCDConfig<PCSCase, State, UserRole> {
 
     private final ManageHearingConfigurer manageHearingConfigurer;
-    private final AddressFormatter addressFormatter;
     private final HearingService hearingService;
     private final LocationReferenceService locationReferenceService;
     private final PcsCaseService pcsCaseService;
     private final PartyService partyService;
+    private final HearingSummaryRenderer hearingSummaryRenderer;
+    private final ConfirmationBodyRenderer confirmationBodyRenderer;
+    private final Clock ukClock;
+
+    public ManageHearing(ManageHearingConfigurer manageHearingConfigurer,
+                         HearingService hearingService,
+                         LocationReferenceService locationReferenceService,
+                         PcsCaseService pcsCaseService,
+                         PartyService partyService,
+                         HearingSummaryRenderer hearingSummaryRenderer,
+                         ConfirmationBodyRenderer confirmationBodyRenderer,
+                         @Qualifier("ukClock") Clock ukClock) {
+
+        this.manageHearingConfigurer = manageHearingConfigurer;
+        this.hearingService = hearingService;
+        this.locationReferenceService = locationReferenceService;
+        this.pcsCaseService = pcsCaseService;
+        this.partyService = partyService;
+        this.hearingSummaryRenderer = hearingSummaryRenderer;
+        this.confirmationBodyRenderer = confirmationBodyRenderer;
+        this.ukClock = ukClock;
+    }
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -90,10 +115,18 @@ public class ManageHearing implements CCDConfig<PCSCase, State, UserRole> {
             pcsCase.setHearingLocation("Unable to find hearing location");
         }
 
-        if (CollectionUtils.isEmpty(pcsCase.getHearingList())) {
+        List<HearingEntity> futureHearings = getFutureHearings(pcsCaseEntity);
+
+        if (futureHearings.isEmpty()) {
             pcsCase.setShowManageHearingPage(VerticalYesNo.NO);
             pcsCase.setManageHearingOption(ManageHearingOption.ADD);
         } else {
+            HearingEntity nextHearingEntity = futureHearings.getFirst();
+            String hearingLocation = pcsCase.getHearingLocation();
+            pcsCase.getHearing().setHearingId(nextHearingEntity.getId());
+            pcsCase.getHearing().setHearingSummaryMarkdown(
+                hearingSummaryRenderer.renderMarkdown(nextHearingEntity, hearingLocation));
+
             pcsCase.setShowManageHearingPage(VerticalYesNo.YES);
         }
 
@@ -101,37 +134,36 @@ public class ManageHearing implements CCDConfig<PCSCase, State, UserRole> {
     }
 
     private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
-        Long caseId = eventPayload.caseReference();
+        long caseReference = eventPayload.caseReference();
         PCSCase caseData = eventPayload.caseData();
-        String address = addressFormatter
-            .formatMediumAddress(caseData.getPropertyAddress(), AddressFormatter.COMMA_DELIMITER);
 
-        if (
-            caseData.getManageHearingOption() == ManageHearingOption.ADD
-                || caseData.getShowManageHearingPage() != VerticalYesNo.YES
-        ) {
-            hearingService.addHearing(caseId, caseData);
+        // Default action is ADD if the choice screen wasn't shown
+        if (caseData.getShowManageHearingPage() != VerticalYesNo.YES) {
+            caseData.setManageHearingOption(ManageHearingOption.ADD);
+        }
+
+        String confirmationBody = "";
+        switch (caseData.getManageHearingOption()) {
+            case ADD: {
+                hearingService.addHearing(caseReference, caseData);
+                confirmationBody = confirmationBodyRenderer
+                    .renderHearingAddedConfirmationBody(caseData, caseReference);
+                break;
+            }
+            case EDIT: {
+                break;
+            }
+            case CANCEL: {
+                hearingService.cancelHearing(caseData.getHearing());
+                confirmationBody = confirmationBodyRenderer
+                    .renderHearingCancelledConfirmationBody(caseData, caseReference);
+                break;
+            }
         }
 
         return SubmitResponse.<State>builder()
-            .confirmationBody(getConfirmationBody(caseId, address, caseData.getCaseNameHmctsInternal()))
+            .confirmationBody(confirmationBody)
             .build();
-    }
-
-    private String getConfirmationBody(Long caseId, String address, String caseName) {
-        return """
-            ---
-            <div class="govuk-panel govuk-panel--confirmation govuk-!-padding-top-3 govuk-!-padding-bottom-3">
-            <span class="govuk-panel__title govuk-!-font-size-36">Hearing Added</span><br>
-            <span class="govuk-panel__body">Case number #%s</span><br>
-            <span class="govuk-panel__body">%s</span><br>
-            <span class="govuk-panel__body">%s</span><br>
-            </div>
-
-            <h3>What happens next</h3>
-
-            A hearing notice will be issued if you specified one is needed.
-            """.formatted(caseId, address, caseName);
     }
 
     private DynamicMultiSelectList buildPartyList(PcsCaseEntity pcsCaseEntity) {
@@ -160,6 +192,15 @@ public class ManageHearing implements CCDConfig<PCSCase, State, UserRole> {
             .code(partyEntity.getId())
             .label(label)
             .build();
+    }
+
+    private List<HearingEntity> getFutureHearings(PcsCaseEntity pcsCaseEntity) {
+        LocalDateTime now = LocalDateTime.now(ukClock);
+        return pcsCaseEntity.getHearings().stream()
+            .filter(hearingEntity -> hearingEntity.getHearingDate().isAfter(now))
+            .filter(hearingEntity -> BooleanUtils.isNotTrue(hearingEntity.getCancelled()))
+            .sorted(Comparator.comparing(HearingEntity::getHearingDate).reversed())
+            .toList();
     }
 
 }

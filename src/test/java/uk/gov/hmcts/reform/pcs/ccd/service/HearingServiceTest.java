@@ -1,9 +1,9 @@
 package uk.gov.hmcts.reform.pcs.ccd.service;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.DynamicListElement;
@@ -15,13 +15,19 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.HearingNoticeWording;
 import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.HearingType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.HearingEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.repository.HearingRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.hearing.HearingService;
+import uk.gov.hmcts.reform.pcs.exception.HearingNotFoundException;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -30,12 +36,17 @@ public class HearingServiceTest {
 
     @Mock
     private PcsCaseService pcsCaseService;
-
     @Mock
     private PcsCaseRepository pcsCaseRepository;
+    @Mock
+    private HearingRepository hearingRepository;
 
-    @InjectMocks
-    private HearingService hearingService;
+    private HearingService underTest;
+
+    @BeforeEach
+    void setUp() {
+        underTest = new HearingService(pcsCaseService, pcsCaseRepository, hearingRepository);
+    }
 
     @Test
     void shouldSaveHearing() {
@@ -73,7 +84,7 @@ public class HearingServiceTest {
         when(pcsCaseService.loadCase(caseReference)).thenReturn(pcsCaseEntity);
 
         // When
-        hearingService.addHearing(caseReference, pcsCase);
+        underTest.addHearing(caseReference, pcsCase);
 
         ArgumentCaptor<PcsCaseEntity> pcsCaseEntityCaptor = ArgumentCaptor.forClass(PcsCaseEntity.class);
         verify(pcsCaseRepository).save(pcsCaseEntityCaptor.capture());
@@ -133,7 +144,7 @@ public class HearingServiceTest {
         when(pcsCaseService.loadCase(caseReference)).thenReturn(pcsCaseEntity);
 
         // When
-        hearingService.addHearing(caseReference, pcsCase);
+        underTest.addHearing(caseReference, pcsCase);
 
         ArgumentCaptor<PcsCaseEntity> pcsCaseEntityCaptor = ArgumentCaptor.forClass(PcsCaseEntity.class);
         verify(pcsCaseRepository).save(pcsCaseEntityCaptor.capture());
@@ -154,5 +165,47 @@ public class HearingServiceTest {
         assertThat(hearingEntity.getIsWithoutNotice()).isEqualTo(VerticalYesNo.NO);
         assertThat(hearingEntity.getAdditionalInformation()).isEqualTo("additional information");
         assertThat(hearingEntity.getNoticeParties()).isEmpty();
+    }
+
+    @Test
+    void shouldCancelHearing() {
+        // Given
+        long hearingId = 5678L;
+        String expectedCancellationReason = "some cancellation reason";
+
+        Hearing hearing = Hearing.builder()
+            .hearingId(hearingId)
+            .cancellationReason(expectedCancellationReason)
+            .build();
+
+        HearingEntity hearingEntity = mock(HearingEntity.class);
+        when(hearingRepository.findById(hearingId)).thenReturn(Optional.of(hearingEntity));
+
+        // When
+        underTest.cancelHearing(hearing);
+
+        // Then
+        verify(hearingEntity).setCancelled(true);
+        verify(hearingEntity).setCancellationReason(expectedCancellationReason);
+    }
+
+    @Test
+    void shouldThrowExceptionCancellingUnknownHearing() {
+        // Given
+        long hearingId = 5678L;
+
+        Hearing hearing = Hearing.builder()
+            .hearingId(hearingId)
+            .build();
+
+        when(hearingRepository.findById(hearingId)).thenReturn(Optional.empty());
+
+        // When
+        Throwable throwable = catchThrowable(() -> underTest.cancelHearing(hearing));
+
+        // Then
+        assertThat(throwable)
+            .isInstanceOf(HearingNotFoundException.class)
+            .hasMessage("Hearing not found with ID %d", hearingId);
     }
 }
