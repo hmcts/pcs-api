@@ -5,7 +5,7 @@
 * 3) View test results by running "open build/reports/tests/test/index.html"
 * */
 
-package uk.gov.hmcts.reform.pcs;
+//package uk.gov.hmcts.reform.pcs;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
