@@ -71,6 +71,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.respondPossessionClaim;
+import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.DEFENDANT_PARTY_EXTRACTOR_NO_DEFENDANTS;
 
 @ExtendWith(MockitoExtension.class)
 class RespondPossessionClaimTest extends BaseEventTest {
@@ -323,7 +324,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
         when(securityContextService.getCurrentUserId()).thenReturn(defendantUserId);
         when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
         when(accessValidator.validateAndGetDefendant(pcsCaseEntity, defendantUserId))
-            .thenThrow(new CaseAccessException("No defendants associated with this case"));
+            .thenThrow(new CaseAccessException(DEFENDANT_PARTY_EXTRACTOR_NO_DEFENDANTS));
 
         PCSCase caseData = PCSCase.builder().build();
 

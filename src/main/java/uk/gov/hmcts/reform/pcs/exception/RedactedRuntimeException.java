@@ -44,11 +44,7 @@ public class RedactedRuntimeException extends RuntimeException {
 
     @Override
     public String getMessage() {
-        return message(
-            getClass(),
-            code,
-            context == null ? null : context.asDebugString()
-        );
+        return message(getClass(), code, context);
     }
 
     @Override
@@ -92,6 +88,10 @@ public class RedactedRuntimeException extends RuntimeException {
     @Override
     public String toString() {
         return getClass().getName() + ": " + getMessage();
+    }
+
+    public ErrorCode getErrorCode() {
+        return code;
     }
 
 }

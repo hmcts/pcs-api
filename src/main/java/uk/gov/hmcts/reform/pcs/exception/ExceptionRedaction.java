@@ -4,7 +4,7 @@ import org.slf4j.LoggerFactory;
 
 public class ExceptionRedaction {
 
-    private static final String REDACTED = "REDACTED";
+    static final String REDACTED = "REDACTED";
 
     private ExceptionRedaction() {
 
@@ -14,10 +14,10 @@ public class ExceptionRedaction {
         return "%s [%s: %s]".formatted(REDACTED, code.internalCode(), code.safeDescription());
     }
 
-    public static String message(Class<?> exceptionClass, ErrorCode code, String debugMessage) {
+    public static String message(Class<?> exceptionClass, ErrorCode code, RedactionContext redactionContext) {
         if (debugEnabled(exceptionClass)) {
-            if (debugMessage != null && !debugMessage.isBlank()) {
-                return debugMessage;
+            if (redactionContext != null) {
+                return redactionContext.asDebugString();
             }
             return code.safeDescription();
         }

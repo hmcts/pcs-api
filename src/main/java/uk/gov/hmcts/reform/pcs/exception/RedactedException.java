@@ -11,25 +11,25 @@ import static uk.gov.hmcts.reform.pcs.exception.ExceptionRedaction.stackTrace;
 public class RedactedException extends Exception {
 
     private final ErrorCode code;
-    private final String debugMessage;
+    private final RedactionContext context;
     private final Throwable debugCause;
 
     public RedactedException(ErrorCode code) {
         this(code, null, null);
     }
 
-    public RedactedException(ErrorCode code, String debugMessage) {
-        this(code, debugMessage, null);
+    public RedactedException(ErrorCode code, RedactionContext context) {
+        this(code, context, null);
     }
 
     public RedactedException(ErrorCode code, Throwable debugCause) {
         this(code, null, debugCause);
     }
 
-    public RedactedException(ErrorCode code, String debugMessage, Throwable debugCause) {
+    public RedactedException(ErrorCode code, RedactionContext context, Throwable debugCause) {
         super(ExceptionRedaction.safeMessage(code), null, false, true);
         this.code = code;
-        this.debugMessage = debugMessage;
+        this.context = context;
         this.debugCause = debugCause;
     }
 
@@ -39,7 +39,7 @@ public class RedactedException extends Exception {
 
     @Override
     public String getMessage() {
-        return message(getClass(), code, debugMessage);
+        return message(getClass(), code, context);
     }
 
     @Override

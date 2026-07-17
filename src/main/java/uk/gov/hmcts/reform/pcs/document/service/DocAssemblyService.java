@@ -15,6 +15,9 @@ import uk.gov.hmcts.reform.pcs.document.service.exception.DocAssemblyException;
 import uk.gov.hmcts.reform.pcs.exception.ErrorCode;
 import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
 
+import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.DOC_ASSEMBLY_NO_URL_RETURNED;
+import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.DOC_GENERATION_FAILED;
+
 @Slf4j
 @Service
 public class DocAssemblyService {
@@ -66,14 +69,14 @@ public class DocAssemblyService {
             String documentUrl = response.getRenditionOutputLocation();
             if (documentUrl == null || documentUrl.isEmpty()) {
                 log.error("No or empty renditionOutputLocation found in Doc Assembly response");
-                throw new DocAssemblyException(ErrorCode.DOC_ASSEMBLY_NO_URL_RETURNED);
+                throw new DocAssemblyException(DOC_ASSEMBLY_NO_URL_RETURNED);
             }
             log.info("Document generated successfully. URL: {}", documentUrl);
             return documentUrl;
         } catch (DocumentGenerationFailedException e) {
             // This is the exception thrown by DocAssemblyClient.generateOrder()
             log.error("Document generation failed.", e);
-            throw new DocAssemblyException(ErrorCode.DOC_GENERATION_FAILED, e);
+            throw new DocAssemblyException(DOC_GENERATION_FAILED, e);
         } catch (DocAssemblyException e) {
             throw e;
         } catch (Exception e) {

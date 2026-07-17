@@ -13,7 +13,6 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 import uk.gov.hmcts.reform.pcs.exception.AccessCodeAlreadyUsedException;
 import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
-import uk.gov.hmcts.reform.pcs.exception.CaseAssignmentException;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.exception.IdamException;
 import uk.gov.hmcts.reform.pcs.exception.InvalidAccessCodeException;
@@ -62,8 +61,9 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(CaseAccessException.class)
     public ResponseEntity<Error> handleCaseAccess(CaseAccessException ex) {
-        log.error("Case access denied", ex);
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new Error(ex.getMessage()));
+        String message = "No defendants associated with this case";
+        log.error(message, ex);
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new Error(message));
     }
 
     @ExceptionHandler(IllegalStateException.class)
@@ -76,14 +76,6 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     public ResponseEntity<Error> handleAccessCodeAlreadyUsed(AccessCodeAlreadyUsedException ex) {
         log.error("Access code already used", ex);
         return ResponseEntity.status(HttpStatus.CONFLICT).body(new Error(ex.getMessage()));
-    }
-
-    @ExceptionHandler(CaseAssignmentException.class)
-    public ResponseEntity<Error> handleCaseAssignmentException(CaseAssignmentException ex) {
-        log.error("Case assignment failed", ex);
-        return ResponseEntity
-            .status(HttpStatus.INTERNAL_SERVER_ERROR)
-            .body(new Error(ex.getMessage()));
     }
 
     @ExceptionHandler(IdamException.class)

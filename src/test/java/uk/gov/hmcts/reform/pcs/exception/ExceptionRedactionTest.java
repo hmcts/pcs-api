@@ -1,9 +1,9 @@
 package uk.gov.hmcts.reform.pcs.exception;
 
 import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import ch.qos.logback.classic.Logger;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -41,10 +41,11 @@ public class ExceptionRedactionTest {
         // Given
         logger.setLevel(Level.INFO);
         ErrorCode code = ErrorCode.DOC_ASSEMBLY_NO_URL_RETURNED;
-        String debugMsg = "Example sensitive failure message";
+        RedactionContext redactionContext = RedactionContext.builder().value(
+            "Issue", "Example sensitive failure message").build();
 
         // When // Then
-        assertThat(ExceptionRedaction.message(RedactedRuntimeException.class, code, debugMsg))
+        assertThat(ExceptionRedaction.message(RedactedRuntimeException.class, code, redactionContext))
             .isEqualTo("%s [%s: %s]".formatted("REDACTED", code.internalCode(), code.safeDescription()));
     }
 
@@ -53,10 +54,11 @@ public class ExceptionRedactionTest {
         // Given
         logger.setLevel(Level.DEBUG);
         ErrorCode code = ErrorCode.DOC_ASSEMBLY_NO_URL_RETURNED;
-        String debugMsg = "Example sensitive failure message";
+        RedactionContext redactionContext = RedactionContext.of("T", "2");
 
         // When // Then
-        assertThat(ExceptionRedaction.message(RedactedRuntimeException.class, code, debugMsg)).isEqualTo(debugMsg);
+        assertThat(ExceptionRedaction.message(RedactedRuntimeException.class, code, redactionContext))
+            .isEqualTo(redactionContext.asDebugString());
     }
 
     @Test
@@ -64,10 +66,10 @@ public class ExceptionRedactionTest {
         // Given
         logger.setLevel(Level.ERROR);
         ErrorCode code = ErrorCode.DOC_ASSEMBLY_NO_URL_RETURNED;
-        String debugMsg = "Example sensitive failure message";
 
         // When // Then
-        assertThat(ExceptionRedaction.message(RedactedRuntimeException.class, code, debugMsg))
+        assertThat(ExceptionRedaction.message(RedactedRuntimeException.class, code,
+                                              RedactionContext.of("Test", "Example sensitive failure message")))
             .isEqualTo("REDACTED [DOC_ASSEMBLY_1: No document URL returned from Doc Assembly service]");
     }
 

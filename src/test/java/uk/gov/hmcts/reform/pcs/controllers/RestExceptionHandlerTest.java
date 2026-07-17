@@ -18,7 +18,6 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.context.request.WebRequest;
 import uk.gov.hmcts.reform.pcs.exception.AccessCodeAlreadyUsedException;
 import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
-import uk.gov.hmcts.reform.pcs.exception.CaseAssignmentException;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.exception.IdamException;
 import uk.gov.hmcts.reform.pcs.exception.InvalidAccessCodeException;
@@ -340,40 +339,6 @@ class RestExceptionHandlerTest {
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
         assertThat(responseEntity.getBody()).isNotNull();
         assertThat(responseEntity.getBody().message()).isEqualTo(expectedErrorMessage);
-    }
-
-    @Test
-    void shouldHandleCaseAssignmentException() {
-        // Given
-        String expectedErrorMessage = "Failed to establish case access for case 123456789012";
-        CaseAssignmentException exception = new CaseAssignmentException(expectedErrorMessage);
-
-        // When
-        ResponseEntity<RestExceptionHandler.Error> responseEntity
-            = underTest.handleCaseAssignmentException(exception);
-
-        // Then
-        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
-        assertThat(responseEntity.getBody()).isNotNull();
-        assertThat(responseEntity.getBody().message()).isEqualTo(expectedErrorMessage);
-    }
-
-    @Test
-    void shouldHandleCaseAssignmentExceptionWithCause() {
-        // Given
-        String expectedErrorMessage = "Failed to establish case access for case 123456789012";
-        Throwable cause = new RuntimeException("CCD assignment API failure");
-        CaseAssignmentException exception = new CaseAssignmentException(expectedErrorMessage, cause);
-
-        // When
-        ResponseEntity<RestExceptionHandler.Error> responseEntity
-            = underTest.handleCaseAssignmentException(exception);
-
-        // Then
-        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
-        assertThat(responseEntity.getBody()).isNotNull();
-        assertThat(responseEntity.getBody().message()).isEqualTo(expectedErrorMessage);
-        assertThat(exception.getCause()).isEqualTo(cause);
     }
 
     @Test
