@@ -52,6 +52,9 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
     @Value("${caseApi.url}")
     private String caseApiUrl;
 
+    @Value("${shutter.service:false}")
+    private boolean shutterService;
+
     public static String getCaseType() {
         return withSuffix(CASE_TYPE_ID, "-");
     }
@@ -154,6 +157,10 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
             .field(PCSCase::getFlagLauncherInternal, null, "#ARGUMENT(READ)")
             .field(PCSCase::getCaseFlags, "flagLauncherInternal!=\"\"")
             .field(PCSCase::getParties, "flagLauncherInternal!=\"\"", "#ARGUMENT(Flags)");
+
+        if (shutterService) {
+            builder.shutterService();
+        }
 
         configureCaseFileCategories(builder);
     }
