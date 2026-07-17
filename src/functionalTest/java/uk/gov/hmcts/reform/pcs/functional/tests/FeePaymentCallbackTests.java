@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import org.junit.jupiter.api.extension.ExtendWith;
 import uk.gov.hmcts.reform.pcs.functional.config.TestConstants;
@@ -29,6 +30,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 @Tag("Functional")
 @ExtendWith(SerenityJUnit5Extension.class)
 @EnabledIfEnvironmentVariable(named = "CCD_ENABLED", matches = "true")
+@DisabledIfEnvironmentVariable(named = "SHUTTER_SERVICE", matches = "true")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class FeePaymentCallbackTests extends BaseApi {
 
