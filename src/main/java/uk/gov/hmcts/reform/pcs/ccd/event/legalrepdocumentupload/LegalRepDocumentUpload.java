@@ -16,9 +16,11 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocumentUploadDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.DocumentUploadCategory;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.page.legalrepdocumentupload.LegalRepDocumentUploadConfigurer;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
+import uk.gov.hmcts.reform.pcs.ccd.service.party.LegalRepForDefendantAccessValidator;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
@@ -27,7 +29,6 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.time.LocalDateTime;
-import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -44,6 +45,7 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
     private final PcsCaseService pcsCaseService;
     private final GenAppVisibilityService genAppVisibilityService;
     private final SecurityContextService securityContextService;
+    private final LegalRepForDefendantAccessValidator legalRepForDefendantAccessValidator;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -53,7 +55,8 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
                 .forAllStates()
                 .name("Upload additional documents")
                 .grant(Permission.CRUD, UserRole.DEFENDANT_SOLICITOR)
-                .showSummary();
+                .showSummary()
+                .endButtonLabel("Submit");
         legalRepDocumentUploadConfigurer.configurePages(new PageBuilder(eventBuilder));
     }
 
@@ -67,21 +70,19 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
         }
 
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
-
         UUID currentUserId = securityContextService.getCurrentUserId();
-        List<GenAppEntity> visibleGenApps =
-            genAppVisibilityService.getVisibleGenAppsToUser(pcsCaseEntity.getGenApps(), currentUserId);
 
         List<DynamicStringListElement> validCategoryItems =
             Arrays.stream(DocumentUploadCategory.values())
                 .flatMap(category -> {
                     if (category == DocumentUploadCategory.MAIN_CLAIM_OR_COUNTERCLAIM) {
-                        return Stream.of(buildCategoryItem(category, null));
+                        return Stream.of(buildCategoryItem(category, category.name(), null));
                     }
 
-                    return findGenAppDatesForCategory(visibleGenApps, category)
+                    return findGenAppsForCategory(pcsCaseEntity, currentUserId, category)
                         .stream()
-                        .map(date -> buildCategoryItem(category, date));
+                        .map(genApp -> buildCategoryItem(
+                            category, genApp.getId().toString(), genApp.getApplicationSubmittedDate()));
                 })
                 .toList();
 
@@ -99,16 +100,18 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
 
     DynamicStringListElement buildCategoryItem(
         DocumentUploadCategory category,
+        String code,
         LocalDateTime genAppDate
     ) {
         return DynamicStringListElement.builder()
-            .code(category.name())
+            .code(code)
             .label(category.getLabel(genAppDate))
             .build();
     }
 
-    List<LocalDateTime> findGenAppDatesForCategory(
-        List<GenAppEntity> visibleGenApps,
+    List<GenAppEntity> findGenAppsForCategory(
+        PcsCaseEntity pcsCaseEntity,
+        UUID currentUserId,
         DocumentUploadCategory category
     ) {
         GenAppType mapped = mapCategoryToGenAppType(category);
@@ -116,11 +119,10 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
             return List.of();
         }
 
-        return visibleGenApps.stream()
+        return visibleGenAppsForUser(pcsCaseEntity, currentUserId).stream()
             .filter(genApp -> genApp.getType() == mapped)
-            .map(GenAppEntity::getApplicationSubmittedDate)
-            .filter(Objects::nonNull)
-            .sorted(Comparator.reverseOrder())
+            .filter(genApp -> genApp.getApplicationSubmittedDate() != null)
+            .sorted(Comparator.comparing(GenAppEntity::getApplicationSubmittedDate).reversed())
             .toList();
     }
 
@@ -131,6 +133,38 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
             case GENERAL_APPLICATION -> GenAppType.SOMETHING_ELSE;
             default -> null;
         };
+    }
+
+    private List<GenAppEntity> visibleGenAppsForUser(PcsCaseEntity pcsCaseEntity, UUID currentUserId) {
+        return genAppVisibilityService.getVisibleGenAppsToUser(pcsCaseEntity.getGenApps(), currentUserId);
+    }
+
+    private GenAppEntity resolveSelectedGenApp(PCSCase caseData, PcsCaseEntity pcsCaseEntity, UUID currentUserId) {
+        LegalRepDocumentUploadDetails details = caseData.getLegalRepDocumentUploadDetails();
+
+        if (details == null || details.getValidCategories() == null) {
+            return null;
+        }
+        String selectedCode = details.getValidCategories().getValueCode();
+        if (selectedCode == null) {
+            return null;
+        }
+        UUID selectedId;
+        try {
+            selectedId = UUID.fromString(selectedCode);
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
+        return visibleGenAppsForUser(pcsCaseEntity, currentUserId).stream()
+            .filter(genApp -> selectedId.equals(genApp.getId()))
+            .findFirst()
+            .orElse(null);
+    }
+
+    private List<PartyEntity> loadAndValidateDefendants(PcsCaseEntity pcsCaseEntity) {
+
+        return legalRepForDefendantAccessValidator.validateAndGetDefendants(pcsCaseEntity,
+                                                                            securityContextService.getCurrentUserId());
     }
 
     private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
