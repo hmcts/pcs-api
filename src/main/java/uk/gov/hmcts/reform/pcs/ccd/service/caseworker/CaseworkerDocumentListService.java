@@ -92,7 +92,7 @@ public class CaseworkerDocumentListService {
     }
 
     public DynamicList buildRelatedPartyList(PcsCaseEntity pcsCaseEntity, DynamicList existingList) {
-        DynamicListElement selected = existingList == null ? null : existingList.getValue();
+        final DynamicListElement selected = existingList == null ? null : existingList.getValue();
         ClaimEntity mainClaim = pcsCaseEntity.getMainClaim();
         if (mainClaim == null || CollectionUtils.isEmpty(mainClaim.getClaimParties())) {
             return DynamicList.builder()

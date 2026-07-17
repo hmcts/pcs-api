@@ -37,7 +37,10 @@ public class StartHandler implements Start<PCSCase, State> {
 
         List<ListValue<GeneralApplication>> genApps = caseData.getGenApps();
 
-        boolean showRelatedSubmissionsList = caseworkerDocumentListService.hasRelatedSubmissions(genApps, counterClaims);
+        boolean showRelatedSubmissionsList = caseworkerDocumentListService.hasRelatedSubmissions(
+            genApps,
+            counterClaims
+        );
 
         DynamicStringList relatedSubmissionsList = showRelatedSubmissionsList
             ? caseworkerDocumentListService.buildRelatedSubmissionsList(pcsCaseEntity, genApps, counterClaims) : null;

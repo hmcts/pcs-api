@@ -54,7 +54,10 @@ public class DocumentAmendSelectionService {
         for (CaseFileCategory category : CaseFileCategory.values()) {
             setDocumentsForCategory(details, pcsCase, category);
         }
-        details.setRelatedParty(caseworkerDocumentListService.buildRelatedPartyList(pcsCase, details.getRelatedParty()));
+        details.setRelatedParty(caseworkerDocumentListService.buildRelatedPartyList(
+            pcsCase,
+            details.getRelatedParty()
+        ));
         setApplicationOrCounterclaimLists(caseData, details, pcsCase);
     }
 
@@ -81,13 +84,19 @@ public class DocumentAmendSelectionService {
         }
 
         DynamicListElement resolvedDocument = resolveSelectedDocument(selectedDocuments, selectedDocument);
-        DocumentEntity selectedDocumentEntity = resolveSelectedDocumentEntity(caseReference, selectedFolder, resolvedDocument);
+        DocumentEntity selectedDocumentEntity = resolveSelectedDocumentEntity(
+            caseReference,
+            selectedFolder,
+            resolvedDocument
+        );
         String selectedDocumentBaseFileName = baseFileName(resolvedDocument.getLabel());
         details.setSelectedDocumentId(resolvedDocument.getCode().toString());
         details.setSelectedDocumentFileName(resolvedDocument.getLabel());
         details.setSelectedDocumentBaseFileName(selectedDocumentBaseFileName);
         details.setAmendedFileName(selectedDocumentBaseFileName);
-        details.setSelectedDocumentIssueDate(selectedDocumentEntity == null ? null : selectedDocumentEntity.getIssueDate());
+        details.setSelectedDocumentIssueDate(
+            selectedDocumentEntity == null ? null : selectedDocumentEntity.getIssueDate()
+        );
         details.setIssueDate(selectedDocumentEntity == null ? null : selectedDocumentEntity.getIssueDate());
         preselectRelatedParty(details, selectedDocumentEntity);
         return List.of();

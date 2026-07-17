@@ -46,6 +46,7 @@ import java.util.stream.Stream;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -95,6 +96,11 @@ class CaseworkerDocumentServiceTest {
                                                   documentRepository, documentNameService, counterClaimRepository,
                                                   partyRepository
         );
+        lenient().when(documentService.mapCaseworkerDocumentTypeToDocumentType(any(CaseworkerDocumentType.class)))
+            .thenAnswer(invocation -> {
+                CaseworkerDocumentType documentType = invocation.getArgument(0, CaseworkerDocumentType.class);
+                return DocumentType.valueOf(documentType.name());
+            });
     }
 
     @ParameterizedTest

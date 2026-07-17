@@ -395,8 +395,8 @@ class DocumentAmendSelectionServiceTest {
     void shouldPopulateRelatedSubmissionsListInDescendingDateOrderAndExcludePendingCounterclaims() {
         LocalDateTime baseDateTime = LocalDateTime.parse("2026-05-04T10:00:00");
 
-        String genAppId = UUID.randomUUID().toString();
-        GeneralApplication genApp = GeneralApplication.builder()
+        final String genAppId = UUID.randomUUID().toString();
+        final GeneralApplication genApp = GeneralApplication.builder()
             .rank(1)
             .submittedOn(baseDateTime)
             .build();

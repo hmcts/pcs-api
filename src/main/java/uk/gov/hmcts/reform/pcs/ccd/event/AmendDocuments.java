@@ -14,8 +14,11 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.documentamend.AmendDocumentDetailsPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.documentamend.SelectDocumentPage;
+import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentAmendService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentAmendSelectionService;
+import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.amendDocuments;
 
 @Component
@@ -23,6 +26,8 @@ import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.amendDocuments;
 public class AmendDocuments implements CCDConfig<PCSCase, State, UserRole> {
 
     private final DocumentAmendSelectionService documentAmendSelectionService;
+    private final DocumentAmendService documentAmendService;
+    private final AddressFormatter addressFormatter;
     private final SelectDocumentPage selectDocumentPage;
     private final AmendDocumentDetailsPage amendDocumentDetailsPage;
 
@@ -46,6 +51,7 @@ public class AmendDocuments implements CCDConfig<PCSCase, State, UserRole> {
                 .name("Manage documents: Amend")
                 .grant(Permission.CRU, UserRole.HEARING_CENTRE_TEAM_LEADER)
                 .grant(Permission.CRU, UserRole.HEARING_CENTRE_ADMIN)
+                .grantHistoryOnly(JUDICIAL_HISTORY_ROLES)
                 .showSummary()
                 .endButtonLabel("Continue");
 
@@ -61,6 +67,37 @@ public class AmendDocuments implements CCDConfig<PCSCase, State, UserRole> {
     }
 
     private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
-        return SubmitResponse.defaultResponse();
+        PCSCase caseData = eventPayload.caseData();
+        long caseReference = eventPayload.caseReference();
+        DocumentAmendService.AmendedDocument amendedDocument = documentAmendService
+            .amendDocument(caseData, caseReference);
+
+        String address = addressFormatter
+            .formatMediumAddress(caseData.getPropertyAddress(), AddressFormatter.COMMA_DELIMITER);
+
+        return SubmitResponse.<State>builder()
+            .confirmationBody(getConfirmationBody(
+                amendedDocument.fileName(),
+                caseReference,
+                address,
+                amendedDocument.partyName()
+            ))
+            .build();
+    }
+
+    private String getConfirmationBody(String fileName, long caseReference, String address, String partyName) {
+        return """
+            ---
+            <div class="govuk-panel govuk-panel--confirmation govuk-!-padding-top-3 govuk-!-padding-bottom-3">
+            <span class="govuk-panel__title govuk-!-font-size-32">Document %s amended</span><br>
+            <span class="govuk-panel__body govuk-!-font-size-24">Case number #%s</span><br>
+            <span class="govuk-panel__body govuk-!-font-size-24">%s</span><br>
+            <span class="govuk-panel__body govuk-!-font-size-24">%s</span><br>
+            </div>
+
+            <h3>What happens next</h3>
+
+            The amended document is available to view in case file view.
+            """.formatted(fileName, caseReference, address, partyName);
     }
 }
