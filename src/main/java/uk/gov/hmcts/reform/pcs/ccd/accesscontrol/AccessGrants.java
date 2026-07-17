@@ -25,7 +25,6 @@ final class AccessGrants {
         CITIZEN,
         DEFENDANT,
         PCS_SOLICITOR,
-        PCS_CASE_WORKER,
         JUDGE,
         FEE_PAID_JUDGE,
         CIRCUIT_JUDGE,
