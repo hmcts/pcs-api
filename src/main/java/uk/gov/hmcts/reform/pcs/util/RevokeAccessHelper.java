@@ -17,6 +17,7 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.DraftCaseDataRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyAccessCodeRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.PartyLegalRepresentativeOrganisationRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseRoleAssignmentService;
+import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 
 import java.time.Instant;
 import java.util.List;
@@ -43,12 +44,14 @@ public class RevokeAccessHelper {
     public void revokeOrganisationAccessToRespondToClaim(
         PcsCaseEntity caseEntity,
         LegalRepresentativeOrganisationEntity legalRepresentativeOrganisation,
-        PartyEntity defendantParty
+        PartyEntity defendantParty,
+        UserInfo user
     ) {
         this.draftCaseDataRepository.deleteByCaseReferenceAndEventIdAndLegalRepresentativeOrganisationIdAndPartyId(
             caseEntity.getCaseReference(),
             EventId.respondPossessionClaim,
-            String.valueOf(legalRepresentativeOrganisation.getId()), defendantParty.getId()
+            String.valueOf(legalRepresentativeOrganisation.getOrganisationId()),
+            defendantParty.getId()
         );
 
         boolean representsOtherDefendantsForCase = this.representsOtherDefendantsForCase(
@@ -58,6 +61,7 @@ public class RevokeAccessHelper {
         );
         if (!representsOtherDefendantsForCase) {
             Set<UUID> legalRepresentativeIds = legalRepresentativeOrganisation.getLegalRepresentativeList().stream()
+                .filter(lr -> lr.getIdamId().toString() != user.getUid())
                 .map(LegalRepresentativeEntity::getIdamId)
                     .collect(Collectors.toSet());
             legalRepresentativeIds.forEach(idamId -> caseRoleAssignmentService.revokeRasRole(

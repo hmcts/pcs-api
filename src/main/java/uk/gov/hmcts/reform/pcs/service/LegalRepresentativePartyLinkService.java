@@ -47,7 +47,7 @@ public class LegalRepresentativePartyLinkService {
 
         PartyEntity defendantPartyEntity = getDefendantPartyEntity(caseEntity, partyId);
 
-        unlinkExistingRepresentation(caseEntity, defendantPartyEntity);
+        unlinkExistingRepresentation(caseEntity, defendantPartyEntity, user);
 
         UUID idamId = UUID.fromString(user.getUid());
 
@@ -146,7 +146,7 @@ public class LegalRepresentativePartyLinkService {
             });
     }
 
-    private void unlinkExistingRepresentation(PcsCaseEntity caseEntity, PartyEntity defendantParty) {
+    private void unlinkExistingRepresentation(PcsCaseEntity caseEntity, PartyEntity defendantParty, UserInfo user) {
         // 1. finds the active LegalRepresentativeOrganisationEntity for the defendants partyId and the case
         Optional<LegalRepresentativeOrganisationEntity> legalRepresentativeOrganisationEntity =
             legalRepresentativeOrganisationRepository
@@ -158,7 +158,8 @@ public class LegalRepresentativePartyLinkService {
             .ifPresent(legalRepresentativeOrganisation -> revokeAccessHelper.revokeOrganisationAccessToRespondToClaim(
                 caseEntity,
                 legalRepresentativeOrganisation,
-                defendantParty
+                defendantParty,
+                user
             ));
 
         // 3. revoke defendants access
