@@ -187,7 +187,7 @@ public class DocumentAmendDetails {
     private VerticalYesNo showRelatedSubmissionsList;
 
     @CCD(
-        label = "Which open application or counterclaim does this document relate to?",
+        label = "Which application or counterclaim does this document relate to?",
         searchable = false,
         typeOverride = DynamicRadioList
     )

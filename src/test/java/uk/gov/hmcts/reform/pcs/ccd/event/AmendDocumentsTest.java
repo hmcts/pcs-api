@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.ccd.sdk.api.Field;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
@@ -13,6 +14,9 @@ import uk.gov.hmcts.reform.pcs.ccd.page.documentamend.SelectDocumentPage;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentAmendSelectionService;
 
 import java.time.Clock;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -53,5 +57,39 @@ class AmendDocumentsTest extends BaseEventTest {
         assertThat(configuredEvent.getGrants().get(UserRole.HEARING_CENTRE_ADMIN))
             .containsExactlyInAnyOrder(Permission.C, Permission.R, Permission.U);
         assertThat(configuredEvent.getGrants().get(UserRole.PCS_SOLICITOR)).isEmpty();
+    }
+
+    @Test
+    void shouldConfigureCheckYourAnswersFieldsForBatchFive() {
+        Map<String, Field<?, ?, ?, ?>> fields = configuredEvent.getFields().getFields().stream()
+            .map(fieldBuilder -> (Field<?, ?, ?, ?>) fieldBuilder.build())
+            .collect(Collectors.toMap(Field::getId, Function.identity(), (first, second) -> first));
+
+        assertSummaryField(fields, "documentAmend_AmendedFileName");
+        assertSummaryField(fields, "documentAmend_IssueDate");
+        assertSummaryField(fields, "documentAmend_RelatedParty");
+        assertSummaryField(fields, "documentAmend_RelatedSubmissionsDocumentType");
+        assertSummaryField(fields, "documentAmend_StandaloneDocumentType");
+
+        Field<?, ?, ?, ?> relatedSubmission = fields.get("documentAmend_RelatedSubmission");
+        assertThat(relatedSubmission).isNotNull();
+        assertThat(relatedSubmission.isShowSummary()).isTrue();
+        assertThat(relatedSubmission.getLabel())
+            .isEqualTo("Which application or counterclaim does this document relate to?");
+        assertThat(relatedSubmission.getShowCondition())
+            .isEqualTo("documentAmend_ShowRelatedSubmissionsList=\"YES\"");
+
+        assertThat(fields.get("documentAmend_RelatedSubmissionsDocumentType").getShowCondition())
+            .isEqualTo("documentAmend_RelatedSubmission=\"NONE\" "
+                + "AND documentAmend_ShowRelatedSubmissionsList=\"YES\"");
+        assertThat(fields.get("documentAmend_StandaloneDocumentType").getShowCondition())
+            .isEqualTo("documentAmend_ShowRelatedSubmissionsList!=\"YES\"");
+    }
+
+    private void assertSummaryField(Map<String, Field<?, ?, ?, ?>> fields, String fieldId) {
+        assertThat(fields.get(fieldId))
+            .withFailMessage("Expected %s to be configured for the CYA summary", fieldId)
+            .isNotNull();
+        assertThat(fields.get(fieldId).isShowSummary()).isTrue();
     }
 }
