@@ -28,20 +28,26 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.ContactPreferencesEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.AccessCodeGenerationService;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseRoleAssignmentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 import uk.gov.hmcts.reform.pcs.idam.IdamAuthenticator;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityResult;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.postcodecourt.service.EligibilityService;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationDetailsService;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 import uk.gov.hmcts.reform.pcs.service.LegalRepresentativePartyLinkService;
+import uk.gov.hmcts.reform.pcs.testingsupport.model.PartyEmail;
 import uk.gov.hmcts.reform.pcs.testingsupport.model.TestingSupportAccessCode;
 import uk.gov.hmcts.reform.pcs.testingsupport.service.CcdTestCaseOrchestrator;
 
@@ -72,6 +78,7 @@ public class TestingSupportController {
     private final EligibilityService eligibilityService;
     private final PcsCaseRepository pcsCaseRepository;
     private final JdbcTemplate jdbcTemplate;
+    private final PartyRepository partyRepository;
     private final ModelMapper modelMapper;
     private final CcdTestCaseOrchestrator ccdTestCaseOrchestrator;
     private final CaseRoleAssignmentService caseRoleAssignmentService;
@@ -80,6 +87,7 @@ public class TestingSupportController {
     private final OrganisationDetailsService organisationDetailsService;
     private final PcsCaseService pcsCaseService;
     private final AccessCodeGenerationService accessCodeGenerationService;
+    private final FeatureToggleService featureToggleService;
 
     @Operation(
         summary = "Schedule a Hello World task",
@@ -410,4 +418,43 @@ public class TestingSupportController {
             return ResponseEntity.internalServerError().build();
         }
     }
+
+    @Operation(
+        summary = "Set a party email address and contact preference"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Email set successfully", content = @Content()),
+        @ApiResponse(
+            responseCode = "400", description = "Bad request", content = @Content()),
+        @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing authorization token"),
+        @ApiResponse(responseCode = "404", description = "Party not found"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    @PostMapping("/party/{partyId}/email-address")
+    public ResponseEntity<String> setPartyEmail(
+        @RequestHeader(value = "ServiceAuthorization") String serviceAuthorization,
+        @PathVariable UUID partyId,
+        @RequestBody PartyEmail partyEmail
+    ) {
+        if (!partyId.equals(partyEmail.getPartyId())) {
+            return ResponseEntity.badRequest().body("Party ID in payload does not match URL");
+        }
+
+        PartyEntity partyEntity = partyRepository.findById(partyId)
+            .orElseThrow(() -> new PartyNotFoundException("No party found for provided ID"));
+
+        partyEntity.setEmailAddress(partyEmail.getEmailAddress());
+        ContactPreferencesEntity contactPreferences = partyEntity.getContactPreferences();
+        if (contactPreferences == null) {
+            contactPreferences = ContactPreferencesEntity.builder().build();
+            partyEntity.setContactPreferences(contactPreferences);
+        }
+
+        contactPreferences.setContactByEmail(VerticalYesNo.YES);
+
+        partyRepository.save(partyEntity);
+
+        return ResponseEntity.ok().build();
+    }
+
 }
