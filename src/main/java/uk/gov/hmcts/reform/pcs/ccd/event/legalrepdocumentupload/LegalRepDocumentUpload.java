@@ -216,7 +216,7 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
         return """
             ---
             <div class="govuk-panel govuk-panel--confirmation govuk-!-padding-top-3 govuk-!-padding-bottom-3">
-                <span class="govuk-panel__title govuk-!-font-size-36">Document uploaded</span>
+                <span class="govuk-panel__title govuk-!-font-size-36">Documents uploaded</span>
             </div>
             <p class="govuk-body">We have received the documents you uploaded.</p>
              <h3>What happens next</h3>
