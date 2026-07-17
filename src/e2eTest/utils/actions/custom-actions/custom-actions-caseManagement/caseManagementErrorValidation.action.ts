@@ -1,13 +1,15 @@
 import { Page } from '@playwright/test';
 import { performAction } from '@utils/controller-caseManagement';
 import { IAction, actionData, actionRecord } from '@utils/interfaces/action.interface';
-import { changeCaseState, selectDocument } from '@data/page-data-figma/page-data-caseManagement-figma';
+import { changeCaseState, enterGenappApplication, selectDocument } from '@data/page-data-figma/page-data-caseManagement-figma';
+import { allPartyDetails } from './caseManagement.action';
 
 export class ErrorValidationAction implements IAction {
   async execute(page: Page, action: string, errorFlag: string | actionRecord, roles?: actionData): Promise<void> {
     const actionsMap = new Map<string, () => Promise<void>>([
       ['errorValidationSelectDocumentPage', () => this.errorValidationSelectDocumentPage(errorFlag as string)],
       ['errorValidationChangeCaseStatePage', () => this.errorValidationChangeCaseStatePage(errorFlag as string)],
+      ['errorValidationEnterGeneralAppPage', () => this.errorValidationEnterGeneralAppPage(errorFlag as string)],
 
     ]);
     const actionToPerform = actionsMap.get(action);
@@ -43,6 +45,35 @@ export class ErrorValidationAction implements IAction {
         option: changeCaseState.caseStateHiddenOption,
         button: changeCaseState.continueButton
       });
+    }
+  }
+
+  private async errorValidationEnterGeneralAppPage(validationReq: string) {
+    if (validationReq === 'YES') {
+      await performAction('inputErrorValidation', {
+        validationType: enterGenappApplication.errorValidationType.two,
+        inputArray: enterGenappApplication.errorValidationField.errorRadioOption1,
+        question: enterGenappApplication.whichPartyMadeAppQuestion,
+        option: allPartyDetails[0],
+        button: enterGenappApplication.continueButton
+      });
+      await performAction('inputErrorValidation', {
+        validationType: enterGenappApplication.errorValidationType.two,
+        inputArray: enterGenappApplication.errorValidationField.errorRadioOption2,
+        question: enterGenappApplication.typeOfAppQuestion,
+        option: enterGenappApplication.somethingElseRadioOption,
+        button: enterGenappApplication.continueButton
+      });
+      await performAction('inputErrorValidation', {
+        validationType: enterGenappApplication.errorValidationType.five,
+        inputArray: enterGenappApplication.errorValidationField.errorTextField,
+        header: enterGenappApplication.eventCouldNotBeCreatedErrorMessageHeader,
+        label1: enterGenappApplication.dayTextLabel,
+        label2: enterGenappApplication.monthTextLabel,
+        label3: enterGenappApplication.yearTextLabel,
+        button: enterGenappApplication.continueButton
+      });
+
     }
   }
 

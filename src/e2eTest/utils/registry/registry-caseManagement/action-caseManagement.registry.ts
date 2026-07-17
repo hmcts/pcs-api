@@ -38,8 +38,10 @@ export class ActionCMRegistry {
     ['selectDocumentToAmend', new CaseManagementAction()],
     ['changeCaseState', new CaseManagementAction()],
     ['confirmCaseStateChange', new CaseManagementAction()],
+    ['getAllPartyDetails', new CaseManagementAction()],
     ['errorValidationSelectDocumentPage', new ErrorValidationAction()],
     ['errorValidationChangeCaseStatePage', new ErrorValidationAction()],
+    ['errorValidationEnterGeneralAppPage', new ErrorValidationAction()],
     ['inputErrorValidation', new CaseManagementAction()],
     ['reTryOnCallBackError', new RetryOnCallBackError()],
     
