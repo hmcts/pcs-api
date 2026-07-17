@@ -96,6 +96,7 @@ public class NoticeOfPossessionView {
         return pcsCaseEntity.getDocuments().stream()
             .filter(NoticeOfPossessionView::isNoticeStatement)
             .filter(DocumentsView::isDescriptionEmpty)
+            .filter(DocumentsView::isNotRemoved)
             .map(NoticeOfPossessionView::toDocument)
             .toList();
     }

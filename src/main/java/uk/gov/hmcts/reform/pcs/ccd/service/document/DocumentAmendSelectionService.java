@@ -90,6 +90,7 @@ public class DocumentAmendSelectionService {
                 .filter(Objects::nonNull)
                 .filter(document -> isInCategory(document, category))
                 .filter(document -> document.getType() != DocumentType.DEFENDANT_ACCESS_CODE)
+                .filter(document -> !document.isRemoved())
                 .sorted(DOCUMENT_ORDER)
                 .map(document -> DynamicListElement.builder()
                     .code(document.getId())
