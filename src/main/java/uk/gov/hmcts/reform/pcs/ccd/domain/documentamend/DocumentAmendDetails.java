@@ -211,7 +211,4 @@ public class DocumentAmendDetails {
         return amendedFileName == null ? selectedDocumentBaseFileName : amendedFileName;
     }
 
-    public LocalDate getIssueDate() {
-        return issueDate == null ? selectedDocumentIssueDate : issueDate;
-    }
 }

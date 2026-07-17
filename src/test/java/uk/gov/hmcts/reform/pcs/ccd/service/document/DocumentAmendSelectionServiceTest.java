@@ -636,6 +636,19 @@ class DocumentAmendSelectionServiceTest {
     }
 
     @Test
+    void shouldKeepIssueDateEmptyWhenPrefilledIssueDateIsCleared() {
+        LocalDate originalIssueDate = LocalDate.of(2026, 4, 16);
+
+        DocumentAmendDetails details = DocumentAmendDetails.builder()
+            .selectedDocumentIssueDate(originalIssueDate)
+            .issueDate(null)
+            .build();
+
+        assertThat(details.getSelectedDocumentIssueDate()).isEqualTo(originalIssueDate);
+        assertThat(details.getIssueDate()).isNull();
+    }
+
+    @Test
     void shouldPreselectRelatedPartyWhenSelectedDocumentHasAssociatedParty() {
         PartyEntity claimant = PartyEntity.builder().id(UUID.randomUUID()).build();
         PartyEntity defendant = PartyEntity.builder().id(UUID.randomUUID()).build();

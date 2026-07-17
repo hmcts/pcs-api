@@ -88,6 +88,7 @@ public class DocumentAmendSelectionService {
         details.setSelectedDocumentBaseFileName(selectedDocumentBaseFileName);
         details.setAmendedFileName(selectedDocumentBaseFileName);
         details.setSelectedDocumentIssueDate(selectedDocumentEntity == null ? null : selectedDocumentEntity.getIssueDate());
+        details.setIssueDate(selectedDocumentEntity == null ? null : selectedDocumentEntity.getIssueDate());
         preselectRelatedParty(details, selectedDocumentEntity);
         return List.of();
     }
@@ -98,6 +99,7 @@ public class DocumentAmendSelectionService {
         details.setSelectedDocumentBaseFileName(null);
         details.setAmendedFileName(null);
         details.setSelectedDocumentIssueDate(null);
+        details.setIssueDate(null);
         if (details.getRelatedParty() != null) {
             details.getRelatedParty().setValue(null);
         }
