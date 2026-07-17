@@ -133,10 +133,12 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
             .organisationalRoleName(UserRole.SOLICITOR.getRole())
             .liveTo("01/01/2027");
 
-        // Org profiles per the agreed RRFM Group Access config (page 1973313166)
+        // Org profiles per the agreed RRFM Group Access config (page 1973313166).
+        // The SDK currently keeps only the FIRST row per AccessTypeID, so LOCALAUTH
+        // (the profile of the test organisations) must lead until that is fixed.
         List<String> groupAccessOrgProfiles = List.of(
-            "SOLICITOR_PROFILE",
             "LOCALAUTH_PROFILE",
+            "SOLICITOR_PROFILE",
             "OTHER_REALT_PROFILE",
             "OTHER_PROP_PROFILE",
             "OTHER_NFP_PROFILE",
