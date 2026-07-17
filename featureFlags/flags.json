@@ -2,6 +2,7 @@
   "flagValues": {
     "bulk-print-enabled": false,
     "caseworker-events-enabled": true,
+    "cui-respond-to-claim-lr-enabled": true,
     "release-1.2-enabled": true
   }
 }
