@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.event.documentremoval;
+package uk.gov.hmcts.reform.pcs.ccd.event.caseworker.removedocument;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -13,7 +13,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.documentremoval.DocumentRemovalDetails;
-import uk.gov.hmcts.reform.pcs.ccd.page.documentremoval.SelectDocumentToRemovePage;
+import uk.gov.hmcts.reform.pcs.ccd.page.caseworker.removedocument.SelectDocumentToRemovePage;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentAmendSelectionService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentRemovalService;
 
@@ -21,12 +21,12 @@ import java.util.UUID;
 
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerRoles.CASEWORKER_ROLES;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
-import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.ManageDocumentsStates.MANAGE_DOCUMENTS_STATES;
-import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.removeDocuments;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.ManageDocumentStates.MANAGE_DOCUMENT_STATES;
+import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.removeDocument;
 
 @Component
 @AllArgsConstructor
-public class DocumentRemoval implements CCDConfig<PCSCase, State, UserRole> {
+public class RemoveDocument implements CCDConfig<PCSCase, State, UserRole> {
 
     private final DocumentAmendSelectionService documentSelectionService;
     private final DocumentRemovalService documentRemovalService;
@@ -36,8 +36,8 @@ public class DocumentRemoval implements CCDConfig<PCSCase, State, UserRole> {
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         Event.EventBuilder<PCSCase, UserRole, State> eventBuilder =
             configBuilder
-                .decentralisedEvent(removeDocuments.name(), this::submit, this::start)
-                .forStates(MANAGE_DOCUMENTS_STATES)
+                .decentralisedEvent(removeDocument.name(), this::submit, this::start)
+                .forStates(MANAGE_DOCUMENT_STATES)
                 .name("Manage documents: Remove")
                 .grant(Permission.CRU, CASEWORKER_ROLES)
                 .grantHistoryOnly(JUDICIAL_HISTORY_ROLES)

@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.page.documentremoval;
+package uk.gov.hmcts.reform.pcs.ccd.page.caseworker.removedocument;
 
 import uk.gov.hmcts.ccd.sdk.api.TypedPropertyGetter;
 import uk.gov.hmcts.ccd.sdk.type.DynamicList;
@@ -7,7 +7,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.documentremoval.DocumentRemovalDetails;
 
-enum DocumentCategoryField {
+enum DocumentRemovalCategoryField {
     STATEMENTS_OF_CASE(
         CaseFileCategory.STATEMENTS_OF_CASE,
         "StatementsOfCaseDocuments",
@@ -88,7 +88,7 @@ enum DocumentCategoryField {
     final TypedPropertyGetter<DocumentRemovalDetails, YesOrNo> emptyGetter;
     final TypedPropertyGetter<DocumentRemovalDetails, String> reasonGetter;
 
-    DocumentCategoryField(CaseFileCategory category,
+    DocumentRemovalCategoryField(CaseFileCategory category,
                           String documentsFieldId,
                           String emptyFieldId,
                           TypedPropertyGetter<PCSCase, DynamicList> documentsGetter,

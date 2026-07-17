@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentFolderSelection;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentSelectionDetails;
 
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.FixedList;
 
@@ -22,7 +22,7 @@ import static uk.gov.hmcts.ccd.sdk.type.FieldType.FixedList;
 @AllArgsConstructor
 @JsonInclude(Include.NON_NULL)
 @JsonNaming(PropertyNamingStrategies.UpperCamelCaseStrategy.class)
-public class DocumentAmendDetails implements DocumentFolderSelection {
+public class DocumentAmendDetails implements DocumentSelectionDetails {
 
     @CCD(
         label = "Which folder is the document in?",

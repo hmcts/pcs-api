@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.page.documentremoval;
+package uk.gov.hmcts.reform.pcs.ccd.page.caseworker.removedocument;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

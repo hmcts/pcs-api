@@ -20,5 +20,5 @@ public enum EventId {
     createFlags,
     amendFlags,
     claimIssuePayment,
-    removeDocuments
+    removeDocument
 }

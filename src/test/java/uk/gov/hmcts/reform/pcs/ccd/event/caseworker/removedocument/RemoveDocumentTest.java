@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.event.documentremoval;
+package uk.gov.hmcts.reform.pcs.ccd.event.caseworker.removedocument;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -11,7 +11,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.documentremoval.DocumentRemovalDetails;
 import uk.gov.hmcts.reform.pcs.ccd.event.BaseEventTest;
-import uk.gov.hmcts.reform.pcs.ccd.page.documentremoval.SelectDocumentToRemovePage;
+import uk.gov.hmcts.reform.pcs.ccd.page.caseworker.removedocument.SelectDocumentToRemovePage;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentAmendSelectionService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentRemovalService;
 
@@ -22,7 +22,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
-class DocumentRemovalTest extends BaseEventTest {
+class RemoveDocumentTest extends BaseEventTest {
 
     @Mock
     private DocumentAmendSelectionService documentSelectionService;
@@ -33,7 +33,7 @@ class DocumentRemovalTest extends BaseEventTest {
 
     @BeforeEach
     void setUp() {
-        DocumentRemoval underTest = new DocumentRemoval(
+        RemoveDocument underTest = new RemoveDocument(
             documentSelectionService, documentRemovalService, selectDocumentToRemovePage
         );
 

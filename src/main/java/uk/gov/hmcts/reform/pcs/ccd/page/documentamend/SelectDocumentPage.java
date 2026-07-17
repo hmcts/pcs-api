@@ -43,14 +43,14 @@ public class SelectDocumentPage implements CcdPageConfiguration {
                 .label("emptyFolderDocumentQuestion", "", NEVER_SHOW)
             .done();
 
-        for (DocumentCategoryField categoryField : DocumentCategoryField.values()) {
+        for (DocumentAmendCategoryField categoryField : DocumentAmendCategoryField.values()) {
             addCategoryFields(page, categoryField);
         }
 
         FieldCollectionBuilder<DocumentAmendDetails, State, ?> documentAmendDetailsFields =
             page.complex(PCSCase::getDocumentAmendDetails);
 
-        for (DocumentCategoryField categoryField : DocumentCategoryField.values()) {
+        for (DocumentAmendCategoryField categoryField : DocumentAmendCategoryField.values()) {
             documentAmendDetailsFields.readonly(categoryField.emptyGetter, NEVER_SHOW, true);
         }
 
@@ -63,7 +63,7 @@ public class SelectDocumentPage implements CcdPageConfiguration {
     }
 
     private void addCategoryFields(FieldCollectionBuilder<PCSCase, State, ?> page,
-                                   DocumentCategoryField categoryField) {
+                                   DocumentAmendCategoryField categoryField) {
         CaseFileCategory category = categoryField.category;
         page
             .label(categoryField.idPrefix + "EmptyFolderMessage", emptyFolderMessage(category),

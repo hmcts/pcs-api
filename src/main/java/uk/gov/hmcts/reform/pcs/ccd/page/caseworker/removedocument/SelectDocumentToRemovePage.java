@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.page.documentremoval;
+package uk.gov.hmcts.reform.pcs.ccd.page.caseworker.removedocument;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -50,18 +50,18 @@ public class SelectDocumentToRemovePage implements CcdPageConfiguration {
                 .label("emptyFolderDocumentQuestion", "", NEVER_SHOW)
             .done();
 
-        for (DocumentCategoryField categoryField : DocumentCategoryField.values()) {
+        for (DocumentRemovalCategoryField categoryField : DocumentRemovalCategoryField.values()) {
             addCategoryFields(page, categoryField);
         }
 
         FieldCollectionBuilder<DocumentRemovalDetails, State, ?> documentRemovalDetailsFields =
             page.complex(PCSCase::getDocumentRemovalDetails);
 
-        for (DocumentCategoryField categoryField : DocumentCategoryField.values()) {
+        for (DocumentRemovalCategoryField categoryField : DocumentRemovalCategoryField.values()) {
             documentRemovalDetailsFields.readonly(categoryField.emptyGetter, NEVER_SHOW, true);
         }
 
-        for (DocumentCategoryField categoryField : DocumentCategoryField.values()) {
+        for (DocumentRemovalCategoryField categoryField : DocumentRemovalCategoryField.values()) {
             documentRemovalDetailsFields.mandatoryWithoutDefaultValue(categoryField.reasonGetter,
                                                               reasonShowCondition(categoryField), REASON_LABEL, false);
         }
@@ -75,7 +75,7 @@ public class SelectDocumentToRemovePage implements CcdPageConfiguration {
     }
 
     private void addCategoryFields(FieldCollectionBuilder<PCSCase, State, ?> page,
-                                   DocumentCategoryField categoryField) {
+                                   DocumentRemovalCategoryField categoryField) {
         page
             .label(categoryField.documentsFieldId + "EmptyFolderMessage",
                    emptyFolderMessage(categoryField.category), noDocumentsShowCondition(categoryField))
@@ -109,17 +109,17 @@ public class SelectDocumentToRemovePage implements CcdPageConfiguration {
             .build();
     }
 
-    private String documentsShowCondition(DocumentCategoryField categoryField) {
+    private String documentsShowCondition(DocumentRemovalCategoryField categoryField) {
         return selectedFolderCondition(categoryField.category) + " AND " + FIELD_PREFIX
             + categoryField.emptyFieldId + NO;
     }
 
-    private String noDocumentsShowCondition(DocumentCategoryField categoryField) {
+    private String noDocumentsShowCondition(DocumentRemovalCategoryField categoryField) {
         return selectedFolderCondition(categoryField.category) + " AND " + FIELD_PREFIX
             + categoryField.emptyFieldId + YES;
     }
 
-    private String reasonShowCondition(DocumentCategoryField categoryField) {
+    private String reasonShowCondition(DocumentRemovalCategoryField categoryField) {
         return selectedFolderCondition(categoryField.category) + " AND "
             + sharedDocumentsFieldId(categoryField.category) + "!=\"\"";
     }
@@ -143,7 +143,7 @@ public class SelectDocumentToRemovePage implements CcdPageConfiguration {
     }
 
     private TypedPropertyGetter<DocumentRemovalDetails, String> reasonGetter(CaseFileCategory category) {
-        for (DocumentCategoryField categoryField : DocumentCategoryField.values()) {
+        for (DocumentRemovalCategoryField categoryField : DocumentRemovalCategoryField.values()) {
             if (categoryField.category == category) {
                 return categoryField.reasonGetter;
             }

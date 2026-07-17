@@ -1,9 +1,8 @@
-package uk.gov.hmcts.reform.pcs.ccd.service.document;
+package uk.gov.hmcts.reform.pcs.ccd.domain;
 
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
 
-public interface DocumentFolderSelection {
+public interface DocumentSelectionDetails {
 
     CaseFileCategory getSelectedFolder();
 
