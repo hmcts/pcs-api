@@ -163,7 +163,9 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
                 .groupRoleName(UserRole.SOLICITOR.getRole())
                 .caseAssignedRoleField(UserRole.PROFESSIONAL_USER.getRole())
                 .groupAccessEnabled(true)
-                .caseAccessGroupIdTemplate("pcs:pcs:prof-org-access:solicitor:$ORGID$")
+                // Must start with the service name in upper case: the definition store rejects
+                // the lowercase template on the agreed RRFM page ("must start with 'PCS'").
+                .caseAccessGroupIdTemplate("PCS:PCS:prof-org-access:solicitor:$ORGID$")
                 .liveTo("01/01/2027");
         }
 
