@@ -12,9 +12,11 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 
 import java.util.Arrays;
 import java.util.EnumSet;
+import java.util.List;
 
 import static java.lang.System.getenv;
 import static java.util.Optional.ofNullable;
+import static uk.gov.hmcts.ccd.sdk.api.Permission.CRU;
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.State.AWAITING_SUBMISSION_TO_HMCTS;
 
@@ -121,30 +123,53 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
             .accessMandatory(true)
             .accessDefault(true)
             .display(false)
+            .description("Access to create cases")
             .hintText("Access to create cases")
             .displayOrder(1)
-            .liveTo("01/01/2027");
-        builder.accessType("prof-org-access")
-            .organisationProfileId("LOCALAUTH_PROFILE")
-            .accessMandatory(false)
-            .accessDefault(false)
-            .display(true)
-            .description("Can manage all cases associated with this organisation")
-            .hintText("Assign to Users to enable access to all cases associated with this organisation")
-            .displayOrder(2)
             .liveTo("01/01/2027");
 
         builder.accessTypeRole("create-cases")
             .organisationProfileId("LOCALAUTH_PROFILE")
             .organisationalRoleName(UserRole.SOLICITOR.getRole())
             .liveTo("01/01/2027");
-        builder.accessTypeRole("prof-org-access")
-            .organisationProfileId("LOCALAUTH_PROFILE")
-            .groupRoleName(UserRole.SOLICITOR.getRole())
-            .caseAssignedRoleField(UserRole.PROFESSIONA_USER.getRole())
-            .groupAccessEnabled(true)
-            .caseAccessGroupIdTemplate("PCS:PCS:prof-org-access:solicitor:$ORGID$")
-            .liveTo("01/01/2027");
+
+        // Org profiles per the agreed RRFM Group Access config (page 1973313166)
+        List<String> groupAccessOrgProfiles = List.of(
+            "SOLICITOR_PROFILE",
+            "LOCALAUTH_PROFILE",
+            "OTHER_REALT_PROFILE",
+            "OTHER_PROP_PROFILE",
+            "OTHER_NFP_PROFILE",
+            "OTHER_CHARITY_PROFILE"
+        );
+
+        for (String orgProfile : groupAccessOrgProfiles) {
+            builder.accessType("prof-org-access")
+                .organisationProfileId(orgProfile)
+                .accessMandatory(false)
+                .accessDefault(false)
+                .display(true)
+                .description("Can manage all cases associated with this organisation")
+                .hintText("Assign to Users to enable access to all cases associated with this organisation")
+                .displayOrder(2)
+                .liveTo("01/01/2027");
+
+            // GroupAccessEnabled is No in the agreed config until case migration is settled;
+            // Yes here so the group role can be exercised on test environments.
+            builder.accessTypeRole("prof-org-access")
+                .organisationProfileId(orgProfile)
+                .groupRoleName(UserRole.SOLICITOR.getRole())
+                .caseAssignedRoleField(UserRole.PROFESSIONAL_USER.getRole())
+                .groupAccessEnabled(true)
+                .caseAccessGroupIdTemplate("pcs:pcs:prof-org-access:solicitor:$ORGID$")
+                .liveTo("01/01/2027");
+        }
+
+        // State-level access for the group-access profiles; without these the data store
+        // filters matched cases out regardless of the caseAccessGroupId key.
+        for (State state : State.values()) {
+            builder.grant(state, CRU, AccessProfile.SOLICITOR, AccessProfile.PROFESSIONAL_USER);
+        }
 
 
         buildCaseListView(builder);
