@@ -346,6 +346,7 @@ am-org-role-mapping-service:
       CCD_DEF_STORE_APP_URL: http://${SERVICE_NAME}-ccd-definition-store
       PROFESSIONAL_REF_APP_URL: http://rd-professional-api-aat.service.core-compute-aat.internal
       PROFESSIONAL_SCHEDULING_ENABLED: true
+      PROFESSIONAL_REFRESH_API_ENABLED: true
 
 aac-manage-case-assignment:
   enabled: true
