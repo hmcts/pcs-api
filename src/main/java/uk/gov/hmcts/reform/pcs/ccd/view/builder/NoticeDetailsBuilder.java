@@ -1,6 +1,8 @@
 package uk.gov.hmcts.reform.pcs.ccd.view.builder;
 
 import org.springframework.stereotype.Component;
+import uk.gov.hmcts.ccd.sdk.type.Document;
+import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServedDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServiceMethod;
@@ -11,6 +13,7 @@ import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 import static uk.gov.hmcts.reform.pcs.ccd.view.CaseDetailsTabUtil.DATE_FORMATTER;
 import static uk.gov.hmcts.reform.pcs.ccd.view.CaseDetailsTabUtil.NO_ANSWER;
@@ -19,15 +22,15 @@ import static uk.gov.hmcts.reform.pcs.ccd.view.CaseDetailsTabUtil.formatDateTime
 @Component
 public class NoticeDetailsBuilder {
 
-    public NoticeTabDetails buildNoticeTabDetails(PCSCase pcsCase) {
+    public NoticeTabDetails buildNoticeTabDetails(PCSCase pcsCase, boolean isSubmitted) {
         if (pcsCase.getLegislativeCountry() == LegislativeCountry.WALES) {
-            return buildNoticeTabDetailsWales(pcsCase);
+            return buildNoticeTabDetailsWales(pcsCase, isSubmitted);
         }
 
-        return buildNoticeTabDetailsEngland(pcsCase);
+        return buildNoticeTabDetailsEngland(pcsCase, isSubmitted);
     }
 
-    private NoticeTabDetails buildNoticeTabDetailsEngland(PCSCase pcsCase) {
+    private NoticeTabDetails buildNoticeTabDetailsEngland(PCSCase pcsCase, boolean isSubmitted) {
         if (pcsCase.getNoticeServed() == null) {
             return NoticeTabDetails.builder()
                     .noticeServed(NO_ANSWER)
@@ -44,13 +47,13 @@ public class NoticeDetailsBuilder {
                 .build();
 
         if (noticeServed == YesOrNo.YES) {
-            populateNoticeDetails(noticeTabDetails, pcsCase.getNoticeServedDetails());
+            populateNoticeDetails(noticeTabDetails, pcsCase.getNoticeServedDetails(), isSubmitted);
         }
 
         return noticeTabDetails;
     }
 
-    private NoticeTabDetails buildNoticeTabDetailsWales(PCSCase pcsCase) {
+    private NoticeTabDetails buildNoticeTabDetailsWales(PCSCase pcsCase, boolean isSubmitted) {
         WalesNoticeDetails walesNoticeDetails = pcsCase.getWalesNoticeDetails();
 
         if (walesNoticeDetails == null) {
@@ -71,17 +74,25 @@ public class NoticeDetailsBuilder {
                 .noticeDate(NO_ANSWER)
                 .build();
 
-        populateNoticeDetails(noticeTabDetails, pcsCase.getNoticeServedDetails());
+        populateNoticeDetails(noticeTabDetails, pcsCase.getNoticeServedDetails(), isSubmitted);
 
         return noticeTabDetails;
     }
 
-    private void populateNoticeDetails(NoticeTabDetails noticeTabDetails, NoticeServedDetails noticeServedDetails) {
+    private void populateNoticeDetails(
+        NoticeTabDetails noticeTabDetails,
+        NoticeServedDetails noticeServedDetails,
+        boolean isSubmitted
+    ) {
         if (noticeServedDetails == null || noticeServedDetails.getServiceMethod() == null) {
             return;
         }
 
-        noticeTabDetails.setNoticeDocuments(noticeServedDetails.getDocuments());
+        List<ListValue<Document>> documents = noticeServedDetails.getDocuments();
+        if (isSubmitted) {
+            noticeServedDetails.setDocuments(null);
+        }
+        noticeTabDetails.setNoticeDocuments(documents);
         noticeTabDetails.setNoticeUploaded(String.valueOf(noticeServedDetails.getAbleToUploadDocument()));
         noticeTabDetails.setReasonsForNoNoticeDocument(noticeServedDetails.getUnableToUploadReason());
 

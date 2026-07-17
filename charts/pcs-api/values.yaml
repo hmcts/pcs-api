@@ -13,7 +13,7 @@ java:
           alias: PCS_DB_PASSWORD
         - name: pcs-api-s2s-secret
           alias: PCS_API_S2S_SECRET
-        - name: govnotify-test-key
+        - name: gov-notify-key
           alias: PCS_NOTIFY_API_KEY
         - name: hmc-servicebus-connection-string
           alias: HEARINGS_SERVICEBUS_CONNECTION_STRING
@@ -29,6 +29,8 @@ java:
           alias: PCS_PRD_ADMIN_PASSWORD
         - name: ccd-elastic-search-hosts
           alias: ELASTIC_SEARCH_HOSTS
+        - name: launchdarkly-sdk-key
+          alias: LAUNCHDARKLY_SDK_KEY
   environment:
     PCS_DB_PORT: "5432"
     PCS_DB_USER_NAME: pgadmin
@@ -37,8 +39,10 @@ java:
     DRAFT_STORE_DB_CONN_OPTIONS: "?sslmode=require&gssEncMode=disable"
     PCS_DB_HOST: "pcs-{{ .Values.global.environment }}.postgres.database.azure.com"
     DOC_ASSEMBLY_URL: "http://dg-docassembly-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal"
+    SEND_LETTER_URL: "http://rpe-send-letter-service-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal"
     IDAM_S2S_AUTH_URL: "http://rpe-service-auth-provider-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal"
     IDAM_API_URL: "https://idam-api.{{ .Values.global.environment }}.platform.hmcts.net"
+    RESPOND_ONLINE_URL: "https://pcs-frontend.{{ .Values.global.environment }}.platform.hmcts.net/access-your-case"
     HMC_API_URL: "http://hmc-cft-hearing-service-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal"
     LOCATION_REF_URL: "http://rd-location-ref-api-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal"
     FEES_REGISTER_API_URL: "http://fees-register-api-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal"
@@ -46,7 +50,7 @@ java:
     PAY_CALLBACK_URL: "http://pcs-api-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal/payment-update"
     FLYWAY_NOOP_STRATEGY: "false"
     SPRING_FLYWAY_ENABLED: "true"
-    HASH_PINS_ENABLED: "true"
+    LAUNCHDARKLY_ENV: "{{ .Values.global.environment }}"
     CCD_DATA_STORE_URL: "http://ccd-data-store-api-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal"
     CASE_DOCUMENT_AM_URL: "http://ccd-case-document-am-api-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal"
     RD_PROFESSIONAL_API_URL: "http://rd-professional-api-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal"

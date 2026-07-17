@@ -33,7 +33,9 @@ import uk.gov.hmcts.reform.pcs.ccd.view.CaseNoteView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseTabView;
 import uk.gov.hmcts.reform.pcs.ccd.view.ClaimGroundsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.ClaimView;
+import uk.gov.hmcts.reform.pcs.ccd.view.DefendantResponseView;
 import uk.gov.hmcts.reform.pcs.ccd.view.DocumentsView;
+import uk.gov.hmcts.reform.pcs.ccd.view.FeatureFlagView;
 import uk.gov.hmcts.reform.pcs.ccd.view.GenAppsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.NoticeOfPossessionView;
 import uk.gov.hmcts.reform.pcs.ccd.view.PartiesView;
@@ -111,9 +113,13 @@ class PCSCaseViewTest {
     @Mock
     private CaseFieldsView caseFieldsView;
     @Mock
-    private EnforcementOrderMediator enforcementOrderMediator;
+    private SearchCriteriaIndexer searchCriteriaIndexer;
+    @Mock
+    private CaseListView caseListView;
     @Mock
     private CaseLinkView caseLinkView;
+    @Mock
+    private EnforcementOrderMediator enforcementOrderMediator;
     @Mock
     private CaseNoteView caseNoteView;
     @Mock
@@ -123,13 +129,13 @@ class PCSCaseViewTest {
     @Mock
     private CaseFlagsView caseFlagsView;
     @Mock
-    private SearchCriteriaIndexer searchCriteriaIndexer;
-    @Mock
-    private CaseListView caseListView;
+    private DefendantResponseView defendantResponseView;
     @Mock
     private LegalRepresentativeSummaryService legalRepresentativeSummaryService;
     @Mock
     private OrganisationService organisationService;
+    @Mock
+    private FeatureFlagView featureFlagView;
 
     private PCSCaseView underTest;
 
@@ -141,11 +147,11 @@ class PCSCaseViewTest {
         underTest = new PCSCaseView(pcsCaseRepository, securityContextService, modelMapper, draftCaseDataService,
                                     caseTitleService, claimView, documentsView, tenancyLicenceView, claimGroundsView,
                                     rentDetailsView, alternativesToPossessionView, asbProhibitedConductView,
-                                    rentArrearsView, noticeOfPossessionView,
-                                    statementOfTruthView, caseFieldsView, caseLinkView, enforcementOrderMediator,
-                                    caseNoteView, caseTabView, partiesView, genAppsView, caseFlagsView,
-                                    searchCriteriaIndexer, caseListView,
-                                    legalRepresentativeSummaryService, organisationService
+                                    rentArrearsView, noticeOfPossessionView, statementOfTruthView, caseFieldsView,
+                                    caseLinkView, enforcementOrderMediator, caseNoteView, caseTabView,
+                                    partiesView, genAppsView, caseFlagsView, searchCriteriaIndexer,
+                                    caseListView, legalRepresentativeSummaryService, organisationService,
+                                    defendantResponseView, featureFlagView
         );
     }
 
@@ -306,7 +312,7 @@ class PCSCaseViewTest {
         // Then
         verify(partiesView).setCaseFields(pcsCase, pcsCaseEntity);
         verify(claimView).setCaseFields(pcsCase, pcsCaseEntity);
-        verify(documentsView).setCaseFields(pcsCase, pcsCaseEntity, orgId);
+        verify(documentsView).setCaseFields(pcsCase, pcsCaseEntity);
         verify(tenancyLicenceView).setCaseFields(pcsCase, pcsCaseEntity);
         verify(claimGroundsView).setCaseFields(pcsCase, pcsCaseEntity);
         verify(rentDetailsView).setCaseFields(pcsCase, pcsCaseEntity);
@@ -317,8 +323,10 @@ class PCSCaseViewTest {
         verify(statementOfTruthView).setCaseFields(pcsCase, pcsCaseEntity);
         verify(caseLinkView).setCaseFields(pcsCase, pcsCaseEntity);
         verify(caseFlagsView).setCaseFields(pcsCase, pcsCaseEntity);
-        verify(genAppsView).setCaseFields(pcsCase, pcsCaseEntity, orgId);
+        verify(defendantResponseView).setCaseFields(pcsCase, pcsCaseEntity);
         verify(caseListView).setCaseFields(pcsCase);
+        verify(genAppsView).setCaseFields(pcsCase, pcsCaseEntity, orgId);
+        verify(featureFlagView).setCaseFields(pcsCase);
         verify(legalRepresentativeSummaryService).handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity, orgId);
     }
 

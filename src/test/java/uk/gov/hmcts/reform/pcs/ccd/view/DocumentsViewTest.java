@@ -3,20 +3,29 @@ package uk.gov.hmcts.reform.pcs.ccd.view;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
+import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -25,8 +34,14 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class DocumentsViewTest {
 
+    private static final UUID CURRENT_USER_ID = UUID.randomUUID();
+
+    @Mock
+    private SecurityContextService securityContextService;
     @Mock
     private GenAppVisibilityService genAppVisibilityService;
+    @Mock
+    private OrganisationService organisationService;
     @Mock
     private PcsCaseEntity pcsCaseEntity;
 
@@ -38,7 +53,7 @@ class DocumentsViewTest {
     void setUp() {
         pcsCase = PCSCase.builder().build();
 
-        underTest = new DocumentsView(genAppVisibilityService);
+        underTest = new DocumentsView(securityContextService, genAppVisibilityService, organisationService);
     }
 
     @Test
@@ -63,12 +78,11 @@ class DocumentsViewTest {
             .binaryUrl("binary url2")
             .categoryId("category 2")
             .build();
-        String organisationId = "org";
 
         when(pcsCaseEntity.getDocuments()).thenReturn(List.of(entity1, entity2));
 
         // When
-        underTest.setCaseFields(pcsCase, pcsCaseEntity, organisationId);
+        underTest.setCaseFields(pcsCase, pcsCaseEntity);
 
         // Then
         List<ListValue<Document>> allDocuments = pcsCase.getAllDocuments();
@@ -105,22 +119,92 @@ class DocumentsViewTest {
     }
 
     @Test
+    void shouldExcludeDefendantAccessCodeLetterFromCaseFile() {
+        DocumentEntity accessCodePack = DocumentEntity.builder()
+            .id(UUID.randomUUID())
+            .fileName("access-code-letter.pdf")
+            .url("pin-url")
+            .type(DocumentType.DEFENDANT_ACCESS_CODE)
+            .build();
+
+        DocumentEntity visibleDocument = DocumentEntity.builder()
+            .id(UUID.randomUUID())
+            .fileName("claim.pdf")
+            .url("claim-url")
+            .categoryId("category")
+            .build();
+
+        when(pcsCaseEntity.getDocuments()).thenReturn(List.of(accessCodePack, visibleDocument));
+
+        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+
+        assertThat(pcsCase.getAllDocuments()).singleElement()
+            .satisfies(document -> assertThat(document.getValue().getFilename()).isEqualTo("claim.pdf"));
+    }
+
+    @Test
     void shouldReturnEmptyListWhenNoDocumentsExist() {
         // Given
-        String organisationId = "org";
         when(pcsCaseEntity.getDocuments()).thenReturn(List.of());
 
         // When
-        underTest.setCaseFields(pcsCase, pcsCaseEntity, organisationId);
+        underTest.setCaseFields(pcsCase, pcsCaseEntity);
 
         // Then
         assertThat(pcsCase.getAllDocuments()).isEmpty();
     }
 
     @Test
-    void shouldFilterGenAppDocumentsBasedOnVisibility() {
+    void shouldShowCounterClaimDocumentWhenStateIsIssued() {
         // Given
-        String orgId = "org";
+        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn("ORG-123");
+
+        CounterClaimEntity counterClaim = mock(CounterClaimEntity.class);
+        when(counterClaim.getStatus()).thenReturn(CounterClaimState.COUNTER_CLAIM_ISSUED);
+
+        DocumentEntity documentEntity = DocumentEntity.builder()
+            .id(UUID.randomUUID())
+            .url("url1")
+            .counterClaim(counterClaim)
+            .build();
+
+        when(pcsCaseEntity.getDocuments()).thenReturn(List.of(documentEntity));
+
+        // When
+        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+
+        // Then
+        assertThat(pcsCase.getAllDocuments()).hasSize(1);
+    }
+
+    @Test
+    void shouldHideCounterClaimDocumentWhenStateIsNotIssued() {
+        // Given
+        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn("ORG-123");
+
+        CounterClaimEntity counterClaim = mock(CounterClaimEntity.class);
+        when(counterClaim.getStatus()).thenReturn(CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED);
+
+        DocumentEntity documentEntity = DocumentEntity.builder()
+            .id(UUID.randomUUID())
+            .url("url1")
+            .counterClaim(counterClaim)
+            .build();
+
+        when(pcsCaseEntity.getDocuments()).thenReturn(List.of(documentEntity));
+
+        // When
+        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+
+        // Then
+        assertThat(pcsCase.getAllDocuments()).isEmpty();
+    }
+
+    @Test
+    void shoulFilterGenAppDocumentsBasedOnVisibilitty() {
+        // Given
+        String orgId = "ORG-123";
+        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(orgId);
 
         GenAppEntity genAppEntity1 = mock(GenAppEntity.class);
         when(genAppVisibilityService.isGenAppVisibleToUser(genAppEntity1, orgId))
@@ -162,7 +246,7 @@ class DocumentsViewTest {
             List.of(documentEntity1, documentEntity2, documentEntity3, documentEntity4));
 
         // When
-        underTest.setCaseFields(pcsCase, pcsCaseEntity, orgId);
+        underTest.setCaseFields(pcsCase, pcsCaseEntity);
 
         // Then
         List<ListValue<Document>> allDocuments = pcsCase.getAllDocuments();
@@ -172,4 +256,121 @@ class DocumentsViewTest {
             .containsExactly("url1", "url3", "url4");
     }
 
+    @ParameterizedTest(name = "[{index}] description={0} => isEmpty={1}")
+    @MethodSource("descriptionProvider")
+    void shouldCheckIfDescriptionIsEmpty(String description, boolean expectedEmpty) {
+        // Given
+        DocumentEntity documentEntity = DocumentEntity.builder()
+                .description(description)
+                .build();
+
+        // When
+        boolean result = DocumentsView.isDescriptionEmpty(documentEntity);
+
+        // Then
+        assertThat(result).isEqualTo(expectedEmpty);
+    }
+
+    @ParameterizedTest
+    @MethodSource("caseDetailsTabDocuments")
+    void shouldFilterOutDocumentsThatAppearInCaseDetailsTab(DocumentType documentType) {
+        // Given
+        DocumentEntity documentEntity = DocumentEntity.builder()
+            .type(documentType)
+            .build();
+
+        when(pcsCaseEntity.getDocuments()).thenReturn(List.of(documentEntity));
+
+        // When
+        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+
+        // Then
+        List<ListValue<Document>> allDocuments = pcsCase.getAllDocuments();
+        assertThat(allDocuments).hasSize(0);
+    }
+
+    @ParameterizedTest
+    @MethodSource("caseDetailsTabDocuments")
+    void shouldNotFilterOutDocumentsThatHaveADescription(DocumentType documentType) {
+        // Given
+        UUID document1Id = UUID.randomUUID();
+        DocumentEntity documentEntity = DocumentEntity.builder()
+            .id(document1Id)
+            .type(documentType)
+            .fileName("filename")
+            .description("description")
+            .build();
+
+        when(pcsCaseEntity.getDocuments()).thenReturn(List.of(documentEntity));
+
+        // When
+        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+
+        // Then
+        List<ListValue<Document>> allDocuments = pcsCase.getAllDocuments();
+        assertThat(allDocuments).hasSize(1);
+        assertThat(allDocuments.getFirst().getValue().getFilename()).isEqualTo("filename");
+    }
+
+    @ParameterizedTest
+    @MethodSource("nonCaseDetailsTabDocuments")
+    void shouldNotFilterOutDocumentsThatDoNotAppearInCaseDetailsTab(DocumentType documentType) {
+        // Given
+        UUID document1Id = UUID.randomUUID();
+        DocumentEntity documentEntity = DocumentEntity.builder()
+            .id(document1Id)
+            .fileName("filename")
+            .type(documentType)
+            .build();
+
+        when(pcsCaseEntity.getDocuments()).thenReturn(List.of(documentEntity));
+
+        // When
+        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+
+        // Then
+        List<ListValue<Document>> allDocuments = pcsCase.getAllDocuments();
+        assertThat(allDocuments).hasSize(1);
+        assertThat(allDocuments.getFirst().getValue().getFilename()).isEqualTo("filename");
+    }
+
+    private static Stream<Arguments> descriptionProvider() {
+        return Stream.of(
+                Arguments.of(null, true),
+                Arguments.of("", true),
+                Arguments.of("   ", true),
+                Arguments.of("Valid description text", false)
+        );
+    }
+
+
+    private static Stream<Arguments> caseDetailsTabDocuments() {
+        return Stream.of(
+            Arguments.of(DocumentType.TENANCY_AGREEMENT),
+            Arguments.of(DocumentType.POSSESSION_NOTICE),
+            Arguments.of(DocumentType.RENT_STATEMENT),
+            Arguments.of(DocumentType.ENERGY_PERFORMANCE_CERTIFICATE),
+            Arguments.of(DocumentType.GAS_SAFETY_CERTIFICATE),
+            Arguments.of(DocumentType.EICR_REPORT),
+            Arguments.of(DocumentType.OCCUPATION_LICENCE)
+        );
+    }
+
+    private static Stream<Arguments> nonCaseDetailsTabDocuments() {
+        return Stream.of(
+            Arguments.of(DocumentType.TENANCY_LICENCE),
+            Arguments.of(DocumentType.NOTICE_SERVED),
+            Arguments.of(DocumentType.WITNESS_STATEMENT),
+            Arguments.of(DocumentType.CERTIFICATE_OF_SERVICE),
+            Arguments.of(DocumentType.CORRESPONDENCE_FROM_DEFENDANT),
+            Arguments.of(DocumentType.CORRESPONDENCE_FROM_CLAIMANT),
+            Arguments.of(DocumentType.NOTICE_FOR_SERVICE_OUT_OF_JURISDICTION),
+            Arguments.of(DocumentType.PHOTOGRAPHIC_EVIDENCE),
+            Arguments.of(DocumentType.INSPECTION_OR_REPORT),
+            Arguments.of(DocumentType.CERTIFICATE_OF_SUITABILITY_AS_LF),
+            Arguments.of(DocumentType.LEGAL_AID_CERTIFICATE),
+            Arguments.of(DocumentType.POLICE_REPORT),
+            Arguments.of(DocumentType.OTHER)
+        );
+    }
 }

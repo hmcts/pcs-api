@@ -41,13 +41,20 @@ import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.DefendantAccessValidator;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.LegalRepForDefendantAccessValidator;
+import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.ClaimResponseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.CounterClaimFeeCalculator;
+import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.CounterClaimService;
+import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.CounterClaimSubmitConfirmationService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.DefendantResponseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.PossessionClaimResponseMapper;
+import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.RespondPossessionClaimSubmitService;
 import uk.gov.hmcts.reform.pcs.ccd.util.SelectedPartyRetriever;
 import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
 import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
+import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
+import uk.gov.hmcts.reform.pcs.feesandpay.service.PaymentService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.ArrayList;
@@ -95,6 +102,20 @@ class RespondPossessionClaimTest extends BaseEventTest {
 
     @Mock
     private RespondToPossessionDraftSavePage respondToPossessionDraftSavePage;
+    @Mock
+    private CounterClaimService counterClaimService;
+    @Mock
+    private CounterClaimFeeCalculator counterClaimFeeCalculator;
+    @Mock
+    private PartyService partyService;
+    @Mock
+    private FeeService feeService;
+    @Mock
+    private PaymentService paymentService;
+    @Mock
+    private uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService documentService;
+    @Mock
+    private com.fasterxml.jackson.databind.ObjectMapper objectMapper;
 
     @Mock
     private SelectedPartyRetriever selectedPartyRetriever;
@@ -146,21 +167,43 @@ class RespondPossessionClaimTest extends BaseEventTest {
             )
         );
 
+        CounterClaimFeeCalculator feeCalculator = new CounterClaimFeeCalculator();
+        RespondPossessionClaimSubmitService submitService = new RespondPossessionClaimSubmitService(
+            claimResponseService,
+            defendantResponseService,
+            counterClaimService,
+            feeCalculator,
+            documentService,
+            draftCaseDataService
+        );
+
+        CounterClaimSubmitConfirmationService confirmationService = new CounterClaimSubmitConfirmationService(
+            partyService,
+            feeService,
+            paymentService,
+            feeCalculator,
+            securityContextService,
+            objectMapper
+        );
 
         SubmitEventHandler submitEventHandler = new SubmitEventHandler(
-            List.of(new LegalRepSubmissionEventStrategy(draftCaseDataService,
-                                                        claimResponseService,
-                                                        defendantResponseService,
-                                                        selectedPartyRetriever,
-                                                        submitResponseFactory,
-                                                        organisationService),
-
-                    new CitizenSubmissionEventStrategy(draftCaseDataService,
-                                                       claimResponseService,
-                                                       defendantResponseService,
-                                                       submitResponseFactory)
-            ),securityContextService
-
+            List.of(
+                new CitizenSubmissionEventStrategy(
+                    draftCaseDataService,
+                    submitResponseFactory,
+                    submitService,
+                    confirmationService
+                ),
+                new LegalRepSubmissionEventStrategy(
+                    draftCaseDataService,
+                    claimResponseService,
+                    defendantResponseService,
+                    selectedPartyRetriever,
+                    submitResponseFactory,
+                    organisationService
+                )
+            ),
+            securityContextService
         );
 
         setEventUnderTest(new RespondPossessionClaim(
