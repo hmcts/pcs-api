@@ -12,55 +12,57 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.domain.documentamend.DocumentAmendDetails;
-import uk.gov.hmcts.reform.pcs.ccd.page.documentamend.AmendDocumentDetailsPlaceholderPage;
-import uk.gov.hmcts.reform.pcs.ccd.page.documentamend.SelectDocumentPage;
+import uk.gov.hmcts.reform.pcs.ccd.domain.documentremoval.DocumentRemovalDetails;
+import uk.gov.hmcts.reform.pcs.ccd.page.documentremoval.SelectDocumentToRemovePage;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentAmendSelectionService;
+import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentRemovalService;
 
-import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.amendDocuments;
+import java.util.UUID;
+
+import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.removeDocuments;
 
 @Component
 @AllArgsConstructor
-public class AmendDocuments implements CCDConfig<PCSCase, State, UserRole> {
+public class RemoveDocuments implements CCDConfig<PCSCase, State, UserRole> {
 
     private final DocumentAmendSelectionService documentSelectionService;
-    private final SelectDocumentPage selectDocumentPage;
-    private final AmendDocumentDetailsPlaceholderPage amendDocumentDetailsPlaceholderPage;
+    private final DocumentRemovalService documentRemovalService;
+    private final SelectDocumentToRemovePage selectDocumentToRemovePage;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         Event.EventBuilder<PCSCase, UserRole, State> eventBuilder =
             configBuilder
-                .decentralisedEvent(amendDocuments.name(), this::submit, this::start)
+                .decentralisedEvent(removeDocuments.name(), this::submit, this::start)
                 .forStates(State.CASE_ISSUED)
-                .name("Manage documents: Amend")
-                .grant(Permission.CRU, UserRole.CTSC_ADMIN)
-                .grant(Permission.CRU, UserRole.WLU_ADMIN)
+                .name("Manage documents: Remove")
                 .grant(Permission.CRU, UserRole.HEARING_CENTRE_ADMIN)
-                .grant(Permission.CRU, UserRole.JUDGE)
-                .grant(Permission.CRU, UserRole.CIRCUIT_JUDGE)
-                .grant(Permission.CRU, UserRole.FEE_PAID_JUDGE)
-                .grant(Permission.CRU, UserRole.LEADERSHIP_JUDGE)
+                .grant(Permission.CRU, UserRole.HEARING_CENTRE_TEAM_LEADER)
+                .showSummary()
                 .endButtonLabel("Submit");
 
         PageBuilder pageBuilder = new PageBuilder(eventBuilder);
-        selectDocumentPage.addTo(pageBuilder);
-        amendDocumentDetailsPlaceholderPage.addTo(pageBuilder);
+        selectDocumentToRemovePage.addTo(pageBuilder);
     }
 
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
         PCSCase caseData = eventPayload.caseData();
 
-        if (caseData.getDocumentAmendDetails() == null) {
-            caseData.setDocumentAmendDetails(new DocumentAmendDetails());
+        if (caseData.getDocumentRemovalDetails() == null) {
+            caseData.setDocumentRemovalDetails(new DocumentRemovalDetails());
         }
-        DocumentAmendDetails details = caseData.getDocumentAmendDetails();
+        DocumentRemovalDetails details = caseData.getDocumentRemovalDetails();
 
         documentSelectionService.initialise(eventPayload.caseReference(), caseData, details);
         return caseData;
     }
 
     private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
+        DocumentRemovalDetails details = eventPayload.caseData().getDocumentRemovalDetails();
+        String reason = details.getReasonForCategory(details.getSelectedFolder());
+
+        documentRemovalService.removeDocument(UUID.fromString(details.getSelectedDocumentId()), reason);
+
         return SubmitResponse.defaultResponse();
     }
 }
