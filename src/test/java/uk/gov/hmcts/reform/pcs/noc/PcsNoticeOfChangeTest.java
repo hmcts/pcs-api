@@ -2,13 +2,11 @@ package uk.gov.hmcts.reform.pcs.noc;
 
 import com.github.kagkarlsson.scheduler.SchedulerClient;
 import com.github.kagkarlsson.scheduler.task.SchedulableInstance;
-import com.github.kagkarlsson.scheduler.task.SchedulableTaskInstance;
 import com.github.kagkarlsson.scheduler.task.TaskInstance;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.AnswerBuilder;
@@ -63,22 +61,24 @@ public class PcsNoticeOfChangeTest {
 
     private static final long TEST_CASE_REFERENCE = 1L;
 
-    private static final String NO_DEFENDANTS_FOUND_MESSAGE = "We cannot find a defendant matching this name."
-        + " Enter their name exactly as it appears on any documents received from the court";
-
-    private static final String DUPLICATE_DEFENDANT_NAME_MESSAGE = "A notice of change cannot be completed for this "
-        + "defendant as there is more than one defendant with the same name on this case. "
-        + "Contact the issuing court for help.";
-
-    private static final String ORG_ALREADY_REPRESENTS_PARTY_MESSAGE = "Your organisation already has access"
-        + " to this case."
-        + "You or a colleague are already representing this client on this case."
-        + " Contact the issuing court for help.";
-
     private static final String FEATURE_FLAG_DISABLED_CODE = "feature-disabled";
 
     private static final String FEATURE_FLAG_DISABLED_MESSAGE = "The Notice of change feature is "
         + "currently disabled";
+
+    private static final String DUPLICATE_DEFENDANT_NAME_CODE = "duplicateDefendantName";
+
+    private static final String DUPLICATE_DEFENDANT_NAME_MESSAGE = "A notice of change cannot be completed for this "
+        + "defendant as there is more than one defendant with the same name on this case."
+        + " Contact the issuing court for help.";
+
+    private static final String ORG_ALREADY_REPRESENTS_PARTY_MESSAGE = "Your organisation already has access"
+        + " to this case. "
+        + "You or a colleague are already representing this client on this case."
+        + " Contact the issuing court for help.";
+
+    private static final String ORG_ALREADY_REPRESENTS_PARTY_CODE = "organisationAlreadyRepresents";
+
 
     private PcsNoticeOfChange pcsNoticeOfChange;
 
@@ -102,10 +102,6 @@ public class PcsNoticeOfChangeTest {
 
     @Mock
     private FeatureToggleService featureToggleService;
-
-    @Captor
-    private ArgumentCaptor<SchedulableTaskInstance> taskCaptor;
-
 
     @BeforeEach
     void setUp() {
@@ -318,7 +314,7 @@ public class PcsNoticeOfChangeTest {
 
         // then
         assertEquals(NocError.ANSWERS_NOT_MATCHED_ANY_LITIGANT.code(), actual.code());
-        assertEquals(NO_DEFENDANTS_FOUND_MESSAGE, actual.message());
+        assertEquals(NocError.ANSWERS_NOT_MATCHED_ANY_LITIGANT.message(), actual.message());
     }
 
     @Test
@@ -345,7 +341,7 @@ public class PcsNoticeOfChangeTest {
 
         // then
         assertEquals(NocError.ANSWERS_NOT_MATCHED_ANY_LITIGANT.code(), actual.code());
-        assertEquals(NO_DEFENDANTS_FOUND_MESSAGE, actual.message());
+        assertEquals(NocError.ANSWERS_NOT_MATCHED_ANY_LITIGANT.message(), actual.message());
     }
 
     @Test
@@ -376,7 +372,7 @@ public class PcsNoticeOfChangeTest {
 
         // then
         assertEquals(NocError.ANSWERS_NOT_MATCHED_ANY_LITIGANT.code(), actual.code());
-        assertEquals(NO_DEFENDANTS_FOUND_MESSAGE, actual.message());
+        assertEquals(NocError.ANSWERS_NOT_MATCHED_ANY_LITIGANT.message(), actual.message());
     }
 
     @Test
@@ -407,7 +403,7 @@ public class PcsNoticeOfChangeTest {
 
         // then
         assertEquals(NocError.ANSWERS_NOT_MATCHED_ANY_LITIGANT.code(), actual.code());
-        assertEquals(NO_DEFENDANTS_FOUND_MESSAGE, actual.message());
+        assertEquals(NocError.ANSWERS_NOT_MATCHED_ANY_LITIGANT.message(), actual.message());
     }
 
     @Test
@@ -444,7 +440,7 @@ public class PcsNoticeOfChangeTest {
         NocAnswersResponse actual = pcsNoticeOfChange.validate(null, nocAnswersRequest);
 
         // then
-        assertEquals(NocError.ANSWERS_NOT_IDENTIFY_LITIGANT.code(), actual.code());
+        assertEquals(DUPLICATE_DEFENDANT_NAME_CODE, actual.code());
         assertEquals(DUPLICATE_DEFENDANT_NAME_MESSAGE, actual.message());
     }
 
@@ -484,7 +480,7 @@ public class PcsNoticeOfChangeTest {
         NocAnswersResponse actual = pcsNoticeOfChange.validate(nocSubmitContext, nocAnswersRequest);
 
         // then
-        assertEquals(NocError.REQUESTING_ORG_ALREADY_REPRESENTS_PARTY.code(), actual.code());
+        assertEquals(ORG_ALREADY_REPRESENTS_PARTY_CODE, actual.code());
         assertEquals(ORG_ALREADY_REPRESENTS_PARTY_MESSAGE, actual.message());
     }
 

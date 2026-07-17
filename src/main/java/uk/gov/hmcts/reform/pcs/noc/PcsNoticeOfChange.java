@@ -38,10 +38,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
-import static uk.gov.hmcts.ccd.sdk.api.noc.NocError.ANSWERS_NOT_IDENTIFY_LITIGANT;
-import static uk.gov.hmcts.ccd.sdk.api.noc.NocError.ANSWERS_NOT_MATCHED_ANY_LITIGANT;
-import static uk.gov.hmcts.ccd.sdk.api.noc.NocError.REQUESTING_ORG_ALREADY_REPRESENTS_PARTY;
-
 @Component
 @RequiredArgsConstructor
 public class PcsNoticeOfChange implements CCDConfig<PCSCase, State, UserRole> {
@@ -53,17 +49,18 @@ public class PcsNoticeOfChange implements CCDConfig<PCSCase, State, UserRole> {
     private static final int EXPECTED_ANSWER_COUNT = 2;
     private static final UserRole CASE_ROLE = UserRole.DEFENDANT_SOLICITOR;
 
-    private static final String NO_DEFENDANTS_FOUND_MESSAGE = "We cannot find a defendant matching this name."
-        + " Enter their name exactly as it appears on any documents received from the court";
+    private static final String DUPLICATE_DEFENDANT_NAME_CODE = "duplicateDefendantName";
 
     private static final String DUPLICATE_DEFENDANT_NAME_MESSAGE = "A notice of change cannot be completed for this "
         + "defendant as there is more than one defendant with the same name on this case."
         + " Contact the issuing court for help.";
 
     private static final String ORG_ALREADY_REPRESENTS_PARTY_MESSAGE = "Your organisation already has access"
-        + " to this case."
+        + " to this case. "
         + "You or a colleague are already representing this client on this case."
         + " Contact the issuing court for help.";
+
+    private static final String ORG_ALREADY_REPRESENTS_PARTY_CODE = "organisationAlreadyRepresents";
 
     private static final String FEATURE_FLAG_DISABLED_CODE = "feature-disabled";
 
@@ -121,8 +118,7 @@ public class PcsNoticeOfChange implements CCDConfig<PCSCase, State, UserRole> {
             organisation.getOrganisationIdentifier(),
             matchedParty.getId()
         )) {
-            return NocAnswersResponse.invalid(REQUESTING_ORG_ALREADY_REPRESENTS_PARTY.code(),
-                                                          ORG_ALREADY_REPRESENTS_PARTY_MESSAGE);
+            return NocAnswersResponse.invalid(ORG_ALREADY_REPRESENTS_PARTY_CODE, ORG_ALREADY_REPRESENTS_PARTY_MESSAGE);
         }
 
         return NocAnswersResponse.verified(new NocOrganisation(
@@ -235,13 +231,11 @@ public class PcsNoticeOfChange implements CCDConfig<PCSCase, State, UserRole> {
 
     private Optional<NocAnswersResponse> validateMatches(List<PartyEntity> matches) {
         if (matches.isEmpty()) {
-            return Optional.of(NocAnswersResponse.invalid(ANSWERS_NOT_MATCHED_ANY_LITIGANT.code(),
-                                                          NO_DEFENDANTS_FOUND_MESSAGE
-            ));
+            return Optional.of(NocAnswersResponse.answersNotMatchedAnyLitigant());
         }
 
         if (matches.size() > 1) {
-            return Optional.of(NocAnswersResponse.invalid(ANSWERS_NOT_IDENTIFY_LITIGANT.code(),
+            return Optional.of(NocAnswersResponse.invalid(DUPLICATE_DEFENDANT_NAME_CODE,
                                                           DUPLICATE_DEFENDANT_NAME_MESSAGE
             ));
         }
