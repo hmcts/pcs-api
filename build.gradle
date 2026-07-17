@@ -46,10 +46,17 @@ dependencies {
   runtimeOnly 'javax.servlet:javax.servlet-api:4.0.1'
 }
 
-configurations.configureEach {
+configurations {
+  deequRuntime.extendsFrom runtimeClasspath
+}
+
+configurations.deequRuntime {
   resolutionStrategy {
     force 'org.antlr:antlr4-runtime:4.9.3'
   }
+}
+
+configurations.configureEach {
   exclude group: 'org.apache.logging.log4j', module: 'log4j-slf4j2-impl'
 }
 
@@ -656,7 +663,7 @@ tasks.withType(Wrapper) {
 tasks.register('runDeequ', JavaExec) {
   group = 'application'
   mainClass = 'uk.gov.hmcts.reform.pcs.DataTest'
-  classpath = sourceSets.main.runtimeClasspath
+  classpath = sourceSets.main.output + configurations.deequRuntime
   jvmArgs = [
     '--add-opens=java.base/sun.nio.ch=ALL-UNNAMED',
     '--add-opens=java.base/java.lang=ALL-UNNAMED',
