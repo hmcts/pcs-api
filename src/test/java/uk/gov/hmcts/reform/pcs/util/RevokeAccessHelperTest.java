@@ -20,6 +20,7 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.DraftCaseDataRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyAccessCodeRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.PartyLegalRepresentativeOrganisationRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseRoleAssignmentService;
+import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 
 import java.time.Instant;
 import java.util.List;
@@ -61,6 +62,8 @@ class RevokeAccessHelperTest {
         long caseReference = 123L;
         UUID partyId = UUID.randomUUID();
 
+        UserInfo user = UserInfo.builder().uid(UUID.randomUUID().toString()).build();
+
         PcsCaseEntity caseEntity = PcsCaseEntity.builder().caseReference(caseReference).build();
 
         LegalRepresentativeOrganisationEntity lro = LegalRepresentativeOrganisationEntity.builder()
@@ -87,13 +90,13 @@ class RevokeAccessHelperTest {
             .thenReturn(List.of(plro));
 
         // when
-        revokeAccessHelper.revokeOrganisationAccessToRespondToClaim(caseEntity, lro, defendant);
+        revokeAccessHelper.revokeOrganisationAccessToRespondToClaim(caseEntity, lro, defendant, user);
 
         // then - draft deletion always called
         verify(draftCaseDataRepository).deleteByCaseReferenceAndEventIdAndLegalRepresentativeOrganisationIdAndPartyId(
             eq(caseReference),
             eq(EventId.respondPossessionClaim),
-            eq(String.valueOf(lro.getId())),
+            eq(String.valueOf(lro.getOrganisationId())),
             eq(defendant.getId())
         );
 
@@ -121,6 +124,8 @@ class RevokeAccessHelperTest {
 
         UUID lrId1 = UUID.randomUUID();
         UUID lrId2 = UUID.randomUUID();
+
+        UserInfo user = UserInfo.builder().uid(UUID.randomUUID().toString()).build();
 
         LegalRepresentativeEntity lr1 = LegalRepresentativeEntity.builder().idamId(lrId1).build();
         LegalRepresentativeEntity lr2 = LegalRepresentativeEntity.builder().idamId(lrId2).build();
@@ -150,13 +155,13 @@ class RevokeAccessHelperTest {
             .thenReturn(List.of(plro));
 
         // when
-        revokeAccessHelper.revokeOrganisationAccessToRespondToClaim(caseEntity, lro, defendant);
+        revokeAccessHelper.revokeOrganisationAccessToRespondToClaim(caseEntity, lro, defendant, user);
 
         // then - draft deletion called
         verify(draftCaseDataRepository).deleteByCaseReferenceAndEventIdAndLegalRepresentativeOrganisationIdAndPartyId(
             eq(caseReference),
             eq(EventId.respondPossessionClaim),
-            eq(String.valueOf(lro.getId())),
+            eq(String.valueOf(lro.getOrganisationId())),
             eq(defendant.getId())
         );
 
