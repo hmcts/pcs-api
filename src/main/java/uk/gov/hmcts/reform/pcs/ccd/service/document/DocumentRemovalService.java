@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.pcs.ccd.service.document;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DocumentRepository;
+import uk.gov.hmcts.reform.pcs.exception.DocumentNotFoundException;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -20,7 +21,8 @@ public class DocumentRemovalService {
     }
 
     public void removeDocument(UUID documentEntityId, String reason) {
-        DocumentEntity documentEntity = documentRepository.findById(documentEntityId).orElseThrow();
+        DocumentEntity documentEntity = documentRepository.findById(documentEntityId)
+            .orElseThrow(() -> new DocumentNotFoundException(documentEntityId));
 
         documentImportService.deleteDocument(documentEntity.getUrl());
 

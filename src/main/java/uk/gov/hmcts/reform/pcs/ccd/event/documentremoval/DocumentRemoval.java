@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.event;
+package uk.gov.hmcts.reform.pcs.ccd.event.documentremoval;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -19,11 +19,14 @@ import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentRemovalService;
 
 import java.util.UUID;
 
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerRoles.CASEWORKER_ROLES;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.ManageDocumentsStates.MANAGE_DOCUMENTS_STATES;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.removeDocuments;
 
 @Component
 @AllArgsConstructor
-public class RemoveDocuments implements CCDConfig<PCSCase, State, UserRole> {
+public class DocumentRemoval implements CCDConfig<PCSCase, State, UserRole> {
 
     private final DocumentAmendSelectionService documentSelectionService;
     private final DocumentRemovalService documentRemovalService;
@@ -34,10 +37,10 @@ public class RemoveDocuments implements CCDConfig<PCSCase, State, UserRole> {
         Event.EventBuilder<PCSCase, UserRole, State> eventBuilder =
             configBuilder
                 .decentralisedEvent(removeDocuments.name(), this::submit, this::start)
-                .forStates(State.CASE_ISSUED)
+                .forStates(MANAGE_DOCUMENTS_STATES)
                 .name("Manage documents: Remove")
-                .grant(Permission.CRU, UserRole.HEARING_CENTRE_ADMIN)
-                .grant(Permission.CRU, UserRole.HEARING_CENTRE_TEAM_LEADER)
+                .grant(Permission.CRU, CASEWORKER_ROLES)
+                .grantHistoryOnly(JUDICIAL_HISTORY_ROLES)
                 .showSummary()
                 .endButtonLabel("Submit");
 
@@ -63,6 +66,23 @@ public class RemoveDocuments implements CCDConfig<PCSCase, State, UserRole> {
 
         documentRemovalService.removeDocument(UUID.fromString(details.getSelectedDocumentId()), reason);
 
-        return SubmitResponse.defaultResponse();
+        return SubmitResponse.<State>builder()
+            .confirmationBody(buildConfirmationMarkdown(details, eventPayload.caseReference()))
+            .build();
+    }
+
+    private String buildConfirmationMarkdown(DocumentRemovalDetails details, long caseReference) {
+        return """
+            ---
+            <div class="govuk-panel govuk-panel--confirmation govuk-!-padding-top-3 govuk-!-padding-bottom-3">
+            <span class="govuk-panel__title govuk-!-font-size-36">%s removed </span><br>
+            <span class="govuk-panel__body">Case number: %s</span><br>
+            <span class="govuk-panel__body">Property address: %s</span>
+            </div>
+
+            <h3 class="govuk-heading-s">What happens next</h3>
+            <p class="govuk-body govuk-!-margin-bottom-6">The document will no longer appear in case file view</p>
+            """.formatted(
+                details.getSelectedDocumentFileName(), caseReference, details.getPropertyAddressSummary());
     }
 }
