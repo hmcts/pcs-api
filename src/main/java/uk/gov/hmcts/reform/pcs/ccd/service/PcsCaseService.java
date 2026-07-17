@@ -3,7 +3,7 @@ package uk.gov.hmcts.reform.pcs.ccd.service;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseFlagEntity;
@@ -15,6 +15,8 @@ import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
+import uk.gov.hmcts.reform.pcs.location.model.CourtVenue;
+import uk.gov.hmcts.reform.pcs.location.service.LocationReferenceService;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.postcodecourt.service.PostCodeCourtService;
 
@@ -35,6 +37,7 @@ public class PcsCaseService {
     private final CaseLinkService caseLinkService;
     private final CaseFlagService caseFlagService;
     private final PostCodeCourtService postCodeCourtService;
+    private final LocationReferenceService locationReferenceService;
 
     public PcsCaseEntity createCase(long caseReference,
                                     AddressUK propertyAddress,
@@ -53,17 +56,17 @@ public class PcsCaseService {
 
     public void createMainClaimOnCase(long caseReference, PCSCase pcsCase, String organisationIdForCurrentUser) {
         PcsCaseEntity pcsCaseEntity = loadCase(caseReference);
-
         ClaimEntity claimEntity = claimService.createMainClaimEntity(pcsCase);
         List<DocumentEntity> documentEntities = documentService.createAllDocuments(pcsCase);
         documentEntities.forEach(doc -> doc.setClaim(claimEntity));
         pcsCaseEntity.addDocuments(documentEntities);
         claimEntity.addClaimDocuments(documentEntities);
         pcsCaseEntity.addClaim(claimEntity);
-
         partyService.createAllParties(pcsCase, pcsCaseEntity, claimEntity, organisationIdForCurrentUser);
-
         pcsCaseEntity.setTenancyLicence(tenancyLicenceService.createTenancyLicenceEntity(pcsCase));
+        pcsCaseEntity.setRegionId(pcsCase.getRegionId());
+        pcsCaseEntity.setBaseLocation(pcsCase.getCaseManagementLocationNumber());
+        pcsCaseEntity.setCaseManagementLocation(pcsCase.getCaseManagementLocationNumber());
     }
 
     public void patchCaseFlags(long caseReference, PCSCase pcsCase) {
@@ -90,7 +93,16 @@ public class PcsCaseService {
             .orElseThrow(() -> new CaseNotFoundException(caseReference));
     }
 
-    @Transactional
+    public void allocateCaseManagementLocation(PCSCase pcsCase) {
+        Integer caseManagementLocation =
+            postCodeCourtService.getCourtManagementLocation(pcsCase.getPropertyAddress().getPostCode(),
+                                                            pcsCase.getLegislativeCountry());
+        log.debug("Setting caseManagementLocationNumber to: {}", caseManagementLocation);
+        pcsCase.setCaseManagementLocationNumber(caseManagementLocation);
+    }
+
+    // Entity-based overload for the testing-support issue shortcut, which works from a persisted
+    // case reference (the PCSCase overload runs in-memory during a CCD event).
     public void allocateCaseManagementLocation(long caseReference) {
         PcsCaseEntity pcsCaseEntity = loadCase(caseReference);
         Integer epimsId =
@@ -100,6 +112,21 @@ public class PcsCaseService {
             );
         if (epimsId != null) {
             pcsCaseEntity.setCaseManagementLocation(epimsId);
+        }
+    }
+
+    public void allocateRegionId(PCSCase pcsCase) {
+        allocateCaseManagementLocation(pcsCase);
+        if (pcsCase.getCaseManagementLocationNumber() != null) {
+            log.debug("Calling locationReferenceService.getCourtVenues(...) with {}",
+                     pcsCase.getCaseManagementLocationNumber());
+            List<CourtVenue> courtVenues = locationReferenceService
+                .getCourtVenues(List.of(pcsCase.getCaseManagementLocationNumber()));
+            log.debug("Court venues are : {}", courtVenues);
+            if (!CollectionUtils.isEmpty(courtVenues)) {
+                Integer regionId = Integer.valueOf(courtVenues.getFirst().regionId());
+                pcsCase.setRegionId(regionId);
+            }
         }
     }
 

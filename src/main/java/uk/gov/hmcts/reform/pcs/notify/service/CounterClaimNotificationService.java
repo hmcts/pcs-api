@@ -29,11 +29,7 @@ public class CounterClaimNotificationService {
     }
 
     private DefendantResponseEntity getAssociatedDefendantResponse(CounterClaimEntity counterClaim) {
-        UUID partyId = counterClaim.getParty().getId();
-
-        return counterClaim.getPcsCase().getDefendantResponses().stream()
-            .filter(defendantResponse -> defendantResponse.getParty().getId().equals(partyId))
-            .findFirst()
+        return counterClaim.findAssociatedDefendantResponse()
             .orElseThrow(
                 () -> new IllegalArgumentException("Associated defendant response not found for counter claim: "
                                                        + counterClaim.getId()));

@@ -17,6 +17,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -26,17 +27,24 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.ContactPreferencesEntity;
+import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
+import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
-import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimStatus;
-import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponseStatus;
-import uk.gov.hmcts.reform.pcs.ccd.entity.PartyAccessCodeEntity;
+import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
+import uk.gov.hmcts.reform.pcs.testingsupport.model.TestingSupportAccessCode;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.repository.PartyAccessCodeRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.AccessCodeGenerationService;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseRoleAssignmentService;
+import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.idam.IdamAuthenticator;
 import uk.gov.hmcts.reform.pcs.idam.User;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityResult;
@@ -45,8 +53,8 @@ import uk.gov.hmcts.reform.pcs.postcodecourt.service.EligibilityService;
 import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationDetailsService;
 import uk.gov.hmcts.reform.pcs.service.LegalRepresentativePartyLinkService;
+import uk.gov.hmcts.reform.pcs.testingsupport.model.PartyEmail;
 import uk.gov.hmcts.reform.pcs.testingsupport.service.CcdTestCaseOrchestrator;
-import uk.gov.hmcts.reform.pcs.testingsupport.service.EntityTestStatusService;
 
 import java.time.Instant;
 import java.util.HashMap;
@@ -55,6 +63,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.Objects;
+import java.util.Collection;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -72,14 +82,17 @@ public class TestingSupportController {
     private final Task<Void> helloWorldTask;
     private final EligibilityService eligibilityService;
     private final PcsCaseRepository pcsCaseRepository;
-    private final PartyAccessCodeRepository partyAccessCodeRepository;
+    private final JdbcTemplate jdbcTemplate;
+    private final PartyRepository partyRepository;
     private final ModelMapper modelMapper;
     private final CcdTestCaseOrchestrator ccdTestCaseOrchestrator;
     private final CaseRoleAssignmentService caseRoleAssignmentService;
     private final LegalRepresentativePartyLinkService legalRepresentativePartyLinkService;
     private final IdamAuthenticator idamAuthenticator;
-    private final EntityTestStatusService entityTestStatusService;
     private final OrganisationDetailsService organisationDetailsService;
+    private final PcsCaseService pcsCaseService;
+    private final AccessCodeGenerationService accessCodeGenerationService;
+    private final FeatureToggleService featureToggleService;
 
     @Operation(
         summary = "Schedule a Hello World task",
@@ -246,8 +259,8 @@ public class TestingSupportController {
         @ApiResponse(responseCode = "404", description = "Case not found"),
         @ApiResponse(responseCode = "500", description = "Internal server error")
     })
-    @GetMapping("/pins/{caseReference}")
-    public ResponseEntity<Map<String, Party>> getPins(
+    @GetMapping({"/access-codes/{caseReference}", "/pins/{caseReference}"})
+    public ResponseEntity<Map<String, Party>> getAccessCodes(
         @Parameter(
             description = "Service-to-Service (S2S) authorization token",
             required = true,
@@ -265,7 +278,12 @@ public class TestingSupportController {
 
             PcsCaseEntity pcsCaseEntity = maybeCase.get();
 
-            List<PartyAccessCodeEntity> accessCodes = partyAccessCodeRepository.findAllByPcsCase_Id(
+            List<TestingSupportAccessCode> pins = jdbcTemplate.query(
+                "SELECT party_id, plaintext_code FROM testing_support_access_code WHERE case_id = ?",
+                (rs, rowNum) -> new TestingSupportAccessCode(
+                    rs.getObject("party_id", UUID.class),
+                    rs.getString("plaintext_code")
+                ),
                 pcsCaseEntity.getId()
             );
 
@@ -281,11 +299,11 @@ public class TestingSupportController {
 
             Map<String, Party> minimalPartyMap = new HashMap<>();
 
-            for (var accessCodeObject : accessCodes) {
+            for (var pinObject : pins) {
                 //for each access code return the matching defendant's name and address
 
-                String accessCode = accessCodeObject.getCode();
-                UUID partyId = accessCodeObject.getPartyId();
+                String accessCode = pinObject.plaintextCode();
+                UUID partyId = pinObject.partyId();
 
                 PartyEntity matched = partyByPartyId.get(partyId);
                 if (matched == null) {
@@ -338,11 +356,20 @@ public class TestingSupportController {
         @PathVariable String legislativeCountry,
         @RequestHeader(value = AUTHORIZATION) String authorization,
         @RequestHeader(value = "ServiceAuthorization") String serviceAuthorization,
+        @Parameter(description = "When true, synchronously issue the case (allocate court location, set issued "
+            + "date) and generate the defendant access codes, so a test can read the PIN immediately without "
+            + "driving payment or waiting for the async scheduler.")
+        @RequestParam(defaultValue = "false") boolean issueAndGenerateAccessCodes,
         @RequestBody(required = false) JsonNode payloadMerge
     ) {
         LegislativeCountry country = LegislativeCountry.valueOf(legislativeCountry.toUpperCase());
 
         Map<String, Object> result = ccdTestCaseOrchestrator.createCase(authorization, country, payloadMerge);
+
+        if (issueAndGenerateAccessCodes) {
+            long caseReference = Long.parseLong(String.valueOf(result.get("caseId")));
+            issueCaseAndGenerateAccessCodes(caseReference);
+        }
 
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("status", "CREATED");
@@ -350,6 +377,18 @@ public class TestingSupportController {
         body.put("caseDetails", result.get("caseDetails"));
 
         return ResponseEntity.status(HttpStatus.CREATED).body(body);
+    }
+
+    /**
+     * Test-only shortcut that reproduces, synchronously, what the payment/issue flow does: allocate the court
+     * location, set the issued date, then generate the defendant access codes + access-code letters. Lets a functional
+     * test obtain the PIN deterministically without paying or waiting for the db-scheduler. Idempotent with the
+     * scheduler (skips defendants that already have a code).
+     */
+    private void issueCaseAndGenerateAccessCodes(long caseReference) {
+        pcsCaseService.allocateCaseManagementLocation(caseReference);
+        pcsCaseService.setCaseIssuedDate(caseReference);
+        accessCodeGenerationService.createAccessCodesForParties(String.valueOf(caseReference), true);
     }
 
     @PostMapping(
@@ -363,6 +402,8 @@ public class TestingSupportController {
         content = @Content())
     @ApiResponse(responseCode = "401", description = "Invalid access token",
         content = @Content())
+    @ApiResponse(responseCode = "412", description = "Feature not enabled",
+        content = @Content())
     public ResponseEntity<Void> linkDefendantSolicitorToParty(
         @Parameter(description = "The 12-digit case reference number", required = true)
         @PathVariable long caseReference,
@@ -371,6 +412,13 @@ public class TestingSupportController {
         @RequestHeader(value = AUTHORIZATION) String authorization,
         @RequestHeader(value = "ServiceAuthorization") String serviceAuthorization
     ) {
+
+        if (!this.featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_2)
+            || !this.featureToggleService.isEnabled(FeatureFlag.CUI_RESPOND_TO_CLAIM_LR)) {
+            log.warn("Feature flags are disabled for [{}] [{}]", FeatureFlag.RELEASE_1_DOT_2.key(),
+                     FeatureFlag.CUI_RESPOND_TO_CLAIM_LR.key());
+            return ResponseEntity.status(HttpStatus.PRECONDITION_FAILED).build();
+        }
 
         User user = idamAuthenticator.validateAuthToken(authorization);
         UserInfo userDetails = user.getUserDetails();
@@ -389,42 +437,75 @@ public class TestingSupportController {
         return ResponseEntity.ok().build();
     }
 
-    @Operation(
-        summary = "Update a counterclaim status"
-    )
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Status updated successfully", content = @Content()),
-        @ApiResponse(responseCode = "400", description = "Bad request - invalid counterclaim", content = @Content()),
-        @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing authorization token"),
-        @ApiResponse(responseCode = "500", description = "Internal server error")
-    })
-    @PostMapping("/counterclaim/{counterClaimId}/status")
-    public ResponseEntity<Void> updateCounterClaimStatus(
+    @GetMapping("/fee-payment-info/{caseReference}")
+    public ResponseEntity<List<FeePaymentEntity>> getFeePaymentInfo(
+        @Parameter(
+            description = "Service-to-Service (S2S) authorization token",
+            required = true,
+            example = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        )
         @RequestHeader(value = "ServiceAuthorization") String serviceAuthorization,
-        @PathVariable UUID counterClaimId,
-        @RequestParam CounterClaimStatus status
+        @Parameter(description = "Case reference to find fee payment details for", required = true)
+        @PathVariable long caseReference
     ) {
-        entityTestStatusService.updateCounterClaimStatus(counterClaimId, status);
-        return ResponseEntity.ok().build();
+        try {
+            // 1. Fetch the core case entity just like the pin method does
+            Optional<PcsCaseEntity> maybeCase = pcsCaseRepository.findByCaseReference(caseReference);
+            if (maybeCase.isEmpty()) {
+                return ResponseEntity.notFound().build();
+            }
+
+            PcsCaseEntity pcsCaseEntity = maybeCase.get();
+
+            List<FeePaymentEntity> feePayments = pcsCaseEntity.getClaims().stream()
+                .map(ClaimEntity::getFeePayments)
+                .filter(Objects::nonNull)
+                .flatMap(Collection::stream)
+                .collect(Collectors.toList());
+            return ResponseEntity.ok(feePayments);
+
+        } catch (Exception e) {
+            log.error("Failed to get Fee Payment details for case reference {}", caseReference, e);
+            return ResponseEntity.internalServerError().build();
+        }
     }
 
     @Operation(
-        summary = "Update a defendant response status"
+        summary = "Set a party email address and contact preference"
     )
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Status updated successfully", content = @Content()),
+        @ApiResponse(responseCode = "200", description = "Email set successfully", content = @Content()),
         @ApiResponse(
-            responseCode = "400", description = "Bad request - invalid defendant response", content = @Content()),
+            responseCode = "400", description = "Bad request", content = @Content()),
         @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing authorization token"),
+        @ApiResponse(responseCode = "404", description = "Party not found"),
         @ApiResponse(responseCode = "500", description = "Internal server error")
     })
-    @PostMapping("/defendant-response/{defendantResponseId}/status")
-    public ResponseEntity<Void> updateDefendantResponseStatus(
+    @PostMapping("/party/{partyId}/email-address")
+    public ResponseEntity<String> setPartyEmail(
         @RequestHeader(value = "ServiceAuthorization") String serviceAuthorization,
-        @PathVariable UUID defendantResponseId,
-        @RequestParam DefendantResponseStatus status
+        @PathVariable UUID partyId,
+        @RequestBody PartyEmail partyEmail
     ) {
-        entityTestStatusService.updateDefendantResponseStatus(defendantResponseId, status);
+        if (!partyId.equals(partyEmail.getPartyId())) {
+            return ResponseEntity.badRequest().body("Party ID in payload does not match URL");
+        }
+
+        PartyEntity partyEntity = partyRepository.findById(partyId)
+            .orElseThrow(() -> new PartyNotFoundException("No party found for provided ID"));
+
+        partyEntity.setEmailAddress(partyEmail.getEmailAddress());
+        ContactPreferencesEntity contactPreferences = partyEntity.getContactPreferences();
+        if (contactPreferences == null) {
+            contactPreferences = ContactPreferencesEntity.builder().build();
+            partyEntity.setContactPreferences(contactPreferences);
+        }
+
+        contactPreferences.setContactByEmail(VerticalYesNo.YES);
+
+        partyRepository.save(partyEntity);
+
         return ResponseEntity.ok().build();
     }
+
 }

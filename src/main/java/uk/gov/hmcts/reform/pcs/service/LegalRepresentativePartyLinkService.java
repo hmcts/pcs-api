@@ -8,12 +8,15 @@ import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeEntity;
 import uk.gov.hmcts.reform.pcs.idam.UserInfo;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.PartyLegalRepresentativeOrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeOrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
+import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.LegalRepresentativeRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.CaseRoleAssignmentService;
 import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.LegalRepresentativeOrganisationRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
@@ -35,6 +38,7 @@ public class LegalRepresentativePartyLinkService {
     private final LegalRepresentativeOrganisationRepository legalRepresentativeOrganisationRepository;
     private final OrganisationDetailsService organisationDetailsService;
     private final AddressMapper addressMapper;
+    private final CaseRoleAssignmentService caseRoleAssignmentService;
 
     @Transactional
     public void linkLegalRepresentativeToParty(long caseReference, String partyId, UserInfo user,
@@ -72,6 +76,19 @@ public class LegalRepresentativePartyLinkService {
         legalRepresentativeOrganisation.addParty(defendantPartyEntity);
 
         legalRepresentativeOrganisationRepository.save(legalRepresentativeOrganisation);
+        revokeDefendantAccessForRepresentedParty(caseReference, defendantPartyEntity);
+    }
+
+    private void revokeDefendantAccessForRepresentedParty(long caseReference, PartyEntity defendantPartyEntity) {
+        if (defendantPartyEntity.getIdamId() == null) {
+            return;
+        }
+
+        caseRoleAssignmentService.revokeRasRole(
+            caseReference,
+            defendantPartyEntity.getIdamId().toString(),
+            UserRole.DEFENDANT
+        );
     }
 
     private LegalRepresentativeOrganisationEntity createNewLegalRepresentative(String id, String name, UUID idamId,
