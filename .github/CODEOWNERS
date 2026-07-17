@@ -12,5 +12,5 @@ src/e2eTest/yarn.lock
 
 src/e2eTest @hmcts/possession-claim-service-qa-admins @hmcts/possession-claim-service-admins
 
-src/functionalTest @hmcts/possession-claim-service-da @hmcts/possession-claim-service-admins
-src/contractTest @hmcts/possession-claim--service-da @hmcts/possession-claim-service-admins
+src/functionalTest @hmcts/possession-claim-service-dev-assurance @hmcts/possession-claim-service-admins
+src/contractTest @hmcts/possession-claim--service-dev-assurance @hmcts/possession-claim-service-admins
