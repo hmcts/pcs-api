@@ -20,9 +20,9 @@ for case_dir in "$run_dir"/build/definitions/*/; do
 
   ccd_definition_file="CCD_Definition_${case_type}_${env}.xlsx"
 
-az login --identity
-
-az acr login --name hmctsprod --subscription 8999dec3-0104-4a27-94ee-6588559729d1
+export AZURE_CONFIG_DIR=/opt/jenkins/.azure-nonprod
+az login --identity >/dev/null
+az acr login --name hmctsprod --subscription DCD-CNP-PROD
 
 docker run --rm --name "json2xlsx" \
   -v "$run_dir/build/definitions/${case_type}:/tmp/ccd-input" \
