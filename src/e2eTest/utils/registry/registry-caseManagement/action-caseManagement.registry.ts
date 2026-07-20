@@ -39,9 +39,12 @@ export class ActionCMRegistry {
     ['changeCaseState', new CaseManagementAction()],
     ['confirmCaseStateChange', new CaseManagementAction()],
     ['getAllPartyDetails', new CaseManagementAction()],
+    ['enterApplicationDetails', new CaseManagementAction()],
+    ['confirmIfCourtHearingInNext14Days', new CaseManagementAction()],
     ['errorValidationSelectDocumentPage', new ErrorValidationAction()],
     ['errorValidationChangeCaseStatePage', new ErrorValidationAction()],
     ['errorValidationEnterGeneralAppPage', new ErrorValidationAction()],
+    ['errorValidationHearingDatePage', new ErrorValidationAction()],
     ['inputErrorValidation', new CaseManagementAction()],
     ['reTryOnCallBackError', new RetryOnCallBackError()],
     

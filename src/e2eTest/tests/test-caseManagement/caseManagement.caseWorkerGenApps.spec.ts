@@ -7,7 +7,8 @@ import { caseSummary, user } from '@data/page-data';
 import { dismissCookieBanner } from '@config/cookie-banner';
 import { initializeCMExecutor, performAction, performValidation } from '@utils/controller-caseManagement';
 import { allPartyDetails } from '@utils/actions/custom-actions/custom-actions-caseManagement';
-import { enterGenappApplication } from '@data/page-data-figma/page-data-caseManagement-figma';
+import { enterGenappApplication, enterGenAppapplicationFee, enterGenAppHearingDate } from '@data/page-data-figma/page-data-caseManagement-figma';
+import { label } from 'allure-js-commons';
 
 test.use({ storageState: undefined })
 
@@ -45,12 +46,20 @@ test.describe('Case management - Case Worker Enter a General application @nightl
     await performAction('selectAnEvent', { eventType: caseSummary.enterAGenApp });
     await performValidation('mainHeader', enterGenappApplication.mainHeader);
     await performAction('errorValidationEnterGeneralAppPage', enterGenappApplication.errorValidation);
-    // await performAction('changeCaseState', {
-    //   question: changeCaseState.whichStateYouMovingCaseToQuestion, option: changeCaseState.caseStateHiddenOption,
-    //   nextPage: checkYourAnswersChangeState.mainHeader
-    // });
-    // await performAction('clickButton', checkYourAnswersChangeState.submitButton);
-    // await performAction('confirmCaseStateChange');
-    // await performValidation('bannerAlert', 'Case #.* has been updated with event: Change case state');
+    await performAction('enterApplicationDetails', {
+      question1: enterGenappApplication.whichPartyMadeAppQuestion, option1: allPartyDetails[0],
+      question2: enterGenappApplication.typeOfAppQuestion, option2: enterGenappApplication.adjournRadioOption,
+      label1: enterGenappApplication.dayTextLabel,
+      label2: enterGenappApplication.monthTextLabel,
+      label3: enterGenappApplication.yearTextLabel,
+      dateType: 'past',
+      nextPage: enterGenAppHearingDate.mainHeader
+    })
+    await performAction('errorValidationHearingDatePage', enterGenAppHearingDate.errorValidation);
+    await performAction('confirmIfCourtHearingInNext14Days', {
+      question: enterGenAppHearingDate.hearingInNext14DaysQuestion,
+      option: enterGenAppHearingDate.yesRadioOption,
+      nextPage: enterGenAppapplicationFee.mainHeader
+    });
   });
 });

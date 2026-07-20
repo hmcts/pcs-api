@@ -1,7 +1,7 @@
 import { Page } from '@playwright/test';
 import { performAction } from '@utils/controller-caseManagement';
 import { IAction, actionData, actionRecord } from '@utils/interfaces/action.interface';
-import { changeCaseState, enterGenappApplication, selectDocument } from '@data/page-data-figma/page-data-caseManagement-figma';
+import { changeCaseState, enterGenappApplication, enterGenAppHearingDate, selectDocument } from '@data/page-data-figma/page-data-caseManagement-figma';
 import { allPartyDetails } from './caseManagement.action';
 
 export class ErrorValidationAction implements IAction {
@@ -10,6 +10,7 @@ export class ErrorValidationAction implements IAction {
       ['errorValidationSelectDocumentPage', () => this.errorValidationSelectDocumentPage(errorFlag as string)],
       ['errorValidationChangeCaseStatePage', () => this.errorValidationChangeCaseStatePage(errorFlag as string)],
       ['errorValidationEnterGeneralAppPage', () => this.errorValidationEnterGeneralAppPage(errorFlag as string)],
+      ['errorValidationHearingDatePage', () => this.errorValidationHearingDatePage(errorFlag as string)],
 
     ]);
     const actionToPerform = actionsMap.get(action);
@@ -57,23 +58,49 @@ export class ErrorValidationAction implements IAction {
         option: allPartyDetails[0],
         button: enterGenappApplication.continueButton
       });
+
       await performAction('inputErrorValidation', {
         validationType: enterGenappApplication.errorValidationType.two,
         inputArray: enterGenappApplication.errorValidationField.errorRadioOption2,
         question: enterGenappApplication.typeOfAppQuestion,
-        option: enterGenappApplication.somethingElseRadioOption,
+        option: enterGenappApplication.adjournRadioOption,
         button: enterGenappApplication.continueButton
       });
       await performAction('inputErrorValidation', {
         validationType: enterGenappApplication.errorValidationType.five,
-        inputArray: enterGenappApplication.errorValidationField.errorTextField,
+        inputArray: enterGenappApplication.errorValidationField.errorDateField,
         header: enterGenappApplication.eventCouldNotBeCreatedErrorMessageHeader,
+        header1: enterGenappApplication.thereIsProbErrorMessageHeader,
+        question: enterGenappApplication.whatDateAppReceivedQuestion,
         label1: enterGenappApplication.dayTextLabel,
         label2: enterGenappApplication.monthTextLabel,
         label3: enterGenappApplication.yearTextLabel,
         button: enterGenappApplication.continueButton
       });
+      await performAction('clickRadioButton', {
+        question: enterGenappApplication.typeOfAppQuestion,
+        option: enterGenappApplication.somethingElseRadioOption,
+      });
+      await performAction('inputErrorValidation', {
+        validationType: enterGenappApplication.errorValidationType.one,
+        inputArray: enterGenappApplication.errorValidationField.errorTextField,
+        header: enterGenappApplication.eventCouldNotBeCreatedErrorMessageHeader,
+        label: enterGenappApplication.whichCategoriesHiddenLabel,
+        button: enterGenappApplication.continueButton
+      });
 
+    }
+  }
+
+  private async errorValidationHearingDatePage(validationReq: string) {
+    if (validationReq === 'YES') {
+      await performAction('inputErrorValidation', {
+        validationType: enterGenAppHearingDate.errorValidationType.two,
+        inputArray: enterGenAppHearingDate.errorValidationField.errorRadioOption,
+        question: enterGenAppHearingDate.hearingInNext14DaysQuestion,
+        option: enterGenAppHearingDate.yesRadioOption,
+        button: enterGenAppHearingDate.continueButton
+      });
     }
   }
 

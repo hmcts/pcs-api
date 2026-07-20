@@ -2,5 +2,7 @@ export default {
   'amendDocumentsselectDocument': 'selectDocument',
   'changeCaseStatechangeCaseStatePage': 'changeCaseState',
   'changeCaseState/confirm': 'confirmCaseStateChange',
-  'enterGenAppapplicationDetails': 'enterGenAppapplicationDetails'
+  'enterGenAppapplicationDetails': 'enterGenAppapplicationDetails',
+  'enterGenApphearingDate': 'enterGenApphearingDate',
+  'enterGenAppapplicationFee': 'enterGenAppapplicationFee',
 };

@@ -75,7 +75,7 @@ export class CaseManagementCommonUtils {
       );
     } else {
       minDate = new Date(
-        today.getFullYear() - 100,
+        today.getFullYear() - 10,
         today.getMonth(),
         today.getDate()
       );

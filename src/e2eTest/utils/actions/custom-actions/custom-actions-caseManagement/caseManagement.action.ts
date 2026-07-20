@@ -6,7 +6,7 @@ import { getCaseTypeId } from '@utils/common/caseType.utils';
 import { performAction, performActions, performValidation } from '@utils/controller-caseManagement';
 import { VERY_LONG_TIMEOUT } from 'playwright.config';
 import { caseSummary, home } from '@data/page-data';
-import { changeCaseState, confirmCaseStateChange, selectDocument } from '@data/page-data-figma/page-data-caseManagement-figma';
+import { changeCaseState, confirmCaseStateChange, enterGenappApplication, enterGenAppHearingDate, selectDocument } from '@data/page-data-figma/page-data-caseManagement-figma';
 import { caseInfo } from '../createCaseAPI.action';
 import { CaseManagementCommonUtils } from './caseManagementUtils.action';
 
@@ -29,6 +29,8 @@ export class CaseManagementAction implements IAction {
       ['changeCaseState', () => this.changeCaseState(fieldName as actionRecord)],
       ['confirmCaseStateChange', () => this.confirmCaseStateChange()],
       ['getAllPartyDetails', () => this.getAllPartyDetails(fieldName as actionRecord)],
+      ['enterApplicationDetails', () => this.enterApplicationDetails(fieldName as actionRecord)],
+      ['confirmIfCourtHearingInNext14Days', () => this.confirmIfCourtHearingInNext14Days(fieldName as actionRecord)],
       ['inputErrorValidation', () => this.inputErrorValidation(page, fieldName as actionRecord)],
 
     ]);
@@ -118,7 +120,29 @@ export class CaseManagementAction implements IAction {
     ...originalDefendantDetails.filter(n => n.trim().toLowerCase() === "null null")
     ];
     allPartyDetails.push(`${payLoad.claimantName} - Claimant 1`);
-    console.log(allPartyDetails);
+  }
+
+  private async enterApplicationDetails(appDetails: actionRecord) {
+    let date = CaseManagementCommonUtils.getRandomDate(appDetails.dateType as string);
+    await performAction('clickRadioButton', { question: appDetails.question1, option: appDetails.option1 });
+
+    await performActions('Enter Date',
+      ['inputText', appDetails.label1, date.split('/')[0]],
+      ['inputText', appDetails.label2, date.split('/')[1]],
+      ['inputText', appDetails.label3, date.split('/')[2]]);
+    await performAction('clickRadioButton', { question: appDetails.question2, option: appDetails.option2 });
+    await performAction('reTryOnCallBackError', enterGenappApplication.continueButton, appDetails.nextPage as string);
+
+  }
+
+  private async confirmIfCourtHearingInNext14Days(courtHearing: actionRecord) {
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
+    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
+    await performAction('clickRadioButton', {
+      question: courtHearing.question,
+      option: courtHearing.option,
+    });
+    await performAction('reTryOnCallBackError', enterGenAppHearingDate.continueButton, courtHearing.nextPage as string);
   }
 
   private async inputErrorValidation(page: Page, validationArr: actionRecord) {
@@ -175,21 +199,36 @@ export class CaseManagementAction implements IAction {
             break;
 
           case 'dateField':
-            let date: string = '';
-            if (item.input === 'empty') {
+            let date: string = CaseManagementCommonUtils.getRandomDate(item.type as string);
+            if (item.type === 'empty') {
               await performAction('clickButton', validationArr.button);
+              await performValidation('inputError', !validationArr?.label ? validationArr.question : validationArr.label, item.errInlineMessage);
+              await performValidation('errorMessage', validationArr.header1, item.errMessage);
+            } else if (item.type === 'past') {
+              await performActions('Enter Date',
+                ['inputText', validationArr.label1, date.split('/')[0]],
+                ['inputText', validationArr.label2, date.split('/')[1]],
+                ['inputText', validationArr.label3, date.split('/')[2]]);
+            }else if(item.type === 'invalid'){
+              await performActions('Enter Date',
+                ['inputText', validationArr.label1, date.split('/')[0]],
+                ['inputText', validationArr.label2, date.split('/')[1]],
+                ['inputText', validationArr.label3, date.split('/')[2]]);
+              await performAction('clickButton', validationArr.button);             
+              await performValidation('errorMessage', validationArr.header1, item.errMessage );
+
+            }
+            else {             
+
+              await performActions('Enter Date',
+                ['inputText', validationArr.label1, date.split('/')[0]],
+                ['inputText', validationArr.label2, date.split('/')[1]],
+                ['inputText', validationArr.label3, date.split('/')[2]]);
+              await performAction('clickButton', validationArr.button);
+              //await performValidation('inputError', !validationArr?.label ? validationArr.question : validationArr.label, item.errInlineMessage);
+              //await performValidation('errorMessage', !validationArr?.header ? validationArr.header = 'There is a problem' : validationArr.header, item.errMessage);
               await performValidation('errorMessage', { header: validationArr.header, message: item.errMessage });
             }
-            else {
-              date = CaseManagementCommonUtils.getRandomDate(item.input);
-            }
-
-            await performActions('Enter Date',
-              ['inputText', validationArr.label, date.split('/')[0]],
-              ['inputText', validationArr.label, date.split('/')[1]],
-              ['inputText', validationArr.label, date.split('/')[2]]);
-            await performValidation('inputError', validationArr.label, item.errMessage);
-            await performValidation('errorMessage', validationArr.label, item.errMessage);
             break;
 
           default:
