@@ -14,6 +14,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.LegalRepresentativeOrganisationRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
+import uk.gov.hmcts.reform.pcs.exception.ConflictOfInterestException;
 import uk.gov.hmcts.reform.pcs.exception.LegalRepresentativeAlreadyLinkedToPartyException;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 import uk.gov.hmcts.reform.pcs.idam.UserInfo;
@@ -44,6 +45,8 @@ public class LegalRepresentativePartyLinkService {
                 "Legal Representative or organisation already linked to Party [" + partyId + "]");
         }
         PcsCaseEntity caseEntity = pcsCaseService.loadCase(caseReference);
+
+        this.checkConflictOfInterest(caseEntity, organisationId);
 
         PartyEntity defendantPartyEntity = getDefendantPartyEntity(caseEntity, partyId);
 
@@ -164,5 +167,21 @@ public class LegalRepresentativePartyLinkService {
 
         // 3. revoke defendants access
         revokeAccessHelper.revokeDefendantsAccessToRespondToClaim(caseEntity, defendantParty);
+    }
+
+    private void checkConflictOfInterest(PcsCaseEntity caseEntity, String organisationId) {
+        PartyEntity claimant = caseEntity.getClaims().getFirst().getClaimParties().stream()
+            .filter(claimParty -> PartyRole.CLAIMANT.equals(claimParty.getRole()))
+            .map(ClaimPartyEntity::getParty)
+            .findFirst()
+            .orElseThrow(() -> {
+                log.error("Unable to find claimant Party");
+                return new PartyNotFoundException("Unable to find claimant Party");
+            });
+
+        if(organisationId.equals(claimant.getOrganisationId())) {
+            throw new ConflictOfInterestException(
+                "Organisation cannot represent both claimant and defendant in the same case");
+        }
     }
 }
