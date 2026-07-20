@@ -1,36 +1,103 @@
-/*
-* Instructions to run:
-* 1) Run "./gradlew cftlibtest"  to populate the cftlibtest database
-* 2) Run this test using "./gradlew test --tests uk.gov.hmcts.reform.pcs.DataTest --rerun"
-* 3) View test results by running "open build/reports/tests/test/index.html"
-* */
+package uk.gov.hmcts.reform.pcs;
 
-//package uk.gov.hmcts.reform.pcs;
+/*
+ * Instructions to run:
+ * Run this test using "./gradlew cftlibTest --tests uk.gov.hmcts.reform.pcs.DataTest"
+ * (this test now populates AND checks the data in one run — no separate
+ * CreatePossessionClaimTest run needed first)
+ *
+ * View test results by running "open build/reports/tests/cftlibTest/index.html"
+ * */
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+
+import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
+import uk.gov.hmcts.reform.idam.client.IdamClient;
+import uk.gov.hmcts.reform.pcs.ccd.domain.CompletionNextStep;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.client.CcdClient;
+import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
+import uk.gov.hmcts.rse.ccd.lib.test.CftlibTest;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.Statement;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.resumePossessionClaim;
 
-public class DataTest {
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+public class DataTest extends CftlibTest {
+
+    @Autowired
+    private CcdClient ccdClient;
+
+    @Autowired
+    private IdamClient idamClient;
 
     private static Connection connection;
 
     @BeforeAll
-    static void setUpConnection() throws Exception {
+    void setUpAndPopulate() throws Exception {
+
+        // ---------- 1. Populate the database via the real CCD journey ----------
+
+        String solicitorToken = idamClient.getAccessToken("pcs-solicitor1@test.com", "password");
+
+        PCSCase createData = PCSCase.builder()
+            .propertyAddress(AddressUK.builder()
+                                 .addressLine1("123 Baker Street")
+                                 .addressLine2("Marylebone")
+                                 .postTown("London")
+                                 .county("Greater London")
+                                 .postCode("NW1 6XE")
+                                 .build()
+            )
+            .legislativeCountry(LegislativeCountry.ENGLAND)
+            .build();
+
+        CaseDetails caseDetails = ccdClient.createCase(createData, solicitorToken);
+        Long caseReference = caseDetails.getId();
+
+        PCSCase resumeData = PCSCase.builder()
+            .caseManagementLocationNumber(20262)
+            .regionId(1)
+            .tenancyLicenceDetails(TenancyLicenceDetails.builder()
+                                       .typeOfTenancyLicence(TenancyLicenceType.ASSURED_TENANCY)
+                                       .build())
+            .defendant1(DefendantDetails.builder()
+                            .nameKnown(VerticalYesNo.YES)
+                            .firstName("Danny")
+                            .lastName("Defendant")
+                            .build())
+            .noticeServed(YesOrNo.NO)
+            .completionNextStep(CompletionNextStep.SUBMIT_AND_PAY_NOW)
+            .build();
+
+        ccdClient.updateCase(resumePossessionClaim, caseReference, resumeData, solicitorToken);
+
+        // ---------- 2. Open the JDBC connection used by the checks below ----------
+
         String host = System.getenv().getOrDefault("PCS_DB_HOST", "localhost");
         String port = System.getenv().getOrDefault("PCS_DB_PORT", "6432");
         String dbName = System.getenv().getOrDefault("PCS_DB_NAME", "pcs");
@@ -45,7 +112,7 @@ public class DataTest {
     }
 
     @AfterAll
-    static void tearDownConnection() throws Exception {
+    void tearDownConnection() throws Exception {
         if (connection != null && !connection.isClosed()) {
             connection.close();
         }
@@ -184,7 +251,8 @@ public class DataTest {
         int valueCount = runCountQuery(
             "SELECT COUNT(*) FROM public.address WHERE address_line1 != '123 Baker Street'"
         );
-        assertEquals(0, valueCount, "Found incorrect value(s) in 'address_line1' — didn't find '123 Baker Street'");
+        assertEquals(0, valueCount,
+                     () -> "Found " + valueCount + " row(s) with unexpected 'address_line1' value — expected 0");
     }
 
     @Test
@@ -193,7 +261,8 @@ public class DataTest {
         int valueCount = runCountQuery(
             "SELECT COUNT(*) FROM public.address WHERE address_line2 != 'Marylebone'"
         );
-        assertEquals(0, valueCount, "Found incorrect value(s) in 'address_line2' — didn't find 'Marylebone'");
+        assertEquals(0, valueCount,
+                     () -> "Found " + valueCount + " row(s) with unexpected 'address_line2' value — expected 0");
     }
 
     @Test
@@ -202,7 +271,8 @@ public class DataTest {
         int valueCount = runCountQuery(
             "SELECT COUNT(*) FROM public.address WHERE post_town != 'London'"
         );
-        assertEquals(0, valueCount, "Found incorrect value(s) in 'post_town' — didn't find 'London'");
+        assertEquals(0, valueCount,
+                     () -> "Found " + valueCount + " row(s) with unexpected 'post_town' value — expected 0");
     }
 
     @Test
@@ -211,7 +281,8 @@ public class DataTest {
         int valueCount = runCountQuery(
             "SELECT COUNT(*) FROM public.address WHERE county != 'Greater London'"
         );
-        assertEquals(0, valueCount, "Found incorrect value(s) in 'county' — didn't find 'Greater London'");
+        assertEquals(0, valueCount,
+                     () -> "Found " + valueCount + " row(s) with unexpected 'county' value — expected 0");
     }
 
     @Test
@@ -220,12 +291,12 @@ public class DataTest {
         int valueCount = runCountQuery(
             "SELECT COUNT(*) FROM public.address WHERE postcode != 'NW1 6XE'"
         );
-        assertEquals(0, valueCount, "Found incorrect value(s) in 'postcode' — didn't find 'NW1 6XE'");
+        assertEquals(0, valueCount,
+                     () -> "Found " + valueCount + " row(s) with unexpected 'postcode' value — expected 0");
     }
 
     // helper
 
-    // checks that a fully-qualified table (e.g. "public.pcs_case") has every column in expectedColumns
     private void assertHasColumns(String qualifiedTable, List<String> expectedColumns) throws SQLException {
         String[] parts = qualifiedTable.split("\\.", 2);
         String schema = parts.length == 2 ? parts[0] : "public";
