@@ -112,7 +112,7 @@ class DefendantAccessCodeServiceTest {
 
         verify(partyAccessCodeRepo).save(accessCodeCaptor.capture());
         PartyAccessCodeEntity savedCode = accessCodeCaptor.getValue();
-        assertThat(savedCode.getPartyId()).isEqualTo(partyId);
+        assertThat(savedCode.getParty().getId()).isEqualTo(partyId);
         assertThat(savedCode.getRole()).isEqualTo(PartyRole.DEFENDANT);
         assertThat(savedCode.getCode()).startsWith("ENC-");
 
@@ -191,7 +191,8 @@ class DefendantAccessCodeServiceTest {
         UUID p2 = UUID.randomUUID();
         PcsCaseEntity caseEntity = createCaseWithDefendants(p1, p2);
         PartyAccessCodeEntity existing = mock(PartyAccessCodeEntity.class);
-        when(existing.getPartyId()).thenReturn(p1);
+        when(existing.getParty()).thenReturn(mock(PartyEntity.class));
+        when(existing.getParty().getId()).thenReturn(p1);
         when(pcsCaseService.loadCase(2L)).thenReturn(caseEntity);
         when(partyAccessCodeRepo.findAllByPcsCase_Id(caseEntity.getId())).thenReturn(List.of(existing));
 

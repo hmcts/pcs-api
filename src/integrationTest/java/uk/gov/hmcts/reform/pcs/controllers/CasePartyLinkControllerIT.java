@@ -469,7 +469,9 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
     private String createPartyAccessCode(PcsCaseEntity caseEntity, UUID partyId) {
         String storedCode = partyAccessCodeHashingService.encodeForStorage(ACCESS_CODE);
         PartyAccessCodeEntity pac = PartyAccessCodeEntity.builder()
-                .partyId(partyId)
+            .party(PartyEntity.builder()
+                    .id(partyId)
+                    .build())
                 .pcsCase(caseEntity)
                 .code(storedCode)
                 .role(PartyRole.DEFENDANT)

@@ -240,3 +240,59 @@ ccd-case-document-am-api:
         secrets:
           - name: ccd-case-document-am-api-s2s-secret
             alias: CASE_DOCUMENT_AM_API_S2S_SECRET
+
+# LAU's ccd-case-disposer, pointed at THIS preview environment's CCD database and Elasticsearch.
+# LAU's own scheduled instance can never reach a preview env (the CCD DB is on a private endpoint
+# in the preview VNet and ES is an in-cluster service), so we run their chart here instead.
+# Hard-deletes PCS cases whose resolved_ttl has passed, i.e. cases deleted via deleteThisCase.
+# Preview only: disabled by default in values.yaml. Credentials come from the ccd key vault.
+ccd-case-disposer:
+  enabled: true
+  global:
+    jobKind: CronJob
+    enableKeyVaults: true
+    # preview is not an "active cron cluster", so without this the job chart suspends the CronJob
+    disableActiveClusterCheck: true
+  job:
+    kind: CronJob
+    suspend: false
+    schedule: "*/10 * * * *"
+    startingDeadlineSeconds: 180
+    concurrencyPolicy: Forbid
+    releaseNameOverride: ${SERVICE_NAME}-case-disposer
+    image: hmctsprod.azurecr.io/ccd/case-disposer:latest
+    aadIdentityName: ccd
+    keyVaults:
+      ccd:
+        secrets:
+          - name: app-insights-connection-string
+            alias: app-insights-connection-string
+          - name: idam-case-disposer-system-user-username
+            alias: IDAM_CASE_DISPOSER_SYSTEM_USER_USERNAME
+          - name: idam-case-disposer-system-user-password
+            alias: IDAM_CASE_DISPOSER_SYSTEM_USER_PASSWORD
+          - name: idam-case-disposer-client-secret
+            alias: IDAM_CASE_DISPOSER_CLIENT_SECRET
+          - name: ccd-case-disposer-s2s-secret
+            alias: IDAM_KEY_CCD_CASE_DISPOSER
+    secrets:
+      DATA_STORE_DB_PASSWORD:
+        secretRef: "{{ .Values.global.postgresSecret }}"
+        key: PASSWORD
+    environment:
+      DATA_STORE_DB_HOST: '{{ tpl .Values.global.postgresHostname $ }}'
+      DATA_STORE_DB_PORT: 5432
+      DATA_STORE_DB_NAME: "{{ .Values.global.databaseNamePrefix }}data-store"
+      DATA_STORE_DB_USERNAME: "{{ .Values.global.postgresUsername }}"
+      DATA_STORE_DB_OPTIONS: "?sslmode=require"
+      ELASTIC_SEARCH_ENABLED: true
+      ELASTIC_SEARCH_DATA_NODES_HOSTS: "http://{{ .Release.Name }}-es-master:9200"
+      DELETE_CASE_TYPES: "PCS"
+      SIMULATED_CASE_TYPES:
+      CASE_COLLECTOR_VERSION: 2
+      DEFINITION_STORE_HOST: http://${SERVICE_NAME}-ccd-definition-store
+      DOCUMENT_STORE_HOST: http://dm-store-aat.service.core-compute-aat.internal
+      ROLE_ASSIGNMENT_HOST: http://am-role-assignment-service-aat.service.core-compute-aat.internal
+      LOG_AND_AUDIT_HOST: http://lau-case-backend-aat.service.core-compute-aat.internal
+      IDAM_API_URL: https://idam-api.aat.platform.hmcts.net
+      IDAM_S2S_URL: http://rpe-service-auth-provider-aat.service.core-compute-aat.internal
