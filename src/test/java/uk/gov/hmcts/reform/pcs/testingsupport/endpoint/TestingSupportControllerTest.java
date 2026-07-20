@@ -19,7 +19,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
-import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -39,7 +38,6 @@ import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.postcodecourt.service.EligibilityService;
 import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationDetailsService;
-import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 import uk.gov.hmcts.reform.pcs.service.LegalRepresentativePartyLinkService;
 import uk.gov.hmcts.reform.pcs.testingsupport.model.PartyEmail;
@@ -370,78 +368,6 @@ class TestingSupportControllerTest {
 
         // Then
         assertThat(HttpStatus.INTERNAL_SERVER_ERROR.equals(response.getStatusCode()));
-    }
-
-    @Test
-    void linkDefendantSolicitorToParty() {
-        // given
-        long caseReference = 111111111111L;
-        String partyId = "abc";
-        String authToken = "testAuth";
-        String userUid = "userUid";
-        when(idamAuthenticator.validateAuthToken(authToken)).thenReturn(user);
-        when(user.getUserDetails()).thenReturn(userInfo);
-        when(userInfo.getUid()).thenReturn(userUid);
-        when(organisationDetailsService.getOrganisationDetails(userUid.toString())).thenReturn(organisationDetails);
-        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_2)).thenReturn(true);
-        when(featureToggleService.isEnabled(FeatureFlag.CUI_RESPOND_TO_CLAIM_LR)).thenReturn(true);
-
-        // when
-        ResponseEntity<Void> response = underTest.linkDefendantSolicitorToParty(
-            caseReference,
-            partyId,
-            authToken,
-            "testS2S"
-        );
-
-        // then
-        verify(caseRoleAssignmentService).assignRasRole(caseReference, userUid, UserRole.DEFENDANT_SOLICITOR);
-
-        verify(legalRepresentativePartyLinkService)
-            .linkLegalRepresentativeToParty(caseReference, partyId, userInfo, organisationDetails);
-
-        assertThat(HttpStatus.OK.equals(response.getStatusCode()));
-    }
-
-    @Test
-    void linkDefendantSolicitorToPartyReleaseFeatureFlagNotSet() {
-        // given
-        long caseReference = 111111111111L;
-        String partyId = "abc";
-        String authToken = "testAuth";
-        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_2)).thenReturn(false);
-
-        // when
-        ResponseEntity<Void> response = underTest.linkDefendantSolicitorToParty(
-            caseReference,
-            partyId,
-            authToken,
-            "testS2S"
-        );
-
-        // then
-        assertThat(HttpStatus.PRECONDITION_FAILED.equals(response.getStatusCode()));
-    }
-
-    @Test
-    void linkDefendantSolicitorToPartyFeatureFlagNotSet() {
-        // given
-        long caseReference = 111111111111L;
-        String partyId = "abc";
-        String authToken = "testAuth";
-        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_2)).thenReturn(true);
-        when(featureToggleService.isEnabled(FeatureFlag.CUI_RESPOND_TO_CLAIM_LR)).thenReturn(false);
-
-        // when
-        ResponseEntity<Void> response = underTest.linkDefendantSolicitorToParty(
-            caseReference,
-            partyId,
-            authToken,
-            "testS2S"
-        );
-
-        // then
-        assertThat(HttpStatus.PRECONDITION_FAILED.equals(response.getStatusCode()));
     }
 
     @Test

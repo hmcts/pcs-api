@@ -7,16 +7,14 @@ import uk.gov.hmcts.ccd.sdk.api.HasRole;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.ORGANISATION_CASE_ACCESS_ADMINISTRATOR;
-import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.PCS_SOLICITOR;
 
 
-public class ClaimantAccess implements HasAccessControl {
+public class AcaSystemUserAccess implements HasAccessControl {
 
     @Override
     public SetMultimap<HasRole, Permission> getGrants() {
         SetMultimap<HasRole, Permission> grants = HashMultimap.create();
-        grants.putAll(PCS_SOLICITOR, Permission.CRU);
-        grants.putAll(ORGANISATION_CASE_ACCESS_ADMINISTRATOR, Permission.CRU);
+        grants.putAll(ORGANISATION_CASE_ACCESS_ADMINISTRATOR, Permission.CRUD);
         return grants;
     }
 

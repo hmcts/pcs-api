@@ -10,6 +10,7 @@ import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.CaseLink;
 import uk.gov.hmcts.ccd.sdk.type.CaseLocation;
+import uk.gov.hmcts.ccd.sdk.type.ChangeOrganisationRequest;
 import uk.gov.hmcts.ccd.sdk.type.ComponentLauncher;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.DynamicList;
@@ -20,7 +21,9 @@ import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.SearchCriteria;
 import uk.gov.hmcts.ccd.sdk.type.WaysToPay;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.AcaSystemUserAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseLinkingAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseRoleID;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.ClaimantAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DefendantAccess;
@@ -355,7 +358,7 @@ public class PCSCase {
     /**
      * Combined list of all defendants in the case (i.e. primary defendant + additional defendants).
      */
-    @CCD(access = {ClaimantAccess.class, CitizenAccess.class, InternalCaseFlagAccess.class})
+    @CCD(access = {ClaimantAccess.class, CitizenAccess.class, InternalCaseFlagAccess.class, AcaSystemUserAccess.class})
     private List<ListValue<Party>> allDefendants;
 
     @JsonUnwrapped(prefix = "tenancy_")
@@ -726,4 +729,8 @@ public class PCSCase {
 
     @CCD
     private String dateIssuedString;
+
+    @CCD(access = {AcaSystemUserAccess.class})
+    private ChangeOrganisationRequest<CaseRoleID> changeOrganisationRequestField;
+
 }

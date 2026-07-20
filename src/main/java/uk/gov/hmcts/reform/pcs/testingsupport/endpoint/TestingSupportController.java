@@ -27,44 +27,39 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
-import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.ContactPreferencesEntity;
-import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
-import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
-import uk.gov.hmcts.reform.pcs.idam.UserInfo;
-import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
-import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
-import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
-import uk.gov.hmcts.reform.pcs.testingsupport.model.TestingSupportAccessCode;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.ContactPreferencesEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.AccessCodeGenerationService;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseRoleAssignmentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 import uk.gov.hmcts.reform.pcs.idam.IdamAuthenticator;
-import uk.gov.hmcts.reform.pcs.idam.User;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityResult;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.postcodecourt.service.EligibilityService;
-import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationDetailsService;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 import uk.gov.hmcts.reform.pcs.service.LegalRepresentativePartyLinkService;
 import uk.gov.hmcts.reform.pcs.testingsupport.model.PartyEmail;
+import uk.gov.hmcts.reform.pcs.testingsupport.model.TestingSupportAccessCode;
 import uk.gov.hmcts.reform.pcs.testingsupport.service.CcdTestCaseOrchestrator;
 
 import java.time.Instant;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.Objects;
-import java.util.Collection;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -389,52 +384,6 @@ public class TestingSupportController {
         pcsCaseService.allocateCaseManagementLocation(caseReference);
         pcsCaseService.setCaseIssuedDate(caseReference);
         accessCodeGenerationService.createAccessCodesForParties(String.valueOf(caseReference), true);
-    }
-
-    @PostMapping(
-        value = "/link-defendant-solicitor-to-party/{caseReference}/{partyId}",
-        produces = MediaType.APPLICATION_JSON_VALUE
-    )
-    @Operation(
-        summary = "Link a defendant solicitor to a party for a case"
-    )
-    @ApiResponse(responseCode = "200", description = "Successful assignment",
-        content = @Content())
-    @ApiResponse(responseCode = "401", description = "Invalid access token",
-        content = @Content())
-    @ApiResponse(responseCode = "412", description = "Feature not enabled",
-        content = @Content())
-    public ResponseEntity<Void> linkDefendantSolicitorToParty(
-        @Parameter(description = "The 12-digit case reference number", required = true)
-        @PathVariable long caseReference,
-        @Parameter(description = "Id of Party to link", required = true)
-        @PathVariable String partyId,
-        @RequestHeader(value = AUTHORIZATION) String authorization,
-        @RequestHeader(value = "ServiceAuthorization") String serviceAuthorization
-    ) {
-
-        if (!this.featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_2)
-            || !this.featureToggleService.isEnabled(FeatureFlag.CUI_RESPOND_TO_CLAIM_LR)) {
-            log.warn("Feature flags are disabled for [{}] [{}]", FeatureFlag.RELEASE_1_DOT_2.key(),
-                     FeatureFlag.CUI_RESPOND_TO_CLAIM_LR.key());
-            return ResponseEntity.status(HttpStatus.PRECONDITION_FAILED).build();
-        }
-
-        User user = idamAuthenticator.validateAuthToken(authorization);
-        UserInfo userDetails = user.getUserDetails();
-
-        caseRoleAssignmentService.assignRasRole(caseReference, userDetails.getUid(), UserRole.DEFENDANT_SOLICITOR);
-
-        OrganisationDetailsResponse organisationDetails = organisationDetailsService
-            .getOrganisationDetails(userDetails.getUid());
-
-        legalRepresentativePartyLinkService.linkLegalRepresentativeToParty(
-            caseReference,
-            partyId,
-            userDetails,
-            organisationDetails
-        );
-        return ResponseEntity.ok().build();
     }
 
     @GetMapping("/fee-payment-info/{caseReference}")
