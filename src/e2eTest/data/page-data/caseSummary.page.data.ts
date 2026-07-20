@@ -12,5 +12,7 @@ export const caseSummary = {
   addCaseNote: 'Add a case note',
   go: "Go",
   HistoryTab: 'History',
-  serviceRequestTab: 'Service Request'
+  servieRequestTab: 'Service Request',
+  linkedCasesTab: 'Linked Cases',
+  linkedCasesHeader: 'Linked cases'
 }
