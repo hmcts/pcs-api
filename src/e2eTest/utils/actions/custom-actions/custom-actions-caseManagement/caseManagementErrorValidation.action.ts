@@ -41,6 +41,7 @@ export class ErrorValidationAction implements IAction {
         label: addReviewDates.dateOfReviewLabel,
         button: addReviewDates.continueButton
       });
+
       await performAction('inputErrorValidation',{
         validationType: addReviewDates.errorValidationType.two,
         inputArray: addReviewDates.errorValidationField.errorRadioOption,
@@ -48,10 +49,12 @@ export class ErrorValidationAction implements IAction {
         button: addReviewDates.continueButton
       });
 
-      await performAction('inputErrorValidation',{
-        validationType: addReviewDates.errorValidationType.one,
-        inputArray: addReviewDates.errorValidationField.errorTextField,
+      await performAction('inputErrorValidation', {
+        validationType: addReviewDates.errorValidationType.six,
+        inputArray: addReviewDates.errorValidationField.errorMaxInputField,
         label: addReviewDates.descriptionTextLabel,
+        question: addReviewDates.reasonLabel,
+        option: addReviewDates.OtherRadioOption,
         button: addReviewDates.continueButton
       });
     }

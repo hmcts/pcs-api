@@ -150,23 +150,46 @@ export class CaseManagementAction implements IAction {
                 break;
 
               case 'textField':
-                await performAction('inputText', validationArr.label, generateRandomString(item.input));
+                if (item.type === 'none') {
+                  await performAction('clickButton', validationArr.button);
+                } else if (item.type === 'Max') {
+                  await performAction('inputText', validationArr.label, generateRandomString(Number(item.input))
+                  );
+                }
                 await performAction('clickButton', validationArr.button);
                 await performValidation('errorMessage', validationArr.label, item.errMessage);
                 break;
 
               case 'dateField':
+                if (item.type !== 'none') {
+                  await performActions(
+                    'Date of Review',
+                    ['inputText', 'Day', item.input.day],
+                    ['inputText', 'Month', item.input.month],
+                    ['inputText', 'Year', item.input.year]
+                  );
+                }
                 await performAction('clickButton', validationArr.button);
                 await performValidation(
                   'inputError',
                   validationArr.label,
-                  item.errMessage
+                  item.input.errMessage
                 );
-                await performValidation(
-                  'errorMessage',
-                  validationArr.header ?? 'There is a problem',
-                  item.errMessage
+                break;
+
+              case 'maxInputField' :
+                await performActions(
+                  'Date of Review',
+                  ['inputText', 'Day', item.input.day],
+                  ['inputText', 'Month', item.input.month],
+                  ['inputText', 'Year', item.input.year]
                 );
+                await performAction('clickRadioButton', {
+                  question: validationArr.question,
+                  option: validationArr.option
+                });
+                await performAction('inputText', validationArr.label, generateRandomString(Number(item.input)));
+                await performAction('clickButton', validationArr.button);
                 break;
 
               default:
