@@ -198,45 +198,6 @@ class FileUploadValidationServiceTest {
     }
 
     @Nested
-    @DisplayName("validateAdditionalDocuments Method Tests")
-    class ValidateAdditionalDocumentsTests {
-
-        @Test
-        @DisplayName("Should return error when an additional document has a blocked extension")
-        void shouldReturnErrorForBlockedAdditionalDocument() {
-            List<String> errors = fileUploadValidationService.validateAdditionalDocuments(
-                additionalDocumentsWithFilenames("clip.mp4"));
-
-            assertThat(errors).containsExactly(DISALLOWED_FILE_TYPE_ERROR, ALLOWED_FILE_TYPE_GUIDANCE);
-        }
-
-        @Test
-        @DisplayName("Should return no error for an allowed additional document")
-        void shouldReturnNoErrorForAllowedAdditionalDocument() {
-            List<String> errors = fileUploadValidationService.validateAdditionalDocuments(
-                additionalDocumentsWithFilenames("statement.pdf"));
-
-            assertThat(errors).isEmpty();
-        }
-
-        @Test
-        @DisplayName("Should return no error when the additional documents list is null")
-        void shouldReturnNoErrorWhenNull() {
-            assertThat(fileUploadValidationService.validateAdditionalDocuments(null)).isEmpty();
-        }
-
-        @Test
-        @DisplayName("Should ignore an additional document with a null inner document")
-        void shouldIgnoreNullInnerDocument() {
-            AdditionalDocument additionalDocument = AdditionalDocument.builder().document(null).build();
-            List<ListValue<AdditionalDocument>> documents =
-                List.of(ListValue.<AdditionalDocument>builder().value(additionalDocument).build());
-
-            assertThat(fileUploadValidationService.validateAdditionalDocuments(documents)).isEmpty();
-        }
-    }
-
-    @Nested
     @DisplayName("validateRequiredAdditionalDocuments Method Tests")
     class ValidateRequiredAdditionalDocumentsTests {
 
@@ -262,6 +223,17 @@ class FileUploadValidationServiceTest {
         void shouldReturnNoErrorWhenAllowedFileUploaded() {
             assertThat(fileUploadValidationService.validateRequiredAdditionalDocuments(
                 additionalDocumentsWithFilenames("statement.pdf"), REQUIRED_MESSAGE))
+                .isEmpty();
+        }
+
+        @Test
+        @DisplayName("Should ignore an additional document with a null inner document")
+        void shouldIgnoreNullInnerDocument() {
+            AdditionalDocument additionalDocument = AdditionalDocument.builder().document(null).build();
+            List<ListValue<AdditionalDocument>> documents =
+                List.of(ListValue.<AdditionalDocument>builder().value(additionalDocument).build());
+
+            assertThat(fileUploadValidationService.validateRequiredAdditionalDocuments(documents, REQUIRED_MESSAGE))
                 .isEmpty();
         }
     }

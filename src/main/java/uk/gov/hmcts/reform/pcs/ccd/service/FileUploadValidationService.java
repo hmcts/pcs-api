@@ -97,7 +97,7 @@ public class FileUploadValidationService {
         String missingMessage) {
     }
 
-    public List<String> validateAdditionalDocuments(List<ListValue<AdditionalDocument>> additionalDocuments) {
+    private List<String> validateAdditionalDocuments(List<ListValue<AdditionalDocument>> additionalDocuments) {
         if (CollectionUtils.isEmpty(additionalDocuments)) {
             return List.of();
         }
