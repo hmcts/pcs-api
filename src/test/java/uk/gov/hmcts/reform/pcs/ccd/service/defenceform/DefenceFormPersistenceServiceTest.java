@@ -36,7 +36,7 @@ import static org.mockito.Mockito.when;
 class DefenceFormPersistenceServiceTest {
 
     private static final long CASE_REFERENCE = 1234567812345678L;
-    private static final UUID RESPONSE_ID = UUID.randomUUID();
+    private static final Long RESPONSE_ID = 1L;
     private static final String DM_STORE_URL = "https://dm-store/xyz";
 
     @Mock

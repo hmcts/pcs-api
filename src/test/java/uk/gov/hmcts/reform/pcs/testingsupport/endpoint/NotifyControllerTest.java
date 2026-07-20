@@ -81,14 +81,14 @@ class NotifyControllerTest {
             pcsCase.setCounterClaims(List.of(counterClaim));
 
             PaymentAgreementEntity paymentAgreement = new PaymentAgreementEntity();
-            paymentAgreement.setId(UUID.randomUUID());
+            paymentAgreement.setId(1L);
 
             DefendantResponseEntity defendantResponse = new DefendantResponseEntity();
             defendantResponse.setParty(party);
             defendantResponse.setPcsCase(pcsCase);
             defendantResponse.setPaymentAgreement(paymentAgreement);
 
-            UUID defendantResponseId = UUID.randomUUID();
+            Long defendantResponseId = 1L;
             when(defendantResponseRepository.findById(defendantResponseId))
                 .thenReturn(Optional.of(defendantResponse));
 
@@ -127,7 +127,7 @@ class NotifyControllerTest {
         @Test
         @DisplayName("Should return 404 when defendant response not found")
         void shouldReturn404WhenDefendantResponseNotFound() {
-            UUID defendantResponseId = UUID.randomUUID();
+            Long defendantResponseId = 1L;
 
             when(defendantResponseRepository.findById(defendantResponseId))
                 .thenReturn(Optional.empty());
@@ -178,7 +178,7 @@ class NotifyControllerTest {
         EmailNotificationResponse response = new EmailNotificationResponse();
         response.setTaskId(TASK_ID);
         response.setStatus(SCHEDULED_STATUS);
-        response.setNotificationId(UUID.randomUUID());
+        response.setNotificationId(1L);
         return response;
     }
 }

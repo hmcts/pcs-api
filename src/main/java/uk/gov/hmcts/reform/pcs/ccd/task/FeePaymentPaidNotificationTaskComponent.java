@@ -13,7 +13,6 @@ import uk.gov.hmcts.reform.pcs.ccd.model.FeePaymentStatusChangeTaskData;
 import uk.gov.hmcts.reform.pcs.notify.service.FeePaymentNotificationService;
 
 import java.time.Duration;
-import java.util.UUID;
 
 @Slf4j
 @Component
@@ -47,7 +46,7 @@ public class FeePaymentPaidNotificationTaskComponent {
             ))
             .execute((taskInstance, executionContext) -> {
                 FeePaymentStatusChangeTaskData taskData = taskInstance.getData();
-                UUID feePaymentId = taskData.getFeePaymentId();
+                Long feePaymentId = taskData.getFeePaymentId();
                 log.info("Processing fee payment paid notification for: {}", feePaymentId);
 
                 feePaymentNotificationService.sendClaimantPaidCaseIssuedNotification(feePaymentId);

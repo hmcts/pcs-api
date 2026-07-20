@@ -239,7 +239,7 @@ public class NotificationService {
      * @param dbNotificationId the unique identifier of the notification stored in the database
      * @param providerNotificationId the unique identifier of the notification assigned by the provider
      */
-    public void updateNotificationAfterSending(UUID dbNotificationId, UUID providerNotificationId) {
+    public void updateNotificationAfterSending(Long dbNotificationId, UUID providerNotificationId) {
         Optional<CaseNotification> notificationOpt = notificationRepository.findById(dbNotificationId);
         if (notificationOpt.isEmpty()) {
             log.error("Notification not found with ID: {}", dbNotificationId);
@@ -257,7 +257,7 @@ public class NotificationService {
      * @param dbNotificationId the unique identifier of the notification in the database
      * @param exception the exception containing the details of the failure
      */
-    public void updateNotificationAfterFailure(UUID dbNotificationId, Exception exception) {
+    public void updateNotificationAfterFailure(Long dbNotificationId, Exception exception) {
         Optional<CaseNotification> notificationOpt = notificationRepository.findById(dbNotificationId);
         if (notificationOpt.isEmpty()) {
             log.error("Notification not found with ID on failure: {}", dbNotificationId);
@@ -325,7 +325,7 @@ public class NotificationService {
      * @param dbNotificationId the unique identifier of the notification in the database
      * @param statusString the new status to set for the notification, represented as a string
      */
-    public void updateNotificationStatus(UUID dbNotificationId, String statusString) {
+    public void updateNotificationStatus(Long dbNotificationId, String statusString) {
         Optional<CaseNotification> notificationOpt = notificationRepository.findById(dbNotificationId);
         if (notificationOpt.isEmpty()) {
             log.error("Notification not found with ID on status update: {}", dbNotificationId);

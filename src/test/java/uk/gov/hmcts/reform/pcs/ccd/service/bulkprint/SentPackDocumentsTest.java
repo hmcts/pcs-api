@@ -94,7 +94,7 @@ class SentPackDocumentsTest {
     private ClaimActivityLogEntity packRow(PartyEntity party, ClaimActivityType activityType,
                                            ClaimActivityStatus status, String details) {
         return ClaimActivityLogEntity.builder()
-            .id(UUID.randomUUID())
+            .id(1L)
             .party(party)
             .activityType(activityType)
             .status(status)

@@ -21,7 +21,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.IncomeType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.RecurrenceFrequency;
 
 import java.math.BigDecimal;
-import java.util.UUID;
 
 import static jakarta.persistence.FetchType.LAZY;
 
@@ -35,8 +34,8 @@ import static jakarta.persistence.FetchType.LAZY;
 public class RegularIncomeItemEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "regular_income_id")

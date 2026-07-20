@@ -17,7 +17,7 @@ import java.util.UUID;
 public class DefenceFormTaskData {
 
     private final String caseReference;
-    private final UUID defendantResponseId;
+    private final Long defendantResponseId;
     private final UUID defendantPartyId;
 
 }

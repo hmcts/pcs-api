@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Repository
-public interface PartyAttributeAssertionRepository extends JpaRepository<PartyAttributeAssertationEntity, UUID> {
+public interface PartyAttributeAssertionRepository extends JpaRepository<PartyAttributeAssertationEntity, Long> {
 
     List<PartyAttributeAssertationEntity> findByPartyIdAndAssertedByAndStatus(
         UUID partyId, PartyAttributeAssertedBy assertedBy, PartyAttributeAssertionStatus status);

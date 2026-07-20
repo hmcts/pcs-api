@@ -5,7 +5,6 @@ import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentImportService;
 
 import java.util.Optional;
-import java.util.UUID;
 
 /**
  * Generates the defence form and attaches it to the case, where it shows under "Statements of case".
@@ -31,7 +30,7 @@ public class DefenceFormService {
         this.documentImportService = documentImportService;
     }
 
-    public void generateAndAttach(UUID defendantResponseId) {
+    public void generateAndAttach(Long defendantResponseId) {
         Optional<DefenceFormRenderContext> context =
             persistenceService.buildContextIfNotAttached(defendantResponseId);
         if (context.isEmpty()) {
@@ -48,7 +47,7 @@ public class DefenceFormService {
         }
     }
 
-    private void deleteOrphanedDocument(UUID defendantResponseId, String dmStoreUrl) {
+    private void deleteOrphanedDocument(Long defendantResponseId, String dmStoreUrl) {
         try {
             documentImportService.deleteDocument(dmStoreUrl);
         } catch (Exception e) {

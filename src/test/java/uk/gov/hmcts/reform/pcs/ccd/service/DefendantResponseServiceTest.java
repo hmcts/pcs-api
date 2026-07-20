@@ -1184,7 +1184,7 @@ class DefendantResponseServiceTest {
         stubClaimLookup();
         UUID partyId = UUID.randomUUID();
         when(partyEntity.getId()).thenReturn(partyId);
-        UUID responseId = UUID.randomUUID();
+        Long responseId = 1L;
         when(defendantResponseRepository.save(any(DefendantResponseEntity.class)))
             .thenReturn(DefendantResponseEntity.builder().id(responseId).party(partyEntity).build());
 

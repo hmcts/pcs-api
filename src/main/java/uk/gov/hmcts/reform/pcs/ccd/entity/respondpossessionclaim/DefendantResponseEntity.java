@@ -38,7 +38,6 @@ import uk.gov.hmcts.reform.pcs.notify.listener.DefendantResponseEntityListener;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 import static jakarta.persistence.CascadeType.ALL;
 
@@ -53,8 +52,8 @@ import static jakarta.persistence.CascadeType.ALL;
 public class DefendantResponseEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "claim_id", nullable = false)

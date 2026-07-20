@@ -691,7 +691,7 @@ class DefenceFormPayloadBuilderTest {
         claim.getClaimParties().add(claimParty(claim, defendant, PartyRole.DEFENDANT, 1));
 
         return DefendantResponseEntity.builder()
-            .id(UUID.randomUUID())
+            .id(1L)
             .claim(claim)
             .pcsCase(pcsCase)
             .party(defendant)
