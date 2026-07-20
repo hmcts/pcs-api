@@ -32,6 +32,7 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.InternalTabAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.PartyVisibleTabAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.RasValidationAccess;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.DashboardData;
+import uk.gov.hmcts.reform.pcs.ccd.domain.documentamend.DocumentAmendDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.CitizenGenAppRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GeneralApplication;
@@ -90,6 +91,9 @@ public class PCSCase {
     public static final String NOTE_LABEL = "Note";
     public static final int MIN_MONETARY_AMOUNT = 1;
     public static final int MAX_MONETARY_AMOUNT = 1_000_000_000;
+
+    @CCD(searchable = false)
+    private FeatureFlags featureFlags;
 
     @CCD(
         searchable = false
@@ -477,6 +481,9 @@ public class PCSCase {
 
     @JsonUnwrapped
     private DocumentUploadDetails documentUploadDetails;
+
+    @JsonUnwrapped(prefix = "documentAmend_")
+    private DocumentAmendDetails documentAmendDetails;
 
     @CCD(
         label = "Are you planning to make an application at the same time as your claim?",

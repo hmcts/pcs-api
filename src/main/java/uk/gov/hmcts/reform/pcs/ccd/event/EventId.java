@@ -15,6 +15,7 @@ public enum EventId {
     dashboardView,
     confirmEviction,
     uploadDocuments,
+    amendDocuments,
     addCaseNote,
     createFlags,
     amendFlags,

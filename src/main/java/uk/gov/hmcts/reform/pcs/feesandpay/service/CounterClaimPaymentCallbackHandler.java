@@ -10,6 +10,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.model.CounterClaimStatusChangeTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.repository.CounterClaimRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.counterclaimform.CounterClaimFormScheduler;
 import uk.gov.hmcts.reform.pcs.ccd.task.CounterClaimIssuedNotificationTaskComponent;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
@@ -27,15 +28,18 @@ public class CounterClaimPaymentCallbackHandler implements PaymentCallbackStrate
 
     private final CounterClaimRepository counterClaimRepository;
     private final SchedulerClient schedulerClient;
+    private final CounterClaimFormScheduler counterClaimFormScheduler;
     private final ObjectMapper objectMapper;
     private final Clock utcClock;
 
     public CounterClaimPaymentCallbackHandler(CounterClaimRepository counterClaimRepository,
                                               SchedulerClient schedulerClient,
+                                              CounterClaimFormScheduler counterClaimFormScheduler,
                                               ObjectMapper objectMapper,
                                               @Qualifier("utcClock") Clock utcClock) {
         this.counterClaimRepository = counterClaimRepository;
         this.schedulerClient = schedulerClient;
+        this.counterClaimFormScheduler = counterClaimFormScheduler;
         this.objectMapper = objectMapper;
         this.utcClock = utcClock;
     }
@@ -67,6 +71,7 @@ public class CounterClaimPaymentCallbackHandler implements PaymentCallbackStrate
             counterClaimEntity.setStatus(CounterClaimState.COUNTER_CLAIM_ISSUED);
             counterClaimEntity.setClaimIssuedDate(LocalDateTime.now(utcClock));
             scheduleCounterClaimIssuedNotification(counterClaimEntity, feePaymentEntity);
+            counterClaimFormScheduler.scheduleCounterClaimFormGeneration(counterClaimId);
             return;
         }
 
