@@ -23,21 +23,20 @@ import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.LegalRepForDefendantAccessValidator;
+import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 
-
-import java.time.LocalDateTime;
 import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
 import java.util.Comparator;
+import java.util.List;
+import java.time.LocalDateTime;
+import java.util.UUID;
 import java.util.stream.Stream;
 
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
-import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.legalRepDocumentUpload;
 
@@ -230,6 +229,4 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
             .errors(List.of(message))
             .build();
     }
-
 }
-
