@@ -118,181 +118,86 @@ public class DataTest extends CftlibTest {
         }
     }
 
-    // pcs_case Schema
+    // pcs_case table validation
 
     @Test
-    @DisplayName("pcs_case table contains all expected columns")
-    void pcsCaseHasExpectedSchema() throws Exception {
+    @DisplayName("validate public.pcs_case - schema, completeness, and data quality rules")
+    void validatePcsCaseTable() throws Exception {
+        // 1. Fetch data required for multi-row validations upfront
         List<String> expectedColumns = Arrays.asList(
             "id", "version", "property_address_id", "case_reference",
             "base_location", "region_id", "claimant_type", "party_documents",
             "legislative_country", "pre_action_protocol_completed", "case_management_location"
         );
-        assertHasColumns("public.pcs_case", expectedColumns);
-    }
 
-    // pcs_case Data Quality
+        int totalRows = runCountQuery("SELECT COUNT(*) FROM public.pcs_case");
 
-    @Test
-    @DisplayName("pcs_case has at least one row - ensure journey actually populated the table)")
-    void pcsCaseHasRows() throws Exception {
-        int rowCount = runCountQuery("SELECT COUNT(*) FROM public.pcs_case");
-        assertTrue(rowCount > 0, "Expected pcs_case to have at least one row, found " + rowCount);
-    }
-
-    @Test
-    @DisplayName("pcs_case.id is unique")
-    void pcsCaseIdIsUnique() throws Exception {
-        int duplicateGroups = runCountQuery(
-            "SELECT COUNT(*) FROM ("
-                + "  SELECT id FROM public.pcs_case GROUP BY id HAVING COUNT(*) > 1"
-                + ") duplicates"
+        int duplicateIds = runCountQuery(
+            "SELECT COUNT(*) FROM (SELECT id FROM public.pcs_case GROUP BY id HAVING COUNT(*) > 1) d"
         );
-        assertEquals(0, duplicateGroups,
-                     () -> "Found " + duplicateGroups + " duplicate 'id' value(s) in pcs_case — expected all unique");
-    }
 
-    @Test
-    @DisplayName("pcs_case.case_reference is unique")
-    void caseReferenceIsUnique() throws Exception {
-        int duplicateGroups = runCountQuery(
-            "SELECT COUNT(*) FROM ("
-                + "  SELECT case_reference FROM public.pcs_case"
-                + "  WHERE case_reference IS NOT NULL"
-                + "  GROUP BY case_reference HAVING COUNT(*) > 1"
-                + ") duplicates"
+        int duplicateCaseRefs = runCountQuery(
+            "SELECT COUNT(*) FROM (SELECT case_reference FROM public.pcs_case WHERE case_reference IS NOT NULL GROUP BY case_reference HAVING COUNT(*) > 1) d"
         );
-        assertEquals(0, duplicateGroups,
-                     () -> "Found " + duplicateGroups + " duplicate 'case_reference' value(s) — expected all unique");
-    }
 
-    @Test
-    @DisplayName("pcs_case.case_reference has zero nulls")
-    void caseReferenceIsComplete() throws Exception {
-        int nullCount = runCountQuery(
-            "SELECT COUNT(*) FROM public.pcs_case WHERE case_reference IS NULL"
+        int nullCaseRefs = runCountQuery("SELECT COUNT(*) FROM public.pcs_case WHERE case_reference IS NULL");
+        int nullAddressIds = runCountQuery("SELECT COUNT(*) FROM public.pcs_case WHERE property_address_id IS NULL");
+
+        int invalidCountries = runCountQuery(
+            "SELECT COUNT(*) FROM public.pcs_case WHERE legislative_country IS NOT NULL AND legislative_country NOT IN ('ENGLAND', 'WALES')"
         );
-        assertEquals(0, nullCount,
-                     () -> "Found " + nullCount + " NULL value(s) in 'case_reference' — expected 0");
-    }
 
-    @Test
-    @DisplayName("pcs_case.property_address_id has zero nulls")
-    void propertyAddressIdIsComplete() throws Exception {
-        int nullCount = runCountQuery(
-            "SELECT COUNT(*) FROM public.pcs_case WHERE property_address_id IS NULL"
+        int orphanAddresses = runCountQuery(
+            "SELECT COUNT(*) FROM public.pcs_case c LEFT JOIN public.address a ON c.property_address_id = a.id WHERE c.property_address_id IS NOT NULL AND a.id IS NULL"
         );
-        assertEquals(0, nullCount,
-                     () -> "Found " + nullCount + " NULL value(s) in 'property_address_id' — expected 0");
-    }
 
-    @Test
-    @DisplayName("pcs_case.legislative_country only contains allowed values")
-    void legislativeCountryIsContainedInAllowedSet() throws Exception {
-        // Adjust this list if more legislative countries are valid in your domain
-        int invalidCount = runCountQuery(
-            "SELECT COUNT(*) FROM public.pcs_case "
-                + "WHERE legislative_country IS NOT NULL "
-                + "AND legislative_country NOT IN ('ENGLAND', 'WALES')"
+        // 2. Execute all assertions collectively using assertAll
+        org.junit.jupiter.api.Assertions.assertAll("pcs_case validations",
+                                                   () -> assertHasColumns("public.pcs_case", expectedColumns),
+                                                   () -> assertTrue(totalRows > 0, "Expected pcs_case to have at least one row, found " + totalRows),
+                                                   () -> assertEquals(0, duplicateIds, "Found duplicate 'id' value(s) in pcs_case"),
+                                                   () -> assertEquals(0, duplicateCaseRefs, "Found duplicate 'case_reference' value(s)"),
+                                                   () -> assertEquals(0, nullCaseRefs, "Found NULL value(s) in 'case_reference' — expected 0"),
+                                                   () -> assertEquals(0, nullAddressIds, "Found NULL value(s) in 'property_address_id' — expected 0"),
+                                                   () -> assertEquals(0, invalidCountries, "Found row(s) with unexpected 'legislative_country' value"),
+                                                   () -> assertEquals(0, orphanAddresses, "Found pcs_case row(s) referencing a non-existent address row")
         );
-        assertEquals(0, invalidCount,
-                     () -> "Found " + invalidCount + " row(s) with unexpected 'legislative_country' value");
     }
 
-    @Test
-    @DisplayName("every pcs_case.property_address_id has a matching address row")
-    void everyCaseHasMatchingAddress() throws Exception {
-        int orphanCount = runCountQuery(
-            "SELECT COUNT(*) FROM public.pcs_case c "
-                + "LEFT JOIN public.address a ON c.property_address_id = a.id "
-                + "WHERE c.property_address_id IS NOT NULL AND a.id IS NULL"
-        );
-        assertEquals(0, orphanCount,
-                     () -> "Found " + orphanCount
-                         + " pcs_case row(s) referencing a property_address_id with no matching address row");
-    }
-
-    // address schema
+    // address table validation
 
     @Test
-    @DisplayName("address table contains all expected columns")
-    void addressHasExpectedSchema() throws Exception {
+    @DisplayName("validate public.address - schema, completeness, and value matching rules")
+    void validateAddressTable() throws Exception {
+        // 1. Fetch data required for column value checks upfront
         List<String> expectedColumns = Arrays.asList(
             "id", "version", "address_line1", "address_line2", "address_line3",
             "post_town", "county", "postcode", "country"
         );
-        assertHasColumns("public.address", expectedColumns);
-    }
 
-    // address data quality
+        int totalRows = runCountQuery("SELECT COUNT(*) FROM public.address");
 
-    @Test
-    @DisplayName("address has at least one row")
-    void addressHasRows() throws Exception {
-        int rowCount = runCountQuery("SELECT COUNT(*) FROM public.address");
-        assertTrue(rowCount > 0, "Expected address to have at least one row, found " + rowCount);
-    }
-
-    @Test
-    @DisplayName("address.id is unique")
-    void addressIdIsUnique() throws Exception {
-        int duplicateGroups = runCountQuery(
-            "SELECT COUNT(*) FROM ("
-                + "  SELECT id FROM public.address GROUP BY id HAVING COUNT(*) > 1"
-                + ") duplicates"
+        int duplicateIds = runCountQuery(
+            "SELECT COUNT(*) FROM (SELECT id FROM public.address GROUP BY id HAVING COUNT(*) > 1) d"
         );
-        assertEquals(0, duplicateGroups,
-                     () -> "Found " + duplicateGroups + " duplicate 'id' value(s) in address — expected all unique");
-    }
 
-    @Test
-    @DisplayName("address.address_line1 has correct value")
-    void addressLine1CorrectValue() throws Exception {
-        int valueCount = runCountQuery(
-            "SELECT COUNT(*) FROM public.address WHERE address_line1 != '123 Baker Street'"
-        );
-        assertEquals(0, valueCount,
-                     () -> "Found " + valueCount + " row(s) with unexpected 'address_line1' value — expected 0");
-    }
+        int badLine1 = runCountQuery("SELECT COUNT(*) FROM public.address WHERE address_line1 != '123 Baker Street'");
+        int badLine2 = runCountQuery("SELECT COUNT(*) FROM public.address WHERE address_line2 != 'Marylebone'");
+        int badPostTown = runCountQuery("SELECT COUNT(*) FROM public.address WHERE post_town != 'London'");
+        int badCounty = runCountQuery("SELECT COUNT(*) FROM public.address WHERE county != 'Greater London'");
+        int badPostcode = runCountQuery("SELECT COUNT(*) FROM public.address WHERE postcode != 'NW1 6XE'");
 
-    @Test
-    @DisplayName("address.address_line2 has correct value")
-    void addressLine2CorrectValue() throws Exception {
-        int valueCount = runCountQuery(
-            "SELECT COUNT(*) FROM public.address WHERE address_line2 != 'Marylebone'"
+        // 2. Execute all assertions collectively using assertAll
+        org.junit.jupiter.api.Assertions.assertAll("address validations",
+                                                   () -> assertHasColumns("public.address", expectedColumns),
+                                                   () -> assertTrue(totalRows > 0, "Expected address to have at least one row, found " + totalRows),
+                                                   () -> assertEquals(0, duplicateIds, "Found duplicate 'id' value(s) in address"),
+                                                   () -> assertEquals(0, badLine1, "Found row(s) with unexpected 'address_line1' value"),
+                                                   () -> assertEquals(0, badLine2, "Found row(s) with unexpected 'address_line2' value"),
+                                                   () -> assertEquals(0, badPostTown, "Found row(s) with unexpected 'post_town' value"),
+                                                   () -> assertEquals(0, badCounty, "Found row(s) with unexpected 'county' value"),
+                                                   () -> assertEquals(0, badPostcode, "Found row(s) with unexpected 'postcode' value")
         );
-        assertEquals(0, valueCount,
-                     () -> "Found " + valueCount + " row(s) with unexpected 'address_line2' value — expected 0");
-    }
-
-    @Test
-    @DisplayName("address.post_town has correct value")
-    void addressPostTownCorrectValue() throws Exception {
-        int valueCount = runCountQuery(
-            "SELECT COUNT(*) FROM public.address WHERE post_town != 'London'"
-        );
-        assertEquals(0, valueCount,
-                     () -> "Found " + valueCount + " row(s) with unexpected 'post_town' value — expected 0");
-    }
-
-    @Test
-    @DisplayName("address.county has correct value")
-    void addressCountyCorrectValue() throws Exception {
-        int valueCount = runCountQuery(
-            "SELECT COUNT(*) FROM public.address WHERE county != 'Greater London'"
-        );
-        assertEquals(0, valueCount,
-                     () -> "Found " + valueCount + " row(s) with unexpected 'county' value — expected 0");
-    }
-
-    @Test
-    @DisplayName("address.postcode has correct value")
-    void addressPostcodeCorrectValue() throws Exception {
-        int valueCount = runCountQuery(
-            "SELECT COUNT(*) FROM public.address WHERE postcode != 'NW1 6XE'"
-        );
-        assertEquals(0, valueCount,
-                     () -> "Found " + valueCount + " row(s) with unexpected 'postcode' value — expected 0");
     }
 
     // helper
