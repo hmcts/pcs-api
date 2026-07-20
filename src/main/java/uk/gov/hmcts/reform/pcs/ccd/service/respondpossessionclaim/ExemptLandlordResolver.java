@@ -6,7 +6,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantRespon
 
 /**
  * Resolves exempt-landlord answers while {@code landlord_registered} is renamed to {@code exempt_landlord}.
- * Compat phase: accept {@code exemptLandlord} from CCD/FE but persist to {@code landlord_registered}.
+ * Cleanup phase: read and persist {@code exempt_landlord} only.
  */
 public final class ExemptLandlordResolver {
 
@@ -17,16 +17,13 @@ public final class ExemptLandlordResolver {
         if (responses == null) {
             return null;
         }
-        if (responses.getExemptLandlord() != null) {
-            return responses.getExemptLandlord();
-        }
-        return responses.getLandlordRegistered();
+        return responses.getExemptLandlord();
     }
 
     public static YesNoNotSure fromEntity(DefendantResponseEntity entity) {
         if (entity == null) {
             return null;
         }
-        return entity.getLandlordRegistered();
+        return entity.getExemptLandlord();
     }
 }
