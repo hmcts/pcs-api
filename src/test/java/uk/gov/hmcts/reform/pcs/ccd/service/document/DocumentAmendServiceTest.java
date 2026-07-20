@@ -68,6 +68,7 @@ class DocumentAmendServiceTest {
     private ArgumentCaptor<DocumentEntity> documentCaptor;
 
     private DocumentAmendService underTest;
+    private DocumentAssociationService documentAssociationService;
     private PcsCaseEntity pcsCaseEntity;
     private ClaimEntity mainClaim;
     private PartyEntity partyEntity;
@@ -75,14 +76,19 @@ class DocumentAmendServiceTest {
 
     @BeforeEach
     void setUp() {
+        documentAssociationService = new DocumentAssociationService(
+            documentService,
+            documentNameService,
+            genAppService,
+            counterClaimRepository
+        );
         underTest = new DocumentAmendService(
             pcsCaseService,
             documentRepository,
             documentService,
             documentNameService,
-            genAppService,
-            counterClaimRepository,
-            partyService
+            partyService,
+            documentAssociationService
         );
 
         mainClaim = new ClaimEntity();

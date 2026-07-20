@@ -30,6 +30,7 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.CounterClaimRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DocumentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentAssociationService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentIdExtractor;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentNameService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
@@ -39,7 +40,6 @@ import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 
 import java.time.LocalDate;
 import java.util.Arrays;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -86,21 +86,34 @@ class CaseworkerDocumentServiceTest {
     private ArgumentCaptor<DocumentEntity> documentEntityCaptor;
 
     private CaseworkerDocumentService underTest;
+    private DocumentAssociationService documentAssociationService;
 
     @BeforeEach
     void setUp() {
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
         when(pcsCaseEntity.getMainClaim()).thenReturn(mainClaim);
 
-        underTest = new CaseworkerDocumentService(pcsCaseService, documentService, genAppService, documentIdExtractor,
-                                                  documentRepository, documentNameService, counterClaimRepository,
-                                                  partyRepository
+        documentAssociationService = new DocumentAssociationService(
+            documentService,
+            documentNameService,
+            genAppService,
+            counterClaimRepository
+        );
+        underTest = new CaseworkerDocumentService(
+            pcsCaseService,
+            documentService,
+            documentIdExtractor,
+            documentRepository,
+            documentNameService,
+            partyRepository,
+            documentAssociationService
         );
         lenient().when(documentService.mapCaseworkerDocumentTypeToDocumentType(any(CaseworkerDocumentType.class)))
             .thenAnswer(invocation -> {
                 CaseworkerDocumentType documentType = invocation.getArgument(0, CaseworkerDocumentType.class);
                 return DocumentType.valueOf(documentType.name());
             });
+        lenient().when(documentService.categoryIdForDocumentType(any(DocumentType.class))).thenReturn(null);
     }
 
     @ParameterizedTest
@@ -493,8 +506,8 @@ class CaseworkerDocumentServiceTest {
         UUID documentId = UUID.randomUUID();
         CaseFileCategory documentCategory = CaseFileCategory.PROPERTY_DOCUMENTS;
         when(documentIdExtractor.extractDocumentId(documentUrl)).thenReturn(documentId);
-        when(documentService.mapDocumentTypeToCategory(DocumentType.OCCUPATION_LICENCE))
-            .thenReturn(Optional.of(documentCategory));
+        when(documentService.categoryIdForDocumentType(DocumentType.OCCUPATION_LICENCE))
+            .thenReturn(documentCategory.getId());
 
         CaseworkerDocument caseworkerDocument = CaseworkerDocument.builder()
             .document(document)
