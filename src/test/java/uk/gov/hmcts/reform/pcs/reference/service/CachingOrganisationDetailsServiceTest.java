@@ -120,6 +120,8 @@ class CachingOrganisationDetailsServiceTest {
         mockOrganisationDetails(response);
         when(cachedOrganisationResponseRepository.findByIdamId(userId)).thenReturn(Optional.empty());
         when(localDateTimeSupplier.get()).thenReturn(now);
+        when(cachedOrganisationResponseRepository.save(org.mockito.ArgumentMatchers.any(CachedOrganisationResponseEntity.class)))
+            .thenAnswer(invocation -> invocation.getArgument(0));
 
         // when
         cachingOrganisationDetailsService.getOrganisationIdentifier(userId.toString());
@@ -206,6 +208,8 @@ class CachingOrganisationDetailsServiceTest {
             .thenReturn(Optional.of(cachedOrganisationResponseEntity));
         mockOrganisationDetails(response);
         when(localDateTimeSupplier.get()).thenReturn(now);
+        when(cachedOrganisationResponseRepository.save(cachedOrganisationResponseEntity))
+            .thenReturn(cachedOrganisationResponseEntity);
 
         // when
         cachingOrganisationDetailsService.getOrganisationIdentifier(userId.toString());
@@ -230,6 +234,47 @@ class CachingOrganisationDetailsServiceTest {
         assertEquals(county, actual.getCounty());
         assertEquals(country, actual.getCountry());
         assertEquals(postCode, actual.getPostCode());
+    }
+
+    @Test
+    void getOrganisationIdentifier_WithCachedResponseExpiredAndNullOrganisationDetailsResponse_UpdatesRecord() {
+        // given
+        UUID userId = UUID.randomUUID();
+        String orgId = "org1";
+        LocalDateTime now = LocalDateTime.now();
+        CachedOrganisationResponseEntity cachedOrganisationResponseEntity = CachedOrganisationResponseEntity.builder()
+            .organisationId(orgId)
+            .idamId(userId)
+            .lastModifiedDate(now.minusHours(1))
+            .build();
+
+        when(cachedOrganisationResponseRepository.findByIdamId(userId))
+            .thenReturn(Optional.of(cachedOrganisationResponseEntity));
+        mockOrganisationDetails(null);
+        when(localDateTimeSupplier.get()).thenReturn(now);
+        when(cachedOrganisationResponseRepository.save(cachedOrganisationResponseEntity))
+            .thenReturn(cachedOrganisationResponseEntity);
+
+        // when
+        cachingOrganisationDetailsService.getOrganisationIdentifier(userId.toString());
+
+        // then
+        verify(cachedOrganisationResponseRepository).save(cachedOrganisationResponseEntityCaptor.capture());
+
+        CachedOrganisationResponseEntity actual = cachedOrganisationResponseEntityCaptor.getValue();
+
+        assertEquals(userId, actual.getIdamId());
+        assertEquals(now, actual.getLastModifiedDate());
+
+        assertNull(actual.getOrganisationId());
+        assertNull(actual.getOrganisationName());
+        assertNull(actual.getAddressLine1());
+        assertNull(actual.getAddressLine2());
+        assertNull(actual.getAddressLine3());
+        assertNull(actual.getPostTown());
+        assertNull(actual.getCounty());
+        assertNull(actual.getCountry());
+        assertNull(actual.getPostCode());
     }
 
     @Test
@@ -263,6 +308,8 @@ class CachingOrganisationDetailsServiceTest {
         when(cachedOrganisationResponseRepository.findByIdamId(userId)).thenReturn(Optional.empty());
         when(localDateTimeSupplier.get()).thenReturn(now);
         mockOrganisationDetails(response);
+        when(cachedOrganisationResponseRepository.save(org.mockito.ArgumentMatchers.any(CachedOrganisationResponseEntity.class)))
+            .thenAnswer(invocation -> invocation.getArgument(0));
 
         // when
         NameAndAddress actual = cachingOrganisationDetailsService.getNameAndAddress(userId.toString());
@@ -311,6 +358,8 @@ class CachingOrganisationDetailsServiceTest {
         when(cachedOrganisationResponseRepository.findByIdamId(userId)).thenReturn(Optional.empty());
         mockOrganisationDetails(response);
         when(localDateTimeSupplier.get()).thenReturn(now);
+        when(cachedOrganisationResponseRepository.save(org.mockito.ArgumentMatchers.any(CachedOrganisationResponseEntity.class)))
+            .thenAnswer(invocation -> invocation.getArgument(0));
 
         // when
         NameAndAddress actual = cachingOrganisationDetailsService.getNameAndAddress(userId.toString());
@@ -326,6 +375,37 @@ class CachingOrganisationDetailsServiceTest {
 
         assertEquals(orgId, savedEntity.getOrganisationId());
         assertEquals(orgName, savedEntity.getOrganisationName());
+        assertNull(savedEntity.getAddressLine1());
+    }
+
+    @Test
+    void getNameAndAddress_WithCachedResponseNotFoundAndNullOrgDetailsResponse_SavesNewRecord_WithoutContactInfo() {
+        // given
+        UUID userId = UUID.randomUUID();
+        LocalDateTime now = LocalDateTime.now();
+
+        when(cachedOrganisationResponseRepository.findByIdamId(userId)).thenReturn(Optional.empty());
+        mockOrganisationDetails(null);
+        when(localDateTimeSupplier.get()).thenReturn(now);
+        when(cachedOrganisationResponseRepository.save(org.mockito.ArgumentMatchers.any(CachedOrganisationResponseEntity.class)))
+            .thenAnswer(invocation -> invocation.getArgument(0));
+
+        // when
+        NameAndAddress actual = cachingOrganisationDetailsService.getNameAndAddress(userId.toString());
+
+        // then
+        assertNotNull(actual);
+        assertNull(actual.name());
+        assertNotNull(actual.address());
+        assertNull(actual.address().getAddressLine1());
+
+        verify(cachedOrganisationResponseRepository).save(cachedOrganisationResponseEntityCaptor.capture());
+        CachedOrganisationResponseEntity savedEntity = cachedOrganisationResponseEntityCaptor.getValue();
+
+        assertEquals(userId, savedEntity.getIdamId());
+        assertEquals(now, savedEntity.getLastModifiedDate());
+        assertNull(savedEntity.getOrganisationId());
+        assertNull(savedEntity.getOrganisationName());
         assertNull(savedEntity.getAddressLine1());
     }
 
@@ -397,6 +477,7 @@ class CachingOrganisationDetailsServiceTest {
                                             .build()))
             .build();
         when(cachedOrganisationResponseRepository.findByIdamId(userId)).thenReturn(Optional.of(cachedEntity));
+        when(cachedOrganisationResponseRepository.save(cachedEntity)).thenReturn(cachedEntity);
         when(localDateTimeSupplier.get()).thenReturn(now);
         mockOrganisationDetails(response);
 
@@ -406,7 +487,6 @@ class CachingOrganisationDetailsServiceTest {
         // then
         assertNotNull(actual);
         assertEquals(orgName, actual.name());
-        assertEquals(addressLine1, actual.address().getAddressLine1());
 
         verify(cachedOrganisationResponseRepository).save(cachedEntity);
         assertEquals(orgId, cachedEntity.getOrganisationId());
@@ -440,6 +520,7 @@ class CachingOrganisationDetailsServiceTest {
         when(cachedOrganisationResponseRepository.findByIdamId(userId)).thenReturn(Optional.of(cachedEntity));
         when(localDateTimeSupplier.get()).thenReturn(now);
         mockOrganisationDetails(response);
+        when(cachedOrganisationResponseRepository.save(cachedEntity)).thenReturn(cachedEntity);
 
         // when
         NameAndAddress actual = cachingOrganisationDetailsService.getNameAndAddress(userId.toString());
