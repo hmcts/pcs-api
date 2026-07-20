@@ -58,7 +58,7 @@ public class PcsNoticeOfChange implements CCDConfig<PCSCase, State, UserRole> {
     private static final String ORG_ALREADY_REPRESENTS_PARTY_MESSAGE = "Your organisation already has access"
         + " to this case. "
         + "You or a colleague are already representing this client on this case."
-        + " Contact the issuing court for help.";
+        + " Return to case list.";
 
     private static final String ORG_ALREADY_REPRESENTS_PARTY_CODE = "organisationAlreadyRepresents";
 
