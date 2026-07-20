@@ -8,6 +8,7 @@ import uk.gov.hmcts.ccd.sdk.api.Event;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
+import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -16,8 +17,11 @@ import uk.gov.hmcts.reform.pcs.ccd.page.changecasestate.ChangeCaseStatePage;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerRoles.CASEWORKER_ROLES;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.changeCaseState;
 import static uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter.COMMA_DELIMITER;
+import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.CASEWORKER_EVENTS;
+import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.RELEASE_1_DOT_2;
 
 @Component
 @AllArgsConstructor
@@ -41,9 +45,9 @@ public class ChangeCaseState implements CCDConfig<PCSCase, State, UserRole> {
                 State.BREATHING_SPACE
             )
             .name("Change case state")
+            .showCondition(ShowConditions.featureFlagsEnabled(RELEASE_1_DOT_2, CASEWORKER_EVENTS))
             .grant(Permission.CRUD, CASEWORKER_ROLES)
-            .grantHistoryOnly(UserRole.CIRCUIT_JUDGE, UserRole.FEE_PAID_JUDGE,
-                              UserRole.JUDGE, UserRole.LEADERSHIP_JUDGE)
+            .grantHistoryOnly(JUDICIAL_HISTORY_ROLES)
             .showSummary()
             .endButtonLabel("Submit");
 
