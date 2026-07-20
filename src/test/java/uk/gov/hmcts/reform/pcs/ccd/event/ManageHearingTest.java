@@ -113,7 +113,7 @@ public class ManageHearingTest extends BaseEventTest {
     @DisplayName("Start Handler")
     class StartHandlerTests {
 
-        @Mock
+        @Mock(strictness = LENIENT)
         private CaseLocation caseLocation;
 
         @BeforeEach
@@ -256,6 +256,19 @@ public class ManageHearingTest extends BaseEventTest {
 
             // Then
             assertThat(response.getHearing().getHearingSummaryMarkdown()).isEqualTo(expectedHearingSummaryMarkdown);
+        }
+
+        @Test
+        void shouldHandleNoCaseManagementLocation() {
+            // Given
+            PCSCase pcsCase = PCSCase.builder()
+                .build();
+
+            // When
+            PCSCase response = callStartHandler(pcsCase);
+
+            // Then
+            assertThat(response.getHearingLocation()).isEqualTo("Unable to find hearing location");
         }
 
         @Test

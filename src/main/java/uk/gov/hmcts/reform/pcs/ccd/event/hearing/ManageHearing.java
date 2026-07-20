@@ -11,6 +11,7 @@ import uk.gov.hmcts.ccd.sdk.api.Event;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
+import uk.gov.hmcts.ccd.sdk.type.CaseLocation;
 import uk.gov.hmcts.ccd.sdk.type.DynamicListElement;
 import uk.gov.hmcts.ccd.sdk.type.DynamicMultiSelectList;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
@@ -41,6 +42,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerRoles.CASEWORKER_ROLES;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.manageHearing;
 
@@ -82,7 +84,7 @@ public class ManageHearing implements CCDConfig<PCSCase, State, UserRole> {
             configBuilder.decentralisedEvent(manageHearing.name(), this::submit, this::start)
                 .forStates(State.CASE_ISSUED)
                 .name("Manage hearing")
-                .grant(Permission.CRUD, UserRole.HEARING_CENTRE_ADMIN)
+                .grant(Permission.CRUD, CASEWORKER_ROLES)
                 .grantHistoryOnly(JUDICIAL_HISTORY_ROLES)
                 .showSummary()
                 .endButtonLabel("Submit");
@@ -98,22 +100,7 @@ public class ManageHearing implements CCDConfig<PCSCase, State, UserRole> {
 
         pcsCase.setPartyMultiSelectionList(buildPartyList(pcsCaseEntity));
 
-        List<Integer> baseLocation = List.of(Integer.parseInt(pcsCase.getCaseManagementLocation().getBaseLocation()));
-
-        try {
-            List<CourtVenue> courtVenues = locationReferenceService.getCourtVenues(baseLocation);
-
-            if (!CollectionUtils.isEmpty(courtVenues)) {
-                CourtVenue courtVenue = courtVenues.getFirst();
-                pcsCase.setHearingLocation(courtVenue.courtName());
-            } else {
-                log.warn("Unable to find hearing location for case {}:", eventPayload.caseReference());
-                pcsCase.setHearingLocation("Unable to find hearing location");
-            }
-        } catch (Exception e) {
-            log.warn("Unable to fetch hearing location for case {}:", eventPayload.caseReference(), e);
-            pcsCase.setHearingLocation("Unable to find hearing location");
-        }
+        setHearingLocation(eventPayload, pcsCase);
 
         List<HearingEntity> futureHearings = getFutureHearings(pcsCaseEntity);
 
@@ -131,6 +118,33 @@ public class ManageHearing implements CCDConfig<PCSCase, State, UserRole> {
         }
 
         return pcsCase;
+    }
+
+    private void setHearingLocation(EventPayload<PCSCase, State> eventPayload, PCSCase pcsCase) {
+        CaseLocation caseManagementLocation = pcsCase.getCaseManagementLocation();
+
+        if (caseManagementLocation == null) {
+            log.warn("Unable to find hearing location for case {}:", eventPayload.caseReference());
+            pcsCase.setHearingLocation("Unable to find hearing location");
+            return;
+        }
+
+        List<Integer> baseLocation = List.of(Integer.parseInt(caseManagementLocation.getBaseLocation()));
+
+        try {
+            List<CourtVenue> courtVenues = locationReferenceService.getCourtVenues(baseLocation);
+
+            if (!CollectionUtils.isEmpty(courtVenues)) {
+                CourtVenue courtVenue = courtVenues.getFirst();
+                pcsCase.setHearingLocation(courtVenue.courtName());
+            } else {
+                log.warn("Unable to find hearing location for case {}:", eventPayload.caseReference());
+                pcsCase.setHearingLocation("Unable to find hearing location");
+            }
+        } catch (Exception e) {
+            log.warn("Unable to fetch hearing location for case {}:", eventPayload.caseReference(), e);
+            pcsCase.setHearingLocation("Unable to find hearing location");
+        }
     }
 
     private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
