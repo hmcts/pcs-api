@@ -28,10 +28,9 @@ public class ClaimResponseService {
     private final ModelMapper modelMapper;
 
     /**
-     * Saves defendant's contact preferences and contact details.
-     * Finds the defendant party by the current user's IDAM ID and case reference updates their information.
+     * Saves defendant's contact preferences and contact details for the given defendant party.
      *
-     * @throws IllegalStateException if no party found for the current user's IDAM ID
+     * @throws IllegalStateException if no party is found
      */
     public void saveDraftDataForParty(PossessionClaimResponse dataFromDraftTable, PartyEntity defendantParty) {
 

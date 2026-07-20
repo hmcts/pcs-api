@@ -3,7 +3,6 @@ package uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.strategy;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
@@ -45,11 +44,10 @@ public class LegalRepSubmissionEventStrategy implements RespondPossessionClaimSu
         return !roles.contains(UserRole.CITIZEN.getRole());
     }
 
-    @Transactional
     @Override
     public SubmitResponse<State> process(EventPayload<PCSCase, State> eventPayload) {
         if (securityContextService.getCurrentUserId() == null) {
-            log.error("Cannot save contact preferences: current user IDAM ID is null");
+            log.error("Current user IDAM ID is null");
             throw new IllegalStateException("Current user IDAM ID is null");
         }
 
