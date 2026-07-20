@@ -145,7 +145,7 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
             .showCondition(NEVER_SHOW)
             .field(PCSCase::getCaseTitleMarkdown)
             .field(PCSCase::getDashboardData)
-            .field(PCSCase::getCaseNameHmctsInternal);
+            .field(PCSCase::getCaseNameHmctsInternal)
             .field(PCSCase::getFeatureFlags);
 
         builder.tab("serviceRequest", "Service Request")
