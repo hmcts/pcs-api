@@ -182,6 +182,9 @@ export class PageContentValidation implements IValidation {
       else if(page.url().includes("makeAnApplication")){
         mappingPath = path.join(__dirname, '../../../data/page-data-figma/page-data-genApps-figma/urlToFileMappingGenApps.ts');
       }
+      else if(page.url().includes("amendDocuments")){
+        mappingPath = path.join(__dirname, '../../../data/page-data-figma/page-data-caseManagement-figma/urlToFileMappingCM.ts');
+      }
       else{
          mappingPath = path.join(__dirname, '../../../data/page-data-figma/urlToFileMapping.ts');
       }
@@ -240,6 +243,9 @@ export class PageContentValidation implements IValidation {
     }
     else if (page.url().includes("globalSearch")) {
       filePath = path.join(__dirname, '../../../data/page-data-figma/page-data-common-component', `${fileName}.page.data.ts`);
+    }
+    else if (page.url().includes("amendDocuments")) {
+      filePath = path.join(__dirname, '../../../data/page-data-figma/page-data-caseManagement-figma', `${fileName}.page.data.ts`);
     }
     else {
       filePath = path.join(__dirname, '../../../data/page-data-figma', `${fileName}.page.data.ts`);
