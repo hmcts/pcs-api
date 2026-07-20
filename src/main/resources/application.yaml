@@ -337,5 +337,9 @@ caseApi:
 shutter:
   service: ${SHUTTER_SERVICE:false}
 
+cache:
+  organisationDetails:
+    ttlInMinutes: ${CACHED_ORGANISATION_DETAILS_RESPONSE_TTL_IN_MINUTES:5}
+
 frontend:
   url: ${PCS_FRONTEND_URL:http://localhost:3209}
