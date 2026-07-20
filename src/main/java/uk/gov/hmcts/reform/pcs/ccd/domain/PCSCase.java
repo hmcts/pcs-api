@@ -31,8 +31,10 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.InternalCaseFlagAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.InternalTabAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.PartyVisibleTabAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.RasValidationAccess;
+import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.EnterGenAppRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.DashboardData;
 import uk.gov.hmcts.reform.pcs.ccd.domain.documentupload.DocumentUploadDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.documentamend.DocumentAmendDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.CitizenGenAppRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GeneralApplication;
@@ -482,6 +484,9 @@ public class PCSCase {
     @JsonUnwrapped
     private DocumentUploadDetails documentUploadDetails;
 
+    @JsonUnwrapped(prefix = "documentAmend_")
+    private DocumentAmendDetails documentAmendDetails;
+
     @CCD(
         label = "Are you planning to make an application at the same time as your claim?",
         hint = "After you’ve submitted your claim, there will be instructions on how to make an application"
@@ -622,6 +627,18 @@ public class PCSCase {
         searchable = false
     )
     private CitizenGenAppRequest citizenGenAppRequest;
+
+    @CCD(
+        searchable = false
+    )
+    @JsonUnwrapped(prefix = "enter_genapp_")
+    private EnterGenAppRequest enterGenAppRequest;
+
+    @CCD(label = "Which party made the application?",
+        searchable = false,
+        typeOverride = DynamicRadioList
+    )
+    private DynamicList partyRadioList;
 
     @CCD(
         label = "Search Criteria",
