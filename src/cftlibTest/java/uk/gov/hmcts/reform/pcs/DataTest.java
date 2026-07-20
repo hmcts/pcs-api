@@ -133,52 +133,52 @@ public class DataTest extends CftlibTest {
         int totalRows = runCountQuery("SELECT COUNT(*) FROM public.pcs_case");
 
         int duplicateIds = runCountQuery(
-            "SELECT COUNT(*) FROM (" +
-                "SELECT id FROM public.pcs_case " +
-                "GROUP BY id HAVING COUNT(*) > 1) d"
+            "SELECT COUNT(*) FROM ("
+                + "SELECT id FROM public.pcs_case "
+                + "GROUP BY id HAVING COUNT(*) > 1) d"
         );
 
         int duplicateCaseRefs = runCountQuery(
-            "SELECT COUNT(*) FROM (" +
-                "SELECT case_reference FROM public.pcs_case " +
-                "WHERE case_reference IS NOT NULL " +
-                "GROUP BY case_reference HAVING COUNT(*) > 1) d"
+            "SELECT COUNT(*) FROM ("
+                + "SELECT case_reference FROM public.pcs_case "
+                + "WHERE case_reference IS NOT NULL "
+                + "GROUP BY case_reference HAVING COUNT(*) > 1) d"
         );
 
         int nullCaseRefs = runCountQuery(
-            "SELECT COUNT(*) " +
-                "FROM public.pcs_case " +
-                "WHERE case_reference IS NULL");
+            "SELECT COUNT(*) "
+                + "FROM public.pcs_case "
+                + "WHERE case_reference IS NULL");
         int nullAddressIds = runCountQuery(
-            "SELECT COUNT(*) " +
-                "FROM public.pcs_case " +
-                "WHERE property_address_id IS NULL");
+            "SELECT COUNT(*) "
+                + "FROM public.pcs_case "
+                + "WHERE property_address_id IS NULL");
 
         int invalidCountries = runCountQuery(
-            "SELECT COUNT(*) " +
-                "FROM public.pcs_case " +
-                "WHERE legislative_country IS NOT NULL " +
-                "AND legislative_country NOT IN ('ENGLAND', 'WALES')"
+            "SELECT COUNT(*) "
+                + "FROM public.pcs_case "
+                + "WHERE legislative_country IS NOT NULL "
+                + "AND legislative_country NOT IN ('ENGLAND', 'WALES')"
         );
 
         int orphanAddresses = runCountQuery(
-            "SELECT COUNT(*) " +
-                "FROM public.pcs_case " +
-                "c LEFT JOIN public.address a ON c.property_address_id = a.id " +
-                "WHERE c.property_address_id IS NOT NULL " +
-                "AND a.id IS NULL"
+            "SELECT COUNT(*) "
+                + "FROM public.pcs_case "
+                + "c LEFT JOIN public.address a ON c.property_address_id = a.id "
+                + "WHERE c.property_address_id IS NOT NULL "
+                + "AND a.id IS NULL"
         );
 
         // 2. Execute all assertions collectively using assertAll
         org.junit.jupiter.api.Assertions.assertAll("pcs_case validations",
-                                                   () -> assertHasColumns("public.pcs_case", expectedColumns),
-                                                   () -> assertTrue(totalRows > 0, "Expected pcs_case to have at least one row, found " + totalRows),
-                                                   () -> assertEquals(0, duplicateIds, "Found duplicate 'id' value(s) in pcs_case"),
-                                                   () -> assertEquals(0, duplicateCaseRefs, "Found duplicate 'case_reference' value(s)"),
-                                                   () -> assertEquals(0, nullCaseRefs, "Found NULL value(s) in 'case_reference' — expected 0"),
-                                                   () -> assertEquals(0, nullAddressIds, "Found NULL value(s) in 'property_address_id' — expected 0"),
-                                                   () -> assertEquals(0, invalidCountries, "Found row(s) with unexpected 'legislative_country' value"),
-                                                   () -> assertEquals(0, orphanAddresses, "Found pcs_case row(s) referencing a non-existent address row")
+           () -> assertHasColumns("public.pcs_case", expectedColumns),
+           () -> assertTrue(totalRows > 0, "Expected pcs_case to have at >1 row, found " + totalRows),
+           () -> assertEquals(0, duplicateIds, "Found duplicate 'id' values in pcs_case"),
+           () -> assertEquals(0, duplicateCaseRefs, "Found duplicate 'case_reference' values"),
+           () -> assertEquals(0, nullCaseRefs, "Found NULL values in 'case_reference' — expected 0"),
+           () -> assertEquals(0, nullAddressIds, "Found NULL values in 'property_address_id' — expected 0"),
+           () -> assertEquals(0, invalidCountries, "Found rows with unexpected 'legislative_country' value"),
+           () -> assertEquals(0, orphanAddresses, "Found pcs_case rows referencing a non-existent address row")
         );
     }
 
@@ -194,15 +194,15 @@ public class DataTest extends CftlibTest {
         );
 
         int totalRows = runCountQuery(
-            "SELECT COUNT(*) " +
-                "FROM public.address");
+            "SELECT COUNT(*) "
+                + "FROM public.address");
 
         int duplicateIds = runCountQuery(
-            "SELECT COUNT(*) " +
-                "FROM (" +
-                "SELECT id " +
-                "FROM public.address " +
-                "GROUP BY id HAVING COUNT(*) > 1) d"
+            "SELECT COUNT(*) "
+                + "FROM ("
+                + "SELECT id "
+                + "FROM public.address "
+                + "GROUP BY id HAVING COUNT(*) > 1) d"
         );
 
         int badLine1 = runCountQuery("SELECT COUNT(*) FROM public.address WHERE address_line1 != '123 Baker Street'");
@@ -213,14 +213,14 @@ public class DataTest extends CftlibTest {
 
         // 2. Execute all assertions collectively using assertAll
         org.junit.jupiter.api.Assertions.assertAll("address validations",
-                                                   () -> assertHasColumns("public.address", expectedColumns),
-                                                   () -> assertTrue(totalRows > 0, "Expected address to have at least one row, found " + totalRows),
-                                                   () -> assertEquals(0, duplicateIds, "Found duplicate 'id' value(s) in address"),
-                                                   () -> assertEquals(0, badLine1, "Found row(s) with unexpected 'address_line1' value"),
-                                                   () -> assertEquals(0, badLine2, "Found row(s) with unexpected 'address_line2' value"),
-                                                   () -> assertEquals(0, badPostTown, "Found row(s) with unexpected 'post_town' value"),
-                                                   () -> assertEquals(0, badCounty, "Found row(s) with unexpected 'county' value"),
-                                                   () -> assertEquals(0, badPostcode, "Found row(s) with unexpected 'postcode' value")
+           () -> assertHasColumns("public.address", expectedColumns),
+           () -> assertTrue(totalRows > 0, "Expected address to have >1, found " + totalRows),
+           () -> assertEquals(0, duplicateIds, "Found duplicate 'id' values in address"),
+           () -> assertEquals(0, badLine1, "Found rows with unexpected 'address_line1' value"),
+           () -> assertEquals(0, badLine2, "Found rows with unexpected 'address_line2' value"),
+           () -> assertEquals(0, badPostTown, "Found rows with unexpected 'post_town' value"),
+           () -> assertEquals(0, badCounty, "Found rows with unexpected 'county' value"),
+           () -> assertEquals(0, badPostcode, "Found rows with unexpected 'postcode' value")
         );
     }
 
