@@ -16,11 +16,9 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocumentUploadDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.DocumentUploadCategory;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.page.legalrepdocumentupload.LegalRepDocumentUploadConfigurer;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
-import uk.gov.hmcts.reform.pcs.ccd.service.party.LegalRepForDefendantAccessValidator;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
@@ -45,7 +43,6 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
     private final PcsCaseService pcsCaseService;
     private final GenAppVisibilityService genAppVisibilityService;
     private final SecurityContextService securityContextService;
-    private final LegalRepForDefendantAccessValidator legalRepForDefendantAccessValidator;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -137,34 +134,6 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
 
     private List<GenAppEntity> visibleGenAppsForUser(PcsCaseEntity pcsCaseEntity, UUID currentUserId) {
         return genAppVisibilityService.getVisibleGenAppsToUser(pcsCaseEntity.getGenApps(), currentUserId);
-    }
-
-    private GenAppEntity resolveSelectedGenApp(PCSCase caseData, PcsCaseEntity pcsCaseEntity, UUID currentUserId) {
-        LegalRepDocumentUploadDetails details = caseData.getLegalRepDocumentUploadDetails();
-
-        if (details == null || details.getValidCategories() == null) {
-            return null;
-        }
-        String selectedCode = details.getValidCategories().getValueCode();
-        if (selectedCode == null) {
-            return null;
-        }
-        UUID selectedId;
-        try {
-            selectedId = UUID.fromString(selectedCode);
-        } catch (IllegalArgumentException e) {
-            return null;
-        }
-        return visibleGenAppsForUser(pcsCaseEntity, currentUserId).stream()
-            .filter(genApp -> selectedId.equals(genApp.getId()))
-            .findFirst()
-            .orElse(null);
-    }
-
-    private List<PartyEntity> loadAndValidateDefendants(PcsCaseEntity pcsCaseEntity) {
-
-        return legalRepForDefendantAccessValidator.validateAndGetDefendants(pcsCaseEntity,
-                                                                            securityContextService.getCurrentUserId());
     }
 
     private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
