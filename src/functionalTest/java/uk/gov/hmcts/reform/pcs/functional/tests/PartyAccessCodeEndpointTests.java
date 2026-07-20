@@ -164,6 +164,6 @@ class PartyAccessCodeEndpointTests extends BaseApi {
         apiSteps.theRequestContainsBody(requestBody);
         apiSteps.callIsSubmittedToTheEndpoint("ValidateAccessCode", "POST");
         apiSteps.checkStatusCode(404);
-        apiSteps.theResponseBodyContainsAString("message", "No case found with reference 1234123412341234");
+        apiSteps.theResponseBodyContainsAString("message", "No case found with Reference 1234123412341234");
     }
 }
