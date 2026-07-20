@@ -94,6 +94,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
     private final FeatureFlagView featureFlagView;
     private final LegalRepresentativeSummaryService legalRepresentativeSummaryService;
     private final OrganisationService organisationService;
+
     /**
      * Invoked by CCD to load PCS cases by reference.
      * @param request encapsulates the CCD case reference and state

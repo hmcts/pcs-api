@@ -200,7 +200,8 @@ class RespondPossessionClaimTest extends BaseEventTest {
                     claimResponseService,
                     defendantResponseService,
                     selectedPartyRetriever,
-                    submitResponseFactory
+                    submitResponseFactory,
+                    organisationService
                 )
             ),
             securityContextService
