@@ -167,7 +167,9 @@ class LegalRepresentativePartyLinkServiceTest {
         when(organisationDetailsService.getOrganisationAddress(organisationDetails))
             .thenReturn(addressUK);
         when(addressMapper.toAddressEntityAndNormalise(addressUK)).thenReturn(addressEntity);
-        when(legalRepresentativeOrganisationRepository.findByOrganisationIdAndCaseReference(organisationId, caseReference)).thenReturn(Optional.empty());
+        when(legalRepresentativeOrganisationRepository.findByOrganisationIdAndCaseReference(organisationId,
+                                                                                            caseReference))
+            .thenReturn(Optional.empty());
 
         // when
         legalRepresentativePartyLinkService.linkLegalRepresentativeToParty(

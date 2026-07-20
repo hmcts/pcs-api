@@ -137,8 +137,6 @@ class PCSCaseViewTest {
     private LegalRepresentativeSummaryService legalRepresentativeSummaryService;
     @Mock
     private OrganisationService organisationService;
-    @Mock
-    private FeatureFlagView featureFlagView;
 
     private PCSCaseView underTest;
 

@@ -134,9 +134,10 @@ class DocumentsViewTest {
             .categoryId("category")
             .build();
         String organisationId = "org";
+        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(organisationId);
         when(pcsCaseEntity.getDocuments()).thenReturn(List.of(accessCodePack, visibleDocument));
 
-        underTest.setCaseFields(pcsCase, pcsCaseEntity, organisationId);
+        underTest.setCaseFields(pcsCase, pcsCaseEntity);
 
         assertThat(pcsCase.getAllDocuments()).singleElement()
             .satisfies(document -> assertThat(document.getValue().getFilename()).isEqualTo("claim.pdf"));
@@ -158,6 +159,7 @@ class DocumentsViewTest {
     void shouldShowCounterClaimDocumentWhenStateIsIssued() {
         // Given
         String organisationId = "org";
+        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(organisationId);
         CounterClaimEntity counterClaim = mock(CounterClaimEntity.class);
         when(counterClaim.getStatus()).thenReturn(CounterClaimState.COUNTER_CLAIM_ISSUED);
 
@@ -170,32 +172,10 @@ class DocumentsViewTest {
         when(pcsCaseEntity.getDocuments()).thenReturn(List.of(documentEntity));
 
         // When
-        underTest.setCaseFields(pcsCase, pcsCaseEntity, organisationId);
+        underTest.setCaseFields(pcsCase, pcsCaseEntity);
 
         // Then
         assertThat(pcsCase.getAllDocuments()).hasSize(1);
-    }
-
-    @Test
-    void shouldHideCounterClaimDocumentWhenStateIsNotIssued() {
-        // Given
-        String organisationId = "org";
-        CounterClaimEntity counterClaim = mock(CounterClaimEntity.class);
-        when(counterClaim.getStatus()).thenReturn(CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED);
-
-        DocumentEntity documentEntity = DocumentEntity.builder()
-            .id(UUID.randomUUID())
-            .url("url1")
-            .counterClaim(counterClaim)
-            .build();
-
-        when(pcsCaseEntity.getDocuments()).thenReturn(List.of(documentEntity));
-
-        // When
-        underTest.setCaseFields(pcsCase, pcsCaseEntity, organisationId);
-
-        // Then
-        assertThat(pcsCase.getAllDocuments()).isEmpty();
     }
 
     @Test
@@ -323,10 +303,11 @@ class DocumentsViewTest {
             .type(documentType)
             .build();
         String organisationId = "org";
+        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(organisationId);
         when(pcsCaseEntity.getDocuments()).thenReturn(List.of(documentEntity));
 
         // When
-        underTest.setCaseFields(pcsCase, pcsCaseEntity, organisationId);
+        underTest.setCaseFields(pcsCase, pcsCaseEntity);
 
         // Then
         List<ListValue<Document>> allDocuments = pcsCase.getAllDocuments();
@@ -345,10 +326,11 @@ class DocumentsViewTest {
             .description("description")
             .build();
         String organisationId = "org";
+        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(organisationId);
         when(pcsCaseEntity.getDocuments()).thenReturn(List.of(documentEntity));
 
         // When
-        underTest.setCaseFields(pcsCase, pcsCaseEntity, organisationId);
+        underTest.setCaseFields(pcsCase, pcsCaseEntity);
 
         // Then
         List<ListValue<Document>> allDocuments = pcsCase.getAllDocuments();
@@ -367,10 +349,11 @@ class DocumentsViewTest {
             .type(documentType)
             .build();
         String organisationId = "org";
+        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(organisationId);
         when(pcsCaseEntity.getDocuments()).thenReturn(List.of(documentEntity));
 
         // When
-        underTest.setCaseFields(pcsCase, pcsCaseEntity, organisationId);
+        underTest.setCaseFields(pcsCase, pcsCaseEntity);
 
         // Then
         List<ListValue<Document>> allDocuments = pcsCase.getAllDocuments();

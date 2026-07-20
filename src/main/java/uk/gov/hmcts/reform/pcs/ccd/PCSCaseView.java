@@ -96,8 +96,6 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
     private final FeatureFlagView featureFlagView;
     private final LegalRepresentativeSummaryService legalRepresentativeSummaryService;
     private final OrganisationService organisationService;
-    private final DefendantResponseView defendantResponseView;
-    private final FeatureFlagView featureFlagView;
 
     /**
      * Invoked by CCD to load PCS cases by reference.
@@ -178,6 +176,8 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         caseListView.setCaseFields(pcsCase);
         defendantResponseView.setCaseFields(pcsCase, pcsCaseEntity);
         featureFlagView.setCaseFields(pcsCase);
+        final String organisationIdForCurrentUser = organisationService.getOrganisationIdForCurrentUser();
+        genAppsView.setCaseFields(pcsCase, pcsCaseEntity, organisationIdForCurrentUser);
         legalRepresentativeSummaryService.handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity,
                                                                            organisationIdForCurrentUser);
 

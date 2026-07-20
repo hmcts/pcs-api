@@ -40,7 +40,7 @@ public class DocumentsView {
         String organisationId = organisationService.getOrganisationIdForCurrentUser();
 
         return pcsCaseEntity.getDocuments().stream()
-            .filter(documentEntity -> this.isDocumentVisibleToUser(documentEntity, organisationIdForCurrentUser))
+            .filter(documentEntity -> this.isDocumentVisibleToUser(documentEntity, organisationId))
             .filter(this::isNotInCaseDetailsTab)
             .map(entity -> ListValue.<Document>builder()
                 .id(entity.getId().toString())
