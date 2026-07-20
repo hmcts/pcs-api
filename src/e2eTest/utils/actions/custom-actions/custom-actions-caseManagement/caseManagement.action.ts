@@ -199,7 +199,7 @@ export class CaseManagementAction implements IAction {
             });
             break;
 
-          case 'appReceivedDateField':
+          case 'dateField':
             let date: string = CaseManagementCommonUtils.getRandomDate(item.type as string);
             const enterDate = () =>
               performActions(
