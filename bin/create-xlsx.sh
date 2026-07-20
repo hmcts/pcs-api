@@ -19,6 +19,8 @@ for case_dir in "$run_dir"/build/definitions/*/; do
   fi
 
   ccd_definition_file="CCD_Definition_${case_type}_${env}.xlsx"
+  
+az login --identity
 
 docker run --rm --name "json2xlsx" \
   -v "$run_dir/build/definitions/${case_type}:/tmp/ccd-input" \
