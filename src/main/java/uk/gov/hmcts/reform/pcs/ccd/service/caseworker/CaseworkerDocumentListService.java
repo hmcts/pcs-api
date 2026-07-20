@@ -33,6 +33,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static java.util.Comparator.comparing;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState.COUNTER_CLAIM_ISSUED;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED;
 import static uk.gov.hmcts.reform.pcs.ccd.service.caseworker.CaseworkerDocumentService.COUNTERCLAIM_ID_PREFIX;
 import static uk.gov.hmcts.reform.pcs.ccd.service.caseworker.CaseworkerDocumentService.GEN_APP_ID_PREFIX;
@@ -217,7 +218,8 @@ public class CaseworkerDocumentListService {
 
         return counterClaims.stream()
             .filter(Objects::nonNull)
-            .filter(counterClaimEntity -> counterClaimEntity.getStatus() != PENDING_COUNTER_CLAIM_ISSUED)
+            .filter(counterClaimEntity -> counterClaimEntity.getStatus() == PENDING_COUNTER_CLAIM_ISSUED
+                || counterClaimEntity.getStatus() == COUNTER_CLAIM_ISSUED)
             .filter(counterClaimEntity -> counterClaimEntity.getClaimSubmittedDate() != null)
             .toList();
     }

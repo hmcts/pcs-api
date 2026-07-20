@@ -111,8 +111,10 @@ class StartHandlerTest {
 
         CounterClaimEntity counterClaimEntity1 = createCounterClaimEntity(baseDateTime.minusDays(5), claimant1Party);
         CounterClaimEntity counterClaimEntity2 = createCounterClaimEntity(baseDateTime.plusDays(5), defendant4Party);
-        CounterClaimEntity counterClaimEntity3 = createCounterClaimEntity(null, defendant4Party);
+        CounterClaimEntity counterClaimEntity3 = createCounterClaimEntity(baseDateTime.plusDays(8), defendant4Party);
         counterClaimEntity3.setStatus(CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED);
+        CounterClaimEntity counterClaimEntity4 = createCounterClaimEntity(baseDateTime.plusDays(9), defendant4Party);
+        counterClaimEntity4.setStatus(null);
 
         PCSCase caseData = PCSCase.builder()
             .genApps(List.of(
@@ -124,7 +126,7 @@ class StartHandlerTest {
             .build();
 
         when(pcsCaseEntity.getCounterClaims())
-            .thenReturn(List.of(counterClaimEntity1, counterClaimEntity2, counterClaimEntity3));
+            .thenReturn(List.of(counterClaimEntity1, counterClaimEntity2, counterClaimEntity3, counterClaimEntity4));
 
         // When
         PCSCase result = underTest.start(toEventPayload(caseData));
@@ -137,6 +139,7 @@ class StartHandlerTest {
         assertThat(listItems).map(DynamicStringListElement::getLabel)
             .containsExactly(
                 "Gen app GA2 - submitted 14 May 2026",
+                "Counter claim CC1 - submitted 12 May 2026",
                 "Counter claim CC1 - submitted 9 May 2026",
                 "Gen app GA1 - submitted 4 May 2026",
                 "Counter claim CC1 - submitted 29 April 2026",
@@ -146,6 +149,7 @@ class StartHandlerTest {
         assertThat(listItems).map(DynamicStringListElement::getCode)
             .containsExactly(
                 "GEN_APP:%s".formatted(genApp2Id),
+                "COUNTERCLAIM:%s".formatted(counterClaimEntity3.getId()),
                 "COUNTERCLAIM:%s".formatted(counterClaimEntity2.getId()),
                 "GEN_APP:%s".formatted(genApp1Id),
                 "COUNTERCLAIM:%s".formatted(counterClaimEntity1.getId()),
@@ -331,6 +335,7 @@ class StartHandlerTest {
         return CounterClaimEntity.builder()
             .id(UUID.randomUUID())
             .claimSubmittedDate(submittedDate)
+            .status(CounterClaimState.COUNTER_CLAIM_ISSUED)
             .party(partyEntity)
             .build();
     }

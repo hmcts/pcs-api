@@ -113,7 +113,8 @@ public class CaseworkerDocumentService {
     }
 
     private static String getSelectedCode(DynamicStringList relatedSubmission) {
-        return Optional.ofNullable(relatedSubmission.getValue())
+        return Optional.ofNullable(relatedSubmission)
+            .map(DynamicStringList::getValue)
             .map(DynamicStringListElement::getCode)
             .orElse(null);
     }

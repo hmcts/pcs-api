@@ -393,7 +393,7 @@ class DocumentAmendSelectionServiceTest {
     }
 
     @Test
-    void shouldPopulateRelatedSubmissionsListInDescendingDateOrderAndExcludePendingCounterclaims() {
+    void shouldPopulateRelatedSubmissionsListInDescendingDateOrderAndExcludeCounterclaimsWithNoOpenStatus() {
         LocalDateTime baseDateTime = LocalDateTime.parse("2026-05-04T10:00:00");
 
         final String genAppId = UUID.randomUUID().toString();
@@ -408,10 +408,12 @@ class DocumentAmendSelectionServiceTest {
         CounterClaimEntity counterClaim = counterClaim(baseDateTime.plusDays(2), defendant);
         CounterClaimEntity pendingCounterClaim = counterClaim(baseDateTime.plusDays(3), defendant);
         pendingCounterClaim.setStatus(CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED);
+        CounterClaimEntity counterClaimWithoutStatus = counterClaim(baseDateTime.plusDays(4), defendant);
+        counterClaimWithoutStatus.setStatus(null);
 
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(PcsCaseEntity.builder()
             .claims(List.of(mainClaim))
-            .counterClaims(List.of(counterClaim, pendingCounterClaim))
+            .counterClaims(List.of(counterClaim, pendingCounterClaim, counterClaimWithoutStatus))
             .build());
         when(partyService.getPartyLabel(mainClaim, defendant.getId())).thenReturn("Defendant 1");
         PCSCase caseData = PCSCase.builder()
@@ -426,6 +428,7 @@ class DocumentAmendSelectionServiceTest {
         assertThat(details.getRelatedSubmission().getListItems())
             .extracting(DynamicStringListElement::getLabel)
             .containsExactly(
+                "Counter claim CC1 - submitted 7 May 2026",
                 "Counter claim CC1 - submitted 6 May 2026",
                 "Gen app GA1 - submitted 4 May 2026",
                 "Not related to an application or counterclaim"
@@ -433,6 +436,7 @@ class DocumentAmendSelectionServiceTest {
         assertThat(details.getRelatedSubmission().getListItems())
             .extracting(DynamicStringListElement::getCode)
             .containsExactly(
+                "COUNTERCLAIM:%s".formatted(pendingCounterClaim.getId()),
                 "COUNTERCLAIM:%s".formatted(counterClaim.getId()),
                 "GEN_APP:%s".formatted(genAppId),
                 "NONE"
@@ -849,6 +853,7 @@ class DocumentAmendSelectionServiceTest {
         return CounterClaimEntity.builder()
             .id(UUID.randomUUID())
             .claimSubmittedDate(submittedDate)
+            .status(CounterClaimState.COUNTER_CLAIM_ISSUED)
             .party(party)
             .build();
     }

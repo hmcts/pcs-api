@@ -19,6 +19,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -37,8 +38,8 @@ public class DocumentAmendService {
 
     public AmendedDocument amendDocument(PCSCase caseData, long caseReference) {
         DocumentAmendDetails amendDetails = caseData.getDocumentAmendDetails();
-        DocumentEntity documentEntity = loadDocument(amendDetails);
         final PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
+        DocumentEntity documentEntity = loadDocument(pcsCaseEntity, amendDetails);
         UUID partyId = selectedPartyId(amendDetails.getRelatedParty());
         PartyEntity partyEntity = partyService.getPartyEntityById(partyId, caseReference);
 
@@ -70,8 +71,12 @@ public class DocumentAmendService {
         return new AmendedDocument(confirmationFileName, partyService.getPartyName(partyEntity));
     }
 
-    private DocumentEntity loadDocument(DocumentAmendDetails amendDetails) {
-        return documentRepository.findById(UUID.fromString(amendDetails.getSelectedDocumentId()))
+    private DocumentEntity loadDocument(PcsCaseEntity pcsCaseEntity, DocumentAmendDetails amendDetails) {
+        UUID selectedDocumentId = UUID.fromString(amendDetails.getSelectedDocumentId());
+        return pcsCaseEntity.getDocuments().stream()
+            .filter(Objects::nonNull)
+            .filter(document -> selectedDocumentId.equals(document.getId()))
+            .findFirst()
             .orElseThrow(() -> new IllegalStateException(
                 "No document found for ID: " + amendDetails.getSelectedDocumentId()
             ));

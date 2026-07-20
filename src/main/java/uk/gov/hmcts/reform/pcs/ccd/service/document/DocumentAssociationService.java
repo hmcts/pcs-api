@@ -40,29 +40,28 @@ public class DocumentAssociationService {
         DynamicStringList relatedSubmission
     ) {
         if (showRelatedSubmissionsList == VerticalYesNo.YES) {
-            String code = getSelectedCode(relatedSubmission);
-            String[] codeParts = code == null ? new String[0] : code.split(":");
+            RelatedSubmissionId relatedSubmissionId = parseRelatedSubmissionId(getSelectedCode(relatedSubmission));
 
-            if (codeParts.length > 0 && GEN_APP_ID_PREFIX.equals(codeParts[0])) {
-                GenAppEntity genAppEntity = genAppService.loadGenApp(UUID.fromString(codeParts[1]));
+            if (GEN_APP_ID_PREFIX.equals(relatedSubmissionId.prefix())) {
+                GenAppEntity genAppEntity = genAppService.loadGenApp(relatedSubmissionId.id());
                 documentEntity.setGeneralApplication(genAppEntity);
                 documentEntity.setCounterClaim(null);
                 documentEntity.setCategoryId(CaseFileCategory.APPLICATIONS.getId());
                 return documentNameService.appendGenAppPostfix(fileName, genAppEntity, mainClaim, partyId);
             }
 
-            if (codeParts.length > 0 && COUNTERCLAIM_ID_PREFIX.equals(codeParts[0])) {
+            if (COUNTERCLAIM_ID_PREFIX.equals(relatedSubmissionId.prefix())) {
                 CounterClaimEntity counterClaimEntity = counterClaimRepository
-                    .getReferenceById(UUID.fromString(codeParts[1]));
+                    .getReferenceById(relatedSubmissionId.id());
                 documentEntity.setCounterClaim(counterClaimEntity);
                 documentEntity.setGeneralApplication(null);
                 documentEntity.setCategoryId(CaseFileCategory.STATEMENTS_OF_CASE.getId());
                 return documentNameService.appendCounterClaimPostfix(fileName, mainClaim, partyId);
             }
 
-            if (!NONE_PREFIX.equals(code)) {
-                log.warn("Unexpected related submission prefix: {}", codeParts.length == 0 ? code : codeParts[0]);
-                return fileName;
+            if (!NONE_PREFIX.equals(relatedSubmissionId.prefix())) {
+                log.warn("Unexpected related submission prefix: {}", relatedSubmissionId.prefix());
+                throw new IllegalArgumentException("Unexpected related submission: " + relatedSubmissionId.prefix());
             }
         }
 
@@ -74,5 +73,25 @@ public class DocumentAssociationService {
 
     private static String getSelectedCode(DynamicStringList dynamicStringList) {
         return dynamicStringList == null ? null : dynamicStringList.getValueCode();
+    }
+
+    private static RelatedSubmissionId parseRelatedSubmissionId(String code) {
+        if (NONE_PREFIX.equals(code)) {
+            return new RelatedSubmissionId(NONE_PREFIX, null);
+        }
+
+        if (code == null || code.isBlank()) {
+            throw new IllegalArgumentException("Related submission must be selected");
+        }
+
+        String[] codeParts = code.split(":");
+        if (codeParts.length != 2 || codeParts[1].isBlank()) {
+            throw new IllegalArgumentException("Invalid related submission: " + code);
+        }
+
+        return new RelatedSubmissionId(codeParts[0], UUID.fromString(codeParts[1]));
+    }
+
+    private record RelatedSubmissionId(String prefix, UUID id) {
     }
 }

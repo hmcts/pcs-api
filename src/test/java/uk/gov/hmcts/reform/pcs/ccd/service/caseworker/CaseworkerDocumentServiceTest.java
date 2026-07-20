@@ -44,6 +44,7 @@ import java.util.UUID;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.lenient;
@@ -178,7 +179,7 @@ class CaseworkerDocumentServiceTest {
     }
 
     @Test
-    void shouldNotModifyNameOrSetCategoryForUnknownRelatedSubmissionPrefix() {
+    void shouldRejectUnknownRelatedSubmissionPrefix() {
         // Given
         DynamicList relatedPartyList = dynamicListWithSelection(SELECTED_PARTY_ID);
 
@@ -197,13 +198,9 @@ class CaseworkerDocumentServiceTest {
             .relatedParty(relatedPartyList)
             .build();
 
-        // When
-        underTest.saveNewDocument(caseworkerDocument, CASE_REFERENCE);
-
-        // Then
-        DocumentEntity savedDocumentEntity = getSavedDocumentEntity();
-        assertThat(savedDocumentEntity.getFileName()).isEqualTo(originalFilename);
-        assertThat(savedDocumentEntity.getCategoryId()).isNull();
+        assertThatThrownBy(() -> underTest.saveNewDocument(caseworkerDocument, CASE_REFERENCE))
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessage("Unexpected related submission: UNKNOWN_PREFIX");
     }
 
     @ParameterizedTest

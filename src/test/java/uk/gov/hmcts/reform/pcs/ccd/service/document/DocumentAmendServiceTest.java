@@ -31,10 +31,11 @@ import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 
 import java.time.LocalDate;
-import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.service.caseworker.CaseworkerDocumentService.COUNTERCLAIM_ID_PREFIX;
@@ -105,11 +106,11 @@ class DocumentAmendServiceTest {
             .id(DOCUMENT_ID)
             .fileName("old file.pdf")
             .build();
+        pcsCaseEntity.addDocument(documentEntity);
 
-        when(documentRepository.findById(DOCUMENT_ID)).thenReturn(Optional.of(documentEntity));
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
-        when(partyService.getPartyEntityById(PARTY_ID, CASE_REFERENCE)).thenReturn(partyEntity);
-        when(partyService.getPartyName(partyEntity)).thenReturn("Defendant One");
+        lenient().when(partyService.getPartyEntityById(PARTY_ID, CASE_REFERENCE)).thenReturn(partyEntity);
+        lenient().when(partyService.getPartyName(partyEntity)).thenReturn("Defendant One");
     }
 
     @Test
@@ -199,6 +200,38 @@ class DocumentAmendServiceTest {
         assertThat(savedDocument.getCounterClaim()).isSameAs(counterClaimEntity);
         assertThat(savedDocument.getGeneralApplication()).isNull();
         assertThat(savedDocument.getType()).isNull();
+    }
+
+    @Test
+    void shouldRejectSelectedDocumentThatDoesNotBelongToCase() {
+        UUID otherDocumentId = UUID.randomUUID();
+        DocumentAmendDetails amendDetails = baseDetails()
+            .selectedDocumentId(otherDocumentId.toString())
+            .amendedFileName("other document.pdf")
+            .showRelatedSubmissionsList(VerticalYesNo.NO)
+            .standaloneDocumentType(dynamicStringList(CaseworkerDocumentType.WITNESS_STATEMENT.name()))
+            .build();
+
+        assertThatThrownBy(() ->
+            underTest.amendDocument(PCSCase.builder().documentAmendDetails(amendDetails).build(), CASE_REFERENCE)
+        )
+            .isInstanceOf(IllegalStateException.class)
+            .hasMessage("No document found for ID: " + otherDocumentId);
+    }
+
+    @Test
+    void shouldRejectMalformedRelatedSubmissionCode() {
+        DocumentAmendDetails amendDetails = baseDetails()
+            .amendedFileName("application evidence.pdf")
+            .showRelatedSubmissionsList(VerticalYesNo.YES)
+            .relatedSubmission(dynamicStringList(GEN_APP_ID_PREFIX))
+            .build();
+
+        assertThatThrownBy(() ->
+            underTest.amendDocument(PCSCase.builder().documentAmendDetails(amendDetails).build(), CASE_REFERENCE)
+        )
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessage("Invalid related submission: " + GEN_APP_ID_PREFIX);
     }
 
     private static DocumentAmendDetails.DocumentAmendDetailsBuilder baseDetails() {
