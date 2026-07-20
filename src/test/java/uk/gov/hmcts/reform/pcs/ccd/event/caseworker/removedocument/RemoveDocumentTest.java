@@ -79,6 +79,7 @@ class RemoveDocumentTest extends BaseEventTest {
             .build();
         PCSCase caseData = PCSCase.builder()
             .documentRemovalDetails(details)
+            .caseNameHmctsInternal("Smith v Jones")
             .build();
 
         SubmitResponse<State> response = callSubmitHandler(caseData);
@@ -87,6 +88,7 @@ class RemoveDocumentTest extends BaseEventTest {
         assertThat(response.getConfirmationBody())
             .contains("evidence.pdf")
             .contains("Case number: " + TEST_CASE_REFERENCE)
-            .contains("123 Test Street, Testville, TE1 1ST");
+            .contains("123 Test Street, Testville, TE1 1ST")
+            .contains("Smith v Jones");
     }
 }
