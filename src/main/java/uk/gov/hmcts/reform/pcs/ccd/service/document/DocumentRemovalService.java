@@ -24,11 +24,11 @@ public class DocumentRemovalService {
         DocumentEntity documentEntity = documentRepository.findById(documentEntityId)
             .orElseThrow(() -> new DocumentNotFoundException(documentEntityId));
 
-        documentImportService.deleteDocument(documentEntity.getUrl());
-
         documentEntity.setRemoved(true);
         documentEntity.setRemovalReason(reason);
         documentEntity.setRemovedAt(LocalDateTime.now());
         documentRepository.save(documentEntity);
+
+        documentImportService.deleteDocument(documentEntity.getUrl());
     }
 }

@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.FieldCollection.FieldCollectionBuilder;
-import uk.gov.hmcts.ccd.sdk.api.TypedPropertyGetter;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
@@ -67,8 +66,6 @@ public class SelectDocumentToRemovePage implements CcdPageConfiguration {
         }
 
         documentRemovalDetailsFields
-                .readonly(DocumentRemovalDetails::getSelectedFolderId, NEVER_SHOW, true)
-                .readonly(DocumentRemovalDetails::getSelectedFolderLabel, NEVER_SHOW, true)
                 .readonly(DocumentRemovalDetails::getSelectedDocumentId, NEVER_SHOW, true)
                 .readonly(DocumentRemovalDetails::getSelectedDocumentFileName, NEVER_SHOW, true)
             .done();
@@ -140,15 +137,6 @@ public class SelectDocumentToRemovePage implements CcdPageConfiguration {
 
     private String selectedFolderCondition(CaseFileCategory category) {
         return FIELD_PREFIX + "SelectedFolder=\"" + category.name() + "\"";
-    }
-
-    private TypedPropertyGetter<DocumentRemovalDetails, String> reasonGetter(CaseFileCategory category) {
-        for (DocumentRemovalCategoryField categoryField : DocumentRemovalCategoryField.values()) {
-            if (categoryField.category == category) {
-                return categoryField.reasonGetter;
-            }
-        }
-        throw new IllegalStateException("No reason field configured for category " + category);
     }
 
     private String emptyFolderMessage(CaseFileCategory category) {
