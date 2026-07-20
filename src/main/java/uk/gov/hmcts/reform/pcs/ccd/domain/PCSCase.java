@@ -33,6 +33,7 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.PartyVisibleTabAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.RasValidationAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.WAAccess;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.DashboardData;
+import uk.gov.hmcts.reform.pcs.ccd.domain.documentamend.DocumentAmendDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.CitizenGenAppRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GeneralApplication;
@@ -481,6 +482,9 @@ public class PCSCase {
 
     @JsonUnwrapped
     private DocumentUploadDetails documentUploadDetails;
+
+    @JsonUnwrapped(prefix = "documentAmend_")
+    private DocumentAmendDetails documentAmendDetails;
 
     @CCD(
         label = "Are you planning to make an application at the same time as your claim?",
