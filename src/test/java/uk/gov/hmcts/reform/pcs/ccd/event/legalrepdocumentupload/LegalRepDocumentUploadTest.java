@@ -8,19 +8,21 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.DocumentUploadCategory;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.BaseEventTest;
 import uk.gov.hmcts.reform.pcs.ccd.page.legalrepdocumentupload.LegalRepDocumentUploadConfigurer;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
+import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType;
 
 import java.time.LocalDateTime;
-import java.util.Set;
+import java.util.List;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -35,6 +37,12 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
 
     @Mock
     private PcsCaseService pcsCaseService;
+
+    @Mock
+    private GenAppVisibilityService genAppVisibilityService;
+
+    @Mock
+    private SecurityContextService securityContextService;
 
     @InjectMocks
     private LegalRepDocumentUpload legalRepDocumentUpload;
@@ -62,52 +70,39 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
         LocalDateTime laterDate = LocalDateTime.of(2026, 4, 25, 10, 0);
         LocalDateTime earlierDate = LocalDateTime.of(2026, 4, 20, 10, 0);
 
-        GenAppEntity earlierGenApp = GenAppEntity.builder()
+        UUID earlierAdjournId = UUID.fromString("11111111-1111-1111-1111-111111111111");
+        UUID laterAdjournId = UUID.fromString("22222222-2222-2222-2222-222222222222");
+        UUID generalId = UUID.fromString("33333333-3333-3333-3333-333333333333");
+
+        GenAppEntity earlierAdjournApp = GenAppEntity.builder()
+            .id(earlierAdjournId)
             .type(GenAppType.ADJOURN)
             .applicationSubmittedDate(earlierDate)
-            .withoutNotice(VerticalYesNo.YES)
             .build();
 
-        GenAppEntity laterGenApp = GenAppEntity.builder()
+        GenAppEntity laterAdjournApp = GenAppEntity.builder()
+            .id(laterAdjournId)
             .type(GenAppType.ADJOURN)
             .applicationSubmittedDate(laterDate)
-            .withoutNotice(VerticalYesNo.YES)
             .build();
 
-        GenAppEntity generalGenApp = GenAppEntity.builder()
+        GenAppEntity generalApp = GenAppEntity.builder()
+            .id(generalId)
             .type(GenAppType.SOMETHING_ELSE)
             .applicationSubmittedDate(laterDate)
-            .withoutNotice(VerticalYesNo.YES)
             .build();
 
-        GenAppEntity generalGenAppNullNotice = GenAppEntity.builder()
-            .type(GenAppType.SOMETHING_ELSE)
-            .applicationSubmittedDate(laterDate)
-            .withoutNotice(null)
-            .build();
-
-        GenAppEntity generalGenAppNoticeNo = GenAppEntity.builder()
-            .type(GenAppType.SOMETHING_ELSE)
-            .applicationSubmittedDate(laterDate)
-            .withoutNotice(VerticalYesNo.NO)
-            .build();
-
-        GenAppEntity generalGenAppWithNullDate = GenAppEntity.builder()
+        GenAppEntity generalAppWithNullDate = GenAppEntity.builder()
+            .id(UUID.fromString("44444444-4444-4444-4444-444444444444"))
             .type(GenAppType.SOMETHING_ELSE)
             .applicationSubmittedDate(null)
-            .withoutNotice(VerticalYesNo.YES)
             .build();
 
         when(pcsCaseService.loadCase(TEST_CASE_REFERENCE))
-            .thenReturn(PcsCaseEntity.builder()
-                            .genApps(Set.of(
-                                earlierGenApp,
-                                laterGenApp,
-                                generalGenApp,
-                                generalGenAppNullNotice,
-                                generalGenAppNoticeNo,
-                                generalGenAppWithNullDate))
-                            .build());
+            .thenReturn(PcsCaseEntity.builder().build());
+
+        when(genAppVisibilityService.getVisibleGenAppsToUser(any(), any()))
+            .thenReturn(List.of(earlierAdjournApp, laterAdjournApp, generalApp, generalAppWithNullDate));
 
         PCSCase result = callStartHandler(PCSCase.builder().build());
 
@@ -123,15 +118,13 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
             .extracting(DynamicStringListElement::getCode)
             .containsExactlyInAnyOrder(
                 DocumentUploadCategory.MAIN_CLAIM_OR_COUNTERCLAIM.name(),
-                DocumentUploadCategory.ADJOURN_HEARING_APPLICATION.name(),
-                DocumentUploadCategory.ADJOURN_HEARING_APPLICATION.name(),
-                DocumentUploadCategory.GENERAL_APPLICATION.name()
+                earlierAdjournId.toString(),
+                laterAdjournId.toString(),
+                generalId.toString()
             );
 
         assertThat(categories.getListItems())
-            .filteredOn(item ->
-                            DocumentUploadCategory.ADJOURN_HEARING_APPLICATION.name()
-                                .equals(item.getCode()))
+            .filteredOn(item -> item.getLabel().contains("adjourn the hearing"))
             .extracting(DynamicStringListElement::getLabel)
             .containsExactlyInAnyOrder(
                 "Yes, the documents I’m uploading relate to the application to adjourn the "
@@ -141,14 +134,11 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
             );
 
         assertThat(categories.getListItems())
-            .filteredOn(item ->
-                            DocumentUploadCategory.GENERAL_APPLICATION.name()
-                                .equals(item.getCode()))
-            .extracting(DynamicStringListElement::getLabel)
-            .containsExactly(
+            .filteredOn(item -> item.getLabel().equals(
                 "Yes, the documents I’m uploading relate to an application submitted on "
-                    + "Saturday 25 Apr 2026"
-            );
+                    + "Saturday 25 Apr 2026"))
+            .extracting(DynamicStringListElement::getCode)
+            .containsExactly(generalId.toString());
 
         assertThat(categories.getListItems())
             .filteredOn(item ->
@@ -182,8 +172,8 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
     void shouldReturnNullForLatestGenAppDateWhenGenAppsIsNull() {
         when(pcsCaseService.loadCase(TEST_CASE_REFERENCE))
             .thenReturn(PcsCaseEntity.builder()
-                .genApps(null)
-                .build());
+                            .genApps(null)
+                            .build());
 
         PCSCase result = callStartHandler(PCSCase.builder().build());
 
@@ -200,17 +190,5 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
         assertThat(legalRepDocumentUpload.mapCategoryToGenAppType(
             DocumentUploadCategory.MAIN_CLAIM_OR_COUNTERCLAIM))
             .isNull();
-    }
-
-    @Test
-    void shouldReturnNullForLatestGenAppDateWhenCategoryIsUnmapped() {
-        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
-            .genApps(Set.of())
-            .build();
-
-        assertThat(legalRepDocumentUpload.findGenAppDatesForCategory(
-            pcsCaseEntity,
-            DocumentUploadCategory.MAIN_CLAIM_OR_COUNTERCLAIM))
-            .isEmpty();
     }
 }

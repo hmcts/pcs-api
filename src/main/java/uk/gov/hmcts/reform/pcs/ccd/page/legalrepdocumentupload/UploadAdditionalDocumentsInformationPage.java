@@ -14,12 +14,12 @@ public class UploadAdditionalDocumentsInformationPage implements CcdPageConfigur
 
                     <div class="govuk-details__text govuk-!-margin-bottom-5">
                         <p class="govuk-body">
-                            We usually share anything you upload with the other party, for example your landlord,
-                            housing association or mortgage provider.
+                            We usually share anything you upload with the other parties, for example other defendants,
+                            the defendant’s landlord, housing association or mortgage provider.
                         </p>
                         <p class="govuk-body">
                             If your application is &lsquo;without notice&rsquo; (where you have asked us to consider
-                            your application without testing the other party) we will not share anything with them.
+                            your application without telling the other party) we will not share anything with them.
                         </p>
                     </div>
                     <p class="govuk-body govuk-!-font-weight-bold govuk-!-font-size-24">What you can upload
@@ -45,7 +45,7 @@ public class UploadAdditionalDocumentsInformationPage implements CcdPageConfigur
                     <p class="govuk-body govuk-!-margin-bottom-0">You can upload the following file types:</p>
                     <ul class="govuk-list govuk-list--bullet">
                         <li class="govuk-!-font-size-19">DOC/DOCX(Word)</li>
-                       <li class="govuk-!-font-size-19">XLS/XLSX(Excel)</li>
+                       <li class="govuk-!-font-size-19">XLS/XLSM(Excel)</li>
                        <li class="govuk-!-font-size-19">PPT/PPTX(PowerPoint)</li>
                        <li class="govuk-!-font-size-19">PDF</li>
                        <li class="govuk-!-font-size-19">RTF</li>
