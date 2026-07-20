@@ -133,22 +133,40 @@ public class DataTest extends CftlibTest {
         int totalRows = runCountQuery("SELECT COUNT(*) FROM public.pcs_case");
 
         int duplicateIds = runCountQuery(
-            "SELECT COUNT(*) FROM (SELECT id FROM public.pcs_case GROUP BY id HAVING COUNT(*) > 1) d"
+            "SELECT COUNT(*) FROM (" +
+                "SELECT id FROM public.pcs_case " +
+                "GROUP BY id HAVING COUNT(*) > 1) d"
         );
 
         int duplicateCaseRefs = runCountQuery(
-            "SELECT COUNT(*) FROM (SELECT case_reference FROM public.pcs_case WHERE case_reference IS NOT NULL GROUP BY case_reference HAVING COUNT(*) > 1) d"
+            "SELECT COUNT(*) FROM (" +
+                "SELECT case_reference FROM public.pcs_case " +
+                "WHERE case_reference IS NOT NULL " +
+                "GROUP BY case_reference HAVING COUNT(*) > 1) d"
         );
 
-        int nullCaseRefs = runCountQuery("SELECT COUNT(*) FROM public.pcs_case WHERE case_reference IS NULL");
-        int nullAddressIds = runCountQuery("SELECT COUNT(*) FROM public.pcs_case WHERE property_address_id IS NULL");
+        int nullCaseRefs = runCountQuery(
+            "SELECT COUNT(*) " +
+                "FROM public.pcs_case " +
+                "WHERE case_reference IS NULL");
+        int nullAddressIds = runCountQuery(
+            "SELECT COUNT(*) " +
+                "FROM public.pcs_case " +
+                "WHERE property_address_id IS NULL");
 
         int invalidCountries = runCountQuery(
-            "SELECT COUNT(*) FROM public.pcs_case WHERE legislative_country IS NOT NULL AND legislative_country NOT IN ('ENGLAND', 'WALES')"
+            "SELECT COUNT(*) " +
+                "FROM public.pcs_case " +
+                "WHERE legislative_country IS NOT NULL " +
+                "AND legislative_country NOT IN ('ENGLAND', 'WALES')"
         );
 
         int orphanAddresses = runCountQuery(
-            "SELECT COUNT(*) FROM public.pcs_case c LEFT JOIN public.address a ON c.property_address_id = a.id WHERE c.property_address_id IS NOT NULL AND a.id IS NULL"
+            "SELECT COUNT(*) " +
+                "FROM public.pcs_case " +
+                "c LEFT JOIN public.address a ON c.property_address_id = a.id " +
+                "WHERE c.property_address_id IS NOT NULL " +
+                "AND a.id IS NULL"
         );
 
         // 2. Execute all assertions collectively using assertAll
@@ -175,10 +193,16 @@ public class DataTest extends CftlibTest {
             "post_town", "county", "postcode", "country"
         );
 
-        int totalRows = runCountQuery("SELECT COUNT(*) FROM public.address");
+        int totalRows = runCountQuery(
+            "SELECT COUNT(*) " +
+                "FROM public.address");
 
         int duplicateIds = runCountQuery(
-            "SELECT COUNT(*) FROM (SELECT id FROM public.address GROUP BY id HAVING COUNT(*) > 1) d"
+            "SELECT COUNT(*) " +
+                "FROM (" +
+                "SELECT id " +
+                "FROM public.address " +
+                "GROUP BY id HAVING COUNT(*) > 1) d"
         );
 
         int badLine1 = runCountQuery("SELECT COUNT(*) FROM public.address WHERE address_line1 != '123 Baker Street'");
