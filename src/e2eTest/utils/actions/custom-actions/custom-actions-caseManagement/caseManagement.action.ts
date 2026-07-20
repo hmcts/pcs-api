@@ -106,18 +106,15 @@ export class CaseManagementAction implements IAction {
 
 
   private async inputErrorValidation(page: Page, validationArr: actionRecord) {
-
-
         if (Array.isArray(validationArr.inputArray)) {
           for (const item of validationArr.inputArray) {
             const inlineMessage = item.errInlineMessage ?? item.errMessage;
             switch (validationArr.validationType) {
 
-
               case 'radioOptions':
                 await performAction('clickButton', validationArr.button);
                 await performValidation('inputError', !validationArr?.label ? validationArr.question : validationArr.label, inlineMessage);
-                await performValidation('errorMessage', !validationArr?.header ? validationArr.header = 'There is a problem' : validationArr.header, item.errMessage); if (validationArr.option)
+                await performValidation('errorMessage', !validationArr?.header ? validationArr.header = 'There is a problem' : validationArr.header, item.errMessage);
                 if (validationArr.option) {
                   await performAction('clickRadioButton', {
                     question: validationArr.question,
