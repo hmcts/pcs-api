@@ -40,6 +40,7 @@ export class ActionCMRegistry {
     ['confirmCaseStateChange', new CaseManagementAction()],
     ['errorValidationSelectDocumentPage', new ErrorValidationAction()],
     ['errorValidationChangeCaseStatePage', new ErrorValidationAction()],
+    ['errorValidationSelectDocumentPage', new ErrorValidationAction()],
     ['inputErrorValidation', new CaseManagementAction()],
     ['reTryOnCallBackError', new RetryOnCallBackError()],
     
