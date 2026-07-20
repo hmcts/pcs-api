@@ -146,6 +146,7 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
             .field(PCSCase::getCaseTitleMarkdown)
             .field(PCSCase::getDashboardData)
             .field(PCSCase::getCaseNameHmctsInternal);
+            .field(PCSCase::getFeatureFlags);
 
         builder.tab("serviceRequest", "Service Request")
             .forRoles(PARTY_VISIBLE_TAB_ROLES)

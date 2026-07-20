@@ -24,11 +24,10 @@
         "roleType": "ORGANISATION",
         "roleName": "hearing-centre-admin",
         "grantType": "STANDARD",
-        "roleCategory": "ADMIN",
+        "roleCategory": "LEGAL_OPERATIONS",
         "classification": "PUBLIC",
         "readOnly": false,
         "attributes": {
-          "jurisdiction": "CIVIL"
         },
         "authorisations": []
       }
