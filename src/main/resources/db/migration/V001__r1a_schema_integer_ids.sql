@@ -744,7 +744,7 @@ CREATE TABLE public.fee_payment (
     payment_callback_handler_type varchar(30) NOT NULL,
     task_data jsonb,
     status varchar(50),
-    possession_claim_id uuid,
+    possession_claim_id uuid NOT NULL,
     related_entity_id uuid
 );
 
