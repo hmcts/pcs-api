@@ -84,6 +84,7 @@ public class CachingOrganisationDetailsService {
             cachedOrganisationResponseRepository.findByIdamId(userIdam);
 
         if (cachedResponse.isEmpty()) {
+            log.debug("Retrieving OrganisationDetails response as not cached");
             OrganisationDetailsResponse response = getOrganisationDetails(userId);
 
             CachedOrganisationResponseEntity newCachedResponse = mapResponseToEntity(userIdam, response);
@@ -124,12 +125,12 @@ public class CachingOrganisationDetailsService {
             return details;
 
         } catch (FeignException ex) {
-            log.error("Feign error retrieving organisation details for userId: {}. Status: {}, Message: {}",
-                      userId, ex.status(), ex.getMessage(), ex);
+            log.error("Feign error retrieving organisation details for userId: {}. Status: {}",
+                      userId, ex.status(), ex);
             throw new OrganisationDetailsException("Failed to retrieve organisation details", ex);
         } catch (Exception ex) {
-            log.error("Unexpected error retrieving organisation details for userId: {}. Error: {}",
-                      userId, ex.getMessage(), ex);
+            log.error("Unexpected error retrieving organisation details for userId: {}",
+                      userId, ex);
             throw new OrganisationDetailsException("Unexpected error retrieving organisation details", ex);
         }
     }

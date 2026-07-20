@@ -29,8 +29,7 @@ public class OrganisationService {
             }
             return cachingOrganisationDetailsService.getNameAndAddress(userId.toString());
         } catch (Exception ex) {
-            log.error("Error retrieving organisation name and address from rd-professional API. Error: {}",
-                      ex.getMessage(), ex);
+            log.error("Error retrieving organisation name and address from rd-professional API. Error: ", ex);
             return null;
         }
     }
@@ -51,8 +50,7 @@ public class OrganisationService {
             return cachingOrganisationDetailsService.getOrganisationIdentifier(userId.toString());
 
         } catch (OrganisationDetailsException | SecurityContextException ex) {
-            log.error("Error retrieving organisation ID from rd-professional API. Error: {}",
-                ex.getMessage(), ex);
+            log.error("Error retrieving organisation ID from rd-professional API. Error: ", ex);
             return null;
         }
     }
