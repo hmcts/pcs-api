@@ -8,6 +8,13 @@ import { VERY_LONG_TIMEOUT } from 'playwright.config';
 import { caseSummary, home } from '@data/page-data';
 import { changeCaseState, confirmCaseStateChange, selectDocument } from '@data/page-data-figma/page-data-caseManagement-figma';
 import { caseInfo } from '../createCaseAPI.action';
+import {performActions} from "@utils/controller";
+import {addReviewDate} from "@data/page-data-figma/page-data-caseManagement-figma/addReviewDate.page.data";
+import {
+  confirmReviewDatesAdded
+} from "@data/page-data-figma/page-data-caseManagement-figma/confirmReviewDatesAdded.page.data";
+import {generateRandomString} from "@utils/common/string.utils";
+
 
 
 export const addressInfo = {
@@ -27,6 +34,8 @@ export class CaseManagementAction implements IAction {
       ['selectDocumentToAmend', () => this.selectDocumentToAmend(fieldName as actionRecord)],
       ['changeCaseState', () => this.changeCaseState(fieldName as actionRecord)],
       ['confirmCaseStateChange', () => this.confirmCaseStateChange()],
+      ['addReviewDates', () => this.addReviewDates(fieldName as actionRecord)],
+      ['confirmReviewDatesAdded', () => this.confirmReviewDatesAdded()],
       ['inputErrorValidation', () => this.inputErrorValidation(page, fieldName as actionRecord)],
 
     ]);
@@ -79,39 +88,77 @@ export class CaseManagementAction implements IAction {
     await performValidation('text', { elementType: 'inlineText', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', {
       elementType: 'inlineText',
-      text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
+      text: `Property address: ${addressInfo.buildingStreet},${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
     });
     await performValidation('mainHeader', confirmCaseStateChange.mainHeader);
     await performAction('clickButton', confirmCaseStateChange.closeAndReturnToCaseOverviewButton);
   }
 
+  private async addReviewDates(reviewDateData: actionRecord){
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
+    await performValidation('text', {
+      elementType: 'paragraph',
+      text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
+    });
+    const userInput =
+      typeof reviewDateData.input === 'number'
+        ? generateRandomString(reviewDateData.input)
+        : (reviewDateData.input as string);
+    await performActions(
+      'Date of Review',
+      ['inputText', addReviewDate.dayTextLabel, reviewDateData.Day],
+      ['inputText', addReviewDate.monthTextLabel, reviewDateData.Month],
+      ['inputText', addReviewDate.yearTextLabel, reviewDateData.Year]
+    );
+    await performAction('clickRadioButton', { question: reviewDateData.question, option: reviewDateData.option });
+    await performAction('inputText', reviewDateData.label, reviewDateData.userInput);
+    await performAction('reTryOnCallBackError', addReviewDate.continueButton, reviewDateData.nextPage as string);
+  }
+
+  private async   confirmReviewDatesAdded(): Promise<void> {
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
+    await performValidation('text', {
+      elementType: 'paragraph',
+      text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
+    });
+    await performValidation('text', { elementType: 'inlineText', text: confirmReviewDatesAdded.reviewDatesAdded});
+    await performValidation('text', { elementType: 'inlineText', text: 'Case number #' + caseInfo.fid });
+    await performValidation('text', {
+      elementType: 'inlineText',
+      text: `${addressInfo.buildingStreet}, ${addressInfo.addressLine2}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
+    });
+    await performValidation('mainHeader', confirmReviewDatesAdded.mainHeader);
+    await performAction('clickButton', confirmReviewDatesAdded.closeAndReturnToCaseOverviewButton);
+  }
+
+
   private async inputErrorValidation(page: Page, validationArr: actionRecord) {
-  
-  
+
+
         if (Array.isArray(validationArr.inputArray)) {
           for (const item of validationArr.inputArray) {
             switch (validationArr.validationType) {
-                
+
               case 'radioOptions':
                 await performAction('clickButton', validationArr.button);
                 await performValidation('inputError', !validationArr?.label ? validationArr.question : validationArr.label, item.errInlineMessage);
                 await performValidation('errorMessage', !validationArr?.header ? validationArr.header = 'There is a problem' : validationArr.header, item.errMessage);
                 await performAction('clickRadioButton', { question: validationArr.question, option: validationArr.option });
                 break;
-  
+
               case 'checkBox':
                 await performAction('clickButton', validationArr.button);
                 await performValidation('inputError', !validationArr?.label ? validationArr.question : validationArr.label, item.errMessage);
                 await performValidation('errorMessage', !validationArr?.header ? validationArr.header = 'There is a problem' : validationArr.header, item.errMessage);
                 await performAction('check', validationArr.checkBox);
                 break;
-  
+
               case 'checkBoxPageLevel':
                 await performAction('clickButton', validationArr.button);
                 await performValidation('errorMessage', !validationArr?.header ? validationArr.header = 'There is a problem' : validationArr.header, item.errMessage);
                 await performAction('check', validationArr.checkBox);
                 break;
-  
+
               case 'dropDown':
                 await performAction('clickButton', validationArr.button);
                 await expect(async () => {
@@ -122,10 +169,34 @@ export class CaseManagementAction implements IAction {
                 });
                 await performAction('select', validationArr.dropQn, validationArr.option);
                 break;
-  
+
+              case 'textField':
+                await performAction('inputText', validationArr.label, generateRandomString(item.input));
+                await performAction('clickButton', validationArr.button);
+                await performValidation(
+                  'errorMessage',
+                  validationArr.header ?? 'There is a problem',
+                  item.errMessage
+                );
+                await performValidation('errorMessage', validationArr.label, item.errMessage);
+                break;
+
+              case 'dateField':
+                await performAction('clickButton', validationArr.button);
+                await performValidation(
+                  'inputError',
+                  !validationArr?.label ? validationArr.label : item.errMessage
+                );
+                await performValidation(
+                  'errorMessage',
+                  !validationArr?.header ? 'There is a problem' : validationArr.header,
+                  item.errMessage
+                );
+                break;
+
               default:
                 throw new Error(`Validation type :"${validationArr.validationType}" is not valid`);
-            };
+            }
           }
         }
       if (validationArr.buttonRemove) {

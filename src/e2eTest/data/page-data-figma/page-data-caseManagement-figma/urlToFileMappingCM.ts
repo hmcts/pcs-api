@@ -1,5 +1,8 @@
 export default {
   'amendDocumentsselectDocument': 'selectDocument',
   'changeCaseStatechangeCaseStatePage': 'changeCaseState',
-  'changeCaseState/confirm': 'confirmCaseStateChange'
+  'changeCaseState/confirm': 'confirmCaseStateChange',
+  'addCaseReviewDateaddCaseReviewDate': 'addReviewDate',
+  'addCaseReviewDate/submit' : 'checkYourAnswersAddReviewDate',
+  'addCaseReviewDate/confirm': 'confirmReviewDatesAdded'
 };

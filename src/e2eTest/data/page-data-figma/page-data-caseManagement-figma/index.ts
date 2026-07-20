@@ -3,3 +3,6 @@ export * from './amendDocumentDetails.page.data';
 export * from './changeCaseState.page.data';
 export * from './checkYourAnswersChangeState.page.data';
 export * from './confirmCaseStateChange.page.data';
+export * from './addReviewDate.page.data';
+export * from './checkYourAnswersAddReviewDate.page.data'
+export * from './confirmReviewDatesAdded.page.data'
