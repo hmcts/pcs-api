@@ -47,14 +47,10 @@ export class ErrorValidationAction implements IAction {
         label: addReviewDates.reasonLabel,
         button: addReviewDates.continueButton
       });
+
       await performAction('inputErrorValidation',{
         validationType: addReviewDates.errorValidationType.one,
         inputArray: addReviewDates.errorValidationField.errorTextField,
-        day: addReviewDates.dayInputText,
-        Month: addReviewDates.monthInputText,
-        Year: addReviewDates.yearInputText,
-        option: addReviewDates.generalOrderRadioOption,
-        header: addReviewDates.eventCouldNotBeCreatedErrorMessageHeader,
         label: addReviewDates.descriptionTextLabel,
         button: addReviewDates.continueButton
       });

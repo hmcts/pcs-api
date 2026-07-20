@@ -35,8 +35,7 @@ export const addReviewDates = {
       { type: 'none', input: '', errMessage: `Reason is required` }
     ],
     errorTextField: [
-      { type: 'none', input: '', errMessage: `Description of review is required` },
-      {type: 'one', input: '510', errMessage: `In ‘Description of review’, you have entered more than the maximum number of characters (500)` }
+      { type: 'none', input: '', errMessage: `Description of review is required` }
     ],
   },
 };

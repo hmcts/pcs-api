@@ -115,9 +115,14 @@ export class CaseManagementAction implements IAction {
 
               case 'radioOptions':
                 await performAction('clickButton', validationArr.button);
-                await performValidation('inputError', !validationArr?.label ? validationArr.question : validationArr.label, item.errInlineMessage);
+                await performValidation('inputError', !validationArr?.label ? validationArr.question : validationArr.label, item.errMessage);
                 await performValidation('errorMessage', !validationArr?.header ? validationArr.header = 'There is a problem' : validationArr.header, item.errMessage);
-                await performAction('clickRadioButton', { question: validationArr.question, option: validationArr.option });
+                if (validationArr.option) {
+                  await performAction('clickRadioButton', {
+                    question: validationArr.question,
+                    option: validationArr.option
+                  });
+                }
                 break;
 
               case 'checkBox':
@@ -154,11 +159,12 @@ export class CaseManagementAction implements IAction {
                 await performAction('clickButton', validationArr.button);
                 await performValidation(
                   'inputError',
-                  !validationArr?.label ? validationArr.label : item.errMessage
+                  validationArr.label,
+                  item.errMessage
                 );
                 await performValidation(
                   'errorMessage',
-                  !validationArr?.header ? 'There is a problem' : validationArr.header,
+                  validationArr.header ?? 'There is a problem',
                   item.errMessage
                 );
                 break;
