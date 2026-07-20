@@ -178,15 +178,4 @@ public class PcsCaseEntity {
         legalRepresentativeOrganisation.setPcsCase(this);
     }
 
-    private int countNumberOfGenAppsForParty(PartyEntity party) {
-        if (party == null || party.getId() == null) {
-            return 0;
-        }
-
-        return (int) genApps.stream()
-            .map(GenAppEntity::getParty)
-            .filter(Objects::nonNull)
-            .filter(genAppParty -> party.getId().equals(genAppParty.getId()))
-            .count();
-    }
 }

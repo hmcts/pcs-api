@@ -397,8 +397,6 @@ dependencies {
   implementation group: 'org.flywaydb', name: 'flyway-core', version: flywayVersion
   implementation group: 'org.springdoc', name: 'springdoc-openapi-starter-webmvc-ui', version: '2.8.17'
   implementation group: 'uk.gov.service.notify', name: 'notifications-java-client', version: '6.0.0-RELEASE'
-  implementation platform(group: 'com.azure.spring', name :'spring-cloud-azure-dependencies', version :'6.4.0')
-  implementation "com.azure.spring:spring-cloud-azure-starter-servicebus-jms"
   implementation group: 'org.modelmapper', name: 'modelmapper', version: '3.2.6'
 
   implementation group: 'com.github.hmcts.java-logging', name: 'logging', version: '8.0.0'
@@ -572,6 +570,21 @@ tasks.withType(CftlibExec).configureEach {
   environment 'CCD_S2S-AUTHORISED_SERVICES_CASE_USER_ROLES', 'aac_manage_case_assignment,pcs_api'
   environment 'RSE_LIB_XUI_ENV_DECENTRALISED_CASE_TYPE_CONFIG', '{"PCS":{"webUrl":"http://localhost:3209","nocBaseUrl":"http://host.docker.internal:3206"}}'
   environment 'XUI_MANAGE_CASES_TAG', 'pr-5293-90d9b99-20260709110945'
+}
+
+cftlibTest {
+  environment 'ENABLE_TESTING_SUPPORT', 'true'
+  environment 'DB_SCHEDULER_POLLING_INTERVAL_SECONDS', '2'
+
+  // To match the fake document URLs returned by the shared Wiremock
+  environment 'CCD_DOCUMENT_URL_PATTERN', 'https://docstore/document/[A-Za-z0-9-]+.*'
+
+  // Use shared wiremock (8083) for the document services in CftLib tests
+  environment 'DM_STORE_BASE_URL', 'http://localhost:8083'
+  environment 'DOC_ASSEMBLY_URL', 'http://localhost:8083'
+
+  // Use wiremock spun up by tests (9400) for email, so it can be queried easily
+  environment 'NOTIFY_URL', 'http://localhost:9400'
 }
 
 cftlibTest {

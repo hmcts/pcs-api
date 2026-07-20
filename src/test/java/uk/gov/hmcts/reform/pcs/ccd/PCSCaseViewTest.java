@@ -131,6 +131,9 @@ class PCSCaseViewTest {
     @Mock
     private DefendantResponseView defendantResponseView;
     @Mock
+    private FeatureFlagView featureFlagView;
+
+    @Mock
     private LegalRepresentativeSummaryService legalRepresentativeSummaryService;
     @Mock
     private OrganisationService organisationService;
@@ -147,11 +150,12 @@ class PCSCaseViewTest {
         underTest = new PCSCaseView(pcsCaseRepository, securityContextService, modelMapper, draftCaseDataService,
                                     caseTitleService, claimView, documentsView, tenancyLicenceView, claimGroundsView,
                                     rentDetailsView, alternativesToPossessionView, asbProhibitedConductView,
-                                    rentArrearsView, noticeOfPossessionView, statementOfTruthView, caseFieldsView,
-                                    caseLinkView, enforcementOrderMediator, caseNoteView, caseTabView,
-                                    partiesView, genAppsView, caseFlagsView, searchCriteriaIndexer,
-                                    caseListView, legalRepresentativeSummaryService, organisationService,
-                                    defendantResponseView, featureFlagView
+                                    rentArrearsView, noticeOfPossessionView,
+                                    statementOfTruthView, caseFieldsView, searchCriteriaIndexer, caseListView,
+                                    caseLinkView, enforcementOrderMediator,
+                                    caseNoteView, caseTabView, partiesView, genAppsView, caseFlagsView,
+                                    defendantResponseView, featureFlagView,
+                                    legalRepresentativeSummaryService, organisationService
         );
     }
 

@@ -40,7 +40,7 @@ public class DocumentsView {
         String organisationId = organisationService.getOrganisationIdForCurrentUser();
 
         return pcsCaseEntity.getDocuments().stream()
-            .filter(documentEntity -> this.isDocumentVisibleToUser(documentEntity, organisationId))
+            .filter(documentEntity -> this.isDocumentVisibleToUser(documentEntity, organisationIdForCurrentUser))
             .filter(this::isNotInCaseDetailsTab)
             .map(entity -> ListValue.<Document>builder()
                 .id(entity.getId().toString())
@@ -58,7 +58,7 @@ public class DocumentsView {
             .collect(Collectors.toList());
     }
 
-    public boolean isDocumentVisibleToUser(DocumentEntity documentEntity, String organisationId) {
+    public boolean isDocumentVisibleToUser(DocumentEntity documentEntity, String orgId) {
         if (isExcludedFromCaseFile(documentEntity)) {
             return false;
         }
@@ -66,7 +66,7 @@ public class DocumentsView {
         GenAppEntity genAppEntity = documentEntity.getGeneralApplication();
 
         if (genAppEntity != null) {
-            return genAppVisibilityService.isGenAppVisibleToUser(genAppEntity, organisationId);
+            return genAppVisibilityService.isGenAppVisibleToUser(genAppEntity, orgId);
         }
 
         CounterClaimEntity counterClaim = documentEntity.getCounterClaim();

@@ -334,8 +334,8 @@ core_case_data:
 caseApi:
   url: ${CASE_API_URL:http://localhost:3206}
 
-frontend:
-  url: ${PCS_FRONTEND_URL:http://localhost:3209}
-
 shutter:
   service: ${SHUTTER_SERVICE:false}
+
+frontend:
+  url: ${PCS_FRONTEND_URL:http://localhost:3209}

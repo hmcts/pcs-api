@@ -186,6 +186,25 @@ class RespondPossessionClaimTest extends BaseEventTest {
             objectMapper
         );
 
+        CounterClaimFeeCalculator feeCalculator = new CounterClaimFeeCalculator();
+        RespondPossessionClaimSubmitService submitService = new RespondPossessionClaimSubmitService(
+            claimResponseService,
+            defendantResponseService,
+            counterClaimService,
+            feeCalculator,
+            documentService,
+            draftCaseDataService
+        );
+
+        CounterClaimSubmitConfirmationService confirmationService = new CounterClaimSubmitConfirmationService(
+            partyService,
+            feeService,
+            paymentService,
+            feeCalculator,
+            securityContextService,
+            objectMapper
+        );
+
         SubmitEventHandler submitEventHandler = new SubmitEventHandler(
             List.of(
                 new CitizenSubmissionEventStrategy(
