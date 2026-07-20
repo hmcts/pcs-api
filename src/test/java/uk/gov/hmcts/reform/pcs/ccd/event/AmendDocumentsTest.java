@@ -63,7 +63,7 @@ class AmendDocumentsTest extends BaseEventTest {
             State.CLOSED
         );
         assertThat(configuredEvent.isShowSummary()).isTrue();
-        assertThat(configuredEvent.getEndButtonLabel()).isEqualTo("Continue");
+        assertThat(configuredEvent.getEndButtonLabel()).isEqualTo("Submit");
         assertThat(configuredEvent.getGrants().get(UserRole.HEARING_CENTRE_TEAM_LEADER))
             .containsExactlyInAnyOrder(Permission.C, Permission.R, Permission.U);
         assertThat(configuredEvent.getGrants().get(UserRole.HEARING_CENTRE_ADMIN))

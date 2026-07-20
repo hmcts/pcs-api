@@ -15,6 +15,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GeneralApplication;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState;
 import uk.gov.hmcts.reform.pcs.ccd.domain.documentamend.DocumentAmendDetails;
@@ -399,6 +400,7 @@ class DocumentAmendSelectionServiceTest {
         final GeneralApplication genApp = GeneralApplication.builder()
             .rank(1)
             .submittedOn(baseDateTime)
+            .state(GenAppState.GEN_APP_ISSUED)
             .build();
 
         PartyEntity defendant = PartyEntity.builder().id(UUID.randomUUID()).build();
@@ -434,6 +436,44 @@ class DocumentAmendSelectionServiceTest {
                 "COUNTERCLAIM:%s".formatted(counterClaim.getId()),
                 "GEN_APP:%s".formatted(genAppId),
                 "NONE"
+            );
+    }
+
+    @Test
+    void shouldShowRelatedSubmissionsListWhenSubmittedPendingGenAppsExist() {
+        final GeneralApplication pendingGenApp = GeneralApplication.builder()
+            .rank(1)
+            .submittedOn(LocalDateTime.parse("2026-05-04T10:00:00"))
+            .state(GenAppState.PENDING_GEN_APP_ISSUED)
+            .build();
+        final GeneralApplication genAppWithoutState = GeneralApplication.builder()
+            .rank(2)
+            .submittedOn(LocalDateTime.parse("2026-05-05T10:00:00"))
+            .build();
+
+        CounterClaimEntity counterClaimWithoutSubmittedDate = counterClaim(null, PartyEntity.builder().build());
+
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(PcsCaseEntity.builder()
+            .counterClaims(List.of(counterClaimWithoutSubmittedDate))
+            .build());
+        PCSCase caseData = PCSCase.builder()
+            .genApps(List.of(
+                ListValue.<GeneralApplication>builder().id(UUID.randomUUID().toString()).value(pendingGenApp).build(),
+                ListValue.<GeneralApplication>builder().id(UUID.randomUUID().toString()).value(genAppWithoutState)
+                    .build()
+            ))
+            .legislativeCountry(ENGLAND)
+            .build();
+
+        underTest.initialise(CASE_REFERENCE, caseData);
+
+        DocumentAmendDetails details = caseData.getDocumentAmendDetails();
+        assertThat(details.getShowRelatedSubmissionsList()).isEqualTo(VerticalYesNo.YES);
+        assertThat(details.getRelatedSubmission().getListItems())
+            .extracting(DynamicStringListElement::getLabel)
+            .containsExactly(
+                "Gen app GA1 - submitted 4 May 2026",
+                "Not related to an application or counterclaim"
             );
     }
 

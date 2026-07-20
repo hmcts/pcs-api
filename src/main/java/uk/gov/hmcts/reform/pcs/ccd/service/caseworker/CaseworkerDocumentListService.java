@@ -9,6 +9,7 @@ import uk.gov.hmcts.ccd.sdk.type.DynamicList;
 import uk.gov.hmcts.ccd.sdk.type.DynamicListElement;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.documentupload.CaseworkerDocumentType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GeneralApplication;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -47,7 +48,7 @@ public class CaseworkerDocumentListService {
 
     public boolean hasRelatedSubmissions(List<ListValue<GeneralApplication>> genApps,
                                          List<CounterClaimEntity> counterClaims) {
-        return !CollectionUtils.isEmpty(genApps)
+        return !getOpenGenApps(genApps).isEmpty()
             || !getOpenCounterClaims(counterClaims).isEmpty();
     }
 
@@ -153,11 +154,7 @@ public class CaseworkerDocumentListService {
     }
 
     private static List<RelatedSubmission> getGenAppSubmissions(List<ListValue<GeneralApplication>> genApps) {
-        if (CollectionUtils.isEmpty(genApps)) {
-            return List.of();
-        }
-
-        return genApps.stream()
+        return getOpenGenApps(genApps).stream()
             .map(genAppListValue -> {
                 GeneralApplication genApp = genAppListValue.getValue();
                 String displayLabel = "Gen app GA%d".formatted(genApp.getRank());
@@ -172,6 +169,24 @@ public class CaseworkerDocumentListService {
                     .build();
             })
             .toList();
+    }
+
+    private static List<ListValue<GeneralApplication>> getOpenGenApps(List<ListValue<GeneralApplication>> genApps) {
+        if (CollectionUtils.isEmpty(genApps)) {
+            return List.of();
+        }
+
+        return genApps.stream()
+            .filter(Objects::nonNull)
+            .filter(genAppListValue -> genAppListValue.getValue() != null)
+            .filter(genAppListValue -> isOpenGenAppState(genAppListValue.getValue().getState()))
+            .filter(genAppListValue -> genAppListValue.getValue().getSubmittedOn() != null)
+            .toList();
+    }
+
+    private static boolean isOpenGenAppState(GenAppState state) {
+        return state == GenAppState.PENDING_GEN_APP_ISSUED
+            || state == GenAppState.GEN_APP_ISSUED;
     }
 
     private List<RelatedSubmission> getCounterClaimSubmissions(List<CounterClaimEntity> counterClaims,
@@ -201,7 +216,9 @@ public class CaseworkerDocumentListService {
         }
 
         return counterClaims.stream()
+            .filter(Objects::nonNull)
             .filter(counterClaimEntity -> counterClaimEntity.getStatus() != PENDING_COUNTER_CLAIM_ISSUED)
+            .filter(counterClaimEntity -> counterClaimEntity.getClaimSubmittedDate() != null)
             .toList();
     }
 

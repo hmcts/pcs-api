@@ -53,7 +53,7 @@ public class AmendDocuments implements CCDConfig<PCSCase, State, UserRole> {
                 .grant(Permission.CRU, UserRole.HEARING_CENTRE_ADMIN)
                 .grantHistoryOnly(JUDICIAL_HISTORY_ROLES)
                 .showSummary()
-                .endButtonLabel("Continue");
+                .endButtonLabel("Submit");
 
         PageBuilder pageBuilder = new PageBuilder(eventBuilder);
         selectDocumentPage.addTo(pageBuilder);

@@ -46,6 +46,7 @@ public class GenAppsView {
             .applicationType(genAppEntity.getType())
             .party(party)
             .submittedOn(genAppEntity.getApplicationSubmittedDate())
+            .state(genAppEntity.getState())
             .submissionDocument(getSubmissionDocument(genAppEntity))
             .supportingDocuments(createSupportingDocumentList(genAppEntity))
             .rank(genAppEntity.getRank())

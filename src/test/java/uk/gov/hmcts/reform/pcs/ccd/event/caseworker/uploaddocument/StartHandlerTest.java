@@ -15,6 +15,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.documentupload.CaseworkerDocument;
+import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GeneralApplication;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
@@ -154,6 +155,46 @@ class StartHandlerTest {
     }
 
     @Test
+    void shouldIncludeSubmittedPendingAndIssuedGenAppsAndExcludeUnsubmittedCounterclaims() {
+        // Given
+        LocalDateTime submittedOn = LocalDateTime.parse("2026-05-04T10:00:00");
+        GeneralApplication pendingGenApp = GeneralApplication.builder()
+            .rank(1)
+            .submittedOn(submittedOn)
+            .state(GenAppState.PENDING_GEN_APP_ISSUED)
+            .build();
+        GeneralApplication genAppWithoutState = GeneralApplication.builder()
+            .rank(2)
+            .submittedOn(submittedOn.plusDays(1))
+            .build();
+
+        CounterClaimEntity counterClaimWithoutSubmittedDate = createCounterClaimEntity(null);
+
+        PCSCase caseData = PCSCase.builder()
+            .genApps(List.of(
+                ListValue.<GeneralApplication>builder().id(UUID.randomUUID().toString()).value(pendingGenApp).build(),
+                ListValue.<GeneralApplication>builder().id(UUID.randomUUID().toString()).value(genAppWithoutState)
+                    .build()
+            ))
+            .legislativeCountry(ENGLAND)
+            .build();
+
+        when(pcsCaseEntity.getCounterClaims()).thenReturn(List.of(counterClaimWithoutSubmittedDate));
+
+        // When
+        PCSCase result = underTest.start(toEventPayload(caseData));
+
+        // Then
+        assertThat(result.getCaseworkerDocument().getShowRelatedSubmissionsList()).isEqualTo(VerticalYesNo.YES);
+        assertThat(result.getCaseworkerDocument().getRelatedSubmission().getListItems())
+            .extracting(DynamicStringListElement::getLabel)
+            .containsExactly(
+                "Gen app GA1 - submitted 4 May 2026",
+                "Not related to an application or counterclaim"
+            );
+    }
+
+    @Test
     void shouldSetDocumentTypeListsForEngland() {
         // Given
         PCSCase caseData = PCSCase.builder()
@@ -278,6 +319,7 @@ class StartHandlerTest {
     private static GeneralApplication createGenApp(LocalDateTime submittedOn) {
         return GeneralApplication.builder()
             .submittedOn(submittedOn)
+            .state(GenAppState.GEN_APP_ISSUED)
             .build();
     }
 
