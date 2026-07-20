@@ -197,7 +197,7 @@ public class LegalRepresentativePartyLinkService {
                 return new PartyNotFoundException("Unable to find claimant Party");
             });
 
-        if(organisationId.equals(claimant.getOrganisationId())) {
+        if (organisationId.equals(claimant.getOrganisationId())) {
             throw new ConflictOfInterestException(
                 "Organisation cannot represent both claimant and defendant in the same case");
         }

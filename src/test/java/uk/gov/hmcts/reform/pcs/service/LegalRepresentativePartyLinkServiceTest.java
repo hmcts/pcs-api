@@ -156,17 +156,27 @@ class LegalRepresentativePartyLinkServiceTest {
         long caseReference = 1L;
         UUID partyId = UUID.randomUUID();
         String organisationName = "orgName";
-        String organisationId = "ORG-123";
+        String organisationId = ORGANISATION_ID;
 
         PartyEntity partyEntity = PartyEntity.builder()
             .id(partyId)
             .idamId(defendantIdamId)
             .build();
 
+        PartyEntity claimantPartyEntity = PartyEntity.builder()
+            .id(UUID.randomUUID())
+            .pcsCase(PcsCaseEntity.builder().caseReference(caseReference).build())
+            .build();
+
         PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
+            .caseReference(caseReference)
             .claims(List.of(ClaimEntity.builder()
                                 .claimParties(
                                     List.of(ClaimPartyEntity.builder()
+                                                .role(PartyRole.CLAIMANT)
+                                                .party(claimantPartyEntity)
+                                                .build(),
+                                            ClaimPartyEntity.builder()
                                                 .role(PartyRole.DEFENDANT)
                                                 .party(partyEntity)
                                                 .build()))
