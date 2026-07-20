@@ -23,7 +23,7 @@ public enum UserRole implements HasRole {
     RAS_VALIDATOR("caseworker-ras-validation", Set.of(R), IDAM),
 
     CITIZEN("citizen", CRU, IDAM),
-    SOLICITOR("solicitor", CRU, RAS),
+    SOLICITOR("[SOLICITOR]", CRU, RAS),
     PROFESSIONAL_USER("professional-user", CRU, RAS),
     DEFENDANT("[DEFENDANT]", CRU, RAS),
     CLAIMANT_SOLICITOR("[CLAIMANTSOLICITOR]", CRU, RAS),
