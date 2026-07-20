@@ -7,8 +7,10 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.ClaimActivityType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.GenerationDetails;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyAccessCodeEntity;
@@ -17,6 +19,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DocumentRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentIdExtractor;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyAccessCodeRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.accesscode.AccessCodeFormDocumentGenerator;
 import uk.gov.hmcts.reform.pcs.ccd.util.AccessCodeGenerator;
@@ -30,6 +33,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mock.Strictness.LENIENT;
@@ -56,6 +60,8 @@ class DefendantAccessCodeServiceTest {
     private AccessCodeFormDocumentGenerator accessCodeFormDocumentGenerator;
     @Mock
     private DocumentRepository documentRepository;
+    @Mock(strictness = LENIENT)
+    private DocumentIdExtractor documentIdExtractor;
     @Mock
     private AccessCodeActivityLogService accessCodeActivityLogService;
     @Mock
@@ -77,6 +83,7 @@ class DefendantAccessCodeServiceTest {
             hashingService,
             accessCodeFormDocumentGenerator,
             documentRepository,
+            documentIdExtractor,
             accessCodeActivityLogService,
             testAccessCodeRecorder
         );
@@ -93,12 +100,12 @@ class DefendantAccessCodeServiceTest {
         PcsCaseEntity caseEntity = createCaseWithDefendants(partyId);
         when(pcsCaseService.loadCase(1L)).thenReturn(caseEntity);
 
-        underTest.generateForDefendant(1L, partyId, true);
+        underTest.generateForDefendant(1L, partyId, false, true);
 
         verify(documentRepository).save(documentCaptor.capture());
         DocumentEntity savedDoc = documentCaptor.getValue();
         assertThat(savedDoc.getType()).isEqualTo(DocumentType.DEFENDANT_ACCESS_CODE);
-        assertThat(savedDoc.getCategoryId()).isNull();
+        assertThat(savedDoc.getCategoryId()).isEqualTo(CaseFileCategory.UNCATEGORISED_DOCUMENTS.getId());
         assertThat(savedDoc.getUrl()).isEqualTo(DOC_URL);
         assertThat(savedDoc.getParty().getId()).isEqualTo(partyId);
         assertThat(savedDoc.getPcsCase()).isEqualTo(caseEntity);
@@ -112,7 +119,7 @@ class DefendantAccessCodeServiceTest {
         verify(testAccessCodeRecorder).record(eq(caseEntity.getId()), eq(partyId), anyString());
         verify(accessCodeActivityLogService).logSuccess(caseEntity, savedDoc.getParty(),
                                                    ClaimActivityType.DOCUMENTS_CREATED);
-        verify(accessCodeActivityLogService, never()).logFailure(any(), any(), any());
+        verify(accessCodeActivityLogService, never()).logFailure(any(), any(), any(), any());
     }
 
     @Test
@@ -124,14 +131,30 @@ class DefendantAccessCodeServiceTest {
             .thenThrow(new RuntimeException("docmosis down"));
 
         RuntimeException thrown = assertThrows(RuntimeException.class,
-            () -> underTest.generateForDefendant(5L, partyId, true));
+            () -> underTest.generateForDefendant(5L, partyId, false, true));
         assertThat(thrown).hasMessage("docmosis down");
 
         verify(accessCodeActivityLogService).logFailure(eq(caseEntity), any(PartyEntity.class),
-                                                   eq(ClaimActivityType.DOCUMENTS_CREATED));
+                                                   eq(ClaimActivityType.DOCUMENTS_CREATED),
+                                                   any(GenerationDetails.class));
         verify(partyAccessCodeRepo, never()).save(any());
         verify(documentRepository, never()).save(any());
         verify(testAccessCodeRecorder, never()).record(any(), any(), anyString());
+    }
+
+    @Test
+    void generateForDefendant_firstAttemptFailure_logsNonTerminalFailure() {
+        UUID partyId = UUID.randomUUID();
+        PcsCaseEntity caseEntity = createCaseWithDefendants(partyId);
+        when(pcsCaseService.loadCase(5L)).thenReturn(caseEntity);
+        when(accessCodeFormDocumentGenerator.generate(any(), any(), any(), anyString()))
+            .thenThrow(new RuntimeException("docmosis down"));
+
+        assertThrows(RuntimeException.class, () -> underTest.generateForDefendant(5L, partyId, true, false));
+
+        verify(accessCodeActivityLogService).logFailure(eq(caseEntity), any(PartyEntity.class),
+                                                   eq(ClaimActivityType.DOCUMENTS_CREATED),
+                                                   argThat((GenerationDetails d) -> !d.terminal()));
     }
 
     @Test
@@ -142,9 +165,9 @@ class DefendantAccessCodeServiceTest {
         when(accessCodeFormDocumentGenerator.generate(any(), any(), any(), anyString()))
             .thenThrow(new RuntimeException("docmosis down"));
 
-        assertThrows(RuntimeException.class, () -> underTest.generateForDefendant(5L, partyId, false));
+        assertThrows(RuntimeException.class, () -> underTest.generateForDefendant(5L, partyId, false, false));
 
-        verify(accessCodeActivityLogService, never()).logFailure(any(), any(), any());
+        verify(accessCodeActivityLogService, never()).logFailure(any(), any(), any(), any());
     }
 
     @Test
@@ -154,7 +177,7 @@ class DefendantAccessCodeServiceTest {
         when(pcsCaseService.loadCase(1L)).thenReturn(caseEntity);
         when(partyAccessCodeRepo.existsByPcsCase_IdAndPartyId(caseEntity.getId(), partyId)).thenReturn(true);
 
-        underTest.generateForDefendant(1L, partyId, true);
+        underTest.generateForDefendant(1L, partyId, false, true);
 
         verify(partyAccessCodeRepo, never()).save(any());
         verify(documentRepository, never()).save(any());
