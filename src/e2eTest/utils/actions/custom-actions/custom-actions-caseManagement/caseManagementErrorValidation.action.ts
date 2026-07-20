@@ -85,7 +85,7 @@ export class ErrorValidationAction implements IAction {
         validationType: enterGenappApplication.errorValidationType.one,
         inputArray: enterGenappApplication.errorValidationField.errorTextField,
         header: enterGenappApplication.eventCouldNotBeCreatedErrorMessageHeader,
-        label: enterGenappApplication.whichCategoriesHiddenLabel,
+        label: enterGenappApplication.whichCategoriesHiddenTextLabel,
         button: enterGenappApplication.continueButton
       });
 

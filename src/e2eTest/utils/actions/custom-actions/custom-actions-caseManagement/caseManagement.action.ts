@@ -131,6 +131,9 @@ export class CaseManagementAction implements IAction {
       ['inputText', appDetails.label2, date.split('/')[1]],
       ['inputText', appDetails.label3, date.split('/')[2]]);
     await performAction('clickRadioButton', { question: appDetails.question2, option: appDetails.option2 });
+    if (appDetails.option2 === 'Something else') {
+      performAction('inputText', appDetails.label, CaseManagementCommonUtils.generateRandomString(appDetails.input as number))
+    }
     await performAction('reTryOnCallBackError', enterGenappApplication.continueButton, appDetails.nextPage as string);
 
   }
@@ -147,11 +150,9 @@ export class CaseManagementAction implements IAction {
 
   private async inputErrorValidation(page: Page, validationArr: actionRecord) {
 
-
     if (Array.isArray(validationArr.inputArray)) {
       for (const item of validationArr.inputArray) {
         switch (validationArr.validationType) {
-
           case 'radioOptions':
             await performAction('clickButton', validationArr.button);
             await performValidation('inputError', !validationArr?.label ? validationArr.question : validationArr.label, item.errInlineMessage);
@@ -198,35 +199,30 @@ export class CaseManagementAction implements IAction {
             });
             break;
 
-          case 'dateField':
+          case 'appReceivedDateField':
             let date: string = CaseManagementCommonUtils.getRandomDate(item.type as string);
+            const enterDate = () =>
+              performActions(
+                'Enter Date',
+                ['inputText', validationArr.label1, date.split('/')[0]],
+                ['inputText', validationArr.label2, date.split('/')[1]],
+                ['inputText', validationArr.label3, date.split('/')[2]]
+              );
+
             if (item.type === 'empty') {
               await performAction('clickButton', validationArr.button);
               await performValidation('inputError', !validationArr?.label ? validationArr.question : validationArr.label, item.errInlineMessage);
               await performValidation('errorMessage', validationArr.header1, item.errMessage);
             } else if (item.type === 'past') {
-              await performActions('Enter Date',
-                ['inputText', validationArr.label1, date.split('/')[0]],
-                ['inputText', validationArr.label2, date.split('/')[1]],
-                ['inputText', validationArr.label3, date.split('/')[2]]);
-            }else if(item.type === 'invalid'){
-              await performActions('Enter Date',
-                ['inputText', validationArr.label1, date.split('/')[0]],
-                ['inputText', validationArr.label2, date.split('/')[1]],
-                ['inputText', validationArr.label3, date.split('/')[2]]);
-              await performAction('clickButton', validationArr.button);             
-              await performValidation('errorMessage', validationArr.header1, item.errMessage );
-
-            }
-            else {             
-
-              await performActions('Enter Date',
-                ['inputText', validationArr.label1, date.split('/')[0]],
-                ['inputText', validationArr.label2, date.split('/')[1]],
-                ['inputText', validationArr.label3, date.split('/')[2]]);
+              await enterDate();
+            } else if (item.type === 'invalid') {
+              await enterDate();
               await performAction('clickButton', validationArr.button);
-              //await performValidation('inputError', !validationArr?.label ? validationArr.question : validationArr.label, item.errInlineMessage);
-              //await performValidation('errorMessage', !validationArr?.header ? validationArr.header = 'There is a problem' : validationArr.header, item.errMessage);
+              await performValidation('errorMessage', validationArr.header1, item.errMessage);
+            }
+            else {
+              await enterDate();
+              await performAction('clickButton', validationArr.button);
               await performValidation('errorMessage', { header: validationArr.header, message: item.errMessage });
             }
             break;
