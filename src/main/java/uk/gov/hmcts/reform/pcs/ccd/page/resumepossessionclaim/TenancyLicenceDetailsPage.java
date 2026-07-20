@@ -9,8 +9,10 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.service.FileUploadValidationService;
+import uk.gov.hmcts.reform.pcs.ccd.service.FileUploadValidationService.ConditionalDocumentUpload;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
 import java.time.Clock;
@@ -18,6 +20,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.ENGLAND;
+import static uk.gov.hmcts.reform.pcs.ccd.service.FileUploadValidationService.TENANCY_LICENCE_DOCUMENT_REQUIRED;
 
 @Component
 public class TenancyLicenceDetailsPage implements CcdPageConfiguration {
@@ -63,7 +66,7 @@ public class TenancyLicenceDetailsPage implements CcdPageConfiguration {
             .label("tenancyLicenceDetails-doc-section", "---")
             .complex(PCSCase::getTenancyLicenceDetails)
                 .mandatory(TenancyLicenceDetails::getHasCopyOfTenancyLicence)
-                .mandatory(
+                .optional(
                     TenancyLicenceDetails::getTenancyLicenceDocuments,
                     "tenancy_HasCopyOfTenancyLicence=\"YES\""
                 )
@@ -107,13 +110,16 @@ public class TenancyLicenceDetailsPage implements CcdPageConfiguration {
             )
         );
 
-        // Validate uploaded documents for disallowed file types
-        validationErrors.addAll(
-            fileUploadValidationService.validateDocuments(
-                caseData.getTenancyLicenceDetails() != null
-                    ? caseData.getTenancyLicenceDetails().getTenancyLicenceDocuments() : null
-            )
-        );
+        // Validate uploaded documents: required (when a copy is held) and disallowed file types
+        TenancyLicenceDetails tenancyLicenceDetails = caseData.getTenancyLicenceDetails();
+        if (tenancyLicenceDetails != null
+                && VerticalYesNo.YES.equals(tenancyLicenceDetails.getHasCopyOfTenancyLicence())) {
+            validationErrors.addAll(
+                fileUploadValidationService.validateConditionalDocuments(List.of(
+                    new ConditionalDocumentUpload(true, tenancyLicenceDetails.getTenancyLicenceDocuments(),
+                        TENANCY_LICENCE_DOCUMENT_REQUIRED)))
+            );
+        }
 
         if (!validationErrors.isEmpty()) {
             return textAreaValidationService.createValidationResponse(caseData, validationErrors);

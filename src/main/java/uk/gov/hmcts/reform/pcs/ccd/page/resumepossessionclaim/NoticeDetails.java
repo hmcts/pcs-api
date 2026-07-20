@@ -13,10 +13,13 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.service.FileUploadValidationService;
+import uk.gov.hmcts.reform.pcs.ccd.service.FileUploadValidationService.ConditionalDocumentUpload;
 import uk.gov.hmcts.reform.pcs.ccd.service.NoticeDetailsService;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
 import java.util.List;
+
+import static uk.gov.hmcts.reform.pcs.ccd.service.FileUploadValidationService.NOTICE_DOCUMENT_REQUIRED;
 
 @Component
 @RequiredArgsConstructor
@@ -113,7 +116,7 @@ public class NoticeDetails implements CcdPageConfiguration {
             // Document upload section
             .label("noticeDetails-document-separator", "---")
             .mandatory(NoticeServedDetails::getAbleToUploadDocument)
-            .mandatory(NoticeServedDetails::getDocuments,
+            .optional(NoticeServedDetails::getDocuments,
                     "notice_AbleToUploadDocument=\"Yes\"")
             .mandatory(NoticeServedDetails::getUnableToUploadReason,
                     "notice_AbleToUploadDocument=\"No\"")
@@ -136,7 +139,9 @@ public class NoticeDetails implements CcdPageConfiguration {
 
         if (ableToUploadDocument) {
             validationErrors.addAll(
-                fileUploadValidationService.validateDocuments(noticeServedDetails.getDocuments())
+                fileUploadValidationService.validateConditionalDocuments(List.of(
+                    new ConditionalDocumentUpload(true, noticeServedDetails.getDocuments(),
+                        NOTICE_DOCUMENT_REQUIRED)))
             );
         }
 

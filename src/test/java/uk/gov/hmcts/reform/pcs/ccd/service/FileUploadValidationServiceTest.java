@@ -11,6 +11,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocument;
+import uk.gov.hmcts.reform.pcs.ccd.service.FileUploadValidationService.ConditionalDocumentUpload;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -147,37 +148,52 @@ class FileUploadValidationServiceTest {
     }
 
     @Nested
-    @DisplayName("validateDocumentGroups Method Tests")
-    class ValidateDocumentGroupsTests {
+    @DisplayName("validateConditionalDocuments Method Tests")
+    class ValidateConditionalDocumentsTests {
 
         @Test
-        @DisplayName("Should return the error once when any group contains a blocked file")
-        void shouldReturnErrorOnceWhenAnyGroupBlocked() {
-            List<String> errors = fileUploadValidationService.validateDocumentGroups(
-                documentsWithFilenames("epc.pdf"),
-                documentsWithFilenames("gas.mp3"),
-                documentsWithFilenames("eicr.mp4"));
+        @DisplayName("Should return the disallowed error once when any upload contains a blocked file")
+        void shouldReturnErrorOnceWhenAnyUploadBlocked() {
+            List<String> errors = fileUploadValidationService.validateConditionalDocuments(List.of(
+                new ConditionalDocumentUpload(true, documentsWithFilenames("epc.pdf"), "missing epc"),
+                new ConditionalDocumentUpload(true, documentsWithFilenames("gas.mp3"), "missing gas"),
+                new ConditionalDocumentUpload(true, documentsWithFilenames("eicr.mp4"), "missing eicr")));
 
             assertThat(errors).containsExactly(DISALLOWED_FILE_TYPE_ERROR, ALLOWED_FILE_TYPE_GUIDANCE);
         }
 
         @Test
-        @DisplayName("Should return no error when all groups contain allowed files")
-        void shouldReturnNoErrorWhenAllGroupsAllowed() {
-            List<String> errors = fileUploadValidationService.validateDocumentGroups(
-                documentsWithFilenames("epc.pdf"),
-                documentsWithFilenames("gas.pdf"),
-                documentsWithFilenames("eicr.pdf"));
+        @DisplayName("Should return no error when every upload is present and of an allowed type")
+        void shouldReturnNoErrorWhenAllUploadsAllowed() {
+            List<String> errors = fileUploadValidationService.validateConditionalDocuments(List.of(
+                new ConditionalDocumentUpload(true, documentsWithFilenames("epc.pdf"), "missing epc"),
+                new ConditionalDocumentUpload(true, documentsWithFilenames("gas.pdf"), "missing gas"),
+                new ConditionalDocumentUpload(true, documentsWithFilenames("eicr.pdf"), "missing eicr")));
 
             assertThat(errors).isEmpty();
         }
 
         @Test
-        @DisplayName("Should handle null groups")
-        void shouldHandleNullGroups() {
-            List<String> errors = fileUploadValidationService.validateDocumentGroups(null, null);
+        @DisplayName("Should return the missing message only for uploads that are required but empty")
+        void shouldReturnMissingMessageForRequiredEmptyUploads() {
+            List<String> errors = fileUploadValidationService.validateConditionalDocuments(List.of(
+                new ConditionalDocumentUpload(true, null, "missing epc"),
+                new ConditionalDocumentUpload(false, null, "missing gas"),
+                new ConditionalDocumentUpload(true, documentsWithFilenames("eicr.pdf"), "missing eicr")));
 
-            assertThat(errors).isEmpty();
+            assertThat(errors).containsExactly("missing epc");
+        }
+
+        @Test
+        @DisplayName("Should list every missing message then the disallowed error at most once")
+        void shouldReturnMissingMessagesThenDisallowedErrorOnce() {
+            List<String> errors = fileUploadValidationService.validateConditionalDocuments(List.of(
+                new ConditionalDocumentUpload(true, null, "missing epc"),
+                new ConditionalDocumentUpload(true, documentsWithFilenames("gas.mp3"), "missing gas"),
+                new ConditionalDocumentUpload(true, documentsWithFilenames("eicr.mp4"), "missing eicr")));
+
+            assertThat(errors)
+                .containsExactly("missing epc", DISALLOWED_FILE_TYPE_ERROR, ALLOWED_FILE_TYPE_GUIDANCE);
         }
     }
 
@@ -217,6 +233,36 @@ class FileUploadValidationServiceTest {
                 List.of(ListValue.<AdditionalDocument>builder().value(additionalDocument).build());
 
             assertThat(fileUploadValidationService.validateAdditionalDocuments(documents)).isEmpty();
+        }
+    }
+
+    @Nested
+    @DisplayName("validateRequiredAdditionalDocuments Method Tests")
+    class ValidateRequiredAdditionalDocumentsTests {
+
+        private static final String REQUIRED_MESSAGE = "You must upload a document";
+
+        @Test
+        @DisplayName("Should return the required message when no additional document has been uploaded")
+        void shouldReturnRequiredMessageWhenEmpty() {
+            assertThat(fileUploadValidationService.validateRequiredAdditionalDocuments(null, REQUIRED_MESSAGE))
+                .containsExactly(REQUIRED_MESSAGE);
+        }
+
+        @Test
+        @DisplayName("Should return the disallowed error when a blocked additional file is uploaded")
+        void shouldReturnDisallowedErrorWhenBlockedFileUploaded() {
+            assertThat(fileUploadValidationService.validateRequiredAdditionalDocuments(
+                additionalDocumentsWithFilenames("clip.mp4"), REQUIRED_MESSAGE))
+                .containsExactly(DISALLOWED_FILE_TYPE_ERROR, ALLOWED_FILE_TYPE_GUIDANCE);
+        }
+
+        @Test
+        @DisplayName("Should return no error when an allowed additional file is uploaded")
+        void shouldReturnNoErrorWhenAllowedFileUploaded() {
+            assertThat(fileUploadValidationService.validateRequiredAdditionalDocuments(
+                additionalDocumentsWithFilenames("statement.pdf"), REQUIRED_MESSAGE))
+                .isEmpty();
         }
     }
 

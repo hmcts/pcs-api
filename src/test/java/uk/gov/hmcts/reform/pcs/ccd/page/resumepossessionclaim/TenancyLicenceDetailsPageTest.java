@@ -14,6 +14,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 import uk.gov.hmcts.reform.pcs.ccd.service.FileUploadValidationService;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
@@ -33,6 +34,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.service.FileUploadValidationService.DISALLOWED_FILE_TYPE_ERROR;
+import static uk.gov.hmcts.reform.pcs.ccd.service.FileUploadValidationService.TENANCY_LICENCE_DOCUMENT_REQUIRED;
 import static uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils.wrapListItems;
 import static uk.gov.hmcts.reform.pcs.config.ClockConfiguration.UK_ZONE_ID;
 
@@ -148,6 +150,7 @@ class TenancyLicenceDetailsPageTest extends BasePageTest {
             .tenancyLicenceDetails(TenancyLicenceDetails.builder()
                 .tenancyLicenceDate(FIXED_CURRENT_DATE.minusDays(1))
                 .typeOfTenancyLicence(TenancyLicenceType.INTRODUCTORY_TENANCY)
+                .hasCopyOfTenancyLicence(VerticalYesNo.YES)
                 .tenancyLicenceDocuments(wrapListItems(List.of(
                     Document.builder().filename("tenancy.mp3").build())))
                 .build())
@@ -169,8 +172,46 @@ class TenancyLicenceDetailsPageTest extends BasePageTest {
             .tenancyLicenceDetails(TenancyLicenceDetails.builder()
                 .tenancyLicenceDate(FIXED_CURRENT_DATE.minusDays(1))
                 .typeOfTenancyLicence(TenancyLicenceType.INTRODUCTORY_TENANCY)
+                .hasCopyOfTenancyLicence(VerticalYesNo.YES)
                 .tenancyLicenceDocuments(wrapListItems(List.of(
                     Document.builder().filename("tenancy.pdf").build())))
+                .build())
+            .build();
+
+        // When
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+        // Then
+        assertThat(response.getErrorMessageOverride()).isNull();
+    }
+
+    @Test
+    void shouldReturnRequiredErrorWhenCopyHeldButNoDocumentUploaded() {
+        // Given
+        PCSCase caseData = PCSCase.builder()
+            .tenancyLicenceDetails(TenancyLicenceDetails.builder()
+                .tenancyLicenceDate(FIXED_CURRENT_DATE.minusDays(1))
+                .typeOfTenancyLicence(TenancyLicenceType.INTRODUCTORY_TENANCY)
+                .hasCopyOfTenancyLicence(VerticalYesNo.YES)
+                .build())
+            .build();
+
+        // When
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+        // Then
+        assertThat(response.getErrorMessageOverride())
+            .isEqualTo(TENANCY_LICENCE_DOCUMENT_REQUIRED);
+    }
+
+    @Test
+    void shouldNotRequireDocumentWhenNoCopyOfTenancyLicenceHeld() {
+        // Given
+        PCSCase caseData = PCSCase.builder()
+            .tenancyLicenceDetails(TenancyLicenceDetails.builder()
+                .tenancyLicenceDate(FIXED_CURRENT_DATE.minusDays(1))
+                .typeOfTenancyLicence(TenancyLicenceType.INTRODUCTORY_TENANCY)
+                .hasCopyOfTenancyLicence(VerticalYesNo.NO)
                 .build())
             .build();
 

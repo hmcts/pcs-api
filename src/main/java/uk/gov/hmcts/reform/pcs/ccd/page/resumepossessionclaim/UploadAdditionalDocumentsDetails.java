@@ -48,7 +48,7 @@ public class UploadAdditionalDocumentsDetails implements CcdPageConfiguration {
                    <p class="govuk-body govuk-!-font-size-19">Give your document a name that explains what it is.</p>
                    """
             )
-            .mandatory(PCSCase::getAdditionalDocuments)
+            .optional(PCSCase::getAdditionalDocuments)
             .label("uploadAdditionalDocuments-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 
@@ -58,7 +58,8 @@ public class UploadAdditionalDocumentsDetails implements CcdPageConfiguration {
 
         List<String> errors = validateDocumentDescription(caseData.getAdditionalDocuments(), DESCRIPTION_LABEL);
 
-        errors.addAll(fileUploadValidationService.validateAdditionalDocuments(caseData.getAdditionalDocuments()));
+        errors.addAll(fileUploadValidationService.validateRequiredAdditionalDocuments(
+            caseData.getAdditionalDocuments(), FileUploadValidationService.ADDITIONAL_DOCUMENT_REQUIRED));
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .errorMessageOverride(StringUtils.joinIfNotEmpty("\n", errors))
@@ -71,6 +72,10 @@ public class UploadAdditionalDocumentsDetails implements CcdPageConfiguration {
         String sectionLabel) {
 
         List<String> validationErrors = new ArrayList<>();
+
+        if (additionalDocuments == null) {
+            return validationErrors;
+        }
 
         for (int i = 0; i < additionalDocuments.size(); i++) {
             String docDescription = additionalDocuments.get(i).getValue().getDescription();

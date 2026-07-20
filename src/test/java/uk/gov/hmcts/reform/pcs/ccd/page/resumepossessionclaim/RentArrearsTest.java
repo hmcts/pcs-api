@@ -25,6 +25,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static uk.gov.hmcts.reform.pcs.ccd.service.FileUploadValidationService.ALLOWED_FILE_TYPE_GUIDANCE;
 import static uk.gov.hmcts.reform.pcs.ccd.service.FileUploadValidationService.DISALLOWED_FILE_TYPE_ERROR;
+import static uk.gov.hmcts.reform.pcs.ccd.service.FileUploadValidationService.RENT_STATEMENT_REQUIRED;
 import static uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils.wrapListItems;
 
 @ExtendWith(MockitoExtension.class)
@@ -85,6 +86,20 @@ public class RentArrearsTest extends BasePageTest {
 
         // Then
         assertThat(response.getErrors()).containsExactly(DISALLOWED_FILE_TYPE_ERROR, ALLOWED_FILE_TYPE_GUIDANCE);
+    }
+
+    @Test
+    void shouldReturnRequiredErrorWhenNoRentStatementUploaded() {
+        // Given
+        PCSCase caseData = PCSCase.builder()
+            .rentArrears(RentArrearsSection.builder().build())
+            .build();
+
+        // When
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+        // Then
+        assertThat(response.getErrors()).containsExactly(RENT_STATEMENT_REQUIRED);
     }
 
     @Test

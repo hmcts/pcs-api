@@ -13,9 +13,12 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsSection;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.service.FileUploadValidationService;
+import uk.gov.hmcts.reform.pcs.ccd.service.FileUploadValidationService.ConditionalDocumentUpload;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
 import java.util.List;
+
+import static uk.gov.hmcts.reform.pcs.ccd.service.FileUploadValidationService.RENT_STATEMENT_REQUIRED;
 
 @AllArgsConstructor
 @Component
@@ -65,7 +68,7 @@ public class RentArrears implements CcdPageConfiguration {
                                  </ul>
                                </section>
                                """)
-                    .mandatory(RentArrearsSection::getStatementDocuments)
+                    .optional(RentArrearsSection::getStatementDocuments)
 
                     // ---------- Total arrears ----------
                     .label("rentArrears-totalArrears-separator", "---")
@@ -97,7 +100,9 @@ public class RentArrears implements CcdPageConfiguration {
         );
 
         validationErrors.addAll(
-            fileUploadValidationService.validateDocuments(caseData.getRentArrears().getStatementDocuments())
+            fileUploadValidationService.validateConditionalDocuments(List.of(
+                new ConditionalDocumentUpload(true, caseData.getRentArrears().getStatementDocuments(),
+                    RENT_STATEMENT_REQUIRED)))
         );
 
         return textAreaValidationService.createValidationResponse(caseData, validationErrors);

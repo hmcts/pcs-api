@@ -9,6 +9,7 @@ import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.WalesDocuments;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 import uk.gov.hmcts.reform.pcs.ccd.service.FileUploadValidationService;
@@ -26,6 +27,7 @@ import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.verify;
 import static uk.gov.hmcts.reform.pcs.ccd.service.FileUploadValidationService.ALLOWED_FILE_TYPE_GUIDANCE;
 import static uk.gov.hmcts.reform.pcs.ccd.service.FileUploadValidationService.DISALLOWED_FILE_TYPE_ERROR;
+import static uk.gov.hmcts.reform.pcs.ccd.service.FileUploadValidationService.ENERGY_PERFORMANCE_CERTIFICATE_REQUIRED;
 import static uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils.wrapListItems;
 
 @ExtendWith(MockitoExtension.class)
@@ -105,6 +107,31 @@ class UploadRequiredDocumentsWalesTest extends BasePageTest {
 
         // Then
         assertThat(response.getErrors()).containsExactly(DISALLOWED_FILE_TYPE_ERROR, ALLOWED_FILE_TYPE_GUIDANCE);
+    }
+
+    @Test
+    void shouldReturnRequiredErrorWhenConfirmedDocumentNotUploaded() {
+        // Given the caseworker confirmed they can provide the EPC but uploaded nothing for it
+        PCSCase caseData = PCSCase.builder()
+            .requiredDocumentsWales(
+                WalesDocuments.builder()
+                    .hasEnergyPerformanceCertificate(VerticalYesNo.YES)
+                    .hasGasSafetyReport(VerticalYesNo.YES)
+                    .gasSafetyReport(wrapListItems(List.of(
+                        Document.builder().filename("gas-report.pdf").build())))
+                    .hasElectricalInstallationConditionReport(VerticalYesNo.YES)
+                    .electricalInstallation(wrapListItems(List.of(
+                        Document.builder().filename("eicr.pdf").build())))
+                    .build()
+            )
+            .build();
+
+        // When
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+        // Then
+        assertThat(response.getErrors())
+            .containsExactly(ENERGY_PERFORMANCE_CERTIFICATE_REQUIRED);
     }
 
     @Test

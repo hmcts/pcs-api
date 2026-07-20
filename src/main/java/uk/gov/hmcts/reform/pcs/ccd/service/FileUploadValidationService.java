@@ -7,10 +7,12 @@ import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocument;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Stream;
 
 /**
  * Service for validating uploaded documents against the allowed file type allowlist.
@@ -28,7 +30,24 @@ public class FileUploadValidationService {
     public static final String DISALLOWED_FILE_TYPE_ERROR = "Your upload contains a disallowed file type";
     public static final String ALLOWED_FILE_TYPE_GUIDANCE =
         "The selected file must be a DOC/DOT/DOCX/DOTX, XLS/XLT/XLA/XLSX/XLTX/XLSB, "
-        + "PPT/POT/PPS/PPA/PPTX/POTX/PPSX, PDF, TXT/RTF/CSV, JPG/JPEG, PNG, BMP, TIF/TIFF.";
+        + "PPT/POT/PPS/PPA/PPTX/POTX/PPSX, PDF, TXT/RTF/CSV, JPG/JPEG, PNG, BMP, TIF/TIFF";
+
+    // Messages shown when a required upload is missing. Held here so each page and its tests reference a
+    // single source of truth rather than repeating the literal text.
+    public static final String NOTICE_DOCUMENT_REQUIRED =
+        "You must upload a copy of the notice served";
+    public static final String TENANCY_LICENCE_DOCUMENT_REQUIRED =
+        "You must upload a copy of the tenancy or licence agreement";
+    public static final String RENT_STATEMENT_REQUIRED =
+        "You must upload the rent statement";
+    public static final String ADDITIONAL_DOCUMENT_REQUIRED =
+        "You must upload a document";
+    public static final String ENERGY_PERFORMANCE_CERTIFICATE_REQUIRED =
+        "You must upload a copy of the energy performance certificate";
+    public static final String GAS_SAFETY_REPORT_REQUIRED =
+        "You must upload a copy of the current gas safety report";
+    public static final String ELECTRICAL_INSTALLATION_REPORT_REQUIRED =
+        "You must upload a copy of the current Electrical Installation Condition Report (EICR)";
 
     private static final List<String> DISALLOWED_FILE_TYPE_ERRORS =
         List.of(DISALLOWED_FILE_TYPE_ERROR, ALLOWED_FILE_TYPE_GUIDANCE);
@@ -38,27 +57,44 @@ public class FileUploadValidationService {
             return List.of();
         }
 
-        boolean hasDisallowedFile = documents.stream()
+        return disallowedFileErrors(documents.stream()
             .map(ListValue::getValue)
             .filter(Objects::nonNull)
-            .map(Document::getFilename)
-            .anyMatch(this::isDisallowed);
-
-        return hasDisallowedFile ? DISALLOWED_FILE_TYPE_ERRORS : List.of();
+            .map(Document::getFilename));
     }
 
     /**
-     * Validates several document lists together, returning the disallowed-file-type error at most once
-     * even when more than one list contains a blocked file.
+     * Validates one or more document uploads that appear together on one page. Each upload contributes its
+     * {@code missingMessage} when it is required but empty, and the disallowed-file-type error is reported
+     * at most once across all uploads. New uploads on a page are added by declaring another
+     * {@link ConditionalDocumentUpload} rather than by adding more branching logic in the page callback.
      */
-    @SafeVarargs
-    public final List<String> validateDocumentGroups(List<ListValue<Document>>... documentGroups) {
-        for (List<ListValue<Document>> documents : documentGroups) {
-            if (!validateDocuments(documents).isEmpty()) {
-                return DISALLOWED_FILE_TYPE_ERRORS;
+    public List<String> validateConditionalDocuments(List<ConditionalDocumentUpload> uploads) {
+        List<String> errors = new ArrayList<>();
+        boolean hasDisallowedFile = false;
+
+        for (ConditionalDocumentUpload upload : uploads) {
+            if (upload.required() && CollectionUtils.isEmpty(upload.documents())) {
+                errors.add(upload.missingMessage());
             }
+            hasDisallowedFile = hasDisallowedFile || !validateDocuments(upload.documents()).isEmpty();
         }
-        return List.of();
+
+        if (hasDisallowedFile) {
+            errors.addAll(DISALLOWED_FILE_TYPE_ERRORS);
+        }
+        return errors;
+    }
+
+    /**
+     * A single document upload on a page: its uploaded {@code documents}, whether it is currently
+     * {@code required} (for example because the caseworker confirmed they can provide it), and the
+     * {@code missingMessage} to show when it is required but nothing has been uploaded.
+     */
+    public record ConditionalDocumentUpload(
+        boolean required,
+        List<ListValue<Document>> documents,
+        String missingMessage) {
     }
 
     public List<String> validateAdditionalDocuments(List<ListValue<AdditionalDocument>> additionalDocuments) {
@@ -66,14 +102,27 @@ public class FileUploadValidationService {
             return List.of();
         }
 
-        boolean hasDisallowedFile = ListValueUtils.unwrapListItems(additionalDocuments).stream()
+        return disallowedFileErrors(ListValueUtils.unwrapListItems(additionalDocuments).stream()
             .filter(Objects::nonNull)
             .map(AdditionalDocument::getDocument)
             .filter(Objects::nonNull)
-            .map(Document::getFilename)
-            .anyMatch(this::isDisallowed);
+            .map(Document::getFilename));
+    }
 
-        return hasDisallowedFile ? DISALLOWED_FILE_TYPE_ERRORS : List.of();
+    private List<String> disallowedFileErrors(Stream<String> filenames) {
+        return filenames.anyMatch(this::isDisallowed) ? DISALLOWED_FILE_TYPE_ERRORS : List.of();
+    }
+
+    /**
+     * Validates a required additional-document upload. Returns the given {@code requiredMessage} when no
+     * document has been uploaded, otherwise applies the standard disallowed-file-type validation.
+     */
+    public List<String> validateRequiredAdditionalDocuments(
+        List<ListValue<AdditionalDocument>> additionalDocuments, String requiredMessage) {
+        if (CollectionUtils.isEmpty(additionalDocuments)) {
+            return List.of(requiredMessage);
+        }
+        return validateAdditionalDocuments(additionalDocuments);
     }
 
     private boolean isDisallowed(String filename) {

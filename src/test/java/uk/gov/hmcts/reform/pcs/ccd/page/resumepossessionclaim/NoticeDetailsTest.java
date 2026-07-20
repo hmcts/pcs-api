@@ -28,6 +28,7 @@ import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.doAnswer;
 import static uk.gov.hmcts.reform.pcs.ccd.service.FileUploadValidationService.ALLOWED_FILE_TYPE_GUIDANCE;
 import static uk.gov.hmcts.reform.pcs.ccd.service.FileUploadValidationService.DISALLOWED_FILE_TYPE_ERROR;
+import static uk.gov.hmcts.reform.pcs.ccd.service.FileUploadValidationService.NOTICE_DOCUMENT_REQUIRED;
 import static uk.gov.hmcts.reform.pcs.ccd.testutil.DocumentTestData.documentsWithFilenames;
 
 @ExtendWith(MockitoExtension.class)
@@ -113,6 +114,24 @@ class NoticeDetailsTest extends BasePageTest {
 
         // Then
         assertThat(response.getErrors()).containsExactly(DISALLOWED_FILE_TYPE_ERROR, ALLOWED_FILE_TYPE_GUIDANCE);
+    }
+
+    @Test
+    void shouldReturnRequiredErrorWhenAbleToUploadButNoDocumentProvided() {
+        // Given
+        PCSCase caseData = PCSCase.builder()
+                .noticeServed(YesOrNo.YES)
+                .noticeServedDetails(NoticeServedDetails.builder()
+                        .serviceMethod(NoticeServiceMethod.FIRST_CLASS_POST)
+                        .ableToUploadDocument(CanUploadNoticeServedDocument.Yes)
+                        .build())
+                .build();
+
+        // When
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+        // Then
+        assertThat(response.getErrors()).containsExactly(NOTICE_DOCUMENT_REQUIRED);
     }
 
     @Test
