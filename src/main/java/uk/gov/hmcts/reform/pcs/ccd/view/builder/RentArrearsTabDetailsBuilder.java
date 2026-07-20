@@ -75,7 +75,7 @@ public class RentArrearsTabDetailsBuilder {
         return hasRentArrearsFlag;
     }
 
-    public RentArrearsTabDetails buildDetailedRentArrearsTabDetails(PCSCase pcsCase) {
+    public RentArrearsTabDetails buildDetailedRentArrearsTabDetails(PCSCase pcsCase, boolean isSubmitted) {
         if (pcsCase.getShowRentSectionPage() != YesOrNo.YES) {
             return null;
         }
@@ -136,6 +136,9 @@ public class RentArrearsTabDetailsBuilder {
             if (CollectionUtils.isEmpty(documents)) {
                 rentArrearsTabDetails.setRentStatementPlaceholder(NO_ANSWER);
             } else {
+                if (isSubmitted) {
+                    rentArrears.setStatementDocuments(null);
+                }
                 rentArrearsTabDetails.setRentStatement(documents);
             }
         } else {

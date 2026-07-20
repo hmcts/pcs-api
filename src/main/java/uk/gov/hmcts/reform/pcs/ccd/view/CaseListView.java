@@ -74,4 +74,4 @@ public class CaseListView {
             pcsCase.setPostCode(address.getPostCode());
         }
     }
-}
+}   

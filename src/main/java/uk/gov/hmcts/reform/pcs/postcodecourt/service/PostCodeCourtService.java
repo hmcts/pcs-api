@@ -34,18 +34,11 @@ public class PostCodeCourtService {
     }
 
     public Integer getCourtManagementLocation(String postCode, LegislativeCountry legislativeCountry) {
-
         List<PostCodeCourtEntity> results = getPostcodeCourtMappings(postCode, legislativeCountry);
-
         if (results.isEmpty()) {
             log.error("EpimId not found for postcode: {}", postCode);
             return null;
         }
-        if (results.size() > 1) {
-            log.error("Multiple EpimIds found for postcode: {}", postCode);
-            return null;
-        }
-        log.info("EpimId found for postcode {}", postCode);
         return results.getFirst().getId().getEpimsId();
     }
 
