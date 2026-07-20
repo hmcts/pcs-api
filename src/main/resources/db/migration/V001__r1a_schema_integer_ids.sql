@@ -114,7 +114,7 @@ CREATE TABLE draft.draft_case_data (
     id bigint NOT NULL,
     case_reference bigint NOT NULL,
     case_data jsonb,
-    event_id character varying(70) NOT NULL,
+    event_id varchar(70) NOT NULL,
     idam_user_id uuid NOT NULL,
     party_id uuid
 );
@@ -135,13 +135,13 @@ ALTER TABLE draft.draft_case_data ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTI
 CREATE TABLE public.address (
     id bigint NOT NULL,
     version integer,
-    address_line1 character varying(100),
-    address_line2 character varying(100),
-    address_line3 character varying(100),
-    post_town character varying(100),
-    county character varying(100),
-    postcode character varying(14),
-    country character varying(100)
+    address_line1 varchar(100),
+    address_line2 varchar(100),
+    address_line3 varchar(100),
+    post_town varchar(100),
+    county varchar(100),
+    postcode varchar(14),
+    country varchar(100)
 );
 
 
@@ -162,15 +162,15 @@ CREATE TABLE public.asb_prohibited_conduct (
     version integer,
     claim_id uuid,
     antisocial_behaviour public.yes_no,
-    antisocial_behaviour_details character varying(500),
+    antisocial_behaviour_details varchar(500),
     illegal_purposes public.yes_no,
-    illegal_purposes_details character varying(500),
+    illegal_purposes_details varchar(500),
     other_prohibited_conduct public.yes_no,
-    other_prohibited_conduct_details character varying(500),
+    other_prohibited_conduct_details varchar(500),
     claiming_standard_contract public.yes_no,
-    claiming_standard_contract_details character varying(250),
+    claiming_standard_contract_details varchar(250),
     periodic_contract_agreed public.yes_no,
-    periodic_contract_details character varying(250)
+    periodic_contract_details varchar(250)
 );
 
 
@@ -190,18 +190,18 @@ CREATE TABLE public.case_flag (
     id uuid NOT NULL,
     pcs_case_id uuid NOT NULL,
     flag_ref_data_id uuid NOT NULL,
-    sub_type_key character varying(50),
-    sub_type_value character varying(50),
-    sub_type_value_cy character varying(50),
-    other_description character varying(50),
-    other_description_cy character varying(50),
-    flag_comment character varying(255),
-    flag_comment_cy character varying(255),
-    flag_update_comment character varying(255),
+    sub_type_key varchar(50),
+    sub_type_value varchar(50),
+    sub_type_value_cy varchar(50),
+    other_description varchar(50),
+    other_description_cy varchar(50),
+    flag_comment varchar(255),
+    flag_comment_cy varchar(255),
+    flag_update_comment varchar(255),
     date_time_created timestamp without time zone,
     date_time_modified timestamp without time zone,
-    status character varying(50) NOT NULL,
-    paths character varying(255) NOT NULL
+    status varchar(50) NOT NULL,
+    paths varchar(255) NOT NULL
 );
 
 
@@ -210,7 +210,7 @@ CREATE TABLE public.case_link (
     id bigint NOT NULL,
     case_id uuid NOT NULL,
     linked_case_reference bigint NOT NULL,
-    ccd_list_id character varying(50),
+    ccd_list_id varchar(50),
     created_at timestamp without time zone DEFAULT now()
 );
 
@@ -230,7 +230,7 @@ ALTER TABLE public.case_link ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
 CREATE TABLE public.case_link_reason (
     id uuid NOT NULL,
     case_link_id bigint NOT NULL,
-    reason_code character varying(100) NOT NULL
+    reason_code varchar(100) NOT NULL
 );
 
 
@@ -238,8 +238,8 @@ CREATE TABLE public.case_link_reason (
 CREATE TABLE public.case_note (
     id bigint NOT NULL,
     created_on timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    created_by character varying(50) NOT NULL,
-    note character varying(500) NOT NULL,
+    created_by varchar(50) NOT NULL,
+    note varchar(500) NOT NULL,
     case_id uuid
 );
 
@@ -263,12 +263,12 @@ CREATE TABLE public.case_notification (
     submitted_at timestamp without time zone,
     scheduled_at timestamp without time zone,
     last_updated_at timestamp without time zone NOT NULL,
-    status character varying(255) NOT NULL,
-    type character varying(255) NOT NULL,
-    recipient character varying(255) NOT NULL,
+    status varchar(255) NOT NULL,
+    type varchar(255) NOT NULL,
+    recipient varchar(255) NOT NULL,
     party_id uuid,
     claim_id uuid,
-    claim_type character varying(255) NOT NULL
+    claim_type varchar(255) NOT NULL
 );
 
 
@@ -288,18 +288,18 @@ CREATE TABLE public.case_party_flag (
     id uuid NOT NULL,
     party_id uuid,
     flag_ref_data_id uuid NOT NULL,
-    sub_type_key character varying(50),
-    sub_type_value character varying(50),
-    sub_type_value_cy character varying(50),
-    other_description character varying(50),
-    other_description_cy character varying(50),
-    flag_comment character varying(255),
-    flag_comment_cy character varying(255),
-    flag_update_comment character varying(255),
+    sub_type_key varchar(50),
+    sub_type_value varchar(50),
+    sub_type_value_cy varchar(50),
+    other_description varchar(50),
+    other_description_cy varchar(50),
+    flag_comment varchar(255),
+    flag_comment_cy varchar(255),
+    flag_update_comment varchar(255),
     date_time_created timestamp without time zone,
     date_time_modified timestamp without time zone,
-    status character varying(50) NOT NULL,
-    paths character varying(450) NOT NULL
+    status varchar(50) NOT NULL,
+    paths varchar(450) NOT NULL
 );
 
 
@@ -316,27 +316,27 @@ CREATE TABLE public.claim (
     mediation_attempted public.yes_no,
     settlement_attempted public.yes_no,
     claimant_circumstances_provided public.yes_no,
-    claimant_circumstances character varying(950),
+    claimant_circumstances varchar(950),
     additional_defendants public.yes_no,
     defendant_circumstances_provided public.yes_no,
-    defendant_circumstances character varying(950),
+    defendant_circumstances varchar(950),
     additional_reasons_provided public.yes_no,
-    additional_reasons character varying(6400),
+    additional_reasons varchar(6400),
     underlessee_or_mortgagee public.yes_no,
     additional_underlessees_or_mortgagees public.yes_no,
     additional_docs_provided public.yes_no,
     gen_app_expected public.yes_no,
     language_used text,
-    pre_action_protocol_incomplete_explanation character varying(250),
+    pre_action_protocol_incomplete_explanation varchar(250),
     is_exempt_landlord public.yes_no,
     claim_submitted_date timestamp with time zone,
     claim_issued_date timestamp with time zone,
     energy_performance_certificate_provided public.yes_no,
     gas_safety_report_provided public.yes_no,
     electrical_installation_condition_provided public.yes_no,
-    no_energy_performance_certificate_reason character varying(500),
-    no_gas_safety_report_reason character varying(500),
-    no_electrical_installation_condition_reason character varying(500),
+    no_energy_performance_certificate_reason varchar(500),
+    no_gas_safety_report_reason varchar(500),
+    no_electrical_installation_condition_reason varchar(500),
     claim_form_document_id uuid
 );
 
@@ -346,8 +346,8 @@ CREATE TABLE public.claim_activity_log (
     id bigint NOT NULL,
     case_id uuid NOT NULL,
     party_id uuid,
-    activity_type character varying NOT NULL,
-    status character varying NOT NULL,
+    activity_type varchar NOT NULL,
+    status varchar NOT NULL,
     created_at timestamp without time zone DEFAULT now() NOT NULL,
     details jsonb
 );
@@ -375,10 +375,10 @@ CREATE TABLE public.claim_document (
 CREATE TABLE public.claim_ground (
     id uuid NOT NULL,
     claim_id uuid NOT NULL,
-    category character varying(60) NOT NULL,
-    code character varying(60) NOT NULL,
-    reason character varying(500),
-    description character varying(500),
+    category varchar(60) NOT NULL,
+    code varchar(60) NOT NULL,
+    reason varchar(500),
+    description varchar(500),
     is_rent_arrears boolean NOT NULL
 );
 
@@ -431,18 +431,18 @@ CREATE TABLE public.counter_claim (
     sot_id bigint,
     case_id uuid NOT NULL,
     party_id uuid NOT NULL,
-    claim_type character varying(50),
+    claim_type varchar(50),
     is_claim_amount_known public.yes_no,
     claim_amount numeric(18,2),
     estimated_max_claim_amount numeric(18,2),
-    counterclaim_for character varying(6800),
-    counterclaim_reasons character varying(6800),
-    other_order_request_details character varying(6800),
-    other_order_request_facts character varying(6800),
+    counterclaim_for varchar(6800),
+    counterclaim_reasons varchar(6800),
+    other_order_request_details varchar(6800),
+    other_order_request_facts varchar(6800),
     need_help_with_fees public.yes_no,
     applied_for_hwf public.yes_no,
-    hwf_reference_number character varying(255),
-    status character varying,
+    hwf_reference_number varchar(255),
+    status varchar,
     claim_submitted_date timestamp without time zone,
     claim_issued_date timestamp without time zone,
     last_modified_date timestamp without time zone,
@@ -486,20 +486,20 @@ CREATE TABLE public.defendant_response (
     notice_received_date date,
     rent_arrears_amount_confirmation public.yes_no_not_sure,
     dispute_claim public.yes_no,
-    dispute_claim_details character varying(6800),
+    dispute_claim_details varchar(6800),
     make_counter_claim public.yes_no,
     version integer,
-    status character varying(60),
+    status varchar(60),
     response_submitted_date timestamp without time zone,
     response_deleted_date timestamp without time zone,
     response_received_date timestamp without time zone,
     language_used text,
-    channel character varying(60),
-    ingestion_source character varying(60),
+    channel varchar(60),
+    ingestion_source varchar(60),
     landlord_licensed public.yes_no_not_sure,
     written_terms public.yes_no_not_sure,
     other_considerations public.yes_no,
-    other_considerations_details character varying(6400),
+    other_considerations_details varchar(6400),
     tenancy_type_confirmation public.yes_no_not_sure,
     counter_claim_want_to_upload_files public.yes_no,
     submission_document_id uuid
@@ -526,10 +526,10 @@ CREATE TABLE public.document (
     binary_url text,
     category_id text DEFAULT 'uncategorisedDocuments'::text NOT NULL,
     type text,
-    description character varying(60),
+    description varchar(60),
     enf_case_id uuid,
     counter_claim_id uuid,
-    content_type character varying(200),
+    content_type varchar(200),
     size bigint,
     display_file_name text,
     claim_id uuid,
@@ -565,15 +565,15 @@ CREATE TABLE public.enf_risk_profile (
     enf_case_id uuid NOT NULL,
     any_risk_to_bailiff public.yes_no_not_sure,
     vulnerable_people_present public.yes_no_not_sure,
-    vulnerable_category character varying(100),
-    vulnerable_reason_text character varying(6800),
-    violent_details character varying(6800),
-    firearms_details character varying(6800),
-    criminal_details character varying(6800),
-    verbal_threats_details character varying(6800),
-    protest_group_details character varying(6800),
-    police_social_services_details character varying(6800),
-    animals_details character varying(6800)
+    vulnerable_category varchar(100),
+    vulnerable_reason_text varchar(6800),
+    violent_details varchar(6800),
+    firearms_details varchar(6800),
+    criminal_details varchar(6800),
+    verbal_threats_details varchar(6800),
+    protest_group_details varchar(6800),
+    police_social_services_details varchar(6800),
+    animals_details varchar(6800)
 );
 
 
@@ -615,32 +615,32 @@ CREATE TABLE public.enf_warrant (
     show_people_you_want_to_evict_page public.yes_no,
     is_suspended_order public.yes_no,
     additional_information_select public.yes_no,
-    additional_information_details character varying(6800),
+    additional_information_details varchar(6800),
     correct_name_and_address public.yes_no,
     evict_everyone public.yes_no,
     is_difficult_to_access_property public.yes_no,
-    clarification_on_access_difficulty_text character varying(6800),
+    clarification_on_access_difficulty_text varchar(6800),
     are_legal_costs_to_be_claimed public.yes_no,
     amount_of_legal_costs numeric(10,2),
     amount_owed numeric(10,2),
     have_land_registry_fees_been_paid public.yes_no,
     amount_of_land_registry_fees numeric(10,2),
-    repayment_choice character varying(20),
+    repayment_choice varchar(20),
     amount_of_repayment_costs numeric(10,2),
     repayment_summary_markdown text,
     defendants_dob_known public.yes_no,
-    defendants_dob_details character varying(6800),
+    defendants_dob_details varchar(6800),
     completed_by public.statement_of_truth_completed_by,
     certification text,
     agreement_claimant text,
-    full_name_claimant character varying(100),
-    position_claimant character varying(100),
+    full_name_claimant varchar(100),
+    position_claimant varchar(100),
     agreement_legal_rep text,
-    full_name_legal_rep character varying(100),
-    firm_name_legal_rep character varying(100),
-    position_legal_rep character varying(100),
+    full_name_legal_rep varchar(100),
+    firm_name_legal_rep varchar(100),
+    position_legal_rep varchar(100),
     created timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    language_used character varying(30)
+    language_used varchar(30)
 );
 
 
@@ -660,12 +660,12 @@ CREATE TABLE public.enf_warrant_of_restitution (
     id bigint NOT NULL,
     enf_case_id uuid NOT NULL,
     created timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    language_used character varying(30),
-    how_defendants_returned character varying(6800),
+    language_used varchar(30),
+    how_defendants_returned varchar(6800),
     is_difficult_to_access_property public.yes_no,
-    clarification_on_access_difficulty_text character varying(6800),
+    clarification_on_access_difficulty_text varchar(6800),
     additional_information_select public.yes_no,
-    additional_information_details character varying(6800)
+    additional_information_details varchar(6800)
 );
 
 
@@ -686,7 +686,7 @@ CREATE TABLE public.enf_writ (
     enf_case_id uuid NOT NULL,
     correct_name_and_address public.yes_no,
     has_hired_high_court_enforcement_officer public.yes_no,
-    hceo_details character varying(120),
+    hceo_details varchar(120),
     has_claim_transferred_to_high_court public.yes_no,
     have_land_registry_fees_been_paid public.yes_no,
     amount_of_land_registry_fees numeric(10,2),
@@ -694,8 +694,8 @@ CREATE TABLE public.enf_writ (
     amount_of_legal_costs numeric(10,2),
     amount_owed numeric(10,2),
     created timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    language_used character varying(30),
-    repayment_choice character varying(20),
+    language_used varchar(30),
+    repayment_choice varchar(20),
     amount_of_repayment_costs numeric(10,2),
     repayment_summary_markdown text
 );
@@ -717,7 +717,7 @@ CREATE TABLE public.enf_writ_of_restitution (
     id bigint NOT NULL,
     enf_case_id uuid NOT NULL,
     created timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    language_used character varying(30)
+    language_used varchar(30)
 );
 
 
@@ -737,13 +737,13 @@ CREATE TABLE public.fee_payment (
     id bigint NOT NULL,
     party_id uuid,
     request_date timestamp without time zone NOT NULL,
-    service_request_reference character varying(255),
-    external_reference character varying(255),
+    service_request_reference varchar(255),
+    external_reference varchar(255),
     amount numeric(19,2),
     hwf_id bigint,
-    payment_callback_handler_type character varying(30) NOT NULL,
+    payment_callback_handler_type varchar(30) NOT NULL,
     task_data jsonb,
-    status character varying(50),
+    status varchar(50),
     possession_claim_id uuid,
     related_entity_id uuid
 );
@@ -763,12 +763,12 @@ ALTER TABLE public.fee_payment ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY 
 
 CREATE TABLE public.flag_ref_data (
     id uuid NOT NULL,
-    flag_code character varying(10),
-    name character varying(255),
-    name_cy character varying(255),
+    flag_code varchar(10),
+    name varchar(255),
+    name_cy varchar(255),
     hearing_relevant boolean,
     available_externally boolean,
-    visibility character varying(20)
+    visibility varchar(20)
 );
 
 
@@ -778,21 +778,21 @@ CREATE TABLE public.general_application (
     case_id uuid NOT NULL,
     sot_id bigint,
     hwf_id bigint,
-    type character varying(50) NOT NULL,
-    state character varying(30),
+    type varchar(50) NOT NULL,
+    state varchar(30),
     party_id uuid NOT NULL,
     within_14_days public.yes_no,
     need_hwf public.yes_no,
     applied_for_hwf public.yes_no,
     other_parties_agreed public.yes_no,
     without_notice public.yes_no,
-    without_notice_reason character varying(6800),
-    what_order_wanted character varying(6800),
+    without_notice_reason varchar(6800),
+    what_order_wanted varchar(6800),
     documents_uploaded public.yes_no,
-    language_used character varying(30),
+    language_used varchar(30),
     application_submitted_date timestamp without time zone,
     application_issued_date timestamp without time zone,
-    client_reference character varying(60),
+    client_reference varchar(60),
     rank integer NOT NULL,
     submission_document_id uuid
 );
@@ -801,7 +801,7 @@ CREATE TABLE public.general_application (
 
 CREATE TABLE public.help_with_fees (
     id bigint NOT NULL,
-    hwf_reference character varying(60) NOT NULL
+    hwf_reference varchar(60) NOT NULL
 );
 
 
@@ -821,27 +821,27 @@ CREATE TABLE public.household_circumstances (
     id bigint NOT NULL,
     defendant_response_id bigint NOT NULL,
     dependant_children public.yes_no,
-    dependant_children_details character varying(500),
+    dependant_children_details varchar(500),
     other_dependants public.yes_no,
-    other_dependant_details character varying(500),
+    other_dependant_details varchar(500),
     other_tenants public.yes_no,
-    other_tenants_details character varying(500),
+    other_tenants_details varchar(500),
     alternative_accommodation public.yes_no_not_sure,
     alternative_accommodation_transfer_date date,
     share_additional_circumstances public.yes_no,
-    additional_circumstances_details character varying(500),
+    additional_circumstances_details varchar(500),
     exceptional_hardship public.yes_no,
-    exceptional_hardship_details character varying(500),
+    exceptional_hardship_details varchar(500),
     share_income_expense_details public.yes_no,
     universal_credit public.yes_no,
     uc_application_date date,
     priority_debts public.yes_no,
     debt_total numeric(18,2),
     debt_contribution numeric(18,2),
-    debt_contribution_frequency character varying(60),
-    regular_expenses character varying(500),
+    debt_contribution_frequency varchar(60),
+    regular_expenses varchar(500),
     expense_amount numeric(18,2),
-    expense_frequency character varying(60)
+    expense_frequency varchar(60)
 );
 
 
@@ -860,13 +860,13 @@ ALTER TABLE public.household_circumstances ALTER COLUMN id ADD GENERATED ALWAYS 
 CREATE TABLE public.legal_representative (
     id uuid NOT NULL,
     idam_id uuid,
-    organisation_name character varying(120),
-    first_name character varying(60),
-    last_name character varying(60),
-    email character varying(120),
-    phone character varying(40),
+    organisation_name varchar(120),
+    first_name varchar(60),
+    last_name varchar(60),
+    email varchar(120),
+    phone varchar(40),
     address_id bigint,
-    organisation_id character varying(64)
+    organisation_id varchar(64)
 );
 
 
@@ -876,13 +876,13 @@ CREATE TABLE public.notice_of_possession (
     version integer,
     claim_id uuid,
     notice_served public.yes_no NOT NULL,
-    notice_type character varying(60),
-    serving_method character varying(40),
-    notice_details character varying(250),
+    notice_type varchar(60),
+    serving_method varchar(40),
+    notice_details varchar(250),
     notice_date date,
     notice_date_time timestamp without time zone,
-    notice_statement character varying(500),
-    unable_to_upload_reason character varying(500),
+    notice_statement varchar(500),
+    unable_to_upload_reason varchar(500),
     is_able_to_upload_document public.yes_no,
     CONSTRAINT chk_notice_date CHECK (((notice_date IS NULL) OR (notice_date_time IS NULL)))
 );
@@ -906,21 +906,21 @@ CREATE TABLE public.party (
     case_id uuid,
     type text,
     idam_id uuid,
-    first_name character varying(60),
-    last_name character varying(60),
-    org_name character varying(60),
+    first_name varchar(60),
+    last_name varchar(60),
+    org_name varchar(60),
     name_known public.yes_no,
     name_overridden public.yes_no,
     address_id bigint,
     address_known public.yes_no,
     address_same_as_property public.yes_no,
     phone_number_provided public.yes_no,
-    phone_number character varying(60),
-    email_address character varying(60),
-    pcq_id character varying(60),
+    phone_number varchar(60),
+    email_address varchar(60),
+    pcq_id varchar(60),
     contact_preferences_id bigint,
     dob date,
-    organisation_id character varying(64)
+    organisation_id varchar(64)
 );
 
 
@@ -929,8 +929,8 @@ CREATE TABLE public.party_access_code (
     id bigint NOT NULL,
     case_id uuid NOT NULL,
     party_id uuid NOT NULL,
-    code character varying(100) NOT NULL,
-    role character varying(20),
+    code varchar(100) NOT NULL,
+    role varchar(20),
     created timestamp without time zone
 );
 
@@ -951,7 +951,7 @@ CREATE TABLE public.party_attribute_assertion (
     id bigint NOT NULL,
     party_id uuid NOT NULL,
     evidence_document_id uuid,
-    attributes_name character varying(255) NOT NULL,
+    attributes_name varchar(255) NOT NULL,
     asserted_value text NOT NULL,
     asserted_by public.party_attribute_assertion_submitted_by NOT NULL,
     status public.party_attribute_assertion_status NOT NULL,
@@ -978,13 +978,13 @@ CREATE TABLE public.payment_agreement (
     id bigint NOT NULL,
     defendant_response_id bigint NOT NULL,
     any_payments_made public.yes_no,
-    payment_details character varying(500),
+    payment_details varchar(500),
     paid_money_to_housing_org public.yes_no,
     repayment_plan_agreed public.yes_no_not_sure,
-    repayment_agreed_details character varying(500),
+    repayment_agreed_details varchar(500),
     repay_arrears_instalments public.yes_no,
     additional_rent_contribution numeric(18,2),
-    additional_contribution_frequency character varying(50)
+    additional_contribution_frequency varchar(50)
 );
 
 
@@ -1007,9 +1007,9 @@ CREATE TABLE public.pcs_case (
     property_address_id bigint,
     case_management_location integer,
     pre_action_protocol_completed boolean,
-    legislative_country character varying(20),
+    legislative_country varchar(20),
     party_documents jsonb,
-    claimant_type character varying(50),
+    claimant_type varchar(50),
     region_id integer,
     base_location integer
 );
@@ -1021,13 +1021,13 @@ CREATE TABLE public.possession_alternatives (
     version integer,
     claim_id uuid,
     supension_of_rtb_requested public.yes_no NOT NULL,
-    supension_of_rtb_housing_act_section character varying(20),
-    supension_of_rtb_reason character varying(250),
+    supension_of_rtb_housing_act_section varchar(20),
+    supension_of_rtb_reason varchar(250),
     dot_requested public.yes_no NOT NULL,
-    dot_housing_act_section character varying(20),
+    dot_housing_act_section varchar(20),
     dot_statement_served public.yes_no,
-    dot_statement_details character varying(950),
-    dot_reason character varying(250)
+    dot_statement_details varchar(950),
+    dot_reason varchar(250)
 );
 
 
@@ -1044,9 +1044,9 @@ ALTER TABLE public.possession_alternatives ALTER COLUMN id ADD GENERATED ALWAYS 
 
 
 CREATE TABLE public.postcode_court_mapping (
-    postcode character varying(20) NOT NULL,
+    postcode varchar(20) NOT NULL,
     epims_id integer NOT NULL,
-    legislative_country character varying(80) NOT NULL,
+    legislative_country varchar(80) NOT NULL,
     effective_from date NOT NULL,
     effective_to date,
     audit jsonb NOT NULL
@@ -1057,16 +1057,16 @@ CREATE TABLE public.postcode_court_mapping (
 CREATE TABLE public.reasonable_adjustments (
     id bigint NOT NULL,
     defendant_response_id bigint NOT NULL,
-    reasonable_adjustments_required character varying(250),
-    reasonable_adjustment_description character varying(500),
-    hearing_enhancement_description character varying(250),
-    sign_language_support_description character varying(250),
-    travel_support_description character varying(250),
-    welsh_language_requirements character varying(250),
+    reasonable_adjustments_required varchar(250),
+    reasonable_adjustment_description varchar(500),
+    hearing_enhancement_description varchar(250),
+    sign_language_support_description varchar(250),
+    travel_support_description varchar(250),
+    welsh_language_requirements varchar(250),
     language_interpreter public.yes_no,
-    language_support_description character varying(250),
+    language_support_description varchar(250),
     considered_vulnerable public.yes_no,
-    vulnerable_characteristic_description character varying(250)
+    vulnerable_characteristic_description varchar(250)
 );
 
 
@@ -1085,9 +1085,9 @@ ALTER TABLE public.reasonable_adjustments ALTER COLUMN id ADD GENERATED ALWAYS A
 CREATE TABLE public.regular_expenses (
     id bigint NOT NULL,
     hc_id bigint NOT NULL,
-    expense_type character varying(30) NOT NULL,
+    expense_type varchar(30) NOT NULL,
     amount numeric(18,2) NOT NULL,
-    expense_frequency character varying(10) NOT NULL,
+    expense_frequency varchar(10) NOT NULL,
     CONSTRAINT chk_regular_expense_amount_positive CHECK ((amount >= (0)::numeric))
 );
 
@@ -1107,7 +1107,7 @@ ALTER TABLE public.regular_expenses ALTER COLUMN id ADD GENERATED ALWAYS AS IDEN
 CREATE TABLE public.regular_income (
     id bigint NOT NULL,
     hc_id bigint NOT NULL,
-    other_income_details character varying(500),
+    other_income_details varchar(500),
     created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
     updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
@@ -1156,7 +1156,7 @@ CREATE TABLE public.rent_arrears (
     total_rent_arrears numeric(18,2) NOT NULL,
     arrears_judgment_wanted public.yes_no,
     recovery_attempted public.yes_no,
-    recovery_attempt_details character varying(500)
+    recovery_attempt_details varchar(500)
 );
 
 
@@ -1193,11 +1193,11 @@ CREATE TABLE public.statement_of_truth (
     id bigint NOT NULL,
     version integer,
     claim_id uuid,
-    completed_by character varying(40),
+    completed_by varchar(40),
     accepted public.yes_no NOT NULL,
-    full_name character varying(100) NOT NULL,
-    firm_name character varying(100),
-    position_held character varying(100),
+    full_name varchar(100) NOT NULL,
+    firm_name varchar(100),
+    position_held varchar(100),
     completed_date timestamp without time zone
 );
 
@@ -1218,16 +1218,16 @@ CREATE TABLE public.tenancy_licence (
     id bigint NOT NULL,
     version integer,
     case_id uuid,
-    type character varying(40) NOT NULL,
-    other_type_details character varying(500),
+    type varchar(40) NOT NULL,
+    other_type_details varchar(500),
     start_date date,
     rent_amount numeric(18,2),
-    rent_frequency character varying(20),
-    other_rent_frequency character varying(60),
+    rent_frequency varchar(20),
+    other_rent_frequency varchar(60),
     rent_per_day numeric(18,2),
     calculated_daily_rent_correct public.yes_no,
     has_copy_of_tenancy_licence public.yes_no,
-    reasons_for_no_tenancy_licence character varying(500)
+    reasons_for_no_tenancy_licence varchar(500)
 );
 
 
