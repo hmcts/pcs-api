@@ -32,6 +32,9 @@ public class DocumentAmendSelectionService {
     private static final Comparator<DocumentEntity> DOCUMENT_ORDER = Comparator
         .comparing(DocumentEntity::getSubmittedDate, Comparator.nullsLast(Comparator.reverseOrder()))
         .thenComparing(DocumentEntity::getFileName, Comparator.nullsLast(String::compareToIgnoreCase));
+    private static final String PARTY_POSTFIX_PATTERN = " - (Claimant|Defendant) \\d+$";
+    private static final String GEN_APP_POSTFIX_PATTERN = " GA\\d+$";
+    private static final String ISSUE_DATE_POSTFIX_PATTERN = " \\d{8}$";
 
     private final PcsCaseService pcsCaseService;
     private final AddressFormatter addressFormatter;
@@ -89,7 +92,7 @@ public class DocumentAmendSelectionService {
             selectedFolder,
             resolvedDocument
         );
-        String selectedDocumentBaseFileName = baseFileName(resolvedDocument.getLabel());
+        String selectedDocumentBaseFileName = editableBaseFileName(resolvedDocument.getLabel());
         details.setSelectedDocumentId(resolvedDocument.getCode().toString());
         details.setSelectedDocumentFileName(resolvedDocument.getLabel());
         details.setSelectedDocumentBaseFileName(selectedDocumentBaseFileName);
@@ -194,16 +197,23 @@ public class DocumentAmendSelectionService {
         return selectedDocument.getCode() == null && selectedDocument.getLabel() == null;
     }
 
-    private String baseFileName(String fileName) {
+    private String editableBaseFileName(String fileName) {
         if (fileName == null) {
             return null;
         }
 
+        String baseFileName;
         int extensionSeparator = fileName.lastIndexOf('.');
         if (extensionSeparator <= 0) {
-            return fileName;
+            baseFileName = fileName;
+        } else {
+            baseFileName = fileName.substring(0, extensionSeparator);
         }
-        return fileName.substring(0, extensionSeparator);
+
+        return baseFileName
+            .replaceFirst(PARTY_POSTFIX_PATTERN, "")
+            .replaceFirst(GEN_APP_POSTFIX_PATTERN, "")
+            .replaceFirst(ISSUE_DATE_POSTFIX_PATTERN, "");
     }
 
     private void setDocumentsForCategory(DocumentAmendDetails details, PcsCaseEntity pcsCase,

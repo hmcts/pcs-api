@@ -787,6 +787,52 @@ class DocumentAmendSelectionServiceTest {
     }
 
     @Test
+    void shouldPopulateEditableFileNameWithoutGeneratedDateAndPartyPostfix() {
+        String fileName = "long rent statement name that remains under sixty chars 16042021 - Defendant 1.pdf";
+        DocumentEntity document = document(fileName, EVIDENCE.getId(), null);
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(PcsCaseEntity.builder()
+            .documents(List.of(document))
+            .build());
+        PCSCase caseData = PCSCase.builder()
+            .documentAmendDetails(DocumentAmendDetails.builder()
+                .selectedFolder(EVIDENCE)
+                .evidenceDocuments(selectedDocument(document))
+                .build())
+            .build();
+        underTest.initialise(CASE_REFERENCE, caseData);
+
+        List<String> errors = underTest.validateAndStoreSelection(CASE_REFERENCE, caseData);
+
+        assertThat(errors).isEmpty();
+        assertThat(caseData.getDocumentAmendDetails().getSelectedDocumentFileName()).isEqualTo(fileName);
+        assertThat(caseData.getDocumentAmendDetails().getAmendedFileName())
+            .isEqualTo("long rent statement name that remains under sixty chars");
+    }
+
+    @Test
+    void shouldPopulateEditableFileNameWithoutGeneratedGenAppDateAndPartyPostfix() {
+        String fileName = "application evidence with longer descriptive name 16042021 GA2 - Claimant 1.pdf";
+        DocumentEntity document = document(fileName, APPLICATIONS.getId(), null);
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(PcsCaseEntity.builder()
+            .documents(List.of(document))
+            .build());
+        PCSCase caseData = PCSCase.builder()
+            .documentAmendDetails(DocumentAmendDetails.builder()
+                .selectedFolder(APPLICATIONS)
+                .applicationsDocuments(selectedDocument(document))
+                .build())
+            .build();
+        underTest.initialise(CASE_REFERENCE, caseData);
+
+        List<String> errors = underTest.validateAndStoreSelection(CASE_REFERENCE, caseData);
+
+        assertThat(errors).isEmpty();
+        assertThat(caseData.getDocumentAmendDetails().getSelectedDocumentFileName()).isEqualTo(fileName);
+        assertThat(caseData.getDocumentAmendDetails().getAmendedFileName())
+            .isEqualTo("application evidence with longer descriptive name");
+    }
+
+    @Test
     void shouldLeaveMissingDocumentSelectionToExuiMandatoryValidation() {
         DocumentEntity document = document("photo.pdf", EVIDENCE.getId(), null);
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(PcsCaseEntity.builder()
