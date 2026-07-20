@@ -110,13 +110,14 @@ export class CaseManagementAction implements IAction {
 
         if (Array.isArray(validationArr.inputArray)) {
           for (const item of validationArr.inputArray) {
+            const inlineMessage = item.errInlineMessage ?? item.errMessage;
             switch (validationArr.validationType) {
 
 
               case 'radioOptions':
                 await performAction('clickButton', validationArr.button);
-                await performValidation('inputError', !validationArr?.label ? validationArr.question : validationArr.label, item.errMessage);
-                await performValidation('errorMessage', !validationArr?.header ? validationArr.header = 'There is a problem' : validationArr.header, item.errMessage);
+                await performValidation('inputError', !validationArr?.label ? validationArr.question : validationArr.label, inlineMessage);
+                await performValidation('errorMessage', !validationArr?.header ? validationArr.header = 'There is a problem' : validationArr.header, item.errMessage); if (validationArr.option)
                 if (validationArr.option) {
                   await performAction('clickRadioButton', {
                     question: validationArr.question,
@@ -150,11 +151,8 @@ export class CaseManagementAction implements IAction {
                 break;
 
               case 'textField':
-                if (item.type === 'none') {
-                  await performAction('clickButton', validationArr.button);
-                } else if (item.type === 'Max') {
-                  await performAction('inputText', validationArr.label, generateRandomString(Number(item.input))
-                  );
+                if (item.type === 'Max') {
+                  await performAction('inputText', validationArr.label, generateRandomString(Number(item.input)));
                 }
                 await performAction('clickButton', validationArr.button);
                 await performValidation('errorMessage', validationArr.label, item.errMessage);
@@ -188,7 +186,7 @@ export class CaseManagementAction implements IAction {
                   question: validationArr.question,
                   option: validationArr.option
                 });
-                await performAction('inputText', validationArr.label, generateRandomString(Number(item.input)));
+                await performAction('inputText', validationArr.label, generateRandomString(Number(item.input.maxLength)));
                 await performAction('clickButton', validationArr.button);
                 break;
 

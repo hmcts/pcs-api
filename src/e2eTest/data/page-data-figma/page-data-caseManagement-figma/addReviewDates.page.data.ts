@@ -25,7 +25,7 @@ export const addReviewDates = {
   yearInputText :`2030`,
   descriptionTextInput:`50`,
   errorValidation: `YES`,
-  eventCouldNotBeCreatedErrorMessageHeader: 'The event could not be created',
+  eventCouldNotBeCreatedErrorMessageHeader: `The event could not be created`,
   errorValidationType: { one: `textField`, two: `radioOptions`, three: `checkBox`, four: `dropDown`, five: `dateField`, six: `maxInputField` },
   errorValidationField: {
     errorDateField: [
