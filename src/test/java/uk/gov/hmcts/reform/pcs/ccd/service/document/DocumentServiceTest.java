@@ -486,7 +486,8 @@ class DocumentServiceTest {
         List<DocumentEntity> capturedEntities = documentEntityListCaptor.getValue();
 
         assertThat(capturedEntities).hasSize(1);
-        assertThat(capturedEntities.getFirst().getCategoryId()).isNull();
+        assertThat(capturedEntities.getFirst().getCategoryId())
+            .isEqualTo(CaseFileCategory.UNCATEGORISED_DOCUMENTS.getId());
     }
 
     @Test
@@ -772,7 +773,7 @@ class DocumentServiceTest {
 
         assertThat(entities).allSatisfy(entity -> {
             assertThat(entity.getType()).isNull();
-            assertThat(entity.getCategoryId()).isNull();
+            assertThat(entity.getCategoryId()).isEqualTo(CaseFileCategory.UNCATEGORISED_DOCUMENTS.getId());
             assertThat(entity.getDefendantResponse()).isEqualTo(response);
             assertThat(entity.getPcsCase()).isEqualTo(pcsCase);
             assertThat(entity.getParty()).isEqualTo(party);
@@ -970,7 +971,7 @@ class DocumentServiceTest {
         assertThat(entities).hasSize(1);
         DocumentEntity entity = entities.getFirst();
         assertThat(entity.getType()).isEqualTo(DocumentType.OTHER);
-        assertThat(entity.getCategoryId()).isNull();
+        assertThat(entity.getCategoryId()).isEqualTo(CaseFileCategory.UNCATEGORISED_DOCUMENTS.getId());
         assertThat(entity.getGeneralApplication()).isNull();
         assertThat(entity.getUrl()).isEqualTo("url-new");
         assertThat(entity.getFileName()).isEqualTo("file-new - Defendant 1.pdf");
@@ -1172,7 +1173,7 @@ class DocumentServiceTest {
             Arguments.of(AdditionalDocumentType.CERTIFICATE_OF_SUITABILITY_AS_LF,
                          CaseFileCategory.CORRESPONDENCE.getId()),
             Arguments.of(AdditionalDocumentType.LEGAL_AID_CERTIFICATE, CaseFileCategory.CORRESPONDENCE.getId()),
-            Arguments.of(AdditionalDocumentType.OTHER, null)
+            Arguments.of(AdditionalDocumentType.OTHER, CaseFileCategory.UNCATEGORISED_DOCUMENTS.getId())
         );
     }
 
