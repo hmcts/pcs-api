@@ -9,7 +9,6 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
-import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
@@ -33,7 +32,7 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.lenient;
 import static uk.gov.hmcts.reform.pcs.ccd.service.FileUploadValidationService.ALLOWED_FILE_TYPE_GUIDANCE;
 import static uk.gov.hmcts.reform.pcs.ccd.service.FileUploadValidationService.DISALLOWED_FILE_TYPE_ERROR;
-import static uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils.wrapListItems;
+import static uk.gov.hmcts.reform.pcs.ccd.testutil.DocumentTestData.documentsWithFilenames;
 import static uk.gov.hmcts.reform.pcs.config.ClockConfiguration.UK_ZONE_ID;
 
 @ExtendWith(MockitoExtension.class)
@@ -178,8 +177,7 @@ class OccupationLicenceDetailsWalesPageTest extends BasePageTest {
         // Given
         OccupationLicenceDetailsWales occupationDetails = OccupationLicenceDetailsWales.builder()
             .occupationLicenceTypeWales(OccupationLicenceTypeWales.SECURE_CONTRACT)
-            .licenceDocuments(wrapListItems(List.of(
-                Document.builder().filename("licence.m4a").build())))
+            .licenceDocuments(documentsWithFilenames("licence.m4a"))
             .build();
 
         PCSCase caseData = PCSCase.builder()
@@ -198,8 +196,7 @@ class OccupationLicenceDetailsWalesPageTest extends BasePageTest {
         // Given
         OccupationLicenceDetailsWales occupationDetails = OccupationLicenceDetailsWales.builder()
             .occupationLicenceTypeWales(OccupationLicenceTypeWales.SECURE_CONTRACT)
-            .licenceDocuments(wrapListItems(List.of(
-                Document.builder().filename("licence.pdf").build())))
+            .licenceDocuments(documentsWithFilenames("licence.pdf"))
             .build();
 
         PCSCase caseData = PCSCase.builder()

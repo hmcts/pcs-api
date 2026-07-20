@@ -6,7 +6,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
-import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
@@ -28,7 +27,7 @@ import static org.mockito.Mockito.verify;
 import static uk.gov.hmcts.reform.pcs.ccd.service.FileUploadValidationService.ALLOWED_FILE_TYPE_GUIDANCE;
 import static uk.gov.hmcts.reform.pcs.ccd.service.FileUploadValidationService.DISALLOWED_FILE_TYPE_ERROR;
 import static uk.gov.hmcts.reform.pcs.ccd.service.FileUploadValidationService.ENERGY_PERFORMANCE_CERTIFICATE_REQUIRED;
-import static uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils.wrapListItems;
+import static uk.gov.hmcts.reform.pcs.ccd.testutil.DocumentTestData.documentsWithFilenames;
 
 @ExtendWith(MockitoExtension.class)
 class UploadRequiredDocumentsWalesTest extends BasePageTest {
@@ -94,10 +93,8 @@ class UploadRequiredDocumentsWalesTest extends BasePageTest {
         PCSCase caseData = PCSCase.builder()
             .requiredDocumentsWales(
                 WalesDocuments.builder()
-                    .energyPerformance(wrapListItems(List.of(
-                        Document.builder().filename("epc.pdf").build())))
-                    .gasSafetyReport(wrapListItems(List.of(
-                        Document.builder().filename("gas-report.mpg").build())))
+                    .energyPerformance(documentsWithFilenames("epc.pdf"))
+                    .gasSafetyReport(documentsWithFilenames("gas-report.mpg"))
                     .build()
             )
             .build();
@@ -117,11 +114,9 @@ class UploadRequiredDocumentsWalesTest extends BasePageTest {
                 WalesDocuments.builder()
                     .hasEnergyPerformanceCertificate(VerticalYesNo.YES)
                     .hasGasSafetyReport(VerticalYesNo.YES)
-                    .gasSafetyReport(wrapListItems(List.of(
-                        Document.builder().filename("gas-report.pdf").build())))
+                    .gasSafetyReport(documentsWithFilenames("gas-report.pdf"))
                     .hasElectricalInstallationConditionReport(VerticalYesNo.YES)
-                    .electricalInstallation(wrapListItems(List.of(
-                        Document.builder().filename("eicr.pdf").build())))
+                    .electricalInstallation(documentsWithFilenames("eicr.pdf"))
                     .build()
             )
             .build();
@@ -140,12 +135,9 @@ class UploadRequiredDocumentsWalesTest extends BasePageTest {
         PCSCase caseData = PCSCase.builder()
             .requiredDocumentsWales(
                 WalesDocuments.builder()
-                    .energyPerformance(wrapListItems(List.of(
-                        Document.builder().filename("epc.pdf").build())))
-                    .gasSafetyReport(wrapListItems(List.of(
-                        Document.builder().filename("gas-report.pdf").build())))
-                    .electricalInstallation(wrapListItems(List.of(
-                        Document.builder().filename("eicr.pdf").build())))
+                    .energyPerformance(documentsWithFilenames("epc.pdf"))
+                    .gasSafetyReport(documentsWithFilenames("gas-report.pdf"))
+                    .electricalInstallation(documentsWithFilenames("eicr.pdf"))
                     .build()
             )
             .build();

@@ -6,7 +6,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
-import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsSection;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
@@ -26,7 +25,7 @@ import static org.mockito.Mockito.verify;
 import static uk.gov.hmcts.reform.pcs.ccd.service.FileUploadValidationService.ALLOWED_FILE_TYPE_GUIDANCE;
 import static uk.gov.hmcts.reform.pcs.ccd.service.FileUploadValidationService.DISALLOWED_FILE_TYPE_ERROR;
 import static uk.gov.hmcts.reform.pcs.ccd.service.FileUploadValidationService.RENT_STATEMENT_REQUIRED;
-import static uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils.wrapListItems;
+import static uk.gov.hmcts.reform.pcs.ccd.testutil.DocumentTestData.documentsWithFilenames;
 
 @ExtendWith(MockitoExtension.class)
 public class RentArrearsTest extends BasePageTest {
@@ -76,8 +75,7 @@ public class RentArrearsTest extends BasePageTest {
         PCSCase caseData = PCSCase.builder()
             .rentArrears(
                 RentArrearsSection.builder()
-                    .statementDocuments(wrapListItems(List.of(
-                        Document.builder().filename("rent-statement.mp3").build())))
+                    .statementDocuments(documentsWithFilenames("rent-statement.mp3"))
                     .build()
             ).build();
 
@@ -108,8 +106,7 @@ public class RentArrearsTest extends BasePageTest {
         PCSCase caseData = PCSCase.builder()
             .rentArrears(
                 RentArrearsSection.builder()
-                    .statementDocuments(wrapListItems(List.of(
-                        Document.builder().filename("rent-statement.pdf").build())))
+                    .statementDocuments(documentsWithFilenames("rent-statement.pdf"))
                     .build()
             ).build();
 

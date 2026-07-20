@@ -9,7 +9,6 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
-import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
@@ -35,7 +34,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.service.FileUploadValidationService.DISALLOWED_FILE_TYPE_ERROR;
 import static uk.gov.hmcts.reform.pcs.ccd.service.FileUploadValidationService.TENANCY_LICENCE_DOCUMENT_REQUIRED;
-import static uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils.wrapListItems;
+import static uk.gov.hmcts.reform.pcs.ccd.testutil.DocumentTestData.documentsWithFilenames;
 import static uk.gov.hmcts.reform.pcs.config.ClockConfiguration.UK_ZONE_ID;
 
 @ExtendWith(MockitoExtension.class)
@@ -151,8 +150,7 @@ class TenancyLicenceDetailsPageTest extends BasePageTest {
                 .tenancyLicenceDate(FIXED_CURRENT_DATE.minusDays(1))
                 .typeOfTenancyLicence(TenancyLicenceType.INTRODUCTORY_TENANCY)
                 .hasCopyOfTenancyLicence(VerticalYesNo.YES)
-                .tenancyLicenceDocuments(wrapListItems(List.of(
-                    Document.builder().filename("tenancy.mp3").build())))
+                .tenancyLicenceDocuments(documentsWithFilenames("tenancy.mp3"))
                 .build())
             .build();
 
@@ -173,8 +171,7 @@ class TenancyLicenceDetailsPageTest extends BasePageTest {
                 .tenancyLicenceDate(FIXED_CURRENT_DATE.minusDays(1))
                 .typeOfTenancyLicence(TenancyLicenceType.INTRODUCTORY_TENANCY)
                 .hasCopyOfTenancyLicence(VerticalYesNo.YES)
-                .tenancyLicenceDocuments(wrapListItems(List.of(
-                    Document.builder().filename("tenancy.pdf").build())))
+                .tenancyLicenceDocuments(documentsWithFilenames("tenancy.pdf"))
                 .build())
             .build();
 
