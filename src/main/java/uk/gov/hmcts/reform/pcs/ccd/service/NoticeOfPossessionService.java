@@ -28,6 +28,9 @@ public class NoticeOfPossessionService {
         }
 
         NoticeServedDetails noticeServedDetails = pcsCase.getNoticeServedDetails();
+        if (noticeServedDetails == null) {
+            return noticeOfPossessionEntity;
+        }
 
         NoticeServiceMethod noticeServiceMethod = noticeServedDetails.getServiceMethod();
 
@@ -35,6 +38,10 @@ public class NoticeOfPossessionService {
         noticeOfPossessionEntity.setIsAbleToUploadDocument(getIsAbleToUploadDocument(noticeServedDetails));
         if (getIsAbleToUploadDocument(noticeServedDetails) == YesOrNo.NO) {
             noticeOfPossessionEntity.setUnableToUploadReason(noticeServedDetails.getUnableToUploadReason());
+        }
+
+        if (noticeServiceMethod == null) {
+            return noticeOfPossessionEntity;
         }
 
         switch (noticeServiceMethod) {
