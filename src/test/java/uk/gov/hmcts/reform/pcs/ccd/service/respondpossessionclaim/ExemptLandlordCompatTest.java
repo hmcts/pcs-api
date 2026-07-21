@@ -10,6 +10,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 class ExemptLandlordCompatTest {
 
     @Test
+    void shouldReturnNullWhenResponsesAreNull() {
+        assertThat(ExemptLandlordCompat.resolveFromResponses(null)).isNull();
+    }
+
+    @Test
+    void shouldReturnNullWhenEntityIsNull() {
+        assertThat(ExemptLandlordCompat.resolveFromEntity(null)).isNull();
+    }
+
+    @Test
     void shouldPreferExemptLandlordWhenBothPresentInResponses() {
         DefendantResponses responses = DefendantResponses.builder()
             .exemptLandlord(YesNoNotSure.NO)
