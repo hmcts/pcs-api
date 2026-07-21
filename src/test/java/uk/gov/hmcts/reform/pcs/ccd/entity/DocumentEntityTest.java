@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.entity;
 
 import org.junit.jupiter.api.Test;
+import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
 
 import java.time.Instant;
 
@@ -25,5 +26,25 @@ class DocumentEntityTest {
         entity.prePersist();
 
         assertThat(entity.getSubmittedDate()).isEqualTo(existingDate);
+    }
+
+    @Test
+    void shouldDefaultCategoryIdWhenMissingBeforePersist() {
+        DocumentEntity entity = DocumentEntity.builder().build();
+
+        entity.prePersist();
+
+        assertThat(entity.getCategoryId()).isEqualTo(CaseFileCategory.UNCATEGORISED_DOCUMENTS.getId());
+    }
+
+    @Test
+    void shouldNotOverwriteCategoryIdWhenAlreadySet() {
+        DocumentEntity entity = DocumentEntity.builder()
+            .categoryId(CaseFileCategory.PROPERTY_DOCUMENTS.getId())
+            .build();
+
+        entity.prePersist();
+
+        assertThat(entity.getCategoryId()).isEqualTo(CaseFileCategory.PROPERTY_DOCUMENTS.getId());
     }
 }
