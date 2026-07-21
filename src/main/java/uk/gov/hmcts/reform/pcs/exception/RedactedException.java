@@ -4,8 +4,8 @@ import java.io.PrintStream;
 import java.io.PrintWriter;
 
 import static uk.gov.hmcts.reform.pcs.exception.ExceptionRedaction.cause;
-import static uk.gov.hmcts.reform.pcs.exception.ExceptionRedaction.debugEnabled;
 import static uk.gov.hmcts.reform.pcs.exception.ExceptionRedaction.message;
+import static uk.gov.hmcts.reform.pcs.exception.ExceptionRedaction.showFullExceptions;
 import static uk.gov.hmcts.reform.pcs.exception.ExceptionRedaction.stackTrace;
 
 public class RedactedException extends Exception {
@@ -39,7 +39,7 @@ public class RedactedException extends Exception {
 
     @Override
     public String getMessage() {
-        return message(getClass(), code, context);
+        return message(code, context);
     }
 
     @Override
@@ -49,12 +49,12 @@ public class RedactedException extends Exception {
 
     @Override
     public Throwable getCause() {
-        return cause(getClass(), debugCause);
+        return cause(debugCause);
     }
 
     @Override
     public StackTraceElement[] getStackTrace() {
-        return stackTrace(getClass(), super.getStackTrace());
+        return stackTrace(super.getStackTrace());
     }
 
     @Override
@@ -64,7 +64,7 @@ public class RedactedException extends Exception {
 
     @Override
     public void printStackTrace(PrintStream stream) {
-        if (debugEnabled(getClass())) {
+        if (showFullExceptions()) {
             super.printStackTrace(stream);
         } else {
             stream.println(this);
@@ -73,7 +73,7 @@ public class RedactedException extends Exception {
 
     @Override
     public void printStackTrace(PrintWriter writer) {
-        if (debugEnabled(getClass())) {
+        if (showFullExceptions()) {
             super.printStackTrace(writer);
         } else {
             writer.println(this);

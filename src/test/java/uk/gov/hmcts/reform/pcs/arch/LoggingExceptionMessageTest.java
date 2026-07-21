@@ -29,11 +29,8 @@ class LoggingExceptionExposureTest {
 
     private static final Set<String> REDACTED_EXCEPTION_TYPES = Set.of("RedactedException", "RedactedRuntimeException");
 
-    private static final Set<String> LOG_METHODS =
-        Set.of("trace", "debug", "info", "warn", "error");
-
-    private static final Set<String> LOGGER_NAMES =
-        Set.of("log", "logger", "logging");
+    private static final Set<String> LOG_METHODS = Set.of("trace", "debug", "info", "warn", "error");
+    private static final Set<String> LOGGER_NAMES = Set.of("log", "logger", "logging");
 
     private static final Set<String> EXCEPTION_MESSAGE_METHODS =
         Set.of(
@@ -76,9 +73,7 @@ class LoggingExceptionExposureTest {
     @Test
     void loggingStatementsShouldNotExposeExceptionDetails() throws IOException {
         Path sourceRoot = Path.of("src/main/java");
-
         List<Violation> violations;
-
         try (Stream<Path> files = Files.walk(sourceRoot)) {
             violations = files
                 .filter(Files::isRegularFile)
@@ -87,12 +82,8 @@ class LoggingExceptionExposureTest {
                 .sorted()
                 .toList();
         }
-
-        Path reportPath =
-            Path.of("build/reports/logging-exception-exposure-violations.txt");
-
+        Path reportPath = Path.of("build/reports/logging-exception-exposure-violations.txt");
         Files.createDirectories(reportPath.getParent());
-
         String report = violations.isEmpty()
             ? "None found"
             : violations.stream()
@@ -102,7 +93,6 @@ class LoggingExceptionExposureTest {
             ));
 
         Files.writeString(reportPath, report);
-
         assertTrue(
             violations.isEmpty(),
             () -> """

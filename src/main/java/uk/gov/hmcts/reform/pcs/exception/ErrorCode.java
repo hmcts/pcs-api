@@ -23,8 +23,12 @@ public enum ErrorCode {
                                    "User is not linked as a defendant solicitor on this case"),
     LEGAL_REP_PARTY_SELECTION("LEGAL_REP_PARTY_SELECTION",
                               "User is not linked as a defendant on this case"),
-
-
+    CASE_NOT_FOUND("CASE_NOT_FOUND","No case found with reference"),
+    CLAIM_NOT_FOUND("CLAIM_NOT_FOUND","No claim found for case reference"),
+    FEE_PAYMENT("FEE_PAYMENT_01", "No fee payment entity found"),
+    FEE_PAYMENT_NOTIFICATION("FEE_PAYMENT_02", "Fee payment not found"),
+    GEN_APP("GEN_APP", "Statement of truth must be accepted to create a gen app"),
+    GEN_APP_NOT_FOUND("GEN_APP_NOT_FOUND", "Unable to find gen app"),
 
     TEST_CASE_SUPPORT("", "");
 

@@ -1,9 +1,9 @@
 package uk.gov.hmcts.reform.pcs.exception;
 
-public class CaseNotFoundException extends RuntimeException {
+public class CaseNotFoundException extends RedactedRuntimeException {
 
-    public CaseNotFoundException(long caseReference) {
-        super("No case found with reference " + caseReference);
+    public CaseNotFoundException(ErrorCode errorCode, RedactionContext redactionContext) {
+        super(errorCode, redactionContext);
     }
 
 }

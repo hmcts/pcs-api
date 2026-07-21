@@ -15,6 +15,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
+import uk.gov.hmcts.reform.pcs.exception.RedactionContext;
 import uk.gov.hmcts.reform.pcs.location.model.CourtVenue;
 import uk.gov.hmcts.reform.pcs.location.service.LocationReferenceService;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
@@ -22,6 +23,8 @@ import uk.gov.hmcts.reform.pcs.postcodecourt.service.PostCodeCourtService;
 
 import java.util.List;
 import java.util.Objects;
+
+import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.CASE_NOT_FOUND;
 
 @Service
 @Slf4j
@@ -90,7 +93,9 @@ public class PcsCaseService {
 
     public PcsCaseEntity loadCase(long caseReference) {
         return pcsCaseRepository.findByCaseReference(caseReference)
-            .orElseThrow(() -> new CaseNotFoundException(caseReference));
+            .orElseThrow(() -> new CaseNotFoundException(CASE_NOT_FOUND,
+                                                         RedactionContext.of("No case found with reference",
+                                                                             String.valueOf(caseReference))));
     }
 
     public void allocateCaseManagementLocation(PCSCase pcsCase) {

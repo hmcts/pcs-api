@@ -19,6 +19,7 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.DocumentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.GenAppRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentNameService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
+import uk.gov.hmcts.reform.pcs.exception.ErrorCode;
 import uk.gov.hmcts.reform.pcs.exception.GenAppException;
 
 import java.time.Clock;
@@ -27,6 +28,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static uk.gov.hmcts.reform.pcs.ccd.util.YesOrNoConverter.toYesOrNo;
+import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.GEN_APP;
 
 @Service
 public class GenAppService {
@@ -105,7 +107,7 @@ public class GenAppService {
         genAppEntity.setApplicationSubmittedDate(LocalDateTime.now(utcClock));
 
         if (genAppRequest.getSotAccepted() != VerticalYesNo.YES) {
-            throw new GenAppException("Statement of truth must be accepted to create a gen app");
+            throw new GenAppException(GEN_APP);
         }
 
         StatementOfTruthEntity statementOfTruthEntity = StatementOfTruthEntity.builder()

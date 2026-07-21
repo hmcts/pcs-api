@@ -8,8 +8,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
+import uk.gov.hmcts.reform.pcs.exception.ErrorCode;
 import uk.gov.hmcts.reform.pcs.exception.InvalidAccessCodeException;
 import uk.gov.hmcts.reform.pcs.exception.InvalidAuthTokenException;
+import uk.gov.hmcts.reform.pcs.exception.RedactionContext;
 import uk.gov.hmcts.reform.pcs.idam.IdamAuthenticator;
 import uk.gov.hmcts.reform.pcs.idam.User;
 import uk.gov.hmcts.reform.pcs.idam.UserInfo;
@@ -105,7 +107,8 @@ class CasePartyLinkControllerTest {
 
         ValidateAccessCodeRequest request = new ValidateAccessCodeRequest(ACCESS_CODE);
 
-        CaseNotFoundException expected = new CaseNotFoundException(CASE_REFERENCE);
+        CaseNotFoundException expected = new CaseNotFoundException(ErrorCode.CASE_NOT_FOUND,
+                                                                   RedactionContext.of("T", "1"));
         doThrow(expected)
             .when(partyAccessCodeLinkService)
             .linkPartyByAccessCode(CASE_REFERENCE, ACCESS_CODE, userDetails);

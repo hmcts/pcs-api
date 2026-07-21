@@ -19,10 +19,12 @@ import org.springframework.web.context.request.WebRequest;
 import uk.gov.hmcts.reform.pcs.exception.AccessCodeAlreadyUsedException;
 import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
+import uk.gov.hmcts.reform.pcs.exception.ErrorCode;
 import uk.gov.hmcts.reform.pcs.exception.IdamException;
 import uk.gov.hmcts.reform.pcs.exception.InvalidAccessCodeException;
 import uk.gov.hmcts.reform.pcs.exception.InvalidAuthTokenException;
 import uk.gov.hmcts.reform.pcs.exception.InvalidPartyForAccessCodeException;
+import uk.gov.hmcts.reform.pcs.exception.RedactionContext;
 
 import java.util.List;
 import java.util.Set;
@@ -49,7 +51,9 @@ class RestExceptionHandlerTest {
     void shouldHandleCaseNotFoundException() {
         // Given
         long caseReference = 12345L;
-        CaseNotFoundException caseNotFoundException = new CaseNotFoundException(caseReference);
+        CaseNotFoundException caseNotFoundException = new CaseNotFoundException(ErrorCode.CASE_NOT_FOUND,
+                                                                                RedactionContext.of("Case Reference",
+                                                                                String.valueOf(caseReference)));
         String expectedErrorMessage = "No case found with reference " + caseReference;
 
         // When
