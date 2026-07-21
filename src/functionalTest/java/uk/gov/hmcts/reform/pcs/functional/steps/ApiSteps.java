@@ -318,7 +318,7 @@ public class ApiSteps {
 
         String liveCaseNoteToken = SerenityRest.given()
             .baseUri(dataStoreUrl)
-            .header(TestConstants.AUTHORIZATION, "Bearer " + citizenUserIdamToken)
+            .header(TestConstants.AUTHORIZATION, "Bearer " + citizenUserIdamToken) //NB: event permissions don't apply for this call, any valid IDAM token can be used
             .header(TestConstants.SERVICE_AUTHORIZATION, pcsApiS2sToken)
             .header("Experimental", "True")
             .pathParam("caseReference", caseReference)
