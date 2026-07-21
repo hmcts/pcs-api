@@ -213,7 +213,7 @@ public class ManageHearing implements CCDConfig<PCSCase, State, UserRole> {
         return pcsCaseEntity.getHearings().stream()
             .filter(hearingEntity -> hearingEntity.getHearingDate().isAfter(now))
             .filter(hearingEntity -> BooleanUtils.isNotTrue(hearingEntity.getCancelled()))
-            .sorted(Comparator.comparing(HearingEntity::getHearingDate).reversed())
+            .sorted(Comparator.comparing(HearingEntity::getHearingDate))
             .toList();
     }
 

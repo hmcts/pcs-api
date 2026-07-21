@@ -232,6 +232,36 @@ public class ManageHearingTest extends BaseEventTest {
         }
 
         @Test
+        void shouldSetNextHearingId() {
+            // Given
+            HearingEntity hearingEntity1 = createHearing(FIXED_TEST_TIME.minusSeconds(1));
+            hearingEntity1.setId(1001L);
+
+            HearingEntity hearingEntity2 = createHearing(FIXED_TEST_TIME.plusSeconds(1));
+            hearingEntity2.setId(1002L);
+
+            HearingEntity hearingEntity3 = createHearing(FIXED_TEST_TIME.plusSeconds(2));
+            hearingEntity3.setId(1003L);
+
+            HearingEntity hearingEntity4 = createHearing(FIXED_TEST_TIME.plusSeconds(3));
+            hearingEntity4.setId(1004L);
+
+            when(pcsCaseEntity.getHearings())
+                .thenReturn(List.of(hearingEntity1, hearingEntity2, hearingEntity3, hearingEntity4));
+
+            PCSCase pcsCase = PCSCase.builder()
+                .caseManagementLocation(caseLocation)
+                .hearing(new Hearing())
+                .build();
+
+            // When
+            PCSCase response = callStartHandler(pcsCase);
+
+            // Then
+            assertThat(response.getHearing().getHearingId()).isEqualTo(1002L);
+        }
+
+        @Test
         void shouldSetHearingSummaryMarkdown() {
             // Given
             final String hearingLocation = "Hearing location name";
