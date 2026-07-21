@@ -178,7 +178,7 @@ class CounterClaimServiceTest {
 
         assertThatThrownBy(() -> underTest.saveCounterClaim(CASE_REFERENCE, counterClaim, null))
             .isInstanceOf(IllegalStateException.class)
-            .hasMessageContaining("Defendant party is null for case: " + CASE_REFERENCE);
+            .hasMessageContaining("party is null for case: " + CASE_REFERENCE);
     }
 
     @Test
