@@ -14,6 +14,9 @@ import {
 import {generateRandomString} from "@utils/common/string.utils";
 import {performActions} from "@utils/controller";
 import {caseInfo} from "@utils/actions/custom-actions";
+import {
+  CaseManagementCommonUtils
+} from "@utils/actions/custom-actions/custom-actions-caseManagement/caseManagementUtils.action";
 
 
 export const addressInfo = {
@@ -77,12 +80,11 @@ export class CaseManagementAction implements IAction {
       typeof reviewDateData.input === 'number'
         ? generateRandomString(reviewDateData.input)
         : (reviewDateData.input as string);
-    await performActions(
-      'Date of Review',
-      ['inputText', addReviewDates.dayTextLabel, reviewDateData.Day],
-      ['inputText', addReviewDates.monthTextLabel, reviewDateData.Month],
-      ['inputText', addReviewDates.yearTextLabel, reviewDateData.Year]
-    );
+    let date = CaseManagementCommonUtils.getRandomDate(reviewDateData.dateType as string);
+    await performActions('Date of Review',
+      ['inputText', reviewDateData.day, date.split('/')[0]],
+      ['inputText', reviewDateData.month, date.split('/')[1]],
+      ['inputText', reviewDateData.year, date.split('/')[2]]);
     await performAction('clickRadioButton', { question: reviewDateData.question, option: reviewDateData.option });
     await performAction('inputText', reviewDateData.label, reviewDateData.userInput);
     await performAction('reTryOnCallBackError', addReviewDates.continueButton, reviewDateData.nextPage as string);
@@ -108,20 +110,19 @@ export class CaseManagementAction implements IAction {
   private async inputErrorValidation(page: Page, validationArr: actionRecord) {
         if (Array.isArray(validationArr.inputArray)) {
           for (const item of validationArr.inputArray) {
-            const inlineMessage = item.errInlineMessage ?? item.errMessage;
+
             switch (validationArr.validationType) {
 
               case 'radioOptions':
                 await performAction('clickButton', validationArr.button);
-                await performValidation('inputError', !validationArr?.label ? validationArr.question : validationArr.label, inlineMessage);
+                await performValidation('inputError', !validationArr?.label ? validationArr.question : validationArr.label, item.errInlineMessage);
                 await performValidation('errorMessage', !validationArr?.header ? validationArr.header = 'There is a problem' : validationArr.header, item.errMessage);
                 if (validationArr.option) {
                   await performAction('clickRadioButton', {
                     question: validationArr.question,
                     option: validationArr.option
                   });
-                }
-                break;
+                }break;
 
               case 'checkBox':
                 await performAction('clickButton', validationArr.button);
@@ -148,43 +149,65 @@ export class CaseManagementAction implements IAction {
                 break;
 
               case 'textField':
-                if (item.type === 'Max') {
-                  await performAction('inputText', validationArr.label, generateRandomString(Number(item.input)));
-                }
-                await performAction('clickButton', validationArr.button);
-                await performValidation('errorMessage', validationArr.label, item.errMessage);
+                await performAction('inputText', validationArr.label, CaseManagementCommonUtils.generateRandomString(item.input));
+                await expect(async () => {
+                  await performAction('clickButton', validationArr.button);
+                  if (item.type === 'moreThanMax') {
+                    await performValidation('errorMessage', { header: validationArr.header, message: item.errMessage });
+                  } else {
+                    await performValidation('inputError', validationArr.label, item.errMessage);
+                    await performValidation('errorMessage', validationArr.label, item.errMessage);
+                  }
+                }).toPass({
+                  timeout: VERY_LONG_TIMEOUT,
+                });
                 break;
 
               case 'dateField':
-                if (item.type !== 'none') {
-                  await performActions(
-                    'Date of Review',
-                    ['inputText', 'Day', item.input.day],
-                    ['inputText', 'Month', item.input.month],
-                    ['inputText', 'Year', item.input.year]
+                let date: string = CaseManagementCommonUtils.getRandomDate(item.type as string);
+                const enterDate = () =>
+                  performActions(
+                    'Enter Date',
+                    ['inputText', validationArr.label1, date.split('/')[0]],
+                    ['inputText', validationArr.label2, date.split('/')[1]],
+                    ['inputText', validationArr.label3, date.split('/')[2]]
                   );
+
+                if (item.type === 'empty') {
+                  await performAction('clickButton', validationArr.button);
+                  await performValidation('inputError', !validationArr?.label ? validationArr.question : validationArr.label, item.errInlineMessage);
+                  await performValidation('errorMessage', validationArr.header1, item.errMessage);
+                } else if (item.type === 'past') {
+                  await enterDate();
+                } else if (item.type === 'invalid') {
+                  await enterDate();
+                  await performAction('clickButton', validationArr.button);
+                  await performValidation('errorMessage', validationArr.header1, item.errMessage);
                 }
-                await performAction('clickButton', validationArr.button);
-                await performValidation(
-                  'inputError',
-                  validationArr.label,
-                  item.input.errMessage
-                );
+                else {
+                  await enterDate();
+                  await performAction('clickButton', validationArr.button);
+                  await performValidation('errorMessage', { header: validationArr.header, message: item.errMessage });
+                }
                 break;
 
               case 'maxInputField' :
-                await performActions(
-                  'Date of Review',
-                  ['inputText', 'Day', item.input.day],
-                  ['inputText', 'Month', item.input.month],
-                  ['inputText', 'Year', item.input.year]
-                );
+                let dateOfReview: string = CaseManagementCommonUtils.getRandomDate(item.type as string);
+                const enterDateOfReview = () =>
+                  performActions(
+                    'Enter Date',
+                    ['inputText', validationArr.label1, dateOfReview.split('/')[0]],
+                    ['inputText', validationArr.label2, dateOfReview.split('/')[1]],
+                    ['inputText', validationArr.label3, dateOfReview.split('/')[2]]
+                  );
+                await enterDateOfReview();
                 await performAction('clickRadioButton', {
                   question: validationArr.question,
                   option: validationArr.option
                 });
-                await performAction('inputText', validationArr.label, generateRandomString(Number(item.input.maxLength)));
+                await performAction('inputText', validationArr.label, generateRandomString(Number(item.input)));
                 await performAction('clickButton', validationArr.button);
+                await performValidation('errorMessage', { header: validationArr.header, message: item.errMessage });
                 break;
 
               default:

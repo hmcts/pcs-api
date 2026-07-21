@@ -38,23 +38,31 @@ export class ErrorValidationAction implements IAction {
       await performAction('inputErrorValidation',{
         validationType: addReviewDates.errorValidationType.five,
         inputArray: addReviewDates.errorValidationField.errorDateField,
-        label: addReviewDates.dateOfReviewLabel,
+        question: addReviewDates.dateOfReviewHiddenLabel,
+        header1: addReviewDates.thereIsProbErrorMessageHeader,
+        label1: addReviewDates.dayHiddenTextLabel,
+        label2: addReviewDates.monthHiddenTextLabel,
+        label3: addReviewDates.yearHiddenTextLabel,
         button: addReviewDates.continueButton
       });
 
       await performAction('inputErrorValidation',{
         validationType: addReviewDates.errorValidationType.two,
         inputArray: addReviewDates.errorValidationField.errorRadioOption,
-        label: addReviewDates.reasonLabel,
+        label: addReviewDates.reasonHiddenLabel,
         button: addReviewDates.continueButton
       });
 
       await performAction('inputErrorValidation', {
         validationType: addReviewDates.errorValidationType.six,
         inputArray: addReviewDates.errorValidationField.errorMaxInputField,
-        label: addReviewDates.descriptionTextLabel,
-        question: addReviewDates.reasonLabel,
-        option: addReviewDates.OtherRadioOption,
+        header: addReviewDates.eventCouldNotBeCreatedErrorMessageHeader,
+        label1: addReviewDates.dayHiddenTextLabel,
+        label2: addReviewDates.monthHiddenTextLabel,
+        label3: addReviewDates.yearHiddenTextLabel,
+        label: addReviewDates.descriptionHiddenTextLabel,
+        question: addReviewDates.reasonHiddenLabel,
+        option: addReviewDates.OtherHiddenRadioOption,
         button: addReviewDates.continueButton
       });
     }

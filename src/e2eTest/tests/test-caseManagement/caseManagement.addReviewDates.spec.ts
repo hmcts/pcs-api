@@ -1,7 +1,7 @@
-import { createCaseApiData, makeAnApplicationApiData, submitCaseApiData } from '@data/api-data';
+import { createCaseApiData, submitCaseApiData } from '@data/api-data';
 import {initializeExecutor, performValidation} from '@utils/controller';
 import test from '@playwright/test';
-import { caseInfo, defendantUserDetails } from '@utils/actions/custom-actions';
+import { caseInfo } from '@utils/actions/custom-actions';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
 import { caseSummary, user } from '@data/page-data';
 import { dismissCookieBanner } from '@config/cookie-banner';
@@ -17,18 +17,9 @@ test.beforeEach(async ({ page, context }) => {
   initializeCMExecutor(page);
   await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
   await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayloadCaseFileView });
+  console.log(`Case created with case number: ${process.env.CASE_NUMBER}`);
   await performAction('updatePaymentAPI');
   await performAction('getCaseAPI', 'Link Solicitor');
-
-  // for (const defendant of defendantUserDetails) {
-  //   await performAction('makeAnApplicationAPI', {
-  //     data: makeAnApplicationApiData.makeAnApplicationAdjournPayload(
-  //       defendant.id,
-  //       defendant.name
-  //     ),
-  //   });
-  // };
-
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
   await dismissCookieBanner(page, 'additional');
   await performAction('login', user.staffAdmin);
@@ -51,11 +42,11 @@ test.describe('Case management - Case Worker Add Review date @nightly', async ()
     performAction('clickButton', addReviewDates.addNewButton);
     await performAction('errorValidationAddReviewDatesPage', addReviewDates.errorValidation);
     await performAction('addReviewDates', {
-      Day: addReviewDates.dayInputText,
-      Month: addReviewDates.monthInputText,
-      Year: addReviewDates.yearInputText,
-      question: addReviewDates.reasonLabel, option: addReviewDates.dismissCaseRadioOption,
-      label: addReviewDates.descriptionTextLabel, userInput: addReviewDates.descriptionTextInput,
+      day: addReviewDates.dayHiddenTextLabel,
+      month: addReviewDates.monthHiddenTextLabel,
+      year: addReviewDates.yearHiddenTextLabel,
+      question: addReviewDates.reasonHiddenLabel, option: addReviewDates.dismissCaseHiddenRadioOption,
+      label: addReviewDates.descriptionHiddenTextLabel, userInput: addReviewDates.descriptionTextInput,
       nextPage: checkYourAnswersAddReviewDates.mainHeader
     });
     await performAction('clickButton', checkYourAnswersAddReviewDates.submitButton);
