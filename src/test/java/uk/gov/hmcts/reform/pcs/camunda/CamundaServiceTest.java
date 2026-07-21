@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.pcs.camunda;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -49,8 +48,8 @@ public class CamundaServiceTest {
     @Test
     void shouldSendCreateTaskTestToCamunda() {
         // Given
-        Long caseId = 1234L;
-        TaskType taskType = TaskType.NEW_CLAIM_CREATE_NEW_HEARING;
+        final Long caseId = 1234L;
+        final TaskType taskType = TaskType.NEW_CLAIM_CREATE_NEW_HEARING;
 
         when(authTokenGenerator.generate()).thenReturn("authToken");
         when(utcClock.instant()).thenReturn(TEST_UTC_DATE_TIME.toInstant(ZoneOffset.UTC));
@@ -97,8 +96,8 @@ public class CamundaServiceTest {
     @Test
     void shouldSkipCreatingTaskIfWaIsNotEnabled() {
         // Given
-        Long caseId = 1234L;
-        TaskType taskType = TaskType.NEW_CLAIM_CREATE_NEW_HEARING;
+        final Long caseId = 1234L;
+        final TaskType taskType = TaskType.NEW_CLAIM_CREATE_NEW_HEARING;
 
         when(featureToggleService.isEnabled(FeatureFlag.CASEWORKER_WA)).thenReturn(false);
 
@@ -112,8 +111,8 @@ public class CamundaServiceTest {
     @Test
     void shouldHandleFailedRequestToCamunda() {
         // Given
-        Long caseId = 1234L;
-        TaskType taskType = TaskType.NEW_CLAIM_CREATE_NEW_HEARING;
+        final Long caseId = 1234L;
+        final TaskType taskType = TaskType.NEW_CLAIM_CREATE_NEW_HEARING;
 
         when(authTokenGenerator.generate()).thenReturn("authToken");
         when(utcClock.instant()).thenReturn(TEST_UTC_DATE_TIME.toInstant(ZoneOffset.UTC));
