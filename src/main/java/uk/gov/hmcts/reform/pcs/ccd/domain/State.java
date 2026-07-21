@@ -7,8 +7,8 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerReadAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.ClaimantAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DefendantAccess;
-import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.InternalCaseFlagAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.GlobalSearchAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.InternalCaseFlagAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.RasValidationAccess;
 
 /**
@@ -40,6 +40,70 @@ public enum State {
             InternalCaseFlagAccess.class, GlobalSearchAccess.class},
         hint = "${caseTitleMarkdown}"
     )
-    CASE_ISSUED
+    CASE_ISSUED,
+
+    @CCD(
+        label = "Judicial Referral",
+        access = {CaseworkerReadAccess.class, ClaimantAccess.class, RasValidationAccess.class,
+            GlobalSearchAccess.class},
+        hint = "${caseTitleMarkdown}"
+    )
+    JUDICIAL_REFERRAL,
+
+    @CCD(
+        label = "Hearing Readiness",
+        access = {CaseworkerReadAccess.class, ClaimantAccess.class, RasValidationAccess.class,
+            GlobalSearchAccess.class},
+        hint = "${caseTitleMarkdown}"
+    )
+    HEARING_READINESS,
+
+    @CCD(
+        label = "Prepare For Hearing Conduct Hearing",
+        access = {CaseworkerReadAccess.class, ClaimantAccess.class, RasValidationAccess.class,
+            GlobalSearchAccess.class},
+        hint = "${caseTitleMarkdown}"
+    )
+    PREPARE_FOR_HEARING_CONDUCT_HEARING,
+
+    @CCD(
+        label = "Decision Outcome",
+        access = {CaseworkerReadAccess.class, ClaimantAccess.class, RasValidationAccess.class,
+            GlobalSearchAccess.class},
+        hint = "${caseTitleMarkdown}"
+    )
+    DECISION_OUTCOME,
+
+    @CCD(
+        label = "Case Progression",
+        access = {CaseworkerReadAccess.class, ClaimantAccess.class, RasValidationAccess.class,
+            GlobalSearchAccess.class},
+        hint = "${caseTitleMarkdown}"
+    )
+    CASE_PROGRESSION,
+
+    @CCD(
+        label = "All Final Orders",
+        access = {CaseworkerReadAccess.class, ClaimantAccess.class, RasValidationAccess.class,
+            GlobalSearchAccess.class},
+        hint = "${caseTitleMarkdown}"
+    )
+    ALL_FINAL_ORDERS_ISSUED,
+
+    @CCD(
+        label = "Case Stayed",
+        access = {CaseworkerReadAccess.class, ClaimantAccess.class, RasValidationAccess.class,
+            GlobalSearchAccess.class},
+        hint = "${caseTitleMarkdown}"
+    )
+    CASE_STAYED,
+
+    @CCD(
+        label = "Breathing Space",
+        access = {CaseworkerReadAccess.class, ClaimantAccess.class, RasValidationAccess.class,
+            GlobalSearchAccess.class},
+        hint = "${caseTitleMarkdown}"
+    )
+    BREATHING_SPACE
 }
 
