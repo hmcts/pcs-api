@@ -12,7 +12,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.documentremoval.DocumentRemovalDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
-import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentAmendSelectionService;
+import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentSelectionService;
 
 import java.util.List;
 
@@ -26,7 +26,7 @@ import static org.mockito.Mockito.when;
 class SelectDocumentToRemovePageTest extends BasePageTest {
 
     @Mock
-    private DocumentAmendSelectionService documentSelectionService;
+    private DocumentSelectionService documentSelectionService;
 
     @BeforeEach
     void setUp() {

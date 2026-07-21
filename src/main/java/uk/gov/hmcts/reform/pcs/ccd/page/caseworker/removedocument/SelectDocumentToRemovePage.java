@@ -12,7 +12,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.documentremoval.DocumentRemovalDetails;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
-import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentAmendSelectionService;
+import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentSelectionService;
 import uk.gov.hmcts.reform.pcs.ccd.util.StringUtils;
 
 import java.util.ArrayList;
@@ -31,7 +31,7 @@ public class SelectDocumentToRemovePage implements CcdPageConfiguration {
     private static final String DOCUMENT_QUESTION_LABEL = "Which document do you want to remove?";
     private static final String REASON_LABEL = "Why are you removing this document?";
 
-    private final DocumentAmendSelectionService documentSelectionService;
+    private final DocumentSelectionService documentSelectionService;
     private final TextAreaValidationService textAreaValidationService;
 
     @Override

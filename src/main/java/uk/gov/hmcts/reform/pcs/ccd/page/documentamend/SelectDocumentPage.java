@@ -11,7 +11,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.documentamend.DocumentAmendDetails;
-import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentAmendSelectionService;
+import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentSelectionService;
 import uk.gov.hmcts.reform.pcs.ccd.util.StringUtils;
 
 import java.util.List;
@@ -27,7 +27,7 @@ public class SelectDocumentPage implements CcdPageConfiguration {
     private static final String DOCUMENT_QUESTION_LABEL = "Which document do you want to amend?";
     private static final String YES = "=\"Yes\"";
     private static final String NO = "=\"No\"";
-    private final DocumentAmendSelectionService documentSelectionService;
+    private final DocumentSelectionService documentSelectionService;
 
     @Override
     public void addTo(PageBuilder pageBuilder) {

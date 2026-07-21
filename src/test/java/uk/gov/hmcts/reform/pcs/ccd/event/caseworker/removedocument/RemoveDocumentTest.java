@@ -12,8 +12,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.documentremoval.DocumentRemovalDetails;
 import uk.gov.hmcts.reform.pcs.ccd.event.BaseEventTest;
 import uk.gov.hmcts.reform.pcs.ccd.page.caseworker.removedocument.SelectDocumentToRemovePage;
-import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentAmendSelectionService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentRemovalService;
+import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentSelectionService;
 
 import java.util.UUID;
 
@@ -25,7 +25,7 @@ import static org.mockito.Mockito.verify;
 class RemoveDocumentTest extends BaseEventTest {
 
     @Mock
-    private DocumentAmendSelectionService documentSelectionService;
+    private DocumentSelectionService documentSelectionService;
     @Mock
     private DocumentRemovalService documentRemovalService;
     @Mock

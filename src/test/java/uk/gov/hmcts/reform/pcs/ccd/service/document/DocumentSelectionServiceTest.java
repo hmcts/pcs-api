@@ -33,18 +33,18 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory.EVIDENCE;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory.UNCATEGORISED_DOCUMENTS;
 
 @ExtendWith(MockitoExtension.class)
-class DocumentAmendSelectionServiceTest {
+class DocumentSelectionServiceTest {
 
     private static final long CASE_REFERENCE = 1234567890123456L;
 
     @Mock
     private PcsCaseService pcsCaseService;
 
-    private DocumentAmendSelectionService underTest;
+    private DocumentSelectionService underTest;
 
     @BeforeEach
     void setUp() {
-        underTest = new DocumentAmendSelectionService(pcsCaseService, new AddressFormatter());
+        underTest = new DocumentSelectionService(pcsCaseService, new AddressFormatter());
     }
 
     @Test

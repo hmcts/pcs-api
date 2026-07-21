@@ -15,8 +15,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.documentremoval.DocumentRemovalDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.caseworker.removedocument.SelectDocumentToRemovePage;
-import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentAmendSelectionService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentRemovalService;
+import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentSelectionService;
 
 import java.util.UUID;
 
@@ -31,7 +31,7 @@ import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.RELEASE_1_DOT_2;
 @AllArgsConstructor
 public class RemoveDocument implements CCDConfig<PCSCase, State, UserRole> {
 
-    private final DocumentAmendSelectionService documentSelectionService;
+    private final DocumentSelectionService documentSelectionService;
     private final DocumentRemovalService documentRemovalService;
     private final SelectDocumentToRemovePage selectDocumentToRemovePage;
 

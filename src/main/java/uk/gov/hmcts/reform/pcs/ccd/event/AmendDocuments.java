@@ -16,7 +16,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.documentamend.DocumentAmendDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.documentamend.AmendDocumentDetailsPlaceholderPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.documentamend.SelectDocumentPage;
-import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentAmendSelectionService;
+import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentSelectionService;
 
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerRoles.CASEWORKER_ROLES;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.amendDocuments;
@@ -27,7 +27,7 @@ import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.RELEASE_1_DOT_2;
 @AllArgsConstructor
 public class AmendDocuments implements CCDConfig<PCSCase, State, UserRole> {
 
-    private final DocumentAmendSelectionService documentSelectionService;
+    private final DocumentSelectionService documentSelectionService;
     private final SelectDocumentPage selectDocumentPage;
     private final AmendDocumentDetailsPlaceholderPage amendDocumentDetailsPlaceholderPage;
 
