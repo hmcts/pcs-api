@@ -315,10 +315,10 @@ public class ApiSteps {
     @Step("retrieving internal case id from ccd data store")
     public String getInternalCaseId(Long caseReference) {
         String dataStoreUrl = System.getenv("DATA_STORE_URL_BASE");
-
+        //NB: event permissions don't apply for this call, any valid IDAM token can be used
         String liveCaseNoteToken = SerenityRest.given()
             .baseUri(dataStoreUrl)
-            .header(TestConstants.AUTHORIZATION, "Bearer " + citizenUserIdamToken) //NB: event permissions don't apply for this call, any valid IDAM token can be used
+            .header(TestConstants.AUTHORIZATION, "Bearer " + citizenUserIdamToken)
             .header(TestConstants.SERVICE_AUTHORIZATION, pcsApiS2sToken)
             .header("Experimental", "True")
             .pathParam("caseReference", caseReference)
