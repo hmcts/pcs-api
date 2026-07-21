@@ -84,7 +84,7 @@ class LegalRepPartySelectionServiceTest {
         assertThat(result.getParties()).hasSize(1);
         assertThat(result.getAllLinkedDefendants()).hasSize(1);
         assertThat(result.getPossessionClaimResponse()).isNull();
-        assertThat(result.getHasUnsubmittedCaseData()).isNull();
+        assertThat(result.getHasUnsubmittedCaseData()).isEqualTo(YesOrNo.YES);
         assertThat(result.getParties().getFirst().getId()).isEqualTo(partyId.toString());
         assertThat(result.getParties().getFirst().getValue().getFirstName()).isEqualTo("John");
     }
