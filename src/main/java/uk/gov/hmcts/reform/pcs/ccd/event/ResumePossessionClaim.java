@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.pcs.ccd.event;
 import com.github.kagkarlsson.scheduler.SchedulerClient;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
@@ -37,6 +38,7 @@ import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
 import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
+import uk.gov.hmcts.reform.pcs.reference.dto.NameAndAddress;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
@@ -90,20 +92,17 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
 
     }
 
-    private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
+    PCSCase start(EventPayload<PCSCase, State> eventPayload) {
         long caseReference = eventPayload.caseReference();
         PCSCase caseData = eventPayload.caseData();
 
         setUnsubmittedCaseDataFlag(caseReference, caseData);
 
-        String userEmail = securityContextService.getCurrentUserDetails().getSub();
-        // Fetch organisation name from rd-professional API
-        String organisationName = organisationService.getOrganisationNameForCurrentUser();
+        NameAndAddress nameAndAddress = organisationService.getNameAndAddressForCurrentUser();
         ClaimantInformation claimantInfo = getClaimantInfo(caseData);
-
-        if (organisationName != null) {
+        if (nameAndAddress != null && StringUtils.isNotEmpty(nameAndAddress.name())) {
             claimantInfo.setOrgNameFound(YesOrNo.YES);
-            claimantInfo.setClaimantName(organisationName);
+            claimantInfo.setClaimantName(nameAndAddress.name());
         } else {
             claimantInfo.setOrgNameFound(YesOrNo.NO);
         }
@@ -112,7 +111,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
         if (contactPreferences == null) {
             contactPreferences = ClaimantContactPreferences.builder().build();
         }
-        contactPreferences.setClaimantContactEmail(userEmail);
+        contactPreferences.setClaimantContactEmail(securityContextService.getCurrentUserDetails().getSub());
         caseData.setClaimantContactPreferences(contactPreferences);
         caseData.setClaimantInformation(claimantInfo);
         AddressUK propertyAddress = caseData.getPropertyAddress();
@@ -136,7 +135,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .build();
         caseData.setClaimantType(claimantTypeList);
 
-        contactPreferences.setOrganisationAddress(organisationService.getOrganisationAddressForCurrentUser());
+        contactPreferences.setOrganisationAddress(null != nameAndAddress ? nameAndAddress.address() : null);
 
         contactPreferences.setFormattedClaimantContactAddress(addressFormatter
             .formatMediumAddress(contactPreferences.getOrganisationAddress(), BR_DELIMITER));

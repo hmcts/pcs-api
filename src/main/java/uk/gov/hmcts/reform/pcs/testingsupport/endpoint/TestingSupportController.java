@@ -36,10 +36,9 @@ import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
-import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
-import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
-import uk.gov.hmcts.reform.pcs.testingsupport.model.TestingSupportAccessCode;
+import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.AccessCodeGenerationService;
@@ -47,24 +46,26 @@ import uk.gov.hmcts.reform.pcs.ccd.service.CaseRoleAssignmentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.idam.IdamAuthenticator;
 import uk.gov.hmcts.reform.pcs.idam.User;
+import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityResult;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.postcodecourt.service.EligibilityService;
-import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
-import uk.gov.hmcts.reform.pcs.reference.service.OrganisationDetailsService;
+import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 import uk.gov.hmcts.reform.pcs.service.LegalRepresentativePartyLinkService;
+import uk.gov.hmcts.reform.pcs.testingsupport.model.TestingSupportAccessCode;
 import uk.gov.hmcts.reform.pcs.testingsupport.model.PartyEmail;
 import uk.gov.hmcts.reform.pcs.testingsupport.service.CcdTestCaseOrchestrator;
 
 import java.time.Instant;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.Objects;
-import java.util.Collection;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -89,7 +90,6 @@ public class TestingSupportController {
     private final CaseRoleAssignmentService caseRoleAssignmentService;
     private final LegalRepresentativePartyLinkService legalRepresentativePartyLinkService;
     private final IdamAuthenticator idamAuthenticator;
-    private final OrganisationDetailsService organisationDetailsService;
     private final PcsCaseService pcsCaseService;
     private final AccessCodeGenerationService accessCodeGenerationService;
     private final FeatureToggleService featureToggleService;
@@ -425,14 +425,10 @@ public class TestingSupportController {
 
         caseRoleAssignmentService.assignRasRole(caseReference, userDetails.getUid(), UserRole.DEFENDANT_SOLICITOR);
 
-        OrganisationDetailsResponse organisationDetails = organisationDetailsService
-            .getOrganisationDetails(userDetails.getUid());
-
         legalRepresentativePartyLinkService.linkLegalRepresentativeToParty(
             caseReference,
             partyId,
-            userDetails,
-            organisationDetails
+            userDetails
         );
         return ResponseEntity.ok().build();
     }
