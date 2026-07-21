@@ -32,6 +32,8 @@ public class CachingOrganisationDetailsService {
     private final AuthTokenGenerator authTokenGenerator;
     private final IdamTokenProvider prdAdminTokenProvider;
 
+    private static final int RD_PROFESSIONAL_NULL_RESPONSE_TLL_OFFSET = 50;
+
     @Autowired
     public CachingOrganisationDetailsService(CachedOrganisationResponseRepository cachedOrganisationResponseRepository,
                                              @Value("${cache.organisationDetails.ttlInMinutes}") int ttlInMinutes,
@@ -103,7 +105,7 @@ public class CachingOrganisationDetailsService {
                 if (response.isPresent()) {
                     updateFields(existingCachedResponse, response.get(), userId);
                 } else {
-                    clearCachedFields(existingCachedResponse);
+                    setRdProfessionalNullResponseTllOffset(existingCachedResponse);
                 }
                 existingCachedResponse = cachedOrganisationResponseRepository.save(existingCachedResponse);
                 log.debug("Cached OrganisationDetails response refreshed");
@@ -193,11 +195,9 @@ public class CachingOrganisationDetailsService {
         return localDateTimeSupplier.get().isAfter(lastModifiedDate.plusMinutes(ttlInMinutes));
     }
 
-    private void clearCachedFields(CachedOrganisationResponseEntity existingCachedResponse) {
-        existingCachedResponse.setLastModifiedDate(localDateTimeSupplier.get());
-        existingCachedResponse.setOrganisationId(null);
-        existingCachedResponse.setOrganisationName(null);
-        clearCachedAddressFields(existingCachedResponse);
+    private void setRdProfessionalNullResponseTllOffset(CachedOrganisationResponseEntity existingCachedResponse) {
+        existingCachedResponse.setLastModifiedDate(localDateTimeSupplier.get()
+                                                       .minusMinutes(RD_PROFESSIONAL_NULL_RESPONSE_TLL_OFFSET));
     }
 
     private void clearCachedAddressFields(CachedOrganisationResponseEntity existingCachedResponse) {
@@ -214,7 +214,7 @@ public class CachingOrganisationDetailsService {
         CachedOrganisationResponseEntity.CachedOrganisationResponseEntityBuilder builder =
             CachedOrganisationResponseEntity.builder()
                 .idamId(userIdam)
-                .lastModifiedDate(localDateTimeSupplier.get());
+                .lastModifiedDate(localDateTimeSupplier.get().minusMinutes(RD_PROFESSIONAL_NULL_RESPONSE_TLL_OFFSET));
 
         return builder.build();
     }
