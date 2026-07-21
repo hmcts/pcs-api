@@ -11,7 +11,6 @@ export class ErrorValidationAction implements IAction {
       ['errorValidationChangeCaseStatePage', () => this.errorValidationChangeCaseStatePage(errorFlag as string)],
       ['errorValidationEnterGeneralAppPage', () => this.errorValidationEnterGeneralAppPage(errorFlag as string)],
       ['errorValidationHearingDatePage', () => this.errorValidationHearingDatePage(errorFlag as string)],
-
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);

@@ -135,7 +135,6 @@ export class CaseManagementAction implements IAction {
       performAction('inputText', appDetails.label, CaseManagementCommonUtils.generateRandomString(appDetails.input as number))
     }
     await performAction('reTryOnCallBackError', enterGenappApplication.continueButton, appDetails.nextPage as string);
-
   }
 
   private async confirmIfCourtHearingInNext14Days(courtHearing: actionRecord) {
