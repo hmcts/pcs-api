@@ -26,9 +26,11 @@ public class R1aResetCallback implements Callback {
         DECLARE
             r RECORD;
         BEGIN
-            IF to_regclass('public.flyway_schema_history') IS NOT NULL
-               AND NOT EXISTS (SELECT 1 FROM public.flyway_schema_history
-                               WHERE script = 'V001__r1a_baseline_schema.sql') THEN
+            -- Nested IFs: PL/pgSQL plans the whole expression before evaluating it, so the
+            -- NOT EXISTS must not be planned when flyway_schema_history is absent (fresh DB).
+            IF to_regclass('public.flyway_schema_history') IS NOT NULL THEN
+              IF NOT EXISTS (SELECT 1 FROM public.flyway_schema_history
+                             WHERE script = 'V001__r1a_baseline_schema.sql') THEN
 
                 RAISE NOTICE 'R1A reset: pre-baseline schema detected - clearing public + draft';
 
@@ -58,6 +60,7 @@ public class R1aResetCallback implements Callback {
                 DROP SCHEMA IF EXISTS draft CASCADE;
 
                 RAISE NOTICE 'R1A reset: done - public emptied, draft removed; baseline will now apply';
+              END IF;
             END IF;
         END $$""";
 
