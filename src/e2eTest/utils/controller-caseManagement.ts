@@ -70,7 +70,7 @@ async function validatePageIfNavigated(action: string): Promise<void> {
 }
 
 function captureDataForCYA(action: string, fieldName?: actionData | actionRecord, value?: actionData | actionRecord): void {
-  if (action === 'selectClaimantType') {
+  if (action === 'changeCaseState') {
     captureDataForCYAPage = true;
   }
 
@@ -82,6 +82,9 @@ function captureDataForCYA(action: string, fieldName?: actionData | actionRecord
 export async function performAction(action: string, fieldName?: actionData | actionRecord, value?: actionData | actionRecord): Promise<void> {
   const executor = getExecutor();
   const actionInstance = ActionCMRegistry.getAction(action);
+
+  captureDataForCYA(action, fieldName, value);
+  
   let displayFieldName = fieldName;
   let displayValue = value ?? fieldName;
 
