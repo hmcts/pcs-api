@@ -118,6 +118,8 @@ public class DocumentAmendService {
     }
 
     private void clearSelectedDocumentDetails(DocumentAmendDetails details) {
+        details.setSelectedDocumentId(null);
+        details.setSelectedDocumentFileName(null);
         details.setSelectedDocumentBaseFileName(null);
         details.setAmendedFileName(null);
         details.setSelectedDocumentIssueDate(null);
@@ -203,7 +205,7 @@ public class DocumentAmendService {
 
     private DocumentType resolveDocumentType(DocumentAmendDetails amendDetails) {
         if (amendDetails.getShowRelatedSubmissionsList() == VerticalYesNo.YES
-            && !NONE_PREFIX.equals(getSelectedCode(amendDetails.getRelatedSubmission()))) {
+            && !NONE_PREFIX.equals(getOptionalSelectedCode(amendDetails.getRelatedSubmission()))) {
             return null;
         }
 
@@ -211,7 +213,7 @@ public class DocumentAmendService {
             ? amendDetails.getRelatedSubmissionsDocumentType()
             : amendDetails.getStandaloneDocumentType();
 
-        String selectedCode = getSelectedCode(documentTypeList);
+        String selectedCode = documentTypeList.getValueCode();
         return Optional.ofNullable(selectedCode)
             .map(CaseworkerDocumentType::valueOf)
             .map(documentService::mapCaseworkerDocumentTypeToDocumentType)
@@ -236,7 +238,7 @@ public class DocumentAmendService {
         return extension.isBlank() ? baseName : baseName + "." + extension;
     }
 
-    private static String getSelectedCode(DynamicStringList dynamicStringList) {
+    private static String getOptionalSelectedCode(DynamicStringList dynamicStringList) {
         return dynamicStringList == null ? null : dynamicStringList.getValueCode();
     }
 

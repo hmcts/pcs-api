@@ -154,4 +154,51 @@ class DynamicStringListTest {
                 .label("Not related to an application or counterclaim")
                 .build());
     }
+
+    @Test
+    void shouldReturnNullListItemsWhenDeserialisedListItemsIsNotAnArray() throws IOException {
+        String json = """
+            {
+              "value": {
+                "code": "NONE",
+                "label": "Not related to an application or counterclaim"
+              },
+              "list_items": {
+                "code": "NONE",
+                "label": "Not related to an application or counterclaim"
+              }
+            }
+            """;
+
+        DynamicStringList actual = new ObjectMapper().readValue(json, DynamicStringList.class);
+
+        assertThat(actual.getValue()).isEqualTo(DynamicStringListElement.builder()
+            .code("NONE")
+            .label("Not related to an application or counterclaim")
+            .build());
+        assertThat(actual.getListItems()).isNull();
+    }
+
+    @Test
+    void shouldReturnNullValueWhenDeserialisedSelectedValueFieldsAreMissing() throws IOException {
+        DynamicStringList actual = new ObjectMapper().readValue("{}", DynamicStringList.class);
+
+        assertThat(actual.getValue()).isNull();
+        assertThat(actual.getListItems()).isNull();
+    }
+
+    @Test
+    void shouldReturnNullValueWhenDeserialisedSelectedValueFieldsAreNull() throws IOException {
+        String json = """
+            {
+              "valueCode": null,
+              "valueLabel": null
+            }
+            """;
+
+        DynamicStringList actual = new ObjectMapper().readValue(json, DynamicStringList.class);
+
+        assertThat(actual.getValue()).isNull();
+        assertThat(actual.getListItems()).isNull();
+    }
 }

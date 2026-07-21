@@ -56,6 +56,7 @@ public class AmendDocuments implements CCDConfig<PCSCase, State, UserRole> {
                 .showCondition(ShowConditions.featureFlagsEnabled(RELEASE_1_DOT_2, CASEWORKER_EVENTS))
                 .grant(Permission.CRU, UserRole.HEARING_CENTRE_TEAM_LEADER)
                 .grant(Permission.CRU, UserRole.HEARING_CENTRE_ADMIN)
+                .grant(Permission.CRU, UserRole.PCS_SOLICITOR)
                 .grantHistoryOnly(JUDICIAL_HISTORY_ROLES)
                 .showSummary()
                 .endButtonLabel("Submit");

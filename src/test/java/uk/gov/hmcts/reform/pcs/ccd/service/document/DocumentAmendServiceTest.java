@@ -182,6 +182,7 @@ class DocumentAmendServiceTest {
         when(caseworkerDocumentListService.buildRelatedPartyList(pcsCaseEntity, relatedParty))
             .thenReturn(relatedParty);
         DocumentAmendDetails amendDetails = DocumentAmendDetails.builder()
+            .selectedDocumentFileName("old.pdf")
             .selectedDocumentBaseFileName("old")
             .amendedFileName("old")
             .issueDate(LocalDate.of(2026, 4, 16))
@@ -193,6 +194,8 @@ class DocumentAmendServiceTest {
             PCSCase.builder().documentAmendDetails(amendDetails).build()
         );
 
+        assertThat(amendDetails.getSelectedDocumentId()).isNull();
+        assertThat(amendDetails.getSelectedDocumentFileName()).isNull();
         assertThat(amendDetails.getSelectedDocumentBaseFileName()).isNull();
         assertThat(amendDetails.getAmendedFileName()).isNull();
         assertThat(amendDetails.getSelectedDocumentIssueDate()).isNull();
@@ -235,6 +238,32 @@ class DocumentAmendServiceTest {
         assertThat(savedDocument.getCounterClaim()).isNull();
         assertThat(amendedDocument.fileName()).isEqualTo("rent statement 16042021");
         assertThat(amendedDocument.partyName()).isEqualTo("Defendant One");
+    }
+
+    @Test
+    void shouldRegenerateFilenameWithoutExtensionWhenOriginalDocumentHasNoExtension() {
+        documentEntity.setFileName("old file");
+        DocumentAmendDetails amendDetails = baseDetails()
+            .amendedFileName("rent statement.docx")
+            .showRelatedSubmissionsList(VerticalYesNo.NO)
+            .standaloneDocumentType(dynamicStringList(CaseworkerDocumentType.RENT_STATEMENT.name()))
+            .build();
+
+        when(documentService.mapCaseworkerDocumentTypeToDocumentType(CaseworkerDocumentType.RENT_STATEMENT))
+            .thenReturn(DocumentType.RENT_STATEMENT);
+        when(documentService.categoryIdForDocumentType(DocumentType.RENT_STATEMENT))
+            .thenReturn(CaseFileCategory.PROPERTY_DOCUMENTS.getId());
+        when(documentNameService.appendPartyPostfix("rent statement", mainClaim, PARTY_ID))
+            .thenReturn("rent statement - Defendant 1");
+
+        DocumentAmendService.AmendedDocument amendedDocument =
+            underTest.amendDocument(PCSCase.builder().documentAmendDetails(amendDetails).build(), CASE_REFERENCE);
+
+        verify(documentRepository).save(documentCaptor.capture());
+        DocumentEntity savedDocument = documentCaptor.getValue();
+
+        assertThat(savedDocument.getFileName()).isEqualTo("rent statement - Defendant 1");
+        assertThat(amendedDocument.fileName()).isEqualTo("rent statement");
     }
 
     @Test
@@ -304,6 +333,21 @@ class DocumentAmendServiceTest {
         )
             .isInstanceOf(IllegalStateException.class)
             .hasMessage("No document found for ID: " + otherDocumentId);
+    }
+
+    @Test
+    void shouldRejectWhenNoRelatedPartyIsSelected() {
+        DocumentAmendDetails amendDetails = baseDetails()
+            .relatedParty(DynamicList.builder()
+                .value(DynamicListElement.EMPTY)
+                .build())
+            .build();
+
+        assertThatThrownBy(() ->
+            underTest.amendDocument(PCSCase.builder().documentAmendDetails(amendDetails).build(), CASE_REFERENCE)
+        )
+            .isInstanceOf(IllegalStateException.class)
+            .hasMessage("No related party selected");
     }
 
     @Test

@@ -159,8 +159,33 @@ class DocumentAmendSelectionServiceTest {
         assertThat(errors).containsExactly(DocumentAmendSelectionService.SELECT_DIFFERENT_FOLDER_ERROR);
         assertThat(caseData.getDocumentAmendDetails().getSelectedFolderId()).isEqualTo(EVIDENCE.getId());
         assertThat(caseData.getDocumentAmendDetails().getSelectedFolderLabel()).isEqualTo(EVIDENCE.getLabel());
-        assertThat(caseData.getDocumentAmendDetails().getSelectedDocumentId()).isNull();
-        assertThat(caseData.getDocumentAmendDetails().getSelectedDocumentFileName()).isNull();
+        assertSelectedDocumentSelectionCleared(caseData.getDocumentAmendDetails());
+    }
+
+    @Test
+    void shouldClearSelectedDocumentWhenSelectedDynamicListValueIsBlank() {
+        UUID documentId = UUID.randomUUID();
+        PCSCase caseData = PCSCase.builder()
+            .documentAmendDetails(DocumentAmendDetails.builder()
+                .selectedFolder(EVIDENCE)
+                .selectedDocumentId(UUID.randomUUID().toString())
+                .selectedDocumentFileName("old.pdf")
+                .build())
+            .evidenceDocuments(DynamicList.builder()
+                .value(DynamicListElement.EMPTY)
+                .listItems(List.of(DynamicListElement.builder()
+                    .code(documentId)
+                    .label("evidence.pdf")
+                    .build()))
+                .build())
+            .build();
+
+        List<String> errors = underTest.validateAndStoreSelection(caseData, caseData.getDocumentAmendDetails());
+
+        assertThat(errors).isEmpty();
+        assertThat(caseData.getDocumentAmendDetails().getSelectedFolderId()).isEqualTo(EVIDENCE.getId());
+        assertThat(caseData.getDocumentAmendDetails().getSelectedFolderLabel()).isEqualTo(EVIDENCE.getLabel());
+        assertSelectedDocumentSelectionCleared(caseData.getDocumentAmendDetails());
     }
 
     @Test
@@ -217,5 +242,10 @@ class DocumentAmendSelectionServiceTest {
             .fileName(fileName)
             .categoryId(categoryId)
             .build();
+    }
+
+    private static void assertSelectedDocumentSelectionCleared(DocumentAmendDetails details) {
+        assertThat(details.getSelectedDocumentId()).isNull();
+        assertThat(details.getSelectedDocumentFileName()).isNull();
     }
 }

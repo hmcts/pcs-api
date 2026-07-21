@@ -466,10 +466,6 @@ public class DocumentService {
     }
 
     private String categoryIdFor(DocumentType documentType) {
-        if (documentType == null) {
-            return DEFAULT_CATEGORY_ID;
-        }
-
         return mapDocumentTypeToCategory(documentType)
             .map(CaseFileCategory::getId)
             .orElse(DEFAULT_CATEGORY_ID);

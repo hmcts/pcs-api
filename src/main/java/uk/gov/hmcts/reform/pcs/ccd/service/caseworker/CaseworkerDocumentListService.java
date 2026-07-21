@@ -38,6 +38,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterC
 import static uk.gov.hmcts.reform.pcs.ccd.service.caseworker.CaseworkerDocumentService.COUNTERCLAIM_ID_PREFIX;
 import static uk.gov.hmcts.reform.pcs.ccd.service.caseworker.CaseworkerDocumentService.GEN_APP_ID_PREFIX;
 import static uk.gov.hmcts.reform.pcs.ccd.service.caseworker.CaseworkerDocumentService.NONE_PREFIX;
+import static uk.gov.hmcts.reform.pcs.ccd.util.DynamicListUtils.retainSelectedValue;
 
 @Service
 @RequiredArgsConstructor
@@ -241,44 +242,6 @@ public class CaseworkerDocumentListService {
 
         String rank = partyLabel.replaceAll("\\D+", "");
         return rank.isBlank() ? "CC" : "CC" + rank;
-    }
-
-    private DynamicListElement retainSelectedValue(DynamicListElement selected,
-                                                   List<DynamicListElement> options) {
-        if (selected == null || selected.getCode() == null) {
-            if (selected == null || selected.getLabel() == null) {
-                return null;
-            }
-            return options.stream()
-                .filter(option -> selected.getLabel().equals(option.getLabel()))
-                .findFirst()
-                .orElse(null);
-        }
-
-        return options.stream()
-            .filter(option -> selected.getCode().toString().equals(option.getCode().toString())
-                || selected.getLabel() != null && selected.getLabel().equals(option.getLabel()))
-            .findFirst()
-            .orElse(null);
-    }
-
-    private DynamicStringListElement retainSelectedValue(DynamicStringListElement selected,
-                                                         List<DynamicStringListElement> options) {
-        if (selected == null || selected.getCode() == null) {
-            if (selected == null || selected.getLabel() == null) {
-                return null;
-            }
-            return options.stream()
-                .filter(option -> selected.getLabel().equals(option.getLabel()))
-                .findFirst()
-                .orElse(null);
-        }
-
-        return options.stream()
-            .filter(option -> selected.getCode().equals(option.getCode())
-                || selected.getLabel() != null && selected.getLabel().equals(option.getLabel()))
-            .findFirst()
-            .orElse(null);
     }
 
     @Builder

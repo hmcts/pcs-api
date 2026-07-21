@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Objects;
 
 import static uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter.COMMA_DELIMITER;
+import static uk.gov.hmcts.reform.pcs.ccd.util.DynamicListUtils.retainSelectedValue;
 
 @Service
 public class DocumentAmendSelectionService {
@@ -135,25 +136,6 @@ public class DocumentAmendSelectionService {
 
     private boolean isInCategory(DocumentEntity document, CaseFileCategory category) {
         return category.getId().equals(document.getCategoryId());
-    }
-
-    private DynamicListElement retainSelectedValue(DynamicListElement selected,
-                                                  List<DynamicListElement> options) {
-        if (selected == null || selected.getCode() == null) {
-            if (selected == null || selected.getLabel() == null) {
-                return null;
-            }
-            return options.stream()
-                .filter(option -> selected.getLabel().equals(option.getLabel()))
-                .findFirst()
-                .orElse(null);
-        }
-
-        return options.stream()
-            .filter(option -> selected.getCode().toString().equals(option.getCode().toString())
-                || selected.getLabel() != null && selected.getLabel().equals(option.getLabel()))
-            .findFirst()
-            .orElse(null);
     }
 
     private boolean isEmpty(DynamicList documents) {
