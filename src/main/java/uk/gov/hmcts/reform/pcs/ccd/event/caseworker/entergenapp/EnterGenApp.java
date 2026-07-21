@@ -115,11 +115,12 @@ public class EnterGenApp implements CCDConfig<PCSCase, State, UserRole> {
         genAppService.createGenAppEntity(caseData, pcsCaseEntity, applicantParty, GenAppState.GEN_APP_ISSUED);
 
         return SubmitResponse.<State>builder()
-            .confirmationBody(buildConfirmationMarkdown(caseData, eventPayload.caseReference()))
+            .confirmationBody(buildConfirmationMarkdown(
+                caseData, eventPayload.caseReference(), caseData.getCaseNameHmctsInternal()))
             .build();
     }
 
-    private String buildConfirmationMarkdown(PCSCase pcsCase, long caseReference) {
+    private String buildConfirmationMarkdown(PCSCase pcsCase, long caseReference, String caseName) {
         String address = addressFormatter.formatShortAddress(pcsCase.getPropertyAddress(), COMMA_DELIMITER);
         return """
             ---
@@ -127,12 +128,13 @@ public class EnterGenApp implements CCDConfig<PCSCase, State, UserRole> {
             <span class="govuk-panel__title govuk-!-font-size-36">Application entered</span><br>
             <span class="govuk-panel__body">Case number: %s</span><br>
             <span class="govuk-panel__body">%s</span>
+            <span class="govuk-panel__body">%s</span>
             </div>
 
             <h3 class="govuk-heading-s">What happens next</h3>
             <p class="govuk-body govuk-!-margin-bottom-6">If the application was made without notice, only the applicant
             will be informed. Otherwise, all parties will be informed.</p>
-            """.formatted(caseReference, address);
+            """.formatted(caseReference, address, caseName);
     }
 
 }

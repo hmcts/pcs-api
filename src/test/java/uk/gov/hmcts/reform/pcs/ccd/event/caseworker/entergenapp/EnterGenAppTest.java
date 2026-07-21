@@ -5,9 +5,11 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.DynamicList;
 import uk.gov.hmcts.ccd.sdk.type.DynamicListElement;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.EnterGenAppRequest;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
@@ -140,14 +142,16 @@ class EnterGenAppTest extends BaseEventTest {
         PCSCase caseData = PCSCase.builder()
             .enterGenAppRequest(enterGenAppRequest)
             .partyRadioList(partyRadioList)
+            .caseNameHmctsInternal("Smith v Doe")
             .build();
 
         // When
-        callSubmitHandler(caseData);
+        SubmitResponse<State> response = callSubmitHandler(caseData);
 
         // Then
         verify(genAppService)
             .createGenAppEntity(caseData, pcsCaseEntity, applicantParty, GEN_APP_ISSUED);
+        assertThat(response.getConfirmationBody()).contains("Smith v Doe");
     }
 
 }
