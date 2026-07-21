@@ -5,12 +5,15 @@ import io.pebbletemplates.pebble.template.PebbleTemplate;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.pcs.ccd.model.EnforcementCosts;
+import uk.gov.hmcts.reform.pcs.exception.ErrorCode;
 import uk.gov.hmcts.reform.pcs.exception.TemplateRenderingException;
 
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.Map;
+
+import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.TEMPLATE_RENDERING;
 
 @AllArgsConstructor
 @Component
@@ -33,7 +36,7 @@ public class RepaymentTableRenderer {
         try {
             compiledTemplate.evaluate(writer, context);
         } catch (IOException e) {
-            throw new TemplateRenderingException("Failed to render template", e);
+            throw new TemplateRenderingException(TEMPLATE_RENDERING, e);
         }
 
         return writer.toString();

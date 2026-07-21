@@ -18,6 +18,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.SECURITY_CONTEXT;
 
 @ExtendWith(MockitoExtension.class)
 class OrganisationServiceTest {
@@ -96,7 +97,7 @@ class OrganisationServiceTest {
     @Test
     @DisplayName("Should return null when exception thrown")
     void getOrganisationIdForCurrentUser_ShouldReturnNullWhenSecurityContextExceptionThrown() {
-        when(securityContextService.getCurrentUserId()).thenThrow(new SecurityContextException(""));
+        when(securityContextService.getCurrentUserId()).thenThrow(new SecurityContextException(SECURITY_CONTEXT));
 
         String result = organisationService.getOrganisationIdForCurrentUser();
 

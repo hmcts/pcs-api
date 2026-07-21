@@ -4,11 +4,14 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.exception.SecurityContextException;
 import uk.gov.hmcts.reform.pcs.idam.User;
+import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 
 import java.util.UUID;
+
+import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.AUTHENTICATION_PRINCIPAL;
+import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.SECURITY_CONTEXT;
 
 @Service
 public class SecurityContextService {
@@ -32,13 +35,13 @@ public class SecurityContextService {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         if (authentication == null) {
-            throw new SecurityContextException("No authentication instance found");
+            throw new SecurityContextException(SECURITY_CONTEXT);
         }
 
         if (authentication.getPrincipal() instanceof User user) {
             return user.getUserDetails();
         } else {
-            throw new SecurityContextException("Authentication principal is null or not of the expected type");
+            throw new SecurityContextException(AUTHENTICATION_PRINCIPAL);
         }
     }
 

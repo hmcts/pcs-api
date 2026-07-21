@@ -71,6 +71,8 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.respondPossessionClaim;
+import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.DEFENDANT_ACCESS_VALIDATOR;
+import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.DEFENDANT_PARTY_EXTRACTOR;
 import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.DEFENDANT_PARTY_EXTRACTOR_NO_DEFENDANTS;
 
 @ExtendWith(MockitoExtension.class)
@@ -330,7 +332,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
 
         assertThatThrownBy(() -> callStartHandler(caseData))
             .isInstanceOf(CaseAccessException.class)
-            .hasMessage("No defendants associated with this case");
+            .hasMessage("REDACTED [DEFENDANT_PARTY_EXTRACTOR_02: No defendants associated with this case]");
     }
 
     @Test
@@ -344,14 +346,14 @@ class RespondPossessionClaimTest extends BaseEventTest {
         when(userInfo.getRoles()).thenReturn(List.of(UserRole.CITIZEN.getRole()));
         when(securityContextService.getCurrentUserId()).thenReturn(defendantUserId);
         when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
-//        when(accessValidator.validateAndGetDefendant(pcsCaseEntity, defendantUserId))
-//            .thenThrow(new CaseAccessException("No claim found for this case"));
+        when(accessValidator.validateAndGetDefendant(pcsCaseEntity, defendantUserId))
+            .thenThrow(new CaseAccessException(DEFENDANT_PARTY_EXTRACTOR));
 
         PCSCase caseData = PCSCase.builder().build();
 
         assertThatThrownBy(() -> callStartHandler(caseData))
             .isInstanceOf(CaseAccessException.class)
-            .hasMessage("No claim found for this case");
+            .hasMessage("REDACTED [DEFENDANT_PARTY_EXTRACTOR_01: No claim found for this case]");
     }
 
     @Test
@@ -383,14 +385,14 @@ class RespondPossessionClaimTest extends BaseEventTest {
         when(userInfo.getRoles()).thenReturn(List.of(UserRole.CITIZEN.getRole()));
         when(securityContextService.getCurrentUserId()).thenReturn(differentUserId);
         when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
-//        when(accessValidator.validateAndGetDefendant(pcsCaseEntity, differentUserId))
-//            .thenThrow(new CaseAccessException("User is not linked as a defendant on this case"));
+        when(accessValidator.validateAndGetDefendant(pcsCaseEntity, differentUserId))
+            .thenThrow(new CaseAccessException(DEFENDANT_ACCESS_VALIDATOR));
 
         PCSCase caseData = PCSCase.builder().build();
 
         assertThatThrownBy(() -> callStartHandler(caseData))
             .isInstanceOf(CaseAccessException.class)
-            .hasMessage("User is not linked as a defendant on this case");
+            .hasMessage("REDACTED [DEFENDANT_ACCESS_VALIDATOR: User is not linked as a defendant on this case]");
     }
 
     @Test
@@ -875,7 +877,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
         // when / then
         assertThatThrownBy(() -> callStartHandler(caseData))
             .isInstanceOf(CaseAccessException.class)
-            .hasMessage("User is not linked as a defendant on this case");
+            .hasMessage("REDACTED [LEGAL_REP_PARTY_SELECTION: User is not linked as a defendant on this case]");
     }
 
     @Test

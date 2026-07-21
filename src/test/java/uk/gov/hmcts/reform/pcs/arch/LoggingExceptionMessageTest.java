@@ -25,7 +25,7 @@ import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class LoggingExceptionExposureTest {
+class LoggingExceptionMessageTest {
 
     private static final Set<String> REDACTED_EXCEPTION_TYPES = Set.of("RedactedException", "RedactedRuntimeException");
 
@@ -78,7 +78,7 @@ class LoggingExceptionExposureTest {
             violations = files
                 .filter(Files::isRegularFile)
                 .filter(path -> path.toString().endsWith(".java"))
-                .flatMap(LoggingExceptionExposureTest::findViolations)
+                .flatMap(LoggingExceptionMessageTest::findViolations)
                 .sorted()
                 .toList();
         }
@@ -120,7 +120,7 @@ class LoggingExceptionExposureTest {
 
             Stream<Violation> loggingViolations =
                 compilationUnit.findAll(MethodCallExpr.class).stream()
-                    .filter(LoggingExceptionExposureTest::isLoggingCall)
+                    .filter(LoggingExceptionMessageTest::isLoggingCall)
                     .flatMap(call -> inspectLoggingCall(file, call));
 
             Stream<Violation> printStackTraceViolations =
@@ -242,7 +242,7 @@ class LoggingExceptionExposureTest {
 
         return call.getScope()
             .map(Expression::toString)
-            .map(LoggingExceptionExposureTest::lastScopeSegment)
+            .map(LoggingExceptionMessageTest::lastScopeSegment)
             .filter(LOGGER_NAMES::contains)
             .isPresent();
     }
@@ -255,9 +255,7 @@ class LoggingExceptionExposureTest {
     }
 
     @SuppressWarnings("unchecked")
-    private static Set<String> findThrowableVariableNames(
-        MethodCallExpr loggingCall
-    ) {
+    private static Set<String> findThrowableVariableNames(MethodCallExpr loggingCall) {
         Set<String> names = new HashSet<>(CONVENTIONAL_EXCEPTION_NAMES);
         Set<String> redactedNames = new HashSet<>();
 

@@ -29,6 +29,16 @@ public enum ErrorCode {
     FEE_PAYMENT_NOTIFICATION("FEE_PAYMENT_02", "Fee payment not found"),
     GEN_APP("GEN_APP", "Statement of truth must be accepted to create a gen app"),
     GEN_APP_NOT_FOUND("GEN_APP_NOT_FOUND", "Unable to find gen app"),
+    POST_CODE("POST_CODE","Postcode can't be empty or null"),
+    SECURITY_CONTEXT("SECURITY_CONTEXT", "No authentication instance found"),
+    AUTHENTICATION_PRINCIPAL("AUTHENTICATION PRINCIPLE",
+                             "Authentication principal is null or not of the expected type"),
+    TEMPLATE_RENDERING("TEMPLATE_RENDERING", "Failed to render template"),
+    UNSUBMITTED_DATA("UNSUBMITTED_DATA_01", "Failed to save answers"),
+    UPDATE_DRAFT("UNSUBMITTED_DATA_02", "Failed to update draft case data"),
+    DRAFT_NOT_FOUND("UNSUBMITTED_DATA_03", "No draft found for case"),
+    NO_UNSUBMITTED_CASE_DATA("UNSUBMITTED_DATA_04",
+                             "No unsubmitted case data found for case"),
 
     TEST_CASE_SUPPORT("", "");
 
