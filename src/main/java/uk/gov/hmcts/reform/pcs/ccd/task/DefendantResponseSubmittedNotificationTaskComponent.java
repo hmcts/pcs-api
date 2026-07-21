@@ -47,7 +47,7 @@ public class DefendantResponseSubmittedNotificationTaskComponent {
             ))
             .execute((taskInstance, executionContext) -> {
                 DefendantResponseStatusChangeTaskData taskData = taskInstance.getData();
-                Long defendantResponseId = taskData.getDefendantResponseId();
+                Integer defendantResponseId = taskData.getDefendantResponseId();
                 log.info("Processing defendant response submitted notification for: {}", defendantResponseId);
 
                 defendantResponseNotificationService.sendEmailNotificationForNoCounterClaim(defendantResponseId);

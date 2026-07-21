@@ -130,7 +130,7 @@ public class DefendantResponseService {
         );
 
         // Citizen path only. Schedule after commit so generation can't run against a rolled-back response.
-        Long defendantResponseId = savedResponse.getId();
+        Integer defendantResponseId = savedResponse.getId();
         UUID defendantPartyId = savedResponse.getParty().getId();
         scheduleAfterCommit(() -> defenceFormScheduler.scheduleDefenceFormGeneration(
             caseReference, defendantResponseId, defendantPartyId));

@@ -22,7 +22,7 @@ public class DefendantResponseNotificationService {
     private final CounterClaimRepository counterClaimRepository;
 
     @Transactional
-    public void sendDefendantResponseReceived(Long defendantResponseId) {
+    public void sendDefendantResponseReceived(Integer defendantResponseId) {
         DefendantResponseEntity defendantResponse = defendantResponseRepository.findById(defendantResponseId)
             .orElseThrow(() -> new IllegalArgumentException("Defendant response not found: " + defendantResponseId));
 
@@ -30,7 +30,7 @@ public class DefendantResponseNotificationService {
     }
 
     @Transactional
-    public void sendEmailNotificationForNoCounterClaim(Long defendantResponseId) {
+    public void sendEmailNotificationForNoCounterClaim(Integer defendantResponseId) {
         DefendantResponseEntity defendantResponse = defendantResponseRepository.findById(defendantResponseId)
             .orElseThrow(() -> new IllegalArgumentException("Defendant response not found: " + defendantResponseId));
 
@@ -44,7 +44,7 @@ public class DefendantResponseNotificationService {
     }
 
     @Transactional
-    public void sendDefendantEmailNotificationForCounterclaim(Long defendantResponseId) {
+    public void sendDefendantEmailNotificationForCounterclaim(Integer defendantResponseId) {
         DefendantResponseEntity defendantResponse = defendantResponseRepository.findById(defendantResponseId)
             .orElseThrow(() -> new IllegalArgumentException("Defendant response not found: " + defendantResponseId));
 

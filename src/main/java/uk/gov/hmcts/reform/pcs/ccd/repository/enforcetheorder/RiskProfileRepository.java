@@ -5,5 +5,5 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.RiskProfileEntity;
 
 
 public interface RiskProfileRepository
-        extends JpaRepository<RiskProfileEntity, Long> {
+        extends JpaRepository<RiskProfileEntity, Integer> {
 }

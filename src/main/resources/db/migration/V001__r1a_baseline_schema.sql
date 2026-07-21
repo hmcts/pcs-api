@@ -1,6 +1,6 @@
--- V001__r1a_schema_integer_ids.sql
--- HDPI-7834: R1A consolidated baseline schema with integer (bigint identity) internal primary keys.
--- Source: live AAT schema (canonical), + reconciled fk_fee_payment_claim (AAT-only drift), + UUID->bigint
+-- V001__r1a_baseline_schema.sql
+-- HDPI-7834: R1A consolidated baseline schema with integer (int4 identity) internal primary keys.
+-- Source: live AAT schema (canonical), + reconciled fk_fee_payment_claim (AAT-only drift), + UUID->integer
 --   conversion of 31 internal tables. Retained UUID: pcs_case, party, claim, counter_claim,
 --   general_application, enf_case, document, claim_ground, case_flag, case_party_flag, case_link_reason,
 --   flag_ref_data, legal_representative. Replaces the incremental V001-V135. Pre-go-live: no data preserved.
@@ -111,7 +111,7 @@ $$;
 
 
 CREATE TABLE draft.draft_case_data (
-    id bigint NOT NULL,
+    id integer NOT NULL GENERATED ALWAYS AS IDENTITY,
     case_reference bigint NOT NULL,
     case_data jsonb,
     event_id varchar(70) NOT NULL,
@@ -121,19 +121,8 @@ CREATE TABLE draft.draft_case_data (
 
 
 
-ALTER TABLE draft.draft_case_data ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
-    SEQUENCE NAME draft.draft_case_data_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1
-);
-
-
-
 CREATE TABLE public.address (
-    id bigint NOT NULL,
+    id integer NOT NULL GENERATED ALWAYS AS IDENTITY,
     version integer,
     address_line1 varchar(100),
     address_line2 varchar(100),
@@ -146,19 +135,8 @@ CREATE TABLE public.address (
 
 
 
-ALTER TABLE public.address ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
-    SEQUENCE NAME public.address_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1
-);
-
-
-
 CREATE TABLE public.asb_prohibited_conduct (
-    id bigint NOT NULL,
+    id integer NOT NULL GENERATED ALWAYS AS IDENTITY,
     version integer,
     claim_id uuid,
     antisocial_behaviour public.yes_no,
@@ -171,17 +149,6 @@ CREATE TABLE public.asb_prohibited_conduct (
     claiming_standard_contract_details varchar(250),
     periodic_contract_agreed public.yes_no,
     periodic_contract_details varchar(250)
-);
-
-
-
-ALTER TABLE public.asb_prohibited_conduct ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
-    SEQUENCE NAME public.asb_prohibited_conduct_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1
 );
 
 
@@ -207,7 +174,7 @@ CREATE TABLE public.case_flag (
 
 
 CREATE TABLE public.case_link (
-    id bigint NOT NULL,
+    id integer NOT NULL GENERATED ALWAYS AS IDENTITY,
     case_id uuid NOT NULL,
     linked_case_reference bigint NOT NULL,
     ccd_list_id varchar(50),
@@ -216,27 +183,16 @@ CREATE TABLE public.case_link (
 
 
 
-ALTER TABLE public.case_link ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
-    SEQUENCE NAME public.case_link_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1
-);
-
-
-
 CREATE TABLE public.case_link_reason (
     id uuid NOT NULL,
-    case_link_id bigint NOT NULL,
+    case_link_id integer NOT NULL,
     reason_code varchar(100) NOT NULL
 );
 
 
 
 CREATE TABLE public.case_note (
-    id bigint NOT NULL,
+    id integer NOT NULL GENERATED ALWAYS AS IDENTITY,
     created_on timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
     created_by varchar(50) NOT NULL,
     note varchar(500) NOT NULL,
@@ -245,19 +201,8 @@ CREATE TABLE public.case_note (
 
 
 
-ALTER TABLE public.case_note ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
-    SEQUENCE NAME public.case_note_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1
-);
-
-
-
 CREATE TABLE public.case_notification (
-    id bigint NOT NULL,
+    id integer NOT NULL GENERATED ALWAYS AS IDENTITY,
     case_id uuid NOT NULL,
     provider_notification_id uuid,
     submitted_at timestamp without time zone,
@@ -269,17 +214,6 @@ CREATE TABLE public.case_notification (
     party_id uuid,
     claim_id uuid,
     claim_type varchar(255) NOT NULL
-);
-
-
-
-ALTER TABLE public.case_notification ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
-    SEQUENCE NAME public.case_notification_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1
 );
 
 
@@ -343,24 +277,13 @@ CREATE TABLE public.claim (
 
 
 CREATE TABLE public.claim_activity_log (
-    id bigint NOT NULL,
+    id integer NOT NULL GENERATED ALWAYS AS IDENTITY,
     case_id uuid NOT NULL,
     party_id uuid,
     activity_type varchar NOT NULL,
     status varchar NOT NULL,
     created_at timestamp without time zone DEFAULT now() NOT NULL,
     details jsonb
-);
-
-
-
-ALTER TABLE public.claim_activity_log ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
-    SEQUENCE NAME public.claim_activity_log_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1
 );
 
 
@@ -404,7 +327,7 @@ CREATE TABLE public.claim_party_legal_representative (
 
 
 CREATE TABLE public.contact_preferences (
-    id bigint NOT NULL,
+    id integer NOT NULL GENERATED ALWAYS AS IDENTITY,
     contact_by_text public.yes_no,
     contact_by_phone public.yes_no,
     preference_type public.contact_preference_type,
@@ -414,21 +337,10 @@ CREATE TABLE public.contact_preferences (
 
 
 
-ALTER TABLE public.contact_preferences ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
-    SEQUENCE NAME public.contact_preferences_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1
-);
-
-
-
 CREATE TABLE public.counter_claim (
     id uuid NOT NULL,
     version integer,
-    sot_id bigint,
+    sot_id integer,
     case_id uuid NOT NULL,
     party_id uuid NOT NULL,
     claim_type varchar(50),
@@ -452,26 +364,15 @@ CREATE TABLE public.counter_claim (
 
 
 CREATE TABLE public.counter_claim_party (
-    id bigint NOT NULL,
+    id integer NOT NULL GENERATED ALWAYS AS IDENTITY,
     cc_id uuid NOT NULL,
     party_id uuid NOT NULL
 );
 
 
 
-ALTER TABLE public.counter_claim_party ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
-    SEQUENCE NAME public.counter_claim_party_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1
-);
-
-
-
 CREATE TABLE public.defendant_response (
-    id bigint NOT NULL,
+    id integer NOT NULL GENERATED ALWAYS AS IDENTITY,
     claim_id uuid NOT NULL,
     party_id uuid NOT NULL,
     free_legal_advice public.yes_no_prefer_not_to_say,
@@ -479,7 +380,7 @@ CREATE TABLE public.defendant_response (
     tenancy_start_date date,
     landlord_registered public.yes_no_not_sure,
     defendant_name_confirmation public.yes_no,
-    sot_id bigint,
+    sot_id integer,
     pcs_case_id uuid NOT NULL,
     correspondence_address_confirmation public.yes_no,
     possession_notice_received public.yes_no_not_sure,
@@ -507,17 +408,6 @@ CREATE TABLE public.defendant_response (
 
 
 
-ALTER TABLE public.defendant_response ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
-    SEQUENCE NAME public.defendant_response_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1
-);
-
-
-
 CREATE TABLE public.document (
     id uuid NOT NULL,
     case_id uuid,
@@ -533,7 +423,7 @@ CREATE TABLE public.document (
     size bigint,
     display_file_name text,
     claim_id uuid,
-    defendant_response_id bigint,
+    defendant_response_id integer,
     party_id uuid,
     general_application_id uuid,
     submitted_date timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
@@ -555,13 +445,13 @@ CREATE TABLE public.enf_case (
     claim_id uuid NOT NULL,
     enforcement_order jsonb NOT NULL,
     bailiff_date timestamp without time zone,
-    sot_id bigint
+    sot_id integer
 );
 
 
 
 CREATE TABLE public.enf_risk_profile (
-    id bigint NOT NULL,
+    id integer NOT NULL GENERATED ALWAYS AS IDENTITY,
     enf_case_id uuid NOT NULL,
     any_risk_to_bailiff public.yes_no_not_sure,
     vulnerable_people_present public.yes_no_not_sure,
@@ -578,38 +468,16 @@ CREATE TABLE public.enf_risk_profile (
 
 
 
-ALTER TABLE public.enf_risk_profile ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
-    SEQUENCE NAME public.enf_risk_profile_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1
-);
-
-
-
 CREATE TABLE public.enf_selected_defendants (
-    id bigint NOT NULL,
+    id integer NOT NULL GENERATED ALWAYS AS IDENTITY,
     enf_case_id uuid NOT NULL,
     party_id uuid NOT NULL
 );
 
 
 
-ALTER TABLE public.enf_selected_defendants ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
-    SEQUENCE NAME public.enf_selected_defendants_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1
-);
-
-
-
 CREATE TABLE public.enf_warrant (
-    id bigint NOT NULL,
+    id integer NOT NULL GENERATED ALWAYS AS IDENTITY,
     enf_case_id uuid NOT NULL,
     show_people_who_will_be_evicted_page public.yes_no,
     show_people_you_want_to_evict_page public.yes_no,
@@ -645,19 +513,8 @@ CREATE TABLE public.enf_warrant (
 
 
 
-ALTER TABLE public.enf_warrant ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
-    SEQUENCE NAME public.enf_warrant_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1
-);
-
-
-
 CREATE TABLE public.enf_warrant_of_restitution (
-    id bigint NOT NULL,
+    id integer NOT NULL GENERATED ALWAYS AS IDENTITY,
     enf_case_id uuid NOT NULL,
     created timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
     language_used varchar(30),
@@ -670,19 +527,8 @@ CREATE TABLE public.enf_warrant_of_restitution (
 
 
 
-ALTER TABLE public.enf_warrant_of_restitution ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
-    SEQUENCE NAME public.enf_warrant_of_restitution_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1
-);
-
-
-
 CREATE TABLE public.enf_writ (
-    id bigint NOT NULL,
+    id integer NOT NULL GENERATED ALWAYS AS IDENTITY,
     enf_case_id uuid NOT NULL,
     correct_name_and_address public.yes_no,
     has_hired_high_court_enforcement_officer public.yes_no,
@@ -702,19 +548,8 @@ CREATE TABLE public.enf_writ (
 
 
 
-ALTER TABLE public.enf_writ ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
-    SEQUENCE NAME public.enf_writ_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1
-);
-
-
-
 CREATE TABLE public.enf_writ_of_restitution (
-    id bigint NOT NULL,
+    id integer NOT NULL GENERATED ALWAYS AS IDENTITY,
     enf_case_id uuid NOT NULL,
     created timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
     language_used varchar(30)
@@ -722,41 +557,19 @@ CREATE TABLE public.enf_writ_of_restitution (
 
 
 
-ALTER TABLE public.enf_writ_of_restitution ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
-    SEQUENCE NAME public.enf_writ_of_restitution_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1
-);
-
-
-
 CREATE TABLE public.fee_payment (
-    id bigint NOT NULL,
+    id integer NOT NULL GENERATED ALWAYS AS IDENTITY,
     party_id uuid,
     request_date timestamp without time zone NOT NULL,
     service_request_reference varchar(255),
     external_reference varchar(255),
     amount numeric(19,2),
-    hwf_id bigint,
+    hwf_id integer,
     payment_callback_handler_type varchar(30) NOT NULL,
     task_data jsonb,
     status varchar(50),
     possession_claim_id uuid NOT NULL,
     related_entity_id uuid
-);
-
-
-
-ALTER TABLE public.fee_payment ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
-    SEQUENCE NAME public.fee_payment_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1
 );
 
 
@@ -776,8 +589,8 @@ CREATE TABLE public.flag_ref_data (
 CREATE TABLE public.general_application (
     id uuid NOT NULL,
     case_id uuid NOT NULL,
-    sot_id bigint,
-    hwf_id bigint,
+    sot_id integer,
+    hwf_id integer,
     type varchar(50) NOT NULL,
     state varchar(30),
     party_id uuid NOT NULL,
@@ -800,26 +613,15 @@ CREATE TABLE public.general_application (
 
 
 CREATE TABLE public.help_with_fees (
-    id bigint NOT NULL,
+    id integer NOT NULL GENERATED ALWAYS AS IDENTITY,
     hwf_reference varchar(60) NOT NULL
 );
 
 
 
-ALTER TABLE public.help_with_fees ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
-    SEQUENCE NAME public.help_with_fees_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1
-);
-
-
-
 CREATE TABLE public.household_circumstances (
-    id bigint NOT NULL,
-    defendant_response_id bigint NOT NULL,
+    id integer NOT NULL GENERATED ALWAYS AS IDENTITY,
+    defendant_response_id integer NOT NULL,
     dependant_children public.yes_no,
     dependant_children_details varchar(500),
     other_dependants public.yes_no,
@@ -846,17 +648,6 @@ CREATE TABLE public.household_circumstances (
 
 
 
-ALTER TABLE public.household_circumstances ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
-    SEQUENCE NAME public.household_circumstances_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1
-);
-
-
-
 CREATE TABLE public.legal_representative (
     id uuid NOT NULL,
     idam_id uuid,
@@ -865,14 +656,14 @@ CREATE TABLE public.legal_representative (
     last_name varchar(60),
     email varchar(120),
     phone varchar(40),
-    address_id bigint,
+    address_id integer,
     organisation_id varchar(64)
 );
 
 
 
 CREATE TABLE public.notice_of_possession (
-    id bigint NOT NULL,
+    id integer NOT NULL GENERATED ALWAYS AS IDENTITY,
     version integer,
     claim_id uuid,
     notice_served public.yes_no NOT NULL,
@@ -889,17 +680,6 @@ CREATE TABLE public.notice_of_possession (
 
 
 
-ALTER TABLE public.notice_of_possession ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
-    SEQUENCE NAME public.notice_of_possession_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1
-);
-
-
-
 CREATE TABLE public.party (
     id uuid NOT NULL,
     version integer,
@@ -911,14 +691,14 @@ CREATE TABLE public.party (
     org_name varchar(60),
     name_known public.yes_no,
     name_overridden public.yes_no,
-    address_id bigint,
+    address_id integer,
     address_known public.yes_no,
     address_same_as_property public.yes_no,
     phone_number_provided public.yes_no,
     phone_number varchar(60),
     email_address varchar(60),
     pcq_id varchar(60),
-    contact_preferences_id bigint,
+    contact_preferences_id integer,
     dob date,
     organisation_id varchar(64)
 );
@@ -926,7 +706,7 @@ CREATE TABLE public.party (
 
 
 CREATE TABLE public.party_access_code (
-    id bigint NOT NULL,
+    id integer NOT NULL GENERATED ALWAYS AS IDENTITY,
     case_id uuid NOT NULL,
     party_id uuid NOT NULL,
     code varchar(100) NOT NULL,
@@ -936,19 +716,8 @@ CREATE TABLE public.party_access_code (
 
 
 
-ALTER TABLE public.party_access_code ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
-    SEQUENCE NAME public.party_access_code_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1
-);
-
-
-
 CREATE TABLE public.party_attribute_assertion (
-    id bigint NOT NULL,
+    id integer NOT NULL GENERATED ALWAYS AS IDENTITY,
     party_id uuid NOT NULL,
     evidence_document_id uuid,
     attributes_name varchar(255) NOT NULL,
@@ -963,20 +732,9 @@ CREATE TABLE public.party_attribute_assertion (
 
 
 
-ALTER TABLE public.party_attribute_assertion ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
-    SEQUENCE NAME public.party_attribute_assertion_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1
-);
-
-
-
 CREATE TABLE public.payment_agreement (
-    id bigint NOT NULL,
-    defendant_response_id bigint NOT NULL,
+    id integer NOT NULL GENERATED ALWAYS AS IDENTITY,
+    defendant_response_id integer NOT NULL,
     any_payments_made public.yes_no,
     payment_details varchar(500),
     paid_money_to_housing_org public.yes_no,
@@ -989,22 +747,11 @@ CREATE TABLE public.payment_agreement (
 
 
 
-ALTER TABLE public.payment_agreement ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
-    SEQUENCE NAME public.payment_agreement_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1
-);
-
-
-
 CREATE TABLE public.pcs_case (
     id uuid NOT NULL,
     version integer,
     case_reference bigint,
-    property_address_id bigint,
+    property_address_id integer,
     case_management_location integer,
     pre_action_protocol_completed boolean,
     legislative_country varchar(20),
@@ -1017,7 +764,7 @@ CREATE TABLE public.pcs_case (
 
 
 CREATE TABLE public.possession_alternatives (
-    id bigint NOT NULL,
+    id integer NOT NULL GENERATED ALWAYS AS IDENTITY,
     version integer,
     claim_id uuid,
     supension_of_rtb_requested public.yes_no NOT NULL,
@@ -1028,17 +775,6 @@ CREATE TABLE public.possession_alternatives (
     dot_statement_served public.yes_no,
     dot_statement_details varchar(950),
     dot_reason varchar(250)
-);
-
-
-
-ALTER TABLE public.possession_alternatives ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
-    SEQUENCE NAME public.possession_alternatives_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1
 );
 
 
@@ -1055,8 +791,8 @@ CREATE TABLE public.postcode_court_mapping (
 
 
 CREATE TABLE public.reasonable_adjustments (
-    id bigint NOT NULL,
-    defendant_response_id bigint NOT NULL,
+    id integer NOT NULL GENERATED ALWAYS AS IDENTITY,
+    defendant_response_id integer NOT NULL,
     reasonable_adjustments_required varchar(250),
     reasonable_adjustment_description varchar(500),
     hearing_enhancement_description varchar(250),
@@ -1071,20 +807,9 @@ CREATE TABLE public.reasonable_adjustments (
 
 
 
-ALTER TABLE public.reasonable_adjustments ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
-    SEQUENCE NAME public.reasonable_adjustments_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1
-);
-
-
-
 CREATE TABLE public.regular_expenses (
-    id bigint NOT NULL,
-    hc_id bigint NOT NULL,
+    id integer NOT NULL GENERATED ALWAYS AS IDENTITY,
+    hc_id integer NOT NULL,
     expense_type varchar(30) NOT NULL,
     amount numeric(18,2) NOT NULL,
     expense_frequency varchar(10) NOT NULL,
@@ -1093,20 +818,9 @@ CREATE TABLE public.regular_expenses (
 
 
 
-ALTER TABLE public.regular_expenses ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
-    SEQUENCE NAME public.regular_expenses_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1
-);
-
-
-
 CREATE TABLE public.regular_income (
-    id bigint NOT NULL,
-    hc_id bigint NOT NULL,
+    id integer NOT NULL GENERATED ALWAYS AS IDENTITY,
+    hc_id integer NOT NULL,
     other_income_details varchar(500),
     created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
     updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
@@ -1114,20 +828,9 @@ CREATE TABLE public.regular_income (
 
 
 
-ALTER TABLE public.regular_income ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
-    SEQUENCE NAME public.regular_income_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1
-);
-
-
-
 CREATE TABLE public.regular_income_item (
-    id bigint NOT NULL,
-    regular_income_id bigint NOT NULL,
+    id integer NOT NULL GENERATED ALWAYS AS IDENTITY,
+    regular_income_id integer NOT NULL,
     income_type public.income_type NOT NULL,
     amount numeric(18,2),
     frequency public.recurrence_frequency,
@@ -1138,36 +841,14 @@ CREATE TABLE public.regular_income_item (
 
 
 
-ALTER TABLE public.regular_income_item ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
-    SEQUENCE NAME public.regular_income_item_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1
-);
-
-
-
 CREATE TABLE public.rent_arrears (
-    id bigint NOT NULL,
+    id integer NOT NULL GENERATED ALWAYS AS IDENTITY,
     version integer,
     claim_id uuid,
     total_rent_arrears numeric(18,2) NOT NULL,
     arrears_judgment_wanted public.yes_no,
     recovery_attempted public.yes_no,
     recovery_attempt_details varchar(500)
-);
-
-
-
-ALTER TABLE public.rent_arrears ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
-    SEQUENCE NAME public.rent_arrears_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1
 );
 
 
@@ -1190,7 +871,7 @@ CREATE TABLE public.scheduled_tasks (
 
 
 CREATE TABLE public.statement_of_truth (
-    id bigint NOT NULL,
+    id integer NOT NULL GENERATED ALWAYS AS IDENTITY,
     version integer,
     claim_id uuid,
     completed_by varchar(40),
@@ -1203,19 +884,8 @@ CREATE TABLE public.statement_of_truth (
 
 
 
-ALTER TABLE public.statement_of_truth ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
-    SEQUENCE NAME public.statement_of_truth_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1
-);
-
-
-
 CREATE TABLE public.tenancy_licence (
-    id bigint NOT NULL,
+    id integer NOT NULL GENERATED ALWAYS AS IDENTITY,
     version integer,
     case_id uuid,
     type varchar(40) NOT NULL,
@@ -1228,17 +898,6 @@ CREATE TABLE public.tenancy_licence (
     calculated_daily_rent_correct public.yes_no,
     has_copy_of_tenancy_licence public.yes_no,
     reasons_for_no_tenancy_licence varchar(500)
-);
-
-
-
-ALTER TABLE public.tenancy_licence ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
-    SEQUENCE NAME public.tenancy_licence_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1
 );
 
 

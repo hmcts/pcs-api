@@ -29,7 +29,7 @@ public class CounterClaimPartyEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Integer id;
 
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "cc_id", nullable = false)

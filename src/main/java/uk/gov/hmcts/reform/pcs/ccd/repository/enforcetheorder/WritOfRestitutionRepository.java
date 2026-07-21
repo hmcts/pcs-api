@@ -7,5 +7,5 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.WritOfRestitutionEntit
 
 @Repository
 public interface WritOfRestitutionRepository extends
-    JpaRepository<WritOfRestitutionEntity, Long> {
+    JpaRepository<WritOfRestitutionEntity, Integer> {
 }

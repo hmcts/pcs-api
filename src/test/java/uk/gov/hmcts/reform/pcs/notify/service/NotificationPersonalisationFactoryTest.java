@@ -370,7 +370,7 @@ class NotificationPersonalisationFactoryTest {
 
     private DefendantResponseEntity createDefendantResponse(PartyEntity claimantParty, PartyEntity defendantParty) {
         DefendantResponseEntity response = new DefendantResponseEntity();
-        response.setId(1L);
+        response.setId(1);
         response.setPcsCase(pcsCaseEntity);
         response.setParty(defendantParty);
         response.setClaim(createClaim(claimantParty, defendantParty));

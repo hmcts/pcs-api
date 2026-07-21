@@ -58,7 +58,7 @@ class FeePaymentPaidNotificationTaskComponentTest {
     @Test
     @DisplayName("Should send notification")
     void shouldSendNotification() {
-        Long feePaymentId = 1L;
+        Integer feePaymentId = 1;
 
         FeePaymentStatusChangeTaskData taskData = FeePaymentStatusChangeTaskData.builder()
             .feePaymentId(feePaymentId)

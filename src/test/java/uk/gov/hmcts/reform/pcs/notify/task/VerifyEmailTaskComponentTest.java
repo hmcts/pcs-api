@@ -60,7 +60,7 @@ class VerifyEmailTaskComponentTest {
     private final Duration statusCheckBackoffDelay = Duration.ofMinutes(2);
 
     private SendEmailTaskData sendEmailTaskData;
-    private final Long dbNotificationId = 1L;
+    private final Integer dbNotificationId = 1;
     private final String taskId = "verify-task-123";
     private final String notificationId = "notification-456";
     private final Map<String, Object> personalisation = Map.of("name", "John Doe");

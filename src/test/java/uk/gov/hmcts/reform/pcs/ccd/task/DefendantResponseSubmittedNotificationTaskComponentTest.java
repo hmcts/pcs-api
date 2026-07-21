@@ -60,7 +60,7 @@ class DefendantResponseSubmittedNotificationTaskComponentTest {
     @Test
     @DisplayName("Should send notification when task executes")
     void shouldSendNotificationWhenTaskExecutes() {
-        Long defendantResponseId = 1L;
+        Integer defendantResponseId = 1;
         DefendantResponseStatusChangeTaskData taskData = DefendantResponseStatusChangeTaskData.builder()
             .defendantResponseId(defendantResponseId)
             .build();
@@ -78,7 +78,7 @@ class DefendantResponseSubmittedNotificationTaskComponentTest {
     @Test
     @DisplayName("Should rethrow exception when notification service fails")
     void shouldRethrowExceptionWhenNotificationServiceFails() {
-        Long defendantResponseId = 1L;
+        Integer defendantResponseId = 1;
         DefendantResponseStatusChangeTaskData taskData = DefendantResponseStatusChangeTaskData.builder()
             .defendantResponseId(defendantResponseId)
             .build();

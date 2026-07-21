@@ -29,7 +29,7 @@ class FeePaymentNotificationServiceTest {
 
     @Test
     void shouldSendClaimantClaimIssuedEmailNotification() {
-        Long feePaymentId = 1L;
+        Integer feePaymentId = 1;
         ClaimEntity claim = new ClaimEntity();
         FeePaymentEntity feePayment = FeePaymentEntity.builder()
             .id(feePaymentId)
@@ -44,7 +44,7 @@ class FeePaymentNotificationServiceTest {
 
     @Test
     void shouldThrowExceptionWhenFeePaymentNotFound() {
-        Long feePaymentId = 1L;
+        Integer feePaymentId = 1;
         when(feePaymentRepository.findById(feePaymentId)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> underTest.sendClaimantPaidCaseIssuedNotification(feePaymentId))

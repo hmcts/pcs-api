@@ -30,7 +30,7 @@ public class DefenceFormService {
         this.documentImportService = documentImportService;
     }
 
-    public void generateAndAttach(Long defendantResponseId) {
+    public void generateAndAttach(Integer defendantResponseId) {
         Optional<DefenceFormRenderContext> context =
             persistenceService.buildContextIfNotAttached(defendantResponseId);
         if (context.isEmpty()) {
@@ -47,7 +47,7 @@ public class DefenceFormService {
         }
     }
 
-    private void deleteOrphanedDocument(Long defendantResponseId, String dmStoreUrl) {
+    private void deleteOrphanedDocument(Integer defendantResponseId, String dmStoreUrl) {
         try {
             documentImportService.deleteDocument(dmStoreUrl);
         } catch (Exception e) {

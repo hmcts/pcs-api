@@ -28,7 +28,7 @@ public class RiskProfileEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Integer id;
 
     @OneToOne(fetch = LAZY)
     @JoinColumn(name = "enf_case_id", nullable = false)

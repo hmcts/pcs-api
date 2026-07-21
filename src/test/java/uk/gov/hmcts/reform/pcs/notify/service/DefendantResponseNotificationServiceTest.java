@@ -49,7 +49,7 @@ class DefendantResponseNotificationServiceTest {
 
     @Test
     void shouldThrowExceptionWhenDefendantResponseNotFound() {
-        Long defendantResponseId = 1L;
+        Integer defendantResponseId = 1;
 
         when(defendantResponseRepository.findById(defendantResponseId))
             .thenReturn(Optional.empty());
@@ -64,7 +64,7 @@ class DefendantResponseNotificationServiceTest {
     void shouldSendDefendantResponseReceivedEmail() {
         DefendantResponseEntity response = mock(DefendantResponseEntity.class);
         ClaimEntity claim = mock(ClaimEntity.class);
-        Long defendantResponseId = 1L;
+        Integer defendantResponseId = 1;
 
         when(defendantResponseRepository.findById(defendantResponseId))
             .thenReturn(Optional.of(response));
@@ -81,7 +81,7 @@ class DefendantResponseNotificationServiceTest {
         PcsCaseEntity caseEntity = mock(PcsCaseEntity.class);
         PartyEntity party = mock(PartyEntity.class);
 
-        Long defendantResponseId = 1L;
+        Integer defendantResponseId = 1;
         UUID partyId = UUID.randomUUID();
 
         when(defendantResponseRepository.findById(defendantResponseId))
@@ -113,7 +113,7 @@ class DefendantResponseNotificationServiceTest {
         CounterClaimEntity counterClaim = mock(CounterClaimEntity.class);
         PartyEntity party = mock(PartyEntity.class);
 
-        Long defendantResponseId = 1L;
+        Integer defendantResponseId = 1;
         UUID partyId = UUID.randomUUID();
 
         when(defendantResponseRepository.findById(defendantResponseId))
@@ -140,7 +140,7 @@ class DefendantResponseNotificationServiceTest {
         CounterClaimEntity counterClaim = mock(CounterClaimEntity.class);
         PartyEntity party = mock(PartyEntity.class);
 
-        Long defendantResponseId = 1L;
+        Integer defendantResponseId = 1;
         UUID partyId = UUID.randomUUID();
 
         when(defendantResponseRepository.findById(defendantResponseId))
@@ -176,7 +176,7 @@ class DefendantResponseNotificationServiceTest {
         CounterClaimEntity counterClaim = mock(CounterClaimEntity.class);
         PartyEntity party = mock(PartyEntity.class);
 
-        Long defendantResponseId = 1L;
+        Integer defendantResponseId = 1;
         UUID partyId = UUID.randomUUID();
 
         when(defendantResponseRepository.findById(defendantResponseId))
@@ -212,7 +212,7 @@ class DefendantResponseNotificationServiceTest {
         CounterClaimEntity counterClaim = mock(CounterClaimEntity.class);
         PartyEntity party = mock(PartyEntity.class);
 
-        Long defendantResponseId = 1L;
+        Integer defendantResponseId = 1;
         UUID partyId = UUID.randomUUID();
 
         when(defendantResponseRepository.findById(defendantResponseId))
@@ -248,7 +248,7 @@ class DefendantResponseNotificationServiceTest {
         CounterClaimEntity counterClaim = mock(CounterClaimEntity.class);
         PartyEntity party = mock(PartyEntity.class);
 
-        Long defendantResponseId = 1L;
+        Integer defendantResponseId = 1;
         UUID partyId = UUID.randomUUID();
 
         when(defendantResponseRepository.findById(defendantResponseId))
@@ -281,7 +281,7 @@ class DefendantResponseNotificationServiceTest {
         CounterClaimEntity counterClaim = mock(CounterClaimEntity.class);
         PartyEntity party = mock(PartyEntity.class);
 
-        Long defendantResponseId = 1L;
+        Integer defendantResponseId = 1;
         UUID partyId = UUID.randomUUID();
 
         when(defendantResponseRepository.findById(defendantResponseId))
@@ -316,7 +316,7 @@ class DefendantResponseNotificationServiceTest {
         PartyEntity defendantParty = mock(PartyEntity.class);
         PartyEntity otherParty = mock(PartyEntity.class);
 
-        Long defendantResponseId = 1L;
+        Integer defendantResponseId = 1;
         UUID defendantPartyId = UUID.randomUUID();
         UUID otherPartyId = UUID.randomUUID();
 
@@ -354,7 +354,7 @@ class DefendantResponseNotificationServiceTest {
         CounterClaimEntity otherCounterClaim = mock(CounterClaimEntity.class);
         CounterClaimEntity matchingCounterClaim = mock(CounterClaimEntity.class);
 
-        Long defendantResponseId = 1L;
+        Integer defendantResponseId = 1;
         UUID defendantPartyId = UUID.randomUUID();
         UUID otherPartyId = UUID.randomUUID();
 
@@ -392,7 +392,7 @@ class DefendantResponseNotificationServiceTest {
     void shouldSendPendingCounterClaimIssuedNotification() {
         UUID counterClaimId = UUID.randomUUID();
         UUID partyId = UUID.randomUUID();
-        Long defendantResponseId = 1L;
+        Integer defendantResponseId = 1;
 
         CounterClaimEntity counterClaim = mock(CounterClaimEntity.class);
         PcsCaseEntity pcsCase = mock(PcsCaseEntity.class);

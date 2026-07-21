@@ -6,6 +6,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.SelectedDefendantEntit
 
 
 @Repository
-public interface SelectedDefendantRepository extends JpaRepository<SelectedDefendantEntity, Long> {
+public interface SelectedDefendantRepository extends JpaRepository<SelectedDefendantEntity, Integer> {
 
 }

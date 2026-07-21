@@ -6,5 +6,5 @@ import lombok.Data;
 public class EmailNotificationResponse {
     private String taskId;
     private String status;
-    private Long notificationId; // Database notification record ID
+    private Integer notificationId; // Database notification record ID
 }

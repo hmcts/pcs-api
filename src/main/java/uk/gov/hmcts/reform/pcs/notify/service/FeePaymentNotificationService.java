@@ -17,7 +17,7 @@ public class FeePaymentNotificationService {
     private final FeePaymentRepository feePaymentRepository;
 
     @Transactional
-    public void sendClaimantPaidCaseIssuedNotification(Long feePaymentId) {
+    public void sendClaimantPaidCaseIssuedNotification(Integer feePaymentId) {
         FeePaymentEntity feePayment = feePaymentRepository.findById(feePaymentId)
             .orElseThrow(() -> new FeePaymentNotFoundException("Fee payment not found: " + feePaymentId));
 

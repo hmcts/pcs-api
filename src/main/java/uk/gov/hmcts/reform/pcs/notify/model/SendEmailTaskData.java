@@ -18,6 +18,6 @@ public class SendEmailTaskData {
     private final String reference;
     private final String emailReplyToId;
     private final String notificationId; // GOV.UK Notify notification ID (set after sending)
-    private final Long dbNotificationId; // Database notification record ID (set before sending)
+    private final Integer dbNotificationId; // Database notification record ID (set before sending)
 
 }

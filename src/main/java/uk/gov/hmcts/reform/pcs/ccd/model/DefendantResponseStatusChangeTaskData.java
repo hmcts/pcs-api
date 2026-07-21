@@ -15,5 +15,5 @@ import java.io.Serializable;
 public class DefendantResponseStatusChangeTaskData implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
-    private Long defendantResponseId;
+    private Integer defendantResponseId;
 }

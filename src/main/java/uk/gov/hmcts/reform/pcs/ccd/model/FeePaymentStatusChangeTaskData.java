@@ -15,5 +15,5 @@ import java.io.Serializable;
 public class FeePaymentStatusChangeTaskData implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
-    private Long feePaymentId;
+    private Integer feePaymentId;
 }

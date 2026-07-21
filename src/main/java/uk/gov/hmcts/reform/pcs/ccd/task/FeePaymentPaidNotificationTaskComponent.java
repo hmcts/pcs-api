@@ -46,7 +46,7 @@ public class FeePaymentPaidNotificationTaskComponent {
             ))
             .execute((taskInstance, executionContext) -> {
                 FeePaymentStatusChangeTaskData taskData = taskInstance.getData();
-                Long feePaymentId = taskData.getFeePaymentId();
+                Integer feePaymentId = taskData.getFeePaymentId();
                 log.info("Processing fee payment paid notification for: {}", feePaymentId);
 
                 feePaymentNotificationService.sendClaimantPaidCaseIssuedNotification(feePaymentId);

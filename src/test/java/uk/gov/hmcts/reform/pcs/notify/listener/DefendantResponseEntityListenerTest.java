@@ -42,7 +42,7 @@ class DefendantResponseEntityListenerTest {
 
     @Test
     void shouldScheduleNotificationOnPostPersistWhenStatusIsSubmitted() {
-        Long defendantResponseId = 1L;
+        Integer defendantResponseId = 1;
         DefendantResponseEntity entity = mock(DefendantResponseEntity.class);
         when(entity.getStatus()).thenReturn(DefendantResponseStatus.SUBMITTED);
         when(entity.getId()).thenReturn(defendantResponseId);
@@ -84,7 +84,7 @@ class DefendantResponseEntityListenerTest {
 
     @Test
     void shouldScheduleNotificationOnPostUpdateWhenStatusChangesToSubmitted() {
-        Long defendantResponseId = 1L;
+        Integer defendantResponseId = 1;
         DefendantResponseEntity entity = mock(DefendantResponseEntity.class);
         when(entity.getStatus()).thenReturn(DefendantResponseStatus.SUBMITTED);
         when(entity.getPreviousStatus()).thenReturn(DefendantResponseStatus.CREATED);

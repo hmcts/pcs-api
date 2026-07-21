@@ -46,7 +46,7 @@ public class FeePaymentEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Integer id;
 
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "possession_claim_id", nullable = false)

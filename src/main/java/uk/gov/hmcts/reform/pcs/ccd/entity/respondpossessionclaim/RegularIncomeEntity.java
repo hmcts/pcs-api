@@ -33,7 +33,7 @@ public class RegularIncomeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Integer id;
 
     @OneToOne(fetch = LAZY)
     @JoinColumn(name = "hc_id")

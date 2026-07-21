@@ -35,7 +35,7 @@ public class RegularIncomeItemEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Integer id;
 
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "regular_income_id")

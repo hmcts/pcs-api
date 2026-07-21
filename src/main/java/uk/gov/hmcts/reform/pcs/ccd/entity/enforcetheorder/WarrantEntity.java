@@ -37,7 +37,7 @@ public class WarrantEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Integer id;
 
     @OneToOne
     @JoinColumn(name = "enf_case_id", nullable = false)

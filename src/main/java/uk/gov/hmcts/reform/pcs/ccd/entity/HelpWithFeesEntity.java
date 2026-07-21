@@ -24,7 +24,7 @@ public class HelpWithFeesEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Integer id;
 
     @Column(name = "hwf_reference", nullable = false)
     private String hwfReference;

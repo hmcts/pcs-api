@@ -6,7 +6,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PartyAccessCodeEntity;
 import java.util.List;
 import java.util.UUID;
 
-public interface PartyAccessCodeRepository extends JpaRepository<PartyAccessCodeEntity, Long> {
+public interface PartyAccessCodeRepository extends JpaRepository<PartyAccessCodeEntity, Integer> {
 
     List<PartyAccessCodeEntity> findAllByPcsCase_Id(UUID pcsCaseId);
 

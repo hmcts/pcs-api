@@ -10,7 +10,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Repository
-public interface DefendantResponseRepository extends JpaRepository<DefendantResponseEntity, Long> {
+public interface DefendantResponseRepository extends JpaRepository<DefendantResponseEntity, Integer> {
 
     boolean existsByClaimPcsCaseCaseReferenceAndPartyId(Long caseReference, UUID partyId);
 

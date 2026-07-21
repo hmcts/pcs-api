@@ -80,7 +80,7 @@ class NotifyControllerIT extends AbstractPostgresContainerIT {
         EmailNotificationResponse mockResponse = new EmailNotificationResponse();
         mockResponse.setTaskId("task-123");
         mockResponse.setStatus(SCHEDULED_STATUS);
-        mockResponse.setNotificationId(1L);
+        mockResponse.setNotificationId(1);
 
         when(notificationService.scheduleEmailNotification(
             any(EmailNotificationRequest.class),
@@ -107,21 +107,21 @@ class NotifyControllerIT extends AbstractPostgresContainerIT {
             pcsCase.setCaseReference(1234567890L);
 
             PaymentAgreementEntity paymentAgreement = new PaymentAgreementEntity();
-            paymentAgreement.setId(1L);
+            paymentAgreement.setId(1);
 
             DefendantResponseEntity defendantResponse = new DefendantResponseEntity();
             defendantResponse.setParty(party);
             defendantResponse.setPcsCase(pcsCase);
             defendantResponse.setPaymentAgreement(paymentAgreement);
 
-            Long defendantResponseId = 1L;
+            Integer defendantResponseId = 1;
             when(defendantResponseRepository.findById(defendantResponseId))
                 .thenReturn(Optional.of(defendantResponse));
 
             EmailNotificationResponse response = new EmailNotificationResponse();
             response.setTaskId("task-123");
             response.setStatus(SCHEDULED_STATUS);
-            response.setNotificationId(1L);
+            response.setNotificationId(1);
 
             when(notificationService.sendDefendantResponseNoCounterclaimEmailNotification(defendantResponse))
                 .thenReturn(response);
@@ -147,7 +147,7 @@ class NotifyControllerIT extends AbstractPostgresContainerIT {
         @Test
         @DisplayName("Should return 404 when defendant response not found")
         void shouldReturn404WhenDefendantResponseNotFound() throws Exception {
-            Long defendantResponseId = 1L;
+            Integer defendantResponseId = 1;
 
             when(defendantResponseRepository.findById(defendantResponseId))
                 .thenReturn(Optional.empty());

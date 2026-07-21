@@ -25,7 +25,7 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class DefenceFormServiceTest {
 
-    private static final Long RESPONSE_ID = 1L;
+    private static final Integer RESPONSE_ID = 1;
     private static final String DM_STORE_URL = "https://dm-store/xyz";
 
     @Mock

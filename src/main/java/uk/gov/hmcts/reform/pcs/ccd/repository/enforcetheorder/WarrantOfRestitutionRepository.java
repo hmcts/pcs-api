@@ -4,5 +4,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.WarrantOfRestitutionEntity;
 
 
-public interface WarrantOfRestitutionRepository extends JpaRepository<WarrantOfRestitutionEntity, Long> {
+public interface WarrantOfRestitutionRepository extends JpaRepository<WarrantOfRestitutionEntity, Integer> {
 }
