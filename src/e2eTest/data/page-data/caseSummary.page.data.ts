@@ -17,4 +17,5 @@ export const caseSummary = {
     amend : 'Manage documents: Amend'
   },
   addReviewDates: 'Add review date',
+  changeCaseState: 'Change case state'
 }

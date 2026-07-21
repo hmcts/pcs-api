@@ -3,4 +3,6 @@ export default {
   'addCaseReviewDateaddCaseReviewDate': 'addReviewDate',
   'addCaseReviewDate/submit' : 'checkYourAnswersAddReviewDate',
   'addCaseReviewDate/confirm': 'confirmReviewDatesAdded'
+  'changeCaseStatechangeCaseStatePage': 'changeCaseState',
+  'changeCaseState/confirm': 'confirmCaseStateChange'
 };

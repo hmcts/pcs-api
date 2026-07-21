@@ -2,12 +2,15 @@ import { Page } from '@playwright/test';
 import { performAction } from '@utils/controller-caseManagement';
 import { IAction, actionData, actionRecord } from '@utils/interfaces/action.interface';
 import {addReviewDates, selectDocument} from '@data/page-data-figma/page-data-caseManagement-figma';
+import { changeCaseState, selectDocument } from '@data/page-data-figma/page-data-caseManagement-figma';
 
 export class ErrorValidationAction implements IAction {
   async execute(page: Page, action: string, errorFlag: string | actionRecord, roles?: actionData): Promise<void> {
     const actionsMap = new Map<string, () => Promise<void>>([
       ['errorValidationSelectDocumentPage', () => this.errorValidationSelectDocumentPage(errorFlag as string)],
       ['errorValidationAddReviewDatesPage', () => this.errorValidationAddReviewDatesPage(errorFlag as string)],
+      ['errorValidationChangeCaseStatePage', () => this.errorValidationChangeCaseStatePage(errorFlag as string)],
+
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -67,4 +70,16 @@ export class ErrorValidationAction implements IAction {
       });
     }
   }
+  private async errorValidationChangeCaseStatePage(validationReq: string) {
+    if (validationReq === 'YES') {
+      await performAction('inputErrorValidation', {
+        validationType: changeCaseState.errorValidationType.four,
+        inputArray: changeCaseState.errorValidationField.errorDropDown,
+        dropQn: changeCaseState.whichStateYouMovingCaseToQuestion,
+        option: changeCaseState.caseStateHiddenOption,
+        button: changeCaseState.continueButton
+      });
+    }
+  }
+
 }
