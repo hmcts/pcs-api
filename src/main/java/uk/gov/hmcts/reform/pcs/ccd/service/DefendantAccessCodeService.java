@@ -4,8 +4,10 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.ClaimActivityType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.GenerationDetails;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyAccessCodeEntity;
@@ -16,6 +18,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DocumentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyAccessCodeRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.accesscode.AccessCodeFormDocumentGenerator;
+import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentIdExtractor;
 import uk.gov.hmcts.reform.pcs.ccd.util.AccessCodeGenerator;
 import uk.gov.hmcts.reform.pcs.exception.ClaimNotFoundException;
 import uk.gov.hmcts.reform.pcs.service.PartyAccessCodeHashingService;
@@ -42,6 +45,7 @@ public class DefendantAccessCodeService {
     private final PartyAccessCodeHashingService hashingService;
     private final AccessCodeFormDocumentGenerator accessCodeFormDocumentGenerator;
     private final DocumentRepository documentRepository;
+    private final DocumentIdExtractor documentIdExtractor;
     private final AccessCodeActivityLogService accessCodeActivityLogService;
     private final TestAccessCodeRecorder testAccessCodeRecorder;
 
@@ -59,7 +63,8 @@ public class DefendantAccessCodeService {
     }
 
     @Transactional
-    public void generateForDefendant(long caseReference, UUID defendantPartyId, boolean finalAttempt) {
+    public void generateForDefendant(long caseReference, UUID defendantPartyId,
+                                     boolean firstAttempt, boolean finalAttempt) {
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
 
         // Idempotent: a re-fired payment or a scheduler retry must not mint a second code for a party
@@ -83,7 +88,9 @@ public class DefendantAccessCodeService {
                     .pcsCase(pcsCaseEntity)
                     .party(defendant)
                     .url(documentUrl)
+                    .documentId(documentIdExtractor.extractDocumentId(documentUrl))
                     .type(DocumentType.DEFENDANT_ACCESS_CODE)
+                    .categoryId(CaseFileCategory.UNCATEGORISED_DOCUMENTS.getId())
                     .build()
             );
 
@@ -101,20 +108,25 @@ public class DefendantAccessCodeService {
             accessCodeActivityLogService.logSuccess(pcsCaseEntity, defendant, ClaimActivityType.DOCUMENTS_CREATED);
 
         } catch (Exception e) {
-            // Terminal-only: intermediate retries are tracked in scheduled_tasks; mirror the claim-form
-            // task's logging so both pipelines behave the same.
+            // First + terminal recording: the first failure makes the reason visible immediately
+            // (terminal:false = still retrying); intermediate retries stay in scheduled_tasks/logs;
+            // the final attempt writes the terminal row. Mirrors the claim-form task.
             if (finalAttempt) {
                 log.error("Access-code letter generation permanently failed for party {} on case {}",
                           defendant.getId(), pcsCaseEntity.getCaseReference(), e);
-                recordFailureSafely(pcsCaseEntity, defendant);
+            }
+            if (firstAttempt || finalAttempt) {
+                recordFailureSafely(pcsCaseEntity, defendant, e, finalAttempt);
             }
             throw e;
         }
     }
 
-    private void recordFailureSafely(PcsCaseEntity pcsCaseEntity, PartyEntity defendant) {
+    private void recordFailureSafely(PcsCaseEntity pcsCaseEntity, PartyEntity defendant, Exception cause,
+                                     boolean terminal) {
         try {
-            accessCodeActivityLogService.logFailure(pcsCaseEntity, defendant, ClaimActivityType.DOCUMENTS_CREATED);
+            accessCodeActivityLogService.logFailure(pcsCaseEntity, defendant, ClaimActivityType.DOCUMENTS_CREATED,
+                GenerationDetails.forFailure(DocumentType.DEFENDANT_ACCESS_CODE, cause, terminal));
         } catch (Exception e) {
             log.error("Failed to record access-code FAILURE for party {} on case {}",
                       defendant.getId(), pcsCaseEntity.getCaseReference(), e);

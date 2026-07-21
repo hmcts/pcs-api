@@ -142,6 +142,7 @@ location-reference:
   court-county-type-id: ${COURT_COUNTY_TYPE_ID:10}
 
 notify:
+  api-url: ${NOTIFY_URL:http://localhost:8083}
   api-key: ${PCS_NOTIFY_API_KEY:AAAAAAAA-AAAA-AAAA-AAAA-AAAAAAAAAAAA}
   send-email:
     max-retries: ${NOTIFY_SEND_EMAIL_MAX_RETRIES:5}
@@ -174,7 +175,7 @@ access-code-test-table:
 db-scheduler:
   enabled: false # This disables the autoconfiguration of DB Scheduler. Always off.
   executor-enabled: ${DB_SCHEDULER_EXECUTOR_ENABLED:true}
-  polling-interval-seconds: 10
+  polling-interval-seconds: ${DB_SCHEDULER_POLLING_INTERVAL_SECONDS:10}
   threads: 10
 
 doc_assembly:
@@ -263,6 +264,26 @@ access-code:
     max-retries: ${ACCESS_CODE_MAX_RETRIES:5}
     backoff-delay-seconds: ${ACCESS_CODE_BACKOFF_DELAY_SECONDS:3600s}
 
+bulk-print:
+  schedule: ${BULK_PRINT_SCHEDULE:DAILY|02:00}
+  # BULK_PRINT_LOOKBACK_HOURS (lower envs only): sweep ignores packs whose documents are older than N hours,
+  # so enabling the flag cannot flood send-letter with the historical backlog. Unset in prod = full backlog.
+
+send-letter:
+  # Default to localhost so a higher environment fails loudly if SEND_LETTER_URL is not set, rather than
+  # silently posting to AAT.
+  url: ${SEND_LETTER_URL:http://localhost:8485}
+
+logging:
+  level:
+    uk.gov.hmcts.reform.pcs.ccd.service.bulkprint: INFO
+
+launchdarkly:
+  sdk-key: ${LAUNCHDARKLY_SDK_KEY:}
+  offline-mode: ${LAUNCHDARKLY_OFFLINE:false}
+  env: ${LAUNCHDARKLY_ENV:default}
+  files: ${LAUNCHDARKLY_FILES:}
+
 claim-form:
   request:
     max-retries: ${CLAIM_FORM_MAX_RETRIES:5}
@@ -272,6 +293,11 @@ defence-form:
   request:
     max-retries: ${DEFENCE_FORM_MAX_RETRIES:5}
     backoff-delay-seconds: ${DEFENCE_FORM_BACKOFF_DELAY_SECONDS:3600s}
+
+counter-claim-form:
+  request:
+    max-retries: ${COUNTER_CLAIM_FORM_MAX_RETRIES:5}
+    backoff-delay-seconds: ${COUNTER_CLAIM_FORM_BACKOFF_DELAY_SECONDS:3600s}
 
 role-assignment:
   request:
@@ -308,3 +334,5 @@ core_case_data:
 caseApi:
   url: ${CASE_API_URL:http://localhost:3206}
 
+shutter:
+  service: ${SHUTTER_SERVICE:false}
