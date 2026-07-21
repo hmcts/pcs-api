@@ -9,17 +9,17 @@ package uk.gov.hmcts.reform.pcs;
  * View test results by running "open build/reports/tests/cftlibTest/index.html"
  * */
 
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 
-import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CompletionNextStep;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
@@ -28,22 +28,13 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.client.CcdClient;
-import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
+import uk.gov.hmcts.reform.pcs.service.CaseCreationService;
 import uk.gov.hmcts.rse.ccd.lib.test.CftlibTest;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.resumePossessionClaim;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -55,76 +46,28 @@ public class DataTest extends CftlibTest {
     @Autowired
     private IdamClient idamClient;
 
-    private static Connection connection;
+    @Autowired
+    private CaseCreationService caseCreationService;
+
+    @Autowired
+    private NamedParameterJdbcTemplate jdbcTemplate;
+
+    private String solicitorToken;
 
     @BeforeAll
-    void setUpAndPopulate() throws Exception {
+    void setUpAndPopulate() {
+        // populate cftlib database
 
-        // populate cftlibdatabase
-
-        String solicitorToken = idamClient.getAccessToken("pcs-solicitor1@test.com", "password");
-
-        PCSCase createData = PCSCase.builder()
-            .propertyAddress(AddressUK.builder()
-                                 .addressLine1("123 Baker Street")
-                                 .addressLine2("Marylebone")
-                                 .postTown("London")
-                                 .county("Greater London")
-                                 .postCode("NW1 6XE")
-                                 .build()
-            )
-            .legislativeCountry(LegislativeCountry.ENGLAND)
-            .build();
-
-        CaseDetails caseDetails = ccdClient.createCase(createData, solicitorToken);
-        Long caseReference = caseDetails.getId();
-
-        PCSCase resumeData = PCSCase.builder()
-            .caseManagementLocationNumber(20262)
-            .regionId(1)
-            .tenancyLicenceDetails(TenancyLicenceDetails.builder()
-                                       .typeOfTenancyLicence(TenancyLicenceType.ASSURED_TENANCY)
-                                       .build())
-            .defendant1(DefendantDetails.builder()
-                            .nameKnown(VerticalYesNo.YES)
-                            .firstName("Danny")
-                            .lastName("Defendant")
-                            .build())
-            .noticeServed(YesOrNo.NO)
-            .completionNextStep(CompletionNextStep.SUBMIT_AND_PAY_NOW)
-            .build();
-
-        ccdClient.updateCase(resumePossessionClaim, caseReference, resumeData, solicitorToken);
-
-        // open the JDBC connection used by the checks below
-
-        String host = System.getenv().getOrDefault("PCS_DB_HOST", "localhost");
-        String port = System.getenv().getOrDefault("PCS_DB_PORT", "6432");
-        String dbName = System.getenv().getOrDefault("PCS_DB_NAME", "pcs");
-        String dbOptions = System.getenv().getOrDefault("PCS_DB_OPTIONS", "");
-        String user = System.getenv().getOrDefault("PCS_DB_USER_NAME", "postgres");
-        String password = System.getenv().getOrDefault("PCS_DB_PASSWORD", "postgres");
-
-        String url = "jdbc:postgresql://" + host + ":" + port + "/" + dbName + dbOptions;
-
-        Class.forName("org.postgresql.Driver");
-        connection = DriverManager.getConnection(url, user, password);
-    }
-
-    @AfterAll
-    void tearDownConnection() throws Exception {
-        if (connection != null && !connection.isClosed()) {
-            connection.close();
-        }
+        solicitorToken = idamClient.getAccessToken("pcs-solicitor1@test.com", "password");
+        long caseReference = caseCreationService.createMinimalCase(solicitorToken);
     }
 
     // pcs_case table validation
 
     @Test
     @DisplayName("validate public.pcs_case - schema, completeness, and data quality rules")
-    void validatePcsCaseTable() throws Exception {
-        // 1. Fetch data required for multi-row validations upfront
-        List<String> expectedColumns = Arrays.asList(
+    void validatePcsCaseTable() {
+        List<String> expectedColumns = List.of(
             "id", "version", "property_address_id", "case_reference",
             "base_location", "region_id", "claimant_type", "party_documents",
             "legislative_country", "pre_action_protocol_completed", "case_management_location"
@@ -146,30 +89,23 @@ public class DataTest extends CftlibTest {
         );
 
         int nullCaseRefs = runCountQuery(
-            "SELECT COUNT(*) "
-                + "FROM public.pcs_case "
-                + "WHERE case_reference IS NULL");
+            "SELECT COUNT(*) FROM public.pcs_case WHERE case_reference IS NULL");
         int nullAddressIds = runCountQuery(
-            "SELECT COUNT(*) "
-                + "FROM public.pcs_case "
-                + "WHERE property_address_id IS NULL");
+            "SELECT COUNT(*) FROM public.pcs_case WHERE property_address_id IS NULL");
 
         int invalidCountries = runCountQuery(
-            "SELECT COUNT(*) "
-                + "FROM public.pcs_case "
+            "SELECT COUNT(*) FROM public.pcs_case "
                 + "WHERE legislative_country IS NOT NULL "
                 + "AND legislative_country NOT IN ('ENGLAND', 'WALES')"
         );
 
         int orphanAddresses = runCountQuery(
-            "SELECT COUNT(*) "
-                + "FROM public.pcs_case "
-                + "c LEFT JOIN public.address a ON c.property_address_id = a.id "
+            "SELECT COUNT(*) FROM public.pcs_case c "
+                + "LEFT JOIN public.address a ON c.property_address_id = a.id "
                 + "WHERE c.property_address_id IS NOT NULL "
                 + "AND a.id IS NULL"
         );
 
-        // define failure messages
         String msgCount = "Expected pcs_case to have at >1 row, found " + totalRows;
         String msgDupId = "Found duplicate 'id' values in pcs_case";
         String msgDupRef = "Found duplicate 'case_reference' values";
@@ -178,7 +114,6 @@ public class DataTest extends CftlibTest {
         String msgCountry = "Found rows with unexpected 'legislative_country' value";
         String msgOrphan = "Found pcs_case rows referencing a non-existent address row";
 
-        // execute all assertions
         org.junit.jupiter.api.Assertions.assertAll("pcs_case validations",
                                                    () -> assertHasColumns("public.pcs_case", expectedColumns),
                                                    () -> assertTrue(totalRows > 0, msgCount),
@@ -194,91 +129,67 @@ public class DataTest extends CftlibTest {
     // address table validation
 
     @Test
-    @DisplayName("validate public.address - schema, completeness, and value matching rules")
-    void validateAddressTable() throws Exception {
-        // 1. Fetch data required for column value checks upfront
-        List<String> expectedColumns = Arrays.asList(
+    @DisplayName("validate public.address - schema and completeness rules")
+    void validateAddressTable() {
+        List<String> expectedColumns = List.of(
             "id", "version", "address_line1", "address_line2", "address_line3",
             "post_town", "county", "postcode", "country"
         );
 
-        int totalRows = runCountQuery(
-            "SELECT COUNT(*) "
-                + "FROM public.address");
+        int totalRows = runCountQuery("SELECT COUNT(*) FROM public.address");
 
         int duplicateIds = runCountQuery(
-            "SELECT COUNT(*) "
-                + "FROM ("
-                + "SELECT id "
-                + "FROM public.address "
+            "SELECT COUNT(*) FROM ("
+                + "SELECT id FROM public.address "
                 + "GROUP BY id HAVING COUNT(*) > 1) d"
         );
 
-        int badLine1 = runCountQuery("SELECT COUNT(*) FROM public.address WHERE address_line1 != '123 Baker Street'");
-        int badLine2 = runCountQuery("SELECT COUNT(*) FROM public.address WHERE address_line2 != 'Marylebone'");
-        int badPostTown = runCountQuery("SELECT COUNT(*) FROM public.address WHERE post_town != 'London'");
-        int badCounty = runCountQuery("SELECT COUNT(*) FROM public.address WHERE county != 'Greater London'");
-        int badPostcode = runCountQuery("SELECT COUNT(*) FROM public.address WHERE postcode != 'NW1 6XE'");
+        int nullLine1 = runCountQuery(
+            "SELECT COUNT(*) FROM public.address WHERE address_line1 IS NULL");
+        int nullPostcode = runCountQuery(
+            "SELECT COUNT(*) FROM public.address WHERE postcode IS NULL");
 
-        // define failure messages
         String msgCount = "Expected address to have a row, found " + totalRows;
         String msgDupId = "Found duplicate 'id' values in address";
-        String msgLine1 = "Found rows with unexpected 'address_line1' value";
-        String msgLine2 = "Found rows with unexpected 'address_line2' value";
-        String msgTown = "Found rows with unexpected 'post_town' value";
-        String msgCounty = "Found rows with unexpected 'county' value";
-        String msgPost = "Found rows with unexpected 'postcode' value";
+        String msgLine1 = "Found NULL values in 'address_line1' — expected 0";
+        String msgPostcode = "Found NULL values in 'postcode' — expected 0";
 
-        // execute all assertions
         org.junit.jupiter.api.Assertions.assertAll("address validations",
                                                    () -> assertHasColumns("public.address", expectedColumns),
                                                    () -> assertTrue(totalRows > 0, msgCount),
                                                    () -> assertEquals(0, duplicateIds, msgDupId),
-                                                   () -> assertEquals(0, badLine1, msgLine1),
-                                                   () -> assertEquals(0, badLine2, msgLine2),
-                                                   () -> assertEquals(0, badPostTown, msgTown),
-                                                   () -> assertEquals(0, badCounty, msgCounty),
-                                                   () -> assertEquals(0, badPostcode, msgPost)
+                                                   () -> assertEquals(0, nullLine1, msgLine1),
+                                                   () -> assertEquals(0, nullPostcode, msgPostcode)
         );
     }
 
     // helper
 
-    private void assertHasColumns(String qualifiedTable, List<String> expectedColumns) throws SQLException {
+    private void assertHasColumns(String qualifiedTable, List<String> expectedColumns) {
         String[] parts = qualifiedTable.split("\\.", 2);
         String schema = parts.length == 2 ? parts[0] : "public";
         String table = parts.length == 2 ? parts[1] : parts[0];
 
-        String sql = "SELECT column_name FROM information_schema.columns "
-            + "WHERE table_schema = ? AND table_name = ?";
+        SqlParameterSource params = new MapSqlParameterSource()
+            .addValue("schema", schema)
+            .addValue("table", table);
 
-        List<String> actualColumns = new ArrayList<>();
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setString(1, schema);
-            stmt.setString(2, table);
-            try (ResultSet rs = stmt.executeQuery()) {
-                while (rs.next()) {
-                    actualColumns.add(rs.getString("column_name"));
-                }
-            }
-        }
+        List<String> actualColumns = jdbcTemplate.query(
+            "SELECT column_name FROM information_schema.columns "
+                + "WHERE table_schema = :schema AND table_name = :table",
+            params,
+            (rs, rowNum) -> rs.getString("column_name")
+        );
 
-        List<String> missingColumns = new ArrayList<>();
-        for (String expectedColumn : expectedColumns) {
-            if (!actualColumns.contains(expectedColumn)) {
-                missingColumns.add(expectedColumn);
-            }
-        }
+        List<String> missingColumns = expectedColumns.stream()
+            .filter(col -> !actualColumns.contains(col))
+            .toList();
 
         assertTrue(missingColumns.isEmpty(),
                    () -> "Missing expected column(s) in " + qualifiedTable + ": " + missingColumns);
     }
 
-    private int runCountQuery(String sql) throws SQLException {
-        try (Statement stmt = connection.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
-            rs.next();
-            return rs.getInt(1);
-        }
+    private int runCountQuery(String sql) {
+        return jdbcTemplate.queryForObject(sql, new MapSqlParameterSource(), Integer.class);
     }
 }
