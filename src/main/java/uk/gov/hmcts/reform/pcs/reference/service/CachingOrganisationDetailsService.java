@@ -147,7 +147,6 @@ public class CachingOrganisationDetailsService {
 
     private CachedOrganisationResponseEntity mapResponseToEntity(UUID userIdam,
                                                                  OrganisationDetailsResponse response) {
-
         CachedOrganisationResponseEntity.CachedOrganisationResponseEntityBuilder builder =
             CachedOrganisationResponseEntity.builder()
                 .idamId(userIdam)
@@ -171,22 +170,22 @@ public class CachingOrganisationDetailsService {
     private void updateFields(CachedOrganisationResponseEntity existingCachedResponse,
                               OrganisationDetailsResponse response,
                               String userId) {
-            existingCachedResponse.setOrganisationId(response.getOrganisationIdentifier());
-            existingCachedResponse.setOrganisationName(response.getName());
+        existingCachedResponse.setOrganisationId(response.getOrganisationIdentifier());
+        existingCachedResponse.setOrganisationName(response.getName());
 
-            if (response.getContactInformation() != null && !response.getContactInformation().isEmpty()) {
-                OrganisationDetailsResponse.ContactInformation contactInfo = response.getContactInformation().getFirst();
-                existingCachedResponse.setAddressLine1(contactInfo.getAddressLine1());
-                existingCachedResponse.setAddressLine2(contactInfo.getAddressLine2());
-                existingCachedResponse.setAddressLine3(contactInfo.getAddressLine3());
-                existingCachedResponse.setPostTown(contactInfo.getTownCity());
-                existingCachedResponse.setCounty(contactInfo.getCounty());
-                existingCachedResponse.setCountry(contactInfo.getCountry());
-                existingCachedResponse.setPostCode(contactInfo.getPostCode());
-            } else {
-                log.warn("Organisation address is null or empty for user ID: {}", userId);
-                clearCachedAddressFields(existingCachedResponse);
-            }
+        if (response.getContactInformation() != null && !response.getContactInformation().isEmpty()) {
+            OrganisationDetailsResponse.ContactInformation contactInfo = response.getContactInformation().getFirst();
+            existingCachedResponse.setAddressLine1(contactInfo.getAddressLine1());
+            existingCachedResponse.setAddressLine2(contactInfo.getAddressLine2());
+            existingCachedResponse.setAddressLine3(contactInfo.getAddressLine3());
+            existingCachedResponse.setPostTown(contactInfo.getTownCity());
+            existingCachedResponse.setCounty(contactInfo.getCounty());
+            existingCachedResponse.setCountry(contactInfo.getCountry());
+            existingCachedResponse.setPostCode(contactInfo.getPostCode());
+        } else {
+            log.warn("Organisation address is null or empty for user ID: {}", userId);
+            clearCachedAddressFields(existingCachedResponse);
+        }
         existingCachedResponse.setLastModifiedDate(localDateTimeSupplier.get());
     }
 
@@ -198,7 +197,7 @@ public class CachingOrganisationDetailsService {
         existingCachedResponse.setLastModifiedDate(localDateTimeSupplier.get());
         existingCachedResponse.setOrganisationId(null);
         existingCachedResponse.setOrganisationName(null);
-       clearCachedAddressFields(existingCachedResponse);
+        clearCachedAddressFields(existingCachedResponse);
     }
 
     private void clearCachedAddressFields(CachedOrganisationResponseEntity existingCachedResponse) {

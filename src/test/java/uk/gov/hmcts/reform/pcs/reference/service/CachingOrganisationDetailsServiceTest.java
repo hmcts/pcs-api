@@ -24,10 +24,8 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
@@ -120,7 +118,7 @@ class CachingOrganisationDetailsServiceTest {
         mockOrganisationDetails(response);
         when(cachedOrganisationResponseRepository.findByIdamId(userId)).thenReturn(Optional.empty());
         when(localDateTimeSupplier.get()).thenReturn(now);
-        when(cachedOrganisationResponseRepository.save(org.mockito.ArgumentMatchers.any(CachedOrganisationResponseEntity.class)))
+        when(cachedOrganisationResponseRepository.save(any(CachedOrganisationResponseEntity.class)))
             .thenAnswer(invocation -> invocation.getArgument(0));
 
         // when
@@ -131,17 +129,17 @@ class CachingOrganisationDetailsServiceTest {
 
         CachedOrganisationResponseEntity actual = cachedOrganisationResponseEntityCaptor.getValue();
 
-        assertEquals(orgId, actual.getOrganisationId());
-        assertEquals(userId, actual.getIdamId());
-        assertEquals(now, actual.getLastModifiedDate());
-        assertEquals(orgName, actual.getOrganisationName());
-        assertEquals(addressLine1, actual.getAddressLine1());
-        assertEquals(addressLine2, actual.getAddressLine2());
-        assertEquals(addressLine3, actual.getAddressLine3());
-        assertEquals(townCity, actual.getPostTown());
-        assertEquals(county, actual.getCounty());
-        assertEquals(country, actual.getCountry());
-        assertEquals(postCode, actual.getPostCode());
+        assertThat(actual.getOrganisationId()).isEqualTo(orgId);
+        assertThat(actual.getIdamId()).isEqualTo(userId);
+        assertThat(actual.getLastModifiedDate()).isEqualTo(now);
+        assertThat(actual.getOrganisationName()).isEqualTo(orgName);
+        assertThat(actual.getAddressLine1()).isEqualTo(addressLine1);
+        assertThat(actual.getAddressLine2()).isEqualTo(addressLine2);
+        assertThat(actual.getAddressLine3()).isEqualTo(addressLine3);
+        assertThat(actual.getPostTown()).isEqualTo(townCity);
+        assertThat(actual.getCounty()).isEqualTo(county);
+        assertThat(actual.getCountry()).isEqualTo(country);
+        assertThat(actual.getPostCode()).isEqualTo(postCode);
     }
 
     @Test
@@ -166,7 +164,7 @@ class CachingOrganisationDetailsServiceTest {
         verify(cachedOrganisationResponseRepository, never()).save(any());
         verifyNoCallsForOrganisationDetails();
 
-        assertEquals(orgId, actual);
+        assertThat(actual).isEqualTo(orgId);
     }
 
     @Test
@@ -219,21 +217,21 @@ class CachingOrganisationDetailsServiceTest {
 
         CachedOrganisationResponseEntity actual = cachedOrganisationResponseEntityCaptor.getValue();
 
-        assertEquals(orgId2, actual.getOrganisationId());
-        assertEquals(userId, actual.getIdamId());
-        assertEquals(now, actual.getLastModifiedDate());
+        assertThat(actual.getOrganisationId()).isEqualTo(orgId2);
+        assertThat(actual.getIdamId()).isEqualTo(userId);
+        assertThat(actual.getLastModifiedDate()).isEqualTo(now);
 
-        assertEquals(orgId2, actual.getOrganisationId());
-        assertEquals(userId, actual.getIdamId());
-        assertEquals(now, actual.getLastModifiedDate());
-        assertEquals(orgName2, actual.getOrganisationName());
-        assertEquals(addressLine1, actual.getAddressLine1());
-        assertEquals(addressLine2, actual.getAddressLine2());
-        assertEquals(addressLine3, actual.getAddressLine3());
-        assertEquals(townCity, actual.getPostTown());
-        assertEquals(county, actual.getCounty());
-        assertEquals(country, actual.getCountry());
-        assertEquals(postCode, actual.getPostCode());
+        assertThat(actual.getOrganisationId()).isEqualTo(orgId2);
+        assertThat(actual.getIdamId()).isEqualTo(userId);
+        assertThat(actual.getLastModifiedDate()).isEqualTo(now);
+        assertThat(actual.getOrganisationName()).isEqualTo(orgName2);
+        assertThat(actual.getAddressLine1()).isEqualTo(addressLine1);
+        assertThat(actual.getAddressLine2()).isEqualTo(addressLine2);
+        assertThat(actual.getAddressLine3()).isEqualTo(addressLine3);
+        assertThat(actual.getPostTown()).isEqualTo(townCity);
+        assertThat(actual.getCounty()).isEqualTo(county);
+        assertThat(actual.getCountry()).isEqualTo(country);
+        assertThat(actual.getPostCode()).isEqualTo(postCode);
     }
 
     @Test
@@ -263,18 +261,18 @@ class CachingOrganisationDetailsServiceTest {
 
         CachedOrganisationResponseEntity actual = cachedOrganisationResponseEntityCaptor.getValue();
 
-        assertEquals(userId, actual.getIdamId());
-        assertEquals(now, actual.getLastModifiedDate());
+        assertThat(actual.getIdamId()).isEqualTo(userId);
+        assertThat(actual.getLastModifiedDate()).isEqualTo(now);
 
-        assertNull(actual.getOrganisationId());
-        assertNull(actual.getOrganisationName());
-        assertNull(actual.getAddressLine1());
-        assertNull(actual.getAddressLine2());
-        assertNull(actual.getAddressLine3());
-        assertNull(actual.getPostTown());
-        assertNull(actual.getCounty());
-        assertNull(actual.getCountry());
-        assertNull(actual.getPostCode());
+        assertThat(actual.getOrganisationId()).isNull();
+        assertThat(actual.getOrganisationName()).isNull();
+        assertThat(actual.getAddressLine1()).isNull();
+        assertThat(actual.getAddressLine2()).isNull();
+        assertThat(actual.getAddressLine3()).isNull();
+        assertThat(actual.getPostTown()).isNull();
+        assertThat(actual.getCounty()).isNull();
+        assertThat(actual.getCountry()).isNull();
+        assertThat(actual.getPostCode()).isNull();
     }
 
     @Test
@@ -308,38 +306,38 @@ class CachingOrganisationDetailsServiceTest {
         when(cachedOrganisationResponseRepository.findByIdamId(userId)).thenReturn(Optional.empty());
         when(localDateTimeSupplier.get()).thenReturn(now);
         mockOrganisationDetails(response);
-        when(cachedOrganisationResponseRepository.save(org.mockito.ArgumentMatchers.any(CachedOrganisationResponseEntity.class)))
+        when(cachedOrganisationResponseRepository.save(any(CachedOrganisationResponseEntity.class)))
             .thenAnswer(invocation -> invocation.getArgument(0));
 
         // when
         NameAndAddress actual = cachingOrganisationDetailsService.getNameAndAddress(userId.toString());
 
         // then
-        assertNotNull(actual);
-        assertEquals(orgName, actual.name());
+        assertThat(actual).isNotNull();
+        assertThat(actual.name()).isEqualTo(orgName);
         AddressUK address = actual.address();
-        assertNotNull(address);
-        assertEquals(addressLine1, address.getAddressLine1());
-        assertEquals(addressLine2, address.getAddressLine2());
-        assertEquals(addressLine3, address.getAddressLine3());
-        assertEquals(townCity, address.getPostTown());
-        assertEquals(county, address.getCounty());
-        assertEquals(country, address.getCountry());
-        assertEquals(postCode, address.getPostCode());
+        assertThat(address).isNotNull();
+        assertThat(address.getAddressLine1()).isEqualTo(addressLine1);
+        assertThat(address.getAddressLine2()).isEqualTo(addressLine2);
+        assertThat(address.getAddressLine3()).isEqualTo(addressLine3);
+        assertThat(address.getPostTown()).isEqualTo(townCity);
+        assertThat(address.getCounty()).isEqualTo(county);
+        assertThat(address.getCountry()).isEqualTo(country);
+        assertThat(address.getPostCode()).isEqualTo(postCode);
 
         verify(cachedOrganisationResponseRepository).save(cachedOrganisationResponseEntityCaptor.capture());
         CachedOrganisationResponseEntity savedEntity = cachedOrganisationResponseEntityCaptor.getValue();
 
-        assertEquals(orgId, savedEntity.getOrganisationId());
-        assertEquals(orgName, savedEntity.getOrganisationName());
-        assertEquals(addressLine1, savedEntity.getAddressLine1());
-        assertEquals(addressLine2, savedEntity.getAddressLine2());
-        assertEquals(addressLine3, savedEntity.getAddressLine3());
-        assertEquals(townCity, savedEntity.getPostTown());
-        assertEquals(county, savedEntity.getCounty());
-        assertEquals(country, savedEntity.getCountry());
-        assertEquals(postCode, savedEntity.getPostCode());
-        assertEquals(now, savedEntity.getLastModifiedDate());
+        assertThat(savedEntity.getOrganisationId()).isEqualTo(orgId);
+        assertThat(savedEntity.getOrganisationName()).isEqualTo(orgName);
+        assertThat(savedEntity.getAddressLine1()).isEqualTo(addressLine1);
+        assertThat(savedEntity.getAddressLine2()).isEqualTo(addressLine2);
+        assertThat(savedEntity.getAddressLine3()).isEqualTo(addressLine3);
+        assertThat(savedEntity.getPostTown()).isEqualTo(townCity);
+        assertThat(savedEntity.getCounty()).isEqualTo(county);
+        assertThat(savedEntity.getCountry()).isEqualTo(country);
+        assertThat(savedEntity.getPostCode()).isEqualTo(postCode);
+        assertThat(savedEntity.getLastModifiedDate()).isEqualTo(now);
     }
 
     @Test
@@ -358,24 +356,24 @@ class CachingOrganisationDetailsServiceTest {
         when(cachedOrganisationResponseRepository.findByIdamId(userId)).thenReturn(Optional.empty());
         mockOrganisationDetails(response);
         when(localDateTimeSupplier.get()).thenReturn(now);
-        when(cachedOrganisationResponseRepository.save(org.mockito.ArgumentMatchers.any(CachedOrganisationResponseEntity.class)))
+        when(cachedOrganisationResponseRepository.save(any(CachedOrganisationResponseEntity.class)))
             .thenAnswer(invocation -> invocation.getArgument(0));
 
         // when
         NameAndAddress actual = cachingOrganisationDetailsService.getNameAndAddress(userId.toString());
 
         // then
-        assertNotNull(actual);
-        assertEquals(orgName, actual.name());
+        assertThat(actual).isNotNull();
+        assertThat(actual.name()).isEqualTo(orgName);
         AddressUK address = actual.address();
-        assertNotNull(address);
+        assertThat(address).isNotNull();
 
         verify(cachedOrganisationResponseRepository).save(cachedOrganisationResponseEntityCaptor.capture());
         CachedOrganisationResponseEntity savedEntity = cachedOrganisationResponseEntityCaptor.getValue();
 
-        assertEquals(orgId, savedEntity.getOrganisationId());
-        assertEquals(orgName, savedEntity.getOrganisationName());
-        assertNull(savedEntity.getAddressLine1());
+        assertThat(savedEntity.getOrganisationId()).isEqualTo(orgId);
+        assertThat(savedEntity.getOrganisationName()).isEqualTo(orgName);
+        assertThat(savedEntity.getAddressLine1()).isNull();
     }
 
     @Test
@@ -387,26 +385,26 @@ class CachingOrganisationDetailsServiceTest {
         when(cachedOrganisationResponseRepository.findByIdamId(userId)).thenReturn(Optional.empty());
         mockOrganisationDetails(null);
         when(localDateTimeSupplier.get()).thenReturn(now);
-        when(cachedOrganisationResponseRepository.save(org.mockito.ArgumentMatchers.any(CachedOrganisationResponseEntity.class)))
+        when(cachedOrganisationResponseRepository.save(any(CachedOrganisationResponseEntity.class)))
             .thenAnswer(invocation -> invocation.getArgument(0));
 
         // when
         NameAndAddress actual = cachingOrganisationDetailsService.getNameAndAddress(userId.toString());
 
         // then
-        assertNotNull(actual);
-        assertNull(actual.name());
-        assertNotNull(actual.address());
-        assertNull(actual.address().getAddressLine1());
+        assertThat(actual).isNotNull();
+        assertThat(actual.name()).isNull();
+        assertThat(actual.address()).isNotNull();
+        assertThat(actual.address().getAddressLine1()).isNull();
 
         verify(cachedOrganisationResponseRepository).save(cachedOrganisationResponseEntityCaptor.capture());
         CachedOrganisationResponseEntity savedEntity = cachedOrganisationResponseEntityCaptor.getValue();
 
-        assertEquals(userId, savedEntity.getIdamId());
-        assertEquals(now, savedEntity.getLastModifiedDate());
-        assertNull(savedEntity.getOrganisationId());
-        assertNull(savedEntity.getOrganisationName());
-        assertNull(savedEntity.getAddressLine1());
+        assertThat(savedEntity.getIdamId()).isEqualTo(userId);
+        assertThat(savedEntity.getLastModifiedDate()).isEqualTo(now);
+        assertThat(savedEntity.getOrganisationId()).isNull();
+        assertThat(savedEntity.getOrganisationName()).isNull();
+        assertThat(savedEntity.getAddressLine1()).isNull();
     }
 
     @Test
@@ -433,10 +431,10 @@ class CachingOrganisationDetailsServiceTest {
         verify(cachedOrganisationResponseRepository, never()).save(any());
         verifyNoCallsForOrganisationDetails();
 
-        assertNotNull(actual);
-        assertEquals("Org Name", actual.name());
-        assertEquals("123 Street", actual.address().getAddressLine1());
-        assertEquals("SW1A 1AA", actual.address().getPostCode());
+        assertThat(actual).isNotNull();
+        assertThat(actual.name()).isEqualTo("Org Name");
+        assertThat(actual.address().getAddressLine1()).isEqualTo("123 Street");
+        assertThat(actual.address().getPostCode()).isEqualTo("SW1A 1AA");
     }
 
     @Test
@@ -463,6 +461,9 @@ class CachingOrganisationDetailsServiceTest {
         String country = "Country";
         String postCode = "PostCode";
 
+        when(cachedOrganisationResponseRepository.findByIdamId(userId)).thenReturn(Optional.of(cachedEntity));
+        when(cachedOrganisationResponseRepository.save(cachedEntity)).thenReturn(cachedEntity);
+        when(localDateTimeSupplier.get()).thenReturn(now);
         OrganisationDetailsResponse response = OrganisationDetailsResponse.builder()
             .organisationIdentifier(orgId)
             .name(orgName)
@@ -476,24 +477,21 @@ class CachingOrganisationDetailsServiceTest {
                                             .postCode(postCode)
                                             .build()))
             .build();
-        when(cachedOrganisationResponseRepository.findByIdamId(userId)).thenReturn(Optional.of(cachedEntity));
-        when(cachedOrganisationResponseRepository.save(cachedEntity)).thenReturn(cachedEntity);
-        when(localDateTimeSupplier.get()).thenReturn(now);
         mockOrganisationDetails(response);
 
         // when
         NameAndAddress actual = cachingOrganisationDetailsService.getNameAndAddress(userId.toString());
 
         // then
-        assertNotNull(actual);
-        assertEquals(orgName, actual.name());
+        assertThat(actual).isNotNull();
+        assertThat(actual.name()).isEqualTo(orgName);
 
         verify(cachedOrganisationResponseRepository).save(cachedEntity);
-        assertEquals(orgId, cachedEntity.getOrganisationId());
-        assertEquals(orgName, cachedEntity.getOrganisationName());
-        assertEquals(addressLine1, cachedEntity.getAddressLine1());
-        assertEquals(addressLine2, cachedEntity.getAddressLine2());
-        assertEquals(now, cachedEntity.getLastModifiedDate());
+        assertThat(cachedEntity.getOrganisationId()).isEqualTo(orgId);
+        assertThat(cachedEntity.getOrganisationName()).isEqualTo(orgName);
+        assertThat(cachedEntity.getAddressLine1()).isEqualTo(addressLine1);
+        assertThat(cachedEntity.getAddressLine2()).isEqualTo(addressLine2);
+        assertThat(cachedEntity.getLastModifiedDate()).isEqualTo(now);
     }
 
     @Test
@@ -526,12 +524,17 @@ class CachingOrganisationDetailsServiceTest {
         NameAndAddress actual = cachingOrganisationDetailsService.getNameAndAddress(userId.toString());
 
         // then
-        assertNotNull(actual);
-        assertNull(actual.address().getAddressLine1());
+        assertThat(actual).isNotNull();
+        assertThat(actual.address().getAddressLine1()).isNull();
 
         verify(cachedOrganisationResponseRepository).save(cachedEntity);
-        assertNull(cachedEntity.getAddressLine1());
-        assertNull(cachedEntity.getPostCode());
+        assertThat(cachedEntity.getAddressLine1()).isNull();
+        assertThat(cachedEntity.getAddressLine2()).isNull();
+        assertThat(cachedEntity.getAddressLine3()).isNull();
+        assertThat(cachedEntity.getPostTown()).isNull();
+        assertThat(cachedEntity.getCounty()).isNull();
+        assertThat(cachedEntity.getCountry()).isNull();
+        assertThat(cachedEntity.getPostCode()).isNull();
 
     }
 
@@ -555,7 +558,7 @@ class CachingOrganisationDetailsServiceTest {
         // then
         verify(cachedOrganisationResponseRepository, never()).save(any());
         verifyNoCallsForOrganisationDetails();
-        assertEquals("org1", actual);
+        assertThat(actual).isEqualTo("org1");
     }
 
     @Test
