@@ -16,7 +16,7 @@ export const addReviewDates = {
   OtherHiddenRadioOption: `Other`,
   descriptionHiddenTextLabel: `Description of review`,
   youCanEnterUpToHiddenHintText: `You can enter up to 500 characters`,
-  removeButton:`Remove`,
+  removeHiddenButton:`Remove`,
   continueButton: `Continue`,
   previousButton: `Previous`,
   cancelLink: `Cancel`,
@@ -27,7 +27,7 @@ export const addReviewDates = {
   errorValidation: `YES`,
   eventCouldNotBeCreatedErrorMessageHeader: `The event could not be created`,
   thereIsProbErrorMessageHeader: `There is a problem`,
-  errorValidationType: { one: `textField`, two: `radioOptions`, three: `checkBox`, four: `dropDown`, five: `dateField`, six: `maxInputField` },
+  errorValidationType: { one: `textField`, two: `radioOptions`, three: `checkBox`, four: `dropDown`, five: `dateField`, six: `dateRadioOption` },
   errorValidationField: {
     errorDateField: [
       { type: `empty`, input: `empty`, errMessage: `Date of review is required`,errInlineMessage: `Date of review is required`},
@@ -39,7 +39,7 @@ export const addReviewDates = {
     errorTextField: [
       { type: `none`, input: ``, errMessage: `Description of review is required` },
       ],
-    errorMaxInputField: [
+    errorDateRadioOption: [
       {type: `Max`, input: `510`, errMessage: `In ‘Description of review’, you have entered more than the maximum number of characters (500)`}
     ]
   },

@@ -6,18 +6,18 @@ import { getCaseTypeId } from '@utils/common/caseType.utils';
 import { performAction, performValidation } from '@utils/controller-caseManagement';
 import { VERY_LONG_TIMEOUT } from 'playwright.config';
 import { caseSummary, home } from '@data/page-data';
-import {
-  addReviewDates,
-  confirmReviewDatesAdded,
-  selectDocument
-} from '@data/page-data-figma/page-data-caseManagement-figma';
 import {generateRandomString} from "@utils/common/string.utils";
 import {performActions} from "@utils/controller";
-import {caseInfo} from "@utils/actions/custom-actions";
 import {
   CaseManagementCommonUtils
 } from "@utils/actions/custom-actions/custom-actions-caseManagement/caseManagementUtils.action";
-import { changeCaseState, confirmCaseStateChange, selectDocument } from '@data/page-data-figma/page-data-caseManagement-figma';
+import {
+  addReviewDates,
+  confirmReviewDatesAdded,
+  selectDocument,
+  changeCaseState,
+  confirmCaseStateChange
+} from '@data/page-data-figma/page-data-caseManagement-figma';
 import { caseInfo } from '../createCaseAPI.action';
 
 
@@ -145,12 +145,8 @@ export class CaseManagementAction implements IAction {
                 await performAction('clickButton', validationArr.button);
                 await performValidation('inputError', !validationArr?.label ? validationArr.question : validationArr.label, item.errInlineMessage);
                 await performValidation('errorMessage', !validationArr?.header ? validationArr.header = 'There is a problem' : validationArr.header, item.errMessage);
-                if (validationArr.option) {
-                  await performAction('clickRadioButton', {
-                    question: validationArr.question,
-                    option: validationArr.option
-                  });
-                }break;
+                await performAction('clickRadioButton', {question: validationArr.question, option: validationArr.option});
+                break;
 
               case 'checkBox':
                 await performAction('clickButton', validationArr.button);
@@ -219,7 +215,7 @@ export class CaseManagementAction implements IAction {
                 }
                 break;
 
-              case 'maxInputField' :
+              case 'dateRadioOption' :
                 let dateOfReview: string = CaseManagementCommonUtils.getRandomDate(item.type as string);
                 const enterDateOfReview = () =>
                   performActions(

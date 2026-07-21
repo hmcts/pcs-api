@@ -1,8 +1,7 @@
 import { Page } from '@playwright/test';
 import { performAction } from '@utils/controller-caseManagement';
 import { IAction, actionData, actionRecord } from '@utils/interfaces/action.interface';
-import {addReviewDates, selectDocument} from '@data/page-data-figma/page-data-caseManagement-figma';
-import { changeCaseState, selectDocument } from '@data/page-data-figma/page-data-caseManagement-figma';
+import { addReviewDates,changeCaseState, selectDocument } from '@data/page-data-figma/page-data-caseManagement-figma';
 
 export class ErrorValidationAction implements IAction {
   async execute(page: Page, action: string, errorFlag: string | actionRecord, roles?: actionData): Promise<void> {
@@ -52,13 +51,22 @@ export class ErrorValidationAction implements IAction {
       await performAction('inputErrorValidation',{
         validationType: addReviewDates.errorValidationType.two,
         inputArray: addReviewDates.errorValidationField.errorRadioOption,
-        label: addReviewDates.reasonHiddenLabel,
+        question: addReviewDates.reasonHiddenLabel,
+        option: addReviewDates.unlessOrderHiddenRadioOption,
+        button: addReviewDates.continueButton
+      });
+
+      await performAction('inputErrorValidation', {
+        validationType: addReviewDates.errorValidationType.one,
+        inputArray: addReviewDates.errorValidationField.errorTextField,
+        header: addReviewDates.eventCouldNotBeCreatedErrorMessageHeader,
+        label: addReviewDates.descriptionHiddenTextLabel,
         button: addReviewDates.continueButton
       });
 
       await performAction('inputErrorValidation', {
         validationType: addReviewDates.errorValidationType.six,
-        inputArray: addReviewDates.errorValidationField.errorMaxInputField,
+        inputArray: addReviewDates.errorValidationField.errorDateRadioOption,
         header: addReviewDates.eventCouldNotBeCreatedErrorMessageHeader,
         label1: addReviewDates.dayHiddenTextLabel,
         label2: addReviewDates.monthHiddenTextLabel,

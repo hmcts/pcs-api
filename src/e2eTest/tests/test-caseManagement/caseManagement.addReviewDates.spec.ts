@@ -39,7 +39,7 @@ test.describe('Case management - Case Worker Add Review date @nightly', async ()
   test('Case management - Case Worker Add Review Date @CM @regression', async () => {
     await performAction('selectAnEvent', { eventType: caseSummary.addReviewDates });
     await performValidation('mainHeader', addReviewDates.mainHeader);
-    performAction('clickButton', addReviewDates.addNewButton);
+    await performAction('clickButton', addReviewDates.addNewButton);
     await performAction('errorValidationAddReviewDatesPage', addReviewDates.errorValidation);
     await performAction('addReviewDates', {
       day: addReviewDates.dayHiddenTextLabel,
