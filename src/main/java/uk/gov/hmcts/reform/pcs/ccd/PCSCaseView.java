@@ -149,6 +149,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
             .build();
 
         setDerivedProperties(pcsCase, pcsCaseEntity);
+        setGroupAccessFields(pcsCase);
 
         partiesView.setCaseFields(pcsCase, pcsCaseEntity);
         claimView.setCaseFields(pcsCase, pcsCaseEntity);
@@ -194,6 +195,29 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
                 .withZoneSameInstant(UK_ZONE_ID)
                 .toLocalDate())
             .orElse(null);
+    }
+
+    // INTERIM: stamp the case with the group-access key so the data store's caseAccessGroupId
+    // matcher can grant org-wide access. Hardcoded to the WK8GIHE test org for the preview demo.
+    // TODO derive from the case creator's organisation (PRD lookup, persisted at create time),
+    // and delete once the decentralised runtime stamps CaseAccessGroups itself.
+    private void setGroupAccessFields(PCSCase pcsCase) {
+        uk.gov.hmcts.ccd.sdk.type.CaseAccessGroup caseAccessGroup =
+            uk.gov.hmcts.ccd.sdk.type.CaseAccessGroup.builder()
+                .caseAccessGroupId("PCS:PCS:prof-org-access:solicitor:WK8GIHE")
+                .caseAccessGroupType("CCD:all-cases-access")
+                .build();
+
+        ListValue<uk.gov.hmcts.ccd.sdk.type.CaseAccessGroup> wrapped =
+            ListValue.<uk.gov.hmcts.ccd.sdk.type.CaseAccessGroup>builder()
+                .id(UUID.nameUUIDFromBytes(caseAccessGroup.getCaseAccessGroupId().getBytes()).toString())
+                .value(caseAccessGroup)
+                .build();
+
+        uk.gov.hmcts.reform.pcs.ccd.domain.GroupAccessFields<uk.gov.hmcts.reform.pcs.ccd.accesscontrol.AccessProfile>
+            groupAccessFields = new uk.gov.hmcts.reform.pcs.ccd.domain.GroupAccessFields<>();
+        groupAccessFields.setCaseAccessGroups(List.of(wrapped));
+        pcsCase.setGroupAccessFields(groupAccessFields);
     }
 
     private void setDerivedProperties(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
