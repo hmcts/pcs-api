@@ -7,7 +7,7 @@ import { caseSummary, user } from '@data/page-data';
 import { dismissCookieBanner } from '@config/cookie-banner';
 import { initializeCMExecutor, performAction, performValidation } from '@utils/controller-caseManagement';
 import { allPartyDetails } from '@utils/actions/custom-actions/custom-actions-caseManagement';
-import { enterGenappApplication, enterGenAppapplicationFee, enterGenAppHearingDate } from '@data/page-data-figma/page-data-caseManagement-figma';
+import { enterGenappApplication, enterGenAppapplicationFee, enterGenAppConsentAndNotice, enterGenAppHearingDate } from '@data/page-data-figma/page-data-caseManagement-figma';
 import { label } from 'allure-js-commons';
 
 test.use({ storageState: undefined })
@@ -63,6 +63,44 @@ test.describe('Case management - Case Worker Enter a General application @nightl
       option: enterGenAppHearingDate.yesRadioOption,
       nextPage: enterGenAppapplicationFee.mainHeader
     });
+    await performAction('errorValidationApplicationFeePage', enterGenappApplication.errorValidation);
+    await performAction('enterApplicationFeeDetails', {
+      question1: enterGenAppapplicationFee.appFeeReceivedQuestion, option1: enterGenAppapplicationFee.yesRadioOption,
+      question2: enterGenAppapplicationFee.referenceNumberIncludedQuestion, option2: enterGenAppapplicationFee.yesRadioOption,
+      label1: enterGenAppapplicationFee.enterTheAmountReceivedHiddenTextLabel,
+      label2: enterGenAppapplicationFee.enterTheFeeReferenceHiddenTextLabel,
+      input: enterGenAppapplicationFee.enterTheFeeReferenceHiddenTextInput,
+      nextPage: enterGenAppConsentAndNotice.mainHeader
+    })
+  });
+
+  test('Case management - Case Worker Enter a General application ADJOURN Journey - Application Fee Received - NO @CM', async () => {
+    await performAction('selectAnEvent', { eventType: caseSummary.enterAGenApp });
+    await performValidation('mainHeader', enterGenappApplication.mainHeader);
+    await performAction('enterApplicationDetails', {
+      question1: enterGenappApplication.whichPartyMadeAppQuestion, option1: allPartyDetails[0],
+      question2: enterGenappApplication.typeOfAppQuestion, option2: enterGenappApplication.adjournRadioOption,
+      label: enterGenappApplication.whichCategoriesHiddenTextLabel,
+      input: enterGenappApplication.whichCategoriesHiddenTextInput,
+      label1: enterGenappApplication.dayTextLabel,
+      label2: enterGenappApplication.monthTextLabel,
+      label3: enterGenappApplication.yearTextLabel,
+      dateType: enterGenappApplication.dateTypeHiddenUserInput,
+      nextPage: enterGenAppHearingDate.mainHeader
+    });
+    await performAction('confirmIfCourtHearingInNext14Days', {
+      question: enterGenAppHearingDate.hearingInNext14DaysQuestion,
+      option: enterGenAppHearingDate.yesRadioOption,
+      nextPage: enterGenAppapplicationFee.mainHeader
+    });
+    await performAction('enterApplicationFeeDetails', {
+      question1: enterGenAppapplicationFee.appFeeReceivedQuestion, option1: enterGenAppapplicationFee.noRadioOption,
+      question2: enterGenAppapplicationFee.referenceNumberIncludedQuestion, option2: enterGenAppapplicationFee.yesRadioOption,
+      label1: enterGenAppapplicationFee.enterTheAmountReceivedHiddenTextLabel,
+      label2: enterGenAppapplicationFee.enterTheFeeReferenceHiddenTextLabel,
+      input: enterGenAppapplicationFee.enterTheFeeReferenceHiddenTextInput,
+      nextPage: enterGenAppConsentAndNotice.mainHeader
+    })
   });
 
   test('Case management - Case Worker Enter a General application SET ASIDE Journey @CM', async () => {
@@ -79,6 +117,14 @@ test.describe('Case management - Case Worker Enter a General application @nightl
       dateType: enterGenappApplication.dateTypeHiddenUserInput,
       nextPage: enterGenAppapplicationFee.mainHeader
     })
+    await performAction('enterApplicationFeeDetails', {
+      question1: enterGenAppapplicationFee.appFeeReceivedQuestion, option1: enterGenAppapplicationFee.yesRadioOption,
+      question2: enterGenAppapplicationFee.referenceNumberIncludedQuestion, option2: enterGenAppapplicationFee.yesRadioOption,
+      label1: enterGenAppapplicationFee.enterTheAmountReceivedHiddenTextLabel,
+      label2: enterGenAppapplicationFee.enterTheFeeReferenceHiddenTextLabel,
+      input: enterGenAppapplicationFee.enterTheFeeReferenceHiddenTextInput,
+      nextPage: enterGenAppConsentAndNotice.mainHeader
+    })
   });
 
   test('Case management - Case Worker Enter a General application SOMETHING ELSE Journey @CM', async () => {
@@ -94,6 +140,14 @@ test.describe('Case management - Case Worker Enter a General application @nightl
       label3: enterGenappApplication.yearTextLabel,
       dateType: enterGenappApplication.dateTypeHiddenUserInput,
       nextPage: enterGenAppapplicationFee.mainHeader
+    })
+    await performAction('enterApplicationFeeDetails', {
+      question1: enterGenAppapplicationFee.appFeeReceivedQuestion, option1: enterGenAppapplicationFee.yesRadioOption,
+      question2: enterGenAppapplicationFee.referenceNumberIncludedQuestion, option2: enterGenAppapplicationFee.yesRadioOption,
+      label1: enterGenAppapplicationFee.enterTheAmountReceivedHiddenTextLabel,
+      label2: enterGenAppapplicationFee.enterTheFeeReferenceHiddenTextLabel,
+      input: enterGenAppapplicationFee.enterTheFeeReferenceHiddenTextInput,
+      nextPage: enterGenAppConsentAndNotice.mainHeader
     })
   });
 });

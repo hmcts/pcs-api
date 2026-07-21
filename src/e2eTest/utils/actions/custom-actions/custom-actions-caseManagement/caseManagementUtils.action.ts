@@ -122,4 +122,9 @@ export class CaseManagementCommonUtils {
     return Array.from({ length }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
   }
 
+
+  public static getRandomNumberAsString(min: number, max: number): string {
+    return (Math.floor(Math.random() * (max - min + 1)) + min).toString();
+  }
+
 } 
