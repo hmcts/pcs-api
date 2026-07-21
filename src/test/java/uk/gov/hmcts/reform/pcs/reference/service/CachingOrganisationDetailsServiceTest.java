@@ -60,6 +60,7 @@ class CachingOrganisationDetailsServiceTest {
     private static final String USER_ID = "dc3f786d-4ad4-4b5d-a79f-6e35a6520ace";
     private static final String S2S_TOKEN = "test-s2s-token";
     private static final String PRD_ADMIN_TOKEN = "Bearer test-prd-admin-token";
+    private static final int RD_PROFESSIONAL_NULL_RESPONSE_TLL_OFFSET = 50;
 
     @BeforeEach
     void setUp() {
@@ -262,9 +263,9 @@ class CachingOrganisationDetailsServiceTest {
         CachedOrganisationResponseEntity actual = cachedOrganisationResponseEntityCaptor.getValue();
 
         assertThat(actual.getIdamId()).isEqualTo(userId);
-        assertThat(actual.getLastModifiedDate()).isEqualTo(now);
+        assertThat(actual.getLastModifiedDate()).isEqualTo(now.minusMinutes(RD_PROFESSIONAL_NULL_RESPONSE_TLL_OFFSET));
 
-        assertThat(actual.getOrganisationId()).isNull();
+        assertThat(actual.getOrganisationId()).isEqualTo(orgId);
         assertThat(actual.getOrganisationName()).isNull();
         assertThat(actual.getAddressLine1()).isNull();
         assertThat(actual.getAddressLine2()).isNull();
@@ -374,6 +375,12 @@ class CachingOrganisationDetailsServiceTest {
         assertThat(savedEntity.getOrganisationId()).isEqualTo(orgId);
         assertThat(savedEntity.getOrganisationName()).isEqualTo(orgName);
         assertThat(savedEntity.getAddressLine1()).isNull();
+        assertThat(savedEntity.getAddressLine2()).isNull();
+        assertThat(savedEntity.getAddressLine3()).isNull();
+        assertThat(savedEntity.getPostTown()).isNull();
+        assertThat(savedEntity.getPostCode()).isNull();
+        assertThat(savedEntity.getCounty()).isNull();
+        assertThat(savedEntity.getCountry()).isNull();
     }
 
     @Test
@@ -401,10 +408,17 @@ class CachingOrganisationDetailsServiceTest {
         CachedOrganisationResponseEntity savedEntity = cachedOrganisationResponseEntityCaptor.getValue();
 
         assertThat(savedEntity.getIdamId()).isEqualTo(userId);
-        assertThat(savedEntity.getLastModifiedDate()).isEqualTo(now);
+        assertThat(savedEntity.getLastModifiedDate())
+            .isEqualTo(now.minusMinutes(RD_PROFESSIONAL_NULL_RESPONSE_TLL_OFFSET));
         assertThat(savedEntity.getOrganisationId()).isNull();
         assertThat(savedEntity.getOrganisationName()).isNull();
         assertThat(savedEntity.getAddressLine1()).isNull();
+        assertThat(savedEntity.getAddressLine2()).isNull();
+        assertThat(savedEntity.getAddressLine3()).isNull();
+        assertThat(savedEntity.getPostTown()).isNull();
+        assertThat(savedEntity.getPostCode()).isNull();
+        assertThat(savedEntity.getCounty()).isNull();
+        assertThat(savedEntity.getCountry()).isNull();
     }
 
     @Test
@@ -412,12 +426,26 @@ class CachingOrganisationDetailsServiceTest {
         // given
         UUID userId = UUID.randomUUID();
         LocalDateTime now = LocalDateTime.now();
+        String orgId = "org2";
+        String orgName = "Org Name2";
+        String addressLine1 = "Addr1";
+        String addressLine2 = "Addr2";
+        String addressLine3 = "Addr3";
+        String townCity = "City";
+        String county = "County";
+        String country = "Country";
+        String postCode = "PostCode";
         CachedOrganisationResponseEntity cachedEntity = CachedOrganisationResponseEntity.builder()
             .idamId(userId)
-            .organisationId("org1")
-            .organisationName("Org Name")
-            .addressLine1("123 Street")
-            .postCode("SW1A 1AA")
+            .organisationId(orgId)
+            .organisationName(orgName)
+            .addressLine1(addressLine1)
+            .addressLine2(addressLine2)
+            .addressLine3(addressLine3)
+            .postTown(townCity)
+            .county(county)
+            .country(country)
+            .postCode(postCode)
             .lastModifiedDate(now.minusMinutes(4))
             .build();
 
@@ -432,9 +460,13 @@ class CachingOrganisationDetailsServiceTest {
         verifyNoCallsForOrganisationDetails();
 
         assertThat(actual).isNotNull();
-        assertThat(actual.name()).isEqualTo("Org Name");
-        assertThat(actual.address().getAddressLine1()).isEqualTo("123 Street");
-        assertThat(actual.address().getPostCode()).isEqualTo("SW1A 1AA");
+        assertThat(actual.address().getAddressLine1()).isEqualTo(addressLine1);
+        assertThat(actual.address().getAddressLine2()).isEqualTo(addressLine2);
+        assertThat(actual.address().getAddressLine3()).isEqualTo(addressLine3);
+        assertThat(actual.address().getPostTown()).isEqualTo(townCity);
+        assertThat(actual.address().getPostCode()).isEqualTo(postCode);
+        assertThat(actual.address().getCounty()).isEqualTo(county);
+        assertThat(actual.address().getCountry()).isEqualTo(country);
     }
 
     @Test
@@ -491,6 +523,11 @@ class CachingOrganisationDetailsServiceTest {
         assertThat(cachedEntity.getOrganisationName()).isEqualTo(orgName);
         assertThat(cachedEntity.getAddressLine1()).isEqualTo(addressLine1);
         assertThat(cachedEntity.getAddressLine2()).isEqualTo(addressLine2);
+        assertThat(cachedEntity.getAddressLine3()).isEqualTo(addressLine3);
+        assertThat(cachedEntity.getPostTown()).isEqualTo(townCity);
+        assertThat(cachedEntity.getPostCode()).isEqualTo(postCode);
+        assertThat(cachedEntity.getCounty()).isEqualTo(county);
+        assertThat(cachedEntity.getCountry()).isEqualTo(country);
         assertThat(cachedEntity.getLastModifiedDate()).isEqualTo(now);
     }
 
