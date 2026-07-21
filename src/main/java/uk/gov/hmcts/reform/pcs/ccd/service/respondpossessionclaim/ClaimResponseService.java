@@ -13,12 +13,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaim
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ContactPreferencesEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
-import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.Optional;
-import java.util.UUID;
-import java.util.function.Supplier;
 
 /**
  * Service for managing defendant contact preferences.
@@ -29,46 +25,27 @@ import java.util.function.Supplier;
 @RequiredArgsConstructor
 public class ClaimResponseService {
 
-    private final PartyService partyService;
-    private final SecurityContextService securityContextService;
     private final ModelMapper modelMapper;
 
     /**
-     * Saves defendant's contact preferences and contact details.
-     * Finds the defendant party by the current user's IDAM ID and case reference updates their information.
+     * Saves defendant's contact preferences and contact details for the given defendant party.
      *
-     * @throws IllegalStateException if no party found for the current user's IDAM ID
+     * @throws IllegalStateException if no party is found
      */
-    public void saveDraftData(PossessionClaimResponse dataFromDraftTable, long caseReference) {
-        UUID currentUserIdamId = securityContextService.getCurrentUserId();
+    public void saveDraftDataForParty(PossessionClaimResponse dataFromDraftTable, PartyEntity defendantParty) {
 
-        if (currentUserIdamId == null) {
-            log.error("Cannot save contact preferences: current user IDAM ID is null");
-            throw new IllegalStateException("Current user IDAM ID is null");
+        if (defendantParty == null) {
+            throw new IllegalStateException("defendant party is null");
         }
 
-        saveDraftDataForPartyInternal(dataFromDraftTable, () -> partyService.getPartyEntityByIdamId(currentUserIdamId,
-                                                                                                    caseReference));
-        log.debug("Successfully saved contact preferences for defendant with IDAM ID: {}", currentUserIdamId);
-    }
-
-    public void saveDraftDataForParty(PossessionClaimResponse dataFromDraftTable, long caseReference, UUID partyId) {
-        saveDraftDataForPartyInternal(dataFromDraftTable, () ->  partyService.getPartyEntityById(partyId,
-                                                                                                 caseReference));
-    }
-
-    private void saveDraftDataForPartyInternal(PossessionClaimResponse dataFromDraftTable, Supplier<PartyEntity>
-        partyEntitySupplier) {
-        PartyEntity defendant = partyEntitySupplier.get();
-
-        saveContactPreferences(defendant, dataFromDraftTable.getDefendantResponses());
-        updatePartyContactDetails(defendant, dataFromDraftTable.getDefendantContactDetails(), dataFromDraftTable
+        saveContactPreferences(defendantParty, dataFromDraftTable.getDefendantResponses());
+        updatePartyContactDetails(defendantParty, dataFromDraftTable.getDefendantContactDetails(), dataFromDraftTable
             .getDefendantResponses());
 
         if (dataFromDraftTable.getDefendantResponses() != null
             && dataFromDraftTable.getDefendantResponses().getDateOfBirth() != null) {
-            defendant.setDateOfBirth(dataFromDraftTable.getDefendantResponses().getDateOfBirth());
-            log.debug("Updated date of birth from defendantResponses for party ID: {}", defendant.getId());
+            defendantParty.setDateOfBirth(dataFromDraftTable.getDefendantResponses().getDateOfBirth());
+            log.debug("Updated date of birth from defendantResponses for party ID: {}", defendantParty.getId());
         }
     }
 
