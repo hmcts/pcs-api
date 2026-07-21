@@ -22,7 +22,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter.COMMA_DELIMITER;
 import static uk.gov.hmcts.reform.pcs.ccd.util.DynamicListUtils.retainSelectedValue;
 
 @Service
-public class DocumentAmendSelectionService {
+public class DocumentSelectionService {
 
     public static final String SELECT_DIFFERENT_FOLDER_ERROR = "Select a different folder to continue";
     private static final Comparator<DocumentEntity> DOCUMENT_ORDER = Comparator
@@ -32,7 +32,7 @@ public class DocumentAmendSelectionService {
     private final PcsCaseService pcsCaseService;
     private final AddressFormatter addressFormatter;
 
-    public DocumentAmendSelectionService(PcsCaseService pcsCaseService,
+    public DocumentSelectionService(PcsCaseService pcsCaseService,
                                          AddressFormatter addressFormatter) {
         this.pcsCaseService = pcsCaseService;
         this.addressFormatter = addressFormatter;

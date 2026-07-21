@@ -15,7 +15,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.documentamend.AmendDocumentDetailsPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.documentamend.SelectDocumentPage;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentAmendService;
-import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentAmendSelectionService;
+import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentSelectionService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 
 import java.time.Clock;
@@ -30,7 +30,7 @@ import static org.mockito.Mockito.when;
 class AmendDocumentsTest extends BaseEventTest {
 
     @Mock
-    private DocumentAmendSelectionService documentAmendSelectionService;
+    private DocumentSelectionService documentSelectionService;
     @Mock
     private DocumentAmendService documentAmendService;
     @Mock
@@ -39,10 +39,10 @@ class AmendDocumentsTest extends BaseEventTest {
     @BeforeEach
     void setUp() {
         setEventUnderTest(new AmendDocuments(
-            documentAmendSelectionService,
+            documentSelectionService,
             documentAmendService,
             addressFormatter,
-            new SelectDocumentPage(documentAmendSelectionService, documentAmendService),
+            new SelectDocumentPage(documentSelectionService, documentAmendService),
             new AmendDocumentDetailsPage(Clock.systemUTC())
         ));
     }

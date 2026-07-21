@@ -21,7 +21,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.caseworker.CaseworkerDocumentListService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentAmendService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentAssociationService;
-import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentAmendSelectionService;
+import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentSelectionService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentNameService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
@@ -56,7 +56,7 @@ class SelectDocumentPageTest extends BasePageTest {
     @BeforeEach
     void setUp() {
         setPageUnderTest(new SelectDocumentPage(
-            new DocumentAmendSelectionService(
+            new DocumentSelectionService(
                 pcsCaseService,
                 new AddressFormatter()
             ),

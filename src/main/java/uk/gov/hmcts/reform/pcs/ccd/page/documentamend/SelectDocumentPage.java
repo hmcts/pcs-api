@@ -12,7 +12,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.documentamend.DocumentAmendDetails;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentAmendService;
-import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentAmendSelectionService;
+import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentSelectionService;
 import uk.gov.hmcts.reform.pcs.ccd.util.StringUtils;
 
 import java.util.ArrayList;
@@ -29,7 +29,7 @@ public class SelectDocumentPage implements CcdPageConfiguration {
     private static final String YES = "=\"Yes\"";
     private static final String NO = "=\"No\"";
     private static final String DOCUMENT_QUESTION_LABEL = "Which document do you want to amend?";
-    private final DocumentAmendSelectionService documentAmendSelectionService;
+    private final DocumentSelectionService documentSelectionService;
     private final DocumentAmendService documentAmendService;
 
     @Override
@@ -88,9 +88,9 @@ public class SelectDocumentPage implements CcdPageConfiguration {
         }
         DocumentAmendDetails documentAmendDetails = caseData.getDocumentAmendDetails();
 
-        documentAmendSelectionService.initialise(details.getId(), caseData, documentAmendDetails);
+        documentSelectionService.initialise(details.getId(), caseData, documentAmendDetails);
         List<String> errors = new ArrayList<>(
-            documentAmendSelectionService.validateAndStoreSelection(caseData, documentAmendDetails));
+            documentSelectionService.validateAndStoreSelection(caseData, documentAmendDetails));
         documentAmendService.initialiseAmendDetails(details.getId(), caseData);
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()

@@ -30,18 +30,18 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory.APPLICATIONS;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory.EVIDENCE;
 
 @ExtendWith(MockitoExtension.class)
-class DocumentAmendSelectionServiceTest {
+class DocumentSelectionServiceTest {
 
     private static final long CASE_REFERENCE = 1234567890123456L;
 
     @Mock
     private PcsCaseService pcsCaseService;
 
-    private DocumentAmendSelectionService underTest;
+    private DocumentSelectionService underTest;
 
     @BeforeEach
     void setUp() {
-        underTest = new DocumentAmendSelectionService(pcsCaseService, new AddressFormatter());
+        underTest = new DocumentSelectionService(pcsCaseService, new AddressFormatter());
     }
 
     @Test
@@ -156,7 +156,7 @@ class DocumentAmendSelectionServiceTest {
         underTest.initialise(CASE_REFERENCE, caseData, caseData.getDocumentAmendDetails());
         List<String> errors = underTest.validateAndStoreSelection(caseData, caseData.getDocumentAmendDetails());
 
-        assertThat(errors).containsExactly(DocumentAmendSelectionService.SELECT_DIFFERENT_FOLDER_ERROR);
+        assertThat(errors).containsExactly(DocumentSelectionService.SELECT_DIFFERENT_FOLDER_ERROR);
         assertThat(caseData.getDocumentAmendDetails().getSelectedFolderId()).isEqualTo(EVIDENCE.getId());
         assertThat(caseData.getDocumentAmendDetails().getSelectedFolderLabel()).isEqualTo(EVIDENCE.getLabel());
         assertSelectedDocumentSelectionCleared(caseData.getDocumentAmendDetails());

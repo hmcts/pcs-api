@@ -17,7 +17,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.documentamend.DocumentAmendDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.documentamend.AmendDocumentDetailsPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.documentamend.SelectDocumentPage;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentAmendService;
-import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentAmendSelectionService;
+import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentSelectionService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
@@ -29,7 +29,7 @@ import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.RELEASE_1_DOT_2;
 @AllArgsConstructor
 public class AmendDocuments implements CCDConfig<PCSCase, State, UserRole> {
 
-    private final DocumentAmendSelectionService documentAmendSelectionService;
+    private final DocumentSelectionService documentSelectionService;
     private final DocumentAmendService documentAmendService;
     private final AddressFormatter addressFormatter;
     private final SelectDocumentPage selectDocumentPage;
@@ -70,7 +70,7 @@ public class AmendDocuments implements CCDConfig<PCSCase, State, UserRole> {
         if (caseData.getDocumentAmendDetails() == null) {
             caseData.setDocumentAmendDetails(new DocumentAmendDetails());
         }
-        documentAmendSelectionService.initialise(
+        documentSelectionService.initialise(
             eventPayload.caseReference(),
             caseData,
             caseData.getDocumentAmendDetails()
