@@ -98,3 +98,13 @@ VALUES ('SY45NN', 22222, 'Wales', '2025-08-29', NULL, '{"created_by": "admin", "
 
 -- ===== from V001.9__update_epim_test_data.sql =====
 UPDATE postcode_court_mapping SET epims_id = 20262 WHERE postcode = 'CF116QX';
+
+-- ===== from V132__repoint_cf116qx_court_mapping.sql (was a MIGRATION on master; its
+-- reference-data change must survive the baseline consolidation on preview/local) =====
+UPDATE postcode_court_mapping
+SET epims_id = 366572
+WHERE postcode = 'CF116QX';
+
+INSERT INTO eligibility_whitelisted_epim (epims_id, eligible_from, audit)
+VALUES (366572, '2025-01-01', '{"created_by": "admin", "change_reason": "repoint CF116QX"}'::jsonb)
+ON CONFLICT (epims_id) DO NOTHING;
