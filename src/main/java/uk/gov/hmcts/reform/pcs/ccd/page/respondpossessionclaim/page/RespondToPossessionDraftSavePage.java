@@ -13,7 +13,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.util.SelectedPartyRetriever;
-import uk.gov.hmcts.reform.pcs.reference.service.OrganisationDetailsService;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.List;
@@ -30,7 +30,7 @@ public class RespondToPossessionDraftSavePage implements CcdPageConfiguration {
     private final DraftCaseDataService draftCaseDataService;
     private final SecurityContextService securityContextService;
     private final SelectedPartyRetriever selectedPartyRetriever;
-    private final OrganisationDetailsService organisationDetailsService;
+    private final OrganisationService organisationService;
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -62,8 +62,7 @@ public class RespondToPossessionDraftSavePage implements CcdPageConfiguration {
             if (securityContextService.getCurrentUserDetails().getRoles().contains(UserRole.CITIZEN.getRole())) {
                 draftCaseDataService.saveUnsubmittedEventData(caseRef, partialUpdate, respondPossessionClaim);
             } else {
-                String organisationId = organisationDetailsService
-                    .getOrganisationIdentifier(securityContextService.getCurrentUserId().toString());
+                String organisationId = organisationService.getOrganisationIdForCurrentUser();
 
                 Optional<UUID> selectedPartyId = selectedPartyRetriever.getSelectedPartyId(caseRef, organisationId);
                 if (selectedPartyId.isEmpty()) {
