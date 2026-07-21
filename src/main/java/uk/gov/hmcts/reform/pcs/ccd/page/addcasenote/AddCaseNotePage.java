@@ -27,10 +27,9 @@ public class AddCaseNotePage implements CcdPageConfiguration, CcdPage {
         String pageKey = getPageKey();
         pageBuilder
             .page(pageKey, this::midEvent)
-            .pageLabel("Case note")
+            .pageLabel("Add a case note")
             .label(pageKey + "-line-separator", "---")
-            .label(pageKey + "-note-heading", "## " + NOTE_LABEL)
-            .mandatoryWithLabel(PCSCase::getNote, " ");
+            .mandatory(PCSCase::getNote);
     }
 
     @Override
