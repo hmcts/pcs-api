@@ -39,6 +39,15 @@ public enum ErrorCode {
     DRAFT_NOT_FOUND("UNSUBMITTED_DATA_03", "No draft found for case"),
     NO_UNSUBMITTED_CASE_DATA("UNSUBMITTED_DATA_04",
                              "No unsubmitted case data found for case"),
+    READ_FAIL("UNSUBMITTED_DATA_05", "Failed to read saved answers"),
+    EMAIL_FAILED_TO_SEND("EMAIL_FAILED_TO_SEND",
+                         "Email failed to send, please try again."),
+    FETCH_NOTIFICATION_FAIL("FETCH_NOTIFICATION_FAIL",
+                            "Failed to fetch notification, please try again."),
+    FAILED_SAVE_CASE("FAILED_SAVE", "Failed to save Case Notification."),
+    NOTIFICATION_ERROR("NOTIFICATION_ERROR", "Null notification ID from email service"),
+    TEMP_EMAIL_SEND("EMAIL_SEND", "Email temporarily failed to send."),
+
 
     TEST_CASE_SUPPORT("", "");
 

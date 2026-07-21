@@ -5,7 +5,6 @@ import io.pebbletemplates.pebble.template.PebbleTemplate;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.pcs.ccd.model.EnforcementCosts;
-import uk.gov.hmcts.reform.pcs.exception.ErrorCode;
 import uk.gov.hmcts.reform.pcs.exception.TemplateRenderingException;
 
 import java.io.IOException;

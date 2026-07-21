@@ -263,7 +263,7 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
                             .content(objectMapper.writeValueAsString(request)))
             .andExpect(status().isConflict())
             .andExpect(jsonPath("$.message",
-                                is("REDACTED [ACCESS_CODE_01: This access code is already linked to a user.]")));
+                                is("REDACTED [ACCESS_CODE: This access code is already linked to a user.]")));
     }
 
     @Test
@@ -289,7 +289,7 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
             .andExpect(status().isConflict())
             .andExpect(jsonPath(
                 "$.message",
-                is("REDACTED [ACCESS_CODE_01: This access code is already linked to a user.]")
+                is("REDACTED [ACCESS_CODE: This access code is already linked to a user.]")
             ));
     }
 

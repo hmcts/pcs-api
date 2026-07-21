@@ -11,6 +11,10 @@ import uk.gov.service.notify.NotificationClientException;
 import java.util.UUID;
 import java.util.function.Consumer;
 
+import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.EMAIL_FAILED_TO_SEND;
+import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.FETCH_NOTIFICATION_FAIL;
+import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.TEMP_EMAIL_SEND;
+
 @Component
 @Slf4j
 public class NotificationErrorHandler {
@@ -47,7 +51,7 @@ public class NotificationErrorHandler {
                     NotificationStatus.TEMPORARY_FAILURE,
                     null
                 ));
-                throw new TemporaryNotificationException("Email temporarily failed to send.", exception);
+                throw new TemporaryNotificationException(TEMP_EMAIL_SEND, exception);
             }
             default -> {
                 statusUpdater.accept(new NotificationStatusUpdate(
@@ -55,7 +59,7 @@ public class NotificationErrorHandler {
                     NotificationStatus.TECHNICAL_FAILURE,
                     null
                 ));
-                throw new NotificationException("Email failed to send, please try again.", exception);
+                throw new NotificationException(EMAIL_FAILED_TO_SEND, exception);
             }
         }
     }
@@ -71,7 +75,7 @@ public class NotificationErrorHandler {
     public void handleFetchException(NotificationClientException exception, String notificationId) {
         int httpStatusCode = exception.getHttpResult();
         log.error("Failed to fetch notification. ID: {}. Status Code: {}", notificationId, httpStatusCode, exception);
-        throw new NotificationException("Failed to fetch notification, please try again.", exception);
+        throw new NotificationException(FETCH_NOTIFICATION_FAIL, exception);
     }
 
     /**

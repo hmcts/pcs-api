@@ -36,6 +36,8 @@ import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 
+import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.FAILED_SAVE_CASE;
+
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -309,7 +311,7 @@ public class NotificationService {
             log.error(
                 "Failed to save Case Notification with Case ID: {}", toSaveNotification.getPcsCase(),
                 dataAccessException);
-            throw new NotificationException("Failed to save Case Notification.", dataAccessException);
+            throw new NotificationException(FAILED_SAVE_CASE, dataAccessException);
         }
     }
 

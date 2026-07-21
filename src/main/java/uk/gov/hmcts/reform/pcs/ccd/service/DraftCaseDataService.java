@@ -24,6 +24,7 @@ import java.util.UUID;
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 
+import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.READ_FAIL;
 import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.UNSUBMITTED_DATA;
 import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.UPDATE_DRAFT;
 
@@ -346,7 +347,7 @@ public class DraftCaseDataService {
             return objectMapper.readValue(caseDataJson, PCSCase.class);
         } catch (JsonProcessingException e) {
             log.error("Unable to parse draft case data JSON", e);
-            throw new UnsubmittedDataException("Failed to read saved answers", e);
+            throw new UnsubmittedDataException(READ_FAIL, e);
         }
     }
 

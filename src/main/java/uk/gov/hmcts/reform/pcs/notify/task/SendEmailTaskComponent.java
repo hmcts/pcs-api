@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
+import uk.gov.hmcts.reform.pcs.exception.ErrorCode;
 import uk.gov.hmcts.reform.pcs.notify.config.NotificationErrorHandler;
 import uk.gov.hmcts.reform.pcs.notify.config.NotificationErrorHandler.NotificationStatusUpdate;
 import uk.gov.hmcts.reform.pcs.notify.entities.CaseNotification;
@@ -30,6 +31,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
+import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.NOTIFICATION_ERROR;
+import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.TEMP_EMAIL_SEND;
 import static uk.gov.hmcts.reform.pcs.notify.task.VerifyEmailTaskComponent.verifyEmailTask;
 
 @Component
@@ -115,9 +118,9 @@ public class SendEmailTaskComponent {
 
                     if (response.getNotificationId() == null) {
                         log.error("Email service returned null notification ID for task: {}", taskData.getId());
-                        throw new PermanentNotificationException("Null notification ID from email service",
-                                                                    new IllegalStateException(
-                                                                        "Email service returned null notification ID"));
+                        throw new PermanentNotificationException(
+                            NOTIFICATION_ERROR,
+                            new IllegalStateException("Email service returned null notification ID"));
                     }
 
                     notificationService.updateNotificationAfterSending(
@@ -153,7 +156,7 @@ public class SendEmailTaskComponent {
                         );
                         return new CompletionHandler.OnCompleteRemove<>();
                     } else {
-                        throw new TemporaryNotificationException("Email temporarily failed to send.", e);
+                        throw new TemporaryNotificationException(TEMP_EMAIL_SEND, e);
                     }
                 }
             });
