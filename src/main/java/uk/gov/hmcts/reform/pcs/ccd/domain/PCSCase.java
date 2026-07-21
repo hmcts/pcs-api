@@ -488,8 +488,35 @@ public class PCSCase {
     @JsonUnwrapped
     private DocumentUploadDetails documentUploadDetails;
 
-    @JsonUnwrapped(prefix = "documentAmend_")
+    @JsonUnwrapped
     private DocumentAmendDetails documentAmendDetails;
+
+    @CCD(searchable = false, typeOverride = DynamicRadioList)
+    private DynamicList statementsOfCaseDocuments;
+
+    @CCD(searchable = false, typeOverride = DynamicRadioList)
+    private DynamicList propertyDocuments;
+
+    @CCD(searchable = false, typeOverride = DynamicRadioList)
+    private DynamicList evidenceDocuments;
+
+    @CCD(searchable = false, typeOverride = DynamicRadioList)
+    private DynamicList hearingDocuments;
+
+    @CCD(searchable = false, typeOverride = DynamicRadioList)
+    private DynamicList ordersAndNoticeOfHearingsDocuments;
+
+    @CCD(searchable = false, typeOverride = DynamicRadioList)
+    private DynamicList applicationsDocuments;
+
+    @CCD(searchable = false, typeOverride = DynamicRadioList)
+    private DynamicList appealsDocuments;
+
+    @CCD(searchable = false, typeOverride = DynamicRadioList)
+    private DynamicList correspondenceDocuments;
+
+    @CCD(searchable = false, typeOverride = DynamicRadioList)
+    private DynamicList uncategorisedDocuments;
 
     @CCD(
         label = "Are you planning to make an application at the same time as your claim?",

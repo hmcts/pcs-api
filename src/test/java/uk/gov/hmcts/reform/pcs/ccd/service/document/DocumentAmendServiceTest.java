@@ -25,12 +25,14 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEnt
 import uk.gov.hmcts.reform.pcs.ccd.repository.CounterClaimRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DocumentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.caseworker.CaseworkerDocumentListService;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -65,6 +67,8 @@ class DocumentAmendServiceTest {
     private CounterClaimRepository counterClaimRepository;
     @Mock
     private PartyService partyService;
+    @Mock
+    private CaseworkerDocumentListService caseworkerDocumentListService;
     @Captor
     private ArgumentCaptor<DocumentEntity> documentCaptor;
 
@@ -89,7 +93,8 @@ class DocumentAmendServiceTest {
             documentService,
             documentNameService,
             partyService,
-            documentAssociationService
+            documentAssociationService,
+            caseworkerDocumentListService
         );
 
         mainClaim = new ClaimEntity();
@@ -108,9 +113,91 @@ class DocumentAmendServiceTest {
             .build();
         pcsCaseEntity.addDocument(documentEntity);
 
-        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+        lenient().when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
         lenient().when(partyService.getPartyEntityById(PARTY_ID, CASE_REFERENCE)).thenReturn(partyEntity);
         lenient().when(partyService.getPartyName(partyEntity)).thenReturn("Defendant One");
+    }
+
+    @Test
+    void shouldInitialiseAmendDetailsForSelectedDocument() {
+        LocalDate issueDate = LocalDate.of(2026, 4, 16);
+        documentEntity.setFileName("Local test application 16042026 GA1 - Defendant 1.pdf");
+        documentEntity.setIssueDate(issueDate);
+        documentEntity.setParty(partyEntity);
+        DynamicList relatedParty = DynamicList.builder()
+            .listItems(List.of(DynamicListElement.builder()
+                .code(PARTY_ID)
+                .label("Defendant One - Defendant 1")
+                .build()))
+            .build();
+        when(caseworkerDocumentListService.buildRelatedPartyList(pcsCaseEntity, null))
+            .thenReturn(relatedParty);
+
+        DocumentAmendDetails amendDetails = DocumentAmendDetails.builder()
+            .selectedDocumentId(DOCUMENT_ID.toString())
+            .selectedDocumentFileName("Local test application 16042026 GA1 - Defendant 1.pdf")
+            .build();
+
+        underTest.initialiseAmendDetails(
+            CASE_REFERENCE,
+            PCSCase.builder().documentAmendDetails(amendDetails).build()
+        );
+
+        assertThat(amendDetails.getSelectedDocumentBaseFileName()).isEqualTo("Local test application");
+        assertThat(amendDetails.getAmendedFileName()).isEqualTo("Local test application");
+        assertThat(amendDetails.getSelectedDocumentIssueDate()).isEqualTo(issueDate);
+        assertThat(amendDetails.getIssueDate()).isEqualTo(issueDate);
+        assertThat(amendDetails.getRelatedParty().getValue().getCode()).isEqualTo(PARTY_ID);
+    }
+
+    @Test
+    void shouldDeserialiseRelatedPartyFromAmendDynamicListPayload() throws Exception {
+        PCSCase caseData = new uk.gov.hmcts.reform.pcs.config.JacksonConfiguration().getMapper().readValue("""
+            {
+              "documentAmend_RelatedParty": {
+                "value": {
+                  "code": "%s",
+                  "label": "Defendant One - Defendant 1"
+                },
+                "list_items": [
+                  {
+                    "code": "%s",
+                    "label": "Defendant One - Defendant 1"
+                  }
+                ]
+              }
+            }
+            """.formatted(PARTY_ID, PARTY_ID), PCSCase.class);
+
+        assertThat(caseData.getDocumentAmendDetails().getRelatedParty().getValue().getCode()).isEqualTo(PARTY_ID);
+        assertThat(caseData.getDocumentAmendDetails().getRelatedParty().getValue().getLabel())
+            .isEqualTo("Defendant One - Defendant 1");
+    }
+
+    @Test
+    void shouldClearAmendSelectionDetailsWhenNoDocumentIsSelected() {
+        DynamicList relatedParty = DynamicList.builder()
+            .value(DynamicListElement.builder().code(PARTY_ID).build())
+            .build();
+        when(caseworkerDocumentListService.buildRelatedPartyList(pcsCaseEntity, relatedParty))
+            .thenReturn(relatedParty);
+        DocumentAmendDetails amendDetails = DocumentAmendDetails.builder()
+            .selectedDocumentBaseFileName("old")
+            .amendedFileName("old")
+            .issueDate(LocalDate.of(2026, 4, 16))
+            .relatedParty(relatedParty)
+            .build();
+
+        underTest.initialiseAmendDetails(
+            CASE_REFERENCE,
+            PCSCase.builder().documentAmendDetails(amendDetails).build()
+        );
+
+        assertThat(amendDetails.getSelectedDocumentBaseFileName()).isNull();
+        assertThat(amendDetails.getAmendedFileName()).isNull();
+        assertThat(amendDetails.getSelectedDocumentIssueDate()).isNull();
+        assertThat(amendDetails.getIssueDate()).isNull();
+        assertThat(amendDetails.getRelatedParty().getValue()).isNull();
     }
 
     @Test

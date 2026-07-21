@@ -16,9 +16,14 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.documentamend.DocumentAmendDetails;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
+import uk.gov.hmcts.reform.pcs.ccd.repository.DocumentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.caseworker.CaseworkerDocumentListService;
+import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentAmendService;
+import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentAssociationService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentAmendSelectionService;
+import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentNameService;
+import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.config.JacksonConfiguration;
@@ -39,13 +44,29 @@ class SelectDocumentPageTest extends BasePageTest {
 
     @Mock
     private PartyService partyService;
+    @Mock
+    private DocumentRepository documentRepository;
+    @Mock
+    private DocumentService documentService;
+    @Mock
+    private DocumentNameService documentNameService;
+    @Mock
+    private DocumentAssociationService documentAssociationService;
 
     @BeforeEach
     void setUp() {
         setPageUnderTest(new SelectDocumentPage(
             new DocumentAmendSelectionService(
                 pcsCaseService,
-                new AddressFormatter(),
+                new AddressFormatter()
+            ),
+            new DocumentAmendService(
+                pcsCaseService,
+                documentRepository,
+                documentService,
+                documentNameService,
+                partyService,
+                documentAssociationService,
                 new CaseworkerDocumentListService(partyService)
             )
         ));
@@ -64,13 +85,13 @@ class SelectDocumentPageTest extends BasePageTest {
             .build());
         PCSCase caseData = PCSCase.builder()
             .propertyAddress(AddressUK.builder().addressLine1("15 Garden Drive").build())
+            .applicationsDocuments(DynamicList.builder()
+                .value(DynamicListElement.builder()
+                    .code(documentId)
+                    .build())
+                .build())
             .documentAmendDetails(DocumentAmendDetails.builder()
                 .selectedFolder(APPLICATIONS)
-                .applicationsDocuments(DynamicList.builder()
-                    .value(DynamicListElement.builder()
-                        .code(documentId)
-                        .build())
-                    .build())
                 .build())
             .build();
 
@@ -98,13 +119,13 @@ class SelectDocumentPageTest extends BasePageTest {
             .build());
         PCSCase caseData = PCSCase.builder()
             .propertyAddress(AddressUK.builder().addressLine1("15 Garden Drive").build())
+            .applicationsDocuments(DynamicList.builder()
+                .value(DynamicListElement.builder()
+                    .code(documentId)
+                    .build())
+                .build())
             .documentAmendDetails(DocumentAmendDetails.builder()
                 .selectedFolder(APPLICATIONS)
-                .applicationsDocuments(DynamicList.builder()
-                    .value(DynamicListElement.builder()
-                        .code(documentId)
-                        .build())
-                    .build())
                 .build())
             .build();
 

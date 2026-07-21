@@ -13,6 +13,7 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.documentamend.DocumentAmendDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.documentamend.AmendDocumentDetailsPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.documentamend.SelectDocumentPage;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentAmendService;
@@ -66,7 +67,14 @@ public class AmendDocuments implements CCDConfig<PCSCase, State, UserRole> {
 
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
         PCSCase caseData = eventPayload.caseData();
-        documentAmendSelectionService.initialise(eventPayload.caseReference(), caseData);
+        if (caseData.getDocumentAmendDetails() == null) {
+            caseData.setDocumentAmendDetails(new DocumentAmendDetails());
+        }
+        documentAmendSelectionService.initialise(
+            eventPayload.caseReference(),
+            caseData,
+            caseData.getDocumentAmendDetails()
+        );
         return caseData;
     }
 

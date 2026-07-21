@@ -4,19 +4,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.ccd.sdk.type.DynamicList;
 import uk.gov.hmcts.ccd.sdk.type.DynamicListElement;
-import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentSelectionDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.documentamend.DocumentAmendDetails;
-import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GeneralApplication;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
-import uk.gov.hmcts.reform.pcs.ccd.service.caseworker.CaseworkerDocumentListService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 
 import java.util.Comparator;
@@ -32,46 +27,33 @@ public class DocumentAmendSelectionService {
     private static final Comparator<DocumentEntity> DOCUMENT_ORDER = Comparator
         .comparing(DocumentEntity::getSubmittedDate, Comparator.nullsLast(Comparator.reverseOrder()))
         .thenComparing(DocumentEntity::getFileName, Comparator.nullsLast(String::compareToIgnoreCase));
-    private static final String PARTY_POSTFIX_PATTERN = " - (Claimant|Defendant) \\d+$";
-    private static final String GEN_APP_POSTFIX_PATTERN = " GA\\d+$";
-    private static final String ISSUE_DATE_POSTFIX_PATTERN = " \\d{8}$";
 
     private final PcsCaseService pcsCaseService;
     private final AddressFormatter addressFormatter;
-    private final CaseworkerDocumentListService caseworkerDocumentListService;
 
     public DocumentAmendSelectionService(PcsCaseService pcsCaseService,
-                                         AddressFormatter addressFormatter,
-                                         CaseworkerDocumentListService caseworkerDocumentListService) {
+                                         AddressFormatter addressFormatter) {
         this.pcsCaseService = pcsCaseService;
         this.addressFormatter = addressFormatter;
-        this.caseworkerDocumentListService = caseworkerDocumentListService;
     }
 
-    public void initialise(long caseReference, PCSCase caseData) {
-        DocumentAmendDetails details = getOrCreateDetails(caseData);
+    public void initialise(long caseReference, PCSCase caseData, DocumentSelectionDetails details) {
         PcsCaseEntity pcsCase = pcsCaseService.loadCase(caseReference);
 
         details.setPropertyAddressSummary(addressFormatter.formatShortAddress(caseData.getPropertyAddress(),
                                                                               COMMA_DELIMITER));
         for (CaseFileCategory category : CaseFileCategory.values()) {
-            setDocumentsForCategory(details, pcsCase, category);
+            setDocumentsForCategory(details, caseData, pcsCase, category);
         }
-        details.setRelatedParty(caseworkerDocumentListService.buildRelatedPartyList(
-            pcsCase,
-            details.getRelatedParty()
-        ));
-        setApplicationOrCounterclaimLists(caseData, details, pcsCase);
     }
 
-    public List<String> validateAndStoreSelection(long caseReference, PCSCase caseData) {
-        DocumentAmendDetails details = caseData.getDocumentAmendDetails();
+    public List<String> validateAndStoreSelection(PCSCase caseData, DocumentSelectionDetails details) {
         if (details == null || details.getSelectedFolder() == null) {
             return List.of();
         }
 
         CaseFileCategory selectedFolder = details.getSelectedFolder();
-        DynamicList selectedDocuments = documentsForCategory(details, selectedFolder);
+        DynamicList selectedDocuments = documentsForCategory(caseData, selectedFolder);
         details.setSelectedFolderId(selectedFolder.getId());
         details.setSelectedFolderLabel(selectedFolder.getLabel());
 
@@ -87,90 +69,14 @@ public class DocumentAmendSelectionService {
         }
 
         DynamicListElement resolvedDocument = resolveSelectedDocument(selectedDocuments, selectedDocument);
-        DocumentEntity selectedDocumentEntity = resolveSelectedDocumentEntity(
-            caseReference,
-            selectedFolder,
-            resolvedDocument
-        );
-        String selectedDocumentBaseFileName = editableBaseFileName(resolvedDocument.getLabel());
         details.setSelectedDocumentId(resolvedDocument.getCode().toString());
         details.setSelectedDocumentFileName(resolvedDocument.getLabel());
-        details.setSelectedDocumentBaseFileName(selectedDocumentBaseFileName);
-        details.setAmendedFileName(selectedDocumentBaseFileName);
-        details.setSelectedDocumentIssueDate(
-            selectedDocumentEntity == null ? null : selectedDocumentEntity.getIssueDate()
-        );
-        details.setIssueDate(selectedDocumentEntity == null ? null : selectedDocumentEntity.getIssueDate());
-        preselectRelatedParty(details, selectedDocumentEntity);
         return List.of();
     }
 
-    private void clearSelectedDocument(DocumentAmendDetails details) {
+    private void clearSelectedDocument(DocumentSelectionDetails details) {
         details.setSelectedDocumentId(null);
         details.setSelectedDocumentFileName(null);
-        details.setSelectedDocumentBaseFileName(null);
-        details.setAmendedFileName(null);
-        details.setSelectedDocumentIssueDate(null);
-        details.setIssueDate(null);
-        if (details.getRelatedParty() != null) {
-            details.getRelatedParty().setValue(null);
-        }
-    }
-
-    private void preselectRelatedParty(DocumentAmendDetails details, DocumentEntity selectedDocumentEntity) {
-        if (selectedDocumentEntity == null
-            || selectedDocumentEntity.getParty() == null
-            || selectedDocumentEntity.getParty().getId() == null
-            || details.getRelatedParty() == null) {
-            return;
-        }
-
-        String selectedPartyId = selectedDocumentEntity.getParty().getId().toString();
-        details.getRelatedParty().getListItems().stream()
-            .filter(option -> option.getCode() != null && selectedPartyId.equals(option.getCode().toString()))
-            .findFirst()
-            .ifPresent(details.getRelatedParty()::setValue);
-    }
-
-    private void setApplicationOrCounterclaimLists(PCSCase caseData, DocumentAmendDetails details,
-                                                  PcsCaseEntity pcsCase) {
-        List<ListValue<GeneralApplication>> genApps = caseData.getGenApps();
-        List<CounterClaimEntity> counterClaims = pcsCase.getCounterClaims();
-        boolean showRelatedSubmissionsList = caseworkerDocumentListService
-            .hasRelatedSubmissions(genApps, counterClaims);
-
-        details.setShowRelatedSubmissionsList(VerticalYesNo.from(showRelatedSubmissionsList));
-        details.setRelatedSubmission(showRelatedSubmissionsList
-            ? caseworkerDocumentListService.buildRelatedSubmissionsList(
-                pcsCase,
-                genApps,
-                counterClaims,
-                details.getRelatedSubmission())
-            : null);
-
-        details.setRelatedSubmissionsDocumentType(caseworkerDocumentListService.buildDocumentTypeList(
-            caseData.getLegislativeCountry(),
-            details.getRelatedSubmissionsDocumentType()));
-        details.setStandaloneDocumentType(caseworkerDocumentListService.buildDocumentTypeList(
-            caseData.getLegislativeCountry(),
-            details.getStandaloneDocumentType()));
-    }
-
-    private DocumentEntity resolveSelectedDocumentEntity(long caseReference,
-                                                         CaseFileCategory selectedFolder,
-                                                         DynamicListElement selectedDocument) {
-        PcsCaseEntity pcsCase = pcsCaseService.loadCase(caseReference);
-        if (CollectionUtils.isEmpty(pcsCase.getDocuments()) || selectedDocument.getCode() == null) {
-            return null;
-        }
-
-        String selectedDocumentId = selectedDocument.getCode().toString();
-        return pcsCase.getDocuments().stream()
-            .filter(Objects::nonNull)
-            .filter(document -> isInCategory(document, selectedFolder))
-            .filter(document -> selectedDocumentId.equals(document.getId().toString()))
-            .findFirst()
-            .orElse(null);
     }
 
     private DynamicListElement resolveSelectedDocument(DynamicList selectedDocuments,
@@ -197,29 +103,10 @@ public class DocumentAmendSelectionService {
         return selectedDocument.getCode() == null && selectedDocument.getLabel() == null;
     }
 
-    private String editableBaseFileName(String fileName) {
-        if (fileName == null) {
-            return null;
-        }
-
-        String baseFileName;
-        int extensionSeparator = fileName.lastIndexOf('.');
-        if (extensionSeparator <= 0) {
-            baseFileName = fileName;
-        } else {
-            baseFileName = fileName.substring(0, extensionSeparator);
-        }
-
-        return baseFileName
-            .replaceFirst(PARTY_POSTFIX_PATTERN, "")
-            .replaceFirst(GEN_APP_POSTFIX_PATTERN, "")
-            .replaceFirst(ISSUE_DATE_POSTFIX_PATTERN, "");
-    }
-
-    private void setDocumentsForCategory(DocumentAmendDetails details, PcsCaseEntity pcsCase,
+    private void setDocumentsForCategory(DocumentSelectionDetails details, PCSCase caseData, PcsCaseEntity pcsCase,
                                          CaseFileCategory category) {
-        DynamicList documents = documentList(pcsCase, category, documentsForCategory(details, category));
-        applyDocumentsForCategory(details, category, documents);
+        DynamicList documents = documentList(pcsCase, category, documentsForCategory(caseData, category));
+        applyDocumentsForCategory(caseData, category, documents);
         setEmptyForCategory(details, category, YesOrNo.from(isEmpty(documents)));
     }
 
@@ -273,53 +160,36 @@ public class DocumentAmendSelectionService {
         return documents == null || CollectionUtils.isEmpty(documents.getListItems());
     }
 
-    private DocumentAmendDetails getOrCreateDetails(PCSCase caseData) {
-        if (caseData.getDocumentAmendDetails() == null) {
-            caseData.setDocumentAmendDetails(new DocumentAmendDetails());
-        }
-        return caseData.getDocumentAmendDetails();
-    }
-
-    private DynamicList documentsForCategory(DocumentAmendDetails details, CaseFileCategory category) {
+    private DynamicList documentsForCategory(PCSCase caseData, CaseFileCategory category) {
         return switch (category) {
-            case STATEMENTS_OF_CASE -> details.getStatementsOfCaseDocuments();
-            case PROPERTY_DOCUMENTS -> details.getPropertyDocuments();
-            case EVIDENCE -> details.getEvidenceDocuments();
-            case HEARING_DOCUMENTS -> details.getHearingDocuments();
-            case ORDERS_AND_NOTICE_OF_HEARINGS -> details.getOrdersAndNoticeOfHearingsDocuments();
-            case APPLICATIONS -> details.getApplicationsDocuments();
-            case APPEALS -> details.getAppealsDocuments();
-            case CORRESPONDENCE -> details.getCorrespondenceDocuments();
-            case UNCATEGORISED_DOCUMENTS -> details.getUncategorisedDocuments();
+            case STATEMENTS_OF_CASE -> caseData.getStatementsOfCaseDocuments();
+            case PROPERTY_DOCUMENTS -> caseData.getPropertyDocuments();
+            case EVIDENCE -> caseData.getEvidenceDocuments();
+            case HEARING_DOCUMENTS -> caseData.getHearingDocuments();
+            case ORDERS_AND_NOTICE_OF_HEARINGS -> caseData.getOrdersAndNoticeOfHearingsDocuments();
+            case APPLICATIONS -> caseData.getApplicationsDocuments();
+            case APPEALS -> caseData.getAppealsDocuments();
+            case CORRESPONDENCE -> caseData.getCorrespondenceDocuments();
+            case UNCATEGORISED_DOCUMENTS -> caseData.getUncategorisedDocuments();
         };
     }
 
-    private void applyDocumentsForCategory(DocumentAmendDetails details, CaseFileCategory category,
+    private void applyDocumentsForCategory(PCSCase caseData, CaseFileCategory category,
                                            DynamicList documents) {
         switch (category) {
-            case STATEMENTS_OF_CASE -> details.setStatementsOfCaseDocuments(documents);
-            case PROPERTY_DOCUMENTS -> details.setPropertyDocuments(documents);
-            case EVIDENCE -> details.setEvidenceDocuments(documents);
-            case HEARING_DOCUMENTS -> details.setHearingDocuments(documents);
-            case ORDERS_AND_NOTICE_OF_HEARINGS -> details.setOrdersAndNoticeOfHearingsDocuments(documents);
-            case APPLICATIONS -> details.setApplicationsDocuments(documents);
-            case APPEALS -> details.setAppealsDocuments(documents);
-            case CORRESPONDENCE -> details.setCorrespondenceDocuments(documents);
-            case UNCATEGORISED_DOCUMENTS -> details.setUncategorisedDocuments(documents);
+            case STATEMENTS_OF_CASE -> caseData.setStatementsOfCaseDocuments(documents);
+            case PROPERTY_DOCUMENTS -> caseData.setPropertyDocuments(documents);
+            case EVIDENCE -> caseData.setEvidenceDocuments(documents);
+            case HEARING_DOCUMENTS -> caseData.setHearingDocuments(documents);
+            case ORDERS_AND_NOTICE_OF_HEARINGS -> caseData.setOrdersAndNoticeOfHearingsDocuments(documents);
+            case APPLICATIONS -> caseData.setApplicationsDocuments(documents);
+            case APPEALS -> caseData.setAppealsDocuments(documents);
+            case CORRESPONDENCE -> caseData.setCorrespondenceDocuments(documents);
+            case UNCATEGORISED_DOCUMENTS -> caseData.setUncategorisedDocuments(documents);
         }
     }
 
-    private void setEmptyForCategory(DocumentAmendDetails details, CaseFileCategory category, YesOrNo empty) {
-        switch (category) {
-            case STATEMENTS_OF_CASE -> details.setStatementsOfCaseEmpty(empty);
-            case PROPERTY_DOCUMENTS -> details.setPropertyDocumentsEmpty(empty);
-            case EVIDENCE -> details.setEvidenceEmpty(empty);
-            case HEARING_DOCUMENTS -> details.setHearingDocumentsEmpty(empty);
-            case ORDERS_AND_NOTICE_OF_HEARINGS -> details.setOrdersAndNoticeOfHearingsEmpty(empty);
-            case APPLICATIONS -> details.setApplicationsEmpty(empty);
-            case APPEALS -> details.setAppealsEmpty(empty);
-            case CORRESPONDENCE -> details.setCorrespondenceEmpty(empty);
-            case UNCATEGORISED_DOCUMENTS -> details.setUncategorisedDocumentsEmpty(empty);
-        }
+    private void setEmptyForCategory(DocumentSelectionDetails details, CaseFileCategory category, YesOrNo empty) {
+        details.setEmptyForCategory(category, empty);
     }
 }

@@ -42,7 +42,7 @@ class AmendDocumentsTest extends BaseEventTest {
             documentAmendSelectionService,
             documentAmendService,
             addressFormatter,
-            new SelectDocumentPage(documentAmendSelectionService),
+            new SelectDocumentPage(documentAmendSelectionService, documentAmendService),
             new AmendDocumentDetailsPage(Clock.systemUTC())
         ));
     }
