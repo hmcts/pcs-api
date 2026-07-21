@@ -44,10 +44,10 @@ public class CounterClaimService {
     public Optional<CounterClaimEntity> saveCounterClaim(
         long caseReference,
         CounterClaim counterClaim,
-        PartyEntity defendantParty
+        PartyEntity partyRef
     ) {
-        if (defendantParty == null) {
-            throw new IllegalStateException("Defendant party is null for case: " + caseReference);
+        if (partyRef == null) {
+            throw new IllegalStateException("party is null for case: " + caseReference);
         }
 
         if (counterClaim == null) {
@@ -59,7 +59,7 @@ public class CounterClaimService {
         ClaimEntity claimRef = claimRepository.getReferenceById(claimId);
 
         CounterClaimEntity counterClaimEntity = buildCounterClaimEntity(
-            counterClaim, defendantParty, LocalDateTime.now(utcClock));
+            counterClaim, partyRef, LocalDateTime.now(utcClock));
         counterClaimEntity.setPcsCase(claimRef.getPcsCase());
         CounterClaimEntity savedCounterClaim = counterClaimRepository.save(counterClaimEntity);
         log.info("Saved counterclaim {} for case {}", savedCounterClaim.getId(), caseReference);
