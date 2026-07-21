@@ -92,6 +92,7 @@ public class CitizenStartEventStrategy implements RespondPossessionClaimStartEve
 
         return pcsCase.toBuilder()
             .possessionClaimResponse(response)
+            .hasUnsubmittedCaseData(YesOrNo.YES)
             .build();
     }
 

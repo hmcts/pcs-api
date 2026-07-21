@@ -152,6 +152,7 @@ public class LegalRepPartySelectionService {
 
         return pcsCase.toBuilder()
             .possessionClaimResponse(response)
+            .hasUnsubmittedCaseData(YesOrNo.YES)
             .build();
     }
 
