@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.reset;
+import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.MIGRATION_NOT_YET_APPLIED;
 
 import org.flywaydb.core.Flyway;
 import org.flywaydb.core.api.MigrationInfo;
@@ -16,6 +17,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.autoconfigure.flyway.FlywayMigrationStrategy;
+import uk.gov.hmcts.reform.pcs.exception.ErrorCode;
+import uk.gov.hmcts.reform.pcs.exception.ExceptionRedaction;
 import uk.gov.hmcts.reform.pcs.exception.PendingMigrationScriptException;
 
 @ExtendWith(MockitoExtension.class)
@@ -59,6 +62,6 @@ class FlywayNoOpStrategyTest {
         Throwable exception = catchThrowable(() -> strategy.migrate(flyway));
         assertThat(exception)
             .isInstanceOf(PendingMigrationScriptException.class)
-            .hasMessageStartingWith("Found migration not yet applied");
+            .hasMessageStartingWith(ExceptionRedaction.safeMessage(MIGRATION_NOT_YET_APPLIED));
     }
 }

@@ -63,7 +63,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     public ResponseEntity<Error> handleCaseAccess(CaseAccessException ex) {
         String message = "No defendants associated with this case";
         log.error(message, ex);
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new Error(message));
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new Error(ex.getMessage()));
     }
 
     @ExceptionHandler(IllegalStateException.class)

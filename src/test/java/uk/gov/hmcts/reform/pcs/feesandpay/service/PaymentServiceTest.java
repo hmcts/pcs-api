@@ -185,7 +185,7 @@ class PaymentServiceTest {
             // When / Then
             assertThatExceptionOfType(PaymentException.class)
                 .isThrownBy(() -> underTest.createServiceRequest(feesAndPayTaskData))
-                .withMessageContaining("Unable to write to json");
+                .withMessageContaining("REDACTED [FEE_TASK_DATA_ISSUE]");
         }
     }
 

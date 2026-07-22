@@ -74,7 +74,7 @@ class CasePartyLinkControllerTest {
         assertThatThrownBy(() ->
             underTest.validateAccessCode(CASE_REFERENCE, request, AUTH_HEADER, S2S_TOKEN))
             .isInstanceOf(InvalidAuthTokenException.class)
-            .hasMessageContaining("Malformed Authorization token");
+            .hasMessageContaining("REDACTED [AUTH_MALFORMED]");
 
         verifyNoInteractions(partyAccessCodeLinkService);
     }

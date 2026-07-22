@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.controllers;
 
 import feign.FeignException;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -38,9 +39,11 @@ import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.ACCESS_CODE_ISSUE;
 import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.AUTH_MALFORMED;
 import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.AUTH_TOKEN_EMPTY;
 import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.AUTH_UNAUTHORIZED;
+import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.CASE_NOT_FOUND;
 import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.DEFENDANT_ACCESS_VALIDATOR;
 import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.DEFENDANT_PARTY_EXTRACTOR_NO_DEFENDANTS;
 import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.PARTY_ACCESS_CODE;
+import static uk.gov.hmcts.reform.pcs.exception.ExceptionRedaction.safeMessage;
 
 class RestExceptionHandlerTest {
 
@@ -48,19 +51,25 @@ class RestExceptionHandlerTest {
 
     @BeforeEach
     void setUp() {
+        ExceptionRedaction.setShowFullExceptionsForTesting(true);
         UpstreamThrottling upstreamThrottling = new UpstreamThrottling(
             "30", Set.of("invalid_token_response", "temporarily_unavailable"));
         underTest = new RestExceptionHandler(upstreamThrottling);
     }
 
+    @AfterEach
+    void afterEach() {
+        ExceptionRedaction.setShowFullExceptionsForTesting(null);
+    }
+
     @Test
     void shouldHandleCaseNotFoundException() {
         // Given
+        ExceptionRedaction.setShowFullExceptionsForTesting(null);
         long caseReference = 12345L;
         CaseNotFoundException caseNotFoundException = new CaseNotFoundException(ErrorCode.CASE_NOT_FOUND,
                                                                                 RedactionContext.of("Case Reference",
                                                                                 String.valueOf(caseReference)));
-        String expectedErrorMessage = "No case found with reference " + caseReference;
 
         // When
         ResponseEntity<RestExceptionHandler.Error> responseEntity
@@ -69,12 +78,13 @@ class RestExceptionHandlerTest {
         // Then
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
         assertThat(responseEntity.getBody()).isNotNull();
-        assertThat(responseEntity.getBody().message()).isEqualTo(expectedErrorMessage);
+        assertThat(responseEntity.getBody().message()).isEqualTo(ExceptionRedaction.safeMessage(CASE_NOT_FOUND));
     }
 
     @Test
     void shouldHandleInvalidAccessCodeException() {
         // Given
+        ExceptionRedaction.setShowFullExceptionsForTesting(null);
         InvalidAccessCodeException exception = new InvalidAccessCodeException(ACCESS_CODE_ISSUE);
 
         // When
@@ -84,12 +94,13 @@ class RestExceptionHandlerTest {
         // Then
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
         assertThat(responseEntity.getBody()).isNotNull();
-        assertThat(responseEntity.getBody().message()).isEqualTo(ExceptionRedaction.safeMessage(ACCESS_CODE_ISSUE));
+        assertThat(responseEntity.getBody().message()).isEqualTo(safeMessage(ACCESS_CODE_ISSUE));
     }
 
     @Test
     void shouldHandleInvalidAccessCodeExceptionWithCause() {
         // Given
+        ExceptionRedaction.setShowFullExceptionsForTesting(null);
         Throwable cause = new RuntimeException("Root cause");
         InvalidAccessCodeException exception = new InvalidAccessCodeException(ACCESS_CODE_ISSUE, cause);
 
@@ -100,12 +111,13 @@ class RestExceptionHandlerTest {
         // Then
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
         assertThat(responseEntity.getBody()).isNotNull();
-        assertThat(responseEntity.getBody().message()).isEqualTo(ExceptionRedaction.safeMessage(ACCESS_CODE_ISSUE));
+        assertThat(responseEntity.getBody().message()).isEqualTo(safeMessage(ACCESS_CODE_ISSUE));
     }
 
     @Test
     void shouldHandleInvalidPartyForCaseException() {
         // Given
+        ExceptionRedaction.setShowFullExceptionsForTesting(null);
         InvalidPartyForAccessCodeException exception = new InvalidPartyForAccessCodeException(PARTY_ACCESS_CODE);
 
         // When
@@ -115,12 +127,13 @@ class RestExceptionHandlerTest {
         // Then
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
         assertThat(responseEntity.getBody()).isNotNull();
-        assertThat(responseEntity.getBody().message()).isEqualTo(ExceptionRedaction.safeMessage(PARTY_ACCESS_CODE));
+        assertThat(responseEntity.getBody().message()).isEqualTo(safeMessage(PARTY_ACCESS_CODE));
     }
 
     @Test
     void shouldHandleInvalidPartyForCaseExceptionWithCause() {
         // Given
+        ExceptionRedaction.setShowFullExceptionsForTesting(null);
         Throwable cause = new RuntimeException("Root cause");
         InvalidPartyForAccessCodeException exception = new InvalidPartyForAccessCodeException(PARTY_ACCESS_CODE, cause);
 
@@ -131,12 +144,13 @@ class RestExceptionHandlerTest {
         // Then
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
         assertThat(responseEntity.getBody()).isNotNull();
-        assertThat(responseEntity.getBody().message()).isEqualTo(ExceptionRedaction.safeMessage(PARTY_ACCESS_CODE));
+        assertThat(responseEntity.getBody().message()).isEqualTo(safeMessage(PARTY_ACCESS_CODE));
     }
 
     @Test
     void shouldHandleInvalidAuthTokenException() {
         // Given
+        ExceptionRedaction.setShowFullExceptionsForTesting(null);
         InvalidAuthTokenException exception = new InvalidAuthTokenException(AUTH_MALFORMED);
 
         // When
@@ -146,12 +160,13 @@ class RestExceptionHandlerTest {
         // Then
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
         assertThat(responseEntity.getBody()).isNotNull();
-        assertThat(responseEntity.getBody().message()).isEqualTo(ExceptionRedaction.safeMessage(AUTH_MALFORMED));
+        assertThat(responseEntity.getBody().message()).isEqualTo(safeMessage(AUTH_MALFORMED));
     }
 
     @Test
     void shouldHandleInvalidAuthTokenExceptionWithCause() {
         // Given
+        ExceptionRedaction.setShowFullExceptionsForTesting(null);
         Exception cause = new RuntimeException("Root cause");
         InvalidAuthTokenException exception = new InvalidAuthTokenException(AUTH_UNAUTHORIZED, cause);
 
@@ -162,7 +177,7 @@ class RestExceptionHandlerTest {
         // Then
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
         assertThat(responseEntity.getBody()).isNotNull();
-        assertThat(responseEntity.getBody().message()).isEqualTo(ExceptionRedaction.safeMessage(AUTH_UNAUTHORIZED));
+        assertThat(responseEntity.getBody().message()).isEqualTo(safeMessage(AUTH_UNAUTHORIZED));
     }
 
     @Test
@@ -201,7 +216,7 @@ class RestExceptionHandlerTest {
     @Test
     void shouldHandleAccessCodeAlreadyUsedException() {
         // Given
-        String expectedErrorMessage = "Access code already used";
+        ExceptionRedaction.setShowFullExceptionsForTesting(null);
         AccessCodeAlreadyUsedException exception = new AccessCodeAlreadyUsedException(ACCESS_CODE_ALREADY_IN_USE);
 
         // When
@@ -211,13 +226,13 @@ class RestExceptionHandlerTest {
         // Then
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
         assertThat(responseEntity.getBody()).isNotNull();
-        assertThat(responseEntity.getBody().message()).isEqualTo(expectedErrorMessage);
+        assertThat(responseEntity.getBody().message()).isEqualTo(safeMessage(ACCESS_CODE_ALREADY_IN_USE));
     }
 
     @Test
     void shouldHandleAccessCodeAlreadyUsedExceptionWithCause() {
         // Given
-        String expectedErrorMessage = "Access code already used";
+        ExceptionRedaction.setShowFullExceptionsForTesting(null);
         Throwable cause = new RuntimeException("Root cause");
         AccessCodeAlreadyUsedException exception = new AccessCodeAlreadyUsedException(ACCESS_CODE_ALREADY_IN_USE,
                                                                                       cause);
@@ -229,7 +244,8 @@ class RestExceptionHandlerTest {
         // Then
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
         assertThat(responseEntity.getBody()).isNotNull();
-        assertThat(responseEntity.getBody().message()).isEqualTo(expectedErrorMessage);
+        assertThat(responseEntity.getBody().message())
+            .isEqualTo(safeMessage(ACCESS_CODE_ALREADY_IN_USE));
     }
 
     @Test
@@ -300,6 +316,7 @@ class RestExceptionHandlerTest {
     @Test
     void shouldHandleCaseAccessException() {
         // Given
+        ExceptionRedaction.setShowFullExceptionsForTesting(null);
         CaseAccessException exception = new CaseAccessException(DEFENDANT_ACCESS_VALIDATOR);
 
         // When
@@ -310,7 +327,7 @@ class RestExceptionHandlerTest {
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
         assertThat(responseEntity.getBody()).isNotNull();
         assertThat(responseEntity.getBody().message())
-            .isEqualTo(ExceptionRedaction.safeMessage(DEFENDANT_ACCESS_VALIDATOR));
+            .isEqualTo(safeMessage(DEFENDANT_ACCESS_VALIDATOR));
     }
 
     @Test

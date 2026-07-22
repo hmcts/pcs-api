@@ -4,6 +4,7 @@ import com.github.kagkarlsson.scheduler.task.CompletionHandler;
 import com.github.kagkarlsson.scheduler.task.ExecutionContext;
 import com.github.kagkarlsson.scheduler.task.TaskInstance;
 import com.github.kagkarlsson.scheduler.task.helper.CustomTask;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -14,6 +15,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
+import uk.gov.hmcts.reform.pcs.exception.ExceptionRedaction;
 import uk.gov.hmcts.reform.pcs.notify.config.NotificationErrorHandler;
 import uk.gov.hmcts.reform.pcs.notify.config.NotificationErrorHandler.NotificationStatusUpdate;
 import uk.gov.hmcts.reform.pcs.notify.entities.CaseNotification;
@@ -108,6 +110,11 @@ class SendEmailTaskComponentTest {
 
         when(taskInstance.getData()).thenReturn(sendEmailTaskData);
         when(taskInstance.getId()).thenReturn(taskId);
+    }
+
+    @AfterEach
+    void afterEach() {
+        ExceptionRedaction.setShowFullExceptionsForTesting(null);
     }
 
     @Nested
@@ -227,6 +234,7 @@ class SendEmailTaskComponentTest {
         @Test
         @DisplayName("Should throw PermanentNotificationException when notification ID is null")
         void shouldThrowPermanentNotificationExceptionWhenNotificationIdIsNull() throws Exception {
+            ExceptionRedaction.setShowFullExceptionsForTesting(true);
             when(notificationRepository.findById(dbNotificationId)).thenReturn(Optional.of(caseNotification));
             when(sendEmailResponse.getNotificationId()).thenReturn(null);
             when(notificationClient.sendEmail(eq(templateId), eq(emailAddress), eq(personalisation), anyString()))
@@ -289,6 +297,7 @@ class SendEmailTaskComponentTest {
         @Test
         @DisplayName("Should throw TemporaryNotificationException for temporary failure status codes")
         void shouldThrowTemporaryNotificationExceptionForTemporaryFailureStatusCodes() throws Exception {
+            ExceptionRedaction.setShowFullExceptionsForTesting(true);
             int[] temporaryFailureStatusCodes = {429, 500, 502, 503, 999};
 
             for (int statusCode : temporaryFailureStatusCodes) {
@@ -469,6 +478,7 @@ class SendEmailTaskComponentTest {
         @Test
         @DisplayName("Should handle temporary failure flow with retry")
         void shouldHandleTemporaryFailureFlowWithRetry() throws Exception {
+            ExceptionRedaction.setShowFullExceptionsForTesting(true);
             NotificationClientException exception = mock(NotificationClientException.class);
             when(exception.getHttpResult()).thenReturn(500);
             when(exception.getMessage()).thenReturn("Internal Server Error");

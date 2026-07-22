@@ -97,7 +97,7 @@ class MakeAClaimPaymentCallbackHandlerTest {
         // When / Then
         assertThatExceptionOfType(PaymentCallbackException.class)
             .isThrownBy(() -> underTest.handle(callback, feePaymentEntity))
-            .withMessageContaining("Unable to process");
+            .withMessageContaining("REDACTED [CALL_BACK_TASK_DATA]");
         verifyNoInteractions(ccdPaymentStateUpdateService);
     }
 

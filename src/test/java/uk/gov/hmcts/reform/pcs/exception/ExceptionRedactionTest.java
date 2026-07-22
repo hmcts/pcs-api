@@ -9,7 +9,7 @@ public class ExceptionRedactionTest {
     @Test
     void shouldShowSafeRedactedMessage() {
         assertThat(ExceptionRedaction.safeMessage(ErrorCode.DOC_ASSEMBLY_NO_URL_RETURNED))
-            .isEqualTo("REDACTED [DOC_ASSEMBLY_1: No document URL returned from Doc Assembly service]");
+            .isEqualTo("REDACTED [DOC_ASSEMBLY_1]");
     }
 
     @Test
@@ -18,9 +18,9 @@ public class ExceptionRedactionTest {
         ErrorCode code = ErrorCode.DOC_ASSEMBLY_NO_URL_RETURNED;
         RedactionContext redactionContext = RedactionContext.of("Issue", "Example sensitive failure message");
 
-        // When // Then - safe by default (LOG_SHOW_FULL_EXCEPTIONS is not set in tests)
+        // When // Then - safe by default (SHOW_FULL_EXCEPTIONS is not set in tests)
         assertThat(ExceptionRedaction.message(code, redactionContext))
-            .isEqualTo("%s [%s: %s]".formatted("REDACTED", code.internalCode(), code.safeDescription()));
+            .isEqualTo("%s [%s]".formatted("REDACTED", code.internalCode()));
     }
 
     @Test

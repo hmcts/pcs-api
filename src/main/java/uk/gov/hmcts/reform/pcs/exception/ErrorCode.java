@@ -34,7 +34,7 @@ public enum ErrorCode {
     FEE_PAYMENT_NOTIFICATION("FEE_PAYMENT_02", "Fee payment not found"),
     GEN_APP("GEN_APP", "Statement of truth must be accepted to create a gen app"),
     GEN_APP_NOT_FOUND("GEN_APP_NOT_FOUND", "Unable to find gen app"),
-    POST_CODE("POST_CODE","Postcode can't be empty or null"),
+    POST_CODE("POST_CODE","Postcode can’t be empty or null"),
     SECURITY_CONTEXT("SECURITY_CONTEXT", "No authentication instance found"),
     AUTHENTICATION_PRINCIPAL("AUTHENTICATION PRINCIPLE",
                              "Authentication principal is null or not of the expected type"),

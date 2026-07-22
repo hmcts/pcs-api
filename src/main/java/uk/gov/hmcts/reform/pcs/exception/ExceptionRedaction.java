@@ -28,6 +28,7 @@ public class ExceptionRedaction {
     static final String REDACTED = "REDACTED";
     private static final boolean SHOW_FULL_EXCEPTIONS =
         parseShowFullExceptions(System.getenv("LOG_SHOW_FULL_EXCEPTIONS"));
+    private static volatile Boolean overrideForTesting; // Not for prod code
 
     private ExceptionRedaction() {
 
@@ -56,11 +57,16 @@ public class ExceptionRedaction {
     }
 
     public static boolean showFullExceptions() {
-        return SHOW_FULL_EXCEPTIONS;
+        Boolean override = overrideForTesting;
+        return override != null ? override : SHOW_FULL_EXCEPTIONS;
     }
 
     static boolean parseShowFullExceptions(String raw) {
         return "true".equalsIgnoreCase(raw);
+    }
+
+    public static void setShowFullExceptionsForTesting(Boolean value) {
+        overrideForTesting = value; // pass null to reset
     }
 
 }
