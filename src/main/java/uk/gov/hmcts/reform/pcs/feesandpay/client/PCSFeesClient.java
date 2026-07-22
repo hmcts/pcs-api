@@ -30,7 +30,8 @@ public class PCSFeesClient {
 
         if (ref == null) {
             log.error("Fee type '{}' not found in configuration", feeType);
-            throw new FeeNotFoundException(ErrorCode.FEE_NOT_FOUND, RedactionContext.of("Fee not found for feeType: ", feeType));
+            throw new FeeNotFoundException(ErrorCode.FEE_NOT_FOUND, RedactionContext.of(
+                "Fee not found for feeType: ", feeType));
         }
 
         BigDecimal resolvedAmountOrVolume = amountOrVolume != null ? amountOrVolume : ref.getAmountOrVolume();
