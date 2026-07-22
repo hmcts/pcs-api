@@ -6,7 +6,7 @@ create TABLE legal_representative_org (
   email varchar(120),
   phone varchar(40),
   contact_reference varchar(80),
-  address_id  UUID REFERENCES address (id),
+  address_id  integer REFERENCES address (id),
   has_amended_contact_details YES_NO
 );
 

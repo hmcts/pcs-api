@@ -102,7 +102,7 @@ class NotificationServiceTest {
 
     private static final String TEST_EMAIL = "test@example.com";
     private static final String TEMPLATE_ID = "template-123";
-    private static final UUID NOTIFICATION_ID = UUID.randomUUID();
+    private static final Integer NOTIFICATION_ID = 1;
     private static final UUID PROVIDER_NOTIFICATION_ID = UUID.randomUUID();
     private static final String STATUS_STRING = "delivered";
 
@@ -425,7 +425,7 @@ class NotificationServiceTest {
             pcsCase.setCaseReference(CASE_REFERENCE);
 
             PaymentAgreementEntity paymentAgreement = new PaymentAgreementEntity();
-            paymentAgreement.setId(UUID.randomUUID());
+            paymentAgreement.setId(1);
 
             defendantResponse = new DefendantResponseEntity();
             defendantResponse.setParty(party);
@@ -601,7 +601,7 @@ class NotificationServiceTest {
         @DisplayName("Should throw PartyNotFoundException when defendant is null in defendantRecipient")
         void shouldThrowPartyNotFoundExceptionWhenDefendantIsNullInDefendantRecipient() {
             defendantResponse.setParty(null);
-            UUID responseId = UUID.randomUUID();
+            Integer responseId = 1;
             defendantResponse.setId(responseId);
 
             assertThatThrownBy(
