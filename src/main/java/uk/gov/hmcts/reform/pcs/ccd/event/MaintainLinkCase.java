@@ -39,8 +39,7 @@ public class MaintainLinkCase implements CCDConfig<PCSCase, State, UserRole> {
                             .description("To manage link related cases")
                             .grant(Permission.CRUD, HEARING_CENTRE_ADMIN, HEARING_CENTRE_TEAM_LEADER,
                                    CTSC_ADMIN, CTSC_TEAM_LEADER, WLU_ADMIN, WLU_TEAM_LEADER)
-                            .grantHistoryOnly(JUDICIAL_HISTORY_ROLES)
-                            .endButtonLabel("Submit"))
+                            .grantHistoryOnly(JUDICIAL_HISTORY_ROLES))
             .page("maintainCaseLink")
             .pageLabel("Manage case links")
             .label("maintainCaseLink-lineSeparator", "---")
