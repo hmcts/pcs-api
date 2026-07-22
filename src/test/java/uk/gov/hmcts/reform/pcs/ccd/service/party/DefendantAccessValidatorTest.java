@@ -72,7 +72,7 @@ class DefendantAccessValidatorTest {
         // When / Then
         assertThatThrownBy(() -> underTest.validateAndGetDefendant(caseEntity, differentUserId))
             .isInstanceOf(CaseAccessException.class)
-            .hasMessage("User is not linked as a defendant on this case");
+            .hasMessage("REDACTED [DEFENDANT_ACCESS_VALIDATOR]");
     }
 
     private ClaimEntity createClaimWithDefendant(PartyEntity defendant) {

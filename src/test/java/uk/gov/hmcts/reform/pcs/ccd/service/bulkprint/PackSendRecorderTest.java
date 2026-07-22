@@ -146,6 +146,7 @@ class PackSendRecorderTest {
         PackDetails details = packDetailsCaptor.getValue();
         assertThat(details.terminal()).isTrue();
         assertThat(details.failureReason()).isEqualTo(FailureReason.MISSING_ADDRESS);
-        assertThat(details.errorDetail()).isEqualTo("MissingPostalAddressException: no usable address");
+        assertThat(details.errorDetail())
+            .isEqualTo("MissingPostalAddressException: REDACTED [MISSING_POSTAL_ADDRESS]");
     }
 }

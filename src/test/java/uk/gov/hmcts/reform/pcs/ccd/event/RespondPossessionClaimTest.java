@@ -332,7 +332,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
 
         assertThatThrownBy(() -> callStartHandler(caseData))
             .isInstanceOf(CaseAccessException.class)
-            .hasMessage("REDACTED [DEFENDANT_PARTY_EXTRACTOR_02: No defendants associated with this case]");
+            .hasMessage("REDACTED [DEFENDANT_PARTY_EXTRACTOR_02]");
     }
 
     @Test
@@ -353,7 +353,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
 
         assertThatThrownBy(() -> callStartHandler(caseData))
             .isInstanceOf(CaseAccessException.class)
-            .hasMessage("REDACTED [DEFENDANT_PARTY_EXTRACTOR_01: No claim found for this case]");
+            .hasMessage("REDACTED [DEFENDANT_PARTY_EXTRACTOR_01]");
     }
 
     @Test
@@ -392,7 +392,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
 
         assertThatThrownBy(() -> callStartHandler(caseData))
             .isInstanceOf(CaseAccessException.class)
-            .hasMessage("REDACTED [DEFENDANT_ACCESS_VALIDATOR: User is not linked as a defendant on this case]");
+            .hasMessage("REDACTED [DEFENDANT_ACCESS_VALIDATOR]");
     }
 
     @Test
@@ -877,7 +877,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
         // when / then
         assertThatThrownBy(() -> callStartHandler(caseData))
             .isInstanceOf(CaseAccessException.class)
-            .hasMessage("REDACTED [LEGAL_REP_PARTY_SELECTION: User is not linked as a defendant on this case]");
+            .hasMessage("REDACTED [LEGAL_REP_PARTY_SELECTION]");
     }
 
     @Test

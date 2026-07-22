@@ -224,7 +224,7 @@ class LegalRepPartySelectionServiceTest {
             pcsCase,
             List.of(),
             12345L
-        )).isInstanceOf(CaseAccessException.class).hasMessage("User is not linked as a defendant on this case");
+        )).isInstanceOf(CaseAccessException.class).hasMessage("REDACTED [LEGAL_REP_PARTY_SELECTION]");
     }
 
     @Test

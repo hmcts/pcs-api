@@ -35,7 +35,7 @@ class GenerationDetailsTest {
             DocumentType.COUNTERCLAIM, new DocAssemblyException(ErrorCode.DOC_GENERATION_FAILED), false);
 
         assertThat(details.failureReason()).isEqualTo(FailureReason.RENDER_FAILED);
-        assertThat(details.errorDetail()).isEqualTo("DocAssemblyException: docmosis returned 500");
+        assertThat(details.errorDetail()).isEqualTo("DocAssemblyException: REDACTED [DOC_GENERATION_1]");
     }
 
     @Test

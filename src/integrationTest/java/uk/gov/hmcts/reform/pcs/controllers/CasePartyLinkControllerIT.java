@@ -262,7 +262,7 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
                             .content(objectMapper.writeValueAsString(request)))
             .andExpect(status().isConflict())
             .andExpect(jsonPath("$.message",
-                                is("REDACTED [ACCESS_CODE: This access code is already linked to a user.]")));
+                                is("REDACTED [ACCESS_CODE]")));
     }
 
     @Test
@@ -288,7 +288,7 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
             .andExpect(status().isConflict())
             .andExpect(jsonPath(
                 "$.message",
-                is("REDACTED [ACCESS_CODE: This access code is already linked to a user.]")
+                is("REDACTED [ACCESS_CODE]")
             ));
     }
 
@@ -370,7 +370,7 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
                             .content(objectMapper.writeValueAsString(request)))
             .andExpect(status().isConflict())
             .andExpect(jsonPath("$.message",
-                                is("REDACTED [ACCESS_CODE: This access code is already linked to a user.]")));
+                                is("REDACTED [ACCESS_CODE]")));
 
         // Then - Verify transaction rolled back: database state unchanged
         PcsCaseEntity caseAfter = pcsCaseRepository.findByCaseReference(caseReference)

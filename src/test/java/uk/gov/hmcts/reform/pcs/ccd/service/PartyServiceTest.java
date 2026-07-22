@@ -143,7 +143,7 @@ class PartyServiceTest {
             // Then
             assertThat(throwable)
                 .isInstanceOf(PartyNotFoundException.class)
-                .hasMessage("No party found for IDAM ID: " + idamId + " and case reference: " + CASE_REFERENCE);
+                .hasMessage("REDACTED [PARTY_BY_IDAM_AND_CASE]");
 
         }
 
@@ -321,7 +321,7 @@ class PartyServiceTest {
             assertThat(throwable).isInstanceOf(PartyNotFoundException.class);
         }
     }
-    
+
     @Nested
     @DisplayName("Get Party Name")
     class GetPartyNameTests {

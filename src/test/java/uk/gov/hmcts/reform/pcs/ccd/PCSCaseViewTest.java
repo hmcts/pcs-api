@@ -163,7 +163,7 @@ class PCSCaseViewTest {
         // Then
         assertThatThrownBy(() -> underTest.getCase(request))
             .isInstanceOf(CaseNotFoundException.class)
-            .hasMessage("REDACTED [CASE_NOT_FOUND: No case found with reference]", CASE_REFERENCE);
+            .hasMessage("REDACTED [CASE_NOT_FOUND]", CASE_REFERENCE);
     }
 
     @Test

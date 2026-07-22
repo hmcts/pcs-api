@@ -97,7 +97,7 @@ class ResumeClaimTest extends BasePageTest {
         // Then
         assertThat(throwable)
             .isInstanceOf(UnsubmittedDataException.class)
-            .hasMessage("No unsubmitted case data found for case %s", TEST_CASE_REFERENCE);
+            .hasMessage("REDACTED [UNSUBMITTED_DATA_04]");
     }
 
 }

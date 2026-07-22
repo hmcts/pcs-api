@@ -133,8 +133,7 @@ class EnterPropertyAddressTest extends BasePageTest {
     @MethodSource("invalidLegislativeCountryScenarios")
     void shouldThrowExceptionWhenLegislativeCountryRequiredButInvalidCountries(
         String postcode,
-        List<LegislativeCountry> countries,
-        String expectedMessageFragment
+        List<LegislativeCountry> countries
     ) {
         // Given
         AddressUK propertyAddress = AddressUK.builder()
@@ -155,9 +154,7 @@ class EnterPropertyAddressTest extends BasePageTest {
         // When & Then
         assertThatThrownBy(() -> callMidEventHandler(caseData))
             .isInstanceOf(EligibilityCheckException.class)
-            .hasMessageContaining("Expected at least 2 legislative countries")
-            .hasMessageContaining(expectedMessageFragment)
-            .hasMessageContaining(postcode);
+            .hasMessageContaining("REDACTED [LEGISLATIVE_COUNTRY_REQUIREMENT]");
     }
 
     @Test
@@ -227,22 +224,19 @@ class EnterPropertyAddressTest extends BasePageTest {
             // Empty list case
             arguments(
                 "XX99 9XX",
-                Collections.emptyList(),
-                "but got 0"
+                Collections.emptyList()
             ),
 
             // Single country case
             arguments(
                 "BT1 1AA",
-                Collections.singletonList(NORTHERN_IRELAND),
-                "but got 1"
+                Collections.singletonList(NORTHERN_IRELAND)
             ),
 
             // Null list case
             arguments(
                 "NULL_CASE",
-                null,
-                "but got 0"
+                null
             )
         );
     }
