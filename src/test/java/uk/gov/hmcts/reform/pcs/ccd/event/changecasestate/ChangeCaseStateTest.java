@@ -14,6 +14,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.event.BaseEventTest;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.eq;
@@ -28,6 +29,9 @@ class ChangeCaseStateTest extends BaseEventTest {
 
     @Mock
     private AddressFormatter addressFormatter;
+
+    @Mock
+    private FeatureToggleService featureToggleService;
 
     @InjectMocks
     private ChangeCaseState changeCaseState;

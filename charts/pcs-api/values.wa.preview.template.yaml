@@ -82,8 +82,9 @@ wa:
     java:
       ingressHost: wa-task-management-api-${SERVICE_FQDN}
       environment:
-        ALLOWED_CASE_TYPES: pcs-${CHANGE_ID}
+        ALLOWED_CASE_TYPES: pcs
         ALLOWED_JURISDICTIONS: pcs
+        ROLE_ASSIGNMENT_URL: http://am-role-assignment-service-aat.service.core-compute-aat.internal
       keyVaults:
         wa:
           secrets:

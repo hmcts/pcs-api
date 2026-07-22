@@ -15,6 +15,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.changecasestate.ChangeCaseStatePage;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
+import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerRoles.CASEWORKER_ROLES;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
@@ -28,6 +30,7 @@ import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.RELEASE_1_DOT_2;
 public class ChangeCaseState implements CCDConfig<PCSCase, State, UserRole> {
 
     private final AddressFormatter addressFormatter;
+    private final FeatureToggleService featureToggleService;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -50,6 +53,10 @@ public class ChangeCaseState implements CCDConfig<PCSCase, State, UserRole> {
             .grantHistoryOnly(JUDICIAL_HISTORY_ROLES)
             .showSummary()
             .endButtonLabel("Submit");
+
+        if (featureToggleService.isEnabled(FeatureFlag.CASEWORKER_WA)) {
+            eventBuilder.publishToCamunda();
+        }
 
         new PageBuilder(eventBuilder)
             .add(new ChangeCaseStatePage());
