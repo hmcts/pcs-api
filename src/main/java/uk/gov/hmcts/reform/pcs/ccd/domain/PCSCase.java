@@ -749,9 +749,6 @@ public class PCSCase {
     private Hearing hearing;
 
     @CCD(searchable = false)
-    private List<ListValue<Hearing>> hearingList;
-
-    @CCD(searchable = false)
     private VerticalYesNo showManageHearingPage;
 
     @CCD(searchable = false)

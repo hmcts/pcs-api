@@ -39,7 +39,7 @@ public class HearingEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private Long id;
 
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "case_id")
@@ -74,6 +74,10 @@ public class HearingEntity {
 
     @Builder.Default
     private List<UUID> noticeParties = new ArrayList<>();
+
+    private Boolean cancelled;
+
+    private String cancellationReason;
 
     public void addParty(UUID partyId) {
         noticeParties.add(partyId);
