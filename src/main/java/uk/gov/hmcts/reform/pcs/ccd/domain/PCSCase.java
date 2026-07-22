@@ -20,6 +20,7 @@ import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.SearchCriteria;
 import uk.gov.hmcts.ccd.sdk.type.WaysToPay;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.AccessProfile;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseLinkingAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.ClaimantAccess;
@@ -710,12 +711,14 @@ public class PCSCase {
         access = {InternalCaseFlagAccess.class},
         label = "Launch the flags screen"
     )
-
     private FlagLauncher flagLauncherInternal;
 
     @CCD(access = {DefendantSolicitorAccess.class})
     private List<ListValue<Party>> allLinkedDefendants;
 
+    @JsonUnwrapped
+    private GroupAccessFields<AccessProfile> groupAccessFields;
+  
     @CCD
     private String postCode;
 

@@ -27,7 +27,7 @@ az acr login --name hmctsprod --subscription DCD-CNP-PROD
 docker run --rm --name "json2xlsx" \
   -v "$run_dir/build/definitions/${case_type}:/tmp/ccd-input" \
   -v "$run_dir/build/definitions:/tmp/ccd-output" \
-  hmctsprod.azurecr.io/ccd/definition-processor:latest \
+  hmctsprod.azurecr.io/ccd/definition-processor:pr-348-64dd53f \
   json2xlsx -D /tmp/ccd-input -o /tmp/ccd-output/"${ccd_definition_file}"
 
 done

@@ -6,6 +6,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.ConfigBuilderImpl;
+import uk.gov.hmcts.ccd.sdk.api.AccessType;
+import uk.gov.hmcts.ccd.sdk.api.AccessTypeRole;
 import uk.gov.hmcts.ccd.sdk.api.CaseCategory;
 import uk.gov.hmcts.ccd.sdk.api.PropertyUtils;
 import uk.gov.hmcts.ccd.sdk.api.Search;
@@ -19,6 +21,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -97,6 +100,10 @@ class CaseTypeTest {
             Search.SearchBuilder.builder(PCSCase.class, utils);
         final SearchCases.SearchCasesBuilder<PCSCase> searchCasesBuilder =
             SearchCases.SearchCasesBuilder.builder(PCSCase.class, utils);
+        final AccessType.AccessTypeBuilder accessTypeBuilder =
+            AccessType.AccessTypeBuilder.builder("accessTypeId");
+        final AccessTypeRole.AccessTypeRoleBuilder accessTypeRoleBuilder =
+            AccessTypeRole.AccessTypeRoleBuilder.builder("accessTypeId");
 
         when(builder.searchInputFields()).thenReturn(searchBuilder);
         when(builder.searchCasesFields()).thenReturn(searchCasesBuilder);
@@ -115,6 +122,8 @@ class CaseTypeTest {
         when(builder.tab("caseDetails", "Case Details")).thenReturn(caseDetailsTabBuilder);
         when(builder.categories(AccessProfile.PCS_SOLICITOR))
             .thenReturn(CaseCategory.CaseCategoryBuilder.builder(AccessProfile.PCS_SOLICITOR));
+        when(builder.accessType(anyString())).thenReturn(accessTypeBuilder);
+        when(builder.accessTypeRole(anyString())).thenReturn(accessTypeRoleBuilder);
 
         // When
         caseType.configure(builder);
