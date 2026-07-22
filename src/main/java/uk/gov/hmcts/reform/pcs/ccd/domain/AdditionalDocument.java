@@ -31,7 +31,7 @@ public class AdditionalDocument {
     private AdditionalDocumentTypeEngland documentTypeEngland;
 
     @CCD(
-        label = "Type of document CY",
+        label = "Type of document",
         typeOverride = FieldType.FixedList,
         typeParameterOverride = "AdditionalDocumentTypeWales",
         access = {DefendantAccess.class}
