@@ -8,7 +8,7 @@ public class UploadAdditionalDocumentsInformationPage implements CcdPageConfigur
 
     private static final String SUPPORTING_EVIDENCE_UPLOAD_CONTENT  = """
                     <p class="govuk-body">
-                        You can upload a document to support an application, or to show proof that you have done
+                        You can upload a document to support an application, a counterclaim, or to show proof that you have done
                         something.
                     </p>
 
@@ -38,8 +38,8 @@ public class UploadAdditionalDocumentsInformationPage implements CcdPageConfigur
                         damp in the bathroom</li>
                        <li class="govuk-!-font-size-19">a report from an electrician or a plumber, showing evidence of
                        a repair that needs to be done</li>
-                       <li class="govuk-!-font-size-19">emails or letters from the claimant (your landlord, housing
-                       association, or mortgage lender)</li>
+                       <li class="govuk-!-font-size-19">emails or letters from the claimant (the defendant's landlord,
+                       housing association, or mortgage lender)</li>
                     </ul>
 
                     <p class="govuk-body govuk-!-margin-bottom-0">You can upload the following file types:</p>
