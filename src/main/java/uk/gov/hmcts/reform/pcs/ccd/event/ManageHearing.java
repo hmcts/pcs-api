@@ -55,9 +55,10 @@ public class ManageHearing implements CCDConfig<PCSCase, State, UserRole> {
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         Event.EventBuilder<PCSCase, UserRole, State> eventBuilder =
             configBuilder.decentralisedEvent(manageHearing.name(), this::submit, this::start)
-                .forStates(State.CASE_ISSUED)
+                .forStates(State.AWAITING_SUBMISSION_TO_HMCTS, State.PENDING_CASE_ISSUED, State.CASE_ISSUED)
                 .name("Manage hearing")
                 .grant(Permission.CRUD, UserRole.HEARING_CENTRE_ADMIN)
+                .grant(Permission.CRUD, UserRole.HEARING_CENTRE_TEAM_LEADER)
                 .grantHistoryOnly(JUDICIAL_HISTORY_ROLES)
                 .showSummary()
                 .endButtonLabel("Submit");
