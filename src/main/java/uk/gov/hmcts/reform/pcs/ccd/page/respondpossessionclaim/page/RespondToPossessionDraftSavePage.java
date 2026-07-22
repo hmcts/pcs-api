@@ -13,6 +13,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.util.SelectedPartyRetriever;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.List;
@@ -29,6 +30,7 @@ public class RespondToPossessionDraftSavePage implements CcdPageConfiguration {
     private final DraftCaseDataService draftCaseDataService;
     private final SecurityContextService securityContextService;
     private final SelectedPartyRetriever selectedPartyRetriever;
+    private final OrganisationService organisationService;
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -57,16 +59,20 @@ public class RespondToPossessionDraftSavePage implements CcdPageConfiguration {
             if (securityContextService.getCurrentUserDetails().getRoles().contains(UserRole.CITIZEN.getRole())) {
                 draftCaseDataService.saveUnsubmittedEventData(caseRef, partialUpdate, respondPossessionClaim);
             } else {
-                Optional<UUID> selectedPartyId = selectedPartyRetriever.getSelectedPartyId(caseRef);
+                String organisationId = organisationService.getOrganisationIdForCurrentUser();
+
+                Optional<UUID> selectedPartyId = selectedPartyRetriever.getSelectedPartyId(caseRef, organisationId);
                 if (selectedPartyId.isEmpty()) {
                     return error(List.of("No selected responding party id for respond to claim"));
                 }
                 UUID representedPartyId = selectedPartyId.get();
+
                 draftCaseDataService.saveUnsubmittedEventData(
                     caseRef,
                     partialUpdate,
                     respondPossessionClaim,
-                    representedPartyId
+                    representedPartyId,
+                    organisationId
                 );
             }
             return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
@@ -84,5 +90,4 @@ public class RespondToPossessionDraftSavePage implements CcdPageConfiguration {
             .errors(errorMessages)
             .build();
     }
-
 }

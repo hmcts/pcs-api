@@ -11,13 +11,13 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.LegalRepresentativeRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.LegalRepresentativeOrganisationRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.DashboardContext;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.Set;
-import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
@@ -28,16 +28,17 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.DashboardTaskTemplate
 
 class ApplicationsTaskGroupEvaluatorTest {
 
-    private static final UUID CURRENT_USER_ID = UUID.fromString("00000000-0000-0000-0000-000000000001");
-    private static final UUID OTHER_USER_ID = UUID.fromString("00000000-0000-0000-0000-000000000002");
+    private static final String CURRENT_ORGANISATION_ID = "org1";
+    private static final String OTHER_ORGANISATION_ID = "org2";
 
     private final SecurityContextService securityContextService = mock(SecurityContextService.class);
-    private final LegalRepresentativeRepository legalRepresentativeRepository =
-        mock(LegalRepresentativeRepository.class);
+    private final OrganisationService organisationService = mock(OrganisationService.class);
+    private final LegalRepresentativeOrganisationRepository legalRepresentativeOrganisationRepository =
+        mock(LegalRepresentativeOrganisationRepository.class);
     private final GenAppVisibilityService genAppVisibilityService =
-        new GenAppVisibilityService(legalRepresentativeRepository);
+        new GenAppVisibilityService(legalRepresentativeOrganisationRepository);
     private final ApplicationsTaskGroupEvaluator underTest =
-        new ApplicationsTaskGroupEvaluator(securityContextService, genAppVisibilityService);
+        new ApplicationsTaskGroupEvaluator(organisationService, genAppVisibilityService);
 
     @Test
     void shouldReturnApplicationsGroupId() {
@@ -46,8 +47,8 @@ class ApplicationsTaskGroupEvaluatorTest {
 
     @Test
     void shouldMarkViewApplicationsAsAvailableWhenCaseHasVisibleApplication() {
-        when(securityContextService.getCurrentUserId()).thenReturn(CURRENT_USER_ID);
-        GenAppEntity visibleGenApp = createGenApp(VerticalYesNo.NO, OTHER_USER_ID);
+        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(CURRENT_ORGANISATION_ID);
+        GenAppEntity visibleGenApp = createGenApp(VerticalYesNo.NO, OTHER_ORGANISATION_ID);
 
         TaskGroup taskGroup = underTest.evaluate(contextWith(visibleGenApp));
 
@@ -56,8 +57,8 @@ class ApplicationsTaskGroupEvaluatorTest {
 
     @Test
     void shouldUseSecurityContextUserWhenCheckingWithoutNoticeApplicationVisibility() {
-        when(securityContextService.getCurrentUserId()).thenReturn(CURRENT_USER_ID);
-        GenAppEntity visibleGenApp = createGenApp(VerticalYesNo.YES, CURRENT_USER_ID);
+        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(CURRENT_ORGANISATION_ID);
+        GenAppEntity visibleGenApp = createGenApp(VerticalYesNo.YES, CURRENT_ORGANISATION_ID);
 
         TaskGroup taskGroup = underTest.evaluate(contextWith(visibleGenApp));
 
@@ -66,8 +67,8 @@ class ApplicationsTaskGroupEvaluatorTest {
 
     @Test
     void shouldMarkViewApplicationsAsNotAvailableWhenOnlyApplicationIsHiddenFromCurrentUser() {
-        when(securityContextService.getCurrentUserId()).thenReturn(CURRENT_USER_ID);
-        GenAppEntity hiddenGenApp = createGenApp(VerticalYesNo.YES, OTHER_USER_ID);
+        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(CURRENT_ORGANISATION_ID);
+        GenAppEntity hiddenGenApp = createGenApp(VerticalYesNo.YES, OTHER_ORGANISATION_ID);
 
         TaskGroup taskGroup = underTest.evaluate(contextWith(hiddenGenApp));
 
@@ -76,9 +77,9 @@ class ApplicationsTaskGroupEvaluatorTest {
 
     @Test
     void shouldCountOnlyVisibleApplicationsWhenDeterminingAvailability() {
-        when(securityContextService.getCurrentUserId()).thenReturn(CURRENT_USER_ID);
-        GenAppEntity hiddenGenApp = createGenApp(VerticalYesNo.YES, OTHER_USER_ID);
-        GenAppEntity visibleGenApp = createGenApp(VerticalYesNo.YES, CURRENT_USER_ID);
+        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(CURRENT_ORGANISATION_ID);
+        GenAppEntity hiddenGenApp = createGenApp(VerticalYesNo.YES, OTHER_ORGANISATION_ID);
+        GenAppEntity visibleGenApp = createGenApp(VerticalYesNo.YES, CURRENT_ORGANISATION_ID);
 
         TaskGroup taskGroup = underTest.evaluate(contextWith(hiddenGenApp, visibleGenApp));
 
@@ -104,17 +105,17 @@ class ApplicationsTaskGroupEvaluatorTest {
             .genApps(Set.of(genApps))
             .build();
         PartyEntity defendant = PartyEntity.builder()
-            .idamId(OTHER_USER_ID)
+            .organisationId(OTHER_ORGANISATION_ID)
             .build();
 
         return new DashboardContext(100L, caseEntity, defendant, false, false);
     }
 
-    private static GenAppEntity createGenApp(VerticalYesNo withoutNotice, UUID partyIdamId) {
+    private static GenAppEntity createGenApp(VerticalYesNo withoutNotice, String organisationId) {
         return GenAppEntity.builder()
             .state(GenAppState.GEN_APP_ISSUED)
             .withoutNotice(withoutNotice)
-            .party(PartyEntity.builder().idamId(partyIdamId).build())
+            .party(PartyEntity.builder().organisationId(organisationId).build())
             .build();
     }
 

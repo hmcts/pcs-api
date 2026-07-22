@@ -18,6 +18,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.ClaimResponseS
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.DefendantResponseService;
 import uk.gov.hmcts.reform.pcs.ccd.util.SelectedPartyRetriever;
 import uk.gov.hmcts.reform.pcs.exception.DraftNotFoundException;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 
 import java.util.List;
 import java.util.Optional;
@@ -28,6 +29,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -51,6 +54,9 @@ class LegalRepSubmissionEventStrategyTest {
     @Mock
     private EventPayload<PCSCase, State> eventPayload;
     private LegalRepSubmissionEventStrategy underTest;
+    @Mock
+    private OrganisationService organisationService;
+
 
     @BeforeEach
     void setUp() {
@@ -59,7 +65,8 @@ class LegalRepSubmissionEventStrategyTest {
             claimResponseService,
             defendantResponseService,
             selectedPartyRetriever,
-            submitResponseFactory
+            submitResponseFactory,
+            organisationService
         );
     }
 
@@ -67,6 +74,7 @@ class LegalRepSubmissionEventStrategyTest {
     void shouldSubmitLegalRepresentativeDraftForSelectedParty() {
         // given
         UUID representedPartyId = UUID.randomUUID();
+        String organisationId = "org";
 
         DefendantResponses responses = DefendantResponses.builder()
             .tenancyTypeConfirmation(YesNoNotSure.YES)
@@ -84,11 +92,13 @@ class LegalRepSubmissionEventStrategyTest {
             .build();
 
         when(selectedPartyRetriever.getCurrentRepresentedPartyId(caseData)).thenReturn(Optional.of(representedPartyId));
-        when(draftCaseDataService.getUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim, representedPartyId))
+        when(draftCaseDataService.getUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim, representedPartyId,
+                                                         organisationId))
             .thenReturn(Optional.of(caseData));
         when(submitResponseFactory.success()).thenReturn(submitResponse);
         when(eventPayload.caseReference()).thenReturn(CASE_REFERENCE);
         when(eventPayload.caseData()).thenReturn(caseData);
+        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(organisationId);
 
         // when
         SubmitResponse<State> result = underTest.process(eventPayload);
@@ -99,7 +109,7 @@ class LegalRepSubmissionEventStrategyTest {
         verify(defendantResponseService).saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse,
                                                                representedPartyId);
         verify(draftCaseDataService).deleteUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim,
-                                                               representedPartyId);
+                                                               representedPartyId, organisationId);
         verify(draftCaseDataService, never()).getUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim);
     }
 
@@ -132,8 +142,8 @@ class LegalRepSubmissionEventStrategyTest {
             .saveDraftDataForParty(possessionClaimResponse, CASE_REFERENCE, representedPartyId);
         verify(defendantResponseService, never()).saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse,
                                                                         representedPartyId);
-        verify(draftCaseDataService, never()).deleteUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim,
-                                                                        representedPartyId);
+        verify(draftCaseDataService, never()).deleteUnsubmittedCaseData(eq(CASE_REFERENCE), eq(respondPossessionClaim),
+                                                                        eq(representedPartyId), anyString());
         verify(draftCaseDataService, never()).getUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim);
     }
 
@@ -141,6 +151,7 @@ class LegalRepSubmissionEventStrategyTest {
     void shouldReturnValidationErrors() {
         // given
         UUID representedPartyId = UUID.randomUUID();
+        String organisationId = "org";
 
         DefendantResponses responses = DefendantResponses.builder()
             .tenancyTypeConfirmation(YesNoNotSure.YES)
@@ -159,12 +170,14 @@ class LegalRepSubmissionEventStrategyTest {
             .build();
 
         when(selectedPartyRetriever.getCurrentRepresentedPartyId(caseData)).thenReturn(Optional.of(representedPartyId));
-        when(draftCaseDataService.getUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim, representedPartyId))
+        when(draftCaseDataService.getUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim, representedPartyId,
+                                                         organisationId))
             .thenReturn(Optional.of(caseData));
         when(submitResponseFactory.validate(possessionClaimResponse, CASE_REFERENCE))
             .thenReturn(Optional.of(submitResponse));
         when(eventPayload.caseReference()).thenReturn(CASE_REFERENCE);
         when(eventPayload.caseData()).thenReturn(caseData);
+        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(organisationId);
 
         // when
         SubmitResponse<State> result = underTest.process(eventPayload);
@@ -174,9 +187,9 @@ class LegalRepSubmissionEventStrategyTest {
         verify(claimResponseService, never()).saveDraftDataForParty(possessionClaimResponse, CASE_REFERENCE,
                                                                     representedPartyId);
         verify(defendantResponseService, never()).saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse,
-                                                               representedPartyId);
-        verify(draftCaseDataService, never()).deleteUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim,
-                                                               representedPartyId);
+                                                                        representedPartyId);
+        verify(draftCaseDataService, never()).deleteUnsubmittedCaseData(eq(CASE_REFERENCE), eq(respondPossessionClaim),
+                                                                        eq(representedPartyId), anyString());
         verify(draftCaseDataService, never()).getUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim);
     }
 
@@ -184,11 +197,13 @@ class LegalRepSubmissionEventStrategyTest {
     void shouldThrowExceptionWhenNoDraft() {
         // Given
         UUID representedPartyId = UUID.randomUUID();
+        String organisationId = "org";
         PCSCase caseData = PCSCase.builder()
             .build();
         when(selectedPartyRetriever.getCurrentRepresentedPartyId(caseData)).thenReturn(Optional.of(representedPartyId));
         when(eventPayload.caseReference()).thenReturn(CASE_REFERENCE);
         when(eventPayload.caseData()).thenReturn(caseData);
+        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(organisationId);
 
         // When
         assertThatThrownBy(() -> underTest.process(eventPayload))
@@ -197,7 +212,7 @@ class LegalRepSubmissionEventStrategyTest {
         // Then
         verify(claimResponseService, never()).saveDraftDataForParty(any(), anyLong(), any());
         verify(defendantResponseService, never()).saveDefendantResponse(anyLong(), any(), any());
-        verify(draftCaseDataService, never()).deleteUnsubmittedCaseData(anyLong(), any(), any());
+        verify(draftCaseDataService, never()).deleteUnsubmittedCaseData(anyLong(), any(), any(), any());
     }
 
     @Test
