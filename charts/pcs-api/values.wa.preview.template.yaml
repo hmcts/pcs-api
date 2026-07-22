@@ -146,14 +146,17 @@ wa:
 
   wa-initiation-batch:
     job:
+      suspend: false
       schedule: "*/1 * * * *"
 
   wa-reconfiguration-batch:
     job:
+      suspend: false
       schedule: "*/1 * * * *"
 
   wa-termination-batch:
     job:
+      suspend: false
       schedule: "*/1 * * * *"
 
   #disable wa db as we are using the postgres flexible server
