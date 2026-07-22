@@ -1,6 +1,9 @@
 package uk.gov.hmcts.reform.pcs.ccd.type;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
+
+import java.io.IOException;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -96,5 +99,106 @@ class DynamicStringListTest {
         assertThat(list1).isEqualTo(list2);
         assertThat(list1.hashCode()).isEqualTo(list2.hashCode());
         assertThat(list1.toString()).isEqualTo(list2.toString());
+    }
+
+    @Test
+    void shouldDeserialiseSelectedValueFromFlattenedExuiValueCodeAndValueLabel() throws IOException {
+        String json = """
+            {
+              "valueCode": "GEN_APP:123",
+              "valueLabel": "Gen app GA1 - submitted 16 July 2026",
+              "list_items": [
+                {
+                  "code": "GEN_APP:123",
+                  "label": "Gen app GA1 - submitted 16 July 2026"
+                }
+              ]
+            }
+            """;
+
+        DynamicStringList actual = new ObjectMapper().readValue(json, DynamicStringList.class);
+
+        assertThat(actual.getValue()).isEqualTo(DynamicStringListElement.builder()
+            .code("GEN_APP:123")
+            .label("Gen app GA1 - submitted 16 July 2026")
+            .build());
+        assertThat(actual.getListItems())
+            .containsExactly(DynamicStringListElement.builder()
+                .code("GEN_APP:123")
+                .label("Gen app GA1 - submitted 16 July 2026")
+                .build());
+    }
+
+    @Test
+    void shouldDeserialiseSelectedValueFromTextualValue() throws IOException {
+        String json = """
+            {
+              "value": "NONE",
+              "list_items": [
+                {
+                  "code": "NONE",
+                  "label": "Not related to an application or counterclaim"
+                }
+              ]
+            }
+            """;
+
+        DynamicStringList actual = new ObjectMapper().readValue(json, DynamicStringList.class);
+
+        assertThat(actual.getValue()).isEqualTo(DynamicStringListElement.builder()
+            .code("NONE")
+            .build());
+        assertThat(actual.getListItems())
+            .containsExactly(DynamicStringListElement.builder()
+                .code("NONE")
+                .label("Not related to an application or counterclaim")
+                .build());
+    }
+
+    @Test
+    void shouldReturnNullListItemsWhenDeserialisedListItemsIsNotAnArray() throws IOException {
+        String json = """
+            {
+              "value": {
+                "code": "NONE",
+                "label": "Not related to an application or counterclaim"
+              },
+              "list_items": {
+                "code": "NONE",
+                "label": "Not related to an application or counterclaim"
+              }
+            }
+            """;
+
+        DynamicStringList actual = new ObjectMapper().readValue(json, DynamicStringList.class);
+
+        assertThat(actual.getValue()).isEqualTo(DynamicStringListElement.builder()
+            .code("NONE")
+            .label("Not related to an application or counterclaim")
+            .build());
+        assertThat(actual.getListItems()).isNull();
+    }
+
+    @Test
+    void shouldReturnNullValueWhenDeserialisedSelectedValueFieldsAreMissing() throws IOException {
+        DynamicStringList actual = new ObjectMapper().readValue("{}", DynamicStringList.class);
+
+        assertThat(actual.getValue()).isNull();
+        assertThat(actual.getListItems()).isNull();
+    }
+
+    @Test
+    void shouldReturnNullValueWhenDeserialisedSelectedValueFieldsAreNull() throws IOException {
+        String json = """
+            {
+              "valueCode": null,
+              "valueLabel": null
+            }
+            """;
+
+        DynamicStringList actual = new ObjectMapper().readValue(json, DynamicStringList.class);
+
+        assertThat(actual.getValue()).isNull();
+        assertThat(actual.getListItems()).isNull();
     }
 }

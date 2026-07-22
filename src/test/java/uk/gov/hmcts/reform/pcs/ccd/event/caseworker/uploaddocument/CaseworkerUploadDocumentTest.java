@@ -12,6 +12,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.event.BaseEventTest;
 
+import java.time.Clock;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -29,7 +31,11 @@ class CaseworkerUploadDocumentTest extends BaseEventTest {
 
     @BeforeEach
     void setUp() {
-        CaseworkerUploadDocument underTest = new CaseworkerUploadDocument(startHandler, submitHandler);
+        CaseworkerUploadDocument underTest = new CaseworkerUploadDocument(
+            startHandler,
+            submitHandler,
+            Clock.systemUTC()
+        );
 
         setEventUnderTest(underTest);
     }
@@ -59,5 +65,4 @@ class CaseworkerUploadDocumentTest extends BaseEventTest {
         verify(submitHandler).submit(eventPayloadCaptor.capture());
         assertThat(eventPayloadCaptor.getValue().caseData()).isEqualTo(caseData);
     }
-
 }

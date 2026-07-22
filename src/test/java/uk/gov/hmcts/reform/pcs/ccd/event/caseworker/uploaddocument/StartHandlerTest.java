@@ -15,6 +15,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.documentupload.CaseworkerDocument;
+import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GeneralApplication;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
@@ -24,6 +25,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.caseworker.CaseworkerDocumentListService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
@@ -65,7 +67,7 @@ class StartHandlerTest {
         when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
         when(pcsCaseEntity.getMainClaim()).thenReturn(mainClaim);
 
-        underTest = new StartHandler(pcsCaseService, partyService);
+        underTest = new StartHandler(pcsCaseService, new CaseworkerDocumentListService(partyService));
     }
 
     @ParameterizedTest
@@ -109,8 +111,10 @@ class StartHandlerTest {
 
         CounterClaimEntity counterClaimEntity1 = createCounterClaimEntity(baseDateTime.minusDays(5), claimant1Party);
         CounterClaimEntity counterClaimEntity2 = createCounterClaimEntity(baseDateTime.plusDays(5), defendant4Party);
-        CounterClaimEntity counterClaimEntity3 = createCounterClaimEntity(null, defendant4Party);
+        CounterClaimEntity counterClaimEntity3 = createCounterClaimEntity(baseDateTime.plusDays(8), defendant4Party);
         counterClaimEntity3.setStatus(CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED);
+        CounterClaimEntity counterClaimEntity4 = createCounterClaimEntity(baseDateTime.plusDays(9), defendant4Party);
+        counterClaimEntity4.setStatus(null);
 
         PCSCase caseData = PCSCase.builder()
             .genApps(List.of(
@@ -122,7 +126,7 @@ class StartHandlerTest {
             .build();
 
         when(pcsCaseEntity.getCounterClaims())
-            .thenReturn(List.of(counterClaimEntity1, counterClaimEntity2, counterClaimEntity3));
+            .thenReturn(List.of(counterClaimEntity1, counterClaimEntity2, counterClaimEntity3, counterClaimEntity4));
 
         // When
         PCSCase result = underTest.start(toEventPayload(caseData));
@@ -134,22 +138,64 @@ class StartHandlerTest {
 
         assertThat(listItems).map(DynamicStringListElement::getLabel)
             .containsExactly(
-                "General Application GA2 - submitted 14 May 2026",
-                "Counterclaim - Defendant 1 Label - submitted 9 May 2026",
-                "General Application GA1 - submitted 4 May 2026",
-                "Counterclaim - Claimant 1 Label - submitted 29 April 2026",
+                "Gen app GA2 - submitted 14 May 2026",
+                "Counter claim CC1 - submitted 12 May 2026",
+                "Counter claim CC1 - submitted 9 May 2026",
+                "Gen app GA1 - submitted 4 May 2026",
+                "Counter claim CC1 - submitted 29 April 2026",
                 "Not related to an application or counterclaim"
         );
 
         assertThat(listItems).map(DynamicStringListElement::getCode)
             .containsExactly(
                 "GEN_APP:%s".formatted(genApp2Id),
+                "COUNTERCLAIM:%s".formatted(counterClaimEntity3.getId()),
                 "COUNTERCLAIM:%s".formatted(counterClaimEntity2.getId()),
                 "GEN_APP:%s".formatted(genApp1Id),
                 "COUNTERCLAIM:%s".formatted(counterClaimEntity1.getId()),
                 "NONE"
         );
 
+    }
+
+    @Test
+    void shouldIncludeSubmittedPendingAndIssuedGenAppsAndExcludeUnsubmittedCounterclaims() {
+        // Given
+        LocalDateTime submittedOn = LocalDateTime.parse("2026-05-04T10:00:00");
+        GeneralApplication pendingGenApp = GeneralApplication.builder()
+            .rank(1)
+            .submittedOn(submittedOn)
+            .state(GenAppState.PENDING_GEN_APP_ISSUED)
+            .build();
+        GeneralApplication genAppWithoutState = GeneralApplication.builder()
+            .rank(2)
+            .submittedOn(submittedOn.plusDays(1))
+            .build();
+
+        CounterClaimEntity counterClaimWithoutSubmittedDate = createCounterClaimEntity(null);
+
+        PCSCase caseData = PCSCase.builder()
+            .genApps(List.of(
+                ListValue.<GeneralApplication>builder().id(UUID.randomUUID().toString()).value(pendingGenApp).build(),
+                ListValue.<GeneralApplication>builder().id(UUID.randomUUID().toString()).value(genAppWithoutState)
+                    .build()
+            ))
+            .legislativeCountry(ENGLAND)
+            .build();
+
+        when(pcsCaseEntity.getCounterClaims()).thenReturn(List.of(counterClaimWithoutSubmittedDate));
+
+        // When
+        PCSCase result = underTest.start(toEventPayload(caseData));
+
+        // Then
+        assertThat(result.getCaseworkerDocument().getShowRelatedSubmissionsList()).isEqualTo(VerticalYesNo.YES);
+        assertThat(result.getCaseworkerDocument().getRelatedSubmission().getListItems())
+            .extracting(DynamicStringListElement::getLabel)
+            .containsExactly(
+                "Gen app GA1 - submitted 4 May 2026",
+                "Not related to an application or counterclaim"
+            );
     }
 
     @Test
@@ -277,6 +323,7 @@ class StartHandlerTest {
     private static GeneralApplication createGenApp(LocalDateTime submittedOn) {
         return GeneralApplication.builder()
             .submittedOn(submittedOn)
+            .state(GenAppState.GEN_APP_ISSUED)
             .build();
     }
 
@@ -288,6 +335,7 @@ class StartHandlerTest {
         return CounterClaimEntity.builder()
             .id(UUID.randomUUID())
             .claimSubmittedDate(submittedDate)
+            .status(CounterClaimState.COUNTER_CLAIM_ISSUED)
             .party(partyEntity)
             .build();
     }

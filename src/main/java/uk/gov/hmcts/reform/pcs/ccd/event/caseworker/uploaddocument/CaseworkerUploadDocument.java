@@ -14,6 +14,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.page.caseworkeruploaddocument.UploadADocument;
 
+import java.time.Clock;
+
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerRoles.CASEWORKER_ROLES;
 
 
@@ -23,12 +25,15 @@ public class CaseworkerUploadDocument implements CCDConfig<PCSCase, State, UserR
 
     private final StartHandler startHandler;
     private final SubmitHandler submitHandler;
+    private final Clock ukClock;
 
     public CaseworkerUploadDocument(@Qualifier("caseworkerUploadDocumentStartHandler") StartHandler startHandler,
-                                    @Qualifier("caseworkerUploadDocumentSubmitHandler") SubmitHandler submitHandler) {
+                                    @Qualifier("caseworkerUploadDocumentSubmitHandler") SubmitHandler submitHandler,
+                                    @Qualifier("ukClock") Clock ukClock) {
 
         this.startHandler = startHandler;
         this.submitHandler = submitHandler;
+        this.ukClock = ukClock;
     }
 
     @Override
@@ -43,7 +48,7 @@ public class CaseworkerUploadDocument implements CCDConfig<PCSCase, State, UserR
             .grant(Permission.CRU, CASEWORKER_ROLES);
 
         new PageBuilder(eventBuilder)
-            .add(new UploadADocument());
+            .add(new UploadADocument(ukClock));
     }
 
 }
