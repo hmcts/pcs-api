@@ -10,6 +10,7 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DefendantAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.GlobalSearchAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.InternalCaseFlagAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.RasValidationAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.SystemUserAccess;
 
 /**
  * All possible PCS case states.
@@ -104,6 +105,11 @@ public enum State {
             GlobalSearchAccess.class},
         hint = "${caseTitleMarkdown}"
     )
-    BREATHING_SPACE
-}
+    BREATHING_SPACE,
 
+    @CCD(
+        label = "Pending Disposal",
+        access = {SystemUserAccess.class}
+    )
+    PendingDisposal
+}

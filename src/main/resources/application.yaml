@@ -107,6 +107,15 @@ spring:
 flyway:
   noop:
     strategy: ${FLYWAY_NOOP_STRATEGY:false}
+ccd:
+  decentralised-runtime:
+    retain-and-dispose:
+      mode: ${CCD_RETAIN_AND_DISPOSE_MODE:off}
+      cron: ${CCD_RETAIN_AND_DISPOSE_CRON:0 0 2 * * *}
+      zone: ${CCD_RETAIN_AND_DISPOSE_ZONE:UTC}
+      system-user:
+        username: ${PCS_IDAM_SYSTEM_USERNAME:pcs-system-user@localhost}
+        password: ${PCS_IDAM_SYSTEM_PASSWORD:password}
 idam:
   api:
     url: ${IDAM_API_URL:http://localhost:5062}

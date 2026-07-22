@@ -451,15 +451,15 @@ dependencies {
   functionalTestImplementation sourceSets.main.runtimeClasspath
   functionalTestImplementation sourceSets.test.runtimeClasspath
 
-  testImplementation group: 'org.junit.platform', name: 'junit-platform-suite-api', version: '6.1.2'
+  testImplementation group: 'org.junit.platform', name: 'junit-platform-suite-api', version: '1.12.2'
 
   contractTestImplementation group: 'au.com.dius.pact.consumer', name: 'junit5', version: pactVersion
   contractTestImplementation group: 'org.hamcrest', name: 'java-hamcrest', version: '2.0.0.0'
-  contractTestImplementation('org.junit.jupiter:junit-jupiter-api:6.1.2')
+  contractTestImplementation('org.junit.jupiter:junit-jupiter-api:5.12.2')
   contractTestImplementation sourceSets.main.runtimeClasspath
   contractTestImplementation sourceSets.test.runtimeClasspath
 
-  testImplementation(platform('org.junit:junit-bom:6.1.2'))
+  testImplementation(platform('org.junit:junit-bom:5.12.2'))
   testImplementation group: 'org.springframework.security', name: 'spring-security-test', version: springSecurityVersion
   testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
   testImplementation(group: 'org.springframework.boot', name: 'spring-boot-starter-test', version: springFrameworkBootVersion) {
@@ -478,6 +478,9 @@ dependencies {
 
   // cftlib does not pull oauth2-client transitively from `implementation`; needed by OAuth2ClientConfig
   cftlibImplementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
+
+  // Keep CFTLib's bundled console launcher aligned with the JUnit platform used by PCS tests.
+  cftlibTestImplementation 'org.junit.platform:junit-platform-console-standalone:1.12.2'
 
   mockitoAgentConfig group: 'org.mockito', name: 'mockito-inline', version: '5.2.0'
   mockitoAgent 'org.mockito:mockito-core'
@@ -568,6 +571,8 @@ tasks.withType(CftlibExec).configureEach {
   environment 'CASE_DOCUMENT_S2S_AUTHORISED_SERVICES', 'ccd_case_document_am_api,ccd_gw,xui_webapp,ccd_data,pcs_frontend,pcs_api'
   environment 'DATA_STORE_S2S_AUTHORISED_SERVICES', 'ccd_data,ccd_gw,pcs_frontend,pcs_api'
   environment 'CCD_S2S-AUTHORISED_SERVICES_CASE_USER_ROLES', 'aac_manage_case_assignment,pcs_api'
+  environment 'CCD_RETAIN_AND_DISPOSE_MODE', 'live'
+  environment 'CCD_RETAIN_AND_DISPOSE_CRON', '-'
 }
 
 cftlibTest {
