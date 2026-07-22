@@ -144,15 +144,15 @@ wa:
     job:
       schedule: "*/1 * * * *"
 
-  wa-task-batch-initiation:
+  wa-initiation-batch:
     job:
       schedule: "*/1 * * * *"
 
-  wa-task-batch-reconfig:
+  wa-reconfiguration-batch:
     job:
       schedule: "*/1 * * * *"
 
-  wa-task-batch-termination:
+  wa-termination-batch:
     job:
       schedule: "*/1 * * * *"
 
