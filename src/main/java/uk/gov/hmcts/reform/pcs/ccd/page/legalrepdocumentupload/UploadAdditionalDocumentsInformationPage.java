@@ -8,7 +8,8 @@ public class UploadAdditionalDocumentsInformationPage implements CcdPageConfigur
 
     private static final String SUPPORTING_EVIDENCE_UPLOAD_CONTENT  = """
                     <p class="govuk-body">
-                        You can upload a document to support an application, a counterclaim, or to show proof that you have done
+                        You can upload a document to support an application, a counterclaim, or to show proof that
+                        you have done
                         something.
                     </p>
 
