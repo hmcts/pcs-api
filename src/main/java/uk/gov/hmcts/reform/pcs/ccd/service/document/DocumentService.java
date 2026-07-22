@@ -153,12 +153,24 @@ public class DocumentService {
         }
 
         return ListValueUtils.unwrapListItems(documents).stream()
-            .map(doc -> DocumentHolder.builder()
-                .document(doc.getDocument())
-                .type(mapAdditionalDocumentTypeToDocumentType(
-                        AdditionalDocumentType.getValueFromLabel(doc.getDocumentType().getValueLabel())))
-                .description(doc.getDescription())
-                .build())
+            .map(doc -> {
+                AdditionalDocumentType additionalDocumentType;
+                if (doc.getDocumentTypeEngland() != null) {
+                    additionalDocumentType = AdditionalDocumentType.valueOf(doc.getDocumentTypeEngland().name());
+                    doc.setDocumentTypeEngland(null);
+                } else if (doc.getDocumentTypeWales() != null) {
+                    additionalDocumentType = AdditionalDocumentType.valueOf(doc.getDocumentTypeWales().name());
+                    doc.setDocumentTypeWales(null);
+                } else {
+                    additionalDocumentType = null;
+                }
+
+                return DocumentHolder.builder()
+                    .document(doc.getDocument())
+                    .type(mapAdditionalDocumentTypeToDocumentType(additionalDocumentType))
+                    .description(doc.getDescription())
+                    .build();
+            })
             .toList();
     }
 
