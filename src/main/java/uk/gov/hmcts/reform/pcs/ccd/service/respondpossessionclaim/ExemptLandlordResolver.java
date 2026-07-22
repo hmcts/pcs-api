@@ -5,15 +5,15 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantRespon
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 
 /**
- * Transitional mapping while {@code landlord_registered} is renamed to {@code exempt_landlord}.
+ * Resolves exempt-landlord answers while {@code landlord_registered} is renamed to {@code exempt_landlord}.
  * Compat phase: accept {@code exemptLandlord} from CCD/FE but persist to {@code landlord_registered}.
  */
-public final class ExemptLandlordCompat {
+public final class ExemptLandlordResolver {
 
-    private ExemptLandlordCompat() {
+    private ExemptLandlordResolver() {
     }
 
-    public static YesNoNotSure resolveFromResponses(DefendantResponses responses) {
+    public static YesNoNotSure fromResponses(DefendantResponses responses) {
         if (responses == null) {
             return null;
         }
@@ -23,7 +23,7 @@ public final class ExemptLandlordCompat {
         return responses.getLandlordRegistered();
     }
 
-    public static YesNoNotSure resolveFromEntity(DefendantResponseEntity entity) {
+    public static YesNoNotSure fromEntity(DefendantResponseEntity entity) {
         if (entity == null) {
             return null;
         }

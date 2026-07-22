@@ -7,16 +7,16 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantRespon
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class ExemptLandlordCompatTest {
+class ExemptLandlordResolverTest {
 
     @Test
     void shouldReturnNullWhenResponsesAreNull() {
-        assertThat(ExemptLandlordCompat.resolveFromResponses(null)).isNull();
+        assertThat(ExemptLandlordResolver.fromResponses(null)).isNull();
     }
 
     @Test
     void shouldReturnNullWhenEntityIsNull() {
-        assertThat(ExemptLandlordCompat.resolveFromEntity(null)).isNull();
+        assertThat(ExemptLandlordResolver.fromEntity(null)).isNull();
     }
 
     @Test
@@ -26,7 +26,7 @@ class ExemptLandlordCompatTest {
             .landlordRegistered(YesNoNotSure.YES)
             .build();
 
-        assertThat(ExemptLandlordCompat.resolveFromResponses(responses)).isEqualTo(YesNoNotSure.NO);
+        assertThat(ExemptLandlordResolver.fromResponses(responses)).isEqualTo(YesNoNotSure.NO);
     }
 
     @Test
@@ -35,7 +35,7 @@ class ExemptLandlordCompatTest {
             .landlordRegistered(YesNoNotSure.NOT_SURE)
             .build();
 
-        assertThat(ExemptLandlordCompat.resolveFromResponses(responses)).isEqualTo(YesNoNotSure.NOT_SURE);
+        assertThat(ExemptLandlordResolver.fromResponses(responses)).isEqualTo(YesNoNotSure.NOT_SURE);
     }
 
     @Test
@@ -44,6 +44,6 @@ class ExemptLandlordCompatTest {
             .landlordRegistered(YesNoNotSure.YES)
             .build();
 
-        assertThat(ExemptLandlordCompat.resolveFromEntity(entity)).isEqualTo(YesNoNotSure.YES);
+        assertThat(ExemptLandlordResolver.fromEntity(entity)).isEqualTo(YesNoNotSure.YES);
     }
 }
