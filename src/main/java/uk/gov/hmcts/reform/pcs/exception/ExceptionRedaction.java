@@ -34,7 +34,7 @@ public class ExceptionRedaction {
     }
 
     public static String safeMessage(ErrorCode code) {
-        return "%s [%s: %s]".formatted(REDACTED, code.internalCode(), code.safeDescription());
+        return "%s [%s]".formatted(REDACTED, code.internalCode());
     }
 
     public static String message(ErrorCode code, RedactionContext redactionContext) {

@@ -214,8 +214,7 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
                             .content(objectMapper.writeValueAsString(request)))
             .andExpect(status().isNotFound())
             .andExpect(jsonPath(
-                "$.message", is("The party this access code was generated for"
-                                    + " is not a defendant in this case")
+                "$.message", is("REDACTED [PARTY_ACCESS_CODE]")
             ));
     }
 
