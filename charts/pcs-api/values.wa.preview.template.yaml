@@ -27,6 +27,14 @@ servicebus:
         subscriptionNeeded: yes
         requiresSession: true
 
+ccd:
+  servicebus:
+    destination: ${SERVICE_NAME}-asb-ccd-case-events
+    scheduler-enabled: true
+    batch-size: 50
+    published-retention-days: 7
+    schedule: "*/10 * * * *"
+
 postgresql:
   enabled: true
   flexibleserver: pcs-preview
@@ -65,6 +73,7 @@ wa:
         AZURE_SERVICE_BUS_TOPIC_NAME: ${SERVICE_NAME}-asb-ccd-case-events
         AZURE_SERVICE_BUS_SUBSCRIPTION_NAME: ${SERVICE_NAME}-asb-ccd-case-events
         AZURE_SERVICE_BUS_CCD_CASE_EVENTS_SUBSCRIPTION_NAME: ${SERVICE_NAME}-asb-ccd-case-events
+        ROLE_ASSIGNMENT_URL: http://am-role-assignment-service-aat.service.core-compute-aat.internal
       keyVaults:
         wa:
           secrets:
@@ -81,8 +90,9 @@ wa:
     java:
       ingressHost: wa-task-management-api-${SERVICE_FQDN}
       environment:
-        ALLOWED_CASE_TYPES: pcs-${CHANGE_ID}
+        ALLOWED_CASE_TYPES: pcs
         ALLOWED_JURISDICTIONS: pcs
+        ROLE_ASSIGNMENT_URL: http://am-role-assignment-service-aat.service.core-compute-aat.internal
       keyVaults:
         wa:
           secrets:

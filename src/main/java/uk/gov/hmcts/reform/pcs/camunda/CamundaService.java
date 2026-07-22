@@ -5,6 +5,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.pcs.ccd.CaseType;
+import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.time.Clock;
 import java.time.LocalDateTime;
@@ -20,6 +22,7 @@ public class CamundaService {
 
     private final CamundaApi camundaApi;
     private final AuthTokenGenerator authTokenGenerator;
+    private final FeatureToggleService featureToggleService;
 
     private static final String CREATE = "createTaskMessage";
     private static final String UNCONFIGURED = "unconfigured";
@@ -30,6 +33,11 @@ public class CamundaService {
         Long caseId,
         TaskType taskType
     ) {
+        if (!featureToggleService.isEnabled(FeatureFlag.CASEWORKER_WA)) {
+            log.info("Skipped creating task for {}", caseId);
+            return;
+        }
+
         log.info("Creating task for {}", caseId);
         Map<String, DmnValue<?>> processVariables = new ConcurrentHashMap<>();
 

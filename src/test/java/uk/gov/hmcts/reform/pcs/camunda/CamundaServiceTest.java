@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.pcs.camunda;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -8,6 +7,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
+import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.time.Clock;
 import java.time.LocalDate;
@@ -19,6 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -34,24 +36,25 @@ public class CamundaServiceTest {
     @Mock
     private Clock utcClock;
 
+    @Mock
+    private FeatureToggleService featureToggleService;
+
     @InjectMocks
     private CamundaService camundaService;
 
     private static final LocalDateTime TEST_UTC_DATE_TIME = LocalDate.of(2025, 8, 27)
         .atTime(12, 51, 19);
 
-    @BeforeEach
-    void setUp() {
-        when(authTokenGenerator.generate()).thenReturn("authToken");
-        when(utcClock.instant()).thenReturn(TEST_UTC_DATE_TIME.toInstant(ZoneOffset.UTC));
-        when(utcClock.getZone()).thenReturn(ZoneOffset.UTC);
-    }
-
     @Test
     void shouldSendCreateTaskTestToCamunda() {
         // Given
-        Long caseId = 1234L;
-        TaskType taskType = TaskType.NEW_CLAIM_CREATE_NEW_HEARING;
+        final Long caseId = 1234L;
+        final TaskType taskType = TaskType.NEW_CLAIM_CREATE_NEW_HEARING;
+
+        when(authTokenGenerator.generate()).thenReturn("authToken");
+        when(utcClock.instant()).thenReturn(TEST_UTC_DATE_TIME.toInstant(ZoneOffset.UTC));
+        when(utcClock.getZone()).thenReturn(ZoneOffset.UTC);
+        when(featureToggleService.isEnabled(FeatureFlag.CASEWORKER_WA)).thenReturn(true);
 
         // When
         camundaService.createTask(caseId, taskType);
@@ -91,12 +94,30 @@ public class CamundaServiceTest {
     }
 
     @Test
+    void shouldSkipCreatingTaskIfWaIsNotEnabled() {
+        // Given
+        final Long caseId = 1234L;
+        final TaskType taskType = TaskType.NEW_CLAIM_CREATE_NEW_HEARING;
+
+        when(featureToggleService.isEnabled(FeatureFlag.CASEWORKER_WA)).thenReturn(false);
+
+        // When
+        camundaService.createTask(caseId, taskType);
+
+        // Then
+        verify(camundaApi, never()).sendMessage(any(), any());
+    }
+
+    @Test
     void shouldHandleFailedRequestToCamunda() {
         // Given
-        Long caseId = 1234L;
-        TaskType taskType = TaskType.NEW_CLAIM_CREATE_NEW_HEARING;
+        final Long caseId = 1234L;
+        final TaskType taskType = TaskType.NEW_CLAIM_CREATE_NEW_HEARING;
 
         when(authTokenGenerator.generate()).thenReturn("authToken");
+        when(utcClock.instant()).thenReturn(TEST_UTC_DATE_TIME.toInstant(ZoneOffset.UTC));
+        when(utcClock.getZone()).thenReturn(ZoneOffset.UTC);
+        when(featureToggleService.isEnabled(FeatureFlag.CASEWORKER_WA)).thenReturn(true);
         doThrow(new RuntimeException()).when(camundaApi).sendMessage(any(), any());
 
         // When

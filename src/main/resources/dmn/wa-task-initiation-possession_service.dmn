@@ -53,7 +53,7 @@ else
       <output id="OutputClause_09b12hk" label="Role Category" name="roleCategory" typeRef="string" />
       <rule id="DecisionRule_0in26ix">
         <inputEntry id="UnaryTests_1mtpy0d">
-          <text>"Notify claim"</text>
+          <text>"Notify claim - claimant is notified of case issued"</text>
         </inputEntry>
         <inputEntry id="UnaryTests_0pzaled">
           <text>"CASE_ISSUED"</text>
