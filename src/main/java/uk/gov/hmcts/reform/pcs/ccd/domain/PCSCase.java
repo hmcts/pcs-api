@@ -131,7 +131,7 @@ public class PCSCase {
 
     @CCD(
         label = "Property address",
-        access = {DefendantAccess.class, WAAccess.class}
+        access = {DefendantAccess.class}
     )
     @External
     private AddressUK propertyAddress;
