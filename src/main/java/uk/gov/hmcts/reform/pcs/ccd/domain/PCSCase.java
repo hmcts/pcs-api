@@ -72,6 +72,7 @@ import java.util.Set;
 
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.Collection;
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.DynamicRadioList;
+import static uk.gov.hmcts.ccd.sdk.type.FieldType.FixedList;
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.MultiSelectList;
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
 
@@ -739,4 +740,10 @@ public class PCSCase {
 
     @CCD
     private String dateIssuedString;
+
+    @CCD(label = "Which state are you moving the case to?",
+        typeOverride = FixedList,
+        typeParameterOverride = "CaseStateOption"
+    )
+    private CaseStateOption targetState;
 }
