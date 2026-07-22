@@ -7,6 +7,7 @@ import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
 import org.springframework.security.oauth2.core.OAuth2AuthorizationException;
 import org.springframework.security.oauth2.core.endpoint.OAuth2ParameterNames;
 import uk.gov.hmcts.reform.pcs.exception.IdamException;
+import uk.gov.hmcts.reform.pcs.exception.RedactionContext;
 
 import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.AUTH_TOKEN_EMPTY;
 import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.AUTH_TOKEN_RETRIEVAL_FAIL;
@@ -59,9 +60,14 @@ public class IdamTokenProvider {
             return BEARER_PREFIX + authorizedClient.getAccessToken().getTokenValue();
 
         } catch (OAuth2AuthorizationException ex) {
-            log.error("OAuth2 authorization error retrieving {} token. Error: {}, Description: {}",
-                clientRegistrationId, ex.getError().getErrorCode(), ex.getError().getDescription(), ex);
-            throw new IdamException(AUTH_TOKEN_RETRIEVAL_FAIL, ex);
+            log.error("OAuth2 authorization error retrieving {}", clientRegistrationId, ex);
+            throw new IdamException(AUTH_TOKEN_RETRIEVAL_FAIL,
+                                    RedactionContext.builder()
+                                        .value("client registration id", clientRegistrationId)
+                                        .value("error code", ex.getError().getErrorCode())
+                                        .value("description", ex.getError().getDescription())
+                                        .build(),
+                                    ex);
         }
     }
 }

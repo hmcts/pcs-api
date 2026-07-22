@@ -10,4 +10,8 @@ public class IdamException extends RedactedRuntimeException {
         super(errorCode, cause);
     }
 
+    public IdamException(ErrorCode errorCode, RedactionContext redactionContext, Throwable cause) {
+        super(errorCode, redactionContext, cause);
+    }
+
 }
