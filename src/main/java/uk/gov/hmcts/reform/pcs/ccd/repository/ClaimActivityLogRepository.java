@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Repository
-public interface ClaimActivityLogRepository extends JpaRepository<ClaimActivityLogEntity, UUID> {
+public interface ClaimActivityLogRepository extends JpaRepository<ClaimActivityLogEntity, Integer> {
 
     List<ClaimActivityLogEntity> findAllByPcsCase_Id(UUID caseId);
 
