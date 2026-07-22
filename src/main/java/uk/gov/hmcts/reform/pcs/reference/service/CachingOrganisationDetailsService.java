@@ -16,10 +16,10 @@ import uk.gov.hmcts.reform.pcs.reference.dto.NameAndAddress;
 import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
 import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
 
+import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.function.Supplier;
 
 @Component
 @Slf4j
@@ -27,10 +27,10 @@ public class CachingOrganisationDetailsService {
 
     private final CachedOrganisationResponseRepository cachedOrganisationResponseRepository;
     private final int ttlInMinutes;
-    private final Supplier<LocalDateTime> localDateTimeSupplier;
     private final RdProfessionalApi rdProfessionalApi;
     private final AuthTokenGenerator authTokenGenerator;
     private final IdamTokenProvider prdAdminTokenProvider;
+    private final Clock utcClock;
 
     private static final int RD_PROFESSIONAL_NULL_RESPONSE_TLL_OFFSET = 50;
 
@@ -40,24 +40,14 @@ public class CachingOrganisationDetailsService {
                                              RdProfessionalApi rdProfessionalApi,
                                              AuthTokenGenerator authTokenGenerator,
                                              @Qualifier("prdAdminTokenProvider")
-                                                 IdamTokenProvider prdAdminTokenProvider) {
-        this(cachedOrganisationResponseRepository, ttlInMinutes, LocalDateTime::now,
-             rdProfessionalApi, authTokenGenerator, prdAdminTokenProvider);
-    }
-
-    public CachingOrganisationDetailsService(CachedOrganisationResponseRepository cachedOrganisationResponseRepository,
-                                             @Value("${cache.organisationDetails.ttlInMinutes}") int ttlInMinutes,
-                                             Supplier<LocalDateTime> localDateTimeSupplier,
-                                             RdProfessionalApi rdProfessionalApi,
-                                             AuthTokenGenerator authTokenGenerator,
-                                             @Qualifier("prdAdminTokenProvider")
-                                             IdamTokenProvider prdAdminTokenProvider) {
+                                                 IdamTokenProvider prdAdminTokenProvider,
+                                             @Qualifier("utcClock") Clock utcClock) {
         this.cachedOrganisationResponseRepository = cachedOrganisationResponseRepository;
         this.ttlInMinutes = ttlInMinutes;
-        this.localDateTimeSupplier = localDateTimeSupplier;
         this.rdProfessionalApi = rdProfessionalApi;
         this.authTokenGenerator = authTokenGenerator;
         this.prdAdminTokenProvider = prdAdminTokenProvider;
+        this.utcClock = utcClock;
     }
 
     public String getOrganisationIdentifier(String userId) {
@@ -152,7 +142,7 @@ public class CachingOrganisationDetailsService {
         CachedOrganisationResponseEntity.CachedOrganisationResponseEntityBuilder builder =
             CachedOrganisationResponseEntity.builder()
                 .idamId(userIdam)
-                .lastModifiedDate(localDateTimeSupplier.get());
+                .lastModifiedDate(LocalDateTime.now(utcClock));
 
         builder.organisationId(response.getOrganisationIdentifier()).organisationName(response.getName());
 
@@ -188,15 +178,15 @@ public class CachingOrganisationDetailsService {
             log.warn("Organisation address is null or empty for user ID: {}", userId);
             clearCachedAddressFields(existingCachedResponse);
         }
-        existingCachedResponse.setLastModifiedDate(localDateTimeSupplier.get());
+        existingCachedResponse.setLastModifiedDate(LocalDateTime.now(utcClock));
     }
 
     private boolean isDataRequiringResync(LocalDateTime lastModifiedDate) {
-        return localDateTimeSupplier.get().isAfter(lastModifiedDate.plusMinutes(ttlInMinutes));
+        return LocalDateTime.now(utcClock).isAfter(lastModifiedDate.plusMinutes(ttlInMinutes));
     }
 
     private void setRdProfessionalNullResponseTllOffset(CachedOrganisationResponseEntity existingCachedResponse) {
-        existingCachedResponse.setLastModifiedDate(localDateTimeSupplier.get()
+        existingCachedResponse.setLastModifiedDate(LocalDateTime.now(utcClock)
                                                        .minusMinutes(RD_PROFESSIONAL_NULL_RESPONSE_TLL_OFFSET));
     }
 
@@ -214,7 +204,7 @@ public class CachingOrganisationDetailsService {
         CachedOrganisationResponseEntity.CachedOrganisationResponseEntityBuilder builder =
             CachedOrganisationResponseEntity.builder()
                 .idamId(userIdam)
-                .lastModifiedDate(localDateTimeSupplier.get().minusMinutes(RD_PROFESSIONAL_NULL_RESPONSE_TLL_OFFSET));
+                .lastModifiedDate(LocalDateTime.now(utcClock).minusMinutes(RD_PROFESSIONAL_NULL_RESPONSE_TLL_OFFSET));
 
         return builder.build();
     }
