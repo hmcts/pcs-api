@@ -5,6 +5,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.ccd.sdk.api.HasLabel;
+import uk.gov.hmcts.ccd.sdk.type.DynamicList;
+import uk.gov.hmcts.ccd.sdk.type.DynamicListElement;
+import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocument;
+import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocumentTypeEngland;
+import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocumentTypeWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseFlagEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
@@ -20,8 +27,10 @@ import uk.gov.hmcts.reform.pcs.location.service.LocationReferenceService;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.postcodecourt.service.PostCodeCourtService;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 
 @Service
 @Slf4j
@@ -56,6 +65,7 @@ public class PcsCaseService {
 
     public void createMainClaimOnCase(long caseReference, PCSCase pcsCase, String organisationIdForCurrentUser) {
         PcsCaseEntity pcsCaseEntity = loadCase(caseReference);
+        copyDocumentType(pcsCase);
         ClaimEntity claimEntity = claimService.createMainClaimEntity(pcsCase);
         List<DocumentEntity> documentEntities = documentService.createAllDocuments(pcsCase);
         documentEntities.forEach(doc -> doc.setClaim(claimEntity));
@@ -67,6 +77,50 @@ public class PcsCaseService {
         pcsCaseEntity.setRegionId(pcsCase.getRegionId());
         pcsCaseEntity.setBaseLocation(pcsCase.getCaseManagementLocationNumber());
         pcsCaseEntity.setCaseManagementLocation(pcsCase.getCaseManagementLocationNumber());
+    }
+
+    public void copyDocumentType(PCSCase caseData) {
+        if (caseData.getAdditionalDocuments() == null) {
+            return;
+        }
+
+        for (ListValue<AdditionalDocument> additionalDocumentListValue : caseData.getAdditionalDocuments()) {
+            AdditionalDocument additionalDocument = additionalDocumentListValue.getValue();
+            if (additionalDocument == null) {
+                continue;
+            }
+
+            if (caseData.getLegislativeCountry() == LegislativeCountry.WALES) {
+                AdditionalDocumentTypeWales walesType = additionalDocument.getDocumentTypeWales();
+                if (walesType != null) {
+                    additionalDocument.setDocumentType(
+                        createDynamicListForDocumentType(walesType.getLabel(), AdditionalDocumentTypeWales.values())
+                    );
+                    additionalDocument.setDocumentTypeWales(null);
+                }
+            } else {
+                AdditionalDocumentTypeEngland englandType = additionalDocument.getDocumentTypeEngland();
+                if (englandType != null) {
+                    additionalDocument.setDocumentType(
+                        createDynamicListForDocumentType(englandType.getLabel(), AdditionalDocumentTypeEngland.values())
+                    );
+                    additionalDocument.setDocumentTypeEngland(null);
+                }
+            }
+        }
+    }
+
+    private DynamicList createDynamicListForDocumentType(String label, HasLabel[] documentTypes) {
+        List<DynamicListElement> items = Arrays.stream(documentTypes)
+            .map(documentType -> new DynamicListElement(UUID.randomUUID(), documentType.getLabel()))
+            .toList();
+
+        DynamicListElement selectedItem = items.stream()
+            .filter(item -> label.equals(item.getLabel()))
+            .findFirst()
+            .orElseThrow(() -> new IllegalArgumentException("No document type found for label: " + label));
+
+        return new DynamicList(selectedItem, items);
     }
 
     public void patchCaseFlags(long caseReference, PCSCase pcsCase) {
