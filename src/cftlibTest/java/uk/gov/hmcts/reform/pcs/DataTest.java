@@ -122,7 +122,7 @@ public class DataTest extends CftlibTest {
     // address table validation
 
     @Test
-    @DisplayName("validate public.address - schema and completeness rules")
+    @DisplayName("validate public.address - schema, completeness and data value rules")
     void validateAddressTable() {
         List<String> expectedColumns = List.of(
             "id", "version", "address_line1", "address_line2", "address_line3",
@@ -142,17 +142,42 @@ public class DataTest extends CftlibTest {
         int nullPostcode = runCountQuery(
             "SELECT COUNT(*) FROM public.address WHERE postcode IS NULL");
 
+        int correctPostTown = runCountQuery(
+            "SELECT COUNT(*) FROM public.address WHERE post_town != 'London'");
+
+        int correctCounty = runCountQuery(
+            "SELECT COUNT(*) FROM public.address WHERE county != 'Greater London'");
+
+        int correctPostcode = runCountQuery(
+            "SELECT COUNT(*) FROM public.address WHERE postcode != 'NW1 6XE'");
+
+        int correctAddress1 = runCountQuery(
+            "SELECT COUNT(*) FROM public.address WHERE address_line1 != '123 Baker Street'");
+
+        int correctAddress2 = runCountQuery(
+            "SELECT COUNT(*) FROM public.address WHERE address_line2 != 'Marylebone'");
+
         String msgCount = "Expected address to have a row, found " + totalRows;
         String msgDupId = "Found duplicate 'id' values in address";
         String msgLine1 = "Found NULL values in 'address_line1' — expected 0";
         String msgPostcode = "Found NULL values in 'postcode' — expected 0";
+        String msgPostTown = "Incorrect 'post_town' value";
+        String msgCounty = "Incorrect 'county' value";
+        String msgPostcodeValue = "Incorrect 'postcode' value";
+        String msgAddress1 = "Incorrect 'address_line1' value";
+        String msgAddress2 = "Incorrect 'address_line2' value";
 
         org.junit.jupiter.api.Assertions.assertAll("address validations",
                                                    () -> assertHasColumns("public.address", expectedColumns),
                                                    () -> assertTrue(totalRows > 0, msgCount),
                                                    () -> assertEquals(0, duplicateIds, msgDupId),
                                                    () -> assertEquals(0, nullLine1, msgLine1),
-                                                   () -> assertEquals(0, nullPostcode, msgPostcode)
+                                                   () -> assertEquals(0, nullPostcode, msgPostcode),
+                                                   () -> assertEquals(0, correctPostTown, msgPostTown),
+                                                   () -> assertEquals(0, correctCounty, msgCounty),
+                                                   () -> assertEquals(0, correctPostcode, msgPostcodeValue),
+                                                   () -> assertEquals(0, correctAddress1, msgAddress1),
+                                                   () -> assertEquals(0, correctAddress2, msgAddress2)
         );
     }
 
