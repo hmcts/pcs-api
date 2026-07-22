@@ -5,6 +5,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.fees.client.model.FeeLookupResponseDto;
+import uk.gov.hmcts.reform.pcs.exception.ErrorCode;
+import uk.gov.hmcts.reform.pcs.exception.RedactionContext;
 import uk.gov.hmcts.reform.pcs.feesandpay.client.PCSFeesClient;
 import uk.gov.hmcts.reform.pcs.feesandpay.config.FeesConfiguration;
 import uk.gov.hmcts.reform.pcs.feesandpay.exception.FeeNotFoundException;
@@ -42,7 +44,8 @@ public class FeeService {
             return FeeDetails.fromFeeLookupResponse(feeLookupResponse);
         } catch (FeignException e) {
             log.error("Failed to retrieve fee for type: {}", feeType, e);
-            throw new FeeNotFoundException("Unable to retrieve fee: " + feeType, e);
+            throw new FeeNotFoundException(ErrorCode.UNABLE_TO_RETRIEVE_FEE,
+                                           RedactionContext.of("Unable to retrieve fee", feeType), e);
         }
     }
 

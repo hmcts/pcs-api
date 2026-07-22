@@ -47,6 +47,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.HouseholdCircu
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.PartyAttributeAssertationService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.PaymentAgreementService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.ReasonableAdjustmentsService;
+import uk.gov.hmcts.reform.pcs.exception.ErrorCode;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
@@ -69,6 +70,7 @@ import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.PARTY_NOT_FOUND;
 
 @ExtendWith(MockitoExtension.class)
 class DefendantResponseServiceTest {
@@ -85,7 +87,7 @@ class DefendantResponseServiceTest {
     private ClaimRepository claimRepository;
     @Mock
     private DefendantResponseRepository defendantResponseRepository;
-    @Mock 
+    @Mock
     private DefendantResponseReadMapper defendantResponseReadMapper;
     @Mock
     private SecurityContextService securityContextService;
@@ -446,7 +448,7 @@ class DefendantResponseServiceTest {
     void shouldPropagateExceptionWhenPartyNotFound() {
         // Given
         when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
-        PartyNotFoundException expectedException = new PartyNotFoundException("test exception");
+        PartyNotFoundException expectedException = new PartyNotFoundException(PARTY_NOT_FOUND);
         when(partyService.getPartyEntityByIdamId(USER_ID, CASE_REFERENCE)).thenThrow(expectedException);
 
         DefendantResponses responses = DefendantResponses.builder()

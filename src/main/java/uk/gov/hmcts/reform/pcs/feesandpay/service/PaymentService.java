@@ -34,6 +34,8 @@ import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
 import java.io.IOException;
 import java.util.Optional;
 
+import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.FEE_TASK_DATA_ISSUE;
+
 @Slf4j
 @Service
 public class PaymentService {
@@ -155,7 +157,7 @@ public class PaymentService {
         try {
             return objectMapper.writeValueAsString(feesAndPayTaskData);
         } catch (IOException e) {
-            throw new PaymentException("Unable to write to json the FeesAndPayTaskData", e);
+            throw new PaymentException(FEE_TASK_DATA_ISSUE, e);
         }
     }
 

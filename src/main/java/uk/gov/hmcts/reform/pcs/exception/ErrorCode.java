@@ -47,6 +47,24 @@ public enum ErrorCode {
     FAILED_SAVE_CASE("FAILED_SAVE", "Failed to save Case Notification."),
     NOTIFICATION_ERROR("NOTIFICATION_ERROR", "Null notification ID from email service"),
     TEMP_EMAIL_SEND("EMAIL_SEND", "Email temporarily failed to send."),
+    FEE_TASK_DATA_ISSUE("FEE_TASK_DATA_ISSUE",
+                        "Unable to write to json the FeesAndPayTaskData"),
+    COUNTER_CLAIM_CALLBACK("COUNTER_CLAIM_CALLBACK",
+                           "Counterclaim payment callback missing relatedEntityId in task data"),
+    COUNTER_CLAIM_TASK_DATA("COUNTER_CLAIM_TASK_DATA", "Unable to process task data"),
+    CALLBACK_TASK_DATA("CALL_BACK_TASK_DATA", "Unable to process task data"),
+    FEE_NOT_FOUND("FEE_NOT_FOUND", "Fee not found"),
+    UNABLE_TO_RETRIEVE_FEE("UNABLE_TO_RETRIEVE_FEE", "Unable to retrieve fee"),
+    UNEXPECTED_ELIGIBILITY("UNEXPECTED_ELIGIBILITY", "Unexpected eligibility status"),
+    LEGISLATIVE_COUNTRY_REQUIREMENT("LEGISLATIVE_COUNTRY_REQUIREMENT",
+                                    "Expected at least 2 legislative countries"),
+    MIGRATION_NOT_YET_APPLIED("MIGRATION_NOT_YET_APPLIED",
+                              "Found migration not yet applied"),
+    PARTY_BY_ENTITY_AND_CASE("PARTY_BY_ENTITY_AND_CASE", "No party found"),
+    PARTY_BY_IDAM_AND_CASE("PARTY_BY_IDAM_AND_CASE", "No party found"),
+    PARTY_TYPE("PARTY_TYPE", "No Party of type"),
+    PARTY_NOT_FOUND("PARTY_NOT_FOUND", "Party not found"),
+
 
 
     TEST_CASE_SUPPORT("", "");

@@ -1,7 +1,5 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim;
 
-import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
-
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -12,10 +10,14 @@ import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.exception.RedactionContext;
 import uk.gov.hmcts.reform.pcs.postcodecourt.exception.EligibilityCheckException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityResult;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.postcodecourt.service.EligibilityService;
+
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
+import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.UNEXPECTED_ELIGIBILITY;
 
 /**
  * CCD page configuration for cross-border postcode selection.
@@ -118,12 +120,12 @@ public class CrossBorderPostcodeSelection implements CcdPageConfiguration {
             default -> {
                 //TODO: HDPI-1838 will handle multiple matches
                 throw new EligibilityCheckException(
-                    String.format(
+                    UNEXPECTED_ELIGIBILITY,
+                    RedactionContext.of("", String.format(
                         "Unexpected eligibility status: %s for postcode %s and country %s",
                         eligibilityResult.getStatus(),
                         postcode,
-                        selectedCountry
-                    )
+                        selectedCountry))
                 );
             }
         }

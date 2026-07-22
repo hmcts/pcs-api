@@ -18,6 +18,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.config.NotificationTemplateConfiguration;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
+import uk.gov.hmcts.reform.pcs.exception.RedactionContext;
 import uk.gov.hmcts.reform.pcs.notify.entities.CaseNotification;
 import uk.gov.hmcts.reform.pcs.notify.exception.NotificationException;
 import uk.gov.hmcts.reform.pcs.notify.model.EmailNotificationRequest;
@@ -37,6 +38,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.FAILED_SAVE_CASE;
+import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.PARTY_NOT_FOUND;
 
 @Service
 @Slf4j
@@ -443,7 +445,8 @@ public class NotificationService {
         PartyEntity claimant = partyService.getPrimaryClaimantPartyEntity(claim.getPcsCase());
 
         if (claimant == null) {
-            throw new PartyNotFoundException("No claimant party found for claim: " + claim.getId());
+            throw new PartyNotFoundException(PARTY_NOT_FOUND,
+                                             RedactionContext.of("No claimant party found for claim", claim.getId()));
         }
 
         return new NotificationRecipient(
@@ -459,7 +462,8 @@ public class NotificationService {
         PartyEntity defendant = response.getParty();
 
         if (defendant == null) {
-            throw new PartyNotFoundException("No defendant party found for response: " + response.getId());
+            throw new PartyNotFoundException(PARTY_NOT_FOUND,
+                RedactionContext.of("No defendant party found for response", response.getId()));
         }
 
         return new NotificationRecipient(

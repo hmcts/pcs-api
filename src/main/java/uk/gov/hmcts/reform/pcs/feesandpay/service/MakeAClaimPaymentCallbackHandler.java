@@ -8,6 +8,8 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.service.CcdPaymentStateUpdateService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
+import uk.gov.hmcts.reform.pcs.exception.ErrorCode;
+import uk.gov.hmcts.reform.pcs.exception.RedactionContext;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatusCallback;
@@ -42,7 +44,8 @@ public class MakeAClaimPaymentCallbackHandler implements PaymentCallbackStrategy
             log.info("Reading taskdata for {} to FeesAndPayTaskData: {}", feePaymentEntity.getId(), taskData);
             return objectMapper.readValue(taskData, FeesAndPayTaskData.class);
         } catch (IOException e) {
-            throw new PaymentCallbackException("Unable to process: " + taskData, e);
+            throw new PaymentCallbackException(ErrorCode.CALLBACK_TASK_DATA,
+                                               RedactionContext.of("Unable to process", taskData), e);
         }
     }
 

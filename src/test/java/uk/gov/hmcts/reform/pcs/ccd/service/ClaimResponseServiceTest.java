@@ -17,6 +17,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.ContactPreferencesEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.ClaimResponseService;
+import uk.gov.hmcts.reform.pcs.exception.ErrorCode;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
@@ -26,6 +27,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.PARTY_NOT_FOUND;
 
 @ExtendWith(MockitoExtension.class)
 class ClaimResponseServiceTest {
@@ -194,7 +196,7 @@ class ClaimResponseServiceTest {
 
         when(securityContextService.getCurrentUserId()).thenReturn(TEST_IDAM_ID);
 
-        PartyNotFoundException expectedException = new PartyNotFoundException("test exception");
+        PartyNotFoundException expectedException = new PartyNotFoundException(PARTY_NOT_FOUND);
         when(partyService.getPartyEntityByIdamId(TEST_IDAM_ID, TEST_CASE_REFERENCE))
             .thenThrow(expectedException);
 

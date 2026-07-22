@@ -7,6 +7,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.exception.ErrorCode;
+import uk.gov.hmcts.reform.pcs.exception.RedactionContext;
 import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -161,7 +163,8 @@ public class LegalRepresentativePartyLinkService {
             .findFirst()
             .orElseThrow(() -> {
                 log.error("Unable to find Party [{}]", partyId);
-                return new PartyNotFoundException("Unable to find Party with Id [" + partyId + "]");
+                return new PartyNotFoundException(ErrorCode.PARTY_NOT_FOUND,
+                                                  RedactionContext.of("Unable to find Party with Id", partyId));
             });
     }
 
