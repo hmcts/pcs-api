@@ -197,7 +197,6 @@ def setAatEnvVars() {
 
 def setProdEnvVars() {
   env.SHUTTER_SERVICE = true
-  env.MANAGE_CASE_BASE_URL = "https://manage-case.platform.hmcts.net"
   env.ENVIRONMENT= "prod"
   env.ENABLE_TESTING_SUPPORT = "false"
   env.DEFINITION_STORE_URL_BASE = "http://ccd-definition-store-api-prod.service.core-compute-prod.internal"
