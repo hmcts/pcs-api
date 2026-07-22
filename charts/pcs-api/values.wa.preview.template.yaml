@@ -27,6 +27,14 @@ servicebus:
         subscriptionNeeded: yes
         requiresSession: true
 
+ccd:
+  servicebus:
+    destination: ${SERVICE_NAME}-asb-ccd-case-events
+    scheduler-enabled: true
+    batch-size: 50
+    published-retention-days: 7
+    schedule: "*/10 * * * *"
+
 postgresql:
   enabled: true
   flexibleserver: pcs-preview
