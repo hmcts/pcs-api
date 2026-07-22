@@ -60,6 +60,12 @@ public class EnterGenAppRequest {
     )
     private String hwfReference;
 
+    @CCD(label = "Do all parties consent to this application?")
+    private VerticalYesNo allPartiesAgree;
+
+    @CCD(label = "Has the applicant asked for this application to be made without notice?")
+    private VerticalYesNo withoutNotice;
+
     @CCD(
         label = "Add document",
         hint = "Upload a document to the system",
