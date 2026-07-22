@@ -163,6 +163,30 @@ class DocumentSelectionServiceTest {
     }
 
     @Test
+    void shouldReturnNoErrorsWhenSelectionDetailsAreMissing() {
+        List<String> errors = underTest.validateAndStoreSelection(PCSCase.builder().build(), null);
+
+        assertThat(errors).isEmpty();
+    }
+
+    @Test
+    void shouldReturnNoErrorsWhenSelectedFolderIsMissing() {
+        DocumentAmendDetails details = DocumentAmendDetails.builder()
+            .selectedDocumentId(UUID.randomUUID().toString())
+            .selectedDocumentFileName("old.pdf")
+            .build();
+
+        List<String> errors = underTest.validateAndStoreSelection(
+            PCSCase.builder().documentAmendDetails(details).build(),
+            details
+        );
+
+        assertThat(errors).isEmpty();
+        assertThat(details.getSelectedDocumentId()).isNotNull();
+        assertThat(details.getSelectedDocumentFileName()).isEqualTo("old.pdf");
+    }
+
+    @Test
     void shouldClearSelectedDocumentWhenSelectedDynamicListValueIsBlank() {
         UUID documentId = UUID.randomUUID();
         PCSCase caseData = PCSCase.builder()
@@ -186,6 +210,52 @@ class DocumentSelectionServiceTest {
         assertThat(caseData.getDocumentAmendDetails().getSelectedFolderId()).isEqualTo(EVIDENCE.getId());
         assertThat(caseData.getDocumentAmendDetails().getSelectedFolderLabel()).isEqualTo(EVIDENCE.getLabel());
         assertSelectedDocumentSelectionCleared(caseData.getDocumentAmendDetails());
+    }
+
+    @Test
+    void shouldResolveSelectedDocumentByCodeWhenOnlyCodeIsPostedBack() {
+        UUID documentId = UUID.randomUUID();
+        PCSCase caseData = PCSCase.builder()
+            .documentAmendDetails(DocumentAmendDetails.builder()
+                .selectedFolder(EVIDENCE)
+                .build())
+            .evidenceDocuments(DynamicList.builder()
+                .value(DynamicListElement.builder().code(documentId).build())
+                .listItems(List.of(DynamicListElement.builder()
+                    .code(documentId)
+                    .label("evidence.pdf")
+                    .build()))
+                .build())
+            .build();
+
+        List<String> errors = underTest.validateAndStoreSelection(caseData, caseData.getDocumentAmendDetails());
+
+        assertThat(errors).isEmpty();
+        assertThat(caseData.getDocumentAmendDetails().getSelectedDocumentId()).isEqualTo(documentId.toString());
+        assertThat(caseData.getDocumentAmendDetails().getSelectedDocumentFileName()).isEqualTo("evidence.pdf");
+    }
+
+    @Test
+    void shouldResolveSelectedDocumentByLabelWhenOnlyLabelIsPostedBack() {
+        UUID documentId = UUID.randomUUID();
+        PCSCase caseData = PCSCase.builder()
+            .documentAmendDetails(DocumentAmendDetails.builder()
+                .selectedFolder(EVIDENCE)
+                .build())
+            .evidenceDocuments(DynamicList.builder()
+                .value(DynamicListElement.builder().label("evidence.pdf").build())
+                .listItems(List.of(DynamicListElement.builder()
+                    .code(documentId)
+                    .label("evidence.pdf")
+                    .build()))
+                .build())
+            .build();
+
+        List<String> errors = underTest.validateAndStoreSelection(caseData, caseData.getDocumentAmendDetails());
+
+        assertThat(errors).isEmpty();
+        assertThat(caseData.getDocumentAmendDetails().getSelectedDocumentId()).isEqualTo(documentId.toString());
+        assertThat(caseData.getDocumentAmendDetails().getSelectedDocumentFileName()).isEqualTo("evidence.pdf");
     }
 
     @Test

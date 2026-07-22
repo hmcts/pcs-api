@@ -31,6 +31,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.W
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.WalesDocuments;
+import uk.gov.hmcts.reform.pcs.ccd.domain.documentupload.CaseworkerDocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -1323,6 +1324,37 @@ class DocumentServiceTest {
         }
     }
 
+    @ParameterizedTest
+    @MethodSource("caseworkerDocumentTypeScenarios")
+    void shouldMapCaseworkerDocumentTypeToDocumentType(CaseworkerDocumentType caseworkerDocumentType,
+                                                       DocumentType expectedDocumentType) {
+        assertThat(underTest.mapCaseworkerDocumentTypeToDocumentType(caseworkerDocumentType))
+            .isEqualTo(expectedDocumentType);
+    }
+
+    @Test
+    void shouldReturnNullWhenCaseworkerDocumentTypeIsNull() {
+        assertThat(underTest.mapCaseworkerDocumentTypeToDocumentType(null)).isNull();
+    }
+
+    @Test
+    void shouldReturnCategoryIdForDocumentType() {
+        assertThat(underTest.categoryIdForDocumentType(DocumentType.RENT_STATEMENT))
+            .isEqualTo(CaseFileCategory.PROPERTY_DOCUMENTS.getId());
+    }
+
+    @Test
+    void shouldReturnDefaultCategoryIdForUnmappedDocumentType() {
+        assertThat(underTest.categoryIdForDocumentType(DocumentType.OTHER))
+            .isEqualTo(CaseFileCategory.UNCATEGORISED_DOCUMENTS.getId());
+    }
+
+    @Test
+    void shouldReturnDefaultCategoryIdForNullDocumentType() {
+        assertThat(underTest.categoryIdForDocumentType(null))
+            .isEqualTo(CaseFileCategory.UNCATEGORISED_DOCUMENTS.getId());
+    }
+
     private static Stream<Arguments> documentTypeToCategoryScenarios() {
         return Stream.of(
             Arguments.of(DocumentType.ENERGY_PERFORMANCE_CERTIFICATE, CaseFileCategory.PROPERTY_DOCUMENTS),
@@ -1359,6 +1391,56 @@ class DocumentServiceTest {
             Arguments.of(DocumentType.WITHOUT_NOTICE_ORDER, CaseFileCategory.ORDERS_AND_NOTICE_OF_HEARINGS),
             Arguments.of(DocumentType.NOTICE_OF_ALLOCATION_TO_TRACK, CaseFileCategory.ORDERS_AND_NOTICE_OF_HEARINGS),
             Arguments.of(DocumentType.OTHER, null)
+        );
+    }
+
+    private static Stream<Arguments> caseworkerDocumentTypeScenarios() {
+        return Stream.of(
+            Arguments.of(CaseworkerDocumentType.WITNESS_STATEMENT, DocumentType.WITNESS_STATEMENT),
+            Arguments.of(CaseworkerDocumentType.RENT_STATEMENT, DocumentType.RENT_STATEMENT),
+            Arguments.of(CaseworkerDocumentType.TENANCY_AGREEMENT, DocumentType.TENANCY_AGREEMENT),
+            Arguments.of(CaseworkerDocumentType.OCCUPATION_LICENCE, DocumentType.OCCUPATION_LICENCE),
+            Arguments.of(CaseworkerDocumentType.CERTIFICATE_OF_SERVICE, DocumentType.CERTIFICATE_OF_SERVICE),
+            Arguments.of(
+                CaseworkerDocumentType.ENERGY_PERFORMANCE_CERTIFICATE,
+                DocumentType.ENERGY_PERFORMANCE_CERTIFICATE
+            ),
+            Arguments.of(CaseworkerDocumentType.GAS_SAFETY_CERTIFICATE, DocumentType.GAS_SAFETY_CERTIFICATE),
+            Arguments.of(CaseworkerDocumentType.EICR_REPORT, DocumentType.EICR_REPORT),
+            Arguments.of(
+                CaseworkerDocumentType.CORRESPONDENCE_BETWEEN_PARTIES,
+                DocumentType.CORRESPONDENCE_BETWEEN_PARTIES
+            ),
+            Arguments.of(
+                CaseworkerDocumentType.CORRESPONDENCE_FROM_CLAIMANT,
+                DocumentType.CORRESPONDENCE_FROM_CLAIMANT
+            ),
+            Arguments.of(
+                CaseworkerDocumentType.CORRESPONDENCE_FROM_DEFENDANT,
+                DocumentType.CORRESPONDENCE_FROM_DEFENDANT
+            ),
+            Arguments.of(CaseworkerDocumentType.POSSESSION_NOTICE, DocumentType.POSSESSION_NOTICE),
+            Arguments.of(
+                CaseworkerDocumentType.NOTICE_FOR_SERVICE_OUT_OF_JURISDICTION,
+                DocumentType.NOTICE_FOR_SERVICE_OUT_OF_JURISDICTION
+            ),
+            Arguments.of(CaseworkerDocumentType.PHOTOGRAPHIC_EVIDENCE, DocumentType.PHOTOGRAPHIC_EVIDENCE),
+            Arguments.of(CaseworkerDocumentType.INSPECTION_OR_REPORT, DocumentType.INSPECTION_OR_REPORT),
+            Arguments.of(CaseworkerDocumentType.AMENDED_CLAIM_FORM, DocumentType.AMENDED_CLAIM_FORM),
+            Arguments.of(CaseworkerDocumentType.PART_20_COUNTERCLAIM, DocumentType.PART_20_COUNTERCLAIM),
+            Arguments.of(
+                CaseworkerDocumentType.CERTIFICATE_OF_SUITABILITY_AS_LF,
+                DocumentType.CERTIFICATE_OF_SUITABILITY_AS_LF
+            ),
+            Arguments.of(CaseworkerDocumentType.LEGAL_AID_CERTIFICATE, DocumentType.LEGAL_AID_CERTIFICATE),
+            Arguments.of(CaseworkerDocumentType.NOTICE_OF_HEARING, DocumentType.NOTICE_OF_HEARING),
+            Arguments.of(CaseworkerDocumentType.WITH_NOTICE_ORDER, DocumentType.WITH_NOTICE_ORDER),
+            Arguments.of(CaseworkerDocumentType.WITHOUT_NOTICE_ORDER, DocumentType.WITHOUT_NOTICE_ORDER),
+            Arguments.of(
+                CaseworkerDocumentType.NOTICE_OF_ALLOCATION_TO_TRACK,
+                DocumentType.NOTICE_OF_ALLOCATION_TO_TRACK
+            ),
+            Arguments.of(CaseworkerDocumentType.OTHER, DocumentType.OTHER)
         );
     }
 
