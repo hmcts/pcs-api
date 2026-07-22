@@ -13,7 +13,6 @@ import uk.gov.hmcts.reform.pcs.ccd.model.DefendantResponseStatusChangeTaskData;
 import uk.gov.hmcts.reform.pcs.notify.service.DefendantResponseNotificationService;
 
 import java.time.Duration;
-import java.util.UUID;
 
 @Slf4j
 @Component
@@ -48,7 +47,7 @@ public class DefendantResponseSubmittedNotificationTaskComponent {
             ))
             .execute((taskInstance, executionContext) -> {
                 DefendantResponseStatusChangeTaskData taskData = taskInstance.getData();
-                UUID defendantResponseId = taskData.getDefendantResponseId();
+                Integer defendantResponseId = taskData.getDefendantResponseId();
                 log.info("Processing defendant response submitted notification for: {}", defendantResponseId);
 
                 defendantResponseNotificationService.sendEmailNotificationForNoCounterClaim(defendantResponseId);
