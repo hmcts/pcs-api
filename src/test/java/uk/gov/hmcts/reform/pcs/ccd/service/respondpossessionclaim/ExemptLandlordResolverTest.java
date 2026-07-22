@@ -20,28 +20,18 @@ class ExemptLandlordResolverTest {
     }
 
     @Test
-    void shouldPreferExemptLandlordWhenBothPresentInResponses() {
+    void shouldReadExemptLandlordFromResponses() {
         DefendantResponses responses = DefendantResponses.builder()
             .exemptLandlord(YesNoNotSure.NO)
-            .landlordRegistered(YesNoNotSure.YES)
             .build();
 
         assertThat(ExemptLandlordResolver.fromResponses(responses)).isEqualTo(YesNoNotSure.NO);
     }
 
     @Test
-    void shouldFallBackToLandlordRegisteredWhenExemptLandlordMissing() {
-        DefendantResponses responses = DefendantResponses.builder()
-            .landlordRegistered(YesNoNotSure.NOT_SURE)
-            .build();
-
-        assertThat(ExemptLandlordResolver.fromResponses(responses)).isEqualTo(YesNoNotSure.NOT_SURE);
-    }
-
-    @Test
-    void shouldReadLandlordRegisteredFromEntityDuringCompatPhase() {
+    void shouldReadExemptLandlordFromEntity() {
         DefendantResponseEntity entity = DefendantResponseEntity.builder()
-            .landlordRegistered(YesNoNotSure.YES)
+            .exemptLandlord(YesNoNotSure.YES)
             .build();
 
         assertThat(ExemptLandlordResolver.fromEntity(entity)).isEqualTo(YesNoNotSure.YES);
