@@ -22,7 +22,11 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.page.caseworker.entergenapp.ApplicationDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.caseworker.entergenapp.ApplicationFee;
+import uk.gov.hmcts.reform.pcs.ccd.page.caseworker.entergenapp.ConsentAndNotice;
 import uk.gov.hmcts.reform.pcs.ccd.page.caseworker.entergenapp.HearingDate;
+import uk.gov.hmcts.reform.pcs.ccd.page.caseworker.entergenapp.ReferApplicationToJudge;
+import uk.gov.hmcts.reform.pcs.ccd.page.caseworker.entergenapp.UploadGeneralApplication;
+import uk.gov.hmcts.reform.pcs.ccd.page.caseworker.entergenapp.UploadRelatedEvidence;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
@@ -39,8 +43,8 @@ public class EnterGenApp implements CCDConfig<PCSCase, State, UserRole> {
 
     private final PcsCaseService pcsCaseService;
     private final PartyService partyService;
-    private final ApplicationDetails applicationDetails;
     private final GenAppService genAppService;
+    private final ApplicationDetails applicationDetails;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -49,12 +53,17 @@ public class EnterGenApp implements CCDConfig<PCSCase, State, UserRole> {
             .forStates(State.CASE_ISSUED)
             .name("Enter a general application")
             .grant(Permission.CRU, CASEWORKER_ROLES)
-            .grantHistoryOnly(JUDICIAL_HISTORY_ROLES);
+            .grantHistoryOnly(JUDICIAL_HISTORY_ROLES)
+            .showSummary();
 
         new PageBuilder(eventBuilder)
             .add(applicationDetails)
             .add(new HearingDate())
-            .add(new ApplicationFee());
+            .add(new ApplicationFee())
+            .add(new ConsentAndNotice())
+            .add(new UploadGeneralApplication())
+            .add(new UploadRelatedEvidence())
+            .add(new ReferApplicationToJudge());
     }
 
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
