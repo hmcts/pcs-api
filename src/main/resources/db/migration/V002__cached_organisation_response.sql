@@ -3,7 +3,7 @@ CREATE TABLE public.cached_organisation_response
   id integer NOT NULL GENERATED ALWAYS AS IDENTITY,
   idam_id UUID NOT NULL,
   organisation_id varchar(64),
-  last_modified_date TIMESTAMP NOT NULL,
+  last_modified_date TIMESTAMP without time zone NOT NULL,
   organisation_name varchar(255),
   address_line1 varchar(100),
   address_line2 varchar(100),
