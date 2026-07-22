@@ -126,6 +126,8 @@ withPipeline(type, product, component) {
       generateDefinitions(builder)
       env.CASE_API_URL = "http://pcs-api-aat.service.core-compute-aat.internal"
       env.CASE_TYPE_SUFFIX=""
+      generateDefinitions(builder)
+      setProdEnvVars()
     }
     onPerftest{
       env.DEFINITION_STORE_URL_BASE = "http://ccd-definition-store-api-perftest.service.core-compute-perftest.internal"
@@ -191,6 +193,16 @@ def setAatEnvVars() {
   env.ENVIRONMENT= "aat"
   env.ENABLE_TESTING_SUPPORT = "true"
   env.E2E_SUITE= "regression"
+}
+
+def setProdEnvVars() {
+  env.SHUTTER_SERVICE = true
+  env.MANAGE_CASE_BASE_URL = "https://manage-case.platform.hmcts.net"
+  env.ENVIRONMENT= "prod"
+  env.ENABLE_TESTING_SUPPORT = "false"
+  env.DEFINITION_STORE_URL_BASE = "http://ccd-definition-store-api-prod.service.core-compute-prod.internal"
+  env.DATA_STORE_URL_BASE="http://ccd-data-store-api-prod.service.core-compute-prod.internal"
+  env.CASE_API_URL = "pcs-api-prod.service.core-compute-prod.internal"
 }
 
 def setDemoEnvVars() {
