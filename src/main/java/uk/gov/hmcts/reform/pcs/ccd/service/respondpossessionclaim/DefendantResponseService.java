@@ -314,6 +314,7 @@ public class DefendantResponseService {
                 .accepted(YesOrNo.YES)
                 .fullName(fullName)
                 .completedDate(LocalDateTime.now(utcClock))
+                .claim(defendantResponse.getClaim())
                 .build()
         );
     }
@@ -328,6 +329,7 @@ public class DefendantResponseService {
             .completedDate(LocalDateTime.now(utcClock))
             .positionHeld(responses.getStatementOfTruth().getPositionHeld())
             .firmName(responses.getStatementOfTruth().getNameOfFirm())
+            .claim(responseEntity.getClaim())
             .build();
         if (VerticalYesNo.YES.equals(responses.getStatementOfTruth().getHasLegalRepresentation())) {
             sot.setCompletedBy(StatementOfTruthCompletedBy.LEGAL_REPRESENTATIVE);
