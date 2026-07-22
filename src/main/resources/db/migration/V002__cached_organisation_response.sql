@@ -1,6 +1,6 @@
 CREATE TABLE public.cached_organisation_response
 (
-  id UUID PRIMARY KEY,
+  id integer NOT NULL GENERATED ALWAYS AS IDENTITY,
   idam_id UUID NOT NULL,
   organisation_id varchar(64),
   last_modified_date TIMESTAMP NOT NULL,

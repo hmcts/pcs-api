@@ -134,6 +134,34 @@ class OrganisationServiceTest {
     }
 
     @Nested
+    @DisplayName("getNameAndAddress")
+    class GetNameAndAddress {
+
+        @Test
+        @DisplayName("Should successfully retrieve organisation name and address for provided user id")
+        void shouldSuccessfullyRetrieveOrganisationNameAndAddressForCurrentUser() {
+            // Given
+            AddressUK addressUK = AddressUK.builder()
+                .addressLine1("21 Abc")
+                .postTown("London")
+                .postCode("L2 3FF")
+                .build();
+            NameAndAddress nameAndAddress = new NameAndAddress(ORGANISATION_NAME, addressUK);
+
+            when(cachingOrganisationDetailsService.getNameAndAddress(USER_ID.toString()))
+                .thenReturn(nameAndAddress);
+
+            // When
+            NameAndAddress result = organisationService.getNameAndAddress(USER_ID.toString());
+
+            // Then
+            assertThat(result).isEqualTo(nameAndAddress);
+            verify(securityContextService, never()).getCurrentUserId();
+            verify(cachingOrganisationDetailsService).getNameAndAddress(USER_ID.toString());
+        }
+    }
+
+    @Nested
     @DisplayName("getOrganisationIdForCurrentUser")
     class GetOrganisationIdForCurrentUser {
 
@@ -194,6 +222,27 @@ class OrganisationServiceTest {
             // Then
             assertThat(result).isNull();
             verify(cachingOrganisationDetailsService, never()).getOrganisationIdentifier(anyString());
+        }
+    }
+
+    @Nested
+    @DisplayName("getOrganisationIdF")
+    class GetOrganisationId {
+
+        @Test
+        @DisplayName("Should successfully retrieve organisation ID for provided user id")
+        void shouldSuccessfullyRetrieveOrganisationIdForCurrentUser() {
+            // Given
+            when(cachingOrganisationDetailsService.getOrganisationIdentifier(USER_ID.toString()))
+                .thenReturn(ORGANISATION_IDENTIFIER);
+
+            // When
+            String result = organisationService.getOrganisationId(USER_ID.toString());
+
+            // Then
+            assertThat(result).isEqualTo(ORGANISATION_IDENTIFIER);
+            verify(cachingOrganisationDetailsService).getOrganisationIdentifier(USER_ID.toString());
+            verify(securityContextService, never()).getCurrentUserId();
         }
     }
 }
