@@ -103,6 +103,35 @@ test.describe('Case management - Case Worker Enter a General application @nightl
     })
   });
 
+  test('Case management - Case Worker Enter a General application ADJOURN Journey - Fee Reference included - NO @CM', async () => {
+    await performAction('selectAnEvent', { eventType: caseSummary.enterAGenApp });
+    await performValidation('mainHeader', enterGenappApplication.mainHeader);
+    await performAction('enterApplicationDetails', {
+      question1: enterGenappApplication.whichPartyMadeAppQuestion, option1: allPartyDetails[0],
+      question2: enterGenappApplication.typeOfAppQuestion, option2: enterGenappApplication.adjournRadioOption,
+      label: enterGenappApplication.whichCategoriesHiddenTextLabel,
+      input: enterGenappApplication.whichCategoriesHiddenTextInput,
+      label1: enterGenappApplication.dayTextLabel,
+      label2: enterGenappApplication.monthTextLabel,
+      label3: enterGenappApplication.yearTextLabel,
+      dateType: enterGenappApplication.dateTypeHiddenUserInput,
+      nextPage: enterGenAppHearingDate.mainHeader
+    });
+    await performAction('confirmIfCourtHearingInNext14Days', {
+      question: enterGenAppHearingDate.hearingInNext14DaysQuestion,
+      option: enterGenAppHearingDate.yesRadioOption,
+      nextPage: enterGenAppapplicationFee.mainHeader
+    });
+    await performAction('enterApplicationFeeDetails', {
+      question1: enterGenAppapplicationFee.appFeeReceivedQuestion, option1: enterGenAppapplicationFee.yesRadioOption,
+      question2: enterGenAppapplicationFee.referenceNumberIncludedQuestion, option2: enterGenAppapplicationFee.noRadioOption,
+      label1: enterGenAppapplicationFee.enterTheAmountReceivedHiddenTextLabel,
+      label2: enterGenAppapplicationFee.enterTheFeeReferenceHiddenTextLabel,
+      input: enterGenAppapplicationFee.enterTheFeeReferenceHiddenTextInput,
+      nextPage: enterGenAppConsentAndNotice.mainHeader
+    })
+  });
+
   test('Case management - Case Worker Enter a General application SET ASIDE Journey @CM', async () => {
     await performAction('selectAnEvent', { eventType: caseSummary.enterAGenApp });
     await performValidation('mainHeader', enterGenappApplication.mainHeader);
