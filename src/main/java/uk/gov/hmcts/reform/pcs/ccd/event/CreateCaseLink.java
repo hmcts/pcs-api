@@ -38,7 +38,8 @@ public class CreateCaseLink implements CCDConfig<PCSCase, State, UserRole> {
                             .description("To link related cases")
                             .grant(Permission.CRU, HEARING_CENTRE_ADMIN, HEARING_CENTRE_TEAM_LEADER,
                                    CTSC_ADMIN, CTSC_TEAM_LEADER, WLU_ADMIN, WLU_TEAM_LEADER)
-                            .grantHistoryOnly(JUDICIAL_HISTORY_ROLES))
+                            .grantHistoryOnly(JUDICIAL_HISTORY_ROLES)
+                            .endButtonLabel("Submit"))
             .page("createCaseLink")
             .pageLabel("Link cases")
             .label("createCaseLink-lineSeparator", "---")
