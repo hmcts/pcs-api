@@ -45,7 +45,7 @@ public class DefenceFormPersistenceService {
     }
 
     @Transactional(readOnly = true)
-    public Optional<DefenceFormRenderContext> buildContextIfNotAttached(UUID defendantResponseId) {
+    public Optional<DefenceFormRenderContext> buildContextIfNotAttached(Integer defendantResponseId) {
         DefendantResponseEntity response = loadResponse(defendantResponseId);
         if (response.getSubmissionDocument() != null) {
             return Optional.empty();
@@ -55,7 +55,7 @@ public class DefenceFormPersistenceService {
     }
 
     @Transactional
-    public void attach(UUID defendantResponseId, String dmStoreUrl) {
+    public void attach(Integer defendantResponseId, String dmStoreUrl) {
         DefendantResponseEntity response = loadResponse(defendantResponseId);
         if (response.getSubmissionDocument() != null) {
             return;
@@ -71,7 +71,7 @@ public class DefenceFormPersistenceService {
         claimActivityLogService.logGenerationSuccess(pcsCase, response.getParty());
     }
 
-    private DefendantResponseEntity loadResponse(UUID defendantResponseId) {
+    private DefendantResponseEntity loadResponse(Integer defendantResponseId) {
         return defendantResponseRepository.findById(defendantResponseId)
             .orElseThrow(() -> new IllegalStateException(
                 "No defendant response found for id: " + defendantResponseId));

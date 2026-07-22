@@ -732,7 +732,7 @@ class DocumentServiceTest {
         DefendantResponseEntity response = mock(DefendantResponseEntity.class);
         PcsCaseEntity pcsCase = mock(PcsCaseEntity.class);
         PartyEntity party = mock(PartyEntity.class);
-        when(response.getId()).thenReturn(UUID.randomUUID());
+        when(response.getId()).thenReturn(1);
         setUpDefendantParty(pcsCase, party, 2);
 
         UploadedDocument defDoc1 = UploadedDocument.builder()
@@ -855,7 +855,7 @@ class DocumentServiceTest {
         DefendantResponseEntity response = mock(DefendantResponseEntity.class);
         PcsCaseEntity pcsCase = mock(PcsCaseEntity.class);
         PartyEntity party = mock(PartyEntity.class);
-        when(response.getId()).thenReturn(UUID.randomUUID());
+        when(response.getId()).thenReturn(1);
         setUpDefendantParty(pcsCase, party, 1);
 
         UploadedDocument validDoc = UploadedDocument.builder()
@@ -890,7 +890,7 @@ class DocumentServiceTest {
         DefendantResponseEntity response = mock(DefendantResponseEntity.class);
         PcsCaseEntity pcsCase = mock(PcsCaseEntity.class);
         PartyEntity party = mock(PartyEntity.class);
-        when(response.getId()).thenReturn(UUID.randomUUID());
+        when(response.getId()).thenReturn(1);
         setUpDefendantParty(pcsCase, party, 1);
 
         UploadedDocument defDoc = UploadedDocument.builder()
