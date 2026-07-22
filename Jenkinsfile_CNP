@@ -198,7 +198,6 @@ def setAatEnvVars() {
 def setProdEnvVars() {
   env.SHUTTER_SERVICE = true
   env.ENVIRONMENT= "prod"
-  env.ENABLE_TESTING_SUPPORT = "false"
   env.DEFINITION_STORE_URL_BASE = "http://ccd-definition-store-api-prod.service.core-compute-prod.internal"
   env.DATA_STORE_URL_BASE="http://ccd-data-store-api-prod.service.core-compute-prod.internal"
   env.CASE_API_URL = "pcs-api-prod.service.core-compute-prod.internal"
