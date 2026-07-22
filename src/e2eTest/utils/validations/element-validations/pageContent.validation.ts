@@ -182,7 +182,10 @@ export class PageContentValidation implements IValidation {
       else if(page.url().includes("makeAnApplication")){
         mappingPath = path.join(__dirname, '../../../data/page-data-figma/page-data-genApps-figma/urlToFileMappingGenApps.ts');
       }
-      else if(page.url().includes("amendDocuments")){
+      else if(
+      ["amendDocuments", "changeCaseState"].some(str =>
+        page.url().includes(str)
+      )) {
         mappingPath = path.join(__dirname, '../../../data/page-data-figma/page-data-caseManagement-figma/urlToFileMappingCM.ts');
       }
       else{
@@ -244,7 +247,10 @@ export class PageContentValidation implements IValidation {
     else if (page.url().includes("globalSearch")) {
       filePath = path.join(__dirname, '../../../data/page-data-figma/page-data-common-component', `${fileName}.page.data.ts`);
     }
-    else if (page.url().includes("amendDocuments")) {
+    else if (
+      ["amendDocuments", "changeCaseState"].some(str =>
+        page.url().includes(str)
+      )) {
       filePath = path.join(__dirname, '../../../data/page-data-figma/page-data-caseManagement-figma', `${fileName}.page.data.ts`);
     }
     else {
@@ -383,9 +389,14 @@ export class PageContentValidation implements IValidation {
          mappingPath = path.join(__dirname, '../../../data/page-data-figma/page-data-enforcement-figma/urlToFileMappingEnforcement.ts');
       } else if(url.includes("makeAnApplication")){
         mappingPath = path.join(__dirname, '../../../data/page-data-figma/page-data-genApps-figma/urlToFileMappingGenApps.ts');
+      } else if (
+        ["amendDocuments", "changeCaseState"].some(str =>
+          url.includes(str)
+        )) {
+        mappingPath = path.join(__dirname, '../../../data/page-data-figma/page-data-caseManagement-figma/urlToFileMappingCM.ts');
       }
-      else{
-         mappingPath = path.join(__dirname, '../../../data/page-data-figma/urlToFileMapping.ts');
+      else {
+        mappingPath = path.join(__dirname, '../../../data/page-data-figma/urlToFileMapping.ts');
       }
       if (!fs.existsSync(mappingPath)) return segment;
       const mappingContent = fs.readFileSync(mappingPath, 'utf8');

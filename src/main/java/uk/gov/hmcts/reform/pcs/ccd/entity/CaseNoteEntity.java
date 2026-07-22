@@ -18,7 +18,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.CaseNote;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 import static jakarta.persistence.FetchType.LAZY;
 import static uk.gov.hmcts.reform.pcs.config.ClockConfiguration.UK_ZONE_ID;
@@ -33,8 +32,8 @@ import static uk.gov.hmcts.reform.pcs.config.ClockConfiguration.UK_ZONE_ID;
 public class CaseNoteEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
 
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "case_id")
