@@ -18,8 +18,16 @@ export class InputErrorValidation implements IValidation {
 
   private async findFieldValueLocator(page: Page, fieldName: string, data: validationData): Promise<Locator> {
     const locators = [
-      page.locator(`//span[text()="${fieldName}"]/ancestor::div[contains(@class,'form-group') and position() = 1]//child::span[contains(@class,'error-message')]`)
+      // Normal fields
+      page.locator(
+        `//span[normalize-space()="${fieldName}"]/ancestor::div[contains(@class,'form-group')][1]//span[contains(@class,'error-message')]`
+      ),
+      // Date fields
+      page.locator(
+        `//legend//span[normalize-space()="${fieldName}"]/following::span[contains(@class,'error-message')][1]`
+      )
     ];
+
 
     for (const locator of locators) {
 
