@@ -1,9 +1,9 @@
 package uk.gov.hmcts.reform.pcs.exception;
 
-public class LegalRepresentativeAlreadyLinkedToPartyException extends RuntimeException {
+public class LegalRepresentativeAlreadyLinkedToPartyException extends RedactedRuntimeException {
 
-    public LegalRepresentativeAlreadyLinkedToPartyException(String message) {
-        super(message);
+    public LegalRepresentativeAlreadyLinkedToPartyException(ErrorCode errorCode, RedactionContext redactionContext) {
+        super(errorCode, redactionContext);
     }
 
 }

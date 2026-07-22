@@ -31,6 +31,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.PARTY_LINK_EXISTS;
 
 @Service
 @RequiredArgsConstructor
@@ -49,7 +50,12 @@ public class LegalRepresentativePartyLinkService {
         String organisationId = organisationDetails.getOrganisationIdentifier();
         if (isAlreadyLinkedToParty(user, partyId, organisationId)) {
             throw new LegalRepresentativeAlreadyLinkedToPartyException(
-                "Legal Representative or organisation already linked to Party [" + partyId + "]");
+                PARTY_LINK_EXISTS,
+                RedactionContext.builder()
+                    .value("Legal Representative or organisation already linked to Party", partyId)
+                    .value("case reference", caseReference)
+                    .value("organisation id", organisationId)
+                    .build());
         }
         PcsCaseEntity caseEntity = pcsCaseService.loadCase(caseReference);
 

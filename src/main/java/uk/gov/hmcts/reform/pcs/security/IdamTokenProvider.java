@@ -8,6 +8,9 @@ import org.springframework.security.oauth2.core.OAuth2AuthorizationException;
 import org.springframework.security.oauth2.core.endpoint.OAuth2ParameterNames;
 import uk.gov.hmcts.reform.pcs.exception.IdamException;
 
+import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.AUTH_TOKEN_EMPTY;
+import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.AUTH_TOKEN_RETRIEVAL_FAIL;
+
 /**
  * Fetches an IDAM access token for a specific OAuth2 client-registration id. One instance
  * is created per service identity (e.g. {@code system-user}, {@code prd-admin}) by
@@ -50,7 +53,7 @@ public class IdamTokenProvider {
             if (authorizedClient == null || authorizedClient.getAccessToken() == null) {
                 log.error("Failed to authorize OAuth2 client for {} - client or token is null",
                           clientRegistrationId);
-                throw new IdamException("Unable to get access token response");
+                throw new IdamException(AUTH_TOKEN_EMPTY);
             }
 
             return BEARER_PREFIX + authorizedClient.getAccessToken().getTokenValue();
@@ -58,7 +61,7 @@ public class IdamTokenProvider {
         } catch (OAuth2AuthorizationException ex) {
             log.error("OAuth2 authorization error retrieving {} token. Error: {}, Description: {}",
                 clientRegistrationId, ex.getError().getErrorCode(), ex.getError().getDescription(), ex);
-            throw new IdamException("Unable to get access token response", ex);
+            throw new IdamException(AUTH_TOKEN_RETRIEVAL_FAIL, ex);
         }
     }
 }

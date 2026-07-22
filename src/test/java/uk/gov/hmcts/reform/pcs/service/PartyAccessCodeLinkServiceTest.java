@@ -17,6 +17,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseRoleAssignmentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.exception.AccessCodeAlreadyUsedException;
+import uk.gov.hmcts.reform.pcs.exception.ExceptionRedaction;
 import uk.gov.hmcts.reform.pcs.exception.InvalidAccessCodeException;
 import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 
@@ -31,6 +32,7 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.ACCESS_CODE_ALREADY_IN_USE;
+import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.ACCESS_CODE_ISSUE;
 
 @ExtendWith(MockitoExtension.class)
 class PartyAccessCodeLinkServiceTest {
@@ -126,12 +128,12 @@ class PartyAccessCodeLinkServiceTest {
 
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(caseEntity);
         when(validator.validateAccessCode(caseId, ACCESS_CODE))
-            .thenThrow(new InvalidAccessCodeException("Invalid access code for this case."));
+            .thenThrow(new InvalidAccessCodeException(ACCESS_CODE_ISSUE));
 
         // WHEN + THEN
         assertThatThrownBy(() -> service.linkPartyByAccessCode(CASE_REFERENCE, ACCESS_CODE, testUser))
             .isInstanceOf(InvalidAccessCodeException.class)
-            .hasMessageContaining("Invalid access code");
+            .hasMessageContaining(ExceptionRedaction.safeMessage(ACCESS_CODE_ISSUE));
     }
 
     @Test

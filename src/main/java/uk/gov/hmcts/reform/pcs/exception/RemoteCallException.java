@@ -1,6 +1,6 @@
 package uk.gov.hmcts.reform.pcs.exception;
 
-public class RemoteCallException extends RuntimeException {
+public class RemoteCallException extends RedactedRuntimeException {
 
     private final int status;
 
@@ -8,14 +8,9 @@ public class RemoteCallException extends RuntimeException {
         return status;
     }
 
-    private RemoteCallException(String message, int status) {
-        super(message);
+    public RemoteCallException(ErrorCode errorCode, RedactionContext redactionContext, int status) {
+        super(errorCode, redactionContext);
         this.status = status;
-    }
-
-    public static RemoteCallException create(String methodKey, int status) {
-        String sanitizedMessage = "Remote call " + methodKey + " failed with status " + status;
-        return new RemoteCallException(sanitizedMessage, status);
     }
 
 }

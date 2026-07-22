@@ -36,7 +36,6 @@ public enum ErrorCode {
     TEMPLATE_RENDERING("TEMPLATE_RENDERING", "Failed to render template"),
     UNSUBMITTED_DATA("UNSUBMITTED_DATA_01", "Failed to save answers"),
     UPDATE_DRAFT("UNSUBMITTED_DATA_02", "Failed to update draft case data"),
-    DRAFT_NOT_FOUND("UNSUBMITTED_DATA_03", "No draft found for case"),
     NO_UNSUBMITTED_CASE_DATA("UNSUBMITTED_DATA_04",
                              "No unsubmitted case data found for case"),
     READ_FAIL("UNSUBMITTED_DATA_05", "Failed to read saved answers"),
@@ -64,8 +63,24 @@ public enum ErrorCode {
     PARTY_BY_IDAM_AND_CASE("PARTY_BY_IDAM_AND_CASE", "No party found"),
     PARTY_TYPE("PARTY_TYPE", "No Party of type"),
     PARTY_NOT_FOUND("PARTY_NOT_FOUND", "Party not found"),
+    AUTH_VALIDATION("IDAM_VALIDATION", "Unable to validate authorization token"),
+    AUTH_TOKEN_EMPTY("IDAM_EMPTY_TOKEN", "Unable to get access token response"),
+    AUTH_TOKEN_RETRIEVAL_FAIL("AUTH_TOKEN_RETRIEVAL_FAIL",
+                              "Unable to get access token response"),
+    AUTH_BLANK("AUTH_BLANK", "Authorization token is null or blank"),
+    AUTH_MALFORMED("AUTH_MALFORMED", "Malformed Authorization token"),
+    AUTH_UNAUTHORIZED("AUTH_UNAUTHORIZED",
+                      "The Authorization token provided is expired or invalid"),
+    ACCESS_CODE_ISSUE("ACCESS_CODE_ISSUE", "Invalid data"),
+    ORGANISATION_DETAILS("ORGANISATION_DETAILS",
+                         "Failed to retrieve organisation details"),
+    PARTY_LINK_EXISTS("PARTY_LINK_EXISTS", "Already linked to Party"),
+    PARTY_ACCESS_CODE("PARTY_ACCESS_CODE",
+                      "The party this access code was generated for is not a defendant in this case"),
+    DOCUMENT_DOWNLOAD("DOCUMENT_DOWNLOAD", "Document download issue"),
+    DRAFT_NOT_FOUND("DRAFT_NOT_FOUND", "No draft found"),
 
-
+    REMOTE_CALL("REMOTE_CALL", "Remote call"),
 
     TEST_CASE_SUPPORT("", "");
 

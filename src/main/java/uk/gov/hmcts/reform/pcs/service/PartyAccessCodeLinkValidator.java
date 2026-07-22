@@ -14,6 +14,8 @@ import java.util.List;
 import java.util.UUID;
 
 import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.ACCESS_CODE_ALREADY_IN_USE;
+import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.ACCESS_CODE_ISSUE;
+import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.PARTY_ACCESS_CODE;
 
 @Slf4j
 @Service
@@ -27,7 +29,7 @@ public class PartyAccessCodeLinkValidator {
         return hashingService.findMatchingAccessCode(pacRepository, caseId, accessCode)
             .orElseThrow(() -> {
                 log.error("Invalid access code - caseId: {}, accessCodeProvided: {}", caseId, accessCode != null);
-                return new InvalidAccessCodeException("Invalid data");
+                return new InvalidAccessCodeException(ACCESS_CODE_ISSUE);
             });
     }
 
@@ -40,8 +42,7 @@ public class PartyAccessCodeLinkValidator {
             .findFirst()
             .orElseThrow(() -> {
                 log.error("Party with ID {} is not a defendant", partyId);
-                return new InvalidPartyForAccessCodeException("The party this access code was generated for"
-                                                                  + " is not a defendant in this case");
+                return new InvalidPartyForAccessCodeException(PARTY_ACCESS_CODE);
             });
     }
 

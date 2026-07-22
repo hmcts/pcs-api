@@ -9,9 +9,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.exception.ErrorCode;
+import uk.gov.hmcts.reform.pcs.exception.ExceptionRedaction;
 import uk.gov.hmcts.reform.pcs.exception.InvalidAccessCodeException;
 import uk.gov.hmcts.reform.pcs.exception.InvalidAuthTokenException;
-import uk.gov.hmcts.reform.pcs.exception.RedactionContext;
 import uk.gov.hmcts.reform.pcs.idam.IdamAuthenticator;
 import uk.gov.hmcts.reform.pcs.idam.User;
 import uk.gov.hmcts.reform.pcs.idam.UserInfo;
@@ -25,6 +25,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.ACCESS_CODE_ISSUE;
+import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.AUTH_MALFORMED;
 
 @ExtendWith(MockitoExtension.class)
 class CasePartyLinkControllerTest {
@@ -65,7 +67,7 @@ class CasePartyLinkControllerTest {
     @Test
     void shouldPropagateInvalidAuthTokenExceptionAndNotCallLinkService() {
         when(idamAuthenticator.validateAuthToken(AUTH_HEADER))
-            .thenThrow(new InvalidAuthTokenException("Malformed Authorization token"));
+            .thenThrow(new InvalidAuthTokenException(AUTH_MALFORMED));
 
         ValidateAccessCodeRequest request = new ValidateAccessCodeRequest(ACCESS_CODE);
 
@@ -86,7 +88,7 @@ class CasePartyLinkControllerTest {
 
         ValidateAccessCodeRequest request = new ValidateAccessCodeRequest(ACCESS_CODE);
 
-        InvalidAccessCodeException expected = new InvalidAccessCodeException("Invalid access code");
+        InvalidAccessCodeException expected = new InvalidAccessCodeException(ACCESS_CODE_ISSUE);
         // Mockito.doThrow on void: use the explicit syntax via the linkPartyByAccessCode signature.
         doThrow(expected)
             .when(partyAccessCodeLinkService)
@@ -95,7 +97,7 @@ class CasePartyLinkControllerTest {
         assertThatThrownBy(() ->
             underTest.validateAccessCode(CASE_REFERENCE, request, AUTH_HEADER, S2S_TOKEN))
             .isInstanceOf(InvalidAccessCodeException.class)
-            .hasMessageContaining("Invalid access code");
+            .hasMessageContaining(ExceptionRedaction.safeMessage(ACCESS_CODE_ISSUE));
     }
 
     @Test
@@ -107,8 +109,7 @@ class CasePartyLinkControllerTest {
 
         ValidateAccessCodeRequest request = new ValidateAccessCodeRequest(ACCESS_CODE);
 
-        CaseNotFoundException expected = new CaseNotFoundException(ErrorCode.CASE_NOT_FOUND,
-                                                                   RedactionContext.of("T", "1"));
+        CaseNotFoundException expected = new CaseNotFoundException(ErrorCode.CASE_NOT_FOUND);
         doThrow(expected)
             .when(partyAccessCodeLinkService)
             .linkPartyByAccessCode(CASE_REFERENCE, ACCESS_CODE, userDetails);
