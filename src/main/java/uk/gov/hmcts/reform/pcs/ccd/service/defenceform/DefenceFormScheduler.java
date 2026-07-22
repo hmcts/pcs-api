@@ -24,7 +24,7 @@ public class DefenceFormScheduler {
         this.schedulerClient = schedulerClient;
     }
 
-    public void scheduleDefenceFormGeneration(long caseReference, UUID defendantResponseId, UUID defendantPartyId) {
+    public void scheduleDefenceFormGeneration(long caseReference, Integer defendantResponseId, UUID defendantPartyId) {
         DefenceFormTaskData taskData = DefenceFormTaskData.builder()
             .caseReference(String.valueOf(caseReference))
             .defendantResponseId(defendantResponseId)
