@@ -731,7 +731,7 @@ public class PCSCase {
     private String dateIssuedString;
 
     @JsonProperty("TTL")
-    @CCD(typeOverride = FieldType.TTL, access = {SystemUserAccess.class})
+    @CCD(access = {SystemUserAccess.class})
     private TTL timeToLive;
 
     @CCD(label = "Which state are you moving the case to?",
