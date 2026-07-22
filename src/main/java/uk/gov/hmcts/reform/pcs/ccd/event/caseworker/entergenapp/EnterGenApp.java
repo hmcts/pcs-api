@@ -108,8 +108,7 @@ public class EnterGenApp implements CCDConfig<PCSCase, State, UserRole> {
         PartyEntity applicantParty = partyService.getPartyEntityByEntityId(
             caseData.getPartyRadioList().getValueCode(), caseReference);
 
-        genAppService.createGenAppEntity(
-            caseData.getEnterGenAppRequest(), pcsCaseEntity, applicantParty, GenAppState.GEN_APP_ISSUED);
+        genAppService.createGenAppEntity(caseData, pcsCaseEntity, applicantParty, GenAppState.GEN_APP_ISSUED);
 
         return SubmitResponse.<State>builder().build();
     }
