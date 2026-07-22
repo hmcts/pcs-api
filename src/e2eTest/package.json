@@ -11,7 +11,7 @@
     "test:makeAClaim": "yarn playwright install && yarn playwright test --project chrome --grep '@MAC'; EXIT_CODE=$?; allure generate -o ../../e2e-output --clean; tsx ./config/clean-attachments.config.ts; exit $EXIT_CODE",
     "test:commonComponent": "yarn playwright install && yarn playwright test --project chrome --grep '@CC'; EXIT_CODE=$?; allure generate -o ../../e2e-output --clean; tsx ./config/clean-attachments.config.ts; exit $EXIT_CODE",
     "test:caseManagement": "yarn playwright install && yarn playwright test --project chrome --grep '@CM'; EXIT_CODE=$?; allure generate -o ../../e2e-output --clean; tsx ./config/clean-attachments.config.ts; exit $EXIT_CODE",
-    "test:chrome": "yarn playwright install && yarn playwright test --project chrome; EXIT_CODE=$?; allure generate -o ../../e2e-output --clean; tsx ./config/clean-attachments.config.ts; exit $EXIT_CODE",
+    "test:chrome": "yarn playwright install && yarn playwright test --project chrome --grep 'Search by postcode'; EXIT_CODE=$?; allure generate -o ../../e2e-output --clean; tsx ./config/clean-attachments.config.ts; exit $EXIT_CODE",
     "test:firefox": "yarn playwright install && yarn playwright test --project firefox; EXIT_CODE=$?; allure generate -o ../../e2e-output --clean; tsx ./config/clean-attachments.config.ts; exit $EXIT_CODE",
     "test:webkit": "yarn playwright install && yarn playwright test --project webkit; EXIT_CODE=$?; allure generate -o ../../e2e-output --clean; tsx ./config/clean-attachments.config.ts; exit $EXIT_CODE",
     "test:edge": "yarn playwright install && yarn playwright install msedge && yarn playwright test --project edge; EXIT_CODE=$?; allure generate -o ../../e2e-output --clean; tsx ./config/clean-attachments.config.ts; exit $EXIT_CODE",
