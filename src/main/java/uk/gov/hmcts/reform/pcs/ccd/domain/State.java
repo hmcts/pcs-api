@@ -22,7 +22,7 @@ public enum State {
 
     @CCD(
         label = "Awaiting Submission to HMCTS",
-        access = {ClaimantAccess.class, CitizenAccess.class, RasValidationAccess.class},
+        access = {ClaimantAccess.class, CitizenAccess.class, RasValidationAccess.class, WAAccess.class},
         hint = "${caseTitleMarkdown}"
     )
     AWAITING_SUBMISSION_TO_HMCTS,
