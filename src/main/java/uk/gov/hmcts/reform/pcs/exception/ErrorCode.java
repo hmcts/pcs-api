@@ -1,5 +1,10 @@
 package uk.gov.hmcts.reform.pcs.exception;
 
+/**
+ * An error code taxonomy where by the 'internalCode' is used to identify what has happened.  Then the system needs to
+ *  be set accordingly to identify further details on these issues.   This is to prevent leaking PII into logs and
+ *  beyond the server itself to the front end or other actors.
+ */
 public enum ErrorCode {
 
     DOC_ASSEMBLY_NO_URL_RETURNED("DOC_ASSEMBLY_1",
