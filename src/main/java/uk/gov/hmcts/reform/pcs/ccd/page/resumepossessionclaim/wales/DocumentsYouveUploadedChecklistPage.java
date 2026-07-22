@@ -10,6 +10,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.WALES;
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.and;
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.featureFlagsEnabled;
@@ -27,6 +28,7 @@ public class DocumentsYouveUploadedChecklistPage implements CcdPageConfiguration
             .page("documentsYouveUploadedChecklist", this::midEvent)
             .pageLabel("Documents you've uploaded")
             .showCondition(and(WALES, featureFlagsEnabled(RELEASE_1_DOT_2, WALES_MAKE_A_CLAIM)))
+            .readonly(PCSCase::getFeatureFlags, NEVER_SHOW, true)
             .label("documentsYouveUploadedChecklist-separator", "---")
             .mandatory(PCSCase::getDocumentsYouveUploaded)
             .label("documentsYouveUploadedChecklist-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
