@@ -17,5 +17,5 @@ export const caseSummary = {
     amend : 'Manage documents: Amend'
   },
   changeCaseState: 'Change case state',
-  enterAGenApp: 'Enter a general application',
+  enterAGenApp: 'Enter a general application'
 }

@@ -122,7 +122,7 @@ export class CaseManagementAction implements IAction {
     }
 
     allPartyDetails = [...new Set(originalDefendantDetails.filter(n => n.trim().toLowerCase() !== "null null")),
-      ...originalDefendantDetails.filter(n => n.trim().toLowerCase() === "null null")
+    ...originalDefendantDetails.filter(n => n.trim().toLowerCase() === "null null")
     ];
     allPartyDetails.push(`${payLoad.claimantName} - Claimant 1`);
   }
