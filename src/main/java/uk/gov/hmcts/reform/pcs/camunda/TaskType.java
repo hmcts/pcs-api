@@ -6,7 +6,12 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public enum TaskType {
-    NEW_CLAIM_CREATE_NEW_HEARING("NewClaimCreateNewHearing", "New Claim –  Create new hearing", 5);
+    NEW_CLAIM_CREATE_NEW_HEARING(
+        "NewClaimCreateNewHearing", "New Claim –  Create new hearing", 5
+    ),
+    REVIEW_DEFENDANT_RESPONSE_AND_COUNTER_CLAIM(
+        "ReviewDefendantResponseAndCounterclaim", "Review Defendant response and counterclaim", 5
+    );
 
     private final String id;
     private final String name;
