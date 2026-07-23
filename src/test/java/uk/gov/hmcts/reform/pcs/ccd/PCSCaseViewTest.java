@@ -285,7 +285,7 @@ class PCSCaseViewTest {
     @Test
     void shouldMapDateIssuedFromClaimIssuedDate() {
         // Given
-        LocalDateTime claimIssuedDate = LocalDateTime.of(2026, 5, 12, 14, 30);
+        LocalDateTime claimIssuedDate = LocalDateTime.of(2026, 5, 14, 9, 0);
         when(claimEntity.getClaimIssuedDate()).thenReturn(claimIssuedDate);
 
         // When
@@ -293,6 +293,18 @@ class PCSCaseViewTest {
 
         // Then
         assertThat(pcsCase.getDateIssued()).isEqualTo(claimIssuedDate);
+    }
+
+    @Test
+    void shouldLeaveDateIssuedNullWhenNoClaims() {
+        // Given
+        when(pcsCaseEntity.getClaims()).thenReturn(List.of());
+
+        // When
+        PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
+
+        // Then
+        assertThat(pcsCase.getDateIssued()).isNull();
     }
 
     @Test
