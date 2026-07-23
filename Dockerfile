@@ -6,7 +6,6 @@ USER hmcts
 
 COPY lib/applicationinsights.json /opt/app/
 COPY build/libs/pcs-api.jar /opt/app/
-COPY build/cftlib/definition-snapshots /opt/app/build/cftlib/definition-snapshots
 
 EXPOSE 3206
 CMD [ "pcs-api.jar" ]
