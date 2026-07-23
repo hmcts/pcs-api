@@ -132,6 +132,14 @@ azure:
   application-insights:
     instrumentation-key: ${pcs.AppInsightsInstrumentationKey:00000000-0000-0000-0000-000000000000}
 
+ccd:
+  servicebus:
+    destination: ${AZURE_SERVICE_BUS_TOPIC_NAME:ccd-case-events-aat}
+    scheduler-enabled: ${PCS_SERVICEBUS_SCHEDULER_ENABLED:false}
+    batch-size: ${PCS_SERVICEBUS_BATCH_SIZE:50}
+    published-retention-days: ${PCS_SERVICEBUS_PUBLISHED_RETENTION_DAYS:7}
+    schedule: ${PCS_SERVICEBUS_SCHEDULE:*/10 * * * * *}
+
 hmc:
   deployment-id: ${HMC_DEPLOYMENT_ID:}
   api-url: ${HMC_API_URL:http://localhost:8084}

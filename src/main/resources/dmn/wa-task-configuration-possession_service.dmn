@@ -619,6 +619,23 @@ Short name</description>
           <text>true</text>
         </outputEntry>
       </rule>
+      <rule id="DecisionRule_1bm38kj">
+        <inputEntry id="UnaryTests_1anslbv">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1tvak6q">
+          <text>"NewClaimCreateNewHearing"</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_14ewc8f">
+          <text>"dueDateIntervalDays"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_117b4j8">
+          <text>5</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_072oo1c">
+          <text></text>
+        </outputEntry>
+      </rule>
       <rule id="DecisionRule_10i40qf">
         <inputEntry id="UnaryTests_1i23a4y">
           <text></text>
