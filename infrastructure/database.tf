@@ -25,7 +25,8 @@ module "postgresql" {
   common_tags   = var.common_tags
   pgsql_databases = [
     {
-      name : var.product
+      name                      = var.product
+      schemas_for_reader_access = ["public", "ccd"]
     }
   ]
   pgsql_server_configuration = [
