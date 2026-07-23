@@ -1623,6 +1623,9 @@ export class CreateCaseAction implements IAction {
       case 'Applications':
         this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad.xui_genapp_UploadedDocuments, 'All Files');
         userInputFiles=this.cleanGenAppFilesArray(userInputFiles,defendantUserDetails.length);
+        if(caseFile.caseWorkerUpload){
+          userInputFiles.push(caseFile.caseWorkerUpload as string);
+        }
         break;
 
       default:

@@ -6,9 +6,10 @@ import { getCaseTypeId } from '@utils/common/caseType.utils';
 import { performAction, performActions, performValidation } from '@utils/controller-caseManagement';
 import { VERY_LONG_TIMEOUT } from 'playwright.config';
 import { caseSummary, home } from '@data/page-data';
-import { changeCaseState, confirmCaseStateChange, enterGenappApplication, enterGenAppapplicationFee, enterGenAppHearingDate, selectDocument } from '@data/page-data-figma/page-data-caseManagement-figma';
-import { caseInfo } from '../createCaseAPI.action';
+import { changeCaseState, confirmCaseStateChange, confirmUpload, enterGenappApplication, enterGenAppapplicationFee, enterGenAppHearingDate, selectDocument, uploadADocument } from '@data/page-data-figma/page-data-caseManagement-figma';
+import { caseInfo, defendantUserDetails } from '../createCaseAPI.action';
 import { CaseManagementCommonUtils } from './caseManagementUtils.action';
+import path from 'path';
 
 
 export const addressInfo = {
@@ -32,6 +33,9 @@ export class CaseManagementAction implements IAction {
       ['enterApplicationDetails', () => this.enterApplicationDetails(fieldName as actionRecord)],
       ['confirmIfCourtHearingInNext14Days', () => this.confirmIfCourtHearingInNext14Days(fieldName as actionRecord)],
       ['enterApplicationFeeDetails', () => this.enterApplicationFeeDetails(fieldName as actionRecord)],
+      ['selectDynamicAppAndPartyDocRelatedTo', () => this.selectDynamicAppAndPartyDocRelatedTo(fieldName as actionRecord)],
+      ['uploadADocument', () => this.uploadADocument(page, fieldName as actionRecord)],
+      ['confirmUpload', () => this.confirmUpload(fieldName as actionRecord)],
       ['inputErrorValidation', () => this.inputErrorValidation(page, fieldName as actionRecord)],
 
     ]);
@@ -178,6 +182,105 @@ export class CaseManagementAction implements IAction {
     } else {
       await performAction('reTryOnCallBackError', enterGenAppHearingDate.continueButton, fee.nextPage as string);
     };
+
+  }
+
+  private async selectDynamicAppAndPartyDocRelatedTo(selectApp: actionRecord) {
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
+    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
+    await performAction('clickRadioButton', {
+      question: selectApp.question,
+      option: selectApp.option,
+    });
+    await performAction('inputDate', selectApp.label as string, selectApp.date);
+
+    await performAction('clickRadioButton', { question: selectApp.question1, option: selectApp.option1 });
+    await performAction('reTryOnCallBackError', uploadADocument.continueButton, selectApp.nextPage as string);
+  }
+
+  private async uploadADocument(page: Page, upload: actionRecord): Promise<void> {
+    const fileInput = page.locator('input[type="file"].form-control.bottom-30');
+    const filePath = path.resolve(__dirname, '../../../../data/inputFiles', upload.file as string);
+    await fileInput.last().setInputFiles(filePath);
+    let timeout = 6000;
+    await performValidation('waitUntilElementDisappears', 'Uploading...');
+    await expect(async () => {
+      const rateLimit = page.locator(`label:text-is("Your request was rate limited. Please wait a few seconds before retrying your document upload"),
+                                           span:text-is("Your request was rate limited. Please wait a few seconds before retrying your document upload")`);
+      let limit = await rateLimit.count();
+
+      while (limit > 0) {
+        timeout *= 2;
+        await page.waitForTimeout(timeout);
+        await fileInput.last().setInputFiles(filePath);
+        await performValidation('waitUntilElementDisappears', 'Uploading...');
+        limit = await rateLimit.count();
+      };
+    }).toPass({
+      timeout: VERY_LONG_TIMEOUT,
+    });
+  }
+
+  private async confirmUpload(confirm: actionRecord): Promise<void> {
+    let submitPayLoad = confirm.submitPayload as Record<string, any>;
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
+    await performValidation('text', {
+      elementType: 'paragraph',
+      text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
+    });
+    const baseName = String(confirm.fileName).replace(/\.pdf$/i, '');
+    const gaNumber = String(confirm.app).match(/\bGA\d+\b/i)?.[0] ?? '';
+    const [day, month, year] = String(confirm.fileDate).split('/');
+    const formattedDate = `${day.padStart(2, '0')}${month.padStart(2, '0')}${year}`;
+    const role = String(confirm.party).split(' - ')[1] ?? '';
+
+    const uploadedFileName = `${baseName} ${formattedDate} ${gaNumber} - ${role}`;
+    await performValidation('text', { elementType: 'inlineText', text: 'Case number #'+ caseInfo.fid });
+    await performValidation('text', {
+      elementType: 'inlineText',
+      text: `${addressInfo.buildingStreet}, ${addressInfo.addressLine2}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
+    });
+    await performValidation('text', { elementType: 'inlineText', text: `‘${uploadedFileName}’ uploaded` });
+    await performValidation('text', { elementType: 'inlineText', text: `${submitPayLoad.claimantName} vs ${await this.getDefendantClaimDetails(submitPayLoad)}` });
+    await performValidation('mainHeader', confirmUpload.mainHeader);
+    await performAction('clickButton', confirmUpload.closeAndReturnToCaseOverviewButton);
+  }
+
+  private async getDefendantClaimDetails(defendantsDetails: actionRecord): Promise<string> {
+
+    let originalDefendantDetails: string[] = [];
+    const payLoad = defendantsDetails as Record<string, any>;
+    if (payLoad.defendant1.nameKnown === 'YES') {
+      originalDefendantDetails.push(
+        `${payLoad.defendant1.firstName} ${payLoad.defendant1.lastName}`
+      );
+    } else {
+      originalDefendantDetails.push(
+        `persons unknown`
+      );
+    }
+
+    if (payLoad.addAnotherDefendant === 'YES') {
+
+      for (const defendant of payLoad.additionalDefendants) {
+        if (defendant.value.nameKnown === 'YES') {
+          originalDefendantDetails.push(`${defendant.value.firstName} ${defendant.value.lastName}`);
+        } else {
+          originalDefendantDetails.push(
+            `persons unknown`
+          );
+        }
+      }
+    }
+
+    let defendantText: string;
+
+    if (originalDefendantDetails.length > 2) {
+      defendantText = `${originalDefendantDetails[0]}, ${originalDefendantDetails[1]} and Others`;
+    } else {
+      defendantText = originalDefendantDetails.join(', ');
+    }
+    return defendantText;
 
   }
 

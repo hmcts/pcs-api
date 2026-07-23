@@ -93,6 +93,25 @@ export class CYAStore {
           qaObject = { question: 'Uploaded files', answer: fieldName };
         }
         break;
+      case 'uploadADocument':
+        if (typeof fieldName === 'object' && fieldName.label && fieldName.file) {
+          qaObject = { question: fieldName.label, answer: fieldName.file };
+        } 
+        break;
+      case 'inputDate':
+        if (typeof fieldName === 'object' && fieldName.label && fieldName.date) {
+          const qn = String(fieldName.label).includes("(Optional)")
+            ? String(fieldName.label).replace(/\s*\(optional\)/i, "")
+            : String(fieldName.label);
+          qaObject = { question: qn, answer: this.formatDate(fieldName.date) };
+        } else if (typeof fieldName === 'string' && typeof value === 'string') {
+          const qn = String(fieldName).includes("(Optional)")
+            ? String(fieldName).replace(/\s*\(optional\)/i, "")
+            : String(fieldName);
+          qaObject = { question: qn, answer: this.formatDate(value) };
+        }
+        break;
+        
     }
 
     if (qaObject) {
@@ -182,6 +201,13 @@ export class CYAStore {
         .trim()
         .toLowerCase()
         .replace(/[^\w\s]/g, '');
+  }
+
+  // convert date from eg: 23/07,2026 to 23 july 2026
+  private formatDate(date: string): string {
+    const [day, month, year] = date.split('/');
+    const monthName = new Date(Number(year),Number(month) - 1,Number(day)).toLocaleString('en-GB', { month: 'long' }).substring(0,3);
+    return `${day} ${monthName} ${year}`;
   }
 
   clearAll(): void {

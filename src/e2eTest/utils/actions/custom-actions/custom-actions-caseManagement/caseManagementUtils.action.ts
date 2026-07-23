@@ -56,7 +56,7 @@ export class CaseManagementCommonUtils {
     const today = new Date();
 
     if (type === 'present') {
-      const day = String(today.getDate()).padStart(2, '0');
+      const day = String(today.getDate());
       const month = String(today.getMonth() + 1).padStart(2, '0');
       const year = today.getFullYear();
 
@@ -88,7 +88,7 @@ export class CaseManagementCommonUtils {
 
     const randomDate = new Date(randomTime);
 
-    const day = String(randomDate.getDate()).padStart(2, '0');
+    const day = String(randomDate.getDate());
     const month = String(randomDate.getMonth() + 1).padStart(2, '0');
     const year = randomDate.getFullYear();
 
@@ -124,6 +124,29 @@ export class CaseManagementCommonUtils {
 
   public static getRandomNumberAsString(min: number, max: number): string {
     return (Math.floor(Math.random() * (max - min + 1)) + min).toString();
+  }
+
+  public static getGenApplicationType(length: number): string[] {
+    const today = new Date().toLocaleDateString('en-GB', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    });
+
+    return Array.from(
+      { length: length },
+      (_, index) =>
+        `General Application GA${index + 1} - submitted ${today}`
+    );
+  }
+
+  public static renameDocument(fileName: string, app: string, party: string, fileDate: string): string {
+    const baseName = fileName.replace(/\.pdf$/i, '');
+    const gaNumber = app.match(/\bGA\d+\b/i)?.[0] ?? '';
+    const [day, month, year] = fileDate.split('/');
+    const formattedDate = `${day.padStart(2, '0')}${month.padStart(2, '0')}${year}`;
+    const role = party.split(' - ')[1] ?? '';
+    return `${baseName} ${formattedDate} ${gaNumber}.pdf`;
   }
 
 } 
