@@ -565,6 +565,11 @@ tasks.withType(CftlibExec).configureEach {
   environment 'IDAM_CLIENT_SECRET', 'dummy-secret-for-local'
   environment 'XUI_JURISDICTIONS', 'PCS'
   environment 'XUI_DOCUMENTS_API_V2', 'http://ccd-case-document-am-api-aat.service.core-compute-aat.internal'
+  // Point XUI's common data (case-linking reason codes) at the local wiremock stub
+  environment 'SERVICES_PRD_COMMONDATA_API', 'http://host.docker.internal:8083'
+  // Point XUI's location reference data (orgServices - needed before the case-linking
+  // reasons are fetched) at the local wiremock stub
+  environment 'SERVICES_LOCATION_REF_API_URL', 'http://host.docker.internal:8083'
   environment 'CASE_DOCUMENT_S2S_AUTHORISED_SERVICES', 'ccd_case_document_am_api,ccd_gw,xui_webapp,ccd_data,pcs_frontend,pcs_api'
   environment 'DATA_STORE_S2S_AUTHORISED_SERVICES', 'ccd_data,ccd_gw,pcs_frontend,pcs_api'
   environment 'CCD_S2S-AUTHORISED_SERVICES_CASE_USER_ROLES', 'aac_manage_case_assignment,pcs_api'

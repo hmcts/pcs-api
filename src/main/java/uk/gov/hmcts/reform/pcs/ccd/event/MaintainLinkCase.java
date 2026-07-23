@@ -41,7 +41,8 @@ public class MaintainLinkCase implements CCDConfig<PCSCase, State, UserRole> {
                                    CTSC_ADMIN, CTSC_TEAM_LEADER, WLU_ADMIN, WLU_TEAM_LEADER)
                             .grantHistoryOnly(JUDICIAL_HISTORY_ROLES))
             .page("maintainCaseLink")
-            .pageLabel("Case Link")
+            .pageLabel("Manage case links")
+            .label("maintainCaseLink-lineSeparator", "---")
             .optional(PCSCase::getCaseLinks, "LinkedCasesComponentLauncher = \"DONOTSHOW\"", null, true)
             .optional(PCSCase::getLinkedCasesComponentLauncher,
                       null, null, null, null, "#ARGUMENT(UPDATE,LinkedCases)");

@@ -40,7 +40,8 @@ public class CreateCaseLink implements CCDConfig<PCSCase, State, UserRole> {
                                    CTSC_ADMIN, CTSC_TEAM_LEADER, WLU_ADMIN, WLU_TEAM_LEADER)
                             .grantHistoryOnly(JUDICIAL_HISTORY_ROLES))
             .page("createCaseLink")
-            .pageLabel("Case Link")
+            .pageLabel("Link cases")
+            .label("createCaseLink-lineSeparator", "---")
             .optional(PCSCase::getCaseLinks,"LinkedCasesComponentLauncher = \"DONOTSHOW\"",null,true)
             .optional(PCSCase::getLinkedCasesComponentLauncher,
                       null,null,null,null,"#ARGUMENT(CREATE,LinkedCases)");

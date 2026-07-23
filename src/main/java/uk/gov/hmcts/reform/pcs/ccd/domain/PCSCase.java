@@ -643,7 +643,7 @@ public class PCSCase {
 
     @CCD(
         label = "CaseNameHmctsInternal",
-        access = {GlobalSearchAccess.class}
+        access = {GlobalSearchAccess.class, CaseLinkingAccess.class}
     )
     private String caseNameHmctsInternal;
 
