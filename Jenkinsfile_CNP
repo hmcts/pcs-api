@@ -23,6 +23,13 @@ def secrets = [
     secret('pcs-prd-admin-password', 'PCS_PRD_ADMIN_PASSWORD'),
     secret('idam-expired-user-token', 'IDAM_EXPIRED_USER_TOKEN'),
     secret('s2s-expired-service-token', 'S2S_EXPIRED_TOKEN'),
+  ],
+  // WA org-role-mapping seeding (setup-role-assignments) needs the shared CCD system-user
+  // credentials, which live in the ccd-${env} vault rather than pcs-${env}.
+  'ccd-${env}': [
+    secret('ccd-api-gateway-oauth2-client-secret', 'CCD_API_GATEWAY_IDAM_CLIENT_SECRET'),
+    secret('idam-data-store-system-user-username', 'IDAM_DATA_STORE_SYSTEM_USER_USERNAME'),
+    secret('idam-data-store-system-user-password', 'IDAM_DATA_STORE_SYSTEM_USER_PASSWORD'),
   ]
 ]
 
@@ -64,6 +71,15 @@ withPipeline(type, product, component) {
     } else {
       env.CCD_ENABLED = "false"
     }
+    // Work Allocation preview (pr-values:wa) — WA pods, Camunda and am-org-role-mapping-service
+    env.CAMUNDA_BASE_URL = "https://camunda-pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
+    env.TASK_MONITOR_API_URL = "https://wa-task-monitor-pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
+    env.TASK_MANAGEMENT_API_URL = "https://wa-task-management-api-pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
+    env.ROLE_ASSIGNMENT_API_URL = "https://am-org-role-mapping-service-pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
+    def waPRLabels = githubApi.getLabelsbyPattern(env.BRANCH_NAME, "pr-values:wa")
+    if (waPRLabels.contains("pr-values:wa-ft-tests")) {
+      env.WA_FUNCTIONAL_TESTS_ENABLED = true
+    }
     if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "enable_e2e_full_regression").size() > 0) {
       env.E2E_SUITE = "chrome"
     }
@@ -88,6 +104,7 @@ withPipeline(type, product, component) {
     ])
     enableHighLevelDataSetup("", true)
     setAatEnvVars()
+    env.CAMUNDA_BASE_URL = "http://camunda-api-aat.service.core-compute-aat.internal"
     // The e2e journeys all create cases, which is blocked while the service is shuttered.
     if (!shutterService) {
       enableE2eTest()
@@ -156,6 +173,34 @@ withPipeline(type, product, component) {
     env.CCD_ENABLED = "true"
   }
 
+  afterSuccess('akschartsinstall') {
+    onPR {
+      for (label in githubApi.getLabelsbyPattern(env.BRANCH_NAME, "pr-values:wa") ) {
+        env.CAMUNDA_BASE_URL = "https://camunda-pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
+        println """After akschartsinstall upload DMN and BPMN diagrams""".stripIndent()
+        uploadDmnDiagrams()
+        uploadBpmnDiagram()
+        setupRoleAssignments()
+      }
+    }
+  }
+
+  // WA DMN/BPMN deployment for AAT. Unlike preview these always run (WA is part of the
+  // AAT/prod topology, not label-gated) and role-assignment seeding is omitted — AAT/prod
+  // role mappings are managed outside this pipeline.
+  before('functionalTest:aat') {
+    uploadDmnDiagrams()
+    uploadBpmnDiagram()
+  }
+
+  // Promote the WA Camunda diagrams to prod after AAT functional tests pass.
+  afterSuccess('functionalTest:aat') {
+    env.ENVIRONMENT = "prod"
+    env.CAMUNDA_BASE_URL = "http://camunda-api-prod.service.core-compute-prod.internal"
+    uploadDmnDiagrams()
+    uploadBpmnDiagram()
+  }
+
   afterAlways('smoketest:preview') {
     archiveSmokeTestReports()
   }
@@ -209,6 +254,32 @@ def generateDefinitions(builder) {
   builder.gradle('--rerun-tasks generateCCDConfig')
   sh "./bin/create-xlsx.sh ${env.ENVIRONMENT}"
   steps.archiveArtifacts artifacts: "build/definitions/*.xlsx"
+}
+
+def uploadDmnDiagrams() {
+  dir("${WORKSPACE}/bin") {
+    tenantId = "pcs"
+    product = "pcs"
+    sh "./wa/import-dmn-diagram.sh ${WORKSPACE} ${env.ENVIRONMENT} ${tenantId} ${product}"
+  }
+}
+
+def uploadBpmnDiagram() {
+  dir("${WORKSPACE}/bin") {
+    bpmnBranch = "master"
+    sh """
+      ./wa/pull-latest-camunda-wa-files.sh ${bpmnBranch}
+      ./wa/import-wa-bpmn-diagram.sh .
+    """
+  }
+}
+
+def setupRoleAssignments() {
+  dir("${WORKSPACE}/bin") {
+    withEnv(["ORG_ROLE_MAPPING_SERVICE_URL=${env.ROLE_ASSIGNMENT_API_URL}"]) {
+      sh "./setup-role-assignments"
+    }
+  }
 }
 
 def archiveFunctionalTestReports() {

@@ -1,0 +1,215 @@
+java:
+  secrets:
+    AZURE_SERVICE_BUS_CONNECTION_STRING:
+      secretRef: pcs-sb-preview
+      key: connectionString
+    AZURE_SERVICE_BUS_PREVIEW_CONNECTION_STRING:
+      secretRef: pcs-sb-preview
+      key: connectionString
+  environment:
+    SPRING_JMS_SERVICEBUS_ENABLED: true
+    AZURE_SERVICE_BUS_TOPIC_NAME: ${SERVICE_NAME}-asb-ccd-case-events
+    AZURE_SERVICE_BUS_SUBSCRIPTION_NAME: ${SERVICE_NAME}-asb-ccd-case-events
+
+servicebus:
+  enabled: true
+  releaseNameOverride: ${SERVICE_NAME}-asb
+  resourceGroup: pcs-aso-preview-rg
+  sbNamespace: pcs-servicebus-preview
+  setup:
+    topics:
+      - name: crd-topic
+        subscriptionNeeded: yes
+      - name: jrd-topic
+        subscriptionNeeded: yes
+      - name: ccd-case-events
+        subscriptionNeeded: yes
+        requiresSession: true
+
+postgresql:
+  enabled: true
+  flexibleserver: pcs-preview
+  setup:
+    databases:
+      - name: "pr-${CHANGE_ID}-data-store"
+      - name: "pr-${CHANGE_ID}-definition-store"
+      - name: "pr-${CHANGE_ID}-pcs"
+      - name: "pr-${CHANGE_ID}-camunda"
+      - name: "pr-${CHANGE_ID}-cft_task_db"
+      - name: "pr-${CHANGE_ID}-wa_workflow_api"
+      - name: "pr-${CHANGE_ID}-wa-case-event-handler"
+      - name: "pr-${CHANGE_ID}-org-role-mapping"
+
+global:
+  postgresUsername: hmcts
+  postgresSecret: postgres
+  postgresHost: "pcs-preview.postgres.database.azure.com"
+  postgresHostname: "pcs-preview.postgres.database.azure.com"
+  databaseNamePrefix: "pr-${CHANGE_ID}-"
+
+wa:
+  enabled: true
+
+  camunda-bpm:
+    java:
+      image: hmctsprod.azurecr.io/camunda/bpm:latest
+
+  wa-case-event-handler:
+    java:
+      secrets:
+        AZURE_SERVICE_BUS_CONNECTION_STRING:
+          secretRef: pcs-sb-preview
+          key: connectionString
+      environment:
+        AZURE_SERVICE_BUS_TOPIC_NAME: ${SERVICE_NAME}-asb-ccd-case-events
+        AZURE_SERVICE_BUS_SUBSCRIPTION_NAME: ${SERVICE_NAME}-asb-ccd-case-events
+        AZURE_SERVICE_BUS_CCD_CASE_EVENTS_SUBSCRIPTION_NAME: ${SERVICE_NAME}-asb-ccd-case-events
+      keyVaults:
+        wa:
+          secrets:
+            - name: app-insights-connection-string
+              alias: app-insights-connection-string
+            - name: s2s-secret-case-event-handler
+              alias: S2S_SECRET_CASE_EVENT_HANDLER
+            - name: ld-secret
+              alias: LAUNCH_DARKLY_SDK_KEY
+            - name: wa-idam-client-secret
+              alias: WA_IDAM_CLIENT_SECRET
+
+  wa-task-management-api:
+    java:
+      ingressHost: wa-task-management-api-${SERVICE_FQDN}
+      environment:
+        ALLOWED_CASE_TYPES: pcs-${CHANGE_ID}
+        ALLOWED_JURISDICTIONS: pcs
+      keyVaults:
+        wa:
+          secrets:
+            - name: app-insights-connection-string
+              alias: app-insights-connection-string
+            - name: wa-system-username
+              alias: WA_SYSTEM_USERNAME
+            - name: wa-system-password
+              alias: WA_SYSTEM_PASSWORD
+            - name: wa-idam-client-secret
+              alias: WA_IDAM_CLIENT_SECRET
+            - name: s2s-secret-task-management-api
+              alias: S2S_SECRET_TASK_MANAGEMENT_API
+            - name: ld-secret
+              alias: LAUNCH_DARKLY_SDK_KEY
+
+  wa-task-monitor:
+    java:
+      ingressHost: wa-task-monitor-${SERVICE_FQDN}
+      keyVaults:
+        wa:
+          secrets:
+            - name: app-insights-connection-string
+              alias: app-insights-connection-string
+            - name: s2s-secret-task-monitor
+              alias: S2S_SECRET_TASK_MONITOR
+            - name: wa-system-username
+              alias: WA_SYSTEM_USERNAME
+            - name: wa-system-password
+              alias: WA_SYSTEM_PASSWORD
+            - name: wa-idam-client-secret
+              alias: WA_IDAM_CLIENT_SECRET
+
+  wa-workflow-api:
+    java:
+      environment:
+        DB_READER_USERNAME: "hmcts"
+      keyVaults:
+        wa:
+          secrets:
+            - name: app-insights-connection-string
+              alias: app-insights-connection-string
+            - name: s2s-secret-workflow-api
+              alias: S2S_SECRET_WORKFLOW_API
+            - name: ld-secret
+              alias: LAUNCH_DARKLY_SDK_KEY
+
+  wa-message-cron-service:
+    job:
+      schedule: "*/1 * * * *"
+
+  wa-initiation-batch:
+    job:
+      schedule: "*/1 * * * *"
+
+  wa-reconfiguration-batch:
+    job:
+      schedule: "*/1 * * * *"
+
+  wa-termination-batch:
+    job:
+      schedule: "*/1 * * * *"
+
+  #disable wa db as we are using the postgres flexible server
+  wa:
+    postgresql:
+      enabled: false
+
+am-org-role-mapping-service:
+  enabled: true
+  java:
+    image: 'hmctsprod.azurecr.io/am/org-role-mapping-service:latest'
+    ingressHost: am-org-role-mapping-service-${SERVICE_FQDN}
+    releaseNameOverride: ${SERVICE_NAME}-am-org-role-mapping-service
+    secrets:
+      SB_ACCESS_KEY:
+        secretRef: pcs-sb-preview
+        key: primaryKey
+      SB_CONNECTION_STRING:
+        secretRef: pcs-sb-preview
+        key: connectionString
+      ORG_ROLE_MAPPING_DB_PASSWORD:
+        secretRef: "{{ .Values.global.postgresSecret }}"
+        key: PASSWORD
+        disabled: false
+    keyVaults:
+      am:
+        secrets:
+          - name: app-insights-connection-string
+            alias: app-insights-connection-string
+          - name: am-org-role-mapping-service-s2s-secret
+            alias: AM_ORG_ROLE_MAPPING_SERVICE_SECRET
+          - name: orm-IDAM-CLIENT-ID
+            alias: ORM_IDAM_CLIENT_ID
+          - name: orm-IDAM-CLIENT-SECRET
+            alias: ORG_ROLE_MAPPING_IDAM_CLIENT_SECRET
+          - name: orm-IDAM-ADMIN-SECRET
+            alias: ORG_ROLE_MAPPING_IDAM_ADMIN_PASSWORD
+    devcpuRequests: 500m
+    devmemoryRequests: 1Gi
+    devcpuLimits: 1
+    devmemoryLimits: 4Gi
+    environment:
+      # PCS does not deploy its own role-assignment-service in preview (unlike sptribs); it uses
+      # the shared AAT instance, matching global.amRoleAssignmentServiceUrl in the ccd overlay.
+      ROLE_ASSIGNMENT_APP_URL: http://am-role-assignment-service-aat.service.core-compute-aat.internal
+      AMQP_SHARED_ACCESS_KEY_NAME: RootManageSharedAccessKey
+      AMQP_HOST: "pcs-sb-preview.servicebus.windows.net"
+      CRD_SUBSCRIPTION_NAME: "{{ .Release.Name}}-asb-crd-topic"
+      JRD_SUBSCRIPTION_NAME: "{{ .Release.Name}}-asb-jrd-topic"
+      CRD_TOPIC_NAME: "{{ .Release.Name}}-asb-crd-topic"
+      JRD_TOPIC_NAME: "{{ .Release.Name}}-asb-jrd-topic"
+      AMQP_CRD_SHARED_ACCESS_KEY_VALUE: "$(SB_ACCESS_KEY)"
+      AMQP_JRD_SHARED_ACCESS_KEY_VALUE: "$(SB_ACCESS_KEY)"
+      ORG_ROLE_MAPPING_DB_HOST: '{{ tpl .Values.global.postgresHostname $}}'
+      ORG_ROLE_MAPPING_DB_NAME: "pr-${CHANGE_ID}-org-role-mapping"
+      ORG_ROLE_MAPPING_DB_USERNAME: hmcts
+      ORG_ROLE_MAPPING_DB_PORT: 5432
+      ORG_ROLE_MAPPING_DB_OPTIONS: "?stringtype=unspecified&reWriteBatchedInserts=true&sslmode=require"
+      TESTING_SUPPORT_ENABLED: true
+      REFRESH_BULK_ASSIGNMENT_INCLUDE_BOOKINGS: true
+      ORM_ENV: pr
+
+xui-webapp:
+  nodejs:
+    environment:
+      SERVICES_WA_WORKFLOW_API_URL: http://{{ .Release.Name }}-wa-workflow-api
+      HEALTH_WORK_ALLOCATION_TASK_API: http://{{ .Release.Name }}-wa-task-management-api/health
+      SERVICES_WORK_ALLOCATION_TASK_API: http://{{ .Release.Name }}-wa-task-management-api
+      SERVICES_ROLE_ASSIGNMENT_MAPPING_API: http://{{ .Release.Name }}-am-org-role-mapping-service
+      WA_SUPPORTED_JURISDICTIONS: PCS
