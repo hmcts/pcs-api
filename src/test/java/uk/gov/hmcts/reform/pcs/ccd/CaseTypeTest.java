@@ -201,6 +201,10 @@ class CaseTypeTest {
         when(builder.searchCasesFields()).thenReturn(searchCasesBuilder);
         when(builder.searchResultFields()).thenReturn(searchBuilder);
         when(builder.workBasketResultFields()).thenReturn(searchBuilder);
+        when(builder.accessType(anyString()))
+            .thenReturn(AccessType.AccessTypeBuilder.builder("accessTypeId"));
+        when(builder.accessTypeRole(anyString()))
+            .thenReturn(AccessTypeRole.AccessTypeRoleBuilder.builder("accessTypeId"));
         when(builder.tab("nextSteps", "Next steps")).thenReturn(TabBuilder.builder(PCSCase.class, utils));
         when(builder.tab("summary", "Summary")).thenReturn(TabBuilder.builder(PCSCase.class, utils));
         when(builder.tab("CaseHistory", "History")).thenReturn(TabBuilder.builder(PCSCase.class, utils));
