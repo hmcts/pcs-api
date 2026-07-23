@@ -75,6 +75,7 @@ public class TenancyLicenceView {
         return pcsCaseEntity.getDocuments().stream()
             .filter(TenancyLicenceView::isTenancyLicence)
             .filter(DocumentsView::isDescriptionEmpty)
+            .filter(DocumentsView::isNotRemoved)
             .map(TenancyLicenceView::toDocument)
             .toList();
     }
@@ -91,6 +92,7 @@ public class TenancyLicenceView {
         return pcsCaseEntity.getDocuments().stream()
             .filter(TenancyLicenceView::isOccupationLicence)
             .filter(DocumentsView::isDescriptionEmpty)
+            .filter(DocumentsView::isNotRemoved)
             .map(TenancyLicenceView::toDocument)
             .toList();
     }

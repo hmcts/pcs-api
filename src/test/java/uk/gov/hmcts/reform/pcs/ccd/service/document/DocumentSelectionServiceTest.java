@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.DynamicList;
 import uk.gov.hmcts.ccd.sdk.type.DynamicListElement;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
@@ -32,18 +33,18 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory.EVIDENCE;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory.UNCATEGORISED_DOCUMENTS;
 
 @ExtendWith(MockitoExtension.class)
-class DocumentAmendSelectionServiceTest {
+class DocumentSelectionServiceTest {
 
     private static final long CASE_REFERENCE = 1234567890123456L;
 
     @Mock
     private PcsCaseService pcsCaseService;
 
-    private DocumentAmendSelectionService underTest;
+    private DocumentSelectionService underTest;
 
     @BeforeEach
     void setUp() {
-        underTest = new DocumentAmendSelectionService(pcsCaseService, new AddressFormatter());
+        underTest = new DocumentSelectionService(pcsCaseService, new AddressFormatter());
     }
 
     @Test
@@ -67,16 +68,17 @@ class DocumentAmendSelectionServiceTest {
     void shouldPopulatePropertyAddressSummary() {
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(PcsCaseEntity.builder().build());
         PCSCase caseData = PCSCase.builder()
-            .propertyAddress(uk.gov.hmcts.ccd.sdk.type.AddressUK.builder()
+            .propertyAddress(AddressUK.builder()
                 .addressLine1("15 Garden Drive")
                 .postTown("Luton")
                 .postCode("LU1 1AB")
                 .build())
             .build();
+        DocumentAmendDetails details = new DocumentAmendDetails();
 
-        underTest.initialise(CASE_REFERENCE, caseData);
+        underTest.initialise(CASE_REFERENCE, caseData, details);
 
-        assertThat(caseData.getDocumentAmendDetails().getPropertyAddressSummary())
+        assertThat(details.getPropertyAddressSummary())
             .isEqualTo("15 Garden Drive, Luton, LU1 1AB");
     }
 
@@ -90,15 +92,15 @@ class DocumentAmendSelectionServiceTest {
                 .build()))
             .build();
         PCSCase caseData = PCSCase.builder()
+            .applicationsDocuments(applicationsDocuments)
             .documentAmendDetails(DocumentAmendDetails.builder()
-                .applicationsDocuments(applicationsDocuments)
                 .applicationsEmpty(YesOrNo.NO)
                 .build())
             .build();
 
         String serialisedCaseData = new ObjectMapper().writeValueAsString(caseData);
 
-        assertThat(serialisedCaseData).contains("\"documentAmend_ApplicationsDocuments\"");
+        assertThat(serialisedCaseData).contains("\"applicationsDocuments\"");
         assertThat(serialisedCaseData).contains("\"documentAmend_ApplicationsEmpty\"");
         assertThat(serialisedCaseData).doesNotContain("documentAmend_applicationsDocuments");
     }
@@ -121,17 +123,17 @@ class DocumentAmendSelectionServiceTest {
             .build();
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCase);
         PCSCase caseData = PCSCase.builder().build();
+        DocumentAmendDetails details = new DocumentAmendDetails();
 
-        underTest.initialise(CASE_REFERENCE, caseData);
+        underTest.initialise(CASE_REFERENCE, caseData, details);
 
-        DocumentAmendDetails details = caseData.getDocumentAmendDetails();
-        assertThat(details.getEvidenceDocuments().getListItems())
+        assertThat(caseData.getEvidenceDocuments().getListItems())
             .extracting(DynamicListElement::getLabel)
             .containsExactly("visible evidence.pdf");
-        assertThat(details.getApplicationsDocuments().getListItems())
+        assertThat(caseData.getApplicationsDocuments().getListItems())
             .extracting(DynamicListElement::getLabel)
             .containsExactly("visible application.pdf", "without notice application.pdf");
-        assertThat(details.getApplicationsDocuments().getValue()).isNull();
+        assertThat(caseData.getApplicationsDocuments().getValue()).isNull();
     }
 
     @Test
@@ -146,38 +148,59 @@ class DocumentAmendSelectionServiceTest {
             .documents(List.of(nullCategoryDocument, categorisedDocument))
             .build());
         PCSCase caseData = PCSCase.builder().build();
+        DocumentAmendDetails details = new DocumentAmendDetails();
 
-        underTest.initialise(CASE_REFERENCE, caseData);
+        underTest.initialise(CASE_REFERENCE, caseData, details);
 
-        assertThat(caseData.getDocumentAmendDetails().getUncategorisedDocuments().getListItems())
+        assertThat(caseData.getUncategorisedDocuments().getListItems())
             .extracting(DynamicListElement::getLabel)
             .containsExactly("uncategorised document.pdf");
-        assertThat(caseData.getDocumentAmendDetails().getUncategorisedDocumentsEmpty()).isEqualTo(YesOrNo.NO);
+        assertThat(details.getUncategorisedDocumentsEmpty()).isEqualTo(YesOrNo.NO);
     }
 
     @Test
     void shouldExcludeDefendantAccessCodeDocumentsFromUncategorisedDocuments() {
-        DocumentEntity accessCodeDocument = documentWithType(
+        DocumentEntity accessCodeDocument = buildDocumentEntity(
             null,
             UNCATEGORISED_DOCUMENTS.getId(),
-            DocumentType.DEFENDANT_ACCESS_CODE
+            DocumentType.DEFENDANT_ACCESS_CODE,
+            false
         );
-        DocumentEntity visibleDocument = documentWithType(
+        DocumentEntity visibleDocument = buildDocumentEntity(
             "uncategorised document.pdf",
             UNCATEGORISED_DOCUMENTS.getId(),
-            DocumentType.OTHER
+            DocumentType.OTHER,
+            false
         );
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(PcsCaseEntity.builder()
             .documents(List.of(accessCodeDocument, visibleDocument))
             .build());
         PCSCase caseData = PCSCase.builder().build();
+        DocumentAmendDetails details = new DocumentAmendDetails();
 
-        underTest.initialise(CASE_REFERENCE, caseData);
+        underTest.initialise(CASE_REFERENCE, caseData, details);
 
-        assertThat(caseData.getDocumentAmendDetails().getUncategorisedDocuments().getListItems())
+        assertThat(caseData.getUncategorisedDocuments().getListItems())
             .extracting(DynamicListElement::getLabel)
             .containsExactly("uncategorised document.pdf");
-        assertThat(caseData.getDocumentAmendDetails().getUncategorisedDocumentsEmpty()).isEqualTo(YesOrNo.NO);
+        assertThat(details.getUncategorisedDocumentsEmpty()).isEqualTo(YesOrNo.NO);
+    }
+
+    @Test
+    void shouldExcludeRemovedDocumentsFromSelection() {
+        DocumentEntity removedDocument = buildDocumentEntity("removed evidence.pdf", EVIDENCE.getId(), null, true);
+        DocumentEntity activeDocument = buildDocumentEntity("active evidence.pdf", EVIDENCE.getId(), null, false);
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(PcsCaseEntity.builder()
+            .documents(List.of(removedDocument, activeDocument))
+            .build());
+        PCSCase caseData = PCSCase.builder().build();
+        DocumentAmendDetails details = new DocumentAmendDetails();
+
+        underTest.initialise(CASE_REFERENCE, caseData, details);
+
+        assertThat(caseData.getEvidenceDocuments().getListItems())
+            .extracting(DynamicListElement::getLabel)
+            .containsExactly("active evidence.pdf");
     }
 
     @Test
@@ -205,10 +228,11 @@ class DocumentAmendSelectionServiceTest {
             .documents(List.of(older, nullDate, newerB, newerA))
             .build());
         PCSCase caseData = PCSCase.builder().build();
+        DocumentAmendDetails details = new DocumentAmendDetails();
 
-        underTest.initialise(CASE_REFERENCE, caseData);
+        underTest.initialise(CASE_REFERENCE, caseData, details);
 
-        assertThat(caseData.getDocumentAmendDetails().getEvidenceDocuments().getListItems())
+        assertThat(caseData.getEvidenceDocuments().getListItems())
             .extracting(DynamicListElement::getLabel)
             .containsExactly(
                 "a newer evidence.pdf",
@@ -220,7 +244,7 @@ class DocumentAmendSelectionServiceTest {
 
     @Test
     void shouldReturnNoErrorsWhenDocumentAmendDetailsIsNull() {
-        List<String> errors = underTest.validateAndStoreSelection(PCSCase.builder().build());
+        List<String> errors = underTest.validateAndStoreSelection(PCSCase.builder().build(),null);
 
         assertThat(errors).isEmpty();
     }
@@ -228,22 +252,19 @@ class DocumentAmendSelectionServiceTest {
     @Test
     void shouldReturnDifferentFolderErrorWhenSelectedFolderHasNoDocuments() {
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(PcsCaseEntity.builder().build());
-        PCSCase caseData = PCSCase.builder()
-            .documentAmendDetails(DocumentAmendDetails.builder()
-                .selectedFolder(UNCATEGORISED_DOCUMENTS)
-                .build())
+        PCSCase caseData = PCSCase.builder().build();
+        DocumentAmendDetails details = DocumentAmendDetails.builder()
+            .selectedFolder(UNCATEGORISED_DOCUMENTS)
             .build();
-        underTest.initialise(CASE_REFERENCE, caseData);
+        underTest.initialise(CASE_REFERENCE, caseData, details);
 
-        List<String> errors = underTest.validateAndStoreSelection(caseData);
+        List<String> errors = underTest.validateAndStoreSelection(caseData, details);
 
         assertThat(errors).containsExactly("Select a different folder to continue");
-        assertThat(caseData.getDocumentAmendDetails().getSelectedFolderId())
-            .isEqualTo(UNCATEGORISED_DOCUMENTS.getId());
-        assertThat(caseData.getDocumentAmendDetails().getSelectedFolderLabel())
-            .isEqualTo(UNCATEGORISED_DOCUMENTS.getLabel());
-        assertThat(caseData.getDocumentAmendDetails().getSelectedDocumentId()).isNull();
-        assertThat(caseData.getDocumentAmendDetails().getSelectedDocumentFileName()).isNull();
+        assertThat(details.getSelectedFolderId()).isEqualTo(UNCATEGORISED_DOCUMENTS.getId());
+        assertThat(details.getSelectedFolderLabel()).isEqualTo(UNCATEGORISED_DOCUMENTS.getLabel());
+        assertThat(details.getSelectedDocumentId()).isNull();
+        assertThat(details.getSelectedDocumentFileName()).isNull();
     }
 
     @Test
@@ -253,19 +274,18 @@ class DocumentAmendSelectionServiceTest {
             .documents(List.of(document))
             .build());
         PCSCase caseData = PCSCase.builder()
-            .documentAmendDetails(DocumentAmendDetails.builder()
-                .selectedFolder(EVIDENCE)
-                .evidenceDocuments(DynamicList.builder()
-                    .build())
-                .build())
+            .evidenceDocuments(DynamicList.builder().build())
             .build();
-        underTest.initialise(CASE_REFERENCE, caseData);
+        DocumentAmendDetails details = DocumentAmendDetails.builder()
+            .selectedFolder(EVIDENCE)
+            .build();
+        underTest.initialise(CASE_REFERENCE, caseData, details);
 
-        List<String> errors = underTest.validateAndStoreSelection(caseData);
+        List<String> errors = underTest.validateAndStoreSelection(caseData, details);
 
         assertThat(errors).isEmpty();
-        assertThat(caseData.getDocumentAmendDetails().getSelectedDocumentId()).isNull();
-        assertThat(caseData.getDocumentAmendDetails().getSelectedDocumentFileName()).isNull();
+        assertThat(details.getSelectedDocumentId()).isNull();
+        assertThat(details.getSelectedDocumentFileName()).isNull();
     }
 
     @Test
@@ -275,20 +295,20 @@ class DocumentAmendSelectionServiceTest {
             .documents(List.of(document))
             .build());
         PCSCase caseData = PCSCase.builder()
-            .documentAmendDetails(DocumentAmendDetails.builder()
-                .selectedFolder(EVIDENCE)
-                .evidenceDocuments(selectedDocument(document))
-                .build())
+            .evidenceDocuments(selectedDocument(document))
             .build();
-        underTest.initialise(CASE_REFERENCE, caseData);
+        DocumentAmendDetails details = DocumentAmendDetails.builder()
+            .selectedFolder(EVIDENCE)
+            .build();
+        underTest.initialise(CASE_REFERENCE, caseData, details);
 
-        List<String> errors = underTest.validateAndStoreSelection(caseData);
+        List<String> errors = underTest.validateAndStoreSelection(caseData, details);
 
         assertThat(errors).isEmpty();
-        assertThat(caseData.getDocumentAmendDetails().getSelectedFolderId()).isEqualTo(EVIDENCE.getId());
-        assertThat(caseData.getDocumentAmendDetails().getSelectedFolderLabel()).isEqualTo(EVIDENCE.getLabel());
-        assertThat(caseData.getDocumentAmendDetails().getSelectedDocumentId()).isEqualTo(document.getId().toString());
-        assertThat(caseData.getDocumentAmendDetails().getSelectedDocumentFileName()).isEqualTo("photo.pdf");
+        assertThat(details.getSelectedFolderId()).isEqualTo(EVIDENCE.getId());
+        assertThat(details.getSelectedFolderLabel()).isEqualTo(EVIDENCE.getLabel());
+        assertThat(details.getSelectedDocumentId()).isEqualTo(document.getId().toString());
+        assertThat(details.getSelectedDocumentFileName()).isEqualTo("photo.pdf");
     }
 
     @Test
@@ -297,17 +317,16 @@ class DocumentAmendSelectionServiceTest {
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(PcsCaseEntity.builder()
             .documents(List.of(document))
             .build());
-        PCSCase caseData = PCSCase.builder()
-            .documentAmendDetails(DocumentAmendDetails.builder()
-                .selectedFolder(EVIDENCE)
-                .build())
+        PCSCase caseData = PCSCase.builder().build();
+        DocumentAmendDetails details = DocumentAmendDetails.builder()
+            .selectedFolder(EVIDENCE)
             .build();
-        underTest.initialise(CASE_REFERENCE, caseData);
+        underTest.initialise(CASE_REFERENCE, caseData, details);
 
-        List<String> errors = underTest.validateAndStoreSelection(caseData);
+        List<String> errors = underTest.validateAndStoreSelection(caseData, details);
 
         assertThat(errors).isEmpty();
-        assertThat(caseData.getDocumentAmendDetails().getSelectedDocumentId()).isNull();
+        assertThat(details.getSelectedDocumentId()).isNull();
     }
 
     private static DynamicList selectedDocument(DocumentEntity document) {
@@ -337,12 +356,14 @@ class DocumentAmendSelectionServiceTest {
             .build();
     }
 
-    private static DocumentEntity documentWithType(String fileName, String categoryId, DocumentType type) {
+    private static DocumentEntity buildDocumentEntity(String fileName, String categoryId, DocumentType type,
+                                                       boolean removed) {
         return DocumentEntity.builder()
             .id(UUID.randomUUID())
             .fileName(fileName)
             .categoryId(categoryId)
             .type(type)
+            .removed(removed)
             .submittedDate(Instant.now())
             .build();
     }

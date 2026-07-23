@@ -11,7 +11,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.documentamend.DocumentAmendDetails;
-import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentAmendSelectionService;
+import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentSelectionService;
 import uk.gov.hmcts.reform.pcs.ccd.util.StringUtils;
 
 import java.util.List;
@@ -24,13 +24,14 @@ public class SelectDocumentPage implements CcdPageConfiguration {
 
     private static final String PAGE_ID = "selectDocument";
     private static final String FIELD_PREFIX = "documentAmend_";
+    private static final String DOCUMENT_QUESTION_LABEL = "Which document do you want to amend?";
     private static final String YES = "=\"Yes\"";
     private static final String NO = "=\"No\"";
-    private final DocumentAmendSelectionService documentAmendSelectionService;
+    private final DocumentSelectionService documentSelectionService;
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
-        FieldCollectionBuilder<DocumentAmendDetails, State, ?> documentAmendPage = pageBuilder
+        FieldCollectionBuilder<PCSCase, State, ?> page = pageBuilder
             .page(PAGE_ID, this::midEvent)
             .pageLabel("Select document")
             .label(PAGE_ID + "-separator", "---")
@@ -39,17 +40,21 @@ public class SelectDocumentPage implements CcdPageConfiguration {
                 .mandatory(DocumentAmendDetails::getSelectedFolder)
                 .label("emptyFolderDocumentError", "", NEVER_SHOW)
                 .label("selectedFolderEmptyErrorMessage", "", NEVER_SHOW)
-                .label("emptyFolderDocumentQuestion", "", NEVER_SHOW);
+                .label("emptyFolderDocumentQuestion", "", NEVER_SHOW)
+            .done();
 
-        for (DocumentCategoryField categoryField : DocumentCategoryField.values()) {
-            addCategoryFields(documentAmendPage, categoryField);
+        for (DocumentAmendCategoryField categoryField : DocumentAmendCategoryField.values()) {
+            addCategoryFields(page, categoryField);
         }
 
-        for (DocumentCategoryField categoryField : DocumentCategoryField.values()) {
-            documentAmendPage.readonly(categoryField.emptyGetter, NEVER_SHOW, true);
+        FieldCollectionBuilder<DocumentAmendDetails, State, ?> documentAmendDetailsFields =
+            page.complex(PCSCase::getDocumentAmendDetails);
+
+        for (DocumentAmendCategoryField categoryField : DocumentAmendCategoryField.values()) {
+            documentAmendDetailsFields.readonly(categoryField.emptyGetter, NEVER_SHOW, true);
         }
 
-        documentAmendPage
+        documentAmendDetailsFields
                 .readonly(DocumentAmendDetails::getSelectedFolderId, NEVER_SHOW, true)
                 .readonly(DocumentAmendDetails::getSelectedFolderLabel, NEVER_SHOW, true)
                 .readonly(DocumentAmendDetails::getSelectedDocumentId, NEVER_SHOW, true)
@@ -57,21 +62,27 @@ public class SelectDocumentPage implements CcdPageConfiguration {
             .done();
     }
 
-    private void addCategoryFields(FieldCollectionBuilder<DocumentAmendDetails, State, ?> page,
-                                   DocumentCategoryField categoryField) {
+    private void addCategoryFields(FieldCollectionBuilder<PCSCase, State, ?> page,
+                                   DocumentAmendCategoryField categoryField) {
         CaseFileCategory category = categoryField.category;
         page
             .label(categoryField.idPrefix + "EmptyFolderMessage", emptyFolderMessage(category),
                    noDocumentsShowCondition(category))
-            .mandatory(categoryField.documentsGetter, documentsShowCondition(category), true);
+            .mandatoryWithoutDefaultValue(categoryField.documentsGetter, documentsShowCondition(category),
+                                          DOCUMENT_QUESTION_LABEL, true);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
                                                                   CaseDetails<PCSCase, State> detailsBefore) {
         PCSCase caseData = details.getData();
 
-        documentAmendSelectionService.initialise(details.getId(), caseData);
-        List<String> errors = documentAmendSelectionService.validateAndStoreSelection(caseData);
+        if (caseData.getDocumentAmendDetails() == null) {
+            caseData.setDocumentAmendDetails(new DocumentAmendDetails());
+        }
+        DocumentAmendDetails documentAmendDetails = caseData.getDocumentAmendDetails();
+
+        documentSelectionService.initialise(details.getId(), caseData, documentAmendDetails);
+        List<String> errors = documentSelectionService.validateAndStoreSelection(caseData, documentAmendDetails);
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(caseData)
@@ -106,7 +117,7 @@ public class SelectDocumentPage implements CcdPageConfiguration {
     }
 
     private String emptyFolderMessage(CaseFileCategory category) {
-        return "Which document do you want to amend?"
+        return DOCUMENT_QUESTION_LABEL
             + "<br>"
             + "<span class=\"govuk-!-font-size-16\">No documents in '" + category.getLabel() + "'</span>";
     }
