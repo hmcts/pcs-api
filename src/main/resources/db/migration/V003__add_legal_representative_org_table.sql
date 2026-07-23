@@ -1,0 +1,27 @@
+create TABLE legal_representative_org (
+  id uuid primary key,
+  organisation_id varchar(80),
+  case_id UUID NOT NULL REFERENCES public.pcs_case (id),
+  organisation_name varchar(120),
+  email varchar(120),
+  phone varchar(40),
+  contact_reference varchar(80),
+  address_id  integer REFERENCES address (id),
+  has_amended_contact_details YES_NO
+);
+
+create table party_legal_rep_org (
+  party_id UUID REFERENCES party (id),
+  legal_representative_organisation_id UUID REFERENCES legal_representative_org (id),
+  active YES_NO,
+  start_date TIMESTAMP WITHOUT TIME ZONE,
+  end_date TIMESTAMP WITHOUT TIME ZONE,
+
+  primary key (party_id, legal_representative_organisation_id)
+);
+
+ALTER TABLE legal_representative
+  ADD COLUMN organisation_uuid UUID REFERENCES legal_representative_org(id);
+
+CREATE UNIQUE INDEX legal_representative_org_unique_by_organisation_idx
+  ON legal_representative_org(case_id, organisation_id);

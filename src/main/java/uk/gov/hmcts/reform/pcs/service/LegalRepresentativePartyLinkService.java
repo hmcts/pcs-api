@@ -41,7 +41,7 @@ public class LegalRepresentativePartyLinkService {
 
     @Transactional
     public void linkLegalRepresentativeToParty(long caseReference, String partyId, UserInfo user) {
-        String organisationId = organisationService.getOrganisationIdForCurrentUser();
+        String organisationId = organisationService.getOrganisationId(user.getUid());
         if (isAlreadyLinkedToParty(partyId, organisationId)) {
             throw new LegalRepresentativeAlreadyLinkedToPartyException(
                 "Legal Representative or organisation already linked to Party [" + partyId + "]");
@@ -65,13 +65,13 @@ public class LegalRepresentativePartyLinkService {
 
             legalRepresentativeOrganisation = legalRepresentativeOrganisationEntity.get();
 
-            backfillOrganisationMetadata(legalRepresentativeOrganisation);
+            backfillOrganisationMetadata(legalRepresentativeOrganisation, user.getUid());
             backfillLegalRepresentative(legalRepresentativeOrganisation, idamId);
         } else {
             legalRepresentativeOrganisation = createNewLegalRepresentative(organisationId,
                                                                            idamId,
                                                                            organisationService
-                                                                               .getNameAndAddressForCurrentUser(),
+                                                                               .getNameAndAddress(user.getUid()),
                                                                            caseEntity);
         }
 
@@ -126,13 +126,14 @@ public class LegalRepresentativePartyLinkService {
                                                                                               caseReference);
     }
 
-    private void backfillOrganisationMetadata(LegalRepresentativeOrganisationEntity legalRepresentativeOrganisation) {
+    private void backfillOrganisationMetadata(LegalRepresentativeOrganisationEntity legalRepresentativeOrganisation,
+                                              String userId) {
         if (legalRepresentativeOrganisation.getOrganisationId() == null) {
-            legalRepresentativeOrganisation.setOrganisationId(organisationService.getOrganisationIdForCurrentUser());
+            legalRepresentativeOrganisation.setOrganisationId(organisationService.getOrganisationId(userId));
         }
         if (legalRepresentativeOrganisation.getOrganisationName() == null) {
             legalRepresentativeOrganisation.setOrganisationName(organisationService
-                                                                    .getNameAndAddressForCurrentUser().name());
+                                                                    .getNameAndAddress(userId).name());
         }
     }
 

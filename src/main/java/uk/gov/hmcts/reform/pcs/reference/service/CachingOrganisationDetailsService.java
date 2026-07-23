@@ -16,10 +16,10 @@ import uk.gov.hmcts.reform.pcs.reference.dto.NameAndAddress;
 import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
 import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
 
+import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.function.Supplier;
 
 @Component
 @Slf4j
@@ -27,10 +27,12 @@ public class CachingOrganisationDetailsService {
 
     private final CachedOrganisationResponseRepository cachedOrganisationResponseRepository;
     private final int ttlInMinutes;
-    private final Supplier<LocalDateTime> localDateTimeSupplier;
     private final RdProfessionalApi rdProfessionalApi;
     private final AuthTokenGenerator authTokenGenerator;
     private final IdamTokenProvider prdAdminTokenProvider;
+    private final Clock utcClock;
+
+    private static final int RD_PROFESSIONAL_NULL_RESPONSE_TLL_OFFSET = 50;
 
     @Autowired
     public CachingOrganisationDetailsService(CachedOrganisationResponseRepository cachedOrganisationResponseRepository,
@@ -38,24 +40,14 @@ public class CachingOrganisationDetailsService {
                                              RdProfessionalApi rdProfessionalApi,
                                              AuthTokenGenerator authTokenGenerator,
                                              @Qualifier("prdAdminTokenProvider")
-                                                 IdamTokenProvider prdAdminTokenProvider) {
-        this(cachedOrganisationResponseRepository, ttlInMinutes, LocalDateTime::now,
-             rdProfessionalApi, authTokenGenerator, prdAdminTokenProvider);
-    }
-
-    public CachingOrganisationDetailsService(CachedOrganisationResponseRepository cachedOrganisationResponseRepository,
-                                             @Value("${cache.organisationDetails.ttlInMinutes}") int ttlInMinutes,
-                                             Supplier<LocalDateTime> localDateTimeSupplier,
-                                             RdProfessionalApi rdProfessionalApi,
-                                             AuthTokenGenerator authTokenGenerator,
-                                             @Qualifier("prdAdminTokenProvider")
-                                             IdamTokenProvider prdAdminTokenProvider) {
+                                                 IdamTokenProvider prdAdminTokenProvider,
+                                             @Qualifier("utcClock") Clock utcClock) {
         this.cachedOrganisationResponseRepository = cachedOrganisationResponseRepository;
         this.ttlInMinutes = ttlInMinutes;
-        this.localDateTimeSupplier = localDateTimeSupplier;
         this.rdProfessionalApi = rdProfessionalApi;
         this.authTokenGenerator = authTokenGenerator;
         this.prdAdminTokenProvider = prdAdminTokenProvider;
+        this.utcClock = utcClock;
     }
 
     public String getOrganisationIdentifier(String userId) {
@@ -85,19 +77,27 @@ public class CachingOrganisationDetailsService {
 
         if (cachedResponse.isEmpty()) {
             log.debug("Retrieving OrganisationDetails response as not cached");
-            OrganisationDetailsResponse response = getOrganisationDetails(userId);
+            Optional<OrganisationDetailsResponse> response = getOrganisationDetails(userId);
+            CachedOrganisationResponseEntity newCachedResponse;
+            if (response.isPresent()) {
+                newCachedResponse = mapResponseToEntity(userIdam, response.get());
+            } else {
+                newCachedResponse = mapPartialResponseToEntity(userIdam);
+            }
 
-            CachedOrganisationResponseEntity newCachedResponse = mapResponseToEntity(userIdam, response);
-
-            cachedOrganisationResponseRepository.save(newCachedResponse);
-            return newCachedResponse;
+            return cachedOrganisationResponseRepository.save(newCachedResponse);
         } else {
             CachedOrganisationResponseEntity existingCachedResponse = cachedResponse.get();
 
             if (isDataRequiringResync(existingCachedResponse.getLastModifiedDate())) {
-                OrganisationDetailsResponse response = getOrganisationDetails(userId);
-                updateFields(existingCachedResponse, response, userId);
-                cachedOrganisationResponseRepository.save(existingCachedResponse);
+                log.debug("Resyncing OrganisationDetails response");
+                Optional<OrganisationDetailsResponse> response = getOrganisationDetails(userId);
+                if (response.isPresent()) {
+                    updateFields(existingCachedResponse, response.get(), userId);
+                } else {
+                    setRdProfessionalNullResponseTllOffset(existingCachedResponse);
+                }
+                existingCachedResponse = cachedOrganisationResponseRepository.save(existingCachedResponse);
                 log.debug("Cached OrganisationDetails response refreshed");
             }
             return existingCachedResponse;
@@ -109,7 +109,7 @@ public class CachingOrganisationDetailsService {
      * @param userId The user ID to get organisation details for
      * @return OrganisationDetailsResponse containing organisation information
      */
-    private OrganisationDetailsResponse getOrganisationDetails(String userId) {
+    private Optional<OrganisationDetailsResponse> getOrganisationDetails(String userId) {
         try {
             String s2sToken = authTokenGenerator.generate();
             String prdAdminToken = prdAdminTokenProvider.getAuthToken();
@@ -120,9 +120,10 @@ public class CachingOrganisationDetailsService {
 
             if (details == null) {
                 log.warn("Organisation details response is null for userId: {}", userId);
+                return Optional.empty();
             }
 
-            return details;
+            return Optional.of(details);
 
         } catch (FeignException ex) {
             log.error("Feign error retrieving organisation details for userId: {}. Status: {}",
@@ -136,26 +137,25 @@ public class CachingOrganisationDetailsService {
     }
 
 
-    private CachedOrganisationResponseEntity mapResponseToEntity(UUID userIdam, OrganisationDetailsResponse response) {
-
+    private CachedOrganisationResponseEntity mapResponseToEntity(UUID userIdam,
+                                                                 OrganisationDetailsResponse response) {
         CachedOrganisationResponseEntity.CachedOrganisationResponseEntityBuilder builder =
             CachedOrganisationResponseEntity.builder()
                 .idamId(userIdam)
-                .lastModifiedDate(localDateTimeSupplier.get());
-        builder.organisationId(response.getOrganisationIdentifier())
-            .organisationName(response.getName());
+                .lastModifiedDate(LocalDateTime.now(utcClock));
+
+        builder.organisationId(response.getOrganisationIdentifier()).organisationName(response.getName());
 
         if (response.getContactInformation() != null && !response.getContactInformation().isEmpty()) {
             OrganisationDetailsResponse.ContactInformation contactInfo = response.getContactInformation().getFirst();
             builder.addressLine1(contactInfo.getAddressLine1())
                 .addressLine2(contactInfo.getAddressLine2())
                 .addressLine3(contactInfo.getAddressLine3())
-                .postTown(contactInfo.getTownCity())
                 .county(contactInfo.getCounty())
+                .postTown(contactInfo.getTownCity())
                 .country(contactInfo.getCountry())
                 .postCode(contactInfo.getPostCode());
         }
-
         return builder.build();
     }
 
@@ -176,18 +176,36 @@ public class CachingOrganisationDetailsService {
             existingCachedResponse.setPostCode(contactInfo.getPostCode());
         } else {
             log.warn("Organisation address is null or empty for user ID: {}", userId);
-            existingCachedResponse.setAddressLine1(null);
-            existingCachedResponse.setAddressLine2(null);
-            existingCachedResponse.setAddressLine3(null);
-            existingCachedResponse.setPostTown(null);
-            existingCachedResponse.setCounty(null);
-            existingCachedResponse.setCountry(null);
-            existingCachedResponse.setPostCode(null);
+            clearCachedAddressFields(existingCachedResponse);
         }
-        existingCachedResponse.setLastModifiedDate(localDateTimeSupplier.get());
+        existingCachedResponse.setLastModifiedDate(LocalDateTime.now(utcClock));
     }
 
     private boolean isDataRequiringResync(LocalDateTime lastModifiedDate) {
-        return localDateTimeSupplier.get().isAfter(lastModifiedDate.plusMinutes(ttlInMinutes));
+        return LocalDateTime.now(utcClock).isAfter(lastModifiedDate.plusMinutes(ttlInMinutes));
+    }
+
+    private void setRdProfessionalNullResponseTllOffset(CachedOrganisationResponseEntity existingCachedResponse) {
+        existingCachedResponse.setLastModifiedDate(LocalDateTime.now(utcClock)
+                                                       .minusMinutes(RD_PROFESSIONAL_NULL_RESPONSE_TLL_OFFSET));
+    }
+
+    private void clearCachedAddressFields(CachedOrganisationResponseEntity existingCachedResponse) {
+        existingCachedResponse.setAddressLine1(null);
+        existingCachedResponse.setAddressLine2(null);
+        existingCachedResponse.setAddressLine3(null);
+        existingCachedResponse.setPostTown(null);
+        existingCachedResponse.setCounty(null);
+        existingCachedResponse.setCountry(null);
+        existingCachedResponse.setPostCode(null);
+    }
+
+    private CachedOrganisationResponseEntity mapPartialResponseToEntity(UUID userIdam) {
+        CachedOrganisationResponseEntity.CachedOrganisationResponseEntityBuilder builder =
+            CachedOrganisationResponseEntity.builder()
+                .idamId(userIdam)
+                .lastModifiedDate(LocalDateTime.now(utcClock).minusMinutes(RD_PROFESSIONAL_NULL_RESPONSE_TLL_OFFSET));
+
+        return builder.build();
     }
 }
