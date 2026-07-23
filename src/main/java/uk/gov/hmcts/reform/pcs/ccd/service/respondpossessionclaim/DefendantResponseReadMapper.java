@@ -115,7 +115,7 @@ public class DefendantResponseReadMapper {
             .tenancyTypeConfirmation(entity.getTenancyTypeConfirmation())
             .tenancyStartDateConfirmation(entity.getTenancyStartDateConfirmation())
             .rentArrearsAmountConfirmation(entity.getRentArrearsAmountConfirmation())
-            .landlordRegistered(entity.getLandlordRegistered())
+            .exemptLandlord(entity.getExemptLandlord())
             .landlordLicensed(entity.getLandlordLicensed())
             .writtenTerms(entity.getWrittenTerms())
             .disputeClaim(entity.getDisputeClaim())
