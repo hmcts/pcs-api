@@ -19,8 +19,8 @@ public class UploadAdditionalDocumentsInformationPage implements CcdPageConfigur
                             the defendant’s landlord, housing association or mortgage provider.
                         </p>
                         <p class="govuk-body">
-                            If your application is 'without notice' (where you have asked us to consider your
-                            application without telling the other party) we will not share anything with them.
+                            If your application is &lsquo;without notice&rsquo; (where you have asked us to consider
+                            your application without telling the other party) we will not share anything with them.
                         </p>
                     </div>
                     <p class="govuk-body govuk-!-font-weight-bold govuk-!-font-size-24">What you can upload

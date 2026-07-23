@@ -13,11 +13,13 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocumentUploadDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.DocumentUploadCategory;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.page.legalrepdocumentupload.LegalRepDocumentUploadConfigurer;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
@@ -32,6 +34,7 @@ import java.util.stream.Stream;
 
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType;
+import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.legalRepDocumentUpload;
 
@@ -41,6 +44,7 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
 
     private final LegalRepDocumentUploadConfigurer legalRepDocumentUploadConfigurer;
     private final PcsCaseService pcsCaseService;
+    private final DocumentService documentService;
     private final GenAppVisibilityService genAppVisibilityService;
     private final SecurityContextService securityContextService;
 
@@ -92,6 +96,10 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
         // By default, Main claim is always added
         caseData.getLegalRepDocumentUploadDetails().setShowExistingApplicationPage(validCategoryItems.size() >= 2
                                                                                        ? YesOrNo.YES : YesOrNo.NO);
+
+        boolean isWalesClaim = pcsCaseEntity.getLegislativeCountry() == LegislativeCountry.WALES;
+        caseData.getLegalRepDocumentUploadDetails().setIsWales(isWalesClaim ? YesOrNo.YES : YesOrNo.NO);
+
         return caseData;
     }
 
@@ -136,7 +144,31 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
         return genAppVisibilityService.getVisibleGenAppsToUser(pcsCaseEntity.getGenApps(), currentUserId);
     }
 
-    private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
-        return SubmitResponse.defaultResponse();
+    SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
+        Long caseReference = eventPayload.caseReference();
+        PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
+        PCSCase pcsCase = eventPayload.caseData();
+
+        List<LegalRepDocument> legalRepDocuments = documentService.createLegalRepDocuments(pcsCase);
+
+        boolean isDocumentNull = legalRepDocuments.stream()
+            .anyMatch(doc -> doc == null || doc.getDocument() == null);
+
+        if (isDocumentNull) {
+            return errorResponse("Your files were not submitted. Try again.");
+        }
+
+        documentService.createDocumentEntitiesFromLegalRepDocuments(legalRepDocuments,pcsCaseEntity);
+
+        return SubmitResponse.<State>builder()
+            .build();
     }
+
+    @SuppressWarnings("SameParameterValue")
+    private SubmitResponse<State> errorResponse(String message) {
+        return SubmitResponse.<State>builder()
+            .errors(List.of(message))
+            .build();
+    }
+
 }
