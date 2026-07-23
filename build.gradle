@@ -30,7 +30,7 @@ plugins {
     Applies analysis tools including checkstyle and OWASP Dependency checker.
     See https://github.com/hmcts/gradle-java-plugin
  */
-  id 'uk.gov.hmcts.java' version '0.12.68'
+  id 'uk.gov.hmcts.java' version '0.12.70'
 }
 
 apply plugin: 'docker-compose'
@@ -366,7 +366,7 @@ repositories {
 }
 
 ext {
-  log4JVersion = "2.26.0"
+  log4JVersion = "2.26.1"
   logbackVersion = "1.5.37"
   testcontainersVersion = "2.0.5"
   testcontainersAdditionsVersion = "1.21.4"
@@ -374,8 +374,8 @@ ext {
   lombokVersion = "1.18.46"
   springSecurityVersion = "7.1.0"
   pactVersion = "4.7.3"
-  tomcatEmbedVersion = "11.0.23"
-  nettyVersion = "4.1.132.Final"
+  tomcatEmbedVersion = "11.0.24"
+  nettyVersion = "4.1.136.Final"
 }
 
 ext['snakeyaml.version'] = '2.0'
@@ -390,14 +390,13 @@ dependencies {
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-security', version: springFrameworkBootVersion
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-oauth2-client', version: springFrameworkBootVersion
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-data-jpa', version: springFrameworkBootVersion
+  implementation group: 'com.launchdarkly', name: 'launchdarkly-java-server-sdk', version: '7.14.0'
 
   runtimeOnly group: 'org.flywaydb', name: 'flyway-database-postgresql', version: flywayVersion
 
   implementation group: 'org.flywaydb', name: 'flyway-core', version: flywayVersion
   implementation group: 'org.springdoc', name: 'springdoc-openapi-starter-webmvc-ui', version: '2.8.17'
   implementation group: 'uk.gov.service.notify', name: 'notifications-java-client', version: '6.0.0-RELEASE'
-  implementation platform(group: 'com.azure.spring', name :'spring-cloud-azure-dependencies', version :'6.4.0')
-  implementation "com.azure.spring:spring-cloud-azure-starter-servicebus-jms"
   implementation group: 'org.modelmapper', name: 'modelmapper', version: '3.2.6'
 
   implementation group: 'com.github.hmcts.java-logging', name: 'logging', version: '8.0.0'
@@ -406,6 +405,8 @@ dependencies {
   implementation group: 'com.github.hmcts', name: 'idam-java-client', version: '3.0.5'
   implementation group: 'com.github.hmcts', name: 'doc-assembly-client', version: '2.2.0'
   implementation group: 'com.github.hmcts', name: 'ccd-case-document-am-client', version: '1.59.2'
+  implementation group: 'com.github.hmcts', name: 'send-letter-client', version: '5.1.1'
+  implementation group: 'org.apache.pdfbox', name: 'pdfbox', version: '3.0.8'
   implementation(group: 'com.github.hmcts', name: 'fees-java-client', version: '0.1.0') {
     exclude group: 'uk.gov.hmcts.reform', module: 'java-logging'
   }
@@ -419,7 +420,7 @@ dependencies {
   implementation group: 'org.apache.logging.log4j', name: 'log4j-to-slf4j', version: log4JVersion
   implementation group: 'ch.qos.logback', name: 'logback-classic', version: logbackVersion
   implementation group: 'ch.qos.logback', name: 'logback-core', version: logbackVersion
-  implementation group: 'org.postgresql', name: 'postgresql', version: '42.7.11'
+  implementation group: 'org.postgresql', name: 'postgresql', version: '42.7.13'
   implementation group: 'com.github.hmcts', name: 'service-auth-provider-java-client', version: '5.3.4'
   implementation group: 'io.pebbletemplates', name: 'pebble', version: '4.1.2'
   implementation group: 'org.springframework.cloud', name: 'spring-cloud-starter-openfeign', version: '4.3.3'
@@ -431,16 +432,17 @@ dependencies {
   implementation group: 'org.apache.tomcat.embed', name: 'tomcat-embed-websocket', version: tomcatEmbedVersion
   annotationProcessor group: 'org.projectlombok', name: 'lombok', version: lombokVersion
 
-  testImplementation group: 'io.rest-assured', name: 'rest-assured', version: '6.0.0'
+  testImplementation group: 'io.rest-assured', name: 'rest-assured', version: '6.0.1'
   testImplementation group: 'com.github.hmcts', name: 'fortify-client', version: '1.4.10', classifier: 'all'
   testImplementation group: 'org.instancio', name: 'instancio', version: '5.6.0'
+  testImplementation group: 'com.auth0', name: 'java-jwt', version: '4.5.2'
+  testImplementation group: 'com.github.tomakehurst', name: 'wiremock-jre8-standalone', version: '2.35.2'
 
   implementation(group: 'com.github.hmcts', name: 'befta-fw', version: '9.2.7') {
     exclude group: 'org.apache.commons', module: 'commons-compress'
     exclude group: 'com.google.guava', module: 'guava'
     exclude group: 'org.apache.poi', module: 'poi-ooxml'
     exclude group: 'org.apache.poi', module: 'poi'
-    exclude group: 'com.launchdarkly', module: 'launchdarkly-java-server-sdk'
   }
 
   functionalTestImplementation group: 'net.serenity-bdd', name: 'serenity-rest-assured', version: serenityBddVersion
@@ -515,6 +517,8 @@ project.tasks.named("generateCCDConfig") {
   environment 'PCS_DB_USER_NAME', 'postgres'
   environment 'PCS_DB_PASSWORD', 'postgres'
   environment 'DB_PORT', '6432'
+  environment 'LAUNCHDARKLY_OFFLINE', 'true'
+  environment 'LAUNCHDARKLY_SDK_KEY', 'ignored'
   environment 'ENABLE_TESTING_SUPPORT', 'false'
   environment 'DB_SCHEDULER_EXECUTOR_ENABLED', 'false'
 }
@@ -545,6 +549,7 @@ tasks.withType(CftlibExec).configureEach {
     logger.quiet("Attaching Mockito Java agent for inline mocking")
   }
 
+  environment 'ENABLE_TESTING_SUPPORT', 'true'
   environment 'RSE_LIB_ADDITIONAL_DATABASES', 'pcs'
   environment 'PCS_DB_USER_NAME', 'postgres'
   environment 'PCS_DB_PASSWORD', 'postgres'
@@ -552,6 +557,10 @@ tasks.withType(CftlibExec).configureEach {
   environment 'CCD_DECENTRALISED_CASE-TYPE-SERVICE-URLS_PCS', 'http://localhost:3206'
   environment 'SPRING_FLYWAY_ENABLED', 'true'
   environment 'SPRING_PROFILES_ACTIVE', 'dev'
+  // No LaunchDarkly key for local/cftlibTest - run the client offline so it serves code defaults
+  environment 'LAUNCHDARKLY_OFFLINE', 'true'
+  environment 'LAUNCHDARKLY_SDK_KEY', 'ignored'
+  environment 'LAUNCHDARKLY_FILES', './featureFlags/flags.json'
   environment 'ENABLE_TESTING_SUPPORT', 'true'
   environment 'IDAM_CLIENT_SECRET', 'dummy-secret-for-local'
   environment 'XUI_JURISDICTIONS', 'PCS'
@@ -559,6 +568,21 @@ tasks.withType(CftlibExec).configureEach {
   environment 'CASE_DOCUMENT_S2S_AUTHORISED_SERVICES', 'ccd_case_document_am_api,ccd_gw,xui_webapp,ccd_data,pcs_frontend,pcs_api'
   environment 'DATA_STORE_S2S_AUTHORISED_SERVICES', 'ccd_data,ccd_gw,pcs_frontend,pcs_api'
   environment 'CCD_S2S-AUTHORISED_SERVICES_CASE_USER_ROLES', 'aac_manage_case_assignment,pcs_api'
+}
+
+cftlibTest {
+  environment 'ENABLE_TESTING_SUPPORT', 'true'
+  environment 'DB_SCHEDULER_POLLING_INTERVAL_SECONDS', '2'
+
+  // To match the fake document URLs returned by the shared Wiremock
+  environment 'CCD_DOCUMENT_URL_PATTERN', 'https://docstore/document/[A-Za-z0-9-]+.*'
+
+  // Use shared wiremock (8083) for the document services in CftLib tests
+  environment 'DM_STORE_BASE_URL', 'http://localhost:8083'
+  environment 'DOC_ASSEMBLY_URL', 'http://localhost:8083'
+
+  // Use wiremock spun up by tests (9400) for email, so it can be queried easily
+  environment 'NOTIFY_URL', 'http://localhost:9400'
 }
 
 tasks.register('highLevelDataSetup', JavaExec) {
