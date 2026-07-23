@@ -19,7 +19,7 @@ public enum DocumentUploadCategory {
         "Yes, the documents I’m uploading relate to an application submitted on %s",
         true),
     MAIN_CLAIM_OR_COUNTERCLAIM(
-        "No, the documents I’m uploading relate to the main claim or counterclaim",
+        "No, the documents I’m uploading relate to the claim or counterclaim",
         false);
 
     private final String label;
