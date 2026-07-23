@@ -86,7 +86,7 @@ withPipeline(type, product, component) {
       AppPipelineDsl.PactRoles.CONSUMER,
       AppPipelineDsl.PactRoles.CONSUMER_DEPLOY_CHECK
     ])
-    enableHighLevelDataSetup("", true)
+    enableHighLevelDataSetup()
     setAatEnvVars()
     // The e2e journeys all create cases, which is blocked while the service is shuttered.
     if (!shutterService) {
