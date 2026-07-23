@@ -11,6 +11,7 @@ import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.pcs.exception.OrganisationDetailsException;
 import uk.gov.hmcts.reform.pcs.reference.api.RdProfessionalApi;
+import uk.gov.hmcts.reform.pcs.reference.dto.NameAndAddress;
 import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
 import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
 
@@ -41,11 +42,11 @@ class OrganisationDetailsServiceTest {
     @Mock
     private IdamTokenProvider prdAdminTokenProvider;
 
-    private OrganisationDetailsService organisationDetailsService;
+    private OrganisationDetailsService underTest;
 
     @BeforeEach
     void setUp() {
-        organisationDetailsService = new OrganisationDetailsService(
+        underTest = new OrganisationDetailsService(
             rdProfessionalApi,
             authTokenGenerator,
             prdAdminTokenProvider
@@ -68,7 +69,7 @@ class OrganisationDetailsServiceTest {
             .thenReturn(expectedResponse);
 
         // When
-        OrganisationDetailsResponse result = organisationDetailsService.getOrganisationDetails(USER_ID);
+        OrganisationDetailsResponse result = underTest.getOrganisationDetails(USER_ID);
 
         // Then
         assertThat(result).isNotNull();
@@ -96,7 +97,7 @@ class OrganisationDetailsServiceTest {
             .thenReturn(response);
 
         // When
-        String result = organisationDetailsService.getOrganisationName(USER_ID);
+        String result = underTest.getOrganisationName(USER_ID);
 
         // Then
         assertThat(result).isEqualTo(ORGANISATION_NAME);
@@ -117,7 +118,7 @@ class OrganisationDetailsServiceTest {
             .thenReturn(response);
 
         // When
-        String result = organisationDetailsService.getOrganisationIdentifier(USER_ID);
+        String result = underTest.getOrganisationIdentifier(USER_ID);
 
         // Then
         assertThat(result).isEqualTo(ORGANISATION_IDENTIFIER);
@@ -135,7 +136,7 @@ class OrganisationDetailsServiceTest {
             .thenThrow(runtimeException);
 
         // When & Then
-        assertThatThrownBy(() -> organisationDetailsService.getOrganisationDetails(USER_ID))
+        assertThatThrownBy(() -> underTest.getOrganisationDetails(USER_ID))
             .isInstanceOf(OrganisationDetailsException.class)
             .hasMessage("Unexpected error retrieving organisation details")
             .hasCause(runtimeException);
@@ -153,7 +154,7 @@ class OrganisationDetailsServiceTest {
             .thenThrow(generalException);
 
         // When & Then
-        assertThatThrownBy(() -> organisationDetailsService.getOrganisationDetails(USER_ID))
+        assertThatThrownBy(() -> underTest.getOrganisationDetails(USER_ID))
             .isInstanceOf(OrganisationDetailsException.class)
             .hasMessage("Unexpected error retrieving organisation details")
             .hasCause(generalException);
@@ -169,7 +170,7 @@ class OrganisationDetailsServiceTest {
             .thenReturn(null);
 
         // When
-        AddressUK result = organisationDetailsService.getOrganisationAddress(USER_ID);
+        AddressUK result = underTest.getOrganisationAddress(USER_ID);
 
         // Then
         assertThat(result).isNull();
@@ -190,7 +191,7 @@ class OrganisationDetailsServiceTest {
             .thenReturn(response);
 
         // When
-        AddressUK result = organisationDetailsService.getOrganisationAddress(USER_ID);
+        AddressUK result = underTest.getOrganisationAddress(USER_ID);
 
         // Then
         assertThat(result).isNull();
@@ -225,7 +226,7 @@ class OrganisationDetailsServiceTest {
             .thenReturn(response);
 
         // When
-        AddressUK result = organisationDetailsService.getOrganisationAddress(USER_ID);
+        AddressUK result = underTest.getOrganisationAddress(USER_ID);
 
         // Then
         assertThat(result.getAddressLine1()).isEqualTo(contactInfo1.getAddressLine1());
@@ -247,7 +248,7 @@ class OrganisationDetailsServiceTest {
             .thenThrow(feignEx);
 
         // When / Then
-        assertThatThrownBy(() -> organisationDetailsService.getOrganisationDetails(USER_ID))
+        assertThatThrownBy(() -> underTest.getOrganisationDetails(USER_ID))
             .isInstanceOf(OrganisationDetailsException.class)
             .hasMessage("Failed to retrieve organisation details")
             .hasCause(feignEx);
@@ -263,7 +264,7 @@ class OrganisationDetailsServiceTest {
         when(authTokenGenerator.generate()).thenThrow(unexpected);
 
         // When / Then
-        assertThatThrownBy(() -> organisationDetailsService.getOrganisationDetails(USER_ID))
+        assertThatThrownBy(() -> underTest.getOrganisationDetails(USER_ID))
             .isInstanceOf(OrganisationDetailsException.class)
             .hasMessage("Unexpected error retrieving organisation details")
             .hasCause(unexpected);
@@ -282,8 +283,96 @@ class OrganisationDetailsServiceTest {
             .thenThrow(feignEx);
 
         // When / Then
-        assertThatThrownBy(() -> organisationDetailsService.getOrganisationName(USER_ID))
+        assertThatThrownBy(() -> underTest.getOrganisationName(USER_ID))
             .isInstanceOf(OrganisationDetailsException.class)
             .hasCause(feignEx);
     }
+
+    @Test
+    void shouldGetNameAndAddress() {
+        // Given
+        OrganisationDetailsResponse.ContactInformation primaryContact =
+            OrganisationDetailsResponse.ContactInformation.builder().addressLine1("21 ZYZ").townCity("London")
+                .county("Greater London").country("UK").postCode("B8 7FH").build();
+
+        OrganisationDetailsResponse response = OrganisationDetailsResponse.builder()
+            .name(ORGANISATION_NAME)
+            .organisationIdentifier(ORGANISATION_IDENTIFIER)
+            .contactInformation(List.of(primaryContact))
+            .build();
+
+        when(authTokenGenerator.generate()).thenReturn(S2S_TOKEN);
+        when(prdAdminTokenProvider.getAuthToken()).thenReturn(PRD_ADMIN_TOKEN);
+        when(rdProfessionalApi.getOrganisationDetails(anyString(), anyString(), anyString()))
+            .thenReturn(response);
+
+        // When
+        NameAndAddress result = underTest.getNameAndAddress(USER_ID);
+
+        // Then
+        assertThat(result).isNotNull();
+        assertThat(result.name()).isEqualTo(ORGANISATION_NAME);
+        assertThat(result.address()).isNotNull();
+        assertThat(result.address().getAddressLine1()).isEqualTo("21 ZYZ");
+        assertThat(result.address().getPostTown()).isEqualTo("London");
+        assertThat(result.address().getCounty()).isEqualTo("Greater London");
+        assertThat(result.address().getCountry()).isEqualTo("UK");
+        assertThat(result.address().getPostCode()).isEqualTo("B8 7FH");
+
+        verify(rdProfessionalApi).getOrganisationDetails(USER_ID, S2S_TOKEN, PRD_ADMIN_TOKEN);
+    }
+
+    @Test
+    void shouldGetNameAndAddressWithNullAddressWhenContactInformationEmpty() {
+        // Given
+        OrganisationDetailsResponse response = OrganisationDetailsResponse.builder()
+            .name(ORGANISATION_NAME)
+            .organisationIdentifier(ORGANISATION_IDENTIFIER)
+            .contactInformation(List.of())
+            .build();
+
+        when(authTokenGenerator.generate()).thenReturn(S2S_TOKEN);
+        when(prdAdminTokenProvider.getAuthToken()).thenReturn(PRD_ADMIN_TOKEN);
+        when(rdProfessionalApi.getOrganisationDetails(anyString(), anyString(), anyString()))
+            .thenReturn(response);
+
+        // When
+        NameAndAddress result = underTest.getNameAndAddress(USER_ID);
+
+        // Then
+        assertThat(result).isNotNull();
+        assertThat(result.name()).isEqualTo(ORGANISATION_NAME);
+        assertThat(result.address()).isNull();
+    }
+
+    @Test
+    void shouldGetNameAndAddressShouldPropagateOrganisationDetailsExceptionOnFeignFailure() {
+        // Given
+        FeignException feignEx = mock(FeignException.class);
+        when(feignEx.status()).thenReturn(500);
+
+        when(authTokenGenerator.generate()).thenReturn(S2S_TOKEN);
+        when(prdAdminTokenProvider.getAuthToken()).thenReturn(PRD_ADMIN_TOKEN);
+        when(rdProfessionalApi.getOrganisationDetails(anyString(), anyString(), anyString()))
+            .thenThrow(feignEx);
+
+        // When / Then
+        assertThatThrownBy(() -> underTest.getNameAndAddress(USER_ID))
+            .isInstanceOf(OrganisationDetailsException.class)
+            .hasMessage("Failed to retrieve organisation details")
+            .hasCause(feignEx);
+    }
+
+    @Test
+    void shouldGetNameAndAddressShouldThrowWhenOrganisationDetailsIsNull() {
+        when(authTokenGenerator.generate()).thenReturn(S2S_TOKEN);
+        when(prdAdminTokenProvider.getAuthToken()).thenReturn(PRD_ADMIN_TOKEN);
+        when(rdProfessionalApi.getOrganisationDetails(anyString(), anyString(), anyString()))
+            .thenReturn(null);
+
+        // When / Then
+        assertThatThrownBy(() -> underTest.getNameAndAddress(USER_ID))
+            .isInstanceOf(NullPointerException.class);
+    }
+
 }
