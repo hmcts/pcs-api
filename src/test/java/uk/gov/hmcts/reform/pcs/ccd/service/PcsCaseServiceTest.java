@@ -228,7 +228,7 @@ class PcsCaseServiceTest {
         PCSCase caseData = PCSCase.builder().build();
 
         List<DocumentEntity> documentEntities = List.of(mock(DocumentEntity.class), mock(DocumentEntity.class));
-        when(documentService.createAllDocuments(caseData)).thenReturn(documentEntities);
+        when(documentService.buildDocumentEntitiesForCase(caseData)).thenReturn(documentEntities);
 
         // When
         underTest.createMainClaimOnCase(CASE_REFERENCE, caseData, ORG_ID);
@@ -236,6 +236,7 @@ class PcsCaseServiceTest {
         // Then
         verify(pcsCaseEntity).addDocuments(documentEntities);
         verify(mainClaimEntity).addClaimDocuments(documentEntities);
+        verify(pcsCaseRepository).save(pcsCaseEntity);
     }
 
     @Test

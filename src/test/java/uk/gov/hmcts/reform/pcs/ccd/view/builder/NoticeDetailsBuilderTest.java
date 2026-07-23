@@ -352,7 +352,7 @@ class NoticeDetailsBuilderTest {
     }
 
     @Test
-    void shouldUnsetNoticeDocumentsIfCaseIsSubmitted() {
+    void shouldRetainNoticeDocumentsIfCaseIsSubmitted() {
         // Given
         List<ListValue<Document>> noticeDocuments = List.of(
             ListValue.<Document>builder().value(Document.builder().build()).build()
@@ -371,8 +371,11 @@ class NoticeDetailsBuilderTest {
         NoticeTabDetails noticeTabDetails = noticeDetailsBuilder.buildNoticeTabDetails(pcsCase, true);
 
         // Then
+        // The notice document is kept on the party-readable notice_Documents field so that
+        // defendant/citizen/legal-rep read paths (e.g. the confirmation-of-notice-date page)
+        // can resolve it, as well as being surfaced on the case-details tab.
         assertThat(noticeTabDetails.getNoticeDocuments()).isEqualTo(noticeDocuments);
-        assertThat(noticeServedDetails.getDocuments()).isNull();
+        assertThat(noticeServedDetails.getDocuments()).isEqualTo(noticeDocuments);
     }
 
     @Test

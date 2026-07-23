@@ -72,6 +72,7 @@ public class NoticeOfPossessionView {
                 }
                 case OTHER_ELECTRONIC -> {
                     noticeServedDetails.setOtherElectronicDateTime(noticeOfPossessionEntity.getNoticeDateTime());
+                    noticeServedDetails.setOtherElectronicExplanation(noticeOfPossessionEntity.getNoticeDetails());
                 }
                 case OTHER -> {
                     noticeServedDetails.setOtherDateTime(noticeOfPossessionEntity.getNoticeDateTime());
