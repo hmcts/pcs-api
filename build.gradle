@@ -569,6 +569,7 @@ tasks.withType(CftlibExec).configureEach {
   environment 'DATA_STORE_S2S_AUTHORISED_SERVICES', 'ccd_data,ccd_gw,pcs_frontend,pcs_api'
   environment 'CCD_S2S-AUTHORISED_SERVICES_CASE_USER_ROLES', 'aac_manage_case_assignment,pcs_api'
   environment 'CCD_RETAIN_AND_DISPOSE_MODE', 'live'
+  // Spring treats "-" as a disabled cron expression; CFTLib tests invoke the live task explicitly.
   environment 'CCD_RETAIN_AND_DISPOSE_CRON', '-'
 }
 
