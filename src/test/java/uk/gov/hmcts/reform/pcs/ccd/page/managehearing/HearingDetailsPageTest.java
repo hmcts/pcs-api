@@ -21,7 +21,7 @@ import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
-public class AddHearingPageTest extends BasePageTest {
+public class HearingDetailsPageTest extends BasePageTest {
 
     @Mock
     private TextAreaValidationService textAreaValidationService;
@@ -36,7 +36,7 @@ public class AddHearingPageTest extends BasePageTest {
                 .errors(errors.isEmpty() ? null : errors)
                 .build();
         }).when(textAreaValidationService).createValidationResponse(any(), any());
-        setPageUnderTest(new AddHearingPage(textAreaValidationService));
+        setPageUnderTest(new HearingDetailsPage(textAreaValidationService));
     }
 
     @Test

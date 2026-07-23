@@ -5,7 +5,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
@@ -20,8 +19,11 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.Hearing;
+import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.HearingNoticeWording;
+import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.HearingType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.ManageHearingOption;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.HearingEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
@@ -34,6 +36,9 @@ import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.location.model.CourtVenue;
 import uk.gov.hmcts.reform.pcs.location.service.LocationReferenceService;
 
+import java.time.Clock;
+import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -48,11 +53,16 @@ import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.HEARING_CENTRE_
 import static uk.gov.hmcts.reform.pcs.ccd.domain.State.AWAITING_SUBMISSION_TO_HMCTS;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.State.CASE_ISSUED;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.State.PENDING_CASE_ISSUED;
+import static uk.gov.hmcts.reform.pcs.config.ClockConfiguration.UK_ZONE_ID;
 
 @ExtendWith(MockitoExtension.class)
 public class ManageHearingTest extends BaseEventTest {
 
     private static final int BASE_LOCATION_ID = 1;
+    private static final Clock FIXED_UK_CLOCK = Clock.fixed(
+        Instant.parse("2026-08-01T09:00:00Z"),
+        UK_ZONE_ID
+    );
 
     @Mock
     private ManageHearingConfigurer manageHearingConfigurer;
@@ -71,11 +81,19 @@ public class ManageHearingTest extends BaseEventTest {
     @Mock
     private ClaimEntity mainClaim;
 
-    @InjectMocks
     private ManageHearing manageHearing;
 
     @BeforeEach
     void setUp() {
+        manageHearing = new ManageHearing(
+            manageHearingConfigurer,
+            addressFormatter,
+            hearingService,
+            locationReferenceService,
+            pcsCaseService,
+            partyService,
+            FIXED_UK_CLOCK
+        );
         setEventUnderTest(manageHearing);
     }
 
@@ -136,6 +154,147 @@ public class ManageHearingTest extends BaseEventTest {
             // Then
             assertThat(response.getShowManageHearingPage()).isEqualTo(VerticalYesNo.YES);
             assertThat(response.getManageHearingOption()).isNull();
+        }
+
+        @Test
+        void shouldPrepopulateEditFormFromNextUpcomingHearingByScheduledDate() {
+            // Given
+            HearingEntity laterUpcomingHearing = HearingEntity.builder()
+                .id(1)
+                .type(HearingType.POSSESSION)
+                .hearingDate(LocalDateTime.of(2026, 8, 3, 9, 0))
+                .build();
+            HearingEntity pastHearing = HearingEntity.builder()
+                .id(2)
+                .type(HearingType.APPLICATION)
+                .hearingDate(LocalDateTime.of(2026, 7, 31, 9, 0))
+                .build();
+            HearingEntity selectedHearing = HearingEntity.builder()
+                .id(3)
+                .type(HearingType.OTHER)
+                .otherHearingType("case management")
+                .noticeWording(HearingNoticeWording.RES)
+                .hearingDate(LocalDateTime.of(2026, 8, 2, 14, 30))
+                .durationDays(1)
+                .durationHours(2)
+                .durationMinutes(45)
+                .notes("existing notes")
+                .issueNotice(VerticalYesNo.YES)
+                .isWithoutNotice(VerticalYesNo.NO)
+                .additionalInformation("existing additional information")
+                .build();
+            when(pcsCaseEntity.getHearings()).thenReturn(List.of(
+                laterUpcomingHearing,
+                pastHearing,
+                selectedHearing
+            ));
+
+            PCSCase pcsCase = PCSCase.builder()
+                .caseManagementLocation(caseLocation)
+                .hearingList(List.of(hearingListValue(Hearing.builder().build())))
+                .build();
+
+            // When
+            PCSCase response = callStartHandler(pcsCase);
+
+            // Then
+            assertThat(response.getSelectedHearingId()).isEqualTo("3");
+            assertThat(response.getHearing()).usingRecursiveComparison().isEqualTo(
+                Hearing.builder()
+                    .type(HearingType.OTHER)
+                    .otherHearingType("case management")
+                    .noticeWording(HearingNoticeWording.RES)
+                    .date(LocalDateTime.of(2026, 8, 2, 14, 30))
+                    .durationDays(1)
+                    .durationHours(2)
+                    .durationMinutes(45)
+                    .notes("existing notes")
+                    .issueNotice(VerticalYesNo.YES)
+                    .isWithoutNotice(VerticalYesNo.NO)
+                    .additionalInformation("existing additional information")
+                    .build()
+            );
+        }
+
+        @Test
+        void shouldPrepopulateEditFormFromPastHearingWhenSelectedScheduledHearingIsInThePast() {
+            // Given
+            HearingEntity selectedPastHearing = HearingEntity.builder()
+                .id(4)
+                .type(HearingType.ADJOURNED)
+                .noticeWording(HearingNoticeWording.ADJ)
+                .hearingDate(LocalDateTime.of(2020, 1, 1, 10, 15))
+                .durationDays(0)
+                .durationHours(1)
+                .durationMinutes(30)
+                .notes("past hearing notes")
+                .issueNotice(VerticalYesNo.NO)
+                .additionalInformation("past hearing information")
+                .build();
+            when(pcsCaseEntity.getHearings()).thenReturn(List.of(selectedPastHearing));
+
+            PCSCase pcsCase = PCSCase.builder()
+                .caseManagementLocation(caseLocation)
+                .hearingList(List.of(hearingListValue(Hearing.builder().build())))
+                .build();
+
+            // When
+            PCSCase response = callStartHandler(pcsCase);
+
+            // Then
+            assertThat(response.getSelectedHearingId()).isEqualTo("4");
+            assertThat(response.getHearing()).usingRecursiveComparison().isEqualTo(
+                Hearing.builder()
+                    .type(HearingType.ADJOURNED)
+                    .noticeWording(HearingNoticeWording.ADJ)
+                    .date(LocalDateTime.of(2020, 1, 1, 10, 15))
+                    .durationDays(0)
+                    .durationHours(1)
+                    .durationMinutes(30)
+                    .notes("past hearing notes")
+                    .issueNotice(VerticalYesNo.NO)
+                    .additionalInformation("past hearing information")
+                    .build()
+            );
+        }
+
+        @Test
+        void shouldPreselectNoticeRecipientPartiesFromSelectedHearing() {
+            // Given
+            UUID claimantId = UUID.randomUUID();
+            PartyEntity claimantParty = createParty(claimantId);
+            when(partyService.getPartyName(claimantParty)).thenReturn("claimant name");
+            when(partyService.getPartyLabel(mainClaim, claimantId)).thenReturn("claimant label");
+
+            UUID defendantId = UUID.randomUUID();
+            PartyEntity defendantParty = createParty(defendantId);
+            when(partyService.getPartyName(defendantParty)).thenReturn("defendant name");
+            when(partyService.getPartyLabel(mainClaim, defendantId)).thenReturn("defendant label");
+
+            when(mainClaim.getClaimParties()).thenReturn(List.of(
+                createClaimParty(PartyRole.CLAIMANT, claimantParty),
+                createClaimParty(PartyRole.DEFENDANT, defendantParty)
+            ));
+
+            HearingEntity selectedHearing = HearingEntity.builder()
+                .id(1)
+                .hearingDate(LocalDateTime.of(2026, 8, 5, 14, 30))
+                .noticeParties(List.of(defendantId))
+                .build();
+            when(pcsCaseEntity.getHearings()).thenReturn(List.of(selectedHearing));
+
+            PCSCase pcsCase = PCSCase.builder()
+                .caseManagementLocation(caseLocation)
+                .hearingList(List.of(hearingListValue(Hearing.builder().build())))
+                .build();
+
+            // When
+            PCSCase response = callStartHandler(pcsCase);
+
+            // Then
+            assertThat(response.getPartyMultiSelectionList().getValue())
+                .extracting(DynamicListElement::getCode)
+                .containsExactly(defendantId);
         }
 
         @Test
@@ -350,6 +509,12 @@ public class ManageHearingTest extends BaseEventTest {
         return ClaimPartyEntity.builder()
             .role(role)
             .party(partyEntity)
+            .build();
+    }
+
+    private static ListValue<Hearing> hearingListValue(Hearing hearing) {
+        return ListValue.<Hearing>builder()
+            .value(hearing)
             .build();
     }
 }

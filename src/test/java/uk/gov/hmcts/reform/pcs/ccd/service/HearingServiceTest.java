@@ -45,6 +45,7 @@ public class HearingServiceTest {
             .otherHearingType("other hearing type")
             .noticeWording(HearingNoticeWording.ADJ)
             .date(LocalDateTime.of(2026, 2, 1, 9,  0, 0))
+            .durationDays(1)
             .durationHours(1)
             .durationMinutes(30)
             .notes("notes")
@@ -87,6 +88,7 @@ public class HearingServiceTest {
         assertThat(hearingEntity.getOtherHearingType()).isEqualTo("other hearing type");
         assertThat(hearingEntity.getNoticeWording()).isEqualTo(HearingNoticeWording.ADJ);
         assertThat(hearingEntity.getHearingDate()).isEqualTo(LocalDateTime.of(2026, 2, 1, 9, 0, 0));
+        assertThat(hearingEntity.getDurationDays()).isEqualTo(1);
         assertThat(hearingEntity.getDurationHours()).isEqualTo(1);
         assertThat(hearingEntity.getDurationMinutes()).isEqualTo(30);
         assertThat(hearingEntity.getNotes()).isEqualTo("notes");
@@ -105,6 +107,7 @@ public class HearingServiceTest {
             .otherHearingType("other hearing type")
             .noticeWording(HearingNoticeWording.ADJ)
             .date(LocalDateTime.of(2026, 2, 1, 9,  0, 0))
+            .durationDays(1)
             .durationHours(1)
             .durationMinutes(30)
             .notes("notes")
@@ -147,6 +150,7 @@ public class HearingServiceTest {
         assertThat(hearingEntity.getOtherHearingType()).isEqualTo("other hearing type");
         assertThat(hearingEntity.getNoticeWording()).isEqualTo(HearingNoticeWording.ADJ);
         assertThat(hearingEntity.getHearingDate()).isEqualTo(LocalDateTime.of(2026, 2, 1, 9, 0, 0));
+        assertThat(hearingEntity.getDurationDays()).isEqualTo(1);
         assertThat(hearingEntity.getDurationHours()).isEqualTo(1);
         assertThat(hearingEntity.getDurationMinutes()).isEqualTo(30);
         assertThat(hearingEntity.getNotes()).isEqualTo("notes");

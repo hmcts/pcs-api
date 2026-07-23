@@ -49,6 +49,12 @@ public class Hearing {
     private LocalDateTime date;
 
     @CCD(
+        label = "Day",
+        max = 100
+    )
+    private Integer durationDays;
+
+    @CCD(
         label = "Hour",
         max = 23
     )

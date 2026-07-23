@@ -35,6 +35,7 @@ public class HearingService {
             .type(hearingType)
             .noticeWording(hearing.getNoticeWording())
             .hearingDate(hearing.getDate())
+            .durationDays(hearing.getDurationDays())
             .durationHours(hearing.getDurationHours())
             .durationMinutes(hearing.getDurationMinutes())
             .issueNotice(issueNotice)

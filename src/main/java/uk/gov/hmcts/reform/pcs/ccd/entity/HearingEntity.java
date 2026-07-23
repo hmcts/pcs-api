@@ -56,6 +56,8 @@ public class HearingEntity {
 
     private LocalDateTime hearingDate;
 
+    private Integer durationDays;
+
     private Integer durationHours;
 
     private Integer durationMinutes;

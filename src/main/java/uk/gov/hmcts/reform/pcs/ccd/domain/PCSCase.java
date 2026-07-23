@@ -755,6 +755,9 @@ public class PCSCase {
     private VerticalYesNo showManageHearingPage;
 
     @CCD(searchable = false)
+    private String selectedHearingId;
+
+    @CCD(searchable = false)
     private String hearingLocation;
 
     @CCD(searchable = false)
