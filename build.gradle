@@ -33,6 +33,33 @@ plugins {
   id 'uk.gov.hmcts.java' version '0.12.70'
 }
 
+dependencies {
+  implementation('org.apache.spark:spark-core_2.12:3.5.1') {
+    exclude group: 'org.apache.logging.log4j', module: 'log4j-slf4j2-impl'
+    exclude group: 'org.slf4j', module: 'slf4j-log4j12'
+  }
+  implementation('org.apache.spark:spark-sql_2.12:3.5.1') {
+    exclude group: 'org.apache.logging.log4j', module: 'log4j-slf4j2-impl'
+    exclude group: 'org.slf4j', module: 'slf4j-log4j12'
+  }
+  implementation 'com.amazon.deequ:deequ:2.0.21-spark-3.5'
+  runtimeOnly 'javax.servlet:javax.servlet-api:4.0.1'
+}
+
+configurations {
+  deequRuntime.extendsFrom runtimeClasspath
+}
+
+configurations.deequRuntime {
+  resolutionStrategy {
+    force 'org.antlr:antlr4-runtime:4.9.3'
+  }
+}
+
+configurations.configureEach {
+  exclude group: 'org.apache.logging.log4j', module: 'log4j-slf4j2-impl'
+}
+
 apply plugin: 'docker-compose'
 
 group = 'uk.gov.hmcts.reform'
@@ -631,4 +658,16 @@ tasks.named("processFunctionalTestResources") {
 
 tasks.withType(Wrapper) {
   distributionType = Wrapper.DistributionType.ALL
+}
+
+tasks.register('runDeequ', JavaExec) {
+  group = 'application'
+  mainClass = 'uk.gov.hmcts.reform.pcs.DataTest'
+  classpath = sourceSets.main.output + configurations.deequRuntime
+  jvmArgs = [
+    '--add-opens=java.base/sun.nio.ch=ALL-UNNAMED',
+    '--add-opens=java.base/java.lang=ALL-UNNAMED',
+    '--add-opens=java.base/java.util=ALL-UNNAMED',
+    '--add-opens=java.base/javax.security.auth=ALL-UNNAMED'
+  ]
 }
