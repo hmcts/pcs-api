@@ -34,6 +34,10 @@ public class OrganisationService {
         }
     }
 
+    public NameAndAddress getNameAndAddress(String userId) {
+        return cachingOrganisationDetailsService.getNameAndAddress(userId);
+    }
+
     /**
      * Retrieves the organisation identifier for the current user.
      *
@@ -53,6 +57,10 @@ public class OrganisationService {
             log.error("Error retrieving organisation ID from rd-professional API. Error: ", ex);
             return null;
         }
+    }
+
+    public String getOrganisationId(String userId) {
+        return cachingOrganisationDetailsService.getOrganisationIdentifier(userId);
     }
 
     private UUID resolveUserId() {
