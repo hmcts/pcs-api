@@ -187,33 +187,35 @@ class ClaimFormGenerationComponentTest {
             .hasMessage("generation failed");
     }
 
-//    @Test
-//    @DisplayName("Final attempt logs one terminal ERROR with the exception message and MDC dimensions")
-//    void finalAttemptLogsTerminalErrorWithDimensions() {
-//        ClaimFormTaskData data = ClaimFormTaskData.builder().caseReference("999").build();
-//        when(taskInstance.getData()).thenReturn(data);
-//        execution.consecutiveFailures = maxRetries;
-//        when(executionContext.getExecution()).thenReturn(execution);
-//        doThrow(new RuntimeException("docassembly 500")).when(claimFormService).generateAndAttach(999L);
-//
-//        CustomTask<ClaimFormTaskData> task = component.claimFormGenerationTask();
-//        assertThatThrownBy(() -> task.execute(taskInstance, executionContext))
-//            .isInstanceOf(RuntimeException.class);
-//
-//        List<ILoggingEvent> terminalErrors = logAppender.list.stream()
-//            .filter(e -> e.getLevel() == Level.ERROR)
-//            .filter(e -> e.getFormattedMessage().contains("permanently failed"))
-//            .toList();
-//        assertThat(terminalErrors).hasSize(1);
-//
-//        ILoggingEvent event = terminalErrors.getFirst();
-//        assertThat(event.getFormattedMessage()).contains("999").contains("docassembly 500");
-//        assertThat(event.getMDCPropertyMap())
-//            .containsEntry("caseReference", "999")
-//            .containsEntry("taskName", "claim-form-generation-task")
-//            .containsEntry("terminalFailure", "true")
-//            .containsEntry("failureReason", "docassembly 500");
-//    }
+    @Test
+    @DisplayName("Final attempt logs one terminal ERROR with the exception message and MDC dimensions")
+    void finalAttemptLogsTerminalErrorWithDimensions() {
+        ClaimFormTaskData data = ClaimFormTaskData.builder().caseReference("999").build();
+        when(taskInstance.getData()).thenReturn(data);
+        execution.consecutiveFailures = maxRetries;
+        when(executionContext.getExecution()).thenReturn(execution);
+        doThrow(new RuntimeException("docassembly 500")).when(claimFormService).generateAndAttach(999L);
+
+        CustomTask<ClaimFormTaskData> task = component.claimFormGenerationTask();
+        assertThatThrownBy(() -> task.execute(taskInstance, executionContext))
+            .isInstanceOf(RuntimeException.class);
+
+        List<ILoggingEvent> terminalErrors = logAppender.list.stream()
+            .filter(e -> e.getLevel() == Level.ERROR)
+            .filter(e -> e.getFormattedMessage().contains("permanently failed"))
+            .toList();
+        assertThat(terminalErrors).hasSize(1);
+
+        ILoggingEvent event = terminalErrors.getFirst();
+        assertThat(event.getFormattedMessage()).contains("999");
+        assertThat(event.getThrowableProxy()).isNotNull();
+        assertThat(event.getThrowableProxy().getMessage()).contains("docassembly 500");
+        assertThat(event.getMDCPropertyMap())
+            .containsEntry("caseReference", "999")
+            .containsEntry("taskName", "claim-form-generation-task")
+            .containsEntry("terminalFailure", "true")
+            .containsEntry("failureReason", "docassembly 500");
+    }
 
     @Test
     @DisplayName("Non-final attempt logs no terminal ERROR (intermediate retries stay silent)")

@@ -26,12 +26,12 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.task.CounterClaimFormGenerationComponent.COUNTER_CLAIM_FORM_TASK_DESCRIPTOR;
@@ -150,60 +150,61 @@ class CounterClaimFormGenerationComponentTest {
         verify(counterClaimFormService).recordGenerationFailure(eq(COUNTER_CLAIM_ID), any(), eq(false));
     }
 
-//    @Test
-//    @DisplayName("Final attempt logs one terminal ERROR with the exception message and MDC dimensions")
-//    void finalAttemptLogsTerminalErrorWithDimensions() {
-//        when(taskInstance.getData()).thenReturn(taskData());
-//        execution.consecutiveFailures = maxRetries;
-//        when(executionContext.getExecution()).thenReturn(execution);
-//        doThrow(new RuntimeException("docassembly 500"))
-//            .when(counterClaimFormService).generateAndAttach(COUNTER_CLAIM_ID);
-//        when(counterClaimFormService.recordGenerationFailure(eq(COUNTER_CLAIM_ID), any(), anyBoolean()))
-//            .thenReturn(CASE_REFERENCE);
-//
-//        CustomTask<CounterClaimFormTaskData> task = component.counterClaimFormGenerationTask();
-//        assertThatThrownBy(() -> task.execute(taskInstance, executionContext))
-//            .isInstanceOf(RuntimeException.class);
-//
-//        List<ILoggingEvent> terminalErrors = logAppender.list.stream()
-//            .filter(e -> e.getLevel() == Level.ERROR)
-//            .filter(e -> e.getFormattedMessage().contains("permanently failed"))
-//            .toList();
-//        assertThat(terminalErrors).hasSize(1);
-//
-//        ILoggingEvent event = terminalErrors.getFirst();
-//        assertThat(event.getFormattedMessage())
-//            .contains(COUNTER_CLAIM_ID.toString())
-//            .contains("docassembly 500");
-//        assertThat(event.getMDCPropertyMap())
-//            .containsEntry("counterClaimId", COUNTER_CLAIM_ID.toString())
-//            .containsEntry("caseReference", String.valueOf(CASE_REFERENCE))
-//            .containsEntry("taskName", "counter-claim-form-generation-task")
-//            .containsEntry("terminalFailure", "true")
-//            .containsEntry("failureReason", "docassembly 500");
-//    }
+    @Test
+    @DisplayName("Final attempt logs one terminal ERROR with the exception message and MDC dimensions")
+    void finalAttemptLogsTerminalErrorWithDimensions() {
+        when(taskInstance.getData()).thenReturn(taskData());
+        execution.consecutiveFailures = maxRetries;
+        when(executionContext.getExecution()).thenReturn(execution);
+        doThrow(new RuntimeException("docassembly 500"))
+            .when(counterClaimFormService).generateAndAttach(COUNTER_CLAIM_ID);
+        when(counterClaimFormService.recordGenerationFailure(eq(COUNTER_CLAIM_ID), any(), anyBoolean()))
+            .thenReturn(CASE_REFERENCE);
 
-//    @Test
-//    @DisplayName("Final attempt omits caseReference MDC when persistence couldn't recover the case reference")
-//    void finalAttemptOmitsCaseReferenceWhenLookupReturnsZero() {
-//        when(taskInstance.getData()).thenReturn(taskData());
-//        execution.consecutiveFailures = maxRetries;
-//        when(executionContext.getExecution()).thenReturn(execution);
-//        doThrow(new RuntimeException("docassembly 500"))
-//            .when(counterClaimFormService).generateAndAttach(COUNTER_CLAIM_ID);
-//        when(counterClaimFormService.recordGenerationFailure(eq(COUNTER_CLAIM_ID), any(), anyBoolean())).thenReturn(0L);
-//
-//        CustomTask<CounterClaimFormTaskData> task = component.counterClaimFormGenerationTask();
-//        assertThatThrownBy(() -> task.execute(taskInstance, executionContext))
-//            .isInstanceOf(RuntimeException.class);
-//
-//        ILoggingEvent event = logAppender.list.stream()
-//            .filter(e -> e.getLevel() == Level.ERROR)
-//            .filter(e -> e.getFormattedMessage().contains("permanently failed"))
-//            .findFirst()
-//            .orElseThrow();
-//        assertThat(event.getMDCPropertyMap()).doesNotContainKey("caseReference");
-//    }
+        CustomTask<CounterClaimFormTaskData> task = component.counterClaimFormGenerationTask();
+        assertThatThrownBy(() -> task.execute(taskInstance, executionContext))
+            .isInstanceOf(RuntimeException.class);
+
+        List<ILoggingEvent> terminalErrors = logAppender.list.stream()
+            .filter(e -> e.getLevel() == Level.ERROR)
+            .filter(e -> e.getFormattedMessage().contains("Counter claim form generation failed"))
+            .toList();
+        assertThat(terminalErrors).hasSize(1);
+
+        ILoggingEvent event = terminalErrors.getFirst();
+        assertThat(event.getFormattedMessage())
+            .contains(COUNTER_CLAIM_ID.toString());
+        assertThat(event.getThrowableProxy()).isNotNull();
+        assertThat(event.getThrowableProxy().getMessage()).contains("docassembly 500");
+        assertThat(event.getMDCPropertyMap())
+            .containsEntry("counterClaimId", COUNTER_CLAIM_ID.toString())
+            .containsEntry("caseReference", String.valueOf(CASE_REFERENCE))
+            .containsEntry("taskName", "counter-claim-form-generation-task")
+            .containsEntry("terminalFailure", "true")
+            .containsEntry("failureReason", "docassembly 500");
+    }
+
+    @Test
+    @DisplayName("Final attempt omits caseReference MDC when persistence couldn't recover the case reference")
+    void finalAttemptOmitsCaseReferenceWhenLookupReturnsZero() {
+        when(taskInstance.getData()).thenReturn(taskData());
+        execution.consecutiveFailures = maxRetries;
+        when(executionContext.getExecution()).thenReturn(execution);
+        doThrow(new RuntimeException("docassembly 500"))
+            .when(counterClaimFormService).generateAndAttach(COUNTER_CLAIM_ID);
+        when(counterClaimFormService.recordGenerationFailure(eq(COUNTER_CLAIM_ID), any(), anyBoolean())).thenReturn(0L);
+
+        CustomTask<CounterClaimFormTaskData> task = component.counterClaimFormGenerationTask();
+        assertThatThrownBy(() -> task.execute(taskInstance, executionContext))
+            .isInstanceOf(RuntimeException.class);
+
+        ILoggingEvent event = logAppender.list.stream()
+            .filter(e -> e.getLevel() == Level.ERROR)
+            .filter(e -> e.getFormattedMessage().contains("Counter claim form generation failed"))
+            .findFirst()
+            .orElseThrow();
+        assertThat(event.getMDCPropertyMap()).doesNotContainKey("caseReference");
+    }
 
     @Test
     @DisplayName("Non-final attempt logs no terminal ERROR (intermediate retries stay silent)")
