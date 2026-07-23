@@ -32,6 +32,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ContactPreferencesEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
+import uk.gov.hmcts.reform.pcs.exception.ErrorCode;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
@@ -69,6 +70,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
+import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.PARTY_NOT_FOUND;
 
 @Slf4j
 @AllArgsConstructor
@@ -492,7 +494,7 @@ public class TestingSupportController {
         }
 
         PartyEntity partyEntity = partyRepository.findById(partyId)
-            .orElseThrow(() -> new PartyNotFoundException("No party found for provided ID"));
+            .orElseThrow(() -> new PartyNotFoundException(PARTY_NOT_FOUND));
 
         partyEntity.setEmailAddress(partyEmail.getEmailAddress());
         ContactPreferencesEntity contactPreferences = partyEntity.getContactPreferences();
