@@ -22,7 +22,7 @@ plugins {
   id 'org.sonarqube' version '7.3.1.8318'
   id 'net.serenity-bdd.serenity-gradle-plugin' version "$serenityBddVersion"
   id 'hmcts.ccd.sdk' version '6.13.0'
-  id 'com.github.hmcts.rse-cft-lib' version '0.19.2220'
+  id 'com.github.hmcts.rse-cft-lib' version '0.19.2277'
   id 'io.freefair.lombok' version '9.5.0'
   id 'au.com.dius.pact' version '4.7.3'
   id "com.avast.gradle.docker-compose" version "0.17.21"
@@ -390,7 +390,7 @@ dependencies {
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-security', version: springFrameworkBootVersion
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-oauth2-client', version: springFrameworkBootVersion
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-data-jpa', version: springFrameworkBootVersion
-  implementation group: 'com.launchdarkly', name: 'launchdarkly-java-server-sdk', version: '7.14.0'
+  implementation group: 'com.launchdarkly', name: 'launchdarkly-java-server-sdk', version: '7.15.0'
 
   runtimeOnly group: 'org.flywaydb', name: 'flyway-database-postgresql', version: flywayVersion
 
@@ -435,7 +435,7 @@ dependencies {
   testImplementation group: 'io.rest-assured', name: 'rest-assured', version: '6.0.1'
   testImplementation group: 'com.github.hmcts', name: 'fortify-client', version: '1.4.10', classifier: 'all'
   testImplementation group: 'org.instancio', name: 'instancio', version: '5.6.0'
-  testImplementation group: 'com.auth0', name: 'java-jwt', version: '4.5.2'
+  testImplementation group: 'com.auth0', name: 'java-jwt', version: '4.6.0'
   testImplementation group: 'com.github.tomakehurst', name: 'wiremock-jre8-standalone', version: '2.35.2'
 
   implementation(group: 'com.github.hmcts', name: 'befta-fw', version: '9.2.7') {
