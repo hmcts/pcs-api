@@ -61,7 +61,7 @@ wa:
 
   camunda-bpm:
     java:
-      image: hmctsprod.azurecr.io/camunda/bpm:7.24.0
+      image: hmctsprod.azurecr.io/camunda/bpm:latest
 
   wa-case-event-handler:
     java:
