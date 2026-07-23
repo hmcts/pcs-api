@@ -23,7 +23,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.ClaimActivityType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 import static jakarta.persistence.FetchType.LAZY;
 
@@ -37,8 +36,8 @@ import static jakarta.persistence.FetchType.LAZY;
 public class ClaimActivityLogEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
 
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "case_id", nullable = false)
