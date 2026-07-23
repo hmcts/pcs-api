@@ -80,7 +80,7 @@ class SendEmailTaskComponentTest {
     private final Duration statusCheckTaskDelay = Duration.ofMinutes(5);
 
     private SendEmailTaskData sendEmailTaskData;
-    private final UUID dbNotificationId = UUID.randomUUID();
+    private final Integer dbNotificationId = 1;
     private final String templateId = "template-456";
     private final String emailAddress = "test@example.com";
     private final Map<String, Object> personalisation = Map.of("name", "John Doe");
