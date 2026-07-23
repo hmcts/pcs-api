@@ -65,9 +65,7 @@ public class PartiesView {
         Party party = shouldRedact
             ? toPartialParty(partyEntity)
             : toParty(partyEntity);
-        if (claimPartyEntity.getRole() == PartyRole.DEFENDANT) {
-            party.setRank(claimPartyEntity.getRank());
-        }
+        party.setRank(claimPartyEntity.getRank());
 
         return ListValue.<Party>builder()
             .id(claimPartyEntity.getId().getPartyId().toString())
