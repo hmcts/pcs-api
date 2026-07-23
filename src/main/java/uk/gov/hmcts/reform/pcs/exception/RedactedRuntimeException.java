@@ -59,7 +59,8 @@ public class RedactedRuntimeException extends RuntimeException {
 
     @Override
     public StackTraceElement[] getStackTrace() {
-        return stackTrace(super.getStackTrace());
+        StackTraceElement[] redactedTrace = stackTrace(super.getStackTrace());
+        return redactedTrace != null ? redactedTrace : new StackTraceElement[0];
     }
 
     @Override
@@ -70,7 +71,15 @@ public class RedactedRuntimeException extends RuntimeException {
     @Override
     public void printStackTrace(PrintStream stream) {
         if (showFullExceptions()) {
-            super.printStackTrace(stream);
+            try {
+                super.printStackTrace(stream);
+            } catch (NullPointerException ex) {
+                stream.println(this);
+                Throwable c = getCause();
+                if (c != null) {
+                    stream.println("Caused by: " + c.getClass().getName() + ": " + c.getMessage());
+                }
+            }
         } else {
             stream.println(this);
         }
@@ -79,7 +88,15 @@ public class RedactedRuntimeException extends RuntimeException {
     @Override
     public void printStackTrace(PrintWriter writer) {
         if (showFullExceptions()) {
-            super.printStackTrace(writer);
+            try {
+                super.printStackTrace(writer);
+            } catch (NullPointerException ex) {
+                writer.println(this);
+                Throwable c = getCause();
+                if (c != null) {
+                    writer.println("Caused by: " + c.getClass().getName() + ": " + c.getMessage());
+                }
+            }
         } else {
             writer.println(this);
         }

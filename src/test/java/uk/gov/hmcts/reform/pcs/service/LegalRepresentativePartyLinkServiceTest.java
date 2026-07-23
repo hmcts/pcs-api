@@ -337,7 +337,7 @@ class LegalRepresentativePartyLinkServiceTest {
             userInfo,
             organisationDetails
         )).isInstanceOf(LegalRepresentativeAlreadyLinkedToPartyException.class)
-            .hasMessage("Legal Representative or organisation already linked to Party [" + partyId + "]");
+            .hasMessage("REDACTED [PARTY_LINK_EXISTS]");
 
         verify(organisationDetailsService, never()).getOrganisationName(anyString());
         verify(userInfo, never()).getName();
@@ -378,7 +378,7 @@ class LegalRepresentativePartyLinkServiceTest {
             userInfo,
             organisationDetails
         )).isInstanceOf(PartyNotFoundException.class)
-            .hasMessage("Unable to find Party with Id [" + partyId + "]");
+            .hasMessage("REDACTED [PARTY_NOT_FOUND]");
 
         verify(organisationDetailsService, never()).getOrganisationName(anyString());
         verify(userInfo, never()).getName();
@@ -419,7 +419,7 @@ class LegalRepresentativePartyLinkServiceTest {
             userInfo,
             organisationDetails
         )).isInstanceOf(PartyNotFoundException.class)
-            .hasMessage("Unable to find Party with Id [" + partyId + "]");
+            .hasMessage("REDACTED [PARTY_NOT_FOUND]");
 
         verify(organisationDetails, never()).getName();
         verify(organisationDetailsService, never()).getOrganisationAddress(organisationDetails);

@@ -54,7 +54,8 @@ public class RedactedException extends Exception {
 
     @Override
     public StackTraceElement[] getStackTrace() {
-        return stackTrace(super.getStackTrace());
+        StackTraceElement[] redactedTrace = stackTrace(super.getStackTrace());
+        return redactedTrace != null ? redactedTrace : new StackTraceElement[0];
     }
 
     @Override

@@ -52,7 +52,8 @@ class AccessCodeAlreadyUsedExceptionTest {
         Throwable cause = new RuntimeException("Root cause");
 
         // When
-        AccessCodeAlreadyUsedException exception = new AccessCodeAlreadyUsedException(ACCESS_CODE_ALREADY_IN_USE, cause);
+        AccessCodeAlreadyUsedException exception = new AccessCodeAlreadyUsedException(ACCESS_CODE_ALREADY_IN_USE,
+                                                                                      cause);
 
         // Then
         assertThat(exception).isNotNull();
@@ -69,7 +70,8 @@ class AccessCodeAlreadyUsedExceptionTest {
         Throwable cause = new RuntimeException("Intermediate cause", rootCause);
 
         // When
-        AccessCodeAlreadyUsedException exception = new AccessCodeAlreadyUsedException(ACCESS_CODE_ALREADY_IN_USE, cause);
+        AccessCodeAlreadyUsedException exception = new AccessCodeAlreadyUsedException(ACCESS_CODE_ALREADY_IN_USE,
+                                                                                      cause);
 
         // Then
         assertThat(exception).isNotNull();

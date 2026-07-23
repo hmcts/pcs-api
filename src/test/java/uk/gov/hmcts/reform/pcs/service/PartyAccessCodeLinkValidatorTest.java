@@ -67,7 +67,7 @@ class PartyAccessCodeLinkValidatorTest {
 
         assertThatThrownBy(() -> validator.validateAccessCode(CASE_ID, ACCESS_CODE))
             .isInstanceOf(InvalidAccessCodeException.class)
-            .hasMessageContaining("Invalid data");
+            .hasMessageContaining("REDACTED [ACCESS_CODE_ISSUE]");
     }
 
     @Test
@@ -94,7 +94,7 @@ class PartyAccessCodeLinkValidatorTest {
         // WHEN + THEN
         assertThatThrownBy(() -> validator.validatePartyIsADefendant(defendantEntities, differentPartyId))
             .isInstanceOf(InvalidPartyForAccessCodeException.class)
-            .hasMessageContaining("The party this access code was generated for is not a defendant in this case");
+            .hasMessageContaining("REDACTED [PARTY_ACCESS_CODE]");
     }
 
     @Test
@@ -114,7 +114,7 @@ class PartyAccessCodeLinkValidatorTest {
         // WHEN + THEN
         assertThatThrownBy(() -> validator.validatePartyNotAlreadyLinked(partyEntity))
             .isInstanceOf(AccessCodeAlreadyUsedException.class)
-            .hasMessageContaining("already linked to a user");
+            .hasMessageContaining("REDACTED [ACCESS_CODE]");
     }
 
     @Test
@@ -143,6 +143,6 @@ class PartyAccessCodeLinkValidatorTest {
         assertThatThrownBy(() -> validator.validateUserNotLinkedToAnotherParty(
             partyEntities, partyId2, USER_ID))
             .isInstanceOf(AccessCodeAlreadyUsedException.class)
-            .hasMessageContaining("already linked to another party");
+            .hasMessageContaining("REDACTED [ACCESS_CODE]");
     }
 }

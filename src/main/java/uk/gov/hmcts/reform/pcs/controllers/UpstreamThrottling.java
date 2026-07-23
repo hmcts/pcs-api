@@ -6,7 +6,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.oauth2.core.OAuth2AuthorizationException;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientResponseException;
-import uk.gov.hmcts.reform.pcs.exception.IdamException;
 
 import java.util.Set;
 

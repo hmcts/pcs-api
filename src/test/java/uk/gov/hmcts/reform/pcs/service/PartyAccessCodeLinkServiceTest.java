@@ -162,7 +162,7 @@ class PartyAccessCodeLinkServiceTest {
         // WHEN + THEN
         assertThatThrownBy(() -> service.linkPartyByAccessCode(CASE_REFERENCE, ACCESS_CODE, testUser))
             .isInstanceOf(AccessCodeAlreadyUsedException.class)
-            .hasMessageContaining("already linked");
+            .hasMessageContaining("REDACTED [ACCESS_CODE]");
     }
 
     @Test
@@ -198,7 +198,7 @@ class PartyAccessCodeLinkServiceTest {
         // WHEN + THEN
         assertThatThrownBy(() -> service.linkPartyByAccessCode(CASE_REFERENCE, ACCESS_CODE, testUser))
             .isInstanceOf(AccessCodeAlreadyUsedException.class)
-            .hasMessageContaining("already linked to another");
+            .hasMessageContaining("REDACTED [ACCESS_CODE]");
     }
 
     @Test

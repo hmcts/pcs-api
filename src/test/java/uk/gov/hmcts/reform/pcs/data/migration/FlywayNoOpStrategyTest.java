@@ -1,11 +1,5 @@
 package uk.gov.hmcts.reform.pcs.data.migration;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.catchThrowable;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.BDDMockito.reset;
-import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.MIGRATION_NOT_YET_APPLIED;
-
 import org.flywaydb.core.Flyway;
 import org.flywaydb.core.api.MigrationInfo;
 import org.flywaydb.core.api.MigrationInfoService;
@@ -17,9 +11,14 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.autoconfigure.flyway.FlywayMigrationStrategy;
-import uk.gov.hmcts.reform.pcs.exception.ErrorCode;
 import uk.gov.hmcts.reform.pcs.exception.ExceptionRedaction;
 import uk.gov.hmcts.reform.pcs.exception.PendingMigrationScriptException;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.reset;
+import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.MIGRATION_NOT_YET_APPLIED;
 
 @ExtendWith(MockitoExtension.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)

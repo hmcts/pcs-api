@@ -1,9 +1,12 @@
 package uk.gov.hmcts.reform.pcs.exception;
 
 /**
- * An error code taxonomy where by the 'internalCode' is used to identify what has happened.  Then the system needs to
- *  be set accordingly to identify further details on these issues.   This is to prevent leaking PII into logs and
+ * An error code taxonomy where by the 'internalCode' is used to identify what has happened.  Then the system needs
+ *  to be set accordingly to identify further details on these issues.  This is to prevent leaking PII into logs and
  *  beyond the server itself to the front end or other actors.
+ *
+ *  <p>NB: These are not set in stone as the safeDescription currently describes to much about what has happened so
+ *   it has been removed from the safe logging output for the time being.</p>
  */
 public enum ErrorCode {
 
@@ -21,7 +24,8 @@ public enum ErrorCode {
     MISSING_POSTAL_ADDRESS("MISSING_POSTAL_ADDRESS", "No postal address for party"),
     DEFENDANT_ACCESS_VALIDATOR("DEFENDANT_ACCESS_VALIDATOR",
                                "User is not linked as a defendant on this case"),
-    DEFENDANT_PARTY_EXTRACTOR("DEFENDANT_PARTY_EXTRACTOR_01", "No claim found for this case"),
+    DEFENDANT_PARTY_EXTRACTOR("DEFENDANT_PARTY_EXTRACTOR_01",
+                              "No claim found for this case"),
     DEFENDANT_PARTY_EXTRACTOR_NO_DEFENDANTS("DEFENDANT_PARTY_EXTRACTOR_02",
                                             "No defendants associated with this case"),
     LEGAL_REP_FOR_DEFENDANT_ACCESS("LEGAL_REP_FOR_DEFENDANT_ACCESS",
@@ -78,7 +82,7 @@ public enum ErrorCode {
                       "The Authorization token provided is expired or invalid"),
     ACCESS_CODE_ISSUE("ACCESS_CODE_ISSUE", "Invalid data"),
     ORGANISATION_DETAILS("ORGANISATION_DETAILS",
-                         "Failed to retrieve organisation details"),
+                         "Unexpected error retrieving organisation details"),
     PARTY_LINK_EXISTS("PARTY_LINK_EXISTS", "Already linked to Party"),
     PARTY_ACCESS_CODE("PARTY_ACCESS_CODE",
                       "The party this access code was generated for is not a defendant in this case"),
