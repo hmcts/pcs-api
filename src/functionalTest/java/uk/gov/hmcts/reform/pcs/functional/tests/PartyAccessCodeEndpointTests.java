@@ -8,6 +8,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import org.junit.jupiter.api.extension.ExtendWith;
 import uk.gov.hmcts.reform.pcs.functional.config.TestConstants;
@@ -21,6 +22,7 @@ import java.util.Map;
 @Slf4j
 @Tag("Functional")
 @EnabledIfEnvironmentVariable(named = "CCD_ENABLED", matches = "true")
+@DisabledIfEnvironmentVariable(named = "SHUTTER_SERVICE", matches = "true")
 @ExtendWith(SerenityJUnit5Extension.class)
 class PartyAccessCodeEndpointTests extends BaseApi {
 
