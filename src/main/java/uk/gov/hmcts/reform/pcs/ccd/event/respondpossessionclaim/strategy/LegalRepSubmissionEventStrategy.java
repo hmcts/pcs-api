@@ -55,6 +55,10 @@ public class LegalRepSubmissionEventStrategy implements RespondPossessionClaimSu
 
         PossessionClaimResponse responseDraftData = draftData.getPossessionClaimResponse();
 
+        if (responseDraftData == null || responseDraftData.getDefendantResponses() == null) {
+            return submitResponseFactory.success();
+        }
+
         Optional<SubmitResponse<State>> validationResult = submitResponseFactory
             .validate(responseDraftData, caseReference);
 

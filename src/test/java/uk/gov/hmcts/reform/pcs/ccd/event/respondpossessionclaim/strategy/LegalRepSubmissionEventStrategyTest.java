@@ -226,4 +226,39 @@ class LegalRepSubmissionEventStrategyTest {
         // when / then
         assertThat(underTest.supports(List.of(UserRole.CITIZEN.getRole()))).isFalse();
     }
+
+    @Test
+    void shouldReturnSuccessForDraftOnlyWhenDefendantResponsesIsNull() {
+        // given
+        UUID representedPartyId = UUID.randomUUID();
+        String organisationId = "org";
+
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .defendantResponses(null)
+            .build();
+
+        PCSCase caseData = PCSCase.builder()
+            .possessionClaimResponse(possessionClaimResponse)
+            .build();
+
+        SubmitResponse<State> submitResponse = SubmitResponse.<State>builder().build();
+
+        when(selectedPartyRetriever.getCurrentRepresentedPartyId(caseData)).thenReturn(Optional.of(representedPartyId));
+        when(draftCaseDataService.getUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim,
+                                                          representedPartyId, organisationId))
+            .thenReturn(Optional.of(caseData));
+        when(submitResponseFactory.success()).thenReturn(submitResponse);
+        when(eventPayload.caseReference()).thenReturn(CASE_REFERENCE);
+        when(eventPayload.caseData()).thenReturn(caseData);
+        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(organisationId);
+
+        // when
+        SubmitResponse<State> result = underTest.process(eventPayload);
+
+        // then
+        assertThat(result.getErrors()).isNullOrEmpty();
+        verify(claimResponseService, never()).saveDraftDataForParty(any(), anyLong(), any());
+        verify(defendantResponseService, never()).saveDefendantResponse(anyLong(), any(), any());
+        verify(draftCaseDataService, never()).deleteUnsubmittedCaseData(anyLong(), any(), any(), any());
+    }
 }

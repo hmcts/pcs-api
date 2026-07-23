@@ -17,7 +17,10 @@ public class PossessionClaimMerger {
                                                        UUID defendantPartyId) {
         String currentDefendantPartyId = defendantPartyId != null ? defendantPartyId.toString() : null;
 
-        return savedResponses.toBuilder()
+        PossessionClaimResponse base = savedResponses != null
+            ? savedResponses : PossessionClaimResponse.builder().build();
+
+        return base.toBuilder()
             .claimantOrganisations(claimantOrgNameListCreator.createClaimantOrgNameList(latestCase))
             .currentDefendantPartyId(currentDefendantPartyId)
             .build();
