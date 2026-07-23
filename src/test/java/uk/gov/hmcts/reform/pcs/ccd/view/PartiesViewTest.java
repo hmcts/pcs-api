@@ -165,6 +165,26 @@ class PartiesViewTest {
     }
 
     @Test
+    void shouldMapRankForDefendants() {
+        when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
+        when(userInfo.getRoles()).thenReturn(List.of("caseworker-pcs"));
+
+        PartyEntity defendant1 = buildParty(UUID.randomUUID(), "Bob", "B", null, null, null);
+        PartyEntity defendant2 = buildParty(UUID.randomUUID(), "Carol", "C", null, null, null);
+
+        when(claimEntity.getClaimParties()).thenReturn(List.of(
+            buildClaimPartyEntity(defendant1, PartyRole.DEFENDANT, 1),
+            buildClaimPartyEntity(defendant2, PartyRole.DEFENDANT, 2)
+        ));
+
+        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+
+        assertThat(pcsCase.getAllDefendants())
+            .extracting(lv -> lv.getValue().getRank())
+            .containsExactly(1, 2);
+    }
+
+    @Test
     void shouldMapLegalRepresentativeIfPresent() {
         when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
         when(userInfo.getRoles()).thenReturn(List.of("caseworker-pcs"));
@@ -341,12 +361,17 @@ class PartiesViewTest {
     }
 
     private ClaimPartyEntity buildClaimPartyEntity(PartyEntity partyEntity, PartyRole role) {
+        return buildClaimPartyEntity(partyEntity, role, null);
+    }
+
+    private ClaimPartyEntity buildClaimPartyEntity(PartyEntity partyEntity, PartyRole role, Integer rank) {
         ClaimPartyId id = new ClaimPartyId();
         id.setPartyId(partyEntity.getId());
         return ClaimPartyEntity.builder()
             .id(id)
             .party(partyEntity)
             .role(role)
+            .rank(rank)
             .build();
     }
 }
