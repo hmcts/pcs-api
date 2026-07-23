@@ -212,8 +212,8 @@ xui-webapp:
            {"service":"CIVIL","serviceCodes":["AAA6","AAA7"]},
            {"service":"SSCS","serviceCodes":["BBA3"]},
            {"service":"PCS","serviceCodes":["AAA3"]}]
-      DECENTRALISED_CASE_TYPE_CONFIG: '{"PCS":{"webUrl":"https://pcs-frontend-pr-${CHANGE_ID}.preview.platform.hmcts.net"}}'
-      RSE_LIB_XUI_ENV_DECENTRALISED_CASE_TYPE_CONFIG: '{"PCS":{"webUrl":"https://pcs-frontend-pr-${CHANGE_ID}.preview.platform.hmcts.net"}}'
+      DECENTRALISED_CASE_TYPE_CONFIG: '{"PCS":{"webUrl":"https://pcs-frontend-pr-${CHANGE_ID}.preview.platform.hmcts.net","nocBaseUrl":"https://pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"}}'
+      RSE_LIB_XUI_ENV_DECENTRALISED_CASE_TYPE_CONFIG: '{"PCS":{"webUrl":"https://pcs-frontend-pr-${CHANGE_ID}.preview.platform.hmcts.net","nocBaseUrl":"https://pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"}}'
     keyVaults:
       rpx:
         resourceGroup: rpx
