@@ -111,7 +111,7 @@ public class PCSCase {
     @JsonUnwrapped
     private ClaimantInformation claimantInformation;
 
-    @CCD(access = {ClaimantAccess.class, DefendantAccess.class, WAAccess.class})
+    @CCD(access = {ClaimantAccess.class, DefendantAccess.class})
     private List<ListValue<Party>> allClaimants;
 
     @CCD(
@@ -131,7 +131,7 @@ public class PCSCase {
 
     @CCD(
         label = "Property address",
-        access = {DefendantAccess.class, WAAccess.class}
+        access = {DefendantAccess.class}
     )
     @External
     private AddressUK propertyAddress;
@@ -177,14 +177,14 @@ public class PCSCase {
 
     @CCD(
         searchable = false,
-        access = {DefendantAccess.class, WAAccess.class}
+        access = {DefendantAccess.class}
     )
     @External
     private String userPcqId;
 
     @CCD(
         searchable = false,
-        access = {DefendantAccess.class, WAAccess.class}
+        access = {DefendantAccess.class}
     )
     private YesOrNo userPcqIdSet;
 
@@ -198,7 +198,7 @@ public class PCSCase {
     )
     private Integer regionId;
 
-    @CCD(access = {InternalCaseFlagAccess.class, WAAccess.class},
+    @CCD(access = {InternalCaseFlagAccess.class},
         label = "Party")
     private List<ListValue<Party>> parties;
 
@@ -270,20 +270,20 @@ public class PCSCase {
 
     @CCD(
         label = "Have you served notice to the defendants?",
-        access = {CitizenAccess.class, WAAccess.class}
+        access = {CitizenAccess.class}
     )
     private YesOrNo noticeServed;
 
     @JsonUnwrapped(prefix = "notice_")
-    @CCD(access = {ClaimantAccess.class, CitizenAccess.class, WAAccess.class})
+    @CCD(access = {ClaimantAccess.class, CitizenAccess.class})
     private NoticeServedDetails noticeServedDetails;
 
     private String caseTitleMarkdown;
 
-    @CCD(access = {DefendantAccess.class, WAAccess.class})
+    @CCD(access = {DefendantAccess.class})
     private DashboardData dashboardData;
 
-    @CCD(access = {CitizenAccess.class, WAAccess.class})
+    @CCD(access = {CitizenAccess.class})
     private LegislativeCountry legislativeCountry;
 
     @CCD(
@@ -357,7 +357,7 @@ public class PCSCase {
     /**
      * Combined list of all defendants in the case (i.e. primary defendant + additional defendants).
      */
-    @CCD(access = {ClaimantAccess.class, CitizenAccess.class, InternalCaseFlagAccess.class, WAAccess.class})
+    @CCD(access = {ClaimantAccess.class, CitizenAccess.class, InternalCaseFlagAccess.class})
     private List<ListValue<Party>> allDefendants;
 
     @JsonUnwrapped(prefix = "tenancy_")
@@ -551,17 +551,17 @@ public class PCSCase {
     /**
      * Combined list of all underlessees/mortgagees in the case.
      */
-    @CCD(access = {ClaimantAccess.class, DefendantAccess.class, WAAccess.class})
+    @CCD(access = {ClaimantAccess.class, DefendantAccess.class})
     private List<ListValue<Party>> allUnderlesseeOrMortgagees;
 
     @CCD(
         searchable = false,
         label = "Ways to pay",
-        access = {PartyVisibleTabAccess.class, WAAccess.class}
+        access = {PartyVisibleTabAccess.class}
     )
     private WaysToPay waysToPay;
 
-    @CCD(access = {ClaimantAccess.class, DefendantAccess.class, WAAccess.class})
+    @CCD(access = {ClaimantAccess.class, DefendantAccess.class})
     private StatementOfTruthDetails statementOfTruth;
 
     @CCD(searchable = false)
@@ -580,7 +580,7 @@ public class PCSCase {
     private VerticalYesNo isExemptLandlord;
 
     @CCD(
-        access = {DefendantAccess.class, WAAccess.class},
+        access = {DefendantAccess.class},
         searchable = false
     )
     private PossessionClaimResponse possessionClaimResponse;
@@ -604,16 +604,16 @@ public class PCSCase {
     private String formattedDefendantNames;
     private String formattedPropertyAddress;
 
-    @CCD(access = {ClaimantAccess.class, DefendantAccess.class, WAAccess.class})
+    @CCD(access = {ClaimantAccess.class, DefendantAccess.class})
     private List<ListValue<ClaimGroundSummary>> claimGroundSummaries;
 
-    @CCD(access = {ClaimantAccess.class, DefendantAccess.class, WAAccess.class})
+    @CCD(access = {ClaimantAccess.class, DefendantAccess.class})
     private LocalDateTime dateSubmitted;
 
-    @CCD(access = {ClaimantAccess.class, DefendantAccess.class, WAAccess.class}, label = "Date claim issued")
+    @CCD(access = {ClaimantAccess.class, DefendantAccess.class}, label = "Date claim issued")
     private LocalDate claimIssueDate;
 
-    @CCD(access = {ClaimantAccess.class, DefendantAccess.class, WAAccess.class})
+    @CCD(access = {ClaimantAccess.class, DefendantAccess.class})
     private LocalDateTime dateIssued;
 
     @CCD(

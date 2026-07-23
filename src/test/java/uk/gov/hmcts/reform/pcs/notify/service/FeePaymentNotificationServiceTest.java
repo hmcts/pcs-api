@@ -14,7 +14,6 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.feeandpay.FeePaymentRepository;
 import uk.gov.hmcts.reform.pcs.exception.FeePaymentNotFoundException;
 
 import java.util.Optional;
-import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.verify;
@@ -35,7 +34,7 @@ class FeePaymentNotificationServiceTest {
 
     @Test
     void shouldSendClaimantClaimIssuedEmailNotification() {
-        UUID feePaymentId = UUID.randomUUID();
+        Integer feePaymentId = 1;
         PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().caseReference(1234L).build();
         ClaimEntity claim = ClaimEntity.builder().pcsCase(pcsCaseEntity).build();
         FeePaymentEntity feePayment = FeePaymentEntity.builder()
@@ -52,7 +51,7 @@ class FeePaymentNotificationServiceTest {
 
     @Test
     void shouldThrowExceptionWhenFeePaymentNotFound() {
-        UUID feePaymentId = UUID.randomUUID();
+        Integer feePaymentId = 1;
         when(feePaymentRepository.findById(feePaymentId)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> underTest.sendClaimantPaidCaseIssuedNotification(feePaymentId))
