@@ -33,7 +33,8 @@ public enum AccessProfile implements HasRole {
     WLU_TEAM_LEADER("wlu-team-leader", Permission.CRU),
     WLU_ADMIN("wlu-admin", Permission.CRU),
     GS_PROFILE("GS_profile", Set.of(R)),
-    SYSTEM_USER("pcs-system-update", CRU);
+    SYSTEM_USER("pcs-system-update", CRU),
+    WA_SYSTEM_USER("caseworker-wa-task-configuration", CRU);
 
 
     @JsonValue
