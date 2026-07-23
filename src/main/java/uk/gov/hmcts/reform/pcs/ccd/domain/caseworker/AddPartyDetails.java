@@ -1,0 +1,104 @@
+package uk.gov.hmcts.reform.pcs.ccd.domain.caseworker;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import uk.gov.hmcts.ccd.sdk.api.CCD;
+import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+
+import java.time.LocalDate;
+
+import static uk.gov.hmcts.ccd.sdk.type.FieldType.FixedRadioList;
+
+@Builder
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class AddPartyDetails {
+
+    @JsonProperty("addParty_ManagePartyOptions")
+    @CCD(label = "What change do you want to make",
+        hint = "You must have judicial approval to add or remove a party",
+        typeOverride = FixedRadioList,
+        typeParameterOverride = "ManagePartyOptions"
+    )
+    private ManagePartyOptions managePartyOptions;
+
+    @JsonProperty("addParty_AddPartyType")
+    @CCD(
+        label = "Which type of party are you adding?",
+        typeOverride = FixedRadioList,
+        typeParameterOverride = "PartyType"
+    )
+    private PartyType addPartyType;
+
+    @JsonProperty("addParty_ClaimantOrganisationName")
+    @CCD(label = "Organisation name")
+    private String claimantOrganisationName;
+
+    @JsonProperty("addParty_ClaimantName")
+    @CCD(label = "Claimant name")
+    private String claimantName;
+
+    @JsonProperty("addParty_ClaimantAddress")
+    @CCD(label = "Address for service")
+    private AddressUK claimantAddress;
+
+    @JsonProperty("addParty_ClaimantEmail")
+    @CCD(label = "Email address", searchable = false)
+    private String claimantEmail;
+
+    @JsonProperty("addParty_ClaimantPhoneNumber")
+    @CCD(label = "Phone number", searchable = false)
+    private String claimantPhoneNumber;
+
+    @JsonProperty("addParty_FirstName")
+    @CCD(label = "First name")
+    private String firstName;
+
+    @JsonProperty("addParty_LastName")
+    @CCD(label = "Last name")
+    private String lastName;
+
+    @JsonProperty("addParty_DefendantDateOfBirth")
+    @CCD(label = "Date of birth")
+    private LocalDate defendantDateOfBirth;
+
+    @JsonProperty("addParty_DefendantAddress")
+    @CCD(label = "Address for service")
+    private AddressUK defendantAddress;
+
+    @JsonProperty("addParty_DefendantEmail")
+    @CCD(label = "Email address", searchable = false)
+    private String defendantEmail;
+
+    @JsonProperty("addParty_DefendantPhoneNumber")
+    @CCD(label = "Phone number", searchable = false)
+    private String defendantPhoneNumber;
+
+    @JsonProperty("addParty_LitigationFriendName")
+    @CCD(label = "Litigation friend name")
+    private String litigationFriendName;
+
+    @JsonProperty("addParty_LitigationFriendOrganisationName")
+    @CCD(label = "Organisation name")
+    private String litigationFriendOrganisationName;
+
+    @JsonProperty("addParty_LitigationFriendDateOfBirth")
+    @CCD(label = "Date of birth")
+    private LocalDate litigationFriendDateOfBirth;
+
+    @JsonProperty("addParty_LitigationFriendAddress")
+    @CCD(label = "Address for service")
+    private AddressUK litigationFriendAddress;
+
+    @JsonProperty("addParty_LitigationFriendEmail")
+    @CCD(label = "Email address", searchable = false)
+    private String litigationFriendEmail;
+
+    @JsonProperty("addParty_LitigationFriendPhoneNumber")
+    @CCD(label = "Phone number", searchable = false)
+    private String litigationFriendPhoneNumber;
+}

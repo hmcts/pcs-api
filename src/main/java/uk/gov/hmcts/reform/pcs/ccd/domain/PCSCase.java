@@ -31,7 +31,7 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.InternalCaseFlagAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.InternalTabAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.PartyVisibleTabAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.RasValidationAccess;
-import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.AddParty;
+import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.AddPartyDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.DashboardData;
 import uk.gov.hmcts.reform.pcs.ccd.domain.documentamend.DocumentAmendDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.documentupload.DocumentUploadDetails;
@@ -742,7 +742,7 @@ public class PCSCase {
     )
     private CaseStateOption targetState;
 
-    @JsonUnwrapped(prefix = "addParty_")
-    private AddParty addParty;
+    @JsonUnwrapped
+    private AddPartyDetails addPartyDetails;
 
 }
