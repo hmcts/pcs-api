@@ -20,7 +20,7 @@ public class CcdCallbackExceptionHandler {
 
     @ExceptionHandler(CaseAccessException.class)
     public ResponseEntity<RestExceptionHandler.Error> handleCaseAccess(CaseAccessException ex) {
-        String internalCode = ex.getErrorCode().internalCode();
+        String internalCode = ex.getCode().internalCode();
         String message = "Unknown code.";
         if (DEFENDANT_ACCESS_VALIDATOR.internalCode().equals(internalCode)) {
             message = "User is not linked as a defendant on this case";

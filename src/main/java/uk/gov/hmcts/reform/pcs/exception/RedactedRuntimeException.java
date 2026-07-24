@@ -55,7 +55,7 @@ public class RedactedRuntimeException extends RuntimeException {
     }
 
     @Override
-    public Throwable getCause() {
+    public synchronized Throwable getCause() {
         return cause(debugCause);
     }
 
@@ -83,10 +83,6 @@ public class RedactedRuntimeException extends RuntimeException {
     @Override
     public String toString() {
         return getClass().getName() + ": " + getMessage();
-    }
-
-    public ErrorCode getErrorCode() {
-        return code;
     }
 
 }

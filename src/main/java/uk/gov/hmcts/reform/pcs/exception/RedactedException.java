@@ -39,6 +39,10 @@ public class RedactedException extends Exception {
         return code;
     }
 
+    public RedactionContext getContext() {
+        return context;
+    }
+
     @Override
     public String getMessage() {
         return message(code, context);
@@ -50,7 +54,7 @@ public class RedactedException extends Exception {
     }
 
     @Override
-    public Throwable getCause() {
+    public synchronized Throwable getCause() {
         return cause(debugCause);
     }
 
