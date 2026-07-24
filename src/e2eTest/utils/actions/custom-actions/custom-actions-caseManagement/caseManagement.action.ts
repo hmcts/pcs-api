@@ -195,7 +195,7 @@ export class CaseManagementAction implements IAction {
       question: confirmApplicationConsent.question1,
       option: confirmApplicationConsent.option1,
     });
-    if(confirmApplicationConsent.option1 == 'No') {
+    if(confirmApplicationConsent.option1 === 'No') {
       await performAction('clickRadioButton', {
         question: confirmApplicationConsent.question2,
         option: confirmApplicationConsent.option2,
