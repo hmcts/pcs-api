@@ -5,7 +5,7 @@ import java.io.PrintWriter;
 import java.util.function.Consumer;
 
 /**
- * Central redaction policy for {@link RedactedRuntimeException} and {@link RedactedException}.
+ * Central redaction policy for {@link RedactedRuntimeException}.
  *
  * <p>Out of the box, everything sensitive is redacted. If you need to see the real detail,
  * you have two options, and they work independently of each other:</p>
