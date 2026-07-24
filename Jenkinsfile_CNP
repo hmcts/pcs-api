@@ -86,7 +86,7 @@ withPipeline(type, product, component) {
       AppPipelineDsl.PactRoles.CONSUMER,
       AppPipelineDsl.PactRoles.CONSUMER_DEPLOY_CHECK
     ])
-    enableHighLevelDataSetup("", true)
+    enableHighLevelDataSetup()
     setAatEnvVars()
     // The e2e journeys all create cases, which is blocked while the service is shuttered.
     if (!shutterService) {
@@ -119,6 +119,7 @@ withPipeline(type, product, component) {
       env.DATA_STORE_URL_BASE="https://ccd-data-store-api-pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
     }
     onMaster{
+      env.SHUTTER_SERVICE = true
       env.DEFINITION_STORE_URL_BASE = "http://ccd-definition-store-api-aat.service.core-compute-aat.internal"
       env.DATA_STORE_URL_BASE="http://ccd-data-store-api-aat.service.core-compute-aat.internal"
       env.CASE_API_URL = "https://pcs-api-staging.aat.platform.hmcts.net"
@@ -176,6 +177,15 @@ withPipeline(type, product, component) {
     if (currentBuild.currentResult in ['FAILURE', 'UNSTABLE']) {
       postAllureResultsToSlack('master')
     }
+  }
+
+  afterAlways('functionalTest:aat') {
+    env.SHUTTER_SERVICE = true
+    env.ENVIRONMENT= "prod"
+    env.DATA_STORE_URL_BASE="http://ccd-data-store-api-prod.service.core-compute-prod.internal"
+    env.CASE_API_URL = "pcs-api-prod.service.core-compute-prod.internal"
+
+    generateDefinitions(builder)
   }
 }
 
