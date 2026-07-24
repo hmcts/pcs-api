@@ -11,6 +11,12 @@ public enum TaskType {
         "New Claim –  Create new hearing",
         5,
         "NewClaimCreateNewHearing"
+    ),
+    REVIEW_DEFENDANT_RESPONSE_AND_COUNTER_CLAIM(
+        "ReviewDefendantResponseAndCounterclaim",
+        "Review Defendant response and counterclaim",
+        5,
+        "ReviewDefendantResponseAndCounterclaim"
     );
 
     private final String id;

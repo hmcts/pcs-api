@@ -7,6 +7,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.reform.pcs.camunda.CamundaService;
+import uk.gov.hmcts.reform.pcs.camunda.TaskType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.UploadedDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaim;
@@ -27,6 +29,7 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -49,6 +52,8 @@ class RespondPossessionClaimSubmitServiceTest {
     private DocumentService documentService;
     @Mock
     private DraftCaseDataService draftCaseDataService;
+    @Mock
+    private CamundaService camundaService;
 
     private RespondPossessionClaimSubmitService underTest;
 
@@ -60,7 +65,8 @@ class RespondPossessionClaimSubmitServiceTest {
             counterClaimService,
             counterClaimFeeCalculator,
             documentService,
-            draftCaseDataService
+            draftCaseDataService,
+            camundaService
         );
     }
 
@@ -113,6 +119,7 @@ class RespondPossessionClaimSubmitServiceTest {
         verify(counterClaimService, never()).issueCounterClaim(any());
         assertThat(result.counterClaimEntity()).isEqualTo(savedCounterClaim);
         assertThat(result.issuedWithoutPayment()).isFalse();
+        verify(camundaService, never()).createTask(eq(CASE_REFERENCE), any(TaskType.class));
     }
 
     @Test
@@ -147,6 +154,8 @@ class RespondPossessionClaimSubmitServiceTest {
         verify(counterClaimService).issueCounterClaim(savedCounterClaim);
         assertThat(result.counterClaimEntity()).isEqualTo(issuedCounterClaim);
         assertThat(result.issuedWithoutPayment()).isTrue();
+
+        verify(camundaService).createTask(CASE_REFERENCE, TaskType.REVIEW_DEFENDANT_RESPONSE_AND_COUNTER_CLAIM);
     }
 
     @Test

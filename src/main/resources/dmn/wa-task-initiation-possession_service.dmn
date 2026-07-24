@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<definitions xmlns="https://www.omg.org/spec/DMN/20191111/MODEL/" xmlns:camunda="http://camunda.org/schema/1.0/dmn" xmlns:biodi="http://bpmn.io/schema/dmn/biodi/2.0" xmlns:dmndi="https://www.omg.org/spec/DMN/20191111/DMNDI/" xmlns:dc="http://www.omg.org/spec/DMN/20180521/DC/" id="wa-initiation-definition" name="DRD" namespace="http://camunda.org/schema/1.0/dmn" exporter="Camunda Modeler" exporterVersion="5.48.0">
+<definitions xmlns="https://www.omg.org/spec/DMN/20191111/MODEL/" xmlns:camunda="http://camunda.org/schema/1.0/dmn" xmlns:biodi="http://bpmn.io/schema/dmn/biodi/2.0" xmlns:dmndi="https://www.omg.org/spec/DMN/20191111/DMNDI/" xmlns:dc="http://www.omg.org/spec/DMN/20180521/DC/" id="wa-initiation-definition" name="DRD" namespace="http://camunda.org/schema/1.0/dmn" exporter="Camunda Modeler" exporterVersion="5.23.0">
   <decision id="wa-task-initiation-pcs-possesions" name="Task initiation DMN" camunda:historyTimeToLive="P90D">
     <decisionTable id="DecisionTable_0jtevuc" hitPolicy="COLLECT">
       <input id="Input_1" label="Event Id" camunda:inputVariable="eventId">
@@ -140,66 +140,21 @@ else
           <text>"ADMIN"</text>
         </outputEntry>
       </rule>
-      <rule id="DecisionRule_0cuaabj">
-        <description>Possible process for welsh translation when user selects they have selected completed claim in english and welsh or just welsh    </description>
-        <inputEntry id="UnaryTests_1jnzzpw">
-          <text>Tech team update case state</text>
-        </inputEntry>
-        <inputEntry id="UnaryTests_1v4n4zf">
-          <text>"PENDING_CASE_ISSUED to CASE_ISSUED"</text>
-        </inputEntry>
-        <inputEntry id="UnaryTests_0iinfsn">
-          <text></text>
-        </inputEntry>
-        <inputEntry id="UnaryTests_0skd4hk">
-          <text></text>
-        </inputEntry>
-        <inputEntry id="UnaryTests_0coljut">
-          <text></text>
-        </inputEntry>
-        <inputEntry id="UnaryTests_0xgdyhp">
-          <text></text>
-        </inputEntry>
-        <inputEntry id="UnaryTests_1u5c0og">
-          <text></text>
-        </inputEntry>
-        <outputEntry id="LiteralExpression_1dct26m">
-          <text>"NewClaimCreateNewHearing"</text>
-        </outputEntry>
-        <outputEntry id="LiteralExpression_0rs33z5">
-          <text>"New Claim –  Create new hearing"</text>
-        </outputEntry>
-        <outputEntry id="LiteralExpression_0nhrxq1">
-          <text></text>
-        </outputEntry>
-        <outputEntry id="LiteralExpression_03bdze4">
-          <text>5</text>
-        </outputEntry>
-        <outputEntry id="LiteralExpression_05f3n17">
-          <text>"NewClaimCreateNewHearing"</text>
-        </outputEntry>
-        <outputEntry id="LiteralExpression_1msesso">
-          <text>"decision_making_work"</text>
-        </outputEntry>
-        <outputEntry id="LiteralExpression_0s91u75">
-          <text>"ADMIN"</text>
-        </outputEntry>
-      </rule>
       <rule id="DecisionRule_0v14k8l">
         <inputEntry id="UnaryTests_125bf6j">
-          <text>"Respond to claim" (Respone and counterclaim submitted)</text>
+          <text>respondPossessionClaim</text>
         </inputEntry>
         <inputEntry id="UnaryTests_0ttsckb">
           <text></text>
         </inputEntry>
         <inputEntry id="UnaryTests_09uwuq6">
-          <text>"PENDING_COUNTER_CLAIM_ISSUED"</text>
+          <text>-</text>
         </inputEntry>
         <inputEntry id="UnaryTests_0vnmqle">
           <text></text>
         </inputEntry>
         <inputEntry id="UnaryTests_1hxxdm7">
-          <text>User selects (Help with fees)</text>
+          <text>Defendant submits response with a counterclaim) AND selects help with fees</text>
         </inputEntry>
         <inputEntry id="UnaryTests_0w9a7qw">
           <text></text>
@@ -208,7 +163,7 @@ else
           <text></text>
         </inputEntry>
         <outputEntry id="LiteralExpression_1krqf3d">
-          <text>"Review DefendantResponseAndCounterclaim "</text>
+          <text>"ReviewDefendantResponseAndCounterclaim"</text>
         </outputEntry>
         <outputEntry id="LiteralExpression_0jeqot3">
           <text>"Review Defendant response and counterclaim" </text>
@@ -220,7 +175,7 @@ else
           <text>5</text>
         </outputEntry>
         <outputEntry id="LiteralExpression_1443rue">
-          <text>"Review DefendantResponseAndCounterclaim "</text>
+          <text>"ReviewDefendantResponseAndCounterclaim"</text>
         </outputEntry>
         <outputEntry id="LiteralExpression_050op82">
           <text>"routine_work"</text>

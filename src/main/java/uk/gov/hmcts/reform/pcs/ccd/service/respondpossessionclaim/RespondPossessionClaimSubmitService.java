@@ -5,6 +5,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+import uk.gov.hmcts.reform.pcs.camunda.CamundaService;
+import uk.gov.hmcts.reform.pcs.camunda.TaskType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaim;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
@@ -27,6 +29,7 @@ public class RespondPossessionClaimSubmitService {
     private final CounterClaimFeeCalculator counterClaimFeeCalculator;
     private final DocumentService documentService;
     private final DraftCaseDataService draftCaseDataService;
+    private final CamundaService camundaService;
 
     @Transactional
     public RespondPossessionClaimSubmitPersistenceResult persistFinalSubmit(
@@ -53,6 +56,7 @@ public class RespondPossessionClaimSubmitService {
             && !counterClaimFeeCalculator.isPaymentRequired(counterClaim)) {
             counterClaimEntity = counterClaimService.issueCounterClaim(counterClaimEntity);
             issuedWithoutPayment = true;
+            camundaService.createTask(caseReference, TaskType.REVIEW_DEFENDANT_RESPONSE_AND_COUNTER_CLAIM);
         }
 
         draftCaseDataService.deleteUnsubmittedCaseData(caseReference, respondPossessionClaim);

@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.event;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -9,7 +10,7 @@ import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.pcs.idam.UserInfo;
+import uk.gov.hmcts.reform.pcs.camunda.CamundaService;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
@@ -40,6 +41,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.respondpossessionclaim.page.RespondToPos
 import uk.gov.hmcts.reform.pcs.ccd.repository.DefendantResponseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.DefendantAccessValidator;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.LegalRepForDefendantAccessValidator;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
@@ -54,6 +56,7 @@ import uk.gov.hmcts.reform.pcs.ccd.util.SelectedPartyRetriever;
 import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.PaymentService;
+import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.ArrayList;
@@ -77,6 +80,9 @@ class RespondPossessionClaimTest extends BaseEventTest {
 
     @Mock
     private DraftCaseDataService draftCaseDataService;
+
+    @Mock
+    private CamundaService camundaService;
 
     @Mock
     private ClaimResponseService claimResponseService;
@@ -104,17 +110,15 @@ class RespondPossessionClaimTest extends BaseEventTest {
     @Mock
     private CounterClaimService counterClaimService;
     @Mock
-    private CounterClaimFeeCalculator counterClaimFeeCalculator;
-    @Mock
     private PartyService partyService;
     @Mock
     private FeeService feeService;
     @Mock
     private PaymentService paymentService;
     @Mock
-    private uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService documentService;
+    private DocumentService documentService;
     @Mock
-    private com.fasterxml.jackson.databind.ObjectMapper objectMapper;
+    private ObjectMapper objectMapper;
 
     @Mock
     private SelectedPartyRetriever selectedPartyRetriever;
@@ -171,7 +175,8 @@ class RespondPossessionClaimTest extends BaseEventTest {
             counterClaimService,
             feeCalculator,
             documentService,
-            draftCaseDataService
+            draftCaseDataService,
+            camundaService
         );
 
         CounterClaimSubmitConfirmationService confirmationService = new CounterClaimSubmitConfirmationService(
@@ -966,7 +971,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
             .thenReturn(Optional.of(caseData));
 
         // when
-        var response = callSubmitHandler(caseData);
+        callSubmitHandler(caseData);
 
         // then
         verify(claimResponseService).saveDraftDataForParty(possessionClaimResponse, TEST_CASE_REFERENCE,
