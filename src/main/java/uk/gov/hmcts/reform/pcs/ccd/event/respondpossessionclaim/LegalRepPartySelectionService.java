@@ -122,7 +122,7 @@ public class LegalRepPartySelectionService {
             .parties(representedPartyList)
             .allLinkedDefendants(representedPartyList)
             .possessionClaimResponse(null)
-            .hasUnsubmittedCaseData(null)
+            .hasUnsubmittedCaseData(YesOrNo.YES)
             .build();
     }
 
@@ -152,6 +152,7 @@ public class LegalRepPartySelectionService {
 
         return pcsCase.toBuilder()
             .possessionClaimResponse(response)
+            .hasUnsubmittedCaseData(YesOrNo.YES)
             .build();
     }
 

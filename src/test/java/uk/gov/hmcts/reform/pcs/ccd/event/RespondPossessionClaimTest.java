@@ -167,7 +167,6 @@ class RespondPossessionClaimTest extends BaseEventTest {
             )
         );
 
-
         CounterClaimFeeCalculator feeCalculator = new CounterClaimFeeCalculator();
         RespondPossessionClaimSubmitService submitService = new RespondPossessionClaimSubmitService(
             claimResponseService,

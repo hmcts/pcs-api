@@ -314,7 +314,7 @@ class PCSCaseViewTest {
         // Then
         verify(partiesView).setCaseFields(pcsCase, pcsCaseEntity);
         verify(claimView).setCaseFields(pcsCase, pcsCaseEntity);
-        verify(documentsView).setCaseFields(pcsCase, pcsCaseEntity, orgId);
+        verify(documentsView).setCaseFields(pcsCase, pcsCaseEntity);
         verify(tenancyLicenceView).setCaseFields(pcsCase, pcsCaseEntity);
         verify(claimGroundsView).setCaseFields(pcsCase, pcsCaseEntity);
         verify(rentDetailsView).setCaseFields(pcsCase, pcsCaseEntity);

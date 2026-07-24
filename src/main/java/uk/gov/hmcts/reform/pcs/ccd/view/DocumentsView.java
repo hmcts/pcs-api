@@ -13,6 +13,8 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
+import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -21,21 +23,24 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class DocumentsView {
 
+    private final SecurityContextService securityContextService;
     private final GenAppVisibilityService genAppVisibilityService;
+    private final OrganisationService organisationService;
 
-    public void setCaseFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity, String organisationIdForCurrentUser) {
-        pcsCase.setAllDocuments(mapAndWrapDocuments(pcsCaseEntity, organisationIdForCurrentUser));
+    public void setCaseFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
+        pcsCase.setAllDocuments(mapAndWrapDocuments(pcsCaseEntity));
     }
 
-    private List<ListValue<Document>> mapAndWrapDocuments(PcsCaseEntity pcsCaseEntity,
-                                                          String organisationIdForCurrentUser) {
+    private List<ListValue<Document>> mapAndWrapDocuments(PcsCaseEntity pcsCaseEntity) {
 
         if (pcsCaseEntity.getDocuments().isEmpty()) {
             return List.of();
         }
 
+        String organisationId = organisationService.getOrganisationIdForCurrentUser();
+
         return pcsCaseEntity.getDocuments().stream()
-            .filter(documentEntity -> this.isDocumentVisibleToUser(documentEntity, organisationIdForCurrentUser))
+            .filter(documentEntity -> this.isDocumentVisibleToUser(documentEntity, organisationId))
             .filter(this::isNotInCaseDetailsTab)
             .map(entity -> ListValue.<Document>builder()
                 .id(entity.getId().toString())
