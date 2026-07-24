@@ -13,19 +13,28 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
+import uk.gov.hmcts.reform.pcs.ccd.service.FileUploadValidationService;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
 import java.time.Clock;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.pcs.ccd.service.FileUploadValidationService.DISALLOWED_FILE_TYPE_ERROR;
+import static uk.gov.hmcts.reform.pcs.ccd.service.FileUploadValidationService.TENANCY_LICENCE_DOCUMENT_REQUIRED;
+import static uk.gov.hmcts.reform.pcs.ccd.testutil.DocumentTestData.documentsWithFilenames;
 import static uk.gov.hmcts.reform.pcs.config.ClockConfiguration.UK_ZONE_ID;
 
 @ExtendWith(MockitoExtension.class)
@@ -45,7 +54,17 @@ class TenancyLicenceDetailsPageTest extends BasePageTest {
         when(ukClock.instant()).thenReturn(FIXED_CURRENT_DATE.atTime(10, 20).atZone(UK_ZONE_ID).toInstant());
         when(ukClock.getZone()).thenReturn(UK_ZONE_ID);
 
-        setPageUnderTest(new TenancyLicenceDetailsPage(ukClock, textAreaValidationService));
+        lenient().doAnswer(invocation -> {
+            Object caseData = invocation.getArgument(0);
+            List<String> errors = invocation.getArgument(1);
+            return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
+                .data((PCSCase) caseData)
+                .errorMessageOverride(errors.isEmpty() ? null : String.join("\n", errors))
+                .build();
+        }).when(textAreaValidationService).createValidationResponse(any(), anyList());
+
+        setPageUnderTest(new TenancyLicenceDetailsPage(
+            ukClock, textAreaValidationService, new FileUploadValidationService()));
     }
 
     @ParameterizedTest
@@ -121,6 +140,83 @@ class TenancyLicenceDetailsPageTest extends BasePageTest {
         assertThat(response.getErrorMessageOverride()).isNull();
         verify(textAreaValidationService, times(1))
             .validateSingleTextArea(eq(reasonsForNoTenancyLicenceDocuments), eq(label), eq(characterLimit));
+    }
+
+    @Test
+    void shouldReturnErrorWhenTenancyLicenceDocumentIsDisallowedFileType() {
+        // Given
+        PCSCase caseData = PCSCase.builder()
+            .tenancyLicenceDetails(TenancyLicenceDetails.builder()
+                .tenancyLicenceDate(FIXED_CURRENT_DATE.minusDays(1))
+                .typeOfTenancyLicence(TenancyLicenceType.INTRODUCTORY_TENANCY)
+                .hasCopyOfTenancyLicence(VerticalYesNo.YES)
+                .tenancyLicenceDocuments(documentsWithFilenames("tenancy.mp3"))
+                .build())
+            .build();
+
+        // When
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+        // Then
+        assertThat(response.getErrorMessageOverride())
+            .isNotNull()
+            .contains(DISALLOWED_FILE_TYPE_ERROR);
+    }
+
+    @Test
+    void shouldNotReturnErrorWhenTenancyLicenceDocumentIsAllowedFileType() {
+        // Given
+        PCSCase caseData = PCSCase.builder()
+            .tenancyLicenceDetails(TenancyLicenceDetails.builder()
+                .tenancyLicenceDate(FIXED_CURRENT_DATE.minusDays(1))
+                .typeOfTenancyLicence(TenancyLicenceType.INTRODUCTORY_TENANCY)
+                .hasCopyOfTenancyLicence(VerticalYesNo.YES)
+                .tenancyLicenceDocuments(documentsWithFilenames("tenancy.pdf"))
+                .build())
+            .build();
+
+        // When
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+        // Then
+        assertThat(response.getErrorMessageOverride()).isNull();
+    }
+
+    @Test
+    void shouldReturnRequiredErrorWhenCopyHeldButNoDocumentUploaded() {
+        // Given
+        PCSCase caseData = PCSCase.builder()
+            .tenancyLicenceDetails(TenancyLicenceDetails.builder()
+                .tenancyLicenceDate(FIXED_CURRENT_DATE.minusDays(1))
+                .typeOfTenancyLicence(TenancyLicenceType.INTRODUCTORY_TENANCY)
+                .hasCopyOfTenancyLicence(VerticalYesNo.YES)
+                .build())
+            .build();
+
+        // When
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+        // Then
+        assertThat(response.getErrorMessageOverride())
+            .isEqualTo(TENANCY_LICENCE_DOCUMENT_REQUIRED);
+    }
+
+    @Test
+    void shouldNotRequireDocumentWhenNoCopyOfTenancyLicenceHeld() {
+        // Given
+        PCSCase caseData = PCSCase.builder()
+            .tenancyLicenceDetails(TenancyLicenceDetails.builder()
+                .tenancyLicenceDate(FIXED_CURRENT_DATE.minusDays(1))
+                .typeOfTenancyLicence(TenancyLicenceType.INTRODUCTORY_TENANCY)
+                .hasCopyOfTenancyLicence(VerticalYesNo.NO)
+                .build())
+            .build();
+
+        // When
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+        // Then
+        assertThat(response.getErrorMessageOverride()).isNull();
     }
 
     private static Stream<Arguments> tenancyDateScenarios() {

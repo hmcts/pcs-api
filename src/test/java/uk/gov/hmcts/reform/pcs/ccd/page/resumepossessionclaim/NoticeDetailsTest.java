@@ -13,6 +13,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServiceMethod;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
+import uk.gov.hmcts.reform.pcs.ccd.service.FileUploadValidationService;
 import uk.gov.hmcts.reform.pcs.ccd.service.NoticeDetailsService;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
@@ -25,6 +26,10 @@ import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyList;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.doAnswer;
+import static uk.gov.hmcts.reform.pcs.ccd.service.FileUploadValidationService.ALLOWED_FILE_TYPE_GUIDANCE;
+import static uk.gov.hmcts.reform.pcs.ccd.service.FileUploadValidationService.DISALLOWED_FILE_TYPE_ERROR;
+import static uk.gov.hmcts.reform.pcs.ccd.service.FileUploadValidationService.NOTICE_DOCUMENT_REQUIRED;
+import static uk.gov.hmcts.reform.pcs.ccd.testutil.DocumentTestData.documentsWithFilenames;
 
 @ExtendWith(MockitoExtension.class)
 class NoticeDetailsTest extends BasePageTest {
@@ -48,7 +53,8 @@ class NoticeDetailsTest extends BasePageTest {
                     .build();
         }).when(textAreaValidationService).createValidationResponse(any(), anyList());
 
-        setPageUnderTest(new NoticeDetails(noticeDetailsService, textAreaValidationService));
+        setPageUnderTest(new NoticeDetails(
+            noticeDetailsService, textAreaValidationService, new FileUploadValidationService()));
     }
 
     @Test
@@ -89,5 +95,81 @@ class NoticeDetailsTest extends BasePageTest {
         // Then
         assertThat(response.getData().getNoticeServedDetails().getUnableToUploadReason())
                 .isEqualTo("Unable to upload document");
+    }
+
+    @Test
+    void shouldReturnErrorWhenNoticeDocumentIsDisallowedFileType() {
+        // Given
+        PCSCase caseData = PCSCase.builder()
+                .noticeServed(YesOrNo.YES)
+                .noticeServedDetails(NoticeServedDetails.builder()
+                        .serviceMethod(NoticeServiceMethod.FIRST_CLASS_POST)
+                        .ableToUploadDocument(CanUploadNoticeServedDocument.Yes)
+                        .documents(documentsWithFilenames("notice.mpeg"))
+                        .build())
+                .build();
+
+        // When
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+        // Then
+        assertThat(response.getErrors()).containsExactly(DISALLOWED_FILE_TYPE_ERROR, ALLOWED_FILE_TYPE_GUIDANCE);
+    }
+
+    @Test
+    void shouldReturnRequiredErrorWhenAbleToUploadButNoDocumentProvided() {
+        // Given
+        PCSCase caseData = PCSCase.builder()
+                .noticeServed(YesOrNo.YES)
+                .noticeServedDetails(NoticeServedDetails.builder()
+                        .serviceMethod(NoticeServiceMethod.FIRST_CLASS_POST)
+                        .ableToUploadDocument(CanUploadNoticeServedDocument.Yes)
+                        .build())
+                .build();
+
+        // When
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+        // Then
+        assertThat(response.getErrors()).containsExactly(NOTICE_DOCUMENT_REQUIRED);
+    }
+
+    @Test
+    void shouldNotValidateDocumentsWhenUnableToUpload() {
+        // Given a stale disallowed upload but the user selected "unable to upload"
+        PCSCase caseData = PCSCase.builder()
+                .noticeServed(YesOrNo.YES)
+                .noticeServedDetails(NoticeServedDetails.builder()
+                        .serviceMethod(NoticeServiceMethod.FIRST_CLASS_POST)
+                        .ableToUploadDocument(CanUploadNoticeServedDocument.No)
+                        .unableToUploadReason("Unable to upload document")
+                        .documents(documentsWithFilenames("notice.mpeg"))
+                        .build())
+                .build();
+
+        // When
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+        // Then
+        assertThat(response.getErrors()).isNull();
+    }
+
+    @Test
+    void shouldNotReturnErrorWhenNoticeDocumentIsAllowedFileType() {
+        // Given
+        PCSCase caseData = PCSCase.builder()
+                .noticeServed(YesOrNo.YES)
+                .noticeServedDetails(NoticeServedDetails.builder()
+                        .serviceMethod(NoticeServiceMethod.FIRST_CLASS_POST)
+                        .ableToUploadDocument(CanUploadNoticeServedDocument.Yes)
+                        .documents(documentsWithFilenames("notice.pdf"))
+                        .build())
+                .build();
+
+        // When
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+        // Then
+        assertThat(response.getErrors()).isNull();
     }
 }

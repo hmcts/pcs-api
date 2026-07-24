@@ -14,6 +14,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
+import uk.gov.hmcts.reform.pcs.ccd.service.FileUploadValidationService;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
 import java.time.Clock;
@@ -29,6 +30,9 @@ import static org.mockito.Mockito.anyInt;
 import static org.mockito.Mockito.anyList;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.lenient;
+import static uk.gov.hmcts.reform.pcs.ccd.service.FileUploadValidationService.ALLOWED_FILE_TYPE_GUIDANCE;
+import static uk.gov.hmcts.reform.pcs.ccd.service.FileUploadValidationService.DISALLOWED_FILE_TYPE_ERROR;
+import static uk.gov.hmcts.reform.pcs.ccd.testutil.DocumentTestData.documentsWithFilenames;
 import static uk.gov.hmcts.reform.pcs.config.ClockConfiguration.UK_ZONE_ID;
 
 @ExtendWith(MockitoExtension.class)
@@ -59,7 +63,8 @@ class OccupationLicenceDetailsWalesPageTest extends BasePageTest {
                 .build();
         }).when(textAreaValidationService).createValidationResponse(any(), anyList());
 
-        setPageUnderTest(new OccupationLicenceDetailsWalesPage(ukClock, textAreaValidationService));
+        setPageUnderTest(new OccupationLicenceDetailsWalesPage(
+            ukClock, textAreaValidationService, new FileUploadValidationService()));
     }
 
     @Test
@@ -165,6 +170,44 @@ class OccupationLicenceDetailsWalesPageTest extends BasePageTest {
         // Then
         assertThat(response.getErrors()).isNull();
         assertThat(response.getData()).isEqualTo(caseData);
+    }
+
+    @Test
+    void shouldReturnErrorWhenLicenceDocumentIsDisallowedFileType() {
+        // Given
+        OccupationLicenceDetailsWales occupationDetails = OccupationLicenceDetailsWales.builder()
+            .occupationLicenceTypeWales(OccupationLicenceTypeWales.SECURE_CONTRACT)
+            .licenceDocuments(documentsWithFilenames("licence.m4a"))
+            .build();
+
+        PCSCase caseData = PCSCase.builder()
+            .occupationLicenceDetailsWales(occupationDetails)
+            .build();
+
+        // When
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+        // Then
+        assertThat(response.getErrors()).containsExactly(DISALLOWED_FILE_TYPE_ERROR, ALLOWED_FILE_TYPE_GUIDANCE);
+    }
+
+    @Test
+    void shouldNotReturnErrorWhenLicenceDocumentIsAllowedFileType() {
+        // Given
+        OccupationLicenceDetailsWales occupationDetails = OccupationLicenceDetailsWales.builder()
+            .occupationLicenceTypeWales(OccupationLicenceTypeWales.SECURE_CONTRACT)
+            .licenceDocuments(documentsWithFilenames("licence.pdf"))
+            .build();
+
+        PCSCase caseData = PCSCase.builder()
+            .occupationLicenceDetailsWales(occupationDetails)
+            .build();
+
+        // When
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+        // Then
+        assertThat(response.getErrors()).isNull();
     }
 
     private static Stream<Arguments> dateValidationScenarios() {

@@ -10,6 +10,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsSection;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
+import uk.gov.hmcts.reform.pcs.ccd.service.FileUploadValidationService;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
 import java.util.List;
@@ -21,6 +22,10 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static uk.gov.hmcts.reform.pcs.ccd.service.FileUploadValidationService.ALLOWED_FILE_TYPE_GUIDANCE;
+import static uk.gov.hmcts.reform.pcs.ccd.service.FileUploadValidationService.DISALLOWED_FILE_TYPE_ERROR;
+import static uk.gov.hmcts.reform.pcs.ccd.service.FileUploadValidationService.RENT_STATEMENT_REQUIRED;
+import static uk.gov.hmcts.reform.pcs.ccd.testutil.DocumentTestData.documentsWithFilenames;
 
 @ExtendWith(MockitoExtension.class)
 public class RentArrearsTest extends BasePageTest {
@@ -38,7 +43,7 @@ public class RentArrearsTest extends BasePageTest {
                 .errors(errors.isEmpty() ? null : errors)
                 .build();
         }).when(textAreaValidationService).createValidationResponse(any(), anyList());
-        setPageUnderTest(new RentArrears(textAreaValidationService));
+        setPageUnderTest(new RentArrears(textAreaValidationService, new FileUploadValidationService()));
     }
 
     @Test
@@ -62,5 +67,53 @@ public class RentArrearsTest extends BasePageTest {
         assertThat(response.getErrorMessageOverride()).isNull();
         verify(textAreaValidationService, times(1))
             .validateSingleTextArea(eq(rentRecoveryAttempt), eq(label), eq(characterLimit));
+    }
+
+    @Test
+    void shouldReturnErrorWhenRentStatementDocumentIsDisallowedFileType() {
+        // Given
+        PCSCase caseData = PCSCase.builder()
+            .rentArrears(
+                RentArrearsSection.builder()
+                    .statementDocuments(documentsWithFilenames("rent-statement.mp3"))
+                    .build()
+            ).build();
+
+        // When
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+        // Then
+        assertThat(response.getErrors()).containsExactly(DISALLOWED_FILE_TYPE_ERROR, ALLOWED_FILE_TYPE_GUIDANCE);
+    }
+
+    @Test
+    void shouldReturnRequiredErrorWhenNoRentStatementUploaded() {
+        // Given
+        PCSCase caseData = PCSCase.builder()
+            .rentArrears(RentArrearsSection.builder().build())
+            .build();
+
+        // When
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+        // Then
+        assertThat(response.getErrors()).containsExactly(RENT_STATEMENT_REQUIRED);
+    }
+
+    @Test
+    void shouldNotReturnErrorWhenRentStatementDocumentIsAllowedFileType() {
+        // Given
+        PCSCase caseData = PCSCase.builder()
+            .rentArrears(
+                RentArrearsSection.builder()
+                    .statementDocuments(documentsWithFilenames("rent-statement.pdf"))
+                    .build()
+            ).build();
+
+        // When
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+        // Then
+        assertThat(response.getErrors()).isNull();
     }
 }
