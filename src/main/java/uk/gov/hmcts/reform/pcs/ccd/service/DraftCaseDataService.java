@@ -223,8 +223,6 @@ public class DraftCaseDataService {
                 .value("partyId", partyId)
                 .build()));
 
-        ;
-
         log.debug("Replacing existing draft for userId={}", userId);
 
         draftCaseDataEntity.setCaseData(eventDataJson);

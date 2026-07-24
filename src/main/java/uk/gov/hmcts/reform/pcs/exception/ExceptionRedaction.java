@@ -1,5 +1,9 @@
 package uk.gov.hmcts.reform.pcs.exception;
 
+import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.util.function.Consumer;
+
 /**
  * Central redaction policy for {@link RedactedRuntimeException} and {@link RedactedException}.
  *
@@ -61,6 +65,31 @@ public class ExceptionRedaction {
         return override != null ? override : SHOW_FULL_EXCEPTIONS;
     }
 
+    public static void printStackTrace(Throwable throwable, PrintStream stream, Consumer<PrintStream> fullPrinter) {
+        printStackTrace(throwable, stream, fullPrinter, stream::println, stream::println);
+    }
+
+    public static void printStackTrace(Throwable throwable, PrintWriter writer, Consumer<PrintWriter> fullPrinter) {
+        printStackTrace(throwable, writer, fullPrinter, writer::println, writer::println);
+    }
+
+    private static <T> void printStackTrace(Throwable throwable, T destination, Consumer<T> fullPrinter,
+                                                    Consumer<Object> printlnObject, Consumer<String> printlnLine) {
+        if (showFullExceptions()) {
+            try {
+                fullPrinter.accept(destination);
+            } catch (NullPointerException ex) {
+                printlnObject.accept(throwable);
+                Throwable c = throwable.getCause();
+                if (c != null) {
+                    printlnLine.accept("Caused by: " + c.getClass().getName() + ": " + c.getMessage());
+                }
+            }
+        } else {
+            printlnObject.accept(throwable);
+        }
+    }
+
     static boolean parseShowFullExceptions(String raw) {
         return "true".equalsIgnoreCase(raw);
     }
@@ -68,5 +97,4 @@ public class ExceptionRedaction {
     public static void setShowFullExceptionsForTesting(Boolean value) {
         overrideForTesting = value; // pass null to reset
     }
-
 }

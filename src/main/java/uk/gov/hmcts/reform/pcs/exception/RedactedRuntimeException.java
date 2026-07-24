@@ -2,17 +2,19 @@ package uk.gov.hmcts.reform.pcs.exception;
 
 import java.io.PrintStream;
 import java.io.PrintWriter;
+import java.io.Serial;
 import java.util.Objects;
 
 import static uk.gov.hmcts.reform.pcs.exception.ExceptionRedaction.cause;
 import static uk.gov.hmcts.reform.pcs.exception.ExceptionRedaction.message;
-import static uk.gov.hmcts.reform.pcs.exception.ExceptionRedaction.showFullExceptions;
 import static uk.gov.hmcts.reform.pcs.exception.ExceptionRedaction.stackTrace;
 
 public class RedactedRuntimeException extends RuntimeException {
 
+    @Serial
+    private static final long serialVersionUID = 1L;
     private final ErrorCode code;
-    private final RedactionContext context;
+    private final transient RedactionContext context;
     private final Throwable debugCause;
 
     public RedactedRuntimeException(ErrorCode code) {
@@ -70,36 +72,12 @@ public class RedactedRuntimeException extends RuntimeException {
 
     @Override
     public void printStackTrace(PrintStream stream) {
-        if (showFullExceptions()) {
-            try {
-                super.printStackTrace(stream);
-            } catch (NullPointerException ex) {
-                stream.println(this);
-                Throwable c = getCause();
-                if (c != null) {
-                    stream.println("Caused by: " + c.getClass().getName() + ": " + c.getMessage());
-                }
-            }
-        } else {
-            stream.println(this);
-        }
+        ExceptionRedaction.printStackTrace(this, stream, super::printStackTrace);
     }
 
     @Override
     public void printStackTrace(PrintWriter writer) {
-        if (showFullExceptions()) {
-            try {
-                super.printStackTrace(writer);
-            } catch (NullPointerException ex) {
-                writer.println(this);
-                Throwable c = getCause();
-                if (c != null) {
-                    writer.println("Caused by: " + c.getClass().getName() + ": " + c.getMessage());
-                }
-            }
-        } else {
-            writer.println(this);
-        }
+        ExceptionRedaction.printStackTrace(this, writer, super::printStackTrace);
     }
 
     @Override

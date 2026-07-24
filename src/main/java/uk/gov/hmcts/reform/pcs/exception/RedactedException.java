@@ -2,16 +2,18 @@ package uk.gov.hmcts.reform.pcs.exception;
 
 import java.io.PrintStream;
 import java.io.PrintWriter;
+import java.io.Serial;
 
 import static uk.gov.hmcts.reform.pcs.exception.ExceptionRedaction.cause;
 import static uk.gov.hmcts.reform.pcs.exception.ExceptionRedaction.message;
-import static uk.gov.hmcts.reform.pcs.exception.ExceptionRedaction.showFullExceptions;
 import static uk.gov.hmcts.reform.pcs.exception.ExceptionRedaction.stackTrace;
 
 public class RedactedException extends Exception {
 
+    @Serial
+    private static final long serialVersionUID = 1L;
     private final ErrorCode code;
-    private final RedactionContext context;
+    private final transient RedactionContext context;
     private final Throwable debugCause;
 
     public RedactedException(ErrorCode code) {
@@ -65,20 +67,12 @@ public class RedactedException extends Exception {
 
     @Override
     public void printStackTrace(PrintStream stream) {
-        if (showFullExceptions()) {
-            super.printStackTrace(stream);
-        } else {
-            stream.println(this);
-        }
+        ExceptionRedaction.printStackTrace(this, stream, super::printStackTrace);
     }
 
     @Override
     public void printStackTrace(PrintWriter writer) {
-        if (showFullExceptions()) {
-            super.printStackTrace(writer);
-        } else {
-            writer.println(this);
-        }
+        ExceptionRedaction.printStackTrace(this, writer, super::printStackTrace);
     }
 
     @Override
