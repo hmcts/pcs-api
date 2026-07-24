@@ -1,19 +1,24 @@
 package uk.gov.hmcts.reform.pcs.camunda;
 
+import com.github.kagkarlsson.scheduler.SchedulerClient;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
+import uk.gov.hmcts.reform.pcs.camunda.CamundaRequestTaskData.Action;
 import uk.gov.hmcts.reform.pcs.ccd.CaseType;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.time.Clock;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE_TIME;
+import static uk.gov.hmcts.reform.pcs.camunda.CamundaRequestTaskComponent.CAMUNDA_REQUEST_TASK_DESCRIPTOR;
 
 @Slf4j
 @AllArgsConstructor
@@ -22,6 +27,7 @@ public class CamundaService {
 
     private final CamundaApi camundaApi;
     private final AuthTokenGenerator authTokenGenerator;
+    private final SchedulerClient schedulerClient;
     private final FeatureToggleService featureToggleService;
 
     private static final String CREATE = "createTaskMessage";
@@ -31,7 +37,41 @@ public class CamundaService {
     private static final String CANCELLATION_PROCESS = "CASE_EVENT_CANCELLATION";
     private final Clock utcClock;
 
-    public void createTask(Long caseId, TaskType taskType) {
+    public void createTask(long caseId, TaskType taskType) {
+        scheduleCamundaRequest(Action.CREATE, caseId, taskType);
+    }
+
+    public void cancelTask(long caseId, TaskType taskType) {
+        scheduleCamundaRequest(Action.CANCEL, caseId, taskType);
+    }
+
+    void handleRequest(CamundaRequestTaskData taskData) {
+        switch (taskData.getAction()) {
+            case CREATE -> requestTaskCreation(taskData.getCaseReference(), taskData.getTaskType());
+            case CANCEL -> requestTaskCancellation(taskData.getCaseReference(), taskData.getTaskType());
+        }
+    }
+
+    private void scheduleCamundaRequest(Action action, long caseId, TaskType taskType) {
+        if (!featureToggleService.isEnabled(FeatureFlag.CASEWORKER_WA)) {
+            log.info("Skipped scheduling Camunda request for {}", caseId);
+            return;
+        }
+
+        CamundaRequestTaskData taskData = CamundaRequestTaskData.builder()
+            .action(action)
+            .caseReference(caseId)
+            .taskType(taskType)
+            .build();
+
+        schedulerClient.scheduleIfNotExists(
+            CAMUNDA_REQUEST_TASK_DESCRIPTOR
+                .instance(UUID.randomUUID().toString())
+                .data(taskData)
+                .scheduledTo(Instant.now(utcClock)));
+    }
+
+    private void requestTaskCreation(Long caseId, TaskType taskType) {
         if (!featureToggleService.isEnabled(FeatureFlag.CASEWORKER_WA)) {
             log.info("Skipped creating task for {}", caseId);
             return;
@@ -64,7 +104,7 @@ public class CamundaService {
         sendCamundaRequest(request, caseId);
     }
 
-    public void cancelTask(Long caseId, TaskType taskType) {
+    private void requestTaskCancellation(Long caseId, TaskType taskType) {
         if (!featureToggleService.isEnabled(FeatureFlag.CASEWORKER_WA)) {
             log.info("Skipped cancelling task for {}", caseId);
             return;
@@ -108,4 +148,5 @@ public class CamundaService {
     private DmnValue<Boolean> dmnBooleanValue(Boolean value) {
         return DmnValue.<Boolean>builder().value(value).type("Boolean").build();
     }
+
 }
