@@ -15,7 +15,7 @@ export const enterGenappApplication = {
   errorValidation: `YES`,
   eventCouldNotBeCreatedErrorMessageHeader: `The event could not be created`,
   thereIsProbErrorMessageHeader: `There is a problem`,
-  errorValidationType: { one: `textField`, two: `radioOptions`, three: `checkBox`, four: `dropDown`, five: `dateField` },
+  errorValidationType: { one: `textField`, two: `radioOptions`, three: `checkBox`, four: `dropDown`, five: `dateField`, six: `dateRadioOption`, seven :`moneyField` },
   errorValidationField: {
     errorRadioOption1: [
       { type: `none`, input: ``, errMessage: `Which party made the application? is required`, errInlineMessage: `Field is required` },
