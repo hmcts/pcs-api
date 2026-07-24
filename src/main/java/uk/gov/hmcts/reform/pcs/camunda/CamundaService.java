@@ -25,14 +25,13 @@ public class CamundaService {
     private final FeatureToggleService featureToggleService;
 
     private static final String CREATE = "createTaskMessage";
+    private static final String CANCEL = "cancelTasks";
     private static final String UNCONFIGURED = "unconfigured";
     private static final String EMPTY_WARNINGS_LIST = "[]";
+    private static final String CANCELLATION_PROCESS = "CASE_EVENT_CANCELLATION";
     private final Clock utcClock;
 
-    public void createTask(
-        Long caseId,
-        TaskType taskType
-    ) {
+    public void createTask(Long caseId, TaskType taskType) {
         if (!featureToggleService.isEnabled(FeatureFlag.CASEWORKER_WA)) {
             log.info("Skipped creating task for {}", caseId);
             return;
@@ -55,12 +54,39 @@ public class CamundaService {
         processVariables.put("delayUntil", dmnStringValue(delayUntil.format(ISO_LOCAL_DATE_TIME)));
         processVariables.put("hasWarnings", dmnBooleanValue(false));
         processVariables.put("warningList", dmnStringValue(EMPTY_WARNINGS_LIST));
+        processVariables.put("__processCategory__" + taskType.getProcessCategory(), dmnBooleanValue(true));
 
         SendMessageRequest request = SendMessageRequest.builder()
             .messageName(CREATE)
             .processVariables(processVariables)
             .build();
 
+        sendCamundaRequest(request, caseId);
+    }
+
+    public void cancelTask(Long caseId, TaskType taskType) {
+        if (!featureToggleService.isEnabled(FeatureFlag.CASEWORKER_WA)) {
+            log.info("Skipped cancelling task for {}", caseId);
+            return;
+        }
+
+        Map<String, DmnValue<?>> correlationKeys = new ConcurrentHashMap<>();
+        correlationKeys.put("caseId", dmnStringValue(caseId.toString()));
+        correlationKeys.put("__processCategory__" + taskType.getProcessCategory(), dmnBooleanValue(true));
+
+        Map<String, DmnValue<?>> processVariables = new ConcurrentHashMap<>();
+        processVariables.put("cancellationProcess", dmnStringValue(CANCELLATION_PROCESS));
+
+        SendMessageRequest request = SendMessageRequest.builder()
+            .messageName(CANCEL)
+            .processVariables(processVariables)
+            .correlationKeys(correlationKeys)
+            .build();
+
+        sendCamundaRequest(request, caseId);
+    }
+
+    private void sendCamundaRequest(SendMessageRequest request, long caseId) {
         String s2sToken = authTokenGenerator.generate();
 
         try {
@@ -69,7 +95,6 @@ public class CamundaService {
         } catch (Exception e) {
             log.error("Failed to send Camunda request for caseId {}", caseId, e);
         }
-
     }
 
     private DmnValue<String> dmnStringValue(String value) {
