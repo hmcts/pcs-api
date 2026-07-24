@@ -114,6 +114,8 @@ wa:
   wa-initiation-batch:
     job:
       schedule: "*/1 * * * *"
+      disableActiveClusterCheck: true
+      suspend: false
 
   wa-reconfiguration-batch:
     job:
@@ -122,6 +124,8 @@ wa:
   wa-termination-batch:
     job:
       schedule: "*/1 * * * *"
+      disableActiveClusterCheck: true
+      suspend: false
 
   #disable wa db as we are using the postgres flexible server
   wa:
