@@ -80,6 +80,18 @@ public class PartyService {
         }
     }
 
+    public String getPartyLabel(ClaimEntity mainClaim, UUID partyId) {
+        ClaimPartyEntity applicantClaimParty = getClaimParty(mainClaim, partyId);
+
+        if (applicantClaimParty.getRole() == PartyRole.CLAIMANT) {
+            return "Claimant %d".formatted(applicantClaimParty.getRank());
+        } else if (applicantClaimParty.getRole() == PartyRole.DEFENDANT) {
+            return "Defendant %d".formatted(applicantClaimParty.getRank());
+        } else {
+            return null;
+        }
+    }
+
     public PartyEntity getPrimaryClaimantPartyEntity(PcsCaseEntity pcsCaseEntity) {
         return getPrimaryPartyEntityOfRole(pcsCaseEntity, PartyRole.CLAIMANT);
     }
@@ -121,7 +133,7 @@ public class PartyService {
                 .map(ClaimPartyEntity::getRole)
                 .orElseThrow(() -> new PartyNotFoundException("Party not found on main claim"));
     }
-    
+
     public PartyEntity getPartyEntityById(UUID partyId, long caseReference) {
         return partyRepository.findByIdAndPcsCaseCaseReference(partyId, caseReference)
             .orElseThrow(() -> new IllegalStateException(
@@ -268,6 +280,13 @@ public class PartyService {
             return contactPreferences.getOverriddenClaimantContactAddress();
         }
         return contactPreferences.getOrganisationAddress();
+    }
+
+    private static ClaimPartyEntity getClaimParty(ClaimEntity claim, UUID partyId) {
+        return claim.getClaimParties().stream()
+            .filter(claimPartyEntity -> partyId.equals(claimPartyEntity.getParty().getId()))
+            .findFirst()
+            .orElseThrow(() -> new PartyNotFoundException("Party not found"));
     }
 
 }

@@ -28,6 +28,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.StatementOfTruthEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -118,6 +119,10 @@ public class GenAppEntity {
     private StatementOfTruthEntity statementOfTruth;
 
     private LocalDateTime applicationSubmittedDate;
+
+    private LocalDate applicationReceivedDate;
+
+    private String somethingElseDetails;
 
     @OneToOne(cascade = ALL, orphanRemoval = true)
     @JoinColumn(name = "submission_document_id")
