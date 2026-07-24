@@ -8,6 +8,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.NullSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
@@ -41,6 +43,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.catchThrowable;
 import static org.junit.jupiter.params.ParameterizedTest.ARGUMENT_SET_NAME_PLACEHOLDER;
 import static org.junit.jupiter.params.provider.Arguments.argumentSet;
+import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mock.Strictness.LENIENT;
@@ -321,10 +324,27 @@ class PartyServiceTest {
             assertThat(throwable).isInstanceOf(PartyNotFoundException.class);
         }
     }
-    
+
     @Nested
     @DisplayName("Get Party Name")
     class GetPartyNameTests {
+
+        @Test
+        void shouldReturnPersonUnknownWhenNameNotKnown() {
+            // Given
+            PartyEntity partyEntity = PartyEntity.builder()
+                .nameKnown(VerticalYesNo.NO)
+                .orgName("Org name")
+                .firstName("First name")
+                .lastName("Last name")
+                .build();
+
+            // When
+            String partyName = underTest.getPartyName(partyEntity);
+
+            // Then
+            assertThat(partyName).isEqualTo("Person unknown");
+        }
 
         @Test
         void shouldReturnOrgNameWhenSet() {
@@ -355,6 +375,57 @@ class PartyServiceTest {
 
             // Then
             assertThat(partyName).isEqualTo("First name Last name");
+        }
+
+        @ParameterizedTest
+        @NullSource
+        @ValueSource(strings = { "", " "})
+        void shouldReturnFirstNameOnlyWhenLastNameIsBlank(String lastName) {
+            // Given
+            PartyEntity partyEntity = PartyEntity.builder()
+                .firstName("First name")
+                .lastName(lastName)
+                .build();
+
+            // When
+            String partyName = underTest.getPartyName(partyEntity);
+
+            // Then
+            assertThat(partyName).isEqualTo("First name");
+        }
+
+        @ParameterizedTest
+        @NullSource
+        @ValueSource(strings = { "", " "})
+        void shouldReturnLastNameOnlyWhenFirstNameIsBlank(String firstName) {
+            // Given
+            PartyEntity partyEntity = PartyEntity.builder()
+                .firstName(firstName)
+                .lastName("Last name")
+                .build();
+
+            // When
+            String partyName = underTest.getPartyName(partyEntity);
+
+            // Then
+            assertThat(partyName).isEqualTo("Last name");
+        }
+
+        @ParameterizedTest
+        @NullSource
+        @ValueSource(strings = { "", " "})
+        void shouldReturnPersonUnknownWhenBothNamesBlank(String name) {
+            // Given
+            PartyEntity partyEntity = PartyEntity.builder()
+                .firstName(name)
+                .lastName(name)
+                .build();
+
+            // When
+            String partyName = underTest.getPartyName(partyEntity);
+
+            // Then
+            assertThat(partyName).isEqualTo("Person unknown");
         }
 
         @Test
@@ -439,6 +510,64 @@ class PartyServiceTest {
             // Then
             assertThat(throwable)
                 .isInstanceOf(PartyNotFoundException.class);
+        }
+    }
+
+    @Nested
+    @DisplayName("Get Party Label")
+    class GetPartyLabelTests {
+        @ParameterizedTest
+        @MethodSource("partyLabelScenarios")
+        void shouldGetPartyLabels(PartyRole partyRole, int rank, String expectedPartyLabel) {
+            // Given
+            UUID partyId = UUID.randomUUID();
+            PartyEntity party = PartyEntity.builder().id(partyId).build();
+            PartyEntity otherParty1 = PartyEntity.builder().id(UUID.randomUUID()).build();
+            PartyEntity otherParty2 = PartyEntity.builder().id(UUID.randomUUID()).build();
+            PartyEntity otherParty3 = PartyEntity.builder().id(UUID.randomUUID()).build();
+
+            when(claimEntity.getClaimParties()).thenReturn(List.of(
+                ClaimPartyEntity.builder().party(otherParty1).role(PartyRole.CLAIMANT).rank(1).build(),
+                ClaimPartyEntity.builder().party(party).role(partyRole).rank(rank).build(),
+                ClaimPartyEntity.builder().party(otherParty2).role(PartyRole.DEFENDANT).rank(1).build(),
+                ClaimPartyEntity.builder().party(otherParty3).role(PartyRole.UNDERLESSEE_OR_MORTGAGEE).rank(1).build()
+            ));
+
+            // When
+            String claimantPartyLabel = underTest.getPartyLabel(claimEntity, partyId);
+
+            // Then
+            assertThat(claimantPartyLabel).isEqualTo(expectedPartyLabel);
+        }
+
+        @Test
+        void shouldThrowExceptionGettingPartyLabelForUnknownParty() {
+            // Given
+            UUID unknoenPartyId = UUID.randomUUID();
+            PartyEntity otherParty1 = PartyEntity.builder().id(UUID.randomUUID()).build();
+            PartyEntity otherParty2 = PartyEntity.builder().id(UUID.randomUUID()).build();
+            PartyEntity otherParty3 = PartyEntity.builder().id(UUID.randomUUID()).build();
+
+            when(claimEntity.getClaimParties()).thenReturn(List.of(
+                ClaimPartyEntity.builder().party(otherParty1).role(PartyRole.CLAIMANT).rank(1).build(),
+                ClaimPartyEntity.builder().party(otherParty2).role(PartyRole.DEFENDANT).rank(1).build(),
+                ClaimPartyEntity.builder().party(otherParty3).role(PartyRole.UNDERLESSEE_OR_MORTGAGEE).rank(1).build()
+            ));
+
+            // When
+            Throwable throwable = catchThrowable(() -> underTest.getPartyLabel(claimEntity, unknoenPartyId));
+
+            // Then
+            assertThat(throwable).isInstanceOf(PartyNotFoundException.class);
+        }
+
+        private static Stream<Arguments> partyLabelScenarios() {
+            return Stream.of(
+                // Role, rank, expected party label
+                arguments(PartyRole.CLAIMANT, 3, "Claimant 3"),
+                arguments(PartyRole.DEFENDANT, 8, "Defendant 8"),
+                arguments(PartyRole.UNDERLESSEE_OR_MORTGAGEE, 2, null)
+            );
         }
     }
 

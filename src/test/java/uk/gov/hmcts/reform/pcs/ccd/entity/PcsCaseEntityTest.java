@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.pcs.ccd.entity;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
@@ -67,6 +68,20 @@ class PcsCaseEntityTest {
         // Then
         verify(genAppEntity).setRank(6);
         verify(genAppEntity).setPcsCase(underTest);
+    }
+
+    @Test
+    void shouldAddHearing() {
+        // Given
+        HearingEntity hearingEntity = mock(HearingEntity.class);
+
+        // When
+        underTest.addHearing(hearingEntity);
+
+        // Then
+        assertThat(underTest.getHearings()).hasSize(1);
+        assertThat(underTest.getHearings().getFirst()).isEqualTo(hearingEntity);
+        verify(hearingEntity).setPcsCase(underTest);
     }
 
 }

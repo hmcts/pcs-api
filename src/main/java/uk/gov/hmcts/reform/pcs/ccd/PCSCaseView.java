@@ -33,6 +33,7 @@ import uk.gov.hmcts.reform.pcs.ccd.view.DefendantResponseView;
 import uk.gov.hmcts.reform.pcs.ccd.view.DocumentsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.FeatureFlagView;
 import uk.gov.hmcts.reform.pcs.ccd.view.GenAppsView;
+import uk.gov.hmcts.reform.pcs.ccd.view.HearingView;
 import uk.gov.hmcts.reform.pcs.ccd.view.NoticeOfPossessionView;
 import uk.gov.hmcts.reform.pcs.ccd.view.PartiesView;
 import uk.gov.hmcts.reform.pcs.ccd.view.RentArrearsView;
@@ -90,6 +91,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
     private final CaseFlagsView flagsView;
     private final DefendantResponseView defendantResponseView;
     private final FeatureFlagView featureFlagView;
+    private final HearingView hearingView;
 
     /**
      * Invoked by CCD to load PCS cases by reference.
@@ -171,6 +173,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         caseListView.setCaseFields(pcsCase);
         defendantResponseView.setCaseFields(pcsCase, pcsCaseEntity);
         featureFlagView.setCaseFields(pcsCase);
+        hearingView.setCaseFields(pcsCase, pcsCaseEntity);
 
         return new SubmittedCase(pcsCase, pcsCaseEntity);
     }
