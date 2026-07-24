@@ -21,15 +21,13 @@ public final class RedactingThrowableConverter extends ThrowableProxyConverter {
         }
         // Global override (LOG_SHOW_FULL_EXCEPTIONS) OR DEBUG on the emitting logger -> full trace
         if (SHOW_FULL_EXCEPTIONS || isDebugEnabled(event)) {
-            // will show the full unredacted stacktrace.
             return super.convert(event);
         }
         return REDACTED + LINE_SEPARATOR;
     }
 
     private boolean isDebugEnabled(ILoggingEvent event) {
-        Logger logger = ((LoggerContext) getContext())
-            .getLogger(event.getLoggerName());
+        Logger logger = ((LoggerContext) getContext()).getLogger(event.getLoggerName());
         return logger.isDebugEnabled();
     }
 

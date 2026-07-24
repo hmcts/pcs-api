@@ -275,6 +275,7 @@ send-letter:
   url: ${SEND_LETTER_URL:http://localhost:8485}
 
 logging:
+  config: classpath:pcs-logback.xml
   level:
     uk.gov.hmcts.reform.pcs.ccd.service.bulkprint: INFO
 
