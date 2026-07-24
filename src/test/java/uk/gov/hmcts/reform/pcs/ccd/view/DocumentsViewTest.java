@@ -271,7 +271,9 @@ class DocumentsViewTest {
     @MethodSource("caseDetailsTabDocuments")
     void shouldFilterOutDocumentsThatAppearInCaseDetailsTab(DocumentType documentType) {
         // Given
+        UUID document1Id = UUID.randomUUID();
         DocumentEntity documentEntity = DocumentEntity.builder()
+            .id(document1Id)
             .type(documentType)
             .build();
 
