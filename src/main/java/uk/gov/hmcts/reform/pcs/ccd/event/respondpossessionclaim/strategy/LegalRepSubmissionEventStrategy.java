@@ -14,7 +14,6 @@ import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.ClaimResponseS
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.DefendantResponseService;
 import uk.gov.hmcts.reform.pcs.ccd.util.SelectedPartyRetriever;
 import uk.gov.hmcts.reform.pcs.exception.DraftNotFoundException;
-import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 
 import java.util.List;
 import java.util.Optional;
@@ -31,7 +30,6 @@ public class LegalRepSubmissionEventStrategy implements RespondPossessionClaimSu
     private final DefendantResponseService defendantResponseService;
     private final SelectedPartyRetriever selectedPartyRetriever;
     private final SubmitResponseFactory submitResponseFactory;
-    private final OrganisationService organisationService;
 
     @Override
     public boolean supports(List<String> roles) {
@@ -42,22 +40,18 @@ public class LegalRepSubmissionEventStrategy implements RespondPossessionClaimSu
     @Override
     public SubmitResponse<State> process(EventPayload<PCSCase, State> eventPayload) {
         Long caseReference = eventPayload.caseReference();
+        PCSCase caseData = eventPayload.caseData();
+
         UUID representedPartyId = selectedPartyRetriever
-            .getCurrentRepresentedPartyId(eventPayload.caseData())
+            .getCurrentRepresentedPartyId(caseData)
+            .or(() -> selectedPartyRetriever.getSelectedPartyId(caseData))
             .orElseThrow(() -> new IllegalStateException("No selected responding party id for respond to claim"));
 
-        String organisationId = organisationService.getOrganisationIdForCurrentUser();
-
         PCSCase draftData = draftCaseDataService
-            .getUnsubmittedCaseData(caseReference, respondPossessionClaim, representedPartyId,
-                                    organisationId)
+            .getUnsubmittedCaseData(caseReference, respondPossessionClaim)
             .orElseThrow(() -> new DraftNotFoundException(caseReference, respondPossessionClaim));
 
         PossessionClaimResponse responseDraftData = draftData.getPossessionClaimResponse();
-
-        if (responseDraftData == null || responseDraftData.getDefendantResponses() == null) {
-            return submitResponseFactory.success();
-        }
 
         Optional<SubmitResponse<State>> validationResult = submitResponseFactory
             .validate(responseDraftData, caseReference);
@@ -68,8 +62,7 @@ public class LegalRepSubmissionEventStrategy implements RespondPossessionClaimSu
 
         claimResponseService.saveDraftDataForParty(responseDraftData, caseReference, representedPartyId);
         defendantResponseService.saveDefendantResponse(caseReference, responseDraftData, representedPartyId);
-        draftCaseDataService.deleteUnsubmittedCaseData(caseReference, respondPossessionClaim, representedPartyId,
-                                                       organisationId);
+        draftCaseDataService.deleteUnsubmittedCaseData(caseReference, respondPossessionClaim);
 
         return submitResponseFactory.success();
     }
