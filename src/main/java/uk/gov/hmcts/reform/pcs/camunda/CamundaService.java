@@ -39,7 +39,6 @@ public class CamundaService {
 
     public void createTask(long caseId, TaskType taskType) {
         scheduleCamundaRequest(Action.CREATE, caseId, taskType);
-
     }
 
     public void cancelTask(long caseId, TaskType taskType) {
@@ -54,6 +53,11 @@ public class CamundaService {
     }
 
     private void scheduleCamundaRequest(Action action, long caseId, TaskType taskType) {
+        if (!featureToggleService.isEnabled(FeatureFlag.CASEWORKER_WA)) {
+            log.info("Skipped scheduling Camunda request for {}", caseId);
+            return;
+        }
+
         CamundaRequestTaskData taskData = CamundaRequestTaskData.builder()
             .action(action)
             .caseReference(caseId)
@@ -90,7 +94,7 @@ public class CamundaService {
         processVariables.put("delayUntil", dmnStringValue(delayUntil.format(ISO_LOCAL_DATE_TIME)));
         processVariables.put("hasWarnings", dmnBooleanValue(false));
         processVariables.put("warningList", dmnStringValue(EMPTY_WARNINGS_LIST));
-        processVariables.put("__processCategory__" + taskType.getProcessCategory(), dmnBooleanValue(true));
+        processVariables.put("__processCategory__" + taskType.getId(), dmnBooleanValue(true));
 
         SendMessageRequest request = SendMessageRequest.builder()
             .messageName(CREATE)
@@ -108,7 +112,7 @@ public class CamundaService {
 
         Map<String, DmnValue<?>> correlationKeys = new ConcurrentHashMap<>();
         correlationKeys.put("caseId", dmnStringValue(caseId.toString()));
-        correlationKeys.put("__processCategory__" + taskType.getProcessCategory(), dmnBooleanValue(true));
+        correlationKeys.put("__processCategory__" + taskType.getId(), dmnBooleanValue(true));
 
         Map<String, DmnValue<?>> processVariables = new ConcurrentHashMap<>();
         processVariables.put("cancellationProcess", dmnStringValue(CANCELLATION_PROCESS));

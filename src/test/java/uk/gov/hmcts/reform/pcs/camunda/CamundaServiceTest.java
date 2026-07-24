@@ -1,7 +1,12 @@
 package uk.gov.hmcts.reform.pcs.camunda;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.read.ListAppender;
 import com.github.kagkarlsson.scheduler.SchedulerClient;
 import com.github.kagkarlsson.scheduler.task.SchedulableInstance;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -10,6 +15,7 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.slf4j.LoggerFactory;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.pcs.camunda.CamundaRequestTaskData.Action;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
@@ -19,6 +25,7 @@ import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -53,21 +60,36 @@ public class CamundaServiceTest {
     @Captor
     private ArgumentCaptor<SchedulableInstance<CamundaRequestTaskData>> schedulableInstanceCaptor;
 
+
+    private Logger componentLogger;
+    private ListAppender<ILoggingEvent> logAppender;
+
+    @BeforeEach
+    void setUp() {
+        componentLogger = (Logger) LoggerFactory.getLogger(CamundaService.class);
+        logAppender = new ListAppender<>();
+        logAppender.start();
+        componentLogger.addAppender(logAppender);
+
+        when(utcClock.instant()).thenReturn(TEST_UTC_DATE_TIME.toInstant(ZoneOffset.UTC));
+        when(utcClock.getZone()).thenReturn(ZoneOffset.UTC);
+    }
+
+    @AfterEach
+    void tearDown() {
+        componentLogger.detachAppender(logAppender);
+    }
+
     @InjectMocks
     private CamundaService camundaService;
 
     private static final LocalDateTime TEST_UTC_DATE_TIME = LocalDate.of(2025, 8, 27)
         .atTime(12, 51, 19);
 
-    @BeforeEach
-    void setUp() {
-        when(utcClock.instant()).thenReturn(TEST_UTC_DATE_TIME.toInstant(ZoneOffset.UTC));
-        when(utcClock.getZone()).thenReturn(ZoneOffset.UTC);
-    }
-
     @Test
-    void shouldScheduleCamundaRequestTask() {
+    void shouldScheduleCamundaCreateRequestTask() {
         // When
+        stubWaFeatureFlag(true);
         camundaService.createTask(CASE_REFERENCE, TaskType.NEW_CLAIM_CREATE_NEW_HEARING);
 
         // Then
@@ -82,8 +104,9 @@ public class CamundaServiceTest {
     }
 
     @Test
-    void shouldScheduleCamundaCancelTask() {
+    void shouldScheduleCamundaCancelRequestTask() {
         // When
+        stubWaFeatureFlag(true);
         camundaService.cancelTask(CASE_REFERENCE, TaskType.NEW_CLAIM_CREATE_NEW_HEARING);
 
         // Then
@@ -98,12 +121,32 @@ public class CamundaServiceTest {
     }
 
     @Test
-    void shouldSendCreateTaskTestToCamunda() {
+    void shouldNotScheduleCamundaCreateRequestTaskWhenWaNotEnabled() {
+        // When
+        stubWaFeatureFlag(false);
+        camundaService.createTask(CASE_REFERENCE, TaskType.NEW_CLAIM_CREATE_NEW_HEARING);
+
+        // Then
+        verify(schedulerClient, never()).scheduleIfNotExists(any());
+    }
+
+    @Test
+    void shouldNotScheduleCamundaCancelRequestTaskWhenWaNotEnabled() {
+        // When
+        stubWaFeatureFlag(false);
+        camundaService.cancelTask(CASE_REFERENCE, TaskType.NEW_CLAIM_CREATE_NEW_HEARING);
+
+        // Then
+        verify(schedulerClient, never()).scheduleIfNotExists(any());
+    }
+
+    @Test
+    void shouldSendCreateTaskToCamunda() {
         // Given
         final TaskType taskType = TaskType.NEW_CLAIM_CREATE_NEW_HEARING;
 
         when(authTokenGenerator.generate()).thenReturn("authToken");
-        when(featureToggleService.isEnabled(FeatureFlag.CASEWORKER_WA)).thenReturn(true);
+        stubWaFeatureFlag(true);
 
         CamundaRequestTaskData taskData = buildTaskDataForCreate(taskType);
 
@@ -149,7 +192,7 @@ public class CamundaServiceTest {
         // Given
         final TaskType taskType = TaskType.NEW_CLAIM_CREATE_NEW_HEARING;
 
-        when(featureToggleService.isEnabled(FeatureFlag.CASEWORKER_WA)).thenReturn(false);
+        stubWaFeatureFlag(false);
 
         CamundaRequestTaskData taskData = buildTaskDataForCreate(taskType);
 
@@ -157,6 +200,11 @@ public class CamundaServiceTest {
         camundaService.handleRequest(taskData);
 
         // Then
+        List<ILoggingEvent> infoMessages = logAppender.list.stream()
+            .filter(e -> e.getLevel() == Level.INFO)
+            .filter(e -> e.getFormattedMessage().contains("Skipped creating task for " + CASE_REFERENCE))
+            .toList();
+        assertThat(infoMessages).hasSize(1);
         verify(camundaApi, never()).sendMessage(any(), any());
     }
 
@@ -166,13 +214,73 @@ public class CamundaServiceTest {
         final TaskType taskType = TaskType.NEW_CLAIM_CREATE_NEW_HEARING;
 
         when(authTokenGenerator.generate()).thenReturn("authToken");
-        when(featureToggleService.isEnabled(FeatureFlag.CASEWORKER_WA)).thenReturn(true);
+        stubWaFeatureFlag(true);
         doThrow(new RuntimeException()).when(camundaApi).sendMessage(any(), any());
 
         CamundaRequestTaskData taskData = buildTaskDataForCreate(taskType);
 
         // When
         camundaService.handleRequest(taskData);
+
+        // Then
+        List<ILoggingEvent> terminalErrors = logAppender.list.stream()
+            .filter(e -> e.getLevel() == Level.ERROR)
+            .filter(e -> e.getFormattedMessage()
+                .contains("Failed to send Camunda request for caseId " + CASE_REFERENCE))
+            .toList();
+        assertThat(terminalErrors).hasSize(1);
+    }
+
+    @Test
+    void shouldSendCancelTaskToCamunda() {
+        // Given
+        final TaskType taskType = TaskType.NEW_CLAIM_CREATE_NEW_HEARING;
+
+        when(authTokenGenerator.generate()).thenReturn("authToken");
+        stubWaFeatureFlag(true);
+
+        CamundaRequestTaskData taskData = buildTaskDataForCancel(taskType);
+
+        // When
+        camundaService.handleRequest(taskData);
+
+        // Then
+        ArgumentCaptor<SendMessageRequest> requestArgumentCaptor = ArgumentCaptor.forClass(SendMessageRequest.class);
+        verify(camundaApi).sendMessage(eq("authToken"), requestArgumentCaptor.capture());
+        SendMessageRequest sendMessageRequest = requestArgumentCaptor.getValue();
+
+        assertThat(sendMessageRequest).isNotNull();
+        assertThat(sendMessageRequest.getMessageName()).isEqualTo("cancelTasks");
+
+        Map<String, DmnValue<?>> processVariables = sendMessageRequest.getProcessVariables();
+        assertThat(processVariables).isNotEmpty();
+        assertThat(processVariables.get("cancellationProcess").getValue()).isEqualTo("CASE_EVENT_CANCELLATION");
+
+        Map<String, DmnValue<?>> correlationKeys = sendMessageRequest.getCorrelationKeys();
+        assertThat(correlationKeys).isNotEmpty();
+        assertThat(correlationKeys.get("caseId").getValue()).isEqualTo(Long.toString(CASE_REFERENCE));
+        assertThat(correlationKeys.get("__processCategory__NewClaimCreateNewHearing").getValue()).isEqualTo(true);
+    }
+
+    @Test
+    void shouldSkipCancellingTaskIfWaIsNotEnabled() {
+        // Given
+        final TaskType taskType = TaskType.NEW_CLAIM_CREATE_NEW_HEARING;
+
+        stubWaFeatureFlag(false);
+
+        CamundaRequestTaskData taskData = buildTaskDataForCancel(taskType);
+
+        // When
+        camundaService.handleRequest(taskData);
+
+        // Then
+        List<ILoggingEvent> infoMessages = logAppender.list.stream()
+            .filter(e -> e.getLevel() == Level.INFO)
+            .filter(e -> e.getFormattedMessage().contains("Skipped cancelling task for " + CASE_REFERENCE))
+            .toList();
+        assertThat(infoMessages).hasSize(1);
+        verify(camundaApi, never()).sendMessage(any(), any());
     }
 
     private static CamundaRequestTaskData buildTaskDataForCreate(TaskType taskType) {
@@ -182,4 +290,17 @@ public class CamundaServiceTest {
             .taskType(taskType)
             .build();
     }
+
+    private static CamundaRequestTaskData buildTaskDataForCancel(TaskType taskType) {
+        return CamundaRequestTaskData.builder()
+            .action(Action.CANCEL)
+            .caseReference(CASE_REFERENCE)
+            .taskType(taskType)
+            .build();
+    }
+
+    private void stubWaFeatureFlag(boolean enabled) {
+        when(featureToggleService.isEnabled(FeatureFlag.CASEWORKER_WA)).thenReturn(enabled);
+    }
+
 }
