@@ -119,6 +119,7 @@ class LegalRepSubmissionEventStrategyTest {
             .build();
 
         when(selectedPartyRetriever.getCurrentRepresentedPartyId(caseData)).thenReturn(Optional.empty());
+        when(selectedPartyRetriever.getSelectedPartyId(CASE_REFERENCE)).thenReturn(Optional.empty());
         when(eventPayload.caseReference()).thenReturn(CASE_REFERENCE);
         when(eventPayload.caseData()).thenReturn(caseData);
 
@@ -134,6 +135,47 @@ class LegalRepSubmissionEventStrategyTest {
                                                                         representedPartyId);
         verify(draftCaseDataService, never()).deleteUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim,
                                                                         representedPartyId);
+        verify(draftCaseDataService, never()).getUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim);
+    }
+
+    @Test
+    void shouldSubmitLegalRepresentativeDraftForSelectedPartyUsingDatabaseFallback() {
+        // given
+        UUID representedPartyId = UUID.randomUUID();
+
+        DefendantResponses responses = DefendantResponses.builder()
+            .tenancyTypeConfirmation(YesNoNotSure.YES)
+            .build();
+
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .defendantResponses(responses)
+            .build();
+
+        PCSCase caseData = PCSCase.builder()
+            .possessionClaimResponse(possessionClaimResponse)
+            .build();
+
+        SubmitResponse<State> submitResponse = SubmitResponse.<State>builder()
+            .build();
+
+        when(selectedPartyRetriever.getCurrentRepresentedPartyId(caseData)).thenReturn(Optional.empty());
+        when(selectedPartyRetriever.getSelectedPartyId(CASE_REFERENCE)).thenReturn(Optional.of(representedPartyId));
+        when(draftCaseDataService.getUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim, representedPartyId))
+            .thenReturn(Optional.of(caseData));
+        when(submitResponseFactory.success()).thenReturn(submitResponse);
+        when(eventPayload.caseReference()).thenReturn(CASE_REFERENCE);
+        when(eventPayload.caseData()).thenReturn(caseData);
+
+        // when
+        SubmitResponse<State> result = underTest.process(eventPayload);
+
+        // then
+        assertThat(result.getErrors()).isNullOrEmpty();
+        verify(claimResponseService).saveDraftDataForParty(possessionClaimResponse, CASE_REFERENCE, representedPartyId);
+        verify(defendantResponseService).saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse,
+                                                               representedPartyId);
+        verify(draftCaseDataService).deleteUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim,
+                                                               representedPartyId);
         verify(draftCaseDataService, never()).getUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim);
     }
 
