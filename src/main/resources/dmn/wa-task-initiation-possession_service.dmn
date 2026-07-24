@@ -208,7 +208,7 @@ else
           <text></text>
         </inputEntry>
         <outputEntry id="LiteralExpression_1krqf3d">
-          <text>"Review DefendantResponseAndCounterclaim "</text>
+          <text>"Review DefendantResponseAndCounterclaim"</text>
         </outputEntry>
         <outputEntry id="LiteralExpression_0jeqot3">
           <text>"Review Defendant response and counterclaim" </text>
@@ -220,7 +220,7 @@ else
           <text>5</text>
         </outputEntry>
         <outputEntry id="LiteralExpression_1443rue">
-          <text>"Review DefendantResponseAndCounterclaim "</text>
+          <text>"Review DefendantResponseAndCounterclaim"</text>
         </outputEntry>
         <outputEntry id="LiteralExpression_050op82">
           <text>"routine_work"</text>
