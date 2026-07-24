@@ -48,6 +48,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.HEARING_CENTRE_ADMIN;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.HEARING_CENTRE_TEAM_LEADER;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.State.AWAITING_SUBMISSION_TO_HMCTS;
@@ -119,6 +120,12 @@ public class ManageHearingTest extends BaseEventTest {
     void shouldGrantAccessToHearingCentreRoles() {
         assertThat(configuredEvent.getGrants().get(HEARING_CENTRE_ADMIN)).containsAll(Permission.CRUD);
         assertThat(configuredEvent.getGrants().get(HEARING_CENTRE_TEAM_LEADER)).containsAll(Permission.CRUD);
+    }
+
+    @Test
+    void shouldGrantHistoryVisibilityToJudicialHistoryRoles() {
+        assertThat(JUDICIAL_HISTORY_ROLES)
+            .allSatisfy(role -> assertThat(configuredEvent.getGrants().get(role)).contains(Permission.R));
     }
 
     @Nested
@@ -496,6 +503,45 @@ public class ManageHearingTest extends BaseEventTest {
 
             // Then
             verify(hearingService, never()).addHearing(TEST_CASE_REFERENCE, pcsCase);
+            verify(hearingService, never()).updateHearing(TEST_CASE_REFERENCE, pcsCase);
+        }
+
+        @Test
+        void shouldUpdateHearingOnSubmitWhenManageHearingOptionIsEdit() {
+            // Given
+            AddressUK address = AddressUK.builder().build();
+
+            PCSCase pcsCase = PCSCase.builder()
+                .propertyAddress(address)
+                .manageHearingOption(ManageHearingOption.EDIT)
+                .showManageHearingPage(VerticalYesNo.YES)
+                .caseNameHmctsInternal("Claimant v Defendant")
+                .build();
+
+            when(addressFormatter.formatMediumAddress(address, AddressFormatter.COMMA_DELIMITER))
+                .thenReturn("address");
+
+            // When
+            SubmitResponse<State> submitResponse = callSubmitHandler(pcsCase);
+
+            // Then
+            verify(hearingService, never()).addHearing(TEST_CASE_REFERENCE, pcsCase);
+            verify(hearingService).updateHearing(TEST_CASE_REFERENCE, pcsCase);
+            assertThat(submitResponse.getConfirmationBody()).isEqualTo(
+                """
+                    ---
+                    <div class="govuk-panel govuk-panel--confirmation govuk-!-padding-top-3 govuk-!-padding-bottom-3">
+                    <span class="govuk-panel__title govuk-!-font-size-36">Hearing edited</span><br>
+                    <span class="govuk-panel__body">Case number #1234</span><br>
+                    <span class="govuk-panel__body">address</span><br>
+                    </div>
+
+                    <h3>What happens next</h3>
+
+                    A hearing notice will be issued if you specified one is needed.
+                    """
+            );
+            assertThat(submitResponse.getConfirmationBody()).doesNotContain("Claimant v Defendant");
         }
     }
 

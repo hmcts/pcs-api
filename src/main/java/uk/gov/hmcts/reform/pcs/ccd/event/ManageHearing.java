@@ -200,14 +200,31 @@ public class ManageHearing implements CCDConfig<PCSCase, State, UserRole> {
                 || caseData.getShowManageHearingPage() != VerticalYesNo.YES
         ) {
             hearingService.addHearing(caseId, caseData);
+        } else if (caseData.getManageHearingOption() == ManageHearingOption.EDIT) {
+            hearingService.updateHearing(caseId, caseData);
         }
 
         return SubmitResponse.<State>builder()
-            .confirmationBody(getConfirmationBody(caseId, address, caseData.getCaseNameHmctsInternal()))
+            .confirmationBody(getConfirmationBody(caseId, address, caseData))
             .build();
     }
 
-    private String getConfirmationBody(Long caseId, String address, String caseName) {
+    private String getConfirmationBody(Long caseId, String address, PCSCase caseData) {
+        if (caseData.getManageHearingOption() == ManageHearingOption.EDIT) {
+            return """
+                ---
+                <div class="govuk-panel govuk-panel--confirmation govuk-!-padding-top-3 govuk-!-padding-bottom-3">
+                <span class="govuk-panel__title govuk-!-font-size-36">Hearing edited</span><br>
+                <span class="govuk-panel__body">Case number #%s</span><br>
+                <span class="govuk-panel__body">%s</span><br>
+                </div>
+
+                <h3>What happens next</h3>
+
+                A hearing notice will be issued if you specified one is needed.
+                """.formatted(caseId, address);
+        }
+
         return """
             ---
             <div class="govuk-panel govuk-panel--confirmation govuk-!-padding-top-3 govuk-!-padding-bottom-3">
@@ -220,7 +237,7 @@ public class ManageHearing implements CCDConfig<PCSCase, State, UserRole> {
             <h3>What happens next</h3>
 
             A hearing notice will be issued if you specified one is needed.
-            """.formatted(caseId, address, caseName);
+            """.formatted(caseId, address, caseData.getCaseNameHmctsInternal());
     }
 
     private DynamicMultiSelectList buildPartyList(PcsCaseEntity pcsCaseEntity) {
