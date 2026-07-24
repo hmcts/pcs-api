@@ -344,6 +344,9 @@ caseApi:
 
 camunda:
   url: ${CAMUNDA_BASE_URL:http://camunda-local-bpm/engine-rest}
+  request:
+    max-retries: ${CAMUNDA_REQUEST_TASK_MAX_RETRIES:3}
+    backoff-delay-duration: ${CAMUNDA_REQUEST_TASK_BACKOFF_DURATION:20m}
 
 shutter:
   service: ${SHUTTER_SERVICE:false}
