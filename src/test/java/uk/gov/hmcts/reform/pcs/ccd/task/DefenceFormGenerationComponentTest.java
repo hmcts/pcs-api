@@ -42,7 +42,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.task.DefenceFormGenerationComponent.DE
 @ExtendWith(MockitoExtension.class)
 class DefenceFormGenerationComponentTest {
 
-    private static final UUID RESPONSE_ID = UUID.randomUUID();
+    private static final Integer RESPONSE_ID = 1;
     private static final UUID PARTY_ID = UUID.randomUUID();
 
     private DefenceFormGenerationComponent component;
