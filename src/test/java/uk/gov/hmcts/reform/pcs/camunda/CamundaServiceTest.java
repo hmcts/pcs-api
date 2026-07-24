@@ -1,11 +1,18 @@
 package uk.gov.hmcts.reform.pcs.camunda;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.read.ListAppender;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.slf4j.LoggerFactory;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
@@ -14,6 +21,7 @@ import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -39,6 +47,22 @@ public class CamundaServiceTest {
     @Mock
     private FeatureToggleService featureToggleService;
 
+    private Logger componentLogger;
+    private ListAppender<ILoggingEvent> logAppender;
+
+    @BeforeEach
+    void setUp() {
+        componentLogger = (Logger) LoggerFactory.getLogger(CamundaService.class);
+        logAppender = new ListAppender<>();
+        logAppender.start();
+        componentLogger.addAppender(logAppender);
+    }
+
+    @AfterEach
+    void tearDown() {
+        componentLogger.detachAppender(logAppender);
+    }
+
     @InjectMocks
     private CamundaService camundaService;
 
@@ -46,7 +70,7 @@ public class CamundaServiceTest {
         .atTime(12, 51, 19);
 
     @Test
-    void shouldSendCreateTaskTestToCamunda() {
+    void shouldSendCreateTaskToCamunda() {
         // Given
         final Long caseId = 1234L;
         final TaskType taskType = TaskType.NEW_CLAIM_CREATE_NEW_HEARING;
@@ -105,6 +129,11 @@ public class CamundaServiceTest {
         camundaService.createTask(caseId, taskType);
 
         // Then
+        List<ILoggingEvent> infoMessages = logAppender.list.stream()
+            .filter(e -> e.getLevel() == Level.INFO)
+            .filter(e -> e.getFormattedMessage().contains("Skipped creating task for " + caseId))
+            .toList();
+        assertThat(infoMessages).hasSize(1);
         verify(camundaApi, never()).sendMessage(any(), any());
     }
 
@@ -122,5 +151,62 @@ public class CamundaServiceTest {
 
         // When
         camundaService.createTask(caseId, taskType);
+
+        // Then
+        List<ILoggingEvent> terminalErrors = logAppender.list.stream()
+            .filter(e -> e.getLevel() == Level.ERROR)
+            .filter(e -> e.getFormattedMessage().contains("Failed to send Camunda request for caseId " + caseId))
+            .toList();
+        assertThat(terminalErrors).hasSize(1);
+    }
+
+    @Test
+    void shouldSendCancelTaskToCamunda() {
+        // Given
+        final Long caseId = 1234L;
+        final TaskType taskType = TaskType.NEW_CLAIM_CREATE_NEW_HEARING;
+
+        when(authTokenGenerator.generate()).thenReturn("authToken");
+        when(featureToggleService.isEnabled(FeatureFlag.CASEWORKER_WA)).thenReturn(true);
+
+        // When
+        camundaService.cancelTask(caseId, taskType);
+
+        // Then
+        ArgumentCaptor<SendMessageRequest> requestArgumentCaptor = ArgumentCaptor.forClass(SendMessageRequest.class);
+        verify(camundaApi).sendMessage(eq("authToken"), requestArgumentCaptor.capture());
+        SendMessageRequest sendMessageRequest = requestArgumentCaptor.getValue();
+
+        assertThat(sendMessageRequest).isNotNull();
+        assertThat(sendMessageRequest.getMessageName()).isEqualTo("cancelTasks");
+
+        Map<String, DmnValue<?>> processVariables = sendMessageRequest.getProcessVariables();
+        assertThat(processVariables).isNotEmpty();
+        assertThat(processVariables.get("cancellationProcess").getValue()).isEqualTo("CASE_EVENT_CANCELLATION");
+
+        Map<String, DmnValue<?>> correlationKeys = sendMessageRequest.getCorrelationKeys();
+        assertThat(correlationKeys).isNotEmpty();
+        assertThat(correlationKeys.get("caseId").getValue()).isEqualTo(caseId.toString());
+        assertThat(correlationKeys.get("__processCategory__NewClaimCreateNewHearing").getValue()).isEqualTo(true);
+    }
+
+    @Test
+    void shouldSkipCancellingTaskIfWaIsNotEnabled() {
+        // Given
+        final Long caseId = 1234L;
+        final TaskType taskType = TaskType.NEW_CLAIM_CREATE_NEW_HEARING;
+
+        when(featureToggleService.isEnabled(FeatureFlag.CASEWORKER_WA)).thenReturn(false);
+
+        // When
+        camundaService.cancelTask(caseId, taskType);
+
+        // Then
+        List<ILoggingEvent> infoMessages = logAppender.list.stream()
+            .filter(e -> e.getLevel() == Level.INFO)
+            .filter(e -> e.getFormattedMessage().contains("Skipped cancelling task for " + caseId))
+            .toList();
+        assertThat(infoMessages).hasSize(1);
+        verify(camundaApi, never()).sendMessage(any(), any());
     }
 }

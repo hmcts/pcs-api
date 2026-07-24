@@ -54,7 +54,7 @@ public class CamundaService {
         processVariables.put("delayUntil", dmnStringValue(delayUntil.format(ISO_LOCAL_DATE_TIME)));
         processVariables.put("hasWarnings", dmnBooleanValue(false));
         processVariables.put("warningList", dmnStringValue(EMPTY_WARNINGS_LIST));
-        processVariables.put("__processCategory__" + taskType.getProcessCategory(), dmnBooleanValue(true));
+        processVariables.put("__processCategory__" + taskType.getId(), dmnBooleanValue(true));
 
         SendMessageRequest request = SendMessageRequest.builder()
             .messageName(CREATE)
@@ -72,7 +72,7 @@ public class CamundaService {
 
         Map<String, DmnValue<?>> correlationKeys = new ConcurrentHashMap<>();
         correlationKeys.put("caseId", dmnStringValue(caseId.toString()));
-        correlationKeys.put("__processCategory__" + taskType.getProcessCategory(), dmnBooleanValue(true));
+        correlationKeys.put("__processCategory__" + taskType.getId(), dmnBooleanValue(true));
 
         Map<String, DmnValue<?>> processVariables = new ConcurrentHashMap<>();
         processVariables.put("cancellationProcess", dmnStringValue(CANCELLATION_PROCESS));
