@@ -200,10 +200,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
             .orElse(null);
     }
 
-    // INTERIM: stamp the case with the group-access key so the data store's caseAccessGroupId
-    // matcher can grant org-wide access. Hardcoded to the WK8GIHE test org for the preview demo.
-    // TODO derive from the case creator's organisation (PRD lookup, persisted at create time),
-    // and delete once the decentralised runtime stamps CaseAccessGroups itself.
+    // INTERIM: hardcoded WK8GIHE stamp for preview. TODO derive from the creator's org.
     private void setGroupAccessFields(PCSCase pcsCase) {
         uk.gov.hmcts.ccd.sdk.type.CaseAccessGroup caseAccessGroup =
             uk.gov.hmcts.ccd.sdk.type.CaseAccessGroup.builder()

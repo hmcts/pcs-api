@@ -136,8 +136,7 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
             .organisationalRoleName(UserRole.SOLICITOR.getRole())
             .liveTo("01/01/2027");
 
-        // Org profiles per the agreed RRFM Group Access config. The SDK keeps only the
-        // first row per AccessTypeID, so LOCALAUTH (the test orgs' profile) must lead.
+        // SDK keeps only the first row per access type, so LOCALAUTH must lead.
         List<String> groupAccessOrgProfiles = List.of(
             "LOCALAUTH_PROFILE",
             "SOLICITOR_PROFILE",
@@ -158,21 +157,17 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
                 .displayOrder(2)
                 .liveTo("01/01/2027");
 
-            // GroupAccessEnabled is No in the agreed config until case migration is settled;
-            // Yes here so the group role can be exercised on test environments.
             builder.accessTypeRole("prof-org-access")
                 .organisationProfileId(orgProfile)
                 .groupRoleName(UserRole.SOLICITOR.getRole())
                 .caseAssignedRoleField(UserRole.PROFESSIONAL_USER.getRole())
                 .groupAccessEnabled(true)
-                // Must start with the service name in upper case: the definition store rejects
-                // the lowercase template on the agreed RRFM page ("must start with 'PCS'").
+                // Uppercase service prefix required; def store rejects lowercase.
                 .caseAccessGroupIdTemplate("PCS:PCS:prof-org-access:solicitor:$ORGID$")
                 .liveTo("01/01/2027");
         }
 
-        // State-level access for the group-access profiles; without these the data store
-        // filters matched cases out regardless of the caseAccessGroupId key.
+        // State ACLs, else the data store filters matched cases out.
         for (State state : State.values()) {
             builder.grant(state, CRU, AccessProfile.SOLICITOR, AccessProfile.PROFESSIONAL_USER);
         }
