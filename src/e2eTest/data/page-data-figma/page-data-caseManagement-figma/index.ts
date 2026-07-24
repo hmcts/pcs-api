@@ -7,3 +7,4 @@ export * from './enterGenAppapplicationDetails.page.data';
 export * from './enterGenApphearingDate.page.data';
 export * from './enterGenAppapplicationFee.page.data';
 export * from './enterGenAppconsentAndNotice.page.data';
+export * from './enterGenAppuploadGeneralApplication.page.data'

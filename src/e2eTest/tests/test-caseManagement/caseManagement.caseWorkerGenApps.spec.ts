@@ -7,7 +7,8 @@ import { caseSummary, user } from '@data/page-data';
 import { dismissCookieBanner } from '@config/cookie-banner';
 import { initializeCMExecutor, performAction, performValidation } from '@utils/controller-caseManagement';
 import { allPartyDetails } from '@utils/actions/custom-actions/custom-actions-caseManagement';
-import { enterGenappApplication, enterGenAppapplicationFee, enterGenAppConsentAndNotice, enterGenAppHearingDate } from '@data/page-data-figma/page-data-caseManagement-figma';
+
+import { enterGenappApplication, enterGenAppapplicationFee, enterGenAppConsentAndNotice, enterGenAppHearingDate, enterGenAppUploadGeneralApplication  } from '@data/page-data-figma/page-data-caseManagement-figma';
 import { label } from 'allure-js-commons';
 
 test.use({ storageState: undefined })
@@ -19,6 +20,7 @@ test.beforeEach(async ({ page, context }) => {
   allPartyDetails.length = 0;
   await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
   await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayloadCaseFileView });
+  console.log(`Case created with case number: ${process.env.CASE_NUMBER}`);
   await performAction('updatePaymentAPI');
   await performAction('getCaseAPI', 'Link Solicitor');
   await performAction('getAllPartyDetails', {
@@ -71,7 +73,14 @@ test.describe('Case management - Case Worker Enter a General application @nightl
       label2: enterGenAppapplicationFee.enterTheFeeReferenceHiddenTextLabel,
       input: enterGenAppapplicationFee.enterTheFeeReferenceHiddenTextInput,
       nextPage: enterGenAppConsentAndNotice.mainHeader
+    });
+    await performAction('errorValidationApplicationConsentAndNotice', enterGenAppConsentAndNotice.errorValidation);
+    await performAction('enterApplicationConsentAndNotice', {
+      question1: enterGenAppConsentAndNotice.doAllPartiesAgreedQuestion, option1: enterGenAppConsentAndNotice.noRadioOption,
+      question2: enterGenAppConsentAndNotice.hasApplicantMadeWithoutNoticeHiddenQuestion, option2: enterGenAppConsentAndNotice.yesHiddenRadioOption,
+      nextPage: enterGenAppUploadGeneralApplication.mainHeader
     })
+
   });
 
   test('Case management - Case Worker Enter a General application ADJOURN Journey - Application Fee Received - NO @CM', async () => {
@@ -100,7 +109,7 @@ test.describe('Case management - Case Worker Enter a General application @nightl
       label2: enterGenAppapplicationFee.enterTheFeeReferenceHiddenTextLabel,
       input: enterGenAppapplicationFee.enterTheFeeReferenceHiddenTextInput,
       nextPage: enterGenAppConsentAndNotice.mainHeader
-    })
+    });
   });
 
   test('Case management - Case Worker Enter a General application ADJOURN Journey - Fee Reference included - NO @CM', async () => {
@@ -129,6 +138,10 @@ test.describe('Case management - Case Worker Enter a General application @nightl
       label2: enterGenAppapplicationFee.enterTheFeeReferenceHiddenTextLabel,
       input: enterGenAppapplicationFee.enterTheFeeReferenceHiddenTextInput,
       nextPage: enterGenAppConsentAndNotice.mainHeader
+    });
+    await performAction('enterApplicationConsentAndNotice', {
+      question1: enterGenAppConsentAndNotice.doAllPartiesAgreedQuestion, option1: enterGenAppConsentAndNotice.yesRadioOption,
+      nextPage: enterGenAppUploadGeneralApplication.mainHeader
     })
   });
 
@@ -153,6 +166,11 @@ test.describe('Case management - Case Worker Enter a General application @nightl
       label2: enterGenAppapplicationFee.enterTheFeeReferenceHiddenTextLabel,
       input: enterGenAppapplicationFee.enterTheFeeReferenceHiddenTextInput,
       nextPage: enterGenAppConsentAndNotice.mainHeader
+    });
+    await performAction('enterApplicationConsentAndNotice', {
+      question1: enterGenAppConsentAndNotice.doAllPartiesAgreedQuestion, option1: enterGenAppConsentAndNotice.noRadioOption,
+      question2: enterGenAppConsentAndNotice.hasApplicantMadeWithoutNoticeHiddenQuestion, option2: enterGenAppConsentAndNotice.yesHiddenRadioOption,
+      nextPage: enterGenAppUploadGeneralApplication.mainHeader
     })
   });
 
@@ -177,6 +195,11 @@ test.describe('Case management - Case Worker Enter a General application @nightl
       label2: enterGenAppapplicationFee.enterTheFeeReferenceHiddenTextLabel,
       input: enterGenAppapplicationFee.enterTheFeeReferenceHiddenTextInput,
       nextPage: enterGenAppConsentAndNotice.mainHeader
+    });
+    await performAction('enterApplicationConsentAndNotice', {
+      question1: enterGenAppConsentAndNotice.doAllPartiesAgreedQuestion, option1: enterGenAppConsentAndNotice.noRadioOption,
+      question2: enterGenAppConsentAndNotice.hasApplicantMadeWithoutNoticeHiddenQuestion, option2: enterGenAppConsentAndNotice.yesHiddenRadioOption,
+      nextPage: enterGenAppUploadGeneralApplication.mainHeader
     })
   });
 });

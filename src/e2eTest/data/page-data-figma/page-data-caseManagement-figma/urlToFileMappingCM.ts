@@ -5,5 +5,6 @@ export default {
   'enterGenAppapplicationDetails': 'enterGenAppapplicationDetails',
   'enterGenApphearingDate': 'enterGenApphearingDate',
   'enterGenAppapplicationFee': 'enterGenAppapplicationFee',
-  'enterGenAppconsentAndNotice': 'enterGenAppconsentAndNotice'
+  'enterGenAppconsentAndNotice': 'enterGenAppconsentAndNotice',
+  'enterGenAppuploadGeneralApplication': 'enterGenAppuploadGeneralApplication',
 };
