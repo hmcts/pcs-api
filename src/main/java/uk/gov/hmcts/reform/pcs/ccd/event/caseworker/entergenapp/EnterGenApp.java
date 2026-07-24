@@ -54,6 +54,7 @@ public class EnterGenApp implements CCDConfig<PCSCase, State, UserRole> {
             .name("Enter a general application")
             .grant(Permission.CRU, CASEWORKER_ROLES)
             .grantHistoryOnly(JUDICIAL_HISTORY_ROLES)
+            .endButtonLabel("Submit")
             .showSummary();
 
         new PageBuilder(eventBuilder)
