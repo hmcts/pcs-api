@@ -57,7 +57,7 @@ java:
     CACHED_ORGANISATION_DETAILS_RESPONSE_TTL_IN_MINUTES: 1440
     PCS_FRONTEND_URL: "https://pcs-{{ .Values.global.environment }}.platform.hmcts.net"
     RSE_LIB_XUI_ENV_DECENTRALISED_CASE_TYPE_CONFIG: >-
-      {"PCS": {"nocBaseUrl": "http://pcs-api-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal"}}
+      {"PCS": {"webUrl": "https://pcs-{{ .Values.global.environment }}.platform.hmcts.net", "nocBaseUrl": "http://pcs-api-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal"}}
 servicebus:
   enabled: false
 ccd:
