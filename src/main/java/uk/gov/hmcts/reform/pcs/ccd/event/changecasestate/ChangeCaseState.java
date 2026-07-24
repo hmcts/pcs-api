@@ -8,6 +8,8 @@ import uk.gov.hmcts.ccd.sdk.api.Event;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
+import uk.gov.hmcts.reform.pcs.camunda.CamundaService;
+import uk.gov.hmcts.reform.pcs.camunda.TaskType;
 import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
@@ -28,6 +30,7 @@ import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.RELEASE_1_DOT_2;
 public class ChangeCaseState implements CCDConfig<PCSCase, State, UserRole> {
 
     private final AddressFormatter addressFormatter;
+    private final CamundaService camundaService;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -58,6 +61,11 @@ public class ChangeCaseState implements CCDConfig<PCSCase, State, UserRole> {
     private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
         PCSCase pcsCase = eventPayload.caseData();
         State targetState = pcsCase.getTargetState().toState();
+
+        if (targetState == State.CASE_STAYED || targetState == State.CASE_ISSUED) {
+            camundaService.cancelTask(eventPayload.caseReference(), TaskType.NEW_CLAIM_CREATE_NEW_HEARING);
+        }
+
         return SubmitResponse.<State>builder()
             .state(targetState)
             .confirmationBody(buildConfirmationMarkdown(pcsCase, eventPayload.caseReference()))

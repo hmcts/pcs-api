@@ -9,6 +9,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
+import uk.gov.hmcts.reform.pcs.camunda.CamundaService;
+import uk.gov.hmcts.reform.pcs.camunda.TaskType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CaseStateOption;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
@@ -18,6 +20,7 @@ import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter.COMMA_DELIMITER;
 
@@ -28,6 +31,9 @@ class ChangeCaseStateTest extends BaseEventTest {
 
     @Mock
     private AddressFormatter addressFormatter;
+
+    @Mock
+    private CamundaService camundaService;
 
     @InjectMocks
     private ChangeCaseState changeCaseState;
@@ -41,14 +47,19 @@ class ChangeCaseStateTest extends BaseEventTest {
 
     @ParameterizedTest
     @EnumSource(CaseStateOption.class)
-    void shouldTransitionToSelectedTargetState(CaseStateOption targetState) {
+    void shouldTransitionToSelectedTargetState(CaseStateOption targetStateOption) {
         PCSCase pcsCase = PCSCase.builder()
-            .targetState(targetState)
+            .targetState(targetStateOption)
             .build();
 
         SubmitResponse<State> response = callSubmitHandler(pcsCase);
 
-        assertThat(response.getState()).isEqualTo(targetState.toState());
+        State targetState = targetStateOption.toState();
+        assertThat(response.getState()).isEqualTo(targetState);
+
+        if (targetState == State.CASE_ISSUED || targetState == State.CASE_STAYED) {
+            verify(camundaService).cancelTask(1234L, TaskType.NEW_CLAIM_CREATE_NEW_HEARING);
+        }
     }
 
     @Test

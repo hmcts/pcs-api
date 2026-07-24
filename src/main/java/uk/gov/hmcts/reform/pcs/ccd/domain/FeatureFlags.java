@@ -9,5 +9,6 @@ public class FeatureFlags {
 
     private VerticalYesNo release1dot2Enabled;
     private VerticalYesNo caseWorkerEventsEnabled;
+    private VerticalYesNo caseWorkerWaEnabled;
 
 }

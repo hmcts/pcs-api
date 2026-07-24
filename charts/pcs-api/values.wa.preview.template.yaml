@@ -8,8 +8,10 @@ java:
       key: connectionString
   environment:
     SPRING_JMS_SERVICEBUS_ENABLED: true
+    PCS_SERVICEBUS_SCHEDULER_ENABLED: true
     AZURE_SERVICE_BUS_TOPIC_NAME: ${SERVICE_NAME}-asb-ccd-case-events
     AZURE_SERVICE_BUS_SUBSCRIPTION_NAME: ${SERVICE_NAME}-asb-ccd-case-events
+    CAMUNDA_BASE_URL: http://pcs-api-pr-${CHANGE_ID}-camunda/engine-rest
 
 servicebus:
   enabled: true
@@ -52,7 +54,7 @@ wa:
 
   camunda-bpm:
     java:
-      image: hmctsprod.azurecr.io/camunda/bpm:latest
+      image: hmctsprod.azurecr.io/camunda/bpm:pr-1025
 
   wa-case-event-handler:
     java:
@@ -64,6 +66,7 @@ wa:
         AZURE_SERVICE_BUS_TOPIC_NAME: ${SERVICE_NAME}-asb-ccd-case-events
         AZURE_SERVICE_BUS_SUBSCRIPTION_NAME: ${SERVICE_NAME}-asb-ccd-case-events
         AZURE_SERVICE_BUS_CCD_CASE_EVENTS_SUBSCRIPTION_NAME: ${SERVICE_NAME}-asb-ccd-case-events
+        ROLE_ASSIGNMENT_URL: http://am-role-assignment-service-aat.service.core-compute-aat.internal
       keyVaults:
         wa:
           secrets:
@@ -80,8 +83,9 @@ wa:
     java:
       ingressHost: wa-task-management-api-${SERVICE_FQDN}
       environment:
-        ALLOWED_CASE_TYPES: pcs-${CHANGE_ID}
+        ALLOWED_CASE_TYPES: pcs
         ALLOWED_JURISDICTIONS: pcs
+        ROLE_ASSIGNMENT_URL: http://am-role-assignment-service-aat.service.core-compute-aat.internal
       keyVaults:
         wa:
           secrets:

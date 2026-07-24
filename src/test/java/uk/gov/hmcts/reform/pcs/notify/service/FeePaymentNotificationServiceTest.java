@@ -5,7 +5,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.reform.pcs.camunda.CamundaService;
+import uk.gov.hmcts.reform.pcs.camunda.TaskType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.feeandpay.FeePaymentRepository;
 import uk.gov.hmcts.reform.pcs.exception.FeePaymentNotFoundException;
@@ -23,6 +26,8 @@ class FeePaymentNotificationServiceTest {
     private NotificationService notificationService;
     @Mock
     private FeePaymentRepository feePaymentRepository;
+    @Mock
+    private CamundaService camundaService;
 
     @InjectMocks
     private FeePaymentNotificationService underTest;
@@ -30,7 +35,8 @@ class FeePaymentNotificationServiceTest {
     @Test
     void shouldSendClaimantClaimIssuedEmailNotification() {
         Integer feePaymentId = 1;
-        ClaimEntity claim = new ClaimEntity();
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().caseReference(1234L).build();
+        ClaimEntity claim = ClaimEntity.builder().pcsCase(pcsCaseEntity).build();
         FeePaymentEntity feePayment = FeePaymentEntity.builder()
             .id(feePaymentId)
             .claim(claim)
@@ -40,6 +46,7 @@ class FeePaymentNotificationServiceTest {
         underTest.sendClaimantPaidCaseIssuedNotification(feePaymentId);
 
         verify(notificationService).sendClaimantClaimIssuedEmailNotification(claim);
+        verify(camundaService).createTask(1234L, TaskType.NEW_CLAIM_CREATE_NEW_HEARING);
     }
 
     @Test
