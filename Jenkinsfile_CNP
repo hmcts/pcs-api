@@ -23,6 +23,10 @@ def secrets = [
     secret('pcs-prd-admin-password', 'PCS_PRD_ADMIN_PASSWORD'),
     secret('idam-expired-user-token', 'IDAM_EXPIRED_USER_TOKEN'),
     secret('s2s-expired-service-token', 'S2S_EXPIRED_TOKEN'),
+  ],
+  'nfdiv-${env}': [
+    secret('ccd-importer-username', 'DEFINITION_IMPORTER_USERNAME'),
+    secret('ccd-importer-password', 'DEFINITION_IMPORTER_PASSWORD'),
   ]
 ]
 
@@ -87,7 +91,7 @@ withPipeline(type, product, component) {
       AppPipelineDsl.PactRoles.CONSUMER,
       AppPipelineDsl.PactRoles.CONSUMER_DEPLOY_CHECK
     ])
-    enableHighLevelDataSetup("", true)
+    enableHighLevelDataSetup()
     setAatEnvVars()
     // The e2e journeys all create cases, which is blocked while the service is shuttered.
     if (!shutterService) {
