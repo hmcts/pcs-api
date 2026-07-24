@@ -17,6 +17,7 @@ public class ManageHearingPage implements CcdPageConfiguration, CcdPage {
             .page(pageKey)
             .pageLabel("Manage hearing")
             .readonly(PCSCase::getShowManageHearingPage, NEVER_SHOW)
+            .readonly(PCSCase::getSelectedHearingId, NEVER_SHOW, true)
             .showCondition("showManageHearingPage=\"YES\"")
             .label("manageHearingSeparator", "---")
             .mandatory(PCSCase::getManageHearingOption);
