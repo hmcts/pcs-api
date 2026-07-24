@@ -1,5 +1,7 @@
 package uk.gov.hmcts.reform.pcs.functional.steps;
 
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.interfaces.DecodedJWT;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
@@ -309,4 +311,26 @@ public class ApiSteps {
             );
         }
     }
+
+    @Step("retrieving internal case id from ccd data store")
+    public String getInternalCaseId(Long caseReference) {
+        String dataStoreUrl = System.getenv("DATA_STORE_URL_BASE");
+        //NB: event permissions don't apply for this call, any valid IDAM token can be used
+        String liveCaseNoteToken = SerenityRest.given()
+            .baseUri(dataStoreUrl)
+            .header(TestConstants.AUTHORIZATION, "Bearer " + citizenUserIdamToken)
+            .header(TestConstants.SERVICE_AUTHORIZATION, pcsApiS2sToken)
+            .header("Experimental", "True")
+            .pathParam("caseReference", caseReference)
+            .when()
+            .get("/cases/{caseReference}/event-triggers/addCaseNote")
+            .then()
+            .statusCode(200)
+            .extract()
+            .path("token");
+
+        DecodedJWT decodedJWT = JWT.decode(liveCaseNoteToken);
+        return decodedJWT.getClaim("case-id").asString();
+    }
+
 }
