@@ -49,7 +49,8 @@ withPipeline(type, product, component) {
   loadVaultSecrets(secrets)
   enableDbMigration('pcs')
 
-  syncBranchesWithMaster(['ithc', 'perftest'])
+  //skipping sync with demo/perftest during SIT testing/DB migration
+  syncBranchesWithMaster(['ithc'])
 
 
   onPR() {
@@ -95,9 +96,9 @@ withPipeline(type, product, component) {
   }
 
   onDemo {
-// disabling new case definition uploads to demo during SIT testing
-//    setDemoEnvVars()
-//    enableHighLevelDataSetup()
+    // disabling new case definition uploads to demo during SIT testing/DB migration
+    //    setDemoEnvVars()
+    //    enableHighLevelDataSetup()
   }
 
   onIthc {
@@ -106,8 +107,9 @@ withPipeline(type, product, component) {
   }
 
   onPerftest {
-    setPerftestEnvVars()
-    enableHighLevelDataSetup()
+    // disabling new case definition uploads to perftest during DB migration to keep test data
+    // setPerftestEnvVars()
+    // enableHighLevelDataSetup()
   }
 
   before('highleveldatasetup') {
