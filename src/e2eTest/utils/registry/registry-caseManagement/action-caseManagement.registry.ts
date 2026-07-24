@@ -41,9 +41,12 @@ export class ActionCMRegistry {
     ['errorValidationSelectDocumentPage', new ErrorValidationAction()],
     ['errorValidationChangeCaseStatePage', new ErrorValidationAction()],
     ['errorValidationSelectDocumentPage', new ErrorValidationAction()],
+    ['addReviewDates', new CaseManagementAction()],
+    ['confirmReviewDatesAdded', new CaseManagementAction()],
+    ['errorValidationAddReviewDatesPage', new ErrorValidationAction()],
     ['inputErrorValidation', new CaseManagementAction()],
     ['reTryOnCallBackError', new RetryOnCallBackError()],
-    
+
   ]);
 
   static getAction(actionName: string): IAction {

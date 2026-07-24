@@ -701,6 +701,12 @@ public class PCSCase {
     List<ListValue<CaseNote>> caseNotes;
 
     @CCD(
+        label = "Review date",
+        min = 1
+    )
+    private List<ListValue<ReviewDate>> reviewDates;
+
+    @CCD(
         access = {InternalCaseFlagAccess.class},
         label = "Case Flags"
     )
