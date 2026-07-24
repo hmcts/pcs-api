@@ -151,6 +151,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
             .build();
 
         setDerivedProperties(pcsCase, pcsCaseEntity);
+        setGroupAccessFields(pcsCase);
 
         partiesView.setCaseFields(pcsCase, pcsCaseEntity);
         claimView.setCaseFields(pcsCase, pcsCaseEntity);
@@ -197,6 +198,26 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
                 .withZoneSameInstant(UK_ZONE_ID)
                 .toLocalDate())
             .orElse(null);
+    }
+
+    // INTERIM: hardcoded WK8GIHE stamp for preview. TODO derive from the creator's org.
+    private void setGroupAccessFields(PCSCase pcsCase) {
+        uk.gov.hmcts.ccd.sdk.type.CaseAccessGroup caseAccessGroup =
+            uk.gov.hmcts.ccd.sdk.type.CaseAccessGroup.builder()
+                .caseAccessGroupId("PCS:PCS:prof-org-access:solicitor:WK8GIHE")
+                .caseAccessGroupType("CCD:all-cases-access")
+                .build();
+
+        ListValue<uk.gov.hmcts.ccd.sdk.type.CaseAccessGroup> wrapped =
+            ListValue.<uk.gov.hmcts.ccd.sdk.type.CaseAccessGroup>builder()
+                .id(UUID.nameUUIDFromBytes(caseAccessGroup.getCaseAccessGroupId().getBytes()).toString())
+                .value(caseAccessGroup)
+                .build();
+
+        uk.gov.hmcts.reform.pcs.ccd.domain.GroupAccessFields<uk.gov.hmcts.reform.pcs.ccd.accesscontrol.AccessProfile>
+            groupAccessFields = new uk.gov.hmcts.reform.pcs.ccd.domain.GroupAccessFields<>();
+        groupAccessFields.setCaseAccessGroups(List.of(wrapped));
+        pcsCase.setGroupAccessFields(groupAccessFields);
     }
 
     private void setDerivedProperties(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {

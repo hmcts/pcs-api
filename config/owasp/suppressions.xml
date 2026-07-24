@@ -30,5 +30,11 @@
     <notes><![CDATA[angus-activation-2.0.3.jar]]></notes>
     <cve>CVE-2025-7962</cve>
   </suppress>
+  <suppress until="2026-08-15">
+    <notes><![CDATA[elasticsearch-rest-client-8.18.8.jar - transitive via rse-cft-lib (local/test infra); branch on UUID lineage, master already on ES 9.4.2]]></notes>
+    <cve>CVE-2025-37731</cve>
+    <cve>CVE-2025-68384</cve>
+    <cve>CVE-2025-68390</cve>
+  </suppress>
   <!--End of false positives section -->
 </suppressions>

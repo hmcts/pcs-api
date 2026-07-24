@@ -24,7 +24,7 @@ public enum UserRole implements HasRole {
 
     CITIZEN("citizen", CRU, IDAM),
     SOLICITOR("[SOLICITOR]", CRU, RAS),
-    PROFESSIONA_USER("professional-user", CRU, RAS),
+    PROFESSIONAL_USER("professional-user", CRU, RAS),
     DEFENDANT("[DEFENDANT]", CRU, RAS),
     CLAIMANT_SOLICITOR("[CLAIMANTSOLICITOR]", CRU, RAS),
     DEFENDANT_SOLICITOR("[DEFENDANTSOLICITOR]", CRU, RAS),
