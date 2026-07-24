@@ -10,7 +10,6 @@ import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentImportService;
 import uk.gov.hmcts.reform.pcs.document.model.defenceform.DefenceFormPayload;
 
 import java.util.Optional;
-import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -26,7 +25,7 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class DefenceFormServiceTest {
 
-    private static final UUID RESPONSE_ID = UUID.randomUUID();
+    private static final Integer RESPONSE_ID = 1;
     private static final String DM_STORE_URL = "https://dm-store/xyz";
 
     @Mock
