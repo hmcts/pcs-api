@@ -12,7 +12,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.CachedOrganisationResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.CachedOrganisationResponseRepository;
 import uk.gov.hmcts.reform.pcs.exception.OrganisationDetailsException;
 import uk.gov.hmcts.reform.pcs.reference.api.RdProfessionalApi;
-import uk.gov.hmcts.reform.pcs.reference.dto.NameAndAddress;
+import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetails;
 import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
 import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
 
@@ -54,7 +54,7 @@ public class CachingOrganisationDetailsService {
         return getCachedOrganisationResponseEntity(userId).getOrganisationId();
     }
 
-    public NameAndAddress getNameAndAddress(String userId) {
+    public OrganisationDetails getOrganisationDetails(String userId) {
         CachedOrganisationResponseEntity entity = getCachedOrganisationResponseEntity(userId);
 
         AddressUK address = AddressUK.builder()
@@ -67,7 +67,7 @@ public class CachingOrganisationDetailsService {
             .postCode(entity.getPostCode())
             .build();
 
-        return new NameAndAddress(entity.getOrganisationName(), address);
+        return new OrganisationDetails(entity.getOrganisationName(), address, entity.getOrganisationId());
     }
 
     private CachedOrganisationResponseEntity getCachedOrganisationResponseEntity(String userId) {
@@ -77,7 +77,7 @@ public class CachingOrganisationDetailsService {
 
         if (cachedResponse.isEmpty()) {
             log.debug("Retrieving OrganisationDetails response as not cached");
-            Optional<OrganisationDetailsResponse> response = getOrganisationDetails(userId);
+            Optional<OrganisationDetailsResponse> response = getOrganisationDetailsFromRdProfessional(userId);
             CachedOrganisationResponseEntity newCachedResponse;
             if (response.isPresent()) {
                 newCachedResponse = mapResponseToEntity(userIdam, response.get());
@@ -91,7 +91,7 @@ public class CachingOrganisationDetailsService {
 
             if (isDataRequiringResync(existingCachedResponse.getLastModifiedDate())) {
                 log.debug("Resyncing OrganisationDetails response");
-                Optional<OrganisationDetailsResponse> response = getOrganisationDetails(userId);
+                Optional<OrganisationDetailsResponse> response = getOrganisationDetailsFromRdProfessional(userId);
                 if (response.isPresent()) {
                     updateFields(existingCachedResponse, response.get(), userId);
                 } else {
@@ -109,7 +109,7 @@ public class CachingOrganisationDetailsService {
      * @param userId The user ID to get organisation details for
      * @return OrganisationDetailsResponse containing organisation information
      */
-    private Optional<OrganisationDetailsResponse> getOrganisationDetails(String userId) {
+    private Optional<OrganisationDetailsResponse> getOrganisationDetailsFromRdProfessional(String userId) {
         try {
             String s2sToken = authTokenGenerator.generate();
             String prdAdminToken = prdAdminTokenProvider.getAuthToken();

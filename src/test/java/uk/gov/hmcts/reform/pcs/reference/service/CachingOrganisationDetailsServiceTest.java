@@ -14,7 +14,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.CachedOrganisationResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.CachedOrganisationResponseRepository;
 import uk.gov.hmcts.reform.pcs.exception.OrganisationDetailsException;
 import uk.gov.hmcts.reform.pcs.reference.api.RdProfessionalApi;
-import uk.gov.hmcts.reform.pcs.reference.dto.NameAndAddress;
+import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetails;
 import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
 import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
 
@@ -264,7 +264,7 @@ class CachingOrganisationDetailsServiceTest {
     }
 
     @Test
-    void getNameAndAddress_WithCachedResponseNotFound_SavesNewRecord_WithContactInfo() {
+    void getOrganisationDetails_WithCachedResponseNotFound_SavesNewRecord_WithContactInfo() {
         // given
         UUID userId = UUID.randomUUID();
         String orgId = "org1";
@@ -297,7 +297,7 @@ class CachingOrganisationDetailsServiceTest {
         stubUtcClock();
 
         // when
-        NameAndAddress actual = cachingOrganisationDetailsService.getNameAndAddress(userId.toString());
+        OrganisationDetails actual = cachingOrganisationDetailsService.getOrganisationDetails(userId.toString());
 
         // then
         assertThat(actual).isNotNull();
@@ -328,7 +328,7 @@ class CachingOrganisationDetailsServiceTest {
     }
 
     @Test
-    void getNameAndAddress_WithCachedResponseNotFound_SavesNewRecord_WithoutContactInfo() {
+    void getOrganisationDetails_WithCachedResponseNotFound_SavesNewRecord_WithoutContactInfo() {
         // given
         UUID userId = UUID.randomUUID();
         String orgId = "org1";
@@ -346,7 +346,7 @@ class CachingOrganisationDetailsServiceTest {
         stubUtcClock();
 
         // when
-        NameAndAddress actual = cachingOrganisationDetailsService.getNameAndAddress(userId.toString());
+        OrganisationDetails actual = cachingOrganisationDetailsService.getOrganisationDetails(userId.toString());
 
         // then
         assertThat(actual).isNotNull();
@@ -369,7 +369,7 @@ class CachingOrganisationDetailsServiceTest {
     }
 
     @Test
-    void getNameAndAddress_WithCachedResponseNotFoundAndNullOrgDetailsResponse_SavesNewRecord_WithoutContactInfo() {
+    void getOrganisationDetails_WithCachedResponseNotFoundAndNullDetailsResponse_SavesNewRecord_WithoutContactInfo() {
         // given
         UUID userId = UUID.randomUUID();
 
@@ -380,7 +380,7 @@ class CachingOrganisationDetailsServiceTest {
         stubUtcClock();
 
         // when
-        NameAndAddress actual = cachingOrganisationDetailsService.getNameAndAddress(userId.toString());
+        OrganisationDetails actual = cachingOrganisationDetailsService.getOrganisationDetails(userId.toString());
 
         // then
         assertThat(actual).isNotNull();
@@ -406,7 +406,7 @@ class CachingOrganisationDetailsServiceTest {
     }
 
     @Test
-    void getNameAndAddress_WithCachedResponseNotExpired_ReturnsCachedValue() {
+    void getOrganisationDetails_WithCachedResponseNotExpired_ReturnsCachedValue() {
         // given
         UUID userId = UUID.randomUUID();
         String orgId = "org2";
@@ -436,7 +436,7 @@ class CachingOrganisationDetailsServiceTest {
         stubUtcClock();
 
         // when
-        NameAndAddress actual = cachingOrganisationDetailsService.getNameAndAddress(userId.toString());
+        OrganisationDetails actual = cachingOrganisationDetailsService.getOrganisationDetails(userId.toString());
 
         // then
         verify(cachedOrganisationResponseRepository, never()).save(any());
@@ -453,7 +453,7 @@ class CachingOrganisationDetailsServiceTest {
     }
 
     @Test
-    void getNameAndAddress_WithCachedResponseExpired_UpdatesAndReturnsNewValue() {
+    void getOrganisationDetails_WithCachedResponseExpired_UpdatesAndReturnsNewValue() {
         // given
         UUID userId = UUID.randomUUID();
         CachedOrganisationResponseEntity cachedEntity = CachedOrganisationResponseEntity.builder()
@@ -494,7 +494,7 @@ class CachingOrganisationDetailsServiceTest {
         stubUtcClock();
 
         // when
-        NameAndAddress actual = cachingOrganisationDetailsService.getNameAndAddress(userId.toString());
+        OrganisationDetails actual = cachingOrganisationDetailsService.getOrganisationDetails(userId.toString());
 
         // then
         assertThat(actual).isNotNull();
@@ -514,7 +514,7 @@ class CachingOrganisationDetailsServiceTest {
     }
 
     @Test
-    void getNameAndAddress_WithCachedResponseExpiredAndContactInfoRemoved_ClearsCachedAddress() {
+    void getOrganisationDetails() {
         // given
         UUID userId = UUID.randomUUID();
         String orgId = "org1";
@@ -539,7 +539,7 @@ class CachingOrganisationDetailsServiceTest {
         stubUtcClock();
 
         // when
-        NameAndAddress actual = cachingOrganisationDetailsService.getNameAndAddress(userId.toString());
+        OrganisationDetails actual = cachingOrganisationDetailsService.getOrganisationDetails(userId.toString());
 
         // then
         assertThat(actual).isNotNull();
