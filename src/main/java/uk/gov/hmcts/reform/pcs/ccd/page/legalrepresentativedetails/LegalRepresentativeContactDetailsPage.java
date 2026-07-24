@@ -69,6 +69,7 @@ public class LegalRepresentativeContactDetailsPage implements CcdPageConfigurati
             .readonly(LegalRepresentativeDetails::getOrganisationAddressFound, NEVER_SHOW)
             .readonly(LegalRepresentativeDetails::getLegalRepresentativeOrganisationAddress, NEVER_SHOW, true)
             .readonly(LegalRepresentativeDetails::getFormattedContactAddress, NEVER_SHOW)
+            .readonly(LegalRepresentativeDetails::getOrganisationId, NEVER_SHOW)
             .label("legalRepresentativeDetails-address-info-yes", """
                     ----
                     <h2 class="govuk-heading-m">Correspondence address</h2>

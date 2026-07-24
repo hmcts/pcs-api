@@ -60,5 +60,7 @@ public class LegalRepresentativeDetails {
 
     private String formattedContactAddress;
 
+    private String organisationId;
+
 }
 

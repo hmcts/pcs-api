@@ -64,18 +64,16 @@ class LegalRepresentativeContactDetailsTest extends BaseEventTest {
     @Test
     void submit_SavesLegalRepresentativeDetails() {
         // given
-        String organisationId = "org";
         LegalRepresentativeDetails legalRepresentativeDetails = LegalRepresentativeDetails.builder().build();
         PCSCase caseData = PCSCase.builder()
             .legalRepresentativeDetails(legalRepresentativeDetails)
             .build();
-        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(organisationId);
 
         // when
         SubmitResponse<State> submitResponse = callSubmitHandler(caseData);
 
         // then
-        verify(legalRepresentativePageService).save(organisationId, TEST_CASE_REFERENCE, legalRepresentativeDetails);
+        verify(legalRepresentativePageService).save(TEST_CASE_REFERENCE, legalRepresentativeDetails);
         assertThat(submitResponse.getConfirmationBody())
             .contains("legal representative's information");
     }

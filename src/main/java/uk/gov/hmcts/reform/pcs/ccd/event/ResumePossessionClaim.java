@@ -38,7 +38,7 @@ import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
 import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
-import uk.gov.hmcts.reform.pcs.reference.dto.NameAndAddress;
+import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetails;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
@@ -98,11 +98,11 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
 
         setUnsubmittedCaseDataFlag(caseReference, caseData);
 
-        NameAndAddress nameAndAddress = organisationService.getNameAndAddressForCurrentUser();
+        OrganisationDetails organisationDetails = organisationService.getOrganisationDetailsForCurrentUser();
         ClaimantInformation claimantInfo = getClaimantInfo(caseData);
-        if (nameAndAddress != null && StringUtils.isNotEmpty(nameAndAddress.name())) {
+        if (organisationDetails != null && StringUtils.isNotEmpty(organisationDetails.name())) {
             claimantInfo.setOrgNameFound(YesOrNo.YES);
-            claimantInfo.setClaimantName(nameAndAddress.name());
+            claimantInfo.setClaimantName(organisationDetails.name());
         } else {
             claimantInfo.setOrgNameFound(YesOrNo.NO);
         }
@@ -135,7 +135,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .build();
         caseData.setClaimantType(claimantTypeList);
 
-        contactPreferences.setOrganisationAddress(null != nameAndAddress ? nameAndAddress.address() : null);
+        contactPreferences.setOrganisationAddress(null != organisationDetails ? organisationDetails.address() : null);
 
         contactPreferences.setFormattedClaimantContactAddress(addressFormatter
             .formatMediumAddress(contactPreferences.getOrganisationAddress(), BR_DELIMITER));
