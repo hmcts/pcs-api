@@ -8,6 +8,11 @@ import uk.gov.hmcts.reform.pcs.exception.IdamException;
 import uk.gov.hmcts.reform.pcs.exception.InvalidAuthTokenException;
 import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
 
+import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.AUTH_BLANK;
+import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.AUTH_MALFORMED;
+import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.AUTH_UNAUTHORIZED;
+import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.AUTH_VALIDATION;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -19,11 +24,11 @@ public class IdamAuthenticator {
     public User validateAuthToken(String authorisation) {
         if (authorisation == null || authorisation.isBlank()) {
             log.warn("Authorization token is null or blank");
-            throw new InvalidAuthTokenException("Authorization token is null or blank");
+            throw new InvalidAuthTokenException(AUTH_BLANK);
         }
         if (!authorisation.startsWith(BEARER_PREFIX) || authorisation.length() <= 7) {
             log.warn("Malformed Bearer token: '{}'", authorisation);
-            throw new InvalidAuthTokenException("Malformed Authorization token");
+            throw new InvalidAuthTokenException(AUTH_MALFORMED);
         }
         try {
             User user = retrieveUser(authorisation);
@@ -31,13 +36,13 @@ public class IdamAuthenticator {
             return user;
         } catch (FeignException.Unauthorized ex) {
             log.error("The Authorization token provided is expired or invalid", ex);
-            throw new InvalidAuthTokenException("The Authorization token provided is expired or invalid", ex);
+            throw new InvalidAuthTokenException(AUTH_UNAUTHORIZED, ex);
         } catch (FeignException ex) {
             // Any other Feign error (timeout, 5xx, network) — surface as IdamException so the
             // controller advice returns 503 + Retry-After instead of a raw 500. The token might
             // still be valid; this is an upstream-IDAM problem, not a client problem.
             log.error("IDAM /o/userinfo call failed while validating Authorization token", ex);
-            throw new IdamException("Unable to validate authorization token", ex);
+            throw new IdamException(AUTH_VALIDATION, ex);
         }
     }
 

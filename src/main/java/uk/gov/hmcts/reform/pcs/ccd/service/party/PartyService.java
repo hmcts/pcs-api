@@ -22,6 +22,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
+import uk.gov.hmcts.reform.pcs.exception.RedactionContext;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,6 +30,10 @@ import java.util.Objects;
 import java.util.UUID;
 
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.PARTY_BY_ENTITY_AND_CASE;
+import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.PARTY_BY_IDAM_AND_CASE;
+import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.PARTY_NOT_FOUND;
+import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.PARTY_TYPE;
 
 @Service
 @AllArgsConstructor
@@ -63,13 +68,20 @@ public class PartyService {
     public PartyEntity getPartyEntityByEntityId(UUID entityId, long caseReference) {
         return partyRepository.queryPartyById(entityId, caseReference)
             .orElseThrow(() -> new PartyNotFoundException(
-                "No party found for entity ID: " + entityId + " and case reference: " + caseReference));
+                PARTY_BY_ENTITY_AND_CASE,
+                RedactionContext.builder()
+                    .value("No party found for entity ID", entityId)
+                    .value("case reference", caseReference)
+                    .build()));
     }
 
     public PartyEntity getPartyEntityByIdamId(UUID idamId, long caseReference) {
         return partyRepository.queryPartyByIdamId(idamId, caseReference)
-            .orElseThrow(() -> new PartyNotFoundException(
-                "No party found for IDAM ID: " + idamId + " and case reference: " + caseReference));
+            .orElseThrow(() -> new PartyNotFoundException(PARTY_BY_IDAM_AND_CASE,
+                RedactionContext.builder()
+                    .value("No party found for IDAM ID", idamId)
+                    .value("case reference", caseReference)
+                    .build()));
     }
 
     public String getPartyName(PartyEntity partyEntity) {
@@ -95,7 +107,8 @@ public class PartyService {
             .filter(claimPartyEntity -> claimPartyEntity.getRole() == role)
             .findFirst()
             .map(ClaimPartyEntity::getParty)
-            .orElseThrow(() -> new PartyNotFoundException("No party of type %s found on case".formatted(role)));
+            .orElseThrow(() -> new PartyNotFoundException(PARTY_TYPE,
+                RedactionContext.of("No party of type", role)));
     }
 
     public boolean canSendEmailNotification(PartyEntity party, PartyRole role) {
@@ -119,9 +132,9 @@ public class PartyService {
                 .filter(claimPartyEntity -> claimPartyEntity.getParty().getId().equals(partyEntity.getId()))
                 .findFirst()
                 .map(ClaimPartyEntity::getRole)
-                .orElseThrow(() -> new PartyNotFoundException("Party not found on main claim"));
+                .orElseThrow(() -> new PartyNotFoundException(PARTY_NOT_FOUND));
     }
-    
+
     public PartyEntity getPartyEntityById(UUID partyId, long caseReference) {
         return partyRepository.findByIdAndPcsCaseCaseReference(partyId, caseReference)
             .orElseThrow(() -> new IllegalStateException(

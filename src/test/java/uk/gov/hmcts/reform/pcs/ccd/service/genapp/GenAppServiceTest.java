@@ -551,7 +551,7 @@ class GenAppServiceTest {
         // Then
         assertThat(throwable)
             .isInstanceOf(GenAppException.class)
-            .hasMessage("Statement of truth must be accepted to create a gen app");
+            .hasMessage("REDACTED [GEN_APP]");
     }
 
     @Test
@@ -590,7 +590,7 @@ class GenAppServiceTest {
         // Then
         assertThat(throwable)
             .isInstanceOf(GenAppException.class)
-            .hasMessage("Statement of truth must be accepted to create a gen app");
+            .hasMessage("REDACTED [GEN_APP]");
     }
 
     @Test

@@ -34,6 +34,8 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantRespon
 import uk.gov.hmcts.reform.pcs.ccd.repository.DocumentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
 import uk.gov.hmcts.reform.pcs.exception.ClaimNotFoundException;
+import uk.gov.hmcts.reform.pcs.exception.ErrorCode;
+import uk.gov.hmcts.reform.pcs.exception.RedactionContext;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -288,7 +290,8 @@ public class DocumentService {
     private static ClaimEntity getMainClaim(PcsCaseEntity pcsCase) {
         return pcsCase.getClaims().stream()
             .findFirst()
-            .orElseThrow(() -> new ClaimNotFoundException(pcsCase.getCaseReference()));
+            .orElseThrow(() -> new ClaimNotFoundException(ErrorCode.CLAIM_NOT_FOUND,
+                RedactionContext.of("No claim found for case reference", pcsCase.getCaseReference())));
     }
 
     public List<DocumentEntity> createDefendantUploadedDocuments(

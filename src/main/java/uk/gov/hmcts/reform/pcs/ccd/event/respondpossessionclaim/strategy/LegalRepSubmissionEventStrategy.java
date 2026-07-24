@@ -14,6 +14,8 @@ import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.ClaimResponseS
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.DefendantResponseService;
 import uk.gov.hmcts.reform.pcs.ccd.util.SelectedPartyRetriever;
 import uk.gov.hmcts.reform.pcs.exception.DraftNotFoundException;
+import uk.gov.hmcts.reform.pcs.exception.ErrorCode;
+import uk.gov.hmcts.reform.pcs.exception.RedactionContext;
 
 import java.util.List;
 import java.util.Optional;
@@ -46,7 +48,11 @@ public class LegalRepSubmissionEventStrategy implements RespondPossessionClaimSu
 
         PCSCase draftData = draftCaseDataService
             .getUnsubmittedCaseData(caseReference, respondPossessionClaim, representedPartyId)
-            .orElseThrow(() -> new DraftNotFoundException(caseReference, respondPossessionClaim));
+            .orElseThrow(() -> new DraftNotFoundException(ErrorCode.DRAFT_NOT_FOUND,
+                                                          RedactionContext.builder()
+                                                              .value("Case Reference", caseReference)
+                                                              .value("Event", respondPossessionClaim)
+                                                              .build()));
 
         PossessionClaimResponse responseDraftData = draftData.getPossessionClaimResponse();
 

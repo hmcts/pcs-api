@@ -13,6 +13,10 @@ import uk.gov.hmcts.reform.pcs.exception.InvalidPartyForAccessCodeException;
 import java.util.List;
 import java.util.UUID;
 
+import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.ACCESS_CODE_ALREADY_IN_USE;
+import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.ACCESS_CODE_ISSUE;
+import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.PARTY_ACCESS_CODE;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -25,7 +29,7 @@ public class PartyAccessCodeLinkValidator {
         return hashingService.findMatchingAccessCode(pacRepository, caseId, accessCode)
             .orElseThrow(() -> {
                 log.error("Invalid access code - caseId: {}, accessCodeProvided: {}", caseId, accessCode != null);
-                return new InvalidAccessCodeException("Invalid data");
+                return new InvalidAccessCodeException(ACCESS_CODE_ISSUE);
             });
     }
 
@@ -38,8 +42,7 @@ public class PartyAccessCodeLinkValidator {
             .findFirst()
             .orElseThrow(() -> {
                 log.error("Party with ID {} is not a defendant", partyId);
-                return new InvalidPartyForAccessCodeException("The party this access code was generated for"
-                                                                  + " is not a defendant in this case");
+                return new InvalidPartyForAccessCodeException(PARTY_ACCESS_CODE);
             });
     }
 
@@ -47,7 +50,7 @@ public class PartyAccessCodeLinkValidator {
         if (partyEntity.getIdamId() != null) {
             log.error("Access code already linked to user - partyId: {}, existingIdamUserId: {}",
                 partyEntity.getId(), partyEntity.getIdamId());
-            throw new AccessCodeAlreadyUsedException("This access code is already linked to a user.");
+            throw new AccessCodeAlreadyUsedException(ACCESS_CODE_ALREADY_IN_USE);
         }
     }
 
@@ -70,7 +73,7 @@ public class PartyAccessCodeLinkValidator {
             log.error(
                 "User already linked to different party - attemptedPartyId: {}, idamUserId: {}, linkedToPartyId: {}",
                 currentPartyId, idamUserId, conflictingPartyId);
-            throw new AccessCodeAlreadyUsedException("This user is already linked to another party in this case.");
+            throw new AccessCodeAlreadyUsedException(ACCESS_CODE_ALREADY_IN_USE);
         }
     }
 }

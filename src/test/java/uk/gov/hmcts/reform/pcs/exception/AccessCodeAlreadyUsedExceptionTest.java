@@ -1,93 +1,88 @@
 package uk.gov.hmcts.reform.pcs.exception;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.ACCESS_CODE_ALREADY_IN_USE;
+import static uk.gov.hmcts.reform.pcs.exception.ExceptionRedaction.safeMessage;
 
 class AccessCodeAlreadyUsedExceptionTest {
 
+    @AfterEach
+    void tearDown() {
+        ExceptionRedaction.setShowFullExceptionsForTesting(null);
+    }
+
     @Test
-    void shouldCreateExceptionWithMessage() {
+    void shouldReturnUnredactedMessageWhenShowFullExceptionsIsTrue() {
         // Given
-        String message = "Access code already used";
+        ExceptionRedaction.setShowFullExceptionsForTesting(true);
 
         // When
-        AccessCodeAlreadyUsedException exception = new AccessCodeAlreadyUsedException(message);
+        AccessCodeAlreadyUsedException exception = new AccessCodeAlreadyUsedException(ACCESS_CODE_ALREADY_IN_USE);
 
         // Then
         assertThat(exception).isNotNull();
-        assertThat(exception.getMessage()).isEqualTo(message);
+        assertThat(exception.getMessage()).isEqualTo(ACCESS_CODE_ALREADY_IN_USE.safeDescription());
         assertThat(exception.getCause()).isNull();
     }
 
     @Test
-    void shouldCreateExceptionWithMessageAndCause() {
+    void shouldReturnExpectedMessageWhenShowFullExceptionsOverrideIsNull() {
         // Given
-        String message = "Access code already used";
-        Throwable cause = new RuntimeException("Root cause");
+        ExceptionRedaction.setShowFullExceptionsForTesting(null);
+        boolean showFull = ExceptionRedaction.showFullExceptions();
 
         // When
-        AccessCodeAlreadyUsedException exception = new AccessCodeAlreadyUsedException(message, cause);
+        AccessCodeAlreadyUsedException exception = new AccessCodeAlreadyUsedException(ACCESS_CODE_ALREADY_IN_USE);
 
         // Then
         assertThat(exception).isNotNull();
-        assertThat(exception.getMessage()).isEqualTo(message);
+        assertThat(exception.getMessage()).isEqualTo(
+            showFull ? ACCESS_CODE_ALREADY_IN_USE.safeDescription() : safeMessage(ACCESS_CODE_ALREADY_IN_USE)
+        );
+        assertThat(exception.getCause()).isNull();
+    }
+
+    @Test
+    void shouldKeepCauseWhenShowFullExceptionsIsTrue() {
+        // Given
+        ExceptionRedaction.setShowFullExceptionsForTesting(true);
+        Throwable cause = new RuntimeException("Root cause");
+
+        // When
+        AccessCodeAlreadyUsedException exception = new AccessCodeAlreadyUsedException(ACCESS_CODE_ALREADY_IN_USE,
+                                                                                      cause);
+
+        // Then
+        assertThat(exception).isNotNull();
+        assertThat(exception.getMessage()).isEqualTo(ACCESS_CODE_ALREADY_IN_USE.safeDescription());
         assertThat(exception.getCause()).isSameAs(cause);
     }
 
     @Test
-    void shouldCreateExceptionWithNullMessage() {
-        // When
-        AccessCodeAlreadyUsedException exception = new AccessCodeAlreadyUsedException((String) null);
-
-        // Then
-        assertThat(exception).isNotNull();
-        assertThat(exception.getMessage()).isNull();
-        assertThat(exception.getCause()).isNull();
-    }
-
-    @Test
-    void shouldCreateExceptionWithMessageAndNullCause() {
+    void shouldApplyExpectedCauseBehaviorWhenShowFullExceptionsOverrideIsNull() {
         // Given
-        String message = "Access code already used";
-
-        // When
-        AccessCodeAlreadyUsedException exception = new AccessCodeAlreadyUsedException(message, null);
-
-        // Then
-        assertThat(exception).isNotNull();
-        assertThat(exception.getMessage()).isEqualTo(message);
-        assertThat(exception.getCause()).isNull();
-    }
-
-    @Test
-    void shouldCreateExceptionWithEmptyMessage() {
-        // Given
-        String message = "";
-
-        // When
-        AccessCodeAlreadyUsedException exception = new AccessCodeAlreadyUsedException(message);
-
-        // Then
-        assertThat(exception).isNotNull();
-        assertThat(exception.getMessage()).isEqualTo(message);
-        assertThat(exception.getCause()).isNull();
-    }
-
-    @Test
-    void shouldCreateExceptionWithMessageAndCauseChain() {
-        // Given
-        String message = "Access code already used";
+        ExceptionRedaction.setShowFullExceptionsForTesting(null);
+        boolean showFull = ExceptionRedaction.showFullExceptions();
         Throwable rootCause = new IllegalStateException("Root cause");
         Throwable cause = new RuntimeException("Intermediate cause", rootCause);
 
         // When
-        AccessCodeAlreadyUsedException exception = new AccessCodeAlreadyUsedException(message, cause);
+        AccessCodeAlreadyUsedException exception = new AccessCodeAlreadyUsedException(ACCESS_CODE_ALREADY_IN_USE,
+                                                                                      cause);
 
         // Then
         assertThat(exception).isNotNull();
-        assertThat(exception.getMessage()).isEqualTo(message);
-        assertThat(exception.getCause()).isSameAs(cause);
-        assertThat(exception.getCause().getCause()).isSameAs(rootCause);
+        assertThat(exception.getMessage()).isEqualTo(
+            showFull ? ACCESS_CODE_ALREADY_IN_USE.safeDescription() : safeMessage(ACCESS_CODE_ALREADY_IN_USE)
+        );
+        if (showFull) {
+            assertThat(exception.getCause()).isSameAs(cause);
+            assertThat(exception.getCause().getCause()).isSameAs(rootCause);
+        } else {
+            assertThat(exception.getCause()).isNull();
+        }
     }
 }

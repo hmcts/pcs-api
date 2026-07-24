@@ -4,6 +4,7 @@ import feign.FeignException.InternalServerError;
 import feign.FeignException.NotFound;
 import feign.Request;
 import feign.RequestTemplate;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -11,6 +12,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.fees.client.model.FeeLookupResponseDto;
+import uk.gov.hmcts.reform.pcs.exception.ExceptionRedaction;
 import uk.gov.hmcts.reform.pcs.feesandpay.client.PCSFeesClient;
 import uk.gov.hmcts.reform.pcs.feesandpay.exception.FeeNotFoundException;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
@@ -51,6 +53,11 @@ class RealFeeServiceTest {
             .build();
     }
 
+    @AfterEach
+    void tearDown() {
+        ExceptionRedaction.setShowFullExceptionsForTesting(null);
+    }
+
     @Test
     void shouldSuccessfullyGetFeeDetails() {
         when(pcsFeesClient.lookupFee(eq(FEE_TYPE), isNull())).thenReturn(feeLookupResponseDto);
@@ -68,6 +75,7 @@ class RealFeeServiceTest {
 
     @Test
     void shouldThrowFeeNotFoundExceptionWhenFeignCallFails() {
+        ExceptionRedaction.setShowFullExceptionsForTesting(true);
         Request request = Request.create(
             Request.HttpMethod.GET,
             "/fees/lookup",
@@ -81,7 +89,7 @@ class RealFeeServiceTest {
 
         assertThatThrownBy(() -> underTest.getFee(FEE_TYPE))
             .isInstanceOf(FeeNotFoundException.class)
-            .hasMessageContaining("Unable to retrieve fee: " + FEE_TYPE)
+            .hasMessageContaining("Unable to retrieve fee=" + FEE_TYPE)
             .hasCauseInstanceOf(NotFound.class);
     }
 
@@ -98,7 +106,7 @@ class RealFeeServiceTest {
 
     @Test
     void shouldThrowFeeNotFoundExceptionWhenFeignReturnsServerError() {
-
+        ExceptionRedaction.setShowFullExceptionsForTesting(true);
         Request request = Request.create(
             Request.HttpMethod.GET,
             "/fees/lookup",
@@ -113,7 +121,7 @@ class RealFeeServiceTest {
 
         assertThatThrownBy(() -> underTest.getFee(FEE_TYPE))
             .isInstanceOf(FeeNotFoundException.class)
-            .hasMessageContaining("Unable to retrieve fee: " + FEE_TYPE)
+            .hasMessageContaining("Unable to retrieve fee=CASE_ISSUE_FEE")
             .hasCauseInstanceOf(InternalServerError.class);
     }
 

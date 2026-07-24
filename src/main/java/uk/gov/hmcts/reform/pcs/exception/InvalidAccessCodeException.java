@@ -1,13 +1,13 @@
 package uk.gov.hmcts.reform.pcs.exception;
 
-public class InvalidAccessCodeException extends RuntimeException {
+public class InvalidAccessCodeException extends RedactedRuntimeException {
 
-    public InvalidAccessCodeException(String message) {
-        super(message);
+    public InvalidAccessCodeException(ErrorCode errorCode) {
+        super(errorCode);
     }
 
-    public InvalidAccessCodeException(String message, Throwable cause) {
-        super(message, cause);
+    public InvalidAccessCodeException(ErrorCode errorCode, Throwable cause) {
+        super(errorCode, cause);
     }
 }
 

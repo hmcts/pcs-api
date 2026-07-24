@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.postcodecourt.service;
 
 import org.apache.commons.lang3.StringUtils;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -9,6 +10,7 @@ import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.reform.pcs.exception.ExceptionRedaction;
 import uk.gov.hmcts.reform.pcs.postcodecourt.exception.InvalidPostCodeException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityResult;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityStatus;
@@ -51,10 +53,16 @@ class EligibilityServiceTest {
         underTest = new EligibilityService(postCodeCourtRepository, partialPostcodesGenerator, ukClock);
     }
 
+    @AfterEach
+    void afterEach() {
+        ExceptionRedaction.setShowFullExceptionsForTesting(null);
+    }
+
     @ParameterizedTest
     @NullSource
     @ValueSource(strings = {"", " "})
     void shouldThrowExceptionForNullOrBlankPostcode(String postcode) {
+        ExceptionRedaction.setShowFullExceptionsForTesting(true);
         Throwable throwable = catchThrowable(() -> underTest.checkEligibility(postcode, ENGLAND));
 
         assertThat(throwable)

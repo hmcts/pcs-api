@@ -1,13 +1,17 @@
 package uk.gov.hmcts.reform.pcs.exception;
 
-public class IdamException extends RuntimeException {
+public class IdamException extends RedactedRuntimeException {
 
-    public IdamException(String message) {
-        super(message);
+    public IdamException(ErrorCode errorCode) {
+        super(errorCode);
     }
 
-    public IdamException(String message, Throwable cause) {
-        super(message, cause);
+    public IdamException(ErrorCode errorCode, Throwable cause) {
+        super(errorCode, cause);
+    }
+
+    public IdamException(ErrorCode errorCode, RedactionContext redactionContext, Throwable cause) {
+        super(errorCode, redactionContext, cause);
     }
 
 }

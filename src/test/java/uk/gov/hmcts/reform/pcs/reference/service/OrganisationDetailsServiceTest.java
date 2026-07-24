@@ -1,6 +1,9 @@
 package uk.gov.hmcts.reform.pcs.reference.service;
 
 import feign.FeignException;
+import feign.Request;
+import feign.Response;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -9,11 +12,14 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
+import uk.gov.hmcts.reform.pcs.exception.ExceptionRedaction;
 import uk.gov.hmcts.reform.pcs.exception.OrganisationDetailsException;
 import uk.gov.hmcts.reform.pcs.reference.api.RdProfessionalApi;
 import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
 import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
 
+import java.nio.charset.StandardCharsets;
+import java.util.Collections;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -50,6 +56,11 @@ class OrganisationDetailsServiceTest {
             authTokenGenerator,
             prdAdminTokenProvider
         );
+    }
+
+    @AfterEach
+    void afterEach() {
+        ExceptionRedaction.setShowFullExceptionsForTesting(null);
     }
 
     @Test
@@ -127,6 +138,7 @@ class OrganisationDetailsServiceTest {
     @DisplayName("Should throw OrganisationDetailsException when Feign client throws exception")
     void shouldThrowOrganisationDetailsExceptionWhenFeignClientThrowsException() {
         // Given
+        ExceptionRedaction.setShowFullExceptionsForTesting(true);
         RuntimeException runtimeException = new RuntimeException("Feign client error");
 
         when(authTokenGenerator.generate()).thenReturn(S2S_TOKEN);
@@ -145,6 +157,7 @@ class OrganisationDetailsServiceTest {
     @DisplayName("Should throw OrganisationDetailsException when general exception occurs")
     void shouldThrowOrganisationDetailsExceptionWhenGeneralExceptionOccurs() {
         // Given
+        ExceptionRedaction.setShowFullExceptionsForTesting(true);
         RuntimeException generalException = new RuntimeException("Connection failed");
 
         when(authTokenGenerator.generate()).thenReturn(S2S_TOKEN);
@@ -237,19 +250,25 @@ class OrganisationDetailsServiceTest {
     @DisplayName("Should wrap FeignException as OrganisationDetailsException with feign cause")
     void shouldWrapFeignExceptionAsOrganisationDetailsException() {
         // Given
-        FeignException feignEx = mock(FeignException.class);
-        when(feignEx.status()).thenReturn(500);
-        when(feignEx.getMessage()).thenReturn("PRD upstream failure");
+        ExceptionRedaction.setShowFullExceptionsForTesting(true);
+        String userId = "dc3f786d-4ad4-4b5d-a79f-6e35a6520ace";
+        Request request = Request.create(Request.HttpMethod.GET,
+                                         "/refdata/external/v1/organisations/users/" + userId,
+                                         Collections.emptyMap(), null, StandardCharsets.UTF_8, null
+        );
+        Response response = Response.builder().status(500).reason("PRD upstream failure").request(request)
+            .headers(Collections.emptyMap()).build();
+        FeignException feignEx = FeignException.errorStatus("RdProfessionalApi#getOrganisationDetails",
+                                                            response);
 
         when(authTokenGenerator.generate()).thenReturn(S2S_TOKEN);
         when(prdAdminTokenProvider.getAuthToken()).thenReturn(PRD_ADMIN_TOKEN);
-        when(rdProfessionalApi.getOrganisationDetails(anyString(), anyString(), anyString()))
-            .thenThrow(feignEx);
+        when(rdProfessionalApi.getOrganisationDetails(anyString(), anyString(), anyString())).thenThrow(feignEx);
 
         // When / Then
         assertThatThrownBy(() -> organisationDetailsService.getOrganisationDetails(USER_ID))
             .isInstanceOf(OrganisationDetailsException.class)
-            .hasMessage("Failed to retrieve organisation details")
+            .hasMessage("Unexpected error retrieving organisation details")
             .hasCause(feignEx);
 
         verify(rdProfessionalApi).getOrganisationDetails(USER_ID, S2S_TOKEN, PRD_ADMIN_TOKEN);
@@ -259,6 +278,7 @@ class OrganisationDetailsServiceTest {
     @DisplayName("Should wrap unexpected RuntimeException as OrganisationDetailsException")
     void shouldWrapUnexpectedExceptionAsOrganisationDetailsException() {
         // Given — anything other than FeignException must hit the generic catch (Exception) branch.
+        ExceptionRedaction.setShowFullExceptionsForTesting(true);
         RuntimeException unexpected = new RuntimeException("token generator blew up");
         when(authTokenGenerator.generate()).thenThrow(unexpected);
 
@@ -273,6 +293,7 @@ class OrganisationDetailsServiceTest {
     @DisplayName("getOrganisationName should propagate OrganisationDetailsException when underlying call throws Feign")
     void getOrganisationNameShouldPropagateOrganisationDetailsExceptionOnFeignFailure() {
         // Given
+        ExceptionRedaction.setShowFullExceptionsForTesting(true);
         FeignException feignEx = mock(FeignException.class);
         when(feignEx.status()).thenReturn(503);
 
@@ -286,4 +307,5 @@ class OrganisationDetailsServiceTest {
             .isInstanceOf(OrganisationDetailsException.class)
             .hasCause(feignEx);
     }
+
 }

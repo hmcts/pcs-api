@@ -32,6 +32,7 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.feeandpay.FeePaymentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.exception.FeePaymentNotFoundException;
+import uk.gov.hmcts.reform.pcs.exception.RedactionContext;
 import uk.gov.hmcts.reform.pcs.feesandpay.mapper.PaymentRequestMapper;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.CardPaymentStatusResponse;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.CreateCardPaymentRequest;
@@ -63,6 +64,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.CASE_NOT_FOUND;
 import static uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentCallbackHandlerType.CLAIM;
 
 @ExtendWith(MockitoExtension.class)
@@ -137,7 +139,9 @@ class PaymentServiceTest {
         void shouldCreateServiceRequest_NoPCSCase() {
             // Given
             FeeDetails feeDetails = Instancio.create(FeeDetails.class);
-            when(pcsCaseService.loadCase(anyLong())).thenThrow(new CaseNotFoundException(222L));
+            when(pcsCaseService.loadCase(anyLong())).thenThrow(new CaseNotFoundException(
+                CASE_NOT_FOUND,
+                RedactionContext.of("Case Reference", "222")));
 
             // When
             assertThatThrownBy(() -> underTest.createServiceRequest(createFeesAndPayTaskData(feeDetails)))
@@ -181,7 +185,7 @@ class PaymentServiceTest {
             // When / Then
             assertThatExceptionOfType(PaymentException.class)
                 .isThrownBy(() -> underTest.createServiceRequest(feesAndPayTaskData))
-                .withMessageContaining("Unable to write to json");
+                .withMessageContaining("REDACTED [FEE_TASK_DATA_ISSUE]");
         }
     }
 

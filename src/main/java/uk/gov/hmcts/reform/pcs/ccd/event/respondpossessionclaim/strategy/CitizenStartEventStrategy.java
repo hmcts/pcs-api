@@ -20,6 +20,8 @@ import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.DefendantAccessValidator;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.PossessionClaimResponseMapper;
 import uk.gov.hmcts.reform.pcs.exception.DraftNotFoundException;
+import uk.gov.hmcts.reform.pcs.exception.ErrorCode;
+import uk.gov.hmcts.reform.pcs.exception.RedactionContext;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.List;
@@ -97,7 +99,11 @@ public class CitizenStartEventStrategy implements RespondPossessionClaimStartEve
 
     private PCSCase restoreDraft(long caseReference, PCSCase pcsCase, PartyEntity defendant) {
         PCSCase savedDraft = draftCaseDataService.getUnsubmittedCaseData(caseReference, respondPossessionClaim)
-            .orElseThrow(() -> new DraftNotFoundException(caseReference, respondPossessionClaim));
+            .orElseThrow(() -> new DraftNotFoundException(ErrorCode.DRAFT_NOT_FOUND,
+                                                          RedactionContext.builder()
+                                                              .value("Case Reference", caseReference)
+                                                              .value("Event", respondPossessionClaim)
+                                                              .build()));
         PossessionClaimResponse merged = possessionClaimMerger.mergeLatestCaseData(pcsCase,
                                                                                    savedDraft
                                                                                        .getPossessionClaimResponse(),

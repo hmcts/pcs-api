@@ -73,7 +73,7 @@ class SecurityContextServiceTest {
 
         assertThat(exception)
             .isInstanceOf(SecurityContextException.class)
-            .hasMessage("No authentication instance found");
+            .hasMessage("REDACTED [SECURITY_CONTEXT]");
     }
 
     @Test
@@ -86,7 +86,7 @@ class SecurityContextServiceTest {
 
         assertThat(exception)
             .isInstanceOf(SecurityContextException.class)
-            .hasMessage("Authentication principal is null or not of the expected type");
+            .hasMessage("REDACTED [AUTHENTICATION PRINCIPLE]");
     }
 
     @Test
@@ -99,7 +99,7 @@ class SecurityContextServiceTest {
 
         assertThat(exception)
             .isInstanceOf(SecurityContextException.class)
-            .hasMessage("Authentication principal is null or not of the expected type");
+            .hasMessage("REDACTED [AUTHENTICATION PRINCIPLE]");
     }
 
     @Test
@@ -127,7 +127,7 @@ class SecurityContextServiceTest {
 
         assertThat(exception)
             .isInstanceOf(SecurityContextException.class)
-            .hasMessage("No authentication instance found");
+            .hasMessage("REDACTED [SECURITY_CONTEXT]");
     }
 
     @Test
@@ -140,7 +140,7 @@ class SecurityContextServiceTest {
 
         assertThat(exception)
             .isInstanceOf(SecurityContextException.class)
-            .hasMessage("Authentication principal is null or not of the expected type");
+            .hasMessage("REDACTED [AUTHENTICATION PRINCIPLE]");
     }
 
     @Test
@@ -153,7 +153,7 @@ class SecurityContextServiceTest {
 
         assertThat(exception)
             .isInstanceOf(SecurityContextException.class)
-            .hasMessage("Authentication principal is null or not of the expected type");
+            .hasMessage("REDACTED [AUTHENTICATION PRINCIPLE]");
     }
 
 }

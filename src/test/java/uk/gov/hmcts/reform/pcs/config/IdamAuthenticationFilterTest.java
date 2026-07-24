@@ -25,6 +25,8 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.AUTH_BLANK;
+import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.AUTH_MALFORMED;
 
 @ExtendWith(MockitoExtension.class)
 class IdamAuthenticationFilterTest {
@@ -94,7 +96,7 @@ class IdamAuthenticationFilterTest {
     void doFilterInternalShouldReturn401AndNotContinueChainWhenTokenInvalid() throws Exception {
         when(request.getHeader(HttpHeaders.AUTHORIZATION)).thenReturn("Bearer bad");
         when(idamAuthenticator.validateAuthToken("Bearer bad"))
-            .thenThrow(new InvalidAuthTokenException("Malformed Authorization token"));
+            .thenThrow(new InvalidAuthTokenException(AUTH_MALFORMED));
 
         underTest.doFilterInternal(request, response, filterChain);
 
@@ -108,7 +110,7 @@ class IdamAuthenticationFilterTest {
         // idamAuthenticator.validateAuthToken(null) throws InvalidAuthTokenException ("null or blank").
         when(request.getHeader(HttpHeaders.AUTHORIZATION)).thenReturn(null);
         when(idamAuthenticator.validateAuthToken(null))
-            .thenThrow(new InvalidAuthTokenException("Authorization token is null or blank"));
+            .thenThrow(new InvalidAuthTokenException(AUTH_BLANK));
 
         underTest.doFilterInternal(request, response, filterChain);
 

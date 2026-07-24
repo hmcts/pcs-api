@@ -45,6 +45,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.respondPossessionClaim;
+import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.DEFENDANT_ACCESS_VALIDATOR;
 
 @ExtendWith(MockitoExtension.class)
 class CitizenStartEventStrategyTest {
@@ -234,7 +235,7 @@ class CitizenStartEventStrategyTest {
         when(securityContextService.getCurrentUserId()).thenReturn(defendantUserId);
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
         when(accessValidator.validateAndGetDefendant(pcsCaseEntity, defendantUserId))
-            .thenThrow(new CaseAccessException(exceptionMessage));
+            .thenThrow(new CaseAccessException(DEFENDANT_ACCESS_VALIDATOR));
 
         // When / Then
         assertThatThrownBy(() -> underTest.loadDraft(CASE_REFERENCE, caseData))
@@ -244,9 +245,9 @@ class CitizenStartEventStrategyTest {
 
     private static Stream<Arguments> caseAccessExceptionScenarios() {
         return Stream.of(
-            Arguments.of("No claim found", "No claim found for this case"),
-            Arguments.of("No defendants found", "No defendants associated with this case"),
-            Arguments.of("User not defendant", "User is not linked as a defendant on this case")
+            Arguments.of("No claim found", "REDACTED [DEFENDANT_ACCESS_VALIDATOR]"),
+            Arguments.of("No defendants found", "REDACTED [DEFENDANT_ACCESS_VALIDATOR]"),
+            Arguments.of("User not defendant", "REDACTED [DEFENDANT_ACCESS_VALIDATOR]")
         );
     }
 

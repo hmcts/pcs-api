@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.security;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -12,6 +13,7 @@ import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
 import org.springframework.security.oauth2.core.OAuth2AccessToken;
 import org.springframework.security.oauth2.core.OAuth2AuthorizationException;
 import org.springframework.security.oauth2.core.OAuth2Error;
+import uk.gov.hmcts.reform.pcs.exception.ExceptionRedaction;
 import uk.gov.hmcts.reform.pcs.exception.IdamException;
 
 import static org.assertj.core.api.Assertions.catchThrowable;
@@ -34,6 +36,11 @@ class IdamTokenProviderTest {
     @BeforeEach
     void setUp() {
         underTest = new IdamTokenProvider(authorizedClientManager, "system-user", SYSTEM_USERNAME, SYSTEM_PASSWORD);
+    }
+
+    @AfterEach
+    void afterEach() {
+        ExceptionRedaction.setShowFullExceptionsForTesting(null);
     }
 
     @Test
@@ -60,7 +67,7 @@ class IdamTokenProviderTest {
 
         assertThat(throwable)
             .isInstanceOf(IdamException.class)
-            .hasMessage("Unable to get access token response");
+            .hasMessage("REDACTED [IDAM_EMPTY_TOKEN]");
     }
 
     @Test
@@ -73,12 +80,13 @@ class IdamTokenProviderTest {
 
         assertThat(throwable)
             .isInstanceOf(IdamException.class)
-            .hasMessage("Unable to get access token response");
+            .hasMessage("REDACTED [IDAM_EMPTY_TOKEN]");
     }
 
     @Test
     @DisplayName("Should wrap OAuth2AuthorizationException thrown when fetching system update user token")
     void shouldWrapOAuth2AuthorizationExceptionGettingAuthToken() {
+        ExceptionRedaction.setShowFullExceptionsForTesting(true);
         OAuth2Error error = new OAuth2Error("invalid_token_response", "throttled", null);
         OAuth2AuthorizationException oauthException = new OAuth2AuthorizationException(error);
         given(authorizedClientManager.authorize(any(OAuth2AuthorizeRequest.class))).willThrow(oauthException);
@@ -87,7 +95,7 @@ class IdamTokenProviderTest {
 
         assertThat(throwable)
             .isInstanceOf(IdamException.class)
-            .hasMessage("Unable to get access token response")
+            .hasMessage("client registration id=system-user, error code=invalid_token_response, description=throttled")
             .hasCause(oauthException);
     }
 

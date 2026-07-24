@@ -1,9 +1,21 @@
 package uk.gov.hmcts.reform.pcs.feesandpay.service;
 
-public class PaymentException extends RuntimeException {
+import uk.gov.hmcts.reform.pcs.exception.ErrorCode;
+import uk.gov.hmcts.reform.pcs.exception.RedactedRuntimeException;
+import uk.gov.hmcts.reform.pcs.exception.RedactionContext;
 
-    public PaymentException(String message, Throwable cause) {
-        super(message, cause);
+public class PaymentException extends RedactedRuntimeException {
+
+    public PaymentException(ErrorCode errorCode) {
+        super(errorCode);
+    }
+
+    public PaymentException(ErrorCode errorCode, Throwable cause) {
+        super(errorCode, cause);
+    }
+
+    public PaymentException(ErrorCode errorCode, RedactionContext redactionContext, Throwable cause) {
+        super(errorCode, redactionContext, cause);
     }
 
 }

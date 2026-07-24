@@ -1,9 +1,13 @@
 package uk.gov.hmcts.reform.pcs.ccd.testcasesupport;
 
-public class TestCaseSupportException extends RuntimeException  {
+import uk.gov.hmcts.reform.pcs.exception.RedactedRuntimeException;
+
+import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.TEST_CASE_SUPPORT;
+
+public class TestCaseSupportException extends RedactedRuntimeException {
 
     public TestCaseSupportException(Throwable cause) {
-        super(cause);
+        super(TEST_CASE_SUPPORT, cause);
     }
 
 }

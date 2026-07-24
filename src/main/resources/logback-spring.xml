@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+  <conversionRule conversionWord="tvrEx"
+                  converterClass="uk.gov.hmcts.reform.pcs.exception.RedactingThrowableConverter"/>
+
+  <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+    <encoder>
+      <pattern>%d{ISO8601} %-5level [%thread] %logger{36} - %msg%n%tvrEx</pattern>
+    </encoder>
+  </appender>
+
+  <root level="${ROOT_LOG_LEVEL:-INFO}">
+    <appender-ref ref="CONSOLE"/>
+  </root>
+
+</configuration>

@@ -5,6 +5,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.fees.client.FeesApi;
 import uk.gov.hmcts.reform.fees.client.model.FeeLookupResponseDto;
+import uk.gov.hmcts.reform.pcs.exception.ErrorCode;
+import uk.gov.hmcts.reform.pcs.exception.RedactionContext;
 import uk.gov.hmcts.reform.pcs.feesandpay.config.FeesConfiguration;
 import uk.gov.hmcts.reform.pcs.feesandpay.exception.FeeNotFoundException;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
@@ -28,7 +30,8 @@ public class PCSFeesClient {
 
         if (ref == null) {
             log.error("Fee type '{}' not found in configuration", feeType);
-            throw new FeeNotFoundException("Fee not found for feeType: " + feeType);
+            throw new FeeNotFoundException(ErrorCode.FEE_NOT_FOUND, RedactionContext.of(
+                "Fee not found for feeType: ", feeType));
         }
 
         BigDecimal resolvedAmountOrVolume = amountOrVolume != null ? amountOrVolume : ref.getAmountOrVolume();

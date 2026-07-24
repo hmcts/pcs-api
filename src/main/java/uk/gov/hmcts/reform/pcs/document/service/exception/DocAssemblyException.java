@@ -1,12 +1,16 @@
 package uk.gov.hmcts.reform.pcs.document.service.exception;
 
-public class DocAssemblyException extends RuntimeException {
+import uk.gov.hmcts.reform.pcs.exception.ErrorCode;
+import uk.gov.hmcts.reform.pcs.exception.RedactedRuntimeException;
 
-    public DocAssemblyException(String message) {
-        super(message);
+public class DocAssemblyException extends RedactedRuntimeException {
+
+    public DocAssemblyException(ErrorCode errorCode) {
+        super(errorCode);
     }
 
-    public DocAssemblyException(String message, Throwable cause) {
-        super(message, cause);
+    public DocAssemblyException(ErrorCode errorCode, Throwable cause) {
+        super(errorCode, cause);
     }
-} 
+
+}

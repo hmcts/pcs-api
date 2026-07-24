@@ -15,6 +15,8 @@ import uk.gov.hmcts.reform.pcs.ccd.service.AddressValidator;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.ccd.util.StringUtils;
+import uk.gov.hmcts.reform.pcs.exception.ErrorCode;
+import uk.gov.hmcts.reform.pcs.exception.RedactionContext;
 import uk.gov.hmcts.reform.pcs.postcodecourt.exception.EligibilityCheckException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityResult;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
@@ -106,12 +108,13 @@ public class EnterPropertyAddress implements CcdPageConfiguration {
 
     private void validateLegislativeCountries(List<LegislativeCountry> legislativeCountries, String postcode) {
         if (legislativeCountries == null || legislativeCountries.size() < 2) {
-            throw new EligibilityCheckException(String.format(
-                "Expected at least 2 legislative countries when status is LEGISLATIVE_COUNTRY_REQUIRED, "
-                    + "but got %d for postcode: %s",
-                legislativeCountries == null ? 0 : legislativeCountries.size(),
-                postcode
-            ));
+            throw new EligibilityCheckException(
+                ErrorCode.LEGISLATIVE_COUNTRY_REQUIREMENT,
+                RedactionContext.of("Expected at least 2 legislative countries when "
+                                        + "status is LEGISLATIVE_COUNTRY_REQUIRED",
+                            String.format(
+                            "when status is LEGISLATIVE_COUNTRY_REQUIRED, but got %d for postcode: %s",
+                            legislativeCountries == null ? 0 : legislativeCountries.size(), postcode)));
         }
     }
 

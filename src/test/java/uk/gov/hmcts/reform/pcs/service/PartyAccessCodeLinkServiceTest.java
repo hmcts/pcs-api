@@ -8,7 +8,6 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.ccd.client.model.CaseAssignmentUserRolesResponse;
-import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyAccessCodeEntity;
@@ -18,7 +17,9 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseRoleAssignmentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.exception.AccessCodeAlreadyUsedException;
+import uk.gov.hmcts.reform.pcs.exception.ExceptionRedaction;
 import uk.gov.hmcts.reform.pcs.exception.InvalidAccessCodeException;
+import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 
 import java.util.List;
 import java.util.UUID;
@@ -30,6 +31,8 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.ACCESS_CODE_ALREADY_IN_USE;
+import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.ACCESS_CODE_ISSUE;
 
 @ExtendWith(MockitoExtension.class)
 class PartyAccessCodeLinkServiceTest {
@@ -125,12 +128,12 @@ class PartyAccessCodeLinkServiceTest {
 
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(caseEntity);
         when(validator.validateAccessCode(caseId, ACCESS_CODE))
-            .thenThrow(new InvalidAccessCodeException("Invalid access code for this case."));
+            .thenThrow(new InvalidAccessCodeException(ACCESS_CODE_ISSUE));
 
         // WHEN + THEN
         assertThatThrownBy(() -> service.linkPartyByAccessCode(CASE_REFERENCE, ACCESS_CODE, testUser))
             .isInstanceOf(InvalidAccessCodeException.class)
-            .hasMessageContaining("Invalid access code");
+            .hasMessageContaining(ExceptionRedaction.safeMessage(ACCESS_CODE_ISSUE));
     }
 
     @Test
@@ -153,13 +156,13 @@ class PartyAccessCodeLinkServiceTest {
             .thenReturn(defendantEntity);
 
         // validatePartyNotAlreadyLinked throws exception (defendant already has idamUserId)
-        doThrow(new AccessCodeAlreadyUsedException("This access code is already linked to a user."))
+        doThrow(new AccessCodeAlreadyUsedException(ACCESS_CODE_ALREADY_IN_USE))
             .when(validator).validatePartyNotAlreadyLinked(defendantEntity);
 
         // WHEN + THEN
         assertThatThrownBy(() -> service.linkPartyByAccessCode(CASE_REFERENCE, ACCESS_CODE, testUser))
             .isInstanceOf(AccessCodeAlreadyUsedException.class)
-            .hasMessageContaining("already linked");
+            .hasMessageContaining("REDACTED [ACCESS_CODE]");
     }
 
     @Test
@@ -188,15 +191,14 @@ class PartyAccessCodeLinkServiceTest {
         // validatePartyNotAlreadyLinked passes
         doNothing().when(validator).validatePartyNotAlreadyLinked(defendantEntity2);
         // validateUserNotLinkedToAnotherParty throws exception
-        doThrow(new AccessCodeAlreadyUsedException(
-            "This user ID is already linked to another party in this case."))
+        doThrow(new AccessCodeAlreadyUsedException(ACCESS_CODE_ALREADY_IN_USE))
             .when(validator).validateUserNotLinkedToAnotherParty(
                 allDefendants, partyId2, USER_ID);
 
         // WHEN + THEN
         assertThatThrownBy(() -> service.linkPartyByAccessCode(CASE_REFERENCE, ACCESS_CODE, testUser))
             .isInstanceOf(AccessCodeAlreadyUsedException.class)
-            .hasMessageContaining("already linked to another");
+            .hasMessageContaining("REDACTED [ACCESS_CODE]");
     }
 
     @Test

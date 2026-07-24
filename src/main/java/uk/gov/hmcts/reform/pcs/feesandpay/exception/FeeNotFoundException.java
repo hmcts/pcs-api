@@ -1,11 +1,17 @@
 package uk.gov.hmcts.reform.pcs.feesandpay.exception;
 
-public class FeeNotFoundException extends RuntimeException {
-    public FeeNotFoundException(String message) {
-        super(message);
+import uk.gov.hmcts.reform.pcs.exception.ErrorCode;
+import uk.gov.hmcts.reform.pcs.exception.RedactedRuntimeException;
+import uk.gov.hmcts.reform.pcs.exception.RedactionContext;
+
+public class FeeNotFoundException extends RedactedRuntimeException {
+
+    public FeeNotFoundException(ErrorCode errorCode, RedactionContext redactionContext) {
+        super(errorCode, redactionContext);
     }
 
-    public FeeNotFoundException(String message, Throwable cause) {
-        super(message, cause);
+    public FeeNotFoundException(ErrorCode errorCode, RedactionContext redactionContext, Throwable cause) {
+        super(errorCode, redactionContext, cause);
     }
+
 }

@@ -82,8 +82,8 @@ public class DefenceFormGenerationComponent {
                     if (finalAttempt) {
                         MDC.put(MDC_TERMINAL_FAILURE, "true");
                         MDC.put(MDC_FAILURE_REASON, String.valueOf(e.getMessage()));
-                        log.error("Defence form generation permanently failed for defendant response {} after {} "
-                                  + "attempts: {}", data.getDefendantResponseId(), attempt, e.getMessage(), e);
+                        log.error("Defence form generation permanently failed for defendant {} after {} attempts.",
+                                  data.getDefendantResponseId(), attempt, e);
                     }
                     // First + terminal rows: reason visible from attempt 1 (terminal:false = retrying)
                     if (attempt == 1 || finalAttempt) {

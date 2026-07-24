@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.idam;
 
 import feign.FeignException;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -10,6 +11,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.reform.pcs.exception.ExceptionRedaction;
 import uk.gov.hmcts.reform.pcs.exception.IdamException;
 import uk.gov.hmcts.reform.pcs.exception.InvalidAuthTokenException;
 
@@ -31,10 +33,16 @@ class IdamAuthenticatorTest {
     @InjectMocks
     private IdamAuthenticator underTest;
 
+    @AfterEach
+    void afterEach() {
+        ExceptionRedaction.setShowFullExceptionsForTesting(null);
+    }
+
     @ParameterizedTest
     @NullAndEmptySource
     @DisplayName("Should throw InvalidAuthTokenException when token is null or blank")
     void shouldThrowInvalidAuthTokenExceptionWhenAuthTokenIsNullOrBlank(String authToken) {
+        ExceptionRedaction.setShowFullExceptionsForTesting(true);
         assertThatThrownBy(() -> underTest.validateAuthToken(authToken))
             .isInstanceOf(InvalidAuthTokenException.class)
             .hasMessage("Authorization token is null or blank");
@@ -45,6 +53,7 @@ class IdamAuthenticatorTest {
     @DisplayName("Should throw InvalidAuthTokenException when token is malformed")
     @Test
     void shouldThrowInvalidAuthTokenExceptionWhenAuthTokenMalformed() {
+        ExceptionRedaction.setShowFullExceptionsForTesting(true);
         assertThatThrownBy(() -> underTest.validateAuthToken("InvalidToken"))
             .isInstanceOf(InvalidAuthTokenException.class)
             .hasMessageContaining("Malformed Authorization token");
@@ -60,6 +69,7 @@ class IdamAuthenticatorTest {
         "Bearer"    // length 6 — fails prefix check (no trailing space); covers the boundary on the other branch
     })
     void shouldThrowInvalidAuthTokenExceptionWhenTokenLengthBelowMinimum(String token) {
+        ExceptionRedaction.setShowFullExceptionsForTesting(true);
         assertThatThrownBy(() -> underTest.validateAuthToken(token))
             .isInstanceOf(InvalidAuthTokenException.class)
             .hasMessageContaining("Malformed Authorization token");
@@ -84,6 +94,7 @@ class IdamAuthenticatorTest {
     @Test
     @DisplayName("Should throw InvalidAuthTokenException when IDAM returns Unauthorized")
     void shouldThrowInvalidAuthTokenExceptionWhenIdamReturnsUnauthorized() {
+        ExceptionRedaction.setShowFullExceptionsForTesting(true);
         String token = BEARER_PREFIX + "invalid-token";
         FeignException.Unauthorized unauthorizedException = mock(FeignException.Unauthorized.class);
         when(idamUserInfoApi.getUserInfo(token)).thenThrow(unauthorizedException);
@@ -97,6 +108,7 @@ class IdamAuthenticatorTest {
     @Test
     @DisplayName("Should wrap non-401 FeignException in IdamException (transient upstream failure)")
     void shouldWrapNon401FeignExceptionInIdamException() {
+        ExceptionRedaction.setShowFullExceptionsForTesting(true);
         String token = BEARER_PREFIX + "valid-token";
         FeignException feignEx = mock(FeignException.class);
         when(idamUserInfoApi.getUserInfo(token)).thenThrow(feignEx);

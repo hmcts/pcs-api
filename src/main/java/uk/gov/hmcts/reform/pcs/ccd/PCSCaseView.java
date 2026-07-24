@@ -16,9 +16,9 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseTitleService;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
+import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
 import uk.gov.hmcts.reform.pcs.ccd.view.AlternativesToPossessionView;
 import uk.gov.hmcts.reform.pcs.ccd.view.AsbProhibitedConductView;
@@ -41,7 +41,6 @@ import uk.gov.hmcts.reform.pcs.ccd.view.StatementOfTruthView;
 import uk.gov.hmcts.reform.pcs.ccd.view.TenancyLicenceView;
 import uk.gov.hmcts.reform.pcs.ccd.view.globalsearch.CaseFieldsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.globalsearch.SearchCriteriaIndexer;
-import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.time.LocalDate;
@@ -63,7 +62,7 @@ import static uk.gov.hmcts.reform.pcs.config.ClockConfiguration.UK_ZONE_ID;
 @AllArgsConstructor
 public class PCSCaseView implements CaseView<PCSCase, State> {
 
-    private final PcsCaseRepository pcsCaseRepository;
+    private final PcsCaseService pcsCaseService;
     private final SecurityContextService securityContextService;
     private final ModelMapper modelMapper;
     private final DraftCaseDataService draftCaseDataService;
@@ -138,7 +137,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
     }
 
     private SubmittedCase getSubmittedCase(long caseReference) {
-        PcsCaseEntity pcsCaseEntity = loadCaseData(caseReference);
+        PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
 
         PCSCase pcsCase = PCSCase.builder()
             .propertyAddress(convertAddress(pcsCaseEntity.getPropertyAddress()))
@@ -264,11 +263,6 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         }
 
         return modelMapper.map(address, AddressUK.class);
-    }
-
-    private PcsCaseEntity loadCaseData(long caseRef) {
-        return pcsCaseRepository.findByCaseReference(caseRef)
-            .orElseThrow(() -> new CaseNotFoundException(caseRef));
     }
 
     private List<ListValue<Party>> mapAndWrapParties(Set<PartyEntity> partyEntities) {
