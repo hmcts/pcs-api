@@ -7,8 +7,9 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerReadAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.ClaimantAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DefendantAccess;
-import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.GlobalSearchAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DeletedStateAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.InternalCaseFlagAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.GlobalSearchAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.RasValidationAccess;
 
 /**
@@ -33,6 +34,12 @@ public enum State {
         hint = "${caseTitleMarkdown}"
     )
     PENDING_CASE_ISSUED,
+
+    @CCD(
+            label = "Deleted",
+            access = {DeletedStateAccess.class}
+    )
+    DRAFT_DISCARDED,
 
     @CCD(
         label = "Case Issued",

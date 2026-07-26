@@ -269,6 +269,10 @@ bulk-print:
   # BULK_PRINT_LOOKBACK_HOURS (lower envs only): sweep ignores packs whose documents are older than N hours,
   # so enabling the flag cannot flood send-letter with the historical backlog. Unset in prod = full backlog.
 
+expired-case-deletion:
+  schedule: ${EXPIRED_CASE_DELETION_SCHEDULE:DAILY|04:00}
+  discard-after-days: ${EXPIRED_CASE_DELETION_DISCARD_AFTER_DAYS:1}
+
 send-letter:
   # Default to localhost so a higher environment fails loudly if SEND_LETTER_URL is not set, rather than
   # silently posting to AAT.
