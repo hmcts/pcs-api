@@ -135,6 +135,10 @@ public class DocumentAmendDetails implements DocumentSelectionDetails {
     private DynamicList relatedParty;
 
     @CCD(searchable = false)
+    @JsonProperty(PREFIX + "_RelatedPartyCode")
+    private String relatedPartyCode;
+
+    @CCD(searchable = false)
     @JsonProperty(PREFIX + "_ShowRelatedSubmissionsList")
     private VerticalYesNo showRelatedSubmissionsList;
 
@@ -146,6 +150,10 @@ public class DocumentAmendDetails implements DocumentSelectionDetails {
     @JsonProperty(PREFIX + "_RelatedSubmission")
     private DynamicStringList relatedSubmission;
 
+    @CCD(searchable = false)
+    @JsonProperty(PREFIX + "_RelatedSubmissionCode")
+    private String relatedSubmissionCode;
+
     @CCD(
         label = "Which type of document is this?",
         searchable = false,
@@ -154,6 +162,10 @@ public class DocumentAmendDetails implements DocumentSelectionDetails {
     @JsonProperty(PREFIX + "_RelatedSubmissionsDocumentType")
     private DynamicStringList relatedSubmissionsDocumentType;
 
+    @CCD(searchable = false)
+    @JsonProperty(PREFIX + "_RelatedSubmissionsDocumentTypeCode")
+    private String relatedSubmissionsDocumentTypeCode;
+
     @CCD(
         label = "Which type of document is this?",
         searchable = false,
@@ -161,6 +173,10 @@ public class DocumentAmendDetails implements DocumentSelectionDetails {
     )
     @JsonProperty(PREFIX + "_StandaloneDocumentType")
     private DynamicStringList standaloneDocumentType;
+
+    @CCD(searchable = false)
+    @JsonProperty(PREFIX + "_StandaloneDocumentTypeCode")
+    private String standaloneDocumentTypeCode;
 
     public String getAmendedFileName() {
         return amendedFileName == null ? selectedDocumentBaseFileName : amendedFileName;

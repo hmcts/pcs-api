@@ -37,6 +37,9 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -148,6 +151,245 @@ class DocumentAmendServiceTest {
         assertThat(amendDetails.getSelectedDocumentIssueDate()).isEqualTo(issueDate);
         assertThat(amendDetails.getIssueDate()).isEqualTo(issueDate);
         assertThat(amendDetails.getRelatedParty().getValue().getCode()).isEqualTo(PARTY_ID);
+    }
+
+    @Test
+    void shouldRetainSelectionsWhenInitialisingSameSelectedDocumentAgain() {
+        UUID newPartyId = UUID.randomUUID();
+        LocalDate enteredIssueDate = LocalDate.of(2026, 5, 20);
+        DynamicList carriedParty = DynamicList.builder().build();
+        DynamicListElement rebuiltPartyOption = DynamicListElement.builder()
+            .code(newPartyId)
+            .label("Claimant One - Claimant 1")
+            .build();
+        DynamicList rebuiltPartyList = DynamicList.builder()
+            .value(rebuiltPartyOption)
+            .listItems(List.of(rebuiltPartyOption))
+            .build();
+        DynamicStringList carriedSubmission = DynamicStringList.builder().build();
+        DynamicStringListElement rebuiltSubmissionOption = DynamicStringListElement.builder()
+            .code(GEN_APP_ID_PREFIX + ":" + GEN_APP_ID)
+            .label("Gen app GA1 - submitted 20 May 2026")
+            .build();
+        DynamicStringList rebuiltSubmissionList = DynamicStringList.builder()
+            .value(rebuiltSubmissionOption)
+            .listItems(List.of(rebuiltSubmissionOption))
+            .build();
+        DynamicStringList carriedRelatedDocumentType = DynamicStringList.builder().build();
+        DynamicStringListElement rebuiltRelatedDocumentTypeOption = DynamicStringListElement.builder()
+            .code(CaseworkerDocumentType.WITNESS_STATEMENT.name())
+            .label("Witness statement")
+            .build();
+        DynamicStringList rebuiltRelatedDocumentTypeList = DynamicStringList.builder()
+            .value(rebuiltRelatedDocumentTypeOption)
+            .listItems(List.of(rebuiltRelatedDocumentTypeOption))
+            .build();
+        DynamicStringList carriedStandaloneDocumentType = DynamicStringList.builder().build();
+        DynamicStringListElement rebuiltStandaloneDocumentTypeOption = DynamicStringListElement.builder()
+            .code(CaseworkerDocumentType.RENT_STATEMENT.name())
+            .label("Rent statement")
+            .build();
+        DynamicStringList rebuiltStandaloneDocumentTypeList = DynamicStringList.builder()
+            .value(rebuiltStandaloneDocumentTypeOption)
+            .listItems(List.of(rebuiltStandaloneDocumentTypeOption))
+            .build();
+        documentEntity.setFileName("old file.pdf");
+        documentEntity.setIssueDate(LocalDate.of(2026, 4, 16));
+        documentEntity.setParty(partyEntity);
+
+        when(caseworkerDocumentListService.buildRelatedPartyList(pcsCaseEntity, carriedParty))
+            .thenReturn(rebuiltPartyList);
+        when(caseworkerDocumentListService.hasRelatedSubmissions(null, List.of())).thenReturn(true);
+        when(caseworkerDocumentListService.buildRelatedSubmissionsList(
+            pcsCaseEntity,
+            null,
+            List.of(),
+            carriedSubmission
+        )).thenReturn(rebuiltSubmissionList);
+        when(caseworkerDocumentListService.buildDocumentTypeList(null, carriedRelatedDocumentType))
+            .thenReturn(rebuiltRelatedDocumentTypeList);
+        when(caseworkerDocumentListService.buildDocumentTypeList(null, carriedStandaloneDocumentType))
+            .thenReturn(rebuiltStandaloneDocumentTypeList);
+
+        DocumentAmendDetails amendDetails = DocumentAmendDetails.builder()
+            .selectedDocumentId(DOCUMENT_ID.toString())
+            .selectedDocumentFileName("old file.pdf")
+            .selectedDocumentBaseFileName("old file")
+            .amendedFileName("changed file name")
+            .issueDate(enteredIssueDate)
+            .relatedParty(carriedParty)
+            .relatedPartyCode(newPartyId.toString())
+            .showRelatedSubmissionsList(VerticalYesNo.YES)
+            .relatedSubmission(carriedSubmission)
+            .relatedSubmissionCode(GEN_APP_ID_PREFIX + ":" + GEN_APP_ID)
+            .relatedSubmissionsDocumentType(carriedRelatedDocumentType)
+            .relatedSubmissionsDocumentTypeCode(CaseworkerDocumentType.WITNESS_STATEMENT.name())
+            .standaloneDocumentType(carriedStandaloneDocumentType)
+            .standaloneDocumentTypeCode(CaseworkerDocumentType.RENT_STATEMENT.name())
+            .build();
+
+        underTest.initialiseAmendDetails(
+            CASE_REFERENCE,
+            PCSCase.builder().documentAmendDetails(amendDetails).build(),
+            DOCUMENT_ID.toString()
+        );
+
+        assertThat(amendDetails.getAmendedFileName()).isEqualTo("changed file name");
+        assertThat(amendDetails.getIssueDate()).isEqualTo(enteredIssueDate);
+        assertThat(carriedParty.getValue().getCode()).isEqualTo(newPartyId);
+        assertThat(carriedSubmission.getValueCode()).isEqualTo(GEN_APP_ID_PREFIX + ":" + GEN_APP_ID);
+        assertThat(carriedRelatedDocumentType.getValueCode())
+            .isEqualTo(CaseworkerDocumentType.WITNESS_STATEMENT.name());
+        assertThat(carriedStandaloneDocumentType.getValueCode())
+            .isEqualTo(CaseworkerDocumentType.RENT_STATEMENT.name());
+        assertThat(amendDetails.getRelatedParty().getValue().getCode()).isEqualTo(newPartyId);
+        assertThat(amendDetails.getRelatedSubmission().getValueCode()).isEqualTo(GEN_APP_ID_PREFIX + ":" + GEN_APP_ID);
+        assertThat(amendDetails.getRelatedSubmissionsDocumentType().getValueCode())
+            .isEqualTo(CaseworkerDocumentType.WITNESS_STATEMENT.name());
+        assertThat(amendDetails.getStandaloneDocumentType().getValueCode())
+            .isEqualTo(CaseworkerDocumentType.RENT_STATEMENT.name());
+    }
+
+    @Test
+    void shouldPreselectSavedGenAppAssociationWhenInitialisingSelectedDocument() {
+        GenAppEntity genAppEntity = GenAppEntity.builder().id(GEN_APP_ID).build();
+        documentEntity.setGeneralApplication(genAppEntity);
+        DynamicStringList rebuiltSubmissionList = dynamicStringList(GEN_APP_ID_PREFIX + ":" + GEN_APP_ID);
+
+        when(caseworkerDocumentListService.buildRelatedPartyList(pcsCaseEntity, null))
+            .thenReturn(DynamicList.builder().build());
+        when(caseworkerDocumentListService.hasRelatedSubmissions(null, List.of())).thenReturn(true);
+        when(caseworkerDocumentListService.buildRelatedSubmissionsList(
+            eq(pcsCaseEntity),
+            eq(null),
+            eq(List.of()),
+            any(DynamicStringList.class)
+        )).thenReturn(rebuiltSubmissionList);
+        when(caseworkerDocumentListService.buildDocumentTypeList(eq(null), nullable(DynamicStringList.class)))
+            .thenReturn(DynamicStringList.builder().build());
+
+        DocumentAmendDetails amendDetails = DocumentAmendDetails.builder()
+            .selectedDocumentId(DOCUMENT_ID.toString())
+            .build();
+
+        underTest.initialiseAmendDetails(
+            CASE_REFERENCE,
+            PCSCase.builder().documentAmendDetails(amendDetails).build()
+        );
+
+        assertThat(amendDetails.getRelatedSubmission().getValueCode())
+            .isEqualTo(GEN_APP_ID_PREFIX + ":" + GEN_APP_ID);
+    }
+
+    @Test
+    void shouldPreselectSavedDocumentTypeWhenInitialisingSelectedDocument() {
+        documentEntity.setType(DocumentType.RENT_STATEMENT);
+        DynamicStringList rebuiltDocumentTypeList = dynamicStringList(CaseworkerDocumentType.RENT_STATEMENT.name());
+
+        when(caseworkerDocumentListService.buildRelatedPartyList(pcsCaseEntity, null))
+            .thenReturn(DynamicList.builder().build());
+        when(caseworkerDocumentListService.hasRelatedSubmissions(null, List.of())).thenReturn(false);
+        when(caseworkerDocumentListService.buildDocumentTypeList(eq(null), nullable(DynamicStringList.class)))
+            .thenReturn(rebuiltDocumentTypeList, rebuiltDocumentTypeList);
+
+        DocumentAmendDetails amendDetails = DocumentAmendDetails.builder()
+            .selectedDocumentId(DOCUMENT_ID.toString())
+            .build();
+
+        underTest.initialiseAmendDetails(
+            CASE_REFERENCE,
+            PCSCase.builder().documentAmendDetails(amendDetails).build()
+        );
+
+        assertThat(amendDetails.getStandaloneDocumentType().getValueCode())
+            .isEqualTo(CaseworkerDocumentType.RENT_STATEMENT.name());
+    }
+
+    @Test
+    void shouldPreselectNotRelatedAndDocumentTypeWhenSavedDocumentHasNoSubmissionAssociation() {
+        documentEntity.setType(DocumentType.WITNESS_STATEMENT);
+        DynamicStringList rebuiltSubmissionList = dynamicStringList(NONE_PREFIX);
+        DynamicStringList rebuiltDocumentTypeList = dynamicStringList(CaseworkerDocumentType.WITNESS_STATEMENT.name());
+
+        when(caseworkerDocumentListService.buildRelatedPartyList(pcsCaseEntity, null))
+            .thenReturn(DynamicList.builder().build());
+        when(caseworkerDocumentListService.hasRelatedSubmissions(null, List.of())).thenReturn(true);
+        when(caseworkerDocumentListService.buildRelatedSubmissionsList(
+            eq(pcsCaseEntity),
+            eq(null),
+            eq(List.of()),
+            any(DynamicStringList.class)
+        )).thenReturn(rebuiltSubmissionList);
+        when(caseworkerDocumentListService.buildDocumentTypeList(eq(null), nullable(DynamicStringList.class)))
+            .thenReturn(rebuiltDocumentTypeList, rebuiltDocumentTypeList);
+
+        DocumentAmendDetails amendDetails = DocumentAmendDetails.builder()
+            .selectedDocumentId(DOCUMENT_ID.toString())
+            .build();
+
+        underTest.initialiseAmendDetails(
+            CASE_REFERENCE,
+            PCSCase.builder().documentAmendDetails(amendDetails).build()
+        );
+
+        assertThat(amendDetails.getRelatedSubmission().getValueCode()).isEqualTo(NONE_PREFIX);
+        assertThat(amendDetails.getRelatedSubmissionsDocumentType().getValueCode())
+            .isEqualTo(CaseworkerDocumentType.WITNESS_STATEMENT.name());
+    }
+
+    @Test
+    void shouldClearCarriedSelectionsWhenSelectedDocumentChanges() {
+        UUID oldPartyId = UUID.randomUUID();
+        UUID oldGenAppId = UUID.randomUUID();
+        DynamicList carriedParty = DynamicList.builder()
+            .value(DynamicListElement.builder().code(oldPartyId).build())
+            .build();
+        DynamicStringList carriedSubmission = dynamicStringList(GEN_APP_ID_PREFIX + ":" + oldGenAppId);
+        DynamicStringList carriedRelatedDocumentType = dynamicStringList(
+            CaseworkerDocumentType.WITNESS_STATEMENT.name()
+        );
+        DynamicStringList carriedStandaloneDocumentType = dynamicStringList(
+            CaseworkerDocumentType.RENT_STATEMENT.name()
+        );
+
+        when(caseworkerDocumentListService.buildRelatedPartyList(eq(pcsCaseEntity), any(DynamicList.class)))
+            .thenReturn(DynamicList.builder().build());
+        when(caseworkerDocumentListService.hasRelatedSubmissions(null, List.of())).thenReturn(true);
+        when(caseworkerDocumentListService.buildRelatedSubmissionsList(
+            eq(pcsCaseEntity),
+            eq(null),
+            eq(List.of()),
+            any(DynamicStringList.class)
+        )).thenReturn(dynamicStringList(NONE_PREFIX));
+        when(caseworkerDocumentListService.buildDocumentTypeList(eq(null), nullable(DynamicStringList.class)))
+            .thenReturn(DynamicStringList.builder().build());
+
+        DocumentAmendDetails amendDetails = DocumentAmendDetails.builder()
+            .selectedDocumentId(DOCUMENT_ID.toString())
+            .relatedParty(carriedParty)
+            .relatedPartyCode(oldPartyId.toString())
+            .relatedSubmission(carriedSubmission)
+            .relatedSubmissionCode(GEN_APP_ID_PREFIX + ":" + oldGenAppId)
+            .relatedSubmissionsDocumentType(carriedRelatedDocumentType)
+            .relatedSubmissionsDocumentTypeCode(CaseworkerDocumentType.WITNESS_STATEMENT.name())
+            .standaloneDocumentType(carriedStandaloneDocumentType)
+            .standaloneDocumentTypeCode(CaseworkerDocumentType.RENT_STATEMENT.name())
+            .build();
+
+        underTest.initialiseAmendDetails(
+            CASE_REFERENCE,
+            PCSCase.builder().documentAmendDetails(amendDetails).build(),
+            UUID.randomUUID().toString()
+        );
+
+        assertThat(amendDetails.getRelatedPartyCode()).isNull();
+        assertThat(amendDetails.getRelatedSubmissionCode()).isNull();
+        assertThat(amendDetails.getRelatedSubmissionsDocumentTypeCode()).isNull();
+        assertThat(amendDetails.getStandaloneDocumentTypeCode()).isNull();
+        assertThat(amendDetails.getRelatedParty().getValue()).isNull();
+        assertThat(amendDetails.getRelatedSubmission().getValueCode()).isEqualTo(NONE_PREFIX);
+        assertThat(amendDetails.getRelatedSubmissionsDocumentType().getValue()).isNull();
+        assertThat(amendDetails.getStandaloneDocumentType().getValue()).isNull();
     }
 
     @Test

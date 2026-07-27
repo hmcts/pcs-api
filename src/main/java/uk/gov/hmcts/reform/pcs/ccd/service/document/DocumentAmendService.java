@@ -23,12 +23,15 @@ import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.caseworker.CaseworkerDocumentListService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
+import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
+import static uk.gov.hmcts.reform.pcs.ccd.service.caseworker.CaseworkerDocumentService.COUNTERCLAIM_ID_PREFIX;
+import static uk.gov.hmcts.reform.pcs.ccd.service.caseworker.CaseworkerDocumentService.GEN_APP_ID_PREFIX;
 import static uk.gov.hmcts.reform.pcs.ccd.service.caseworker.CaseworkerDocumentService.NONE_PREFIX;
 
 @Service
@@ -48,18 +51,34 @@ public class DocumentAmendService {
     private static final String ISSUE_DATE_POSTFIX_PATTERN = " \\d{8}$";
 
     public void initialiseAmendDetails(long caseReference, PCSCase caseData) {
+        initialiseAmendDetails(caseReference, caseData, null);
+    }
+
+    public void initialiseAmendDetails(long caseReference, PCSCase caseData, String previouslySelectedDocumentId) {
         DocumentAmendDetails details = caseData.getDocumentAmendDetails();
         if (details == null) {
             return;
         }
 
         PcsCaseEntity pcsCase = pcsCaseService.loadCase(caseReference);
+        Optional<DocumentEntity> selectedDocument = findSelectedDocument(pcsCase, details.getSelectedDocumentId());
+        boolean sameSelectedDocument = Objects.equals(previouslySelectedDocumentId, details.getSelectedDocumentId());
+        if (!sameSelectedDocument) {
+            clearAmendSelections(details);
+            selectedDocument.ifPresent(document -> preselectSavedDocumentSelections(details, document));
+        }
+
+        restoreCarriedSelections(details);
         details.setRelatedParty(caseworkerDocumentListService.buildRelatedPartyList(
             pcsCase,
             details.getRelatedParty()
         ));
         setApplicationOrCounterclaimLists(caseData, details, pcsCase);
-        populateSelectedDocumentDetails(details, findSelectedDocument(pcsCase, details.getSelectedDocumentId()));
+        populateSelectedDocumentDetails(
+            details,
+            selectedDocument,
+            sameSelectedDocument
+        );
     }
 
     public AmendedDocument amendDocument(PCSCase caseData, long caseReference) {
@@ -98,7 +117,8 @@ public class DocumentAmendService {
     }
 
     private void populateSelectedDocumentDetails(DocumentAmendDetails details,
-                                                 Optional<DocumentEntity> selectedDocumentEntity) {
+                                                 Optional<DocumentEntity> selectedDocumentEntity,
+                                                 boolean sameSelectedDocument) {
         if (details.getSelectedDocumentId() == null) {
             clearSelectedDocumentDetails(details);
             return;
@@ -111,10 +131,89 @@ public class DocumentAmendService {
 
         details.setSelectedDocumentFileName(selectedDocumentFileName);
         details.setSelectedDocumentBaseFileName(selectedDocumentBaseFileName);
+        if (sameSelectedDocument) {
+            return;
+        }
+
         details.setAmendedFileName(selectedDocumentBaseFileName);
         details.setSelectedDocumentIssueDate(selectedDocumentEntity.map(DocumentEntity::getIssueDate).orElse(null));
         details.setIssueDate(selectedDocumentEntity.map(DocumentEntity::getIssueDate).orElse(null));
         selectedDocumentEntity.ifPresent(document -> preselectRelatedParty(details, document));
+    }
+
+    private void preselectSavedDocumentSelections(DocumentAmendDetails details, DocumentEntity document) {
+        if (document.getGeneralApplication() != null && document.getGeneralApplication().getId() != null) {
+            details.setRelatedSubmission(dynamicStringList(
+                GEN_APP_ID_PREFIX + ":" + document.getGeneralApplication().getId()
+            ));
+        } else if (document.getCounterClaim() != null && document.getCounterClaim().getId() != null) {
+            details.setRelatedSubmission(dynamicStringList(
+                COUNTERCLAIM_ID_PREFIX + ":" + document.getCounterClaim().getId()
+            ));
+        } else {
+            details.setRelatedSubmission(dynamicStringList(NONE_PREFIX));
+        }
+
+        documentTypeFor(document.getType()).ifPresent(documentType -> {
+            DynamicStringList selectedDocumentType = dynamicStringList(documentType.name());
+            details.setRelatedSubmissionsDocumentType(selectedDocumentType);
+            details.setStandaloneDocumentType(selectedDocumentType);
+        });
+    }
+
+    private void restoreCarriedSelections(DocumentAmendDetails details) {
+        restoreRelatedPartySelection(details);
+        details.setRelatedSubmission(restoreStringListSelection(
+            details.getRelatedSubmission(),
+            details.getRelatedSubmissionCode()
+        ));
+        details.setRelatedSubmissionsDocumentType(restoreStringListSelection(
+            details.getRelatedSubmissionsDocumentType(),
+            details.getRelatedSubmissionsDocumentTypeCode()
+        ));
+        details.setStandaloneDocumentType(restoreStringListSelection(
+            details.getStandaloneDocumentType(),
+            details.getStandaloneDocumentTypeCode()
+        ));
+    }
+
+    private void restoreRelatedPartySelection(DocumentAmendDetails details) {
+        UUID selectedPartyId = parseUuid(details.getRelatedPartyCode());
+        if (selectedPartyId == null
+            || details.getRelatedParty() != null && details.getRelatedParty().getValue() != null) {
+            return;
+        }
+
+        if (details.getRelatedParty() == null) {
+            details.setRelatedParty(DynamicList.builder().build());
+        }
+        details.getRelatedParty().setValue(DynamicListElement.builder()
+            .code(selectedPartyId)
+            .build());
+    }
+
+    private DynamicStringList restoreStringListSelection(DynamicStringList dynamicStringList, String selectedCode) {
+        if (selectedCode == null) {
+            return dynamicStringList;
+        }
+
+        DynamicStringList restoredList = dynamicStringList == null
+            ? DynamicStringList.builder().build()
+            : dynamicStringList;
+        if (restoredList.getValue() == null) {
+            restoredList.setValue(DynamicStringListElement.builder()
+                .code(selectedCode)
+                .build());
+        }
+        return restoredList;
+    }
+
+    private UUID parseUuid(String value) {
+        try {
+            return value == null ? null : UUID.fromString(value);
+        } catch (IllegalArgumentException exception) {
+            return null;
+        }
     }
 
     private void clearSelectedDocumentDetails(DocumentAmendDetails details) {
@@ -124,9 +223,27 @@ public class DocumentAmendService {
         details.setAmendedFileName(null);
         details.setSelectedDocumentIssueDate(null);
         details.setIssueDate(null);
+        clearAmendSelections(details);
+    }
+
+    private void clearAmendSelections(DocumentAmendDetails details) {
         if (details.getRelatedParty() != null) {
             details.getRelatedParty().setValue(null);
         }
+        if (details.getRelatedSubmission() != null) {
+            details.getRelatedSubmission().setValue(null);
+        }
+        if (details.getRelatedSubmissionsDocumentType() != null) {
+            details.getRelatedSubmissionsDocumentType().setValue(null);
+        }
+        if (details.getStandaloneDocumentType() != null) {
+            details.getStandaloneDocumentType().setValue(null);
+        }
+
+        details.setRelatedPartyCode(null);
+        details.setRelatedSubmissionCode(null);
+        details.setRelatedSubmissionsDocumentTypeCode(null);
+        details.setStandaloneDocumentTypeCode(null);
     }
 
     private Optional<DocumentEntity> findSelectedDocument(PcsCaseEntity pcsCaseEntity, String selectedDocumentId) {
@@ -240,6 +357,24 @@ public class DocumentAmendService {
 
     private static String getOptionalSelectedCode(DynamicStringList dynamicStringList) {
         return dynamicStringList == null ? null : dynamicStringList.getValueCode();
+    }
+
+    private static DynamicStringList dynamicStringList(String selectedCode) {
+        return DynamicStringList.builder()
+            .value(DynamicStringListElement.builder().code(selectedCode).build())
+            .build();
+    }
+
+    private static Optional<CaseworkerDocumentType> documentTypeFor(DocumentType documentType) {
+        if (documentType == null) {
+            return Optional.empty();
+        }
+
+        try {
+            return Optional.of(CaseworkerDocumentType.valueOf(documentType.name()));
+        } catch (IllegalArgumentException exception) {
+            return Optional.empty();
+        }
     }
 
     public record AmendedDocument(String fileName, String partyName) {
