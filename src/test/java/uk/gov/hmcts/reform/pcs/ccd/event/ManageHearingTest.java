@@ -434,6 +434,7 @@ public class ManageHearingTest extends BaseEventTest {
 
             // Then
             verify(hearingService).addHearing(TEST_CASE_REFERENCE, pcsCase);
+            verify(hearingService, never()).updateHearing(TEST_CASE_REFERENCE, pcsCase);
             assertThat(submitResponse.getConfirmationBody()).isEqualTo(
                 """
                     ---
@@ -469,6 +470,7 @@ public class ManageHearingTest extends BaseEventTest {
 
             // Then
             verify(hearingService).addHearing(TEST_CASE_REFERENCE, pcsCase);
+            verify(hearingService, never()).updateHearing(TEST_CASE_REFERENCE, pcsCase);
             assertThat(submitResponse.getConfirmationBody()).isEqualTo(
                 """
                     ---

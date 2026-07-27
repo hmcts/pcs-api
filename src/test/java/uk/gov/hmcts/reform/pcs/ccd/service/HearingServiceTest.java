@@ -161,6 +161,47 @@ public class HearingServiceTest {
     }
 
     @Test
+    void shouldAddNonOtherHearingWithoutOtherTypeOrNoticeParties() {
+        // Given
+        Hearing hearing = Hearing.builder()
+            .type(HearingType.APPLICATION)
+            .noticeWording(HearingNoticeWording.TPL)
+            .date(LocalDateTime.of(2026, 2, 1, 9,  0, 0))
+            .durationDays(0)
+            .durationHours(2)
+            .durationMinutes(15)
+            .issueNotice(VerticalYesNo.NO)
+            .build();
+
+        UUID partyId = UUID.randomUUID();
+        DynamicMultiSelectList partyList = DynamicMultiSelectList.builder()
+            .value(List.of(DynamicListElement.builder().code(partyId).build()))
+            .build();
+
+        PCSCase pcsCase = PCSCase.builder()
+            .hearing(hearing)
+            .partyMultiSelectionList(partyList)
+            .build();
+
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().build();
+        long caseReference = 12345L;
+        when(pcsCaseService.loadCase(caseReference)).thenReturn(pcsCaseEntity);
+
+        // When
+        hearingService.addHearing(caseReference, pcsCase);
+
+        ArgumentCaptor<PcsCaseEntity> pcsCaseEntityCaptor = ArgumentCaptor.forClass(PcsCaseEntity.class);
+        verify(pcsCaseRepository).save(pcsCaseEntityCaptor.capture());
+
+        // Then
+        HearingEntity hearingEntity = pcsCaseEntityCaptor.getValue().getHearings().getFirst();
+        assertThat(hearingEntity.getType()).isEqualTo(HearingType.APPLICATION);
+        assertThat(hearingEntity.getOtherHearingType()).isNull();
+        assertThat(hearingEntity.getIssueNotice()).isEqualTo(VerticalYesNo.NO);
+        assertThat(hearingEntity.getNoticeParties()).isEmpty();
+    }
+
+    @Test
     void shouldUpdateSelectedHearingAndPreserveOtherHearings() {
         // Given
         Hearing hearing = Hearing.builder()
@@ -239,5 +280,56 @@ public class HearingServiceTest {
         assertThat(hearingEntity.getIsWithoutNotice()).isEqualTo(VerticalYesNo.YES);
         assertThat(hearingEntity.getAdditionalInformation()).isEqualTo("updated additional information");
         assertThat(hearingEntity.getNoticeParties()).containsExactly(partyId);
+    }
+
+    @Test
+    void shouldClearStaleOtherTypeAndNoticePartiesWhenUpdatingSelectedHearing() {
+        // Given
+        Hearing hearing = Hearing.builder()
+            .type(HearingType.APPLICATION)
+            .noticeWording(HearingNoticeWording.TPL)
+            .date(LocalDateTime.of(2026, 4, 5, 11, 30, 0))
+            .durationDays(0)
+            .durationHours(1)
+            .durationMinutes(0)
+            .issueNotice(VerticalYesNo.NO)
+            .build();
+
+        UUID oldPartyId = UUID.randomUUID();
+        HearingEntity selectedHearing = HearingEntity.builder()
+            .id(10)
+            .type(HearingType.OTHER)
+            .otherHearingType("old custom type")
+            .issueNotice(VerticalYesNo.YES)
+            .isWithoutNotice(VerticalYesNo.YES)
+            .noticeParties(List.of(oldPartyId))
+            .build();
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
+            .hearings(List.of(selectedHearing))
+            .build();
+        long caseReference = 12345L;
+        when(pcsCaseService.loadCase(caseReference)).thenReturn(pcsCaseEntity);
+
+        PCSCase pcsCase = PCSCase.builder()
+            .selectedHearingId("10")
+            .hearing(hearing)
+            .partyMultiSelectionList(DynamicMultiSelectList.builder()
+                                         .value(List.of(DynamicListElement.builder().code(UUID.randomUUID()).build()))
+                                         .build())
+            .build();
+
+        // When
+        hearingService.updateHearing(caseReference, pcsCase);
+
+        ArgumentCaptor<PcsCaseEntity> pcsCaseEntityCaptor = ArgumentCaptor.forClass(PcsCaseEntity.class);
+        verify(pcsCaseRepository).save(pcsCaseEntityCaptor.capture());
+
+        // Then
+        HearingEntity hearingEntity = pcsCaseEntityCaptor.getValue().getHearings().getFirst();
+        assertThat(hearingEntity.getId()).isEqualTo(10);
+        assertThat(hearingEntity.getType()).isEqualTo(HearingType.APPLICATION);
+        assertThat(hearingEntity.getOtherHearingType()).isNull();
+        assertThat(hearingEntity.getIssueNotice()).isEqualTo(VerticalYesNo.NO);
+        assertThat(hearingEntity.getNoticeParties()).isEmpty();
     }
 }
