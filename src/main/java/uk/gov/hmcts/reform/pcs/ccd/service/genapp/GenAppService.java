@@ -212,7 +212,7 @@ public class GenAppService {
                     .appendGenAppPostfix(document.getFilename(), genAppEntity, mainClaimEntity, applicantPartyId);
 
                 return buildDocumentEntity(document, pcsCaseEntity, genAppEntity, renamedFilename,
-                    null, null);
+                    CaseFileCategory.UNCATEGORISED_DOCUMENTS.getId(), null);
             })
             .toList();
 
