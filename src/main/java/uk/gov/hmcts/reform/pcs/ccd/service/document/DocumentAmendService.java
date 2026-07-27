@@ -65,9 +65,9 @@ public class DocumentAmendService {
         boolean sameSelectedDocument = Objects.equals(previouslySelectedDocumentId, details.getSelectedDocumentId());
         if (!sameSelectedDocument) {
             clearAmendSelections(details);
-            selectedDocument.ifPresent(document -> preselectSavedDocumentSelections(details, document));
         }
 
+        selectedDocument.ifPresent(document -> preselectSavedDocumentSelections(details, document));
         restoreCarriedSelections(details);
         details.setRelatedParty(caseworkerDocumentListService.buildRelatedPartyList(
             pcsCase,
@@ -131,6 +131,7 @@ public class DocumentAmendService {
 
         details.setSelectedDocumentFileName(selectedDocumentFileName);
         details.setSelectedDocumentBaseFileName(selectedDocumentBaseFileName);
+        selectedDocumentEntity.ifPresent(document -> preselectRelatedParty(details, document));
         if (sameSelectedDocument) {
             return;
         }
@@ -138,27 +139,38 @@ public class DocumentAmendService {
         details.setAmendedFileName(selectedDocumentBaseFileName);
         details.setSelectedDocumentIssueDate(selectedDocumentEntity.map(DocumentEntity::getIssueDate).orElse(null));
         details.setIssueDate(selectedDocumentEntity.map(DocumentEntity::getIssueDate).orElse(null));
-        selectedDocumentEntity.ifPresent(document -> preselectRelatedParty(details, document));
     }
 
     private void preselectSavedDocumentSelections(DocumentAmendDetails details, DocumentEntity document) {
-        if (document.getGeneralApplication() != null && document.getGeneralApplication().getId() != null) {
-            details.setRelatedSubmission(dynamicStringList(
-                GEN_APP_ID_PREFIX + ":" + document.getGeneralApplication().getId()
-            ));
-        } else if (document.getCounterClaim() != null && document.getCounterClaim().getId() != null) {
-            details.setRelatedSubmission(dynamicStringList(
-                COUNTERCLAIM_ID_PREFIX + ":" + document.getCounterClaim().getId()
-            ));
-        } else {
-            details.setRelatedSubmission(dynamicStringList(NONE_PREFIX));
+        if (isSelectionMissing(details.getRelatedSubmission(), details.getRelatedSubmissionCode())) {
+            String relatedSubmissionCode = savedRelatedSubmissionCode(document);
+            details.setRelatedSubmission(dynamicStringList(relatedSubmissionCode));
+            details.setRelatedSubmissionCode(relatedSubmissionCode);
         }
 
         documentTypeFor(document.getType()).ifPresent(documentType -> {
-            DynamicStringList selectedDocumentType = dynamicStringList(documentType.name());
-            details.setRelatedSubmissionsDocumentType(selectedDocumentType);
-            details.setStandaloneDocumentType(selectedDocumentType);
+            if (isSelectionMissing(
+                details.getRelatedSubmissionsDocumentType(),
+                details.getRelatedSubmissionsDocumentTypeCode()
+            )) {
+                details.setRelatedSubmissionsDocumentType(dynamicStringList(documentType.name()));
+                details.setRelatedSubmissionsDocumentTypeCode(documentType.name());
+            }
+            if (isSelectionMissing(details.getStandaloneDocumentType(), details.getStandaloneDocumentTypeCode())) {
+                details.setStandaloneDocumentType(dynamicStringList(documentType.name()));
+                details.setStandaloneDocumentTypeCode(documentType.name());
+            }
         });
+    }
+
+    private String savedRelatedSubmissionCode(DocumentEntity document) {
+        if (document.getGeneralApplication() != null && document.getGeneralApplication().getId() != null) {
+            return GEN_APP_ID_PREFIX + ":" + document.getGeneralApplication().getId();
+        }
+        if (document.getCounterClaim() != null && document.getCounterClaim().getId() != null) {
+            return COUNTERCLAIM_ID_PREFIX + ":" + document.getCounterClaim().getId();
+        }
+        return NONE_PREFIX;
     }
 
     private void restoreCarriedSelections(DocumentAmendDetails details) {
@@ -272,8 +284,15 @@ public class DocumentAmendService {
     private void preselectRelatedParty(DocumentAmendDetails details, DocumentEntity selectedDocumentEntity) {
         if (selectedDocumentEntity.getParty() == null
             || selectedDocumentEntity.getParty().getId() == null
+            || details.getRelatedPartyCode() != null
             || details.getRelatedParty() == null
             || CollectionUtils.isEmpty(details.getRelatedParty().getListItems())) {
+            return;
+        }
+
+        if (details.getRelatedParty().getValue() != null
+            && details.getRelatedParty().getValue().getCode() != null) {
+            details.setRelatedPartyCode(details.getRelatedParty().getValue().getCode().toString());
             return;
         }
 
@@ -281,7 +300,10 @@ public class DocumentAmendService {
         details.getRelatedParty().getListItems().stream()
             .filter(option -> option.getCode() != null && selectedPartyId.equals(option.getCode().toString()))
             .findFirst()
-            .ifPresent(details.getRelatedParty()::setValue);
+            .ifPresent(option -> {
+                details.getRelatedParty().setValue(option);
+                details.setRelatedPartyCode(selectedPartyId);
+            });
     }
 
     private void setApplicationOrCounterclaimLists(PCSCase caseData, DocumentAmendDetails details,
@@ -357,6 +379,10 @@ public class DocumentAmendService {
 
     private static String getOptionalSelectedCode(DynamicStringList dynamicStringList) {
         return dynamicStringList == null ? null : dynamicStringList.getValueCode();
+    }
+
+    private static boolean isSelectionMissing(DynamicStringList dynamicStringList, String selectedCode) {
+        return selectedCode == null && getOptionalSelectedCode(dynamicStringList) == null;
     }
 
     private static DynamicStringList dynamicStringList(String selectedCode) {

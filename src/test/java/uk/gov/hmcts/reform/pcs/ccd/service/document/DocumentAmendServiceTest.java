@@ -338,6 +338,72 @@ class DocumentAmendServiceTest {
     }
 
     @Test
+    void shouldPreselectSavedGenAppAndPartyWhenSameDocumentIsInitialisedWithoutCarriedCodes() {
+        documentEntity.setGeneralApplication(GenAppEntity.builder().id(GEN_APP_ID).build());
+        documentEntity.setParty(partyEntity);
+
+        when(caseworkerDocumentListService.buildRelatedPartyList(
+            eq(pcsCaseEntity),
+            nullable(DynamicList.class)
+        )).thenReturn(dynamicList(PARTY_ID));
+        when(caseworkerDocumentListService.hasRelatedSubmissions(null, List.of())).thenReturn(true);
+        when(caseworkerDocumentListService.buildRelatedSubmissionsList(
+            eq(pcsCaseEntity),
+            eq(null),
+            eq(List.of()),
+            any(DynamicStringList.class)
+        )).thenReturn(dynamicStringList(GEN_APP_ID_PREFIX + ":" + GEN_APP_ID));
+        when(caseworkerDocumentListService.buildDocumentTypeList(eq(null), nullable(DynamicStringList.class)))
+            .thenReturn(DynamicStringList.builder().build());
+
+        DocumentAmendDetails amendDetails = DocumentAmendDetails.builder()
+            .selectedDocumentId(DOCUMENT_ID.toString())
+            .build();
+
+        underTest.initialiseAmendDetails(
+            CASE_REFERENCE,
+            PCSCase.builder().documentAmendDetails(amendDetails).build(),
+            DOCUMENT_ID.toString()
+        );
+
+        assertThat(amendDetails.getRelatedPartyCode()).isEqualTo(PARTY_ID.toString());
+        assertThat(amendDetails.getRelatedParty().getValue().getCode()).isEqualTo(PARTY_ID);
+        assertThat(amendDetails.getRelatedSubmissionCode()).isEqualTo(GEN_APP_ID_PREFIX + ":" + GEN_APP_ID);
+        assertThat(amendDetails.getRelatedSubmission().getValueCode()).isEqualTo(GEN_APP_ID_PREFIX + ":" + GEN_APP_ID);
+    }
+
+    @Test
+    void shouldPreselectSavedStandaloneDocumentTypeAndPartyWhenSameDocumentIsInitialisedWithoutCarriedCodes() {
+        documentEntity.setType(DocumentType.RENT_STATEMENT);
+        documentEntity.setParty(partyEntity);
+
+        when(caseworkerDocumentListService.buildRelatedPartyList(
+            eq(pcsCaseEntity),
+            nullable(DynamicList.class)
+        )).thenReturn(dynamicList(PARTY_ID));
+        when(caseworkerDocumentListService.hasRelatedSubmissions(null, List.of())).thenReturn(false);
+        when(caseworkerDocumentListService.buildDocumentTypeList(eq(null), nullable(DynamicStringList.class)))
+            .thenReturn(dynamicStringList(CaseworkerDocumentType.RENT_STATEMENT.name()));
+
+        DocumentAmendDetails amendDetails = DocumentAmendDetails.builder()
+            .selectedDocumentId(DOCUMENT_ID.toString())
+            .build();
+
+        underTest.initialiseAmendDetails(
+            CASE_REFERENCE,
+            PCSCase.builder().documentAmendDetails(amendDetails).build(),
+            DOCUMENT_ID.toString()
+        );
+
+        assertThat(amendDetails.getRelatedPartyCode()).isEqualTo(PARTY_ID.toString());
+        assertThat(amendDetails.getRelatedParty().getValue().getCode()).isEqualTo(PARTY_ID);
+        assertThat(amendDetails.getStandaloneDocumentTypeCode())
+            .isEqualTo(CaseworkerDocumentType.RENT_STATEMENT.name());
+        assertThat(amendDetails.getStandaloneDocumentType().getValueCode())
+            .isEqualTo(CaseworkerDocumentType.RENT_STATEMENT.name());
+    }
+
+    @Test
     void shouldClearCarriedSelectionsWhenSelectedDocumentChanges() {
         UUID oldPartyId = UUID.randomUUID();
         UUID oldGenAppId = UUID.randomUUID();
@@ -383,7 +449,7 @@ class DocumentAmendServiceTest {
         );
 
         assertThat(amendDetails.getRelatedPartyCode()).isNull();
-        assertThat(amendDetails.getRelatedSubmissionCode()).isNull();
+        assertThat(amendDetails.getRelatedSubmissionCode()).isEqualTo(NONE_PREFIX);
         assertThat(amendDetails.getRelatedSubmissionsDocumentTypeCode()).isNull();
         assertThat(amendDetails.getStandaloneDocumentTypeCode()).isNull();
         assertThat(amendDetails.getRelatedParty().getValue()).isNull();
@@ -619,6 +685,14 @@ class DocumentAmendServiceTest {
     private static DynamicStringList dynamicStringList(String code) {
         return DynamicStringList.builder()
             .value(DynamicStringListElement.builder().code(code).build())
+            .build();
+    }
+
+    private static DynamicList dynamicList(UUID code) {
+        DynamicListElement value = DynamicListElement.builder().code(code).build();
+        return DynamicList.builder()
+            .value(value)
+            .listItems(List.of(value))
             .build();
     }
 }
