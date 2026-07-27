@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.event.caseworker.addparty;
+package uk.gov.hmcts.reform.pcs.ccd.event.caseworker.manageparty;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

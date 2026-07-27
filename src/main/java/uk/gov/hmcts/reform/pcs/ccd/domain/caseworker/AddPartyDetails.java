@@ -65,7 +65,7 @@ public class AddPartyDetails {
     private String lastName;
 
     @JsonProperty("addParty_DefendantDateOfBirth")
-    @CCD(label = "Date of birth")
+    @CCD(label = "Date of birth", hint = "For example, 16 4 2021")
     private LocalDate defendantDateOfBirth;
 
     @JsonProperty("addParty_DefendantAddress")
@@ -89,7 +89,7 @@ public class AddPartyDetails {
     private String litigationFriendOrganisationName;
 
     @JsonProperty("addParty_LitigationFriendDateOfBirth")
-    @CCD(label = "Date of birth")
+    @CCD(label = "Date of birth", hint = "For example, 16 4 2021")
     private LocalDate litigationFriendDateOfBirth;
 
     @JsonProperty("addParty_LitigationFriendAddress")

@@ -19,11 +19,13 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
+import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 
 import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -128,6 +130,24 @@ class ManagePartyServiceTest {
         verify(claimEntity).addParty(createdParty, PartyRole.LITIGATION_FRIEND, actingForParty);
         verify(claimRepository).save(claimEntity);
         verify(partyRepository).findById(actingForPartyId);
+    }
+
+    @Test
+    void shouldThrowWhenActingForPartyNotFound() {
+        // Given
+        UUID actingForPartyId = UUID.randomUUID();
+        when(partyRepository.findById(actingForPartyId)).thenReturn(Optional.empty());
+
+        AddPartyDetails addPartyDetails = AddPartyDetails.builder()
+            .addPartyType(PartyType.LITIGATION_FRIEND)
+            .litigationFriendName("Bob Jones")
+            .build();
+
+        // When / Then
+        assertThatThrownBy(() -> underTest.addParty(addPartyDetails, pcsCaseEntity, claimEntity, actingForPartyId))
+            .isInstanceOf(PartyNotFoundException.class);
+
+        verify(claimRepository, never()).save(any());
     }
 
     @Test

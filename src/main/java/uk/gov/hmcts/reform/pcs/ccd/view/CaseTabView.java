@@ -178,11 +178,22 @@ public class CaseTabView {
     private CasePartiesTab buildCasePartiesTab(PCSCase pcsCase) {
         CasePartiesTab tab = CasePartiesTab.builder().build();
 
-        List<ListValue<Party>> allClaimants = pcsCase.getAllClaimants();
-        if (!CollectionUtils.isEmpty(allClaimants)) {
-            Party claimant = allClaimants.getFirst().getValue();
-            ClaimantTabDetails claimantTabDetails = createClaimantTabDetails(claimant);
-            tab.setClaimantDetails(claimantTabDetails);
+        if (!CollectionUtils.isEmpty(pcsCase.getAllClaimants())) {
+            List<ListValue<Party>> allClaimants = new ArrayList<>(pcsCase.getAllClaimants());
+            Party claimant1 = allClaimants.removeFirst().getValue();
+            ClaimantTabDetails claimant1TabDetails = createClaimantTabDetails(claimant1);
+            tab.setClaimantDetails(claimant1TabDetails);
+
+            if (!allClaimants.isEmpty()) {
+                List<ListValue<ClaimantTabDetails>> additionalClaimants = allClaimants
+                    .stream().map(partyListValue -> {
+                        Party claimant = partyListValue.getValue();
+                        ClaimantTabDetails claimantTabDetails = createClaimantTabDetails(claimant);
+                        return ListValue.<ClaimantTabDetails>builder().value(claimantTabDetails).build();
+                    }).toList();
+
+                tab.setClaimantsDetails(additionalClaimants);
+            }
         }
 
         if (!CollectionUtils.isEmpty(pcsCase.getAllDefendants())) {

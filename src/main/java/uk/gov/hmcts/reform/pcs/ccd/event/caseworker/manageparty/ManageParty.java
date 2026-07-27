@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.event.caseworker.addparty;
+package uk.gov.hmcts.reform.pcs.ccd.event.caseworker.manageparty;
 
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.StringUtils;

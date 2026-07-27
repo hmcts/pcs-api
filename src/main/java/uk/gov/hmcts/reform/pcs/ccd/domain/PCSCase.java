@@ -73,7 +73,6 @@ import java.util.Set;
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.Collection;
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.DynamicRadioList;
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.FixedList;
-import static uk.gov.hmcts.ccd.sdk.type.FieldType.FixedRadioList;
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.MultiSelectList;
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
 
@@ -496,7 +495,7 @@ public class PCSCase {
 
     @CCD(
         label = "What would you like to do next?",
-        typeOverride = FixedRadioList,
+        typeOverride = FieldType.FixedRadioList,
         typeParameterOverride = "CompletionNextStep"
     )
     private CompletionNextStep completionNextStep;
