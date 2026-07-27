@@ -75,7 +75,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState.PENDING_GEN_
 class GenAppServiceTest {
 
     private static final LocalDateTime TEST_UTC_DATE_TIME = LocalDate.of(2025, 8, 27)
-            .atTime(12, 51, 19);
+        .atTime(12, 51, 19);
 
     @Mock
     private GenAppRepository genAppRepository;
@@ -106,7 +106,8 @@ class GenAppServiceTest {
         when(pcsCaseEntity.getClaims()).thenReturn(List.of(mainClaim));
 
         underTest = new GenAppService(genAppRepository, documentService, documentNameService,
-                                      documentRepository, utcClock);
+                                      documentRepository, utcClock
+        );
     }
 
     @Nested
@@ -124,10 +125,11 @@ class GenAppServiceTest {
             when(genAppRepository.save(isA(GenAppEntity.class))).thenReturn(savedGenAppEntity);
 
             // When
-            GenAppEntity returnedGenAppEntity = underTest.createGenAppEntity(genAppRequest,
-                                                                             pcsCaseEntity,
-                                                                             applicantParty,
-                                                                             PENDING_GEN_APP_ISSUED
+            GenAppEntity returnedGenAppEntity = underTest.createGenAppEntity(
+                genAppRequest,
+                pcsCaseEntity,
+                applicantParty,
+                PENDING_GEN_APP_ISSUED
             );
 
             // Then
@@ -631,34 +633,34 @@ class GenAppServiceTest {
         }
 
 
-    @Test
-    void shouldLoadGenAppFromRepository() {
-        // Given
-        UUID genAppId = UUID.randomUUID();
-        GenAppEntity expectedGenAppEntity = mock(GenAppEntity.class);
-        when(genAppRepository.findById(genAppId)).thenReturn(Optional.of(expectedGenAppEntity));
+        @Test
+        void shouldLoadGenAppFromRepository() {
+            // Given
+            UUID genAppId = UUID.randomUUID();
+            GenAppEntity expectedGenAppEntity = mock(GenAppEntity.class);
+            when(genAppRepository.findById(genAppId)).thenReturn(Optional.of(expectedGenAppEntity));
 
-        // When
-        GenAppEntity genAppEntity = underTest.loadGenApp(genAppId);
+            // When
+            GenAppEntity genAppEntity = underTest.loadGenApp(genAppId);
 
-        // Then
-        assertThat(genAppEntity).isEqualTo(expectedGenAppEntity);
-    }
+            // Then
+            assertThat(genAppEntity).isEqualTo(expectedGenAppEntity);
+        }
 
-    @Test
-    void shouldThrowExceptionLoadingUnknownGenApp() {
-        // Given
-        UUID unknownGenAppId = UUID.randomUUID();
-        when(genAppRepository.findById(unknownGenAppId)).thenReturn(Optional.empty());
+        @Test
+        void shouldThrowExceptionLoadingUnknownGenApp() {
+            // Given
+            UUID unknownGenAppId = UUID.randomUUID();
+            when(genAppRepository.findById(unknownGenAppId)).thenReturn(Optional.empty());
 
-        // When
-        Throwable throwable = catchThrowable(() -> underTest.loadGenApp(unknownGenAppId));
+            // When
+            Throwable throwable = catchThrowable(() -> underTest.loadGenApp(unknownGenAppId));
 
-        // Then
-        assertThat(throwable)
-            .isInstanceOf(GenAppNotFoundException.class)
-            .hasMessage("No gen app found with ID %s", unknownGenAppId);
-    }
+            // Then
+            assertThat(throwable)
+                .isInstanceOf(GenAppNotFoundException.class)
+                .hasMessage("No gen app found with ID %s", unknownGenAppId);
+        }
 
         private static Stream<Arguments> otherPartiesAgreedScenarios() {
             return Stream.of(
