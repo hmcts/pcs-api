@@ -13,7 +13,6 @@ import java.util.Arrays;
 import java.util.EnumSet;
 
 import static java.lang.System.getenv;
-import static java.util.Optional.ofNullable;
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.State.AWAITING_SUBMISSION_TO_HMCTS;
 
@@ -74,9 +73,11 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
     }
 
     private static String withSuffix(String base, String separator) {
-        return ofNullable(getenv().get("CASE_TYPE_SUFFIX"))
-            .map(changeId -> base + separator + changeId)
-            .orElse(base);
+        return withSuffix(base, separator, getenv().get("CASE_TYPE_SUFFIX"));
+    }
+
+    static String withSuffix(String base, String separator, String suffix) {
+        return isSuffixed(suffix) ? base + separator + suffix : base;
     }
 
     private static AccessProfile[] nonInternalHistoryRoles() {

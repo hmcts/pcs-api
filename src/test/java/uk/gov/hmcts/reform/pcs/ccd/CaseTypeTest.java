@@ -61,6 +61,23 @@ class CaseTypeTest {
     }
 
     @Test
+    void shouldNotAppendSeparatorWhenSuffixAbsentOrBlank() {
+        // The pipeline clears CASE_TYPE_SUFFIX with "" rather than unsetting it, so a blank
+        // suffix must yield the canonical name - not a trailing separator (PCS-, "Possession ").
+        assertThat(CaseType.withSuffix("PCS", "-", null)).isEqualTo("PCS");
+        assertThat(CaseType.withSuffix("PCS", "-", "")).isEqualTo("PCS");
+        assertThat(CaseType.withSuffix("PCS", "-", "   ")).isEqualTo("PCS");
+        assertThat(CaseType.withSuffix("Possession", " ", "")).isEqualTo("Possession");
+    }
+
+    @Test
+    void shouldAppendSuffixWhenSuffixSet() {
+        assertThat(CaseType.withSuffix("PCS", "-", "staging")).isEqualTo("PCS-staging");
+        assertThat(CaseType.withSuffix("PCS", "-", "1234")).isEqualTo("PCS-1234");
+        assertThat(CaseType.withSuffix("Possession", " ", "1234")).isEqualTo("Possession 1234");
+    }
+
+    @Test
     void shouldGetJurisdictionId() {
         // When
         String jurisdictionId = CaseType.getJurisdictionId();
