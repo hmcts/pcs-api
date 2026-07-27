@@ -32,6 +32,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 
 import java.util.List;
+import java.util.UUID;
 
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerRoles.CASEWORKER_ROLES;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
@@ -70,7 +71,7 @@ public class ManageParty implements CCDConfig<PCSCase, State, UserRole> {
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(eventPayload.caseReference());
         ClaimEntity mainClaim = pcsCaseEntity.getClaims().getFirst();
 
-        caseData.setPartyRadioList(buildApplicantPartyList(mainClaim));
+        caseData.getAddPartyDetails().setPartyRadioList(buildApplicantPartyList(mainClaim));
 
         return caseData;
     }
@@ -109,7 +110,9 @@ public class ManageParty implements CCDConfig<PCSCase, State, UserRole> {
 
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(eventPayload.caseReference());
         ClaimEntity mainClaim = pcsCaseEntity.getClaims().getFirst();
-        managePartyService.addParty(partyDetails, pcsCaseEntity, mainClaim);
+        DynamicList partyRadioList = partyDetails.getPartyRadioList();
+        UUID actingForPartyId = partyRadioList != null ? partyRadioList.getValueCode() : null;
+        managePartyService.addParty(partyDetails, pcsCaseEntity, mainClaim, actingForPartyId);
 
         return SubmitResponse.<State>builder()
             .confirmationBody(buildConfirmationPageForParty(caseData, eventPayload.caseReference()))

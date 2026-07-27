@@ -5,6 +5,7 @@ import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.AddPartyDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.PartyType;
 
 @Component
@@ -17,6 +18,8 @@ public class AddLitigationParty implements CcdPageConfiguration {
             .showCondition(ShowConditions.fieldEquals("addParty_AddPartyType", PartyType.LITIGATION_FRIEND))
             .pageLabel("Add a party")
             .label("addLitigationParty-separator", "---")
-            .mandatoryWithLabel(PCSCase::getPartyRadioList, "Which party is the litigation friend acting for?");
+            .complex(PCSCase::getAddPartyDetails)
+                .mandatory(AddPartyDetails::getPartyRadioList)
+            .done();
     }
 }

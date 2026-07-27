@@ -7,9 +7,11 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.ccd.sdk.type.DynamicList;
 
 import java.time.LocalDate;
 
+import static uk.gov.hmcts.ccd.sdk.type.FieldType.DynamicRadioList;
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.FixedRadioList;
 
 @Builder
@@ -101,4 +103,11 @@ public class AddPartyDetails {
     @JsonProperty("addParty_LitigationFriendPhoneNumber")
     @CCD(label = "Phone number", searchable = false)
     private String litigationFriendPhoneNumber;
+
+    @JsonProperty("addParty_PartyRadioList")
+    @CCD(label = "Which party is the litigation friend acting for?",
+        searchable = false,
+        typeOverride = DynamicRadioList
+    )
+    private DynamicList partyRadioList;
 }

@@ -629,12 +629,6 @@ public class PCSCase {
     )
     private CitizenGenAppRequest citizenGenAppRequest;
 
-    @CCD(label = "Which party made the application?",
-        searchable = false,
-        typeOverride = DynamicRadioList
-    )
-    private DynamicList partyRadioList;
-
     @CCD(
         label = "Search Criteria",
         access = {GlobalSearchAccess.class}
