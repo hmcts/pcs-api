@@ -61,7 +61,7 @@ public class EnterGenAppRequest {
     private String hwfReference;
 
     @CCD(
-        label = "Add document",
+        label = "Upload related evidence",
         hint = "Upload a document to the system",
         searchable = false
     )
