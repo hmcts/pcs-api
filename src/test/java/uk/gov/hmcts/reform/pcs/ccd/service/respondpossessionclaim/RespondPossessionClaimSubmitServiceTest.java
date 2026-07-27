@@ -171,7 +171,7 @@ class RespondPossessionClaimSubmitServiceTest {
     }
 
     @Test
-    void shouldIssueCounterClaimImmediatelyWhenHelpWithFeesApplies() {
+    void shouldNotIssueCounterClaimWhenHelpWithFeesApplies() {
         JourneyType journeyType = JourneyType.CITIZEN;
 
         CounterClaim counterClaim = CounterClaim.builder()
@@ -188,21 +188,18 @@ class RespondPossessionClaimSubmitServiceTest {
             .id(UUID.randomUUID())
             .status(CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED)
             .build();
-        CounterClaimEntity issuedCounterClaim = CounterClaimEntity.builder()
-            .id(savedCounterClaim.getId())
-            .status(CounterClaimState.COUNTER_CLAIM_ISSUED)
-            .build();
 
         when(counterClaimService.saveCounterClaim(CASE_REFERENCE, counterClaim, partyEntity))
             .thenReturn(Optional.of(savedCounterClaim));
         when(counterClaimFeeCalculator.isPaymentRequired(counterClaim)).thenReturn(false);
-        when(counterClaimService.issueCounterClaim(savedCounterClaim)).thenReturn(issuedCounterClaim);
 
         RespondPossessionClaimSubmitPersistenceResult result =
             underTest.persistFinalSubmit(CASE_REFERENCE, possessionClaimResponse, partyEntity, journeyType);
 
-        verify(counterClaimService).issueCounterClaim(savedCounterClaim);
-        assertThat(result.counterClaimEntity()).isEqualTo(issuedCounterClaim);
+        verify(counterClaimService, never()).issueCounterClaim(any());
+        assertThat(result.counterClaimEntity()).isEqualTo(savedCounterClaim);
+        assertThat(result.counterClaimEntity().getStatus())
+            .isEqualTo(CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED);
         assertThat(result.issuedWithoutPayment()).isTrue();
     }
 

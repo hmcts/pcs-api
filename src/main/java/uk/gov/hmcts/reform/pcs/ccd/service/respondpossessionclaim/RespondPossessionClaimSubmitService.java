@@ -56,7 +56,6 @@ public class RespondPossessionClaimSubmitService {
 
         if (counterClaimEntity != null
             && !counterClaimFeeCalculator.isPaymentRequired(counterClaim)) {
-            counterClaimEntity = counterClaimService.issueCounterClaim(counterClaimEntity);
             issuedWithoutPayment = true;
         }
 
