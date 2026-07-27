@@ -5,4 +5,5 @@ export default {
   'enterGenAppapplicationDetails': 'enterGenAppapplicationDetails',
   'enterGenApphearingDate': 'enterGenApphearingDate',
   'enterGenAppapplicationFee': 'enterGenAppapplicationFee',
+  'enterGenAppconsentAndNotice': 'enterGenAppconsentAndNotice'
 };

@@ -41,13 +41,15 @@ export class ActionCMRegistry {
     ['getAllPartyDetails', new CaseManagementAction()],
     ['enterApplicationDetails', new CaseManagementAction()],
     ['confirmIfCourtHearingInNext14Days', new CaseManagementAction()],
+    ['enterApplicationFeeDetails', new CaseManagementAction()],
     ['errorValidationSelectDocumentPage', new ErrorValidationAction()],
     ['errorValidationChangeCaseStatePage', new ErrorValidationAction()],
     ['errorValidationEnterGeneralAppPage', new ErrorValidationAction()],
     ['errorValidationHearingDatePage', new ErrorValidationAction()],
+    ['errorValidationApplicationFeePage', new ErrorValidationAction()],
     ['inputErrorValidation', new CaseManagementAction()],
     ['reTryOnCallBackError', new RetryOnCallBackError()],
-    
+
   ]);
 
   static getAction(actionName: string): IAction {

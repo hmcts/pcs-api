@@ -29,6 +29,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.claim.StatementOfTruthEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 
 import java.time.LocalDate;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -127,4 +128,7 @@ public class GenAppEntity {
     @OneToOne(cascade = ALL, orphanRemoval = true)
     @JoinColumn(name = "submission_document_id")
     private DocumentEntity submissionDocument;
+
+    private BigDecimal feeAmountReceived;
+
 }

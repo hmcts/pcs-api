@@ -6,7 +6,7 @@ import { getCaseTypeId } from '@utils/common/caseType.utils';
 import { performAction, performActions, performValidation } from '@utils/controller-caseManagement';
 import { VERY_LONG_TIMEOUT } from 'playwright.config';
 import { caseSummary, home } from '@data/page-data';
-import { changeCaseState, confirmCaseStateChange, enterGenappApplication, enterGenAppHearingDate, selectDocument } from '@data/page-data-figma/page-data-caseManagement-figma';
+import { changeCaseState, confirmCaseStateChange, enterGenappApplication, enterGenAppapplicationFee, enterGenAppHearingDate, selectDocument } from '@data/page-data-figma/page-data-caseManagement-figma';
 import { caseInfo } from '../createCaseAPI.action';
 import { CaseManagementCommonUtils } from './caseManagementUtils.action';
 
@@ -31,6 +31,7 @@ export class CaseManagementAction implements IAction {
       ['getAllPartyDetails', () => this.getAllPartyDetails(fieldName as actionRecord)],
       ['enterApplicationDetails', () => this.enterApplicationDetails(fieldName as actionRecord)],
       ['confirmIfCourtHearingInNext14Days', () => this.confirmIfCourtHearingInNext14Days(fieldName as actionRecord)],
+      ['enterApplicationFeeDetails', () => this.enterApplicationFeeDetails(fieldName as actionRecord)],
       ['inputErrorValidation', () => this.inputErrorValidation(page, fieldName as actionRecord)],
 
     ]);
@@ -147,6 +148,39 @@ export class CaseManagementAction implements IAction {
     await performAction('reTryOnCallBackError', enterGenAppHearingDate.continueButton, courtHearing.nextPage as string);
   }
 
+  private async enterApplicationFeeDetails(fee: actionRecord) {
+
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
+    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
+    await performAction('clickRadioButton', {
+      question: fee.question1,
+      option: fee.option1,
+    });
+    if (fee.option1 === 'Yes') {
+      await performAction('inputText', fee.label1, CaseManagementCommonUtils.getRandomNumberAsString(1, 500));
+    };
+    await performAction('clickRadioButton', {
+      question: fee.question2,
+      option: fee.option2,
+    });
+
+    if (fee.option2 === 'Yes') {
+      await performAction('inputText', fee.label2, CaseManagementCommonUtils.generateRandomString(fee.input as number));
+    };
+    if (fee.option1 === 'No') {
+      await performValidation('text', {
+        elementType: 'paragraph',
+        text: enterGenAppapplicationFee.yourMustRequestPaymentHiddenParagraph
+      });
+      await performAction('clickButton', enterGenAppapplicationFee.continueButton);
+      await performValidation('errorMessage', { header: enterGenAppapplicationFee.eventCouldNotBeCreatedErrorMessageHeader, message: enterGenAppapplicationFee.yourMustRequestPaymentHiddenParagraph });
+
+    } else {
+      await performAction('reTryOnCallBackError', enterGenAppHearingDate.continueButton, fee.nextPage as string);
+    };
+
+  }
+
   private async inputErrorValidation(page: Page, validationArr: actionRecord) {
 
     if (Array.isArray(validationArr.inputArray)) {
@@ -184,18 +218,22 @@ export class CaseManagementAction implements IAction {
             break;
 
           case 'textField':
-            await performAction('inputText', validationArr.label, CaseManagementCommonUtils.generateRandomString(item.input));
-            await expect(async () => {
-              await performAction('clickButton', validationArr.button);
-              if (item.type === 'moreThanMax') {
-                await performValidation('errorMessage', { header: validationArr.header, message: item.errMessage });
-              } else {
-                await performValidation('inputError', validationArr.label, item.errMessage);
-                await performValidation('errorMessage', validationArr.label, item.errMessage);
-              }
-            }).toPass({
-              timeout: VERY_LONG_TIMEOUT,
-            });
+            if (item.type === 'valid') {
+              await performAction('inputText', validationArr.label, CaseManagementCommonUtils.generateRandomString(item.input));
+            } else {
+              await performAction('inputText', validationArr.label, CaseManagementCommonUtils.generateRandomString(item.input));
+              await expect(async () => {
+                await performAction('clickButton', validationArr.button);
+                if (item.type === 'moreThanMax') {
+                  await performValidation('errorMessage', { header: validationArr.header, message: item.errMessage });
+                } else {
+                  await performValidation('inputError', validationArr.label, item.errMessage);
+                  await performValidation('errorMessage', validationArr.label, item.errMessage);
+                }
+              }).toPass({
+                timeout: VERY_LONG_TIMEOUT,
+              });
+            }
             break;
 
           case 'dateField':
@@ -224,6 +262,17 @@ export class CaseManagementAction implements IAction {
               await performAction('clickButton', validationArr.button);
               await performValidation('errorMessage', { header: validationArr.header, message: item.errMessage });
             }
+            break;
+
+          case 'moneyField':
+            await performAction('inputText', validationArr.label, item.input);
+            await expect(async () => {
+              await performAction('clickButton', validationArr.button);
+              //await performValidation('errorMessage', { header: !validationArr?.header ? validationArr.header = 'The event could not be created' : validationArr.header, message: item.errMessage });
+              await performValidation('inputError', validationArr.label, item.errMessage);
+            }).toPass({
+              timeout: VERY_LONG_TIMEOUT,
+            });
             break;
 
           default:

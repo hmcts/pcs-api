@@ -8,9 +8,13 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
+import uk.gov.hmcts.reform.pcs.ccd.annotation.JacksonMoneyGBP;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
+
+import static uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase.MAX_MONETARY_AMOUNT;
 
 @Builder
 @Data
@@ -34,7 +38,17 @@ public class EnterGenAppRequest {
     @CCD(label = "Is there a hearing for this case in the next 14 days?")
     private VerticalYesNo within14Days;
 
-    @CCD(label = "Has the applicant included a Help With Fees reference number on their application")
+    @CCD(label = "Has HMCTS received the application fee?")
+    private VerticalYesNo feeReceived;
+
+    @CCD(label = "Enter the amount received",
+        typeOverride = FieldType.MoneyGBP,
+        max = MAX_MONETARY_AMOUNT
+    )
+    @JacksonMoneyGBP
+    private BigDecimal feeAmountReceived;
+
+    @CCD(label = "Has the applicant included a Help With Fees reference number on their application?")
     private VerticalYesNo appliedForHwf;
 
     @CCD(
