@@ -9,10 +9,13 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.slf4j.MDC;
 import uk.gov.hmcts.reform.pcs.ccd.model.DraftCasesToDiscard;
+import uk.gov.hmcts.reform.pcs.ccd.service.CaseDeletionService;
 import uk.gov.hmcts.reform.pcs.ccd.service.CcdCaseDataService;
 
 import java.lang.reflect.Method;
+import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.inOrder;
@@ -25,6 +28,8 @@ class CaseDeletionScheduledTaskTest {
 
     @Mock
     private CcdCaseDataService ccdCaseDataService;
+    @Mock
+    private CaseDeletionService caseDeletionService;
 
     private CaseDeletionScheduledTask underTest;
 
@@ -32,13 +37,80 @@ class CaseDeletionScheduledTaskTest {
     void setUp() {
         String validSchedule = "DAILY|00:00";
         int discardAfterDays = 7;
-        underTest = new CaseDeletionScheduledTask(validSchedule, discardAfterDays, ccdCaseDataService);
+        underTest = new CaseDeletionScheduledTask(validSchedule, discardAfterDays, ccdCaseDataService,
+                caseDeletionService);
     }
 
     @Test
     void shouldCreateRecurringTaskBeanSuccessfully() {
         RecurringTask<Void> task = underTest.caseDeletionTask();
         assertThat(task).isNotNull();
+    }
+
+    @Test
+    void shouldReturnCaseTypeInSet() {
+        // When
+        Set<String> caseTypes = underTest.caseTypes();
+
+        // Then
+        assertThat(caseTypes).hasSize(1);
+    }
+
+    @Test
+    void shouldReturnEmptyListWhenNoCandidatesForDisposal() {
+        // Given
+        when(ccdCaseDataService.findExpiredDraftCases(7))
+                .thenReturn(List.of());
+
+        // When
+        Collection<Long> candidates = underTest.findCandidatesForDisposal();
+
+        // Then
+        assertThat(candidates).isEmpty();
+    }
+
+    @Test
+    void shouldReturnCaseReferencesWhenCandidatesExist() {
+        // Given
+        Long caseRef1 = 12345L;
+        Long caseRef2 = 67890L;
+        DraftCasesToDiscard case1 = DraftCasesToDiscard.builder().caseReference(caseRef1).build();
+        DraftCasesToDiscard case2 = DraftCasesToDiscard.builder().caseReference(caseRef2).build();
+
+        when(ccdCaseDataService.findExpiredDraftCases(7))
+                .thenReturn(List.of(case1, case2));
+
+        // When
+        Collection<Long> candidates = underTest.findCandidatesForDisposal();
+
+        // Then
+        assertThat(candidates).hasSize(2)
+            .containsExactly(caseRef1, caseRef2);
+    }
+
+    @Test
+    void shouldCallCaseDeletionServiceWhenDisposing() {
+        // Given
+        long caseReference = 99999L;
+
+        // When
+        underTest.dispose(caseReference);
+
+        // Then
+        verify(caseDeletionService).deleteCase(caseReference);
+    }
+
+    @Test
+    void shouldHandleNullFromFindExpiredDraftCases() {
+        // Given
+        when(ccdCaseDataService.findExpiredDraftCases(7))
+                .thenReturn(null);
+
+        // When
+        Collection<Long> candidates = underTest.findCandidatesForDisposal();
+
+        // Then
+        assertThat(candidates).isEmpty();
     }
 
     @Test

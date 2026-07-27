@@ -11,11 +11,14 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.ccd.sdk.RetainAndDisposePolicy;
 import uk.gov.hmcts.reform.pcs.ccd.model.DraftCasesToDiscard;
+import uk.gov.hmcts.reform.pcs.ccd.service.CaseDeletionService;
 import uk.gov.hmcts.reform.pcs.ccd.service.CcdCaseDataService;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+
+import static uk.gov.hmcts.reform.pcs.ccd.CaseType.getCaseType;
 
 @Slf4j
 @Component
@@ -27,13 +30,16 @@ public class CaseDeletionScheduledTask implements RetainAndDisposePolicy {
     private final String schedule;
     private final int discardAfterDays;
     private final CcdCaseDataService ccdCaseDataService;
+    private final CaseDeletionService caseDeletionService;
 
     public CaseDeletionScheduledTask(@Value("${expired-case-deletion.schedule}") String schedule,
                                      @Value("${expired-case-deletion.discard-after-days}") int discardAfterDays,
-                                     CcdCaseDataService ccdCaseDataService) {
+                                     CcdCaseDataService ccdCaseDataService,
+                                     CaseDeletionService caseDeletionService) {
         this.schedule = schedule;
         this.discardAfterDays = discardAfterDays;
         this.ccdCaseDataService = ccdCaseDataService;
+        this.caseDeletionService = caseDeletionService;
     }
 
     @Bean
@@ -44,7 +50,7 @@ public class CaseDeletionScheduledTask implements RetainAndDisposePolicy {
 
     @Override
     public Set<String> caseTypes() {
-        return Set.of();
+        return Set.of(getCaseType());
     }
 
     @Override
@@ -60,7 +66,7 @@ public class CaseDeletionScheduledTask implements RetainAndDisposePolicy {
 
     @Override
     public void dispose(long caseReference) {
-        RetainAndDisposePolicy.super.dispose(caseReference);
+        caseDeletionService.deleteCase(caseReference);
     }
 
     private void runSweep() {

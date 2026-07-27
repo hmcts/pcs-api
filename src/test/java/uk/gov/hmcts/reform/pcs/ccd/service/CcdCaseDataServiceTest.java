@@ -22,17 +22,20 @@ import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.model.DraftCasesToDiscard;
 import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-public class CcdCaseDataServiceTest {
+class CcdCaseDataServiceTest {
 
     @Mock
     private IdamTokenProvider systemUpdateUserTokenProvider;
@@ -105,6 +108,32 @@ public class CcdCaseDataServiceTest {
 
         // Then
         assertThat(result).isEmpty();
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void shouldMapResultSetRowToDraftCasesToDiscard() throws SQLException {
+        // Given
+        int discardAfterDays = 7;
+        long expectedCaseRef = 999999L;
+
+        ResultSet mockResultSet = mock(ResultSet.class);
+        when(mockResultSet.getLong("case_reference")).thenReturn(expectedCaseRef);
+
+        when(jdbcTemplate.query(anyString(), any(SqlParameterSource.class), any(RowMapper.class)))
+                .thenAnswer(invocation -> {
+                    RowMapper<DraftCasesToDiscard> rowMapper = invocation.getArgument(2);
+                    DraftCasesToDiscard result = rowMapper.mapRow(mockResultSet, 0);
+                    return List.of(result);
+                });
+
+        // When
+        List<DraftCasesToDiscard> result = underTest.findExpiredDraftCases(discardAfterDays);
+
+        // Then
+        assertThat(result).hasSize(1);
+        assertThat(result.getFirst().getCaseReference()).isEqualTo(expectedCaseRef);
+        verify(mockResultSet).getLong("case_reference");
     }
 
     @Test
