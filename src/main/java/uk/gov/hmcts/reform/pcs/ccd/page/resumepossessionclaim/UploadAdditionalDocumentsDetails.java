@@ -57,8 +57,10 @@ public class UploadAdditionalDocumentsDetails implements CcdPageConfiguration {
             )
             .list(PCSCase::getAdditionalDocuments)
                 .mandatory(AdditionalDocument::getDocumentType, "additionalDocuments.documentType!=\"\"")
-                .mandatory(AdditionalDocument::getDocumentTypeEngland, "additionalDocuments.documentType=\"\" AND " + ShowConditions.ENGLAND)
-                .mandatory(AdditionalDocument::getDocumentTypeWales, "additionalDocuments.documentType=\"\" AND " + ShowConditions.WALES  )
+                .mandatory(AdditionalDocument::getDocumentTypeEngland, "additionalDocuments.documentType=\"\" AND " 
+                    + ShowConditions.ENGLAND)
+                .mandatory(AdditionalDocument::getDocumentTypeWales, "additionalDocuments.documentType=\"\" AND " 
+                    + ShowConditions.WALES)
                 .mandatory(AdditionalDocument::getDocument)
                 .mandatory(AdditionalDocument::getDescription)
             .done()

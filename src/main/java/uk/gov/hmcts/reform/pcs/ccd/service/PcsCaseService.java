@@ -5,13 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
-import uk.gov.hmcts.ccd.sdk.api.HasLabel;
-import uk.gov.hmcts.ccd.sdk.type.DynamicList;
-import uk.gov.hmcts.ccd.sdk.type.DynamicListElement;
-import uk.gov.hmcts.ccd.sdk.type.ListValue;
-import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocument;
-import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocumentTypeEngland;
-import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocumentTypeWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseFlagEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
@@ -27,10 +20,8 @@ import uk.gov.hmcts.reform.pcs.location.service.LocationReferenceService;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.postcodecourt.service.PostCodeCourtService;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-import java.util.UUID;
 
 @Service
 @Slf4j
