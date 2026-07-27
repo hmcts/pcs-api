@@ -21,5 +21,6 @@ public enum EventId {
     amendFlags,
     claimIssuePayment,
     changeCaseState,
+    enterGenApp,
     manageParties
 }
