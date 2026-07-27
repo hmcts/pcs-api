@@ -7,7 +7,7 @@ import { performAction, performActions, performValidation } from '@utils/control
 import { VERY_LONG_TIMEOUT } from 'playwright.config';
 import { caseSummary, home } from '@data/page-data';
 import { changeCaseState, confirmCaseStateChange, confirmUpload, enterGenappApplication, enterGenAppapplicationFee, enterGenAppHearingDate, selectDocument, uploadADocument } from '@data/page-data-figma/page-data-caseManagement-figma';
-import { caseInfo, defendantUserDetails } from '../createCaseAPI.action';
+import { caseInfo } from '../createCaseAPI.action';
 import { CaseManagementCommonUtils } from './caseManagementUtils.action';
 import path from 'path';
 

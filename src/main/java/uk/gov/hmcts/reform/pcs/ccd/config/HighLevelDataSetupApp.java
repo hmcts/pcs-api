@@ -53,11 +53,6 @@ public class HighLevelDataSetupApp extends DataLoaderToDefinitionStore {
 
     @Override
     public void addCcdRoles() {
-        if (environment == CcdEnvironment.PROD) {
-            // CCD roles are managed centrally in prod; only the definition is imported here.
-            BeftaUtils.defaultLog("PROD environment - skipping CCD role creation");
-            return;
-        }
         for (CcdRoleConfig roleConfig : CCD_ROLES) {
             try {
                 logger.info("\n\nAdding CCD Role {}.", roleConfig);
