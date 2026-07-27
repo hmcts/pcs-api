@@ -301,7 +301,7 @@ export class CaseManagementAction implements IAction {
 
           default:
             throw new Error(`Validation type :"${validationArr.validationType}" is not valid`);
-        }
+        };
       }
     }
     if (validationArr.buttonRemove) {

@@ -14,7 +14,6 @@ import uk.gov.hmcts.reform.pcs.ccd.model.FeePaymentStatusChangeTaskData;
 import uk.gov.hmcts.reform.pcs.notify.service.FeePaymentNotificationService;
 
 import java.time.Duration;
-import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
@@ -59,7 +58,7 @@ class FeePaymentPaidNotificationTaskComponentTest {
     @Test
     @DisplayName("Should send notification")
     void shouldSendNotification() {
-        UUID feePaymentId = UUID.randomUUID();
+        Integer feePaymentId = 1;
 
         FeePaymentStatusChangeTaskData taskData = FeePaymentStatusChangeTaskData.builder()
             .feePaymentId(feePaymentId)
