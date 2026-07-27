@@ -5,4 +5,9 @@ export default {
   'enterGenAppapplicationDetails': 'enterGenAppapplicationDetails',
   'enterGenApphearingDate': 'enterGenApphearingDate',
   'enterGenAppapplicationFee': 'enterGenAppapplicationFee',
+  'enterGenAppconsentAndNotice': 'enterGenAppconsentAndNotice',
+  'enterGenAppuploadGeneralApplication': 'enterGenAppuploadGeneralApplication',
+  'enterGenAppuploadRelatedEvidence': 'enterGenAppuploadRelatedEvidence',
+  'enterGenAppreferApplicationToJudge': 'enterGenAppreferApplicationToJudge',
+  'enterGenApp/submit': 'genAppsCheckYouAnswers',
 };

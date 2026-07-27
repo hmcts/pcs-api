@@ -1,7 +1,10 @@
 import { Page } from '@playwright/test';
 import { performAction } from '@utils/controller-caseManagement';
 import { IAction, actionData, actionRecord } from '@utils/interfaces/action.interface';
-import { changeCaseState, enterGenappApplication, enterGenAppHearingDate, selectDocument } from '@data/page-data-figma/page-data-caseManagement-figma';
+import {
+  changeCaseState, enterGenappApplication, enterGenAppapplicationFee,
+  enterGenAppConsentAndNotice, enterGenAppHearingDate, selectDocument
+} from '@data/page-data-figma/page-data-caseManagement-figma';
 import { allPartyDetails } from './caseManagement.action';
 
 export class ErrorValidationAction implements IAction {
@@ -11,6 +14,8 @@ export class ErrorValidationAction implements IAction {
       ['errorValidationChangeCaseStatePage', () => this.errorValidationChangeCaseStatePage(errorFlag as string)],
       ['errorValidationEnterGeneralAppPage', () => this.errorValidationEnterGeneralAppPage(errorFlag as string)],
       ['errorValidationHearingDatePage', () => this.errorValidationHearingDatePage(errorFlag as string)],
+      ['errorValidationApplicationFeePage', () => this.errorValidationApplicationFeePage(errorFlag as string)],
+      ['errorValidationApplicationConsentAndNotice', () => this.errorValidationApplicationConsentAndNotice(errorFlag as string)],
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -103,4 +108,56 @@ export class ErrorValidationAction implements IAction {
     }
   }
 
+  private async errorValidationApplicationFeePage(validationReq: string) {
+    if (validationReq === 'YES') {
+      await performAction('inputErrorValidation', {
+        validationType: enterGenAppapplicationFee.errorValidationType.two,
+        inputArray: enterGenAppapplicationFee.errorValidationField.errorRadioOption1,
+        question: enterGenAppapplicationFee.appFeeReceivedQuestion,
+        option: enterGenAppapplicationFee.yesRadioOption,
+        button: enterGenappApplication.continueButton
+      });
+      await performAction('inputErrorValidation', {
+        validationType: enterGenAppapplicationFee.errorValidationType.two,
+        inputArray: enterGenAppapplicationFee.errorValidationField.errorRadioOption2,
+        question: enterGenAppapplicationFee.referenceNumberIncludedQuestion,
+        option: enterGenAppapplicationFee.yesRadioOption,
+        button: enterGenAppapplicationFee.continueButton
+      });
+      await performAction('inputErrorValidation', {
+        validationType: enterGenAppapplicationFee.errorValidationType.one,
+        inputArray: enterGenAppapplicationFee.errorValidationField.errorTextField,
+        header: enterGenAppapplicationFee.thereIsProbErrorMessageHeader,
+        label: enterGenAppapplicationFee.enterTheFeeReferenceHiddenTextLabel,
+        button: enterGenAppapplicationFee.continueButton
+      });
+      await performAction('inputErrorValidation', {
+        validationType: enterGenAppapplicationFee.errorValidationType.seven,
+        inputArray: enterGenAppapplicationFee.errorValidationField.errorMoneyField,
+        label: enterGenAppapplicationFee.enterTheAmountReceivedHiddenTextLabel,
+        button: enterGenAppapplicationFee.continueButton
+      });
+
+    }
+  }
+
+  private async errorValidationApplicationConsentAndNotice(validationReq: string) {
+    if (validationReq === 'YES') {
+      await performAction('inputErrorValidation', {
+        validationType: enterGenAppConsentAndNotice.errorValidationType.two,
+        inputArray: enterGenAppConsentAndNotice.errorValidationField.errorRadioOption1,
+        question: enterGenAppConsentAndNotice.doAllPartiesAgreedQuestion,
+        option: enterGenAppConsentAndNotice.noRadioOption,
+        button: enterGenAppConsentAndNotice.continueButton
+      });
+      await performAction('inputErrorValidation', {
+        validationType: enterGenAppapplicationFee.errorValidationType.two,
+        inputArray: enterGenAppConsentAndNotice.errorValidationField.errorRadioOption2,
+        question: enterGenAppConsentAndNotice.hasApplicantMadeWithoutNoticeHiddenQuestion,
+        option: enterGenAppConsentAndNotice.noHiddenRadioOption,
+        button: enterGenAppConsentAndNotice.continueButton
+      });
+
+    }
+  }
 }
