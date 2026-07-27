@@ -192,7 +192,12 @@ export class CaseManagementAction implements IAction {
       question: selectApp.question,
       option: selectApp.option,
     });
+    if (selectApp.option === 'Not related to an application or counterclaim') {
+      await performAction('select', selectApp.dropQn, selectApp.selectOption);
+    }
+    if(selectApp.date){
     await performAction('inputDate', selectApp.label as string, selectApp.date);
+    }
 
     await performAction('clickRadioButton', { question: selectApp.question1, option: selectApp.option1 });
     await performAction('reTryOnCallBackError', uploadADocument.continueButton, selectApp.nextPage as string);
@@ -223,6 +228,7 @@ export class CaseManagementAction implements IAction {
 
   private async confirmUpload(confirm: actionRecord): Promise<void> {
     let submitPayLoad = confirm.submitPayload as Record<string, any>;
+    let formattedDate;
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', {
       elementType: 'paragraph',
@@ -230,12 +236,16 @@ export class CaseManagementAction implements IAction {
     });
     const baseName = String(confirm.fileName).replace(/\.pdf$/i, '');
     const gaNumber = String(confirm.app).match(/\bGA\d+\b/i)?.[0] ?? '';
+    if(confirm.fileDate){
     const [day, month, year] = String(confirm.fileDate).split('/');
-    const formattedDate = `${day.padStart(2, '0')}${month.padStart(2, '0')}${year}`;
+    formattedDate = `${day.padStart(2, '0')}${month.padStart(2, '0')}${year}`;
+    }else{
+      formattedDate = '';
+    }
     const role = String(confirm.party).split(' - ')[1] ?? '';
 
     const uploadedFileName = `${baseName} ${formattedDate} ${gaNumber} - ${role}`;
-    await performValidation('text', { elementType: 'inlineText', text: 'Case number #'+ caseInfo.fid });
+    await performValidation('text', { elementType: 'inlineText', text: 'Case number #' + caseInfo.fid });
     await performValidation('text', {
       elementType: 'inlineText',
       text: `${addressInfo.buildingStreet}, ${addressInfo.addressLine2}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
@@ -313,6 +323,7 @@ export class CaseManagementAction implements IAction {
             await performAction('clickButton', validationArr.button);
             await expect(async () => {
               await performAction('clickButton', validationArr.button);
+              await performValidation('inputError', !validationArr?.label ? validationArr.dropQn : validationArr.label, item.errInlineMessage);
               await performValidation('errorMessage', !validationArr?.header ? validationArr.header = 'There is a problem' : validationArr.header, item.errMessage);
             }).toPass({
               timeout: VERY_LONG_TIMEOUT,
@@ -373,6 +384,15 @@ export class CaseManagementAction implements IAction {
               await performAction('clickButton', validationArr.button);
               //await performValidation('errorMessage', { header: !validationArr?.header ? validationArr.header = 'The event could not be created' : validationArr.header, message: item.errMessage });
               await performValidation('inputError', validationArr.label, item.errMessage);
+            }).toPass({
+              timeout: VERY_LONG_TIMEOUT,
+            });
+            break;
+
+          case 'uploadADocument':
+            await expect(async () => {
+              await performAction('clickButton', validationArr.button);
+              await performValidation('errorMessage', !validationArr?.header ? validationArr.header = 'There is a problem' : validationArr.header, item.errMessage);
             }).toPass({
               timeout: VERY_LONG_TIMEOUT,
             });

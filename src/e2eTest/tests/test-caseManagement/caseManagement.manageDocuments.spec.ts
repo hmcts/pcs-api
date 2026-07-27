@@ -63,13 +63,14 @@ test.describe('Case management - Manage documents e2e Journey @nightly', async (
   });
 
   test('Case management - Manage documents - Upload @CM @regression', async () => {
-    let date = CaseManagementCommonUtils.getRandomDate(uploadADocument.dateTypeHiddenUserInput);    
-    let appType = CaseManagementCommonUtils.getGenApplicationType(defendantUserDetails.length)[1];
-    let party = allPartyDetails[1]
+    let date = CaseManagementCommonUtils.getRandomDate(uploadADocument.dateTypeHiddenUserInput);
+    let appType = CaseManagementCommonUtils.getGenApplicationType(defendantUserDetails.length)[0];
+    let party = allPartyDetails[0]
+    let fileName = uploadADocument.uploadDocHiddenOption[0];
     await performAction('selectAnEvent', { eventType: caseSummary.manageDocuments.upload });
     await performValidation('mainHeader', uploadADocument.mainHeader);
-    // await performAction('errorValidationSelectDocumentPage', selectDocument.errorValidation);
-    await performAction('uploadADocument', { label: uploadADocument.uploadADocumentTextLabel, file: 'legalAidCertificate.pdf' })
+    await performAction('errorValidationUploadADocumentPage', uploadADocument.errorValidation);
+    await performAction('uploadADocument', { label: uploadADocument.uploadADocumentTextLabel, file: fileName })
     await performAction('selectDynamicAppAndPartyDocRelatedTo', {
       question: uploadADocument.whichAppOrCounterClaimThisRelateToQuestion,
       option: appType,
@@ -80,15 +81,76 @@ test.describe('Case management - Manage documents e2e Journey @nightly', async (
       nextPage: checkYourAnswersUploadADocument.mainHeader
     });
     await performAction('clickButton', checkYourAnswersUploadADocument.submitButton);
-    await performAction('confirmUpload', { fileName: 'legalAidCertificate.pdf', app: appType, party: party, fileDate: date, submitPayload: submitCaseApiData.submitCasePayloadCaseFileView, });
+    await performAction('confirmUpload', { fileName: fileName, app: appType, party: party, fileDate: date, submitPayload: submitCaseApiData.submitCasePayloadCaseFileView, });
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage documents: Upload');
     await performAction('clickTab', home.caseFileView);
     await performAction('validateCaseFileViewFolders', home.caseFileFolders);
     await performAction('validateCaseFileViewIndividualFolder', {
       folder: 'Applications',
-      submitPayload: makeAnApplicationApiData.makeAnApplicationAdjournPayload(defendantUserDetails[1].id,defendantUserDetails[1].name),
-      caseWorkerUpload: CaseManagementCommonUtils.renameDocument('legalAidCertificate.pdf', appType, party, date)
+      submitPayload: makeAnApplicationApiData.makeAnApplicationAdjournPayload(defendantUserDetails[0].id, defendantUserDetails[0].name),
+      caseWorkerUpload: CaseManagementCommonUtils.renameDocument(fileName, date, appType)
     });
+  });
 
+  test('Case management - Manage documents - Upload Document not related to any App or Counterclaim @CM @regression', async () => {
+    let date = CaseManagementCommonUtils.getRandomDate(uploadADocument.dateTypeHiddenUserInput);
+    let appType = uploadADocument.notRelatedToAppRadioOption;
+    let party = allPartyDetails[1];
+    let fileName = uploadADocument.uploadDocHiddenOption[1];
+    await performAction('selectAnEvent', { eventType: caseSummary.manageDocuments.upload });
+    await performValidation('mainHeader', uploadADocument.mainHeader);
+    await performAction('uploadADocument', { label: uploadADocument.uploadADocumentTextLabel, file: fileName })
+    await performAction('selectDynamicAppAndPartyDocRelatedTo', {
+      question: uploadADocument.whichAppOrCounterClaimThisRelateToQuestion,
+      option: appType,
+      label: uploadADocument.addIssueDateTextLabel,
+      date: date,
+      question1: uploadADocument.partyDocRelatedToQuestion,
+      option1: party,
+      dropQn: uploadADocument.whichTypeOfDocHiddenQuestion,
+      selectOption: uploadADocument.whichTypeHiddenOption[0],
+      nextPage: checkYourAnswersUploadADocument.mainHeader
+    });
+    await performAction('clickButton', checkYourAnswersUploadADocument.submitButton);
+    await performAction('confirmUpload', { fileName: fileName, app: appType, party: party, fileDate: date, submitPayload: submitCaseApiData.submitCasePayloadCaseFileView, });
+    await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage documents: Upload');
+    await performAction('clickTab', home.caseFileView);
+    await performAction('validateCaseFileViewFolders', home.caseFileFolders);
+    await performAction('validateCaseFileViewIndividualFolder', {
+      folder: 'Property documents',
+      submitPayload: submitCaseApiData.submitCasePayloadCaseFileView,
+      caseWorkerUpload: CaseManagementCommonUtils.renameDocument(fileName, date)
+    });
+  });
+
+  test('Case management - Manage documents - Upload Document without any Issue date CM @regression', async () => {
+    let date = '';
+    let appType = uploadADocument.notRelatedToAppRadioOption;
+    let party = allPartyDetails[2];
+    let fileName = uploadADocument.uploadDocHiddenOption[1];
+    await performAction('selectAnEvent', { eventType: caseSummary.manageDocuments.upload });
+    await performValidation('mainHeader', uploadADocument.mainHeader);
+    await performAction('uploadADocument', { label: uploadADocument.uploadADocumentTextLabel, file: fileName })
+    await performAction('selectDynamicAppAndPartyDocRelatedTo', {
+      question: uploadADocument.whichAppOrCounterClaimThisRelateToQuestion,
+      option: appType,
+      label: uploadADocument.addIssueDateTextLabel,
+      date: date,
+      question1: uploadADocument.partyDocRelatedToQuestion,
+      option1: party,
+      dropQn: uploadADocument.whichTypeOfDocHiddenQuestion,
+      selectOption: uploadADocument.whichTypeHiddenOption[1],
+      nextPage: checkYourAnswersUploadADocument.mainHeader
+    });
+    await performAction('clickButton', checkYourAnswersUploadADocument.submitButton);
+    await performAction('confirmUpload', { fileName: fileName, app: appType, party: party, fileDate: date, submitPayload: submitCaseApiData.submitCasePayloadCaseFileView, });
+    await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage documents: Upload');
+    await performAction('clickTab', home.caseFileView);
+    await performAction('validateCaseFileViewFolders', home.caseFileFolders);
+    await performAction('validateCaseFileViewIndividualFolder', {
+      folder: 'Evidence',
+      submitPayload: submitCaseApiData.submitCasePayloadCaseFileView,
+      caseWorkerUpload: CaseManagementCommonUtils.renameDocument(fileName)
+    });
   });
 });

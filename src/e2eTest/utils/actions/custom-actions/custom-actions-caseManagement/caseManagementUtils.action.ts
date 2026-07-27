@@ -140,13 +140,23 @@ export class CaseManagementCommonUtils {
     );
   }
 
-  public static renameDocument(fileName: string, app: string, party: string, fileDate: string): string {
+  public static renameDocument(fileName: string, fileDate?: string, app?: string): string {
     const baseName = fileName.replace(/\.pdf$/i, '');
-    const gaNumber = app.match(/\bGA\d+\b/i)?.[0] ?? '';
-    const [day, month, year] = fileDate.split('/');
-    const formattedDate = `${day.padStart(2, '0')}${month.padStart(2, '0')}${year}`;
-    const role = party.split(' - ')[1] ?? '';
-    return `${baseName} ${formattedDate} ${gaNumber}.pdf`;
-  }
+    const gaNumber = app?.match(/\bGA\d+\b/i)?.[0] ?? '';
+    const formattedDate = fileDate ? (() => {
+        const [day, month, year] = fileDate.split('/');
+        return `${day.padStart(2, '0')}${month.padStart(2, '0')}${year}`;
+      })(): '';
+    const parts = [baseName];
 
-} 
+    if (formattedDate) {
+      parts.push(formattedDate);
+    }
+
+    if (gaNumber) {
+      parts.push(gaNumber);
+    }
+
+    return `${parts.join(' ')}.pdf`;
+  }
+}

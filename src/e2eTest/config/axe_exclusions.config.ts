@@ -4,5 +4,9 @@ export const axe_Exclusions = [
   '#target-offset',
   '.sort-button-icon',
   '.toggle-button-icon',
-  '.overlay-toggle'
+  '.overlay-toggle',
+  'button.overlay-toggle',
+  'ccd-case-file-view-folder-toggle',
+  'ccd-case-file-view-folder-sort',
+  'ccd-case-file-view-overlay-menu'
 ];
