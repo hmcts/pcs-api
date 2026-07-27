@@ -123,7 +123,7 @@ test.describe('Case management - Manage documents e2e Journey @nightly', async (
     });
   });
 
-  test('Case management - Manage documents - Upload Document without any Issue date CM @regression', async () => {
+  test('Case management - Manage documents - Upload Document without any Issue date @CM @regression', async () => {
     let date = '';
     let appType = uploadADocument.notRelatedToAppRadioOption;
     let party = allPartyDetails[2];
