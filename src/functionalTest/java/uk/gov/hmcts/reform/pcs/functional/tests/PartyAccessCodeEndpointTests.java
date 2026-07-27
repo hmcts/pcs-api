@@ -11,7 +11,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import org.junit.jupiter.api.extension.ExtendWith;
-import uk.gov.hmcts.reform.pcs.exception.ExceptionRedaction;
 import uk.gov.hmcts.reform.pcs.functional.config.TestConstants;
 import uk.gov.hmcts.reform.pcs.functional.steps.ApiSteps;
 import uk.gov.hmcts.reform.pcs.functional.steps.BaseApi;
@@ -35,7 +34,6 @@ class PartyAccessCodeEndpointTests extends BaseApi {
 
     @BeforeEach
     void setUp() {
-        ExceptionRedaction.setShowFullExceptionsForTesting(true);
         caseReference = apiSteps.ccdCaseIsCreatedAndIssued("england");
     }
 
@@ -43,7 +41,6 @@ class PartyAccessCodeEndpointTests extends BaseApi {
     void cleanUp() {
         CaseRoleCleanUp.cleanUpCaseRole(caseReference.toString(), TestConstants.PCS_SOLICITOR_AUTOMATION_IDAM_UID,
                                         "[CLAIMANTSOLICITOR]");
-        ExceptionRedaction.setShowFullExceptionsForTesting(null);
     }
 
     @Title("Party Access Code Endpoint Tests - should return 200 when successfully link user with valid access code")
@@ -150,7 +147,7 @@ class PartyAccessCodeEndpointTests extends BaseApi {
         //resend request to get 409 error.
         apiSteps.callIsSubmittedToTheEndpoint("ValidateAccessCode", "POST");
         apiSteps.checkStatusCode(409);
-        apiSteps.theResponseBodyContainsAString("message", "This access code is already linked to a user.");
+        apiSteps.theResponseBodyContainsAString("message", "REDACTED [ACCESS_CODE]");
 
     }
 
@@ -167,6 +164,6 @@ class PartyAccessCodeEndpointTests extends BaseApi {
         apiSteps.theRequestContainsBody(requestBody);
         apiSteps.callIsSubmittedToTheEndpoint("ValidateAccessCode", "POST");
         apiSteps.checkStatusCode(404);
-        apiSteps.theResponseBodyContainsAString("message", "No case found with reference 1234123412341234");
+        apiSteps.theResponseBodyContainsAString("message", "REDACTED [CASE_NOT_FOUND]");
     }
 }
