@@ -22,7 +22,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 
 import java.time.Instant;
-import java.util.UUID;
 
 @Entity
 @Getter
@@ -34,8 +33,8 @@ import java.util.UUID;
 public class PartyAccessCodeEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "party_id", nullable = false)

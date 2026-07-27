@@ -21,6 +21,7 @@ public enum EventId {
     amendFlags,
     claimIssuePayment,
     changeCaseState,
+    enterGenApp,
     markCaseForDeletion,
     confirmCaseDisposal
 }
