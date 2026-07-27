@@ -46,11 +46,9 @@ class EnterGenAppTest extends BaseEventTest {
     @Mock
     private GenAppService genAppService;
 
-    private EnterGenApp enterGenApp;
-
     @BeforeEach
     void setUp() {
-        enterGenApp = new EnterGenApp(pcsCaseService, partyService, applicationDetails, genAppService);
+        EnterGenApp enterGenApp = new EnterGenApp(pcsCaseService, partyService, genAppService, applicationDetails);
         setEventUnderTest(enterGenApp);
     }
 
