@@ -160,6 +160,8 @@ export const submitCaseApiDataWales = {
     }
   },
   submitCasePayloadCaseFileView: {
+    regionId: '7',
+    caseManagementLocationNumber: '366572',
     orgNameFound: 'Yes',
     claimantName: 'Possession Claims Solicitor Org',
     isClaimantNameCorrect: 'YES',
