@@ -58,6 +58,7 @@ export class ActionRegistry {
     ['createCaseAPIDynamicUsers', new CreateCaseAPIAction()],
     ['submitCaseAPIDynamicUsers', new CreateCaseAPIAction()],
     ['makeAnApplicationAPI', new CreateCaseAPIAction()],
+    ['updatePaymentAPI', new CreateCaseAPIAction()],
     ['selectClaimType', new CreateCaseAction()],
     ['selectClaimantName', new CreateCaseAction()],
     ['selectClaimantDetails', new CreateCaseWalesAction()],

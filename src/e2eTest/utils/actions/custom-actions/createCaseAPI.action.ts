@@ -1,13 +1,14 @@
 import Axios from 'axios';
 import { actionData, actionRecord, IAction } from '@utils/interfaces';
 import { Page } from '@playwright/test';
-import { createCaseApiData, createCaseEventTokenApiData, submitCaseApiData, submitCaseEventTokenApiData, caseUserRoleDeletionApiData, enforceOrderEventTokenApiData, enforceWarrantApiData, getCaseApiData, submitCaseEventTokenDynamicApiData, createCaseEventTokenDynamicApiData, makeAnApplicationEventTokenApiData, makeAnApplicationApiData } from '@data/api-data';
+import { createCaseApiData, createCaseEventTokenApiData, submitCaseApiData, submitCaseEventTokenApiData, caseUserRoleDeletionApiData, enforceOrderEventTokenApiData, enforceWarrantApiData, getCaseApiData, submitCaseEventTokenDynamicApiData, createCaseEventTokenDynamicApiData, makeAnApplicationEventTokenApiData, makeAnApplicationApiData, paymentApiData } from '@data/api-data';
 import { user } from '@data/user-data';
 import { caseNumber } from './createCase.action';
 import { performAction } from '@utils/controller';
 import { fetchCurrentUserTokenApiData } from '@data/api-data/fetchCurrentUser.api.data';
 import { formatDateTimeBST } from '@utils/common/string.utils';
 import { IdamUtils } from '@hmcts/playwright-common';
+import { actionRetries, VERY_SHORT_TIMEOUT } from 'playwright.config';
 
 export let caseInfo: { id: string; fid: string; state: string } = { id: '', fid: '', state: '' };
 
@@ -26,6 +27,7 @@ export class CreateCaseAPIAction implements IAction {
       ['createCaseAPIDynamicUsers', () => this.createCaseAPIDynamicUsers(fieldName as actionRecord)],
       ['submitCaseAPIDynamicUsers', () => this.submitCaseAPIDynamicUsers(fieldName as actionRecord)],
       ['makeAnApplicationAPI', () => this.makeAnApplicationAPI(fieldName)],
+      ['updatePaymentAPI', () => this.updatePaymentAPI()],
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -447,5 +449,39 @@ export class CreateCaseAPIAction implements IAction {
       }
       throw new Error(`Make an application failed with status ${status}.Response received is ${responseBody?.message}}`);
     }
+  }
+
+  private async updatePaymentAPI(): Promise<void> {
+    const paymentApi = Axios.create(paymentApiData.paymentApiInstance());
+    const maxRetries = actionRetries + actionRetries;
+    const delayMs = VERY_SHORT_TIMEOUT;
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        const response = await paymentApi.get(paymentApiData.getFeePaymentInfoApiEndPoint());
+        const paymentInfo = response.data;
+        if (!paymentInfo?.length) {
+          throw new Error('No payment information found.');
+        }
+        const requestReference = paymentInfo[0].serviceRequestReference;
+        const updateResponse = await paymentApi.put(
+          paymentApiData.updatePaymentApiEndPoint,
+          paymentApiData.paymentUpdatePayload(requestReference)
+        );
+        if (updateResponse.status === 200 || updateResponse.status === 204) {
+          return;
+        }
+        throw new Error(`Payment update failed with status ${updateResponse.status}`);
+      } catch (error: any) {
+        const status = error?.response?.status;
+        if (attempt === maxRetries) {
+          if (Axios.isAxiosError(error)) {
+            throw new Error(`Payment API failed after retries: ${status}`);
+          }
+          throw new Error(`Payment API failed unexpectedly after retries.${error}`);
+        }
+        await new Promise(res => setTimeout(res, delayMs));
+      }
+    }
+    throw new Error('Payment API failed after multiple retries');
   }
 }
