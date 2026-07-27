@@ -13,6 +13,7 @@ import jakarta.persistence.Entity;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
+import uk.gov.hmcts.reform.pcs.exception.RedactedRuntimeException;
 
 import static com.tngtech.archunit.base.DescribedPredicate.not;
 import static com.tngtech.archunit.core.domain.JavaClass.Predicates.belongToAnyOf;
@@ -22,8 +23,6 @@ import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.fields;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noFields;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noMethods;
-import uk.gov.hmcts.reform.pcs.exception.RedactedRuntimeException;
-
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.priority;
 
 @AnalyzeClasses(packages = "uk.gov.hmcts.reform.pcs")
@@ -101,7 +100,6 @@ public class ArchitectureTest {
         return new ArchCondition<JavaField>("not use FetchType.EAGER") {
             @Override
             public void check(JavaField field, ConditionEvents events) {
-                // System.out.println("[SCOPE] checking field: " + field.getFullName());
                 field.getAnnotations().forEach(annotation -> {
                     annotation.tryGetExplicitlyDeclaredProperty("fetch")
                         .ifPresent(fetch -> {
