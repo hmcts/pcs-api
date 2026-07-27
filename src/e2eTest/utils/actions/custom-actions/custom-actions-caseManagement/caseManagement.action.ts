@@ -3,11 +3,12 @@ import { expect, Page } from '@playwright/test';
 import { IAction, actionData, actionRecord } from '@utils/interfaces';
 import { createCaseApiData } from '@data/api-data';
 import { getCaseTypeId } from '@utils/common/caseType.utils';
-import { performAction, performValidation } from '@utils/controller-caseManagement';
+import { performAction, performActions, performValidation } from '@utils/controller-caseManagement';
 import { VERY_LONG_TIMEOUT } from 'playwright.config';
 import { caseSummary, home } from '@data/page-data';
-import { changeCaseState, confirmCaseStateChange, selectDocument } from '@data/page-data-figma/page-data-caseManagement-figma';
+import { changeCaseState, confirmCaseStateChange, enterGenappApplication, enterGenAppHearingDate, selectDocument } from '@data/page-data-figma/page-data-caseManagement-figma';
 import { caseInfo } from '../createCaseAPI.action';
+import { CaseManagementCommonUtils } from './caseManagementUtils.action';
 
 
 export const addressInfo = {
@@ -17,7 +18,7 @@ export const addressInfo = {
   engOrWalPostcode: createCaseApiData.createCasePayload.propertyAddress.PostCode
 };
 const cyaMap = new Map<string, string>();
-export let defendantDetails: string[] = [];
+export let allPartyDetails: string[] = [];
 
 export class CaseManagementAction implements IAction {
   async execute(page: Page, action: string, fieldName: actionData | actionRecord): Promise<void> {
@@ -27,6 +28,9 @@ export class CaseManagementAction implements IAction {
       ['selectDocumentToAmend', () => this.selectDocumentToAmend(fieldName as actionRecord)],
       ['changeCaseState', () => this.changeCaseState(fieldName as actionRecord)],
       ['confirmCaseStateChange', () => this.confirmCaseStateChange()],
+      ['getAllPartyDetails', () => this.getAllPartyDetails(fieldName as actionRecord)],
+      ['enterApplicationDetails', () => this.enterApplicationDetails(fieldName as actionRecord)],
+      ['confirmIfCourtHearingInNext14Days', () => this.confirmIfCourtHearingInNext14Days(fieldName as actionRecord)],
       ['inputErrorValidation', () => this.inputErrorValidation(page, fieldName as actionRecord)],
 
     ]);
@@ -54,13 +58,13 @@ export class CaseManagementAction implements IAction {
     await performAction('clickButton', caseSummary.go);
   }
 
-  private async selectDocumentToAmend(selectDoc: actionRecord){
+  private async selectDocumentToAmend(selectDoc: actionRecord) {
     await performAction('select', selectDoc.question, selectDoc.option);
     await performAction('clickRadioButton', { question: selectDoc.question1, option: selectDoc.option1 });
     await performAction('reTryOnCallBackError', selectDocument.continueButton, selectDoc.nextPage as string);
   }
 
-  private async changeCaseState(caseState: actionRecord){
+  private async changeCaseState(caseState: actionRecord) {
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', {
       elementType: 'paragraph',
@@ -85,52 +89,151 @@ export class CaseManagementAction implements IAction {
     await performAction('clickButton', confirmCaseStateChange.closeAndReturnToCaseOverviewButton);
   }
 
-  private async inputErrorValidation(page: Page, validationArr: actionRecord) {
-  
-  
-        if (Array.isArray(validationArr.inputArray)) {
-          for (const item of validationArr.inputArray) {
-            switch (validationArr.validationType) {
-                
-              case 'radioOptions':
-                await performAction('clickButton', validationArr.button);
-                await performValidation('inputError', !validationArr?.label ? validationArr.question : validationArr.label, item.errInlineMessage);
-                await performValidation('errorMessage', !validationArr?.header ? validationArr.header = 'There is a problem' : validationArr.header, item.errMessage);
-                await performAction('clickRadioButton', { question: validationArr.question, option: validationArr.option });
-                break;
-  
-              case 'checkBox':
-                await performAction('clickButton', validationArr.button);
-                await performValidation('inputError', !validationArr?.label ? validationArr.question : validationArr.label, item.errMessage);
-                await performValidation('errorMessage', !validationArr?.header ? validationArr.header = 'There is a problem' : validationArr.header, item.errMessage);
-                await performAction('check', validationArr.checkBox);
-                break;
-  
-              case 'checkBoxPageLevel':
-                await performAction('clickButton', validationArr.button);
-                await performValidation('errorMessage', !validationArr?.header ? validationArr.header = 'There is a problem' : validationArr.header, item.errMessage);
-                await performAction('check', validationArr.checkBox);
-                break;
-  
-              case 'dropDown':
-                await performAction('clickButton', validationArr.button);
-                await expect(async () => {
-                  await performAction('clickButton', validationArr.button);
-                  await performValidation('errorMessage', !validationArr?.header ? validationArr.header = 'There is a problem' : validationArr.header, item.errMessage);
-                }).toPass({
-                  timeout: VERY_LONG_TIMEOUT,
-                });
-                await performAction('select', validationArr.dropQn, validationArr.option);
-                break;
-  
-              default:
-                throw new Error(`Validation type :"${validationArr.validationType}" is not valid`);
-            };
-          }
+  private async getAllPartyDetails(allPartiesDetails: actionRecord) {
+
+    let originalDefendantDetails: string[] = [];
+    const payLoad = allPartiesDetails.payLoad as Record<string, any>;
+    if (allPartiesDetails.defendant1NameKnown === 'YES') {
+      originalDefendantDetails.push(
+        `${payLoad.defendant1.firstName} ${payLoad.defendant1.lastName} - Defendant 1`
+      );
+    } else {
+      originalDefendantDetails.push(
+        `null null`
+      );
+    }
+
+    if (allPartiesDetails.additionalDefendants === 'YES') {
+
+      for (const [index, defendant] of payLoad.additionalDefendants.entries()) {
+        if (defendant.value.nameKnown === 'YES') {
+          originalDefendantDetails.push(`${defendant.value.firstName} ${defendant.value.lastName} - Defendant ${index + 2}`);
+        } else {
+          originalDefendantDetails.push(
+            `null null`
+          );
         }
-      if (validationArr.buttonRemove) {
-        await performAction('removeFile');
-        await page.waitForTimeout(6000);
       }
     }
+
+    allPartyDetails = [...new Set(originalDefendantDetails.filter(n => n.trim().toLowerCase() !== "null null")),
+    ...originalDefendantDetails.filter(n => n.trim().toLowerCase() === "null null")
+    ];
+    allPartyDetails.push(`${payLoad.claimantName} - Claimant 1`);
+  }
+
+  private async enterApplicationDetails(appDetails: actionRecord) {
+    let date = CaseManagementCommonUtils.getRandomDate(appDetails.dateType as string);
+    await performAction('clickRadioButton', { question: appDetails.question1, option: appDetails.option1 });
+
+    await performActions('Enter Date',
+      ['inputText', appDetails.label1, date.split('/')[0]],
+      ['inputText', appDetails.label2, date.split('/')[1]],
+      ['inputText', appDetails.label3, date.split('/')[2]]);
+    await performAction('clickRadioButton', { question: appDetails.question2, option: appDetails.option2 });
+    if (appDetails.option2 === 'Something else') {
+      performAction('inputText', appDetails.label, CaseManagementCommonUtils.generateRandomString(appDetails.input as number))
+    }
+    await performAction('reTryOnCallBackError', enterGenappApplication.continueButton, appDetails.nextPage as string);
+  }
+
+  private async confirmIfCourtHearingInNext14Days(courtHearing: actionRecord) {
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
+    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
+    await performAction('clickRadioButton', {
+      question: courtHearing.question,
+      option: courtHearing.option,
+    });
+    await performAction('reTryOnCallBackError', enterGenAppHearingDate.continueButton, courtHearing.nextPage as string);
+  }
+
+  private async inputErrorValidation(page: Page, validationArr: actionRecord) {
+
+    if (Array.isArray(validationArr.inputArray)) {
+      for (const item of validationArr.inputArray) {
+        switch (validationArr.validationType) {
+          case 'radioOptions':
+            await performAction('clickButton', validationArr.button);
+            await performValidation('inputError', !validationArr?.label ? validationArr.question : validationArr.label, item.errInlineMessage);
+            await performValidation('errorMessage', !validationArr?.header ? validationArr.header = 'There is a problem' : validationArr.header, item.errMessage);
+            await performAction('clickRadioButton', { question: validationArr.question, option: validationArr.option });
+            break;
+
+          case 'checkBox':
+            await performAction('clickButton', validationArr.button);
+            await performValidation('inputError', !validationArr?.label ? validationArr.question : validationArr.label, item.errMessage);
+            await performValidation('errorMessage', !validationArr?.header ? validationArr.header = 'There is a problem' : validationArr.header, item.errMessage);
+            await performAction('check', validationArr.checkBox);
+            break;
+
+          case 'checkBoxPageLevel':
+            await performAction('clickButton', validationArr.button);
+            await performValidation('errorMessage', !validationArr?.header ? validationArr.header = 'There is a problem' : validationArr.header, item.errMessage);
+            await performAction('check', validationArr.checkBox);
+            break;
+
+          case 'dropDown':
+            await performAction('clickButton', validationArr.button);
+            await expect(async () => {
+              await performAction('clickButton', validationArr.button);
+              await performValidation('errorMessage', !validationArr?.header ? validationArr.header = 'There is a problem' : validationArr.header, item.errMessage);
+            }).toPass({
+              timeout: VERY_LONG_TIMEOUT,
+            });
+            await performAction('select', validationArr.dropQn, validationArr.option);
+            break;
+
+          case 'textField':
+            await performAction('inputText', validationArr.label, CaseManagementCommonUtils.generateRandomString(item.input));
+            await expect(async () => {
+              await performAction('clickButton', validationArr.button);
+              if (item.type === 'moreThanMax') {
+                await performValidation('errorMessage', { header: validationArr.header, message: item.errMessage });
+              } else {
+                await performValidation('inputError', validationArr.label, item.errMessage);
+                await performValidation('errorMessage', validationArr.label, item.errMessage);
+              }
+            }).toPass({
+              timeout: VERY_LONG_TIMEOUT,
+            });
+            break;
+
+          case 'dateField':
+            let date: string = CaseManagementCommonUtils.getRandomDate(item.type as string);
+            const enterDate = () =>
+              performActions(
+                'Enter Date',
+                ['inputText', validationArr.label1, date.split('/')[0]],
+                ['inputText', validationArr.label2, date.split('/')[1]],
+                ['inputText', validationArr.label3, date.split('/')[2]]
+              );
+
+            if (item.type === 'empty') {
+              await performAction('clickButton', validationArr.button);
+              await performValidation('inputError', !validationArr?.label ? validationArr.question : validationArr.label, item.errInlineMessage);
+              await performValidation('errorMessage', validationArr.header1, item.errMessage);
+            } else if (item.type === 'past') {
+              await enterDate();
+            } else if (item.type === 'invalid') {
+              await enterDate();
+              await performAction('clickButton', validationArr.button);
+              await performValidation('errorMessage', validationArr.header1, item.errMessage);
+            }
+            else {
+              await enterDate();
+              await performAction('clickButton', validationArr.button);
+              await performValidation('errorMessage', { header: validationArr.header, message: item.errMessage });
+            }
+            break;
+
+          default:
+            throw new Error(`Validation type :"${validationArr.validationType}" is not valid`);
+        };
+      }
+    }
+    if (validationArr.buttonRemove) {
+      await performAction('removeFile');
+      await page.waitForTimeout(6000);
+    }
+  }
 }
