@@ -62,7 +62,7 @@ public class ChangeCaseState implements CCDConfig<PCSCase, State, UserRole> {
         PCSCase pcsCase = eventPayload.caseData();
         State targetState = pcsCase.getTargetState().toState();
 
-        if (targetState == State.CASE_STAYED || targetState == State.CASE_ISSUED) {
+        if (targetState == State.CASE_STAYED) {
             camundaService.cancelTask(eventPayload.caseReference(), TaskType.NEW_CLAIM_CREATE_NEW_HEARING);
         }
 

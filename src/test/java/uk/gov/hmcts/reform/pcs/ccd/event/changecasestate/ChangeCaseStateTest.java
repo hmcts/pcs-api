@@ -57,7 +57,7 @@ class ChangeCaseStateTest extends BaseEventTest {
         State targetState = targetStateOption.toState();
         assertThat(response.getState()).isEqualTo(targetState);
 
-        if (targetState == State.CASE_ISSUED || targetState == State.CASE_STAYED) {
+        if (targetState == State.CASE_STAYED) {
             verify(camundaService).cancelTask(1234L, TaskType.NEW_CLAIM_CREATE_NEW_HEARING);
         }
     }

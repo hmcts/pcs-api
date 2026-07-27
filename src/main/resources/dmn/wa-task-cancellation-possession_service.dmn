@@ -30,7 +30,7 @@
           <text>"changeCaseState"</text>
         </inputEntry>
         <inputEntry id="UnaryTests_1ah5t17">
-          <text>"CASE_ISSUED"</text>
+          <text>"CASE_CLOSED"</text>
         </inputEntry>
         <outputEntry id="LiteralExpression_1c4vo81">
           <text>"Cancel"</text>
