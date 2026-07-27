@@ -159,9 +159,7 @@ test.describe('Case management - Case Worker Enter a General application @nightl
     await performAction('clickButton',enterGenAppUploadGeneralApplication.continueButton);
     await performValidation('mainHeader', enterGenAppuploadRelatedEvidence.mainHeader);
     await performAction('clickButton',enterGenAppuploadRelatedEvidence.continueButton);
-    await performAction('verifyReferToJudge',{
-      nextPage: genAppsCheckYouAnswers.mainHeader
-    });
+    await performValidation('mainHeader', genAppsCheckYouAnswers.mainHeader);
   });
 
   test('Case management - Case Worker Enter a General application SET ASIDE Journey @CM', async () => {
