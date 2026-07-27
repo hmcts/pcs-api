@@ -17,6 +17,8 @@ import uk.gov.hmcts.ccd.sdk.type.DynamicListElement;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocumentType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocumentTypeEngland;
+import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocumentTypeWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServedDetails;
@@ -100,7 +102,7 @@ class DocumentServiceTest {
                           .binaryUrl("bin-WITNESS_STATEMENT")
                           .categoryId("cat-WITNESS_STATEMENT")
                           .build())
-            .documentType(documentTypeList1)
+            .documentTypeEngland(AdditionalDocumentTypeEngland.WITNESS_STATEMENT)
             .build();
 
         when(pcsCase.getAdditionalDocuments()).thenReturn(ListValueUtils.wrapListItems(List.of(additionalDocument1)));
@@ -133,7 +135,7 @@ class DocumentServiceTest {
                           .binaryUrl("bin-WITNESS_STATEMENT")
                           .categoryId("cat-WITNESS_STATEMENT")
                           .build())
-            .documentType(documentTypeList1)
+            .documentTypeEngland(AdditionalDocumentTypeEngland.WITNESS_STATEMENT)
             .build();
 
         DynamicList documentTypeList2 = new DynamicList(
@@ -147,7 +149,7 @@ class DocumentServiceTest {
                            .binaryUrl("bin-RENT_STATEMENT")
                            .categoryId("cat-RENT_STATEMENT")
                            .build())
-            .documentType(documentTypeList2)
+            .documentTypeEngland(AdditionalDocumentTypeEngland.RENT_STATEMENT)
             .build();
 
         ListValue<AdditionalDocument> lv1 = ListValue.<AdditionalDocument>builder()
@@ -196,7 +198,8 @@ class DocumentServiceTest {
                     .binaryUrl("someUrl")
                     .categoryId("uploaded-category")
                     .build())
-            .documentType(documentTypeList)
+            .documentTypeEngland(mapEnglandType(additionalDocumentType))
+            .documentTypeWales(mapWalesType(additionalDocumentType))
             .build();
 
         when(pcsCase.getAdditionalDocuments()).thenReturn(List.of(
@@ -234,7 +237,7 @@ class DocumentServiceTest {
                         .filename("filename.txt")
                         .categoryId("uploaded-category")
                         .build())
-            .documentType(documentTypeList)
+            .documentTypeEngland(AdditionalDocumentTypeEngland.valueOf(additionalDocumentType.name()))
             .build();
 
         when(pcsCase.getAdditionalDocuments()).thenReturn(List.of(
@@ -525,7 +528,7 @@ class DocumentServiceTest {
                         .categoryId("cat1")
                         .uploadTimestamp(LocalDateTime.now())
                         .build())
-                .documentType(documentTypeList)
+                .documentTypeEngland(AdditionalDocumentTypeEngland.WITNESS_STATEMENT)
                 .description(description)
                 .build();
 
@@ -569,7 +572,7 @@ class DocumentServiceTest {
                         .binaryUrl("bin1")
                         .categoryId("cat1")
                         .build())
-                .documentType(documentTypeList)
+                .documentTypeEngland(AdditionalDocumentTypeEngland.WITNESS_STATEMENT)
                 .description("")
                 .build();
 
@@ -1171,6 +1174,20 @@ class DocumentServiceTest {
             Arguments.of(AdditionalDocumentType.LEGAL_AID_CERTIFICATE, CaseFileCategory.CORRESPONDENCE.getId()),
             Arguments.of(AdditionalDocumentType.OTHER, null)
         );
+    }
+
+    private static AdditionalDocumentTypeEngland mapEnglandType(AdditionalDocumentType additionalDocumentType) {
+        return switch (additionalDocumentType) {
+            case OCCUPATION_LICENCE, ENERGY_PERFORMANCE_CERTIFICATE, GAS_SAFETY_CERTIFICATE, EICR_REPORT -> null;
+            default -> AdditionalDocumentTypeEngland.valueOf(additionalDocumentType.name());
+        };
+    }
+
+    private static AdditionalDocumentTypeWales mapWalesType(AdditionalDocumentType additionalDocumentType) {
+        return switch (additionalDocumentType) {
+            case TENANCY_AGREEMENT -> null;
+            default -> AdditionalDocumentTypeWales.valueOf(additionalDocumentType.name());
+        };
     }
 
     @Test
