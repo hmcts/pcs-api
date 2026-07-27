@@ -46,42 +46,37 @@ public class RespondToPossessionDraftSavePage implements CcdPageConfiguration {
         final long caseRef = details.getId();
         PossessionClaimResponse response = caseData.getPossessionClaimResponse();
 
-        PossessionClaimResponse defendantAnswersOnly = null;
-        if (response != null) {
-            defendantAnswersOnly = PossessionClaimResponse.builder()
-                .defendantContactDetails(response.getDefendantContactDetails())
-                .defendantResponses(response.getDefendantResponses())
-                .build();
-        }
+        PossessionClaimResponse defendantAnswersOnly = PossessionClaimResponse.builder()
+            .defendantContactDetails(response.getDefendantContactDetails())
+            .defendantResponses(response.getDefendantResponses())
+            .build();
 
         PCSCase partialUpdate = PCSCase.builder()
             .possessionClaimResponse(defendantAnswersOnly)
             .build();
 
         try {
-            if (defendantAnswersOnly != null) {
-                if (securityContextService.getCurrentUserDetails().getRoles().contains(UserRole.CITIZEN.getRole())) {
-                    draftCaseDataService.saveUnsubmittedEventData(caseRef, partialUpdate, respondPossessionClaim);
-                } else {
-                    String organisationId = organisationService.getOrganisationIdForCurrentUser();
+            if (securityContextService.getCurrentUserDetails().getRoles().contains(UserRole.CITIZEN.getRole())) {
+                draftCaseDataService.saveUnsubmittedEventData(caseRef, partialUpdate, respondPossessionClaim);
+            } else {
+                String organisationId = organisationService.getOrganisationIdForCurrentUser();
 
-                    Optional<UUID> selectedPartyId = selectedPartyRetriever.getSelectedPartyId(caseRef, organisationId);
-                    if (selectedPartyId.isEmpty()) {
-                        return error(List.of("No selected responding party id for respond to claim"));
-                    }
-                    UUID representedPartyId = selectedPartyId.get();
-
-                    draftCaseDataService.saveUnsubmittedEventData(
-                        caseRef,
-                        partialUpdate,
-                        respondPossessionClaim,
-                        representedPartyId,
-                        organisationId
-                    );
+                Optional<UUID> selectedPartyId = selectedPartyRetriever.getSelectedPartyId(caseRef, organisationId);
+                if (selectedPartyId.isEmpty()) {
+                    return error(List.of("No selected responding party id for respond to claim"));
                 }
+                UUID representedPartyId = selectedPartyId.get();
+
+                draftCaseDataService.saveUnsubmittedEventData(
+                    caseRef,
+                    partialUpdate,
+                    respondPossessionClaim,
+                    representedPartyId,
+                    organisationId
+                );
             }
             return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-                .data(caseData)
+                .data(partialUpdate)
                 .build();
         } catch (Exception e) {
             log.error("Failed to save draft for case {}", caseRef, e);

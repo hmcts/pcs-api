@@ -18,8 +18,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
-import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
-import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -34,14 +32,8 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class DocumentsViewTest {
 
-    private static final UUID CURRENT_USER_ID = UUID.randomUUID();
-
-    @Mock
-    private SecurityContextService securityContextService;
     @Mock
     private GenAppVisibilityService genAppVisibilityService;
-    @Mock
-    private OrganisationService organisationService;
     @Mock
     private PcsCaseEntity pcsCaseEntity;
 
@@ -53,7 +45,7 @@ class DocumentsViewTest {
     void setUp() {
         pcsCase = PCSCase.builder().build();
 
-        underTest = new DocumentsView(securityContextService, genAppVisibilityService, organisationService);
+        underTest = new DocumentsView(genAppVisibilityService);
     }
 
     @Test
@@ -78,11 +70,12 @@ class DocumentsViewTest {
             .binaryUrl("binary url2")
             .categoryId("category 2")
             .build();
+        String organisationId = "org";
 
         when(pcsCaseEntity.getDocuments()).thenReturn(List.of(entity1, entity2));
 
         // When
-        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+        underTest.setCaseFields(pcsCase, pcsCaseEntity, organisationId);
 
         // Then
         List<ListValue<Document>> allDocuments = pcsCase.getAllDocuments();
@@ -134,10 +127,9 @@ class DocumentsViewTest {
             .categoryId("category")
             .build();
         String organisationId = "org";
-        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(organisationId);
         when(pcsCaseEntity.getDocuments()).thenReturn(List.of(accessCodePack, visibleDocument));
 
-        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+        underTest.setCaseFields(pcsCase, pcsCaseEntity, organisationId);
 
         assertThat(pcsCase.getAllDocuments()).singleElement()
             .satisfies(document -> assertThat(document.getValue().getFilename()).isEqualTo("claim.pdf"));
@@ -146,10 +138,11 @@ class DocumentsViewTest {
     @Test
     void shouldReturnEmptyListWhenNoDocumentsExist() {
         // Given
+        String organisationId = "org";
         when(pcsCaseEntity.getDocuments()).thenReturn(List.of());
 
         // When
-        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+        underTest.setCaseFields(pcsCase, pcsCaseEntity, organisationId);
 
         // Then
         assertThat(pcsCase.getAllDocuments()).isEmpty();
@@ -159,7 +152,6 @@ class DocumentsViewTest {
     void shouldShowCounterClaimDocumentWhenStateIsIssued() {
         // Given
         String organisationId = "org";
-        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(organisationId);
         CounterClaimEntity counterClaim = mock(CounterClaimEntity.class);
         when(counterClaim.getStatus()).thenReturn(CounterClaimState.COUNTER_CLAIM_ISSUED);
 
@@ -172,30 +164,7 @@ class DocumentsViewTest {
         when(pcsCaseEntity.getDocuments()).thenReturn(List.of(documentEntity));
 
         // When
-        underTest.setCaseFields(pcsCase, pcsCaseEntity);
-
-        // Then
-        assertThat(pcsCase.getAllDocuments()).hasSize(1);
-    }
-
-    @Test
-    void shouldFilterGenAppDocumentsBasedOnVisibility() {
-        // Given
-        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn("ORG-123");
-
-        CounterClaimEntity counterClaim = mock(CounterClaimEntity.class);
-        when(counterClaim.getStatus()).thenReturn(CounterClaimState.COUNTER_CLAIM_ISSUED);
-
-        DocumentEntity documentEntity = DocumentEntity.builder()
-            .id(UUID.randomUUID())
-            .url("url1")
-            .counterClaim(counterClaim)
-            .build();
-
-        when(pcsCaseEntity.getDocuments()).thenReturn(List.of(documentEntity));
-
-        // When
-        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+        underTest.setCaseFields(pcsCase, pcsCaseEntity, organisationId);
 
         // Then
         assertThat(pcsCase.getAllDocuments()).hasSize(1);
@@ -204,8 +173,7 @@ class DocumentsViewTest {
     @Test
     void shouldHideCounterClaimDocumentWhenStateIsNotIssued() {
         // Given
-        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn("ORG-123");
-
+        String organisationId = "org";
         CounterClaimEntity counterClaim = mock(CounterClaimEntity.class);
         when(counterClaim.getStatus()).thenReturn(CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED);
 
@@ -218,17 +186,16 @@ class DocumentsViewTest {
         when(pcsCaseEntity.getDocuments()).thenReturn(List.of(documentEntity));
 
         // When
-        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+        underTest.setCaseFields(pcsCase, pcsCaseEntity, organisationId);
 
         // Then
         assertThat(pcsCase.getAllDocuments()).isEmpty();
     }
 
     @Test
-    void shoulFilterGenAppDocumentsBasedOnVisibilitty() {
+    void shouldFilterGenAppDocumentsBasedOnVisibility() {
         // Given
-        String orgId = "ORG-123";
-        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(orgId);
+        String orgId = "org";
 
         GenAppEntity genAppEntity1 = mock(GenAppEntity.class);
         when(genAppVisibilityService.isGenAppVisibleToUser(genAppEntity1, orgId))
@@ -270,7 +237,7 @@ class DocumentsViewTest {
             List.of(documentEntity1, documentEntity2, documentEntity3, documentEntity4));
 
         // When
-        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+        underTest.setCaseFields(pcsCase, pcsCaseEntity, orgId);
 
         // Then
         List<ListValue<Document>> allDocuments = pcsCase.getAllDocuments();
@@ -303,11 +270,10 @@ class DocumentsViewTest {
             .type(documentType)
             .build();
         String organisationId = "org";
-        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(organisationId);
         when(pcsCaseEntity.getDocuments()).thenReturn(List.of(documentEntity));
 
         // When
-        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+        underTest.setCaseFields(pcsCase, pcsCaseEntity, organisationId);
 
         // Then
         List<ListValue<Document>> allDocuments = pcsCase.getAllDocuments();
@@ -326,11 +292,10 @@ class DocumentsViewTest {
             .description("description")
             .build();
         String organisationId = "org";
-        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(organisationId);
         when(pcsCaseEntity.getDocuments()).thenReturn(List.of(documentEntity));
 
         // When
-        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+        underTest.setCaseFields(pcsCase, pcsCaseEntity, organisationId);
 
         // Then
         List<ListValue<Document>> allDocuments = pcsCase.getAllDocuments();
@@ -349,11 +314,10 @@ class DocumentsViewTest {
             .type(documentType)
             .build();
         String organisationId = "org";
-        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(organisationId);
         when(pcsCaseEntity.getDocuments()).thenReturn(List.of(documentEntity));
 
         // When
-        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+        underTest.setCaseFields(pcsCase, pcsCaseEntity, organisationId);
 
         // Then
         List<ListValue<Document>> allDocuments = pcsCase.getAllDocuments();

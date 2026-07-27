@@ -105,6 +105,8 @@ class RespondPossessionClaimTest extends BaseEventTest {
     @Mock
     private CounterClaimService counterClaimService;
     @Mock
+    private CounterClaimFeeCalculator counterClaimFeeCalculator;
+    @Mock
     private PartyService partyService;
     @Mock
     private FeeService feeService;
@@ -165,6 +167,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
             )
         );
 
+
         CounterClaimFeeCalculator feeCalculator = new CounterClaimFeeCalculator();
         RespondPossessionClaimSubmitService submitService = new RespondPossessionClaimSubmitService(
             claimResponseService,
@@ -197,7 +200,8 @@ class RespondPossessionClaimTest extends BaseEventTest {
                     claimResponseService,
                     defendantResponseService,
                     selectedPartyRetriever,
-                    submitResponseFactory
+                    submitResponseFactory,
+                    organisationService
                 )
             ),
             securityContextService
@@ -756,6 +760,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
     @Test
     void shouldInitializeDraftForSelectedRepresentedPartyWhenNoDraftExists_ForLegalRepresentativeUser() {
         // given
+        UUID legalRepUserId = UUID.randomUUID();
         UUID representedPartyId = UUID.randomUUID();
         UUID differentPartyId = UUID.randomUUID();
 
@@ -812,6 +817,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
         PartyEntity representedParty = PartyEntity.builder().id(representedPartyId).build();
         PartyEntity representedParty2 = PartyEntity.builder().id(differentPartyId).build();
         PcsCaseEntity caseEntity = PcsCaseEntity.builder().build();
+        UUID legalRepUserId = UUID.randomUUID();
         PossessionClaimResponse savedResponse = PossessionClaimResponse.builder().build();
         PCSCase savedDraft = PCSCase.builder()
             .possessionClaimResponse(savedResponse)
@@ -960,9 +966,12 @@ class RespondPossessionClaimTest extends BaseEventTest {
         PCSCase caseData = PCSCase.builder()
             .possessionClaimResponse(possessionClaimResponse)
             .build();
+        String orgId = "org";
         when(selectedPartyRetriever.getCurrentRepresentedPartyId(caseData))
             .thenReturn(Optional.of(representedPartyId));
-        when(draftCaseDataService.getUnsubmittedCaseData(TEST_CASE_REFERENCE, respondPossessionClaim))
+        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(orgId);
+        when(draftCaseDataService.getUnsubmittedCaseData(TEST_CASE_REFERENCE, respondPossessionClaim,
+                                                         representedPartyId, orgId))
             .thenReturn(Optional.of(caseData));
 
         // when
@@ -973,8 +982,11 @@ class RespondPossessionClaimTest extends BaseEventTest {
                                                            representedPartyId);
         verify(defendantResponseService).saveDefendantResponse(TEST_CASE_REFERENCE, possessionClaimResponse,
                                                                representedPartyId);
-        verify(draftCaseDataService).deleteUnsubmittedCaseData(TEST_CASE_REFERENCE, respondPossessionClaim);
-        verify(draftCaseDataService).getUnsubmittedCaseData(TEST_CASE_REFERENCE, respondPossessionClaim);
+        verify(draftCaseDataService).deleteUnsubmittedCaseData(eq(TEST_CASE_REFERENCE),
+                                                               eq(respondPossessionClaim),
+                                                               eq(representedPartyId), eq(orgId));
+        verify(draftCaseDataService).getUnsubmittedCaseData(TEST_CASE_REFERENCE, respondPossessionClaim,
+                                                            representedPartyId, orgId);
     }
 
     @Test
@@ -987,7 +999,6 @@ class RespondPossessionClaimTest extends BaseEventTest {
         when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
         when(userInfo.getRoles()).thenReturn(List.of(UserRole.DEFENDANT_SOLICITOR.getRole()));
         when(selectedPartyRetriever.getCurrentRepresentedPartyId(caseData)).thenReturn(Optional.empty());
-        when(selectedPartyRetriever.getSelectedPartyId(caseData)).thenReturn(Optional.empty());
 
         // when / then
         assertThatThrownBy(() -> callSubmitHandler(caseData))
