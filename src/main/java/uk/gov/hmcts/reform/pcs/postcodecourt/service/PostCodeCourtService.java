@@ -39,7 +39,6 @@ public class PostCodeCourtService {
             log.error("EpimId not found for postcode: {}", postCode);
             return null;
         }
-        log.info("Court management location allocated for postcode {}", postCode);
         return results.getFirst().getId().getEpimsId();
     }
 

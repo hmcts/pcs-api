@@ -17,7 +17,6 @@ import org.hibernate.type.SqlTypes;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.VulnerableCategory;
 
-import java.util.UUID;
 
 import static jakarta.persistence.FetchType.LAZY;
 
@@ -28,8 +27,8 @@ import static jakarta.persistence.FetchType.LAZY;
 public class RiskProfileEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
 
     @OneToOne(fetch = LAZY)
     @JoinColumn(name = "enf_case_id", nullable = false)

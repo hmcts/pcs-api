@@ -116,7 +116,7 @@ test.describe('[Case tabs - England Journey] @nightly', async () => {
     const firstTab = pages[0];
     await firstTab.bringToFront();
     await dismissCookieBanner(page, 'additional');
-    await performAction('login', { email: 'DDJ.Randell.Lesch@ejudiciary.net', password: process.env.IDAM_PCS_USER_PASSWORD, });
+    await performAction('login', { email: 'TribunalMember.Brandon.Kshlerin-Hartmann@ejudiciary.net', password: process.env.IDAM_PCS_USER_PASSWORD, });
     await dismissCookieBanner(page, 'analytics');
     await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/${getCaseTypeId()}/${process.env.CASE_NUMBER}#Summary`);
     await performValidation('mainHeader', home.caseSummary);

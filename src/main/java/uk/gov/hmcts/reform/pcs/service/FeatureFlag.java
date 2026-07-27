@@ -5,6 +5,7 @@ public enum FeatureFlag {
 
     BULK_PRINT("bulk-print-enabled", false),
     CASEWORKER_EVENTS("caseworker-events-enabled", false),
+    CUI_RESPOND_TO_CLAIM_LR("cui-respond-to-claim-lr-enabled", false),
     RELEASE_1_DOT_2("release-1.2-enabled", false);
 
     private final String key;

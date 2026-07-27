@@ -1,0 +1,16 @@
+{
+  "request": {
+    "method": "GET",
+    "urlPathTemplate": "/v2/notifications/{notificationId}"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "id": "{{ request.path.notificationId }}",
+      "status": "delivered"
+    }
+  }
+}

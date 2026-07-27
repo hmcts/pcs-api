@@ -1,0 +1,28 @@
+{
+  "request": {
+    "method": "GET",
+    "urlPathTemplate": "/documents/{documentId}"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "originalDocumentName": "Test document",
+      "_links": {
+        "self": {
+          "href": "https://docstore/document/{{request.path.documentId}}"
+        },
+        "binary": {
+          "href": "https://docstore/document/{{request.path.documentId}}/binary"
+        }
+      },
+      "ttl": "2050-01-01T00:00:00.000Z",
+      "metadata": {
+        "case_type_id": "PCS",
+        "jurisdiction": "PCS"
+      }
+    }
+  }
+}
