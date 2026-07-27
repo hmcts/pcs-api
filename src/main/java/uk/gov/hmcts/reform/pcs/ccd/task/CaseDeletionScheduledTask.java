@@ -8,14 +8,18 @@ import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
+import uk.gov.hmcts.ccd.sdk.RetainAndDisposePolicy;
 import uk.gov.hmcts.reform.pcs.ccd.model.DraftCasesToDiscard;
 import uk.gov.hmcts.reform.pcs.ccd.service.CcdCaseDataService;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 @Slf4j
 @Component
-public class CaseDeletionScheduledTask {
+public class CaseDeletionScheduledTask implements RetainAndDisposePolicy {
 
     private static final String CASE_DELETION_TASK_NAME = "case-deletion-task";
     private static final String MDC_TASK_NAME = "taskName";
@@ -36,6 +40,27 @@ public class CaseDeletionScheduledTask {
     public RecurringTask<Void> caseDeletionTask() {
         return Tasks.recurring(CASE_DELETION_TASK_NAME, Schedules.parseSchedule(schedule))
                 .execute((taskInstance, executionContext) -> runSweep());
+    }
+
+    @Override
+    public Set<String> caseTypes() {
+        return Set.of();
+    }
+
+    @Override
+    public Collection<Long> findCandidatesForDisposal() {
+        List<DraftCasesToDiscard> casesToDiscard = ccdCaseDataService.findExpiredDraftCases(discardAfterDays);
+        if (!CollectionUtils.isEmpty(casesToDiscard)) {
+            return casesToDiscard.stream()
+                    .map(DraftCasesToDiscard::getCaseReference)
+                    .toList();
+        }
+        return List.of();
+    }
+
+    @Override
+    public void dispose(long caseReference) {
+        RetainAndDisposePolicy.super.dispose(caseReference);
     }
 
     private void runSweep() {
