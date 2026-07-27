@@ -10,7 +10,6 @@ export const documentsYouveUploadedChecklist = {
   currentEicrReportCheckbox: `Current Electrical Installation Condition Report (EICR)`,
   depositSchemeCheckbox: `Deposit scheme (not required for community landlords)`,
   noticeServedCheckbox: `The notice you served, for example RHW20`,
-  pleaseSelectAtLeastOneOptionError: `Please select at least one option`,
   iWantToSaveThisApplicationAndReturnToItLaterLink: `I want to save this application and return to it later`,
   previousButton: `Previous`,
   cancelLink: `Cancel`,
