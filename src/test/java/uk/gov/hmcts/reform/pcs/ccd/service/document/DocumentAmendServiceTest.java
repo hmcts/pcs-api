@@ -155,44 +155,36 @@ class DocumentAmendServiceTest {
 
     @Test
     void shouldRetainSelectionsWhenInitialisingSameSelectedDocumentAgain() {
-        UUID newPartyId = UUID.randomUUID();
-        LocalDate enteredIssueDate = LocalDate.of(2026, 5, 20);
-        DynamicList carriedParty = DynamicList.builder().build();
-        DynamicListElement rebuiltPartyOption = DynamicListElement.builder()
+        final UUID newPartyId = UUID.randomUUID();
+        final LocalDate enteredIssueDate = LocalDate.of(2026, 5, 20);
+        final DynamicList carriedParty = DynamicList.builder().build();
+        final DynamicListElement rebuiltPartyOption = DynamicListElement.builder()
             .code(newPartyId)
             .label("Claimant One - Claimant 1")
             .build();
-        DynamicList rebuiltPartyList = DynamicList.builder()
+        final DynamicList rebuiltPartyList = DynamicList.builder()
             .value(rebuiltPartyOption)
             .listItems(List.of(rebuiltPartyOption))
             .build();
-        DynamicStringList carriedSubmission = DynamicStringList.builder().build();
-        DynamicStringListElement rebuiltSubmissionOption = DynamicStringListElement.builder()
+        final DynamicStringList carriedSubmission = DynamicStringList.builder().build();
+        final DynamicStringListElement rebuiltSubmissionOption = DynamicStringListElement.builder()
             .code(GEN_APP_ID_PREFIX + ":" + GEN_APP_ID)
             .label("Gen app GA1 - submitted 20 May 2026")
             .build();
-        DynamicStringList rebuiltSubmissionList = DynamicStringList.builder()
+        final DynamicStringList rebuiltSubmissionList = DynamicStringList.builder()
             .value(rebuiltSubmissionOption)
             .listItems(List.of(rebuiltSubmissionOption))
             .build();
-        DynamicStringList carriedRelatedDocumentType = DynamicStringList.builder().build();
-        DynamicStringListElement rebuiltRelatedDocumentTypeOption = DynamicStringListElement.builder()
+        final DynamicStringList carriedRelatedDocumentType = DynamicStringList.builder().build();
+        final DynamicStringListElement rebuiltRelatedDocumentTypeOption = DynamicStringListElement.builder()
             .code(CaseworkerDocumentType.WITNESS_STATEMENT.name())
             .label("Witness statement")
             .build();
-        DynamicStringList rebuiltRelatedDocumentTypeList = DynamicStringList.builder()
+        final DynamicStringList rebuiltRelatedDocumentTypeList = DynamicStringList.builder()
             .value(rebuiltRelatedDocumentTypeOption)
             .listItems(List.of(rebuiltRelatedDocumentTypeOption))
             .build();
-        DynamicStringList carriedStandaloneDocumentType = DynamicStringList.builder().build();
-        DynamicStringListElement rebuiltStandaloneDocumentTypeOption = DynamicStringListElement.builder()
-            .code(CaseworkerDocumentType.RENT_STATEMENT.name())
-            .label("Rent statement")
-            .build();
-        DynamicStringList rebuiltStandaloneDocumentTypeList = DynamicStringList.builder()
-            .value(rebuiltStandaloneDocumentTypeOption)
-            .listItems(List.of(rebuiltStandaloneDocumentTypeOption))
-            .build();
+        final DynamicStringList carriedStandaloneDocumentType = DynamicStringList.builder().build();
         documentEntity.setFileName("old file.pdf");
         documentEntity.setIssueDate(LocalDate.of(2026, 4, 16));
         documentEntity.setParty(partyEntity);
@@ -208,6 +200,14 @@ class DocumentAmendServiceTest {
         )).thenReturn(rebuiltSubmissionList);
         when(caseworkerDocumentListService.buildDocumentTypeList(null, carriedRelatedDocumentType))
             .thenReturn(rebuiltRelatedDocumentTypeList);
+        final DynamicStringListElement rebuiltStandaloneDocumentTypeOption = DynamicStringListElement.builder()
+            .code(CaseworkerDocumentType.RENT_STATEMENT.name())
+            .label("Rent statement")
+            .build();
+        final DynamicStringList rebuiltStandaloneDocumentTypeList = DynamicStringList.builder()
+            .value(rebuiltStandaloneDocumentTypeOption)
+            .listItems(List.of(rebuiltStandaloneDocumentTypeOption))
+            .build();
         when(caseworkerDocumentListService.buildDocumentTypeList(null, carriedStandaloneDocumentType))
             .thenReturn(rebuiltStandaloneDocumentTypeList);
 
