@@ -127,6 +127,9 @@ withPipeline(type, product, component) {
         env.SHUTTER_SERVICE = true
         env.DATA_STORE_URL_BASE="http://ccd-data-store-api-prod.service.core-compute-prod.internal"
         env.CASE_API_URL = "https://pcs-api.prod.platform.hmcts.net"
+        // The AAT smoketest hook sets CASE_TYPE_SUFFIX=staging and never clears it. env is
+        // build-scoped, so without this reset prod imports CCD_Definition_PCS-staging_prod.xlsx.
+        env.CASE_TYPE_SUFFIX=""
       } else {
         env.DEFINITION_STORE_URL_BASE = "http://ccd-definition-store-api-aat.service.core-compute-aat.internal"
         env.DATA_STORE_URL_BASE="http://ccd-data-store-api-aat.service.core-compute-aat.internal"
