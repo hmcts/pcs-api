@@ -48,6 +48,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.featureFlagsEnabled;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.HEARING_CENTRE_ADMIN;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.HEARING_CENTRE_TEAM_LEADER;
@@ -55,6 +56,8 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.State.AWAITING_SUBMISSION_TO_HM
 import static uk.gov.hmcts.reform.pcs.ccd.domain.State.CASE_ISSUED;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.State.PENDING_CASE_ISSUED;
 import static uk.gov.hmcts.reform.pcs.config.ClockConfiguration.UK_ZONE_ID;
+import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.CASEWORKER_EVENTS;
+import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.RELEASE_1_DOT_2;
 
 @ExtendWith(MockitoExtension.class)
 public class ManageHearingTest extends BaseEventTest {
@@ -114,6 +117,12 @@ public class ManageHearingTest extends BaseEventTest {
     void shouldConfigureEventForConfirmedStates() {
         assertThat(configuredEvent.getPreState())
             .containsExactlyInAnyOrder(AWAITING_SUBMISSION_TO_HMCTS, PENDING_CASE_ISSUED, CASE_ISSUED);
+    }
+
+    @Test
+    void shouldOnlyShowEventWhenReleaseAndCaseworkerEventsFeatureFlagsAreEnabled() {
+        assertThat(configuredEvent.getShowCondition())
+            .isEqualTo(featureFlagsEnabled(RELEASE_1_DOT_2, CASEWORKER_EVENTS));
     }
 
     @Test
