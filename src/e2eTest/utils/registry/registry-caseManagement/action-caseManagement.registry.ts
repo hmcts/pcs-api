@@ -42,11 +42,13 @@ export class ActionCMRegistry {
     ['enterApplicationDetails', new CaseManagementAction()],
     ['confirmIfCourtHearingInNext14Days', new CaseManagementAction()],
     ['enterApplicationFeeDetails', new CaseManagementAction()],
+    ['enterApplicationConsentAndNotice', new CaseManagementAction()],
     ['errorValidationSelectDocumentPage', new ErrorValidationAction()],
     ['errorValidationChangeCaseStatePage', new ErrorValidationAction()],
     ['errorValidationEnterGeneralAppPage', new ErrorValidationAction()],
     ['errorValidationHearingDatePage', new ErrorValidationAction()],
     ['errorValidationApplicationFeePage', new ErrorValidationAction()],
+    ['errorValidationApplicationConsentAndNotice', new ErrorValidationAction()],
     ['inputErrorValidation', new CaseManagementAction()],
     ['reTryOnCallBackError', new RetryOnCallBackError()],
 
