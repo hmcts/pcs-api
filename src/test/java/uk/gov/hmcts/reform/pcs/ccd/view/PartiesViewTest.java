@@ -165,23 +165,35 @@ class PartiesViewTest {
     }
 
     @Test
-    void shouldMapRankForDefendants() {
+    void shouldMapRankForAllPartyRoles() {
         when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
         when(userInfo.getRoles()).thenReturn(List.of("caseworker-pcs"));
 
+        PartyEntity claimant = buildParty(UUID.randomUUID(), "Alice", "A", null, null, null);
         PartyEntity defendant1 = buildParty(UUID.randomUUID(), "Bob", "B", null, null, null);
         PartyEntity defendant2 = buildParty(UUID.randomUUID(), "Carol", "C", null, null, null);
+        PartyEntity underlessee = buildParty(UUID.randomUUID(), "Dave", "D", null, null, null);
 
         when(claimEntity.getClaimParties()).thenReturn(List.of(
+            buildClaimPartyEntity(claimant, PartyRole.CLAIMANT, 1),
             buildClaimPartyEntity(defendant1, PartyRole.DEFENDANT, 1),
-            buildClaimPartyEntity(defendant2, PartyRole.DEFENDANT, 2)
+            buildClaimPartyEntity(defendant2, PartyRole.DEFENDANT, 2),
+            buildClaimPartyEntity(underlessee, PartyRole.UNDERLESSEE_OR_MORTGAGEE, 1)
         ));
 
         underTest.setCaseFields(pcsCase, pcsCaseEntity);
 
+        assertThat(pcsCase.getAllClaimants())
+            .extracting(lv -> lv.getValue().getRank())
+            .containsExactly(1);
+
         assertThat(pcsCase.getAllDefendants())
             .extracting(lv -> lv.getValue().getRank())
             .containsExactly(1, 2);
+
+        assertThat(pcsCase.getAllUnderlesseeOrMortgagees())
+            .extracting(lv -> lv.getValue().getRank())
+            .containsExactly(1);
     }
 
     @Test
