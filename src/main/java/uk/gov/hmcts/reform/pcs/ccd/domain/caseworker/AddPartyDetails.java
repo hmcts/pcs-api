@@ -37,11 +37,11 @@ public class AddPartyDetails {
     private PartyType addPartyType;
 
     @JsonProperty("addParty_ClaimantOrganisationName")
-    @CCD(label = "Organisation name")
+    @CCD(label = "Organisation name", max = 60)
     private String claimantOrganisationName;
 
     @JsonProperty("addParty_ClaimantName")
-    @CCD(label = "Claimant name")
+    @CCD(label = "Claimant name", max = 60)
     private String claimantName;
 
     @JsonProperty("addParty_ClaimantAddress")
@@ -49,19 +49,19 @@ public class AddPartyDetails {
     private AddressUK claimantAddress;
 
     @JsonProperty("addParty_ClaimantEmail")
-    @CCD(label = "Email address", searchable = false)
+    @CCD(label = "Email address", searchable = false, max = 60)
     private String claimantEmail;
 
     @JsonProperty("addParty_ClaimantPhoneNumber")
-    @CCD(label = "Phone number", searchable = false)
+    @CCD(label = "Phone number", searchable = false, max = 60)
     private String claimantPhoneNumber;
 
     @JsonProperty("addParty_FirstName")
-    @CCD(label = "First name")
+    @CCD(label = "First name", max = 60)
     private String firstName;
 
     @JsonProperty("addParty_LastName")
-    @CCD(label = "Last name")
+    @CCD(label = "Last name", max = 60)
     private String lastName;
 
     @JsonProperty("addParty_DefendantDateOfBirth")
@@ -73,19 +73,19 @@ public class AddPartyDetails {
     private AddressUK defendantAddress;
 
     @JsonProperty("addParty_DefendantEmail")
-    @CCD(label = "Email address", searchable = false)
+    @CCD(label = "Email address", searchable = false, max = 60)
     private String defendantEmail;
 
     @JsonProperty("addParty_DefendantPhoneNumber")
-    @CCD(label = "Phone number", searchable = false)
+    @CCD(label = "Phone number", searchable = false, max = 60)
     private String defendantPhoneNumber;
 
     @JsonProperty("addParty_LitigationFriendName")
-    @CCD(label = "Litigation friend name")
+    @CCD(label = "Litigation friend name", max = 60)
     private String litigationFriendName;
 
     @JsonProperty("addParty_LitigationFriendOrganisationName")
-    @CCD(label = "Organisation name")
+    @CCD(label = "Organisation name", max = 60)
     private String litigationFriendOrganisationName;
 
     @JsonProperty("addParty_LitigationFriendDateOfBirth")
@@ -97,11 +97,11 @@ public class AddPartyDetails {
     private AddressUK litigationFriendAddress;
 
     @JsonProperty("addParty_LitigationFriendEmail")
-    @CCD(label = "Email address", searchable = false)
+    @CCD(label = "Email address", searchable = false, max = 60)
     private String litigationFriendEmail;
 
     @JsonProperty("addParty_LitigationFriendPhoneNumber")
-    @CCD(label = "Phone number", searchable = false)
+    @CCD(label = "Phone number", searchable = false, max = 60)
     private String litigationFriendPhoneNumber;
 
     @JsonProperty("addParty_PartyRadioList")

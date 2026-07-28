@@ -53,7 +53,8 @@ class SubmitEventHandlerTest {
 
     @ParameterizedTest
     @MethodSource("confirmationPageScenarios")
-    void shouldBuildConfirmationPage(AddPartyDetails partyDetails, UUID actingForPartyId, String expectedPartyName) {
+    void shouldBuildConfirmationPage(AddPartyDetails partyDetails, UUID actingForPartyId,
+                                      String expectedPartyDescription) {
         // Given
         ClaimEntity mainClaim = ClaimEntity.builder().build();
         PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().claims(List.of(mainClaim)).build();
@@ -77,7 +78,7 @@ class SubmitEventHandlerTest {
         verify(addPartyService).addParty(partyDetails, pcsCaseEntity, mainClaim, actingForPartyId);
 
         assertThat(response.getConfirmationBody())
-            .contains("Party " + expectedPartyName + " added")
+            .contains(expectedPartyDescription + " added")
             .contains("Case number: " + TEST_CASE_REFERENCE)
             .contains("1 Test Street, Test Town")
             .contains("Smith v Jones");
@@ -97,7 +98,7 @@ class SubmitEventHandlerTest {
                     .claimantName("Jane Doe")
                     .build(),
                 null,
-                "Jane Doe"
+                "Claimant Jane Doe"
             ),
             Arguments.of(
                 AddPartyDetails.builder()
@@ -107,7 +108,7 @@ class SubmitEventHandlerTest {
                     .lastName("Smith")
                     .build(),
                 null,
-                "John Smith"
+                "Defendant John Smith"
             ),
             Arguments.of(
                 AddPartyDetails.builder()
@@ -118,7 +119,7 @@ class SubmitEventHandlerTest {
                     .partyRadioList(partyRadioList)
                     .build(),
                 actingForPartyId,
-                "Acme Ltd"
+                "Litigation friend Acme Ltd"
             )
         );
     }

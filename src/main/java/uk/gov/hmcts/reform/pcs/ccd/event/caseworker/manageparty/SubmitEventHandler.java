@@ -54,28 +54,30 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
     private String buildConfirmationPageForParty(PCSCase pcsCase, long caseReference) {
         AddPartyDetails partyDetails = pcsCase.getAddPartyDetails();
 
-        String partyName = switch (partyDetails.getAddPartyType()) {
-            case CLAIMANT -> resolvePartyName(
-                partyDetails.getClaimantOrganisationName(), partyDetails.getClaimantName());
-            case DEFENDANT -> partyDetails.getFirstName() + " " + partyDetails.getLastName();
-            case LITIGATION_FRIEND -> resolvePartyName(
-                partyDetails.getLitigationFriendOrganisationName(), partyDetails.getLitigationFriendName());
+        String partyDescription = switch (partyDetails.getAddPartyType()) {
+            case CLAIMANT -> "Claimant %s".formatted(resolvePartyName(
+                partyDetails.getClaimantOrganisationName(), partyDetails.getClaimantName()));
+            case DEFENDANT -> "Defendant %s %s".formatted(
+                partyDetails.getFirstName(), partyDetails.getLastName());
+            case LITIGATION_FRIEND -> "Litigation friend %s".formatted(resolvePartyName(
+                partyDetails.getLitigationFriendOrganisationName(), partyDetails.getLitigationFriendName()));
         };
 
         return buildConfirmationMarkdown(
-            partyName, caseReference, pcsCase.getPropertyAddress(), pcsCase.getCaseNameHmctsInternal());
+            partyDescription, caseReference, pcsCase.getPropertyAddress(), pcsCase.getCaseNameHmctsInternal());
     }
 
     private String resolvePartyName(String organisationName, String personName) {
         return StringUtils.isNotBlank(organisationName) ? organisationName : personName;
     }
 
-    private String buildConfirmationMarkdown(String partyName, long caseReference, AddressUK address, String caseName) {
+    private String buildConfirmationMarkdown(String partyDescription, long caseReference, AddressUK address,
+                                              String caseName) {
         String formatAddress = addressFormatter.formatShortAddress(address, COMMA_DELIMITER);
         return """
             ---
             <div class="govuk-panel govuk-panel--confirmation govuk-!-padding-top-3 govuk-!-padding-bottom-3">
-            <span class="govuk-panel__title govuk-!-font-size-36">Party %s added</span><br>
+            <span class="govuk-panel__title govuk-!-font-size-36">%s added</span><br>
             <span class="govuk-panel__body">Case number: %s</span><br>
             <span class="govuk-panel__body">%s</span>
             <span class="govuk-panel__body">%s</span>
@@ -84,7 +86,7 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
             <h3 class="govuk-heading-s">What happens next</h3>
             <p class="govuk-body govuk-!-margin-bottom-6">If the application was made without notice, only the applicant
             will be informed. Otherwise, all parties will be informed.</p>
-            """.formatted(partyName,caseReference, formatAddress, caseName);
+            """.formatted(partyDescription, caseReference, formatAddress, caseName);
     }
 
 }

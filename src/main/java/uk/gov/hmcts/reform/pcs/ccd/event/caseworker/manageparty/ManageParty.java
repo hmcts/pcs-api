@@ -10,6 +10,7 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.ManagePartyStates;
 import uk.gov.hmcts.reform.pcs.ccd.page.caseworker.manageparty.AddLitigationParty;
 import uk.gov.hmcts.reform.pcs.ccd.page.caseworker.manageparty.AddPartyDetailsPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.caseworker.manageparty.ManagePartyOptionsPage;
@@ -34,7 +35,7 @@ public class ManageParty implements CCDConfig<PCSCase, State, UserRole> {
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         Event.EventBuilder<PCSCase, UserRole, State> eventBuilder = configBuilder
             .decentralisedEvent(manageParties.name(), submitEventHandler, startEventHandler)
-            .forStates(State.values())
+            .forStates(ManagePartyStates.ALLOWED_STATES)
             .name("Manage parties")
             .grant(Permission.CRUD, CASEWORKER_ROLES)
             .grantHistoryOnly(JUDICIAL_HISTORY_ROLES)
