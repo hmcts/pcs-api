@@ -49,7 +49,7 @@ export class ActionCMRegistry {
     ['errorValidationApplicationFeePage', new ErrorValidationAction()],
     ['inputErrorValidation', new CaseManagementAction()],
     ['reTryOnCallBackError', new RetryOnCallBackError()],
-    
+
   ]);
 
   static getAction(actionName: string): IAction {
