@@ -22,7 +22,7 @@ plugins {
   id 'org.sonarqube' version '7.3.1.8318'
   id 'net.serenity-bdd.serenity-gradle-plugin' version "$serenityBddVersion"
   id 'hmcts.ccd.sdk' version '6.13.0'
-  id 'com.github.hmcts.rse-cft-lib' version '0.19.2284'
+  id 'com.github.hmcts.rse-cft-lib' version '0.19.2287'
   id 'io.freefair.lombok' version '9.5.0'
   id 'au.com.dius.pact' version '4.7.3'
   id "com.avast.gradle.docker-compose" version "0.17.21"
@@ -421,7 +421,7 @@ dependencies {
   implementation group: 'ch.qos.logback', name: 'logback-classic', version: logbackVersion
   implementation group: 'ch.qos.logback', name: 'logback-core', version: logbackVersion
   implementation group: 'org.postgresql', name: 'postgresql', version: '42.7.13'
-  implementation group: 'com.github.hmcts', name: 'service-auth-provider-java-client', version: '5.3.4'
+  implementation group: 'com.github.hmcts', name: 'service-auth-provider-java-client', version: '5.3.5'
   implementation group: 'io.pebbletemplates', name: 'pebble', version: '4.1.2'
   implementation group: 'org.springframework.cloud', name: 'spring-cloud-starter-openfeign', version: '4.3.3'
   implementation group: 'commons-fileupload', name: 'commons-fileupload', version: '1.6.0'

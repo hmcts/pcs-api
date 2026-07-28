@@ -23,6 +23,8 @@ def secrets = [
     secret('pcs-prd-admin-password', 'PCS_PRD_ADMIN_PASSWORD'),
     secret('idam-expired-user-token', 'IDAM_EXPIRED_USER_TOKEN'),
     secret('s2s-expired-service-token', 'S2S_EXPIRED_TOKEN'),
+    secret('definition-importer-username', 'DEFINITION_IMPORTER_USERNAME'),
+    secret('definition-importer-password', 'DEFINITION_IMPORTER_PASSWORD'),
   ]
 ]
 
@@ -125,6 +127,7 @@ withPipeline(type, product, component) {
         env.SHUTTER_SERVICE = true
         env.DATA_STORE_URL_BASE="http://ccd-data-store-api-prod.service.core-compute-prod.internal"
         env.CASE_API_URL = "https://pcs-api.prod.platform.hmcts.net"
+        env.CASE_TYPE_SUFFIX=""
       } else {
         env.DEFINITION_STORE_URL_BASE = "http://ccd-definition-store-api-aat.service.core-compute-aat.internal"
         env.DATA_STORE_URL_BASE="http://ccd-data-store-api-aat.service.core-compute-aat.internal"
