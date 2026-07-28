@@ -16,11 +16,12 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 
+import java.util.Objects;
 import java.util.UUID;
 
 @Service
 @AllArgsConstructor
-public class ManagePartyService {
+public class AddPartyService {
 
     private final PartyRepository partyRepository;
     private final ClaimRepository claimRepository;
@@ -39,28 +40,35 @@ public class ManagePartyService {
         pcsCaseEntity.addParty(partyToAdd);
         partyRepository.save(partyToAdd);
 
-        claimEntity.addParty(partyToAdd, PartyRole.valueOf(partyType.name()), actingForParty);
+        claimEntity.addParty(partyToAdd, toPartyRole(partyType), actingForParty);
         claimRepository.save(claimEntity);
+    }
+
+    private PartyRole toPartyRole(PartyType partyType) {
+        return switch (partyType) {
+            case CLAIMANT -> PartyRole.CLAIMANT;
+            case DEFENDANT -> PartyRole.DEFENDANT;
+            case LITIGATION_FRIEND -> PartyRole.LITIGATION_FRIEND;
+        };
     }
 
     private PartyEntity buildParty(PartyType partyType, AddPartyDetails addPartyDetails) {
         PartyEntity partyEntity = new PartyEntity();
         switch (partyType) {
-            case CLAIMANT -> addClaimant(addPartyDetails, partyEntity);
-            case DEFENDANT -> addDefendant(addPartyDetails, partyEntity);
-            case LITIGATION_FRIEND -> addLitigationFriend(addPartyDetails, partyEntity);
+            case CLAIMANT -> applyClaimantDetails(addPartyDetails, partyEntity);
+            case DEFENDANT -> applyDefendantDetails(addPartyDetails, partyEntity);
+            case LITIGATION_FRIEND -> applyLitigationFriendDetails(addPartyDetails, partyEntity);
         }
         return partyEntity;
     }
 
     private PartyEntity resolveActingForParty(UUID actingForPartyId) {
-        return actingForPartyId != null
-            ? partyRepository.findById(actingForPartyId)
-                .orElseThrow(() -> new PartyNotFoundException("Party not found"))
-            : null;
+        Objects.requireNonNull(actingForPartyId, "Acting for party is required for litigation friend");
+        return partyRepository.findById(actingForPartyId)
+            .orElseThrow(() -> new PartyNotFoundException("Acting for party not found"));
     }
 
-    public void addClaimant(AddPartyDetails addPartyDetails, PartyEntity partyEntity) {
+    private void applyClaimantDetails(AddPartyDetails addPartyDetails, PartyEntity partyEntity) {
         partyEntity.setOrgName(addPartyDetails.getClaimantOrganisationName() != null
             ? addPartyDetails.getClaimantOrganisationName() : addPartyDetails.getClaimantName());
         partyEntity.setNameKnown(VerticalYesNo.YES);
@@ -69,7 +77,7 @@ public class ManagePartyService {
             addPartyDetails.getClaimantEmail(), addPartyDetails.getClaimantPhoneNumber());
     }
 
-    public void addDefendant(AddPartyDetails addPartyDetails, PartyEntity partyEntity) {
+    private void applyDefendantDetails(AddPartyDetails addPartyDetails, PartyEntity partyEntity) {
         partyEntity.setFirstName(addPartyDetails.getFirstName());
         partyEntity.setLastName(addPartyDetails.getLastName());
         partyEntity.setNameKnown(VerticalYesNo.YES);
@@ -79,7 +87,7 @@ public class ManagePartyService {
             addPartyDetails.getDefendantEmail(), addPartyDetails.getDefendantPhoneNumber());
     }
 
-    public void addLitigationFriend(AddPartyDetails addPartyDetails, PartyEntity partyEntity) {
+    private void applyLitigationFriendDetails(AddPartyDetails addPartyDetails, PartyEntity partyEntity) {
         partyEntity.setOrgName(addPartyDetails.getLitigationFriendOrganisationName() != null
             ? addPartyDetails.getLitigationFriendOrganisationName() : addPartyDetails.getLitigationFriendName());
         partyEntity.setNameKnown(VerticalYesNo.YES);

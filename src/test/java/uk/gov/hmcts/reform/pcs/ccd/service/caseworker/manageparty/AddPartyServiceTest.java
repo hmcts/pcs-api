@@ -34,7 +34,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class ManagePartyServiceTest {
+class AddPartyServiceTest {
 
     @Mock
     private PartyRepository partyRepository;
@@ -49,11 +49,11 @@ class ManagePartyServiceTest {
     @Captor
     private ArgumentCaptor<PartyEntity> partyEntityCaptor;
 
-    private ManagePartyService underTest;
+    private AddPartyService underTest;
 
     @BeforeEach
     void setUp() {
-        underTest = new ManagePartyService(partyRepository, claimRepository, addressMapper);
+        underTest = new AddPartyService(partyRepository, claimRepository, addressMapper);
     }
 
     @Test
@@ -143,10 +143,27 @@ class ManagePartyServiceTest {
             .litigationFriendName("Bob Jones")
             .build();
 
-        // When / Then
+        // When
         assertThatThrownBy(() -> underTest.addParty(addPartyDetails, pcsCaseEntity, claimEntity, actingForPartyId))
             .isInstanceOf(PartyNotFoundException.class);
+        // Then
+        verify(claimRepository, never()).save(any());
+    }
 
+    @Test
+    void shouldThrowWhenActingForPartyIdNotProvidedForLitigationFriend() {
+        // Given
+        AddPartyDetails addPartyDetails = AddPartyDetails.builder()
+            .addPartyType(PartyType.LITIGATION_FRIEND)
+            .litigationFriendName("Bob Jones")
+            .build();
+
+        // When
+        assertThatThrownBy(() -> underTest.addParty(addPartyDetails, pcsCaseEntity, claimEntity, null))
+            .isInstanceOf(NullPointerException.class);
+
+        // Then
+        verify(partyRepository, never()).findById(any());
         verify(claimRepository, never()).save(any());
     }
 
@@ -157,8 +174,8 @@ class ManagePartyServiceTest {
         AddressEntity mappedAddress = mock(AddressEntity.class);
         when(addressMapper.toAddressEntityAndNormalise(address)).thenReturn(mappedAddress);
 
-        PartyEntity partyEntity = new PartyEntity();
         AddPartyDetails addPartyDetails = AddPartyDetails.builder()
+            .addPartyType(PartyType.CLAIMANT)
             .claimantName("Jane Doe")
             .claimantAddress(address)
             .claimantEmail("jane@test.com")
@@ -166,9 +183,11 @@ class ManagePartyServiceTest {
             .build();
 
         // When
-        underTest.addClaimant(addPartyDetails, partyEntity);
+        underTest.addParty(addPartyDetails, pcsCaseEntity, claimEntity, null);
 
         // Then
+        verify(pcsCaseEntity).addParty(partyEntityCaptor.capture());
+        PartyEntity partyEntity = partyEntityCaptor.getValue();
         assertThat(partyEntity.getAddress()).isEqualTo(mappedAddress);
         assertThat(partyEntity.getAddressKnown()).isEqualTo(VerticalYesNo.YES);
         assertThat(partyEntity.getEmailAddress()).isEqualTo("jane@test.com");
@@ -179,15 +198,17 @@ class ManagePartyServiceTest {
     @Test
     void shouldNotSetAddressOrPhoneWhenNotProvided() {
         // Given
-        PartyEntity partyEntity = new PartyEntity();
         AddPartyDetails addPartyDetails = AddPartyDetails.builder()
+            .addPartyType(PartyType.CLAIMANT)
             .claimantName("Jane Doe")
             .build();
 
         // When
-        underTest.addClaimant(addPartyDetails, partyEntity);
+        underTest.addParty(addPartyDetails, pcsCaseEntity, claimEntity, null);
 
         // Then
+        verify(pcsCaseEntity).addParty(partyEntityCaptor.capture());
+        PartyEntity partyEntity = partyEntityCaptor.getValue();
         assertThat(partyEntity.getAddress()).isNull();
         assertThat(partyEntity.getAddressKnown()).isEqualTo(VerticalYesNo.NO);
         assertThat(partyEntity.getPhoneNumber()).isNull();

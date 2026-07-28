@@ -27,7 +27,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.caseworker.manageparty.AddLitigationPart
 import uk.gov.hmcts.reform.pcs.ccd.page.caseworker.manageparty.AddPartyDetailsPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.caseworker.manageparty.ManagePartyOptionsPage;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
-import uk.gov.hmcts.reform.pcs.ccd.service.caseworker.manageparty.ManagePartyService;
+import uk.gov.hmcts.reform.pcs.ccd.service.caseworker.manageparty.AddPartyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 
@@ -46,7 +46,7 @@ public class ManageParty implements CCDConfig<PCSCase, State, UserRole> {
     private final PcsCaseService pcsCaseService;
     private final PartyService partyService;
     private final AddressFormatter addressFormatter;
-    private final ManagePartyService managePartyService;
+    private final AddPartyService addPartyService;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -112,7 +112,7 @@ public class ManageParty implements CCDConfig<PCSCase, State, UserRole> {
         ClaimEntity mainClaim = pcsCaseEntity.getClaims().getFirst();
         DynamicList partyRadioList = partyDetails.getPartyRadioList();
         UUID actingForPartyId = partyRadioList != null ? partyRadioList.getValueCode() : null;
-        managePartyService.addParty(partyDetails, pcsCaseEntity, mainClaim, actingForPartyId);
+        addPartyService.addParty(partyDetails, pcsCaseEntity, mainClaim, actingForPartyId);
 
         return SubmitResponse.<State>builder()
             .confirmationBody(buildConfirmationPageForParty(caseData, eventPayload.caseReference()))

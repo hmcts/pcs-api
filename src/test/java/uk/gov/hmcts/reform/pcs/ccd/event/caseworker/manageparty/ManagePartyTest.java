@@ -25,7 +25,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.event.BaseEventTest;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
-import uk.gov.hmcts.reform.pcs.ccd.service.caseworker.manageparty.ManagePartyService;
+import uk.gov.hmcts.reform.pcs.ccd.service.caseworker.manageparty.AddPartyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 
@@ -49,11 +49,11 @@ class ManagePartyTest extends BaseEventTest {
     @Mock
     private AddressFormatter addressFormatter;
     @Mock
-    private ManagePartyService managePartyService;
+    private AddPartyService addPartyService;
 
     @BeforeEach
     void setUp() {
-        ManageParty underTest = new ManageParty(pcsCaseService, partyService, addressFormatter, managePartyService);
+        ManageParty underTest = new ManageParty(pcsCaseService, partyService, addressFormatter, addPartyService);
         setEventUnderTest(underTest);
     }
 
@@ -116,7 +116,7 @@ class ManagePartyTest extends BaseEventTest {
         SubmitResponse<State> response = callSubmitHandler(caseData);
 
         // Then
-        verify(managePartyService).addParty(partyDetails, pcsCaseEntity, mainClaim, actingForPartyId);
+        verify(addPartyService).addParty(partyDetails, pcsCaseEntity, mainClaim, actingForPartyId);
 
         assertThat(response.getConfirmationBody())
             .contains("Party " + expectedPartyName + " added")
