@@ -10,6 +10,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.reform.pcs.camunda.CamundaService;
+import uk.gov.hmcts.reform.pcs.camunda.TaskType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
@@ -51,6 +53,7 @@ public class DocumentService {
     private final DocumentRepository documentRepository;
     private final DocumentIdExtractor documentIdExtractor;
     private final DocumentNameService documentNameService;
+    private final CamundaService camundaService;
 
     private static final String CLAIMANT_1 = "Claimant 1";
     private static final String DEFAULT_CATEGORY_ID = CaseFileCategory.UNCATEGORISED_DOCUMENTS.getId();
@@ -236,8 +239,10 @@ public class DocumentService {
         PartyEntity party,
         GenAppEntity selectedGenApp
     ) {
+        long caseReference = pcsCase.getCaseReference();
+
         if (CollectionUtils.isEmpty(uploadedDocuments)) {
-            log.info("No additional documents to save for case {}", pcsCase.getCaseReference());
+            log.info("No additional documents to save for case {}", caseReference);
             return Collections.emptyList();
         }
 
@@ -275,14 +280,23 @@ public class DocumentService {
 
         if (documentEntities.isEmpty()) {
             log.info("All additional documents for case {} already persisted; nothing to save",
-                pcsCase.getCaseReference());
+                     caseReference
+            );
             return Collections.emptyList();
+        }
+
+        if (selectedGenApp != null) {
+            camundaService.createTask(caseReference, TaskType.REVIEW_ADDITIONAL_DOCS_GEN_APP);
         }
 
         List<DocumentEntity> saved = documentRepository.saveAll(documentEntities);
         log.info("Saved {} additional documents for case {} and party {}",
-            saved.size(), pcsCase.getCaseReference(), party.getId());
+                 saved.size(), caseReference, party.getId());
         return saved;
+    }
+
+    private void createWorkAllocationTasks(GenAppEntity selectedGenApp) {
+
     }
 
     private static ClaimEntity getMainClaim(PcsCaseEntity pcsCase) {
