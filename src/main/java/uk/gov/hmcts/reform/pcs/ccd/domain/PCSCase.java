@@ -31,6 +31,7 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.InternalCaseFlagAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.InternalTabAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.PartyVisibleTabAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.RasValidationAccess;
+import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.EnterGenAppRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.DashboardData;
 import uk.gov.hmcts.reform.pcs.ccd.domain.documentupload.DocumentUploadDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.documentamend.DocumentAmendDetails;
@@ -626,6 +627,18 @@ public class PCSCase {
         searchable = false
     )
     private CitizenGenAppRequest citizenGenAppRequest;
+
+    @CCD(
+        searchable = false
+    )
+    @JsonUnwrapped(prefix = "enter_genapp_")
+    private EnterGenAppRequest enterGenAppRequest;
+
+    @CCD(label = "Which party made the application?",
+        searchable = false,
+        typeOverride = DynamicRadioList
+    )
+    private DynamicList partyRadioList;
 
     @CCD(
         label = "Search Criteria",
