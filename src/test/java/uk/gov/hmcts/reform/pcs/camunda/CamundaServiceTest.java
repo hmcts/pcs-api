@@ -319,8 +319,7 @@ public class CamundaServiceTest {
         camundaService.handleRequest(taskData);
 
         // Then
-        ArgumentCaptor<SendMessageRequest> requestArgumentCaptor =
-        ArgumentCaptor.forClass(SendMessageRequest.class);
+        ArgumentCaptor<SendMessageRequest> requestArgumentCaptor = ArgumentCaptor.forClass(SendMessageRequest.class);
         verify(camundaApi).sendMessage(eq("authToken"), requestArgumentCaptor.capture());
         SendMessageRequest sendMessageRequest = requestArgumentCaptor.getValue();
 
@@ -349,8 +348,7 @@ public class CamundaServiceTest {
         camundaService.handleRequest(taskData);
 
         // Then
-        ArgumentCaptor<SendMessageRequest> requestArgumentCaptor =
-        ArgumentCaptor.forClass(SendMessageRequest.class);
+        ArgumentCaptor<SendMessageRequest> requestArgumentCaptor = ArgumentCaptor.forClass(SendMessageRequest.class);
         verify(camundaApi).sendMessage(eq("authToken"), requestArgumentCaptor.capture());
         SendMessageRequest sendMessageRequest = requestArgumentCaptor.getValue();
 
@@ -379,8 +377,7 @@ public class CamundaServiceTest {
         camundaService.handleRequest(taskData);
 
         // Then
-        ArgumentCaptor<SendMessageRequest> requestArgumentCaptor =
-        ArgumentCaptor.forClass(SendMessageRequest.class);
+        ArgumentCaptor<SendMessageRequest> requestArgumentCaptor = ArgumentCaptor.forClass(SendMessageRequest.class);
         verify(camundaApi).sendMessage(eq("authToken"), requestArgumentCaptor.capture());
         SendMessageRequest sendMessageRequest = requestArgumentCaptor.getValue();
 
