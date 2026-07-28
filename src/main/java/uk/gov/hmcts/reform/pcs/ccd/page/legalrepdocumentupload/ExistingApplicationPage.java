@@ -8,6 +8,9 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocumentUploadDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.CcdPage;
+import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
+
+import java.util.List;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 
@@ -23,9 +26,6 @@ public class ExistingApplicationPage implements CcdPageConfiguration, CcdPage {
                         without telling the other party) we will not share anything with them.
                     </p>
                     """;
-
-    static final String ERROR_MESSAGE =
-        "Confirm if these documents relate to an existing application";
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -51,9 +51,17 @@ public class ExistingApplicationPage implements CcdPageConfiguration, CcdPage {
     public AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
                                                                  CaseDetails<PCSCase, State> before) {
         PCSCase data = details.getData();
+        LegalRepDocumentUploadDetails uploadDetails = data.getLegalRepDocumentUploadDetails();
+        DynamicStringList validCategories = uploadDetails.getValidCategories();
+
+        if (validCategories == null || validCategories.getValue() == null) {
+            return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
+                .data(data)
+                .errors(List.of("Confirm if these documents relate to an existing application"))
+                .build();
+        }
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(data)
-            .errorMessageOverride(ERROR_MESSAGE)
             .build();
     }
 }
