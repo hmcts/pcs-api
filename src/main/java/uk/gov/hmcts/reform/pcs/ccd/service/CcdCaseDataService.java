@@ -46,7 +46,7 @@ public class CcdCaseDataService {
                 """,
                 namedParameters,
                 (rs, rowNum) -> {
-                    long caseRef = rs.getLong("case_reference");
+                    long caseRef = rs.getLong("reference");
                     return DraftCasesToDiscard.builder()
                             .caseReference(caseRef)
                             .build();
