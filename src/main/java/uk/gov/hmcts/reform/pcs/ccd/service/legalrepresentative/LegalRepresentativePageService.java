@@ -31,10 +31,10 @@ public class LegalRepresentativePageService {
     private final AddressFormatter addressFormatter;
 
     @Transactional
-    public void save(String organisationId, long caseReference, LegalRepresentativeDetails legalRepresentativeDetails) {
+    public void save(long caseReference, LegalRepresentativeDetails legalRepresentativeDetails) {
         Optional<LegalRepresentativeOrganisationEntity> legalRepresentativeOrganisation =
             legalRepresentativeOrganisationRepository
-                .findByOrganisationIdAndCaseReference(organisationId, caseReference);
+                .findByOrganisationIdAndCaseReference(legalRepresentativeDetails.getOrganisationId(), caseReference);
 
         LegalRepresentativeOrganisationEntity legalRepresentativeOrganisationEntity = legalRepresentativeOrganisation
                 .orElseThrow(() -> new IllegalStateException("Cannot find LegalRepresentativeOrganisation"));
@@ -105,6 +105,8 @@ public class LegalRepresentativePageService {
         } else {
             details.setOrganisationAddressFound(YesOrNo.NO);
         }
+        details.setOrganisationId(organisationId);
+
         return details;
     }
 

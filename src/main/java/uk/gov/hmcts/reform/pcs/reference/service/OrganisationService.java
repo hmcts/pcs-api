@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.pcs.exception.OrganisationDetailsException;
 import uk.gov.hmcts.reform.pcs.exception.SecurityContextException;
-import uk.gov.hmcts.reform.pcs.reference.dto.NameAndAddress;
+import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetails;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.UUID;
@@ -21,21 +21,21 @@ public class OrganisationService {
     private final SecurityContextService securityContextService;
     private final CachingOrganisationDetailsService cachingOrganisationDetailsService;
 
-    public NameAndAddress getNameAndAddressForCurrentUser() {
+    public OrganisationDetails getOrganisationDetailsForCurrentUser() {
         try {
             UUID userId = resolveUserId();
             if (userId == null) {
                 return null;
             }
-            return cachingOrganisationDetailsService.getNameAndAddress(userId.toString());
+            return cachingOrganisationDetailsService.getOrganisationDetails(userId.toString());
         } catch (Exception ex) {
             log.error("Error retrieving organisation name and address from rd-professional API. Error: ", ex);
             return null;
         }
     }
 
-    public NameAndAddress getNameAndAddress(String userId) {
-        return cachingOrganisationDetailsService.getNameAndAddress(userId);
+    public OrganisationDetails getOrganisationDetails(String userId) {
+        return cachingOrganisationDetailsService.getOrganisationDetails(userId);
     }
 
     /**

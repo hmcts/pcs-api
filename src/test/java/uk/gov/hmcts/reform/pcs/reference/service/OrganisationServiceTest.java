@@ -10,7 +10,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.exception.OrganisationDetailsException;
 import uk.gov.hmcts.reform.pcs.exception.SecurityContextException;
-import uk.gov.hmcts.reform.pcs.reference.dto.NameAndAddress;
+import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetails;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.UUID;
@@ -45,7 +45,7 @@ class OrganisationServiceTest {
     }
 
     @Nested
-    @DisplayName("getNameAndAddressForCurrentUser")
+    @DisplayName("getOrganisationDetailsForCurrentUser")
     class GetNameAndAddressForCurrentUser {
 
         @Test
@@ -57,19 +57,20 @@ class OrganisationServiceTest {
                 .postTown("London")
                 .postCode("L2 3FF")
                 .build();
-            NameAndAddress nameAndAddress = new NameAndAddress(ORGANISATION_NAME, addressUK);
+            String orgId = "org";
+            OrganisationDetails organisationDetails = new OrganisationDetails(ORGANISATION_NAME, addressUK, orgId);
 
             when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
-            when(cachingOrganisationDetailsService.getNameAndAddress(USER_ID.toString()))
-                .thenReturn(nameAndAddress);
+            when(cachingOrganisationDetailsService.getOrganisationDetails(USER_ID.toString()))
+                .thenReturn(organisationDetails);
 
             // When
-            NameAndAddress result = organisationService.getNameAndAddressForCurrentUser();
+            OrganisationDetails result = organisationService.getOrganisationDetailsForCurrentUser();
 
             // Then
-            assertThat(result).isEqualTo(nameAndAddress);
+            assertThat(result).isEqualTo(organisationDetails);
             verify(securityContextService).getCurrentUserId();
-            verify(cachingOrganisationDetailsService).getNameAndAddress(USER_ID.toString());
+            verify(cachingOrganisationDetailsService).getOrganisationDetails(USER_ID.toString());
         }
 
         @Test
@@ -79,12 +80,12 @@ class OrganisationServiceTest {
             when(securityContextService.getCurrentUserId()).thenReturn(null);
 
             // When
-            NameAndAddress result = organisationService.getNameAndAddressForCurrentUser();
+            OrganisationDetails result = organisationService.getOrganisationDetailsForCurrentUser();
 
             // Then
             assertThat(result).isNull();
             verify(securityContextService).getCurrentUserId();
-            verify(cachingOrganisationDetailsService, never()).getNameAndAddress(anyString());
+            verify(cachingOrganisationDetailsService, never()).getOrganisationDetails(anyString());
         }
 
         @Test
@@ -92,11 +93,11 @@ class OrganisationServiceTest {
         void shouldReturnNullWhenCachingServiceReturnsNull() {
             // Given
             when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
-            when(cachingOrganisationDetailsService.getNameAndAddress(USER_ID.toString()))
+            when(cachingOrganisationDetailsService.getOrganisationDetails(USER_ID.toString()))
                 .thenReturn(null);
 
             // When
-            NameAndAddress result = organisationService.getNameAndAddressForCurrentUser();
+            OrganisationDetails result = organisationService.getOrganisationDetailsForCurrentUser();
 
             // Then
             assertThat(result).isNull();
@@ -107,11 +108,11 @@ class OrganisationServiceTest {
         void shouldReturnNullWhenCachingServiceThrowsException() {
             // Given
             when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
-            when(cachingOrganisationDetailsService.getNameAndAddress(USER_ID.toString()))
+            when(cachingOrganisationDetailsService.getOrganisationDetails(USER_ID.toString()))
                 .thenThrow(new RuntimeException("Service unavailable"));
 
             // When
-            NameAndAddress result = organisationService.getNameAndAddressForCurrentUser();
+            OrganisationDetails result = organisationService.getOrganisationDetailsForCurrentUser();
 
             // Then
             assertThat(result).isNull();
@@ -125,16 +126,16 @@ class OrganisationServiceTest {
                 .thenThrow(new RuntimeException("Security context error"));
 
             // When
-            NameAndAddress result = organisationService.getNameAndAddressForCurrentUser();
+            OrganisationDetails result = organisationService.getOrganisationDetailsForCurrentUser();
 
             // Then
             assertThat(result).isNull();
-            verify(cachingOrganisationDetailsService, never()).getNameAndAddress(anyString());
+            verify(cachingOrganisationDetailsService, never()).getOrganisationDetails(anyString());
         }
     }
 
     @Nested
-    @DisplayName("getNameAndAddress")
+    @DisplayName("getOrganisationDetails")
     class GetNameAndAddress {
 
         @Test
@@ -146,18 +147,19 @@ class OrganisationServiceTest {
                 .postTown("London")
                 .postCode("L2 3FF")
                 .build();
-            NameAndAddress nameAndAddress = new NameAndAddress(ORGANISATION_NAME, addressUK);
+            String orgId = "org";
+            OrganisationDetails organisationDetails = new OrganisationDetails(ORGANISATION_NAME, addressUK, orgId);
 
-            when(cachingOrganisationDetailsService.getNameAndAddress(USER_ID.toString()))
-                .thenReturn(nameAndAddress);
+            when(cachingOrganisationDetailsService.getOrganisationDetails(USER_ID.toString()))
+                .thenReturn(organisationDetails);
 
             // When
-            NameAndAddress result = organisationService.getNameAndAddress(USER_ID.toString());
+            OrganisationDetails result = organisationService.getOrganisationDetails(USER_ID.toString());
 
             // Then
-            assertThat(result).isEqualTo(nameAndAddress);
+            assertThat(result).isEqualTo(organisationDetails);
             verify(securityContextService, never()).getCurrentUserId();
-            verify(cachingOrganisationDetailsService).getNameAndAddress(USER_ID.toString());
+            verify(cachingOrganisationDetailsService).getOrganisationDetails(USER_ID.toString());
         }
     }
 
