@@ -163,7 +163,11 @@ public class DocumentService {
                     additionalDocumentType = AdditionalDocumentType.valueOf(doc.getDocumentTypeWales().name());
                     doc.setDocumentTypeWales(null);
                 } else {
-                    additionalDocumentType = null;
+                    additionalDocumentType = doc.getDocumentType() == null
+                        || doc.getDocumentType().getValue() == null
+                        || doc.getDocumentType().getValue().getLabel() == null
+                        ? null
+                        : AdditionalDocumentType.getValueFromLabel(doc.getDocumentType().getValue().getLabel());
                 }
 
                 return DocumentHolder.builder()

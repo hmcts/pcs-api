@@ -97,8 +97,10 @@ class UploadAdditionalDocumentsDetailsTest extends BasePageTest {
         assertThat(secondDocumentType).isNotNull();
         assertThat(firstDocumentType.getListItems()).hasSize(AdditionalDocumentTypeEngland.values().length);
         assertThat(secondDocumentType.getListItems()).isSameAs(firstDocumentType.getListItems());
-        assertThat(firstDocumentType.getValue().getLabel()).isEqualTo(AdditionalDocumentTypeEngland.WITNESS_STATEMENT.getLabel());
-        assertThat(secondDocumentType.getValue().getLabel()).isEqualTo(AdditionalDocumentTypeEngland.OTHER.getLabel());
+        assertThat(firstDocumentType.getValue().getLabel())
+            .isEqualTo(AdditionalDocumentTypeEngland.WITNESS_STATEMENT.getLabel());
+        assertThat(secondDocumentType.getValue().getLabel())
+            .isEqualTo(AdditionalDocumentTypeEngland.OTHER.getLabel());
     }
 
     @Test
@@ -127,7 +129,8 @@ class UploadAdditionalDocumentsDetailsTest extends BasePageTest {
         assertThat(secondDocumentType).isNotNull();
         assertThat(firstDocumentType.getListItems()).hasSize(AdditionalDocumentTypeWales.values().length);
         assertThat(secondDocumentType.getListItems()).isSameAs(firstDocumentType.getListItems());
-        assertThat(firstDocumentType.getValue().getLabel()).isEqualTo(AdditionalDocumentTypeWales.WITNESS_STATEMENT.getLabel());
+        assertThat(firstDocumentType.getValue().getLabel())
+            .isEqualTo(AdditionalDocumentTypeWales.WITNESS_STATEMENT.getLabel());
         assertThat(secondDocumentType.getValue().getLabel()).isEqualTo(AdditionalDocumentTypeWales.OTHER.getLabel());
     }
 

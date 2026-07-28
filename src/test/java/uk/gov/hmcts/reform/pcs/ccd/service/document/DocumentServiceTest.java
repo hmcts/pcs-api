@@ -220,6 +220,39 @@ class DocumentServiceTest {
             .containsExactly(expectedDocumentType);
     }
 
+    @Test
+    void shouldMapAdditionalDocumentTypeFromDynamicListWhenCountrySpecificTypesAreNull() {
+        PCSCase pcsCase = mock(PCSCase.class);
+        AdditionalDocumentType additionalDocumentType = AdditionalDocumentType.EICR_REPORT;
+
+        AdditionalDocument additionalDocument = AdditionalDocument.builder()
+            .document(Document.builder()
+                .filename("userEnteredDetails.pdf")
+                .uploadTimestamp(LocalDateTime.now())
+                .url("https://host/" + UUID.randomUUID())
+                .binaryUrl("someUrl")
+                .categoryId("uploaded-category")
+                .build())
+            .documentType(new DynamicList(
+                new DynamicListElement(UUID.randomUUID(), additionalDocumentType.getLabel()),
+                new ArrayList<>()
+            ))
+            .build();
+
+        when(pcsCase.getAdditionalDocuments()).thenReturn(List.of(
+            ListValue.<AdditionalDocument>builder().value(additionalDocument).build()
+        ));
+
+        underTest.createAllDocuments(pcsCase);
+
+        verify(documentRepository).saveAll(documentEntityListCaptor.capture());
+        List<DocumentEntity> capturedEntities = documentEntityListCaptor.getValue();
+
+        assertThat(capturedEntities)
+            .extracting(DocumentEntity::getType)
+            .containsExactly(DocumentType.EICR_REPORT);
+    }
+
     @ParameterizedTest
     @MethodSource("additionalDocumentCategoryScenarios")
     void shouldMapAdditionalDocumentsToCaseFileCategories(AdditionalDocumentType additionalDocumentType,

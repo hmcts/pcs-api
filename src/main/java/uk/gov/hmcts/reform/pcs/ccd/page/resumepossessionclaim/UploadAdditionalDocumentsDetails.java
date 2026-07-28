@@ -69,7 +69,7 @@ public class UploadAdditionalDocumentsDetails implements CcdPageConfiguration {
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
                                                                   CaseDetails<PCSCase, State> detailsBefore) {
-       PCSCase caseData = details.getData();
+        PCSCase caseData = details.getData();
 
         copyDocumentType(caseData);
 
