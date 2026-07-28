@@ -38,12 +38,18 @@ export class ActionCMRegistry {
     ['selectDocumentToAmend', new CaseManagementAction()],
     ['changeCaseState', new CaseManagementAction()],
     ['confirmCaseStateChange', new CaseManagementAction()],
+    ['getAllPartyDetails', new CaseManagementAction()],
+    ['enterApplicationDetails', new CaseManagementAction()],
+    ['confirmIfCourtHearingInNext14Days', new CaseManagementAction()],
+    ['enterApplicationFeeDetails', new CaseManagementAction()],
     ['errorValidationSelectDocumentPage', new ErrorValidationAction()],
     ['errorValidationChangeCaseStatePage', new ErrorValidationAction()],
-    ['errorValidationSelectDocumentPage', new ErrorValidationAction()],
+    ['errorValidationEnterGeneralAppPage', new ErrorValidationAction()],
+    ['errorValidationHearingDatePage', new ErrorValidationAction()],
+    ['errorValidationApplicationFeePage', new ErrorValidationAction()],
     ['inputErrorValidation', new CaseManagementAction()],
     ['reTryOnCallBackError', new RetryOnCallBackError()],
-    
+
   ]);
 
   static getAction(actionName: string): IAction {
