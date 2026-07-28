@@ -40,7 +40,7 @@ public class CcdCaseDataService {
                 .addValue("discardDaysAfter", discardAfterDays);
         return jdbcTemplate.query(
                 """
-                   SELECT cd.case_reference
+                   SELECT cd.reference
                    FROM ccd.case_data cd
                    WHERE cd.created_date < now()::date - :discardDaysAfter
                 """,

@@ -37,7 +37,7 @@ java:
     DB_SCHEDULER_EXECUTOR_ENABLED: true
     BULK_PRINT_SCHEDULE: "FIXED_DELAY|300s"
     EXPIRED_CASE_DELETION_SCHEDULE: "FIXED_DELAY|300s"
-    EXPIRED_CASE_DELETION_DISCARD_AFTER_DAYS: "30"
+    EXPIRED_CASE_DELETION_DISCARD_AFTER_DAYS: "-1"
     BULK_PRINT_LOOKBACK_HOURS: "1"
     DOC_ASSEMBLY_URL: http://dg-docassembly-aat.service.core-compute-aat.internal
     SEND_LETTER_URL: http://rpe-send-letter-service-aat.service.core-compute-aat.internal
