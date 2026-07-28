@@ -95,7 +95,8 @@ class SubmitEventHandlerTest {
                 AddPartyDetails.builder()
                     .managePartyOptions(ManagePartyOptions.ADD_PARTY)
                     .addPartyType(PartyType.CLAIMANT)
-                    .claimantName("Jane Doe")
+                    .claimantFirstName("Jane")
+                    .claimantLastName("Doe")
                     .build(),
                 null,
                 "Claimant Jane Doe"
@@ -115,11 +116,12 @@ class SubmitEventHandlerTest {
                     .managePartyOptions(ManagePartyOptions.ADD_PARTY)
                     .addPartyType(PartyType.LITIGATION_FRIEND)
                     .litigationFriendOrganisationName("Acme Ltd")
-                    .litigationFriendName("Bob Jones")
+                    .litigationFriendFirstName("Bob")
+                    .litigationFriendLastName("Jones")
                     .partyRadioList(partyRadioList)
                     .build(),
                 actingForPartyId,
-                "Litigation friend Acme Ltd"
+                "Litigation friend Bob Jones"
             )
         );
     }

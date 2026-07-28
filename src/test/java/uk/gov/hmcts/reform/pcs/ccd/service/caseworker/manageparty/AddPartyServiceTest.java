@@ -61,7 +61,8 @@ class AddPartyServiceTest {
         // Given
         AddPartyDetails addPartyDetails = AddPartyDetails.builder()
             .addPartyType(PartyType.CLAIMANT)
-            .claimantName("Jane Doe")
+            .claimantFirstName("Jane")
+            .claimantLastName("Doe")
             .build();
 
         // When
@@ -70,7 +71,8 @@ class AddPartyServiceTest {
         // Then
         verify(pcsCaseEntity).addParty(partyEntityCaptor.capture());
         PartyEntity createdParty = partyEntityCaptor.getValue();
-        assertThat(createdParty.getOrgName()).isEqualTo("Jane Doe");
+        assertThat(createdParty.getFirstName()).isEqualTo("Jane");
+        assertThat(createdParty.getLastName()).isEqualTo("Doe");
         assertThat(createdParty.getNameKnown()).isEqualTo(VerticalYesNo.YES);
 
         verify(partyRepository).save(createdParty);
@@ -114,7 +116,8 @@ class AddPartyServiceTest {
         AddPartyDetails addPartyDetails = AddPartyDetails.builder()
             .addPartyType(PartyType.LITIGATION_FRIEND)
             .litigationFriendOrganisationName("Acme Ltd")
-            .litigationFriendName("Bob Jones")
+            .litigationFriendFirstName("Bob")
+            .litigationFriendLastName("Jones")
             .build();
 
         // When
@@ -140,7 +143,8 @@ class AddPartyServiceTest {
 
         AddPartyDetails addPartyDetails = AddPartyDetails.builder()
             .addPartyType(PartyType.LITIGATION_FRIEND)
-            .litigationFriendName("Bob Jones")
+            .litigationFriendFirstName("Bob")
+            .litigationFriendLastName("Jones")
             .build();
 
         // When
@@ -155,7 +159,8 @@ class AddPartyServiceTest {
         // Given
         AddPartyDetails addPartyDetails = AddPartyDetails.builder()
             .addPartyType(PartyType.LITIGATION_FRIEND)
-            .litigationFriendName("Bob Jones")
+            .litigationFriendFirstName("Bob")
+            .litigationFriendLastName("Jones")
             .build();
 
         // When
@@ -176,7 +181,8 @@ class AddPartyServiceTest {
 
         AddPartyDetails addPartyDetails = AddPartyDetails.builder()
             .addPartyType(PartyType.CLAIMANT)
-            .claimantName("Jane Doe")
+            .claimantFirstName("Jane")
+            .claimantLastName("Doe")
             .claimantAddress(address)
             .claimantEmail("jane@test.com")
             .claimantPhoneNumber("07000000000")
@@ -200,7 +206,8 @@ class AddPartyServiceTest {
         // Given
         AddPartyDetails addPartyDetails = AddPartyDetails.builder()
             .addPartyType(PartyType.CLAIMANT)
-            .claimantName("Jane Doe")
+            .claimantFirstName("Jane")
+            .claimantLastName("Doe")
             .build();
 
         // When

@@ -1,7 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.event.caseworker.manageparty;
 
 import lombok.RequiredArgsConstructor;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.callback.Submit;
@@ -55,20 +54,20 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
         AddPartyDetails partyDetails = pcsCase.getAddPartyDetails();
 
         String partyDescription = switch (partyDetails.getAddPartyType()) {
-            case CLAIMANT -> "Claimant %s".formatted(resolvePartyName(
-                partyDetails.getClaimantOrganisationName(), partyDetails.getClaimantName()));
-            case DEFENDANT -> "Defendant %s %s".formatted(
-                partyDetails.getFirstName(), partyDetails.getLastName());
-            case LITIGATION_FRIEND -> "Litigation friend %s".formatted(resolvePartyName(
-                partyDetails.getLitigationFriendOrganisationName(), partyDetails.getLitigationFriendName()));
+            case CLAIMANT -> "Claimant %s".formatted(
+                joinFirstAndLastName(partyDetails.getClaimantFirstName(), partyDetails.getClaimantLastName()));
+            case DEFENDANT -> "Defendant %s".formatted(
+                joinFirstAndLastName(partyDetails.getFirstName(), partyDetails.getLastName()));
+            case LITIGATION_FRIEND -> "Litigation friend %s".formatted(joinFirstAndLastName(
+                partyDetails.getLitigationFriendFirstName(), partyDetails.getLitigationFriendLastName()));
         };
 
         return buildConfirmationMarkdown(
             partyDescription, caseReference, pcsCase.getPropertyAddress(), pcsCase.getCaseNameHmctsInternal());
     }
 
-    private String resolvePartyName(String organisationName, String personName) {
-        return StringUtils.isNotBlank(organisationName) ? organisationName : personName;
+    private String joinFirstAndLastName(String firstName, String lastName) {
+        return firstName + " " + lastName;
     }
 
     private String buildConfirmationMarkdown(String partyDescription, long caseReference, AddressUK address,

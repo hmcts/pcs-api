@@ -40,9 +40,13 @@ public class AddPartyDetails {
     @CCD(label = "Organisation name", max = 60)
     private String claimantOrganisationName;
 
-    @JsonProperty("addParty_ClaimantName")
-    @CCD(label = "Claimant name", max = 60)
-    private String claimantName;
+    @JsonProperty("addParty_ClaimantFirstName")
+    @CCD(label = "First name", max = 60)
+    private String claimantFirstName;
+
+    @JsonProperty("addParty_ClaimantLastName")
+    @CCD(label = "Last name", max = 60)
+    private String claimantLastName;
 
     @JsonProperty("addParty_ClaimantAddress")
     @CCD(label = "Address for service")
@@ -80,27 +84,31 @@ public class AddPartyDetails {
     @CCD(label = "Phone number", searchable = false, max = 60)
     private String defendantPhoneNumber;
 
-    @JsonProperty("addParty_LitigationFriendName")
-    @CCD(label = "Litigation friend name", max = 60)
-    private String litigationFriendName;
+    @JsonProperty("addParty_LFFirstName")
+    @CCD(label = "First name", max = 60)
+    private String litigationFriendFirstName;
 
-    @JsonProperty("addParty_LitigationFriendOrganisationName")
+    @JsonProperty("addParty_LFLastName")
+    @CCD(label = "Last name", max = 60)
+    private String litigationFriendLastName;
+
+    @JsonProperty("addParty_LFOrganisationName")
     @CCD(label = "Organisation name", max = 60)
     private String litigationFriendOrganisationName;
 
-    @JsonProperty("addParty_LitigationFriendDateOfBirth")
+    @JsonProperty("addParty_LFDateOfBirth")
     @CCD(label = "Date of birth", hint = "For example, 16 4 2021")
     private LocalDate litigationFriendDateOfBirth;
 
-    @JsonProperty("addParty_LitigationFriendAddress")
+    @JsonProperty("addParty_LFAddress")
     @CCD(label = "Address for service")
     private AddressUK litigationFriendAddress;
 
-    @JsonProperty("addParty_LitigationFriendEmail")
+    @JsonProperty("addParty_LFEmail")
     @CCD(label = "Email address", searchable = false, max = 60)
     private String litigationFriendEmail;
 
-    @JsonProperty("addParty_LitigationFriendPhoneNumber")
+    @JsonProperty("addParty_LFPhoneNumber")
     @CCD(label = "Phone number", searchable = false, max = 60)
     private String litigationFriendPhoneNumber;
 

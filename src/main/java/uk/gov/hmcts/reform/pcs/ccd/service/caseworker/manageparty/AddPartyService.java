@@ -69,8 +69,9 @@ public class AddPartyService {
     }
 
     private void applyClaimantDetails(AddPartyDetails addPartyDetails, PartyEntity partyEntity) {
-        partyEntity.setOrgName(addPartyDetails.getClaimantOrganisationName() != null
-            ? addPartyDetails.getClaimantOrganisationName() : addPartyDetails.getClaimantName());
+        partyEntity.setFirstName(addPartyDetails.getClaimantFirstName());
+        partyEntity.setLastName(addPartyDetails.getClaimantLastName());
+        partyEntity.setOrgName(addPartyDetails.getClaimantOrganisationName());
         partyEntity.setNameKnown(VerticalYesNo.YES);
 
         applyContactDetails(partyEntity, addPartyDetails.getClaimantAddress(),
@@ -88,8 +89,9 @@ public class AddPartyService {
     }
 
     private void applyLitigationFriendDetails(AddPartyDetails addPartyDetails, PartyEntity partyEntity) {
-        partyEntity.setOrgName(addPartyDetails.getLitigationFriendOrganisationName() != null
-            ? addPartyDetails.getLitigationFriendOrganisationName() : addPartyDetails.getLitigationFriendName());
+        partyEntity.setFirstName(addPartyDetails.getLitigationFriendFirstName());
+        partyEntity.setLastName(addPartyDetails.getLitigationFriendLastName());
+        partyEntity.setOrgName(addPartyDetails.getLitigationFriendOrganisationName());
         partyEntity.setNameKnown(VerticalYesNo.YES);
         partyEntity.setDateOfBirth(addPartyDetails.getLitigationFriendDateOfBirth());
 

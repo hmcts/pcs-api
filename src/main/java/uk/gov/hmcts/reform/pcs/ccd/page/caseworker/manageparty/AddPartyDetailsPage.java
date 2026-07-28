@@ -29,7 +29,8 @@ public class AddPartyDetailsPage implements CcdPageConfiguration {
             .complex(PCSCase::getAddPartyDetails)
                 // Claimant
                 .optional(AddPartyDetails::getClaimantOrganisationName, CLAIMANT_SELECTED)
-                .mandatory(AddPartyDetails::getClaimantName, CLAIMANT_SELECTED)
+                .mandatory(AddPartyDetails::getClaimantFirstName, CLAIMANT_SELECTED)
+                .mandatory(AddPartyDetails::getClaimantLastName, CLAIMANT_SELECTED)
                 .complex(AddPartyDetails::getClaimantAddress, CLAIMANT_SELECTED)
                     .mandatory(AddressUK::getAddressLine1)
                     .optional(AddressUK::getAddressLine2)
@@ -60,7 +61,8 @@ public class AddPartyDetailsPage implements CcdPageConfiguration {
 
                 // Litigation friend
                 .optional(AddPartyDetails::getLitigationFriendOrganisationName, LITIGATION_FRIEND_SELECTED)
-                .mandatory(AddPartyDetails::getLitigationFriendName, LITIGATION_FRIEND_SELECTED)
+                .mandatory(AddPartyDetails::getLitigationFriendFirstName, LITIGATION_FRIEND_SELECTED)
+                .mandatory(AddPartyDetails::getLitigationFriendLastName, LITIGATION_FRIEND_SELECTED)
                 .optional(AddPartyDetails::getLitigationFriendDateOfBirth, LITIGATION_FRIEND_SELECTED)
                 .complex(AddPartyDetails::getLitigationFriendAddress, LITIGATION_FRIEND_SELECTED)
                     .mandatory(AddressUK::getAddressLine1)
