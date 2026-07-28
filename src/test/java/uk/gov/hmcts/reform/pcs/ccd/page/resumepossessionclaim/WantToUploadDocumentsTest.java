@@ -53,7 +53,7 @@ class WantToUploadDocumentsTest extends BasePageTest {
     }
 
     @Test
-    void shouldSetDataFromDraftIfAvailable() {
+    void shouldSetDataFromDraftIfAvailableForEngland() {
         // Given
         PCSCase caseData = PCSCase.builder()
                 .legislativeCountry(LegislativeCountry.ENGLAND)
@@ -90,6 +90,46 @@ class WantToUploadDocumentsTest extends BasePageTest {
         assertThat(addDoc.getDocumentType().getListItems())
                 .extracting(DynamicListElement::getLabel)
                 .containsExactly(AdditionalDocumentType.WITNESS_STATEMENT.getLabel());
+    }
+
+    @Test
+    void shouldSetDataFromDraftIfAvailableForWales() {
+        // Given
+        PCSCase caseData = PCSCase.builder()
+                .legislativeCountry(LegislativeCountry.WALES)
+                .wantToUploadDocuments(VerticalYesNo.YES)
+                .build();
+
+        long caseReference = 1234;
+        UUID id = UUID.randomUUID();
+        DynamicListElement value = DynamicListElement.builder()
+                .code(id)
+                .label(AdditionalDocumentType.OCCUPATION_LICENCE.getLabel())
+                .build();
+
+        Optional<PCSCase> draftCaseData = Optional.of(PCSCase.builder()
+                .additionalDocuments(List.of(ListValue.<AdditionalDocument>builder()
+                        .value(AdditionalDocument.builder()
+                                .documentType(new DynamicList(value,
+                                        List.of(new DynamicListElement(
+                                                id, AdditionalDocumentType.OCCUPATION_LICENCE.getLabel()))))
+                                .description("Witness Statement")
+                                .build())
+                        .build()))
+                .build());
+
+        when(draftCaseDataService.getUnsubmittedCaseData(caseReference, EventId.resumePossessionClaim))
+                .thenReturn(draftCaseData);
+
+        // When
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+        // Then
+        AdditionalDocument addDoc = response.getData().getAdditionalDocuments().getFirst().getValue();
+        assertThat(addDoc.getDescription()).isEqualTo("Witness Statement");
+        assertThat(addDoc.getDocumentType().getListItems())
+                .extracting(DynamicListElement::getLabel)
+                .containsExactly(AdditionalDocumentType.OCCUPATION_LICENCE.getLabel());
     }
 
     @Test

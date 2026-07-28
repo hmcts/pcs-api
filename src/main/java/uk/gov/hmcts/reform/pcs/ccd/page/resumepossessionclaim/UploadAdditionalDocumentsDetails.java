@@ -69,7 +69,7 @@ public class UploadAdditionalDocumentsDetails implements CcdPageConfiguration {
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
                                                                   CaseDetails<PCSCase, State> detailsBefore) {
-        PCSCase caseData = details.getData();
+       PCSCase caseData = details.getData();
 
         copyDocumentType(caseData);
 
@@ -102,6 +102,8 @@ public class UploadAdditionalDocumentsDetails implements CcdPageConfiguration {
             return;
         }
 
+        List<DynamicListElement> documentTypes = getDocumentTypes(caseData);
+
         for (ListValue<AdditionalDocument> additionalDocumentListValue : caseData.getAdditionalDocuments()) {
             AdditionalDocument additionalDocument = additionalDocumentListValue.getValue();
             if (additionalDocument == null || additionalDocument.getDocumentType() != null) {
@@ -112,33 +114,49 @@ public class UploadAdditionalDocumentsDetails implements CcdPageConfiguration {
                 AdditionalDocumentTypeWales walesType = additionalDocument.getDocumentTypeWales();
                 if (walesType != null) {
                     additionalDocument.setDocumentType(
-                        createDynamicListForDocumentType(walesType.getLabel(), AdditionalDocumentTypeWales.values())
+                        createDynamicListForDocumentType(walesType.getLabel(), documentTypes)
                     );
-                    //additionalDocument.setDocumentTypeWales(null);
                 }
             } else {
                 AdditionalDocumentTypeEngland englandType = additionalDocument.getDocumentTypeEngland();
                 if (englandType != null) {
                     additionalDocument.setDocumentType(
-                        createDynamicListForDocumentType(englandType.getLabel(), AdditionalDocumentTypeEngland.values())
+                        createDynamicListForDocumentType(englandType.getLabel(), documentTypes)
                     );
-                    //additionalDocument.setDocumentTypeEngland(null);
                 }
             }
         }
     }
 
-    private DynamicList createDynamicListForDocumentType(String label, HasLabel[] documentTypes) {
-        List<DynamicListElement> items = Arrays.stream(documentTypes)
+    private List<DynamicListElement> getDocumentTypes(PCSCase caseData) {
+        ListValue<AdditionalDocument> firstAdditionalDocument = caseData.getAdditionalDocuments().isEmpty()
+            ? null
+            : caseData.getAdditionalDocuments().getFirst();
+
+        if (firstAdditionalDocument != null
+            && firstAdditionalDocument.getValue() != null
+            && firstAdditionalDocument.getValue().getDocumentType() != null
+            && firstAdditionalDocument.getValue().getDocumentType().getListItems() != null) {
+            return firstAdditionalDocument.getValue().getDocumentType().getListItems();
+        }
+
+        return caseData.getLegislativeCountry() == LegislativeCountry.WALES
+            ? createDocumentTypeItems(AdditionalDocumentTypeWales.values())
+            : createDocumentTypeItems(AdditionalDocumentTypeEngland.values());
+    }
+
+    private List<DynamicListElement> createDocumentTypeItems(HasLabel[] documentTypes) {
+        return Arrays.stream(documentTypes)
             .map(documentType -> new DynamicListElement(UUID.randomUUID(), documentType.getLabel()))
             .toList();
+    }
 
-        DynamicListElement selectedItem = items.stream()
+    private DynamicList createDynamicListForDocumentType(String label, List<DynamicListElement> documentTypes) {
+        DynamicListElement selectedItem = documentTypes.stream()
             .filter(item -> label.equals(item.getLabel()))
             .findFirst()
             .orElseThrow(() -> new IllegalArgumentException("No document type found for label: " + label));
 
-        return new DynamicList(selectedItem, items);
+        return new DynamicList(selectedItem, documentTypes);
     }
 }
-
