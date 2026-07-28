@@ -670,23 +670,6 @@ Short name</description>
           <text>true</text>
         </outputEntry>
       </rule>
-      <rule id="DecisionRule_0o4vdup">
-        <inputEntry id="UnaryTests_0mn0gpa">
-          <text></text>
-        </inputEntry>
-        <inputEntry id="UnaryTests_0jyv65c">
-          <text></text>
-        </inputEntry>
-        <outputEntry id="LiteralExpression_123pc6f">
-          <text>"dueDateOrigin"</text>
-        </outputEntry>
-        <outputEntry id="LiteralExpression_0kefczv">
-          <text>now()</text>
-        </outputEntry>
-        <outputEntry id="LiteralExpression_1c4v3cu">
-          <text>false</text>
-        </outputEntry>
-      </rule>
       <rule id="DecisionRule_0nk33fy">
         <inputEntry id="UnaryTests_0ok8nis">
           <text></text>
