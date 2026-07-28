@@ -118,7 +118,7 @@ class CcdCaseDataServiceTest {
         long expectedCaseRef = 999999L;
 
         ResultSet mockResultSet = mock(ResultSet.class);
-        when(mockResultSet.getLong("case_reference")).thenReturn(expectedCaseRef);
+        when(mockResultSet.getLong("reference")).thenReturn(expectedCaseRef);
 
         when(jdbcTemplate.query(anyString(), any(SqlParameterSource.class), any(RowMapper.class)))
                 .thenAnswer(invocation -> {
@@ -133,7 +133,7 @@ class CcdCaseDataServiceTest {
         // Then
         assertThat(result).hasSize(1);
         assertThat(result.getFirst().getCaseReference()).isEqualTo(expectedCaseRef);
-        verify(mockResultSet).getLong("case_reference");
+        verify(mockResultSet).getLong("reference");
     }
 
     @Test
