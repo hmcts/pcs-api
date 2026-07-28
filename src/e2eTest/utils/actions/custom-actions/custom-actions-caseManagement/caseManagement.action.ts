@@ -6,7 +6,10 @@ import { getCaseTypeId } from '@utils/common/caseType.utils';
 import { performAction, performActions, performValidation } from '@utils/controller-caseManagement';
 import { VERY_LONG_TIMEOUT } from 'playwright.config';
 import { caseSummary, home } from '@data/page-data';
-import { changeCaseState, confirmCaseStateChange, enterGenappApplication, enterGenAppapplicationFee, enterGenAppHearingDate, selectDocument } from '@data/page-data-figma/page-data-caseManagement-figma';
+import {
+  changeCaseState, confirmCaseStateChange, enterGenappApplication, enterGenAppapplicationFee,
+  enterGenAppConsentAndNotice, enterGenAppHearingDate, selectDocument
+} from '@data/page-data-figma/page-data-caseManagement-figma';
 import { caseInfo } from '../createCaseAPI.action';
 import { CaseManagementCommonUtils } from './caseManagementUtils.action';
 
@@ -32,6 +35,7 @@ export class CaseManagementAction implements IAction {
       ['enterApplicationDetails', () => this.enterApplicationDetails(fieldName as actionRecord)],
       ['confirmIfCourtHearingInNext14Days', () => this.confirmIfCourtHearingInNext14Days(fieldName as actionRecord)],
       ['enterApplicationFeeDetails', () => this.enterApplicationFeeDetails(fieldName as actionRecord)],
+      ['enterApplicationConsentAndNotice', () => this.enterApplicationConsentAndNotice(fieldName as actionRecord)],
       ['inputErrorValidation', () => this.inputErrorValidation(page, fieldName as actionRecord)],
 
     ]);
@@ -158,7 +162,7 @@ export class CaseManagementAction implements IAction {
     });
     if (fee.option1 === 'Yes') {
       await performAction('inputText', fee.label1, CaseManagementCommonUtils.getRandomNumberAsString(1, 500));
-    };
+    }
     await performAction('clickRadioButton', {
       question: fee.question2,
       option: fee.option2,
@@ -166,7 +170,7 @@ export class CaseManagementAction implements IAction {
 
     if (fee.option2 === 'Yes') {
       await performAction('inputText', fee.label2, CaseManagementCommonUtils.generateRandomString(fee.input as number));
-    };
+    }
     if (fee.option1 === 'No') {
       await performValidation('text', {
         elementType: 'paragraph',
@@ -177,7 +181,27 @@ export class CaseManagementAction implements IAction {
 
     } else {
       await performAction('reTryOnCallBackError', enterGenAppHearingDate.continueButton, fee.nextPage as string);
-    };
+    }
+
+  }
+
+  private async enterApplicationConsentAndNotice(confirmApplicationConsent: actionRecord) {
+    await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid});
+    await performValidation('text', {
+      elementType: 'paragraph',
+      text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
+    });
+    await performAction('clickRadioButton', {
+      question: confirmApplicationConsent.question1,
+      option: confirmApplicationConsent.option1,
+    });
+    if(confirmApplicationConsent.option1 === 'No') {
+      await performAction('clickRadioButton', {
+        question: confirmApplicationConsent.question2,
+        option: confirmApplicationConsent.option2,
+      });
+    }
+    await performAction('reTryOnCallBackError', enterGenAppConsentAndNotice.continueButton, confirmApplicationConsent.nextPage as string);
 
   }
 
@@ -277,7 +301,7 @@ export class CaseManagementAction implements IAction {
 
           default:
             throw new Error(`Validation type :"${validationArr.validationType}" is not valid`);
-        };
+        }
       }
     }
     if (validationArr.buttonRemove) {
