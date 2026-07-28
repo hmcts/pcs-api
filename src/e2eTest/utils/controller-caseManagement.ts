@@ -70,7 +70,7 @@ async function validatePageIfNavigated(action: string): Promise<void> {
 }
 
 function captureDataForCYA(action: string, fieldName?: actionData | actionRecord, value?: actionData | actionRecord): void {
-  if (action === 'changeCaseState') {
+  if (action === 'changeCaseState' || action === 'enterAppDetails') {
     captureDataForCYAPage = true;
   }
 
