@@ -98,7 +98,7 @@ class RespondPossessionClaimSubmitServiceTest {
         verify(documentService, never()).createCounterClaimUploadedDocuments(any(), any(), any(), any());
         verify(counterClaimService, never()).issueCounterClaim(any());
         assertThat(result.counterClaimEntity()).isNull();
-        assertThat(result.issuedWithoutPayment()).isFalse();
+        assertThat(result.paymentRequired()).isFalse();
         assertThat(result.possessionClaimResponse()).isEqualTo(possessionClaimResponse);
     }
 
@@ -132,7 +132,7 @@ class RespondPossessionClaimSubmitServiceTest {
         verify(counterClaimService, never()).issueCounterClaim(any());
         verify(draftCaseDataService).deleteUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim);
         assertThat(result.counterClaimEntity()).isEqualTo(savedCounterClaim);
-        assertThat(result.issuedWithoutPayment()).isFalse();
+        assertThat(result.paymentRequired()).isTrue();
     }
 
     @Test
@@ -167,7 +167,7 @@ class RespondPossessionClaimSubmitServiceTest {
         verify(draftCaseDataService).deleteUnsubmittedCaseData(
             CASE_REFERENCE, respondPossessionClaim, partyEntity.getId());
         assertThat(result.counterClaimEntity()).isEqualTo(savedCounterClaim);
-        assertThat(result.issuedWithoutPayment()).isFalse();
+        assertThat(result.paymentRequired()).isTrue();
     }
 
     @Test
@@ -200,7 +200,7 @@ class RespondPossessionClaimSubmitServiceTest {
         assertThat(result.counterClaimEntity()).isEqualTo(savedCounterClaim);
         assertThat(result.counterClaimEntity().getStatus())
             .isEqualTo(CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED);
-        assertThat(result.issuedWithoutPayment()).isTrue();
+        assertThat(result.paymentRequired()).isFalse();
     }
 
     @Test
