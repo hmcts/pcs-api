@@ -83,8 +83,7 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
             </div>
 
             <h3 class="govuk-heading-s">What happens next</h3>
-            <p class="govuk-body govuk-!-margin-bottom-6">If the application was made without notice, only the applicant
-            will be informed. Otherwise, all parties will be informed.</p>
+            <p class="govuk-body govuk-!-margin-bottom-6">The case record will be updated.</p>
             """.formatted(partyDescription, caseReference, formatAddress, caseName);
     }
 
