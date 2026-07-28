@@ -7,5 +7,5 @@ import lombok.Data;
 @Builder
 public class DraftCasesToDiscard {
 
-    private final Long caseReference;
+    private final long caseReference;
 }

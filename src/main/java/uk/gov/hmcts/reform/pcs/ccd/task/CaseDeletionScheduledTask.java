@@ -81,7 +81,7 @@ public class CaseDeletionScheduledTask implements RetainAndDisposePolicy {
         }
     }
 
-    private void performCcdCaseDeletionEvents(Long caseRef) {
+    private void performCcdCaseDeletionEvents(long caseRef) {
         Runnable task = () -> {
             ccdCaseDataService.markCaseForDeletion(caseRef);
             ccdCaseDataService.confirmCaseDisposal(caseRef);

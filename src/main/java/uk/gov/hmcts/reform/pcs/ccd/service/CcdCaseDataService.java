@@ -54,19 +54,19 @@ public class CcdCaseDataService {
         );
     }
 
-    public CaseResource markCaseForDeletion(Long caseRef) {
+    public CaseResource markCaseForDeletion(long caseRef) {
         log.debug("Marking following case for deletion: {} ", caseRef);
 
         return performEvent(markCaseForDeletion, caseRef);
     }
 
-    public CaseResource confirmCaseDisposal(Long caseRef) {
+    public CaseResource confirmCaseDisposal(long caseRef) {
         log.debug("Confirming disposal for case: {} ", caseRef);
 
         return performEvent(confirmCaseDisposal, caseRef);
     }
 
-    private CaseResource performEvent(EventId eventId, Long caseRef) {
+    private CaseResource performEvent(EventId eventId, long caseRef) {
         String serviceAuthorization = authTokenGenerator.generate();
         String idamToken = systemUpdateUserTokenProvider.getAuthToken();
 
