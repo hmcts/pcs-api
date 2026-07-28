@@ -8,7 +8,8 @@ import { VERY_LONG_TIMEOUT } from 'playwright.config';
 import { caseSummary, home } from '@data/page-data';
 import {
   changeCaseState, confirmCaseStateChange, enterGenappApplication, enterGenAppapplicationFee,
-  enterGenAppConsentAndNotice, enterGenAppHearingDate, selectDocument
+  enterGenAppConsentAndNotice, enterGenAppHearingDate,
+  enterGenAppPreferApplicationToJudge, selectDocument
 } from '@data/page-data-figma/page-data-caseManagement-figma';
 import { caseInfo } from '../createCaseAPI.action';
 import { CaseManagementCommonUtils } from './caseManagementUtils.action';
@@ -36,6 +37,7 @@ export class CaseManagementAction implements IAction {
       ['confirmIfCourtHearingInNext14Days', () => this.confirmIfCourtHearingInNext14Days(fieldName as actionRecord)],
       ['enterApplicationFeeDetails', () => this.enterApplicationFeeDetails(fieldName as actionRecord)],
       ['enterApplicationConsentAndNotice', () => this.enterApplicationConsentAndNotice(fieldName as actionRecord)],
+      ['verifyReferToJudge', () => this.verifyReferToJudge(fieldName as actionRecord)],
       ['inputErrorValidation', () => this.inputErrorValidation(page, fieldName as actionRecord)],
 
     ]);
@@ -122,7 +124,7 @@ export class CaseManagementAction implements IAction {
     }
 
     allPartyDetails = [...new Set(originalDefendantDetails.filter(n => n.trim().toLowerCase() !== "null null")),
-    ...originalDefendantDetails.filter(n => n.trim().toLowerCase() === "null null")
+      ...originalDefendantDetails.filter(n => n.trim().toLowerCase() === "null null")
     ];
     allPartyDetails.push(`${payLoad.claimantName} - Claimant 1`);
   }
@@ -182,7 +184,6 @@ export class CaseManagementAction implements IAction {
     } else {
       await performAction('reTryOnCallBackError', enterGenAppHearingDate.continueButton, fee.nextPage as string);
     }
-
   }
 
   private async enterApplicationConsentAndNotice(confirmApplicationConsent: actionRecord) {
@@ -195,14 +196,23 @@ export class CaseManagementAction implements IAction {
       question: confirmApplicationConsent.question1,
       option: confirmApplicationConsent.option1,
     });
-    if(confirmApplicationConsent.option1 === 'No') {
+    if(confirmApplicationConsent.option1 ==='No') {
       await performAction('clickRadioButton', {
         question: confirmApplicationConsent.question2,
         option: confirmApplicationConsent.option2,
       });
     }
     await performAction('reTryOnCallBackError', enterGenAppConsentAndNotice.continueButton, confirmApplicationConsent.nextPage as string);
+  }
 
+  private async verifyReferToJudge(referToJudgeData: actionRecord) {
+    await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid});
+    await performValidation('text', {
+      elementType: 'paragraph',
+      text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
+    });
+    await performValidation('mainHeader', enterGenAppPreferApplicationToJudge.mainHeader);
+    await performAction('reTryOnCallBackError', enterGenAppPreferApplicationToJudge.continueButton, referToJudgeData.nextPage as string);
   }
 
   private async inputErrorValidation(page: Page, validationArr: actionRecord) {
