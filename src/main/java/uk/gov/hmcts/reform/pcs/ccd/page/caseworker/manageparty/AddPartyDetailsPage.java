@@ -59,8 +59,8 @@ public class AddPartyDetailsPage implements CcdPageConfiguration {
                 .optional(AddPartyDetails::getDefendantPhoneNumber, DEFENDANT_SELECTED)
 
                 // Litigation friend
-                .mandatory(AddPartyDetails::getLitigationFriendName, LITIGATION_FRIEND_SELECTED)
                 .optional(AddPartyDetails::getLitigationFriendOrganisationName, LITIGATION_FRIEND_SELECTED)
+                .mandatory(AddPartyDetails::getLitigationFriendName, LITIGATION_FRIEND_SELECTED)
                 .optional(AddPartyDetails::getLitigationFriendDateOfBirth, LITIGATION_FRIEND_SELECTED)
                 .complex(AddPartyDetails::getLitigationFriendAddress, LITIGATION_FRIEND_SELECTED)
                     .mandatory(AddressUK::getAddressLine1)
