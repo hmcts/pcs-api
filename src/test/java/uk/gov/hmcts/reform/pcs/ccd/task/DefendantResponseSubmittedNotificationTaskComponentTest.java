@@ -14,7 +14,6 @@ import uk.gov.hmcts.reform.pcs.ccd.model.DefendantResponseStatusChangeTaskData;
 import uk.gov.hmcts.reform.pcs.notify.service.DefendantResponseNotificationService;
 
 import java.time.Duration;
-import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -61,7 +60,7 @@ class DefendantResponseSubmittedNotificationTaskComponentTest {
     @Test
     @DisplayName("Should send notification when task executes")
     void shouldSendNotificationWhenTaskExecutes() {
-        UUID defendantResponseId = UUID.randomUUID();
+        Integer defendantResponseId = 1;
         DefendantResponseStatusChangeTaskData taskData = DefendantResponseStatusChangeTaskData.builder()
             .defendantResponseId(defendantResponseId)
             .build();
@@ -79,7 +78,7 @@ class DefendantResponseSubmittedNotificationTaskComponentTest {
     @Test
     @DisplayName("Should rethrow exception when notification service fails")
     void shouldRethrowExceptionWhenNotificationServiceFails() {
-        UUID defendantResponseId = UUID.randomUUID();
+        Integer defendantResponseId = 1;
         DefendantResponseStatusChangeTaskData taskData = DefendantResponseStatusChangeTaskData.builder()
             .defendantResponseId(defendantResponseId)
             .build();

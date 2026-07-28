@@ -18,7 +18,7 @@ export const users = [{
 },
 {
   user: 'County Court Judge',
-  email: 'DDJ.Randell.Lesch@ejudiciary.net',
+  email: 'TribunalMember.Brandon.Kshlerin-Hartmann@ejudiciary.net',
   password: process.env.IDAM_PCS_USER_PASSWORD,
   tabAccess: ['Case Parties', 'Case Details', 'Case File View', 'Summary', 'History', 'Service Request', 'Notes', 'Linked Cases', 'Case flags']
 },

@@ -3,7 +3,6 @@ package uk.gov.hmcts.reform.pcs;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.openfeign.EnableFeignClients;
-import org.springframework.jms.annotation.EnableJms;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import uk.gov.hmcts.reform.ccd.document.am.feign.CaseDocumentClientApi;
 import uk.gov.hmcts.reform.fees.client.FeesApi;
@@ -35,7 +34,7 @@ import uk.gov.hmcts.reform.pcs.reference.api.RdProfessionalApi;
         CaseDocumentClientApi.class
     }
 )
-@EnableJms
+
 @EnableScheduling
 public class Application {
 
