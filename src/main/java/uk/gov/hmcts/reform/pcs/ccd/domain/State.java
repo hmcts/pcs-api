@@ -7,7 +7,7 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerReadAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.ClaimantAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DefendantAccess;
-import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DeletedStateAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DraftDiscardedAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.InternalCaseFlagAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.GlobalSearchAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.RasValidationAccess;
@@ -36,8 +36,8 @@ public enum State {
     PENDING_CASE_ISSUED,
 
     @CCD(
-            label = "Deleted",
-            access = {DeletedStateAccess.class}
+            label = "Draft Discarded",
+            access = {DraftDiscardedAccess.class}
     )
     DRAFT_DISCARDED,
 
