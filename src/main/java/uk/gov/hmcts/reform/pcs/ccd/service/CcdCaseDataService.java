@@ -43,6 +43,7 @@ public class CcdCaseDataService {
                    SELECT cd.reference
                    FROM ccd.case_data cd
                    WHERE cd.created_date < now()::date - :discardDaysAfter
+                   AND cd.state in ('AWAITING_SUBMISSION_TO_HMCTS', 'PENDING_CASE_ISSUED')
                 """,
                 namedParameters,
                 (rs, rowNum) -> {

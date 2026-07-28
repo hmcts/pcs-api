@@ -270,7 +270,7 @@ bulk-print:
   # so enabling the flag cannot flood send-letter with the historical backlog. Unset in prod = full backlog.
 
 expired-case-deletion:
-  schedule: ${EXPIRED_CASE_DELETION_SCHEDULE:DAILY|04:00}
+  schedule: ${EXPIRED_CASE_DELETION_SCHEDULE:FIXED_DELAY|60s}
   discard-after-days: ${EXPIRED_CASE_DELETION_DISCARD_AFTER_DAYS:-1}
 
 send-letter:
