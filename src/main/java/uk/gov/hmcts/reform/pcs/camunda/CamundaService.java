@@ -86,12 +86,12 @@ public class CamundaService {
         Map<String, DmnValue<?>> processVariables = new ConcurrentHashMap<>();
 
         LocalDateTime delayUntil = LocalDateTime.now(utcClock);
-        LocalDateTime dueDate = addWorkingDays(delayUntil, taskType.getWorkingDays());
+        //LocalDateTime dueDate = addWorkingDays(delayUntil, taskType.getWorkingDays());
 
         processVariables.put("taskState", dmnStringValue(UNCONFIGURED));
         processVariables.put("caseTypeId", dmnStringValue(CaseType.getCaseType()));
-        processVariables.put("dueDate", dmnStringValue(dueDate.format(ISO_LOCAL_DATE_TIME)));
-        processVariables.put("workingDaysAllowed", dmnIntegerValue(taskType.getWorkingDays()));
+        //processVariables.put("dueDate", dmnStringValue(dueDate.format(ISO_LOCAL_DATE_TIME)));
+        //processVariables.put("workingDaysAllowed", dmnIntegerValue(taskType.getWorkingDays()));
         processVariables.put("jurisdiction", dmnStringValue(CaseType.getJurisdictionId()));
         processVariables.put("name", dmnStringValue(taskType.getName()));
         processVariables.put("taskId", dmnStringValue(taskType.getId()));
