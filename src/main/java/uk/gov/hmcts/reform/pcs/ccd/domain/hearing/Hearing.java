@@ -49,19 +49,19 @@ public class Hearing {
     private LocalDateTime date;
 
     @CCD(
-        label = "Day",
+        label = "Days",
         max = 100
     )
     private Integer durationDays;
 
     @CCD(
-        label = "Hour",
+        label = "Hours",
         max = 23
     )
     private Integer durationHours;
 
     @CCD(
-        label = "Minute",
+        label = "Minutes",
         max = 59
     )
     private Integer durationMinutes;

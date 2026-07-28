@@ -44,6 +44,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerRoles.CASEWORKER_ROLES;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.manageHearing;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.CASEWORKER_EVENTS;
@@ -84,8 +85,7 @@ public class ManageHearing implements CCDConfig<PCSCase, State, UserRole> {
                 .forStates(State.AWAITING_SUBMISSION_TO_HMCTS, State.PENDING_CASE_ISSUED, State.CASE_ISSUED)
                 .name("Manage hearing")
                 .showCondition(ShowConditions.featureFlagsEnabled(RELEASE_1_DOT_2, CASEWORKER_EVENTS))
-                .grant(Permission.CRUD, UserRole.HEARING_CENTRE_ADMIN)
-                .grant(Permission.CRUD, UserRole.HEARING_CENTRE_TEAM_LEADER)
+                .grant(Permission.CRUD, CASEWORKER_ROLES)
                 .grantHistoryOnly(JUDICIAL_HISTORY_ROLES)
                 .showSummary()
                 .endButtonLabel("Submit");
