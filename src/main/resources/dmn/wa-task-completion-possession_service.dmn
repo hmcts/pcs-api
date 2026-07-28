@@ -177,12 +177,108 @@
       <rule id="DecisionRule_1ocss0f">
         <description>No associated task</description>
         <inputEntry id="UnaryTests_1yev92k">
-          <text>resumePossessionClaim</text>
+          <text>"resumePossessionClaim"</text>
         </inputEntry>
         <outputEntry id="LiteralExpression_1s60rra">
           <text></text>
         </outputEntry>
         <outputEntry id="LiteralExpression_0yl3n1g">
+          <text></text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_1vjuo5c">
+        <description>No associated task</description>
+        <inputEntry id="UnaryTests_04qurb1">
+          <text>"makeAnApplication"</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_1snpdge">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_15me3b9">
+          <text></text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_1ojb1lq">
+        <description>No associated task</description>
+        <inputEntry id="UnaryTests_0805aob">
+          <text>"createCaseLink"</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_1driogr">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_14jxbtv">
+          <text></text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_0tecpaw">
+        <description>No associated task</description>
+        <inputEntry id="UnaryTests_0sfb172">
+          <text>"maintainCaseLink"</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_04mnzle">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0bdmc56">
+          <text></text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_0rffffp">
+        <description>No associated task</description>
+        <inputEntry id="UnaryTests_0gxvph4">
+          <text>"uploadDocuments"</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_13l04q9">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0ee5yzw">
+          <text></text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_0dbafv7">
+        <description>No associated task</description>
+        <inputEntry id="UnaryTests_0yh9oon">
+          <text>"addCaseNote"</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_0ya5hnc">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0z0p61p">
+          <text></text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_1jngzaa">
+        <description>No associated task</description>
+        <inputEntry id="UnaryTests_0mgw2gi">
+          <text>"createFlags"</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_1b4040z">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1p5kw47">
+          <text></text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_0enu7r1">
+        <description>No associated task</description>
+        <inputEntry id="UnaryTests_1c10wos">
+          <text>"amendFlags"</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_0ky0m7f">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0jwskxb">
+          <text></text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_0lcd9te">
+        <description>No associated task</description>
+        <inputEntry id="UnaryTests_1drz8vr">
+          <text>"changeCaseState"</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_19gqudp">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1gj6vlt">
           <text></text>
         </outputEntry>
       </rule>
