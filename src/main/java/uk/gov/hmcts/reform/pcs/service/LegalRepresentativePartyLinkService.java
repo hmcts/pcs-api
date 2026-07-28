@@ -48,7 +48,7 @@ public class LegalRepresentativePartyLinkService {
         }
         PcsCaseEntity caseEntity = pcsCaseService.loadCase(caseReference);
 
-        this.checkConflictOfInterest(caseEntity, organisationId);
+        this.checkConflictOfInterest(caseEntity, organisationDetails.organisationIdentifier());
 
         PartyEntity defendantPartyEntity = getDefendantPartyEntity(caseEntity, partyId);
 
