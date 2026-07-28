@@ -33,6 +33,11 @@ class CreateFlagsTest extends  BaseEventTest {
     }
 
     @Test
+    void shouldBeConfiguredForMergedEventStates() {
+        assertConfiguredForStates(MergedEventStates.createFlags());
+    }
+
+    @Test
     void shouldCreateFlagsInSubmitCallback() {
         // Given
         List<ListValue<FlagDetail>> flagDetails = createFlagDetails();

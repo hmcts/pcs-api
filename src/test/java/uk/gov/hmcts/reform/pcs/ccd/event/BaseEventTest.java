@@ -40,6 +40,11 @@ public abstract class BaseEventTest {
         return submitHandler.submit(eventPayload);
     }
 
+    protected void assertConfiguredForStates(State... expectedStates) {
+        assertThat(getConfiguredEvent().getPreState())
+            .containsExactlyInAnyOrder(expectedStates);
+    }
+
     private ResolvedCCDConfig<PCSCase, State, UserRole> buildEventConfig(
         CCDConfig<PCSCase, State, UserRole> eventConfig) {
 

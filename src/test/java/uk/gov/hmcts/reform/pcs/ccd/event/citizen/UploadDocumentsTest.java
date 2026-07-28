@@ -19,6 +19,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.BaseEventTest;
+import uk.gov.hmcts.reform.pcs.ccd.event.MergedEventStates;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
@@ -69,6 +70,11 @@ class UploadDocumentsTest extends BaseEventTest {
                 Collection<GenAppEntity> input = invocation.getArgument(0);
                 return input == null ? List.<GenAppEntity>of() : new ArrayList<>(input);
             });
+    }
+
+    @Test
+    void shouldBeConfiguredForMergedEventStates() {
+        assertConfiguredForStates(MergedEventStates.uploadDocuments());
     }
 
     @Nested

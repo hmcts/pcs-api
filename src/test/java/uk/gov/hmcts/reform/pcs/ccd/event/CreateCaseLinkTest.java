@@ -34,6 +34,10 @@ class CreateCaseLinkTest extends BaseEventTest {
         setEventUnderTest(underTest);
     }
 
+    @Test
+    void shouldBeConfiguredForMergedEventStates() {
+        assertConfiguredForStates(MergedEventStates.createCaseLink());
+    }
 
     @Test
     void shouldCreateCaseLinksInSubmitCallback() {

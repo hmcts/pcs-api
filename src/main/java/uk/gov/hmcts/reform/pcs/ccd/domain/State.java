@@ -27,6 +27,13 @@ public enum State {
     AWAITING_SUBMISSION_TO_HMCTS,
 
     @CCD(
+        label = "Awaiting Resubmission to HMCTS",
+        access = {ClaimantAccess.class, CitizenAccess.class, RasValidationAccess.class},
+        hint = "${caseTitleMarkdown}"
+    )
+    AWAITING_RESUBMISSION_TO_HMCTS,
+
+    @CCD(
         label = "Pending Case Issued",
         access = {ClaimantAccess.class, CitizenAccess.class,  RasValidationAccess.class,
             InternalCaseFlagAccess.class, GlobalSearchAccess.class},
@@ -104,6 +111,11 @@ public enum State {
             GlobalSearchAccess.class},
         hint = "${caseTitleMarkdown}"
     )
-    BREATHING_SPACE
-}
+    BREATHING_SPACE,
 
+    @CCD(
+        label = "Closed",
+        hint = "${caseTitleMarkdown}"
+    )
+    CLOSED
+}
