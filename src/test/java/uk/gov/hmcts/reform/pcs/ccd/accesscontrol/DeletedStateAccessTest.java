@@ -23,5 +23,6 @@ class DeletedStateAccessTest {
         // then
         assertThat(grants.get(UserRole.CLAIMANT_SOLICITOR)).isEqualTo(Permission.CRU);
         assertThat(grants.get(UserRole.CREATOR)).isEqualTo(Permission.CRU);
+        assertThat(grants.get(UserRole.SYSTEM_USER)).isEqualTo(Permission.CRU);
     }
 }
