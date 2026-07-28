@@ -12,7 +12,7 @@ public class BankHolidayService {
 
     private final BankHolidayApi bankHolidayApi;
 
-    @Cacheable(value = "scottish_bank_holiday_cache", sync = true, cacheManager = "bankHolidayCacheManager")
+    @Cacheable(value = "bank_holiday_cache", sync = true, cacheManager = "bankHolidayCacheManager")
     public BankHolidayResponse getBankHolidays() {
         log.info("Getting England and Wales bank holidays");
         return bankHolidayApi.getEnglandAndWalesHolidays();
