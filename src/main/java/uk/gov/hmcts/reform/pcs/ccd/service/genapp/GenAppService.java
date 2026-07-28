@@ -137,6 +137,7 @@ public class GenAppService {
             .state(initialState)
             .feeAmountReceived(enterGenAppRequest.getFeeAmountReceived())
             .appliedForHwf(enterGenAppRequest.getAppliedForHwf())
+            .otherPartiesAgreed(enterGenAppRequest.getAllPartiesAgree())
             .build();
 
         if (enterGenAppRequest.getApplicationTypeOption() == EnterGenAppType.SOMETHING_ELSE) {
@@ -151,6 +152,10 @@ public class GenAppService {
             HelpWithFeesEntity helpWithFeesEntity = new HelpWithFeesEntity();
             helpWithFeesEntity.setHwfReference(enterGenAppRequest.getHwfReference());
             genAppEntity.setHelpWithFeesEntity(helpWithFeesEntity);
+        }
+
+        if (enterGenAppRequest.getAllPartiesAgree() == VerticalYesNo.NO) {
+            genAppEntity.setWithoutNotice(enterGenAppRequest.getWithoutNotice());
         }
 
         genAppRepository.save(genAppEntity);
