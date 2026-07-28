@@ -340,5 +340,8 @@ camunda:
     max-retries: ${CAMUNDA_REQUEST_TASK_MAX_RETRIES:3}
     backoff-delay-duration: ${CAMUNDA_REQUEST_TASK_BACKOFF_DURATION:20m}
 
+bankHoliday:
+  url: https://www.gov.uk/bank-holidays
+
 shutter:
   service: ${SHUTTER_SERVICE:false}
