@@ -133,7 +133,7 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
 
         builder.accessTypeRole("create-cases")
             .organisationProfileId("LOCALAUTH_PROFILE")
-            .organisationalRoleName("PCS_Solicitor_Org")
+            .organisationalRoleName(UserRole.PCS_SOLICITOR_ORG.getRole())
             .liveTo("01/01/2027");
 
         // SDK keeps only the first row per access type, so LOCALAUTH must lead.
@@ -159,7 +159,7 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
 
             builder.accessTypeRole("prof-org-access")
                 .organisationProfileId(orgProfile)
-                .groupRoleName("PCS_Solicitor_Group")
+                .groupRoleName(UserRole.PCS_SOLICITOR_GROUP.getRole())
                 .caseAssignedRoleField(UserRole.PROFESSIONAL_USER.getRole())
                 .groupAccessEnabled(true)
                 // Uppercase service prefix required; def store rejects lowercase.
