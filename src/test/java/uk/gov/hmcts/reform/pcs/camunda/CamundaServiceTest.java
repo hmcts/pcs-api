@@ -17,7 +17,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.slf4j.LoggerFactory;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
-import uk.gov.hmcts.reform.pcs.bankholiday.BankHolidayService;
 import uk.gov.hmcts.reform.pcs.camunda.CamundaRequestTaskData.Action;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
@@ -59,9 +58,6 @@ public class CamundaServiceTest {
 
     @Mock
     private FeatureToggleService featureToggleService;
-
-    @Mock
-    private BankHolidayService bankHolidayService;
 
     @Captor
     private ArgumentCaptor<SchedulableInstance<CamundaRequestTaskData>> schedulableInstanceCaptor;
@@ -155,7 +151,6 @@ public class CamundaServiceTest {
         // Given
         final TaskType taskType = TaskType.NEW_CLAIM_CREATE_NEW_HEARING;
 
-        //when(bankHolidayService.getBankHolidays()).thenReturn(BankHolidayResponse.builder().build());
         when(authTokenGenerator.generate()).thenReturn("authToken");
         stubWaFeatureFlag(true);
 
@@ -178,9 +173,9 @@ public class CamundaServiceTest {
         assertThat(processVariables.get("taskState").getType()).isEqualTo("String");
         assertThat(processVariables.get("caseTypeId").getValue()).isEqualTo("PCS");
         assertThat(processVariables.get("caseTypeId").getType()).isEqualTo("String");
-        //assertThat(processVariables.get("dueDate").getValue()).isEqualTo("2025-09-01T12:51:19");
-        //assertThat(processVariables.get("dueDate").getType()).isEqualTo("String");
-        assertThat(processVariables.get("workingDaysAllowed").getValue()).isEqualTo(5);
+        assertThat(processVariables.get("dueDate").getValue()).isEqualTo("2050-01-01T17:00:00");
+        assertThat(processVariables.get("dueDate").getType()).isEqualTo("String");
+        assertThat(processVariables.get("workingDaysAllowed").getValue()).isEqualTo(99);
         assertThat(processVariables.get("workingDaysAllowed").getType()).isEqualTo("Integer");
         assertThat(processVariables.get("jurisdiction").getValue()).isEqualTo("PCS");
         assertThat(processVariables.get("jurisdiction").getType()).isEqualTo("String");
@@ -225,7 +220,6 @@ public class CamundaServiceTest {
         final TaskType taskType = TaskType.NEW_CLAIM_CREATE_NEW_HEARING;
 
         when(authTokenGenerator.generate()).thenReturn("authToken");
-        //when(bankHolidayService.getBankHolidays()).thenReturn(BankHolidayResponse.builder().build());
         stubWaFeatureFlag(true);
         doThrow(new RuntimeException()).when(camundaApi).sendMessage(any(), any());
 
@@ -293,100 +287,6 @@ public class CamundaServiceTest {
             .toList();
         assertThat(infoMessages).hasSize(1);
         verify(camundaApi, never()).sendMessage(any(), any());
-    }
-
-    @Test
-    void shouldSetDueDateAfterBankHoliday() {
-        // Given
-        final TaskType taskType = TaskType.NEW_CLAIM_CREATE_NEW_HEARING;
-
-        when(authTokenGenerator.generate()).thenReturn("authToken");
-        /*
-        when(bankHolidayService.getBankHolidays()).thenReturn(
-            BankHolidayResponse.builder()
-                .events(List.of(BankHolidayEvent.builder()
-                                    .date(LocalDate.of(2025, 9, 1))
-                                    .build())
-                )
-                .build()
-        );
-         */
-        stubWaFeatureFlag(true);
-
-        CamundaRequestTaskData taskData = buildTaskDataForCreate(taskType);
-
-        // When
-        camundaService.handleRequest(taskData);
-
-        // Then
-        ArgumentCaptor<SendMessageRequest> requestArgumentCaptor = ArgumentCaptor.forClass(SendMessageRequest.class);
-        verify(camundaApi).sendMessage(eq("authToken"), requestArgumentCaptor.capture());
-        SendMessageRequest sendMessageRequest = requestArgumentCaptor.getValue();
-
-        assertThat(sendMessageRequest).isNotNull();
-        assertThat(sendMessageRequest.getMessageName()).isEqualTo("createTaskMessage");
-
-        Map<String, DmnValue<?>> processVariables = sendMessageRequest.getProcessVariables();
-        assertThat(processVariables).isNotEmpty();
-        //assertThat(processVariables.get("dueDate").getValue()).isEqualTo("2025-09-02T12:51:19");
-    }
-
-    @Test
-    void shouldSetDueDateAfterSaturday() {
-        // Given
-        final TaskType taskType = TaskType.NEW_CLAIM_CREATE_NEW_HEARING;
-
-        //when(bankHolidayService.getBankHolidays()).thenReturn(BankHolidayResponse.builder().build());
-        when(authTokenGenerator.generate()).thenReturn("authToken");
-        when(utcClock.instant())
-            .thenReturn(LocalDateTime.of(2025, 9, 1, 12, 51, 19).toInstant(ZoneOffset.UTC));
-        stubWaFeatureFlag(true);
-
-        CamundaRequestTaskData taskData = buildTaskDataForCreate(taskType);
-
-        // When
-        camundaService.handleRequest(taskData);
-
-        // Then
-        ArgumentCaptor<SendMessageRequest> requestArgumentCaptor = ArgumentCaptor.forClass(SendMessageRequest.class);
-        verify(camundaApi).sendMessage(eq("authToken"), requestArgumentCaptor.capture());
-        SendMessageRequest sendMessageRequest = requestArgumentCaptor.getValue();
-
-        assertThat(sendMessageRequest).isNotNull();
-        assertThat(sendMessageRequest.getMessageName()).isEqualTo("createTaskMessage");
-
-        Map<String, DmnValue<?>> processVariables = sendMessageRequest.getProcessVariables();
-        assertThat(processVariables).isNotEmpty();
-        //assertThat(processVariables.get("dueDate").getValue()).isEqualTo("2025-09-08T12:51:19");
-    }
-
-    @Test
-    void shouldSetDueDateAfterSunday() {
-        // Given
-        final TaskType taskType = TaskType.NEW_CLAIM_CREATE_NEW_HEARING;
-
-        //when(bankHolidayService.getBankHolidays()).thenReturn(BankHolidayResponse.builder().build());
-        when(authTokenGenerator.generate()).thenReturn("authToken");
-        when(utcClock.instant())
-            .thenReturn(LocalDateTime.of(2025, 9, 2, 12, 51, 19).toInstant(ZoneOffset.UTC));
-        stubWaFeatureFlag(true);
-
-        CamundaRequestTaskData taskData = buildTaskDataForCreate(taskType);
-
-        // When
-        camundaService.handleRequest(taskData);
-
-        // Then
-        ArgumentCaptor<SendMessageRequest> requestArgumentCaptor = ArgumentCaptor.forClass(SendMessageRequest.class);
-        verify(camundaApi).sendMessage(eq("authToken"), requestArgumentCaptor.capture());
-        SendMessageRequest sendMessageRequest = requestArgumentCaptor.getValue();
-
-        assertThat(sendMessageRequest).isNotNull();
-        assertThat(sendMessageRequest.getMessageName()).isEqualTo("createTaskMessage");
-
-        Map<String, DmnValue<?>> processVariables = sendMessageRequest.getProcessVariables();
-        assertThat(processVariables).isNotEmpty();
-        //assertThat(processVariables.get("dueDate").getValue()).isEqualTo("2025-09-08T12:51:19");
     }
 
     private static CamundaRequestTaskData buildTaskDataForCreate(TaskType taskType) {

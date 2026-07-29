@@ -7,7 +7,6 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import uk.gov.hmcts.reform.ccd.document.am.feign.CaseDocumentClientApi;
 import uk.gov.hmcts.reform.fees.client.FeesApi;
 import uk.gov.hmcts.reform.idam.client.IdamApi;
-import uk.gov.hmcts.reform.pcs.bankholiday.BankHolidayApi;
 import uk.gov.hmcts.reform.pcs.camunda.CamundaApi;
 import uk.gov.hmcts.reform.pcs.hearings.service.api.HmcHearingApi;
 import uk.gov.hmcts.reform.pcs.idam.IdamUserInfoApi;
@@ -34,8 +33,7 @@ import uk.gov.hmcts.reform.pcs.reference.api.RdProfessionalApi;
         RdProfessionalApi.class,
         FeesApi.class,
         CaseDocumentClientApi.class,
-        CamundaApi.class,
-        BankHolidayApi.class
+        CamundaApi.class
     }
 )
 

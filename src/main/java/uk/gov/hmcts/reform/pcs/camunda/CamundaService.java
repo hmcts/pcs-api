@@ -5,19 +5,15 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
-import uk.gov.hmcts.reform.pcs.bankholiday.BankHolidayService;
 import uk.gov.hmcts.reform.pcs.camunda.CamundaRequestTaskData.Action;
 import uk.gov.hmcts.reform.pcs.ccd.CaseType;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.time.Clock;
-import java.time.DayOfWeek;
 import java.time.Instant;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -33,7 +29,6 @@ public class CamundaService {
     private final AuthTokenGenerator authTokenGenerator;
     private final SchedulerClient schedulerClient;
     private final FeatureToggleService featureToggleService;
-    private final BankHolidayService bankHolidayService;
 
     private static final String CREATE = "createTaskMessage";
     private static final String CANCEL = "cancelTasks";
@@ -86,13 +81,9 @@ public class CamundaService {
         Map<String, DmnValue<?>> processVariables = new ConcurrentHashMap<>();
 
         LocalDateTime delayUntil = LocalDateTime.now(utcClock);
-        //LocalDateTime dueDate = addWorkingDays(delayUntil, taskType.getWorkingDays());
 
         processVariables.put("taskState", dmnStringValue(UNCONFIGURED));
         processVariables.put("caseTypeId", dmnStringValue(CaseType.getCaseType()));
-        //processVariables.put("dueDate", dmnStringValue(dueDate.format(ISO_LOCAL_DATE_TIME)));
-        processVariables.put("dueDate", dmnStringValue(delayUntil.format(ISO_LOCAL_DATE_TIME)));
-        processVariables.put("workingDaysAllowed", dmnIntegerValue(taskType.getWorkingDays()));
         processVariables.put("jurisdiction", dmnStringValue(CaseType.getJurisdictionId()));
         processVariables.put("name", dmnStringValue(taskType.getName()));
         processVariables.put("taskId", dmnStringValue(taskType.getId()));
@@ -101,6 +92,11 @@ public class CamundaService {
         processVariables.put("hasWarnings", dmnBooleanValue(false));
         processVariables.put("warningList", dmnStringValue(EMPTY_WARNINGS_LIST));
         processVariables.put("__processCategory__" + taskType.getId(), dmnBooleanValue(true));
+
+        // Default values - WA task due date is configured in configuration dmn
+        LocalDateTime dueDate = LocalDateTime.of(2050, 1, 1, 17, 0, 0);
+        processVariables.put("dueDate", dmnStringValue(dueDate.format(ISO_LOCAL_DATE_TIME)));
+        processVariables.put("workingDaysAllowed", dmnIntegerValue(99));
 
         SendMessageRequest request = SendMessageRequest.builder()
             .messageName(CREATE)
@@ -154,28 +150,5 @@ public class CamundaService {
 
     private DmnValue<Boolean> dmnBooleanValue(Boolean value) {
         return DmnValue.<Boolean>builder().value(value).type("Boolean").build();
-    }
-
-    private LocalDateTime addWorkingDays(LocalDateTime dateTime, Integer workingDays) {
-        Set<LocalDate> bankHolidays = bankHolidayService
-            .getBankHolidays()
-            .getDates();
-
-        log.info("bankHoliday response {}", bankHolidays);
-
-        dateTime = dateTime.plusDays(workingDays);
-
-        while (isNonWorkingDay(dateTime, bankHolidays)) {
-            dateTime = dateTime.plusDays(1);
-        }
-
-        return dateTime;
-    }
-
-    private Boolean isNonWorkingDay(LocalDateTime dateTime, Set<LocalDate> bankHolidays) {
-        DayOfWeek dayOfWeek = dateTime.getDayOfWeek();
-        return dayOfWeek == DayOfWeek.SATURDAY
-            || dayOfWeek == DayOfWeek.SUNDAY
-            || bankHolidays.contains(dateTime.toLocalDate());
     }
 }
