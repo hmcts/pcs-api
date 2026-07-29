@@ -53,6 +53,8 @@ public class LegalRepPartySelectionService {
         Optional<UUID> selectedPartyId = selectedPartyRetriever.getSelectedPartyId(pcsCase);
 
         if (selectedPartyId.isEmpty()) {
+            log.warn("No selected party id for case reference [{}] when checking for submitted response",
+                     caseReference);
             return false;
         }
 
