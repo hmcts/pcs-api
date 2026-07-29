@@ -11,8 +11,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.WalesDocuments;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
-import uk.gov.hmcts.reform.pcs.ccd.service.FileUploadValidationService;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
+import uk.gov.hmcts.reform.pcs.ccd.testutil.DocumentTestData;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -48,7 +48,7 @@ class UploadRequiredDocumentsWalesTest extends BasePageTest {
         }).when(textAreaValidationService).createValidationResponse(any(), anyList());
 
         setPageUnderTest(new UploadRequiredDocumentsWales(
-            textAreaValidationService, new FileUploadValidationService()));
+            textAreaValidationService, DocumentTestData.restrictionEnabledFileUploadValidationService()));
     }
 
     @Test

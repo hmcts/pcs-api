@@ -13,9 +13,9 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServiceMethod;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
-import uk.gov.hmcts.reform.pcs.ccd.service.FileUploadValidationService;
 import uk.gov.hmcts.reform.pcs.ccd.service.NoticeDetailsService;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
+import uk.gov.hmcts.reform.pcs.ccd.testutil.DocumentTestData;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -54,7 +54,8 @@ class NoticeDetailsTest extends BasePageTest {
         }).when(textAreaValidationService).createValidationResponse(any(), anyList());
 
         setPageUnderTest(new NoticeDetails(
-            noticeDetailsService, textAreaValidationService, new FileUploadValidationService()));
+            noticeDetailsService, textAreaValidationService,
+            DocumentTestData.restrictionEnabledFileUploadValidationService()));
     }
 
     @Test

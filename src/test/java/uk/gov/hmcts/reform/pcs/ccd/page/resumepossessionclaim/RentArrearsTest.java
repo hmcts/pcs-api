@@ -10,8 +10,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsSection;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
-import uk.gov.hmcts.reform.pcs.ccd.service.FileUploadValidationService;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
+import uk.gov.hmcts.reform.pcs.ccd.testutil.DocumentTestData;
 
 import java.util.List;
 
@@ -43,7 +43,8 @@ public class RentArrearsTest extends BasePageTest {
                 .errors(errors.isEmpty() ? null : errors)
                 .build();
         }).when(textAreaValidationService).createValidationResponse(any(), anyList());
-        setPageUnderTest(new RentArrears(textAreaValidationService, new FileUploadValidationService()));
+        setPageUnderTest(new RentArrears(textAreaValidationService,
+            DocumentTestData.restrictionEnabledFileUploadValidationService()));
     }
 
     @Test

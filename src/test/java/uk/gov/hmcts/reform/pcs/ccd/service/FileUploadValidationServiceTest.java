@@ -12,6 +12,8 @@ import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocument;
 import uk.gov.hmcts.reform.pcs.ccd.service.FileUploadValidationService.ConditionalDocumentUpload;
+import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,6 +21,8 @@ import java.util.Locale;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.service.FileUploadValidationService.ALLOWED_FILE_TYPE_GUIDANCE;
 import static uk.gov.hmcts.reform.pcs.ccd.service.FileUploadValidationService.DISALLOWED_FILE_TYPE_ERROR;
 import static uk.gov.hmcts.reform.pcs.ccd.testutil.DocumentTestData.additionalDocumentsWithFilenames;
@@ -27,11 +31,15 @@ import static uk.gov.hmcts.reform.pcs.ccd.testutil.DocumentTestData.documentsWit
 @DisplayName("FileUploadValidationService Tests")
 class FileUploadValidationServiceTest {
 
+    private FeatureToggleService featureToggleService;
     private FileUploadValidationService fileUploadValidationService;
 
     @BeforeEach
     void setUp() {
-        fileUploadValidationService = new FileUploadValidationService();
+        featureToggleService = mock(FeatureToggleService.class);
+        when(featureToggleService.isEnabled(FeatureFlag.RESTRICT_DOCUMENT_UPLOAD_TYPES)).thenReturn(true);
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_2)).thenReturn(true);
+        fileUploadValidationService = new FileUploadValidationService(featureToggleService);
     }
 
     private static Stream<String> allowedExtensions() {
@@ -263,6 +271,59 @@ class FileUploadValidationServiceTest {
                     assertThat(FileUploadValidationService.ALLOWED_FILE_EXTENSIONS).contains(token);
                 }
             }
+        }
+    }
+
+    @Nested
+    @DisplayName("Feature flag gating of the file-type restriction")
+    class FeatureFlagGatingTests {
+
+        // Builds a service whose two gating flags are set independently, so each combination can be exercised.
+        private FileUploadValidationService serviceWithFlags(boolean restrictFlag, boolean releaseFlag) {
+            FeatureToggleService toggleService = mock(FeatureToggleService.class);
+            when(toggleService.isEnabled(FeatureFlag.RESTRICT_DOCUMENT_UPLOAD_TYPES)).thenReturn(restrictFlag);
+            when(toggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_2)).thenReturn(releaseFlag);
+            return new FileUploadValidationService(toggleService);
+        }
+
+        @Test
+        @DisplayName("Should not reject a disallowed file when the journey flag is off")
+        void shouldNotRestrictWhenJourneyFlagOff() {
+            List<String> errors = serviceWithFlags(false, true)
+                .validateDocuments(documentsWithFilenames("clip.mp4"));
+
+            assertThat(errors).isEmpty();
+        }
+
+        @Test
+        @DisplayName("Should not reject a disallowed file when the release flag is off")
+        void shouldNotRestrictWhenReleaseFlagOff() {
+            List<String> errors = serviceWithFlags(true, false)
+                .validateDocuments(documentsWithFilenames("clip.mp4"));
+
+            assertThat(errors).isEmpty();
+        }
+
+        @Test
+        @DisplayName("Should reject a disallowed file only when both flags are on")
+        void shouldRestrictWhenBothFlagsOn() {
+            List<String> errors = serviceWithFlags(true, true)
+                .validateDocuments(documentsWithFilenames("clip.mp4"));
+
+            assertThat(errors).containsExactly(DISALLOWED_FILE_TYPE_ERROR, ALLOWED_FILE_TYPE_GUIDANCE);
+        }
+
+        @Test
+        @DisplayName("Should still enforce required-document validation when the restriction is off")
+        void shouldStillValidateRequiredDocumentsWhenRestrictionOff() {
+            FileUploadValidationService service = serviceWithFlags(false, false);
+
+            List<String> conditionalErrors = service.validateConditionalDocuments(List.of(
+                new ConditionalDocumentUpload(true, null, "missing epc")));
+            List<String> additionalErrors = service.validateRequiredAdditionalDocuments(null, "missing document");
+
+            assertThat(conditionalErrors).containsExactly("missing epc");
+            assertThat(additionalErrors).containsExactly("missing document");
         }
     }
 }

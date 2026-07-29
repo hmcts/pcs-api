@@ -14,8 +14,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
-import uk.gov.hmcts.reform.pcs.ccd.service.FileUploadValidationService;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
+import uk.gov.hmcts.reform.pcs.ccd.testutil.DocumentTestData;
 
 import java.time.Clock;
 import java.time.LocalDate;
@@ -64,7 +64,8 @@ class OccupationLicenceDetailsWalesPageTest extends BasePageTest {
         }).when(textAreaValidationService).createValidationResponse(any(), anyList());
 
         setPageUnderTest(new OccupationLicenceDetailsWalesPage(
-            ukClock, textAreaValidationService, new FileUploadValidationService()));
+            ukClock, textAreaValidationService,
+            DocumentTestData.restrictionEnabledFileUploadValidationService()));
     }
 
     @Test

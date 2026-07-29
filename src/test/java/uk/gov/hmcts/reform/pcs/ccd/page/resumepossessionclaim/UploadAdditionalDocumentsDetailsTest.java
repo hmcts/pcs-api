@@ -11,8 +11,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
-import uk.gov.hmcts.reform.pcs.ccd.service.FileUploadValidationService;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
+import uk.gov.hmcts.reform.pcs.ccd.testutil.DocumentTestData;
 
 import java.util.List;
 
@@ -29,7 +29,7 @@ class UploadAdditionalDocumentsDetailsTest extends BasePageTest {
     void setUp() {
         TextAreaValidationService textAreaValidationService = new TextAreaValidationService();
         setPageUnderTest(new UploadAdditionalDocumentsDetails(
-            textAreaValidationService, new FileUploadValidationService()));
+            textAreaValidationService, DocumentTestData.restrictionEnabledFileUploadValidationService()));
     }
 
     @Test

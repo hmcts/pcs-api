@@ -1,11 +1,14 @@
 package uk.gov.hmcts.reform.pcs.ccd.service;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocument;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
+import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,6 +22,7 @@ import java.util.stream.Stream;
  * Any file whose extension is not in {@link #ALLOWED_FILE_EXTENSIONS} is rejected.
  */
 @Service
+@RequiredArgsConstructor
 public class FileUploadValidationService {
 
     public static final Set<String> ALLOWED_FILE_EXTENSIONS = Set.of(
@@ -51,6 +55,8 @@ public class FileUploadValidationService {
 
     private static final List<String> DISALLOWED_FILE_TYPE_ERRORS =
         List.of(DISALLOWED_FILE_TYPE_ERROR, ALLOWED_FILE_TYPE_GUIDANCE);
+
+    private final FeatureToggleService featureToggleService;
 
     public List<String> validateDocuments(List<ListValue<Document>> documents) {
         if (CollectionUtils.isEmpty(documents)) {
@@ -110,7 +116,15 @@ public class FileUploadValidationService {
     }
 
     private List<String> disallowedFileErrors(Stream<String> filenames) {
+        if (!restrictionEnabled()) {
+            return List.of();
+        }
         return filenames.anyMatch(this::isDisallowed) ? DISALLOWED_FILE_TYPE_ERRORS : List.of();
+    }
+
+    private boolean restrictionEnabled() {
+        return featureToggleService.isEnabled(FeatureFlag.RESTRICT_DOCUMENT_UPLOAD_TYPES)
+            && featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_2);
     }
 
     /**
