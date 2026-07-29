@@ -14,7 +14,7 @@ import {
   enterGenAppConsentAndNotice,
   enterGenAppHearingDate, enterGenAppPreferApplicationToJudge,
   enterGenAppUploadGeneralApplication,
-  enterGenAppUploadRelatedEvidence, genAppsCheckYouAnswers
+  enterGenAppUploadRelatedEvidence, genAppsCheckYourAnswers
 } from '@data/page-data-figma/page-data-caseManagement-figma';
 import { label } from 'allure-js-commons';
 
@@ -97,10 +97,10 @@ test.describe('Case management - Case Worker Enter a General application @nightl
       nextPage: enterGenAppPreferApplicationToJudge.mainHeader
     });
     await performAction('verifyReferToJudge',{
-      nextPage: genAppsCheckYouAnswers.mainHeader
+      nextPage: genAppsCheckYourAnswers.mainHeader
     });
-    await performValidation('mainHeader', genAppsCheckYouAnswers.mainHeader);
-    await performAction('clickButton', genAppsCheckYouAnswers.submitButton);
+    await performValidation('mainHeader', genAppsCheckYourAnswers.mainHeader);
+    await performAction('clickButton', genAppsCheckYourAnswers.submitButton);
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Enter a general application');
   });
 
@@ -170,10 +170,10 @@ test.describe('Case management - Case Worker Enter a General application @nightl
       nextPage: enterGenAppUploadRelatedEvidence.mainHeader
     });
     await performAction('uploadGenAppsRelatedEvidence',{
-      nextPage: genAppsCheckYouAnswers.mainHeader
+      nextPage: genAppsCheckYourAnswers.mainHeader
     });
-    await performValidation('mainHeader', genAppsCheckYouAnswers.mainHeader);
-    await performAction('clickButton', genAppsCheckYouAnswers.submitButton);
+    await performValidation('mainHeader', genAppsCheckYourAnswers.mainHeader);
+    await performAction('clickButton', genAppsCheckYourAnswers.submitButton);
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Enter a general application');
   });
 
@@ -213,10 +213,10 @@ test.describe('Case management - Case Worker Enter a General application @nightl
       nextPage: enterGenAppPreferApplicationToJudge.mainHeader
     });
     await performAction('verifyReferToJudge',{
-      nextPage: genAppsCheckYouAnswers.mainHeader
+      nextPage: genAppsCheckYourAnswers.mainHeader
     });
-    await performValidation('mainHeader', genAppsCheckYouAnswers.mainHeader);
-    await performAction('clickButton', genAppsCheckYouAnswers.submitButton);
+    await performValidation('mainHeader', genAppsCheckYourAnswers.mainHeader);
+    await performAction('clickButton', genAppsCheckYourAnswers.submitButton);
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Enter a general application');
   });
 
@@ -255,10 +255,10 @@ test.describe('Case management - Case Worker Enter a General application @nightl
       nextPage: enterGenAppPreferApplicationToJudge.mainHeader
     });
     await performAction('verifyReferToJudge',{
-      nextPage: genAppsCheckYouAnswers.mainHeader
+      nextPage: genAppsCheckYourAnswers.mainHeader
     });
-    await performValidation('mainHeader', genAppsCheckYouAnswers.mainHeader);
-    await performAction('clickButton', genAppsCheckYouAnswers.submitButton);
+    await performValidation('mainHeader', genAppsCheckYourAnswers.mainHeader);
+    await performAction('clickButton', genAppsCheckYourAnswers.submitButton);
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Enter a general application');
   });
 });

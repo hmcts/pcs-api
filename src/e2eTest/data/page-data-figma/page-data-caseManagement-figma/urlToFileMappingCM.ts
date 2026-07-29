@@ -9,5 +9,5 @@ export default {
   'enterGenAppuploadGeneralApplication': 'enterGenAppUploadGeneralApplication',
   'enterGenAppuploadRelatedEvidence': 'enterGenAppUploadRelatedEvidence',
   'enterGenAppreferApplicationToJudge': 'enterGenAppPreferApplicationToJudge',
-  'enterGenApp/submit': 'genAppsCheckYouAnswers',
+  'enterGenApp/submit': 'genAppsCheckYourAnswers',
 };

@@ -1,4 +1,4 @@
-export const genAppsCheckYouAnswers= {
+export const genAppsCheckYourAnswers= {
   mainHeader: `Enter a general application`,
   subHeader: `Check your answers`,
   submitButton: `Submit`,
