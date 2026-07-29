@@ -1,16 +1,10 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.legalrepdocumentupload;
 
-import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
-import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocumentUploadDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.CcdPage;
-import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
-
-import java.util.List;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 
@@ -31,7 +25,7 @@ public class ExistingApplicationPage implements CcdPageConfiguration, CcdPage {
     public void addTo(PageBuilder pageBuilder) {
         String pageKey = getPageKey();
         pageBuilder
-            .page(pageKey, this::midEvent)
+            .page(pageKey)
             .pageLabel("Confirm if these documents relate to an existing application")
             .showCondition("showExistingApplicationPage=\"Yes\"")
             .complex(PCSCase::getLegalRepDocumentUploadDetails)
@@ -46,22 +40,5 @@ public class ExistingApplicationPage implements CcdPageConfiguration, CcdPage {
     @Override
     public String getPageKey() {
         return CcdPage.derivePageKey(this.getClass());
-    }
-
-    public AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
-                                                                 CaseDetails<PCSCase, State> before) {
-        PCSCase data = details.getData();
-        LegalRepDocumentUploadDetails uploadDetails = data.getLegalRepDocumentUploadDetails();
-        DynamicStringList validCategories = uploadDetails.getValidCategories();
-
-        if (validCategories == null || validCategories.getValue() == null) {
-            return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-                .data(data)
-                .errors(List.of("Confirm if these documents relate to an existing application"))
-                .build();
-        }
-        return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-            .data(data)
-            .build();
     }
 }
