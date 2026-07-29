@@ -8,7 +8,7 @@ import lombok.Getter;
 public enum TaskType {
     NEW_CLAIM_CREATE_NEW_HEARING(
         "NewClaimCreateNewHearing",
-        "New Claim –  Create new hearing"
+        "New Claim – Create new hearing"
     ),
     REVIEW_ADDITIONAL_DOCS_GEN_APP(
         "ReviewAdditionalDocumentsGenApp",
