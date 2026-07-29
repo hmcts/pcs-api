@@ -44,7 +44,6 @@ public class LegalRepPartySelectionService {
         }
 
         PartyEntity matchedDefendant = findMatchedDefendant(defendantPartiesLinkedAndActive, selectedPartyId.get());
-        validateResponseNotAlreadySubmitted(caseReference, matchedDefendant.getId());
 
         return getDraftCaseData(caseReference, pcsCase, matchedDefendant, defendantPartiesLinkedAndActive);
     }
