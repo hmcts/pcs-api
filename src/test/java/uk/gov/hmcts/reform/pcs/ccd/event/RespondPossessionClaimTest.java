@@ -889,36 +889,6 @@ class RespondPossessionClaimTest extends BaseEventTest {
     }
 
     @Test
-    void shouldRejectSelectedPartyWhenResponseAlreadySubmitted_ForLegalRepresentativeUser() {
-        // given
-        UUID legalRepUserId = UUID.randomUUID();
-        UUID representedPartyId = UUID.randomUUID();
-        UUID differentPartyId = UUID.randomUUID();
-
-        PcsCaseEntity caseEntity = PcsCaseEntity.builder().build();
-        PartyEntity representedParty = PartyEntity.builder().id(representedPartyId).build();
-        PartyEntity representedParty2 = PartyEntity.builder().id(differentPartyId).build();
-
-        when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
-        when(userInfo.getRoles()).thenReturn(List.of(UserRole.DEFENDANT_SOLICITOR.getRole()));
-        when(securityContextService.getCurrentUserId()).thenReturn(legalRepUserId);
-        PCSCase caseData = PCSCase.builder()
-            .build();
-        when(selectedPartyRetriever.getSelectedPartyId(caseData)).thenReturn(Optional.of(representedPartyId));
-        when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(caseEntity);
-        when(legalRepForDefendantAccessValidator.validateAndGetDefendants(caseEntity, legalRepUserId))
-            .thenReturn(List.of(representedParty, representedParty2));
-        when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyId(TEST_CASE_REFERENCE,
-                                                                                     representedPartyId))
-            .thenReturn(true);
-
-        // when / then
-        assertThatThrownBy(() -> callStartHandler(caseData))
-            .isInstanceOf(IllegalStateException.class)
-            .hasMessage("A response has already been submitted for this case.");
-    }
-
-    @Test
     void shouldInitializeDraftForSingleRepresentedPartyWhenNoDraftExists_ForLegalRepresentativeUser() {
         // given
         UUID legalRepUserId = UUID.randomUUID();
@@ -948,7 +918,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
         verify(draftCaseDataService).patchUnsubmittedEventData(
             eq(TEST_CASE_REFERENCE), any(PCSCase.class), eq(respondPossessionClaim), eq(representedPartyId)
         );
-        verify(selectedPartyRetriever, never()).getSelectedPartyId(any(PCSCase.class));
+        verify(selectedPartyRetriever, times(1)).getSelectedPartyId(any(PCSCase.class));
     }
 
     @Test

@@ -48,12 +48,6 @@ public class LegalRepPartySelectionService {
         return getDraftCaseData(caseReference, pcsCase, matchedDefendant, defendantPartiesLinkedAndActive);
     }
 
-    public void validateResponseNotAlreadySubmitted(long caseReference, UUID partyId) {
-        if (defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyId(caseReference, partyId)) {
-            throw new IllegalStateException("A response has already been submitted for this case.");
-        }
-    }
-
     public boolean hasSubmittedResponse(long caseReference, PCSCase pcsCase,
                                         List<PartyEntity> defendantPartiesLinkedAndActive) {
         Optional<UUID> selectedPartyId = selectedPartyRetriever.getSelectedPartyId(pcsCase);

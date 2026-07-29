@@ -122,8 +122,6 @@ class LegalRepStartEventStrategyTest {
         // then
         assertThat(result).isEqualTo(pcsCase);
 
-        verify(legalRepPartySelectionService, never()).validateResponseNotAlreadySubmitted(anyLong(), any());
-
         verify(legalRepPartySelectionService).getDraft(pcsCase, defendants, CASE_REFERENCE);
     }
 

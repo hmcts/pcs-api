@@ -89,25 +89,6 @@ class LegalRepPartySelectionServiceTest {
     }
 
     @Test
-    void shouldThrowExceptionWhenResponseAlreadySubmitted() {
-        // given
-        PCSCase pcsCase = PCSCase.builder()
-            .build();
-
-        UUID partyId = UUID.randomUUID();
-        PartyEntity partyEntity = PartyEntity.builder()
-            .id(partyId)
-            .build();
-
-        when(selectedPartyRetriever.getSelectedPartyId(pcsCase)).thenReturn(Optional.of(partyId));
-        when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyId(12345L, partyId)).thenReturn(true);
-
-        // when / then
-        assertThatThrownBy(() -> underTest.getDraft(pcsCase, List.of(partyEntity), 12345L)).isInstanceOf(
-            IllegalStateException.class).hasMessage("A response has already been submitted for this case.");
-    }
-
-    @Test
     void shouldInitialiseDraftWhenNoExistingDraft() {
         // given
         long caseReference = 12345L;
@@ -128,10 +109,6 @@ class LegalRepPartySelectionServiceTest {
             .build();
 
         when(selectedPartyRetriever.getSelectedPartyId(pcsCase)).thenReturn(Optional.of(partyId));
-        when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyId(
-            caseReference,
-            partyId
-        )).thenReturn(false);
         when(draftCaseDataService.hasUnsubmittedCaseData(caseReference, respondPossessionClaim, partyId)).thenReturn(
             false);
         when(responseMapper.mapFrom(pcsCase, partyEntity)).thenReturn(response);
@@ -191,10 +168,6 @@ class LegalRepPartySelectionServiceTest {
             .build();
 
         when(selectedPartyRetriever.getSelectedPartyId(pcsCase)).thenReturn(Optional.of(partyId));
-        when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyId(
-            caseReference,
-            partyId
-        )).thenReturn(false);
         when(draftCaseDataService.hasUnsubmittedCaseData(caseReference, respondPossessionClaim, partyId)).thenReturn(
             true);
         when(draftCaseDataService.getUnsubmittedCaseData(caseReference, respondPossessionClaim, partyId)).thenReturn(
@@ -226,34 +199,6 @@ class LegalRepPartySelectionServiceTest {
             List.of(),
             12345L
         )).isInstanceOf(CaseAccessException.class).hasMessage("User is not linked as a defendant on this case");
-    }
-
-    @Test
-    void shouldThrowDraftNotFoundException() {
-        // given
-        long caseReference = 12345L;
-        UUID partyId = UUID.randomUUID();
-
-        PCSCase pcsCase = PCSCase.builder()
-            .build();
-
-        PartyEntity partyEntity = PartyEntity.builder()
-            .id(partyId)
-            .build();
-
-        when(selectedPartyRetriever.getSelectedPartyId(pcsCase)).thenReturn(Optional.of(partyId));
-        when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyId(
-            caseReference,
-            partyId
-        )).thenReturn(false);
-        when(draftCaseDataService.hasUnsubmittedCaseData(caseReference, respondPossessionClaim, partyId)).thenReturn(
-            true);
-        when(draftCaseDataService.getUnsubmittedCaseData(caseReference, respondPossessionClaim, partyId)).thenReturn(
-            Optional.empty());
-
-        // when / then
-        assertThatThrownBy(() -> underTest.getDraft(pcsCase, List.of(partyEntity), caseReference)).isInstanceOf(
-            DraftNotFoundException.class);
     }
 
     @Test
