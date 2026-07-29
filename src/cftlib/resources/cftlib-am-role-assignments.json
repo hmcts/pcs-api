@@ -39,6 +39,17 @@
     "roleAssignments": [
       {
         "roleType": "ORGANISATION",
+        "roleName": "hmcts-admin",
+        "grantType": "STANDARD",
+        "roleCategory": "ADMIN",
+        "classification": "PUBLIC",
+        "readOnly": false,
+        "attributes": {
+        },
+        "authorisations": []
+      },
+      {
+        "roleType": "ORGANISATION",
         "roleName": "hearing-centre-team-leader",
         "grantType": "STANDARD",
         "roleCategory": "ADMIN",
