@@ -550,7 +550,7 @@ tasks.withType(CftlibExec).configureEach {
   }
 
   environment 'ENABLE_TESTING_SUPPORT', 'true'
-  environment 'RSE_LIB_ADDITIONAL_DATABASES', 'pcs'
+  environment 'RSE_LIB_ADDITIONAL_DATABASES', 'pcs,wa_workflow_api,evidence'
   environment 'PCS_DB_USER_NAME', 'postgres'
   environment 'PCS_DB_PASSWORD', 'postgres'
   environment 'PCS_DB_PORT', '6432'
@@ -563,11 +563,32 @@ tasks.withType(CftlibExec).configureEach {
   environment 'LAUNCHDARKLY_FILES', './featureFlags/flags.json'
   environment 'ENABLE_TESTING_SUPPORT', 'true'
   environment 'IDAM_CLIENT_SECRET', 'dummy-secret-for-local'
+  environment 'CASE_DOCUMENT_S2S_AUTHORISED_SERVICES', 'ccd_case_document_am_api,ccd_gw,xui_webapp,ccd_data,pcs_frontend,pcs_api'
+  environment 'DATA_STORE_S2S_AUTHORISED_SERVICES', 'ccd_data,ccd_gw,pcs_frontend,pcs_api,wa_task_management_api'
+  environment 'CCD_S2S-AUTHORISED_SERVICES_CASE_USER_ROLES', 'aac_manage_case_assignment,pcs_api'
+
+  // ExUI config overrides
   environment 'XUI_JURISDICTIONS', 'PCS'
   environment 'XUI_DOCUMENTS_API_V2', 'http://ccd-case-document-am-api-aat.service.core-compute-aat.internal'
-  environment 'CASE_DOCUMENT_S2S_AUTHORISED_SERVICES', 'ccd_case_document_am_api,ccd_gw,xui_webapp,ccd_data,pcs_frontend,pcs_api'
-  environment 'DATA_STORE_S2S_AUTHORISED_SERVICES', 'ccd_data,ccd_gw,pcs_frontend,pcs_api'
-  environment 'CCD_S2S-AUTHORISED_SERVICES_CASE_USER_ROLES', 'aac_manage_case_assignment,pcs_api'
+  environment 'STAFF_SUPPORTED_JURISDICTIONS', 'PCS'
+  environment 'XUI_SYSTEM_USER_NAME', 'exui-system-user@localhost'
+  environment 'XUI_SYSTEM_USER_PASSWORD', 'password'
+  environment 'WA_SUPPORTED_JURISDICTIONS', 'PCS'
+  environment 'OPEN_ID_IDAM_URL', 'http://localhost:5062'
+  environment 'TASK_MANAGEMENT_API_URL', 'http://localhost:8087'
+  environment 'SERVICES_WORK_ALLOCATION_TASK_API', 'http://localhost:8087'
+  environment 'SERVICES_CASE_CASEWORKER_API', 'http://host.docker.internal:8083'
+  environment 'SERVICES_PRD_LOCATION_API', 'http://host.docker.internal:8083'
+  environment 'SERVICES_LOCATION_API', 'http://host.docker.internal:8083'
+  environment 'SERVICES_LOCATION_REF_API_URL', 'http://host.docker.internal:8083'
+
+  // wa-task-management-api overrides
+  environment 'IDAM_SECURITY_ALLOWED_ISSUER_0', 'http://localhost:5062/o'
+  environment 'CAMUNDA_URL', 'http://localhost:8097/engine-rest'
+  environment 'CCD_URL', 'http://localhost:4452'
+  environment 'IDAM_URL', 'http://localhost:5062'
+  environment 'WA_SYSTEM_USERNAME', 'wa-system-user@localhost'
+  environment 'WA_SYSTEM_PASSWORD', 'password'
 }
 
 cftlibTest {
