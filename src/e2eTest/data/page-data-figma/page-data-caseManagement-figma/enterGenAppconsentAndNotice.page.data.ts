@@ -7,9 +7,12 @@ export const enterGenAppConsentAndNotice = {
   hasApplicantMadeWithoutNoticeHiddenQuestion: `Has the applicant asked for this application to be made without notice?`,
   yesHiddenRadioOption: 'Yes',
   noHiddenRadioOption: 'No',
+  continueButton: `Continue`,
+  previousButton: `Previous`,
+  cancelLink: `Cancel`,
   errorValidation: `YES`,
   thereIsProbErrorMessageHeader: `There is a problem`,
-  errorValidationType: { one: `textField`, two: `radioOptions`, three: `checkBox`, four: `dropDown`, five: `dateField`, six: `dateRadioOption`, seven: `moneyField` },
+  errorValidationType: { one: `textField`, two: `radioOptions`, three: `checkBox`, four: `dropDown`, five: `dateField`, six: `dateRadioOption`, seven :`moneyField` },
   errorValidationField: {
     errorRadioOption1: [
       {
@@ -26,9 +29,6 @@ export const enterGenAppConsentAndNotice = {
         errMessage: `Has the applicant asked for this application to be made without notice? is required`,
         errInlineMessage: `Has the applicant asked for this application to be made without notice? is required`
       },
-    ],
-  },
-  continueButton: `Continue`,
-  previousButton: `Previous`,
-  cancelLink: `Cancel`,
+      ],
+  }
 };

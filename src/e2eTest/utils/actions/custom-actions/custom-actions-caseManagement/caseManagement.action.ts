@@ -123,7 +123,7 @@ export class CaseManagementAction implements IAction {
     }
 
     allPartyDetails = [...new Set(originalDefendantDetails.filter(n => n.trim().toLowerCase() !== "null null")),
-    ...originalDefendantDetails.filter(n => n.trim().toLowerCase() === "null null")
+      ...originalDefendantDetails.filter(n => n.trim().toLowerCase() === "null null")
     ];
     allPartyDetails.push(`${payLoad.claimantName} - Claimant 1`);
   }
@@ -159,7 +159,7 @@ export class CaseManagementAction implements IAction {
     });
     if (fee.option1 === 'Yes') {
       await performAction('inputText', fee.label1, CaseManagementCommonUtils.getRandomNumberAsString(1, 500));
-    };
+    }
     await performAction('clickRadioButton', {
       question: fee.question2,
       option: fee.option2,
@@ -167,7 +167,7 @@ export class CaseManagementAction implements IAction {
 
     if (fee.option2 === 'Yes') {
       await performAction('inputText', fee.label2, CaseManagementCommonUtils.generateRandomString(fee.input as number));
-    };
+    }
     if (fee.option1 === 'No') {
       await performValidation('text', {
         elementType: 'paragraph',
@@ -178,8 +178,36 @@ export class CaseManagementAction implements IAction {
 
     } else {
       await performAction('reTryOnCallBackError', enterGenAppHearingDate.continueButton, fee.nextPage as string);
-    };
+    }
+  }
 
+  private async enterApplicationConsentAndNotice(confirmApplicationConsent: actionRecord) {
+    await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid});
+    await performValidation('text', {
+      elementType: 'paragraph',
+      text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
+    });
+    await performAction('clickRadioButton', {
+      question: confirmApplicationConsent.question1,
+      option: confirmApplicationConsent.option1,
+    });
+    if(confirmApplicationConsent.option1 ==='No') {
+      await performAction('clickRadioButton', {
+        question: confirmApplicationConsent.question2,
+        option: confirmApplicationConsent.option2,
+      });
+    }
+    await performAction('reTryOnCallBackError', enterGenAppConsentAndNotice.continueButton, confirmApplicationConsent.nextPage as string);
+  }
+
+  private async verifyReferToJudge(referToJudgeData: actionRecord) {
+    await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid});
+    await performValidation('text', {
+      elementType: 'paragraph',
+      text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
+    });
+    await performValidation('mainHeader', enterGenAppPreferApplicationToJudge.mainHeader);
+    await performAction('reTryOnCallBackError', enterGenAppPreferApplicationToJudge.continueButton, referToJudgeData.nextPage as string);
   }
 
   private async uploadADocument(page: Page, upload: actionRecord): Promise<void> {
@@ -204,35 +232,6 @@ export class CaseManagementAction implements IAction {
       timeout: VERY_LONG_TIMEOUT,
     });
     await page.waitForTimeout(timeout);
-  }
-
-  private async enterApplicationConsentAndNotice(confirmApplicationConsent: actionRecord) {
-    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
-    await performValidation('text', {
-      elementType: 'paragraph',
-      text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
-    });
-    await performAction('clickRadioButton', {
-      question: confirmApplicationConsent.question1,
-      option: confirmApplicationConsent.option1,
-    });
-    if (confirmApplicationConsent.option1 === 'No') {
-      await performAction('clickRadioButton', {
-        question: confirmApplicationConsent.question2,
-        option: confirmApplicationConsent.option2,
-      });
-    }
-    await performAction('reTryOnCallBackError', enterGenAppConsentAndNotice.continueButton, confirmApplicationConsent.nextPage as string);
-  }
-
-  private async verifyReferToJudge(referToJudgeData: actionRecord) {
-    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
-    await performValidation('text', {
-      elementType: 'paragraph',
-      text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
-    });
-    await performValidation('mainHeader', enterGenAppPreferApplicationToJudge.mainHeader);
-    await performAction('reTryOnCallBackError', enterGenAppPreferApplicationToJudge.continueButton, referToJudgeData.nextPage as string);
   }
 
   private async uploadRelativeEvidence(uploadEvidence: actionRecord): Promise<void> {
@@ -340,7 +339,7 @@ export class CaseManagementAction implements IAction {
 
           default:
             throw new Error(`Validation type :"${validationArr.validationType}" is not valid`);
-        };
+        }
       }
     }
     if (validationArr.buttonRemove) {
