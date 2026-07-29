@@ -287,6 +287,8 @@ public class DocumentService {
 
         if (selectedGenApp != null) {
             camundaService.createTask(caseReference, TaskType.REVIEW_ADDITIONAL_DOCS_GEN_APP);
+        } else {
+            camundaService.createTask(caseReference, TaskType.REVIEW_ADDITIONAL_DOCS_CLAIM);
         }
 
         List<DocumentEntity> saved = documentRepository.saveAll(documentEntities);

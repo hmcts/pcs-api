@@ -15,6 +15,11 @@ public enum TaskType {
         "ReviewAdditionalDocumentsGenApp",
         "Review additional documents – gen app",
         5
+    ),
+    REVIEW_ADDITIONAL_DOCS_CLAIM(
+        "ReviewAdditionalDocumentsClaim",
+        "ReviewAdditionalDocumentsClaim",
+        99
     );
 
     private final String id;

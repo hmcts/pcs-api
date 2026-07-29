@@ -982,6 +982,7 @@ class DocumentServiceTest {
         assertThat(entity.getSize()).isEqualTo(123L);
         assertThat(entity.getPcsCase()).isSameAs(pcsCase);
         assertThat(entity.getParty()).isSameAs(party);
+        verify(camundaService).createTask(CASE_REFERENCE, TaskType.REVIEW_ADDITIONAL_DOCS_CLAIM);
     }
 
     @Test
