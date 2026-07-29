@@ -12,9 +12,9 @@ import {
   enterGenappApplication,
   enterGenAppapplicationFee,
   enterGenAppConsentAndNotice,
-  enterGenAppHearingDate,
+  enterGenAppHearingDate, enterGenAppPreferApplicationToJudge,
   enterGenAppUploadGeneralApplication,
-  enterGenAppuploadRelatedEvidence, genAppsCheckYouAnswers
+  enterGenAppUploadRelatedEvidence, genAppsCheckYouAnswers
 } from '@data/page-data-figma/page-data-caseManagement-figma';
 import { label } from 'allure-js-commons';
 
@@ -86,9 +86,24 @@ test.describe('Case management - Case Worker Enter a General application @nightl
       question1: enterGenAppConsentAndNotice.doAllPartiesAgreedQuestion, option1: enterGenAppConsentAndNotice.noRadioOption,
       question2: enterGenAppConsentAndNotice.hasApplicantMadeWithoutNoticeHiddenQuestion, option2: enterGenAppConsentAndNotice.yesHiddenRadioOption,
       nextPage: enterGenAppUploadGeneralApplication.mainHeader
-    })
-
+    });
+    await performAction('errorValidationUploadGenAppsFile', enterGenAppUploadGeneralApplication.errorValidation);
+    await performAction('uploadGenAppsFile', {
+      files: { fileName: 'genApps.xlsx' },
+      nextPage: enterGenAppUploadRelatedEvidence.mainHeader
+    });
+    await performAction('uploadGenAppsRelatedEvidence', {
+      files: { fileName: 'genApps.docx' },
+      nextPage: enterGenAppPreferApplicationToJudge.mainHeader
+    });
+    await performAction('verifyReferToJudge',{
+      nextPage: genAppsCheckYouAnswers.mainHeader
+    });
+    await performValidation('mainHeader', genAppsCheckYouAnswers.mainHeader);
+    await performAction('clickButton', genAppsCheckYouAnswers.submitButton);
+    await performValidation('bannerAlert', 'Case #.* has been updated with event: Enter a general application');
   });
+
 
   test('Case management - Case Worker Enter a General application ADJOURN Journey - Application Fee Received - NO @CM', async () => {
     await performAction('selectAnEvent', { eventType: caseSummary.enterAGenApp });
@@ -150,11 +165,16 @@ test.describe('Case management - Case Worker Enter a General application @nightl
       question1: enterGenAppConsentAndNotice.doAllPartiesAgreedQuestion, option1: enterGenAppConsentAndNotice.yesRadioOption,
       nextPage: enterGenAppUploadGeneralApplication.mainHeader
     });
-    await performValidation('mainHeader', enterGenAppUploadGeneralApplication.mainHeader);
-    await performAction('clickButton',enterGenAppUploadGeneralApplication.continueButton);
-    await performValidation('mainHeader', enterGenAppuploadRelatedEvidence.mainHeader);
-    await performAction('clickButton',enterGenAppuploadRelatedEvidence.continueButton);
+    await performAction('uploadGenAppsFile', {
+      files: { fileName: 'genApps.xlsx' },
+      nextPage: enterGenAppUploadRelatedEvidence.mainHeader
+    });
+    await performAction('uploadGenAppsRelatedEvidence',{
+      nextPage: genAppsCheckYouAnswers.mainHeader
+    });
     await performValidation('mainHeader', genAppsCheckYouAnswers.mainHeader);
+    await performAction('clickButton', genAppsCheckYouAnswers.submitButton);
+    await performValidation('bannerAlert', 'Case #.* has been updated with event: Enter a general application');
   });
 
   test('Case management - Case Worker Enter a General application SET ASIDE Journey @CM', async () => {
@@ -184,13 +204,20 @@ test.describe('Case management - Case Worker Enter a General application @nightl
       question2: enterGenAppConsentAndNotice.hasApplicantMadeWithoutNoticeHiddenQuestion, option2: enterGenAppConsentAndNotice.yesHiddenRadioOption,
       nextPage: enterGenAppUploadGeneralApplication.mainHeader
     });
-    await performValidation('mainHeader', enterGenAppUploadGeneralApplication.mainHeader);
-    await performAction('clickButton',enterGenAppUploadGeneralApplication.continueButton);
-    await performValidation('mainHeader', enterGenAppuploadRelatedEvidence.mainHeader);
-    await performAction('clickButton',enterGenAppuploadRelatedEvidence.continueButton);
+    await performAction('uploadGenAppsFile', {
+      files: { fileName: 'genApps.xlsx' },
+      nextPage: enterGenAppUploadRelatedEvidence.mainHeader
+    });
+    await performAction('uploadGenAppsRelatedEvidence',{
+      files: { fileName: 'genApps.docx' },
+      nextPage: enterGenAppPreferApplicationToJudge.mainHeader
+    });
     await performAction('verifyReferToJudge',{
       nextPage: genAppsCheckYouAnswers.mainHeader
     });
+    await performValidation('mainHeader', genAppsCheckYouAnswers.mainHeader);
+    await performAction('clickButton', genAppsCheckYouAnswers.submitButton);
+    await performValidation('bannerAlert', 'Case #.* has been updated with event: Enter a general application');
   });
 
   test('Case management - Case Worker Enter a General application SOMETHING ELSE Journey @CM', async () => {
@@ -220,12 +247,18 @@ test.describe('Case management - Case Worker Enter a General application @nightl
       question2: enterGenAppConsentAndNotice.hasApplicantMadeWithoutNoticeHiddenQuestion, option2: enterGenAppConsentAndNotice.yesHiddenRadioOption,
       nextPage: enterGenAppUploadGeneralApplication.mainHeader
     });
-    await performValidation('mainHeader', enterGenAppUploadGeneralApplication.mainHeader);
-    await performAction('clickButton',enterGenAppUploadGeneralApplication.continueButton);
-    await performValidation('mainHeader', enterGenAppuploadRelatedEvidence.mainHeader);
-    await performAction('clickButton',enterGenAppuploadRelatedEvidence.continueButton);
+    await performAction('uploadGenAppsFile', {
+      files: { fileName: 'genApps.xlsx' },
+      nextPage: enterGenAppUploadRelatedEvidence.mainHeader
+    });
+    await performAction('uploadGenAppsRelatedEvidence',{
+      nextPage: enterGenAppPreferApplicationToJudge.mainHeader
+    });
     await performAction('verifyReferToJudge',{
       nextPage: genAppsCheckYouAnswers.mainHeader
     });
+    await performValidation('mainHeader', genAppsCheckYouAnswers.mainHeader);
+    await performAction('clickButton', genAppsCheckYouAnswers.submitButton);
+    await performValidation('bannerAlert', 'Case #.* has been updated with event: Enter a general application');
   });
 });

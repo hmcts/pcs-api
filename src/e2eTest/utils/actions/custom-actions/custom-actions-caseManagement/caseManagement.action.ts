@@ -9,10 +9,13 @@ import { caseSummary, home } from '@data/page-data';
 import {
   changeCaseState, confirmCaseStateChange, enterGenappApplication, enterGenAppapplicationFee,
   enterGenAppConsentAndNotice, enterGenAppHearingDate,
-  enterGenAppPreferApplicationToJudge, selectDocument
+  enterGenAppPreferApplicationToJudge, selectDocument,
+  enterGenAppUploadGeneralApplication,
+  enterGenAppUploadRelatedEvidence,
 } from '@data/page-data-figma/page-data-caseManagement-figma';
 import { caseInfo } from '../createCaseAPI.action';
 import { CaseManagementCommonUtils } from './caseManagementUtils.action';
+import path from "path";
 
 
 export const addressInfo = {
@@ -37,6 +40,9 @@ export class CaseManagementAction implements IAction {
       ['confirmIfCourtHearingInNext14Days', () => this.confirmIfCourtHearingInNext14Days(fieldName as actionRecord)],
       ['enterApplicationFeeDetails', () => this.enterApplicationFeeDetails(fieldName as actionRecord)],
       ['enterApplicationConsentAndNotice', () => this.enterApplicationConsentAndNotice(fieldName as actionRecord)],
+      ['uploadGenAppsFile', () => this.uploadGenAppsFile(fieldName as actionRecord)],
+      ['uploadGenAppsRelatedEvidence',() => this.uploadGenAppsRelatedEvidence(fieldName as actionRecord)],
+      ['uploadADocument',() => this.uploadADocument(page, fieldName as actionRecord)],
       ['verifyReferToJudge', () => this.verifyReferToJudge(fieldName as actionRecord)],
       ['inputErrorValidation', () => this.inputErrorValidation(page, fieldName as actionRecord)],
 
@@ -205,7 +211,47 @@ export class CaseManagementAction implements IAction {
     await performAction('reTryOnCallBackError', enterGenAppConsentAndNotice.continueButton, confirmApplicationConsent.nextPage as string);
   }
 
-  private async verifyReferToJudge(referToJudgeData: actionRecord) {
+  private async uploadGenAppsFile(uploadDocs: actionRecord): Promise<void> {
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
+    await performValidation('text', {
+      elementType: 'paragraph',
+      text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
+    });
+
+    if (uploadDocs.files) {
+      const files = Array.isArray(uploadDocs.files)
+        ? uploadDocs.files
+        : [uploadDocs.files];
+      for (const file of files) {
+        await performAction('uploadADocument', {
+          file: file.fileName,
+        });
+      }
+    }
+    await performAction('reTryOnCallBackError', enterGenAppUploadGeneralApplication.continueButton, uploadDocs.nextPage as string);
+  }
+
+  private async uploadGenAppsRelatedEvidence(uploadDocs: actionRecord): Promise<void> {
+    await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid});
+    await performValidation('text', {
+      elementType: 'paragraph',
+      text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
+    });
+    if (uploadDocs.files) {
+      await performAction('clickButton', enterGenAppUploadRelatedEvidence.addNewButton);
+      const files = Array.isArray(uploadDocs.files)
+        ? uploadDocs.files
+        : [uploadDocs.files];
+      for (const file of files) {
+        await performAction('uploadADocument', {
+          file: file.fileName,
+        });
+      }
+    }
+    await performAction('reTryOnCallBackError', enterGenAppUploadRelatedEvidence.continueButton, uploadDocs.nextPage as string);
+  }
+
+    private async verifyReferToJudge(referToJudgeData: actionRecord) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid});
     await performValidation('text', {
       elementType: 'paragraph',
@@ -214,6 +260,31 @@ export class CaseManagementAction implements IAction {
     await performValidation('mainHeader', enterGenAppPreferApplicationToJudge.mainHeader);
     await performAction('reTryOnCallBackError', enterGenAppPreferApplicationToJudge.continueButton, referToJudgeData.nextPage as string);
   }
+
+  private async uploadADocument(page: Page, upload: actionRecord): Promise<void> {
+    const fileInput = page.locator('input[type="file"].form-control.bottom-30');
+    const filePath = path.resolve(__dirname, '../../../../data/inputFiles', upload.file as string);
+    await fileInput.last().setInputFiles(filePath);
+    let timeout = 6000;
+    await performValidation('waitUntilElementDisappears', 'Uploading...');
+    await expect(async () => {
+      const rateLimit = page.locator(`label:text-is("Your request was rate limited. Please wait a few seconds before retrying your document upload"),
+                                           span:text-is("Your request was rate limited. Please wait a few seconds before retrying your document upload")`);
+      let limit = await rateLimit.count();
+
+      while (limit > 0) {
+        timeout *= 2;
+        await page.waitForTimeout(timeout);
+        await fileInput.last().setInputFiles(filePath);
+        await performValidation('waitUntilElementDisappears', 'Uploading...');
+        limit = await rateLimit.count();
+      }
+    }).toPass({
+      timeout: VERY_LONG_TIMEOUT,
+    });
+    await page.waitForTimeout(timeout);
+  }
+
 
   private async inputErrorValidation(page: Page, validationArr: actionRecord) {
 
@@ -304,6 +375,15 @@ export class CaseManagementAction implements IAction {
               await performAction('clickButton', validationArr.button);
               //await performValidation('errorMessage', { header: !validationArr?.header ? validationArr.header = 'The event could not be created' : validationArr.header, message: item.errMessage });
               await performValidation('inputError', validationArr.label, item.errMessage);
+            }).toPass({
+              timeout: VERY_LONG_TIMEOUT,
+            });
+            break;
+
+          case 'uploadADocument':
+            await expect(async () => {
+              await performAction('clickButton', validationArr.button);
+              await performValidation('errorMessage', !validationArr?.header ? validationArr.header = 'There is a problem' : validationArr.header, item.errMessage);
             }).toPass({
               timeout: VERY_LONG_TIMEOUT,
             });
