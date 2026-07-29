@@ -20,6 +20,6 @@ public enum EventId {
     createFlags,
     amendFlags,
     claimIssuePayment,
-    changeCaseState,
-    addCaseReviewDate
+    addCaseReviewDate,
+    changeCaseState
 }
