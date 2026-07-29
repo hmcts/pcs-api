@@ -8,7 +8,14 @@ import { dismissCookieBanner } from '@config/cookie-banner';
 import { initializeCMExecutor, performAction, performValidation } from '@utils/controller-caseManagement';
 import { allPartyDetails } from '@utils/actions/custom-actions/custom-actions-caseManagement';
 
-import { enterGenappApplication, enterGenAppapplicationFee, enterGenAppConsentAndNotice, enterGenAppHearingDate, enterGenAppUploadGeneralApplication  } from '@data/page-data-figma/page-data-caseManagement-figma';
+import {
+  enterGenappApplication,
+  enterGenAppapplicationFee,
+  enterGenAppConsentAndNotice,
+  enterGenAppHearingDate,
+  enterGenAppUploadGeneralApplication,
+  enterGenAppuploadRelatedEvidence, genAppsCheckYouAnswers
+} from '@data/page-data-figma/page-data-caseManagement-figma';
 import { label } from 'allure-js-commons';
 
 test.use({ storageState: undefined })
@@ -20,6 +27,7 @@ test.beforeEach(async ({ page, context }) => {
   allPartyDetails.length = 0;
   await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
   await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayloadCaseFileView });
+  console.log(`Case created with case number: ${process.env.CASE_NUMBER}`);
   await performAction('updatePaymentAPI');
   await performAction('getCaseAPI', 'Link Solicitor');
   await performAction('getAllPartyDetails', {
@@ -141,7 +149,12 @@ test.describe('Case management - Case Worker Enter a General application @nightl
     await performAction('enterApplicationConsentAndNotice', {
       question1: enterGenAppConsentAndNotice.doAllPartiesAgreedQuestion, option1: enterGenAppConsentAndNotice.yesRadioOption,
       nextPage: enterGenAppUploadGeneralApplication.mainHeader
-    })
+    });
+    await performValidation('mainHeader', enterGenAppUploadGeneralApplication.mainHeader);
+    await performAction('clickButton',enterGenAppUploadGeneralApplication.continueButton);
+    await performValidation('mainHeader', enterGenAppuploadRelatedEvidence.mainHeader);
+    await performAction('clickButton',enterGenAppuploadRelatedEvidence.continueButton);
+    await performValidation('mainHeader', genAppsCheckYouAnswers.mainHeader);
   });
 
   test('Case management - Case Worker Enter a General application SET ASIDE Journey @CM', async () => {
@@ -170,7 +183,14 @@ test.describe('Case management - Case Worker Enter a General application @nightl
       question1: enterGenAppConsentAndNotice.doAllPartiesAgreedQuestion, option1: enterGenAppConsentAndNotice.noRadioOption,
       question2: enterGenAppConsentAndNotice.hasApplicantMadeWithoutNoticeHiddenQuestion, option2: enterGenAppConsentAndNotice.yesHiddenRadioOption,
       nextPage: enterGenAppUploadGeneralApplication.mainHeader
-    })
+    });
+    await performValidation('mainHeader', enterGenAppUploadGeneralApplication.mainHeader);
+    await performAction('clickButton',enterGenAppUploadGeneralApplication.continueButton);
+    await performValidation('mainHeader', enterGenAppuploadRelatedEvidence.mainHeader);
+    await performAction('clickButton',enterGenAppuploadRelatedEvidence.continueButton);
+    await performAction('verifyReferToJudge',{
+      nextPage: genAppsCheckYouAnswers.mainHeader
+    });
   });
 
   test('Case management - Case Worker Enter a General application SOMETHING ELSE Journey @CM', async () => {
@@ -199,6 +219,13 @@ test.describe('Case management - Case Worker Enter a General application @nightl
       question1: enterGenAppConsentAndNotice.doAllPartiesAgreedQuestion, option1: enterGenAppConsentAndNotice.noRadioOption,
       question2: enterGenAppConsentAndNotice.hasApplicantMadeWithoutNoticeHiddenQuestion, option2: enterGenAppConsentAndNotice.yesHiddenRadioOption,
       nextPage: enterGenAppUploadGeneralApplication.mainHeader
-    })
+    });
+    await performValidation('mainHeader', enterGenAppUploadGeneralApplication.mainHeader);
+    await performAction('clickButton',enterGenAppUploadGeneralApplication.continueButton);
+    await performValidation('mainHeader', enterGenAppuploadRelatedEvidence.mainHeader);
+    await performAction('clickButton',enterGenAppuploadRelatedEvidence.continueButton);
+    await performAction('verifyReferToJudge',{
+      nextPage: genAppsCheckYouAnswers.mainHeader
+    });
   });
 });

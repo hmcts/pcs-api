@@ -880,6 +880,62 @@ class GenAppServiceTest {
             assertThat(genAppEntity.getHelpWithFeesEntity()).isNull();
         }
 
+        @ParameterizedTest
+        @EnumSource(VerticalYesNo.class)
+        void shouldSetAllPartiesAgreeFlag(VerticalYesNo allPartiesAgree) {
+            // Given
+            EnterGenAppRequest enterGenAppRequest = EnterGenAppRequest.builder()
+                .applicationTypeOption(EnterGenAppType.SOMETHING_ELSE)
+                .allPartiesAgree(allPartiesAgree)
+                .build();
+
+            // When
+            underTest.createGenAppEntity(PCSCase.builder().enterGenAppRequest(enterGenAppRequest).build(),
+                                          pcsCaseEntity, applicantParty, GEN_APP_ISSUED);
+
+            // Then
+            GenAppEntity genAppEntity = getSavedGenAppEntity();
+            assertThat(genAppEntity.getOtherPartiesAgreed()).isEqualTo(allPartiesAgree);
+        }
+
+        @ParameterizedTest
+        @EnumSource(VerticalYesNo.class)
+        void shouldSetWithoutNoticeFlagWhenNotAllPartiesAgree(VerticalYesNo withoutNotice) {
+            // Given
+            EnterGenAppRequest enterGenAppRequest = EnterGenAppRequest.builder()
+                .applicationTypeOption(EnterGenAppType.SOMETHING_ELSE)
+                .allPartiesAgree(VerticalYesNo.NO)
+                .withoutNotice(withoutNotice)
+                .build();
+
+            // When
+            underTest.createGenAppEntity(PCSCase.builder().enterGenAppRequest(enterGenAppRequest).build(),
+                                         pcsCaseEntity, applicantParty, GEN_APP_ISSUED);
+
+            // Then
+            GenAppEntity genAppEntity = getSavedGenAppEntity();
+            assertThat(genAppEntity.getWithoutNotice()).isEqualTo(withoutNotice);
+        }
+
+        @ParameterizedTest
+        @EnumSource(VerticalYesNo.class)
+        void shouldNotSetWithoutNoticeFlagWhenAllPartiesAgree(VerticalYesNo withoutNotice) {
+            // Given
+            EnterGenAppRequest enterGenAppRequest = EnterGenAppRequest.builder()
+                .applicationTypeOption(EnterGenAppType.SOMETHING_ELSE)
+                .allPartiesAgree(VerticalYesNo.YES)
+                .withoutNotice(withoutNotice)
+                .build();
+
+            // When
+            underTest.createGenAppEntity(PCSCase.builder().enterGenAppRequest(enterGenAppRequest).build(),
+                                         pcsCaseEntity, applicantParty, GEN_APP_ISSUED);
+
+            // Then
+            GenAppEntity genAppEntity = getSavedGenAppEntity();
+            assertThat(genAppEntity.getWithoutNotice()).isNull();
+        }
+
         @Test
         void shouldSaveUploadedGenAppAsSubmissionDocument() {
             // Given
@@ -983,7 +1039,7 @@ class GenAppServiceTest {
             assertThat(documentEntity.getUrl()).isEqualTo("evidence url");
             assertThat(documentEntity.getBinaryUrl()).isEqualTo("evidence binary url");
             assertThat(documentEntity.getType()).isNull();
-            assertThat(documentEntity.getCategoryId()).isNull();
+            assertThat(documentEntity.getCategoryId()).isEqualTo(CaseFileCategory.UNCATEGORISED_DOCUMENTS.getId());
         }
 
         @Test
