@@ -1048,7 +1048,7 @@ class GenAppServiceTest {
             assertThat(documentEntity.getUrl()).isEqualTo("evidence url");
             assertThat(documentEntity.getBinaryUrl()).isEqualTo("evidence binary url");
             assertThat(documentEntity.getType()).isNull();
-            assertThat(documentEntity.getCategoryId()).isNull();
+            assertThat(documentEntity.getCategoryId()).isEqualTo(CaseFileCategory.UNCATEGORISED_DOCUMENTS.getId());
         }
 
         @Test

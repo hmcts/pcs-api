@@ -12,7 +12,7 @@ public class UploadGeneralApplication implements CcdPageConfiguration {
             .page("uploadGeneralApplication")
             .pageLabel("Upload general application")
             .label("uploadGeneralApplication-lineSeparator", "---")
-            .mandatory(PCSCase::getUploadSingleDocument);
+            .mandatoryWithLabel(PCSCase::getUploadSingleDocument, "Upload general application");
     }
 
 }
