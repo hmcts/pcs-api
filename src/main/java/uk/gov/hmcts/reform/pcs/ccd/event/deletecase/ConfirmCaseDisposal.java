@@ -14,6 +14,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.SYSTEM_USER;
+import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.confirmCaseDisposal;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.markCaseForDeletion;
 
 @Slf4j
@@ -24,7 +25,7 @@ public class ConfirmCaseDisposal implements CCDConfig<PCSCase, State, UserRole> 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         configBuilder
-                .decentralisedEvent(markCaseForDeletion.name(), this::submit)
+                .decentralisedEvent(confirmCaseDisposal.name(), this::submit)
                 .forStates(State.DRAFT_DISCARDED)
                 .name("Discard unissued cases")
                 .ttlIncrement(-1)
