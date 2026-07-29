@@ -1,0 +1,85 @@
+name: Validate DB migrations
+
+on:
+  pull_request:
+    branches:
+      - master
+    paths:
+      - src/main/resources/db/migration/V*.sql
+
+permissions:
+  contents: read
+
+concurrency:
+  group: validate-db-migrations-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  enforce-migration-immutability:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Fail when existing versioned migrations are changed
+        run: |
+          set -euo pipefail
+
+          changed_versioned_migrations="$(git diff --name-status origin/master...HEAD -- \
+            'src/main/resources/db/migration/V*.sql' || true)"
+
+          if [ -z "${changed_versioned_migrations}" ]; then
+            echo "No versioned migration changes detected."
+            exit 0
+          fi
+
+          echo "Detected versioned migration changes:"
+          echo "${changed_versioned_migrations}"
+
+          # Migration-changing PRs must include latest master to avoid stale numbering.
+          if ! git merge-base --is-ancestor origin/master HEAD; then
+            echo ""
+            echo "This PR changes versioned migrations but is not up to date with master."
+            echo "Please rebase or merge origin/master, then rerun checks."
+            exit 1
+          fi
+
+          disallowed_changes="$(echo "${changed_versioned_migrations}" | awk '$1 ~ /^(M|R|D)$/')"
+
+          if [ -n "${disallowed_changes}" ]; then
+            echo ""
+            echo "Existing versioned migrations must remain immutable."
+            echo "Only new V*.sql files are allowed in pull requests."
+            echo ""
+            echo "Blocked changes:"
+            echo "${disallowed_changes}"
+            exit 1
+          fi
+
+          added_migrations="$(echo "${changed_versioned_migrations}" | awk '$1 == "A" {print $2}')"
+
+          duplicate_versions=""
+          for migration_path in ${added_migrations}; do
+            migration_file="$(basename "${migration_path}")"
+            migration_version="$(echo "${migration_file}" | sed -E 's/^(V[0-9]+)__.*$/\1/')"
+            master_match="$(git ls-tree -r --name-only origin/master \
+              src/main/resources/db/migration | grep -E "^src/main/resources/db/migration/${migration_version}__.*\.sql$" || true)"
+
+            if [ -n "${master_match}" ]; then
+              duplicate_versions="${duplicate_versions}${migration_version}: ${migration_file}"$'\n'
+              duplicate_versions="${duplicate_versions}conflicts with ${master_match}"$'\n'
+            fi
+          done
+
+          if [ -n "${duplicate_versions}" ]; then
+            echo ""
+            echo "Duplicate migration version number(s) found against master."
+            echo "Rename your new migration file to the next available version and push again."
+            echo ""
+            echo "${duplicate_versions}"
+            exit 1
+          fi
+
+          echo "Migration checks passed: branch is up to date and added versions are unique."
