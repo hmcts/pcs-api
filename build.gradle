@@ -577,7 +577,6 @@ tasks.withType(CftlibExec).configureEach {
   environment 'OPEN_ID_IDAM_URL', 'http://localhost:5062'
   environment 'TASK_MANAGEMENT_API_URL', 'http://localhost:8087'
   environment 'SERVICES_WORK_ALLOCATION_TASK_API', 'http://localhost:8087'
-
   environment 'SERVICES_CASE_CASEWORKER_API', 'http://host.docker.internal:8083'
   environment 'SERVICES_PRD_LOCATION_API', 'http://host.docker.internal:8083'
   environment 'SERVICES_LOCATION_API', 'http://host.docker.internal:8083'
