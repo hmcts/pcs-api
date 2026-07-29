@@ -28,7 +28,7 @@ public class ManageFlags implements CCDConfig<PCSCase, State, UserRole> {
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         new PageBuilder(configBuilder
                             .decentralisedEvent(EventId.amendFlags.name(), this::submit)
-                            .forState(State.PENDING_CASE_ISSUED)
+                            .forAllStates()
                             .name("Manage case flags")
                             .description("To manage flags")
                             .showSummary()
@@ -44,7 +44,7 @@ public class ManageFlags implements CCDConfig<PCSCase, State, UserRole> {
                 .optional(Party::getDefendantFlags, ShowConditions.NEVER_SHOW, true)
             .done()
             .optional(PCSCase::getFlagLauncherInternal,null, null,
-                null, null, "#ARGUMENT(UPDATE)");
+                null, null, "#ARGUMENT(UPDATE,VERSION2.1)");
     }
 
     private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
