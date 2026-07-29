@@ -65,7 +65,7 @@ else
           <text></text>
         </inputEntry>
         <inputEntry id="UnaryTests_15rwj67">
-          <text></text>
+          <text>User selects claim completed in English for Which language did you use to complete this service</text>
         </inputEntry>
         <inputEntry id="UnaryTests_058t87a">
           <text></text>
@@ -77,7 +77,7 @@ else
           <text>"NewClaimCreateNewHearing"</text>
         </outputEntry>
         <outputEntry id="LiteralExpression_11crul1">
-          <text>"New Claim –  Create new hearing"</text>
+          <text>"New Claim – Create new hearing"</text>
         </outputEntry>
         <outputEntry id="LiteralExpression_0j4vwvw">
           <text></text>
@@ -122,7 +122,7 @@ else
           <text>"NewClaimCreateNewHearing"</text>
         </outputEntry>
         <outputEntry id="LiteralExpression_0q695rt">
-          <text>"New Claim –  Create new hearing"</text>
+          <text>"New Claim – Create new hearing"</text>
         </outputEntry>
         <outputEntry id="LiteralExpression_11pmqzg">
           <text></text>
@@ -167,7 +167,7 @@ else
           <text>"NewClaimCreateNewHearing"</text>
         </outputEntry>
         <outputEntry id="LiteralExpression_0rs33z5">
-          <text>"New Claim –  Create new hearing"</text>
+          <text>"New Claim – Create new hearing"</text>
         </outputEntry>
         <outputEntry id="LiteralExpression_0nhrxq1">
           <text></text>

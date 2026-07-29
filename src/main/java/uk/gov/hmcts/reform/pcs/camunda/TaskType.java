@@ -8,21 +8,17 @@ import lombok.Getter;
 public enum TaskType {
     NEW_CLAIM_CREATE_NEW_HEARING(
         "NewClaimCreateNewHearing",
-        "New Claim –  Create new hearing",
-        5
+        "New Claim –  Create new hearing"
     ),
     REVIEW_ADDITIONAL_DOCS_GEN_APP(
         "ReviewAdditionalDocumentsGenApp",
-        "Review additional documents – gen app",
-        5
+        "Review additional documents – gen app"
     ),
     REVIEW_ADDITIONAL_DOCS_CLAIM(
         "ReviewAdditionalDocumentsClaim",
-        "ReviewAdditionalDocumentsClaim",
-        99
+        "Review additional documents - claim"
     );
 
     private final String id;
     private final String name;
-    private final Integer workingDays;
 }
