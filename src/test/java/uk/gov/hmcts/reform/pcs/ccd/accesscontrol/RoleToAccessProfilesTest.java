@@ -64,4 +64,12 @@ class RoleToAccessProfilesTest {
             .containsExactly(AccessProfile.HEARING_CENTRE_ADMIN.getRole());
         assertThat(UserRole.WLU_TEAM_LEADER.getAccessProfiles()).containsExactly(AccessProfile.WLU_ADMIN.getRole());
     }
+
+    @Test
+    void shouldMapGroupAccessRolesToProfilesWithCaseTypeAcls() {
+        assertThat(UserRole.PCS_SOLICITOR_ORG.getAccessProfiles())
+            .containsExactly(AccessProfile.PCS_SOLICITOR.getRole());
+        assertThat(UserRole.PCS_SOLICITOR_GROUP.getAccessProfiles())
+            .containsExactly(AccessProfile.PROFESSIONAL_USER.getRole());
+    }
 }
