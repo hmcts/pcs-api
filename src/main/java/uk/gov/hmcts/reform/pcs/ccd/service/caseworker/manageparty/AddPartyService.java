@@ -93,7 +93,6 @@ public class AddPartyService {
         partyEntity.setLastName(addPartyDetails.getLitigationFriendLastName());
         partyEntity.setOrgName(addPartyDetails.getLitigationFriendOrganisationName());
         partyEntity.setNameKnown(VerticalYesNo.YES);
-        partyEntity.setDateOfBirth(addPartyDetails.getLitigationFriendDateOfBirth());
 
         applyContactDetails(partyEntity, addPartyDetails.getLitigationFriendAddress(),
             addPartyDetails.getLitigationFriendEmail(), addPartyDetails.getLitigationFriendPhoneNumber());
