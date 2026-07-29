@@ -890,7 +890,7 @@ class GenAppServiceTest {
                 .build();
 
             // When
-            underTest.createGenAppEntity( PCSCase.builder().enterGenAppRequest(enterGenAppRequest).build(),
+            underTest.createGenAppEntity(PCSCase.builder().enterGenAppRequest(enterGenAppRequest).build(),
                                           pcsCaseEntity, applicantParty, GEN_APP_ISSUED);
 
             // Then
