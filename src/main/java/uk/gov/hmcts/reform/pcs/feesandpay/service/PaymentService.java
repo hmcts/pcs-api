@@ -6,13 +6,16 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import uk.gov.hmcts.reform.payments.client.PaymentsApi;
 import uk.gov.hmcts.reform.payments.client.PaymentsClient;
 import uk.gov.hmcts.reform.payments.client.models.CasePaymentRequestDto;
 import uk.gov.hmcts.reform.payments.client.models.FeeDto;
 import uk.gov.hmcts.reform.payments.client.models.PaymentDto;
 import uk.gov.hmcts.reform.payments.request.CardPaymentServiceRequestDTO;
 import uk.gov.hmcts.reform.payments.request.CreateServiceRequestDTO;
+import uk.gov.hmcts.reform.payments.request.PBAServiceRequestDTO;
 import uk.gov.hmcts.reform.payments.response.CardPaymentServiceRequestResponse;
+import uk.gov.hmcts.reform.payments.response.PBAServiceRequestResponse;
 import uk.gov.hmcts.reform.payments.response.PaymentServiceResponse;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -27,10 +30,14 @@ import uk.gov.hmcts.reform.pcs.feesandpay.model.CreateCardPaymentResponse;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatusCallback;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.PbaAccountsResponse;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.PbaPaymentRequest;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
 
 import java.io.IOException;
 import java.util.Optional;
+import java.util.UUID;
 
 @Slf4j
 @Service
@@ -43,6 +50,8 @@ public class PaymentService {
     private final PcsCaseService pcsCaseService;
     private final PaymentCallbackStrategyFactory paymentCallbackStrategyFactory;
     private final ObjectMapper objectMapper;
+    private final OrganisationService organisationService;
+    private final PaymentsApi paymentsApi;
 
     @Value("${payments.api.callback-url}")
     private String callbackUrl;
@@ -53,7 +62,9 @@ public class PaymentService {
     public PaymentService(PaymentsClient paymentsClient, PaymentRequestMapper paymentRequestMapper,
         @Qualifier("systemUpdateUserTokenProvider") IdamTokenProvider systemUpdateUserTokenProvider,
         FeePaymentRepository feePaymentRepository, PcsCaseService pcsCaseService,
-        PaymentCallbackStrategyFactory paymentCallbackStrategyFactory, ObjectMapper objectMapper) {
+        PaymentCallbackStrategyFactory paymentCallbackStrategyFactory, ObjectMapper objectMapper,
+                          OrganisationService organisationService,
+                          PaymentsApi paymentsApi) {
         this.paymentsClient = paymentsClient;
         this.paymentRequestMapper = paymentRequestMapper;
         this.systemUpdateUserTokenProvider = systemUpdateUserTokenProvider;
@@ -61,6 +72,8 @@ public class PaymentService {
         this.pcsCaseService = pcsCaseService;
         this.paymentCallbackStrategyFactory = paymentCallbackStrategyFactory;
         this.objectMapper = objectMapper;
+        this.organisationService = organisationService;
+        this.paymentsApi = paymentsApi;
     }
 
     /**
@@ -145,6 +158,49 @@ public class PaymentService {
 
         return CardPaymentStatusResponse.builder()
             .status(govPayCardPaymentStatus.getStatus())
+            .build();
+    }
+
+    public PbaAccountsResponse getPbaAccounts() {
+        return PbaAccountsResponse.builder()
+            .paymentAccount(organisationService.getPbaAccountsForCurrentUser())
+            .build();
+    }
+
+    public PBAServiceRequestResponse createPbaPaymentRequest(String serviceRequestReference,
+                                                             PbaPaymentRequest pbaPaymentRequest) {
+
+        FeePaymentEntity feePaymentEntity = feePaymentRepository.findByServiceRequestReference(serviceRequestReference)
+            .orElseThrow(
+                () -> new FeePaymentNotFoundException("No fee payment entity found for " + serviceRequestReference)
+            );
+
+        String organisationName = organisationService.getOrganisationNameForCurrentUser();
+
+        PBAServiceRequestDTO paymentRequest = PBAServiceRequestDTO.builder()
+            .accountNumber(pbaPaymentRequest.getAccountNumber())
+            .amount(pbaPaymentRequest.getAmount())
+            .customerReference(pbaPaymentRequest.getCustomerReference())
+            .idempotencyKey(UUID.randomUUID().toString())
+            .organisationName(organisationName)
+            .build();
+
+        PaymentStatus paymentStatus = feePaymentEntity.getPaymentStatus();
+        if (paymentStatus == PaymentStatus.PAID || paymentStatus == PaymentStatus.PARTIALLY_PAID) {
+            throw new IllegalStateException("Service request " + serviceRequestReference
+                                                + " already has a completed status");
+        }
+
+        PBAServiceRequestResponse pbaPaymentResponse = paymentsClient.createPbaPayment(
+            serviceRequestReference,
+            systemUpdateUserTokenProvider.getAuthToken(),
+            paymentRequest
+        );
+
+        return PBAServiceRequestResponse.builder()
+            .paymentReference(pbaPaymentResponse.getPaymentReference())
+            .status(pbaPaymentResponse.getStatus())
+            .dateCreated(pbaPaymentResponse.getDateCreated())
             .build();
     }
 

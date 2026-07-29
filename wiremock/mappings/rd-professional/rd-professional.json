@@ -21,6 +21,10 @@
           "country": "",
           "postCode": "CF24 5JT"
         }
+      ],
+      "paymentAccount": [
+        "pba123",
+        "pba456"
       ]
     }
   }
