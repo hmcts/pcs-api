@@ -7,6 +7,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.ccd.sdk.type.Flags;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantContactDetails;
@@ -25,6 +26,7 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -45,6 +47,8 @@ class ClaimResponseServiceTest {
     private SecurityContextService securityContextService;
     @Mock
     private ModelMapper modelMapper;
+    @Mock
+    private CaseFlagService caseFlagService;
 
     private ClaimResponseService underTest;
 
@@ -56,7 +60,7 @@ class ClaimResponseServiceTest {
         testParty.setId(TEST_PARTY_ID);
         testParty.setIdamId(TEST_IDAM_ID);
 
-        underTest = new ClaimResponseService(partyService, securityContextService, modelMapper);
+        underTest = new ClaimResponseService(partyService, securityContextService, modelMapper, caseFlagService);
     }
 
     @Test
@@ -518,6 +522,42 @@ class ClaimResponseServiceTest {
         assertThat(savedPrefs.getContactByText()).isEqualTo(VerticalYesNo.YES);
         assertThat(savedPrefs.getContactByEmail()).isEqualTo(VerticalYesNo.YES);
         assertThat(savedPrefs.getContactByPost()).isEqualTo(VerticalYesNo.NO);
+    }
+
+    @Test
+    void shouldSaveDefendantFlagsAgainstPartyForCitizen() {
+        // Given
+        Flags defendantFlags = Flags.builder().partyName("Jack Smith").roleOnCase("Defendant").build();
+        PossessionClaimResponse response = PossessionClaimResponse.builder()
+            .defendantFlags(defendantFlags)
+            .build();
+
+        when(securityContextService.getCurrentUserId()).thenReturn(TEST_IDAM_ID);
+        when(partyService.getPartyEntityByIdamId(TEST_IDAM_ID, TEST_CASE_REFERENCE)).thenReturn(testParty);
+
+        // When
+        underTest.saveDraftData(response, TEST_CASE_REFERENCE);
+
+        // Then
+        verify(caseFlagService).savePartyFlags(testParty, defendantFlags);
+    }
+
+    @Test
+    void shouldSaveDefendantFlagsAgainstPartyForLegalRepresentative() {
+        // Given
+        UUID partyId = UUID.randomUUID();
+        Flags defendantFlags = Flags.builder().partyName("Jack Smith").roleOnCase("Defendant").build();
+        PossessionClaimResponse response = PossessionClaimResponse.builder()
+            .defendantFlags(defendantFlags)
+            .build();
+
+        when(partyService.getPartyEntityById(partyId, TEST_CASE_REFERENCE)).thenReturn(testParty);
+
+        // When
+        underTest.saveDraftDataForParty(response, TEST_CASE_REFERENCE, partyId);
+
+        // Then
+        verify(caseFlagService).savePartyFlags(testParty, defendantFlags);
     }
 
     private PossessionClaimResponse buildResponse(Party party, DefendantResponses defendantResponses) {

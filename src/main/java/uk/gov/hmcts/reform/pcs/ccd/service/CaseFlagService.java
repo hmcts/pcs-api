@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.pcs.ccd.service;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.Flags;
 import uk.gov.hmcts.ccd.sdk.type.FlagDetail;
@@ -27,10 +28,14 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import static java.util.Objects.requireNonNullElse;
+
 
 @Service
 @AllArgsConstructor
 public class CaseFlagService {
+
+    private static final String RA_FLAG_CODE_PREFIX = "RA";
 
     private FlagRefDataRepository flagRefDataRepository;
 
@@ -38,6 +43,23 @@ public class CaseFlagService {
 
         return mergeFlagDetails(incomingCaseFlags, pcsCaseEntity,null,
                         CaseFlagEntity::new);
+    }
+
+    /**
+     * Applies the reasonable adjustment flags a defendant supplied via the cui-ra microsite to their
+     * party. Only the RA flags are replaced, so any flag a caseworker raised against the same party
+     * survives - the defendant is never shown those and so could not have supplied them back.
+     */
+    public void savePartyFlags(PartyEntity partyEntity, Flags incomingFlags) {
+        if (incomingFlags == null || CollectionUtils.isEmpty(incomingFlags.getDetails())) {
+            return;
+        }
+
+        List<CasePartyFlagEntity> mergedCasePartyFlags = mergeFlagDetails(
+            incomingFlags, null, partyEntity, CasePartyFlagEntity::new);
+
+        partyEntity.getDefendantFlags().removeIf(CaseFlagService::isReasonableAdjustmentFlag);
+        partyEntity.getDefendantFlags().addAll(mergedCasePartyFlags);
     }
 
     public void mergePartyFlags(List<ListValue<Party>> incomingParties, Set<PartyEntity> existingParties) {
@@ -126,15 +148,27 @@ public class CaseFlagService {
         return flagRefDataEntity;
     }
 
+    private static boolean isReasonableAdjustmentFlag(BaseCaseFlag flag) {
+        return flag.getFlagRefData() != null
+            && flag.getFlagRefData().getFlagCode() != null
+            && flag.getFlagRefData().getFlagCode().startsWith(RA_FLAG_CODE_PREFIX);
+    }
+
     private void setFlagPath(FlagDetail incomingFlagDetail, BaseCaseFlag flagEntity) {
 
-        if (incomingFlagDetail.getPath() != null) {
-            String paths = incomingFlagDetail.getPath().stream()
-                .map(pathListValue -> pathListValue.getId() + CaseFlagsView.PATH_DELIMITER + pathListValue.getValue())
-                .collect(Collectors.joining(CaseFlagsView.PATHS_DELIMITER));
-
-            flagEntity.setPaths(paths);
+        if (incomingFlagDetail.getPath() == null) {
+            // The paths column is not nullable
+            flagEntity.setPaths("");
+            return;
         }
+
+        // Flags raised outside CCD arrive with path values but no ids
+        String paths = incomingFlagDetail.getPath().stream()
+            .map(pathListValue -> requireNonNullElse(pathListValue.getId(), "")
+                + CaseFlagsView.PATH_DELIMITER + pathListValue.getValue())
+            .collect(Collectors.joining(CaseFlagsView.PATHS_DELIMITER));
+
+        flagEntity.setPaths(paths);
     }
 }
 

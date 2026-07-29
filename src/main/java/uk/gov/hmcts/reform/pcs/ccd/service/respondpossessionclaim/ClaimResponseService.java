@@ -13,6 +13,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaim
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ContactPreferencesEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.service.CaseFlagService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
@@ -32,6 +33,7 @@ public class ClaimResponseService {
     private final PartyService partyService;
     private final SecurityContextService securityContextService;
     private final ModelMapper modelMapper;
+    private final CaseFlagService caseFlagService;
 
     /**
      * Saves defendant's contact preferences and contact details.
@@ -64,6 +66,7 @@ public class ClaimResponseService {
         saveContactPreferences(defendant, dataFromDraftTable.getDefendantResponses());
         updatePartyContactDetails(defendant, dataFromDraftTable.getDefendantContactDetails(), dataFromDraftTable
             .getDefendantResponses());
+        caseFlagService.savePartyFlags(defendant, dataFromDraftTable.getDefendantFlags());
 
         if (dataFromDraftTable.getDefendantResponses() != null
             && dataFromDraftTable.getDefendantResponses().getDateOfBirth() != null) {

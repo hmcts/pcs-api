@@ -146,6 +146,97 @@ class CaseFlagServiceTest {
 
     }
 
+    @Test
+    void shouldReplaceOnlyReasonableAdjustmentFlagsOnParty() {
+        // Given
+        List<CasePartyFlagEntity> existingFlags = new ArrayList<>();
+        existingFlags.add(createPartyFlagEntity("RA0012", "Braille documents"));
+        existingFlags.add(createPartyFlagEntity("PF0015", "Language Interpreter"));
+
+        PartyEntity partyEntity = PartyEntity.builder()
+            .id(UUID.randomUUID())
+            .defendantFlags(existingFlags)
+            .build();
+
+        Flags incomingFlags = Flags.builder()
+            .partyName("Jack Smith")
+            .roleOnCase("Defendant")
+            .details(createReasonableAdjustmentDetails("RA0033", "Sign language interpreter"))
+            .build();
+
+        // When
+        underTest.savePartyFlags(partyEntity, incomingFlags);
+
+        // Then
+        assertThat(partyEntity.getDefendantFlags())
+            .extracting(flag -> flag.getFlagRefData().getFlagCode())
+            .containsExactlyInAnyOrder("PF0015", "RA0033");
+    }
+
+    @Test
+    void shouldStorePathsWhenPathValuesHaveNoIds() {
+        // Given
+        PartyEntity partyEntity = PartyEntity.builder().id(UUID.randomUUID()).build();
+
+        Flags incomingFlags = Flags.builder()
+            .details(createReasonableAdjustmentDetails("RA0012", "Braille documents"))
+            .build();
+
+        // When
+        underTest.savePartyFlags(partyEntity, incomingFlags);
+
+        // Then
+        assertThat(partyEntity.getDefendantFlags().getFirst().getPaths())
+            .isEqualTo(":Party_:Reasonable adjustment");
+    }
+
+    @Test
+    void shouldRetainExistingPartyFlagsWhenNoFlagsSupplied() {
+        // Given
+        List<CasePartyFlagEntity> existingFlags = new ArrayList<>();
+        existingFlags.add(createPartyFlagEntity("RA0012", "Braille documents"));
+
+        PartyEntity partyEntity = PartyEntity.builder()
+            .id(UUID.randomUUID())
+            .defendantFlags(existingFlags)
+            .build();
+
+        // When
+        underTest.savePartyFlags(partyEntity, null);
+        underTest.savePartyFlags(partyEntity, Flags.builder().details(new ArrayList<>()).build());
+
+        // Then
+        assertThat(partyEntity.getDefendantFlags()).hasSize(1);
+        assertThat(partyEntity.getDefendantFlags().getFirst().getFlagComment()).isEqualTo("Braille documents");
+    }
+
+    private List<ListValue<FlagDetail>> createReasonableAdjustmentDetails(String flagCode, String name) {
+        return List.of(ListValue.<FlagDetail>builder()
+                           .value(FlagDetail.builder()
+                                      .flagCode(flagCode)
+                                      .name(name)
+                                      .status("Active")
+                                      .hearingRelevant(YesOrNo.YES)
+                                      .availableExternally(YesOrNo.YES)
+                                      .dateTimeCreated(LocalDateTime.now())
+                                      .path(List.of(
+                                          ListValue.<String>builder().value("Party").build(),
+                                          ListValue.<String>builder().value("Reasonable adjustment").build()))
+                                      .build())
+                           .build());
+    }
+
+    private CasePartyFlagEntity createPartyFlagEntity(String flagCode, String flagComment) {
+        CasePartyFlagEntity casePartyFlagEntity = new CasePartyFlagEntity();
+        casePartyFlagEntity.setId(UUID.randomUUID());
+        casePartyFlagEntity.setDefaultStatus("Active");
+        casePartyFlagEntity.setFlagRefData(FlagRefDataEntity.builder().flagCode(flagCode).build());
+        casePartyFlagEntity.setFlagComment(flagComment);
+        casePartyFlagEntity.setPaths(":Party");
+
+        return casePartyFlagEntity;
+    }
+
     private Set<PartyEntity> createPartyEntities(UUID partyId) {
         Set<PartyEntity> parties = new HashSet<>();
         PartyEntity partyEntity = PartyEntity.builder()

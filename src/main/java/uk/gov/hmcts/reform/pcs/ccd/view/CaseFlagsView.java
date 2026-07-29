@@ -88,6 +88,7 @@ public class CaseFlagsView {
 
         return Arrays.stream(entityPaths.split(PATHS_DELIMITER))
                 .map(pathPairs -> pathPairs.split(PATH_DELIMITER))
+                .filter(paths -> paths.length > 1)
                 .map(paths -> ListValue.<String>builder()
                     .id(paths[0])
                     .value(paths[1])
