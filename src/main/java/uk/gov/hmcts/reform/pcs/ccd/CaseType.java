@@ -172,7 +172,7 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
 
         // State ACLs, else the data store filters matched cases out.
         for (State state : State.values()) {
-            builder.grant(state, CRU, AccessProfile.SOLICITOR, AccessProfile.PROFESSIONAL_USER);
+            builder.grant(state, CRU, AccessProfile.PROFESSIONAL_USER);
         }
 
 

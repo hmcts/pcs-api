@@ -55,7 +55,6 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
                 .initialState(State.AWAITING_SUBMISSION_TO_HMCTS)
                 .showSummary()
                 .name("Make a claim")
-                .grant(Permission.CRUD, UserRole.SOLICITOR)
                 .grant(Permission.CRUD, UserRole.PCS_SOLICITOR)
                 // XUI Create Case filters events by raw RAS role name vs event ACLs.
                 // RoleToAccessProfiles is enough for deep-link/server auth, but the
