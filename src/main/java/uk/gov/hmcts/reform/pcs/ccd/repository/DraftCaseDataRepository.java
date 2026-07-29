@@ -9,6 +9,9 @@ import java.util.UUID;
 
 public interface DraftCaseDataRepository extends JpaRepository<DraftCaseDataEntity, Integer> {
 
+    Optional<DraftCaseDataEntity> findByCaseReferenceAndEventId(
+            long caseReference, EventId eventId);
+
     Optional<DraftCaseDataEntity> findByCaseReferenceAndEventIdAndIdamUserId(
         long caseReference, EventId eventId, UUID idamUserId);
 

@@ -333,6 +333,17 @@ public class DraftCaseDataService {
         );
     }
 
+    @Transactional
+    public void deleteUnsubmittedCaseDataBySystemUser(long caseReference, EventId eventId) {
+        draftCaseDataRepository.findByCaseReferenceAndEventId(caseReference, eventId)
+                        .ifPresent(draftCaseDataEntity -> {
+                            log.debug("Deleting draft case data for caseReference={}, eventId={}, userId={}",
+                                    caseReference, eventId, draftCaseDataEntity.getIdamUserId());
+                            draftCaseDataRepository.delete(draftCaseDataEntity);
+                        });
+
+    }
+
     public PCSCase parseCaseDataJson(String caseDataJson) {
         try {
             return objectMapper.readValue(caseDataJson, PCSCase.class);

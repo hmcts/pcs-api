@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.pcs.ccd.service;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -91,6 +92,15 @@ public class PcsCaseService {
     public PcsCaseEntity loadCase(long caseReference) {
         return pcsCaseRepository.findByCaseReference(caseReference)
             .orElseThrow(() -> new CaseNotFoundException(caseReference));
+    }
+
+    @Transactional
+    public void deleteCase(long caseReference) {
+        PcsCaseEntity pcsCaseEntity = loadCase(caseReference);
+        if (pcsCaseEntity != null) {
+            pcsCaseRepository.delete(pcsCaseEntity);
+            log.debug("Deleted case with reference: {}", caseReference);
+        }
     }
 
     public void allocateCaseManagementLocation(PCSCase pcsCase) {

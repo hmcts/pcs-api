@@ -3,8 +3,6 @@ package uk.gov.hmcts.reform.pcs.ccd.service;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.resumePossessionClaim;
 
@@ -14,12 +12,10 @@ public class CaseDeletionService {
 
     private final DraftCaseDataService draftCaseDataService;
     private final PcsCaseService pcsCaseService;
-    private final PcsCaseRepository pcsCaseRepository;
 
     @Transactional
     public void deleteCase(long caseReference) {
-        draftCaseDataService.deleteUnsubmittedCaseData(caseReference, resumePossessionClaim);
-        PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
-        pcsCaseRepository.delete(pcsCaseEntity);
+        draftCaseDataService.deleteUnsubmittedCaseDataBySystemUser(caseReference, resumePossessionClaim);
+        pcsCaseService.deleteCase(caseReference);
     }
 }
