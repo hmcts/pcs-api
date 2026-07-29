@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
+import uk.gov.hmcts.ccd.sdk.type.Flags;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DefendantAccess;
@@ -49,6 +50,12 @@ public class PossessionClaimResponse {
 
     @CCD(access = {DefendantAccess.class})
     private DefendantResponses defendantResponses;
+
+    /**
+     * Persisted against the responding defendant's party by the submit path.
+     */
+    @CCD(access = {DefendantAccess.class}, label = "Defendant flags")
+    private Flags defendantFlags;
 
     @CCD(access = {DefendantAccess.class})
     private String currentDefendantPartyId;
