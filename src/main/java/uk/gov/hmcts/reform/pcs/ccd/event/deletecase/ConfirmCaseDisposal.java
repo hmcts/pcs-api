@@ -15,7 +15,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.SYSTEM_USER;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.confirmCaseDisposal;
-import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.markCaseForDeletion;
 
 @Slf4j
 @Component
