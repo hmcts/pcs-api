@@ -346,8 +346,18 @@ export class CYAPageValidation {
     let ignored = 0;
     const validatedExtractedQuestions = new Set<string>();
     const ignoredQAs: QAObject[] = [];
+    const seenQuestions = new Set<string>();
+    const uniqueSavedQA = [...savedQA].reverse().filter(qa => {
+      const normalizedQuestion = this.normalizeText(qa.question);
+      if (seenQuestions.has(normalizedQuestion)) {
+        return false;
+      }
+      seenQuestions.add(normalizedQuestion);
+      return true;
 
-    savedQA.forEach((saved, index) => {
+    }).reverse();
+
+    uniqueSavedQA.forEach((saved, index) => {
       if (this.store.shouldIgnore(saved.question)) {
         ignored++;
         ignoredQAs.push(saved);
