@@ -9,7 +9,7 @@ export default {
   'enterGenApphearingDate': 'enterGenApphearingDate',
   'enterGenAppapplicationFee': 'enterGenAppapplicationFee',
   'enterGenAppconsentAndNotice': 'enterGenAppconsentAndNotice',
-  'enterGenAppuploadGeneralApplication': 'enterGenAppUploadGeneralApplication',
+  'enterGenAppuploadGeneralApplication': 'enterGenAppuploadGeneralApplication',
   'enterGenAppuploadRelatedEvidence': 'enterGenAppUploadRelatedEvidence',
   'enterGenAppreferApplicationToJudge': 'enterGenAppPreferApplicationToJudge',
   'enterGenApp/submit': 'genAppsCheckYouAnswers',

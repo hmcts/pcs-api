@@ -10,7 +10,7 @@ export * from './enterGenAppapplicationDetails.page.data';
 export * from './enterGenApphearingDate.page.data';
 export * from './enterGenAppapplicationFee.page.data';
 export * from './enterGenAppconsentAndNotice.page.data';
-export * from './enterGenAppUploadGeneralApplication.page.data';
 export * from './enterGenAppUploadRelatedEvidence.page.data';
 export * from './enterGenAppPreferApplicationToJudge.page.data'
-export * from './genAppsCheckYouAnswers.page.data'
+export * from './genAppsCheckYouAnswers.page.data';
+export * from './enterGenAppuploadGeneralApplication.page.data'
