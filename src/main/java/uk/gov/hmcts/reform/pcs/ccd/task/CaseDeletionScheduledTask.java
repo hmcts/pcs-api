@@ -76,6 +76,7 @@ public class CaseDeletionScheduledTask implements RetainAndDisposePolicy {
                     .map(DraftCasesToDiscard::getCaseReference)
                     .toList();
             caseReferences.forEach(this::performCcdCaseDeletionEvents);
+            caseReferences.forEach(this::dispose);
         } finally {
             MDC.remove(MDC_TASK_NAME);
         }
