@@ -19,11 +19,9 @@ import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.PaymentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
-import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 import uk.gov.hmcts.reform.payments.response.PaymentServiceResponse;
 
 import java.math.BigDecimal;
-import java.util.UUID;
 
 import static uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentCallbackHandlerType.COUNTER_CLAIM_ISSUE;
 
@@ -35,16 +33,20 @@ public class CounterClaimSubmitConfirmationService {
     private final FeeService feeService;
     private final PaymentService paymentService;
     private final CounterClaimFeeCalculator counterClaimFeeCalculator;
-    private final SecurityContextService securityContextService;
     private final ObjectMapper objectMapper;
 
     public SubmitResponse<State> buildSubmitResponse(
         long caseReference,
-        RespondPossessionClaimSubmitPersistenceResult persistenceResult
+        RespondPossessionClaimSubmitPersistenceResult persistenceResult,
+        PartyEntity responsibleParty
     ) {
         CounterClaimEntity counterClaimEntity = persistenceResult.counterClaimEntity();
         if (counterClaimEntity == null) {
             return SubmitResponse.defaultResponse();
+        }
+
+        if (responsibleParty == null) {
+            throw new IllegalStateException("Responsible party entity not provided");
         }
 
         if (persistenceResult.issuedWithoutPayment()) {
@@ -66,6 +68,7 @@ public class CounterClaimSubmitConfirmationService {
         );
         String serviceRequestReference = createPaymentServiceRequest(
             counterClaimEntity,
+            responsibleParty,
             feeDetails,
             caseReference
         );
@@ -79,9 +82,9 @@ public class CounterClaimSubmitConfirmationService {
     }
 
     private String createPaymentServiceRequest(CounterClaimEntity counterClaimEntity,
+                                               PartyEntity responsibleParty,
                                                FeeDetails feeDetails,
                                                long caseReference) {
-        PartyEntity responsibleParty = getCurrentUserParty(caseReference);
 
         FeesAndPayTaskData taskData = FeesAndPayTaskData.builder()
             .feeDetails(feeDetails)
@@ -122,14 +125,6 @@ public class CounterClaimSubmitConfirmationService {
         return SubmitResponse.<State>builder()
             .confirmationBody(writeAsString(response))
             .build();
-    }
-
-    private PartyEntity getCurrentUserParty(long caseReference) {
-        UUID currentUserId = securityContextService.getCurrentUserId();
-        if (currentUserId == null) {
-            throw new IllegalStateException("Current user IDAM ID is null");
-        }
-        return partyService.getPartyEntityByIdamId(currentUserId, caseReference);
     }
 
     private String writeAsString(RespondPossessionClaimSubmitResponse submitResponse) {
