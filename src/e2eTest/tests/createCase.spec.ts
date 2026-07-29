@@ -93,7 +93,7 @@ test.describe('[Create Case - England]', async () => {
       correspondenceAddress: contactPreferences.yesRadioOption,
       phoneNumber: contactPreferences.noRadioOption
     });
-    await performValidation('mainHeader', defendantDetails.mainHeader); 
+    await performValidation('mainHeader', defendantDetails.mainHeader);
     await performAction('addDefendantDetails', {
       nameOption: defendantDetails.yesRadioOption, firstName: defendantDetails.defendantsFirstNameTextInput, lastName: defendantDetails.defendantsLastNameTextInput,
       correspondenceAddressOption: defendantDetails.yesRadioOption, correspondenceAddressSameOption: defendantDetails.noRadioOption, address: defendantDetails.postcodeTextInput,
@@ -204,7 +204,7 @@ test.describe('[Create Case - England]', async () => {
     await performAction('submitAddressCheckYourAnswers');
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
-    await performAction('provideMoreDetailsOfClaim');    
+    await performAction('provideMoreDetailsOfClaim');
     await performAction('selectClaimantName', claimantInformation.yesRadioOption);
     await performValidation('mainHeader', claimantType.mainHeader);
     await performAction('selectClaimantType', claimantType.englandRegisteredProviderForSocialHousingDynamicRadioOption);
@@ -215,7 +215,7 @@ test.describe('[Create Case - England]', async () => {
       correspondenceAddress: contactPreferences.yesRadioOption,
       phoneNumber: contactPreferences.noRadioOption
     });
-    await performValidation('mainHeader', defendantDetails.mainHeader); 
+    await performValidation('mainHeader', defendantDetails.mainHeader);
     await performAction('addDefendantDetails', {
       nameOption: defendantDetails.yesRadioOption, firstName: defendantDetails.defendantsFirstNameTextInput, lastName: defendantDetails.defendantsLastNameTextInput,
       correspondenceAddressOption: defendantDetails.yesRadioOption, correspondenceAddressSameOption: defendantDetails.noRadioOption, address: defendantDetails.postcodeTextInput,
@@ -338,7 +338,7 @@ test.describe('[Create Case - England]', async () => {
       notifications: contactPreferences.yesRadioOption,
       correspondenceAddress: contactPreferences.yesRadioOption
     });
-    await performValidation('mainHeader', defendantDetails.mainHeader); 
+    await performValidation('mainHeader', defendantDetails.mainHeader);
     await performAction('addDefendantDetails', {
       nameOption: defendantDetails.yesRadioOption, firstName: defendantDetails.defendantsFirstNameTextInput, lastName: defendantDetails.defendantsLastNameTextInput,
       correspondenceAddressOption: defendantDetails.yesRadioOption, correspondenceAddressSameOption: defendantDetails.noRadioOption, address: defendantDetails.postcodeTextInput,
@@ -438,7 +438,7 @@ test.describe('[Create Case - England]', async () => {
       correspondenceAddress: contactPreferences.yesRadioOption,
       phoneNumber: contactPreferences.noRadioOption
     });
-    await performValidation('mainHeader', defendantDetails.mainHeader); 
+    await performValidation('mainHeader', defendantDetails.mainHeader);
     await performAction('addDefendantDetails', {
       nameOption: defendantDetails.yesRadioOption, firstName: defendantDetails.defendantsFirstNameTextInput, lastName: defendantDetails.defendantsLastNameTextInput,
       correspondenceAddressOption: defendantDetails.yesRadioOption, correspondenceAddressSameOption: defendantDetails.noRadioOption, address: defendantDetails.postcodeTextInput,
@@ -538,14 +538,14 @@ test.describe('[Create Case - England]', async () => {
     await performAction('selectClaimantName', claimantInformation.yesRadioOption);
     await performValidation('mainHeader', claimantType.mainHeader);
     await performAction('selectClaimantType', claimantType.englandRegisteredProviderForSocialHousingDynamicRadioOption);
-    await performAction('selectClaimType', claimType.noRadioOption);    
+    await performAction('selectClaimType', claimType.noRadioOption);
     await performValidation('mainHeader', contactPreferences.mainHeader);
     await performAction('selectContactPreferences', {
       notifications: contactPreferences.yesRadioOption,
       correspondenceAddress: contactPreferences.yesRadioOption,
       phoneNumber: contactPreferences.noRadioOption
     });
-    await performValidation('mainHeader', defendantDetails.mainHeader); 
+    await performValidation('mainHeader', defendantDetails.mainHeader);
     await performAction('addDefendantDetails', {
       nameOption: defendantDetails.yesRadioOption, firstName: defendantDetails.defendantsFirstNameTextInput, lastName: defendantDetails.defendantsLastNameTextInput,
       correspondenceAddressOption: defendantDetails.yesRadioOption, correspondenceAddressSameOption: defendantDetails.noRadioOption, address: defendantDetails.postcodeTextInput,
@@ -629,13 +629,13 @@ test.describe('[Create Case - England]', async () => {
     await performValidation('mainHeader', claimantType.mainHeader);
     await performAction('selectClaimantType', claimantType.englandRegisteredProviderForSocialHousingDynamicRadioOption);
     await performAction('selectClaimType', claimType.noRadioOption);
-    await performValidation('mainHeader', contactPreferences.mainHeader); 
+    await performValidation('mainHeader', contactPreferences.mainHeader);
     await performAction('selectContactPreferences', {
       notifications: contactPreferences.yesRadioOption,
       correspondenceAddress: contactPreferences.yesRadioOption,
       phoneNumber: contactPreferences.noRadioOption
     });
-    await performValidation('mainHeader', defendantDetails.mainHeader); 
+    await performValidation('mainHeader', defendantDetails.mainHeader);
     await performAction('addDefendantDetails', {
       nameOption: defendantDetails.yesRadioOption, firstName: defendantDetails.defendantsFirstNameTextInput, lastName: defendantDetails.defendantsLastNameTextInput,
       correspondenceAddressOption: defendantDetails.yesRadioOption, correspondenceAddressSameOption: defendantDetails.noRadioOption, address: defendantDetails.postcodeTextInput,
@@ -734,7 +734,7 @@ test.describe('[Create Case - England]', async () => {
       correspondenceAddress: contactPreferences.noRadioOption,
       phoneNumber: contactPreferences.yesRadioOption
     });
-    await performValidation('mainHeader', defendantDetails.mainHeader); 
+    await performValidation('mainHeader', defendantDetails.mainHeader);
     await performAction('addDefendantDetails', {
       nameOption: defendantDetails.yesRadioOption, firstName: defendantDetails.defendantsFirstNameTextInput, lastName: defendantDetails.defendantsLastNameTextInput,
       correspondenceAddressOption: defendantDetails.yesRadioOption, correspondenceAddressSameOption: defendantDetails.yesRadioOption,
@@ -830,13 +830,13 @@ test.describe('[Create Case - England]', async () => {
     await performValidation('mainHeader', claimantType.mainHeader);
     await performAction('selectClaimantType', claimantType.englandRegisteredProviderForSocialHousingDynamicRadioOption);
     await performAction('selectClaimType', claimType.noRadioOption);
-    await performValidation('mainHeader', contactPreferences.mainHeader); 
+    await performValidation('mainHeader', contactPreferences.mainHeader);
     await performAction('selectContactPreferences', {
       notifications: contactPreferences.yesRadioOption,
       correspondenceAddress: contactPreferences.yesRadioOption,
       phoneNumber: contactPreferences.noRadioOption
     });
-    await performValidation('mainHeader', defendantDetails.mainHeader); 
+    await performValidation('mainHeader', defendantDetails.mainHeader);
     await performAction('addDefendantDetails', {
       nameOption: defendantDetails.noRadioOption,
       correspondenceAddressOption: defendantDetails.noRadioOption,
@@ -937,7 +937,7 @@ test.describe('[Create Case - England]', async () => {
       correspondenceAddress: contactPreferences.noRadioOption,
       phoneNumber: contactPreferences.yesRadioOption
     });
-    await performValidation('mainHeader', defendantDetails.mainHeader); 
+    await performValidation('mainHeader', defendantDetails.mainHeader);
     await performAction('addDefendantDetails', {
       nameOption: defendantDetails.yesRadioOption, firstName: defendantDetails.defendantsFirstNameTextInput, lastName: defendantDetails.defendantsLastNameTextInput,
       correspondenceAddressOption: defendantDetails.yesRadioOption, correspondenceAddressSameOption: defendantDetails.yesRadioOption,
@@ -1054,13 +1054,13 @@ test.describe('[Create Case - England]', async () => {
     await performValidation('mainHeader', claimantType.mainHeader);
     await performAction('selectClaimantType', claimantType.englandRegisteredProviderForSocialHousingDynamicRadioOption);
     await performAction('selectClaimType', claimType.noRadioOption);
-    await performValidation('mainHeader', contactPreferences.mainHeader); 
+    await performValidation('mainHeader', contactPreferences.mainHeader);
     await performAction('selectContactPreferences', {
       notifications: contactPreferences.yesRadioOption,
       correspondenceAddress: contactPreferences.yesRadioOption,
       phoneNumber: contactPreferences.noRadioOption
     });
-    await performValidation('mainHeader', defendantDetails.mainHeader); 
+    await performValidation('mainHeader', defendantDetails.mainHeader);
     await performAction('addDefendantDetails', {
       nameOption: defendantDetails.yesRadioOption, firstName: defendantDetails.defendantsFirstNameTextInput, lastName: defendantDetails.defendantsLastNameTextInput,
       correspondenceAddressOption: defendantDetails.yesRadioOption, correspondenceAddressSameOption: defendantDetails.noRadioOption, address: defendantDetails.postcodeTextInput,
@@ -1157,13 +1157,13 @@ test.describe('[Create Case - England]', async () => {
     await performValidation('mainHeader', claimantType.mainHeader);
     await performAction('selectClaimantType', claimantType.englandRegisteredProviderForSocialHousingDynamicRadioOption);
     await performAction('selectClaimType', claimType.noRadioOption);
-    await performValidation('mainHeader', contactPreferences.mainHeader); 
+    await performValidation('mainHeader', contactPreferences.mainHeader);
     await performAction('selectContactPreferences', {
       notifications: contactPreferences.yesRadioOption,
       correspondenceAddress: contactPreferences.yesRadioOption,
       phoneNumber: contactPreferences.noRadioOption
     });
-    await performValidation('mainHeader', defendantDetails.mainHeader); 
+    await performValidation('mainHeader', defendantDetails.mainHeader);
     await performAction('addDefendantDetails', {
       nameOption: defendantDetails.noRadioOption,
       correspondenceAddressOption: defendantDetails.noRadioOption,
@@ -1232,5 +1232,105 @@ test.describe('[Create Case - England]', async () => {
     await performAction('clickButton', checkYourAnswers.saveClaim);
     await performAction('claimSaved');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
+  });
+
+  test ('HDPI-4176', async() => {
+    await performAction('selectAddress', {
+      postcode: addressDetails.englandCourtAssignedPostcodeTextInput,
+      addressIndex: addressDetails.addressIndex
+    });
+    await performValidation('mainHeader', addressCheckYourAnswers.mainHeader)
+    await performAction('submitAddressCheckYourAnswers');
+    await performValidation('bannerAlert', 'Case #.* has been created.');
+    await performAction('extractCaseIdFromAlert');
+    await performAction('provideMoreDetailsOfClaim');
+    await performAction('selectClaimantName', claimantInformation.yesRadioOption);
+    await performValidation('mainHeader', claimantType.mainHeader);
+    await performAction('selectClaimantType', claimantType.englandRegisteredProviderForSocialHousingDynamicRadioOption);
+    await performAction('selectClaimType', claimType.noRadioOption);
+    await performValidation('mainHeader', contactPreferences.mainHeader);
+    await performAction('selectContactPreferences', {
+      notifications: contactPreferences.yesRadioOption,
+      correspondenceAddress: contactPreferences.yesRadioOption,
+      phoneNumber: contactPreferences.noRadioOption
+    });
+    await performValidation('mainHeader', defendantDetails.mainHeader);
+    await performAction('addDefendantDetails', {
+      nameOption: defendantDetails.yesRadioOption, firstName: defendantDetails.defendantsFirstNameTextInput, lastName: defendantDetails.defendantsLastNameTextInput,
+      correspondenceAddressOption: defendantDetails.yesRadioOption, correspondenceAddressSameOption: defendantDetails.noRadioOption, address: defendantDetails.postcodeTextInput,
+      addAdditionalDefendantsOption: defendantDetails.noRadioOption
+    });
+    await performAction('selectTenancyOrLicenceDetails', {
+      tenancyOrLicenceType: tenancyLicenceDetails.demotedTenancyRadioOption,
+      question: tenancyLicenceDetails.doYouHaveACopyOftenancyQuestion,
+      option: tenancyLicenceDetails.noRadioOption,
+      reason: tenancyLicenceDetails.reasonForNoCopyInputText
+    });
+    await performAction('selectGroundsForPossession', {groundsRadioInput: groundsForPossession.noRadioOption,rentArrears: groundsForPossession.noRadioOption});
+    await performAction('enterReasonForPossession', [groundsForPossession.noRadioOption]);
+    await performAction('selectPreActionProtocol', preactionProtocol.yesRadioOption);
+    await performValidation('mainHeader', mediationAndSettlement.mainHeader);
+    await performAction('selectMediationAndSettlement', {
+      attemptedMediationWithDefendantsOption: mediationAndSettlement.yesRadioOption,
+      settlementWithDefendantsOption: mediationAndSettlement.noRadioOption,
+    });
+    await performValidation('mainHeader', checkingNotice.mainHeader);
+    await performAction('selectNoticeOfYourIntention', {
+      question: checkingNotice.haveYouServedNoticeToQuestion,
+      option: checkingNotice.yesRadioOption
+    });
+    await performValidation('mainHeader', noticeDetails.mainHeader);
+    await performAction('selectNoticeDetails', {
+      howDidYouServeNotice: noticeDetails.byEmailRadioOption,
+      explanationLabel: noticeDetails.explainHowItWasServedByEmailHiddenTextLabel,
+      explanation: noticeDetails.explainHowItWasServedByEmailHiddenTextInput,
+      day: '29', month: '02', year: '2000', hour: '16', minute: '01', second: '56', uploadNoticeQuestion: noticeDetails.areYouAbleToUploadQuestion,uploadNoticeOption: noticeDetails.noRadioOption});
+    await performValidation('mainHeader', claimantCircumstances.mainHeader);
+    await performAction('selectClaimantCircumstances', {
+      circumstanceOption: claimantCircumstances.yesRadioOption,
+      claimantInput: claimantCircumstances.giveDetailsAboutCircumstancesIsRequiredTextInput
+    });
+    await performValidation('mainHeader', defendantCircumstances.mainHeader);
+    await performAction('selectDefendantCircumstances', {
+      defendantCircumstance: defendantCircumstances.noRadioOption,
+      additionalDefendants: false
+    });
+    await performValidation('mainHeader', alternativesToPossession.mainHeader);
+    await performAction('selectAlternativesToPossession', {question: alternativesToPossession.inTheAlternativeToPossessionQuestion
+      , option: [alternativesToPossession.suspensionOfRightToBuyCheckBox, alternativesToPossession.demotionOfTenancyCheckBox]});
+    await performValidation('mainHeader', suspensionToBuyDemotionOfTenancyActs.mainHeader);
+    await performAction('selectHousingAct', [{question: suspensionToBuyDemotionOfTenancyActs.whichSectionSuspensionOfRightToBuyQuestion
+      , option: suspensionToBuyDemotionOfTenancyActs.section6A1988RadioOption}
+      , {question: suspensionToBuyDemotionOfTenancyActs.whichSectionDemotionOfTenancyQuestion
+        , option: suspensionToBuyDemotionOfTenancyActs.section82A1985RadioOption}]);
+    await performValidation('mainHeader', statementOfExpressTerms.mainHeader);
+    await performAction('selectStatementOfExpressTerms', statementOfExpressTerms.yesRadioOption);
+    await performValidation('mainHeader', suspensionToBuyDemotionOfTenancyOrderReasons.mainHeader);
+    await performAction('enterReasonForSuspensionAndDemotionOrder'
+      , {suspension: suspensionToBuyDemotionOfTenancyOrderReasons.whyAreYouRequestingSuspensionOrderQuestion
+        ,  demotion: suspensionToBuyDemotionOfTenancyOrderReasons.whyAreYouRequestingDemotionOrderQuestion});
+    await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
+    await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.noRadioOption);
+    await performValidation('mainHeader', underlesseeMortgageeEntitledToClaimRelief.mainHeader);
+    await performAction('selectUnderlesseeOrMortgageeEntitledToClaim', {
+      question: underlesseeMortgageeEntitledToClaimRelief.isThereAnUnderlesseeQuestion,
+      option: underlesseeMortgageeEntitledToClaimRelief.yesRadioOption});
+    await performAction('selectUnderlesseeMortgageeDetails', {
+      nameOption: underlesseeMortgageeDetails.noRadioOption,
+      addressOption: underlesseeMortgageeDetails.noRadioOption,
+      anotherUnderlesseeOrMortgageeOption: underlesseeMortgageeDetails.noRadioOption
+    });
+    await performAction('wantToUploadDocuments', {
+      question: wantToUploadDocuments.uploadAnyAdditionalDocumentsQuestion,
+      option: wantToUploadDocuments.noRadioOption
+    });
+    await performAction('selectApplications', generalApplication.noRadioOption);
+    await performValidation('mainHeader', claimLanguageUsed.mainHeader);
+    await performAction('selectLanguageUsed', {question: claimLanguageUsed.whichLanguageDidYouUseQuestion, option: claimLanguageUsed.englishLRadioOption});
+    await performAction('completingYourClaim', completingYourClaim.saveItForLaterRadioOption);
+    await performAction('clickButton', checkYourAnswers.saveClaim);
+    await performAction('claimSaved');
+    await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
+
   });
 });
