@@ -84,8 +84,6 @@ class LegalRepStartEventStrategyTest {
         when(legalRepForDefendantAccessValidator.validateAndGetDefendants(caseEntity, userId))
             .thenReturn(defendants);
 
-        when(defendant.getId()).thenReturn(UUID.randomUUID());
-
         when(legalRepPartySelectionService.getDraftCaseData(CASE_REFERENCE, pcsCase,
                                                             defendant, defendants))
             .thenReturn(pcsCase);
@@ -95,8 +93,6 @@ class LegalRepStartEventStrategyTest {
 
         // then
         assertThat(result).isEqualTo(pcsCase);
-
-        verify(legalRepPartySelectionService).validateResponseNotAlreadySubmitted(CASE_REFERENCE, defendant.getId());
 
         verify(legalRepPartySelectionService).getDraftCaseData(CASE_REFERENCE, pcsCase, defendant, defendants);
     }
@@ -131,5 +127,27 @@ class LegalRepStartEventStrategyTest {
         verify(legalRepPartySelectionService).getDraft(pcsCase, defendants, CASE_REFERENCE);
     }
 
+    @Test
+    void shouldBuildSubmittedResponseWhenResponseAlreadySubmitted() {
+        // Given
+        UUID defendantId = UUID.randomUUID();
+        UUID representativeId = UUID.randomUUID();
+        PartyEntity defendantEntity = PartyEntity.builder().id(defendantId).build();
+        PCSCase pcsCase = PCSCase.builder().build();
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().build();
+
+        when(securityContextService.getCurrentUserId()).thenReturn(representativeId);
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+        when(legalRepForDefendantAccessValidator.validateAndGetDefendants(pcsCaseEntity, representativeId))
+            .thenReturn(List.of(defendantEntity));
+        when(legalRepPartySelectionService.hasSubmittedResponse(CASE_REFERENCE, pcsCase, List.of(defendantEntity)))
+            .thenReturn(true);
+
+        // When
+        underTest.loadDraft(CASE_REFERENCE, pcsCase);
+
+        // Then
+        verify(legalRepPartySelectionService).buildSubmittedResponseCase(pcsCase);
+    }
 
 }

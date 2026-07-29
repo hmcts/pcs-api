@@ -7,6 +7,8 @@ import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponseStatus;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.utils.PossessionClaimMerger;
@@ -53,6 +55,19 @@ public class LegalRepPartySelectionService {
         }
     }
 
+    public boolean hasSubmittedResponse(long caseReference, PCSCase pcsCase,
+                                        List<PartyEntity> defendantPartiesLinkedAndActive) {
+        Optional<UUID> selectedPartyId = selectedPartyRetriever.getSelectedPartyId(pcsCase);
+
+        if (selectedPartyId.isEmpty()) {
+            return false;
+        }
+
+        PartyEntity matchedDefendant = findMatchedDefendant(defendantPartiesLinkedAndActive, selectedPartyId.get());
+        return defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyId(
+            caseReference, matchedDefendant.getId());
+    }
+
     public PCSCase getDraftCaseData(long caseReference, PCSCase pcsCase, PartyEntity matchedDefendant,
                                     List<PartyEntity> linkedDefendants) {
 
@@ -67,6 +82,17 @@ public class LegalRepPartySelectionService {
         }
 
         return initialiseDraft(caseReference, pcsCase, matchedDefendant);
+    }
+
+    public PCSCase buildSubmittedResponseCase(PCSCase pcsCase) {
+        return pcsCase.toBuilder()
+            .possessionClaimResponse(PossessionClaimResponse.builder()
+                                         .defendantResponses(DefendantResponses.builder()
+                                                                 .status(DefendantResponseStatus.SUBMITTED)
+                                                                 .build())
+                                         .build())
+            .hasUnsubmittedCaseData(YesOrNo.NO)
+            .build();
     }
 
     private PartyEntity findMatchedDefendant(List<PartyEntity> parties, UUID selectedPartyId) {
