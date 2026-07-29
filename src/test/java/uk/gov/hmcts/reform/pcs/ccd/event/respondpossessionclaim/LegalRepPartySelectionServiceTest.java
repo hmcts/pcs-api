@@ -21,7 +21,6 @@ import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.PossessionClaimResponseMapper;
 import uk.gov.hmcts.reform.pcs.ccd.util.SelectedPartyRetriever;
 import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
-import uk.gov.hmcts.reform.pcs.exception.DraftNotFoundException;
 
 import java.util.List;
 import java.util.Optional;
