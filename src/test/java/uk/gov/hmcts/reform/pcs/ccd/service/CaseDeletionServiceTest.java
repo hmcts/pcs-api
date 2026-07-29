@@ -13,6 +13,8 @@ import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.resumePossessionClaim;
 class CaseDeletionServiceTest {
 
     @Mock
+    private CcdCaseDataService ccdCaseDataService;
+    @Mock
     private DraftCaseDataService draftCaseDataService;
     @Mock
     private PcsCaseService pcsCaseService;
@@ -29,6 +31,7 @@ class CaseDeletionServiceTest {
         underTest.deleteCase(caseReference);
 
         // Then
+        verify(ccdCaseDataService).deleteCcdCaseData(caseReference);
         verify(draftCaseDataService).deleteUnsubmittedCaseDataBySystemUser(caseReference, resumePossessionClaim);
         verify(pcsCaseService).deleteCase(caseReference);
     }

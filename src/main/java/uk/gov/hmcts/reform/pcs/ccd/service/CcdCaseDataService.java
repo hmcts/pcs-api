@@ -8,6 +8,7 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
@@ -17,6 +18,7 @@ import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.model.DraftCasesToDiscard;
+import uk.gov.hmcts.reform.pcs.ccd.repository.CcdCaseRepository;
 import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
 
 import java.util.List;
@@ -34,6 +36,12 @@ public class CcdCaseDataService {
     private final CoreCaseDataApi coreCaseDataApi;
     private final ObjectMapper objectMapper;
     private final NamedParameterJdbcTemplate jdbcTemplate;
+    private final CcdCaseRepository ccdCaseRepository;
+
+    @Transactional
+    public void deleteCcdCaseData(long caseReference) {
+        ccdCaseRepository.deleteCcdCaseData(caseReference);
+    }
 
     public List<DraftCasesToDiscard> findExpiredDraftCases(int discardAfterDays) {
         SqlParameterSource namedParameters = new MapSqlParameterSource()

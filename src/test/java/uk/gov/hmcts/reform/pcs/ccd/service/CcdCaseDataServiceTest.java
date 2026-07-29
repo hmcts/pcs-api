@@ -20,6 +20,7 @@ import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.model.DraftCasesToDiscard;
+import uk.gov.hmcts.reform.pcs.ccd.repository.CcdCaseRepository;
 import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
 
 import java.sql.ResultSet;
@@ -39,18 +40,16 @@ class CcdCaseDataServiceTest {
 
     @Mock
     private IdamTokenProvider systemUpdateUserTokenProvider;
-
     @Mock
     private AuthTokenGenerator authTokenGenerator;
-
     @Mock
     private CoreCaseDataApi coreCaseDataApi;
-
     @Mock
     private ObjectMapper objectMapper;
-
     @Mock
     private NamedParameterJdbcTemplate jdbcTemplate;
+    @Mock
+    private CcdCaseRepository ccdCaseRepository;
 
     @Captor
     private ArgumentCaptor<SqlParameterSource> sqlParameterSourceCaptor;
@@ -67,7 +66,8 @@ class CcdCaseDataServiceTest {
                 authTokenGenerator,
                 coreCaseDataApi,
                 objectMapper,
-                jdbcTemplate
+                jdbcTemplate,
+                ccdCaseRepository
         );
     }
 
@@ -139,7 +139,7 @@ class CcdCaseDataServiceTest {
     @Test
     void shouldMarkCaseForDeletionWithCorrectEventId() throws Exception {
         // Given
-        final Long caseRef = 12345L;
+        final long caseRef = 12345L;
         String idamToken = "idam-token";
         String serviceAuth = "service-auth";
         final StartEventResponse startEventResponse = StartEventResponse.builder().token("event-token").build();
@@ -171,7 +171,7 @@ class CcdCaseDataServiceTest {
     @Test
     void shouldConfirmCaseDisposalWithCorrectEventId() throws Exception {
         // Given
-        final Long caseRef = 67890L;
+        final long caseRef = 67890L;
         String idamToken = "idam-token";
         String serviceAuth = "service-auth";
         final StartEventResponse startEventResponse = StartEventResponse.builder().token("event-token").build();
@@ -203,7 +203,7 @@ class CcdCaseDataServiceTest {
     @Test
     void shouldUseCaseReferenceAsStringInCoreDataApiCalls() throws Exception {
         // Given
-        final Long caseRef = 99999L;
+        final long caseRef = 99999L;
         String idamToken = "idam-token";
         String serviceAuth = "service-auth";
         final StartEventResponse startEventResponse = StartEventResponse.builder().token("event-token").build();
@@ -229,7 +229,7 @@ class CcdCaseDataServiceTest {
     @Test
     void shouldObtainAuthTokensForEachEvent() throws Exception {
         // Given
-        final Long caseRef = 11111L;
+        final long caseRef = 11111L;
         String idamToken = "idam-token-1";
         String serviceAuth = "service-auth-1";
         final StartEventResponse startEventResponse = StartEventResponse.builder().token("event-token").build();
@@ -255,7 +255,7 @@ class CcdCaseDataServiceTest {
     @Test
     void shouldConvertPcsCaseToJsonNodeForCaseDataContent() throws Exception {
         // Given
-        final Long caseRef = 22222L;
+        final long caseRef = 22222L;
         String idamToken = "idam-token";
         String serviceAuth = "service-auth";
         final StartEventResponse startEventResponse = StartEventResponse.builder().token("event-token").build();
