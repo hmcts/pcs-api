@@ -6,9 +6,10 @@ import { getCaseTypeId } from '@utils/common/caseType.utils';
 import { performAction, performActions, performValidation } from '@utils/controller-caseManagement';
 import { VERY_LONG_TIMEOUT } from 'playwright.config';
 import { caseSummary, home } from '@data/page-data';
-import { changeCaseState, confirmCaseStateChange, enterGenappApplication, enterGenAppapplicationFee, enterGenAppHearingDate, selectDocument } from '@data/page-data-figma/page-data-caseManagement-figma';
+import { changeCaseState, confirmCaseStateChange, enterGenappApplication, enterGenAppapplicationFee, enterGenAppConsentAndNotice, enterGenAppHearingDate, enterGenAppPreferApplicationToJudge, selectDocument } from '@data/page-data-figma/page-data-caseManagement-figma';
 import { caseInfo } from '../createCaseAPI.action';
 import { CaseManagementCommonUtils } from './caseManagementUtils.action';
+import path from 'path';
 
 
 export const addressInfo = {
@@ -32,6 +33,10 @@ export class CaseManagementAction implements IAction {
       ['enterApplicationDetails', () => this.enterApplicationDetails(fieldName as actionRecord)],
       ['confirmIfCourtHearingInNext14Days', () => this.confirmIfCourtHearingInNext14Days(fieldName as actionRecord)],
       ['enterApplicationFeeDetails', () => this.enterApplicationFeeDetails(fieldName as actionRecord)],
+      ['enterApplicationConsentAndNotice', () => this.enterApplicationConsentAndNotice(fieldName as actionRecord)],
+      ['verifyReferToJudge', () => this.verifyReferToJudge(fieldName as actionRecord)],
+      ['uploadADocument', () => this.uploadADocument(page, fieldName as actionRecord)],
+      ['uploadRelativeEvidence', () => this.uploadRelativeEvidence(fieldName as actionRecord)],
       ['inputErrorValidation', () => this.inputErrorValidation(page, fieldName as actionRecord)],
 
     ]);
@@ -126,11 +131,7 @@ export class CaseManagementAction implements IAction {
   private async enterApplicationDetails(appDetails: actionRecord) {
     let date = CaseManagementCommonUtils.getRandomDate(appDetails.dateType as string);
     await performAction('clickRadioButton', { question: appDetails.question1, option: appDetails.option1 });
-
-    await performActions('Enter Date',
-      ['inputText', appDetails.label1, date.split('/')[0]],
-      ['inputText', appDetails.label2, date.split('/')[1]],
-      ['inputText', appDetails.label3, date.split('/')[2]]);
+    await performAction('inputDate', appDetails.label1 as string, appDetails.date);
     await performAction('clickRadioButton', { question: appDetails.question2, option: appDetails.option2 });
     if (appDetails.option2 === 'Something else') {
       performAction('inputText', appDetails.label, CaseManagementCommonUtils.generateRandomString(appDetails.input as number))
@@ -179,6 +180,68 @@ export class CaseManagementAction implements IAction {
       await performAction('reTryOnCallBackError', enterGenAppHearingDate.continueButton, fee.nextPage as string);
     };
 
+  }
+
+  private async uploadADocument(page: Page, upload: actionRecord): Promise<void> {
+    const fileInput = page.locator('input[type="file"].form-control.bottom-30');
+    const filePath = path.resolve(__dirname, '../../../../data/inputFiles', upload.file as string);
+    await fileInput.last().setInputFiles(filePath);
+    let timeout = 6000;
+    await performValidation('waitUntilElementDisappears', 'Uploading...');
+    await expect(async () => {
+      const rateLimit = page.locator(`label:text-is("Your request was rate limited. Please wait a few seconds before retrying your document upload"),
+                                           span:text-is("Your request was rate limited. Please wait a few seconds before retrying your document upload")`);
+      let limit = await rateLimit.count();
+
+      while (limit > 0) {
+        timeout *= 2;
+        await page.waitForTimeout(timeout);
+        await fileInput.last().setInputFiles(filePath);
+        await performValidation('waitUntilElementDisappears', 'Uploading...');
+        limit = await rateLimit.count();
+      };
+    }).toPass({
+      timeout: VERY_LONG_TIMEOUT,
+    });
+    await page.waitForTimeout(timeout);
+  }
+
+  private async enterApplicationConsentAndNotice(confirmApplicationConsent: actionRecord) {
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
+    await performValidation('text', {
+      elementType: 'paragraph',
+      text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
+    });
+    await performAction('clickRadioButton', {
+      question: confirmApplicationConsent.question1,
+      option: confirmApplicationConsent.option1,
+    });
+    if (confirmApplicationConsent.option1 === 'No') {
+      await performAction('clickRadioButton', {
+        question: confirmApplicationConsent.question2,
+        option: confirmApplicationConsent.option2,
+      });
+    }
+    await performAction('reTryOnCallBackError', enterGenAppConsentAndNotice.continueButton, confirmApplicationConsent.nextPage as string);
+  }
+
+  private async verifyReferToJudge(referToJudgeData: actionRecord) {
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
+    await performValidation('text', {
+      elementType: 'paragraph',
+      text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
+    });
+    await performValidation('mainHeader', enterGenAppPreferApplicationToJudge.mainHeader);
+    await performAction('reTryOnCallBackError', enterGenAppPreferApplicationToJudge.continueButton, referToJudgeData.nextPage as string);
+  }
+
+  private async uploadRelativeEvidence(uploadEvidence: actionRecord): Promise<void> {
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
+    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
+    if (uploadEvidence.files) {
+      await performAction('uploadFile', { files: uploadEvidence.files, label: uploadEvidence.label });
+    }
+    await performAction('reTryOnCallBackError', enterGenAppPreferApplicationToJudge.continueButton, uploadEvidence.nextPage as string);
   }
 
   private async inputErrorValidation(page: Page, validationArr: actionRecord) {
