@@ -21,12 +21,7 @@ public class ExternalCaseFlagAccess implements HasAccessControl {
         SetMultimap<HasRole, Permission> grants = HashMultimap.create();
         grants.putAll(CTSC_ADMIN, Permission.CRU);
         grants.putAll(HEARING_CENTRE_ADMIN, Permission.CRU);
-        grants.putAll(WLU_ADMIN, Permission.CRU);
-        grants.put(FEE_PAID_JUDGE, Permission.R);
-        grants.put(CIRCUIT_JUDGE, Permission.R);
-        grants.put(LEADERSHIP_JUDGE, Permission.R);
         grants.put(JUDGE, Permission.R);
-
         return grants;
     }
 }
