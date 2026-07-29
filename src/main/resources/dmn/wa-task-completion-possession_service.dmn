@@ -177,7 +177,7 @@
       <rule id="DecisionRule_1ocss0f">
         <description>No associated task</description>
         <inputEntry id="UnaryTests_1yev92k">
-          <text>"resumePossessionClaim"</text>
+          <text>"resumePossessionClaim", "amendDocuments"</text>
         </inputEntry>
         <outputEntry id="LiteralExpression_1s60rra">
           <text></text>
