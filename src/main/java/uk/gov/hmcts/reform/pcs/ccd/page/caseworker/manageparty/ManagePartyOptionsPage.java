@@ -7,6 +7,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.AddPartyDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.ManagePartyOptions;
+import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.UpdatePartyDetails;
 
 @Component
 public class ManagePartyOptionsPage implements CcdPageConfiguration {
@@ -22,6 +23,11 @@ public class ManagePartyOptionsPage implements CcdPageConfiguration {
                 .mandatory(
                     AddPartyDetails::getAddPartyType,
                     ShowConditions.fieldEquals("addParty_ManagePartyOptions", ManagePartyOptions.ADD_PARTY))
+            .done()
+            .complex(PCSCase::getUpdatePartyDetails)
+                .mandatory(
+                    UpdatePartyDetails::getPartyToUpdate,
+                    ShowConditions.fieldEquals("addParty_ManagePartyOptions", ManagePartyOptions.UPDATE))
             .done();
     }
 }

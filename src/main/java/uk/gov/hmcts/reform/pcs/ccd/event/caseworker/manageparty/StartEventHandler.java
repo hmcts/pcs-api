@@ -33,6 +33,7 @@ public class StartEventHandler implements Start<PCSCase, State> {
         ClaimEntity mainClaim = pcsCaseEntity.getClaims().getFirst();
 
         caseData.getAddPartyDetails().setPartyRadioList(buildApplicantPartyList(mainClaim));
+        caseData.getUpdatePartyDetails().setPartyToUpdate(buildApplicantPartyList(mainClaim));
 
         return caseData;
     }

@@ -14,6 +14,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.ManagePartyStates;
 import uk.gov.hmcts.reform.pcs.ccd.page.caseworker.manageparty.AddLitigationParty;
 import uk.gov.hmcts.reform.pcs.ccd.page.caseworker.manageparty.AddPartyDetailsPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.caseworker.manageparty.ManagePartyOptionsPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.caseworker.manageparty.UpdatePartyDetailsPage;
 
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerRoles.CASEWORKER_ROLES;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
@@ -45,7 +46,8 @@ public class ManageParty implements CCDConfig<PCSCase, State, UserRole> {
         new PageBuilder(eventBuilder)
             .add(new ManagePartyOptionsPage())
             .add(new AddLitigationParty())
-            .add(new AddPartyDetailsPage());
+            .add(new AddPartyDetailsPage())
+            .add(new UpdatePartyDetailsPage());
     }
 
 }
