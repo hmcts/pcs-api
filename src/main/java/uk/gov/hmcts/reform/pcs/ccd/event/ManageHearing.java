@@ -1,7 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.event;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
@@ -18,10 +17,8 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.Hearing;
 import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.ManageHearingOption;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.HearingEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
@@ -34,14 +31,9 @@ import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.location.model.CourtVenue;
 import uk.gov.hmcts.reform.pcs.location.service.LocationReferenceService;
 
-import java.time.Clock;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerRoles.CASEWORKER_ROLES;
@@ -60,22 +52,19 @@ public class ManageHearing implements CCDConfig<PCSCase, State, UserRole> {
     private final LocationReferenceService locationReferenceService;
     private final PcsCaseService pcsCaseService;
     private final PartyService partyService;
-    private final Clock ukClock;
 
     public ManageHearing(ManageHearingConfigurer manageHearingConfigurer,
                          AddressFormatter addressFormatter,
                          HearingService hearingService,
                          LocationReferenceService locationReferenceService,
                          PcsCaseService pcsCaseService,
-                         PartyService partyService,
-                         @Qualifier("ukClock") Clock ukClock) {
+                         PartyService partyService) {
         this.manageHearingConfigurer = manageHearingConfigurer;
         this.addressFormatter = addressFormatter;
         this.hearingService = hearingService;
         this.locationReferenceService = locationReferenceService;
         this.pcsCaseService = pcsCaseService;
         this.partyService = partyService;
-        this.ukClock = ukClock;
     }
 
     @Override
@@ -100,6 +89,7 @@ public class ManageHearing implements CCDConfig<PCSCase, State, UserRole> {
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
 
         pcsCase.setPartyMultiSelectionList(buildPartyList(pcsCaseEntity));
+        hearingService.clearHearingForm(pcsCase);
 
         List<Integer> baseLocation = List.of(Integer.parseInt(pcsCase.getCaseManagementLocation().getBaseLocation()));
 
@@ -124,73 +114,10 @@ public class ManageHearing implements CCDConfig<PCSCase, State, UserRole> {
             pcsCase.setSelectedHearingId(null);
         } else {
             pcsCase.setShowManageHearingPage(VerticalYesNo.YES);
-            prepopulateEditableHearing(pcsCase, pcsCaseEntity);
+            hearingService.setSelectedEditableHearingId(pcsCase, pcsCaseEntity);
         }
 
         return pcsCase;
-    }
-
-    private void prepopulateEditableHearing(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
-        editableHearing(pcsCaseEntity).ifPresent(selectedHearing -> {
-            pcsCase.setSelectedHearingId(selectedHearing.getId().toString());
-            pcsCase.setHearing(mapToHearing(selectedHearing));
-            pcsCase.setPartyMultiSelectionList(preselectNoticeRecipients(
-                pcsCase.getPartyMultiSelectionList(),
-                selectedHearing.getNoticeParties()
-            ));
-        });
-    }
-
-    private Optional<HearingEntity> editableHearing(PcsCaseEntity pcsCaseEntity) {
-        if (CollectionUtils.isEmpty(pcsCaseEntity.getHearings())) {
-            return Optional.empty();
-        }
-
-        List<HearingEntity> hearingsByDate = pcsCaseEntity.getHearings().stream()
-            .filter(hearing -> hearing != null && hearing.getHearingDate() != null)
-            .toList();
-
-        LocalDateTime now = LocalDateTime.now(ukClock);
-
-        Optional<HearingEntity> nextUpcomingHearing = hearingsByDate.stream()
-            .filter(hearing -> !hearing.getHearingDate().isBefore(now))
-            .min(Comparator.comparing(HearingEntity::getHearingDate));
-
-        return nextUpcomingHearing.or(() -> hearingsByDate.stream()
-            .max(Comparator.comparing(HearingEntity::getHearingDate)));
-    }
-
-    private Hearing mapToHearing(HearingEntity hearing) {
-        return Hearing.builder()
-            .type(hearing.getType())
-            .otherHearingType(hearing.getOtherHearingType())
-            .noticeWording(hearing.getNoticeWording())
-            .date(hearing.getHearingDate())
-            .durationDays(hearing.getDurationDays())
-            .durationHours(hearing.getDurationHours())
-            .durationMinutes(hearing.getDurationMinutes())
-            .notes(hearing.getNotes())
-            .issueNotice(hearing.getIssueNotice())
-            .isWithoutNotice(hearing.getIsWithoutNotice())
-            .additionalInformation(hearing.getAdditionalInformation())
-            .build();
-    }
-
-    private DynamicMultiSelectList preselectNoticeRecipients(DynamicMultiSelectList partyList,
-                                                            List<UUID> selectedPartyIds) {
-        if (partyList == null || CollectionUtils.isEmpty(partyList.getListItems())
-            || CollectionUtils.isEmpty(selectedPartyIds)) {
-            return partyList;
-        }
-
-        List<DynamicListElement> selectedParties = partyList.getListItems().stream()
-            .filter(party -> selectedPartyIds.contains(party.getCode()))
-            .toList();
-
-        return DynamicMultiSelectList.builder()
-            .value(selectedParties)
-            .listItems(partyList.getListItems())
-            .build();
     }
 
     private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
