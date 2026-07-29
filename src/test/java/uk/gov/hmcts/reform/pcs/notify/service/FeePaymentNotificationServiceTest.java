@@ -7,6 +7,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.camunda.CamundaService;
 import uk.gov.hmcts.reform.pcs.camunda.TaskType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
@@ -16,6 +17,7 @@ import uk.gov.hmcts.reform.pcs.exception.FeePaymentNotFoundException;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -36,7 +38,7 @@ class FeePaymentNotificationServiceTest {
     void shouldSendClaimantClaimIssuedEmailNotification() {
         Integer feePaymentId = 1;
         PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().caseReference(1234L).build();
-        ClaimEntity claim = ClaimEntity.builder().pcsCase(pcsCaseEntity).build();
+        ClaimEntity claim = ClaimEntity.builder().pcsCase(pcsCaseEntity).languageUsed(LanguageUsed.ENGLISH).build();
         FeePaymentEntity feePayment = FeePaymentEntity.builder()
             .id(feePaymentId)
             .claim(claim)
@@ -47,6 +49,23 @@ class FeePaymentNotificationServiceTest {
 
         verify(notificationService).sendClaimantClaimIssuedEmailNotification(claim);
         verify(camundaService).createTask(1234L, TaskType.NEW_CLAIM_CREATE_NEW_HEARING);
+    }
+
+    @Test
+    void shouldNotCreateWaTaskIfLanguageUsedIsNotEnglish() {
+        Integer feePaymentId = 1;
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().caseReference(1234L).build();
+        ClaimEntity claim = ClaimEntity.builder().pcsCase(pcsCaseEntity).languageUsed(LanguageUsed.WELSH).build();
+        FeePaymentEntity feePayment = FeePaymentEntity.builder()
+            .id(feePaymentId)
+            .claim(claim)
+            .build();
+        when(feePaymentRepository.findById(feePaymentId)).thenReturn(Optional.of(feePayment));
+
+        underTest.sendClaimantPaidCaseIssuedNotification(feePaymentId);
+
+        verify(notificationService).sendClaimantClaimIssuedEmailNotification(claim);
+        verify(camundaService, never()).createTask(1234L, TaskType.NEW_CLAIM_CREATE_NEW_HEARING);
     }
 
     @Test

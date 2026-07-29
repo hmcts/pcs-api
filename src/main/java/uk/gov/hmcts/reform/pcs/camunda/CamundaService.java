@@ -81,12 +81,9 @@ public class CamundaService {
         Map<String, DmnValue<?>> processVariables = new ConcurrentHashMap<>();
 
         LocalDateTime delayUntil = LocalDateTime.now(utcClock);
-        LocalDateTime dueDate = delayUntil.plusDays(taskType.getWorkingDays());
 
         processVariables.put("taskState", dmnStringValue(UNCONFIGURED));
         processVariables.put("caseTypeId", dmnStringValue(CaseType.getCaseType()));
-        processVariables.put("dueDate", dmnStringValue(dueDate.format(ISO_LOCAL_DATE_TIME)));
-        processVariables.put("workingDaysAllowed", dmnIntegerValue(taskType.getWorkingDays()));
         processVariables.put("jurisdiction", dmnStringValue(CaseType.getJurisdictionId()));
         processVariables.put("name", dmnStringValue(taskType.getName()));
         processVariables.put("taskId", dmnStringValue(taskType.getId()));
@@ -95,6 +92,11 @@ public class CamundaService {
         processVariables.put("hasWarnings", dmnBooleanValue(false));
         processVariables.put("warningList", dmnStringValue(EMPTY_WARNINGS_LIST));
         processVariables.put("__processCategory__" + taskType.getId(), dmnBooleanValue(true));
+
+        // Default values - WA task due date is configured in configuration dmn
+        LocalDateTime dueDate = LocalDateTime.of(2050, 1, 1, 17, 0, 0);
+        processVariables.put("dueDate", dmnStringValue(dueDate.format(ISO_LOCAL_DATE_TIME)));
+        processVariables.put("workingDaysAllowed", dmnIntegerValue(99));
 
         SendMessageRequest request = SendMessageRequest.builder()
             .messageName(CREATE)
@@ -134,6 +136,7 @@ public class CamundaService {
             camundaApi.sendMessage(s2sToken, request);
         } catch (Exception e) {
             log.error("Failed to send Camunda request for caseId {}", caseId, e);
+            throw e;
         }
     }
 
@@ -148,5 +151,4 @@ public class CamundaService {
     private DmnValue<Boolean> dmnBooleanValue(Boolean value) {
         return DmnValue.<Boolean>builder().value(value).type("Boolean").build();
     }
-
 }

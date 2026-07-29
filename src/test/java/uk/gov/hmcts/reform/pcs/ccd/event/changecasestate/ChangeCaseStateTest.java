@@ -20,6 +20,7 @@ import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter.COMMA_DELIMITER;
@@ -59,6 +60,8 @@ class ChangeCaseStateTest extends BaseEventTest {
 
         if (targetState == State.CASE_STAYED) {
             verify(camundaService).cancelTask(1234L, TaskType.NEW_CLAIM_CREATE_NEW_HEARING);
+        } else {
+            verify(camundaService, never()).cancelTask(1234L, TaskType.NEW_CLAIM_CREATE_NEW_HEARING);
         }
     }
 

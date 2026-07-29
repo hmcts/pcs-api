@@ -22,6 +22,7 @@ import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.time.Clock;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -29,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mock.Strictness.LENIENT;
@@ -101,6 +103,8 @@ public class CamundaServiceTest {
         assertThat(taskData.getAction()).isEqualTo(Action.CREATE);
         assertThat(taskData.getCaseReference()).isEqualTo(CASE_REFERENCE);
         assertThat(taskData.getTaskType()).isEqualTo(TaskType.NEW_CLAIM_CREATE_NEW_HEARING);
+        assertThat(schedulableInstance.getNextExecutionTime(Instant.now()))
+            .isEqualTo(Instant.parse("2025-08-27T12:51:19Z"));
     }
 
     @Test
@@ -118,6 +122,8 @@ public class CamundaServiceTest {
         assertThat(taskData.getAction()).isEqualTo(Action.CANCEL);
         assertThat(taskData.getCaseReference()).isEqualTo(CASE_REFERENCE);
         assertThat(taskData.getTaskType()).isEqualTo(TaskType.NEW_CLAIM_CREATE_NEW_HEARING);
+        assertThat(schedulableInstance.getNextExecutionTime(Instant.now()))
+            .isEqualTo(Instant.parse("2025-08-27T12:51:19Z"));
     }
 
     @Test
@@ -167,13 +173,13 @@ public class CamundaServiceTest {
         assertThat(processVariables.get("taskState").getType()).isEqualTo("String");
         assertThat(processVariables.get("caseTypeId").getValue()).isEqualTo("PCS");
         assertThat(processVariables.get("caseTypeId").getType()).isEqualTo("String");
-        assertThat(processVariables.get("dueDate").getValue()).isEqualTo("2025-09-01T12:51:19");
+        assertThat(processVariables.get("dueDate").getValue()).isEqualTo("2050-01-01T17:00:00");
         assertThat(processVariables.get("dueDate").getType()).isEqualTo("String");
-        assertThat(processVariables.get("workingDaysAllowed").getValue()).isEqualTo(5);
+        assertThat(processVariables.get("workingDaysAllowed").getValue()).isEqualTo(99);
         assertThat(processVariables.get("workingDaysAllowed").getType()).isEqualTo("Integer");
         assertThat(processVariables.get("jurisdiction").getValue()).isEqualTo("PCS");
         assertThat(processVariables.get("jurisdiction").getType()).isEqualTo("String");
-        assertThat(processVariables.get("name").getValue()).isEqualTo("New Claim –  Create new hearing");
+        assertThat(processVariables.get("name").getValue()).isEqualTo("New Claim – Create new hearing");
         assertThat(processVariables.get("name").getType()).isEqualTo("String");
         assertThat(processVariables.get("taskId").getValue()).isEqualTo("NewClaimCreateNewHearing");
         assertThat(processVariables.get("taskId").getType()).isEqualTo("String");
@@ -220,7 +226,7 @@ public class CamundaServiceTest {
         CamundaRequestTaskData taskData = buildTaskDataForCreate(taskType);
 
         // When
-        camundaService.handleRequest(taskData);
+        assertThatThrownBy(() -> camundaService.handleRequest(taskData)).isInstanceOf(RuntimeException.class);
 
         // Then
         List<ILoggingEvent> terminalErrors = logAppender.list.stream()
