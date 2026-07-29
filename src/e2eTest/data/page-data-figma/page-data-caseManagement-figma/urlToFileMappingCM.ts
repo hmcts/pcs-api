@@ -4,5 +4,13 @@ export default {
   'addCaseReviewDate/submit' : 'checkYourAnswersAddReviewDates',
   'addCaseReviewDate/confirm': 'confirmReviewDatesAdded',
   'changeCaseStatechangeCaseStatePage': 'changeCaseState',
-  'changeCaseState/confirm': 'confirmCaseStateChange'
+  'changeCaseState/confirm': 'confirmCaseStateChange',
+  'enterGenAppapplicationDetails': 'enterGenAppapplicationDetails',
+  'enterGenApphearingDate': 'enterGenApphearingDate',
+  'enterGenAppapplicationFee': 'enterGenAppapplicationFee',
+  'enterGenAppconsentAndNotice': 'enterGenAppconsentAndNotice',
+  'enterGenAppuploadGeneralApplication': 'enterGenAppUploadGeneralApplication',
+  'enterGenAppuploadRelatedEvidence': 'enterGenAppUploadRelatedEvidence',
+  'enterGenAppreferApplicationToJudge': 'enterGenAppPreferApplicationToJudge',
+  'enterGenApp/submit': 'genAppsCheckYouAnswers',
 };
