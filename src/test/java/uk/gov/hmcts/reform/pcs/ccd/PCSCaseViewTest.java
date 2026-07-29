@@ -400,6 +400,40 @@ class PCSCaseViewTest {
         verify(enforcementOrderMediator).handleEnforcementRequirements(pcsCaseEntity, pcsCase);
     }
 
+    @Test
+    void shouldSetCaseAccessGroupFromClaimantOrganisation() {
+        // Given
+        PartyEntity partyEntity = mock(PartyEntity.class);
+        when(partyEntity.getOrganisationId()).thenReturn("WK8GIHE");
+        when(pcsCaseEntity.getParties()).thenReturn(Set.of(partyEntity));
+
+        // When
+        PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
+
+        // Then
+        assertThat(pcsCase.getGroupAccessFields().getCaseAccessGroups())
+            .singleElement()
+            .satisfies(group -> assertThat(group.getValue().getCaseAccessGroupId())
+                .isEqualTo("PCS:PCS:prof-org-access:solicitor:WK8GIHE"));
+
+        assertThat(pcsCase.getGroupAccessFields().getOrganisationPolicyField().getOrganisation()
+                       .getOrganisationId()).isEqualTo("WK8GIHE");
+    }
+
+    @Test
+    void shouldNotSetCaseAccessGroupWhenNoPartyHasAnOrganisation() {
+        // Given
+        PartyEntity partyEntity = mock(PartyEntity.class);
+        when(partyEntity.getOrganisationId()).thenReturn(null);
+        when(pcsCaseEntity.getParties()).thenReturn(Set.of(partyEntity));
+
+        // When
+        PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
+
+        // Then
+        assertThat(pcsCase.getGroupAccessFields()).isNull();
+    }
+
     private AddressUK stubAddressEntityModelMapper(AddressEntity addressEntity) {
         AddressUK addressUK = mock(AddressUK.class);
         when(modelMapper.map(addressEntity, AddressUK.class)).thenReturn(addressUK);

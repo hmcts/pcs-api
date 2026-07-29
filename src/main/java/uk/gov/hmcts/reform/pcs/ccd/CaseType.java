@@ -32,6 +32,9 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
     private static final String JURISDICTION_ID = "PCS";
     private static final String JURISDICTION_NAME = "Civil Possession";
     private static final String JURISDICTION_DESCRIPTION = "Civil Possession Jurisdiction";
+    public static final String ORG_ID_PLACEHOLDER = "$ORGID$";
+    public static final String GROUP_ACCESS_ID_TEMPLATE =
+        "PCS:PCS:prof-org-access:solicitor:" + ORG_ID_PLACEHOLDER;
     static final AccessProfile[] PARTY_VISIBLE_TAB_ROLES = {
         AccessProfile.CITIZEN,
         AccessProfile.DEFENDANT,
@@ -163,7 +166,7 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
                 .caseAssignedRoleField(UserRole.PROFESSIONAL_USER.getRole())
                 .groupAccessEnabled(true)
                 // Uppercase service prefix required; def store rejects lowercase.
-                .caseAccessGroupIdTemplate("PCS:PCS:prof-org-access:solicitor:$ORGID$")
+                .caseAccessGroupIdTemplate(GROUP_ACCESS_ID_TEMPLATE)
                 .liveTo("01/01/2027");
         }
 

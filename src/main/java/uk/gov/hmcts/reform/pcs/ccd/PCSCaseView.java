@@ -6,8 +6,13 @@ import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.CaseView;
 import uk.gov.hmcts.ccd.sdk.CaseViewRequest;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.ccd.sdk.type.CaseAccessGroup;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.ccd.sdk.type.Organisation;
+import uk.gov.hmcts.ccd.sdk.type.OrganisationPolicy;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.AccessProfile;
+import uk.gov.hmcts.reform.pcs.ccd.domain.GroupAccessFields;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
@@ -53,6 +58,9 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import static uk.gov.hmcts.reform.pcs.ccd.CaseType.GROUP_ACCESS_ID_TEMPLATE;
+import static uk.gov.hmcts.reform.pcs.ccd.CaseType.ORG_ID_PLACEHOLDER;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.resumePossessionClaim;
 import static uk.gov.hmcts.reform.pcs.config.ClockConfiguration.UK_ZONE_ID;
 
@@ -151,7 +159,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
             .build();
 
         setDerivedProperties(pcsCase, pcsCaseEntity);
-        setGroupAccessFields(pcsCase);
+        setGroupAccessFields(pcsCase, pcsCaseEntity);
 
         partiesView.setCaseFields(pcsCase, pcsCaseEntity);
         claimView.setCaseFields(pcsCase, pcsCaseEntity);
@@ -200,23 +208,38 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
             .orElse(null);
     }
 
-    // INTERIM: hardcoded WK8GIHE stamp for preview. TODO derive from the creator's org.
-    private void setGroupAccessFields(PCSCase pcsCase) {
-        uk.gov.hmcts.ccd.sdk.type.CaseAccessGroup caseAccessGroup =
-            uk.gov.hmcts.ccd.sdk.type.CaseAccessGroup.builder()
-                .caseAccessGroupId("PCS:PCS:prof-org-access:solicitor:WK8GIHE")
-                .caseAccessGroupType("CCD:all-cases-access")
-                .build();
+    private void setGroupAccessFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
+        PartyEntity organisationParty = pcsCaseEntity.getParties().stream()
+            .filter(party -> isNotBlank(party.getOrganisationId()))
+            .findFirst()
+            .orElse(null);
 
-        ListValue<uk.gov.hmcts.ccd.sdk.type.CaseAccessGroup> wrapped =
-            ListValue.<uk.gov.hmcts.ccd.sdk.type.CaseAccessGroup>builder()
-                .id(UUID.nameUUIDFromBytes(caseAccessGroup.getCaseAccessGroupId().getBytes()).toString())
-                .value(caseAccessGroup)
-                .build();
+        if (organisationParty == null) {
+            return;
+        }
 
-        uk.gov.hmcts.reform.pcs.ccd.domain.GroupAccessFields<uk.gov.hmcts.reform.pcs.ccd.accesscontrol.AccessProfile>
-            groupAccessFields = new uk.gov.hmcts.reform.pcs.ccd.domain.GroupAccessFields<>();
+        String organisationId = organisationParty.getOrganisationId();
+
+        CaseAccessGroup caseAccessGroup = CaseAccessGroup.builder()
+            .caseAccessGroupId(GROUP_ACCESS_ID_TEMPLATE.replace(ORG_ID_PLACEHOLDER, organisationId))
+            .caseAccessGroupType("CCD:all-cases-access")
+            .build();
+
+        ListValue<CaseAccessGroup> wrapped = ListValue.<CaseAccessGroup>builder()
+            .id(UUID.nameUUIDFromBytes(caseAccessGroup.getCaseAccessGroupId().getBytes()).toString())
+            .value(caseAccessGroup)
+            .build();
+
+        GroupAccessFields<AccessProfile> groupAccessFields = new GroupAccessFields<>();
         groupAccessFields.setCaseAccessGroups(List.of(wrapped));
+        groupAccessFields.setOrganisationPolicyField(OrganisationPolicy.<AccessProfile>builder()
+            .organisation(Organisation.builder()
+                .organisationId(organisationId)
+                .organisationName(organisationParty.getOrgName())
+                .build())
+            .orgPolicyCaseAssignedRole(AccessProfile.PROFESSIONAL_USER)
+            .build());
+
         pcsCase.setGroupAccessFields(groupAccessFields);
     }
 
