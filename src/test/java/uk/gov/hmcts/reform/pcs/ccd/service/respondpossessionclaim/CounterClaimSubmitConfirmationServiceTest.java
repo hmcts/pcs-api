@@ -25,7 +25,6 @@ import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.PaymentService;
-import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 import uk.gov.hmcts.reform.payments.response.PaymentServiceResponse;
 
 import java.math.BigDecimal;
@@ -34,7 +33,6 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
@@ -61,8 +59,6 @@ class CounterClaimSubmitConfirmationServiceTest {
     private PaymentService paymentService;
     @Mock
     private CounterClaimFeeCalculator counterClaimFeeCalculator;
-    @Mock
-    private SecurityContextService securityContextService;
 
     @Captor
     private ArgumentCaptor<FeesAndPayTaskData> taskDataCaptor;
@@ -77,18 +73,18 @@ class CounterClaimSubmitConfirmationServiceTest {
             feeService,
             paymentService,
             counterClaimFeeCalculator,
-            securityContextService,
             objectMapper
         );
     }
 
     @Test
     void shouldReturnDefaultResponseWhenNoCounterClaimEntity() {
+        PartyEntity partyEntity = PartyEntity.builder().build();
         PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder().build();
         RespondPossessionClaimSubmitPersistenceResult persistenceResult =
             new RespondPossessionClaimSubmitPersistenceResult(possessionClaimResponse, null, false);
 
-        SubmitResponse<State> response = underTest.buildSubmitResponse(CASE_REFERENCE, persistenceResult);
+        SubmitResponse<State> response = underTest.buildSubmitResponse(CASE_REFERENCE, persistenceResult, partyEntity);
 
         assertThat(response).isEqualTo(SubmitResponse.defaultResponse());
         verify(feeService, never()).getFee(any(), any());
@@ -97,6 +93,7 @@ class CounterClaimSubmitConfirmationServiceTest {
 
     @Test
     void shouldReturnIssuedConfirmationWhenCounterClaimIssuedWithoutPayment() {
+        PartyEntity partyEntity = PartyEntity.builder().build();
         CounterClaimEntity counterClaimEntity = CounterClaimEntity.builder()
             .id(COUNTER_CLAIM_ID)
             .status(CounterClaimState.COUNTER_CLAIM_ISSUED)
@@ -109,7 +106,7 @@ class CounterClaimSubmitConfirmationServiceTest {
                 true
             );
 
-        SubmitResponse<State> response = underTest.buildSubmitResponse(CASE_REFERENCE, persistenceResult);
+        SubmitResponse<State> response = underTest.buildSubmitResponse(CASE_REFERENCE, persistenceResult, partyEntity);
 
         assertThat(response.getConfirmationBody())
             .contains("\"status\":\"COUNTER_CLAIM_ISSUED\"")
@@ -152,8 +149,6 @@ class CounterClaimSubmitConfirmationServiceTest {
 
         String currentUserPartyName = "Current user party name";
 
-        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
-        when(partyService.getPartyEntityByIdamId(USER_ID, CASE_REFERENCE)).thenReturn(partyEntity);
         when(partyService.getPartyName(partyEntity)).thenReturn(currentUserPartyName);
         when(counterClaimFeeCalculator.resolveFeeType(counterClaim)).thenReturn(FeeType.COUNTER_CLAIM_RANGED);
         when(counterClaimFeeCalculator.resolveFeeLookupAmountInPounds(counterClaim))
@@ -164,7 +159,7 @@ class CounterClaimSubmitConfirmationServiceTest {
                 .serviceRequestReference(SERVICE_REQUEST_REFERENCE)
                 .build());
 
-        SubmitResponse<State> response = underTest.buildSubmitResponse(CASE_REFERENCE, persistenceResult);
+        SubmitResponse<State> response = underTest.buildSubmitResponse(CASE_REFERENCE, persistenceResult, partyEntity);
 
         verify(paymentService).createServiceRequest(taskDataCaptor.capture());
         FeesAndPayTaskData taskData = taskDataCaptor.getValue();
@@ -184,7 +179,7 @@ class CounterClaimSubmitConfirmationServiceTest {
     }
 
     @Test
-    void shouldThrowWhenCurrentUserIdIsNullDuringPaymentCreation() {
+    void shouldThrowWhenSuppliedPartyIsNullDuringPaymentCreation() {
         CounterClaim counterClaim = CounterClaim.builder()
             .claimType(CounterClaimType.PAYMENT_OR_COMPENSATION)
             .build();
@@ -204,27 +199,21 @@ class CounterClaimSubmitConfirmationServiceTest {
                 counterClaimEntity,
                 false
             );
-        FeeDetails feeDetails = FeeDetails.builder().feeAmount(FEE_AMOUNT).build();
 
-        when(counterClaimFeeCalculator.resolveFeeType(counterClaim)).thenReturn(FeeType.COUNTER_CLAIM_FLAT_FEE);
-        when(counterClaimFeeCalculator.resolveFeeLookupAmountInPounds(counterClaim)).thenReturn(null);
-        when(feeService.getFee(eq(FeeType.COUNTER_CLAIM_FLAT_FEE), eq(null))).thenReturn(feeDetails);
-        when(securityContextService.getCurrentUserId()).thenReturn(null);
-
-        assertThatThrownBy(() -> underTest.buildSubmitResponse(CASE_REFERENCE, persistenceResult))
+        assertThatThrownBy(() -> underTest.buildSubmitResponse(CASE_REFERENCE, persistenceResult, null))
             .isInstanceOf(IllegalStateException.class)
-            .hasMessageContaining("Current user IDAM ID is null");
+            .hasMessageContaining("Responsible party entity not provided");
     }
 
     @Test
     void shouldThrowWhenSubmitResponseCannotBeSerialised() throws Exception {
+        PartyEntity partyEntity = PartyEntity.builder().build();
         ObjectMapper failingObjectMapper = spy(new ObjectMapper());
         CounterClaimSubmitConfirmationService serviceUnderTest = new CounterClaimSubmitConfirmationService(
             partyService,
             feeService,
             paymentService,
             counterClaimFeeCalculator,
-            securityContextService,
             failingObjectMapper
         );
         CounterClaimEntity counterClaimEntity = CounterClaimEntity.builder()
@@ -241,8 +230,10 @@ class CounterClaimSubmitConfirmationServiceTest {
         doThrow(new JsonProcessingException("serialisation failed") {})
             .when(failingObjectMapper).writeValueAsString(any());
 
-        assertThatThrownBy(() -> serviceUnderTest.buildSubmitResponse(CASE_REFERENCE, persistenceResult))
+        assertThatThrownBy(() -> serviceUnderTest.buildSubmitResponse(CASE_REFERENCE, persistenceResult, partyEntity))
             .isInstanceOf(IllegalStateException.class)
             .hasMessageContaining("Unable to serialise respond possession claim submit response");
     }
+
+
 }
