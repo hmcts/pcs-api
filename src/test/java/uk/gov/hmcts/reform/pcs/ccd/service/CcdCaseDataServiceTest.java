@@ -148,6 +148,7 @@ class CcdCaseDataServiceTest {
         verify(ccdCaseRepository).deleteCcdCaseData(caseReference);
 
     }
+
     @Test
     void shouldMarkCaseForDeletionWithCorrectEventId() throws Exception {
         // Given
