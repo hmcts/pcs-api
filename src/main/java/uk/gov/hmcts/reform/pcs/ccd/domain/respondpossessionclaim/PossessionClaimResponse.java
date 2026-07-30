@@ -52,7 +52,9 @@ public class PossessionClaimResponse {
     private DefendantResponses defendantResponses;
 
     /**
-     * Persisted against the responding defendant's party by the submit path.
+     * Reasonable adjustment flags from cui-ra microsite, persisted against their party on submit.
+     * Every draft save must carry this field. The respond draft save fully replaces the
+     * stored draft rather than merging into it.
      */
     @CCD(access = {DefendantAccess.class}, label = "Defendant flags")
     private Flags defendantFlags;

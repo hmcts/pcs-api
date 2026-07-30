@@ -26,12 +26,14 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 //import static org.assertj.core.api.Assertions.assertE;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class CaseFlagServiceTest {
@@ -161,11 +163,11 @@ class CaseFlagServiceTest {
         Flags incomingFlags = Flags.builder()
             .partyName("Jack Smith")
             .roleOnCase("Defendant")
-            .details(createReasonableAdjustmentDetails("RA0033", "Sign language interpreter"))
+            .details(createFlagDetailsWithoutIds("RA0033", "Sign language interpreter"))
             .build();
 
         // When
-        underTest.savePartyFlags(partyEntity, incomingFlags);
+        underTest.saveReasonableAdjustmentFlags(partyEntity, incomingFlags);
 
         // Then
         assertThat(partyEntity.getDefendantFlags())
@@ -174,16 +176,149 @@ class CaseFlagServiceTest {
     }
 
     @Test
+    void shouldIgnoreSuppliedFlagsThatAreNotReasonableAdjustments() {
+        // Given
+        List<CasePartyFlagEntity> existingFlags = new ArrayList<>();
+        existingFlags.add(createPartyFlagEntity("PF0015", "Language Interpreter"));
+
+        PartyEntity partyEntity = PartyEntity.builder()
+            .id(UUID.randomUUID())
+            .defendantFlags(existingFlags)
+            .build();
+
+        List<ListValue<FlagDetail>> details = new ArrayList<>();
+        details.addAll(createFlagDetailsWithoutIds("RA0033", "Sign language interpreter"));
+        details.addAll(createFlagDetailsWithoutIds("CF0002", "Complex case"));
+
+        // When
+        underTest.saveReasonableAdjustmentFlags(partyEntity, Flags.builder().details(details).build());
+
+        // Then
+        assertThat(partyEntity.getDefendantFlags())
+            .extracting(flag -> flag.getFlagRefData().getFlagCode())
+            .containsExactlyInAnyOrder("PF0015", "RA0033");
+    }
+
+    @Test
+    void shouldRetainExistingFlagsWhenNoReasonableAdjustmentsSupplied() {
+        // Given
+        List<CasePartyFlagEntity> existingFlags = new ArrayList<>();
+        existingFlags.add(createPartyFlagEntity("RA0012", "Braille documents"));
+
+        PartyEntity partyEntity = PartyEntity.builder()
+            .id(UUID.randomUUID())
+            .defendantFlags(existingFlags)
+            .build();
+
+        Flags incomingFlags = Flags.builder()
+            .details(createFlagDetailsWithoutIds("CF0002", "Complex case"))
+            .build();
+
+        // When
+        underTest.saveReasonableAdjustmentFlags(partyEntity, incomingFlags);
+
+        // Then
+        assertThat(partyEntity.getDefendantFlags())
+            .extracting(flag -> flag.getFlagRefData().getFlagCode())
+            .containsExactly("RA0012");
+    }
+
+    @Test
+    void shouldNotRewriteSharedReferenceDataFromASuppliedFlag() {
+        // Given reference data already describing this flag code
+        FlagRefDataEntity existingRefData = FlagRefDataEntity.builder()
+            .flagCode("RA0035")
+            .flagName("Video hearing")
+            .flagNameWelsh("Gwrandawiad fideo")
+            .hearingRelevant(true)
+            .availableExternally(true)
+            .visibility(FlagVisibility.INTERNAL.getValue())
+            .build();
+        when(flagRefDataRepository.findByFlagCode("RA0035")).thenReturn(Optional.of(existingRefData));
+
+        PartyEntity partyEntity = PartyEntity.builder().id(UUID.randomUUID()).build();
+
+        // and a payload claiming something different about it
+        Flags incomingFlags = Flags.builder()
+            .visibility(FlagVisibility.EXTERNAL)
+            .details(List.of(ListValue.<FlagDetail>builder()
+                                 .value(FlagDetail.builder()
+                                            .flagCode("RA0035")
+                                            .name("Overwritten name")
+                                            .nameCy("Overwritten welsh name")
+                                            .status("Requested")
+                                            .hearingRelevant(YesOrNo.NO)
+                                            .availableExternally(YesOrNo.NO)
+                                            .build())
+                                 .build()))
+            .build();
+
+        // When
+        underTest.saveReasonableAdjustmentFlags(partyEntity, incomingFlags);
+
+        // Then the flag is stored against the party, but the shared reference data is untouched
+        assertThat(partyEntity.getDefendantFlags()).hasSize(1);
+        assertThat(partyEntity.getDefendantFlags().getFirst().getFlagRefData()).isSameAs(existingRefData);
+        assertThat(existingRefData.getFlagName()).isEqualTo("Video hearing");
+        assertThat(existingRefData.getFlagNameWelsh()).isEqualTo("Gwrandawiad fideo");
+        assertThat(existingRefData.getHearingRelevant()).isTrue();
+        assertThat(existingRefData.getAvailableExternally()).isTrue();
+        assertThat(existingRefData.getVisibility()).isEqualTo(FlagVisibility.INTERNAL.getValue());
+    }
+
+    @Test
+    void shouldCreateReferenceDataForAnUnseenSuppliedFlagCode() {
+        // Given
+        PartyEntity partyEntity = PartyEntity.builder().id(UUID.randomUUID()).build();
+
+        Flags incomingFlags = Flags.builder()
+            .details(createFlagDetailsWithoutIds("RA0099", "Newly published adjustment"))
+            .build();
+
+        // When
+        underTest.saveReasonableAdjustmentFlags(partyEntity, incomingFlags);
+
+        // Then
+        FlagRefDataEntity createdRefData = partyEntity.getDefendantFlags().getFirst().getFlagRefData();
+        assertThat(createdRefData.getFlagCode()).isEqualTo("RA0099");
+        assertThat(createdRefData.getFlagName()).isEqualTo("Newly published adjustment");
+    }
+
+    @Test
+    void shouldUpdateSharedReferenceDataFromCaseworkerFlags() {
+        // Given reference data a caseworker is correcting
+        FlagRefDataEntity existingRefData = FlagRefDataEntity.builder()
+            .flagCode("CF0002")
+            .flagName("Complex Case")
+            .build();
+        when(flagRefDataRepository.findByFlagCode("CF0002")).thenReturn(Optional.of(existingRefData));
+
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().build();
+
+        Flags incomingFlags = Flags.builder()
+            .visibility(FlagVisibility.INTERNAL)
+            .details(createFlagDetail(null, "CF0002", "Complex case - renamed",
+                                      "Complicated case", "Active"))
+            .build();
+
+        // When
+        underTest.mergeCaseFlags(incomingFlags, pcsCaseEntity);
+
+        // Then
+        assertThat(existingRefData.getFlagName()).isEqualTo("Complex case - renamed");
+    }
+
+    @Test
     void shouldStorePathsWhenPathValuesHaveNoIds() {
         // Given
         PartyEntity partyEntity = PartyEntity.builder().id(UUID.randomUUID()).build();
 
         Flags incomingFlags = Flags.builder()
-            .details(createReasonableAdjustmentDetails("RA0012", "Braille documents"))
+            .details(createFlagDetailsWithoutIds("RA0012", "Braille documents"))
             .build();
 
         // When
-        underTest.savePartyFlags(partyEntity, incomingFlags);
+        underTest.saveReasonableAdjustmentFlags(partyEntity, incomingFlags);
 
         // Then
         assertThat(partyEntity.getDefendantFlags().getFirst().getPaths())
@@ -202,15 +337,15 @@ class CaseFlagServiceTest {
             .build();
 
         // When
-        underTest.savePartyFlags(partyEntity, null);
-        underTest.savePartyFlags(partyEntity, Flags.builder().details(new ArrayList<>()).build());
+        underTest.saveReasonableAdjustmentFlags(partyEntity, null);
+        underTest.saveReasonableAdjustmentFlags(partyEntity, Flags.builder().details(new ArrayList<>()).build());
 
         // Then
         assertThat(partyEntity.getDefendantFlags()).hasSize(1);
         assertThat(partyEntity.getDefendantFlags().getFirst().getFlagComment()).isEqualTo("Braille documents");
     }
 
-    private List<ListValue<FlagDetail>> createReasonableAdjustmentDetails(String flagCode, String name) {
+    private List<ListValue<FlagDetail>> createFlagDetailsWithoutIds(String flagCode, String name) {
         return List.of(ListValue.<FlagDetail>builder()
                            .value(FlagDetail.builder()
                                       .flagCode(flagCode)

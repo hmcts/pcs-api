@@ -504,7 +504,7 @@ class ClaimResponseServiceTest {
         underTest.saveDraftDataForParty(response, testParty);
 
         // Then
-        verify(caseFlagService).savePartyFlags(testParty, defendantFlags);
+        verify(caseFlagService).saveReasonableAdjustmentFlags(testParty, defendantFlags);
     }
 
     @Test
@@ -523,7 +523,7 @@ class ClaimResponseServiceTest {
         underTest.saveDraftDataForParty(response, testParty);
 
         // Then
-        verify(caseFlagService).savePartyFlags(testParty, defendantFlags);
+        verify(caseFlagService).saveReasonableAdjustmentFlags(testParty, defendantFlags);
     }
 
     private PossessionClaimResponse buildResponse(Party party, DefendantResponses defendantResponses) {

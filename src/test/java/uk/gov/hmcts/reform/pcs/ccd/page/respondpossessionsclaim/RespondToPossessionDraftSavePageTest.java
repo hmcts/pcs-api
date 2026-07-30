@@ -10,7 +10,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.FlagDetail;
-import uk.gov.hmcts.ccd.sdk.type.FlagVisibility;
 import uk.gov.hmcts.ccd.sdk.type.Flags;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
@@ -421,15 +420,21 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
     @Test
     void shouldSaveDefendantFlagsInDraft() {
         //Given
+        // As supplied by the cui-ra microsite: no visibility, and no ids on the list values or paths
         Flags defendantFlags = Flags.builder()
-            .visibility(FlagVisibility.EXTERNAL)
+            .partyName("Jack Smith")
+            .roleOnCase("Defendant")
             .details(List.of(ListValue.<FlagDetail>builder()
-                                 .id(UUID.randomUUID().toString())
                                  .value(FlagDetail.builder()
-                                            .name("Language Interpreter")
-                                            .flagCode("PF0015")
-                                            .status("Active")
+                                            .name("Video hearing")
+                                            .nameCy("Gwrandawiad fideo")
+                                            .flagCode("RA0035")
+                                            .status("Requested")
                                             .hearingRelevant(YesOrNo.YES)
+                                            .availableExternally(YesOrNo.YES)
+                                            .path(List.of(
+                                                ListValue.<String>builder().value("Party").build(),
+                                                ListValue.<String>builder().value("Reasonable adjustment").build()))
                                             .build())
                                  .build()))
             .build();

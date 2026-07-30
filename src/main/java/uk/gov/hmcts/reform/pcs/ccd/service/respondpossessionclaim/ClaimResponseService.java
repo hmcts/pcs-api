@@ -18,8 +18,8 @@ import uk.gov.hmcts.reform.pcs.ccd.service.CaseFlagService;
 import java.util.Optional;
 
 /**
- * Service for managing defendant contact preferences.
- * Handles saving contact preferences and updating party contact details.
+ * Applies a submitted defendant response to their party record: contact preferences, contact
+ * details, date of birth, and the reasonable adjustment flags supplied through the cui-ra microsite.
  */
 @Service
 @Slf4j
@@ -30,7 +30,10 @@ public class ClaimResponseService {
     private final CaseFlagService caseFlagService;
 
     /**
-     * Saves defendant's contact preferences and contact details for the given defendant party.
+     * Saves the defendant's contact preferences, contact details and reasonable adjustment flags
+     * against the given defendant party. Both the citizen and legal representative journeys reach
+     * this through {@code RespondPossessionClaimSubmitService.persistFinalSubmit}, which resolves
+     * the party, so the flags are always scoped to the party that responded.
      *
      * @throws IllegalStateException if no party is found
      */
@@ -44,7 +47,7 @@ public class ClaimResponseService {
         updatePartyContactDetails(defendantParty, dataFromDraftTable.getDefendantContactDetails(), dataFromDraftTable
             .getDefendantResponses());
 
-        caseFlagService.savePartyFlags(defendantParty, dataFromDraftTable.getDefendantFlags());
+        caseFlagService.saveReasonableAdjustmentFlags(defendantParty, dataFromDraftTable.getDefendantFlags());
 
         if (dataFromDraftTable.getDefendantResponses() != null
             && dataFromDraftTable.getDefendantResponses().getDateOfBirth() != null) {
