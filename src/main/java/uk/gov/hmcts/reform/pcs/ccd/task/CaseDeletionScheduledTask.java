@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.pcs.ccd.model.DraftCasesToDiscard;
 import uk.gov.hmcts.reform.pcs.ccd.service.casedeletion.CaseDeletionService;
 import uk.gov.hmcts.reform.pcs.ccd.service.casedeletion.CcdCaseDataDeletionService;
+import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 
 import java.util.List;
 
@@ -60,8 +61,12 @@ public class CaseDeletionScheduledTask {
     private void performCaseDeletionTasks(long caseRef) {
         log.debug("Performing case deletion tasks for case: {}", caseRef);
         Runnable caseDeletionTasks = () -> {
-            ccdCaseDataDeletionService.markCaseForDeletion(caseRef);
-            ccdCaseDataDeletionService.confirmCaseDisposal(caseRef);
+            try {
+                ccdCaseDataDeletionService.markCaseForDeletion(caseRef);
+                ccdCaseDataDeletionService.confirmCaseDisposal(caseRef);
+            } catch (CaseNotFoundException e) {
+                log.error("Case not found in main ccd datastore. Will proceed to delete in decentralised ccd schema");
+            }
             caseDeletionService.deleteCase(caseRef);
         };
         caseDeletionTasks.run();
