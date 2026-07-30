@@ -113,6 +113,7 @@ class CaseTypeTest {
         when(builder.tab("caseParties", "Case Parties")).thenReturn(casePartiesTabBuilder);
         when(builder.tab("caseFlags", "Case flags")).thenReturn(caseFlagsTabBuilder);
         when(builder.tab("caseDetails", "Case Details")).thenReturn(caseDetailsTabBuilder);
+        when(builder.tab("supportFlags", "Support")).thenReturn(caseDetailsTabBuilder);
         when(builder.categories(AccessProfile.PCS_SOLICITOR))
             .thenReturn(CaseCategory.CaseCategoryBuilder.builder(AccessProfile.PCS_SOLICITOR));
 
@@ -203,6 +204,7 @@ class CaseTypeTest {
         when(builder.tab("caseParties", "Case Parties")).thenReturn(TabBuilder.builder(PCSCase.class, utils));
         when(builder.tab("caseFlags", "Case flags")).thenReturn(TabBuilder.builder(PCSCase.class, utils));
         when(builder.tab("caseDetails", "Case Details")).thenReturn(TabBuilder.builder(PCSCase.class, utils));
+        when(builder.tab("supportFlags", "Support")).thenReturn(TabBuilder.builder(PCSCase.class, utils));
         when(builder.categories(AccessProfile.PCS_SOLICITOR))
             .thenReturn(CaseCategory.CaseCategoryBuilder.builder(AccessProfile.PCS_SOLICITOR));
     }
