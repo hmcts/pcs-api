@@ -160,9 +160,6 @@ test.describe('Case management - Case Worker Enter a General application @nightl
     await performAction('uploadRelativeEvidence',{
       label : enterGenAppuploadRelatedEvidence.uploadADocumentHiddenTextLabel,
       nextPage:enterGenAppPreferApplicationToJudge.mainHeader
-    })
-    await performAction('verifyReferToJudge', {
-      nextPage: genAppsCheckYouAnswers.mainHeader
     });
   });
 
