@@ -139,7 +139,6 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
             .organisationalRoleName(UserRole.PCS_SOLICITOR_ORG.getRole())
             .liveTo("01/01/2027");
 
-        // SDK keeps only the first row per access type, so LOCALAUTH must lead.
         List<String> groupAccessOrgProfiles = List.of(
             "LOCALAUTH_PROFILE",
             "SOLICITOR_PROFILE",
