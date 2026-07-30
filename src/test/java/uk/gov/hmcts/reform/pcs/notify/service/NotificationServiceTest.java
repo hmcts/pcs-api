@@ -776,9 +776,11 @@ class NotificationServiceTest {
             PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
             GenAppEntity genAppEntity = mock(GenAppEntity.class);
             when(genAppEntity.getPcsCase()).thenReturn(pcsCaseEntity);
+            when(pcsCaseEntity.getClaims()).thenReturn(List.of(mock(ClaimEntity.class)));
 
             PartyEntity applicantPartyEntity = mock(PartyEntity.class);
             when(genAppEntity.getParty()).thenReturn(applicantPartyEntity);
+            when(applicantPartyEntity.getPcsCase()).thenReturn(pcsCaseEntity);
             when(partyService.getPartyRole(applicantPartyEntity)).thenReturn(PartyRole.DEFENDANT);
             when(partyService.canSendEmailNotification(applicantPartyEntity, PartyRole.DEFENDANT)).thenReturn(true);
             when(applicantPartyEntity.getEmailAddress()).thenReturn(expectedEmailAddress);
@@ -812,7 +814,10 @@ class NotificationServiceTest {
             // Given
             GenAppEntity genAppEntity = mock(GenAppEntity.class);
             PartyEntity applicantParty = mock(PartyEntity.class);
+            PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
             when(genAppEntity.getParty()).thenReturn(applicantParty);
+            when(applicantParty.getPcsCase()).thenReturn(pcsCaseEntity);
+            when(pcsCaseEntity.getClaims()).thenReturn(List.of(mock(ClaimEntity.class)));
             when(partyService.getPartyRole(applicantParty)).thenReturn(PartyRole.DEFENDANT);
             when(partyService.canSendEmailNotification(applicantParty, PartyRole.DEFENDANT)).thenReturn(false);
 

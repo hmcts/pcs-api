@@ -155,13 +155,23 @@ public class NotificationService {
         );
     }
 
+    public EmailNotificationResponse sendNoticeOfChangeCompletedEmailNotification(PartyEntity defendant) {
+        return sendEmail(
+            partyRecipient(defendant),
+            EmailTemplate.NOTICE_OF_CHANGE_COMPLETED,
+            NotificationClaimType.NOTICE_OF_CHANGE,
+            notificationPersonalisationFactory.forParty(defendant, defendant.getPcsCase())
+        );
+    }
+
     private NotificationRecipient partyRecipient(PartyEntity party) {
+        PcsCaseEntity pcsCase = party.getPcsCase();
         PartyRole partyRole = partyService.getPartyRole(party);
         return new NotificationRecipient(
                 party.getEmailAddress(),
                 party,
-                party.getPcsCase(),
-                null,
+                pcsCase,
+                pcsCase.getClaims().getFirst(),
                 partyRole
         );
     }
