@@ -362,6 +362,12 @@ public class PCSCase {
     @CCD(access = {ClaimantAccess.class, CitizenAccess.class, InternalCaseFlagAccess.class})
     private List<ListValue<Party>> allDefendants;
 
+    /**
+     * Combined list of all litigation friends in the case.
+     */
+    @CCD(access = {ClaimantAccess.class, DefendantAccess.class})
+    private List<ListValue<Party>> allLitigationFriends;
+
     @JsonUnwrapped(prefix = "tenancy_")
     @CCD
     private TenancyLicenceDetails tenancyLicenceDetails;

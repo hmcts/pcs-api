@@ -29,4 +29,10 @@ public class CasePartiesTab {
 
     @CCD(label = "Additional defendant")
     private List<ListValue<DefendantTabDetails>> defendantsDetails;
+
+    @CCD(label = "Litigation friend")
+    private LitigationFriendTabDetails lfDetails;
+
+    @CCD(label = "Additional litigation friend")
+    private List<ListValue<LitigationFriendTabDetails>> lfsDetails;
 }

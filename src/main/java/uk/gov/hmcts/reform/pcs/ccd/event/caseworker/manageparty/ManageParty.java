@@ -25,13 +25,16 @@ public class ManageParty implements CCDConfig<PCSCase, State, UserRole> {
 
     private final StartEventHandler startEventHandler;
     private final SubmitEventHandler submitEventHandler;
+    private final AddPartyDetailsPage addPartyDetailsPage;
     private final ManagePartyOptionsPage managePartyOptionsPage;
 
     public ManageParty(@Qualifier("managePartyStartEventHandler") StartEventHandler startEventHandler,
                         @Qualifier("managePartySubmitEventHandler") SubmitEventHandler submitEventHandler,
+                        AddPartyDetailsPage addPartyDetailsPage,
                         ManagePartyOptionsPage managePartyOptionsPage) {
         this.startEventHandler = startEventHandler;
         this.submitEventHandler = submitEventHandler;
+        this.addPartyDetailsPage = addPartyDetailsPage;
         this.managePartyOptionsPage = managePartyOptionsPage;
     }
 
@@ -49,7 +52,7 @@ public class ManageParty implements CCDConfig<PCSCase, State, UserRole> {
         new PageBuilder(eventBuilder)
             .add(managePartyOptionsPage)
             .add(new AddLitigationParty())
-            .add(new AddPartyDetailsPage())
+            .add(addPartyDetailsPage)
             .add(new UpdatePartyDetailsPage());
     }
 

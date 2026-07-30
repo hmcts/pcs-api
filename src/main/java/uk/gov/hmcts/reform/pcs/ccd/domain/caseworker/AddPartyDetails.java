@@ -21,7 +21,7 @@ import static uk.gov.hmcts.ccd.sdk.type.FieldType.FixedRadioList;
 public class AddPartyDetails {
 
     @JsonProperty("addParty_ManagePartyOptions")
-    @CCD(label = "What change do you want to make ?",
+    @CCD(label = "What change do you want to make?",
         hint = "You must have judicial approval to add or remove a party",
         typeOverride = FixedRadioList,
         typeParameterOverride = "ManagePartyOptions"
@@ -37,7 +37,7 @@ public class AddPartyDetails {
     private PartyType addPartyType;
 
     @JsonProperty("addParty_ClaimantOrganisationName")
-    @CCD(label = "Organisation name", max = 60)
+    @CCD(label = "Organisation name")
     private String claimantOrganisationName;
 
     @JsonProperty("addParty_ClaimantFirstName")
@@ -53,11 +53,11 @@ public class AddPartyDetails {
     private AddressUK claimantAddress;
 
     @JsonProperty("addParty_ClaimantEmail")
-    @CCD(label = "Email address", searchable = false, max = 60)
+    @CCD(label = "Email address", searchable = false)
     private String claimantEmail;
 
     @JsonProperty("addParty_ClaimantPhoneNumber")
-    @CCD(label = "Phone number", searchable = false, max = 60)
+    @CCD(label = "Phone number", searchable = false)
     private String claimantPhoneNumber;
 
     @JsonProperty("addParty_FirstName")
@@ -77,11 +77,11 @@ public class AddPartyDetails {
     private AddressUK defendantAddress;
 
     @JsonProperty("addParty_DefendantEmail")
-    @CCD(label = "Email address", searchable = false, max = 60)
+    @CCD(label = "Email address", searchable = false)
     private String defendantEmail;
 
     @JsonProperty("addParty_DefendantPhoneNumber")
-    @CCD(label = "Phone number", searchable = false, max = 60)
+    @CCD(label = "Phone number", searchable = false)
     private String defendantPhoneNumber;
 
     @JsonProperty("addParty_LFFirstName")
@@ -93,23 +93,19 @@ public class AddPartyDetails {
     private String litigationFriendLastName;
 
     @JsonProperty("addParty_LFOrganisationName")
-    @CCD(label = "Organisation name", max = 60)
+    @CCD(label = "Organisation name")
     private String litigationFriendOrganisationName;
-
-    @JsonProperty("addParty_LFDateOfBirth")
-    @CCD(label = "Date of birth", hint = "For example, 16 4 2021")
-    private LocalDate litigationFriendDateOfBirth;
 
     @JsonProperty("addParty_LFAddress")
     @CCD(label = "Address for service")
     private AddressUK litigationFriendAddress;
 
     @JsonProperty("addParty_LFEmail")
-    @CCD(label = "Email address", searchable = false, max = 60)
+    @CCD(label = "Email address", searchable = false)
     private String litigationFriendEmail;
 
     @JsonProperty("addParty_LFPhoneNumber")
-    @CCD(label = "Phone number", searchable = false, max = 60)
+    @CCD(label = "Phone number", searchable = false)
     private String litigationFriendPhoneNumber;
 
     @JsonProperty("addParty_PartyRadioList")
