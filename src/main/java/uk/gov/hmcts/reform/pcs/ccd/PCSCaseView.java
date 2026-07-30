@@ -58,7 +58,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 import static uk.gov.hmcts.reform.pcs.ccd.CaseType.GROUP_ACCESS_ID_TEMPLATE;
 import static uk.gov.hmcts.reform.pcs.ccd.CaseType.ORG_ID_PLACEHOLDER;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.resumePossessionClaim;
@@ -209,22 +209,13 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
     }
 
     private void setGroupAccessFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
-        PartyEntity organisationParty = pcsCaseEntity.getParties().stream()
-            .filter(party -> isNotBlank(party.getOrganisationId()))
-            .findFirst()
-            .orElse(null);
+        // Only the case's own organisation decides group access. Deriving it from a party would
+        // mean an access-control decision depended on iteration order over a Set of parties.
+        String organisationId = pcsCaseEntity.getOrganisationId();
 
-        // The case's own organisation is authoritative; the party scan covers cases created
-        // before pcs_case.organisation_id existed.
-        String organisationId = isNotBlank(pcsCaseEntity.getOrganisationId())
-            ? pcsCaseEntity.getOrganisationId()
-            : organisationParty != null ? organisationParty.getOrganisationId() : null;
-
-        if (organisationId == null) {
+        if (isBlank(organisationId)) {
             return;
         }
-
-        String organisationName = organisationParty != null ? organisationParty.getOrgName() : null;
 
         CaseAccessGroup caseAccessGroup = CaseAccessGroup.builder()
             .caseAccessGroupId(GROUP_ACCESS_ID_TEMPLATE.replace(ORG_ID_PLACEHOLDER, organisationId))
@@ -241,7 +232,6 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         groupAccessFields.setOrganisationPolicyField(OrganisationPolicy.<AccessProfile>builder()
             .organisation(Organisation.builder()
                 .organisationId(organisationId)
-                .organisationName(organisationName)
                 .build())
             .orgPolicyCaseAssignedRole(AccessProfile.PROFESSIONAL_USER)
             .build());

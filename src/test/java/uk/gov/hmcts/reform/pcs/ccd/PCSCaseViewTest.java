@@ -401,30 +401,9 @@ class PCSCaseViewTest {
     }
 
     @Test
-    void shouldSetCaseAccessGroupFromClaimantOrganisation() {
-        // Given
-        PartyEntity partyEntity = mock(PartyEntity.class);
-        when(partyEntity.getOrganisationId()).thenReturn("WK8GIHE");
-        when(pcsCaseEntity.getParties()).thenReturn(Set.of(partyEntity));
-
-        // When
-        PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
-
-        // Then
-        assertThat(pcsCase.getGroupAccessFields().getCaseAccessGroups())
-            .singleElement()
-            .satisfies(group -> assertThat(group.getValue().getCaseAccessGroupId())
-                .isEqualTo("PCS:PCS:prof-org-access:solicitor:WK8GIHE"));
-
-        assertThat(pcsCase.getGroupAccessFields().getOrganisationPolicyField().getOrganisation()
-                       .getOrganisationId()).isEqualTo("WK8GIHE");
-    }
-
-    @Test
-    void shouldSetCaseAccessGroupFromTheCaseOrganisationWithoutAnyParty() {
+    void shouldSetCaseAccessGroupFromTheCaseOrganisation() {
         // Given: a case created by a solicitor, before any party exists
         when(pcsCaseEntity.getOrganisationId()).thenReturn("ABC123");
-        when(pcsCaseEntity.getParties()).thenReturn(Set.of());
 
         // When
         PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
@@ -434,31 +413,29 @@ class PCSCaseViewTest {
             .singleElement()
             .satisfies(group -> assertThat(group.getValue().getCaseAccessGroupId())
                 .isEqualTo("PCS:PCS:prof-org-access:solicitor:ABC123"));
+
+        assertThat(pcsCase.getGroupAccessFields().getOrganisationPolicyField().getOrganisation()
+                       .getOrganisationId()).isEqualTo("ABC123");
     }
 
     @Test
-    void shouldPreferTheCaseOrganisationOverAPartyOrganisation() {
-        // Given: group access must follow the case, not a party that may be added later
+    void shouldIgnorePartyOrganisationWhenDecidingGroupAccess() {
+        // Given: a party carries an organisation but the case does not
         PartyEntity partyEntity = mock(PartyEntity.class);
-        when(pcsCaseEntity.getOrganisationId()).thenReturn("ABC123");
+        when(pcsCaseEntity.getOrganisationId()).thenReturn(null);
         when(pcsCaseEntity.getParties()).thenReturn(Set.of(partyEntity));
 
         // When
         PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
 
-        // Then
-        assertThat(pcsCase.getGroupAccessFields().getCaseAccessGroups())
-            .singleElement()
-            .satisfies(group -> assertThat(group.getValue().getCaseAccessGroupId())
-                .isEqualTo("PCS:PCS:prof-org-access:solicitor:ABC123"));
+        // Then: group access never derives from a party
+        assertThat(pcsCase.getGroupAccessFields()).isNull();
     }
 
     @Test
-    void shouldNotSetCaseAccessGroupWhenNoPartyHasAnOrganisation() {
-        // Given
-        PartyEntity partyEntity = mock(PartyEntity.class);
-        when(partyEntity.getOrganisationId()).thenReturn(null);
-        when(pcsCaseEntity.getParties()).thenReturn(Set.of(partyEntity));
+    void shouldNotSetCaseAccessGroupWhenCaseHasNoOrganisation() {
+        // Given: a citizen-created case, or one created before pcs_case.organisation_id existed
+        when(pcsCaseEntity.getOrganisationId()).thenReturn(null);
 
         // When
         PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
