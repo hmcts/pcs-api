@@ -21,6 +21,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.caseworker.manageparty.AddPartyService;
+import uk.gov.hmcts.reform.pcs.ccd.service.caseworker.manageparty.UpdatePartyService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 
 import java.util.List;
@@ -43,12 +44,14 @@ class SubmitEventHandlerTest {
     private AddressFormatter addressFormatter;
     @Mock
     private AddPartyService addPartyService;
+    @Mock
+    private UpdatePartyService updatePartyService;
 
     private SubmitEventHandler underTest;
 
     @BeforeEach
     void setUp() {
-        underTest = new SubmitEventHandler(pcsCaseService, addressFormatter, addPartyService);
+        underTest = new SubmitEventHandler(pcsCaseService, addressFormatter, addPartyService, updatePartyService);
     }
 
     @ParameterizedTest
