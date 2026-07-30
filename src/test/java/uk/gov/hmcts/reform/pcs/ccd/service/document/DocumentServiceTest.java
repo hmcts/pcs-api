@@ -42,6 +42,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DocumentRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TaskDescriptionService;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
 import uk.gov.hmcts.reform.pcs.exception.ClaimNotFoundException;
 
@@ -75,6 +76,8 @@ class DocumentServiceTest {
     @Mock
     private DocumentNameService documentNameService;
     @Mock
+    private TaskDescriptionService taskDescriptionService;
+    @Mock
     private CamundaService camundaService;
     @Mock(strictness = LENIENT)
     private PcsCaseEntity pcsCase;
@@ -88,7 +91,8 @@ class DocumentServiceTest {
     void setUp() {
         when(pcsCase.getCaseReference()).thenReturn(CASE_REFERENCE);
 
-        underTest = new DocumentService(documentRepository, documentIdExtractor, documentNameService, camundaService);
+        underTest = new DocumentService(documentRepository, documentIdExtractor, documentNameService,
+                                        taskDescriptionService, camundaService);
     }
 
     @Test
@@ -1011,6 +1015,11 @@ class DocumentServiceTest {
 
         when(documentRepository.saveAll(anyList())).thenAnswer(inv -> inv.getArgument(0));
 
+        String expectedTaskDescription = "some task description";
+        when(taskDescriptionService.createGenAppAdditionalDocumentsDescription(
+            eq(CASE_REFERENCE), eq(mainClaim), eq(party), eq(selectedGenApp), anyList()
+        )).thenReturn(expectedTaskDescription);
+
         // When
         underTest.linkAdditionalDocumentsToCase(uploadedDocs, pcsCase, party, selectedGenApp);
 
@@ -1024,7 +1033,8 @@ class DocumentServiceTest {
         assertThat(entity.getGeneralApplication()).isSameAs(selectedGenApp);
         assertThat(entity.getFileName()).isEqualTo("file-new GA1 - Defendant 1.pdf");
 
-        verify(camundaService).createTask(CASE_REFERENCE, TaskType.REVIEW_ADDITIONAL_DOCS_GEN_APP);
+        verify(camundaService)
+            .createTask(CASE_REFERENCE, TaskType.REVIEW_ADDITIONAL_DOCS_GEN_APP, expectedTaskDescription);
     }
 
     @Test

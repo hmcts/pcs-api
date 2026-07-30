@@ -34,6 +34,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DocumentRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TaskDescriptionService;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
 import uk.gov.hmcts.reform.pcs.exception.ClaimNotFoundException;
 
@@ -53,6 +54,7 @@ public class DocumentService {
     private final DocumentRepository documentRepository;
     private final DocumentIdExtractor documentIdExtractor;
     private final DocumentNameService documentNameService;
+    private final TaskDescriptionService taskDescriptionService;
     private final CamundaService camundaService;
 
     private static final String CLAIMANT_1 = "Claimant 1";
@@ -286,7 +288,15 @@ public class DocumentService {
         }
 
         if (selectedGenApp != null) {
-            camundaService.createTask(caseReference, TaskType.REVIEW_ADDITIONAL_DOCS_GEN_APP);
+            String description = taskDescriptionService.createGenAppAdditionalDocumentsDescription(
+                caseReference,
+                mainClaim,
+                party,
+                selectedGenApp,
+                documentEntities
+            );
+
+            camundaService.createTask(caseReference, TaskType.REVIEW_ADDITIONAL_DOCS_GEN_APP, description);
         } else {
             camundaService.createTask(caseReference, TaskType.REVIEW_ADDITIONAL_DOCS_CLAIM);
         }
@@ -295,10 +305,6 @@ public class DocumentService {
         log.info("Saved {} additional documents for case {} and party {}",
                  saved.size(), caseReference, party.getId());
         return saved;
-    }
-
-    private void createWorkAllocationTasks(GenAppEntity selectedGenApp) {
-
     }
 
     private static ClaimEntity getMainClaim(PcsCaseEntity pcsCase) {

@@ -148,7 +148,7 @@ client or with curl:
 ```
 POST http://localhost:8077/monitor/tasks/jobs
 Headers:
-  ServiceAuthorization:Bearer {{s2s token containing 'wa_task_monitor' service name}}
+  ServiceAuthorization:Bearer {{s2s token for 'pcs_api'}}
 
 Payload:
 
