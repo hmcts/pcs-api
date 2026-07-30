@@ -10,8 +10,6 @@ import {
   changeCaseState, confirmCaseStateChange, enterGenappApplication, enterGenAppapplicationFee,
   enterGenAppConsentAndNotice, enterGenAppHearingDate,
   enterGenAppPreferApplicationToJudge, selectDocument,
-  enterGenAppUploadGeneralApplication,
-  enterGenAppUploadRelatedEvidence,
 } from '@data/page-data-figma/page-data-caseManagement-figma';
 import { caseInfo } from '../createCaseAPI.action';
 import { CaseManagementCommonUtils } from './caseManagementUtils.action';
@@ -40,8 +38,7 @@ export class CaseManagementAction implements IAction {
       ['confirmIfCourtHearingInNext14Days', () => this.confirmIfCourtHearingInNext14Days(fieldName as actionRecord)],
       ['enterApplicationFeeDetails', () => this.enterApplicationFeeDetails(fieldName as actionRecord)],
       ['enterApplicationConsentAndNotice', () => this.enterApplicationConsentAndNotice(fieldName as actionRecord)],
-      ['uploadGenAppsFile', () => this.uploadGenAppsFile(fieldName as actionRecord)],
-      ['uploadGenAppsRelatedEvidence',() => this.uploadGenAppsRelatedEvidence(fieldName as actionRecord)],
+      ['uploadRelativeEvidence',() => this.uploadRelativeEvidence(fieldName as actionRecord)],
       ['uploadADocument',() => this.uploadADocument(page, fieldName as actionRecord)],
       ['verifyReferToJudge', () => this.verifyReferToJudge(fieldName as actionRecord)],
       ['inputErrorValidation', () => this.inputErrorValidation(page, fieldName as actionRecord)],
@@ -211,56 +208,6 @@ export class CaseManagementAction implements IAction {
     await performAction('reTryOnCallBackError', enterGenAppConsentAndNotice.continueButton, confirmApplicationConsent.nextPage as string);
   }
 
-  private async uploadGenAppsFile(uploadDocs: actionRecord): Promise<void> {
-    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
-    await performValidation('text', {
-      elementType: 'paragraph',
-      text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
-    });
-
-    if (uploadDocs.files) {
-      const files = Array.isArray(uploadDocs.files)
-        ? uploadDocs.files
-        : [uploadDocs.files];
-      for (const file of files) {
-        await performAction('uploadADocument', {
-          file: file.fileName,
-        });
-      }
-    }
-    await performAction('reTryOnCallBackError', enterGenAppUploadGeneralApplication.continueButton, uploadDocs.nextPage as string);
-  }
-
-  private async uploadGenAppsRelatedEvidence(uploadDocs: actionRecord): Promise<void> {
-    await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid});
-    await performValidation('text', {
-      elementType: 'paragraph',
-      text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
-    });
-    if (uploadDocs.files) {
-      await performAction('clickButton', enterGenAppUploadRelatedEvidence.addNewButton);
-      const files = Array.isArray(uploadDocs.files)
-        ? uploadDocs.files
-        : [uploadDocs.files];
-      for (const file of files) {
-        await performAction('uploadADocument', {
-          file: file.fileName,
-        });
-      }
-    }
-    await performAction('reTryOnCallBackError', enterGenAppUploadRelatedEvidence.continueButton, uploadDocs.nextPage as string);
-  }
-
-    private async verifyReferToJudge(referToJudgeData: actionRecord) {
-    await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid});
-    await performValidation('text', {
-      elementType: 'paragraph',
-      text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
-    });
-    await performValidation('mainHeader', enterGenAppPreferApplicationToJudge.mainHeader);
-    await performAction('reTryOnCallBackError', enterGenAppPreferApplicationToJudge.continueButton, referToJudgeData.nextPage as string);
-  }
-
   private async uploadADocument(page: Page, upload: actionRecord): Promise<void> {
     const fileInput = page.locator('input[type="file"].form-control.bottom-30');
     const filePath = path.resolve(__dirname, '../../../../data/inputFiles', upload.file as string);
@@ -284,6 +231,28 @@ export class CaseManagementAction implements IAction {
     });
     await page.waitForTimeout(timeout);
   }
+
+  private async uploadRelativeEvidence(uploadEvidence: actionRecord): Promise<void> {
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
+    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
+    if (uploadEvidence.files) {
+      await performAction('uploadFile', { files: uploadEvidence.files, label: uploadEvidence.label });
+    }
+    await performAction('reTryOnCallBackError', enterGenAppPreferApplicationToJudge.continueButton, uploadEvidence.nextPage as string);
+  }
+
+    private async verifyReferToJudge(referToJudgeData: actionRecord) {
+    await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid});
+    await performValidation('text', {
+      elementType: 'paragraph',
+      text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
+    });
+    await performValidation('mainHeader', enterGenAppPreferApplicationToJudge.mainHeader);
+    await performAction('reTryOnCallBackError', enterGenAppPreferApplicationToJudge.continueButton, referToJudgeData.nextPage as string);
+  }
+
+
+
 
 
   private async inputErrorValidation(page: Page, validationArr: actionRecord) {
