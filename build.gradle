@@ -438,7 +438,7 @@ dependencies {
   testImplementation group: 'com.auth0', name: 'java-jwt', version: '4.6.0'
   testImplementation group: 'com.github.tomakehurst', name: 'wiremock-jre8-standalone', version: '2.35.2'
 
-  implementation(group: 'com.github.hmcts', name: 'befta-fw', version: '9.2.7') {
+  implementation(group: 'com.github.hmcts', name: 'befta-fw', version: '9.2.8') {
     exclude group: 'org.apache.commons', module: 'commons-compress'
     exclude group: 'com.google.guava', module: 'guava'
     exclude group: 'org.apache.poi', module: 'poi-ooxml'
