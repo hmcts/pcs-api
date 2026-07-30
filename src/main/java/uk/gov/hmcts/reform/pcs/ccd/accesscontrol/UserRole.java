@@ -41,9 +41,12 @@ public enum UserRole implements HasRole {
     HEARING_CENTRE_ADMIN("hearing-centre-admin", Permission.CRU, RAS),
     WLU_TEAM_LEADER("wlu-team-leader", Permission.CRU, RAS, AccessProfile.WLU_ADMIN),
     WLU_ADMIN("wlu-admin", Permission.CRU, RAS),
-    FEE_PAID_JUDGE("fee-paid-judge", Set.of(R), RAS),
-    LEADERSHIP_JUDGE("leadership-judge", Set.of(R), RAS),
-    CIRCUIT_JUDGE("circuit-judge", Set.of(R), RAS),
+    // Judicial office holders hold the generic judge role alongside their specialisation.
+    // Mapping each specialisation to its own access profile gives such a user two profiles,
+    // and CCD then returns every role-scoped tab twice.
+    FEE_PAID_JUDGE("fee-paid-judge", Set.of(R), RAS, AccessProfile.JUDGE),
+    LEADERSHIP_JUDGE("leadership-judge", Set.of(R), RAS, AccessProfile.JUDGE),
+    CIRCUIT_JUDGE("circuit-judge", Set.of(R), RAS, AccessProfile.JUDGE),
     JUDGE("judge", Set.of(R), RAS),
     SYSTEM_USER("pcs-system-update", Permission.CRU, IDAM);
 
