@@ -4,7 +4,7 @@ export const enterGenAppUploadGeneralApplication = {
   continueButton: `Continue`,
   previousButton: `Previous`,
   cancelLink: `Cancel`,
-  uploadDocHiddenOption:[`legalAidCertificate.pdf`,`possessionNotice.pdf`,`certificateOfService.pdf`,`GenApps.docx`],
+  uploadDocHiddenOption:[`legalAidCertificate.pdf`,`possessionNotice.pdf`,`certificateOfService.pdf`,`GenApp.pdf`],
   errorValidation: `YES`,
   thereIsProbErrorMessageHeader: `There is a problem`,
   errorValidationType: { one: `textField`, two: `radioOptions`, three: `checkBox`, four: `dropDown`, five: `dateField`, six: `dateRadioOption`, seven: `moneyField`,eight: 'uploadADocument' },
