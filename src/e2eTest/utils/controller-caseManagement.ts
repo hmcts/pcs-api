@@ -74,6 +74,10 @@ function captureDataForCYA(action: string, fieldName?: actionData | actionRecord
     captureDataForCYAPage = true;
   }
 
+  if(action.includes('errorValidation')){
+    captureDataForCYAPage = false;
+  }
+
   if (captureDataForCYAPage && ['clickRadioButton', 'inputText', 'check', 'select', 'uploadFile', 'uploadADocument', 'inputDate'].includes(action)) {
     cyaStore.captureAnswer(action, fieldName, value);
   }
