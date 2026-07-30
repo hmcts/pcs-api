@@ -465,11 +465,30 @@ public class PCSCase {
     )
     private VerticalYesNo wantToUploadDocuments;
 
+    /**
+     * Additional documents uploaded for the case.
+     *
+     * @deprecated Replaced by {@link #additionalDocumentsEngland} or {@link #additionalDocumentsWales}
+     *     depending on LegislativeCountry.
+     */
+    @Deprecated
     @CCD(
         label = "Add document",
         hint = "Upload a document to the system"
     )
     private List<ListValue<AdditionalDocument>> additionalDocuments;
+
+    @CCD(
+        label = "Add document",
+        hint = "Upload a document to the system"
+    )
+    private List<ListValue<AdditionalDocumentEngland>> additionalDocumentsEngland;
+
+    @CCD(
+        label = "Add document",
+        hint = "Upload a document to the system"
+    )
+    private List<ListValue<AdditionalDocumentWales>> additionalDocumentsWales;
 
     @CCD
     @JsonUnwrapped(prefix = "walesDocs_")

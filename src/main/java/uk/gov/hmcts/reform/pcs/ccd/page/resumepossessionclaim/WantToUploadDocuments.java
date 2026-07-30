@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
+import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.util.Optional;
 
@@ -42,12 +43,23 @@ public class WantToUploadDocuments implements CcdPageConfiguration {
     }
 
     private void setAdditionalDocumentsFromDraft(long caseReference, PCSCase caseData) {
-        Optional<PCSCase> draftCaseData =
-                draftCaseDataService.getUnsubmittedCaseData(caseReference, EventId.resumePossessionClaim);
+        Optional<PCSCase> draftCaseData = draftCaseDataService.getUnsubmittedCaseData(
+            caseReference,
+            EventId.resumePossessionClaim
+        );
 
-        if (draftCaseData.isPresent() && draftCaseData.get().getAdditionalDocuments() != null) {
-            caseData.setAdditionalDocuments(draftCaseData.get().getAdditionalDocuments());
+        if (draftCaseData.isEmpty()) {
+            return;
+        }
+
+        PCSCase draftCase = draftCaseData.get();
+
+        if (caseData.getLegislativeCountry() == LegislativeCountry.ENGLAND) {
+            caseData.setAdditionalDocumentsEngland(draftCase.getAdditionalDocumentsEngland());
+        }
+
+        if (caseData.getLegislativeCountry() == LegislativeCountry.WALES) {
+            caseData.setAdditionalDocumentsWales(draftCase.getAdditionalDocumentsWales());
         }
     }
-
 }

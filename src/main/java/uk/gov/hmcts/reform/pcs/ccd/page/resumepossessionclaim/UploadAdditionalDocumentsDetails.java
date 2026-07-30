@@ -3,17 +3,13 @@ package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
-import uk.gov.hmcts.ccd.sdk.api.HasLabel;
-import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
-import uk.gov.hmcts.ccd.sdk.type.DynamicList;
-import uk.gov.hmcts.ccd.sdk.type.DynamicListElement;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
-import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocument;
-import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocumentTypeEngland;
-import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocumentTypeWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocumentEngland;
+import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocumentWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
@@ -22,9 +18,8 @@ import uk.gov.hmcts.reform.pcs.ccd.util.StringUtils;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.UUID;
+import java.util.function.Function;
 
 @AllArgsConstructor
 @Component
@@ -55,15 +50,8 @@ public class UploadAdditionalDocumentsDetails implements CcdPageConfiguration {
                    <p class="govuk-body govuk-!-font-size-19">Give your document a name that explains what it is.</p>
                    """
             )
-            .list(PCSCase::getAdditionalDocuments)
-                .mandatory(AdditionalDocument::getDocumentType, "additionalDocuments.documentType!=\"\"")
-                .mandatory(AdditionalDocument::getDocumentTypeEngland, "additionalDocuments.documentType=\"\" AND " 
-                    + ShowConditions.ENGLAND)
-                .mandatory(AdditionalDocument::getDocumentTypeWales, "additionalDocuments.documentType=\"\" AND " 
-                    + ShowConditions.WALES)
-                .mandatory(AdditionalDocument::getDocument)
-                .mandatory(AdditionalDocument::getDescription)
-            .done()
+            .mandatory(PCSCase::getAdditionalDocumentsEngland, ShowConditions.ENGLAND)
+            .mandatory(PCSCase::getAdditionalDocumentsWales, ShowConditions.WALES)
             .label("uploadAdditionalDocuments-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 
@@ -71,9 +59,7 @@ public class UploadAdditionalDocumentsDetails implements CcdPageConfiguration {
                                                                   CaseDetails<PCSCase, State> detailsBefore) {
         PCSCase caseData = details.getData();
 
-        copyDocumentType(caseData);
-
-        List<String> errors = validateDocumentDescription(caseData.getAdditionalDocuments(), DESCRIPTION_LABEL);
+        List<String> errors = validateDocumentDescription(caseData, DESCRIPTION_LABEL);
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .errorMessageOverride(StringUtils.joinIfNotEmpty("\n", errors))
@@ -82,81 +68,47 @@ public class UploadAdditionalDocumentsDetails implements CcdPageConfiguration {
     }
 
     private List<String> validateDocumentDescription(
-        List<ListValue<AdditionalDocument>> additionalDocuments,
+        PCSCase caseData,
         String sectionLabel) {
 
+        if (caseData.getLegislativeCountry() == LegislativeCountry.ENGLAND) {
+            return validateDocumentDescriptions(
+                caseData.getAdditionalDocumentsEngland(),
+                AdditionalDocumentEngland::getDescription,
+                sectionLabel
+            );
+        }
+
+        if (caseData.getLegislativeCountry() == LegislativeCountry.WALES) {
+            return validateDocumentDescriptions(
+                caseData.getAdditionalDocumentsWales(),
+                AdditionalDocumentWales::getDescription,
+                sectionLabel
+            );
+        }
+
+        return List.of();
+    }
+
+    private <T> List<String> validateDocumentDescriptions(
+        List<ListValue<T>> additionalDocuments,
+        Function<T, String> descriptionExtractor,
+        String sectionLabel
+    ) {
         List<String> validationErrors = new ArrayList<>();
 
+        if (additionalDocuments == null) {
+            return validationErrors;
+        }
+
         for (int i = 0; i < additionalDocuments.size(); i++) {
-            String docDescription = additionalDocuments.get(i).getValue().getDescription();
+            String docDescription = descriptionExtractor.apply(additionalDocuments.get(i).getValue());
             String sectionHint = "Additional document %d".formatted(i + 1) + "'s " + sectionLabel;
             validationErrors.addAll(textAreaValidationService.validateSingleTextArea(
                 docDescription, sectionHint, TextAreaValidationService.EXTRA_SHORT_TEXT_LIMIT)
             );
         }
+
         return validationErrors;
-    }
-
-    public void copyDocumentType(PCSCase caseData) {
-        if (caseData.getAdditionalDocuments() == null) {
-            return;
-        }
-
-        List<DynamicListElement> documentTypes = getDocumentTypes(caseData);
-
-        for (ListValue<AdditionalDocument> additionalDocumentListValue : caseData.getAdditionalDocuments()) {
-            AdditionalDocument additionalDocument = additionalDocumentListValue.getValue();
-            if (additionalDocument == null || additionalDocument.getDocumentType() != null) {
-                continue;
-            }
-
-            if (caseData.getLegislativeCountry() == LegislativeCountry.WALES) {
-                AdditionalDocumentTypeWales walesType = additionalDocument.getDocumentTypeWales();
-                if (walesType != null) {
-                    additionalDocument.setDocumentType(
-                        createDynamicListForDocumentType(walesType.getLabel(), documentTypes)
-                    );
-                }
-            } else {
-                AdditionalDocumentTypeEngland englandType = additionalDocument.getDocumentTypeEngland();
-                if (englandType != null) {
-                    additionalDocument.setDocumentType(
-                        createDynamicListForDocumentType(englandType.getLabel(), documentTypes)
-                    );
-                }
-            }
-        }
-    }
-
-    private List<DynamicListElement> getDocumentTypes(PCSCase caseData) {
-        ListValue<AdditionalDocument> firstAdditionalDocument = caseData.getAdditionalDocuments().isEmpty()
-            ? null
-            : caseData.getAdditionalDocuments().getFirst();
-
-        if (firstAdditionalDocument != null
-            && firstAdditionalDocument.getValue() != null
-            && firstAdditionalDocument.getValue().getDocumentType() != null
-            && firstAdditionalDocument.getValue().getDocumentType().getListItems() != null) {
-            return firstAdditionalDocument.getValue().getDocumentType().getListItems();
-        }
-
-        return caseData.getLegislativeCountry() == LegislativeCountry.WALES
-            ? createDocumentTypeItems(AdditionalDocumentTypeWales.values())
-            : createDocumentTypeItems(AdditionalDocumentTypeEngland.values());
-    }
-
-    private List<DynamicListElement> createDocumentTypeItems(HasLabel[] documentTypes) {
-        return Arrays.stream(documentTypes)
-            .map(documentType -> new DynamicListElement(UUID.randomUUID(), documentType.getLabel()))
-            .toList();
-    }
-
-    private DynamicList createDynamicListForDocumentType(String label, List<DynamicListElement> documentTypes) {
-        DynamicListElement selectedItem = documentTypes.stream()
-            .filter(item -> label.equals(item.getLabel()))
-            .findFirst()
-            .orElseThrow(() -> new IllegalArgumentException("No document type found for label: " + label));
-
-        return new DynamicList(selectedItem, documentTypes);
     }
 }
