@@ -11,10 +11,12 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.AddPartyDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.ManagePartyOptions;
+import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.UpdatePartyDetails;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.caseworker.manageparty.AddPartyService;
+import uk.gov.hmcts.reform.pcs.ccd.service.caseworker.manageparty.UpdatePartyService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 
 import java.util.UUID;
@@ -28,12 +30,23 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
     private final PcsCaseService pcsCaseService;
     private final AddressFormatter addressFormatter;
     private final AddPartyService addPartyService;
+    private final UpdatePartyService updatePartyService;
 
     @Override
     public SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
 
         PCSCase caseData = eventPayload.caseData();
         AddPartyDetails partyDetails = caseData.getAddPartyDetails();
+
+        if (partyDetails.getManagePartyOptions() == ManagePartyOptions.UPDATE) {
+            UpdatePartyDetails updatePartyDetails = caseData.getUpdatePartyDetails();
+            updatePartyService.updateParty(updatePartyDetails, eventPayload.caseReference());
+
+            return SubmitResponse.<State>builder()
+                .confirmationBody(buildUpdateConfirmationMarkdown(caseData, eventPayload.caseReference()))
+                .build();
+        }
+
         if (partyDetails.getManagePartyOptions() != ManagePartyOptions.ADD_PARTY) {
             return SubmitResponse.<State>builder()
                 .build();
@@ -46,11 +59,11 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
         addPartyService.addParty(partyDetails, pcsCaseEntity, mainClaim, actingForPartyId);
 
         return SubmitResponse.<State>builder()
-            .confirmationBody(buildConfirmationPageForParty(caseData, eventPayload.caseReference()))
+            .confirmationBody(buildAddConfirmationMarkdown(caseData, eventPayload.caseReference()))
             .build();
     }
 
-    private String buildConfirmationPageForParty(PCSCase pcsCase, long caseReference) {
+    private String buildAddConfirmationMarkdown(PCSCase pcsCase, long caseReference) {
         AddPartyDetails partyDetails = pcsCase.getAddPartyDetails();
 
         String partyDescription = switch (partyDetails.getAddPartyType()) {
@@ -63,20 +76,35 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
         };
 
         return buildConfirmationMarkdown(
-            partyDescription, caseReference, pcsCase.getPropertyAddress(), pcsCase.getCaseNameHmctsInternal());
+            partyDescription + " added", caseReference,
+            pcsCase.getPropertyAddress(), pcsCase.getCaseNameHmctsInternal());
+    }
+
+    private String buildUpdateConfirmationMarkdown(PCSCase pcsCase, long caseReference) {
+        UpdatePartyDetails updatePartyDetails = pcsCase.getUpdatePartyDetails();
+
+        String partyDescription = switch (updatePartyDetails.getPartyType()) {
+            case CLAIMANT -> "Claimant";
+            case DEFENDANT -> "Defendant";
+            case LITIGATION_FRIEND -> "Litigation friend";
+        };
+
+        return buildConfirmationMarkdown(
+            partyDescription + " details updated", caseReference,
+            pcsCase.getPropertyAddress(), pcsCase.getCaseNameHmctsInternal());
     }
 
     private String joinFirstAndLastName(String firstName, String lastName) {
         return firstName + " " + lastName;
     }
 
-    private String buildConfirmationMarkdown(String partyDescription, long caseReference, AddressUK address,
+    private String buildConfirmationMarkdown(String title, long caseReference, AddressUK address,
                                               String caseName) {
         String formatAddress = addressFormatter.formatShortAddress(address, COMMA_DELIMITER);
         return """
             ---
             <div class="govuk-panel govuk-panel--confirmation govuk-!-padding-top-3 govuk-!-padding-bottom-3">
-            <span class="govuk-panel__title govuk-!-font-size-36">%s added</span><br>
+            <span class="govuk-panel__title govuk-!-font-size-36">%s</span><br>
             <span class="govuk-panel__body">Case number: %s</span><br>
             <span class="govuk-panel__body">%s</span>
             <span class="govuk-panel__body">%s</span>
@@ -84,7 +112,7 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
 
             <h3 class="govuk-heading-s">What happens next</h3>
             <p class="govuk-body govuk-!-margin-bottom-6">The case record will be updated.</p>
-            """.formatted(partyDescription, caseReference, formatAddress, caseName);
+            """.formatted(title, caseReference, formatAddress, caseName);
     }
 
 }

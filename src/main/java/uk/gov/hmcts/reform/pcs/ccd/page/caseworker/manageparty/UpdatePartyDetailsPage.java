@@ -24,7 +24,6 @@ public class UpdatePartyDetailsPage implements CcdPageConfiguration {
             .pageLabel("Update party's details")
             .label("updatePartyDetails-separator", "---")
             .complex(PCSCase::getUpdatePartyDetails)
-                .readonly(UpdatePartyDetails::getPartyType, ShowConditions.NEVER_SHOW, true)
                 .optional(UpdatePartyDetails::getDateOfBirth, DEFENDANT_TYPE)
                 .complex(UpdatePartyDetails::getAddress)
                     .mandatory(AddressUK::getAddressLine1)
