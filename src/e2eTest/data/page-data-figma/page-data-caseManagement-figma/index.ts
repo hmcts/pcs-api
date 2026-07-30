@@ -8,5 +8,5 @@ export * from './enterGenApphearingDate.page.data';
 export * from './enterGenAppapplicationFee.page.data';
 export * from './enterGenAppconsentAndNotice.page.data';
 export * from './uploadADocument.page.data';
-export * from './checkYourAnswersUploadADcument.page.data';
+export * from './checkYourAnswersUploadADocument.page.data';
 export * from './confirmUpload.page.data';
