@@ -67,7 +67,7 @@ public class EnterGenAppRequest {
     private VerticalYesNo withoutNotice;
 
     @CCD(
-        label = "Add document",
+        label = "Upload related evidence",
         hint = "Upload a document to the system",
         searchable = false
     )
