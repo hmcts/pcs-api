@@ -165,6 +165,11 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
             .field(PCSCase::getCaseFlags, "flagLauncherInternal!=\"\"")
             .field(PCSCase::getParties, "flagLauncherInternal!=\"\"", "#ARGUMENT(Flags)");
 
+        builder.tab("supportFlags", "Support")
+            .forRoles(PARTY_VISIBLE_TAB_ROLES)
+            .field(PCSCase::getFlagLauncherExternal, null, "#ARGUMENT(READ,EXTERNAL)")
+            .field(PCSCase::getParties, "flagLauncherExternal!=\"\"", "#ARGUMENT(Flags)");
+
         if (shutterService) {
             builder.shutterService();
         }

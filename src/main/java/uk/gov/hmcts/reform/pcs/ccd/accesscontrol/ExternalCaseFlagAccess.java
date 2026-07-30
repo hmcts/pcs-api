@@ -9,6 +9,7 @@ import uk.gov.hmcts.ccd.sdk.api.Permission;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CTSC_ADMIN;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.HEARING_CENTRE_ADMIN;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.JUDGE;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.PCS_SOLICITOR;
 
 public class ExternalCaseFlagAccess implements HasAccessControl {
 
@@ -17,7 +18,8 @@ public class ExternalCaseFlagAccess implements HasAccessControl {
         SetMultimap<HasRole, Permission> grants = HashMultimap.create();
         grants.putAll(CTSC_ADMIN, Permission.CRU);
         grants.putAll(HEARING_CENTRE_ADMIN, Permission.CRU);
-        grants.put(JUDGE, Permission.R);
+        grants.putAll(JUDGE, Permission.CRU);
+        grants.putAll(PCS_SOLICITOR, Permission.CRU);
         return grants;
     }
 }
