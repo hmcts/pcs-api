@@ -87,6 +87,8 @@ public class PartyService {
             return "Claimant %d".formatted(applicantClaimParty.getRank());
         } else if (applicantClaimParty.getRole() == PartyRole.DEFENDANT) {
             return "Defendant %d".formatted(applicantClaimParty.getRank());
+        } else if (applicantClaimParty.getRole() == PartyRole.LITIGATION_FRIEND) {
+            return "Litigation friend %d".formatted(applicantClaimParty.getRank());
         } else {
             return null;
         }

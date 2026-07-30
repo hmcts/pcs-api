@@ -73,15 +73,21 @@ public class ManagePartyOptionsPage implements CcdPageConfiguration {
 
         PartyRole role = partyService.getPartyRole(partyEntity);
 
-        updatePartyDetails.setPartyType(role == PartyRole.DEFENDANT ? PartyType.DEFENDANT : PartyType.CLAIMANT);
-        updatePartyDetails.setAddress(clearStaleAddress(partyEntity.getAddress()));
+        PartyType partyType = switch (role) {
+            case CLAIMANT -> PartyType.CLAIMANT;
+            case DEFENDANT -> PartyType.DEFENDANT;
+            case LITIGATION_FRIEND -> PartyType.LITIGATION_FRIEND;
+            default -> null;
+        };
+        updatePartyDetails.setPartyType(partyType);
+        updatePartyDetails.setAddress(clearPreviousAddress(partyEntity.getAddress()));
         updatePartyDetails.setEmail(blankIfNull(partyEntity.getEmailAddress()));
         updatePartyDetails.setPhoneNumber(blankIfNull(partyEntity.getPhoneNumber()));
         updatePartyDetails.setDateOfBirth(partyEntity.getDateOfBirth());
         updatePartyDetails.setPreviouslySelectedPartyId(partyId.toString());
     }
 
-    private AddressUK clearStaleAddress(AddressEntity addressEntity) {
+    private AddressUK clearPreviousAddress(AddressEntity addressEntity) {
         AddressUK address = addressEntity != null
             ? addressMapper.toAddressUK(addressEntity)
             : AddressUK.builder().build();
