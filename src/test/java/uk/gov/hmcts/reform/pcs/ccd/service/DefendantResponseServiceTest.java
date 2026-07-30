@@ -300,7 +300,6 @@ class DefendantResponseServiceTest {
     @MethodSource("landlordRegisteredPersistenceScenarios")
     void shouldPersistExemptLandlordToLandlordRegisteredColumn(YesNoNotSure exemptLandlord) {
         when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
-        stubPartyLookup();
         stubClaimLookup();
 
         DefendantResponses responses = DefendantResponses.builder()
@@ -311,7 +310,7 @@ class DefendantResponseServiceTest {
             .defendantResponses(responses)
             .build();
 
-        underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse);
+        underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse, partyEntity, JOURNEY_TYPE);
 
         verify(defendantResponseRepository).save(responseCaptor.capture());
         DefendantResponseEntity savedResponse = responseCaptor.getValue();
