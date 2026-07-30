@@ -209,8 +209,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
     }
 
     private void setGroupAccessFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
-        // Only the case's own organisation decides group access. Deriving it from a party would
-        // mean an access-control decision depended on iteration order over a Set of parties.
+        // Group access follows the case, never a party.
         String organisationId = pcsCaseEntity.getOrganisationId();
 
         if (isBlank(organisationId)) {

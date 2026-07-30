@@ -24,6 +24,9 @@ import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import java.util.List;
 import java.util.Objects;
 
+import static org.apache.commons.lang3.StringUtils.isBlank;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
+
 @Service
 @Slf4j
 @AllArgsConstructor
@@ -52,10 +55,24 @@ public class PcsCaseService {
         pcsCaseEntity.setCaseReference(caseReference);
         pcsCaseEntity.setPropertyAddress(addressMapper.toAddressEntityAndNormalise(propertyAddress));
         pcsCaseEntity.setLegislativeCountry(legislativeCountry);
-        // Owning organisation is fixed at creation: group access must not depend on who reads the case.
-        pcsCaseEntity.setOrganisationId(organisationService.getOrganisationIdForCurrentUser());
+        // Fixed at creation, so group access can't shift with whoever reads the case.
+        String organisationId = organisationService.getOrganisationIdForCurrentUser();
+        pcsCaseEntity.setOrganisationId(organisationId);
+
+        if (isBlank(organisationId)) {
+            log.warn("No owning organisation resolved for case {}; group access not applied", caseReference);
+        }
 
         return pcsCaseRepository.save(pcsCaseEntity);
+    }
+
+    // Second chance, for cases created while the reference data lookup was down.
+    private void backfillOwningOrganisation(PcsCaseEntity pcsCaseEntity, String organisationIdForCurrentUser) {
+        if (isBlank(pcsCaseEntity.getOrganisationId()) && isNotBlank(organisationIdForCurrentUser)) {
+            log.info("Recording owning organisation on case {} at claim submission",
+                pcsCaseEntity.getCaseReference());
+            pcsCaseEntity.setOrganisationId(organisationIdForCurrentUser);
+        }
     }
 
     public void createMainClaimOnCase(long caseReference, PCSCase pcsCase, String organisationIdForCurrentUser) {
@@ -67,6 +84,7 @@ public class PcsCaseService {
         claimEntity.addClaimDocuments(documentEntities);
         pcsCaseEntity.addClaim(claimEntity);
         partyService.createAllParties(pcsCase, pcsCaseEntity, claimEntity, organisationIdForCurrentUser);
+        backfillOwningOrganisation(pcsCaseEntity, organisationIdForCurrentUser);
         pcsCaseEntity.setTenancyLicence(tenancyLicenceService.createTenancyLicenceEntity(pcsCase));
         pcsCaseEntity.setRegionId(pcsCase.getRegionId());
         pcsCaseEntity.setBaseLocation(pcsCase.getCaseManagementLocationNumber());

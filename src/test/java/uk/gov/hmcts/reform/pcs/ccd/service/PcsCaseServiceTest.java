@@ -154,6 +154,34 @@ class PcsCaseServiceTest {
     }
 
     @Test
+    void shouldRecordOwningOrganisationAtClaimSubmissionWhenMissingFromCreation() {
+        // Given: reference data was unavailable when the case was created
+        PcsCaseEntity pcsCaseEntity = stubFindCase();
+        stubClaimCreation();
+        when(pcsCaseEntity.getOrganisationId()).thenReturn(null);
+
+        // When
+        underTest.createMainClaimOnCase(CASE_REFERENCE, PCSCase.builder().build(), ORG_ID);
+
+        // Then
+        verify(pcsCaseEntity).setOrganisationId(ORG_ID);
+    }
+
+    @Test
+    void shouldNotOverwriteAnOwningOrganisationAlreadyOnTheCase() {
+        // Given
+        PcsCaseEntity pcsCaseEntity = stubFindCase();
+        stubClaimCreation();
+        when(pcsCaseEntity.getOrganisationId()).thenReturn("ORIGINAL_ORG");
+
+        // When
+        underTest.createMainClaimOnCase(CASE_REFERENCE, PCSCase.builder().build(), ORG_ID);
+
+        // Then
+        verify(pcsCaseEntity, never()).setOrganisationId(any());
+    }
+
+    @Test
     void shouldLoadCaseFromRepository() {
         // Given
         PcsCaseEntity expectedPcsCaseEntity = stubFindCase();
