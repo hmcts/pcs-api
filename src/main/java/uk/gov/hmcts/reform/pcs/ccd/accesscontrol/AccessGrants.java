@@ -16,6 +16,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.HEARING_CENTRE_
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.JUDGE;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.LEADERSHIP_JUDGE;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.PCS_SOLICITOR;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.PROFESSIONAL_USER;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.WLU_ADMIN;
 
 final class AccessGrants {
@@ -24,6 +25,7 @@ final class AccessGrants {
         CITIZEN,
         DEFENDANT,
         PCS_SOLICITOR,
+        PROFESSIONAL_USER,
         JUDGE,
         FEE_PAID_JUDGE,
         CIRCUIT_JUDGE,
