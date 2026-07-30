@@ -123,7 +123,7 @@ withPipeline(type, product, component) {
     }
     onMaster{
       if(env.ENVIRONMENT == "prod") {
-        env.SHUTTER_SERVICE = false
+        env.SHUTTER_SERVICE = true
         env.DATA_STORE_URL_BASE="http://ccd-data-store-api-prod.service.core-compute-prod.internal"
         env.CASE_API_URL = "https://pcs-api.prod.platform.hmcts.net"
         env.CASE_TYPE_SUFFIX=""
