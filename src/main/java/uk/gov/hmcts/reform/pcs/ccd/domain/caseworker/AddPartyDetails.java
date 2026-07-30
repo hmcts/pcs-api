@@ -21,7 +21,7 @@ import static uk.gov.hmcts.ccd.sdk.type.FieldType.FixedRadioList;
 public class AddPartyDetails {
 
     @JsonProperty("addParty_ManagePartyOptions")
-    @CCD(label = "What change do you want to make ?",
+    @CCD(label = "What change do you want to make?",
         hint = "You must have judicial approval to add or remove a party",
         typeOverride = FixedRadioList,
         typeParameterOverride = "ManagePartyOptions"
