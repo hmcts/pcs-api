@@ -30,6 +30,7 @@ services:
       S2S_URL: "http://host.docker.internal:8489"
       WA_TASK_MANAGEMENT_API_URL: "http://host.docker.internal:8087"
       WA_SYSTEM_USERNAME: "wa-system-user@localhost@hmcts.net"
+      WA_S2S_AUTHORIZED_SERVICES: "wa_task_monitor,wa_task_management_api,pcs_api"
       POSTGRES_HOST: "host.docker.internal"
       POSTGRES_PORT: 6432
       POSTGRES_USERNAME: "postgres"
