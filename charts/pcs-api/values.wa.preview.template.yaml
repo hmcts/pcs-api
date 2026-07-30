@@ -25,8 +25,6 @@ global:
 
 wa:
   enabled: true
-  eventHandler:
-    enabled: false
 
   camunda-bpm:
     java:
