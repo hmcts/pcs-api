@@ -18,6 +18,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
@@ -41,6 +42,7 @@ import static jakarta.persistence.FetchType.LAZY;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Slf4j
 public class LegalRepresentativeOrganisationEntity {
 
     @Id
@@ -92,6 +94,10 @@ public class LegalRepresentativeOrganisationEntity {
                 .get();
             partyLegalRepresentativeOrganisationEntity.setActive(YesOrNo.YES);
             partyLegalRepresentativeOrganisationEntity.setStartDate(Instant.now());
+            return;
+        } else if (existingEntity.isPresent() && YesOrNo.YES.equals(existingEntity.get().getActive())) {
+            log.warn("Party [{}] is already linked to Legal Representative Organisation [{}] and is active.",
+                     party.getId(), this.getId());
             return;
         }
 
