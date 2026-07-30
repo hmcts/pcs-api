@@ -8,11 +8,15 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
+import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.AddPartyDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.PartyType;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
+import uk.gov.hmcts.reform.pcs.ccd.service.AddressValidator;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
+import uk.gov.hmcts.reform.pcs.ccd.util.PostcodeValidator;
 
 import java.util.stream.Stream;
 
@@ -23,16 +27,24 @@ import static uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService.EXTR
 @ExtendWith(MockitoExtension.class)
 class AddPartyDetailsPageTest extends BasePageTest {
 
+    private static final AddressUK VALID_ADDRESS = AddressUK.builder()
+        .addressLine1("1 Test Street")
+        .postTown("London")
+        .postCode("SW1A1AA")
+        .build();
+
     @BeforeEach
     void setUp() {
         TextAreaValidationService textAreaValidationService = new TextAreaValidationService();
-        setPageUnderTest(new AddPartyDetailsPage(textAreaValidationService));
+        AddressValidator addressValidator = new AddressValidator(new PostcodeValidator());
+        setPageUnderTest(new AddPartyDetailsPage(textAreaValidationService, addressValidator));
     }
 
     @Test
     void shouldAcceptFieldsWithinLimit() {
         // Given
         AddPartyDetails addPartyDetails = AddPartyDetails.builder()
+            .addPartyType(PartyType.CLAIMANT)
             .claimantOrganisationName("Acme Ltd")
             .claimantEmail("jane@test.com")
             .claimantPhoneNumber("07000000000")
@@ -41,6 +53,7 @@ class AddPartyDetailsPageTest extends BasePageTest {
             .litigationFriendOrganisationName("Litigation Friends Ltd")
             .litigationFriendEmail("bob@test.com")
             .litigationFriendPhoneNumber("07000000002")
+            .claimantAddress(VALID_ADDRESS)
             .build();
         PCSCase caseData = PCSCase.builder().addPartyDetails(addPartyDetails).build();
 
@@ -71,15 +84,89 @@ class AddPartyDetailsPageTest extends BasePageTest {
 
         return Stream.of(
             Arguments.of(
-                AddPartyDetails.builder().claimantOrganisationName(tooLong).build(), "Organisation name"),
-            Arguments.of(AddPartyDetails.builder().claimantEmail(tooLong).build(), "Email address"),
-            Arguments.of(AddPartyDetails.builder().claimantPhoneNumber(tooLong).build(), "Phone number"),
-            Arguments.of(AddPartyDetails.builder().defendantEmail(tooLong).build(), "Email address"),
-            Arguments.of(AddPartyDetails.builder().defendantPhoneNumber(tooLong).build(), "Phone number"),
+                AddPartyDetails.builder()
+                    .addPartyType(PartyType.CLAIMANT)
+                    .claimantOrganisationName(tooLong)
+                    .claimantAddress(VALID_ADDRESS)
+                    .build(),
+                "Organisation name"),
             Arguments.of(
-                AddPartyDetails.builder().litigationFriendOrganisationName(tooLong).build(), "Organisation name"),
-            Arguments.of(AddPartyDetails.builder().litigationFriendEmail(tooLong).build(), "Email address"),
-            Arguments.of(AddPartyDetails.builder().litigationFriendPhoneNumber(tooLong).build(), "Phone number")
+                AddPartyDetails.builder()
+                    .addPartyType(PartyType.CLAIMANT)
+                    .claimantEmail(tooLong)
+                    .claimantAddress(VALID_ADDRESS)
+                    .build(),
+                "Email address"),
+            Arguments.of(
+                AddPartyDetails.builder()
+                    .addPartyType(PartyType.CLAIMANT)
+                    .claimantPhoneNumber(tooLong)
+                    .claimantAddress(VALID_ADDRESS)
+                    .build(),
+                "Phone number"),
+            Arguments.of(
+                AddPartyDetails.builder()
+                    .addPartyType(PartyType.DEFENDANT)
+                    .defendantEmail(tooLong)
+                    .defendantAddress(VALID_ADDRESS)
+                    .build(),
+                "Email address"),
+            Arguments.of(
+                AddPartyDetails.builder()
+                    .addPartyType(PartyType.DEFENDANT)
+                    .defendantPhoneNumber(tooLong)
+                    .defendantAddress(VALID_ADDRESS)
+                    .build(),
+                "Phone number"),
+            Arguments.of(
+                AddPartyDetails.builder()
+                    .addPartyType(PartyType.LITIGATION_FRIEND)
+                    .litigationFriendOrganisationName(tooLong)
+                    .litigationFriendAddress(VALID_ADDRESS)
+                    .build(),
+                "Organisation name"),
+            Arguments.of(
+                AddPartyDetails.builder()
+                    .addPartyType(PartyType.LITIGATION_FRIEND)
+                    .litigationFriendEmail(tooLong)
+                    .litigationFriendAddress(VALID_ADDRESS)
+                    .build(),
+                "Email address"),
+            Arguments.of(
+                AddPartyDetails.builder()
+                    .addPartyType(PartyType.LITIGATION_FRIEND)
+                    .litigationFriendPhoneNumber(tooLong)
+                    .litigationFriendAddress(VALID_ADDRESS)
+                    .build(),
+                "Phone number")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("addressScenarios")
+    void shouldValidateAddressForSelectedPartyType(PartyType partyType, AddPartyDetails addPartyDetails) {
+        // Given
+        addPartyDetails.setAddPartyType(partyType);
+        PCSCase caseData = PCSCase.builder().addPartyDetails(addPartyDetails).build();
+
+        // When
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+        // Then
+        assertThat(response.getErrorMessageOverride()).contains("Town or City is required");
+        assertThat(response.getErrorMessageOverride()).contains("Postcode is required");
+    }
+
+    private static Stream<Arguments> addressScenarios() {
+        AddressUK addressMissingTownAndPostcode = AddressUK.builder().addressLine1("1 Test Street").build();
+
+        return Stream.of(
+            Arguments.of(PartyType.CLAIMANT,
+                AddPartyDetails.builder().claimantAddress(addressMissingTownAndPostcode).build()),
+            Arguments.of(PartyType.DEFENDANT,
+                AddPartyDetails.builder().defendantAddress(addressMissingTownAndPostcode).build()),
+            Arguments.of(PartyType.LITIGATION_FRIEND,
+                AddPartyDetails.builder().litigationFriendAddress(addressMissingTownAndPostcode).build())
         );
     }
 }

@@ -12,6 +12,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.AddPartyDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.PartyType;
+import uk.gov.hmcts.reform.pcs.ccd.service.AddressValidator;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
 import java.util.List;
@@ -24,6 +25,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService.Fiel
 public class AddPartyDetailsPage implements CcdPageConfiguration {
 
     private final TextAreaValidationService textAreaValidationService;
+    private final AddressValidator addressValidator;
 
     private static final String ORGANISATION_NAME_LABEL = "Organisation name";
     private static final String EMAIL_ADDRESS_LABEL = "Email address";
@@ -113,6 +115,13 @@ public class AddPartyDetailsPage implements CcdPageConfiguration {
             FieldValidation.of(
                 partyDetails.getLitigationFriendPhoneNumber(), PHONE_NUMBER_LABEL, EXTRA_SHORT_TEXT_LIMIT)
         );
+
+        AddressUK address = switch (partyDetails.getAddPartyType()) {
+            case CLAIMANT -> partyDetails.getClaimantAddress();
+            case DEFENDANT -> partyDetails.getDefendantAddress();
+            case LITIGATION_FRIEND -> partyDetails.getLitigationFriendAddress();
+        };
+        validationErrors.addAll(addressValidator.validateAddressFields(address));
 
         return textAreaValidationService.createValidationResponse(caseData, validationErrors);
     }
