@@ -87,6 +87,11 @@ public class ManagePartyOptionsPage implements CcdPageConfiguration {
         updatePartyDetails.setPreviouslySelectedPartyId(partyId.toString());
     }
 
+    /**
+     * Clears a stale address left over from the previously selected party's prepopulation by
+     * setting the fields to empty strings if the current party's address isn't known
+     * Setting the address field to null does not clear it.
+     */
     private AddressUK clearPreviousAddress(AddressEntity addressEntity) {
         AddressUK address = addressEntity != null
             ? addressMapper.toAddressUK(addressEntity)
