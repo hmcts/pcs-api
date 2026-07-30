@@ -28,6 +28,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import static jakarta.persistence.CascadeType.ALL;
@@ -80,8 +81,17 @@ public class LegalRepresentativeOrganisationEntity {
     private List<LegalRepresentativeEntity> legalRepresentativeList = new ArrayList<>();
 
     public void addParty(PartyEntity party) {
-        if (this.partyLegalRepresentativeOrganisationList.stream().anyMatch(e ->
-                                                                         e.getParty().getId().equals(party.getId()))) {
+        // if we have an existing inactive plroe that is inactive, then reactivate as it was previously linked
+        Optional<PartyLegalRepresentativeOrganisationEntity> existingEntity =
+            this.partyLegalRepresentativeOrganisationList
+                .stream()
+                .filter(e -> e.getParty().getId().equals(party.getId()))
+                .findFirst();
+        if (existingEntity.isPresent() && YesOrNo.NO.equals(existingEntity.get().getActive())) {
+            PartyLegalRepresentativeOrganisationEntity partyLegalRepresentativeOrganisationEntity = existingEntity
+                .get();
+            partyLegalRepresentativeOrganisationEntity.setActive(YesOrNo.YES);
+            partyLegalRepresentativeOrganisationEntity.setStartDate(Instant.now());
             return;
         }
 
