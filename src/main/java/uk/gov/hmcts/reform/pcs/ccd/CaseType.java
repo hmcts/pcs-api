@@ -148,6 +148,9 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
             "OTHER_CHARITY_PROFILE"
         );
 
+        // Def store rejects the import unless every AccessType row has a unique DisplayOrder.
+        int displayOrder = 2;
+
         for (String orgProfile : groupAccessOrgProfiles) {
             builder.accessType("prof-org-access")
                 .organisationProfileId(orgProfile)
@@ -156,7 +159,7 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
                 .display(true)
                 .description("Can manage all cases associated with this organisation")
                 .hintText("Assign to Users to enable access to all cases associated with this organisation")
-                .displayOrder(2)
+                .displayOrder(displayOrder++)
                 .liveTo("01/01/2027");
 
             builder.accessTypeRole("prof-org-access")
