@@ -57,7 +57,7 @@ class FeePaymentEntityListenerTest {
         party.setClaimParties(Set.of(claimParty));
 
         feePaymentEntity = FeePaymentEntity.builder()
-            .id(UUID.randomUUID())
+            .id(1)
             .claim(claim)
             .party(party)
             .paymentStatus(PaymentStatus.NOT_PAID)
