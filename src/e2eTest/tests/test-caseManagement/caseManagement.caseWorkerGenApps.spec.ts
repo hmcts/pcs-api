@@ -85,6 +85,7 @@ test.describe('Case management - Case Worker Enter a General application @nightl
     await performAction('reTryOnCallBackError', enterGenAppUploadGeneralApplication.continueButton, enterGenAppuploadRelatedEvidence.mainHeader);    
     await performAction('uploadRelativeEvidence',{
       label : enterGenAppuploadRelatedEvidence.uploadADocumentHiddenTextLabel,
+      files: enterGenAppuploadRelatedEvidence.uploadDocHiddenOption,
       nextPage:enterGenAppPreferApplicationToJudge.mainHeader
     })
     await performAction('verifyReferToJudge', {
