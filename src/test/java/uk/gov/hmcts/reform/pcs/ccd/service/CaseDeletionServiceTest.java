@@ -5,6 +5,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.reform.pcs.ccd.service.casedeletion.CaseDeletionService;
+import uk.gov.hmcts.reform.pcs.ccd.service.casedeletion.CcdCaseDataDeletionService;
 
 import static org.mockito.Mockito.verify;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.resumePossessionClaim;
@@ -13,7 +15,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.resumePossessionClaim;
 class CaseDeletionServiceTest {
 
     @Mock
-    private CcdCaseDataService ccdCaseDataService;
+    private CcdCaseDataDeletionService ccdCaseDataDeletionService;
     @Mock
     private DraftCaseDataService draftCaseDataService;
     @Mock
@@ -31,7 +33,7 @@ class CaseDeletionServiceTest {
         underTest.deleteCase(caseReference);
 
         // Then
-        verify(ccdCaseDataService).deleteCcdCaseData(caseReference);
+        verify(ccdCaseDataDeletionService).deleteCcdCaseData(caseReference);
         verify(draftCaseDataService).deleteUnsubmittedCaseDataBySystemUser(caseReference, resumePossessionClaim);
         verify(pcsCaseService).deleteCase(caseReference);
     }

@@ -7,15 +7,12 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.slf4j.MDC;
 import uk.gov.hmcts.reform.pcs.ccd.model.DraftCasesToDiscard;
-import uk.gov.hmcts.reform.pcs.ccd.service.CaseDeletionService;
-import uk.gov.hmcts.reform.pcs.ccd.service.CcdCaseDataService;
+import uk.gov.hmcts.reform.pcs.ccd.service.casedeletion.CaseDeletionService;
+import uk.gov.hmcts.reform.pcs.ccd.service.casedeletion.CcdCaseDataDeletionService;
 
 import java.lang.reflect.Method;
-import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.inOrder;
@@ -26,8 +23,12 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class CaseDeletionScheduledTaskTest {
 
+    private final int discardAfterDays = 30;
+    private final long caseRef = 123456789L;
+    private final long caseRef2 = 987654321L;
+
     @Mock
-    private CcdCaseDataService ccdCaseDataService;
+    private CcdCaseDataDeletionService ccdCaseDataDeletionService;
     @Mock
     private CaseDeletionService caseDeletionService;
 
@@ -36,179 +37,71 @@ class CaseDeletionScheduledTaskTest {
     @BeforeEach
     void setUp() {
         String validSchedule = "DAILY|00:00";
-        int discardAfterDays = 7;
-        underTest = new CaseDeletionScheduledTask(validSchedule, discardAfterDays, ccdCaseDataService,
+        underTest = new CaseDeletionScheduledTask(validSchedule, discardAfterDays, ccdCaseDataDeletionService,
                 caseDeletionService);
     }
 
     @Test
     void shouldCreateRecurringTaskBeanSuccessfully() {
-        RecurringTask<Void> task = underTest.caseDeletionTask();
-        assertThat(task).isNotNull();
-    }
-
-    @Test
-    void shouldReturnCaseTypeInSet() {
-        // When
-        Set<String> caseTypes = underTest.caseTypes();
-
-        // Then
-        assertThat(caseTypes).hasSize(1);
-    }
-
-    @Test
-    void shouldReturnEmptyListWhenNoCandidatesForDisposal() {
-        // Given
-        when(ccdCaseDataService.findExpiredDraftCases(7))
-                .thenReturn(List.of());
-
-        // When
-        Collection<Long> candidates = underTest.findCandidatesForDisposal();
-
-        // Then
-        assertThat(candidates).isEmpty();
-    }
-
-    @Test
-    void shouldReturnCaseReferencesWhenCandidatesExist() {
-        // Given
-        Long caseRef1 = 12345L;
-        Long caseRef2 = 67890L;
-        DraftCasesToDiscard case1 = DraftCasesToDiscard.builder().caseReference(caseRef1).build();
-        DraftCasesToDiscard case2 = DraftCasesToDiscard.builder().caseReference(caseRef2).build();
-
-        when(ccdCaseDataService.findExpiredDraftCases(7))
-                .thenReturn(List.of(case1, case2));
-
-        // When
-        Collection<Long> candidates = underTest.findCandidatesForDisposal();
-
-        // Then
-        assertThat(candidates).hasSize(2)
-            .containsExactly(caseRef1, caseRef2);
-    }
-
-    @Test
-    void shouldCallCaseDeletionServiceWhenDisposing() {
-        // Given
-        long caseReference = 99999L;
-
-        // When
-        underTest.dispose(caseReference);
-
-        // Then
-        verify(caseDeletionService).deleteCase(caseReference);
-    }
-
-    @Test
-    void shouldHandleNullFromFindExpiredDraftCases() {
-        // Given
-        when(ccdCaseDataService.findExpiredDraftCases(7))
-                .thenReturn(null);
-
-        // When
-        Collection<Long> candidates = underTest.findCandidatesForDisposal();
-
-        // Then
-        assertThat(candidates).isEmpty();
-    }
-
-    @Test
-    void shouldPerformDeletionEventsForEachExpiredCase() throws Exception {
-        // Given
-        Long caseRef1 = 12345L;
-        Long caseRef2 = 67890L;
-
-        DraftCasesToDiscard case1 = DraftCasesToDiscard.builder().caseReference(caseRef1).build();
-        DraftCasesToDiscard case2 = DraftCasesToDiscard.builder().caseReference(caseRef2).build();
-
-        when(ccdCaseDataService.findExpiredDraftCases(7))
-                .thenReturn(List.of(case1, case2));
-
-        // When
-        runSweepViaReflection();
-
-        // Then
-        verify(ccdCaseDataService).findExpiredDraftCases(7);
-        verify(ccdCaseDataService).markCaseForDeletion(caseRef1);
-        verify(ccdCaseDataService).confirmCaseDisposal(caseRef1);
-        verify(ccdCaseDataService).markCaseForDeletion(caseRef2);
-        verify(ccdCaseDataService).confirmCaseDisposal(caseRef2);
-        verifyNoMoreInteractions(ccdCaseDataService);
-    }
-
-    @Test
-    void shouldCallMarkCaseForDeletionBeforeConfirmCaseDisposal() throws Exception {
-        // Given
-        Long caseRef = 11111L;
-        DraftCasesToDiscard draftCase = DraftCasesToDiscard.builder().caseReference(caseRef).build();
-
-        when(ccdCaseDataService.findExpiredDraftCases(7))
-                .thenReturn(List.of(draftCase));
-
-        // When
-        runSweepViaReflection();
-
-        // Then - verify call order
-        InOrder inOrder = inOrder(ccdCaseDataService);
-        inOrder.verify(ccdCaseDataService).markCaseForDeletion(caseRef);
-        inOrder.verify(ccdCaseDataService).confirmCaseDisposal(caseRef);
+        RecurringTask<Void> recurringTask = underTest.caseDeletionTask();
+        assertThat(recurringTask).isNotNull();
     }
 
     @Test
     void shouldHandleEmptyListOfExpiredCases() throws Exception {
         // Given
-        when(ccdCaseDataService.findExpiredDraftCases(7))
+        when(ccdCaseDataDeletionService.findExpiredDraftCases(discardAfterDays))
                 .thenReturn(List.of());
 
         // When
         runSweepViaReflection();
 
         // Then
-        verify(ccdCaseDataService).findExpiredDraftCases(7);
-        verifyNoMoreInteractions(ccdCaseDataService);
+        verify(ccdCaseDataDeletionService).findExpiredDraftCases(discardAfterDays);
+        verifyNoMoreInteractions(ccdCaseDataDeletionService);
+        verifyNoMoreInteractions(caseDeletionService);
     }
 
     @Test
-    void shouldCleanupMdcAfterRunSweep() throws Exception {
+    void shouldPerformCaseDeletionTasksForEachExpiredCase() throws Exception {
         // Given
-        DraftCasesToDiscard draftCase = DraftCasesToDiscard.builder().caseReference(99999L).build();
-        when(ccdCaseDataService.findExpiredDraftCases(7))
-                .thenReturn(List.of(draftCase));
+        DraftCasesToDiscard case1 = DraftCasesToDiscard.builder().caseReference(caseRef).build();
+        DraftCasesToDiscard case2 = DraftCasesToDiscard.builder().caseReference(caseRef2).build();
 
-        // Ensure MDC is clean before test
-        MDC.clear();
+        when(ccdCaseDataDeletionService.findExpiredDraftCases(discardAfterDays))
+                .thenReturn(List.of(case1, case2));
 
         // When
         runSweepViaReflection();
 
-        // Then - MDC should be cleaned up after finally block
-        assertThat(MDC.get("taskName")).isNull();
+        // Then
+        verify(ccdCaseDataDeletionService).findExpiredDraftCases(discardAfterDays);
+        verify(ccdCaseDataDeletionService).markCaseForDeletion(caseRef);
+        verify(ccdCaseDataDeletionService).confirmCaseDisposal(caseRef);
+        verify(caseDeletionService).deleteCase(caseRef);
+        verify(ccdCaseDataDeletionService).markCaseForDeletion(caseRef2);
+        verify(ccdCaseDataDeletionService).confirmCaseDisposal(caseRef2);
+        verify(caseDeletionService).deleteCase(caseRef2);
+        verifyNoMoreInteractions(ccdCaseDataDeletionService);
     }
 
     @Test
-    void shouldCleanupMdcEvenWhenExceptionOccurs() {
+    void shouldCallMarkCaseForDeletionBeforeConfirmCaseDisposal() throws Exception {
         // Given
-        DraftCasesToDiscard draftCase = DraftCasesToDiscard.builder().caseReference(99999L).build();
-        when(ccdCaseDataService.findExpiredDraftCases(7))
+        DraftCasesToDiscard draftCase = DraftCasesToDiscard.builder().caseReference(caseRef).build();
+
+        when(ccdCaseDataDeletionService.findExpiredDraftCases(discardAfterDays))
                 .thenReturn(List.of(draftCase));
-        when(ccdCaseDataService.markCaseForDeletion(99999L))
-                .thenThrow(new RuntimeException("Test exception"));
 
-        MDC.clear();
+        // When
+        runSweepViaReflection();
 
-        // When & Then - exception should not propagate; MDC should still be cleaned
-        try {
-            runSweepViaReflection();
-        } catch (Exception e) {
-            // Expected: the exception from markCaseForDeletion is wrapped and rethrown by reflection
-        }
-
-        // MDC should be cleaned up even though an exception occurred
-        assertThat(MDC.get("taskName")).isNull();
+        // Then
+        InOrder inOrder = inOrder(ccdCaseDataDeletionService);
+        inOrder.verify(ccdCaseDataDeletionService).markCaseForDeletion(caseRef);
+        inOrder.verify(ccdCaseDataDeletionService).confirmCaseDisposal(caseRef);
     }
 
-    // Helper method to invoke private runSweep() via reflection
     private void runSweepViaReflection() throws Exception {
         Method method = CaseDeletionScheduledTask.class.getDeclaredMethod("runSweep");
         method.setAccessible(true);

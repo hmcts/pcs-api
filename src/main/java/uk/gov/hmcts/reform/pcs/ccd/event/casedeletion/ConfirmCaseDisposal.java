@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.event.deletecase;
+package uk.gov.hmcts.reform.pcs.ccd.event.casedeletion;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -14,26 +14,27 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.SYSTEM_USER;
-import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.markCaseForDeletion;
+import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.confirmCaseDisposal;
 
 @Slf4j
 @Component
 @AllArgsConstructor
-public class MarkCaseForDeletion implements CCDConfig<PCSCase, State, UserRole> {
+public class ConfirmCaseDisposal implements CCDConfig<PCSCase, State, UserRole> {
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         configBuilder
-            .decentralisedEvent(markCaseForDeletion.name(), this::submit)
-            .forStates(State.AWAITING_SUBMISSION_TO_HMCTS, State.PENDING_CASE_ISSUED)
-            .name("Discard unissued cases")
-            .showCondition(NEVER_SHOW)
-            .grant(Permission.CRU, SYSTEM_USER);
+                .decentralisedEvent(confirmCaseDisposal.name(), this::submit)
+                .forStates(State.DRAFT_DISCARDED)
+                .name("Discard unissued cases")
+                .ttlIncrement(-1)
+                .showCondition(NEVER_SHOW)
+                .grant(Permission.CRU, SYSTEM_USER);
     }
 
     private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
         return SubmitResponse.<State>builder()
-            .state(State.DRAFT_DISCARDED)
-            .build();
+                .state(State.DRAFT_DISCARDED)
+                .build();
     }
 }

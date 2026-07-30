@@ -2,13 +2,40 @@ package uk.gov.hmcts.reform.pcs.ccd.repository;
 
 import lombok.AllArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.stereotype.Repository;
+import uk.gov.hmcts.reform.pcs.ccd.model.DraftCasesToDiscard;
+
+import java.util.List;
 
 @Repository
 @AllArgsConstructor
 public class CcdCaseRepository {
 
     private final JdbcTemplate jdbcTemplate;
+    private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
+
+    public List<DraftCasesToDiscard> findExpiredDraftCases(int discardAfterDays) {
+        SqlParameterSource namedParameters = new MapSqlParameterSource()
+                .addValue("discardDaysAfter", discardAfterDays);
+        return namedParameterJdbcTemplate.query(
+                """
+                   SELECT cd.reference
+                   FROM ccd.case_data cd
+                   WHERE cd.created_date < now()::date - :discardDaysAfter
+                   AND cd.state in ('AWAITING_SUBMISSION_TO_HMCTS', 'PENDING_CASE_ISSUED')
+                """,
+                namedParameters,
+                (rs, rowNum) -> {
+                    long caseRef = rs.getLong("reference");
+                    return DraftCasesToDiscard.builder()
+                            .caseReference(caseRef)
+                            .build();
+                }
+        );
+    }
 
     public void deleteCcdCaseData(long caseReference) {
         String sql = """

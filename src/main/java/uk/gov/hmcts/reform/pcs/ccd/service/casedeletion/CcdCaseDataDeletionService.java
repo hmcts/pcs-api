@@ -1,14 +1,10 @@
-package uk.gov.hmcts.reform.pcs.ccd.service;
+package uk.gov.hmcts.reform.pcs.ccd.service.casedeletion;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
-import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
@@ -26,41 +22,29 @@ import java.util.List;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.confirmCaseDisposal;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.markCaseForDeletion;
 
+/**
+ * Delete feature to allow ccd data to be deleted via the ccd-case-disposer microservice for cases in the data-store.
+ * This relies on running the events that transition the case to Draft Discarded and marks the resolvedTtl.
+ * The data in the decentralised ccd schema is deleted separately via the Repository.
+ */
 @AllArgsConstructor
 @Service
 @Slf4j
-public class CcdCaseDataService {
+public class CcdCaseDataDeletionService {
 
     private final IdamTokenProvider systemUpdateUserTokenProvider;
     private final AuthTokenGenerator authTokenGenerator;
     private final CoreCaseDataApi coreCaseDataApi;
     private final ObjectMapper objectMapper;
-    private final NamedParameterJdbcTemplate jdbcTemplate;
     private final CcdCaseRepository ccdCaseRepository;
 
-    @Transactional
-    public void deleteCcdCaseData(long caseReference) {
-        ccdCaseRepository.deleteCcdCaseData(caseReference);
+    public List<DraftCasesToDiscard> findExpiredDraftCases(int discardAfterDays) {
+        return ccdCaseRepository.findExpiredDraftCases(discardAfterDays);
     }
 
-    public List<DraftCasesToDiscard> findExpiredDraftCases(int discardAfterDays) {
-        SqlParameterSource namedParameters = new MapSqlParameterSource()
-                .addValue("discardDaysAfter", discardAfterDays);
-        return jdbcTemplate.query(
-                """
-                   SELECT cd.reference
-                   FROM ccd.case_data cd
-                   WHERE cd.created_date < now()::date - :discardDaysAfter
-                   AND cd.state in ('AWAITING_SUBMISSION_TO_HMCTS', 'PENDING_CASE_ISSUED')
-                """,
-                namedParameters,
-                (rs, rowNum) -> {
-                    long caseRef = rs.getLong("reference");
-                    return DraftCasesToDiscard.builder()
-                            .caseReference(caseRef)
-                            .build();
-                }
-        );
+    public void deleteCcdCaseData(long caseReference) {
+        ccdCaseRepository.deleteCcdCaseData(caseReference);
+        log.debug("Deleted case data for case reference: {}", caseReference);
     }
 
     public CaseResource markCaseForDeletion(long caseRef) {

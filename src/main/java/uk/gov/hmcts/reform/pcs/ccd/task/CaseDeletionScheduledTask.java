@@ -8,37 +8,31 @@ import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
-import org.springframework.util.CollectionUtils;
-import uk.gov.hmcts.ccd.sdk.RetainAndDisposePolicy;
 import uk.gov.hmcts.reform.pcs.ccd.model.DraftCasesToDiscard;
-import uk.gov.hmcts.reform.pcs.ccd.service.CaseDeletionService;
-import uk.gov.hmcts.reform.pcs.ccd.service.CcdCaseDataService;
+import uk.gov.hmcts.reform.pcs.ccd.service.casedeletion.CaseDeletionService;
+import uk.gov.hmcts.reform.pcs.ccd.service.casedeletion.CcdCaseDataDeletionService;
 
-import java.util.Collection;
 import java.util.List;
-import java.util.Set;
-
-import static uk.gov.hmcts.reform.pcs.ccd.CaseType.getCaseType;
 
 @Slf4j
 @Component
-public class CaseDeletionScheduledTask implements RetainAndDisposePolicy {
+public class CaseDeletionScheduledTask {
 
     private static final String CASE_DELETION_TASK_NAME = "case-deletion-task";
     private static final String MDC_TASK_NAME = "taskName";
 
     private final String schedule;
     private final int discardAfterDays;
-    private final CcdCaseDataService ccdCaseDataService;
+    private final CcdCaseDataDeletionService ccdCaseDataDeletionService;
     private final CaseDeletionService caseDeletionService;
 
     public CaseDeletionScheduledTask(@Value("${expired-case-deletion.schedule}") String schedule,
                                      @Value("${expired-case-deletion.discard-after-days}") int discardAfterDays,
-                                     CcdCaseDataService ccdCaseDataService,
+                                     CcdCaseDataDeletionService ccdCaseDataDeletionService,
                                      CaseDeletionService caseDeletionService) {
         this.schedule = schedule;
         this.discardAfterDays = discardAfterDays;
-        this.ccdCaseDataService = ccdCaseDataService;
+        this.ccdCaseDataDeletionService = ccdCaseDataDeletionService;
         this.caseDeletionService = caseDeletionService;
     }
 
@@ -48,45 +42,28 @@ public class CaseDeletionScheduledTask implements RetainAndDisposePolicy {
                 .execute((taskInstance, executionContext) -> runSweep());
     }
 
-    @Override
-    public Set<String> caseTypes() {
-        return Set.of(getCaseType());
-    }
-
-    @Override
-    public Collection<Long> findCandidatesForDisposal() {
-        List<DraftCasesToDiscard> casesToDiscard = ccdCaseDataService.findExpiredDraftCases(discardAfterDays);
-        if (!CollectionUtils.isEmpty(casesToDiscard)) {
-            return casesToDiscard.stream()
-                    .map(DraftCasesToDiscard::getCaseReference)
-                    .toList();
-        }
-        return List.of();
-    }
-
-    @Override
-    public void dispose(long caseReference) {
-        caseDeletionService.deleteCase(caseReference);
-    }
-
     private void runSweep() {
         MDC.put(MDC_TASK_NAME, CASE_DELETION_TASK_NAME);
         try {
-            List<Long> caseReferences = ccdCaseDataService.findExpiredDraftCases(discardAfterDays).stream()
+            List<Long> caseReferences = ccdCaseDataDeletionService.findExpiredDraftCases(discardAfterDays).stream()
                     .map(DraftCasesToDiscard::getCaseReference)
                     .toList();
-            caseReferences.forEach(this::performCcdCaseDeletionEvents);
-            caseReferences.forEach(this::dispose);
+            if (!caseReferences.isEmpty()) {
+                log.debug("Found {} expired draft cases to delete", caseReferences.size());
+            }
+            caseReferences.forEach(this::performCaseDeletionTasks);
         } finally {
             MDC.remove(MDC_TASK_NAME);
         }
     }
 
-    private void performCcdCaseDeletionEvents(long caseRef) {
-        Runnable task = () -> {
-            ccdCaseDataService.markCaseForDeletion(caseRef);
-            ccdCaseDataService.confirmCaseDisposal(caseRef);
+    private void performCaseDeletionTasks(long caseRef) {
+        log.debug("Performing case deletion tasks for case: {}", caseRef);
+        Runnable caseDeletionTasks = () -> {
+            ccdCaseDataDeletionService.markCaseForDeletion(caseRef);
+            ccdCaseDataDeletionService.confirmCaseDisposal(caseRef);
+            caseDeletionService.deleteCase(caseRef);
         };
-        task.run();
+        caseDeletionTasks.run();
     }
 }

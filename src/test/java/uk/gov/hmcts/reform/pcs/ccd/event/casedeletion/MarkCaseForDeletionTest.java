@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.event.deletecase;
+package uk.gov.hmcts.reform.pcs.ccd.event.casedeletion;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -13,13 +13,13 @@ import uk.gov.hmcts.reform.pcs.ccd.event.BaseEventTest;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(MockitoExtension.class)
-public class ConfirmCaseDisposalTest extends BaseEventTest {
+class MarkCaseForDeletionTest extends BaseEventTest {
 
-    private ConfirmCaseDisposal underTest;
+    private MarkCaseForDeletion underTest;
 
     @BeforeEach
     void setUp() {
-        underTest = new ConfirmCaseDisposal();
+        underTest = new MarkCaseForDeletion();
     }
 
     @Test
