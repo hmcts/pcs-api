@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.accesscontrol;
 
 import static java.util.Arrays.stream;
+import static uk.gov.hmcts.ccd.sdk.api.Permission.C;
 import static uk.gov.hmcts.ccd.sdk.api.Permission.CRU;
 import static uk.gov.hmcts.ccd.sdk.api.Permission.R;
 
@@ -21,6 +22,8 @@ public enum AccessProfile implements HasRole {
     DEFENDANT_SOLICITOR("[DEFENDANTSOLICITOR]", CRU),
     PCS_CASE_WORKER("caseworker-pcs", Set.of(R)),
     PCS_SOLICITOR("caseworker-pcs-solicitor", CRU),
+    // Create only: the org-wide role it maps to is unscoped, so it must confer no read.
+    PCS_SOLICITOR_CREATE("caseworker-pcs-solicitor-create", Set.of(C)),
     PROFESSIONAL_USER("professional-user", CRU),
 
     JUDGE("judge", CRU),

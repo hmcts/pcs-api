@@ -68,8 +68,18 @@ class RoleToAccessProfilesTest {
     @Test
     void shouldMapGroupAccessRolesToProfilesWithCaseTypeAcls() {
         assertThat(UserRole.PCS_SOLICITOR_ORG.getAccessProfiles())
-            .containsExactly(AccessProfile.PCS_SOLICITOR.getRole());
+            .containsExactly(AccessProfile.PCS_SOLICITOR_CREATE.getRole());
         assertThat(UserRole.PCS_SOLICITOR_GROUP.getAccessProfiles())
             .containsExactly(AccessProfile.PROFESSIONAL_USER.getRole());
+    }
+
+    /**
+     * The organisation role is granted to every professional user and its role assignment is
+     * unscoped, so it must not carry read - organisation-wide reading comes from the group role.
+     */
+    @Test
+    void shouldGiveTheOrganisationRoleCreateOnlyAndTheGroupRoleRead() {
+        assertThat(AccessProfile.PCS_SOLICITOR_CREATE.getCaseTypePermissions()).isEqualTo("C");
+        assertThat(AccessProfile.PROFESSIONAL_USER.getCaseTypePermissions()).contains("R");
     }
 }
