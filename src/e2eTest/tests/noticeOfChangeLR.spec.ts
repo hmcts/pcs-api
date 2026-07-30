@@ -11,7 +11,7 @@ import { caseInfo } from '@utils/actions/custom-actions';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
 import { defendantDetails } from '@utils/actions/custom-actions/custom-actions-genApps/genApps.action';
 import { home } from '@data/page-data';
-import {noc} from '@data/page-data/page-data-legalRepresentative/noc.page.data';
+import {noc} from '@data/page-data-figma/page-data-legalRepresentative/noc.page.data';
 
 
 test.use({ storageState: undefined })
