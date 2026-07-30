@@ -77,6 +77,11 @@ class UploadDocumentsTest extends BaseEventTest {
         assertConfiguredForStates(MergedEventStates.uploadDocuments());
     }
 
+    @Test
+    void shouldBeConfiguredAsNeverShowWithMergedEventFeatureFlags() {
+        assertConfiguredAsNeverShowWithMergedEventFeatureFlags();
+    }
+
     @Nested
     @DisplayName("Submit event tests")
     class SubmitTests {

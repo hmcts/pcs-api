@@ -217,6 +217,11 @@ class RespondPossessionClaimTest extends BaseEventTest {
         assertConfiguredForStates(MergedEventStates.respondPossessionClaim());
     }
 
+    @Test
+    void shouldBeConfiguredAsNeverShowWithMergedEventFeatureFlags() {
+        assertConfiguredAsNeverShowWithMergedEventFeatureFlags();
+    }
+
     private void setupDefaultExistingDraft() {
         PossessionClaimResponse defaultResponse = PossessionClaimResponse.builder()
             .defendantContactDetails(DefendantContactDetails.builder().build())

@@ -37,6 +37,11 @@ public class AddCaseNoteTest extends BaseEventTest {
     }
 
     @Test
+    void shouldBeConfiguredWithMergedEventFeatureFlags() {
+        assertConfiguredWithMergedEventFeatureFlags();
+    }
+
+    @Test
     void shouldConfigurePages() {
         // Given
         PCSCase pcsCase = PCSCase.builder().build();

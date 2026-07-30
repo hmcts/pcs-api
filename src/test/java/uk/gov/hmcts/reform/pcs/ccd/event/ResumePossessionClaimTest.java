@@ -125,6 +125,11 @@ class ResumePossessionClaimTest extends BaseEventTest {
         assertConfiguredForStates(MergedEventStates.resumePossessionClaim());
     }
 
+    @Test
+    void shouldBeConfiguredAsNeverShowWithMergedEventFeatureFlags() {
+        assertConfiguredAsNeverShowWithMergedEventFeatureFlags();
+    }
+
     @Nested
     @DisplayName("Start callback tests")
     class StartCallbackTests {

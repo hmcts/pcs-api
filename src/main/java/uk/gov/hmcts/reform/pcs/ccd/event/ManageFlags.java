@@ -17,6 +17,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
+import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.CASEWORKER_EVENTS;
+import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.RELEASE_1_DOT_2;
 
 @Component
 @Slf4j
@@ -31,6 +33,7 @@ public class ManageFlags implements CCDConfig<PCSCase, State, UserRole> {
                             .forStates(MergedEventStates.amendFlags())
                             .name("Manage case flags")
                             .description("To manage flags")
+                            .showCondition(ShowConditions.featureFlagsEnabled(RELEASE_1_DOT_2, CASEWORKER_EVENTS))
                             .showSummary()
                             .grant(Permission.CRU,
                                    UserRole.CTSC_ADMIN,

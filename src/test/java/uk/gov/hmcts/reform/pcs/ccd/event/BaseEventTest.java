@@ -9,6 +9,7 @@ import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.callback.Start;
 import uk.gov.hmcts.ccd.sdk.api.callback.Submit;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
+import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
@@ -17,6 +18,8 @@ import java.util.Collection;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.CASEWORKER_EVENTS;
+import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.RELEASE_1_DOT_2;
 
 public abstract class BaseEventTest {
 
@@ -43,6 +46,19 @@ public abstract class BaseEventTest {
     protected void assertConfiguredForStates(State... expectedStates) {
         assertThat(getConfiguredEvent().getPreState())
             .containsExactlyInAnyOrder(expectedStates);
+    }
+
+    protected void assertConfiguredWithMergedEventFeatureFlags() {
+        assertThat(getConfiguredEvent().getShowCondition())
+            .isEqualTo(ShowConditions.featureFlagsEnabled(RELEASE_1_DOT_2, CASEWORKER_EVENTS));
+    }
+
+    protected void assertConfiguredAsNeverShowWithMergedEventFeatureFlags() {
+        assertThat(getConfiguredEvent().getShowCondition())
+            .isEqualTo(ShowConditions.and(
+                ShowConditions.NEVER_SHOW,
+                ShowConditions.featureFlagsEnabled(RELEASE_1_DOT_2, CASEWORKER_EVENTS)
+            ));
     }
 
     private ResolvedCCDConfig<PCSCase, State, UserRole> buildEventConfig(

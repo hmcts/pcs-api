@@ -34,6 +34,8 @@ import java.util.Objects;
 import java.util.UUID;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.uploadDocuments;
+import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.CASEWORKER_EVENTS;
+import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.RELEASE_1_DOT_2;
 
 @Slf4j
 @Component
@@ -52,7 +54,10 @@ public class UploadDocuments implements CCDConfig<PCSCase, State, UserRole> {
             .decentralisedEvent(uploadDocuments.name(), this::submit, this::start)
             .forStates(MergedEventStates.uploadDocuments())
             .name("Upload additional documents")
-            .showCondition(ShowConditions.NEVER_SHOW)
+            .showCondition(ShowConditions.and(
+                ShowConditions.NEVER_SHOW,
+                ShowConditions.featureFlagsEnabled(RELEASE_1_DOT_2, CASEWORKER_EVENTS)
+            ))
             .grant(Permission.CRU, UserRole.DEFENDANT);
     }
 

@@ -52,6 +52,8 @@ import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.resumePossessionClaim;
 import static uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter.BR_DELIMITER;
 import static uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentCallbackHandlerType.CLAIM;
 import static uk.gov.hmcts.reform.pcs.feesandpay.task.FeesAndPayTaskComponent.FEES_AND_PAY_TASK_DESCRIPTOR;
+import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.CASEWORKER_EVENTS;
+import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.RELEASE_1_DOT_2;
 
 @Slf4j
 @Component
@@ -78,7 +80,10 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
                 .decentralisedEvent(resumePossessionClaim.name(), this::submit, this::start)
                 .forStates(MergedEventStates.resumePossessionClaim())
                 .name("Make a claim")
-                .showCondition(ShowConditions.NEVER_SHOW)
+                .showCondition(ShowConditions.and(
+                    ShowConditions.NEVER_SHOW,
+                    ShowConditions.featureFlagsEnabled(RELEASE_1_DOT_2, CASEWORKER_EVENTS)
+                ))
                 .grant(Permission.CRUD, UserRole.PCS_SOLICITOR)
                 .grantHistoryOnly(JUDICIAL_HISTORY_ROLES)
                 .showSummary()

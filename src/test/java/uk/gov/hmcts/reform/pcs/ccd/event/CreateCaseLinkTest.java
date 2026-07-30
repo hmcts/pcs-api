@@ -40,6 +40,11 @@ class CreateCaseLinkTest extends BaseEventTest {
     }
 
     @Test
+    void shouldBeConfiguredWithMergedEventFeatureFlags() {
+        assertConfiguredWithMergedEventFeatureFlags();
+    }
+
+    @Test
     void shouldCreateCaseLinksInSubmitCallback() {
         // Given
         CaseLink caseLink = CaseLink.builder().build();
