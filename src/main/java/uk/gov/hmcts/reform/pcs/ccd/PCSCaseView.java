@@ -214,11 +214,17 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
             .findFirst()
             .orElse(null);
 
-        if (organisationParty == null) {
+        // The case's own organisation is authoritative; the party scan covers cases created
+        // before pcs_case.organisation_id existed.
+        String organisationId = isNotBlank(pcsCaseEntity.getOrganisationId())
+            ? pcsCaseEntity.getOrganisationId()
+            : organisationParty != null ? organisationParty.getOrganisationId() : null;
+
+        if (organisationId == null) {
             return;
         }
 
-        String organisationId = organisationParty.getOrganisationId();
+        String organisationName = organisationParty != null ? organisationParty.getOrgName() : null;
 
         CaseAccessGroup caseAccessGroup = CaseAccessGroup.builder()
             .caseAccessGroupId(GROUP_ACCESS_ID_TEMPLATE.replace(ORG_ID_PLACEHOLDER, organisationId))
@@ -235,7 +241,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         groupAccessFields.setOrganisationPolicyField(OrganisationPolicy.<AccessProfile>builder()
             .organisation(Organisation.builder()
                 .organisationId(organisationId)
-                .organisationName(organisationParty.getOrgName())
+                .organisationName(organisationName)
                 .build())
             .orgPolicyCaseAssignedRole(AccessProfile.PROFESSIONAL_USER)
             .build());

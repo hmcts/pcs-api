@@ -19,6 +19,7 @@ import uk.gov.hmcts.reform.pcs.location.model.CourtVenue;
 import uk.gov.hmcts.reform.pcs.location.service.LocationReferenceService;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.postcodecourt.service.PostCodeCourtService;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 
 import java.util.List;
 import java.util.Objects;
@@ -38,6 +39,7 @@ public class PcsCaseService {
     private final CaseFlagService caseFlagService;
     private final PostCodeCourtService postCodeCourtService;
     private final LocationReferenceService locationReferenceService;
+    private final OrganisationService organisationService;
 
     public PcsCaseEntity createCase(long caseReference,
                                     AddressUK propertyAddress,
@@ -50,6 +52,8 @@ public class PcsCaseService {
         pcsCaseEntity.setCaseReference(caseReference);
         pcsCaseEntity.setPropertyAddress(addressMapper.toAddressEntityAndNormalise(propertyAddress));
         pcsCaseEntity.setLegislativeCountry(legislativeCountry);
+        // Owning organisation is fixed at creation: group access must not depend on who reads the case.
+        pcsCaseEntity.setOrganisationId(organisationService.getOrganisationIdForCurrentUser());
 
         return pcsCaseRepository.save(pcsCaseEntity);
     }

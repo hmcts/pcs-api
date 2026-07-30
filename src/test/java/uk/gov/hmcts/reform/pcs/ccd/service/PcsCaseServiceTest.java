@@ -35,6 +35,7 @@ import uk.gov.hmcts.reform.pcs.location.model.CourtVenue;
 import uk.gov.hmcts.reform.pcs.location.service.LocationReferenceService;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.postcodecourt.service.PostCodeCourtService;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -80,6 +81,8 @@ class PcsCaseServiceTest {
     private PostCodeCourtService postCodeCourtService;
     @Mock
     private LocationReferenceService locationReferenceService;
+    @Mock
+    private OrganisationService organisationService;
 
     @Captor
     private ArgumentCaptor<PcsCaseEntity> pcsCaseEntityCaptor;
@@ -99,7 +102,8 @@ class PcsCaseServiceTest {
             caseLinkService,
             caseFlagService,
             postCodeCourtService,
-            locationReferenceService
+            locationReferenceService,
+            organisationService
         );
     }
 
@@ -121,6 +125,32 @@ class PcsCaseServiceTest {
         assertThat(savedEntity.getCaseReference()).isEqualTo(CASE_REFERENCE);
         assertThat(savedEntity.getPropertyAddress()).isEqualTo(propertyAddressEntity);
         assertThat(savedEntity.getLegislativeCountry()).isEqualTo(legislativeCountry);
+    }
+
+    @Test
+    void shouldStampCreatingUsersOrganisationOnTheCase() {
+        AddressUK propertyAddress = mock(AddressUK.class);
+        LegislativeCountry legislativeCountry = mock(LegislativeCountry.class);
+        when(addressMapper.toAddressEntityAndNormalise(propertyAddress)).thenReturn(mock(AddressEntity.class));
+        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(ORG_ID);
+
+        underTest.createCase(CASE_REFERENCE, propertyAddress, legislativeCountry);
+
+        verify(pcsCaseRepository).save(pcsCaseEntityCaptor.capture());
+        assertThat(pcsCaseEntityCaptor.getValue().getOrganisationId()).isEqualTo(ORG_ID);
+    }
+
+    @Test
+    void shouldLeaveOrganisationUnsetWhenCreatingUserHasNoOrganisation() {
+        AddressUK propertyAddress = mock(AddressUK.class);
+        LegislativeCountry legislativeCountry = mock(LegislativeCountry.class);
+        when(addressMapper.toAddressEntityAndNormalise(propertyAddress)).thenReturn(mock(AddressEntity.class));
+        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(null);
+
+        underTest.createCase(CASE_REFERENCE, propertyAddress, legislativeCountry);
+
+        verify(pcsCaseRepository).save(pcsCaseEntityCaptor.capture());
+        assertThat(pcsCaseEntityCaptor.getValue().getOrganisationId()).isNull();
     }
 
     @Test

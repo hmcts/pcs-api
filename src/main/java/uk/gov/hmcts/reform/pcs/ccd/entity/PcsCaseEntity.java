@@ -57,6 +57,9 @@ public class PcsCaseEntity {
     @Column(name = "claimant_type")
     private ClaimantType claimantType;
 
+    @Column(name = "organisation_id")
+    private String organisationId;
+
     private Integer caseManagementLocation;
     private Integer baseLocation;
 
