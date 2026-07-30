@@ -137,6 +137,18 @@ class CcdCaseDataServiceTest {
     }
 
     @Test
+    void shouldInvokeDeleteCcdCaseData() {
+        // Given
+        long caseReference = 12345L;
+
+        // When
+        underTest.deleteCcdCaseData(caseReference);
+
+        // Then
+        verify(ccdCaseRepository).deleteCcdCaseData(caseReference);
+
+    }
+    @Test
     void shouldMarkCaseForDeletionWithCorrectEventId() throws Exception {
         // Given
         final long caseRef = 12345L;
