@@ -52,7 +52,7 @@ withPipeline(type, product, component) {
   enableDbMigration('pcs')
 
   //skipping sync with demo/perftest during SIT testing/DB migration
-  syncBranchesWithMaster(['ithc'])
+  syncBranchesWithMaster(['ithc', 'perftest'])
 
 
   onPR() {
@@ -109,9 +109,8 @@ withPipeline(type, product, component) {
   }
 
   onPerftest {
-    // disabling new case definition uploads to perftest during DB migration to keep test data
-    // setPerftestEnvVars()
-    // enableHighLevelDataSetup()
+     setPerftestEnvVars()
+     enableHighLevelDataSetup()
   }
 
   before('highleveldatasetup') {
@@ -124,7 +123,7 @@ withPipeline(type, product, component) {
     }
     onMaster{
       if(env.ENVIRONMENT == "prod") {
-        env.SHUTTER_SERVICE = true
+        env.SHUTTER_SERVICE = false
         env.DATA_STORE_URL_BASE="http://ccd-data-store-api-prod.service.core-compute-prod.internal"
         env.CASE_API_URL = "https://pcs-api.prod.platform.hmcts.net"
         env.CASE_TYPE_SUFFIX=""
@@ -206,6 +205,14 @@ def setAatEnvVars() {
   env.ENVIRONMENT= "aat"
   env.ENABLE_TESTING_SUPPORT = "true"
   env.E2E_SUITE= "regression"
+}
+
+def setProdEnvVars() {
+  env.SHUTTER_SERVICE = true
+  env.ENVIRONMENT= "prod"
+  env.DEFINITION_STORE_URL_BASE = "http://ccd-definition-store-api-prod.service.core-compute-prod.internal"
+  env.DATA_STORE_URL_BASE="http://ccd-data-store-api-prod.service.core-compute-prod.internal"
+  env.CASE_API_URL = "pcs-api-prod.service.core-compute-prod.internal"
 }
 
 def setDemoEnvVars() {
