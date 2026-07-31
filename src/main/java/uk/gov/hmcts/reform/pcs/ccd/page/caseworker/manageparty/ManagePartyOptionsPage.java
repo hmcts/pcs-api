@@ -88,7 +88,7 @@ public class ManagePartyOptionsPage implements CcdPageConfiguration {
 
     /**
      * Clears a stale address left over from the previously selected party's prepopulation by
-     * setting the fields to empty strings if the current party's address isn't known
+     * setting the fields to empty strings if the current party's address isn't known.
      */
     private AddressUK clearPreviousAddress(AddressEntity addressEntity) {
         AddressUK address = addressEntity != null

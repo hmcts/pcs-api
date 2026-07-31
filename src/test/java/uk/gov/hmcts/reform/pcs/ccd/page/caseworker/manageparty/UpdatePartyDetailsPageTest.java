@@ -15,9 +15,17 @@ import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 import uk.gov.hmcts.reform.pcs.ccd.util.PostcodeValidator;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService.CHARACTER_LIMIT_ERROR_TEMPLATE;
+import static uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService.EXTRA_SHORT_TEXT_LIMIT;
 
 @ExtendWith(MockitoExtension.class)
 class UpdatePartyDetailsPageTest extends BasePageTest {
+
+    private static final AddressUK VALID_ADDRESS = AddressUK.builder()
+        .addressLine1("1 Test Street")
+        .postTown("London")
+        .postCode("SW1A1AA")
+        .build();
 
     @BeforeEach
     void setUp() {
@@ -59,5 +67,41 @@ class UpdatePartyDetailsPageTest extends BasePageTest {
         // Then
         assertThat(response.getErrorMessageOverride()).contains("Town or City is required");
         assertThat(response.getErrorMessageOverride()).contains("Postcode is required");
+    }
+
+    @Test
+    void shouldRejectEmailOverCharacterLimit() {
+        // Given
+        String tooLong = "a".repeat(EXTRA_SHORT_TEXT_LIMIT + 1);
+        UpdatePartyDetails updatePartyDetails = UpdatePartyDetails.builder()
+            .address(VALID_ADDRESS)
+            .email(tooLong)
+            .build();
+        PCSCase caseData = PCSCase.builder().updatePartyDetails(updatePartyDetails).build();
+
+        // When
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+        // Then
+        String expectedError = String.format(CHARACTER_LIMIT_ERROR_TEMPLATE, "Email address", "60");
+        assertThat(response.getErrorMessageOverride()).isEqualTo(expectedError);
+    }
+
+    @Test
+    void shouldRejectPhoneNumberOverCharacterLimit() {
+        // Given
+        String tooLong = "7".repeat(EXTRA_SHORT_TEXT_LIMIT + 1);
+        UpdatePartyDetails updatePartyDetails = UpdatePartyDetails.builder()
+            .address(VALID_ADDRESS)
+            .phoneNumber(tooLong)
+            .build();
+        PCSCase caseData = PCSCase.builder().updatePartyDetails(updatePartyDetails).build();
+
+        // When
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+        // Then
+        String expectedError = String.format(CHARACTER_LIMIT_ERROR_TEMPLATE, "Phone number", "60");
+        assertThat(response.getErrorMessageOverride()).isEqualTo(expectedError);
     }
 }

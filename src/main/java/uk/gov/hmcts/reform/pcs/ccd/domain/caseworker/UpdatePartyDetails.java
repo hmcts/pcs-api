@@ -41,11 +41,11 @@ public class UpdatePartyDetails {
     private AddressUK address;
 
     @JsonProperty("updateParty_UpdatePartyEmail")
-    @CCD(label = "Email address", searchable = false, max = 60)
+    @CCD(label = "Email address", searchable = false)
     private String email;
 
     @JsonProperty("updateParty_PhoneNumber")
-    @CCD(label = "Phone number", searchable = false, max = 60)
+    @CCD(label = "Phone number", searchable = false)
     private String phoneNumber;
 
     @JsonProperty("updateParty_DateOfBirth")

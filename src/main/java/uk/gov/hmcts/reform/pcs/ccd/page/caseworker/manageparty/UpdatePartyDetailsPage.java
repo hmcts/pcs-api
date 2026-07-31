@@ -18,12 +18,18 @@ import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
 import java.util.List;
 
+import static uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService.EXTRA_SHORT_TEXT_LIMIT;
+import static uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService.FieldValidation;
+
 @AllArgsConstructor
 @Component
 public class UpdatePartyDetailsPage implements CcdPageConfiguration {
 
     private final AddressValidator addressValidator;
     private final TextAreaValidationService textAreaValidationService;
+
+    private static final String EMAIL_ADDRESS_LABEL = "Email address";
+    private static final String PHONE_NUMBER_LABEL = "Phone number";
 
     private static final String DEFENDANT_TYPE =
         ShowConditions.fieldEquals("updateParty_UpdatePartyType", PartyType.DEFENDANT);
@@ -36,7 +42,7 @@ public class UpdatePartyDetailsPage implements CcdPageConfiguration {
             .pageLabel("Update party's details")
             .label("updatePartyDetails-separator", "---")
             .complex(PCSCase::getUpdatePartyDetails)
-                .optional(UpdatePartyDetails::getDateOfBirth, DEFENDANT_TYPE)
+                .mandatory(UpdatePartyDetails::getDateOfBirth, DEFENDANT_TYPE)
                 .complex(UpdatePartyDetails::getAddress)
                     .mandatory(AddressUK::getAddressLine1)
                     .optional(AddressUK::getAddressLine2)
@@ -57,7 +63,11 @@ public class UpdatePartyDetailsPage implements CcdPageConfiguration {
         PCSCase caseData = details.getData();
         UpdatePartyDetails updatePartyDetails = caseData.getUpdatePartyDetails();
 
-        List<String> validationErrors = addressValidator.validateAddressFields(updatePartyDetails.getAddress());
+        List<String> validationErrors = textAreaValidationService.validateMultipleTextAreas(
+            FieldValidation.of(updatePartyDetails.getEmail(), EMAIL_ADDRESS_LABEL, EXTRA_SHORT_TEXT_LIMIT),
+            FieldValidation.of(updatePartyDetails.getPhoneNumber(), PHONE_NUMBER_LABEL, EXTRA_SHORT_TEXT_LIMIT)
+        );
+        validationErrors.addAll(addressValidator.validateAddressFields(updatePartyDetails.getAddress()));
 
         return textAreaValidationService.createValidationResponse(caseData, validationErrors);
     }
