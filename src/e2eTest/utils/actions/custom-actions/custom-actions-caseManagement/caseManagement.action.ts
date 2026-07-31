@@ -200,11 +200,8 @@ export class CaseManagementAction implements IAction {
 
   private async enterApplicationFeeDetails(fee: actionRecord) {
 
-    await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid});
-    await performValidation('text', {
-      elementType: 'paragraph',
-      text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
-    });
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
+    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`});
     await performAction('clickRadioButton', {
       question: fee.question1,
       option: fee.option1,
@@ -226,10 +223,7 @@ export class CaseManagementAction implements IAction {
         text: enterGenAppapplicationFee.yourMustRequestPaymentHiddenParagraph
       });
       await performAction('clickButton', enterGenAppapplicationFee.continueButton);
-      await performValidation('errorMessage', {
-        header: enterGenAppapplicationFee.eventCouldNotBeCreatedErrorMessageHeader,
-        message: enterGenAppapplicationFee.yourMustRequestPaymentHiddenParagraph
-      });
+      await performValidation('errorMessage', { header: enterGenAppapplicationFee.eventCouldNotBeCreatedErrorMessageHeader, message: enterGenAppapplicationFee.yourMustRequestPaymentHiddenParagraph });
 
     } else {
       await performAction('reTryOnCallBackError', enterGenAppHearingDate.continueButton, fee.nextPage as string);
@@ -303,18 +297,22 @@ export class CaseManagementAction implements IAction {
             break;
 
           case 'textField':
-            await performAction('inputText', validationArr.label, CaseManagementCommonUtils.generateRandomString(item.input));
-            await expect(async () => {
-              await performAction('clickButton', validationArr.button);
-              if (item.type === 'moreThanMax') {
-                await performValidation('errorMessage', {header: validationArr.header, message: item.errMessage});
-              } else {
-                await performValidation('inputError', validationArr.label, item.errMessage);
-                await performValidation('errorMessage', validationArr.label, item.errMessage);
-              }
-            }).toPass({
-              timeout: VERY_LONG_TIMEOUT,
-            });
+            if (item.type === 'valid') {
+              await performAction('inputText', validationArr.label, CaseManagementCommonUtils.generateRandomString(item.input));
+            } else {
+              await performAction('inputText', validationArr.label, CaseManagementCommonUtils.generateRandomString(item.input));
+              await expect(async () => {
+                await performAction('clickButton', validationArr.button);
+                if (item.type === 'moreThanMax') {
+                  await performValidation('errorMessage', { header: validationArr.header, message: item.errMessage });
+                } else {
+                  await performValidation('inputError', validationArr.label, item.errMessage);
+                  await performValidation('errorMessage', validationArr.label, item.errMessage);
+                }
+              }).toPass({
+                timeout: VERY_LONG_TIMEOUT,
+              });
+            }
             break;
 
           case 'dateField':
