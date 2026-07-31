@@ -6,4 +6,13 @@ export const noc = {
   onlineCaseReferenceNumberTextLabel: `Online case reference number`,
   thisIsHintText: `This is a 16-digit number from MyHMCTS, for example 1111-2222-3333-4444`,
   continueButton: `Continue`,
+  errorValidation: `YES`,
+  errorValidationField: {
+    errorTextField: [
+      { type: `tooLong`, input: `1111-2222-3333-4444-5555`, errMessage: `Error:You have either not entered an exact match for the case reference, or the case you are trying to update has not yet been issued. You can retry with a different case number, wait until the case has been issued, or email your local court or Financial Remedy Centre to request the change of legal representative. You should include the 16-digit Financial Remedy case reference in your email.` },
+      { type: `empty`, input: `EMPTY`, errMessage: `Error:You have either not entered an exact match for the case reference, or the case you are trying to update has not yet been issued. You can retry with a different case number, wait until the case has been issued, or email your local court or Financial Remedy Centre to request the change of legal representative. You should include the 16-digit Financial Remedy case reference in your email.` },
+      { type: `tooShort`, input: `1111-2222-3333`, errMessage: `Error:You have either not entered an exact match for the case reference, or the case you are trying to update has not yet been issued. You can retry with a different case number, wait until the case has been issued, or email your local court or Financial Remedy Centre to request the change of legal representative. You should include the 16-digit Financial Remedy case reference in your email.` },
+      { type: `caseNotFound`, input: `1111-2222-3333-4444`, errMessage: `Error:You have either not entered an exact match for the case reference, or the case you are trying to update has not yet been issued. You can retry with a different case number, wait until the case has been issued, or email your local court or Financial Remedy Centre to request the change of legal representative. You should include the 16-digit Financial Remedy case reference in your email.` },
+    ]
+  },
 };

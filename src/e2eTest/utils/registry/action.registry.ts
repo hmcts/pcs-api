@@ -162,6 +162,11 @@ export class ActionRegistry {
     ['rejectRefund', new FeeAndPayAction()],
     ['noticeOfChange', new CreateCaseAction()],
     ['clientDetails', new CreateCaseAction()],
+    ['checkAndSubmit', new CreateCaseAction()],
+    ['verifyChangeLink', new CreateCaseAction()],
+    ['validateErrorPage', new CreateCaseAction()],
+    ['errorValidationNOC', new CreateCaseAction()],
+    ['inputErrorValidation', new CreateCaseAction()],
   ]);
 
   static getAction(actionName: string): IAction {

@@ -32,6 +32,12 @@ export class TextValidation implements IValidation {
         break;
       case 'listItem':
         data.elementType = 'li';
+        break;
+      case 'tableElement':
+        data.elementType = 'div';
+        break;
+      case 'link':
+        data.elementType = 'a';
     }
     const text = String(data.text);
     const locator = data.elementType === 'p'
