@@ -889,9 +889,12 @@ class GenAppServiceTest {
                 .allPartiesAgree(allPartiesAgree)
                 .build();
 
+            PCSCase caseData = PCSCase.builder()
+                .enterGenAppRequest(enterGenAppRequest)
+                .build();
+
             // When
-            underTest.createGenAppEntity(PCSCase.builder().enterGenAppRequest(enterGenAppRequest).build(),
-                                          pcsCaseEntity, applicantParty, GEN_APP_ISSUED);
+            underTest.createGenAppEntity(caseData, pcsCaseEntity, applicantParty, GEN_APP_ISSUED);
 
             // Then
             GenAppEntity genAppEntity = getSavedGenAppEntity();
@@ -908,9 +911,12 @@ class GenAppServiceTest {
                 .withoutNotice(withoutNotice)
                 .build();
 
+            PCSCase caseData = PCSCase.builder()
+                .enterGenAppRequest(enterGenAppRequest)
+                .build();
+
             // When
-            underTest.createGenAppEntity(PCSCase.builder().enterGenAppRequest(enterGenAppRequest).build(),
-                                         pcsCaseEntity, applicantParty, GEN_APP_ISSUED);
+            underTest.createGenAppEntity(caseData, pcsCaseEntity, applicantParty, GEN_APP_ISSUED);
 
             // Then
             GenAppEntity genAppEntity = getSavedGenAppEntity();
@@ -927,9 +933,12 @@ class GenAppServiceTest {
                 .withoutNotice(withoutNotice)
                 .build();
 
+            PCSCase caseData = PCSCase.builder()
+                .enterGenAppRequest(enterGenAppRequest)
+                .build();
+
             // When
-            underTest.createGenAppEntity(PCSCase.builder().enterGenAppRequest(enterGenAppRequest).build(),
-                                         pcsCaseEntity, applicantParty, GEN_APP_ISSUED);
+            underTest.createGenAppEntity(caseData, pcsCaseEntity, applicantParty, GEN_APP_ISSUED);
 
             // Then
             GenAppEntity genAppEntity = getSavedGenAppEntity();
