@@ -166,6 +166,18 @@ withPipeline(type, product, component) {
     env.CCD_ENABLED = "true"
   }
 
+  // HDPI-7989: slim the workspace before the High Level Data Setup agent hop.
+  // The HLDS stage stashes the whole workspace (16k+ files, ~19 min observed);
+  // scanner caches and report output are not needed by the gradle HLDS task.
+  // The du listing keeps a size breakdown in the log for future diagnosis.
+  afterAlways('akschartsinstall') {
+    sh '''
+      echo "Workspace size before HLDS stash:"
+      du -sm .[^.]* * 2>/dev/null | sort -rn | head -15 || true
+      rm -rf .scannerwork .sonar build/reports build/test-results test-results allure-results functional-output || true
+    '''
+  }
+
   afterAlways('smoketest:preview') {
     archiveSmokeTestReports()
   }
