@@ -28,6 +28,7 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CasePartyFlagEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimActivityLogEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyAccessCodeEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyLegalRepresentativeEntity;
@@ -71,6 +72,10 @@ public class PartyEntity {
     @OneToMany(mappedBy = "party", fetch = LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private Set<PartyAccessCodeEntity> accessCodes = new HashSet<>();
+
+    @OneToMany(mappedBy = "party", fetch = LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private Set<ClaimActivityLogEntity> claimActivityLogs = new HashSet<>();
 
     private UUID idamId;
 

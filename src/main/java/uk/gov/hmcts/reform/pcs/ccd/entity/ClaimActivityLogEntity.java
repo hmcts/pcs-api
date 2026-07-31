@@ -44,7 +44,7 @@ public class ClaimActivityLogEntity {
     private PcsCaseEntity pcsCase;
 
     @ManyToOne(fetch = LAZY)
-    @JoinColumn(name = "party_id")
+    @JoinColumn(name = "party_id", nullable = false)
     private PartyEntity party;
 
     @Enumerated(EnumType.STRING)
