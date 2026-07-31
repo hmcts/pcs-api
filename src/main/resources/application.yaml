@@ -143,7 +143,8 @@ location-reference:
 
 notify:
   api-url: ${NOTIFY_URL:http://localhost:8083}
-  api-key: ${PCS_NOTIFY_API_KEY:AAAAAAAA-AAAA-AAAA-AAAA-AAAAAAAAAAAA}
+  # PLEASE DON'T CHECK IN
+  api-key: lucastestkey-d83dc897-57d7-4093-891e-2367b79f22a9-cf2f5419-2568-4e2d-8510-bf207c90810b
   send-email:
     max-retries: ${NOTIFY_SEND_EMAIL_MAX_RETRIES:5}
     backoff-delay-seconds: ${NOTIFY_SEND_EMAIL_BACKOFF_DELAY_SECONDS:300s}
@@ -161,6 +162,7 @@ notify:
     make-a-claim-defendant-response-received: 64a6cfbd-9797-4110-9a44-b9b04f1e2c53
     make-a-claim-claim-issued: 0ea3d807-8ebb-484e-8cd5-72364c9b527f
     general-application-received: e5daba0d-5c66-4c76-9e0f-06646200dc89
+    counterclaim-not-submitted-yet: 1fb10077-f302-4159-abce-18a861518d24
 
 testing-support:
   enabled: ${ENABLE_TESTING_SUPPORT:false}

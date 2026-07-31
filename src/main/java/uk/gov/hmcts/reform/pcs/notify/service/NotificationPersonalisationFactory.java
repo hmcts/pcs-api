@@ -15,8 +15,11 @@ import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.BasePersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.ClaimantBasePersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.CounterclaimPaymentSuccessPersonalisation;
+import uk.gov.hmcts.reform.pcs.notify.template.personalisation.LegalRepresentativeBasePersonalisation;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationDetailsService;
 
 import java.util.Locale;
+import java.util.UUID;
 
 @Slf4j
 @Service
@@ -24,6 +27,7 @@ import java.util.Locale;
 public class NotificationPersonalisationFactory {
 
     private final PartyService partyService;
+    private final OrganisationDetailsService organisationDetailsService;
 
     public BasePersonalisation forDefendant(DefendantResponseEntity defendantResponse) {
         PartyEntity defendant = defendantResponse.getParty();
@@ -58,6 +62,18 @@ public class NotificationPersonalisationFactory {
 
     public BasePersonalisation forParty(PartyEntity partyEntity, PcsCaseEntity pcsCaseEntity) {
         return buildPersonalisation(partyEntity, pcsCaseEntity);
+    }
+
+    public LegalRepresentativeBasePersonalisation forLegalRepresentative(PartyEntity legalRepresentativePartyEntity, PcsCaseEntity pcsCaseEntity) {
+        UUID userId = legalRepresentativePartyEntity.getIdamId();
+//        OrganisationDetailsResponse organisationDetailsResponse = organisationDetailsService.getOrganisationDetails(userId.toString());
+        String organisationName = organisationDetailsService.getOrganisationName(userId.toString()); // unsure?
+
+        return LegalRepresentativeBasePersonalisation.builder()
+            .base(buildPersonalisation(legalRepresentativePartyEntity, pcsCaseEntity))
+            .organisationName(organisationName)
+            .paymentReference("??????") // this needs to be fixed
+            .build();
     }
 
     public CounterclaimPaymentSuccessPersonalisation counterclaimSuccess(DefendantResponseEntity defendantResponse,

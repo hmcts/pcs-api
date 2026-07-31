@@ -9,12 +9,25 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.utils.LegalRepHelper;
+import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.LegalRepresentativeRepository;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.CounterClaimSubmitConfirmationService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.RespondPossessionClaimSubmitPersistenceResult;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.RespondPossessionClaimSubmitService;
+import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
+import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.ClaimResponseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.DefendantResponseService;
 import uk.gov.hmcts.reform.pcs.ccd.util.SelectedPartyRetriever;
 import uk.gov.hmcts.reform.pcs.exception.DraftNotFoundException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
@@ -32,12 +45,17 @@ import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.respondPossessionClaim;
 public class LegalRepSubmissionEventStrategy implements RespondPossessionClaimSubmissionEventStrategy {
 
     private final DraftCaseDataService draftCaseDataService;
+    private final ClaimResponseService claimResponseService;
+    private final DefendantResponseService defendantResponseService;
+    private final PartyService partyService;
+    private final LegalRepresentativeRepository legalRepresentativeRepository;
+    private final PcsCaseService pcsCaseService;
     private final SelectedPartyRetriever selectedPartyRetriever;
     private final SubmitResponseFactory submitResponseFactory;
-    private final PartyService partyService;
     private final RespondPossessionClaimSubmitService respondPossessionClaimSubmitService;
     private final CounterClaimSubmitConfirmationService counterClaimSubmitConfirmationService;
     private final SecurityContextService securityContextService;
+    private final LegalRepHelper legalRepHelper;
 
     @Override
     public boolean supports(List<String> roles) {
@@ -69,13 +87,32 @@ public class LegalRepSubmissionEventStrategy implements RespondPossessionClaimSu
             return validationResult.get();
         }
 
+
         PartyEntity defendantParty = partyService.getPartyEntityById(representedPartyId, caseReference);
 
         RespondPossessionClaimSubmitPersistenceResult persistenceResult = respondPossessionClaimSubmitService
             .persistFinalSubmit(caseReference, responseDraftData, defendantParty, JourneyType.LEGAL_REPRESENTATIVE);
 
-        return counterClaimSubmitConfirmationService
-            .buildSubmitResponse(caseReference, persistenceResult, defendantParty);
-    }
+        LegalRepresentativeEntity legalRepresentativeEntity =
+            legalRepresentativeRepository
+                .findByPartyLinkedToLegalRepresentativeAndActive(representedPartyId)
+                .orElseThrow(IllegalAccessError::new);
 
+        PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
+
+        PartyEntity legalRepresentativePartyEntity = partyService.getPartyEntityByEntityId(representedPartyId, caseReference);
+
+        DefendantResponseEntity defendantResponse = pcsCaseEntity.getDefendantResponses().stream()
+            .filter(counter -> counter.getParty().getId().equals(representedPartyId))
+            .findFirst()
+            .orElse(null);
+
+        SubmitResponse<State> submitResponse =  counterClaimSubmitConfirmationService
+            .buildSubmitResponse(caseReference, persistenceResult, defendantParty);
+
+        // Schedule this as a task
+        legalRepHelper.submit(legalRepresentativeEntity, pcsCaseEntity, legalRepresentativePartyEntity, defendantResponse);
+
+        return submitResponse;
+    }
 }

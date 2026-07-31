@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
@@ -91,6 +92,22 @@ public class NotificationService {
             NotificationClaimType.COUNTER_CLAIM,
             notificationPersonalisationFactory.forDefendant(defendantResponse)
         );
+    }
+
+    public EmailNotificationResponse sendDefendantResponseConfirmationToLegalRepresentative(LegalRepresentativeEntity legalRepresentativeEntity,
+                                                                                            PcsCaseEntity pcsCaseEntity, PartyEntity legalRepresentativePartyEntity,
+                                                                                            DefendantResponseEntity defendantResponse, EmailTemplate emailTemplate,
+                                                                                            NotificationClaimType notificationClaimType) {
+        return sendEmail(
+            legalRepresentativeRecipient(
+                legalRepresentativeEntity,
+                pcsCaseEntity,
+                legalRepresentativePartyEntity,
+                defendantResponse
+            ),
+            emailTemplate,
+            notificationClaimType,
+            notificationPersonalisationFactory.forLegalRepresentative(legalRepresentativePartyEntity, pcsCaseEntity));
     }
 
     public EmailNotificationResponse sendClaimantDraftSavedForLaterEmailNotification(
@@ -472,6 +489,23 @@ public class NotificationService {
             response.getPcsCase(),
             response.getClaim(),
             PartyRole.DEFENDANT
+        );
+    }
+
+    private NotificationRecipient legalRepresentativeRecipient(LegalRepresentativeEntity legalRepresentativeEntity,
+                                                                PcsCaseEntity pcsCaseEntity,
+                                                                PartyEntity legalRepresentativePartyEntity,
+                                                                DefendantResponseEntity defendantResponse) {
+        if (legalRepresentativeEntity == null) {
+            throw new IllegalStateException("No legal representative found for response: " + defendantResponse.getId());
+        }
+
+        return new NotificationRecipient(
+            legalRepresentativeEntity.getEmail(),
+            legalRepresentativePartyEntity, // was defendant party
+            pcsCaseEntity,
+            defendantResponse.getClaim(),
+            PartyRole.LEGAL_REPRESENTATIVE
         );
     }
 }

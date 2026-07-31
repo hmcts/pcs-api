@@ -10,6 +10,10 @@ import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.utils.LegalRepHelper;
+import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.LegalRepresentativeRepository;
+import uk.gov.hmcts.reform.pcs.idam.UserInfo;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
@@ -142,6 +146,12 @@ class RespondPossessionClaimTest extends BaseEventTest {
     @Mock
     private SubmitResponseFactory submitResponseFactory;
 
+    @Mock
+    private LegalRepresentativeRepository legalRepresentativeRepository;
+
+    @Mock
+    private LegalRepHelper legalRepHelper;
+
     @BeforeEach
     void setUp() {
 
@@ -199,12 +209,17 @@ class RespondPossessionClaimTest extends BaseEventTest {
                 ),
                 new LegalRepSubmissionEventStrategy(
                     draftCaseDataService,
+                    claimResponseService,
+                    defendantResponseService,
+                    partyService,
+                    legalRepresentativeRepository,
+                    pcsCaseService,
                     selectedPartyRetriever,
                     submitResponseFactory,
-                    partyService,
                     submitService,
                     confirmationService,
-                    securityContextService
+                    securityContextService,
+                    legalRepHelper
                 )
             ),
             securityContextService

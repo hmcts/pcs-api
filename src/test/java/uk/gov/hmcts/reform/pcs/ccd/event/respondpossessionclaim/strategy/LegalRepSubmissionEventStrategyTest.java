@@ -14,10 +14,18 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.utils.LegalRepHelper;
+import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.LegalRepresentativeRepository;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
+import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
+import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.ClaimResponseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.DefendantResponseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.CounterClaimSubmitConfirmationService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.RespondPossessionClaimSubmitPersistenceResult;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.RespondPossessionClaimSubmitService;
@@ -49,15 +57,25 @@ class LegalRepSubmissionEventStrategyTest {
     @Mock
     private DraftCaseDataService draftCaseDataService;
     @Mock
+    private ClaimResponseService claimResponseService;
+    @Mock
+    private DefendantResponseService defendantResponseService;
+    @Mock
     private SelectedPartyRetriever selectedPartyRetriever;
     @Mock
+    private PartyService partyService;
+    @Mock
+    private LegalRepresentativeRepository legalRepresentativeRepository;
+    @Mock
+    private PcsCaseService pcsCaseService;
+    @Mock
     private SubmitResponseFactory submitResponseFactory;
+    @Mock
+    private LegalRepHelper legalRepHelper;
     @Mock
     private EventPayload<PCSCase, State> eventPayload;
     @Mock
     private SecurityContextService securityContextService;
-    @Mock
-    private PartyService partyService;
     @Mock
     private RespondPossessionClaimSubmitService respondPossessionClaimSubmitService;
     @Mock
@@ -69,12 +87,17 @@ class LegalRepSubmissionEventStrategyTest {
     void setUp() {
         underTest = new LegalRepSubmissionEventStrategy(
             draftCaseDataService,
+            claimResponseService,
+            defendantResponseService,
+            partyService,
+            legalRepresentativeRepository,
+            pcsCaseService,
             selectedPartyRetriever,
             submitResponseFactory,
-            partyService,
             respondPossessionClaimSubmitService,
             counterClaimSubmitConfirmationService,
-            securityContextService
+            securityContextService,
+            legalRepHelper
         );
     }
 
@@ -116,6 +139,13 @@ class LegalRepSubmissionEventStrategyTest {
         when(selectedPartyRetriever.getCurrentRepresentedPartyId(caseData)).thenReturn(Optional.of(representedPartyId));
         when(draftCaseDataService.getUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim, representedPartyId))
             .thenReturn(Optional.of(caseData));
+//        when(submitResponseFactory.success()).thenReturn(submitResponse);
+        when(eventPayload.caseReference()).thenReturn(CASE_REFERENCE);
+        when(eventPayload.caseData()).thenReturn(caseData);
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(aPcsCaseEntity(representedPartyId));
+        when(legalRepresentativeRepository.findByPartyLinkedToLegalRepresentativeAndActive(representedPartyId))
+            .thenReturn(aLegalRepresentativeEntity());
+
         when(partyService.getPartyEntityById(representedPartyId, CASE_REFERENCE)).thenReturn(representedParty);
         when(respondPossessionClaimSubmitService.persistFinalSubmit(
             CASE_REFERENCE,
@@ -244,5 +274,20 @@ class LegalRepSubmissionEventStrategyTest {
     void supports_WithNonDefendantSolicitorUser_ReturnsFalse() {
         // when / then
         assertThat(underTest.supports(List.of(UserRole.CITIZEN.getRole()))).isFalse();
+    }
+
+    private Optional<LegalRepresentativeEntity> aLegalRepresentativeEntity() {
+        return Optional.of(LegalRepresentativeEntity.builder().build());
+    }
+
+    private PcsCaseEntity aPcsCaseEntity(UUID representedPartyId) {
+        return PcsCaseEntity.builder()
+            .defendantResponses(List.of(
+                DefendantResponseEntity.builder()
+                    .party(PartyEntity.builder()
+                               .id(representedPartyId)
+                               .build())
+                    .build()))
+            .build();
     }
 }
