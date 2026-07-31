@@ -103,6 +103,18 @@ public class PartyService {
         }
     }
 
+    public String getPartyLabel(ClaimEntity mainClaim, UUID partyId) {
+        ClaimPartyEntity applicantClaimParty = getClaimParty(mainClaim, partyId);
+
+        if (applicantClaimParty.getRole() == PartyRole.CLAIMANT) {
+            return "Claimant %d".formatted(applicantClaimParty.getRank());
+        } else if (applicantClaimParty.getRole() == PartyRole.DEFENDANT) {
+            return "Defendant %d".formatted(applicantClaimParty.getRank());
+        } else {
+            return null;
+        }
+    }
+
     public PartyEntity getPrimaryClaimantPartyEntity(PcsCaseEntity pcsCaseEntity) {
         return getPrimaryPartyEntityOfRole(pcsCaseEntity, PartyRole.CLAIMANT);
     }
