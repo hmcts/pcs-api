@@ -18,6 +18,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.LegalRepresentativeRepository;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
@@ -26,6 +27,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.withSettings;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerRoles.CASEWORKER_ROLES;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState.GEN_APP_ISSUED;
 
 @ExtendWith(MockitoExtension.class)
@@ -101,8 +104,9 @@ class GenAppVisibilityServiceTest {
         assertThat(genAppVisibleToUser).isEqualTo(expectedIsVisible);
     }
 
-    @Test
-    void shouldShowWithoutNoticeGenAppsToInternalUsers() {
+    @ParameterizedTest
+    @MethodSource("internalRoles")
+    void shouldShowWithoutNoticeGenAppsToInternalUsers(UserRole internalRole) {
         // Given
         GenAppEntity genAppEntity = mock(GenAppEntity.class);
         when(genAppEntity.getState()).thenReturn(GEN_APP_ISSUED);
@@ -112,11 +116,54 @@ class GenAppVisibilityServiceTest {
         boolean genAppVisibleToUser = underTest.isGenAppVisibleToUser(
             genAppEntity,
             null,
-            List.of(UserRole.HEARING_CENTRE_ADMIN.getRole())
+            List.of(internalRole.getRole())
         );
 
         // Then
         assertThat(genAppVisibleToUser).isTrue();
+    }
+
+    @Test
+    void shouldNotTreatGenericPcsCaseworkerRoleAsInternalVisibilityRole() {
+        // Given
+        PartyEntity party = mock(PartyEntity.class);
+
+        // When
+        boolean documentVisibleToUser = underTest.isWithoutNoticeVisibleToUser(
+            party,
+            null,
+            List.of(UserRole.PCS_CASE_WORKER.getRole())
+        );
+
+        // Then
+        assertThat(documentVisibleToUser).isFalse();
+    }
+
+    @Test
+    void shouldShowDocumentsLinkedToPendingWithoutNoticeGenAppsUsingPartyVisibilityRule() {
+        // Given
+        PartyEntity party = mock(PartyEntity.class);
+        UUID partyId = UUID.randomUUID();
+        when(party.getId()).thenReturn(partyId);
+        when(party.getIdamId()).thenReturn(UUID.randomUUID());
+
+        GenAppEntity genAppEntity = mock(GenAppEntity.class);
+        when(genAppEntity.getWithoutNotice()).thenReturn(VerticalYesNo.YES);
+        when(genAppEntity.getParty()).thenReturn(party);
+
+        when(legalRepresentativeRepository
+                 .isLegalRepresentativeLinkedToPartyAndActive(CURRENT_USER_ID, partyId))
+            .thenReturn(true);
+
+        // When
+        boolean documentVisibleToUser = underTest.isGenAppDocumentVisibleToUser(
+            genAppEntity,
+            CURRENT_USER_ID,
+            List.of()
+        );
+
+        // Then
+        assertThat(documentVisibleToUser).isTrue();
     }
 
     @Test
@@ -160,6 +207,13 @@ class GenAppVisibilityServiceTest {
                 false
             )
         );
+    }
+
+    private static Stream<UserRole> internalRoles() {
+        return Stream.concat(
+            Arrays.stream(CASEWORKER_ROLES),
+            Arrays.stream(JUDICIAL_HISTORY_ROLES)
+        ).distinct();
     }
 
 }

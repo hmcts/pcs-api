@@ -205,11 +205,11 @@ class DocumentsViewTest {
         when(securityContextService.getCurrentUserRoles()).thenReturn(List.of());
 
         GenAppEntity genAppEntity1 = mock(GenAppEntity.class);
-        when(genAppVisibilityService.isGenAppVisibleToUser(genAppEntity1, CURRENT_USER_ID, List.of()))
+        when(genAppVisibilityService.isGenAppDocumentVisibleToUser(genAppEntity1, CURRENT_USER_ID, List.of()))
             .thenReturn(true);
 
         GenAppEntity genAppEntity2 = mock(GenAppEntity.class);
-        when(genAppVisibilityService.isGenAppVisibleToUser(genAppEntity2, CURRENT_USER_ID, List.of()))
+        when(genAppVisibilityService.isGenAppDocumentVisibleToUser(genAppEntity2, CURRENT_USER_ID, List.of()))
             .thenReturn(false);
 
         UUID document1Id = UUID.randomUUID();
@@ -261,7 +261,7 @@ class DocumentsViewTest {
         when(securityContextService.getCurrentUserRoles()).thenReturn(List.of());
 
         GenAppEntity withoutNoticeGenApp = mock(GenAppEntity.class);
-        when(genAppVisibilityService.isGenAppVisibleToUser(withoutNoticeGenApp, CURRENT_USER_ID, List.of()))
+        when(genAppVisibilityService.isGenAppDocumentVisibleToUser(withoutNoticeGenApp, CURRENT_USER_ID, List.of()))
             .thenReturn(false);
 
         DocumentEntity documentEntity = DocumentEntity.builder()

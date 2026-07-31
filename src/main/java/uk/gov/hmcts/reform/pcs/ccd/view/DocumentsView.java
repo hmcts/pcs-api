@@ -74,7 +74,7 @@ public class DocumentsView {
         GenAppEntity genAppEntity = documentEntity.getGeneralApplication();
 
         if (genAppEntity != null) {
-            return genAppVisibilityService.isGenAppVisibleToUser(genAppEntity, currentUserId, currentUserRoles);
+            return genAppVisibilityService.isGenAppDocumentVisibleToUser(genAppEntity, currentUserId, currentUserRoles);
         }
 
         if (documentEntity.getType() == DocumentType.WITHOUT_NOTICE_ORDER) {

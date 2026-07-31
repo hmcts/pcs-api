@@ -2,19 +2,24 @@ package uk.gov.hmcts.reform.pcs.ccd.service.genapp;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
-import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.LegalRepresentativeRepository;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerRoles.CASEWORKER_ROLES;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
 
 @Service
 @AllArgsConstructor
@@ -22,18 +27,10 @@ public class GenAppVisibilityService {
 
     private final LegalRepresentativeRepository legalRepresentativeRepository;
 
-    private static final Set<String> INTERNAL_ROLES = Set.of(
-        UserRole.JUDGE.getRole(),
-        UserRole.FEE_PAID_JUDGE.getRole(),
-        UserRole.CIRCUIT_JUDGE.getRole(),
-        UserRole.LEADERSHIP_JUDGE.getRole(),
-        UserRole.HEARING_CENTRE_TEAM_LEADER.getRole(),
-        UserRole.HEARING_CENTRE_ADMIN.getRole(),
-        UserRole.CTSC_TEAM_LEADER.getRole(),
-        UserRole.CTSC_ADMIN.getRole(),
-        UserRole.WLU_TEAM_LEADER.getRole(),
-        UserRole.WLU_ADMIN.getRole()
-    );
+    private static final Set<String> INTERNAL_ROLES = Stream.concat(
+        Arrays.stream(CASEWORKER_ROLES),
+        Arrays.stream(JUDICIAL_HISTORY_ROLES)
+    ).map(role -> role.getRole()).collect(Collectors.toUnmodifiableSet());
 
     public boolean isGenAppVisibleToUser(GenAppEntity genAppEntity, UUID currentUserId) {
         return isGenAppVisibleToUser(genAppEntity, currentUserId, List.of());
@@ -74,6 +71,20 @@ public class GenAppVisibilityService {
 
         return legalRepresentativeRepository
             .isLegalRepresentativeLinkedToPartyAndActive(currentUserId, party.getId());
+    }
+
+    public boolean isGenAppDocumentVisibleToUser(GenAppEntity genAppEntity,
+                                                 UUID currentUserId,
+                                                 Collection<String> currentUserRoles) {
+        if (genAppEntity == null) {
+            return false;
+        }
+
+        if (genAppEntity.getWithoutNotice() == VerticalYesNo.YES) {
+            return isWithoutNoticeVisibleToUser(genAppEntity.getParty(), currentUserId, currentUserRoles);
+        }
+
+        return isGenAppVisibleToUser(genAppEntity, currentUserId, currentUserRoles);
     }
 
     public List<GenAppEntity> getVisibleGenAppsToUser(Collection<GenAppEntity> genApps, UUID userId) {
