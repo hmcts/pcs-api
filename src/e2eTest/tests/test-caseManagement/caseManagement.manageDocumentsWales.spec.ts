@@ -38,7 +38,7 @@ test.beforeEach(async ({ page, context }) => {
   };
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
   await dismissCookieBanner(page, 'additional');
-  await performAction('login', user.staffAdminWales);
+  await performAction('login', user.hearingCenterAdminWales);
   await dismissCookieBanner(page, 'analytics');
   await performAction('navigateToSummaryPage');
 
