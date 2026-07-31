@@ -968,6 +968,11 @@ class DocumentServiceTest {
 
         when(documentRepository.saveAll(anyList())).thenAnswer(inv -> inv.getArgument(0));
 
+        String description = "some task description";
+        when(taskDescriptionService.createClaimAdditionalDocumentsDescription(
+            eq(CASE_REFERENCE), eq(mainClaim), eq(party), anyList()
+        )).thenReturn(description);
+
         // When
         underTest.linkAdditionalDocumentsToCase(uploadedDocs, pcsCase, party, null);
 
@@ -986,7 +991,7 @@ class DocumentServiceTest {
         assertThat(entity.getSize()).isEqualTo(123L);
         assertThat(entity.getPcsCase()).isSameAs(pcsCase);
         assertThat(entity.getParty()).isSameAs(party);
-        verify(camundaService).createTask(CASE_REFERENCE, TaskType.REVIEW_ADDITIONAL_DOCS_CLAIM);
+        verify(camundaService).createTask(CASE_REFERENCE, TaskType.REVIEW_ADDITIONAL_DOCS_CLAIM, description);
     }
 
     @Test
