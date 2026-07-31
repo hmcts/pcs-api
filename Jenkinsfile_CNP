@@ -167,11 +167,12 @@ withPipeline(type, product, component) {
   }
 
   // HDPI-7989: slim the workspace between agent hops. withEnvironmentAgent
-  // stashes the whole workspace (767MB observed = ~18 min per stash at
-  // controller upload speed). Gradle build output, scanner caches and report
-  // artefacts are not needed downstream: deploy uses the ACR image, HLDS
-  // recompiles from source. The du listing logs a breakdown for diagnosis.
-  afterAlways('akschartsinstall') {
+  // (lib 2.4.4) stashes the whole workspace on entry and exit of every stage
+  // that switches agent pools. build/ alone is 742MB of a 767MB workspace
+  // (~18 min per stash at degraded controller IO; 22MB after cleanup). Any
+  // stage that runs gradle regenerates build/, so cleanup runs after each:
+  // downstream stages recompile from source and never read a stashed build/.
+  def slimWorkspace = {
     sh '''
       echo "Workspace size breakdown (MB):"
       du -sm * .[!.]* 2>/dev/null | sort -rn | sed -n 1,15p
@@ -182,20 +183,32 @@ withPipeline(type, product, component) {
     '''
   }
 
+  afterAlways('akschartsinstall') {
+    slimWorkspace()
+  }
+
+  afterAlways('highleveldatasetup') {
+    slimWorkspace()
+  }
+
   afterAlways('smoketest:preview') {
     archiveSmokeTestReports()
+    slimWorkspace()
   }
 
   afterAlways('smoketest:aat') {
     archiveSmokeTestReports()
+    slimWorkspace()
   }
 
   afterAlways('functionalTest:preview') {
     archiveFunctionalTestReports()
+    slimWorkspace()
   }
 
   afterAlways('functionalTest:aat') {
     archiveFunctionalTestReports()
+    slimWorkspace()
   }
 
   afterAlways('E2eTest:aat') {
