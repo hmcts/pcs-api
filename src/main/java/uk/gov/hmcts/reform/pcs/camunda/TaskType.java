@@ -27,7 +27,11 @@ public enum TaskType {
     REVIEW_ADDITIONAL_DOCS_CLAIM(
         "ReviewAdditionalDocumentsClaim",
         "Review additional documents - claim",
-        ""
+        """
+            Review the additional documents submitted on the claim, check whether any further case action is required,
+            and take the appropriate action. Only mark the task as complete once the documents have been reviewed
+            and any required action has been completed.
+            """
     );
 
     private final String id;
