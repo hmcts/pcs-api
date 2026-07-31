@@ -1,6 +1,6 @@
 ### Review Documents
 
-Additional documents have been uploaded to claim by {{partyLabel}}:
+Additional documents have been uploaded to the claim by {{partyLabel}}:
 
 <ul class="govuk-list govuk-list--bullet">
   {% for filename in filenames %}
