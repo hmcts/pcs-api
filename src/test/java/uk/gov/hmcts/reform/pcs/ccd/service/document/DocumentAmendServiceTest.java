@@ -169,7 +169,7 @@ class DocumentAmendServiceTest {
         final DynamicStringList carriedSubmission = DynamicStringList.builder().build();
         final DynamicStringListElement rebuiltSubmissionOption = DynamicStringListElement.builder()
             .code(GEN_APP_ID_PREFIX + ":" + GEN_APP_ID)
-            .label("Gen app GA1 - submitted 20 May 2026")
+            .label("General Application GA1 - submitted 20 May 2026")
             .build();
         final DynamicStringList rebuiltSubmissionList = DynamicStringList.builder()
             .value(rebuiltSubmissionOption)

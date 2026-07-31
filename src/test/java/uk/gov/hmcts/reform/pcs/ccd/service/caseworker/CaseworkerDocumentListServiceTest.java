@@ -60,7 +60,7 @@ class CaseworkerDocumentListServiceTest {
         );
 
         assertThat(result.getValue().getCode()).isEqualTo(GEN_APP_ID_PREFIX + ":" + GEN_APP_ID);
-        assertThat(result.getValue().getLabel()).isEqualTo("Gen app GA1 - submitted 1 July 2026");
+        assertThat(result.getValue().getLabel()).isEqualTo("General Application GA1 - submitted 1 July 2026");
     }
 
     @Test

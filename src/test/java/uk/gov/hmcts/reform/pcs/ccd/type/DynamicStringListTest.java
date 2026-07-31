@@ -106,11 +106,11 @@ class DynamicStringListTest {
         String json = """
             {
               "valueCode": "GEN_APP:123",
-              "valueLabel": "Gen app GA1 - submitted 16 July 2026",
+              "valueLabel": "General Application GA1 - submitted 16 July 2026",
               "list_items": [
                 {
                   "code": "GEN_APP:123",
-                  "label": "Gen app GA1 - submitted 16 July 2026"
+                  "label": "General Application GA1 - submitted 16 July 2026"
                 }
               ]
             }
@@ -120,12 +120,12 @@ class DynamicStringListTest {
 
         assertThat(actual.getValue()).isEqualTo(DynamicStringListElement.builder()
             .code("GEN_APP:123")
-            .label("Gen app GA1 - submitted 16 July 2026")
+            .label("General Application GA1 - submitted 16 July 2026")
             .build());
         assertThat(actual.getListItems())
             .containsExactly(DynamicStringListElement.builder()
                 .code("GEN_APP:123")
-                .label("Gen app GA1 - submitted 16 July 2026")
+                .label("General Application GA1 - submitted 16 July 2026")
                 .build());
     }
 
