@@ -7,14 +7,18 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantInformation;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
+import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
+import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.BasePersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.ClaimantBasePersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.CounterclaimPaymentSuccessPersonalisation;
+import uk.gov.hmcts.reform.pcs.notify.template.personalisation.NoticeOfChangeCompletedPersonalisation;
 
 import java.util.Locale;
 
@@ -24,6 +28,8 @@ import java.util.Locale;
 public class NotificationPersonalisationFactory {
 
     private final PartyService partyService;
+    private final AddressFormatter addressFormatter;
+    private final AddressMapper addressMapper;
 
     public BasePersonalisation forDefendant(DefendantResponseEntity defendantResponse) {
         PartyEntity defendant = defendantResponse.getParty();
@@ -67,6 +73,28 @@ public class NotificationPersonalisationFactory {
             .base(forDefendant(defendantResponse))
             .paymentReferenceNumber(paymentReference)
             .build();
+    }
+
+    public NoticeOfChangeCompletedPersonalisation noticeOfChangeCompleted(PartyEntity partyEntity,
+                                                                         PcsCaseEntity pcsCaseEntity) {
+
+        return NoticeOfChangeCompletedPersonalisation.builder()
+            .base(buildPersonalisation(partyEntity, pcsCaseEntity))
+            .address(formatPropertyAddress(pcsCaseEntity))
+            .build();
+    }
+
+    private String formatPropertyAddress(PcsCaseEntity pcsCaseEntity) {
+        AddressEntity propertyAddress = pcsCaseEntity.getPropertyAddress();
+
+        if (propertyAddress == null) {
+            return "";
+        }
+
+        return addressFormatter.formatFullAddressWithoutCountry(
+            addressMapper.toAddressUK(propertyAddress),
+            AddressFormatter.COMMA_DELIMITER
+        );
     }
 
     private BasePersonalisation buildPersonalisation(

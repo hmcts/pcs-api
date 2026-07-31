@@ -17,6 +17,8 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
+import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
+import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.BasePersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.ClaimantBasePersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.CounterclaimPaymentSuccessPersonalisation;
@@ -38,6 +40,8 @@ class NotificationPersonalisationFactoryTest {
     private PartyService partyService;
     @Mock(strictness = LENIENT)
     private PcsCaseEntity pcsCaseEntity;
+    @Mock(strictness = LENIENT)
+    private AddressMapper addressMapper;
 
     private NotificationPersonalisationFactory factory;
 
@@ -45,7 +49,7 @@ class NotificationPersonalisationFactoryTest {
     void setUp() {
         when(pcsCaseEntity.getCaseReference()).thenReturn(CASE_REFERENCE);
 
-        factory = new NotificationPersonalisationFactory(partyService);
+        factory = new NotificationPersonalisationFactory(partyService, new AddressFormatter(), addressMapper);
     }
 
     @Nested

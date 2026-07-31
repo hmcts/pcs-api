@@ -29,6 +29,8 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantRespon
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.PaymentAgreementEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
+import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
+import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 import uk.gov.hmcts.reform.pcs.config.NotificationTemplateConfiguration;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 import uk.gov.hmcts.reform.pcs.notify.entities.CaseNotification;
@@ -94,6 +96,9 @@ class NotificationServiceTest {
 
     @Mock
     private NotificationPersonalisationFactory notificationPersonalisationFactory;
+
+    @Mock
+    private AddressMapper addressMapper;
 
     @Captor
     private ArgumentCaptor<SchedulableInstance<SendEmailTaskData>> schedulableInstanceCaptor;
@@ -1018,7 +1023,7 @@ class NotificationServiceTest {
     @DisplayName("TemplatePersonalisation Method Tests")
     class TemplatePersonalisationMethodTests {
         private final NotificationPersonalisationFactory factory =
-            new NotificationPersonalisationFactory(partyService);
+            new NotificationPersonalisationFactory(partyService, new AddressFormatter(), addressMapper);
 
         @Test
         @DisplayName("Should use overridden claimant name when name flag is NO")

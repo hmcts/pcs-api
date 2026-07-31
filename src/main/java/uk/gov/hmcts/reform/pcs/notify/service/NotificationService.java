@@ -160,7 +160,7 @@ public class NotificationService {
             partyRecipient(defendant),
             EmailTemplate.NOTICE_OF_CHANGE_COMPLETED,
             NotificationClaimType.NOTICE_OF_CHANGE,
-            notificationPersonalisationFactory.forParty(defendant, defendant.getPcsCase())
+            notificationPersonalisationFactory.noticeOfChangeCompleted(defendant, defendant.getPcsCase())
         );
     }
 
