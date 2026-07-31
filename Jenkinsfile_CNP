@@ -166,15 +166,19 @@ withPipeline(type, product, component) {
     env.CCD_ENABLED = "true"
   }
 
-  // HDPI-7989: slim the workspace before the High Level Data Setup agent hop.
-  // The HLDS stage stashes the whole workspace (16k+ files, ~19 min observed);
-  // scanner caches and report output are not needed by the gradle HLDS task.
-  // The du listing keeps a size breakdown in the log for future diagnosis.
+  // HDPI-7989: slim the workspace between agent hops. withEnvironmentAgent
+  // stashes the whole workspace (767MB observed = ~18 min per stash at
+  // controller upload speed). Gradle build output, scanner caches and report
+  // artefacts are not needed downstream: deploy uses the ACR image, HLDS
+  // recompiles from source. The du listing logs a breakdown for diagnosis.
   afterAlways('akschartsinstall') {
     sh '''
-      echo "Workspace size before HLDS stash:"
-      du -sm .[^.]* * 2>/dev/null | sort -rn | head -15 || true
-      rm -rf .scannerwork .sonar build/reports build/test-results test-results allure-results functional-output || true
+      echo "Workspace size breakdown (MB):"
+      du -sm * .[!.]* 2>/dev/null | sort -rn | sed -n 1,15p
+      rm -rf build .scannerwork .sonar test-results allure-results functional-output e2e-output output
+      echo "After cleanup:"
+      du -sm . 2>/dev/null
+      true
     '''
   }
 
