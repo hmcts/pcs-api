@@ -150,7 +150,7 @@ public class CaseworkerDocumentService {
     private static String getSelectedCode(DynamicStringList relatedSubmission) {
         return Optional.ofNullable(relatedSubmission.getValue())
             .map(DynamicStringListElement::getCode)
-            .orElse(null);
+            .orElseThrow(() -> new IllegalStateException("No related submission selected"));
     }
 
     public DocumentType mapToDocumentType(CaseworkerDocumentType caseworkerDocumentType) {
