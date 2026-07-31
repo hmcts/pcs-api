@@ -14,6 +14,8 @@ import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 
 import java.util.UUID;
 
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
+
 @Service
 @AllArgsConstructor
 public class UpdatePartyService {
@@ -31,19 +33,15 @@ public class UpdatePartyService {
         partyEntity.setAddressKnown(VerticalYesNo.from(address != null));
         partyEntity.setAddress(address != null ? addressMapper.toAddressEntityAndNormalise(address) : null);
 
-        String phoneNumber = nullIfBlank(updatePartyDetails.getPhoneNumber());
-        partyEntity.setPhoneNumberProvided(VerticalYesNo.from(phoneNumber != null));
+        String phoneNumber = updatePartyDetails.getPhoneNumber();
+        partyEntity.setPhoneNumberProvided(VerticalYesNo.from(isNotBlank(phoneNumber)));
         partyEntity.setPhoneNumber(phoneNumber);
-        partyEntity.setEmailAddress(nullIfBlank(updatePartyDetails.getEmail()));
+        partyEntity.setEmailAddress(updatePartyDetails.getEmail());
 
         if (updatePartyDetails.getPartyType() == PartyType.DEFENDANT) {
             partyEntity.setDateOfBirth(updatePartyDetails.getDateOfBirth());
         }
 
         partyRepository.save(partyEntity);
-    }
-
-    private String nullIfBlank(String value) {
-        return value == null || value.isBlank() ? null : value;
     }
 }

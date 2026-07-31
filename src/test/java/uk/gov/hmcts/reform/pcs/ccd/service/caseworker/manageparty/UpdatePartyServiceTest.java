@@ -83,7 +83,7 @@ class UpdatePartyServiceTest {
     }
 
     @Test
-    void shouldNullifyBlankEmailAndPhoneNumber() {
+    void shouldNotMarkPhoneNumberProvidedWhenBlank() {
         // Given
         UUID partyId = UUID.randomUUID();
         PartyEntity partyEntity = new PartyEntity();
@@ -92,8 +92,8 @@ class UpdatePartyServiceTest {
         UpdatePartyDetails updatePartyDetails = UpdatePartyDetails.builder()
             .partyToUpdate(buildPartyRadioList(partyId))
             .partyType(PartyType.CLAIMANT)
-            .email("")
-            .phoneNumber("")
+            .email(" ")
+            .phoneNumber(" ")
             .build();
 
         // When
@@ -102,8 +102,8 @@ class UpdatePartyServiceTest {
         // Then
         verify(partyRepository).save(partyEntityCaptor.capture());
         PartyEntity savedParty = partyEntityCaptor.getValue();
-        assertThat(savedParty.getEmailAddress()).isNull();
-        assertThat(savedParty.getPhoneNumber()).isNull();
+        assertThat(savedParty.getEmailAddress()).isEqualTo(" ");
+        assertThat(savedParty.getPhoneNumber()).isEqualTo(" ");
         assertThat(savedParty.getPhoneNumberProvided()).isEqualTo(VerticalYesNo.NO);
     }
 

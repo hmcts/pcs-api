@@ -76,7 +76,6 @@ public class ManagePartyOptionsPage implements CcdPageConfiguration {
         PartyType partyType = switch (role) {
             case CLAIMANT -> PartyType.CLAIMANT;
             case DEFENDANT -> PartyType.DEFENDANT;
-            case LITIGATION_FRIEND -> PartyType.LITIGATION_FRIEND;
             default -> null;
         };
         updatePartyDetails.setPartyType(partyType);
@@ -90,7 +89,6 @@ public class ManagePartyOptionsPage implements CcdPageConfiguration {
     /**
      * Clears a stale address left over from the previously selected party's prepopulation by
      * setting the fields to empty strings if the current party's address isn't known
-     * Setting the address field to null does not clear it.
      */
     private AddressUK clearPreviousAddress(AddressEntity addressEntity) {
         AddressUK address = addressEntity != null

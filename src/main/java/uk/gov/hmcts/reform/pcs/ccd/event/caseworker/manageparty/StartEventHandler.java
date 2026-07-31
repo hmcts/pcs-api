@@ -36,7 +36,7 @@ public class StartEventHandler implements Start<PCSCase, State> {
         caseData.getAddPartyDetails().setPartyRadioList(
             buildPartyList(mainClaim, PartyRole.CLAIMANT, PartyRole.DEFENDANT));
         caseData.getUpdatePartyDetails().setPartyToUpdate(
-            buildPartyList(mainClaim, PartyRole.CLAIMANT, PartyRole.DEFENDANT, PartyRole.LITIGATION_FRIEND));
+            buildPartyList(mainClaim, PartyRole.CLAIMANT, PartyRole.DEFENDANT));
 
         return caseData;
     }
