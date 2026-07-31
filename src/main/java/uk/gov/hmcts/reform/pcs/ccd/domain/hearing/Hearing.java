@@ -28,7 +28,7 @@ public class Hearing {
     @CCD(ignore = true)
     public static final String CANCELLATION_REASON_LABEL = "Enter reason for cancellation";
 
-    private Long hearingId;
+    private Integer hearingId;
 
     @CCD(label = "Which type of hearing is this?")
     private HearingType type;

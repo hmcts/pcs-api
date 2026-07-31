@@ -33,7 +33,7 @@ public class HearingService {
     }
 
     public void cancelHearing(Hearing hearing) {
-        Long hearingId = Objects.requireNonNull(hearing.getHearingId(), "Hearing ID must be set");
+        int hearingId = Objects.requireNonNull(hearing.getHearingId(), "Hearing ID must be set");
 
         HearingEntity hearingEntity = loadHearing(hearingId);
 
@@ -41,7 +41,7 @@ public class HearingService {
         hearingEntity.setCancellationReason(hearing.getCancellationReason());
     }
 
-    private HearingEntity loadHearing(Long hearingId) {
+    private HearingEntity loadHearing(int hearingId) {
         return hearingRepository.findById(hearingId)
             .orElseThrow(() -> new HearingNotFoundException("Hearing not found with ID " + hearingId));
     }

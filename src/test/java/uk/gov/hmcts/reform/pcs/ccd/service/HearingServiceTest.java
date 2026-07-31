@@ -170,7 +170,7 @@ public class HearingServiceTest {
     @Test
     void shouldCancelHearing() {
         // Given
-        long hearingId = 5678L;
+        int hearingId = 5678;
         String expectedCancellationReason = "some cancellation reason";
 
         Hearing hearing = Hearing.builder()
@@ -192,7 +192,7 @@ public class HearingServiceTest {
     @Test
     void shouldThrowExceptionCancellingUnknownHearing() {
         // Given
-        long hearingId = 5678L;
+        int hearingId = 5678;
 
         Hearing hearing = Hearing.builder()
             .hearingId(hearingId)

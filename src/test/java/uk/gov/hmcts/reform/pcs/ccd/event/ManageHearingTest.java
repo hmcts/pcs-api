@@ -235,16 +235,16 @@ public class ManageHearingTest extends BaseEventTest {
         void shouldSetNextHearingId() {
             // Given
             HearingEntity hearingEntity1 = createHearing(FIXED_TEST_TIME.minusSeconds(1));
-            hearingEntity1.setId(1001L);
+            hearingEntity1.setId(1001);
 
             HearingEntity hearingEntity2 = createHearing(FIXED_TEST_TIME.plusSeconds(1));
-            hearingEntity2.setId(1002L);
+            hearingEntity2.setId(1002);
 
             HearingEntity hearingEntity3 = createHearing(FIXED_TEST_TIME.plusSeconds(2));
-            hearingEntity3.setId(1003L);
+            hearingEntity3.setId(1003);
 
             HearingEntity hearingEntity4 = createHearing(FIXED_TEST_TIME.plusSeconds(3));
-            hearingEntity4.setId(1004L);
+            hearingEntity4.setId(1004);
 
             when(pcsCaseEntity.getHearings())
                 .thenReturn(List.of(hearingEntity1, hearingEntity2, hearingEntity3, hearingEntity4));
