@@ -38,7 +38,9 @@ public class CreateFlags implements CCDConfig<PCSCase, State, UserRole> {
                        UserRole.CTSC_ADMIN,
                        UserRole.HEARING_CENTRE_ADMIN,
                        UserRole.WLU_ADMIN,
-                       UserRole.PCS_CASE_WORKER)
+                       UserRole.PCS_CASE_WORKER,
+                       UserRole.PCS_SOLICITOR,
+                       UserRole.HMCTS_CTSC)
                 .grantHistoryOnly(JUDICIAL_HISTORY_ROLES))
                 .page("caseworkerCaseFlag")
                 .optional(PCSCase::getCaseFlags, ShowConditions.NEVER_SHOW, true, true)
