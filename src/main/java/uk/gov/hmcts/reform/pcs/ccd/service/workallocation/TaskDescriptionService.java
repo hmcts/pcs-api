@@ -25,8 +25,8 @@ public class TaskDescriptionService {
     private final PartyService partyService;
     private final PebbleEngine pebbleEngine;
 
-    public String createReviewAdjournGenAppDescription(long caseReference,
-                                                       GenAppEntity genAppEntity) {
+    public String createReviewGenAppDescription(long caseReference,
+                                                GenAppEntity genAppEntity) {
 
         List<String> additionalDocumentFilenames = genAppEntity.getDocuments().stream()
             .map(DocumentEntity::getFileName)
@@ -41,7 +41,12 @@ public class TaskDescriptionService {
             "filenames", filenames
         );
 
-        String templateName = "review-adjourn-gen-app";
+        String templateName = switch (genAppEntity.getType()) {
+            case ADJOURN -> "review-adjourn-gen-app";
+            case SET_ASIDE -> "review-set-aside-gen-app";
+            case SOMETHING_ELSE -> "review-gen-app";
+        };
+
         return renderTemplate(templateName, context);
     }
 
