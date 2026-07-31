@@ -31,9 +31,7 @@ public class ClaimResponseService {
 
     /**
      * Saves the defendant's contact preferences, contact details and reasonable adjustment flags
-     * against the given defendant party. Both the citizen and legal representative journeys reach
-     * this through {@code RespondPossessionClaimSubmitService.persistFinalSubmit}, which resolves
-     * the party, so the flags are always scoped to the party that responded.
+     * against the given defendant party.
      *
      * @throws IllegalStateException if no party is found
      */
