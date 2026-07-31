@@ -7,7 +7,7 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerReadAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.ClaimantAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DefendantAccess;
-import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DraftDiscardedAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.SystemUserAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.InternalCaseFlagAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.GlobalSearchAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.RasValidationAccess;
@@ -22,7 +22,7 @@ public enum State {
 
     @CCD(
         label = "Awaiting Submission to HMCTS",
-        access = {ClaimantAccess.class, CitizenAccess.class, RasValidationAccess.class},
+        access = {ClaimantAccess.class, CitizenAccess.class, RasValidationAccess.class, SystemUserAccess.class},
         hint = "${caseTitleMarkdown}"
     )
     AWAITING_SUBMISSION_TO_HMCTS,
@@ -30,14 +30,14 @@ public enum State {
     @CCD(
         label = "Pending Case Issued",
         access = {ClaimantAccess.class, CitizenAccess.class,  RasValidationAccess.class,
-            InternalCaseFlagAccess.class, GlobalSearchAccess.class},
+            InternalCaseFlagAccess.class, GlobalSearchAccess.class, SystemUserAccess.class},
         hint = "${caseTitleMarkdown}"
     )
     PENDING_CASE_ISSUED,
 
     @CCD(
             label = "Draft Discarded",
-            access = {DraftDiscardedAccess.class}
+            access = {SystemUserAccess.class}
     )
     DRAFT_DISCARDED,
 

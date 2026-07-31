@@ -6,7 +6,7 @@ import uk.gov.hmcts.ccd.sdk.api.HasAccessControl;
 import uk.gov.hmcts.ccd.sdk.api.HasRole;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 
-public class DraftDiscardedAccess implements HasAccessControl {
+public class SystemUserAccess implements HasAccessControl {
 
     @Override
     public SetMultimap<HasRole, Permission> getGrants() {

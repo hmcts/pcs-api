@@ -750,8 +750,7 @@ public class PCSCase {
 
     @JsonProperty("TTL")
     @CCD(
-            label = "Set up TTL",
-            typeOverride = FieldType.TTL
+        typeOverride = FieldType.TTL
     )
     private TTL ttl;
 }

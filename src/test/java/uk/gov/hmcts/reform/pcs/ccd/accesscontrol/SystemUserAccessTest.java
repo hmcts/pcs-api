@@ -10,15 +10,15 @@ import uk.gov.hmcts.ccd.sdk.api.Permission;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(MockitoExtension.class)
-class DraftDiscardedAccessTest {
+class SystemUserAccessTest {
 
     @Test
     void shouldReturnGrantsWithCreateReadAndUpdateAccess() {
         // given
-        DraftDiscardedAccess draftDiscardedAccess = new DraftDiscardedAccess();
+        SystemUserAccess systemUserAccess = new SystemUserAccess();
 
         // when
-        SetMultimap<HasRole, Permission> grants = draftDiscardedAccess.getGrants();
+        SetMultimap<HasRole, Permission> grants = systemUserAccess.getGrants();
 
         // then
         assertThat(grants.get(UserRole.SYSTEM_USER)).isEqualTo(Permission.CRU);
