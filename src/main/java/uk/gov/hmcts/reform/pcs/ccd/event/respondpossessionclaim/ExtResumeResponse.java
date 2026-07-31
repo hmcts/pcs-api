@@ -1,7 +1,7 @@
-package uk.gov.hmcts.reform.pcs.ccd.event;
+package uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim;
 
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+
 import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
 import uk.gov.hmcts.ccd.sdk.api.DecentralisedConfigBuilder;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
@@ -9,23 +9,21 @@ import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.NoopSubmitHandler;
 
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.RELEASE_1_DOT_2;
 
 @Component
-@Slf4j
-public class ExtRespondPossessionClaim implements CCDConfig<PCSCase, State, UserRole> {
+public class ExtResumeResponse implements CCDConfig<PCSCase, State, UserRole> {
+
+    private static final String EVENT_ID = "ext:resumeResponse";
 
     @Override
-    public void configureDecentralised(final DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
+    public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         configBuilder
-            .decentralisedEvent("ext:respondPossessionClaim", new NoopSubmitHandler())
+            .decentralisedEvent(EVENT_ID, new NoopSubmitHandler())
             .forState(State.CASE_ISSUED)
-            .showCondition(ShowConditions.and(
-                "legalRepUpdatedDetails=\"Yes\"",
-                ShowConditions.featureFlagsEnabled(RELEASE_1_DOT_2)))
-            .name("Respond to claim")
+            .showCondition(ShowConditions.featureFlagsEnabled(RELEASE_1_DOT_2))
+            .name("Resume response")
             .description("Exposes event to redirect to pcs-frontend")
             .grant(Permission.CRU, UserRole.DEFENDANT_SOLICITOR);
     }

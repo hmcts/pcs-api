@@ -60,6 +60,10 @@ public abstract class BaseEventTest {
 
     }
 
+    protected void assertConfiguredId(String id) {
+        assertThat(getConfiguredEvent().getId()).isEqualTo(id);
+    }
+
     private ResolvedCCDConfig<PCSCase, State, UserRole> buildEventConfig(
         CCDConfig<PCSCase, State, UserRole> eventConfig) {
 
