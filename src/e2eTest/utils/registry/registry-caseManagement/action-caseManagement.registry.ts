@@ -44,6 +44,7 @@ export class ActionCMRegistry {
     ['enterApplicationFeeDetails', new CaseManagementAction()],
     ['enterApplicationConsentAndNotice', new CaseManagementAction()],
     ['verifyReferToJudge', new CaseManagementAction()],
+    ['verifyGenAppConfirm', new CaseManagementAction()],
     ['errorValidationSelectDocumentPage', new ErrorValidationAction()],
     ['errorValidationChangeCaseStatePage', new ErrorValidationAction()],
     ['errorValidationEnterGeneralAppPage', new ErrorValidationAction()],
