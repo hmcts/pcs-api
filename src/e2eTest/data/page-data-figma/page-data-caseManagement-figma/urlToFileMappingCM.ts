@@ -7,5 +7,6 @@ export default {
   'enterGenAppapplicationFee': 'enterGenAppapplicationFee',
   'enterGenAppconsentAndNotice': 'enterGenAppconsentAndNotice',
   'caseworkerUploadDocumentsuploadADocument': 'uploadADocument',
-  'caseworkerUploadDocuments/confirm' : 'confirmUpload'
+  'caseworkerUploadDocuments/confirm' : 'confirmUpload',
+  'amendDocuments/confirm': 'confirmAmend',
 };

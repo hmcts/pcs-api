@@ -196,7 +196,7 @@ export class CaseManagementAction implements IAction {
       await performAction('select', selectApp.dropQn, selectApp.selectOption);
     }
     if(selectApp.date){
-    await performAction('inputDate', selectApp.label as string, selectApp.date);
+    await performAction('inputDate', selectApp.label as string, selectApp.date as string);
     }
 
     await performAction('clickRadioButton', { question: selectApp.question1, option: selectApp.option1 });

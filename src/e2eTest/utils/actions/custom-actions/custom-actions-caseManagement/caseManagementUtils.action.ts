@@ -136,7 +136,7 @@ export class CaseManagementCommonUtils {
     return Array.from(
       { length: length },
       (_, index) =>
-        `General Application GA${index + 1} - submitted ${today}`
+        `Gen app GA${index + 1} - submitted ${today}`
     );
   }
 

@@ -6,7 +6,7 @@ import { PageContentValidation } from '@utils/validations/element-validations/pa
 import { caseSummary, home, user } from '@data/page-data';
 import { dismissCookieBanner } from '@config/cookie-banner';
 import { initializeCMExecutor, performAction } from '@utils/controller-caseManagement';
-import { amendDocumentDetails, checkYourAnswersUploadADocument, selectDocument, uploadADocument } from '@data/page-data-figma/page-data-caseManagement-figma';
+import { amendDocumentDetails, checkYourAnswersAmendDocument, checkYourAnswersUploadADocument, selectDocument, uploadADocument } from '@data/page-data-figma/page-data-caseManagement-figma';
 import { CaseManagementCommonUtils } from '@utils/actions/custom-actions/custom-actions-caseManagement/caseManagementUtils.action';
 import { allPartyDetails } from '@utils/actions/custom-actions/custom-actions-caseManagement/caseManagement.action';
 
@@ -52,6 +52,9 @@ test.afterEach(async () => {
 
 test.describe('Case management - Manage documents e2e Journey @nightly', async () => {
   test('Case management - Manage documents - Amend @CM @regression', async () => {
+    let date = CaseManagementCommonUtils.getRandomDate(uploadADocument.dateTypeHiddenUserInput);
+    let appType = CaseManagementCommonUtils.getGenApplicationType(defendantUserDetails.length)[0];
+    let party = allPartyDetails[0]
     await performAction('selectAnEvent', { eventType: caseSummary.manageDocuments.amend });
     await performValidation('mainHeader', selectDocument.mainHeader);
     await performAction('errorValidationSelectDocumentPage', selectDocument.errorValidation);
@@ -60,6 +63,17 @@ test.describe('Case management - Manage documents e2e Journey @nightly', async (
       question1: selectDocument.documentToAmendHiddenQuestion, option1: selectDocument.typeOfDocumentHiddenRadioOption,
       nextPage: amendDocumentDetails.mainHeader
     });
+    await performAction('inputText', amendDocumentDetails.fileNameInputTextLabel, (selectDocument.typeOfDocumentHiddenRadioOption).split('-')[0]);
+    await performAction('selectDynamicAppAndPartyDocRelatedTo', {
+      question: amendDocumentDetails.whichAppOrCounterClaimThisRelateToQuestion,
+      option: appType,
+      label: amendDocumentDetails.addIssueDateTextLabel,
+      date: date,
+      question1: amendDocumentDetails.partyDocRelatedToQuestion,
+      option1: party,
+      nextPage: checkYourAnswersAmendDocument.mainHeader
+    });
+    await performAction('clickButton', checkYourAnswersAmendDocument.submitButton);
   });
 
   test('Case management - Manage documents - Upload @CM @regression', async () => {
