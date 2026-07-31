@@ -159,7 +159,9 @@ export class ActionRegistry {
     ['requestRemission', new FeeAndPayAction()],
     ['requestRefund', new FeeAndPayAction()],
     ['approveRefund', new FeeAndPayAction()],
-    ['rejectRefund', new FeeAndPayAction()]
+    ['rejectRefund', new FeeAndPayAction()],
+    ['noticeOfChange', new CreateCaseAction()],
+    ['clientDetails', new CreateCaseAction()],
   ]);
 
   static getAction(actionName: string): IAction {

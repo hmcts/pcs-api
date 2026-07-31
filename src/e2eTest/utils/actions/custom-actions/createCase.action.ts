@@ -58,6 +58,8 @@ import {compareMaps} from '@utils/common/compareMaps.util';
 import {caseInfo, defendantUserDetails} from './createCaseAPI.action';
 import {createCaseApiData} from '@data/api-data';
 import {formatCaseStateText, formatCurrency, formatDate, formatDateTime, formatUploadDocName, formatText, formatWord} from '@utils/common/string.utils';
+import {noc} from "@data/page-data-figma/page-data-legalRepresentative/noc.page.data";
+import {clientDetails} from "@data/page-data-figma/page-data-legalRepresentative/clientDetails.page.data";
 export let caseNumber: string;
 export let claimantsName: string;
 export let addressInfo: { buildingStreet: string; townCity: string; engOrWalPostcode: string };
@@ -132,6 +134,8 @@ export class CreateCaseAction implements IAction {
       ['validateCaseFileViewIndividualFolder', () => this.validateCaseFileViewIndividualFolder(page, fieldName as actionRecord)],
       ['validateCaseListTable', () => this.validateCaseListTable(page, fieldName as actionRecord)],
       ['validateTabAccess', () => this.validateTabAccess(page, fieldName as actionRecord)],
+      ['noticeOfChange', () => this.noticeOfChange(fieldName as actionRecord)],
+      ['clientDetails', () => this.clientDetails(fieldName as actionRecord)],
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -1585,7 +1589,7 @@ export class CreateCaseAction implements IAction {
     const folder:string[] = caseFileView as string[];
 
     const missingFolders = folder.filter(name => !folderRetrieved.some(text => text.includes(name)));
-    expect(missingFolders, `Missing folders: ${missingFolders.join(", ")}`).toHaveLength(0);    
+    expect(missingFolders, `Missing folders: ${missingFolders.join(", ")}`).toHaveLength(0);
   }
 
   public async validateCaseFileViewIndividualFolder(page: Page ,caseFile: actionRecord){
@@ -1619,7 +1623,7 @@ export class CreateCaseAction implements IAction {
       case 'Uncategorised documents':
         this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad.additionalDocuments, 'Other document');
         break;
-      
+
       case 'Applications':
         this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad.xui_genapp_UploadedDocuments, 'All Files');
         userInputFiles=this.cleanGenAppFilesArray(userInputFiles,defendantUserDetails.length);
@@ -1643,7 +1647,7 @@ export class CreateCaseAction implements IAction {
     const actualFileCount = await fileLocator.count();
 
     expect(actualFileCount, 'File count matching').toEqual(fileCount)
-    const fileArray = this.cleanFilesArray(await fileLocator.allTextContents());    
+    const fileArray = this.cleanFilesArray(await fileLocator.allTextContents());
     expect(userInputFiles.sort(), `validating  upload files for "${folderName}"`).toEqual(fileArray.sort());
     console.log(`\n✅ The files under section "${folderName}" are \n "${fileArray}"`);
 
@@ -1787,7 +1791,7 @@ export class CreateCaseAction implements IAction {
 
     });
   }
- 
+
   public cleanGenAppFilesArray(filesArray: string[], defendantCount: number): string[] {
     const result: string[] = [];
 
@@ -1802,6 +1806,17 @@ export class CreateCaseAction implements IAction {
     }
 
     return result;
+  }
+
+  private async noticeOfChange(caseReferenceNumber: actionRecord) {
+    await performAction('inputText', noc.onlineCaseReferenceNumberTextLabel, caseReferenceNumber.caseRefNo);
+    await performAction('clickButton', noc.continueButton);
+  }
+
+  private async clientDetails(clientName: actionRecord) {
+    await performAction('inputText', clientDetails.firstNameTextLabel, clientName.firstName);
+    await performAction('inputText', clientDetails.lastNameTextLabel, clientName.lastName);
+    await performAction('clickButton', clientDetails.continueButton);
   }
 
 }
