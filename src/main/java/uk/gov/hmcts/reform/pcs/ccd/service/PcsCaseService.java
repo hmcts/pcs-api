@@ -12,6 +12,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentImportService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
@@ -33,6 +34,7 @@ public class PcsCaseService {
     private final ClaimService claimService;
     private final PartyService partyService;
     private final DocumentService documentService;
+    private final DocumentImportService documentImportService;
     private final TenancyLicenceService tenancyLicenceService;
     private final AddressMapper addressMapper;
     private final CaseLinkService caseLinkService;
@@ -97,10 +99,9 @@ public class PcsCaseService {
     @Transactional
     public void deleteCase(long caseReference) {
         PcsCaseEntity pcsCaseEntity = loadCase(caseReference);
-        if (pcsCaseEntity != null) {
-            pcsCaseRepository.delete(pcsCaseEntity);
-            log.debug("Deleted case with reference: {}", caseReference);
-        }
+        deleteDocuments(pcsCaseEntity);
+        pcsCaseRepository.delete(pcsCaseEntity);
+        log.debug("Deleted case with reference: {}", caseReference);
     }
 
     public void allocateCaseManagementLocation(PCSCase pcsCase) {
@@ -152,5 +153,12 @@ public class PcsCaseService {
     public void setCaseIssuedDate(long caseReference) {
         PcsCaseEntity pcsCaseEntity = loadCase(caseReference);
         claimService.setClaimIssuedDate(pcsCaseEntity.getClaims().getFirst());
+    }
+
+    private void deleteDocuments(PcsCaseEntity pcsCaseEntity) {
+        pcsCaseEntity.getDocuments()
+                .stream()
+                .map(DocumentEntity::getUrl)
+                .forEach(documentImportService::deleteDocument);
     }
 }
