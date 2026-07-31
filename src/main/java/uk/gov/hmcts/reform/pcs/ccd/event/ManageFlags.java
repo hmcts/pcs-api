@@ -35,7 +35,8 @@ public class ManageFlags implements CCDConfig<PCSCase, State, UserRole> {
                             .grant(Permission.CRU,
                                    UserRole.CTSC_ADMIN,
                                    UserRole.HEARING_CENTRE_ADMIN,
-                                   UserRole.WLU_ADMIN)
+                                   UserRole.WLU_ADMIN,
+                                   UserRole.PCS_CASE_WORKER)
                             .grantHistoryOnly(JUDICIAL_HISTORY_ROLES))
             .page("caseworkerCaseFlag")
             .optional(PCSCase::getCaseFlags, ShowConditions.NEVER_SHOW, true, true)
