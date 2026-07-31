@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.genapp;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -10,12 +11,14 @@ import org.junit.jupiter.params.provider.NullSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.quality.Strictness;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.LegalRepresentativeRepository;
 
+import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -96,6 +99,42 @@ class GenAppVisibilityServiceTest {
 
         // Then
         assertThat(genAppVisibleToUser).isEqualTo(expectedIsVisible);
+    }
+
+    @Test
+    void shouldShowWithoutNoticeGenAppsToInternalUsers() {
+        // Given
+        GenAppEntity genAppEntity = mock(GenAppEntity.class);
+        when(genAppEntity.getState()).thenReturn(GEN_APP_ISSUED);
+        when(genAppEntity.getWithoutNotice()).thenReturn(VerticalYesNo.YES);
+
+        // When
+        boolean genAppVisibleToUser = underTest.isGenAppVisibleToUser(
+            genAppEntity,
+            null,
+            List.of(UserRole.HEARING_CENTRE_ADMIN.getRole())
+        );
+
+        // Then
+        assertThat(genAppVisibleToUser).isTrue();
+    }
+
+    @Test
+    void shouldUseSamePartyVisibilityRuleForWithoutNoticeDocuments() {
+        // Given
+        PartyEntity party = mock(PartyEntity.class);
+        UUID partyId = UUID.randomUUID();
+        when(party.getId()).thenReturn(partyId);
+        when(party.getIdamId()).thenReturn(UUID.randomUUID());
+        when(legalRepresentativeRepository
+                 .isLegalRepresentativeLinkedToPartyAndActive(CURRENT_USER_ID, partyId))
+            .thenReturn(true);
+
+        // When
+        boolean documentVisibleToUser = underTest.isWithoutNoticeVisibleToUser(party, CURRENT_USER_ID, List.of());
+
+        // Then
+        assertThat(documentVisibleToUser).isTrue();
     }
 
     private static Stream<Arguments> withoutNoticeScenarios() {

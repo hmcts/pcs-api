@@ -576,7 +576,10 @@ class DocumentAmendServiceTest {
 
     @Test
     void shouldStoreGenAppDocumentInApplicationsWithoutShowingReferenceInConfirmationName() {
-        GenAppEntity genAppEntity = GenAppEntity.builder().id(GEN_APP_ID).build();
+        GenAppEntity genAppEntity = GenAppEntity.builder()
+            .id(GEN_APP_ID)
+            .withoutNotice(VerticalYesNo.YES)
+            .build();
         DocumentAmendDetails amendDetails = baseDetails()
             .amendedFileName("application evidence.pdf")
             .showRelatedSubmissionsList(VerticalYesNo.YES)
@@ -596,6 +599,7 @@ class DocumentAmendServiceTest {
         assertThat(savedDocument.getFileName()).isEqualTo("application evidence GA1 - Defendant 1.pdf");
         assertThat(savedDocument.getCategoryId()).isEqualTo(CaseFileCategory.APPLICATIONS.getId());
         assertThat(savedDocument.getGeneralApplication()).isSameAs(genAppEntity);
+        assertThat(savedDocument.getGeneralApplication().getWithoutNotice()).isEqualTo(VerticalYesNo.YES);
         assertThat(savedDocument.getCounterClaim()).isNull();
         assertThat(savedDocument.getType()).isNull();
         assertThat(amendedDocument.fileName()).isEqualTo("application evidence");

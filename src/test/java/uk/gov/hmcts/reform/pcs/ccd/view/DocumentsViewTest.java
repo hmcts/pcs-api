@@ -16,6 +16,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimSta
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
@@ -201,13 +202,14 @@ class DocumentsViewTest {
     void shoulFilterGenAppDocumentsBasedOnVisibilitty() {
         // Given
         when(securityContextService.getCurrentUserId()).thenReturn(CURRENT_USER_ID);
+        when(securityContextService.getCurrentUserRoles()).thenReturn(List.of());
 
         GenAppEntity genAppEntity1 = mock(GenAppEntity.class);
-        when(genAppVisibilityService.isGenAppVisibleToUser(genAppEntity1, CURRENT_USER_ID))
+        when(genAppVisibilityService.isGenAppVisibleToUser(genAppEntity1, CURRENT_USER_ID, List.of()))
             .thenReturn(true);
 
         GenAppEntity genAppEntity2 = mock(GenAppEntity.class);
-        when(genAppVisibilityService.isGenAppVisibleToUser(genAppEntity2, CURRENT_USER_ID))
+        when(genAppVisibilityService.isGenAppVisibleToUser(genAppEntity2, CURRENT_USER_ID, List.of()))
             .thenReturn(false);
 
         UUID document1Id = UUID.randomUUID();
@@ -250,6 +252,87 @@ class DocumentsViewTest {
             .extracting(ListValue::getValue)
             .extracting(Document::getUrl)
             .containsExactly("url1", "url3", "url4");
+    }
+
+    @Test
+    void shouldHideDocumentLinkedToWithoutNoticeGenAppWhenGenAppIsNotVisibleToUser() {
+        // Given
+        when(securityContextService.getCurrentUserId()).thenReturn(CURRENT_USER_ID);
+        when(securityContextService.getCurrentUserRoles()).thenReturn(List.of());
+
+        GenAppEntity withoutNoticeGenApp = mock(GenAppEntity.class);
+        when(genAppVisibilityService.isGenAppVisibleToUser(withoutNoticeGenApp, CURRENT_USER_ID, List.of()))
+            .thenReturn(false);
+
+        DocumentEntity documentEntity = DocumentEntity.builder()
+            .id(UUID.randomUUID())
+            .fileName("without notice application evidence.pdf")
+            .url("without-notice-url")
+            .generalApplication(withoutNoticeGenApp)
+            .build();
+
+        when(pcsCaseEntity.getDocuments()).thenReturn(List.of(documentEntity));
+
+        // When
+        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+
+        // Then
+        assertThat(pcsCase.getAllDocuments()).isEmpty();
+    }
+
+    @Test
+    void shouldHideStandaloneWithoutNoticeOrderWhenPartyScopedRuleDoesNotAllowAccess() {
+        // Given
+        when(securityContextService.getCurrentUserId()).thenReturn(CURRENT_USER_ID);
+        when(securityContextService.getCurrentUserRoles()).thenReturn(List.of());
+
+        PartyEntity relatedParty = PartyEntity.builder().id(UUID.randomUUID()).build();
+        when(genAppVisibilityService.isWithoutNoticeVisibleToUser(relatedParty, CURRENT_USER_ID, List.of()))
+            .thenReturn(false);
+
+        DocumentEntity documentEntity = DocumentEntity.builder()
+            .id(UUID.randomUUID())
+            .fileName("without notice order.pdf")
+            .url("without-notice-order-url")
+            .type(DocumentType.WITHOUT_NOTICE_ORDER)
+            .party(relatedParty)
+            .build();
+
+        when(pcsCaseEntity.getDocuments()).thenReturn(List.of(documentEntity));
+
+        // When
+        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+
+        // Then
+        assertThat(pcsCase.getAllDocuments()).isEmpty();
+    }
+
+    @Test
+    void shouldShowStandaloneWithoutNoticeOrderWhenPartyScopedRuleAllowsAccess() {
+        // Given
+        when(securityContextService.getCurrentUserId()).thenReturn(CURRENT_USER_ID);
+        when(securityContextService.getCurrentUserRoles()).thenReturn(List.of());
+
+        PartyEntity relatedParty = PartyEntity.builder().id(UUID.randomUUID()).build();
+        when(genAppVisibilityService.isWithoutNoticeVisibleToUser(relatedParty, CURRENT_USER_ID, List.of()))
+            .thenReturn(true);
+
+        DocumentEntity documentEntity = DocumentEntity.builder()
+            .id(UUID.randomUUID())
+            .fileName("without notice order.pdf")
+            .url("without-notice-order-url")
+            .type(DocumentType.WITHOUT_NOTICE_ORDER)
+            .party(relatedParty)
+            .build();
+
+        when(pcsCaseEntity.getDocuments()).thenReturn(List.of(documentEntity));
+
+        // When
+        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+
+        // Then
+        assertThat(pcsCase.getAllDocuments()).singleElement()
+            .satisfies(document -> assertThat(document.getValue().getFilename()).isEqualTo("without notice order.pdf"));
     }
 
     @ParameterizedTest(name = "[{index}] description={0} => isEmpty={1}")

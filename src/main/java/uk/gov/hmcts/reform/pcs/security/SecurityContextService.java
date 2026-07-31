@@ -8,6 +8,7 @@ import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.exception.SecurityContextException;
 import uk.gov.hmcts.reform.pcs.idam.User;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -21,6 +22,11 @@ public class SecurityContextService {
     public UUID getCurrentUserId() {
         UserInfo userDetails = getCurrentUserDetails();
         return userDetails != null ? UUID.fromString(userDetails.getUid()) : null;
+    }
+
+    public List<String> getCurrentUserRoles() {
+        UserInfo userDetails = getCurrentUserDetails();
+        return userDetails != null && userDetails.getRoles() != null ? userDetails.getRoles() : List.of();
     }
 
     /**

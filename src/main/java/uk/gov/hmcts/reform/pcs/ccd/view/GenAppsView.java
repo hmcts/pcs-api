@@ -29,10 +29,15 @@ public class GenAppsView {
 
     public void setCaseFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
         UUID currentUserId = securityContextService.getCurrentUserId();
+        List<String> currentUserRoles = securityContextService.getCurrentUserRoles();
 
         List<ListValue<GeneralApplication>> genApps = pcsCaseEntity.getGenApps().stream()
             .sorted(Comparator.comparing(GenAppEntity::getApplicationSubmittedDate).reversed())
-            .filter(genAppEntity -> genAppVisibilityService.isGenAppVisibleToUser(genAppEntity, currentUserId))
+            .filter(genAppEntity -> genAppVisibilityService.isGenAppVisibleToUser(
+                genAppEntity,
+                currentUserId,
+                currentUserRoles
+            ))
             .map(this::createListValue)
             .toList();
 
