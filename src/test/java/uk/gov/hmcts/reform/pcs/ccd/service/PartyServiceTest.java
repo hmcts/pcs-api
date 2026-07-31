@@ -1351,6 +1351,60 @@ class PartyServiceTest {
                 .isEqualTo(expectedUnderlessee1);
         }
 
+        @ParameterizedTest
+        @MethodSource("partyLabelScenarios")
+        void shouldGetPartyLabels(PartyRole partyRole, int rank, String expectedPartyLabel) {
+            // Given
+            UUID partyId = UUID.randomUUID();
+            PartyEntity party = PartyEntity.builder().id(partyId).build();
+            PartyEntity otherParty1 = PartyEntity.builder().id(UUID.randomUUID()).build();
+            PartyEntity otherParty2 = PartyEntity.builder().id(UUID.randomUUID()).build();
+            PartyEntity otherParty3 = PartyEntity.builder().id(UUID.randomUUID()).build();
+
+            when(claimEntity.getClaimParties()).thenReturn(List.of(
+                ClaimPartyEntity.builder().party(otherParty1).role(PartyRole.CLAIMANT).rank(1).build(),
+                ClaimPartyEntity.builder().party(party).role(partyRole).rank(rank).build(),
+                ClaimPartyEntity.builder().party(otherParty2).role(PartyRole.DEFENDANT).rank(1).build(),
+                ClaimPartyEntity.builder().party(otherParty3).role(PartyRole.UNDERLESSEE_OR_MORTGAGEE).rank(1).build()
+            ));
+
+            // When
+            String claimantPartyLabel = underTest.getPartyLabel(claimEntity, partyId);
+
+            // Then
+            assertThat(claimantPartyLabel).isEqualTo(expectedPartyLabel);
+        }
+
+        @Test
+        void shouldThrowExceptionGettingPartyLabelForUnknownParty() {
+            // Given
+            UUID unknoenPartyId = UUID.randomUUID();
+            PartyEntity otherParty1 = PartyEntity.builder().id(UUID.randomUUID()).build();
+            PartyEntity otherParty2 = PartyEntity.builder().id(UUID.randomUUID()).build();
+            PartyEntity otherParty3 = PartyEntity.builder().id(UUID.randomUUID()).build();
+
+            when(claimEntity.getClaimParties()).thenReturn(List.of(
+                ClaimPartyEntity.builder().party(otherParty1).role(PartyRole.CLAIMANT).rank(1).build(),
+                ClaimPartyEntity.builder().party(otherParty2).role(PartyRole.DEFENDANT).rank(1).build(),
+                ClaimPartyEntity.builder().party(otherParty3).role(PartyRole.UNDERLESSEE_OR_MORTGAGEE).rank(1).build()
+            ));
+
+            // When
+            Throwable throwable = catchThrowable(() -> underTest.getPartyLabel(claimEntity, unknoenPartyId));
+
+            // Then
+            assertThat(throwable).isInstanceOf(PartyNotFoundException.class);
+        }
+
+        private static Stream<Arguments> partyLabelScenarios() {
+            return Stream.of(
+                // Role, rank, expected party label
+                arguments(PartyRole.CLAIMANT, 3, "Claimant 3"),
+                arguments(PartyRole.DEFENDANT, 8, "Defendant 8"),
+                arguments(PartyRole.UNDERLESSEE_OR_MORTGAGEE, 2, null)
+            );
+        }
+
         private static Stream<Arguments> singleUnderlesseeScenarios() {
             AddressUK correspondenceAddress = mock(AddressUK.class);
 
