@@ -14,6 +14,7 @@ import uk.gov.hmcts.reform.pcs.exception.TemplateRenderingException;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -24,12 +25,31 @@ public class TaskDescriptionService {
     private final PartyService partyService;
     private final PebbleEngine pebbleEngine;
 
+    public String createReviewAdjournGenAppDescription(long caseReference,
+                                                       GenAppEntity genAppEntity) {
+
+        List<String> additionalDocumentFilenames = genAppEntity.getDocuments().stream()
+            .map(DocumentEntity::getFileName)
+            .toList();
+
+        List<String> filenames = new ArrayList<>();
+        filenames.add(genAppEntity.getSubmissionDocument().getFileName());
+        filenames.addAll(additionalDocumentFilenames);
+
+        Map<String, Object> context = Map.of(
+            "caseReference", caseReference,
+            "filenames", filenames
+        );
+
+        String templateName = "review-adjourn-gen-app";
+        return renderTemplate(templateName, context);
+    }
+
     public String createGenAppAdditionalDocumentsDescription(long caseReference,
                                                              ClaimEntity mainClaim,
                                                              PartyEntity partyEntity,
                                                              GenAppEntity genAppEntity,
                                                              List<DocumentEntity> documentEntities) {
-
 
         String partyLabel = partyService.getPartyLabel(mainClaim, partyEntity.getId());
 

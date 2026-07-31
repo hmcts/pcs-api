@@ -57,6 +57,72 @@ class TaskDescriptionServiceTest {
     }
 
     @Nested
+    @DisplayName("Get description for Review Adjourn Gen App task")
+    class ReviewAdjournGenAppTests {
+
+        @Mock
+        private GenAppEntity genAppEntity;
+
+        @Test
+        void shouldRenderTaskDescription() throws IOException {
+            // Given
+            when(genAppEntity.getSubmissionDocument()).thenReturn(
+                DocumentEntity.builder().fileName("submission-document.pdf").build()
+            );
+
+            when(genAppEntity.getDocuments()).thenReturn(List.of(
+                DocumentEntity.builder().fileName("filename1.pdf").build(),
+                DocumentEntity.builder().fileName("filename2.csv").build()
+            ));
+
+            String expectedRenderedContent = "some rendered content";
+            PebbleTemplate pebbleTemplate = stubPebbleTemplate(
+                "review-adjourn-gen-app",
+                expectedRenderedContent
+            );
+
+            // When
+            String description = underTest.createReviewAdjournGenAppDescription(CASE_REFERENCE, genAppEntity);
+
+            // Then
+            assertThat(description).isEqualTo(expectedRenderedContent);
+
+            verify(pebbleTemplate).evaluate(isA(StringWriter.class), contextMapCaptor.capture());
+            Map<String, Object> contextMap = contextMapCaptor.getValue();
+            assertThat(contextMap)
+                .containsEntry("caseReference", CASE_REFERENCE)
+                .containsEntry("filenames", List.of("submission-document.pdf", "filename1.pdf", "filename2.csv"));
+        }
+
+        @Test
+        void shouldThrowExceptionWhenUnableToRenderTemplate() throws IOException {
+            // Given
+            when(genAppEntity.getSubmissionDocument()).thenReturn(
+                DocumentEntity.builder().fileName("submission-document.pdf").build()
+            );
+
+            PebbleTemplate pebbleTemplate = stubPebbleTemplate(
+                "review-adjourn-gen-app",
+                "some content"
+            );
+
+            IOException pebbleException = mock(IOException.class);
+            doThrow(pebbleException).when(pebbleTemplate).evaluate(any(StringWriter.class), anyMap());
+
+            // When
+            Throwable throwable = catchThrowable(
+                () -> underTest.createReviewAdjournGenAppDescription(CASE_REFERENCE, genAppEntity)
+            );
+
+            // Then
+            assertThat(throwable)
+                .isInstanceOf(TemplateRenderingException.class)
+                .hasMessage("Failed to render template")
+                .hasCause(pebbleException);
+        }
+    }
+
+    @Nested
     @DisplayName("Get description for Gen App Additional Documents task")
     class GenAppAdditionalDocumentsTests {
 
@@ -143,7 +209,6 @@ class TaskDescriptionServiceTest {
                 .hasMessage("Failed to render template")
                 .hasCause(pebbleException);
         }
-
     }
 
     private PebbleTemplate stubPebbleTemplate(String templateName, String renderedContent) throws IOException {
