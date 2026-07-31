@@ -68,7 +68,7 @@ class RoleToAccessProfilesTest {
     @Test
     void shouldMapGroupAccessRolesToProfilesWithCaseTypeAcls() {
         assertThat(UserRole.PCS_SOLICITOR_ORG.getAccessProfiles())
-            .containsExactly(AccessProfile.PCS_SOLICITOR_CREATE.getRole());
+            .containsExactly(AccessProfile.PCS_SOLICITOR_ORG.getRole());
         assertThat(UserRole.PCS_SOLICITOR_GROUP.getAccessProfiles())
             .containsExactly(AccessProfile.PROFESSIONAL_USER.getRole());
     }
@@ -79,7 +79,7 @@ class RoleToAccessProfilesTest {
      */
     @Test
     void shouldGiveTheOrganisationRoleCreateOnlyAndTheGroupRoleRead() {
-        assertThat(AccessProfile.PCS_SOLICITOR_CREATE.getCaseTypePermissions()).isEqualTo("C");
+        assertThat(AccessProfile.PCS_SOLICITOR_ORG.getCaseTypePermissions()).isEqualTo("C");
         assertThat(AccessProfile.PROFESSIONAL_USER.getCaseTypePermissions()).contains("R");
     }
 }

@@ -24,7 +24,7 @@ public enum UserRole implements HasRole {
 
     CITIZEN("citizen", CRU, IDAM),
     PROFESSIONAL_USER("professional-user", CRU, RAS),
-    PCS_SOLICITOR_ORG("PCS_Solicitor_Org", Set.of(Permission.C), RAS, AccessProfile.PCS_SOLICITOR_CREATE),
+    PCS_SOLICITOR_ORG("PCS_Solicitor_Org", Set.of(Permission.C), RAS),
     PCS_SOLICITOR_GROUP("PCS_Solicitor_Group", CRU, RAS, AccessProfile.PROFESSIONAL_USER),
     DEFENDANT("[DEFENDANT]", CRU, RAS),
     CLAIMANT_SOLICITOR("[CLAIMANTSOLICITOR]", CRU, RAS),
@@ -32,7 +32,6 @@ public enum UserRole implements HasRole {
 
     PCS_CASE_WORKER("caseworker-pcs", Set.of(R), IDAM),
     PCS_SOLICITOR("caseworker-pcs-solicitor", CRU, IDAM),
-    PCS_SOLICITOR_CREATE("caseworker-pcs-solicitor-create", Set.of(Permission.C), IDAM),
 
     HMCTS_ADMIN("hmcts-admin", Set.of(R), RAS, GS_PROFILE),
     HMCTS_JUDICIARY("hmcts-judiciary", Set.of(R), RAS, GS_PROFILE),

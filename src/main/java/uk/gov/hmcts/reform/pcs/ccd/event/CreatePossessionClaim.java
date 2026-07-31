@@ -57,8 +57,6 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
                 .showSummary()
                 .name("Make a claim")
                 .grant(Permission.CRUD, UserRole.PCS_SOLICITOR)
-                .grant(Set.of(Permission.C), UserRole.PCS_SOLICITOR_CREATE)
-                // XUI's Create Case dropdown matches the raw RAS role name against event ACLs.
                 .grant(Set.of(Permission.C), UserRole.PCS_SOLICITOR_ORG)
                 .grantHistoryOnly(JUDICIAL_HISTORY_ROLES);
 

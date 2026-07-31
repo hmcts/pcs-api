@@ -125,21 +125,6 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
         builder.searchResultFields()
             .caseReferenceField();
 
-        builder.accessType("create-cases")
-            .organisationProfileId("LOCALAUTH_PROFILE")
-            .accessMandatory(true)
-            .accessDefault(true)
-            .display(false)
-            .description("Access to create cases")
-            .hintText("Access to create cases")
-            .displayOrder(1)
-            .liveTo("01/01/2027");
-
-        builder.accessTypeRole("create-cases")
-            .organisationProfileId("LOCALAUTH_PROFILE")
-            .organisationalRoleName(UserRole.PCS_SOLICITOR_ORG.getRole())
-            .liveTo("01/01/2027");
-
         List<String> groupAccessOrgProfiles = List.of(
             "LOCALAUTH_PROFILE",
             "SOLICITOR_PROFILE",
@@ -149,8 +134,26 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
             "OTHER_CHARITY_PROFILE"
         );
 
-        // Def store rejects the import unless every AccessType row has a unique DisplayOrder.
-        int displayOrder = 2;
+        // Def store rejects the import unless every AccessType row has a unique DisplayOrder,
+        // so the counter runs across both access types rather than restarting.
+        int displayOrder = 1;
+
+        for (String orgProfile : groupAccessOrgProfiles) {
+            builder.accessType("create-cases")
+                .organisationProfileId(orgProfile)
+                .accessMandatory(true)
+                .accessDefault(true)
+                .display(false)
+                .description("Access to create cases")
+                .hintText("Access to create cases")
+                .displayOrder(displayOrder++)
+                .liveTo("01/01/2027");
+
+            builder.accessTypeRole("create-cases")
+                .organisationProfileId(orgProfile)
+                .organisationalRoleName(UserRole.PCS_SOLICITOR_ORG.getRole())
+                .liveTo("01/01/2027");
+        }
 
         for (String orgProfile : groupAccessOrgProfiles) {
             builder.accessType("prof-org-access")
@@ -177,7 +180,6 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
         for (State state : State.values()) {
             builder.grant(state, CRU, AccessProfile.PROFESSIONAL_USER);
         }
-
 
         buildCaseListView(builder);
 
