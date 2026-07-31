@@ -50,10 +50,7 @@ public class CaseFlagService {
 
     /**
      * Applies the reasonable adjustment flags a defendant supplied via the cui-ra microsite to their
-     * party. Only RA flags are accepted and replaced, so any flag a caseworker raised against the same
-     * party survives - the defendant is never shown those and so could not have supplied them back.
-     * Details carrying any other flag code are ignored: accepting them would insert rows this method
-     * could never replace on a resubmission. Caseworker flags arrive through
+     * party. Only RA flags are accepted and replaced. Caseworker flags arrive through
      * {@link #mergePartyFlags(List, Set)} instead, which is not restricted in this way.
      */
     public void saveReasonableAdjustmentFlags(PartyEntity partyEntity, Flags incomingFlags) {
