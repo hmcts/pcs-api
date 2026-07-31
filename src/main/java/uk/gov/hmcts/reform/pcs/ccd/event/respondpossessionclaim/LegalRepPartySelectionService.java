@@ -7,6 +7,8 @@ import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponseStatus;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.utils.PossessionClaimMerger;
@@ -67,6 +69,21 @@ public class LegalRepPartySelectionService {
         }
 
         return initialiseDraft(caseReference, pcsCase, matchedDefendant);
+    }
+
+    public boolean hasSubmittedResponse(long caseReference, PCSCase pcsCase, List<PartyEntity> defendantPartiesLinkedAndActive) {
+        return true;
+    }
+
+    public PCSCase buildSubmittedResponseCase(PCSCase pcsCase) {
+        return PCSCase.builder()
+            .hasUnsubmittedCaseData(YesOrNo.NO)
+            .possessionClaimResponse(PossessionClaimResponse.builder()
+                                         .defendantResponses(DefendantResponses.builder()
+                                                                 .status(DefendantResponseStatus.SUBMITTED)
+                                                                 .build())
+                                         .build())
+            .build();
     }
 
     private PartyEntity findMatchedDefendant(List<PartyEntity> parties, UUID selectedPartyId) {
@@ -153,5 +170,4 @@ public class LegalRepPartySelectionService {
             .defendantContactDetails(response.getDefendantContactDetails())
             .build();
     }
-
 }

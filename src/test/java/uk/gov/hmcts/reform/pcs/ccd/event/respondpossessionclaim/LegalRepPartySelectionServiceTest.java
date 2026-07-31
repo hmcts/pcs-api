@@ -11,6 +11,7 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantContactDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponseStatus;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.utils.ClaimantOrgNameListCreator;
@@ -305,5 +306,19 @@ class LegalRepPartySelectionServiceTest {
         assertThat(result.getAllLinkedDefendants()).hasSize(1);
         assertThat(result.getAllLinkedDefendants().getFirst().getId()).isEqualTo(matchedPartyId.toString());
         assertThat(result.getHasUnsubmittedCaseData()).isEqualTo(YesOrNo.YES);
+    }
+
+    @Test
+    void shouldReturnSubmittedCase() {
+        // given
+        PCSCase pcsCase = PCSCase.builder().build();
+
+        // when
+        pcsCase = underTest.buildSubmittedResponseCase(pcsCase);
+
+        // then
+        assertThat(pcsCase.getHasUnsubmittedCaseData()).isEqualTo(YesOrNo.NO);
+        assertThat(pcsCase.getPossessionClaimResponse().getDefendantResponses().getStatus()).isEqualTo(
+            DefendantResponseStatus.SUBMITTED);
     }
 }

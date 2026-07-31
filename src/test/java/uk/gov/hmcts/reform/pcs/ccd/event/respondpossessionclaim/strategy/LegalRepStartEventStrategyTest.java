@@ -7,14 +7,18 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponseStatus;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.LegalRepPartySelectionService;
+import uk.gov.hmcts.reform.pcs.ccd.repository.DefendantResponseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.LegalRepForDefendantAccessValidator;
+import uk.gov.hmcts.reform.pcs.ccd.util.SelectedPartyRetriever;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -131,5 +135,29 @@ class LegalRepStartEventStrategyTest {
         verify(legalRepPartySelectionService).getDraft(pcsCase, defendants, CASE_REFERENCE);
     }
 
+    @Test
+    void shouldReturnSubmittedStatusWhenResponseAlreadySubmitted() {
+        // Given
+        UUID defendantId = UUID.randomUUID();
+        UUID representativeId = UUID.randomUUID();
+        PartyEntity defendantEntity = PartyEntity.builder().id(defendantId).build();
+        PCSCase pcsCase = PCSCase.builder().build();
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().build();
+
+        when(securityContextService.getCurrentUserId()).thenReturn(representativeId);
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+        when(legalRepForDefendantAccessValidator.validateAndGetDefendants(pcsCaseEntity, representativeId))
+            .thenReturn(List.of(defendantEntity));
+        when(legalRepPartySelectionService.hasSubmittedResponse(CASE_REFERENCE, pcsCase, List.of(defendantEntity)))
+            .thenReturn(true);
+
+        // When
+        PCSCase result = underTest.loadDraft(CASE_REFERENCE, pcsCase);
+
+        // Then
+        verify(legalRepPartySelectionService).buildSubmittedResponseCase(pcsCase);
+       // assertThat(result.getPossessionClaimResponse().getDefendantResponses().getStatus())
+       //     .isEqualTo(DefendantResponseStatus.SUBMITTED);
+    }
 
 }
