@@ -336,3 +336,8 @@ caseApi:
 
 shutter:
   service: ${SHUTTER_SERVICE:false}
+
+ccd:
+  decentralised-runtime:
+    noc:
+      enabled: true
