@@ -39,7 +39,7 @@ public class UploadAdditionalDocumentsInformationPage implements CcdPageConfigur
                         damp in the bathroom</li>
                        <li class="govuk-!-font-size-19">a report from an electrician or a plumber, showing evidence of
                        a repair that needs to be done</li>
-                       <li class="govuk-!-font-size-19">emails or letters from the claimant (the defendant's landlord,
+                       <li class="govuk-!-font-size-19">emails or letters from the claimant (the defendant’s landlord,
                        housing association, or mortgage lender)</li>
                     </ul>
 
