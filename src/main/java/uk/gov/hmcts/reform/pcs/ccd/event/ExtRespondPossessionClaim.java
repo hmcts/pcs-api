@@ -8,9 +8,12 @@ import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.ccd.sdk.api.callback.Submit;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
+import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+
+import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.RELEASE_1_DOT_2;
 
 @Component
 @Slf4j
@@ -21,7 +24,9 @@ public class ExtRespondPossessionClaim implements CCDConfig<PCSCase, State, User
         configBuilder
             .decentralisedEvent("ext:respondPossessionClaim", new NoopSubmitHandler())
             .forState(State.CASE_ISSUED)
-            .showCondition("legalRepUpdatedDetails=\"Yes\"")
+            .showCondition(ShowConditions.and(
+                "legalRepUpdatedDetails=\"Yes\"",
+                ShowConditions.featureFlagsEnabled(RELEASE_1_DOT_2)))
             .name("Respond to claim")
             .description("Exposes event to redirect to pcs-frontend")
             .grant(Permission.CRU, UserRole.DEFENDANT_SOLICITOR);

@@ -6,6 +6,7 @@ import uk.gov.hmcts.ccd.sdk.ResolvedCCDConfig;
 import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
 import uk.gov.hmcts.ccd.sdk.api.Event;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
+import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.ccd.sdk.api.callback.Start;
 import uk.gov.hmcts.ccd.sdk.api.callback.Submit;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
@@ -15,6 +16,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -38,6 +40,24 @@ public abstract class BaseEventTest {
         EventPayload<PCSCase, State> eventPayload = new EventPayload<>(TEST_CASE_REFERENCE, caseData, null);
         Submit<PCSCase, State> submitHandler = getConfiguredEvent().getSubmitHandler();
         return submitHandler.submit(eventPayload);
+    }
+
+    protected void assertConfiguredShowConditions(String expectedShowCondition) {
+        assertThat(getConfiguredEvent().getShowCondition())
+            .isEqualTo(expectedShowCondition);
+    }
+
+
+    protected void assertConfiguredForStates(State... expectedStates) {
+        assertThat(getConfiguredEvent().getPreState())
+            .containsExactlyInAnyOrder(expectedStates);
+    }
+
+    protected void assertGrants(UserRole userRole, Set<Permission> permissions) {
+        assertThat(getConfiguredEvent().getGrants().asMap())
+            .containsKey(userRole)
+            .containsEntry(userRole, permissions);
+
     }
 
     private ResolvedCCDConfig<PCSCase, State, UserRole> buildEventConfig(
