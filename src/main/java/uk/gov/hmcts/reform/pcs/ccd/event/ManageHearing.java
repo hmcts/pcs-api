@@ -9,8 +9,6 @@ import uk.gov.hmcts.ccd.sdk.api.Event;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
-import uk.gov.hmcts.ccd.sdk.type.DynamicListElement;
-import uk.gov.hmcts.ccd.sdk.type.DynamicMultiSelectList;
 import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
@@ -18,23 +16,15 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.ManageHearingOption;
-import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.page.managehearing.ManageHearingConfigurer;
 import uk.gov.hmcts.reform.pcs.ccd.service.HearingService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
-import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.location.model.CourtVenue;
 import uk.gov.hmcts.reform.pcs.location.service.LocationReferenceService;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerRoles.CASEWORKER_ROLES;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
@@ -51,20 +41,17 @@ public class ManageHearing implements CCDConfig<PCSCase, State, UserRole> {
     private final HearingService hearingService;
     private final LocationReferenceService locationReferenceService;
     private final PcsCaseService pcsCaseService;
-    private final PartyService partyService;
 
     public ManageHearing(ManageHearingConfigurer manageHearingConfigurer,
                          AddressFormatter addressFormatter,
                          HearingService hearingService,
                          LocationReferenceService locationReferenceService,
-                         PcsCaseService pcsCaseService,
-                         PartyService partyService) {
+                         PcsCaseService pcsCaseService) {
         this.manageHearingConfigurer = manageHearingConfigurer;
         this.addressFormatter = addressFormatter;
         this.hearingService = hearingService;
         this.locationReferenceService = locationReferenceService;
         this.pcsCaseService = pcsCaseService;
-        this.partyService = partyService;
     }
 
     @Override
@@ -88,7 +75,7 @@ public class ManageHearing implements CCDConfig<PCSCase, State, UserRole> {
 
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
 
-        pcsCase.setPartyMultiSelectionList(buildPartyList(pcsCaseEntity));
+        pcsCase.setPartyMultiSelectionList(hearingService.buildPartyList(pcsCaseEntity));
         hearingService.clearHearingForm(pcsCase);
 
         List<Integer> baseLocation = List.of(Integer.parseInt(pcsCase.getCaseManagementLocation().getBaseLocation()));
@@ -169,34 +156,6 @@ public class ManageHearing implements CCDConfig<PCSCase, State, UserRole> {
 
             A hearing notice will be issued if you specified one is needed.
             """.formatted(caseId, address, caseData.getCaseNameHmctsInternal());
-    }
-
-    private DynamicMultiSelectList buildPartyList(PcsCaseEntity pcsCaseEntity) {
-        ClaimEntity mainClaim = pcsCaseEntity.getMainClaim();
-        Map<PartyRole, List<ClaimPartyEntity>> partyRoleListMap = mainClaim.getClaimParties().stream()
-            .collect(Collectors.groupingBy(ClaimPartyEntity::getRole));
-
-        List<DynamicListElement> partyElementList = new ArrayList<>();
-
-        partyRoleListMap.getOrDefault(PartyRole.CLAIMANT, List.of()).stream()
-            .map(claimPartyEntity -> mapToPartyListElement(mainClaim, claimPartyEntity.getParty()))
-            .forEach(partyElementList::add);
-
-        partyRoleListMap.getOrDefault(PartyRole.DEFENDANT, List.of()).stream()
-            .map(claimPartyEntity -> mapToPartyListElement(mainClaim, claimPartyEntity.getParty()))
-            .forEach(partyElementList::add);
-
-        return DynamicMultiSelectList.builder().listItems(partyElementList).build();
-    }
-
-    private DynamicListElement mapToPartyListElement(ClaimEntity mainClaim, PartyEntity partyEntity) {
-        String partyName = partyService.getPartyName(partyEntity);
-        String partyLabel = partyService.getPartyLabel(mainClaim, partyEntity.getId());
-        String label = ("%s - %s").formatted(partyName, partyLabel);
-        return DynamicListElement.builder()
-            .code(partyEntity.getId())
-            .label(label)
-            .build();
     }
 
 }

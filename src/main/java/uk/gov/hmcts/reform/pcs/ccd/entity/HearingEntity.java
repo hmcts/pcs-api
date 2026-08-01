@@ -75,6 +75,7 @@ public class HearingEntity {
     private String additionalInformation;
 
     @Builder.Default
+    @JdbcTypeCode(SqlTypes.ARRAY)
     private List<UUID> noticeParties = new ArrayList<>();
 
     public void addParty(UUID partyId) {

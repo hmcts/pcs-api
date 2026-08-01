@@ -3,37 +3,47 @@ package uk.gov.hmcts.reform.pcs.ccd.service;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
-import uk.gov.hmcts.ccd.sdk.type.DynamicListElement;
-import uk.gov.hmcts.ccd.sdk.type.DynamicMultiSelectList;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.Hearing;
 import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.HearingType;
+import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.HearingEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
+import uk.gov.hmcts.reform.pcs.ccd.type.DynamicMultiSelectStringList;
+import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class HearingService {
 
     private final PcsCaseService pcsCaseService;
     private final PcsCaseRepository pcsCaseRepository;
+    private final PartyService partyService;
     private final Clock ukClock;
 
     public HearingService(PcsCaseService pcsCaseService,
                           PcsCaseRepository pcsCaseRepository,
+                          PartyService partyService,
                           @Qualifier("ukClock") Clock ukClock) {
         this.pcsCaseService = pcsCaseService;
         this.pcsCaseRepository = pcsCaseRepository;
+        this.partyService = partyService;
         this.ukClock = ukClock;
     }
 
@@ -80,7 +90,7 @@ public class HearingService {
             pcsCase.setSelectedHearingId(selectedHearing.getId().toString());
             pcsCase.setHearing(mapToHearing(selectedHearing));
             pcsCase.setPartyMultiSelectionList(preselectNoticeRecipients(
-                pcsCase.getPartyMultiSelectionList(),
+                partyListForPrepopulation(pcsCase, pcsCaseEntity),
                 selectedHearing.getNoticeParties()
             ));
         });
@@ -111,21 +121,63 @@ public class HearingService {
         }
 
         if (issueNotice == VerticalYesNo.YES && isWithoutNotice == VerticalYesNo.YES) {
-            DynamicMultiSelectList selectedParties = pcsCase.getPartyMultiSelectionList();
-
-            if (selectedParties != null && selectedParties.getValue() != null) {
-                addPartiesToHearingEntity(selectedParties, hearingEntity);
-            }
+            selectedNoticePartyIds(pcsCase).forEach(hearingEntity::addParty);
         }
 
         return hearingEntity;
     }
 
-    private void addPartiesToHearingEntity(DynamicMultiSelectList selectedParties, HearingEntity hearingEntity) {
-        selectedParties.getValue()
-            .stream()
-            .map(DynamicListElement::getCode)
-            .forEach(hearingEntity::addParty);
+    private DynamicMultiSelectStringList partyListForPrepopulation(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
+        DynamicMultiSelectStringList currentPartyList = pcsCase.getPartyMultiSelectionList();
+        if (currentPartyList != null && !CollectionUtils.isEmpty(currentPartyList.getListItems())) {
+            return currentPartyList;
+        }
+
+        return buildPartyList(pcsCaseEntity);
+    }
+
+    public DynamicMultiSelectStringList buildPartyList(PcsCaseEntity pcsCaseEntity) {
+        ClaimEntity mainClaim = pcsCaseEntity.getMainClaim();
+        Map<PartyRole, List<ClaimPartyEntity>> partyRoleListMap = mainClaim.getClaimParties().stream()
+            .collect(Collectors.groupingBy(ClaimPartyEntity::getRole));
+
+        List<DynamicStringListElement> partyElementList = new ArrayList<>();
+
+        partyRoleListMap.getOrDefault(PartyRole.CLAIMANT, List.of()).stream()
+            .map(claimPartyEntity -> mapToPartyListElement(mainClaim, claimPartyEntity.getParty()))
+            .forEach(partyElementList::add);
+
+        partyRoleListMap.getOrDefault(PartyRole.DEFENDANT, List.of()).stream()
+            .map(claimPartyEntity -> mapToPartyListElement(mainClaim, claimPartyEntity.getParty()))
+            .forEach(partyElementList::add);
+
+        return DynamicMultiSelectStringList.builder()
+            .value(new ArrayList<>())
+            .listItems(partyElementList)
+            .build();
+    }
+
+    private DynamicStringListElement mapToPartyListElement(ClaimEntity mainClaim, PartyEntity partyEntity) {
+        String partyName = partyService.getPartyName(partyEntity);
+        String partyLabel = partyService.getPartyLabel(mainClaim, partyEntity.getId());
+        String label = ("%s - %s").formatted(partyName, partyLabel);
+        return DynamicStringListElement.builder()
+            .code(partyEntity.getId().toString())
+            .label(label)
+            .build();
+    }
+
+    private List<UUID> selectedNoticePartyIds(PCSCase pcsCase) {
+        DynamicMultiSelectStringList selectedParties = pcsCase.getPartyMultiSelectionList();
+        if (selectedParties != null && !CollectionUtils.isEmpty(selectedParties.getValue())) {
+            return selectedParties.getValue().stream()
+                .map(DynamicStringListElement::getCode)
+                .filter(Objects::nonNull)
+                .map(UUID::fromString)
+                .toList();
+        }
+
+        return List.of();
     }
 
     private Optional<HearingEntity> editableHearing(PcsCaseEntity pcsCaseEntity, String selectedHearingId) {
@@ -170,28 +222,33 @@ public class HearingService {
             .build();
     }
 
-    private DynamicMultiSelectList clearSelectedParties(DynamicMultiSelectList partyList) {
+    private DynamicMultiSelectStringList clearSelectedParties(DynamicMultiSelectStringList partyList) {
         if (partyList == null) {
             return null;
         }
 
-        return DynamicMultiSelectList.builder()
+        return DynamicMultiSelectStringList.builder()
+            .value(new ArrayList<>())
             .listItems(partyList.getListItems())
             .build();
     }
 
-    private DynamicMultiSelectList preselectNoticeRecipients(DynamicMultiSelectList partyList,
-                                                            List<UUID> selectedPartyIds) {
+    private DynamicMultiSelectStringList preselectNoticeRecipients(DynamicMultiSelectStringList partyList,
+                                                                  List<UUID> selectedPartyIds) {
         if (partyList == null || CollectionUtils.isEmpty(partyList.getListItems())
             || CollectionUtils.isEmpty(selectedPartyIds)) {
             return partyList;
         }
 
-        List<DynamicListElement> selectedParties = partyList.getListItems().stream()
-            .filter(party -> selectedPartyIds.contains(party.getCode()))
+        List<String> selectedPartyIdStrings = selectedPartyIds.stream()
+            .map(UUID::toString)
             .toList();
 
-        return DynamicMultiSelectList.builder()
+        List<DynamicStringListElement> selectedParties = partyList.getListItems().stream()
+            .filter(party -> selectedPartyIdStrings.contains(party.getCode()))
+            .toList();
+
+        return DynamicMultiSelectStringList.builder()
             .value(selectedParties)
             .listItems(partyList.getListItems())
             .build();

@@ -13,8 +13,6 @@ import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.CaseLocation;
-import uk.gov.hmcts.ccd.sdk.type.DynamicListElement;
-import uk.gov.hmcts.ccd.sdk.type.DynamicMultiSelectList;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -24,15 +22,12 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.Hearing;
 import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.HearingNoticeWording;
 import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.HearingType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.ManageHearingOption;
-import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.page.managehearing.ManageHearingConfigurer;
 import uk.gov.hmcts.reform.pcs.ccd.service.HearingService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
-import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
+import uk.gov.hmcts.reform.pcs.ccd.type.DynamicMultiSelectStringList;
+import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.config.JacksonConfiguration;
 import uk.gov.hmcts.reform.pcs.location.model.CourtVenue;
@@ -75,11 +70,7 @@ public class ManageHearingTest extends BaseEventTest {
     @Mock
     private PcsCaseService pcsCaseService;
     @Mock
-    private PartyService partyService;
-    @Mock
     private PcsCaseEntity pcsCaseEntity;
-    @Mock
-    private ClaimEntity mainClaim;
 
     private ManageHearing manageHearing;
     private final ObjectMapper objectMapper = new JacksonConfiguration().getMapper();
@@ -91,8 +82,7 @@ public class ManageHearingTest extends BaseEventTest {
             addressFormatter,
             hearingService,
             locationReferenceService,
-            pcsCaseService,
-            partyService
+            pcsCaseService
         );
         setEventUnderTest(manageHearing);
     }
@@ -143,16 +133,19 @@ public class ManageHearingTest extends BaseEventTest {
         @BeforeEach
         void setUp() {
             when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
-            when(pcsCaseEntity.getMainClaim()).thenReturn(mainClaim);
-            when(mainClaim.getClaimParties()).thenReturn(List.of());
+            when(hearingService.buildPartyList(pcsCaseEntity)).thenReturn(DynamicMultiSelectStringList.builder()
+                .value(List.of())
+                .listItems(List.of())
+                .build());
             when(caseLocation.getBaseLocation()).thenReturn(Integer.toString(BASE_LOCATION_ID));
             doAnswer(invocation -> {
                 PCSCase caseData = invocation.getArgument(0);
                 caseData.setHearing(Hearing.builder().build());
 
-                DynamicMultiSelectList partyList = caseData.getPartyMultiSelectionList();
+                DynamicMultiSelectStringList partyList = caseData.getPartyMultiSelectionList();
                 if (partyList != null) {
-                    caseData.setPartyMultiSelectionList(DynamicMultiSelectList.builder()
+                    caseData.setPartyMultiSelectionList(DynamicMultiSelectStringList.builder()
+                        .value(List.of())
                         .listItems(partyList.getListItems())
                         .build());
                 }
@@ -239,21 +232,6 @@ public class ManageHearingTest extends BaseEventTest {
         @Test
         void shouldNotPreselectNoticeRecipientPartiesUntilEditHearingIsSelected() {
             // Given
-            UUID claimantId = UUID.randomUUID();
-            PartyEntity claimantParty = createParty(claimantId);
-            when(partyService.getPartyName(claimantParty)).thenReturn("claimant name");
-            when(partyService.getPartyLabel(mainClaim, claimantId)).thenReturn("claimant label");
-
-            UUID defendantId = UUID.randomUUID();
-            PartyEntity defendantParty = createParty(defendantId);
-            when(partyService.getPartyName(defendantParty)).thenReturn("defendant name");
-            when(partyService.getPartyLabel(mainClaim, defendantId)).thenReturn("defendant label");
-
-            when(mainClaim.getClaimParties()).thenReturn(List.of(
-                createClaimParty(PartyRole.CLAIMANT, claimantParty),
-                createClaimParty(PartyRole.DEFENDANT, defendantParty)
-            ));
-
             PCSCase pcsCase = PCSCase.builder()
                 .caseManagementLocation(caseLocation)
                 .hearingList(List.of(hearingListValue(Hearing.builder().build())))
@@ -264,7 +242,7 @@ public class ManageHearingTest extends BaseEventTest {
 
             // Then
             verify(hearingService).setSelectedEditableHearingId(response, pcsCaseEntity);
-            assertThat(response.getPartyMultiSelectionList().getValue()).isNull();
+            assertThat(response.getPartyMultiSelectionList().getValue()).isEmpty();
         }
 
         @Test
@@ -289,20 +267,14 @@ public class ManageHearingTest extends BaseEventTest {
         @Test
         void shouldSetPartyList() {
             // Given
-            UUID claimantId = UUID.randomUUID();
-            PartyEntity claimantParty = createParty(claimantId);
-            when(partyService.getPartyName(claimantParty)).thenReturn("claimant name");
-            when(partyService.getPartyLabel(mainClaim, claimantId)).thenReturn("claimant label");
-
-            UUID defendantId = UUID.randomUUID();
-            PartyEntity defendantParty = createParty(defendantId);
-            when(partyService.getPartyName(defendantParty)).thenReturn("defendant name");
-            when(partyService.getPartyLabel(mainClaim, defendantId)).thenReturn("defendant label");
-
-            when(mainClaim.getClaimParties()).thenReturn(List.of(
-                createClaimParty(PartyRole.CLAIMANT, claimantParty),
-                createClaimParty(PartyRole.DEFENDANT, defendantParty)
-            ));
+            DynamicMultiSelectStringList partyList = DynamicMultiSelectStringList.builder()
+                .value(List.of())
+                .listItems(List.of(DynamicStringListElement.builder()
+                    .code(UUID.randomUUID().toString())
+                    .label("claimant name - claimant label")
+                    .build()))
+                .build();
+            when(hearingService.buildPartyList(pcsCaseEntity)).thenReturn(partyList);
 
             PCSCase pcsCase = PCSCase.builder()
                 .caseManagementLocation(caseLocation)
@@ -312,15 +284,9 @@ public class ManageHearingTest extends BaseEventTest {
             PCSCase response = callStartHandler(pcsCase);
 
             // Then
-            DynamicMultiSelectList partyMultiSelectionList = response.getPartyMultiSelectionList();
-            assertThat(partyMultiSelectionList).isNotNull();
-
-            List<DynamicListElement> listItems = partyMultiSelectionList.getListItems();
-            assertThat(listItems).hasSize(2);
-            assertThat(listItems.getFirst().getCode()).isEqualTo(claimantId);
-            assertThat(listItems.getFirst().getLabel()).isEqualTo("claimant name - claimant label");
-            assertThat(listItems.getLast().getCode()).isEqualTo(defendantId);
-            assertThat(listItems.getLast().getLabel()).isEqualTo("defendant name - defendant label");
+            DynamicMultiSelectStringList partyMultiSelectionList = response.getPartyMultiSelectionList();
+            assertThat(partyMultiSelectionList).usingRecursiveComparison().isEqualTo(partyList);
+            verify(hearingService).buildPartyList(pcsCaseEntity);
         }
 
         @Test
@@ -511,19 +477,6 @@ public class ManageHearingTest extends BaseEventTest {
             );
             assertThat(submitResponse.getConfirmationBody()).doesNotContain("Claimant v Defendant");
         }
-    }
-
-    private static PartyEntity createParty(UUID partyId) {
-        PartyEntity partyEntity = mock(PartyEntity.class);
-        when(partyEntity.getId()).thenReturn(partyId);
-        return partyEntity;
-    }
-
-    private static ClaimPartyEntity createClaimParty(PartyRole role, PartyEntity partyEntity) {
-        return ClaimPartyEntity.builder()
-            .role(role)
-            .party(partyEntity)
-            .build();
     }
 
     private static ListValue<Hearing> hearingListValue(Hearing hearing) {

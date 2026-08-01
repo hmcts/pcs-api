@@ -1,13 +1,13 @@
 package uk.gov.hmcts.reform.pcs.ccd.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.gov.hmcts.ccd.sdk.type.DynamicListElement;
-import uk.gov.hmcts.ccd.sdk.type.DynamicMultiSelectList;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.Hearing;
@@ -15,7 +15,14 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.HearingNoticeWording;
 import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.HearingType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.HearingEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
+import uk.gov.hmcts.reform.pcs.ccd.type.DynamicMultiSelectStringList;
+import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 
 import java.time.Clock;
 import java.time.Instant;
@@ -42,11 +49,14 @@ public class HearingServiceTest {
     @Mock
     private PcsCaseRepository pcsCaseRepository;
 
+    @Mock
+    private PartyService partyService;
+
     private HearingService hearingService;
 
     @BeforeEach
     void setUp() {
-        hearingService = new HearingService(pcsCaseService, pcsCaseRepository, FIXED_UK_CLOCK);
+        hearingService = new HearingService(pcsCaseService, pcsCaseRepository, partyService, FIXED_UK_CLOCK);
     }
 
     @Test
@@ -67,12 +77,12 @@ public class HearingServiceTest {
             .build();
 
         UUID partyId = UUID.randomUUID();
-        List<DynamicListElement> listItems = List.of(
-            DynamicListElement.builder()
-                .code(partyId)
+        List<DynamicStringListElement> listItems = List.of(
+            DynamicStringListElement.builder()
+                .code(partyId.toString())
                 .build()
         );
-        DynamicMultiSelectList partyList = DynamicMultiSelectList.builder()
+        DynamicMultiSelectStringList partyList = DynamicMultiSelectStringList.builder()
             .value(listItems)
             .build();
 
@@ -129,12 +139,12 @@ public class HearingServiceTest {
             .build();
 
         UUID partyId = UUID.randomUUID();
-        List<DynamicListElement> listItems = List.of(
-            DynamicListElement.builder()
-                .code(partyId)
+        List<DynamicStringListElement> listItems = List.of(
+            DynamicStringListElement.builder()
+                .code(partyId.toString())
                 .build()
         );
-        DynamicMultiSelectList partyList = DynamicMultiSelectList.builder()
+        DynamicMultiSelectStringList partyList = DynamicMultiSelectStringList.builder()
             .value(listItems)
             .build();
 
@@ -186,8 +196,8 @@ public class HearingServiceTest {
             .build();
 
         UUID partyId = UUID.randomUUID();
-        DynamicMultiSelectList partyList = DynamicMultiSelectList.builder()
-            .value(List.of(DynamicListElement.builder().code(partyId).build()))
+        DynamicMultiSelectStringList partyList = DynamicMultiSelectStringList.builder()
+            .value(List.of(DynamicStringListElement.builder().code(partyId.toString()).build()))
             .build();
 
         PCSCase pcsCase = PCSCase.builder()
@@ -231,8 +241,8 @@ public class HearingServiceTest {
             .build();
 
         UUID partyId = UUID.randomUUID();
-        DynamicMultiSelectList partyList = DynamicMultiSelectList.builder()
-            .value(List.of(DynamicListElement.builder().code(partyId).build()))
+        DynamicMultiSelectStringList partyList = DynamicMultiSelectStringList.builder()
+            .value(List.of(DynamicStringListElement.builder().code(partyId.toString()).build()))
             .build();
 
         PCSCase pcsCase = PCSCase.builder()
@@ -325,8 +335,10 @@ public class HearingServiceTest {
         PCSCase pcsCase = PCSCase.builder()
             .selectedHearingId("10")
             .hearing(hearing)
-            .partyMultiSelectionList(DynamicMultiSelectList.builder()
-                                         .value(List.of(DynamicListElement.builder().code(UUID.randomUUID()).build()))
+            .partyMultiSelectionList(DynamicMultiSelectStringList.builder()
+                                         .value(List.of(DynamicStringListElement.builder()
+                                                            .code(UUID.randomUUID().toString())
+                                                            .build()))
                                          .build())
             .build();
 
@@ -348,8 +360,8 @@ public class HearingServiceTest {
     @Test
     void shouldClearHearingFormAndSelectedNoticeRecipients() {
         // Given
-        DynamicListElement selectedParty = DynamicListElement.builder()
-            .code(UUID.randomUUID())
+        DynamicStringListElement selectedParty = DynamicStringListElement.builder()
+            .code(UUID.randomUUID().toString())
             .label("Defendant - Defendant 1")
             .build();
         PCSCase pcsCase = PCSCase.builder()
@@ -365,7 +377,7 @@ public class HearingServiceTest {
                 .isWithoutNotice(VerticalYesNo.YES)
                 .additionalInformation("stale information")
                 .build())
-            .partyMultiSelectionList(DynamicMultiSelectList.builder()
+            .partyMultiSelectionList(DynamicMultiSelectStringList.builder()
                 .value(List.of(selectedParty))
                 .listItems(List.of(selectedParty))
                 .build())
@@ -377,8 +389,36 @@ public class HearingServiceTest {
         // Then
         assertThat(pcsCase.getHearing()).usingRecursiveComparison()
             .isEqualTo(Hearing.builder().build());
-        assertThat(pcsCase.getPartyMultiSelectionList().getValue()).isNull();
+        assertThat(pcsCase.getPartyMultiSelectionList().getValue()).isEmpty();
         assertThat(pcsCase.getPartyMultiSelectionList().getListItems()).containsExactly(selectedParty);
+    }
+
+    @Test
+    void shouldBindNoticeRecipientsFromCcdDynamicMultiSelectPayloadWithStringCodes()
+        throws JsonProcessingException {
+        // Given
+        UUID partyId = UUID.randomUUID();
+        DynamicMultiSelectStringList selectedParties = new ObjectMapper().readValue("""
+            {
+                "value": [
+                  {
+                    "code": "%s",
+                    "label": "Defendant - Defendant 1"
+                  }
+                ],
+                "list_items": [
+                  {
+                    "code": "%s",
+                    "label": "Defendant - Defendant 1"
+                  }
+                ]
+            }
+            """.formatted(partyId, partyId), DynamicMultiSelectStringList.class);
+
+        // Then
+        assertThat(selectedParties.getValue())
+            .extracting(DynamicStringListElement::getCode)
+            .containsExactly(partyId.toString());
     }
 
     @Test
@@ -436,8 +476,8 @@ public class HearingServiceTest {
         // Given
         long caseReference = 12345L;
         UUID selectedPartyId = UUID.randomUUID();
-        DynamicListElement selectedParty = DynamicListElement.builder()
-            .code(selectedPartyId)
+        DynamicStringListElement selectedParty = DynamicStringListElement.builder()
+            .code(selectedPartyId.toString())
             .label("Defendant - Defendant 1")
             .build();
         HearingEntity selectedHearing = HearingEntity.builder()
@@ -463,7 +503,7 @@ public class HearingServiceTest {
         PCSCase pcsCase = PCSCase.builder()
             .selectedHearingId("1")
             .hearing(Hearing.builder().build())
-            .partyMultiSelectionList(DynamicMultiSelectList.builder()
+            .partyMultiSelectionList(DynamicMultiSelectStringList.builder()
                 .listItems(List.of(selectedParty))
                 .build())
             .build();
@@ -489,7 +529,107 @@ public class HearingServiceTest {
                 .build()
         );
         assertThat(pcsCase.getPartyMultiSelectionList().getValue())
-            .extracting(DynamicListElement::getCode)
-            .containsExactly(selectedPartyId);
+            .extracting(DynamicStringListElement::getCode)
+            .containsExactly(selectedPartyId.toString());
+    }
+
+    @Test
+    void shouldBuildPartyListBeforePreselectingNoticeRecipientsWhenPartyListIsMissing() {
+        // Given
+        long caseReference = 12345L;
+        UUID selectedPartyId = UUID.randomUUID();
+        PartyEntity selectedParty = PartyEntity.builder()
+            .id(selectedPartyId)
+            .firstName("Claimant")
+            .lastName("One")
+            .build();
+        ClaimEntity mainClaim = ClaimEntity.builder()
+            .claimParties(List.of(ClaimPartyEntity.builder()
+                .role(PartyRole.CLAIMANT)
+                .party(selectedParty)
+                .build()))
+            .build();
+        HearingEntity selectedHearing = HearingEntity.builder()
+            .id(1)
+            .type(HearingType.APPLICATION)
+            .noticeWording(HearingNoticeWording.RES)
+            .hearingDate(LocalDateTime.of(2026, 8, 3, 14, 30))
+            .durationDays(1)
+            .durationHours(2)
+            .durationMinutes(45)
+            .issueNotice(VerticalYesNo.YES)
+            .isWithoutNotice(VerticalYesNo.YES)
+            .noticeParties(List.of(selectedPartyId))
+            .build();
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
+            .claims(List.of(mainClaim))
+            .hearings(List.of(selectedHearing))
+            .build();
+        when(pcsCaseService.loadCase(caseReference)).thenReturn(pcsCaseEntity);
+        when(partyService.getPartyName(selectedParty)).thenReturn("Claimant One");
+        when(partyService.getPartyLabel(mainClaim, selectedPartyId)).thenReturn("Claimant 1");
+
+        PCSCase pcsCase = PCSCase.builder()
+            .selectedHearingId("1")
+            .hearing(Hearing.builder().build())
+            .build();
+
+        // When
+        hearingService.prepopulateEditableHearing(caseReference, pcsCase);
+
+        // Then
+        assertThat(pcsCase.getPartyMultiSelectionList()).isNotNull();
+        assertThat(pcsCase.getPartyMultiSelectionList().getListItems())
+            .extracting(DynamicStringListElement::getCode)
+            .containsExactly(selectedPartyId.toString());
+        assertThat(pcsCase.getPartyMultiSelectionList().getValue())
+            .extracting(DynamicStringListElement::getCode)
+            .containsExactly(selectedPartyId.toString());
+    }
+
+    @Test
+    void shouldUpdateHearingNoticePartiesFromSelectedDynamicMultiSelectValues() {
+        // Given
+        UUID partyId = UUID.randomUUID();
+        Hearing hearing = Hearing.builder()
+            .type(HearingType.APPLICATION)
+            .noticeWording(HearingNoticeWording.TPL)
+            .date(LocalDateTime.of(2026, 4, 5, 11, 30, 0))
+            .durationDays(0)
+            .durationHours(1)
+            .durationMinutes(0)
+            .issueNotice(VerticalYesNo.YES)
+            .isWithoutNotice(VerticalYesNo.YES)
+            .build();
+
+        HearingEntity selectedHearing = HearingEntity.builder()
+            .id(10)
+            .noticeParties(List.of())
+            .build();
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
+            .hearings(List.of(selectedHearing))
+            .build();
+        long caseReference = 12345L;
+        when(pcsCaseService.loadCase(caseReference)).thenReturn(pcsCaseEntity);
+
+        PCSCase pcsCase = PCSCase.builder()
+            .selectedHearingId("10")
+            .partyMultiSelectionList(DynamicMultiSelectStringList.builder()
+                .value(List.of(DynamicStringListElement.builder()
+                    .code(partyId.toString())
+                    .build()))
+                .build())
+            .hearing(hearing)
+            .build();
+
+        // When
+        hearingService.updateHearing(caseReference, pcsCase);
+
+        ArgumentCaptor<PcsCaseEntity> pcsCaseEntityCaptor = ArgumentCaptor.forClass(PcsCaseEntity.class);
+        verify(pcsCaseRepository).save(pcsCaseEntityCaptor.capture());
+
+        // Then
+        assertThat(pcsCaseEntityCaptor.getValue().getHearings().getFirst().getNoticeParties())
+            .containsExactly(partyId);
     }
 }
