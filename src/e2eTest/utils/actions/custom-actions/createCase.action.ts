@@ -62,8 +62,9 @@ import {noc} from "@data/page-data-figma/page-data-legalRepresentative/noc.page.
 import {clientDetails} from "@data/page-data-figma/page-data-legalRepresentative/clientDetails.page.data";
 import {checkAndSubmit} from "@data/page-data-figma/page-data-legalRepresentative/checkAndSubmit.page.data";
 import {somethingWentWrong} from "@data/page-data-figma/page-data-legalRepresentative/somethingWentWrong.page.data";
-import {EnforcementCommonUtils} from "@utils/actions/element-actions/enforcementUtils.action";
-import path from "path";
+import {
+  noticeOfChangeSuccessful
+} from "@data/page-data-figma/page-data-legalRepresentative/noticeOfChangeSuccessful.page.data";
 export let caseNumber: string;
 export let claimantsName: string;
 export let addressInfo: { buildingStreet: string; townCity: string; engOrWalPostcode: string };
@@ -143,8 +144,7 @@ export class CreateCaseAction implements IAction {
       ['checkAndSubmit', () => this.checkAndSubmit(fieldName as actionRecord)],
       ['verifyChangeLink', () => this.verifyChangeLink(fieldName as actionRecord)],
       ['validateErrorPage', () => this.validateErrorPage(fieldName as actionRecord)],
-      ['errorValidationNOC', () => this.errorValidationNOC(fieldName as string)],
-      ['inputErrorValidation', () => this.inputErrorValidation(page, fieldName as actionRecord)]
+      ['noticeOfChangeSuccessful', () => this.noticeOfChangeSuccessful( fieldName as actionRecord)],
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -1828,7 +1828,19 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', clientDetails.continueButton);
   }
 
-  private async checkAndSubmit(data: actionRecord){
+  private async checkAndSubmit(nocData: actionRecord){
+    await performValidation('text', {
+      elementType: 'tableElement',
+      text: nocData.caseRefNo,
+    });
+    await performValidation('text', {
+      elementType: 'tableElement',
+      text: nocData.firstName,
+    });
+    await performValidation('text', {
+      elementType: 'tableElement',
+      text: nocData.lastName,
+    });
     await performAction('check', checkAndSubmit.iConfirmCheckbox);
     await performAction('check', checkAndSubmit.iHaveServedCheckbox);
     await performAction('clickButton', checkAndSubmit.submitButton);
@@ -1858,101 +1870,10 @@ export class CreateCaseAction implements IAction {
     await performValidation('text', { elementType: 'link', text: somethingWentWrong.contactUs });
   }
 
-  private async inputErrorValidation(page: Page, validationArr: actionRecord) {
-    if (Array.isArray(validationArr.inputArray)) {
-      for (const item of validationArr.inputArray) {
-        switch (validationArr.validationType) {
-          case 'radioOptions':
-            await performAction('clickButton', validationArr.button);
-            await performValidation('inputError', !validationArr?.label ? validationArr.question : validationArr.label, item.errMessage);
-            await performValidation('errorMessage', !validationArr?.header ? validationArr.header = 'There is a problem' : validationArr.header, item.errMessage);
-            await performAction('clickRadioButton', { question: validationArr.question, option: validationArr.option });
-            break;
-
-          case 'textField':
-            await performAction('inputText', validationArr.label, await EnforcementCommonUtils.generateMoreThanMaxString(page, validationArr.label as string, item.input));
-            await expect(async () => {
-              await performAction('clickButton', validationArr.button);
-              if (item.type === 'moreThanMax') {
-                await performValidation('errorMessage', { header: validationArr.header, message: item.errMessage });
-              } else {
-                await performValidation('inputError', validationArr.label, item.errMessage);
-                await performValidation('errorMessage', validationArr.label, item.errMessage);
-              }
-            }).toPass({
-              timeout: VERY_LONG_TIMEOUT,
-            });
-            break;
-
-          case 'checkBox':
-            await performAction('clickButton', validationArr.button);
-            await performValidation('inputError', !validationArr?.label ? validationArr.question : validationArr.label, item.errMessage);
-            await performValidation('errorMessage', !validationArr?.header ? validationArr.header = 'There is a problem' : validationArr.header, item.errMessage);
-            await performAction('check', validationArr.checkBox);
-            break;
-
-          case 'checkBoxPageLevel':
-            await performAction('clickButton', validationArr.button);
-            await performValidation('errorMessage', !validationArr?.header ? validationArr.header = 'There is a problem' : validationArr.header, item.errMessage);
-            await performAction('check', validationArr.checkBox);
-            break;
-
-          case 'addDocument':
-            await expect(async () => {
-              await performAction('clickButton', validationArr.button);
-              await performValidation('errorMessage', !validationArr?.header ? validationArr.header = 'There is a problem' : validationArr.header, item.errMessage);
-            }).toPass({
-              timeout: VERY_LONG_TIMEOUT,
-            });
-            await performAction('clickButton', 'Add new');
-            break;
-
-          case 'dropDown':
-            await performAction('clickButton', validationArr.button);
-            await expect(async () => {
-              await performAction('clickButton', validationArr.button);
-              await performValidation('errorMessage', !validationArr?.header ? validationArr.header = 'There is a problem' : validationArr.header, item.errMessage);
-            }).toPass({
-              timeout: VERY_LONG_TIMEOUT,
-            });
-            await performAction('select', validationArr.docType, validationArr.type);
-            break;
-
-          case 'upLoad':
-            await expect(async () => {
-              await performAction('clickButton', validationArr.button);
-              if (item.type === 'invalid') {
-                const fileInput = page.locator('input[type="file"].form-control.bottom-30');
-                const filePath = path.resolve(__dirname, '../../../../data/inputFiles', item.file);
-                await fileInput.last().setInputFiles(filePath);
-                await performValidation('inputError', validationArr.label, item.errMessage);
-              } else {
-                await performValidation('errorMessage', !validationArr?.header ? validationArr.header = 'There is a problem' : validationArr.header, item.errMessage);
-              }
-            }).toPass({
-              timeout: VERY_LONG_TIMEOUT,
-            });
-            break;
-
-          default:
-            throw new Error(`Validation type :"${validationArr.validationType}" is not valid`);
-        };
-      }
-    }
-    if (validationArr.buttonRemove) {
-      await performAction('removeFile');
-      await page.waitForTimeout(6000);
-    }
+  private async noticeOfChangeSuccessful(nocData: actionRecord) {
+    await performValidation('text', { elementType: 'heading', text: noticeOfChangeSuccessful.mainHeader });
+    await performValidation('text', { elementType: 'tableElement', text: noticeOfChangeSuccessful.youAreNowRepresenting + caseInfo.id });
   }
 
-  private async errorValidationNOC(validationReq: string) {
-    if (validationReq === 'YES') {
-      await performAction('inputErrorValidation', {
-        validationType: 'textField',
-        inputArray: noc.errorValidationField.errorTextField,
-        label: noc.onlineCaseReferenceNumberTextLabel,
-        button: noc.continueButton
-      });
-    }
-  }
+
 }

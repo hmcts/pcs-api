@@ -1,7 +1,7 @@
 import { createCaseApiData, submitCaseApiData } from '@data/api-data';
 
 
-import {initializeExecutor, performAction,} from '@utils/controller';
+import {initializeExecutor, performAction, performValidation,} from '@utils/controller';
 import test from '@playwright/test';
 import { FieldsStore } from '@utils/actions/custom-actions/custom-actions-genApps/recordAnsweredFields.action';
 import { user } from '@data/user-data';
@@ -36,7 +36,7 @@ test.afterEach(async () => {
 });
 
 test.describe('Make an Application - LR - e2e Journey @nightly', async () => {
-  test('Notice of change - LR @regression @smoke', async () => {
+  test('Notice of change - Change link - LR @nightly', async () => {
     await performAction('noticeOfChange', { caseRefNo: caseInfo.id } );
     await performAction('clientDetails', { firstName: 'Peter' , lastName: 'Parker' });
     await performAction('verifyChangeLink', { caseRefNo: caseInfo.id, firstName: 'Peter' , lastName: 'Parker' });
@@ -49,7 +49,17 @@ test.describe('Make an Application - LR - e2e Journey @nightly', async () => {
     await performAction('validateErrorPage' );
   });
 
+  test('Notice of change - successful - LR - @regression @smoke', async () => {
+    await performAction('noticeOfChange', { caseRefNo: caseInfo.id } );
+    await performAction('clientDetails', { firstName: 'Peter' , lastName: 'Parker' });
+    await performAction('checkAndSubmit', { caseRefNo: caseInfo.id, firstName: 'Peter' , lastName: 'Parker' } );
+    await performAction('noticeOfChangeSuccessful', { caseRefNo: caseInfo.id } );
+  });
+
   test('Notice of change - Error message validations - LR @nightly', async () => {
-    await performAction('errorValidationNOC', noc.errorValidation);
+    await performAction('clickButton', noc.continueButton);
+    await performValidation('text', { elementType: 'link', text: noc.errMessage });
+    await performAction('noticeOfChange', { caseRefNo: '1111-2222-3333-4444-5555' } );
+    await performValidation('text', { elementType: 'link', text: noc.errMessage });
   });
 });

@@ -165,8 +165,7 @@ export class ActionRegistry {
     ['checkAndSubmit', new CreateCaseAction()],
     ['verifyChangeLink', new CreateCaseAction()],
     ['validateErrorPage', new CreateCaseAction()],
-    ['errorValidationNOC', new CreateCaseAction()],
-    ['inputErrorValidation', new CreateCaseAction()],
+    ['noticeOfChangeSuccessful', new CreateCaseAction()],
   ]);
 
   static getAction(actionName: string): IAction {
