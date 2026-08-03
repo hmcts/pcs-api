@@ -12,7 +12,7 @@
     "jurisdiction": "PCS",
     "state": "PENDING_CASE_ISSUED",
     "version": 2,
-    "case_type_id": "PCS",
+    "case_type_id": "${caseTypeId}",
     "security_classification": "PUBLIC",
     "case_data": {
       "featureFlags": {

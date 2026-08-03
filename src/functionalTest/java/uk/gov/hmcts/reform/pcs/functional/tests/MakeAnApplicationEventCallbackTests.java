@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.TestInstance;
+import uk.gov.hmcts.reform.pcs.ccd.CaseType;
 import uk.gov.hmcts.reform.pcs.functional.config.TestConstants;
 import uk.gov.hmcts.reform.pcs.functional.steps.ApiSteps;
 import uk.gov.hmcts.reform.pcs.functional.steps.BaseApi;
@@ -25,6 +26,8 @@ import uk.gov.hmcts.reform.pcs.functional.testutils.PcsIdamTokenClient;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class MakeAnApplicationEventCallbackTests extends BaseApi {
+
+    private static final String caseType = CaseType.getCaseType();
 
     @Steps
     ApiSteps apiSteps;
@@ -46,6 +49,7 @@ public class MakeAnApplicationEventCallbackTests extends BaseApi {
         String makeApplicationRequestBody = PayloadLoader.load(
             "/payloads/makeAnApplication-startEventCallbackRequest.json",
             Map.of(
+                "caseTypeId", caseType,
                 "caseId", caseReference
             )
         );
@@ -71,6 +75,7 @@ public class MakeAnApplicationEventCallbackTests extends BaseApi {
         String submitApplicationRequestBody = PayloadLoader.load(
             "/payloads/makeAnApplication-submitEventCallbackRequest.json",
             Map.of(
+                "caseTypeId", caseType,
                 "caseId", String.valueOf(caseReference),
                 "internalCaseId", decodedCaseId
             )
