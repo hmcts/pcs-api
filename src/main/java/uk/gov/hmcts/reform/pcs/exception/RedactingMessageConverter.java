@@ -6,9 +6,9 @@ import org.slf4j.helpers.MessageFormatter;
 
 import java.util.Arrays;
 
-public final class RedactingMessageConverter extends ClassicConverter {
+import static uk.gov.hmcts.reform.pcs.exception.ExceptionRedaction.REDACTED;
 
-    private static final String REDACTED = "[REDACTED]";
+public final class RedactingMessageConverter extends ClassicConverter {
 
     @Override
     public String convert(ILoggingEvent event) {

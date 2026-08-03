@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.pcs.arch;
 
 import com.tngtech.archunit.base.DescribedPredicate;
 import com.tngtech.archunit.core.domain.JavaClass;
+import com.tngtech.archunit.core.domain.JavaClasses;
 import com.tngtech.archunit.core.domain.JavaConstructorCall;
 import com.tngtech.archunit.core.domain.JavaField;
 import com.tngtech.archunit.core.domain.JavaMethod;
@@ -12,6 +13,7 @@ import com.tngtech.archunit.junit.ArchTest;
 import com.tngtech.archunit.lang.ArchCondition;
 import com.tngtech.archunit.lang.ArchRule;
 import com.tngtech.archunit.lang.ConditionEvents;
+import com.tngtech.archunit.lang.EvaluationResult;
 import com.tngtech.archunit.lang.SimpleConditionEvent;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
@@ -91,15 +93,33 @@ public class ArchitectureTest {
                 org.springframework.web.bind.annotation.RestController.class)
             .should(haveAnyParameterTypeResidingIn());
 
-    // Added test to show how many JDK and third party exceptions are used.  This is not an issue per say so long as
-    // they are for programatic reasonings - otherwise we
+    // Added test to show how many JDK and third party exceptions are used.  This is not an issue 'per say' so long as
+    // they are for programatic reasonings - otherwise we could expose things beyond the application boundary.
+    // This is deliberately left as a output warning so that it can be used to monitor size.
     @ArchTest
-    static final ArchRule custom_exceptions_must_extend_redacted_runtime_exception =
-        priority(LOW).noClasses()
+    static void warn_when_custom_exceptions_do_not_extend_redacted_runtime_exception(JavaClasses classes) {
+        ArchRule rule = priority(LOW).noClasses()
             .that().areNotAssignableTo(Throwable.class)
             .should().callConstructorWhere(instantiatesForeignThrowable())
             .as("Custom exceptions must extend RedactedRuntimeException")
-            .because("Instantiating JDK or third-party exceptions directly bypasses the Redaction formal structure.");
+            .because(
+                "Instantiating JDK or third-party exceptions directly bypasses "
+                    + "the Redaction formal structure so should only be used for programitic means and not contain "
+                    + "application knowledge."
+            );
+        EvaluationResult result = rule.evaluate(classes);
+        if (result.hasViolation()) {
+            log.warn("""
+            WARNING: Architecture violations found:
+            %s
+            """.formatted(
+                String.join(
+                    System.lineSeparator(),
+                    result.getFailureReport().getDetails()
+                )
+            ));
+        }
+    }
 
     // Those within the not(belongToAnyOf(...) should be removed once the service layer implementation has been created.
     @ArchTest
