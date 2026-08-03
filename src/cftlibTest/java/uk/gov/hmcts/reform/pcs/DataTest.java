@@ -201,7 +201,7 @@ public class DataTest extends CftlibTest {
         String msgDupId = "Found duplicate 'id' values in address";
         String msgLine1 = "Found NULL values in 'address_line1' — expected 0";
         String msgPostcode = "Found NULL values in 'postcode' — expected 0";
-        String msgAddress = "Property address linked to case is incorrectly populated";
+        String msgValidAddress = "Property address linked to case is incorrectly populated";
 
         org.junit.jupiter.api.Assertions.assertAll("address validations",
                                                    () -> assertHasColumns("public.address", expectedColumns),
@@ -209,7 +209,7 @@ public class DataTest extends CftlibTest {
                                                    () -> assertEquals(0, duplicateIds, msgDupId),
                                                    () -> assertEquals(0, nullLine1, msgLine1),
                                                    () -> assertEquals(0, nullPostcode, msgPostcode),
-                                                   () -> assertTrue(validPropertyAddresses > 0,  msgAddress)
+                                                   () -> assertEquals(1, validPropertyAddresses,  msgValidAddress)
         );
     }
 
@@ -250,7 +250,50 @@ public class DataTest extends CftlibTest {
                                                    () -> assertHasColumns("public.tenancy_licence", expectedColumns),
                                                    () -> assertTrue(totalRows > 0, msgCount),
                                                    () -> assertEquals(1, createdCasePresent, msgCasePresent),
-                                                   () -> assertTrue(validTenancy > 0,  msgValidTenancy)
+                                                   () -> assertEquals(1, validTenancy,  msgValidTenancy)
+        );
+    }
+
+    // claim table validation
+
+    @Test
+    @DisplayName("validate public.claim - schema, flags, and relationship rules")
+    void validateClaimTable() {
+        List<String> expectedColumns = List.of(
+            "id", "version", "case_id", "claimant_type", "against_trespassers",
+            "due_to_rent_arrears", "claim_costs", "pre_action_protocol_followed",
+            "mediation_attempted", "settlement_attempted", "language_used"
+        );
+
+        int totalRows = runCountQuery("SELECT COUNT(*) FROM public.claim");
+
+        int createdCasePresent = runCountQuery(
+            "SELECT COUNT(*) FROM public.claim cl "
+                + "JOIN public.pcs_case c ON cl.case_id = c.id "
+                + "WHERE c.case_reference = '" + caseReference + "'"
+        );
+
+        int validClaim = runCountQuery(
+            "SELECT COUNT(*) FROM public.claim cl "
+                + "JOIN public.pcs_case c ON cl.case_id = c.id "
+                + "WHERE c.case_reference = '" + caseReference + "'"
+                + "AND cl.due_to_rent_arrears = 'YES' "
+                + "AND cl.against_trespassers = 'NO' "
+                + "AND cl.pre_action_protocol_followed = 'YES' "
+                + "AND cl.mediation_attempted = 'YES' "
+                + "AND cl.settlement_attempted = 'YES' "
+                + "AND cl.language_used = 'ENGLISH' "
+        );
+
+        String msgCount = "Expected tenancy_licence to have a row, found " + totalRows;
+        String msgCasePresent = "Expected created case_reference " + caseReference + " to exist";
+        String msgValidClaim = "Claim detail fields linked to case are incorrectly populated";
+
+        org.junit.jupiter.api.Assertions.assertAll("claim validations",
+                                                   () -> assertHasColumns("public.claim", expectedColumns),
+                                                   () -> assertTrue(totalRows > 0, msgCount),
+                                                   () -> assertEquals(1, createdCasePresent, msgCasePresent),
+                                                   () -> assertEquals(1, validClaim,  msgValidClaim)
         );
     }
 
@@ -283,4 +326,5 @@ public class DataTest extends CftlibTest {
     private int runCountQuery(String sql) {
         return jdbcTemplate.queryForObject(sql, new MapSqlParameterSource(), Integer.class);
     }
+
 }
