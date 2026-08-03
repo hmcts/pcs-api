@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.pcs.notify.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import uk.gov.hmcts.reform.pcs.LegalRepresentative;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantInformation;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -64,13 +65,12 @@ public class NotificationPersonalisationFactory {
         return buildPersonalisation(partyEntity, pcsCaseEntity);
     }
 
-    public LegalRepresentativeBasePersonalisation forLegalRepresentative(PartyEntity legalRepresentativePartyEntity, PcsCaseEntity pcsCaseEntity) {
-        UUID userId = legalRepresentativePartyEntity.getIdamId();
-//        OrganisationDetailsResponse organisationDetailsResponse = organisationDetailsService.getOrganisationDetails(userId.toString());
+    public LegalRepresentativeBasePersonalisation forLegalRepresentative(PartyEntity defendantParty, PcsCaseEntity pcsCaseEntity) {
+        UUID userId = defendantParty.getIdamId();
         String organisationName = organisationDetailsService.getOrganisationName(userId.toString()); // unsure?
 
         return LegalRepresentativeBasePersonalisation.builder()
-            .base(buildPersonalisation(legalRepresentativePartyEntity, pcsCaseEntity))
+            .base(buildPersonalisation(defendantParty, pcsCaseEntity))
             .organisationName(organisationName)
             .paymentReference("??????") // this needs to be fixed
             .build();
@@ -82,6 +82,34 @@ public class NotificationPersonalisationFactory {
         return CounterclaimPaymentSuccessPersonalisation.builder()
             .base(forDefendant(defendantResponse))
             .paymentReferenceNumber(paymentReference)
+            .build();
+    }
+
+    private BasePersonalisation buildPersonalisation(
+        PartyEntity emailRecipient,
+        PcsCaseEntity pcsCaseEntity,
+        LegalRepresentative legalRepresentative
+    ) {
+        PartyEntity primaryClaimant = partyService.getPrimaryClaimantPartyEntity(pcsCaseEntity);
+        PartyEntity primaryDefendant = partyService.getPrimaryDefendantPartyEntity(pcsCaseEntity);
+
+        String claimantName = primaryClaimant.getOrgName() != null
+            ? primaryClaimant.getOrgName().toUpperCase(Locale.ROOT)
+            : formatNameUpperForNotification(primaryClaimant.getFirstName(), primaryClaimant.getLastName());
+
+        String primaryDefendantName = getDefendantName(
+            primaryDefendant.getNameKnown() != null && primaryDefendant.getNameKnown().toBoolean(),
+            primaryDefendant.getFirstName(),
+            primaryDefendant.getLastName());
+
+        return BasePersonalisation.builder()
+            .firstName(legalRepresentative.getFirstName() != null
+                           ? legalRepresentative.getFirstName() : legalRepresentative.getOrgName())
+            .lastName(legalRepresentative.getLastName() != null
+                          ? legalRepresentative.getLastName() : "")
+            .caseNumber(formatCaseReference(pcsCaseEntity.getCaseReference().toString()))
+            .claimantName(claimantName)
+            .primaryDefendantName(primaryDefendantName)
             .build();
     }
 
