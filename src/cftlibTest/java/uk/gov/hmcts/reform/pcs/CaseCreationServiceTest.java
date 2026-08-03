@@ -10,6 +10,8 @@ import uk.gov.hmcts.rse.ccd.lib.test.CftlibTest;
 
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 
+import feign.FeignException;
+
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @SpringBootTest
 class CaseCreationServiceTest extends CftlibTest {
@@ -21,14 +23,22 @@ class CaseCreationServiceTest extends CftlibTest {
 
     @Test
     void runCreateMaximalCase() {
-        String testAuthorisationToken = idamClient.getAccessToken("pcs-solicitor1@test.com", "password");
+        try {
+            String testAuthorisationToken = idamClient.getAccessToken("pcs-solicitor1@test.com", "password");
 
-        long caseReference = caseCreationService.createMaximalCase(testAuthorisationToken);
+            long caseReference = caseCreationService.createMaximalCase(testAuthorisationToken);
 
-        System.out.println("==========================================");
-        System.out.println("CREATED MAXIMAL CASE ID: " + caseReference);
-        System.out.println("==========================================");
+            System.out.println("==========================================");
+            System.out.println("CREATED MAXIMAL CASE ID: " + caseReference);
+            System.out.println("==========================================");
 
-        Assertions.assertThat(caseReference).isGreaterThan(0L);
+            Assertions.assertThat(caseReference).isGreaterThan(0);
+        } catch (FeignException e) {
+            System.err.println("===================ERROR CREATING MAX CASE===================");
+            System.err.println("Status: " + e.status());
+            System.err.println("Response Body: " + e.contentUTF8());
+            System.err.println("=============================================================");
+            throw e;
+        }
     }
 }
