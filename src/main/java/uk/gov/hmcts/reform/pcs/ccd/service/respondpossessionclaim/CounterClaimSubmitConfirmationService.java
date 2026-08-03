@@ -49,7 +49,7 @@ public class CounterClaimSubmitConfirmationService {
             throw new IllegalStateException("Responsible party entity not provided");
         }
 
-        if (persistenceResult.issuedWithoutPayment()) {
+        if (!persistenceResult.paymentRequired()) {
             return buildCounterClaimConfirmationResponse(
                 persistenceResult.counterClaimEntity().getStatus(),
                 null,
