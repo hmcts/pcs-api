@@ -52,7 +52,7 @@ withPipeline(type, product, component) {
   enableDbMigration('pcs')
 
   //skipping sync with demo/perftest during SIT testing/DB migration
-  syncBranchesWithMaster(['ithc'])
+  syncBranchesWithMaster(['ithc', 'perftest'])
 
 
   onPR() {
@@ -89,7 +89,7 @@ withPipeline(type, product, component) {
       AppPipelineDsl.PactRoles.CONSUMER,
       AppPipelineDsl.PactRoles.CONSUMER_DEPLOY_CHECK
     ])
-    enableHighLevelDataSetup("", true)
+    enableHighLevelDataSetup()
     setAatEnvVars()
     // The e2e journeys all create cases, which is blocked while the service is shuttered.
     if (!shutterService) {
@@ -109,9 +109,8 @@ withPipeline(type, product, component) {
   }
 
   onPerftest {
-    // disabling new case definition uploads to perftest during DB migration to keep test data
-    // setPerftestEnvVars()
-    // enableHighLevelDataSetup()
+     setPerftestEnvVars()
+     enableHighLevelDataSetup()
   }
 
   before('highleveldatasetup') {
