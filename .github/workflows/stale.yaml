@@ -13,15 +13,15 @@ jobs:
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           days-before-stale: '14'
-          days-before-close: '30'
+          days-before-close: '7'
           stale-issue-message: >
             This issue has been automatically marked as stale because it has not had
-            recent activity in the last 30 days. It will be closed in 14 days if no
+            recent activity in the last 14 days. It will be closed in 7 days if no
             further activity occurs. Comment or push to keep it open. Thank you for
             your contributions.
           stale-pr-message: >
             This pull request has been automatically marked as stale because it has not
-            had recent activity in the last 30 days. It will be closed in 14 days if no
+            had recent activity in the last 14 days. It will be closed in 7 days if no
             further activity occurs. Comment or push to keep it open. Thank you for
             your contributions.
           close-issue-message: >
