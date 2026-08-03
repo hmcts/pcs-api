@@ -197,6 +197,25 @@ class CaseFlagsViewTest {
     }
 
     @Test
+    void shouldKeepPathValuesContainingThePathDelimiter() {
+        PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
+        PCSCase pcsCase = PCSCase.builder().build();
+
+        CaseFlagEntity caseFlagEntity = new CaseFlagEntity();
+        caseFlagEntity.setId(UUID.randomUUID());
+        caseFlagEntity.setFlagRefData(createMockRefDataFlagsEntity("RA0035", "Video hearing"));
+        caseFlagEntity.setPaths(":Party_:Note: I need a video hearing");
+        pcsCaseEntity.setCaseFlags(List.of(caseFlagEntity));
+
+        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+
+        List<ListValue<String>> paths = pcsCase.getCaseFlags().getDetails().getFirst().getValue().getPath();
+        assertEquals(2, paths.size());
+        assertEquals("Party", paths.get(0).getValue());
+        assertEquals("Note: I need a video hearing", paths.get(1).getValue());
+    }
+
+    @Test
     void shouldHandleNullCaseFlagsGracefully() {
         PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
         PCSCase pcsCase = PCSCase.builder().build();

@@ -491,26 +491,8 @@ class ClaimResponseServiceTest {
     }
 
     @Test
-    void shouldSaveDefendantFlagsAgainstPartyForCitizen() {
+    void shouldSaveDefendantFlagsAgainstParty() {
         // Given
-        Flags defendantFlags = Flags.builder().partyName("Jack Smith").roleOnCase("Defendant").build();
-        PossessionClaimResponse response = buildResponse(
-            Party.builder().build(),
-            DefendantResponses.builder().contactByEmail(VerticalYesNo.YES).build()
-        ).toBuilder()
-            .defendantFlags(defendantFlags)
-            .build();
-        // When
-        underTest.saveDraftDataForParty(response, testParty);
-
-        // Then
-        verify(caseFlagService).saveReasonableAdjustmentFlags(testParty, defendantFlags);
-    }
-
-    @Test
-    void shouldSaveDefendantFlagsAgainstPartyForLegalRepresentative() {
-        // Given
-        UUID partyId = UUID.randomUUID();
         Flags defendantFlags = Flags.builder().partyName("Jack Smith").roleOnCase("Defendant").build();
         PossessionClaimResponse response = buildResponse(
             Party.builder().build(),
