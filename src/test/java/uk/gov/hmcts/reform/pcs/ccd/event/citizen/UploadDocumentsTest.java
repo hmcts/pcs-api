@@ -78,8 +78,8 @@ class UploadDocumentsTest extends BaseEventTest {
     }
 
     @Test
-    void shouldBeConfiguredAsNeverShowWithMergedEventFeatureFlags() {
-        assertConfiguredAsNeverShowWithMergedEventFeatureFlags();
+    void shouldBeConfiguredAsNeverShow() {
+        assertConfiguredAsNeverShow();
     }
 
     @Nested
