@@ -26,12 +26,12 @@ global:
 wa:
   enabled: true
 
+  eventHandler:
+    enabled: false
+
   camunda-bpm:
     java:
       image: hmctsprod.azurecr.io/camunda/bpm:pr-1025
-
-  wa-case-event-handler:
-    enabled: false
 
   wa-task-management-api:
     java:
