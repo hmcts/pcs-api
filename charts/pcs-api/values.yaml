@@ -54,13 +54,21 @@ java:
     CCD_DATA_STORE_URL: "http://ccd-data-store-api-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal"
     CASE_DOCUMENT_AM_URL: "http://ccd-case-document-am-api-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal"
     RD_PROFESSIONAL_API_URL: "http://rd-professional-api-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal"
+    RSE_LIB_XUI_ENV_DECENTRALISED_CASE_TYPE_CONFIG: >-
+      {"PCS": {"nocBaseUrl": "http://pcs-api-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal"}}
 servicebus:
   enabled: false
 ccd:
   enabled: false
 xui-webapp:
   enabled: false
+xui-mo-webapp:
+  enabled: false
 wiremock:
   enabled: false
 ccd-case-document-am-api:
+  enabled: false
+aac-manage-case-assignment:
+  enabled: false
+am-org-role-mapping-service:
   enabled: false
