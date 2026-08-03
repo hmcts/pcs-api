@@ -4,7 +4,6 @@ import feign.FeignException.InternalServerError;
 import feign.FeignException.NotFound;
 import feign.Request;
 import feign.RequestTemplate;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -13,6 +12,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.fees.client.model.FeeLookupResponseDto;
 import uk.gov.hmcts.reform.pcs.exception.ExceptionRedaction;
+import uk.gov.hmcts.reform.pcs.exception.ResetExceptionRedactionExtension;
 import uk.gov.hmcts.reform.pcs.feesandpay.client.PCSFeesClient;
 import uk.gov.hmcts.reform.pcs.feesandpay.exception.FeeNotFoundException;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
@@ -29,7 +29,7 @@ import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@ExtendWith(MockitoExtension.class)
+@ExtendWith({MockitoExtension.class, ResetExceptionRedactionExtension.class})
 class RealFeeServiceTest {
 
     @Mock
@@ -51,11 +51,6 @@ class RealFeeServiceTest {
             .version(4)
             .feeAmount(BigDecimal.valueOf(404.00))
             .build();
-    }
-
-    @AfterEach
-    void tearDown() {
-        ExceptionRedaction.setShowFullExceptionsForTesting(null);
     }
 
     @Test

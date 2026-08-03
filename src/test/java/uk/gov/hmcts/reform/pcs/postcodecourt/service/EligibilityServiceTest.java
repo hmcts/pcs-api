@@ -1,7 +1,6 @@
 package uk.gov.hmcts.reform.pcs.postcodecourt.service;
 
 import org.apache.commons.lang3.StringUtils;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -11,6 +10,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.exception.ExceptionRedaction;
+import uk.gov.hmcts.reform.pcs.exception.ResetExceptionRedactionExtension;
 import uk.gov.hmcts.reform.pcs.postcodecourt.exception.InvalidPostCodeException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityResult;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityStatus;
@@ -30,7 +30,7 @@ import static uk.gov.hmcts.reform.pcs.config.ClockConfiguration.UK_ZONE_ID;
 import static uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.ENGLAND;
 import static uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.WALES;
 
-@ExtendWith(MockitoExtension.class)
+@ExtendWith({MockitoExtension.class, ResetExceptionRedactionExtension.class})
 class EligibilityServiceTest {
 
     private static final String TEST_POSTCODE = "AB12 3EF";
@@ -51,11 +51,6 @@ class EligibilityServiceTest {
         when(ukClock.getZone()).thenReturn(UK_ZONE_ID);
 
         underTest = new EligibilityService(postCodeCourtRepository, partialPostcodesGenerator, ukClock);
-    }
-
-    @AfterEach
-    void afterEach() {
-        ExceptionRedaction.setShowFullExceptionsForTesting(null);
     }
 
     @ParameterizedTest

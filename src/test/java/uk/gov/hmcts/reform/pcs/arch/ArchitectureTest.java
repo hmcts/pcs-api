@@ -110,13 +110,13 @@ public class ArchitectureTest {
         EvaluationResult result = rule.evaluate(classes);
         if (result.hasViolation()) {
             log.warn("""
-            WARNING: Architecture violations found:
-            %s
-            """.formatted(
-                String.join(
-                    System.lineSeparator(),
-                    result.getFailureReport().getDetails()
-                )
+                WARNING: Architecture violations found:
+                %s
+                """.formatted(
+                    String.join(
+                        System.lineSeparator(),
+                        result.getFailureReport().getDetails()
+                    )
             ));
         }
     }

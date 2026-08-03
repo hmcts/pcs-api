@@ -1,8 +1,8 @@
 package uk.gov.hmcts.reform.pcs.exception;
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
@@ -13,16 +13,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@ExtendWith(ResetExceptionRedactionExtension.class)
 public class ExceptionRedactionTest {
 
     @BeforeEach
     void forceRedactedModeByDefaultForEachTest() {
         ExceptionRedaction.setShowFullExceptionsForTesting(false);
-    }
-
-    @AfterEach
-    void resetShowFullExceptionsOverride() {
-        ExceptionRedaction.setShowFullExceptionsForTesting(null);
     }
 
     @Test

@@ -1,9 +1,9 @@
 package uk.gov.hmcts.reform.pcs.controllers;
 
 import feign.FeignException;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -28,6 +28,7 @@ import uk.gov.hmcts.reform.pcs.exception.InvalidAccessCodeException;
 import uk.gov.hmcts.reform.pcs.exception.InvalidAuthTokenException;
 import uk.gov.hmcts.reform.pcs.exception.InvalidPartyForAccessCodeException;
 import uk.gov.hmcts.reform.pcs.exception.RedactionContext;
+import uk.gov.hmcts.reform.pcs.exception.ResetExceptionRedactionExtension;
 
 import java.util.List;
 import java.util.Set;
@@ -53,6 +54,7 @@ import static uk.gov.hmcts.reform.pcs.exception.ExceptionRedaction.safeMessage;
 import static uk.gov.hmcts.reform.pcs.exception.IdamException.AUTH_VALIDATION_STATUS_CODE;
 import static uk.gov.hmcts.reform.pcs.exception.IdamException.OAUTH2_ERROR_CODE;
 
+@ExtendWith(ResetExceptionRedactionExtension.class)
 class RestExceptionHandlerTest {
 
     private RestExceptionHandler underTest;
@@ -63,11 +65,6 @@ class RestExceptionHandlerTest {
         UpstreamThrottling upstreamThrottling = new UpstreamThrottling(
             "30", Set.of("invalid_token_response", "temporarily_unavailable"));
         underTest = new RestExceptionHandler(upstreamThrottling);
-    }
-
-    @AfterEach
-    void afterEach() {
-        ExceptionRedaction.setShowFullExceptionsForTesting(null);
     }
 
     @Test

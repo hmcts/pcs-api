@@ -1,17 +1,13 @@
 package uk.gov.hmcts.reform.pcs.exception;
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.PARTY_ACCESS_CODE;
 
+@ExtendWith(ResetExceptionRedactionExtension.class)
 class InvalidPartyForAccessCodeExceptionTest {
-
-    @AfterEach
-    void tearDown() {
-        ExceptionRedaction.setShowFullExceptionsForTesting(null);
-    }
 
     @Test
     void shouldCreateExceptionWithMessage() {

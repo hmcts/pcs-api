@@ -3,7 +3,6 @@ package uk.gov.hmcts.reform.pcs.reference.service;
 import feign.FeignException;
 import feign.Request;
 import feign.Response;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -14,6 +13,7 @@ import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.pcs.exception.ExceptionRedaction;
 import uk.gov.hmcts.reform.pcs.exception.OrganisationDetailsException;
+import uk.gov.hmcts.reform.pcs.exception.ResetExceptionRedactionExtension;
 import uk.gov.hmcts.reform.pcs.reference.api.RdProfessionalApi;
 import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
 import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
@@ -29,7 +29,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@ExtendWith(MockitoExtension.class)
+@ExtendWith({MockitoExtension.class, ResetExceptionRedactionExtension.class})
 class OrganisationDetailsServiceTest {
 
     private static final String USER_ID = "dc3f786d-4ad4-4b5d-a79f-6e35a6520ace";
@@ -56,11 +56,6 @@ class OrganisationDetailsServiceTest {
             authTokenGenerator,
             prdAdminTokenProvider
         );
-    }
-
-    @AfterEach
-    void afterEach() {
-        ExceptionRedaction.setShowFullExceptionsForTesting(null);
     }
 
     @Test

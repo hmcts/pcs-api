@@ -1,19 +1,20 @@
 package uk.gov.hmcts.reform.pcs.controllers;
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.client.HttpClientErrorException;
-import uk.gov.hmcts.reform.pcs.exception.ExceptionRedaction;
 import uk.gov.hmcts.reform.pcs.exception.IdamException;
+import uk.gov.hmcts.reform.pcs.exception.ResetExceptionRedactionExtension;
 
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.AUTH_TOKEN_RETRIEVAL_FAIL;
 
+@ExtendWith(ResetExceptionRedactionExtension.class)
 class UpstreamThrottlingTest {
 
     private static final Set<String> DEFAULT_OAUTH2_CODES =
@@ -24,11 +25,6 @@ class UpstreamThrottlingTest {
     @BeforeEach
     void beforeEach() {
         underTest = new UpstreamThrottling("42", DEFAULT_OAUTH2_CODES);
-    }
-
-    @AfterEach
-    void afterEach() {
-        ExceptionRedaction.setShowFullExceptionsForTesting(null);
     }
 
     @Test

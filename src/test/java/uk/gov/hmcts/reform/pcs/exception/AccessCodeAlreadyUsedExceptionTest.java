@@ -1,18 +1,14 @@
 package uk.gov.hmcts.reform.pcs.exception;
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.ACCESS_CODE_ALREADY_IN_USE;
 import static uk.gov.hmcts.reform.pcs.exception.ExceptionRedaction.safeMessage;
 
+@ExtendWith(ResetExceptionRedactionExtension.class)
 class AccessCodeAlreadyUsedExceptionTest {
-
-    @AfterEach
-    void tearDown() {
-        ExceptionRedaction.setShowFullExceptionsForTesting(null);
-    }
 
     @Test
     void shouldReturnUnredactedMessageWhenShowFullExceptionsIsTrue() {
@@ -26,6 +22,7 @@ class AccessCodeAlreadyUsedExceptionTest {
         assertThat(exception).isNotNull();
         assertThat(exception.getMessage()).isEqualTo(ACCESS_CODE_ALREADY_IN_USE.safeDescription());
         assertThat(exception.getCause()).isNull();
+
     }
 
     @Test
