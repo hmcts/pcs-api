@@ -32,5 +32,66 @@
         "authorisations": []
       }
     ]
+  },
+  {
+    "email": "pcs-hearing-centre-team-leader-01@localhost",
+    "id": "adcab220-a2cf-3a1b-9705-29f5cd5e387b",
+    "roleAssignments": [
+      {
+        "roleType": "ORGANISATION",
+        "roleName": "hmcts-admin",
+        "grantType": "STANDARD",
+        "roleCategory": "ADMIN",
+        "classification": "PUBLIC",
+        "readOnly": false,
+        "attributes": {
+        },
+        "authorisations": []
+      },
+      {
+        "roleType": "ORGANISATION",
+        "roleName": "hearing-centre-team-leader",
+        "grantType": "STANDARD",
+        "roleCategory": "ADMIN",
+        "classification": "PUBLIC",
+        "readOnly": false,
+        "attributes": {
+          "substantive": "Y",
+          "primaryLocation": "20262",
+          "jurisdiction": "PCS",
+          "region": "1",
+          "workTypes": "routine_work,applications,decision_making_work,error_management,appeals"
+        }
+      },
+      {
+        "roleType": "ORGANISATION",
+        "roleName": "hearing-centre-admin",
+        "grantType": "STANDARD",
+        "roleCategory": "ADMIN",
+        "classification": "PUBLIC",
+        "readOnly": false,
+        "attributes": {
+          "substantive": "Y",
+          "primaryLocation": "20262",
+          "jurisdiction": "PCS",
+          "region": "1",
+          "workTypes": "routine_work,applications,decision_making_work,error_management,appeals"
+        }
+      },
+      {
+        "roleType": "ORGANISATION",
+        "roleName": "task-supervisor",
+        "grantType": "STANDARD",
+        "roleCategory": "ADMIN",
+        "classification": "PUBLIC",
+        "readOnly": false,
+        "attributes": {
+          "substantive": "N",
+          "primaryLocation": "20262",
+          "jurisdiction": "PCS",
+          "region": "1"
+        }
+      }
+    ]
   }
 ]
