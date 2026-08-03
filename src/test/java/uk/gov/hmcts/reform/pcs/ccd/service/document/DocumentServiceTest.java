@@ -56,6 +56,7 @@ import java.util.UUID;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
@@ -244,6 +245,45 @@ class DocumentServiceTest {
             .containsExactlyInAnyOrder(DocumentType.OCCUPATION_LICENCE, DocumentType.OCCUPATION_LICENCE);
     }
 
+    @ParameterizedTest
+    @EnumSource(AdditionalDocumentType.class)
+    void shouldMapAllAdditionalDocumentTypes(AdditionalDocumentType additionalDocumentType) {
+        // Given
+        PCSCase pcsCase = mock(PCSCase.class);
+
+        DynamicList documentTypeList = new DynamicList(
+                new DynamicListElement(UUID.randomUUID(), additionalDocumentType.getLabel()),
+                new ArrayList<>()
+        );
+        AdditionalDocument additionalDocument = AdditionalDocument.builder()
+            .document(Document.builder()
+                    .filename("userEnteredDetails.pdf")
+                    .uploadTimestamp(LocalDateTime.now())
+                    .url("https://host/" + UUID.randomUUID())
+                    .binaryUrl("someUrl")
+                    .categoryId("uploaded-category")
+                    .build())
+            .documentType(documentTypeList)
+            .build();
+
+        when(pcsCase.getAdditionalDocuments()).thenReturn(List.of(
+                ListValue.<AdditionalDocument>builder().value(additionalDocument).build()
+        ));
+
+        // When
+        underTest.createAllDocuments(pcsCase);
+
+        // Then
+        DocumentType expectedDocumentType = DocumentType.valueOf(additionalDocumentType.name());
+
+        verify(documentRepository).saveAll(documentEntityListCaptor.capture());
+        List<DocumentEntity> capturedEntities = documentEntityListCaptor.getValue();
+
+        assertThat(capturedEntities)
+            .extracting(DocumentEntity::getType)
+            .containsExactly(expectedDocumentType);
+    }
+    
     @Test
     void shouldMapAllAdditionalDocumentTypesForEngland() {
         PCSCase pcsCase = mock(PCSCase.class);
