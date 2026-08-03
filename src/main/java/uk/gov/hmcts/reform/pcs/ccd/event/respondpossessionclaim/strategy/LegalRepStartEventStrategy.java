@@ -34,10 +34,6 @@ public class LegalRepStartEventStrategy implements RespondPossessionClaimStartEv
 
         List<PartyEntity> defendantPartiesLinkedAndActive = loadAndValidateDefendants(caseReference);
 
-        if (this.legalRepPartySelectionService.hasSubmittedResponse(caseReference, pcsCase, defendantPartiesLinkedAndActive)) {
-            return legalRepPartySelectionService.buildSubmittedResponseCase(pcsCase);
-        }
-
         if (defendantPartiesLinkedAndActive.size() == 1) {
             PartyEntity defendant = defendantPartiesLinkedAndActive.getFirst();
             legalRepPartySelectionService.validateResponseNotAlreadySubmitted(caseReference, defendant.getId());

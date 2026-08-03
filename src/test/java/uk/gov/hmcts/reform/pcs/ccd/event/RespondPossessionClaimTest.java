@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.event;
 
+import com.github.kagkarlsson.scheduler.SchedulerClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,6 +23,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantContac
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
@@ -70,8 +72,7 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -142,6 +143,9 @@ class RespondPossessionClaimTest extends BaseEventTest {
     @Mock
     private SubmitResponseFactory submitResponseFactory;
 
+    @Mock
+    private SchedulerClient schedulerClient;
+
     @BeforeEach
     void setUp() {
 
@@ -176,7 +180,8 @@ class RespondPossessionClaimTest extends BaseEventTest {
             counterClaimService,
             feeCalculator,
             documentService,
-            draftCaseDataService
+            draftCaseDataService,
+            schedulerClient
         );
 
         CounterClaimSubmitConfirmationService confirmationService = new CounterClaimSubmitConfirmationService(
@@ -403,9 +408,11 @@ class RespondPossessionClaimTest extends BaseEventTest {
     @Test
     void shouldNotSaveDraftWhenPossessionClaimResponseIsNull_ForCitizenUser() {
 
+        DefendantResponseEntity defendantResponseEntity = DefendantResponseEntity.builder().build();
         when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
         when(securityContextService.getCurrentUserId()).thenReturn(UUID.randomUUID());
         when(userInfo.getRoles()).thenReturn(List.of(UserRole.CITIZEN.getRole()));
+        when(defendantResponseService.saveDefendantResponse(anyLong(), any(), any(), any())).thenReturn(defendantResponseEntity);
 
         PCSCase caseData = PCSCase.builder()
             .possessionClaimResponse(null)
@@ -1006,6 +1013,8 @@ class RespondPossessionClaimTest extends BaseEventTest {
 
         when(counterClaimService.saveCounterClaim(TEST_CASE_REFERENCE, responses.getCounterClaim(), representedParty))
             .thenReturn(Optional.of(counterClaimEntity));
+        when(defendantResponseService.saveDefendantResponse(anyLong(), any(), any(), any())).thenReturn(
+            DefendantResponseEntity.builder().build());
 
         // when
         var response = callSubmitHandler(caseData);
