@@ -47,6 +47,7 @@ import uk.gov.hmcts.reform.pcs.notify.template.EmailTemplate;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.BasePersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.ClaimantBasePersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.CounterclaimPaymentSuccessPersonalisation;
+import uk.gov.hmcts.reform.pcs.notify.template.personalisation.NoticeOfChangeCompletedPersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.TemplatePersonalisation;
 
 import java.time.Instant;
@@ -65,6 +66,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThatCode;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -835,7 +837,7 @@ class NotificationServiceTest {
     }
 
     @Nested
-    @DisplayName("Notice Of Change Other Parties Tests")
+    @DisplayName("Notice Of Change Tests")
     class NoticeOfChangeOtherPartiesTests {
 
         private static final String CLAIMANT_EMAIL = "claimant@example.com";
@@ -915,6 +917,59 @@ class NotificationServiceTest {
             verify(schedulerClient).scheduleIfNotExists(schedulableInstanceCaptor.capture());
             assertThat(schedulableInstanceCaptor.getValue().getTaskInstance().getData().getEmailAddress())
                 .isEqualTo(CLAIMANT_EMAIL);
+            representedDefendant = party(REPRESENTED_DEFENDANT_EMAIL);
+
+            when(pcsCase.getClaims()).thenReturn(List.of(mock(ClaimEntity.class)));
+            when(notificationPersonalisationFactory.noticeOfChangeCompleted(representedDefendant, pcsCase))
+                .thenReturn(mock(NoticeOfChangeCompletedPersonalisation.class));
+            lenient().when(templateConfiguration.getTemplateId(EmailTemplate.NOTICE_OF_CHANGE_COMPLETED))
+                .thenReturn(TEMPLATE_ID);
+            lenient().when(notificationRepository.save(any())).thenReturn(mock(CaseNotification.class));
+        }
+
+        @Test
+        @DisplayName("Should email the represented defendant when a notice of change completes")
+        void shouldEmailRepresentedDefendant() {
+            allowEmailTo(representedDefendant, PartyRole.DEFENDANT);
+
+            notificationService.sendNoticeOfChangeCompletedEmailNotification(representedDefendant);
+
+            verify(schedulerClient).scheduleIfNotExists(schedulableInstanceCaptor.capture());
+
+            SendEmailTaskData taskData = schedulableInstanceCaptor.getValue().getTaskInstance().getData();
+            assertThat(taskData.getEmailAddress()).isEqualTo(REPRESENTED_DEFENDANT_EMAIL);
+            assertThat(taskData.getTemplateId()).isEqualTo(TEMPLATE_ID);
+        }
+
+        @Test
+        @DisplayName("Should record the notice of change notification against the case")
+        void shouldRecordNotificationAgainstTheCase() {
+            allowEmailTo(representedDefendant, PartyRole.DEFENDANT);
+
+            notificationService.sendNoticeOfChangeCompletedEmailNotification(representedDefendant);
+
+            ArgumentCaptor<CaseNotification> notificationCaptor =
+                ArgumentCaptor.forClass(CaseNotification.class);
+            verify(notificationRepository, atLeastOnce()).save(notificationCaptor.capture());
+
+            CaseNotification created = notificationCaptor.getAllValues().getFirst();
+            assertThat(created.getClaimType()).isEqualTo(NotificationClaimType.NOTICE_OF_CHANGE);
+            assertThat(created.getRecipient()).isEqualTo(REPRESENTED_DEFENDANT_EMAIL);
+            assertThat(created.getPartyId()).isEqualTo(representedDefendant);
+            assertThat(created.getPcsCase()).isEqualTo(pcsCase);
+        }
+
+        @Test
+        @DisplayName("Should not email a defendant who has opted out of email contact")
+        void shouldNotEmailDefendantWhoOptedOutOfEmailContact() {
+            when(partyService.getPartyRole(representedDefendant)).thenReturn(PartyRole.DEFENDANT);
+            when(partyService.canSendEmailNotification(representedDefendant, PartyRole.DEFENDANT))
+                .thenReturn(false);
+
+            notificationService.sendNoticeOfChangeCompletedEmailNotification(representedDefendant);
+
+            verify(schedulerClient, never()).scheduleIfNotExists(any());
+            verify(notificationRepository, never()).save(any());
         }
 
         private PartyEntity party(String emailAddress) {
