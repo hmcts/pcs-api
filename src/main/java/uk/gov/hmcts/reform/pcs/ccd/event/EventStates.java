@@ -59,9 +59,7 @@ public class EventStates {
 
     public static State[] resumePossessionClaim() {
         return new State[] {
-            State.AWAITING_SUBMISSION_TO_HMCTS,
-            State.AWAITING_RESUBMISSION_TO_HMCTS,
-            State.PENDING_CASE_ISSUED
+            State.AWAITING_SUBMISSION_TO_HMCTS
         };
     }
 

@@ -122,7 +122,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
 
     @Test
     void shouldBeConfiguredForEventStates() {
-        assertConfiguredForStates(EventStates.resumePossessionClaim());
+        assertConfiguredForStates(State.AWAITING_SUBMISSION_TO_HMCTS);
     }
 
     @Test
