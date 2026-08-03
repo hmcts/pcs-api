@@ -73,7 +73,7 @@ class UploadAdditionalDocumentsDetailsTest extends BasePageTest {
     }
 
     @Test
-    void shouldKeepEnglandDocumentTypeOnSumbit() {
+    void shouldKeepEnglandDocumentTypeOnSubmit() {
         AdditionalDocumentEngland additionalDocument = AdditionalDocumentEngland.builder()
             .documentType(AdditionalDocumentTypeEngland.TENANCY_AGREEMENT)
             .description("Valid description")

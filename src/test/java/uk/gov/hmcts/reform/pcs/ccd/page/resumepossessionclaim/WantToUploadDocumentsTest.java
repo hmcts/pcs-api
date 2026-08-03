@@ -6,7 +6,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
+import uk.gov.hmcts.ccd.sdk.type.Document;
+import uk.gov.hmcts.ccd.sdk.type.DynamicList;
+import uk.gov.hmcts.ccd.sdk.type.DynamicListElement;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocumentEngland;
 import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocumentTypeEngland;
 import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocumentTypeWales;
@@ -180,5 +184,73 @@ class WantToUploadDocumentsTest extends BasePageTest {
         assertThat(response.getData().getAdditionalDocumentsWales()).isNull();
     }
 
-    
+    @Test
+    void shouldMapAdditionalDocumentsToAdditionalDocumentsEnglandDocumentsWhenAdditionalDocumentsIsPresent() {
+        PCSCase caseData = PCSCase.builder()
+            .legislativeCountry(LegislativeCountry.ENGLAND)
+            .wantToUploadDocuments(VerticalYesNo.YES)
+            .build();
+
+        long caseReference = 1234;
+
+        AdditionalDocument legacyAdditionalDocument = AdditionalDocument.builder()
+            .document(Document.builder().filename("tenancy-agreement.pdf").build())
+            .documentType(DynamicList.builder()
+                .value(DynamicListElement.builder().label("Tenancy agreement").build())
+                .build())
+            .description("Legacy tenancy agreement")
+            .build();
+
+        Optional<PCSCase> draftCaseData = Optional.of(PCSCase.builder()
+            .additionalDocuments(List.of(
+                ListValue.<AdditionalDocument>builder()
+                    .value(legacyAdditionalDocument)
+                    .build()))
+            .build());
+
+        when(draftCaseDataService.getUnsubmittedCaseData(caseReference, EventId.resumePossessionClaim))
+            .thenReturn(draftCaseData);
+
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+        AdditionalDocumentEngland addDoc = response.getData().getAdditionalDocumentsEngland().getFirst().getValue();
+        assertThat(addDoc.getDescription()).isEqualTo("Legacy tenancy agreement");
+        assertThat(addDoc.getDocument().getFilename()).isEqualTo("tenancy-agreement.pdf");
+        assertThat(addDoc.getDocumentType()).isEqualTo(AdditionalDocumentTypeEngland.TENANCY_AGREEMENT);
+    }
+
+    @Test
+    void shouldMapAdditionalDocumentsToAdditionalDocumentsWalesDocumentsWhenAdditionalDocumentsIsPresent() {
+        PCSCase caseData = PCSCase.builder()
+            .legislativeCountry(LegislativeCountry.WALES)
+            .wantToUploadDocuments(VerticalYesNo.YES)
+            .build();
+
+        long caseReference = 1234;
+
+        AdditionalDocument legacyAdditionalDocument = AdditionalDocument.builder()
+            .document(Document.builder().filename("occupation-licence.pdf").build())
+            .documentType(DynamicList.builder()
+                .value(DynamicListElement.builder().label("Occupation contract or licence").build())
+                .build())
+            .description("Legacy occupation contract")
+            .build();
+
+        Optional<PCSCase> draftCaseData = Optional.of(PCSCase.builder()
+            .additionalDocuments(List.of(
+                ListValue.<AdditionalDocument>builder()
+                    .value(legacyAdditionalDocument)
+                    .build()))
+            .build());
+
+        when(draftCaseDataService.getUnsubmittedCaseData(caseReference, EventId.resumePossessionClaim))
+            .thenReturn(draftCaseData);
+
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+        AdditionalDocumentWales addDoc = response.getData().getAdditionalDocumentsWales().getFirst().getValue();
+        assertThat(addDoc.getDescription()).isEqualTo("Legacy occupation contract");
+        assertThat(addDoc.getDocument().getFilename()).isEqualTo("occupation-licence.pdf");
+        assertThat(addDoc.getDocumentType()).isEqualTo(AdditionalDocumentTypeWales.OCCUPATION_LICENCE);
+    }
 }

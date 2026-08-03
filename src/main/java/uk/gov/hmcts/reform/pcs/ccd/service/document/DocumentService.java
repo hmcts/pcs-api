@@ -151,21 +151,30 @@ public class DocumentService {
                 .toList();
     }
 
-    private List<DocumentHolder> mapAdditionalDocumentsWithType(
-            PCSCase pcsCase) {
+    private List<DocumentHolder> mapAdditionalDocumentsWithType(PCSCase pcsCase) {
         
-        if (pcsCase.getLegislativeCountry() == LegislativeCountry.ENGLAND) {
-            return mapAdditionalDocumentsWithType(
-                pcsCase.getAdditionalDocumentsEngland(),
-                AdditionalDocumentEngland::getDocumentType
-            );
-        }
-
         if (pcsCase.getLegislativeCountry() == LegislativeCountry.WALES) {
-            return mapAdditionalDocumentsWithType(
-                pcsCase.getAdditionalDocumentsWales(),
-                AdditionalDocumentWales::getDocumentType
-            );
+            
+            if (!CollectionUtils.isEmpty(pcsCase.getAdditionalDocumentsWales())) {
+                return mapAdditionalDocumentsWithType(
+                    pcsCase.getAdditionalDocumentsWales(),
+                    AdditionalDocumentWales::getDocumentType
+                );
+            } else if (!CollectionUtils.isEmpty(pcsCase.getAdditionalDocuments())) {
+                // fallback to additional documents
+                return mapLegacyAdditionalDocumentsWithType(pcsCase.getAdditionalDocuments());
+            }
+            
+        } else {
+            if (!CollectionUtils.isEmpty(pcsCase.getAdditionalDocumentsEngland())) {
+                return mapAdditionalDocumentsWithType(
+                    pcsCase.getAdditionalDocumentsEngland(),
+                    AdditionalDocumentEngland::getDocumentType
+                );
+            } else if (!CollectionUtils.isEmpty(pcsCase.getAdditionalDocuments())) {
+                // fallback to additional documents
+                return mapLegacyAdditionalDocumentsWithType(pcsCase.getAdditionalDocuments());
+            }
         }
 
         return Collections.emptyList();
@@ -179,22 +188,29 @@ public class DocumentService {
             return Collections.emptyList();
         }
 
-        // old
-        /*return ListValueUtils.unwrapListItems(documents).stream()
-            .map(doc -> DocumentHolder.builder()
-                .document(doc.getDocument())
-                .type(mapAdditionalDocumentTypeToDocumentType(
-                        AdditionalDocumentType.getValueFromLabel(doc.getDocumentType().getValueLabel())))
-                .description(doc.getDescription())
-                .build())
-            .toList();
-*/
-
         return ListValueUtils.unwrapListItems(documents).stream()
             .map(doc -> DocumentHolder.builder()
                 .document(getAdditionalDocument(doc).getDocument())
                 .type(getAdditionalDocumentType(documentTypeExtractor.apply(doc)))
                 .description(getAdditionalDocument(doc).getDescription())
+                .build())
+            .toList();
+    }
+
+    private List<DocumentHolder> mapLegacyAdditionalDocumentsWithType(List<ListValue<AdditionalDocument>> documents) {
+        if (CollectionUtils.isEmpty(documents)) {
+            return Collections.emptyList();
+        }
+
+        return ListValueUtils.unwrapListItems(documents).stream()
+            .map(doc -> DocumentHolder.builder()
+                .document(doc.getDocument())
+                .type(
+                    getAdditionalDocumentType(
+                        AdditionalDocumentType.getValueFromLabel(doc.getDocumentType().getValue().getLabel())
+                    )
+                )
+                .description(doc.getDescription())
                 .build())
             .toList();
     }
@@ -222,7 +238,8 @@ public class DocumentService {
             return null;
         }
 
-        if (documentType instanceof AdditionalDocumentTypeEngland
+        if (documentType instanceof AdditionalDocumentType
+            || documentType instanceof AdditionalDocumentTypeEngland
             || documentType instanceof AdditionalDocumentTypeWales) {
             return DocumentType.valueOf(documentType.name());
         }

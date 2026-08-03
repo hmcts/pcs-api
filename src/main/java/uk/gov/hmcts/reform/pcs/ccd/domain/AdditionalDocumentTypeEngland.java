@@ -3,8 +3,6 @@ package uk.gov.hmcts.reform.pcs.ccd.domain;
 import lombok.Getter;
 import uk.gov.hmcts.ccd.sdk.api.HasLabel;
 
-import java.util.Arrays;
-
 @Getter
 public enum AdditionalDocumentTypeEngland implements HasLabel {
 
@@ -26,11 +24,6 @@ public enum AdditionalDocumentTypeEngland implements HasLabel {
 
     AdditionalDocumentTypeEngland(String label) {
         this.label = label;
-    }
-
-    public static AdditionalDocumentTypeEngland getValueFromLabel(String label) {
-        return Arrays.stream(values()).filter(v -> v.getLabel().equals(label)).findFirst()
-            .orElseThrow(() -> new IllegalArgumentException("No AdditionalDocumentTypeEngland with label: " + label));
     }
 
 }

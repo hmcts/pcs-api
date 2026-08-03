@@ -12,7 +12,10 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.Document;
+import uk.gov.hmcts.ccd.sdk.type.DynamicList;
+import uk.gov.hmcts.ccd.sdk.type.DynamicListElement;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocumentEngland;
 import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocumentTypeEngland;
@@ -299,6 +302,40 @@ class DocumentServiceTest {
         assertThat(capturedEntities)
             .extracting(DocumentEntity::getType)
             .containsExactly(DocumentType.OCCUPATION_LICENCE);
+    }
+
+    @Test
+    void shouldMapLegacyAdditionalDocumentsWhenPresent() {
+        PCSCase pcsCase = mock(PCSCase.class);
+        AdditionalDocument additionalDocument = AdditionalDocument.builder()
+            .document(Document.builder()
+                .filename("legacy-user-entered-details.pdf")
+                .uploadTimestamp(LocalDateTime.now())
+                .url("https://host/" + UUID.randomUUID())
+                .binaryUrl("someUrl")
+                .categoryId("uploaded-category")
+                .build())
+            .documentType(DynamicList.builder()
+                .value(DynamicListElement.builder().label("Tenancy agreement").build())
+                .build())
+            .description("Legacy tenancy agreement")
+            .build();
+
+        when(pcsCase.getAdditionalDocuments()).thenReturn(List.of(
+            ListValue.<AdditionalDocument>builder().value(additionalDocument).build()
+        ));
+
+        underTest.createAllDocuments(pcsCase);
+
+        verify(documentRepository).saveAll(documentEntityListCaptor.capture());
+        List<DocumentEntity> capturedEntities = documentEntityListCaptor.getValue();
+
+        assertThat(capturedEntities)
+            .extracting(DocumentEntity::getType)
+            .containsExactly(DocumentType.TENANCY_AGREEMENT);
+        assertThat(capturedEntities)
+            .extracting(DocumentEntity::getDescription)
+            .containsExactly("Legacy tenancy agreement");
     }
 
     @Test
