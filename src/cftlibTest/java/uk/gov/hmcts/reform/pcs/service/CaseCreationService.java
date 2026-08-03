@@ -38,6 +38,11 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.client.CcdClient;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
+import java.util.List;
+import java.util.List;
+import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthAgreementClaimant;
+import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthCompletedBy;
+import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthDetails;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -96,14 +101,29 @@ public class CaseCreationService {
 
         PCSCase createData = PCSCase.builder()
             .propertyAddress(AddressUK.builder()
-                                 .addressLine1("123 Baker Street")
+                                 .addressLine1("2 Second Avenue")
                                  .postTown("London")
-                                 .postCode("NW1 6XE")
+                                 .postCode("W3 7RX")
                                  .build()
             )
             .legislativeCountry(LegislativeCountry.ENGLAND)
+            .build();
+
+        CaseDetails caseDetails = ccdClient.createCase(createData, authorisation);
+        long caseReference = caseDetails.getId();
+
+        PCSCase resumeData = PCSCase.builder()
             .caseManagementLocationNumber(20262)
             .regionId(1)
+
+            .tenancyLicenceDetails(TenancyLicenceDetails.builder()
+                                       .typeOfTenancyLicence(TenancyLicenceType.ASSURED_TENANCY)
+                                       .tenancyLicenceDate(LocalDate.of(2025, 1, 1))
+                                       .hasCopyOfTenancyLicence(VerticalYesNo.NO)
+                                       .reasonsForNoTenancyLicenceDocuments("Copy of agreement was lost")
+                                       .build())
+
+            .claimantInformation(ClaimantInformation.builder().claimantName("TreeTops Housing").build())
 
             .claimAgainstTrespassers(VerticalYesNo.NO)
 
@@ -121,13 +141,6 @@ public class CaseCreationService {
                             .addressKnown(VerticalYesNo.YES)
                             .addressSameAsPossession(VerticalYesNo.YES)
                             .build())
-
-            .tenancyLicenceDetails(TenancyLicenceDetails.builder()
-                                       .typeOfTenancyLicence(TenancyLicenceType.ASSURED_TENANCY)
-                                       .tenancyLicenceDate(LocalDate.of(2025, 1, 1))
-                                       .hasCopyOfTenancyLicence(VerticalYesNo.NO)
-                                       .reasonsForNoTenancyLicenceDocuments("Copy of agreement was lost")
-                                       .build())
 
             .claimDueToRentArrears(YesOrNo.YES)
             .assuredRentArrearsPossessionGrounds(AssuredRentArrearsPossessionGrounds.builder()
@@ -169,8 +182,6 @@ public class CaseCreationService {
                                         .hasDefendantCircumstancesInfo(VerticalYesNo.NO)
                                         .build())
 
-            .additionalReasonsForPossession(null) // journey answered "No" — left unset
-
             .hasUnderlesseeOrMortgagee(VerticalYesNo.NO)
             .wantToUploadDocuments(VerticalYesNo.NO)
             .applicationWithClaim(VerticalYesNo.NO)
@@ -181,14 +192,15 @@ public class CaseCreationService {
 
             .statementOfTruth(StatementOfTruthDetails.builder()
                                   .completedBy(StatementOfTruthCompletedBy.CLAIMANT)
-                                  .fullNameParty("Possession Claims Solicitor Org")
-                                  .positionParty("Office position")
+                                  .agreementClaimant(List.of(StatementOfTruthAgreementClaimant.BELIEVE_TRUE))
+                                  .fullNameParty("TreeTops Housing Representative")
+                                  .positionParty("Housing Manager")
                                   .build())
 
             .build();
 
-        CaseDetails caseDetails = ccdClient.createCase(createData, authorisation);
-        return caseDetails.getId();
+        ccdClient.updateCase(resumePossessionClaim, caseReference, resumeData, authorisation);
+        return caseReference;
     }
 
 }
