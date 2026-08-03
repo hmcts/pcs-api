@@ -26,6 +26,7 @@ import uk.gov.hmcts.reform.pcs.feesandpay.model.PbaAccountsResponse;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PbaPaymentRequest;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.PaymentService;
 
+import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @RestController
@@ -102,9 +103,10 @@ public class PaymentController {
         @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     public ResponseEntity<PbaAccountsResponse> getPbaAccounts(
+        @RequestHeader(value = AUTHORIZATION) String authorization,
         @RequestHeader(value = SERVICE_AUTHORIZATION) String s2sToken) {
 
-        PbaAccountsResponse pbaPaymentRequest = paymentService.getPbaAccounts();
+        PbaAccountsResponse pbaPaymentRequest = paymentService.getPbaAccounts(authorization);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(pbaPaymentRequest);
     }
@@ -136,10 +138,12 @@ public class PaymentController {
     })
     public ResponseEntity<PBAServiceRequestResponse> createPbaPaymentRequest(
         @RequestHeader(value = SERVICE_AUTHORIZATION) String s2sToken,
+        @RequestHeader(value = AUTHORIZATION) String authorization,
         @PathVariable("serviceRequestReference") String serviceRequestReference,
         @RequestBody @Valid PbaPaymentRequest pbaPaymentRequest) {
 
         PBAServiceRequestResponse pbaPaymentResponse = paymentService.createPbaPaymentRequest(
+            authorization,
             serviceRequestReference,
             pbaPaymentRequest
         );

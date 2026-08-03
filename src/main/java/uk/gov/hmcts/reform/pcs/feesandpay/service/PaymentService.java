@@ -6,7 +6,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import uk.gov.hmcts.reform.payments.client.PaymentsApi;
 import uk.gov.hmcts.reform.payments.client.PaymentsClient;
 import uk.gov.hmcts.reform.payments.client.models.CasePaymentRequestDto;
 import uk.gov.hmcts.reform.payments.client.models.FeeDto;
@@ -32,7 +31,9 @@ import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatusCallback;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PbaAccountsResponse;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PbaPaymentRequest;
-import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
+import uk.gov.hmcts.reform.pcs.idam.IdamAuthenticator;
+import uk.gov.hmcts.reform.pcs.idam.User;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationDetailsService;
 import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
 
 import java.io.IOException;
@@ -50,8 +51,8 @@ public class PaymentService {
     private final PcsCaseService pcsCaseService;
     private final PaymentCallbackStrategyFactory paymentCallbackStrategyFactory;
     private final ObjectMapper objectMapper;
-    private final OrganisationService organisationService;
-    private final PaymentsApi paymentsApi;
+    private final OrganisationDetailsService organisationDetailsService;
+    private final IdamAuthenticator idamAuthenticator;
 
     @Value("${payments.api.callback-url}")
     private String callbackUrl;
@@ -63,8 +64,8 @@ public class PaymentService {
         @Qualifier("systemUpdateUserTokenProvider") IdamTokenProvider systemUpdateUserTokenProvider,
         FeePaymentRepository feePaymentRepository, PcsCaseService pcsCaseService,
         PaymentCallbackStrategyFactory paymentCallbackStrategyFactory, ObjectMapper objectMapper,
-                          OrganisationService organisationService,
-                          PaymentsApi paymentsApi) {
+                          OrganisationDetailsService organisationDetailsService,
+                          IdamAuthenticator idamAuthenticator) {
         this.paymentsClient = paymentsClient;
         this.paymentRequestMapper = paymentRequestMapper;
         this.systemUpdateUserTokenProvider = systemUpdateUserTokenProvider;
@@ -72,8 +73,8 @@ public class PaymentService {
         this.pcsCaseService = pcsCaseService;
         this.paymentCallbackStrategyFactory = paymentCallbackStrategyFactory;
         this.objectMapper = objectMapper;
-        this.organisationService = organisationService;
-        this.paymentsApi = paymentsApi;
+        this.organisationDetailsService = organisationDetailsService;
+        this.idamAuthenticator = idamAuthenticator;
     }
 
     /**
@@ -161,21 +162,24 @@ public class PaymentService {
             .build();
     }
 
-    public PbaAccountsResponse getPbaAccounts() {
+    public PbaAccountsResponse getPbaAccounts(String authToken) {
+        User user = idamAuthenticator.validateAuthToken(authToken);
+
         return PbaAccountsResponse.builder()
-            .paymentAccount(organisationService.getPbaAccountsForCurrentUser())
+            .pbaAccounts(organisationDetailsService.getOrganisationPaymentAccount(user.getUserDetails().getUid()))
             .build();
     }
 
-    public PBAServiceRequestResponse createPbaPaymentRequest(String serviceRequestReference,
+    public PBAServiceRequestResponse createPbaPaymentRequest(String authToken, String serviceRequestReference,
                                                              PbaPaymentRequest pbaPaymentRequest) {
+        User user = idamAuthenticator.validateAuthToken(authToken);
 
         FeePaymentEntity feePaymentEntity = feePaymentRepository.findByServiceRequestReference(serviceRequestReference)
             .orElseThrow(
                 () -> new FeePaymentNotFoundException("No fee payment entity found for " + serviceRequestReference)
             );
 
-        String organisationName = organisationService.getOrganisationNameForCurrentUser();
+        String organisationName = organisationDetailsService.getOrganisationName(user.getUserDetails().getUid());
 
         PBAServiceRequestDTO paymentRequest = PBAServiceRequestDTO.builder()
             .accountNumber(pbaPaymentRequest.getAccountNumber())

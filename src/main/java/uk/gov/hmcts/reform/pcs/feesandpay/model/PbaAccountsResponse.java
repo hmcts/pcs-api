@@ -13,5 +13,5 @@ import java.util.List;
 @Builder
 public class PbaAccountsResponse {
 
-    private List<String> paymentAccount;
+    private List<String> pbaAccounts;
 }
