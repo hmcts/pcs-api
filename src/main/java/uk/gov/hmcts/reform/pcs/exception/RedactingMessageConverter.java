@@ -1,0 +1,24 @@
+package uk.gov.hmcts.reform.pcs.exception;
+
+import ch.qos.logback.classic.pattern.ClassicConverter;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import org.slf4j.helpers.MessageFormatter;
+
+import java.util.Arrays;
+
+public final class RedactingMessageConverter extends ClassicConverter {
+
+    private static final String REDACTED = "[REDACTED]";
+
+    @Override
+    public String convert(ILoggingEvent event) {
+        Object[] arguments = event.getArgumentArray();
+        if (arguments == null || arguments.length == 0) {
+            return event.getMessage();
+        }
+        Object[] redactedArguments = new Object[arguments.length];
+        Arrays.fill(redactedArguments, REDACTED);
+        return MessageFormatter.arrayFormat(event.getMessage(), redactedArguments).getMessage();
+    }
+
+}

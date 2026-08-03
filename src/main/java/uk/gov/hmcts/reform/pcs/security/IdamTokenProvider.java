@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.pcs.exception.RedactionContext;
 
 import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.AUTH_TOKEN_EMPTY;
 import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.AUTH_TOKEN_RETRIEVAL_FAIL;
+import static uk.gov.hmcts.reform.pcs.exception.IdamException.OAUTH2_ERROR_CODE;
 
 /**
  * Fetches an IDAM access token for a specific OAuth2 client-registration id. One instance
@@ -64,7 +65,7 @@ public class IdamTokenProvider {
             throw new IdamException(AUTH_TOKEN_RETRIEVAL_FAIL,
                                     RedactionContext.builder()
                                         .value("client registration id", clientRegistrationId)
-                                        .value("error code", ex.getError().getErrorCode())
+                                        .value(OAUTH2_ERROR_CODE, ex.getError().getErrorCode())
                                         .value("description", ex.getError().getDescription())
                                         .build(),
                                     ex);

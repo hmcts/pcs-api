@@ -121,7 +121,7 @@ public class CrossBorderPostcodeSelection implements CcdPageConfiguration {
                 //TODO: HDPI-1838 will handle multiple matches
                 throw new EligibilityCheckException(
                     UNEXPECTED_ELIGIBILITY,
-                    RedactionContext.of("", String.format(
+                    RedactionContext.of("Details", String.format(
                         "Unexpected eligibility status: %s for postcode %s and country %s",
                         eligibilityResult.getStatus(),
                         postcode,

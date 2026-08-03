@@ -152,6 +152,51 @@ tasks.register('architectureValidation', Test) {
   }
 }
 
+tasks.register('archTest', Test) {
+  group = 'verification'
+  description = 'Runs ArchUnit architecture rules (local only)'
+  useJUnitPlatform {
+    includeTags 'archunit'
+  }
+  filter {
+    includeTestsMatching "uk.gov.hmcts.reform.pcs.arch.ArchitectureTest*"
+  }
+  testClassesDirs = sourceSets.test.output.classesDirs
+  classpath = sourceSets.test.runtimeClasspath
+  ignoreFailures = true
+
+  testLogging {
+    events 'passed', 'failed', 'skipped'
+    exceptionFormat = 'full'
+    showStandardStreams = true
+  }
+  systemProperty 'logback.configurationFile', 'logback-quiet.xml'
+
+  def resultsFile = file("${project.buildDir}/reports/arch-test-results.txt")
+  def resultsLines = []
+
+  doFirst {
+    resultsLines.clear()
+  }
+
+  afterTest { descriptor, result ->
+    resultsLines << ""
+    resultsLines << ""
+    resultsLines << "========================= [ArchRule: ${descriptor.name}] ========================="
+    resultsLines << "${descriptor.className} > ${descriptor.name}: ${result.resultType}"
+    if (result.resultType.toString() == 'FAILURE' && result.exception != null) {
+      resultsLines << "  ${result.exception.message}"
+    }
+  }
+
+  doLast {
+    resultsFile.parentFile.mkdirs()
+    resultsFile.text = resultsLines.join('\n') + '\n'
+    println "\n=== ArchUnit Report ==="
+    println "Results written to: file://${resultsFile.absolutePath}"
+  }
+}
+
 tasks.register('enforcementValidation', Test) {
   description = "Runs enforcement domain-entity alignment validation"
   group = "verification"

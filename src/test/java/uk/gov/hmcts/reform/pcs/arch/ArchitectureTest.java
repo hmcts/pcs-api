@@ -1,7 +1,11 @@
 package uk.gov.hmcts.reform.pcs.arch;
 
+import com.tngtech.archunit.base.DescribedPredicate;
+import com.tngtech.archunit.core.domain.JavaClass;
+import com.tngtech.archunit.core.domain.JavaConstructorCall;
 import com.tngtech.archunit.core.domain.JavaField;
 import com.tngtech.archunit.core.domain.JavaMethod;
+import com.tngtech.archunit.core.importer.ImportOption;
 import com.tngtech.archunit.junit.AnalyzeClasses;
 import com.tngtech.archunit.junit.ArchTag;
 import com.tngtech.archunit.junit.ArchTest;
@@ -10,22 +14,31 @@ import com.tngtech.archunit.lang.ArchRule;
 import com.tngtech.archunit.lang.ConditionEvents;
 import com.tngtech.archunit.lang.SimpleConditionEvent;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EntityListeners;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.exception.RedactedRuntimeException;
 
 import static com.tngtech.archunit.base.DescribedPredicate.not;
 import static com.tngtech.archunit.core.domain.JavaClass.Predicates.belongToAnyOf;
 import static com.tngtech.archunit.core.domain.JavaClass.Predicates.resideInAPackage;
 import static com.tngtech.archunit.lang.Priority.HIGH;
+import static com.tngtech.archunit.lang.Priority.LOW;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.fields;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noFields;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noMethods;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.priority;
 
-@AnalyzeClasses(packages = "uk.gov.hmcts.reform.pcs")
+@AnalyzeClasses(packages = "uk.gov.hmcts.reform.pcs",
+                importOptions = {
+                    ImportOption.DoNotIncludeTests.class,
+                    ArchIgnoreTestSources.class
+                })
 @ArchTag("archunit")
 @Slf4j
 public class ArchitectureTest {
@@ -66,7 +79,7 @@ public class ArchitectureTest {
     @ArchTest
     static final ArchRule exceptions_must_extend_redacted_base =
         priority(HIGH).classes()
-            .that().resideInAPackage("..exception..")
+            .that().resideInAPackage("uk.gov.hmcts.reform.pcs..")
             .and().areAssignableTo(Throwable.class)
             .and().doNotHaveFullyQualifiedName(RedactedRuntimeException.class.getName())
             .should().beAssignableTo(RedactedRuntimeException.class);
@@ -77,6 +90,36 @@ public class ArchitectureTest {
             .that().areDeclaredInClassesThat().areAnnotatedWith(
                 org.springframework.web.bind.annotation.RestController.class)
             .should(haveAnyParameterTypeResidingIn());
+
+    // Added test to show how many JDK and third party exceptions are used.  This is not an issue per say so long as
+    // they are for programatic reasonings - otherwise we
+    @ArchTest
+    static final ArchRule custom_exceptions_must_extend_redacted_runtime_exception =
+        priority(LOW).noClasses()
+            .that().areNotAssignableTo(Throwable.class)
+            .should().callConstructorWhere(instantiatesForeignThrowable())
+            .as("Custom exceptions must extend RedactedRuntimeException")
+            .because("Instantiating JDK or third-party exceptions directly bypasses the Redaction formal structure.");
+
+    // Those within the not(belongToAnyOf(...) should be removed once the service layer implementation has been created.
+    @ArchTest
+    static final ArchRule no_entity_listeners =
+        noClasses()
+            .that(not(belongToAnyOf(FeePaymentEntity.class, CounterClaimEntity.class, DefendantResponseEntity.class)))
+            .should().beAnnotatedWith(EntityListeners.class)
+            .because("@EntityListeners couples lifecycle behaviour to JPA internals.");
+
+    private static DescribedPredicate<JavaConstructorCall> instantiatesForeignThrowable() {
+        return new DescribedPredicate<JavaConstructorCall>("Instantiates a Throwable that "
+                                                               + "is not a RedactedRuntimeException") {
+            @Override
+            public boolean test(JavaConstructorCall call) {
+                JavaClass instantiated = call.getTargetOwner();
+                return instantiated.isAssignableTo(Throwable.class)
+                    && !instantiated.isAssignableTo(RedactedRuntimeException.class);
+            }
+        };
+    }
 
     private static ArchCondition<JavaMethod> haveAnyParameterTypeResidingIn() {
         String packageIdentifier = "..ccd.entity..";

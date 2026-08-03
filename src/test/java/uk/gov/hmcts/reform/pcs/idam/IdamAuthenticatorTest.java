@@ -115,7 +115,7 @@ class IdamAuthenticatorTest {
 
         assertThatThrownBy(() -> underTest.validateAuthToken(token))
             .isInstanceOf(IdamException.class)
-            .hasMessage("Unable to validate authorization token")
+            .hasMessageContaining("Unable to validate authorization token")
             .hasCause(feignEx);
     }
 

@@ -9,4 +9,5 @@ public class InvalidAuthTokenException extends RedactedRuntimeException {
     public InvalidAuthTokenException(ErrorCode errorCode) {
         super(errorCode);
     }
+
 }

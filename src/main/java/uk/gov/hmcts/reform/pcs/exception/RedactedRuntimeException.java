@@ -9,6 +9,21 @@ import static uk.gov.hmcts.reform.pcs.exception.ExceptionRedaction.cause;
 import static uk.gov.hmcts.reform.pcs.exception.ExceptionRedaction.message;
 import static uk.gov.hmcts.reform.pcs.exception.ExceptionRedaction.stackTrace;
 
+/**
+ * Looks to make data-leak prevention structural rather than developer discipline which can slip passed code review.
+ *
+ * <p>Consider throw new NotFoundException("case " + caseRef + " for claimant " + name + " not found")</p>
+ *
+ * <p>Exceptions can get serialized beyond logs and proliferate PII and potential security issues beyond the boundary
+ * of the application - think Rest heads, APM, Tracing, Open Telemetry, App Insights, pipelines, event payloads, queues,
+ * messaging etc etc.</p>
+ *
+ * <p>The use of JDK and third party exceptions can still be made but should be used to programatic issues rather
+ * than spreading domain knowledge to a caller or serialisation.</p>
+ *
+ * <p>Visibility is still possible with other environments via the configuration noted in
+ * {@link uk.gov.hmcts.reform.pcs.exception.ExceptionRedaction}</p>
+ */
 public class RedactedRuntimeException extends RuntimeException {
 
     @Serial
@@ -18,11 +33,11 @@ public class RedactedRuntimeException extends RuntimeException {
     private final Throwable debugCause;
 
     public RedactedRuntimeException(ErrorCode code) {
-        this(code, null, null);
+        this(code, RedactionContext.empty(), null);
     }
 
     public RedactedRuntimeException(ErrorCode code, Throwable debugCause) {
-        this(code, null, debugCause);
+        this(code, RedactionContext.empty(), debugCause);
     }
 
     public RedactedRuntimeException(ErrorCode code, RedactionContext context) {

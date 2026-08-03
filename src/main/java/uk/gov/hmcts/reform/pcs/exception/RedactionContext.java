@@ -5,6 +5,7 @@ import lombok.Singular;
 import tools.jackson.databind.ObjectMapper;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.StringJoiner;
 
 @Builder
@@ -21,6 +22,10 @@ public final class RedactionContext {
 
     public static RedactionContext of(String key, Object value) {
         return RedactionContext.builder().value(key, value).build();
+    }
+
+    public Optional<Object> getValue(String key) {
+        return Optional.ofNullable(values.get(key));
     }
 
     public String asDebugString() {

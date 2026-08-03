@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.pcs.exception.IdamException;
 import uk.gov.hmcts.reform.pcs.exception.InvalidAuthTokenException;
+import uk.gov.hmcts.reform.pcs.exception.RedactionContext;
 import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
 
 import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.AUTH_BLANK;
@@ -42,7 +43,11 @@ public class IdamAuthenticator {
             // controller advice returns 503 + Retry-After instead of a raw 500. The token might
             // still be valid; this is an upstream-IDAM problem, not a client problem.
             log.error("IDAM /o/userinfo call failed while validating Authorization token", ex);
-            throw new IdamException(AUTH_VALIDATION, ex);
+            throw new IdamException(AUTH_VALIDATION, RedactionContext.builder()
+                .value("message", AUTH_VALIDATION.safeDescription())
+                .value("statusCode", ex.status())
+                    .build(),
+                ex);
         }
     }
 

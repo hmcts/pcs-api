@@ -129,7 +129,8 @@ public class PartyService {
     public PartyRole getPartyRole(PartyEntity partyEntity) {
         ClaimEntity mainClaim = partyEntity.getPcsCase().getClaims().getFirst();
         return mainClaim.getClaimParties().stream()
-                .filter(claimPartyEntity -> claimPartyEntity.getParty().getId().equals(partyEntity.getId()))
+                .filter(claimPartyEntity -> claimPartyEntity.getParty()
+                    .getId().equals(partyEntity.getId()))
                 .findFirst()
                 .map(ClaimPartyEntity::getRole)
                 .orElseThrow(() -> new PartyNotFoundException(PARTY_NOT_FOUND));
@@ -137,9 +138,12 @@ public class PartyService {
 
     public PartyEntity getPartyEntityById(UUID partyId, long caseReference) {
         return partyRepository.findByIdAndPcsCaseCaseReference(partyId, caseReference)
-            .orElseThrow(() -> new IllegalStateException(
-                "No party found for party ID: " + partyId + " and case reference: " + caseReference
-            ));
+            .orElseThrow(() -> new PartyNotFoundException(PARTY_NOT_FOUND,
+                                                          RedactionContext.builder()
+                                                              .value("message", "No party found for")
+                                                              .value("partyId", partyId)
+                                                              .value("case reference", caseReference)
+                                                              .build()));
     }
 
     private PartyEntity createClaimant(PCSCase pcsCase, String organisationIdForCurrentUser) {

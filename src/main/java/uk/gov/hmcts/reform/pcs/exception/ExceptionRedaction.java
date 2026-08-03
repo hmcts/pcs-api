@@ -1,5 +1,7 @@
 package uk.gov.hmcts.reform.pcs.exception;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.util.function.Consumer;
@@ -26,6 +28,9 @@ import java.util.function.Consumer;
  *
  * <p>In effect: {@code LOG_SHOW_FULL_EXCEPTIONS} flips everything (object and logs);
  * per-logger DEBUG only affects what that logger writes out.</p>
+ *
+ * <p>NOTE: Consider {@link uk.gov.hmcts.reform.pcs.exception.RedactingThrowableConverter} also when looking to see
+ * what is happening.</p>
  */
 public class ExceptionRedaction {
 
@@ -45,7 +50,9 @@ public class ExceptionRedaction {
     public static String message(ErrorCode code, RedactionContext redactionContext) {
         if (showFullExceptions()) {
             if (redactionContext != null) {
-                return redactionContext.asDebugString();
+                if (StringUtils.isNotEmpty(redactionContext.asDebugString())) {
+                    return redactionContext.asDebugString();
+                }
             }
             return code.safeDescription();
         }

@@ -95,7 +95,7 @@ class IdamTokenProviderTest {
 
         assertThat(throwable)
             .isInstanceOf(IdamException.class)
-            .hasMessage("client registration id=system-user, error code=invalid_token_response, description=throttled")
+            .hasMessage("client registration id=system-user, errorCode=invalid_token_response, description=throttled")
             .hasCause(oauthException);
     }
 

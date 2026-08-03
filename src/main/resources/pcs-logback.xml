@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
 
-  <conversionRule conversionWord="tvrEx"
+  <conversionRule conversionWord="exception"
                   converterClass="uk.gov.hmcts.reform.pcs.exception.RedactingThrowableConverter"/>
+
+  <conversionRule conversionWord="msg" converterClass="uk.gov.hmcts.reform.pcs.exception.RedactingMessageConverter"/>
 
   <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
     <encoder>
-      <pattern>%d{ISO8601} %-5level [%thread] %logger{36} - %msg%n%tvrEx</pattern>
+      <pattern>%d{ISO8601} %-5level [%thread] %logger{36} - %msg%n%exception</pattern>
     </encoder>
   </appender>
 
