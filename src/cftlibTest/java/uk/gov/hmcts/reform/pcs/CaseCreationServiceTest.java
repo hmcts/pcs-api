@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs;
 
 import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +13,12 @@ import uk.gov.hmcts.reform.idam.client.IdamClient;
 
 import feign.FeignException;
 
+import com.github.tomakehurst.wiremock.client.WireMock;
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.any;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
+
+
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @SpringBootTest
 class CaseCreationServiceTest extends CftlibTest {
@@ -20,6 +27,39 @@ class CaseCreationServiceTest extends CftlibTest {
 
     @Autowired
     private IdamClient idamClient;
+
+    @BeforeEach
+    void setupWireMock() {
+        // Configure WireMock to talk to the shared CFTLib WireMock instance on port 8083
+        WireMock wireMock8083 = new WireMock("localhost", 8083);
+
+        wireMock8083.register(
+            any(urlMatching("/documents.*"))
+                .willReturn(aResponse()
+                                .withStatus(200)
+                                .withHeader("Content-Type", "application/json")
+                                .withBody("""
+                                    {
+                                      "status": "SUCCESS",
+                                      "_embedded": {
+                                        "documents": [
+                                          {
+                                            "_links": {
+                                              "self": {
+                                                "href": "https://docstore/documents/00000000-AA00-0000-A000-A0AA000A0000"
+                                              },
+                                              "binary": {
+                                                "href": "https://docstore/documents/00000000-AA00-0000-A000-A0AA000A0000/binary"
+                                              }
+                                            },
+                                            "originalDocumentSerialization": "rent-statement.pdf"
+                                          }
+                                        ]
+                                      }
+                                    }
+                                    """))
+        );
+    }
 
     @Test
     void runCreateMaximalCase() {

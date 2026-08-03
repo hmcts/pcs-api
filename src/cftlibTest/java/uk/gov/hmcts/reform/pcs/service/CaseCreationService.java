@@ -29,10 +29,12 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthDetai
 import uk.gov.hmcts.reform.pcs.client.CcdClient;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import java.util.List;
-import java.util.List;
 import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthAgreementClaimant;
 import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthCompletedBy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthDetails;
+
+import uk.gov.hmcts.ccd.sdk.type.Document;
+import uk.gov.hmcts.ccd.sdk.type.ListValue;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -152,9 +154,20 @@ public class CaseCreationService {
                              .frequency(RentPaymentFrequency.MONTHLY)
                              .build())
 
+
             .rentArrears(RentArrearsSection.builder()
                              .total(BigDecimal.valueOf(2000))
                              .recoveryAttempted(VerticalYesNo.NO)
+                             .statementDocuments(List.of(
+                                 ListValue.<Document>builder()
+                                     .id("00000000-AA00-0000-A000-A0AA000A0000")
+                                     .value(Document.builder()
+                                                .url("https://docstore/document/00000000-AA00-0000-A000-A0AA000A0000")
+                                                .binaryUrl("https://docstore/document/00000000-AA00-0000-A000-A0AA000A0000/binary")
+                                                .filename("rent-statement.pdf")
+                                                .build())
+                                     .build()
+                             ))
                              .build())
 
             .arrearsJudgmentWanted(VerticalYesNo.YES)
@@ -168,8 +181,12 @@ public class CaseCreationService {
                                         .build())
 
             .hasUnderlesseeOrMortgagee(VerticalYesNo.NO)
+
             .wantToUploadDocuments(VerticalYesNo.NO)
+
             .applicationWithClaim(VerticalYesNo.NO)
+
+
 
             .languageUsed(LanguageUsed.ENGLISH)
 
