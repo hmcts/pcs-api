@@ -81,14 +81,14 @@ public class RemoveDocument implements CCDConfig<PCSCase, State, UserRole> {
         return """
             ---
             <div class="govuk-panel govuk-panel--confirmation govuk-!-padding-top-3 govuk-!-padding-bottom-3">
-            <span class="govuk-panel__title govuk-!-font-size-36">%s removed </span><br>
-            <span class="govuk-panel__body">Case number: %s</span><br>
-            <span class="govuk-panel__body">Property address: %s</span>
-            <span class="govuk-panel__body">%s</span>
+            <span class="govuk-panel__title govuk-!-font-size-32">%s removed </span><br>
+            <span class="govuk-panel__body govuk-!-font-size-24">Case number: %s</span><br>
+            <span class="govuk-panel__body govuk-!-font-size-24">Property address: %s</span>
+            <span class="govuk-panel__body govuk-!-font-size-24">%s</span>
             </div>
 
             <h3 class="govuk-heading-s">What happens next</h3>
-            <p class="govuk-body govuk-!-margin-bottom-6">The document will no longer appear in case file view</p>
+            <p class="govuk-body govuk-!-margin-bottom-6">The document will no longer appear in case file view.</p>
             """.formatted(details.getSelectedDocumentFileName(), caseReference,
                           details.getPropertyAddressSummary(),caseName);
     }
