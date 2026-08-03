@@ -90,6 +90,7 @@ public enum ErrorCode {
     DRAFT_NOT_FOUND("DRAFT_NOT_FOUND", "No draft found"),
 
     REMOTE_CALL("REMOTE_CALL", "Remote call"),
+    STATE("STATE", "Conflict state"),
 
     TEST_CASE_SUPPORT("", "");
 

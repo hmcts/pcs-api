@@ -18,6 +18,9 @@ import uk.gov.hmcts.reform.pcs.exception.IdamException;
 import uk.gov.hmcts.reform.pcs.exception.InvalidAccessCodeException;
 import uk.gov.hmcts.reform.pcs.exception.InvalidAuthTokenException;
 import uk.gov.hmcts.reform.pcs.exception.InvalidPartyForAccessCodeException;
+import uk.gov.hmcts.reform.pcs.exception.StateException;
+
+import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.STATE;
 
 @Slf4j
 @ControllerAdvice
@@ -68,7 +71,8 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(IllegalStateException.class)
     public ResponseEntity<Error> handleConflict(IllegalStateException ex) {
         log.error("Conflict state detected", ex);
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(new Error(ex.getMessage()));
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+            .body(new Error(new StateException(STATE, ex).getMessage()));
     }
 
     @ExceptionHandler(AccessCodeAlreadyUsedException.class)
@@ -84,7 +88,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
             return ResponseEntity
                 .status(HttpStatus.SERVICE_UNAVAILABLE)
                 .header(HttpHeaders.RETRY_AFTER, upstreamThrottling.retryAfterSeconds())
-                .body(new Error("Authentication service temporarily unavailable, please retry"));
+                .body(new Error(ex.getMessage()));
         }
         // Generic message to avoid leaking upstream OAuth2 error descriptions / internal URLs.
         return ResponseEntity
@@ -94,11 +98,9 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 
     @Override
     @Nullable
-    protected ResponseEntity<Object> handleMethodArgumentNotValid(
-            MethodArgumentNotValidException ex,
-            HttpHeaders headers,
-            HttpStatusCode status,
-            WebRequest request) {
+    protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex,
+                                                                  HttpHeaders headers, HttpStatusCode status,
+                                                                  WebRequest request) {
         log.error("Validation failed for request", ex);
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
