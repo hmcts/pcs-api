@@ -17,6 +17,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.AddPartyDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.ManagePartyOptions;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.PartyType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.UpdatePartyDetails;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
@@ -55,9 +56,9 @@ class SubmitEventHandlerTest {
     }
 
     @ParameterizedTest
-    @MethodSource("confirmationPageScenarios")
-    void shouldBuildConfirmationPage(AddPartyDetails partyDetails, UUID actingForPartyId,
-                                      String expectedPartyDescription) {
+    @MethodSource("addConfirmationPageScenarios")
+    void shouldBuildAddConfirmationPage(AddPartyDetails partyDetails, UUID actingForPartyId,
+                                         String expectedPartyDescription) {
         // Given
         ClaimEntity mainClaim = ClaimEntity.builder().build();
         PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().claims(List.of(mainClaim)).build();
@@ -87,7 +88,51 @@ class SubmitEventHandlerTest {
             .contains("Smith v Jones");
     }
 
-    private static Stream<Arguments> confirmationPageScenarios() {
+    @ParameterizedTest
+    @MethodSource("updateConfirmationPageScenarios")
+    void shouldBuildUpdateConfirmationPage(PartyType partyType, String expectedPartyDescription) {
+        // Given
+        UpdatePartyDetails updatePartyDetails = UpdatePartyDetails.builder()
+            .partyType(partyType)
+            .build();
+
+        AddPartyDetails partyDetails = AddPartyDetails.builder()
+            .managePartyOptions(ManagePartyOptions.UPDATE)
+            .build();
+
+        AddressUK propertyAddress = AddressUK.builder().addressLine1("1 Test Street").build();
+        when(addressFormatter.formatShortAddress(propertyAddress, COMMA_DELIMITER))
+            .thenReturn("1 Test Street, Test Town");
+
+        PCSCase caseData = PCSCase.builder()
+            .addPartyDetails(partyDetails)
+            .updatePartyDetails(updatePartyDetails)
+            .propertyAddress(propertyAddress)
+            .caseNameHmctsInternal("Smith v Jones")
+            .build();
+        EventPayload<PCSCase, State> eventPayload = new EventPayload<>(TEST_CASE_REFERENCE, caseData, null);
+
+        // When
+        SubmitResponse<State> response = underTest.submit(eventPayload);
+
+        // Then
+        verify(updatePartyService).updateParty(updatePartyDetails, TEST_CASE_REFERENCE);
+
+        assertThat(response.getConfirmationBody())
+            .contains(expectedPartyDescription + " details updated")
+            .contains("Case number: " + TEST_CASE_REFERENCE)
+            .contains("1 Test Street, Test Town")
+            .contains("Smith v Jones");
+    }
+
+    private static Stream<Arguments> updateConfirmationPageScenarios() {
+        return Stream.of(
+            Arguments.of(PartyType.CLAIMANT, "Claimant"),
+            Arguments.of(PartyType.DEFENDANT, "Defendant")
+        );
+    }
+
+    private static Stream<Arguments> addConfirmationPageScenarios() {
         UUID actingForPartyId = UUID.randomUUID();
         DynamicList partyRadioList = DynamicList.builder()
             .value(DynamicListElement.builder().code(actingForPartyId).label("Jane Doe - Claimant 1").build())

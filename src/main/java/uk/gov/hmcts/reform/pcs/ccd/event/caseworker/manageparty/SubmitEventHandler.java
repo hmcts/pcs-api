@@ -45,21 +45,19 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
             return SubmitResponse.<State>builder()
                 .confirmationBody(buildUpdateConfirmationMarkdown(caseData, eventPayload.caseReference()))
                 .build();
-        }
+        } else if (partyDetails.getManagePartyOptions() == ManagePartyOptions.ADD_PARTY) {
+            PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(eventPayload.caseReference());
+            ClaimEntity mainClaim = pcsCaseEntity.getClaims().getFirst();
+            DynamicList partyRadioList = partyDetails.getPartyRadioList();
+            UUID actingForPartyId = partyRadioList != null ? partyRadioList.getValueCode() : null;
+            addPartyService.addParty(partyDetails, pcsCaseEntity, mainClaim, actingForPartyId);
 
-        if (partyDetails.getManagePartyOptions() != ManagePartyOptions.ADD_PARTY) {
             return SubmitResponse.<State>builder()
+                .confirmationBody(buildAddConfirmationMarkdown(caseData, eventPayload.caseReference()))
                 .build();
         }
 
-        PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(eventPayload.caseReference());
-        ClaimEntity mainClaim = pcsCaseEntity.getClaims().getFirst();
-        DynamicList partyRadioList = partyDetails.getPartyRadioList();
-        UUID actingForPartyId = partyRadioList != null ? partyRadioList.getValueCode() : null;
-        addPartyService.addParty(partyDetails, pcsCaseEntity, mainClaim, actingForPartyId);
-
         return SubmitResponse.<State>builder()
-            .confirmationBody(buildAddConfirmationMarkdown(caseData, eventPayload.caseReference()))
             .build();
     }
 

@@ -86,22 +86,4 @@ class UpdatePartyDetailsPageTest extends BasePageTest {
         String expectedError = String.format(CHARACTER_LIMIT_ERROR_TEMPLATE, "Email address", "60");
         assertThat(response.getErrorMessageOverride()).isEqualTo(expectedError);
     }
-
-    @Test
-    void shouldRejectPhoneNumberOverCharacterLimit() {
-        // Given
-        String tooLong = "7".repeat(EXTRA_SHORT_TEXT_LIMIT + 1);
-        UpdatePartyDetails updatePartyDetails = UpdatePartyDetails.builder()
-            .address(VALID_ADDRESS)
-            .phoneNumber(tooLong)
-            .build();
-        PCSCase caseData = PCSCase.builder().updatePartyDetails(updatePartyDetails).build();
-
-        // When
-        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
-
-        // Then
-        String expectedError = String.format(CHARACTER_LIMIT_ERROR_TEMPLATE, "Phone number", "60");
-        assertThat(response.getErrorMessageOverride()).isEqualTo(expectedError);
-    }
 }

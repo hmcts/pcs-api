@@ -29,7 +29,6 @@ public class UpdatePartyDetailsPage implements CcdPageConfiguration {
     private final TextAreaValidationService textAreaValidationService;
 
     private static final String EMAIL_ADDRESS_LABEL = "Email address";
-    private static final String PHONE_NUMBER_LABEL = "Phone number";
 
     private static final String DEFENDANT_TYPE =
         ShowConditions.fieldEquals("updateParty_UpdatePartyType", PartyType.DEFENDANT);
@@ -64,8 +63,7 @@ public class UpdatePartyDetailsPage implements CcdPageConfiguration {
         UpdatePartyDetails updatePartyDetails = caseData.getUpdatePartyDetails();
 
         List<String> validationErrors = textAreaValidationService.validateMultipleTextAreas(
-            FieldValidation.of(updatePartyDetails.getEmail(), EMAIL_ADDRESS_LABEL, EXTRA_SHORT_TEXT_LIMIT),
-            FieldValidation.of(updatePartyDetails.getPhoneNumber(), PHONE_NUMBER_LABEL, EXTRA_SHORT_TEXT_LIMIT)
+            FieldValidation.of(updatePartyDetails.getEmail(), EMAIL_ADDRESS_LABEL, EXTRA_SHORT_TEXT_LIMIT)
         );
         validationErrors.addAll(addressValidator.validateAddressFields(updatePartyDetails.getAddress()));
 

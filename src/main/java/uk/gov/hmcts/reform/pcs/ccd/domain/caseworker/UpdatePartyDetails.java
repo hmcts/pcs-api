@@ -43,11 +43,11 @@ public class UpdatePartyDetails {
     private AddressUK address;
 
     @JsonProperty("updateParty_UpdatePartyEmail")
-    @CCD(label = "Email address", searchable = false)
+    @CCD(label = "Email address", typeOverride = FieldType.Email, searchable = false)
     private String email;
 
     @JsonProperty("updateParty_PhoneNumber")
-    @CCD(label = "Phone number", searchable = false)
+    @CCD(label = "Phone number", regex = "^\\s*0\\d{10}\\s*$", searchable = false)
     private String phoneNumber;
 
     @JsonProperty("updateParty_DateOfBirth")
