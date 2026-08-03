@@ -19,10 +19,6 @@ public class EmptyStringLocalDateSerializer extends JsonSerializer<Optional<Loca
     public void serialize(Optional<LocalDate> value, JsonGenerator gen, SerializerProvider serializers)
         throws IOException {
 
-        if (value.isPresent()) {
-            gen.writeString(value.get().toString());
-        } else {
-            gen.writeString("");
-        }
+        gen.writeString(value.map(LocalDate::toString).orElse(""));
     }
 }
