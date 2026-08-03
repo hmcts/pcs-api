@@ -198,13 +198,14 @@ class CaseFlagsViewTest {
 
     @Test
     void shouldKeepPathValuesContainingThePathDelimiter() {
-        PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
         PCSCase pcsCase = PCSCase.builder().build();
 
         CaseFlagEntity caseFlagEntity = new CaseFlagEntity();
         caseFlagEntity.setId(UUID.randomUUID());
         caseFlagEntity.setFlagRefData(createMockRefDataFlagsEntity("RA0035", "Video hearing"));
         caseFlagEntity.setPaths(":Party_:Note: I need a video hearing");
+
+        PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
         pcsCaseEntity.setCaseFlags(List.of(caseFlagEntity));
 
         underTest.setCaseFields(pcsCase, pcsCaseEntity);
