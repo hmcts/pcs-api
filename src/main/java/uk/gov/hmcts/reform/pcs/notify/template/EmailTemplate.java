@@ -20,7 +20,8 @@ public enum EmailTemplate {
     GENERAL_APPLICATION_RECEIVED("general-application-received"),
 
     // Notice of Change Email Templates
-    NOTICE_OF_CHANGE_COMPLETED("notice-of-change-completed");
+    NOTICE_OF_CHANGE_COMPLETED("notice-of-change-completed"),
+    NOTICE_OF_CHANGE_OTHER_PARTY_REPRESENTED("notice-of-change-other-party-represented");
 
     private final String templateKey;
 
