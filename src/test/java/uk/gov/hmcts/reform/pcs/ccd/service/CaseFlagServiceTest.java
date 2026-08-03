@@ -33,6 +33,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 //import static org.assertj.core.api.Assertions.assertE;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -221,6 +222,8 @@ class CaseFlagServiceTest {
         assertThat(partyEntity.getDefendantFlags())
             .extracting(flag -> flag.getFlagRefData().getFlagCode())
             .containsExactly("RA0012");
+        // The non reasonable adjustment flag is dropped before any reference data is touched
+        verifyNoInteractions(flagRefDataRepository);
     }
 
     @Test
@@ -343,6 +346,8 @@ class CaseFlagServiceTest {
         // Then
         assertThat(partyEntity.getDefendantFlags()).hasSize(1);
         assertThat(partyEntity.getDefendantFlags().getFirst().getFlagComment()).isEqualTo("Braille documents");
+        // The method returns before doing anything else - no reference data is looked up or written
+        verifyNoInteractions(flagRefDataRepository);
     }
 
     private List<ListValue<FlagDetail>> createFlagDetailsWithoutIds(String flagCode, String name) {
