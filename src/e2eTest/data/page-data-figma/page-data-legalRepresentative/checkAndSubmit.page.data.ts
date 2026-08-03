@@ -1,9 +1,9 @@
 export const checkAndSubmit = {
   mainHeader: `Check and submit`,
-  request: `Request`,
+  requestTableElement: `Request`,
   changeButton: `Change`,
-  clientFirstName: `Enter client first name`,
-  clientLastName: `Enter client last name`,
+  clientFirstNameTextLabel: `Enter client first name`,
+  clientLastNameTextLabel: `Enter client last name`,
   youShouldTickParagraph: `You should tick to 'sign' when:`,
   youAreSatisfiedListItem: `You're satisfied that all these details are accurate and match what is written on the case`,
   youHaveServedListItem: `You have served notice of this change on every party to the case, including the former legal representative (if there was one)`,
@@ -12,5 +12,7 @@ export const checkAndSubmit = {
   notificationsHeader: `Notifications`,
   ifTheClientParagraph: `If the client previously had legal representation, we'll let the legal firm or legal representative know that they no longer have access to the case.`,
   afterYouSubmitParagraph: `After you submit a notice of change, you might not see the confirmation page immediately`,
+  tickTheBoxErrorMessage: `Tick the box to confirm all these details are accurate and match what is written on the case`,
+  tickTheBoxConfirmDetailsErrorMessage: `Tick the box to confirm you have served notice of this change on every party to the case, including the former legal representative (if there was one)`,
   submitButton: `Submit`,
 };

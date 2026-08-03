@@ -144,7 +144,7 @@ export class CreateCaseAction implements IAction {
       ['checkAndSubmit', () => this.checkAndSubmit(fieldName as actionRecord)],
       ['verifyChangeLink', () => this.verifyChangeLink(fieldName as actionRecord)],
       ['validateErrorPage', () => this.validateErrorPage(fieldName as actionRecord)],
-      ['noticeOfChangeSuccessful', () => this.noticeOfChangeSuccessful( fieldName as actionRecord)],
+      ['noticeOfChangeSuccessful', () => this.noticeOfChangeSuccessful( page, fieldName as actionRecord)],
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -1870,10 +1870,10 @@ export class CreateCaseAction implements IAction {
     await performValidation('text', { elementType: 'link', text: somethingWentWrong.contactUs });
   }
 
-  private async noticeOfChangeSuccessful(nocData: actionRecord) {
-    await performValidation('text', { elementType: 'heading', text: noticeOfChangeSuccessful.mainHeader });
-    await performValidation('text', { elementType: 'tableElement', text: noticeOfChangeSuccessful.youAreNowRepresenting + caseInfo.id });
+  private async noticeOfChangeSuccessful(page: Page, nocData: actionRecord) {
+    const actual = await page.locator('h1.govuk-panel__title').innerText();
+    expect(actual).toBe(
+      `Notice of change successful\n\n\nYou're now representing a client on case\n${nocData.caseRefNo}`
+    );
   }
-
-
 }

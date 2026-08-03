@@ -10,6 +10,8 @@ import { caseInfo } from '@utils/actions/custom-actions';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
 import { home } from '@data/page-data';
 import {noc} from "@data/page-data-figma/page-data-legalRepresentative/noc.page.data";
+import {clientDetails} from "@data/page-data-figma/page-data-legalRepresentative/clientDetails.page.data";
+import {checkAndSubmit} from "@data/page-data-figma/page-data-legalRepresentative/checkAndSubmit.page.data";
 
 
 test.use({ storageState: undefined })
@@ -36,7 +38,7 @@ test.afterEach(async () => {
 });
 
 test.describe('Make an Application - LR - e2e Journey @nightly', async () => {
-  test('Notice of change - Change link - LR @nightly', async () => {
+  test('Notice of change - Change link - Same Org LR submits another NOC - LR @nightly', async () => {
     await performAction('noticeOfChange', { caseRefNo: caseInfo.id } );
     await performAction('clientDetails', { firstName: 'Peter' , lastName: 'Parker' });
     await performAction('verifyChangeLink', { caseRefNo: caseInfo.id, firstName: 'Peter' , lastName: 'Parker' });
@@ -53,7 +55,7 @@ test.describe('Make an Application - LR - e2e Journey @nightly', async () => {
     await performAction('noticeOfChange', { caseRefNo: caseInfo.id } );
     await performAction('clientDetails', { firstName: 'Peter' , lastName: 'Parker' });
     await performAction('checkAndSubmit', { caseRefNo: caseInfo.id, firstName: 'Peter' , lastName: 'Parker' } );
-    await performAction('noticeOfChangeSuccessful', { caseRefNo: caseInfo.id } );
+    await performAction('noticeOfChangeSuccessful', { caseRefNo: caseInfo.fid } );
   });
 
   test('Notice of change - Error message validations - LR @nightly', async () => {
@@ -61,5 +63,34 @@ test.describe('Make an Application - LR - e2e Journey @nightly', async () => {
     await performValidation('text', { elementType: 'link', text: noc.errMessage });
     await performAction('noticeOfChange', { caseRefNo: '1111-2222-3333-4444-5555' } );
     await performValidation('text', { elementType: 'link', text: noc.errMessage });
+    await performAction('noticeOfChange', { caseRefNo: caseInfo.id } );
+
+    await performAction('clientDetails', { firstName: '' , lastName: '' });
+    await performValidation('text', { elementType: 'inlineText', text: clientDetails.clientDetailsErrorMessage });
+
+
+    await performAction('clientDetails', { firstName: 'Test' , lastName: '' });
+    await performValidation('text', { elementType: 'inlineText', text: clientDetails.clientDetailsErrorMessage });
+
+    await performAction('clientDetails', { firstName: '' , lastName: 'Invalid' });
+    await performValidation('text', { elementType: 'inlineText', text: clientDetails.clientDetailsErrorMessage });
+
+    await performAction('clientDetails', { firstName: 'Test' , lastName: 'Invalid' });
+    await performValidation('text', { elementType: 'inlineText', text: clientDetails.clientDetailsErrorMessage });
+
+    await performAction('clientDetails', { firstName: 'Peter' , lastName: 'Parker' });
+
+    await performAction('clickButton', checkAndSubmit.submitButton);
+    await performValidation('text', { elementType: 'link', text: checkAndSubmit.tickTheBoxErrorMessage });
+    await performValidation('text', { elementType: 'link', text: checkAndSubmit.tickTheBoxConfirmDetailsErrorMessage });
+
+    await performAction('check', checkAndSubmit.iConfirmCheckbox);
+    await performAction('clickButton', checkAndSubmit.submitButton);
+    await performValidation('text', { elementType: 'link', text: checkAndSubmit.tickTheBoxConfirmDetailsErrorMessage });
+
+    await performAction('uncheck', checkAndSubmit.iConfirmCheckbox);
+    await performAction('check', checkAndSubmit.iHaveServedCheckbox);
+    await performAction('clickButton', checkAndSubmit.submitButton);
+    await performValidation('text', { elementType: 'link', text: checkAndSubmit.tickTheBoxErrorMessage });
   });
 });

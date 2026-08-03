@@ -16,7 +16,7 @@ export class TextValidation implements IValidation {
   private async textValidation(page: Page, data: validationRecord): Promise<void> {
     switch (data.elementType) {
       case 'heading':
-        data.elementType = 'h1.govuk-heading-l';
+        data.elementType = 'h1.govuk-heading-l, h1.govuk-panel__title, h1.govuk-heading-xl';
         break;
       case 'subHeader':
         data.elementType = 'h3';
