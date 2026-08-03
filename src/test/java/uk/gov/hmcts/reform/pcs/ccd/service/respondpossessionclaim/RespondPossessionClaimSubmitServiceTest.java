@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim;
 
+import com.github.kagkarlsson.scheduler.SchedulerClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -52,6 +53,8 @@ class RespondPossessionClaimSubmitServiceTest {
     private DraftCaseDataService draftCaseDataService;
     @Mock
     private PartyEntity partyEntity;
+    @Mock
+    private SchedulerClient schedulerClient;
 
     private RespondPossessionClaimSubmitService underTest;
 
@@ -63,7 +66,8 @@ class RespondPossessionClaimSubmitServiceTest {
             counterClaimService,
             counterClaimFeeCalculator,
             documentService,
-            draftCaseDataService
+            draftCaseDataService,
+            schedulerClient
         );
     }
 

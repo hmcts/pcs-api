@@ -31,7 +31,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimTyp
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.StatementOfTruthEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
-import uk.gov.hmcts.reform.pcs.notify.listener.CounterClaimEntityListener;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -50,7 +49,6 @@ import static jakarta.persistence.FetchType.LAZY;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@EntityListeners(CounterClaimEntityListener.class)
 public class CounterClaimEntity {
 
     @Id
