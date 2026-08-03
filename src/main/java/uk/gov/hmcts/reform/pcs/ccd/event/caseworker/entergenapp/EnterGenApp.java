@@ -58,6 +58,7 @@ public class EnterGenApp implements CCDConfig<PCSCase, State, UserRole> {
             .showCondition(ShowConditions.featureFlagsEnabled(RELEASE_1_DOT_2, CASEWORKER_EVENTS))
             .grant(Permission.CRU, CASEWORKER_ROLES)
             .grantHistoryOnly(JUDICIAL_HISTORY_ROLES)
+            .endButtonLabel("Submit")
             .showSummary();
 
         new PageBuilder(eventBuilder)
