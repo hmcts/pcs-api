@@ -66,6 +66,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThatCode;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -839,21 +840,32 @@ class NotificationServiceTest {
     @DisplayName("Notice Of Change Tests")
     class NoticeOfChangeTests {
 
+        private static final String CLAIMANT_EMAIL = "claimant@example.com";
         private static final String REPRESENTED_DEFENDANT_EMAIL = "represented@example.com";
+        private static final String OTHER_DEFENDANT_EMAIL = "other@example.com";
 
         private PcsCaseEntity pcsCase;
+        private ClaimEntity claim;
+        private PartyEntity claimant;
         private PartyEntity representedDefendant;
 
         @BeforeEach
         void setUp() {
             pcsCase = mock(PcsCaseEntity.class);
+            claim = mock(ClaimEntity.class);
+            claimant = party(CLAIMANT_EMAIL);
             representedDefendant = party(REPRESENTED_DEFENDANT_EMAIL);
 
-            when(pcsCase.getClaims()).thenReturn(List.of(mock(ClaimEntity.class)));
-            when(notificationPersonalisationFactory.noticeOfChangeCompleted(representedDefendant, pcsCase))
+            when(pcsCase.getClaims()).thenReturn(List.of(claim));
+            lenient().when(partyService.getPrimaryClaimantPartyEntity(pcsCase)).thenReturn(claimant);
+            lenient().when(notificationPersonalisationFactory.noticeOfChangeCompleted(representedDefendant, pcsCase))
                 .thenReturn(mock(NoticeOfChangeCompletedPersonalisation.class));
+            lenient().when(notificationPersonalisationFactory.forParty(any(), any()))
+                .thenReturn(mock(BasePersonalisation.class));
             lenient().when(templateConfiguration.getTemplateId(EmailTemplate.NOTICE_OF_CHANGE_COMPLETED))
                 .thenReturn(TEMPLATE_ID);
+            lenient().when(templateConfiguration.getTemplateId(
+                EmailTemplate.NOTICE_OF_CHANGE_OTHER_PARTY_REPRESENTED)).thenReturn(TEMPLATE_ID);
             lenient().when(notificationRepository.save(any())).thenReturn(mock(CaseNotification.class));
         }
 
@@ -871,6 +883,23 @@ class NotificationServiceTest {
             assertThat(taskData.getTemplateId()).isEqualTo(TEMPLATE_ID);
         }
 
+        @Test
+        @DisplayName("Should record the notice of change notification against the case")
+        void shouldRecordNotificationAgainstTheCase() {
+            allowEmailTo(representedDefendant, PartyRole.DEFENDANT);
+
+            notificationService.sendNoticeOfChangeCompletedEmailNotification(representedDefendant);
+
+            ArgumentCaptor<CaseNotification> notificationCaptor =
+                ArgumentCaptor.forClass(CaseNotification.class);
+            verify(notificationRepository, atLeastOnce()).save(notificationCaptor.capture());
+
+            CaseNotification created = notificationCaptor.getAllValues().getFirst();
+            assertThat(created.getClaimType()).isEqualTo(NotificationClaimType.NOTICE_OF_CHANGE);
+            assertThat(created.getRecipient()).isEqualTo(REPRESENTED_DEFENDANT_EMAIL);
+            assertThat(created.getPartyId()).isEqualTo(representedDefendant);
+            assertThat(created.getPcsCase()).isEqualTo(pcsCase);
+        }
 
         @Test
         @DisplayName("Should not email a defendant who has opted out of email contact")
@@ -885,11 +914,76 @@ class NotificationServiceTest {
             verify(notificationRepository, never()).save(any());
         }
 
+        @Test
+        @DisplayName("Should email the claimant and other defendants but not the represented defendant")
+        void shouldEmailOtherPartiesExcludingRepresentedDefendant() {
+            PartyEntity otherDefendant = party(OTHER_DEFENDANT_EMAIL);
+            when(claim.getClaimParties()).thenReturn(List.of(
+                claimParty(claimant, PartyRole.CLAIMANT),
+                claimParty(representedDefendant, PartyRole.DEFENDANT),
+                claimParty(otherDefendant, PartyRole.DEFENDANT)
+            ));
+            allowEmailTo(claimant, PartyRole.CLAIMANT);
+            allowEmailTo(otherDefendant, PartyRole.DEFENDANT);
+
+            notificationService.sendNoticeOfChangeOtherPartiesEmailNotification(representedDefendant);
+
+            verify(schedulerClient, times(2)).scheduleIfNotExists(schedulableInstanceCaptor.capture());
+            assertThat(schedulableInstanceCaptor.getAllValues())
+                .extracting(instance -> instance.getTaskInstance().getData().getEmailAddress())
+                .containsExactlyInAnyOrder(CLAIMANT_EMAIL, OTHER_DEFENDANT_EMAIL);
+        }
+
+        @Test
+        @DisplayName("Should email only the claimant when the represented defendant is the sole defendant")
+        void shouldEmailOnlyClaimantWhenThereAreNoOtherDefendants() {
+            when(claim.getClaimParties()).thenReturn(List.of(
+                claimParty(claimant, PartyRole.CLAIMANT),
+                claimParty(representedDefendant, PartyRole.DEFENDANT)
+            ));
+            allowEmailTo(claimant, PartyRole.CLAIMANT);
+
+            notificationService.sendNoticeOfChangeOtherPartiesEmailNotification(representedDefendant);
+
+            verify(schedulerClient).scheduleIfNotExists(schedulableInstanceCaptor.capture());
+
+            SendEmailTaskData taskData = schedulableInstanceCaptor.getValue().getTaskInstance().getData();
+            assertThat(taskData.getEmailAddress()).isEqualTo(CLAIMANT_EMAIL);
+            assertThat(taskData.getTemplateId()).isEqualTo(TEMPLATE_ID);
+        }
+
+        @Test
+        @DisplayName("Should not email another party who has opted out of email contact")
+        void shouldNotEmailOtherPartyWhoOptedOutOfEmailContact() {
+            PartyEntity otherDefendant = party(OTHER_DEFENDANT_EMAIL);
+            when(claim.getClaimParties()).thenReturn(List.of(
+                claimParty(claimant, PartyRole.CLAIMANT),
+                claimParty(representedDefendant, PartyRole.DEFENDANT),
+                claimParty(otherDefendant, PartyRole.DEFENDANT)
+            ));
+            allowEmailTo(claimant, PartyRole.CLAIMANT);
+            when(partyService.getPartyRole(otherDefendant)).thenReturn(PartyRole.DEFENDANT);
+            when(partyService.canSendEmailNotification(otherDefendant, PartyRole.DEFENDANT)).thenReturn(false);
+
+            notificationService.sendNoticeOfChangeOtherPartiesEmailNotification(representedDefendant);
+
+            verify(schedulerClient).scheduleIfNotExists(schedulableInstanceCaptor.capture());
+            assertThat(schedulableInstanceCaptor.getValue().getTaskInstance().getData().getEmailAddress())
+                .isEqualTo(CLAIMANT_EMAIL);
+        }
+
         private PartyEntity party(String emailAddress) {
             return PartyEntity.builder()
                 .id(UUID.randomUUID())
                 .emailAddress(emailAddress)
                 .pcsCase(pcsCase)
+                .build();
+        }
+
+        private ClaimPartyEntity claimParty(PartyEntity party, PartyRole role) {
+            return ClaimPartyEntity.builder()
+                .party(party)
+                .role(role)
                 .build();
         }
 
