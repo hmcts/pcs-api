@@ -110,6 +110,8 @@ wa:
       enabled: false
     eventHandler:
       enabled: false
+    messageCron:
+      enabled: false
 
 am-org-role-mapping-service:
   enabled: true
