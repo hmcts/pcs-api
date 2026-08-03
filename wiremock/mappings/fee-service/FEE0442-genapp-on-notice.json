@@ -1,0 +1,38 @@
+{
+  "request": {
+    "urlPath": "/fees-register/fees/lookup",
+    "method": "GET",
+    "queryParameters": {
+      "service": {
+        "equalTo": "general"
+      },
+      "jurisdiction1": {
+        "equalTo": "civil"
+      },
+      "jurisdiction2": {
+        "equalTo": "civil"
+      },
+      "channel": {
+        "equalTo": "default"
+      },
+      "event": {
+        "equalTo": "general application"
+      },
+      "keyword": {
+        "equalTo": "GAOnNotice"
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "code": "FEE0442",
+      "description": "Stub for general application with notice",
+      "version": 5,
+      "fee_amount": 313.0
+    }
+  }
+}

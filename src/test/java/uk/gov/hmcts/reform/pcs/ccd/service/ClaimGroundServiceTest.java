@@ -12,6 +12,7 @@ import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredAdditionalDiscretionaryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredAdditionalMandatoryGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredAdditionalOtherGround;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredDiscretionaryGround;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredMandatoryGround;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredNoArrearsPossessionGrounds;
@@ -23,6 +24,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.IntroductoryDemotedOtherGround
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.RentArrearsGroundsReasons;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsOrBreachOfTenancy;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureAntisocialAdditionalGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexibleDiscretionaryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexibleDiscretionaryGroundsAlternativeAccomm;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexibleGroundsReasons;
@@ -33,7 +35,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.model.NoRentArrearsReasonForGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.NoRentArrearsGroundsReasons;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundCategory;
@@ -49,6 +51,7 @@ import java.util.Set;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType.SECURE_TENANCY;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.grounds.IntroductoryDemotedOrOtherGrounds.ABSOLUTE_GROUNDS;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.grounds.IntroductoryDemotedOrOtherGrounds.ANTI_SOCIAL;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.grounds.IntroductoryDemotedOrOtherGrounds.BREACH_OF_THE_TENANCY;
@@ -201,10 +204,11 @@ class ClaimGroundServiceTest {
     @Test
     void shouldReturnClaimGroundEntities_WhenAssuredTenancyNoRentArrears() {
         Answer<String> defaultReasonAnswer = invocation -> "Reason from " + invocation.getMethod().getName();
-        NoRentArrearsReasonForGrounds reasons = mock(NoRentArrearsReasonForGrounds.class, defaultReasonAnswer);
+        NoRentArrearsGroundsReasons reasons = mock(NoRentArrearsGroundsReasons.class, defaultReasonAnswer);
 
         Set<AssuredMandatoryGround> mandatory = EnumSet.allOf(AssuredMandatoryGround.class);
         Set<AssuredDiscretionaryGround> discretionary = EnumSet.allOf(AssuredDiscretionaryGround.class);
+        Set<AssuredAdditionalOtherGround> other = EnumSet.allOf(AssuredAdditionalOtherGround.class);
 
         PCSCase caseData = PCSCase.builder()
             .claimDueToRentArrears(YesOrNo.NO)
@@ -212,9 +216,11 @@ class ClaimGroundServiceTest {
                 AssuredNoArrearsPossessionGrounds.builder()
                     .mandatoryGrounds(mandatory)
                     .discretionaryGrounds(discretionary)
+                    .otherGround(other)
+                    .otherGroundDescription("Other ground description")
                     .build()
             )
-            .noRentArrearsReasonForGrounds(reasons)
+            .noRentArrearsGroundsReasons(reasons)
             .tenancyLicenceDetails(
                 TenancyLicenceDetails.builder()
                     .typeOfTenancyLicence(TenancyLicenceType.ASSURED_TENANCY)
@@ -354,9 +360,15 @@ class ClaimGroundServiceTest {
                     .code("FALSE_STATEMENT_GROUND17")
                     .reason("Reason from getFalseStatement")
                     .isRentArrears(false)
+                    .build(),
+                ClaimGroundEntity.builder()
+                    .category(ClaimGroundCategory.ASSURED_OTHER)
+                    .code("OTHER")
+                    .reason("Reason from getOtherGround")
+                    .description("Other ground description")
+                    .isRentArrears(false)
                     .build()
             );
-
     }
 
     @Test
@@ -374,6 +386,7 @@ class ClaimGroundServiceTest {
                     .rentArrearsGrounds(Set.of(AssuredRentArrearsGround.RENT_ARREARS_GROUND10))
                     .additionalMandatoryGrounds(null)
                     .additionalDiscretionaryGrounds(null)
+                    .additionalOtherGround(null)
                     .build()
             )
             .build();
@@ -400,6 +413,7 @@ class ClaimGroundServiceTest {
                 AssuredNoArrearsPossessionGrounds.builder()
                     .mandatoryGrounds(null)
                     .discretionaryGrounds(null)
+                    .otherGround(null)
                     .build()
             )
             .build();
@@ -428,11 +442,14 @@ class ClaimGroundServiceTest {
             AssuredAdditionalDiscretionaryGrounds.NUISANCE_ANNOYANCE_GROUND14
         );
 
+        Set<AssuredAdditionalOtherGround> other = EnumSet.allOf(AssuredAdditionalOtherGround.class);
+
         RentArrearsGroundsReasons reasons = RentArrearsGroundsReasons.builder()
             .ownerOccupierReason("Owner occupier needs the property")
             .redevelopmentReason("Redevelopment planned")
             .breachOfTenancyConditionsReason("Tenant breached agreement")
             .nuisanceAnnoyanceReason("Tenant caused nuisance")
+            .otherGroundReason("Other reasons")
             .build();
 
         PCSCase caseData = PCSCase.builder()
@@ -447,6 +464,8 @@ class ClaimGroundServiceTest {
                     .rentArrearsGrounds(rentArrearsGrounds)
                     .additionalMandatoryGrounds(mandatoryGrounds)
                     .additionalDiscretionaryGrounds(discretionaryGrounds)
+                    .additionalOtherGround(other)
+                    .additionalOtherGroundDescription("Other ground description")
                     .build()
             )
             .rentArrearsGroundsReasons(reasons)
@@ -486,6 +505,13 @@ class ClaimGroundServiceTest {
                     .category(ClaimGroundCategory.ASSURED_DISCRETIONARY)
                     .code("NUISANCE_ANNOYANCE_GROUND14")
                     .reason("Tenant caused nuisance")
+                    .isRentArrears(false)
+                    .build(),
+                ClaimGroundEntity.builder()
+                    .category(ClaimGroundCategory.ASSURED_OTHER)
+                    .code("OTHER")
+                    .description("Other ground description")
+                    .reason("Other reasons")
                     .isRentArrears(false)
                     .build()
             );
@@ -537,7 +563,9 @@ class ClaimGroundServiceTest {
         Set<SecureOrFlexibleDiscretionaryGrounds> discretionaryGrounds
             = EnumSet.allOf(SecureOrFlexibleDiscretionaryGrounds.class);
         Set<SecureOrFlexibleMandatoryGrounds> mandatoryGrounds
-            = EnumSet.allOf(SecureOrFlexibleMandatoryGrounds.class);
+            = Set.of();
+        Set<SecureAntisocialAdditionalGrounds> antisocialGrounds
+            = EnumSet.allOf(SecureAntisocialAdditionalGrounds.class);
         Set<SecureOrFlexibleDiscretionaryGroundsAlternativeAccomm> discretionaryGroundsAlt
             = EnumSet.allOf(SecureOrFlexibleDiscretionaryGroundsAlternativeAccomm.class);
         Set<SecureOrFlexibleMandatoryGroundsAlternativeAccomm> mandatoryGroundsAlt
@@ -552,6 +580,7 @@ class ClaimGroundServiceTest {
                 SecureOrFlexiblePossessionGrounds.builder()
                     .secureOrFlexibleDiscretionaryGrounds(discretionaryGrounds)
                     .secureOrFlexibleMandatoryGrounds(mandatoryGrounds)
+                    .secureAntisocialAdditionalGrounds(antisocialGrounds)
                     .secureOrFlexibleDiscretionaryGroundsAlt(discretionaryGroundsAlt)
                     .secureOrFlexibleMandatoryGroundsAlt(mandatoryGroundsAlt)
                     .build()
@@ -628,9 +657,33 @@ class ClaimGroundServiceTest {
                     .isRentArrears(false)
                     .build(),
                 ClaimGroundEntity.builder()
-                    .category(ClaimGroundCategory.SECURE_OR_FLEXIBLE_MANDATORY)
-                    .code("ANTI_SOCIAL")
-                    .reason("Reason from getAntiSocialGround")
+                    .category(ClaimGroundCategory.SECURE_OR_FLEXIBLE_ANTISOCIAL)
+                    .code("S84A_CONDITION_1")
+                    .reason("Reason from getAntiSocialCondition1OfS84AGround")
+                    .isRentArrears(false)
+                    .build(),
+                ClaimGroundEntity.builder()
+                    .category(ClaimGroundCategory.SECURE_OR_FLEXIBLE_ANTISOCIAL)
+                    .code("S84A_CONDITION_2")
+                    .reason("Reason from getAntiSocialCondition2OfS84AGround")
+                    .isRentArrears(false)
+                    .build(),
+                ClaimGroundEntity.builder()
+                    .category(ClaimGroundCategory.SECURE_OR_FLEXIBLE_ANTISOCIAL)
+                    .code("S84A_CONDITION_3")
+                    .reason("Reason from getAntiSocialCondition3OfS84AGround")
+                    .isRentArrears(false)
+                    .build(),
+                ClaimGroundEntity.builder()
+                    .category(ClaimGroundCategory.SECURE_OR_FLEXIBLE_ANTISOCIAL)
+                    .code("S84A_CONDITION_4")
+                    .reason("Reason from getAntiSocialCondition4OfS84AGround")
+                    .isRentArrears(false)
+                    .build(),
+                ClaimGroundEntity.builder()
+                    .category(ClaimGroundCategory.SECURE_OR_FLEXIBLE_ANTISOCIAL)
+                    .code("S84A_CONDITION_5")
+                    .reason("Reason from getAntiSocialCondition5OfS84AGround")
                     .isRentArrears(false)
                     .build(),
                 ClaimGroundEntity.builder()
@@ -703,6 +756,7 @@ class ClaimGroundServiceTest {
                 SecureOrFlexiblePossessionGrounds.builder()
                     .secureOrFlexibleDiscretionaryGrounds(discretionaryGrounds)
                     .secureOrFlexibleMandatoryGrounds(Set.of())
+                    .secureAntisocialAdditionalGrounds(Set.of())
                     .secureOrFlexibleDiscretionaryGroundsAlt(Set.of())
                     .secureOrFlexibleMandatoryGroundsAlt(Set.of())
                     .build()
@@ -741,6 +795,7 @@ class ClaimGroundServiceTest {
                 SecureOrFlexiblePossessionGrounds.builder()
                     .secureOrFlexibleDiscretionaryGrounds(discretionaryGrounds)
                     .secureOrFlexibleMandatoryGrounds(Set.of())
+                    .secureAntisocialAdditionalGrounds(Set.of())
                     .secureOrFlexibleDiscretionaryGroundsAlt(Set.of())
                     .secureOrFlexibleMandatoryGroundsAlt(Set.of())
                     .build()
@@ -819,4 +874,39 @@ class ClaimGroundServiceTest {
         assertThat(actualClaimGroundEntities).isEqualTo(expectedClaimGroundEntities);
     }
 
+    @Test
+    void shouldReturnClaimGroundEntityWhenSecureAntisocialAdditionalGroundsIsNull() {
+        // Given
+        Set<SecureOrFlexibleDiscretionaryGrounds> discretionaryGrounds
+            = Set.of(SecureOrFlexibleDiscretionaryGrounds.FURNITURE_DETERIORATION);
+
+        PCSCase caseData = PCSCase.builder()
+            .tenancyLicenceDetails(TenancyLicenceDetails.builder().typeOfTenancyLicence(SECURE_TENANCY).build())
+            .secureOrFlexiblePossessionGrounds(
+                SecureOrFlexiblePossessionGrounds.builder()
+                    .secureOrFlexibleDiscretionaryGrounds(discretionaryGrounds)
+                    .secureOrFlexibleMandatoryGrounds(Set.of())
+                    .secureAntisocialAdditionalGrounds(null)
+                    .secureOrFlexibleDiscretionaryGroundsAlt(Set.of())
+                    .secureOrFlexibleMandatoryGroundsAlt(Set.of())
+                    .build()
+            )
+            .secureOrFlexibleGroundsReasons(mock(SecureOrFlexibleGroundsReasons.class))
+            .rentArrearsOrBreachOfTenancy(null)
+            .build();
+
+        // When
+        List<ClaimGroundEntity> result = underTest.createClaimGroundEntities(caseData);
+
+        // Then
+        assertThat(result)
+            .usingRecursiveFieldByFieldElementComparator()
+            .containsExactlyInAnyOrder(
+                ClaimGroundEntity.builder()
+                    .category(ClaimGroundCategory.SECURE_OR_FLEXIBLE_DISCRETIONARY)
+                    .code("FURNITURE_DETERIORATION")
+                    .isRentArrears(false)
+                    .build()
+            );
+    }
 }

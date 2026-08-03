@@ -1,0 +1,38 @@
+{
+  "request": {
+    "urlPath": "/fees-register/fees/lookup",
+    "method": "GET",
+    "queryParameters": {
+      "service": {
+        "equalTo": "possession claim"
+      },
+      "jurisdiction1": {
+        "equalTo": "civil"
+      },
+      "jurisdiction2": {
+        "equalTo": "county court"
+      },
+      "channel": {
+        "equalTo": "default"
+      },
+      "event": {
+        "equalTo": "issue"
+      },
+      "keyword": {
+        "equalTo": "PossessionCC"
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "code": "FEE0412",
+      "description": "Recovery of Land - County Court",
+      "version": 4,
+      "fee_amount": 404.00
+    }
+  }
+}

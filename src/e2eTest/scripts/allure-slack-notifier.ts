@@ -308,9 +308,11 @@ export function buildSlackMessage(
   const reportUrl = buildUrl ? `${buildUrl}${reportPathSuffix}` : '';
   const platform = (process.env.E2E_PLATFORM ?? 'Linux').trim();
   const browser = (process.env.E2E_BROWSER ?? 'Chrome').trim();
+  const environment = (process.env.ENVIRONMENT ?? 'unknown').trim();
   const lines: string[] = [];
   lines.push(`*E2E Test Results* — Build #${buildNumber}  ${rag}`);
   lines.push(`*Service:* ${serviceName}  |  *Pipeline:* ${pipelineType}`);
+  lines.push(`*Env:* ${environment}`);
   lines.push(`*Platform:* ${platform}  |  *Browser:* ${browser}`);
   lines.push('');
   if (reportUrl) {
@@ -397,9 +399,11 @@ function getFallbackMessage(
 ): string {
   const platform = (process.env.E2E_PLATFORM ?? 'Linux').trim();
   const browser = (process.env.E2E_BROWSER ?? 'Chrome').trim();
+  const environment = (process.env.ENVIRONMENT ?? 'unknown').trim();
   const lines = [
     `E2E Test Results — Build #${buildNumber}`,
     `*Service:* ${serviceName}  |  *Pipeline:* ${pipelineType}`,
+    `*Env:* ${environment}`,
     `*Platform:* ${platform}  |  *Browser:* ${browser}`,
     '',
     'Allure report not available – check build logs.',

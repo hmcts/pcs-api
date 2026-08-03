@@ -64,8 +64,8 @@ export const enforceWarrantApiData = {
     warrantAgreementClaimant: [
       "BELIEVE_TRUE"
     ],
-    warrantFullNameClaimant: "Full name",
-    warrantPositionClaimant: "Position or office held"
+    warrantFullNameParty: "Full name",
+    warrantPositionParty: "Position or office held"
 
   },
   enforceCasePayloadNoJourney: {
@@ -122,8 +122,8 @@ export const enforceWarrantApiData = {
     warrantAgreementClaimant: [
       "BELIEVE_TRUE"
     ],
-    warrantFullNameClaimant: "Full name",
-    warrantPositionClaimant: "Position or office held"
+    warrantFullNameParty: "Full name",
+    warrantPositionParty: "Position or office held"
 
   },
   enforceCaseApiEndPoint: () =>

@@ -27,11 +27,11 @@ public class StatementOfTruth implements CcdPageConfiguration {
                 .mandatory(StatementOfTruthDetails::getCompletedBy)
                 .mandatory(StatementOfTruthDetails::getAgreementClaimant,
                     "statementOfTruth.completedBy=\"CLAIMANT\"")
-                .mandatory(StatementOfTruthDetails::getFullNameClaimant,
+                .mandatory(StatementOfTruthDetails::getFullNameParty,
                     "statementOfTruth.completedBy=\"CLAIMANT\"")
-                .mandatory(StatementOfTruthDetails::getPositionClaimant,
+                .mandatory(StatementOfTruthDetails::getPositionParty,
                     "statementOfTruth.completedBy=\"CLAIMANT\"")
-                .mandatory(StatementOfTruthDetails::getAgreementLegalRep,
+                .mandatory(StatementOfTruthDetails::getAgreementClaimantLegalRep,
                     "statementOfTruth.completedBy=\"LEGAL_REPRESENTATIVE\"")
                 .mandatory(StatementOfTruthDetails::getFullNameLegalRep,
                     "statementOfTruth.completedBy=\"LEGAL_REPRESENTATIVE\"")

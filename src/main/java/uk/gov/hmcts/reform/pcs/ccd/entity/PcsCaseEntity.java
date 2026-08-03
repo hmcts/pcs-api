@@ -10,6 +10,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
+import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -57,6 +58,7 @@ public class PcsCaseEntity {
     private ClaimantType claimantType;
 
     private Integer caseManagementLocation;
+    private Integer baseLocation;
 
     private Boolean preActionProtocolCompleted;
 
@@ -77,6 +79,12 @@ public class PcsCaseEntity {
     @OneToMany(mappedBy = "pcsCase", fetch = LAZY, cascade = ALL)
     @Builder.Default
     @JsonManagedReference
+    private List<CaseNoteEntity> caseNotes = new ArrayList<>();
+
+    @OneToMany(mappedBy = "pcsCase", fetch = LAZY, cascade = ALL)
+    @Builder.Default
+    @JsonManagedReference
+    @OrderBy("rank ASC")
     private Set<GenAppEntity> genApps = new HashSet<>();
 
     @OneToMany(mappedBy = "pcsCase", fetch = LAZY, cascade = ALL)
@@ -100,6 +108,12 @@ public class PcsCaseEntity {
     @Builder.Default
     private List<CaseLinkEntity> caseLinks = new ArrayList<>();
 
+    private Integer regionId;
+
+    @OneToMany(mappedBy = "pcsCase", cascade = ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<CaseFlagEntity> caseFlags = new ArrayList<>();
+
     public void setTenancyLicence(TenancyLicenceEntity tenancyLicence) {
         if (this.tenancyLicence != null) {
             this.tenancyLicence.setPcsCase(null);
@@ -118,6 +132,8 @@ public class PcsCaseEntity {
     }
 
     public void addGenApp(GenAppEntity genApp) {
+        int rank = genApps.size() + 1;
+        genApp.setRank(rank);
         genApps.add(genApp);
         genApp.setPcsCase(this);
     }
@@ -143,4 +159,10 @@ public class PcsCaseEntity {
         counterClaims.add(counterClaim);
         counterClaim.setPcsCase(this);
     }
+
+    public void addCaseNote(CaseNoteEntity caseNote) {
+        caseNotes.add(caseNote);
+        caseNote.setPcsCase(this);
+    }
+
 }

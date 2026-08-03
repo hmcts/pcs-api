@@ -42,8 +42,6 @@ import static org.springframework.test.context.TestConstructor.AutowireMode.ALL;
 class FeeRegistrationLookupConsumerTest {
     private final FeesApi feesApi;
 
-    private static final String SERVICE_AUTH_TOKEN = "Bearer serviceToken";
-
     private static final String POSSESSION_SERVICE = "possession claim";
     private static final String CIVIL_JURISDICTION = "civil";
     private static final String COUNTY_COURT = "county court";

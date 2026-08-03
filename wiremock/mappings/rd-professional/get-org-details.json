@@ -1,0 +1,27 @@
+{
+  "request": {
+    "method": "GET",
+    "urlPathPattern": "/refdata/internal/v1/organisations/orgDetails/.*"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "name": "Local test org",
+      "organisationIdentifier": "TEST-123",
+      "contactInformation": [
+        {
+          "addressLine1": "10 Org Street",
+          "addressLine2": "",
+          "addressLine3": "",
+          "townCity": "Cardiff",
+          "county": "",
+          "country": "",
+          "postCode": "CF24 5JT"
+        }
+      ]
+    }
+  }
+}

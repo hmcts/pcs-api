@@ -23,3 +23,4 @@ export * from '@data/page-data/cancelPayment.page.data';
 export * from '@data/page-data/confirmYourPayment.page.data';
 export * from '@data/page-data/enterPaymentDetails.page.data';
 export * from '@data/page-data/serviceRequest.page.data';
+export * from '@data/page-data/checkYourAnswersCaseNote.page.data';

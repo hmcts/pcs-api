@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.domain;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import lombok.Builder;
@@ -8,11 +9,13 @@ import uk.gov.hmcts.ccd.sdk.External;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.CaseLink;
-import uk.gov.hmcts.ccd.sdk.type.ComponentLauncher;
 import uk.gov.hmcts.ccd.sdk.type.CaseLocation;
+import uk.gov.hmcts.ccd.sdk.type.ComponentLauncher;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.DynamicList;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
+import uk.gov.hmcts.ccd.sdk.type.FlagLauncher;
+import uk.gov.hmcts.ccd.sdk.type.Flags;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.SearchCriteria;
 import uk.gov.hmcts.ccd.sdk.type.WaysToPay;
@@ -21,22 +24,35 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseLinkingAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.ClaimantAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DefendantAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DefendantSolicitorAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DocumentAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.GlobalSearchAccess;
-import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.DashboardData;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.InternalCaseFlagAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.InternalTabAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.PartyVisibleTabAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.RasValidationAccess;
+import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.EnterGenAppRequest;
+import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.DashboardData;
+import uk.gov.hmcts.reform.pcs.ccd.domain.documentupload.DocumentUploadDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.documentamend.DocumentAmendDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.CitizenGenAppRequest;
+import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GeneralApplication;
+import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.XuiGenAppRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredNoArrearsPossessionGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredRentArrearsPossessionGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.ClaimGroundSummary;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.IntroductoryDemotedOtherGroundReason;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.IntroductoryDemotedOtherGroundsForPossession;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.NoRentArrearsGroundsReasons;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.RentArrearsGroundsReasons;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexibleGroundsReasons;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexiblePossessionGrounds;
-import uk.gov.hmcts.reform.pcs.ccd.domain.model.NoRentArrearsReasonForGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.CaseDetailsTab;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.parties.CasePartiesTab;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.summary.SummaryTab;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.ASBQuestionsDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.EstateManagementGroundsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.GroundsForPossessionWales;
@@ -44,14 +60,19 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.wales.GroundsReasonsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.PeriodicContractTermsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractGroundsForPossessionWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.WalesDocuments;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import static uk.gov.hmcts.ccd.sdk.type.FieldType.Collection;
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.DynamicRadioList;
+import static uk.gov.hmcts.ccd.sdk.type.FieldType.FixedList;
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.MultiSelectList;
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
 
@@ -67,8 +88,14 @@ public class PCSCase {
     public static final String NOTICE_EMAIL_EXPLANATION_LABEL = "Explain how it was served by email";
     public static final String NOTICE_OTHER_EXPLANATION_LABEL = "Explain what the other means were";
     public static final String OTHER_GROUND_DESCRIPTION_LABEL = "Enter your grounds for possession";
+    public static final String PRE_ACTION_PROTOCOL_INCOMPLETE_EXPLANATION_LABEL =
+        "Explain why you have not followed the pre-action protocol";
+    public static final String NOTE_LABEL = "Note";
     public static final int MIN_MONETARY_AMOUNT = 1;
     public static final int MAX_MONETARY_AMOUNT = 1_000_000_000;
+
+    @CCD(searchable = false)
+    private FeatureFlags featureFlags;
 
     @CCD(
         searchable = false
@@ -84,12 +111,27 @@ public class PCSCase {
     @JsonUnwrapped
     private ClaimantInformation claimantInformation;
 
-    @CCD(access = {ClaimantAccess.class})
+    @CCD(access = {ClaimantAccess.class, DefendantAccess.class})
     private List<ListValue<Party>> allClaimants;
 
     @CCD(
+        searchable = false,
+        typeOverride = DynamicRadioList
+    )
+    private DynamicList representedPartyNames;
+
+    @CCD(searchable = false)
+    private String currentRepresentedPartyId;
+
+    @CCD(searchable = false)
+    private String currentRepresentedPartyName;
+
+    @CCD(searchable = false)
+    private VerticalYesNo multipleRepresentedParties;
+
+    @CCD(
         label = "Property address",
-        access = {CitizenAccess.class}
+        access = {DefendantAccess.class}
     )
     @External
     private AddressUK propertyAddress;
@@ -119,9 +161,10 @@ public class PCSCase {
     private String crossBorderCountry2;
 
     @CCD(access = {CaseLinkingAccess.class},
-        typeOverride = FieldType.Collection,
+        typeOverride = Collection,
         label = "Linked cases",
         typeParameterOverride = "CaseLink")
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
     @Builder.Default
     private List<ListValue<CaseLink>> caseLinks = new ArrayList<>();
 
@@ -134,14 +177,14 @@ public class PCSCase {
 
     @CCD(
         searchable = false,
-        access = {CitizenAccess.class}
+        access = {DefendantAccess.class}
     )
     @External
     private String userPcqId;
 
     @CCD(
         searchable = false,
-        access = {CitizenAccess.class}
+        access = {DefendantAccess.class}
     )
     private YesOrNo userPcqIdSet;
 
@@ -155,7 +198,8 @@ public class PCSCase {
     )
     private Integer regionId;
 
-    @CCD(label = "Party")
+    @CCD(access = {InternalCaseFlagAccess.class},
+        label = "Party")
     private List<ListValue<Party>> parties;
 
     @JsonUnwrapped
@@ -166,12 +210,20 @@ public class PCSCase {
         hint = "You do not need to provide the exact amount at this stage, but a judge will request a schedule "
             + "of costs at the hearing"
     )
+    @Deprecated
     private VerticalYesNo claimingCostsWanted;
 
     @CCD(
         label = "Have you followed the pre-action protocol?"
     )
     private VerticalYesNo preActionProtocolCompleted;
+
+    @CCD(
+        label = PRE_ACTION_PROTOCOL_INCOMPLETE_EXPLANATION_LABEL,
+        hint = "You can enter up to 250 characters",
+        typeOverride = TextArea
+    )
+    private String preActionProtocolIncompleteExplanation;
 
     @CCD(
         label = "Do your grounds for possession include rent arrears?",
@@ -200,6 +252,7 @@ public class PCSCase {
         hint = "You can enter up to 250 characters",
         typeOverride = TextArea
     )
+    @Deprecated
     private String mediationAttemptedDetails;
 
     @CCD(
@@ -212,6 +265,7 @@ public class PCSCase {
         hint = "You can enter up to 250 characters",
         typeOverride = TextArea
     )
+    @Deprecated
     private String settlementAttemptedDetails;
 
     @CCD(
@@ -221,7 +275,7 @@ public class PCSCase {
     private YesOrNo noticeServed;
 
     @JsonUnwrapped(prefix = "notice_")
-    @CCD(access = {ClaimantAccess.class})
+    @CCD(access = {ClaimantAccess.class, CitizenAccess.class})
     private NoticeServedDetails noticeServedDetails;
 
     private String caseTitleMarkdown;
@@ -256,11 +310,7 @@ public class PCSCase {
     @CCD(searchable = false)
     private YesOrNo showClaimTypeNotEligibleWales;
 
-    @JsonUnwrapped(prefix = "wales")
-    @CCD
-    private WalesHousingAct walesHousingAct;
-
-    @CCD(label = "Are you also making a claim for an order imposing a prohibited conduct standard contract?")
+    @CCD(label = "Are you seeking an order imposing a prohibited conduct standard contract?")
     private VerticalYesNo prohibitedConductWalesClaim;
 
     @CCD(
@@ -307,7 +357,7 @@ public class PCSCase {
     /**
      * Combined list of all defendants in the case (i.e. primary defendant + additional defendants).
      */
-    @CCD(access = {ClaimantAccess.class})
+    @CCD(access = {ClaimantAccess.class, CitizenAccess.class, InternalCaseFlagAccess.class})
     private List<ListValue<Party>> allDefendants;
 
     @JsonUnwrapped(prefix = "tenancy_")
@@ -368,7 +418,7 @@ public class PCSCase {
     private AssuredNoArrearsPossessionGrounds noRentArrearsGroundsOptions;
 
     @JsonUnwrapped(prefix = "assuredNoArrearsReasons_")
-    private NoRentArrearsReasonForGrounds noRentArrearsReasonForGrounds;
+    private NoRentArrearsGroundsReasons noRentArrearsGroundsReasons;
 
     private YesOrNo showRentSectionPage;
 
@@ -376,8 +426,8 @@ public class PCSCase {
     private YesOrNo showRentArrearsPage;
 
     @CCD(
-        label = "Which language did you use to complete this service?",
-        hint = "If someone else helped you to answer a question in this service, "
+        label = "Which language did you use to complete this claim?",
+        hint = "If someone else helped you to answer a question in this claim, "
             + "ask them if they answered any questions in Welsh. We’ll use this to "
             + "make sure your claim is processed correctly"
     )
@@ -420,6 +470,22 @@ public class PCSCase {
         hint = "Upload a document to the system"
     )
     private List<ListValue<AdditionalDocument>> additionalDocuments;
+
+    @CCD
+    @JsonUnwrapped(prefix = "walesDocs_")
+    private WalesDocuments requiredDocumentsWales;
+
+    @CCD(
+        access = DefendantAccess.class,
+        searchable = false
+    )
+    private List<ListValue<UploadedDocument>> uploadedAdditionalDocuments;
+
+    @JsonUnwrapped
+    private DocumentUploadDetails documentUploadDetails;
+
+    @JsonUnwrapped(prefix = "documentAmend_")
+    private DocumentAmendDetails documentAmendDetails;
 
     @CCD(
         label = "Are you planning to make an application at the same time as your claim?",
@@ -485,16 +551,17 @@ public class PCSCase {
     /**
      * Combined list of all underlessees/mortgagees in the case.
      */
-    @CCD(access = ClaimantAccess.class)
+    @CCD(access = {ClaimantAccess.class, DefendantAccess.class})
     private List<ListValue<Party>> allUnderlesseeOrMortgagees;
 
     @CCD(
         searchable = false,
-        label = "Ways to pay"
+        label = "Ways to pay",
+        access = {PartyVisibleTabAccess.class}
     )
     private WaysToPay waysToPay;
 
-    @CCD
+    @CCD(access = {ClaimantAccess.class, DefendantAccess.class})
     private StatementOfTruthDetails statementOfTruth;
 
     @CCD(searchable = false)
@@ -508,6 +575,11 @@ public class PCSCase {
     private ASBQuestionsDetailsWales asbQuestionsWales;
 
     @CCD(
+        label = "Are you an exempt landlord under Part 1 of the Housing (Wales) Act 2014?"
+    )
+    private VerticalYesNo isExemptLandlord;
+
+    @CCD(
         access = {DefendantAccess.class},
         searchable = false
     )
@@ -519,12 +591,12 @@ public class PCSCase {
     )
     private DynamicList testCaseSupportFileList;
 
-    @CCD(access = ClaimantAccess.class)
+    @CCD(access = DocumentAccess.class)
     private List<ListValue<Document>> allDocuments;
 
     @CCD(
         label = "Case file view",
-        access = {ClaimantAccess.class}
+        access = {DocumentAccess.class}
     )
     private ComponentLauncher caseFileView;
 
@@ -535,11 +607,38 @@ public class PCSCase {
     @CCD(access = {ClaimantAccess.class, DefendantAccess.class})
     private List<ListValue<ClaimGroundSummary>> claimGroundSummaries;
 
+    @CCD(access = {ClaimantAccess.class, DefendantAccess.class})
+    private LocalDateTime dateSubmitted;
+
+    @CCD(access = {ClaimantAccess.class, DefendantAccess.class}, label = "Date claim issued")
+    private LocalDate claimIssueDate;
+
+    @CCD(access = {ClaimantAccess.class, DefendantAccess.class})
+    private LocalDateTime dateIssued;
+
+    @CCD(
+        searchable = false
+    )
+    @JsonUnwrapped(prefix = "xui_genapp_")
+    private XuiGenAppRequest xuiGenAppRequest;
+
     @CCD(
         access = DefendantAccess.class,
         searchable = false
     )
     private CitizenGenAppRequest citizenGenAppRequest;
+
+    @CCD(
+        searchable = false
+    )
+    @JsonUnwrapped(prefix = "enter_genapp_")
+    private EnterGenAppRequest enterGenAppRequest;
+
+    @CCD(label = "Which party made the application?",
+        searchable = false,
+        typeOverride = DynamicRadioList
+    )
+    private DynamicList partyRadioList;
 
     @CCD(
         label = "Search Criteria",
@@ -585,4 +684,66 @@ public class PCSCase {
     @CCD(searchable = false, access = {ClaimantAccess.class})
     private YesOrNo showConfirmEvictionJourney;
 
+    @CCD(access = {CitizenAccess.class})
+    private List<ListValue<GeneralApplication>> genApps;
+
+    @JsonUnwrapped(prefix = "casePartiesTab_")
+    @CCD(access = {PartyVisibleTabAccess.class})
+    private CasePartiesTab casePartiesTab;
+
+    @JsonUnwrapped(prefix = "summaryTab_")
+    @CCD(searchable = false, access = {PartyVisibleTabAccess.class})
+    private SummaryTab summaryTab;
+
+    @JsonUnwrapped(prefix = "detailsTab_")
+    @CCD(access = {PartyVisibleTabAccess.class})
+    private CaseDetailsTab caseDetailsTab;
+
+    @CCD(
+        label = NOTE_LABEL,
+        hint = "Add note detail, including relevant dates and people involved",
+        typeOverride = TextArea
+    )
+    private String note;
+
+    @CCD (
+        label = "Note",
+        access = {InternalTabAccess.class},
+        typeOverride = Collection,
+        typeParameterOverride = "CaseNote")
+    List<ListValue<CaseNote>> caseNotes;
+
+    @CCD(
+        access = {InternalCaseFlagAccess.class},
+        label = "Case Flags"
+    )
+    private Flags caseFlags;
+
+    @CCD(
+        access = {InternalCaseFlagAccess.class},
+        label = "Launch the flags screen"
+    )
+
+    private FlagLauncher flagLauncherInternal;
+
+    @CCD(access = {DefendantSolicitorAccess.class})
+    private List<ListValue<Party>> allLinkedDefendants;
+
+    @CCD
+    private String postCode;
+
+    @CCD
+    private String claimantNames;
+
+    @CCD
+    private String defendantNames;
+
+    @CCD
+    private String dateIssuedString;
+
+    @CCD(label = "Which state are you moving the case to?",
+        typeOverride = FixedList,
+        typeParameterOverride = "CaseStateOption"
+    )
+    private CaseStateOption targetState;
 }

@@ -9,6 +9,8 @@ import uk.gov.hmcts.reform.pcs.feesandpay.config.FeesConfiguration;
 import uk.gov.hmcts.reform.pcs.feesandpay.exception.FeeNotFoundException;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
 
+import java.math.BigDecimal;
+
 @Service
 @Slf4j
 @AllArgsConstructor
@@ -18,6 +20,10 @@ public class PCSFeesClient {
     private final FeesApi feesApi;
 
     public FeeLookupResponseDto lookupFee(FeeType feeType) {
+        return lookupFee(feeType, null);
+    }
+
+    public FeeLookupResponseDto lookupFee(FeeType feeType, BigDecimal amountOrVolume) {
         FeesConfiguration.LookUpReferenceData ref = feesConfiguration.getLookup(feeType);
 
         if (ref == null) {
@@ -25,14 +31,16 @@ public class PCSFeesClient {
             throw new FeeNotFoundException("Fee not found for feeType: " + feeType);
         }
 
+        BigDecimal resolvedAmountOrVolume = amountOrVolume != null ? amountOrVolume : ref.getAmountOrVolume();
+
         return feesApi.lookupFee(
             ref.getService(),
             ref.getJurisdiction1(),
             ref.getJurisdiction2(),
             ref.getChannel(),
             ref.getEvent(),
-            null,
-            ref.getAmountOrVolume(),
+            ref.getApplicantType(),
+            resolvedAmountOrVolume,
             ref.getKeyword()
         );
     }

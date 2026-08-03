@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import uk.gov.hmcts.reform.pcs.idam.IdamService;
+import uk.gov.hmcts.reform.pcs.idam.IdamAuthenticator;
 import uk.gov.hmcts.reform.pcs.model.ValidateAccessCodeRequest;
 import uk.gov.hmcts.reform.pcs.service.PartyAccessCodeLinkService;
 
@@ -27,7 +27,7 @@ import uk.gov.hmcts.reform.pcs.service.PartyAccessCodeLinkService;
         description = "Validate access code and link user ID to party")
 public class CasePartyLinkController {
 
-    private final IdamService idamService;
+    private final IdamAuthenticator idamAuthenticator;
     private final PartyAccessCodeLinkService partyAccessCodeLinkService;
 
     @PostMapping(
@@ -64,7 +64,7 @@ public class CasePartyLinkController {
             @Parameter(description = "Service-to-Service (S2S) authorization token", required = true)
             @RequestHeader("ServiceAuthorization") String s2sToken
     ) {
-        var user = idamService.validateAuthToken(authorization).getUserDetails();
+        var user = idamAuthenticator.validateAuthToken(authorization).getUserDetails();
 
         partyAccessCodeLinkService.linkPartyByAccessCode(caseReference, request.getAccessCode(), user);
 

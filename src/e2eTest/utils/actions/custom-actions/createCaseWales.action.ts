@@ -4,10 +4,10 @@ import {performAction, performActions, performValidation} from '@utils/controlle
 import {addressInfo, caseNumber, CreateCaseAction} from "@utils/actions/custom-actions/createCase.action";
 import {
   // migration (page-data → page-data-figma)
-  claimantDetailsWales,
+  contactPreferences,
+  exemptLandlord,
   occupationLicenceDetailsWales,
-  prohibitedConductWales
-} from '@data/page-data-figma';
+  prohibitedConductWales} from '@data/page-data-figma';
 import {asbQuestionsWales} from '@data/page-data/asbQuestionsWales.page.data';
 
 export class CreateCaseWalesAction extends CreateCaseAction implements IAction {
@@ -16,7 +16,8 @@ export class CreateCaseWalesAction extends CreateCaseAction implements IAction {
       ['selectClaimantDetails', () => this.selectClaimantDetails(fieldName as actionRecord)],
       ['selectProhibitedConductStandardContract', () => this.selectProhibitedConductStandardContract(fieldName as actionRecord)],
       ['selectOccupationContractOrLicenceDetails', () => this.selectOccupationContractOrLicenceDetails(fieldName as actionRecord)],
-      ['selectAsb', () => this.selectAsb(fieldName as actionRecord)]
+      ['selectAsb', () => this.selectAsb(fieldName as actionRecord)],
+      ['requiredDocumentsUpload', () => this.requiredDocumentsUpload(fieldName as actionRecord)],
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -27,24 +28,7 @@ export class CreateCaseWalesAction extends CreateCaseAction implements IAction {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
     await performAction('clickRadioButton', {question: claimant.question1, option: claimant.option1});
-    if (claimant.option1 == claimantDetailsWales.yesRadioOption) {
-      await performAction('inputText', claimantDetailsWales.whatsYourRegistrationNumberHiddenTextLabel, claimantDetailsWales.whatsYourRegistrationNumberHiddenTextInput);
-    }
-    await performAction('clickRadioButton', {question: claimant.question2, option: claimant.option2});
-    if (claimant.option2 == claimantDetailsWales.yesRadioOption) {
-      await performAction('inputText', claimantDetailsWales.whatsYourLicenceNumberHiddenTextLabel, claimantDetailsWales.whatsYourLicenceNumberHiddenTextInput);
-    }
-    await performAction('clickRadioButton', {question: claimant.question3, option: claimant.option3});
-    if (claimant.option3 == claimantDetailsWales.yesRadioOption) {
-      await performAction('inputText', claimantDetailsWales.agentsFirstNameHiddenTextLabel, claimantDetailsWales.agentsFirstNameHiddenTextInput);
-      await performAction('inputText', claimantDetailsWales.agentsLastNameHiddenTextLabel, claimantDetailsWales.agentsLastNameHiddenTextInput);
-      await performAction('inputText', claimantDetailsWales.agentsLicenceNumberHiddenTextLabel, claimantDetailsWales.agentsLicenceNumberHiddenTextInput);
-      await performActions('Enter Date',
-        ['inputText', claimantDetailsWales.dayHiddenTextLabel, claimantDetailsWales.dayHiddenTextInput],
-        ['inputText', claimantDetailsWales.monthHiddenTextLabel, claimantDetailsWales.monthHiddenTextInput],
-        ['inputText', claimantDetailsWales.yearHiddenTextLabel, claimantDetailsWales.yearHiddenTextInput]);
-    }
-    await performAction('clickButton', claimantDetailsWales.continueButton);
+    await performAction('clickButtonAndVerifyPageNavigation', exemptLandlord.continueButton, contactPreferences.mainHeader);    
   }
 
   private async selectOccupationContractOrLicenceDetails(occupationContractData: actionRecord) {
@@ -112,5 +96,23 @@ export class CreateCaseWalesAction extends CreateCaseAction implements IAction {
       await performAction('inputText', asbQuestionsWales.giveDetailsOfTheOtherHiddenTextLabel, asbQuestions.giveDetailsOfTheOther);
     }
     await performAction('clickButton', asbQuestionsWales.continueButton);
+  }
+
+  private async requiredDocumentsUpload(reqDocs: actionRecord){
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseNumber });
+    await performValidation('text', {
+      elementType: 'paragraph',
+      text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
+    });
+    await performAction('clickRadioButton', {
+      question: reqDocs.question,
+      option: reqDocs.option
+    });
+    if (reqDocs.option === 'Yes') {
+      await performAction('uploadFile', reqDocs.file);
+    } else {
+      await performAction('inputText', reqDocs.label, reqDocs.input);
+    }   
+
   }
 }

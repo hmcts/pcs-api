@@ -15,6 +15,8 @@ import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 import java.util.ArrayList;
 import java.util.List;
 
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.ENGLAND;
+
 @AllArgsConstructor
 @Component
 public class IntroductoryDemotedOtherGroundsReasons implements CcdPageConfiguration {
@@ -30,7 +32,7 @@ public class IntroductoryDemotedOtherGroundsReasons implements CcdPageConfigurat
                     + " AND (tenancy_TypeOfTenancyLicence=\"INTRODUCTORY_TENANCY\""
                     + " OR tenancy_TypeOfTenancyLicence=\"DEMOTED_TENANCY\""
                     +  " OR tenancy_TypeOfTenancyLicence=\"OTHER\")"
-                    + " AND legislativeCountry=\"England\"")
+                    + " AND " + ENGLAND)
             .complex(PCSCase::getIntroductoryDemotedOtherGroundReason)
             .label("introductoryDemotedOtherGroundsReasons-antiSocial-label","""
                 ---

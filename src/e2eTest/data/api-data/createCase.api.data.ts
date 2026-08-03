@@ -3,7 +3,7 @@ import { getCaseTypeId } from '@utils/common/caseType.utils';
 export const createCaseApiData = {
   createCaseEventName: 'createPossessionClaim',
   createCasePayload: {
-    feeAmount: '£404',
+    feeAmount: '£415',
     propertyAddress: {
       AddressLine1: '2 Second Avenue',
       AddressLine2: 'Oxford Street',

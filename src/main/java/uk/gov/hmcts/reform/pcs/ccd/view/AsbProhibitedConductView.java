@@ -1,7 +1,9 @@
 package uk.gov.hmcts.reform.pcs.ccd.view;
 
 import org.springframework.stereotype.Component;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.ASBQuestionsDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.PeriodicContractTermsWales;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AsbProhibitedConductEntity;
@@ -27,7 +29,12 @@ public class AsbProhibitedConductView {
     private static void setAsbQuestions(PCSCase pcsCase, AsbProhibitedConductEntity asbProhibitedConductEntity) {
         ASBQuestionsDetailsWales asbDetails = new ASBQuestionsDetailsWales();
 
-        asbDetails.setAntisocialBehaviour(asbProhibitedConductEntity.getAntisocialBehaviour());
+        VerticalYesNo antisocialBehaviour = asbProhibitedConductEntity.getAntisocialBehaviour();
+        if (antisocialBehaviour != null) {
+            pcsCase.setShowASBQuestionsPageWales(YesOrNo.YES);
+        }
+
+        asbDetails.setAntisocialBehaviour(antisocialBehaviour);
         asbDetails.setAntisocialBehaviourDetails(asbProhibitedConductEntity.getAntisocialBehaviourDetails());
         asbDetails.setIllegalPurposesUse(asbProhibitedConductEntity.getIllegalPurposes());
         asbDetails.setIllegalPurposesUseDetails(asbProhibitedConductEntity.getIllegalPurposesDetails());

@@ -1,12 +1,10 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.party;
 
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
 
 import java.util.List;
@@ -22,7 +20,10 @@ import java.util.UUID;
  */
 @Service
 @Slf4j
+@AllArgsConstructor
 public class DefendantAccessValidator {
+
+    private final DefendantPartyExtractor defendantPartyExtractor;
 
     /**
      * Validates that the authenticated user has defendant access and returns the matched defendant.
@@ -34,29 +35,8 @@ public class DefendantAccessValidator {
      */
     public PartyEntity validateAndGetDefendant(PcsCaseEntity caseEntity, UUID authenticatedUserId) {
         long caseReference = caseEntity.getCaseReference();
-        List<PartyEntity> defendants = extractDefendants(caseEntity, caseReference);
+        List<PartyEntity> defendants = defendantPartyExtractor.extractDefendants(caseEntity, caseReference);
         return findMatchingDefendant(defendants, authenticatedUserId, caseReference);
-    }
-
-    private List<PartyEntity> extractDefendants(PcsCaseEntity caseEntity, long caseReference) {
-        ClaimEntity mainClaim = caseEntity.getClaims().stream()
-            .findFirst()
-            .orElseThrow(() -> {
-                log.error("No claim found for case {}", caseReference);
-                return new CaseAccessException("No claim found for this case");
-            });
-
-        List<PartyEntity> defendants = mainClaim.getClaimParties().stream()
-            .filter(claimParty -> claimParty.getRole() == PartyRole.DEFENDANT)
-            .map(ClaimPartyEntity::getParty)
-            .toList();
-
-        if (defendants.isEmpty()) {
-            log.error("No defendants found for case {}", caseReference);
-            throw new CaseAccessException("No defendants associated with this case");
-        }
-
-        return defendants;
     }
 
     private PartyEntity findMatchingDefendant(

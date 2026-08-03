@@ -1,7 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
 
-import org.junit.Test;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
@@ -30,12 +30,12 @@ class UploadAdditionalDocumentsDetailsTest extends BasePageTest {
     void shouldNotReturnErrorsWhenDescriptionIsCorrectLength() {
         // Given
         AdditionalDocument doc = AdditionalDocument.builder()
-            .description("Valid description")
-            .build();
+                .description("Valid description")
+                .build();
 
         PCSCase caseData = PCSCase.builder()
-            .additionalDocuments(List.of(ListValue.<AdditionalDocument>builder().value(doc).build()))
-            .build();
+                .additionalDocuments(List.of(ListValue.<AdditionalDocument>builder().value(doc).build()))
+                .build();
 
         // When
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
@@ -50,12 +50,12 @@ class UploadAdditionalDocumentsDetailsTest extends BasePageTest {
         // Given
         String longDescription = "a".repeat(61);
         AdditionalDocument doc = AdditionalDocument.builder()
-            .description(longDescription)
-            .build();
+                .description(longDescription)
+                .build();
 
         PCSCase caseData = PCSCase.builder()
-            .additionalDocuments(List.of(ListValue.<AdditionalDocument>builder().value(doc).build()))
-            .build();
+                .additionalDocuments(List.of(ListValue.<AdditionalDocument>builder().value(doc).build()))
+                .build();
 
         // When
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);

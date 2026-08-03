@@ -1,0 +1,38 @@
+{
+  "request": {
+    "urlPath": "/fees-register/fees/lookup",
+    "method": "GET",
+    "queryParameters": {
+      "service": {
+        "equalTo": "general"
+      },
+      "jurisdiction1": {
+        "equalTo": "civil"
+      },
+      "jurisdiction2": {
+        "equalTo": "civil"
+      },
+      "channel": {
+        "equalTo": "default"
+      },
+      "event": {
+        "equalTo": "general application"
+      },
+      "keyword": {
+        "equalTo": "GeneralAppWithoutNotice"
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "code": "FEE0443",
+      "description": "Stub for general application without notice",
+      "version": 5,
+      "fee_amount": 123.0
+    }
+  }
+}

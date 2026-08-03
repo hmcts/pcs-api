@@ -64,11 +64,11 @@ public class StatementOfTruthPage implements CcdPageConfiguration {
                         .mandatory(StatementOfTruthDetailsEnforcement::getCompletedBy)
                         .mandatory(StatementOfTruthDetailsEnforcement::getAgreementClaimant,
                             WARRANT_COMPLETED_BY_CLAIMANT)
-                        .mandatory(StatementOfTruthDetailsEnforcement::getFullNameClaimant,
+                        .mandatory(StatementOfTruthDetailsEnforcement::getFullNameParty,
                             WARRANT_COMPLETED_BY_CLAIMANT)
-                        .mandatory(StatementOfTruthDetailsEnforcement::getPositionClaimant,
+                        .mandatory(StatementOfTruthDetailsEnforcement::getPositionParty,
                             WARRANT_COMPLETED_BY_CLAIMANT)
-                        .mandatory(StatementOfTruthDetailsEnforcement::getAgreementLegalRep,
+                        .mandatory(StatementOfTruthDetailsEnforcement::getAgreementClaimantLegalRep,
                             WARRANT_COMPLETED_BY_LEGAL_REP)
                         .mandatory(StatementOfTruthDetailsEnforcement::getFullNameLegalRep,
                             WARRANT_COMPLETED_BY_LEGAL_REP)

@@ -1,0 +1,38 @@
+{
+  "request": {
+    "urlPath": "/fees-register/fees/lookup",
+    "method": "GET",
+    "queryParameters": {
+      "service": {
+        "equalTo": "other"
+      },
+      "jurisdiction1": {
+        "equalTo": "civil"
+      },
+      "jurisdiction2": {
+        "equalTo": "high court"
+      },
+      "channel": {
+        "equalTo": "default"
+      },
+      "event": {
+        "equalTo": "enforcement"
+      },
+      "keyword": {
+        "equalTo": "SealWrit"
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "code": "FEE0397",
+      "description": "Sealing a writ of control/possession/delivery (High court)",
+      "version": 5,
+      "fee_amount": 80.00
+    }
+  }
+}

@@ -9,7 +9,7 @@ import java.util.UUID;
 
 public interface PcsCaseRepository extends JpaRepository<PcsCaseEntity, UUID> {
 
-    @EntityGraph(attributePaths = {"parties"})
+    @EntityGraph(attributePaths = {"propertyAddress", "parties", "parties.address"})
     Optional<PcsCaseEntity> findByCaseReference(long caseReference);
 
 }

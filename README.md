@@ -1,5 +1,5 @@
 # pcs-api
-
+ 
 ## Building and deploying the application
 
 ### Building the application
@@ -87,6 +87,34 @@ To access the swagger documentation for the API, go to http://localhost:3206/swa
 
 - To get document upload working locally, it's easier to connect to AAT dependencies using a VPN.
 - Set the authentication mode to `AuthMode.AAT` as described above.
+
+#### Generating the CCD definition XLS
+
+We can generate the xlsx spreadsheet by running the script:
+
+```
+./bin/create-xlsx.sh
+```
+
+This spreadsheet can be found in: /build/definitions/CCD_Definition_PCS_ENVIRONMENT.xlsx
+
+You can specify which environment to generate the spreadsheet for by passing it in when calling the script. E.g ./bin/create-xlsx.sh preview.
+
+If you encounter the error:
+
+```
+ [{"code":"UNAUTHORIZED","message":"authentication required,}]
+```
+
+Run:
+
+```
+az login
+```
+
+```
+- az acr login -n hmctsprod
+```
 
 ### Running the tests
 
@@ -185,6 +213,18 @@ During test execution, temporary users are automatically created and tracked in 
 Update ./config/global-setup.config with list of roles for which temporary users needs to be created along with the key/name to
 identify them.
 
+### Running with Wiremock in local environment
+
+The docker-compose-wiremock.yml in the project root will start wiremock with mappings
+from the wiremock/mappings folder. Currently this has mappings to simulate the payment API
+callback and also to provide a fixed professional ref data response for an organisation.
+
+It can be run as follows:
+
+```
+docker compose -f docker-compose-wiremock.yml up -d
+```
+
 ### Running with Wiremock in Preview environment
 
 To enable a Wiremock pod in the Preview environment for a PR, add the label `pr-values:wiremock` to the PR. This
@@ -243,6 +283,34 @@ response for the possession claim fee:
   }
 }
 ```
+
+## Feature flags
+
+We use [LaunchDarkly](https://launchdarkly.com) for feature flags, so behaviour can be turned on or
+off per environment without a redeploy. Flags live in the `FeatureFlag` enum and are read through
+`FeatureToggleService`:
+
+```java
+if (featureToggle.isEnabled(FeatureFlag.BULK_PRINT)) {
+    // ...
+}
+```
+
+Each flag has a key matching the LaunchDarkly dashboard and a default served when LaunchDarkly can't
+be reached. The first flag is `bulk-print-enabled`. To add one, add a constant
+(`MY_FEATURE("my-feature-enabled", false)`) and create the matching flag in LaunchDarkly; to retire
+one, delete the constant and the compiler points you at every use.
+
+The SDK key comes from the key vault (`LAUNCHDARKLY_SDK_KEY`) and `LAUNCHDARKLY_ENV` sets the
+environment used for targeting.
+
+### Local Dev
+
+When running the pcs-api locally, set `LAUNCHDARKLY_OFFLINE` to `true` and optionally specify one or more files
+containing flags values to be used. This is set up by default for cftLibTest and bootWithCcd
+
+With no key the client runs offline and every flag uses its default,
+so it still runs locally; local and `cftlibTest` set `LAUNCHDARKLY_OFFLINE=true`.
 
 ## License
 

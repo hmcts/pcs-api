@@ -13,7 +13,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import uk.gov.hmcts.reform.pcs.exception.InvalidAuthTokenException;
-import uk.gov.hmcts.reform.pcs.idam.IdamService;
+import uk.gov.hmcts.reform.pcs.idam.IdamAuthenticator;
 import uk.gov.hmcts.reform.pcs.idam.User;
 
 import java.io.IOException;
@@ -26,10 +26,10 @@ public class IdamAuthenticationFilter extends OncePerRequestFilter {
 
     private static final List<String> FILTER_PATHS = List.of("/ccd", "/callbacks");
 
-    private final IdamService idamService;
+    private final IdamAuthenticator idamAuthenticator;
 
-    public IdamAuthenticationFilter(IdamService idamService) {
-        this.idamService = idamService;
+    public IdamAuthenticationFilter(IdamAuthenticator idamAuthenticator) {
+        this.idamAuthenticator = idamAuthenticator;
     }
 
     @Override
@@ -45,7 +45,7 @@ public class IdamAuthenticationFilter extends OncePerRequestFilter {
         String authToken = request.getHeader(HttpHeaders.AUTHORIZATION);
 
         try {
-            User user = idamService.validateAuthToken(authToken);
+            User user = idamAuthenticator.validateAuthToken(authToken);
             Authentication authentication =
                 new UsernamePasswordAuthenticationToken(user, null, Collections.emptyList());
             SecurityContextHolder.getContext().setAuthentication(authentication);

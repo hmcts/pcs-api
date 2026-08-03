@@ -46,4 +46,12 @@ public class SecureOrFlexiblePossessionGrounds {
         typeParameterOverride = "SecureOrFlexibleMandatoryGroundsAlternativeAccomm"
     )
     private Set<SecureOrFlexibleMandatoryGroundsAlternativeAccomm> secureOrFlexibleMandatoryGroundsAlt;
+
+    @CCD(
+        label = "Absolute ground for possession for antisocial behaviour",
+        hint = "Select all that you allege apply",
+        typeOverride = FieldType.MultiSelectList,
+        typeParameterOverride = "SecureAntisocialAdditionalGrounds"
+    )
+    private Set<SecureAntisocialAdditionalGrounds> secureAntisocialAdditionalGrounds;
 }

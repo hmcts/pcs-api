@@ -20,4 +20,5 @@ public class DashboardData {
     private AddressUK propertyAddress;
     private List<ListValue<DashboardNotification>> notifications;
     private List<ListValue<TaskGroup>> taskGroups;
+    private List<ListValue<RelatedApplication>> relatedApplications;
 }

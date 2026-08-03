@@ -6,8 +6,10 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
 import java.util.Optional;
 import java.util.UUID;
 
-public interface FeePaymentRepository extends JpaRepository<FeePaymentEntity, UUID> {
+public interface FeePaymentRepository extends JpaRepository<FeePaymentEntity, Integer> {
 
-    Optional<FeePaymentEntity> findByRequestReference(String requestReference);
+    Optional<FeePaymentEntity> findByServiceRequestReference(String serviceRequestReference);
+
+    Optional<FeePaymentEntity> findByRelatedEntityId(UUID relatedEntityId);
 
 }

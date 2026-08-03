@@ -1,0 +1,27 @@
+global:
+  postgresSecret: ${SERVICE_NAME}-postgresql
+  postgresHostname: "{{ .Release.Name }}-postgresql"
+  postgresUsername: "javapostgres"
+  databaseNamePrefix: ""
+
+java:
+  postgresql:
+    enabled: true
+  environment:
+    PCS_DB_NAME: "javadatabase"
+  secrets:
+    PCS_DB_PASSWORD:
+      key: password
+ccd:
+  ccd-definition-store-api:
+    java:
+      secrets:
+        DEFINITION_STORE_DB_PASSWORD:
+          key: password
+  ccd-data-store-api:
+    java:
+      secrets:
+        DATA_STORE_DB_PASSWORD:
+          key: password
+postgresql:
+  enabled: false

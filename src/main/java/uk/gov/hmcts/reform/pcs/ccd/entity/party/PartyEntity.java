@@ -19,11 +19,14 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.CasePartyFlagEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyLegalRepresentativeEntity;
 
@@ -71,6 +74,8 @@ public class PartyEntity {
 
     private String orgName;
 
+    private String organisationId;
+
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private VerticalYesNo nameKnown;
@@ -109,6 +114,14 @@ public class PartyEntity {
     @OneToMany(fetch = LAZY, mappedBy = "party")
     @Builder.Default
     @JsonManagedReference
+    @Fetch(FetchMode.SUBSELECT)
     private List<ClaimPartyLegalRepresentativeEntity> claimPartyLegalRepresentativeList = new ArrayList<>();
+
+    @OneToMany(mappedBy = "party",
+        cascade = ALL,
+        orphanRemoval = true)
+    @Builder.Default
+    @Fetch(FetchMode.SUBSELECT)
+    private List<CasePartyFlagEntity> defendantFlags = new ArrayList<>();
 
 }

@@ -22,7 +22,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 @Entity
 @Builder
@@ -34,8 +33,8 @@ import java.util.UUID;
 public class NoticeOfPossessionEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
 
     @OneToOne
     @JsonBackReference
@@ -55,5 +54,13 @@ public class NoticeOfPossessionEntity {
     private LocalDate noticeDate;
 
     private LocalDateTime noticeDateTime;
+
+    private String noticeStatement;
+
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private YesOrNo isAbleToUploadDocument;
+
+    private String unableToUploadReason;
 
 }

@@ -3,7 +3,7 @@ export const prohibitedConductWales = {
   mainHeader: `Prohibited conduct standard contract`,
   ifJudgeDecidesParagraph: `If a judge decides that possession is not reasonable at this time, they may instead decide to make an order imposing a prohibited conduct standard contract.`,
   thisIsA12MonthParagraph: `This is a 12-month probationary contract.`,
-  areYouAlsoMakingAClaimQuestion: `Are you also making a claim for an order imposing a prohibited conduct standard contract?`,
+  areYouAlsoMakingAClaimQuestion: `Are you seeking an order imposing a prohibited conduct standard contract?`,
   yesRadioOption: `Yes`,
   noRadioOption: `No`,
   haveYouAndContractHolderAgreedHiddenQuestion: `Have you and the contract holder agreed terms of the periodic standard contract in addition to those incorporated by statute?`,

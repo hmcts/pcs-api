@@ -7,12 +7,15 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.reform.pcs.exception.OrganisationDetailsException;
+import uk.gov.hmcts.reform.pcs.exception.SecurityContextException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -21,6 +24,7 @@ class OrganisationServiceTest {
 
     private static final UUID USER_ID = UUID.fromString("dc3f786d-4ad4-4b5d-a79f-6e35a6520ace");
     private static final String ORGANISATION_NAME = "Possession Claims Solicitor Org";
+    private static final String ORGANISATION_IDENTIFIER = "ORG-123";
 
     @Mock
     private SecurityContextService securityContextService;
@@ -53,6 +57,51 @@ class OrganisationServiceTest {
         assertThat(result).isEqualTo(ORGANISATION_NAME);
         verify(securityContextService).getCurrentUserId();
         verify(organisationDetailsService).getOrganisationName(USER_ID.toString());
+    }
+
+    @Test
+    @DisplayName("Should successfully retrieve organisation ID for current user")
+    void shouldSuccessfullyRetrieveOrganisationIdForCurrentUser() {
+        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
+        when(organisationDetailsService.getOrganisationIdentifier(USER_ID.toString()))
+            .thenReturn(ORGANISATION_IDENTIFIER);
+
+        String result = organisationService.getOrganisationIdForCurrentUser();
+
+        assertThat(result).isEqualTo(ORGANISATION_IDENTIFIER);
+        verify(organisationDetailsService).getOrganisationIdentifier(USER_ID.toString());
+    }
+
+    @Test
+    @DisplayName("Should return null when user ID is null")
+    void getOrganisationIdForCurrentUser_ShouldReturnNullWhenUserIdIsNull() {
+        String result = organisationService.getOrganisationIdForCurrentUser();
+
+        assertThat(result).isNull();
+        verify(organisationDetailsService, never()).getOrganisationIdentifier(USER_ID.toString());
+    }
+
+    @Test
+    @DisplayName("Should return null when exception thrown")
+    void getOrganisationIdForCurrentUser_ShouldReturnNullWhenOrganisationDetailsExceptionThrown() {
+        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
+        when(organisationDetailsService.getOrganisationIdentifier(USER_ID.toString()))
+            .thenThrow(new OrganisationDetailsException("", null));
+
+        String result = organisationService.getOrganisationIdForCurrentUser();
+
+        assertThat(result).isNull();
+    }
+
+    @Test
+    @DisplayName("Should return null when exception thrown")
+    void getOrganisationIdForCurrentUser_ShouldReturnNullWhenSecurityContextExceptionThrown() {
+        when(securityContextService.getCurrentUserId()).thenThrow(new SecurityContextException(""));
+
+        String result = organisationService.getOrganisationIdForCurrentUser();
+
+        assertThat(result).isNull();
+        verify(organisationDetailsService, never()).getOrganisationIdentifier(USER_ID.toString());
     }
 
     @Test

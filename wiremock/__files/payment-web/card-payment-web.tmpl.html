@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+        content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Fake Payment Web</title>
+
+  <style>
+    li {
+      line-height: 2.5;
+    }
+  </style>
+
+
+</head>
+<body>
+
+<h2>Fake Payment Web</h2>
+<h3>Choose a payment status</h3>
+
+<ul>
+  <li><a href="{{ request.query.return }}/internal-ref-for-Success/confirmation">Success</a></li>
+  <li><a href="{{ request.query.return }}/internal-ref-for-Failed/confirmation">Failed</a></li>
+  <li><a href="{{ request.query.return }}/internal-ref-for-Pending/confirmation">Pending</a></li>
+  <li><a href="{{ request.query.return }}/internal-ref-for-Declined/confirmation">Declined</a></li>
+  <li><a href="{{ request.query.return }}/internal-ref-for-Initiated/confirmation">Initiated</a></li>
+</ul>
+
+</body>
+</html>

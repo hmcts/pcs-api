@@ -6,18 +6,20 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.ccd.sdk.type.Document;
+import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsSection;
-import uk.gov.hmcts.reform.pcs.ccd.domain.ThirdPartyPaymentSource;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.RentArrearsEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.claim.RentArrearsPaymentSourceEntity;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Set;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mock.Strictness.LENIENT;
@@ -76,24 +78,21 @@ class RentArrearsViewTest {
     void shouldSetRentArrearsFields() {
         // Given
         BigDecimal totalRentArrears = new BigDecimal("1234.00");
-        String otherPaymentSourceDescription = "other source description";
+        String details = "details";
+        final UUID rentDocumentId = UUID.randomUUID();
 
-        RentArrearsPaymentSourceEntity paymentSource1 = RentArrearsPaymentSourceEntity.builder()
-            .name(ThirdPartyPaymentSource.DISCRETIONARY_HOUSING_PAYMENT)
-            .build();
-
-        RentArrearsPaymentSourceEntity paymentSource2 = RentArrearsPaymentSourceEntity.builder()
-            .name(ThirdPartyPaymentSource.OTHER)
-            .description(otherPaymentSourceDescription)
-            .build();
-
-        Set<RentArrearsPaymentSourceEntity> thirdPartyPaymentSources = Set.of(paymentSource1, paymentSource2);
-
-        when(rentArrearsEntity.getTotalRentArrears()).thenReturn(totalRentArrears);
-        when(rentArrearsEntity.getThirdPartyPaymentsMade()).thenReturn(VerticalYesNo.YES);
-        when(rentArrearsEntity.getThirdPartyPaymentSources()).thenReturn(thirdPartyPaymentSources);
         when(rentArrearsEntity.getTotalRentArrears()).thenReturn(totalRentArrears);
         when(rentArrearsEntity.getArrearsJudgmentWanted()).thenReturn(VerticalYesNo.YES);
+        when(rentArrearsEntity.getRecoveryAttempted()).thenReturn(VerticalYesNo.YES);
+        when(rentArrearsEntity.getRecoveryAttemptDetails()).thenReturn(details);
+        when(pcsCaseEntity.getDocuments()).thenReturn(
+            List.of(
+                DocumentEntity.builder()
+                    .id(rentDocumentId)
+                    .type(DocumentType.RENT_STATEMENT)
+                    .build()
+            )
+        );
 
         // When
         underTest.setCaseFields(pcsCase, pcsCaseEntity);
@@ -105,14 +104,50 @@ class RentArrearsViewTest {
 
         RentArrearsSection rentArrears = rentArrearsCaptor.getValue();
         assertThat(rentArrears.getTotal()).isEqualTo(totalRentArrears);
-        assertThat(rentArrears.getThirdPartyPayments()).isEqualTo(VerticalYesNo.YES);
-        assertThat(rentArrears.getThirdPartyPaymentSources()).containsExactlyInAnyOrder(
-            ThirdPartyPaymentSource.DISCRETIONARY_HOUSING_PAYMENT,
-            ThirdPartyPaymentSource.OTHER
-        );
-        assertThat(rentArrears.getPaymentSourceOther()).isEqualTo(otherPaymentSourceDescription);
+        assertThat(rentArrears.getRecoveryAttempted()).isEqualTo(VerticalYesNo.YES);
+        assertThat(rentArrears.getRecoveryAttemptDetails()).isEqualTo(details);
+        List<ListValue<Document>> statementDocuments = rentArrears.getStatementDocuments();
+        assertThat(statementDocuments).hasSize(1);
+        assertThat(statementDocuments.getFirst().getId()).isEqualTo(rentDocumentId.toString());
 
         verify(pcsCase).setArrearsJudgmentWanted(VerticalYesNo.YES);
     }
 
+    @Test
+    void shouldNotIncludeAdditionalDocumentUploaded() {
+        // Given
+        final UUID rentDocumentId = UUID.randomUUID();
+
+        when(pcsCaseEntity.getDocuments()).thenReturn(
+                List.of(
+                        DocumentEntity.builder()
+                                .id(rentDocumentId)
+                                .type(DocumentType.RENT_STATEMENT)
+                                .build(),
+                        DocumentEntity.builder()
+                                .id(UUID.randomUUID())
+                                .type(DocumentType.RENT_STATEMENT)
+                                .description("Additional document uploaded")
+                                .build(),
+                        DocumentEntity.builder()
+                                .id(UUID.randomUUID())
+                                .type(DocumentType.WITNESS_STATEMENT)
+                                .description("Witness Statement uploaded")
+                                .build()
+                )
+        );
+
+        // When
+        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+
+        // Then
+        ArgumentCaptor<RentArrearsSection> rentArrearsCaptor = ArgumentCaptor.forClass(RentArrearsSection.class);
+
+        verify(pcsCase).setRentArrears(rentArrearsCaptor.capture());
+
+        RentArrearsSection rentArrears = rentArrearsCaptor.getValue();
+        List<ListValue<Document>> statementDocuments = rentArrears.getStatementDocuments();
+        assertThat(statementDocuments).hasSize(1);
+        assertThat(statementDocuments.getFirst().getId()).isEqualTo(rentDocumentId.toString());
+    }
 }

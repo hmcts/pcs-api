@@ -1,7 +1,10 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.party;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
@@ -9,22 +12,23 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
 
-import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 class DefendantAccessValidatorTest {
 
     private static final long CASE_REFERENCE = 1234567890123456L;
 
+    @InjectMocks
     private DefendantAccessValidator underTest;
 
-    @BeforeEach
-    void setUp() {
-        underTest = new DefendantAccessValidator();
-    }
+    @Mock
+    private DefendantPartyExtractor defendantPartyExtractor;
 
     @Test
     void shouldReturnDefendantWhenUserHasAccess() {
@@ -39,6 +43,8 @@ class DefendantAccessValidatorTest {
 
         ClaimEntity claimEntity = createClaimWithDefendant(defendantEntity);
         PcsCaseEntity caseEntity = createCaseWithClaim(claimEntity);
+        List<PartyEntity> defendants = List.of(defendantEntity);
+        when(defendantPartyExtractor.extractDefendants(caseEntity, CASE_REFERENCE)).thenReturn(defendants);
 
         // When
         PartyEntity result = underTest.validateAndGetDefendant(caseEntity, defendantUserId);
@@ -46,36 +52,6 @@ class DefendantAccessValidatorTest {
         // Then
         assertThat(result).isEqualTo(defendantEntity);
         assertThat(result.getIdamId()).isEqualTo(defendantUserId);
-    }
-
-    @Test
-    void shouldThrowCaseAccessExceptionWhenNoClaimExists() {
-        // Given
-        UUID defendantUserId = UUID.randomUUID();
-
-        PcsCaseEntity caseEntity = PcsCaseEntity.builder()
-            .caseReference(CASE_REFERENCE)
-            .claims(Collections.emptyList())
-            .build();
-
-        // When / Then
-        assertThatThrownBy(() -> underTest.validateAndGetDefendant(caseEntity, defendantUserId))
-            .isInstanceOf(CaseAccessException.class)
-            .hasMessage("No claim found for this case");
-    }
-
-    @Test
-    void shouldThrowCaseAccessExceptionWhenNoDefendantsFound() {
-        // Given
-        UUID defendantUserId = UUID.randomUUID();
-
-        ClaimEntity claimEntity = ClaimEntity.builder().build();
-        PcsCaseEntity caseEntity = createCaseWithClaim(claimEntity);
-
-        // When / Then
-        assertThatThrownBy(() -> underTest.validateAndGetDefendant(caseEntity, defendantUserId))
-            .isInstanceOf(CaseAccessException.class)
-            .hasMessage("No defendants associated with this case");
     }
 
     @Test

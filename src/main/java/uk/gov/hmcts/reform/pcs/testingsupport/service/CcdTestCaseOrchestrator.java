@@ -41,7 +41,7 @@ public class CcdTestCaseOrchestrator {
         String s2sToken = s2sAuthTokenGenerator.generate();
 
         PCSCase caseData = PCSCase.builder()
-            .propertyAddress(addressFor(legislativeCountry))
+            .propertyAddress(propertyAddressFor(legislativeCountry, payloadMerge))
             .legislativeCountry(legislativeCountry)
             .build();
 
@@ -138,6 +138,15 @@ public class CcdTestCaseOrchestrator {
         } catch (Exception e) {
             throw new RuntimeException("Failed to read base payload JSON", e);
         }
+    }
+
+    // Lets a test override the property address via payloadMerge ("propertyAddress"); the property
+    // address is otherwise fixed at create time, so the resume-event merge alone can't change it.
+    private AddressUK propertyAddressFor(LegislativeCountry legislativeCountry, JsonNode payloadMerge) {
+        if (payloadMerge != null && payloadMerge.hasNonNull("propertyAddress")) {
+            return objectMapper.convertValue(payloadMerge.get("propertyAddress"), AddressUK.class);
+        }
+        return addressFor(legislativeCountry);
     }
 
     private AddressUK addressFor(LegislativeCountry legislativeCountry) {

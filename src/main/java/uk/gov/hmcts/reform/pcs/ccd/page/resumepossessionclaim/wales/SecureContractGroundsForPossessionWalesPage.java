@@ -21,6 +21,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractDiscretiona
 import static uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractDiscretionaryGroundsWales.ESTATE_MANAGEMENT_GROUNDS_S160;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractDiscretionaryGroundsWales.OTHER_BREACH_OF_CONTRACT_S157;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractDiscretionaryGroundsWales.RENT_ARREARS_S157;
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.WALES;
 
 @Component
 public class SecureContractGroundsForPossessionWalesPage implements CcdPageConfiguration {
@@ -34,13 +35,13 @@ public class SecureContractGroundsForPossessionWalesPage implements CcdPageConfi
                 .pageLabel("What are your grounds for possession?")
                 .showCondition(
                         "occupationLicenceTypeWales=\"SECURE_CONTRACT\""
-                        + " AND legislativeCountry=\"Wales\""
+                        + " AND " + WALES
                 )
                 .label("secureOrFlexibleGroundsForPossessionWales-info", """
                ---
                <p>You may have already given the defendants notice of your intention to begin possession
                proceedings. If you have, you should have written the grounds you’re making your claim under.
-               You should select these grounds here and any extra ground you’d like to add to your claim,
+               You should select these grounds here and any extra grounds you’d like to add to your claim,
                if you need to.</p>
                <p class="govuk-body">
                  <a href="https://www.gov.wales/understanding-possession-action-process-guidance-tenants-contract-holders-html" class="govuk-link" rel="noreferrer noopener" target="_blank">More information about possession grounds (opens in new tab)</a>.

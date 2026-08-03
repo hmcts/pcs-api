@@ -30,19 +30,25 @@ public class StatementOfTruthDetails {
     @CCD(
         label = "Full name",
         max = 100)
-    protected String fullNameClaimant;
+    protected String fullNameParty;
 
     @CCD(
         label = "Position or office held",
         max = 100
     )
-    protected String positionClaimant;
+    protected String positionParty;
 
     @CCD(
         typeOverride = MultiSelectList,
-        typeParameterOverride = "StatementOfTruthAgreementLegalRep"
+        typeParameterOverride = "AgreementClaimantLegalRep"
     )
-    protected List<StatementOfTruthAgreementLegalRep> agreementLegalRep;
+    protected List<AgreementClaimantLegalRep> agreementClaimantLegalRep;
+
+    @CCD(
+        typeOverride = MultiSelectList,
+        typeParameterOverride = "AgreementDefendantLegalRep"
+    )
+    protected List<AgreementDefendantLegalRep> agreementDefendantLegalRep;
 
     @CCD(
         label = "Full name",

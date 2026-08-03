@@ -22,8 +22,21 @@ public class HighLevelDataSetupApp extends DataLoaderToDefinitionStore {
     private static final CcdRoleConfig[] CCD_ROLES = {
         new CcdRoleConfig("caseworker-pcs", "PUBLIC"),
         new CcdRoleConfig("caseworker-pcs-solicitor", "PUBLIC"),
+        new CcdRoleConfig("caseworker-ras-validation", "PUBLIC"),
         new CcdRoleConfig("citizen", "PUBLIC"),
-        new CcdRoleConfig("caseworker-ras-validation", "PUBLIC")
+        new CcdRoleConfig("caseworker", "PUBLIC"),
+        new CcdRoleConfig("GS_profile", "PUBLIC"),
+        new CcdRoleConfig("ctsc-team-leader", "PUBLIC"),
+        new CcdRoleConfig("ctsc", "PUBLIC"),
+        new CcdRoleConfig("hearing-centre-team-leader", "PUBLIC"),
+        new CcdRoleConfig("hearing-centre-admin", "PUBLIC"),
+        new CcdRoleConfig("wlu-team-leader", "PUBLIC"),
+        new CcdRoleConfig("wlu-admin", "PUBLIC"),
+        new CcdRoleConfig("judge", "PUBLIC"),
+        new CcdRoleConfig("fee-paid-judge", "PUBLIC"),
+        new CcdRoleConfig("circuit-judge", "PUBLIC"),
+        new CcdRoleConfig("leadership-judge", "PUBLIC"),
+        new CcdRoleConfig("pcs-system-update", "PUBLIC")
     };
 
 
@@ -72,12 +85,6 @@ public class HighLevelDataSetupApp extends DataLoaderToDefinitionStore {
     public void createRoleAssignments() {
         // Do not create role assignments.
         BeftaUtils.defaultLog("Will NOT create role assignments!");
-    }
-
-    @Override
-    protected boolean shouldTolerateDataSetupFailure() {
-        var env = getDataSetupEnvironment();
-        return CcdEnvironment.PERFTEST == env || CcdEnvironment.DEMO == env || CcdEnvironment.ITHC == env;
     }
 
     @Override

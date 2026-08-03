@@ -4,7 +4,7 @@ import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthAgreementClaimant;
-import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthAgreementLegalRep;
+import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.AgreementClaimantLegalRep;
 import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthCompletedBy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthDetails;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
@@ -30,8 +30,8 @@ public class StatementOfTruthView {
         statementOfTruth.setCompletedBy(completedBy);
 
         if (completedBy == StatementOfTruthCompletedBy.CLAIMANT) {
-            statementOfTruth.setFullNameClaimant(statementOfTruthEntity.getFullName());
-            statementOfTruth.setPositionClaimant(statementOfTruthEntity.getPositionHeld());
+            statementOfTruth.setFullNameParty(statementOfTruthEntity.getFullName());
+            statementOfTruth.setPositionParty(statementOfTruthEntity.getPositionHeld());
             if (statementOfTruthEntity.getAccepted() == YesOrNo.YES) {
                 statementOfTruth.setAgreementClaimant(List.of(StatementOfTruthAgreementClaimant.BELIEVE_TRUE));
             }
@@ -42,7 +42,7 @@ public class StatementOfTruthView {
             statementOfTruth.setFirmNameLegalRep(statementOfTruthEntity.getFirmName());
 
             if (statementOfTruthEntity.getAccepted() == YesOrNo.YES) {
-                statementOfTruth.setAgreementLegalRep(List.of(StatementOfTruthAgreementLegalRep.AGREED));
+                statementOfTruth.setAgreementClaimantLegalRep(List.of(AgreementClaimantLegalRep.AGREED));
             }
         }
 

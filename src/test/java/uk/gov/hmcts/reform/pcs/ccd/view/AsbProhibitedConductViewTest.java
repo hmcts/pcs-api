@@ -9,6 +9,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.ASBQuestionsDetailsWales;
@@ -22,7 +23,9 @@ import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.params.provider.Arguments.argumentSet;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mock.Strictness.LENIENT;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -75,6 +78,19 @@ class AsbProhibitedConductViewTest {
         verifyNoInteractions(pcsCase);
     }
 
+    @Test
+    void shouldNotSetAsbQuestionsWalesIfAntisocialBehaviourIsNotPresent() {
+        // When
+        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+
+        // Then
+        ArgumentCaptor<ASBQuestionsDetailsWales> asbQuestionDetailsCaptor
+            = ArgumentCaptor.forClass(ASBQuestionsDetailsWales.class);
+
+        verify(pcsCase).setAsbQuestionsWales(asbQuestionDetailsCaptor.capture());
+        verify(pcsCase, times(0)).setShowASBQuestionsPageWales(any());
+    }
+
     @ParameterizedTest
     @MethodSource("asbQuestionScenarios")
     void shouldSetAsbQuestionDetails(VerticalYesNo antisocialBehaviour,
@@ -96,6 +112,7 @@ class AsbProhibitedConductViewTest {
             = ArgumentCaptor.forClass(ASBQuestionsDetailsWales.class);
 
         verify(pcsCase).setAsbQuestionsWales(asbQuestionDetailsCaptor.capture());
+        verify(pcsCase).setShowASBQuestionsPageWales(YesOrNo.YES);
 
         ASBQuestionsDetailsWales asbQuestionDetails = asbQuestionDetailsCaptor.getValue();
 

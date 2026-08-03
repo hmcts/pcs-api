@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.pcs.ccd.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -12,28 +13,31 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
+import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
-import uk.gov.hmcts.reform.pcs.ccd.entity.claim.HousingActWalesEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.NoticeOfPossessionEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.PossessionAlternativesEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.RentArrearsEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.StatementOfTruthEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -77,23 +81,17 @@ public class ClaimEntity {
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private VerticalYesNo claimCosts;
-
-    @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private VerticalYesNo preActionProtocolFollowed;
+
+    private String preActionProtocolIncompleteExplanation;
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private VerticalYesNo mediationAttempted;
 
-    private String mediationDetails;
-
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private VerticalYesNo settlementAttempted;
-
-    private String settlementDetails;
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
@@ -136,9 +134,28 @@ public class ClaimEntity {
     @Enumerated(EnumType.STRING)
     private LanguageUsed languageUsed;
 
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private VerticalYesNo energyPerformanceCertificateProvided;
+
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private VerticalYesNo gasSafetyReportProvided;
+
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private VerticalYesNo electricalInstallationConditionProvided;
+
+    private String noEnergyPerformanceCertificateReason;
+
+    private String noGasSafetyReportReason;
+
+    private String noElectricalInstallationConditionReason;
+
     @OneToMany(fetch = LAZY, cascade = ALL, mappedBy = "claim")
     @Builder.Default
     @JsonManagedReference
+    @OrderBy("rank ASC")
     private List<ClaimPartyEntity> claimParties = new ArrayList<>();
 
     @OneToMany(fetch = LAZY, cascade = ALL, mappedBy = "claim")
@@ -155,10 +172,6 @@ public class ClaimEntity {
     @Builder.Default
     @JsonManagedReference
     private Set<EnforcementOrderEntity> enforcementOrders = new HashSet<>();
-
-    @OneToOne(cascade = ALL, mappedBy = "claim", orphanRemoval = true)
-    @JsonManagedReference
-    private HousingActWalesEntity housingActWales;
 
     @OneToOne(cascade = ALL, mappedBy = "claim", orphanRemoval = true)
     @JsonManagedReference
@@ -180,17 +193,29 @@ public class ClaimEntity {
     @JsonManagedReference
     private StatementOfTruthEntity statementOfTruth;
 
-    public void setHousingActWales(HousingActWalesEntity housingActWales) {
-        if (this.housingActWales != null) {
-            this.housingActWales.setClaim(null);
-        }
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private VerticalYesNo isExemptLandlord;
 
-        this.housingActWales = housingActWales;
+    @CreationTimestamp
+    @Column(updatable = false, nullable = false)
+    private LocalDateTime claimSubmittedDate;
 
-        if (this.housingActWales != null) {
-            this.housingActWales.setClaim(this);
-        }
+    private LocalDateTime claimIssuedDate;
+
+    @Builder.Default
+    @OneToMany(mappedBy = "claim", cascade = ALL, orphanRemoval = true)
+    @JsonManagedReference
+    private List<FeePaymentEntity> feePayments = new ArrayList<>();
+
+    public void addFeePayment(FeePaymentEntity feePayment) {
+        feePayments.add(feePayment);
+        feePayment.setClaim(this);
     }
+
+    @OneToOne(cascade = ALL, orphanRemoval = true)
+    @JoinColumn(name = "claim_form_document_id")
+    private DocumentEntity claimFormDocument;
 
     public void setAsbProhibitedConductEntity(AsbProhibitedConductEntity asbProhibitedConductEntity) {
         if (this.asbProhibitedConductEntity != null) {
@@ -253,7 +278,9 @@ public class ClaimEntity {
     }
 
     public void addParty(PartyEntity party, PartyRole partyRole) {
+        int rank = countNumberOfExistingPartiesWithRole(partyRole) + 1;
         ClaimPartyEntity claimPartyEntity = ClaimPartyEntity.builder()
+            .rank(rank)
             .claim(this)
             .party(party)
             .role(partyRole)
@@ -281,4 +308,11 @@ public class ClaimEntity {
             document.getClaimDocuments().add(claimDocument);
         }
     }
+
+    private int countNumberOfExistingPartiesWithRole(PartyRole partyRole) {
+        return (int) claimParties.stream()
+            .filter(claimPartyEntity -> claimPartyEntity.getRole().equals(partyRole))
+            .count();
+    }
+
 }

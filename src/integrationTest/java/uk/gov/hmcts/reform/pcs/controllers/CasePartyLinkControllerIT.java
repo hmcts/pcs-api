@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -16,9 +17,8 @@ import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.ccd.client.CaseAssignmentApi;
 import uk.gov.hmcts.reform.ccd.client.model.CaseAssignmentUserRolesRequest;
 import uk.gov.hmcts.reform.ccd.client.model.CaseAssignmentUserRolesResponse;
-import uk.gov.hmcts.reform.idam.client.IdamClient;
-import uk.gov.hmcts.reform.idam.client.models.UserInfo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.idam.IdamUserInfoApi;
+import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyAccessCodeEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -41,7 +41,6 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
@@ -85,7 +84,10 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
     private AuthTokenGenerator authTokenGenerator;
 
     @MockitoBean
-    private IdamClient idamClient;
+    private IdamUserInfoApi idamUserInfoApi;
+
+    @MockitoBean
+    private OAuth2AuthorizedClientManager authorizedClientManager;
 
     @MockitoBean
     private CaseAssignmentApi caseAssignmentApi;
@@ -95,12 +97,10 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
 
     @BeforeEach
     void setUp() {
-        idamHelper.stubIdamSystemUser(idamClient, SYSTEM_USER_ID_TOKEN);
+        idamHelper.stubIdamSystemUser(authorizedClientManager, SYSTEM_USER_ID_TOKEN);
 
-        // Stub IDAM user info for token validation
-        UserInfo userInfo = mock(UserInfo.class);
-        when(userInfo.getUid()).thenReturn(USER_ID.toString());
-        when(idamClient.getUserInfo(anyString())).thenReturn(userInfo);
+        UserInfo userInfo = UserInfo.builder().uid(USER_ID.toString()).build();
+        when(idamUserInfoApi.getUserInfo(anyString())).thenReturn(userInfo);
 
         // Mock CaseAssignmentApi for all tests
         CaseAssignmentUserRolesResponse mockedResponse = CaseAssignmentUserRolesResponse.builder()
@@ -145,8 +145,8 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
     }
 
     @Test
-    @DisplayName("Should call IdamClient.getUserInfo with the exact Authorization header value")
-    void shouldCallIdamClientGetUserInfoWithExactAuthHeader() throws Exception {
+    @DisplayName("Should call IdamUserInfoApi with the exact Authorization header value")
+    void shouldCallIdamUserInfoApiWithExactAuthHeader() throws Exception {
         // Given
         long caseReference = 12355L;
         PcsCaseEntity caseEntity = caseCreationHelper
@@ -166,10 +166,7 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
                             .content(objectMapper.writeValueAsString(request)))
             .andExpect(status().isOk());
 
-        // Then - Verify idamClient.getUserInfo was called with the exact AUTH_HEADER value
-        // Note: getBearerToken() keeps the "Bearer " prefix if already present,
-        // so it should be called with the full "Bearer test-token" value
-        verify(idamClient).getUserInfo(eq(AUTH_HEADER));
+        verify(idamUserInfoApi).getUserInfo(eq(AUTH_HEADER));
     }
 
     @Test
@@ -426,7 +423,6 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
         caseEntity.setCaseReference(caseReference);
 
         ClaimEntity claimEntity = ClaimEntity.builder()
-            .claimCosts(VerticalYesNo.NO)
             .build();
 
         caseEntity.addClaim(claimEntity);
@@ -447,9 +443,7 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
         PcsCaseEntity caseEntity = new PcsCaseEntity();
         caseEntity.setCaseReference(caseReference);
 
-        ClaimEntity claimEntity = ClaimEntity.builder()
-            .claimCosts(VerticalYesNo.NO)
-            .build();
+        ClaimEntity claimEntity = ClaimEntity.builder().build();
 
         caseEntity.addClaim(claimEntity);
 

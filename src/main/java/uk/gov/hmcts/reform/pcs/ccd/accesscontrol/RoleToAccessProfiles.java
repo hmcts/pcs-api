@@ -17,7 +17,7 @@ public class RoleToAccessProfiles implements CCDConfig<PCSCase, State, ExternalU
             .forEach(userRole ->
                          configBuilder
                              .caseRoleToAccessProfile(ExternalUserRole.forCcdRole(userRole))
-                             .accessProfiles(userRole.getRole())
+                             .accessProfiles(userRole.getAccessProfiles())
                              .build()
             );
     }

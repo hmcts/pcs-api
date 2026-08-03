@@ -40,7 +40,7 @@ export class PageContentValidation implements IValidation {
                 th[scope="col"]:text-is("${value}"),
                 th:text-is("${value}"),
                 [role="rowheader"]:text-is("${value}"),
-                [role="columnheader"]:text-is("${value}")`),                
+                [role="columnheader"]:text-is("${value}")`),
     Header: (page: Page, value: string) => page.getByRole('heading', {name: new RegExp(`^${escapeForRegex(value)}(\\s*\\([^)]*\\))?$`)})
       .or(page.locator(`h1:text-is("${value}"),
                     h2:text-is("${value}"),
@@ -162,7 +162,11 @@ export class PageContentValidation implements IValidation {
     try {
       const urlObj = new URL(url);
       const segments = urlObj.pathname.split('/').filter(Boolean);
-      return segments[segments.length - 1] || 'home';
+      const lastSegment = segments.at(-1);
+      if (lastSegment === 'confirm') {
+        return segments.slice(-2).join('/');
+      }
+      return lastSegment || 'home';
     } catch {
       const segments = url.split('/').filter(Boolean);
       return segments[segments.length - 1] || 'home';
@@ -174,6 +178,15 @@ export class PageContentValidation implements IValidation {
       let mappingPath;
       if(page.url().includes("enforceTheOrder")){
          mappingPath = path.join(__dirname, '../../../data/page-data-figma/page-data-enforcement-figma/urlToFileMappingEnforcement.ts');
+      }
+      else if(page.url().includes("makeAnApplication")){
+        mappingPath = path.join(__dirname, '../../../data/page-data-figma/page-data-genApps-figma/urlToFileMappingGenApps.ts');
+      }
+      else if(
+      ["amendDocuments", "changeCaseState", "enterGenApp"].some(str =>
+        page.url().includes(str)
+      )) {
+        mappingPath = path.join(__dirname, '../../../data/page-data-figma/page-data-caseManagement-figma/urlToFileMappingCM.ts');
       }
       else{
          mappingPath = path.join(__dirname, '../../../data/page-data-figma/urlToFileMapping.ts');
@@ -225,13 +238,24 @@ export class PageContentValidation implements IValidation {
   }
 
   private async loadPageDataFile(fileName: string, page: Page): Promise<any> {
-   let filePath;
-      if(page.url().includes("enforceTheOrder")){
-        filePath = path.join(__dirname, '../../../data/page-data-figma/page-data-enforcement-figma', `${fileName}.page.data.ts`);
-      }
-      else{
-         filePath = path.join(__dirname, '../../../data/page-data-figma', `${fileName}.page.data.ts`);
-      } 
+    let filePath;
+    if (page.url().includes("enforceTheOrder")) {
+      filePath = path.join(__dirname, '../../../data/page-data-figma/page-data-enforcement-figma', `${fileName}.page.data.ts`);
+    } else if (page.url().includes("makeAnApplication")) {
+      filePath = path.join(__dirname, '../../../data/page-data-figma/page-data-genApps-figma', `${fileName}.page.data.ts`);
+    }
+    else if (page.url().includes("globalSearch")) {
+      filePath = path.join(__dirname, '../../../data/page-data-figma/page-data-common-component', `${fileName}.page.data.ts`);
+    }
+    else if (
+      ["amendDocuments", "changeCaseState", "enterGenApp"].some(str =>
+        page.url().includes(str)
+      )) {
+      filePath = path.join(__dirname, '../../../data/page-data-figma/page-data-caseManagement-figma', `${fileName}.page.data.ts`);
+    }
+    else {
+      filePath = path.join(__dirname, '../../../data/page-data-figma', `${fileName}.page.data.ts`);
+    }
     if (!fs.existsSync(filePath)) return null;
     try {
       delete require.cache[require.resolve(filePath)];
@@ -363,9 +387,16 @@ export class PageContentValidation implements IValidation {
       let mappingPath;
       if(url.includes("enforceTheOrder")){
          mappingPath = path.join(__dirname, '../../../data/page-data-figma/page-data-enforcement-figma/urlToFileMappingEnforcement.ts');
+      } else if(url.includes("makeAnApplication")){
+        mappingPath = path.join(__dirname, '../../../data/page-data-figma/page-data-genApps-figma/urlToFileMappingGenApps.ts');
+      } else if (
+        ["amendDocuments", "changeCaseState", "enterGenApp"].some(str =>
+          url.includes(str)
+        )) {
+        mappingPath = path.join(__dirname, '../../../data/page-data-figma/page-data-caseManagement-figma/urlToFileMappingCM.ts');
       }
-      else{
-         mappingPath = path.join(__dirname, '../../../data/page-data-figma/urlToFileMapping.ts');
+      else {
+        mappingPath = path.join(__dirname, '../../../data/page-data-figma/urlToFileMapping.ts');
       }
       if (!fs.existsSync(mappingPath)) return segment;
       const mappingContent = fs.readFileSync(mappingPath, 'utf8');

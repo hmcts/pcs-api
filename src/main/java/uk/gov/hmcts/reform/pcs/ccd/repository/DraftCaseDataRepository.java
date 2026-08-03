@@ -7,7 +7,7 @@ import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import java.util.Optional;
 import java.util.UUID;
 
-public interface DraftCaseDataRepository extends JpaRepository<DraftCaseDataEntity, UUID> {
+public interface DraftCaseDataRepository extends JpaRepository<DraftCaseDataEntity, Integer> {
 
     Optional<DraftCaseDataEntity> findByCaseReferenceAndEventIdAndIdamUserId(
         long caseReference, EventId eventId, UUID idamUserId);
@@ -17,5 +17,14 @@ public interface DraftCaseDataRepository extends JpaRepository<DraftCaseDataEnti
 
     void deleteByCaseReferenceAndEventIdAndIdamUserId(
         long caseReference, EventId eventId, UUID idamUserId);
+
+    void deleteByCaseReferenceAndEventIdAndIdamUserIdAndPartyId(
+        long caseReference, EventId eventId, UUID idamUserId, UUID partyId);
+
+    Optional<DraftCaseDataEntity> findByCaseReferenceAndEventIdAndIdamUserIdAndPartyId(
+        long caseReference, EventId eventId, UUID idamUserId, UUID partyId);
+
+    boolean existsByCaseReferenceAndEventIdAndIdamUserIdAndPartyId(
+        long caseReference, EventId eventId, UUID idamUserId, UUID partId);
 
 }

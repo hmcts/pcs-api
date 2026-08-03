@@ -12,10 +12,16 @@ import {UploadFileAction} from '@utils/actions/element-actions/uploadFile.action
 import {CreateCaseWalesAction} from '@utils/actions/custom-actions/createCaseWales.action';
 import {SearchCaseAction} from '@utils/actions/custom-actions/searchCase.action';
 import {signOutAction} from '@utils/actions/custom-actions/signOut.action';
+import {GlobalSearchCaseAction} from '@utils/actions/custom-actions/commonComponent/globalSearch.action';
 import {ClickLinkAndVerifyNewTabTitleAction} from '@utils/actions/element-actions/clickLinkAndVerifyNewTabTitle.action';
+import {ClickLinkAction} from '@utils/actions/element-actions/clickLink.action';
 import {CreateCaseAPIAction} from '@utils/actions/custom-actions/createCaseAPI.action';
 import {ExpandSummaryAction} from '@utils/actions/element-actions';
 import {FeeAndPayAction } from '@utils/actions/custom-actions/commonComponent/feeAndPay.action';
+import {CaseFlagAction } from '@utils/actions/custom-actions/commonComponent/caseFlag.action';
+import {CaseLinking } from '@utils/actions/custom-actions/commonComponent/caseLinking.action';
+import { LinkSolicitorAPIAction } from '@utils/actions/custom-actions/linkSolicitorAPI.action';
+
 
 export class ActionRegistry {
   private static actions: Map<string, IAction> = new Map<string, IAction>([
@@ -45,6 +51,14 @@ export class ActionRegistry {
     ['createCaseAPI', new CreateCaseAPIAction()],
     ['submitCaseAPI', new CreateCaseAPIAction()],
     ['deleteCaseRole', new CreateCaseAPIAction()],
+    ['getCaseAPI', new CreateCaseAPIAction()],
+    ['getCaseAPIDynamic', new CreateCaseAPIAction()],
+    ['linkSolicitorAPI', new LinkSolicitorAPIAction()],
+    ['fetchCurrentUserAPI', new CreateCaseAPIAction()],
+    ['createCaseAPIDynamicUsers', new CreateCaseAPIAction()],
+    ['submitCaseAPIDynamicUsers', new CreateCaseAPIAction()],
+    ['makeAnApplicationAPI', new CreateCaseAPIAction()],
+    ['updatePaymentAPI', new CreateCaseAPIAction()],
     ['selectClaimType', new CreateCaseAction()],
     ['selectClaimantName', new CreateCaseAction()],
     ['selectClaimantDetails', new CreateCaseWalesAction()],
@@ -55,6 +69,7 @@ export class ActionRegistry {
     ['selectMediationAndSettlement', new CreateCaseAction()],
     ['selectNoticeOfYourIntention', new CreateCaseAction()],
     ['selectNoticeDetails', new CreateCaseAction()],
+    ['selectNoticeDetailsWales', new CreateCaseAction()],
     ['selectBorderPostcode', new CreateCaseAction()],
     ['selectYourPossessionGrounds', new CreateCaseAction()],
     ['selectOtherGrounds', new CreateCaseAction()],
@@ -67,7 +82,6 @@ export class ActionRegistry {
     ['selectClaimantCircumstances', new CreateCaseAction()],
     ['provideDetailsOfRentArrears', new CreateCaseAction()],
     ['selectMoneyJudgment', new CreateCaseAction()],
-    ['selectClaimingCosts', new CreateCaseAction()],
     ['selectLanguageUsed', new CreateCaseAction()],
     ['selectDefendantCircumstances', new CreateCaseAction()],
     ['selectApplications', new CreateCaseAction()],
@@ -82,7 +96,16 @@ export class ActionRegistry {
     ['selectHousingAct', new CreateCaseAction()],
     ['enterReasonForSuspensionOrder', new CreateCaseAction()],
     ['searchCaseFromFindCase', new SearchCaseAction()],
+    ['searchCase', new SearchCaseAction()],
     ['filterCaseFromCaseList', new SearchCaseAction()],
+    ['accessingTheSearch', new GlobalSearchCaseAction()],
+    ['searchByCaseReference', new GlobalSearchCaseAction()],
+    ['invalidCaseReferenceSearch', new GlobalSearchCaseAction()],
+    ['changeSearchLink', new GlobalSearchCaseAction()],
+    ['submitGlobalSearch', new GlobalSearchCaseAction()],
+    ['executeSearch', new GlobalSearchCaseAction()],
+    ['validateResults', new GlobalSearchCaseAction()],
+    ['validateResultsWithRetry', new GlobalSearchCaseAction()],
     ['selectClaimingCosts', new CreateCaseAction()],
     ['wantToUploadDocuments', new CreateCaseAction()],
     ['uploadAdditionalDocs', new CreateCaseAction()],
@@ -90,14 +113,53 @@ export class ActionRegistry {
     ['selectProhibitedConductStandardContract', new CreateCaseWalesAction()],
     ['selectOccupationContractOrLicenceDetails', new CreateCaseWalesAction()],
     ['provideMoreDetailsOfClaim', new CreateCaseAction()],
+    ['clickLink', new ClickLinkAction()],
     ['clickLinkAndVerifyNewTabTitle', new ClickLinkAndVerifyNewTabTitleAction()],
     ['selectStatementOfTruth', new CreateCaseAction()],
     ['selectAsb', new CreateCaseWalesAction()],
+    ['requiredDocumentsUpload', new CreateCaseWalesAction()],
     ['payClaimFee', new CreateCaseAction()],
     ['claimSaved', new CreateCaseAction()],
+    ['validateDefendantDetails', new CreateCaseAction()],
+    ['validateClaimantDetails', new CreateCaseAction()],
+    ['validateCaseNotesDetails', new CreateCaseAction()],
+    ['validateCaseSummaryDetails', new CreateCaseAction()],
+    ['addCaseNotes', new CreateCaseAction()],
+    ['validateCaseFileViewFolders', new CreateCaseAction()],
+    ['validateCaseFileViewIndividualFolder', new CreateCaseAction()],
+    ['validateCaseListTable', new CreateCaseAction()],
+    ['validateTabAccess', new CreateCaseAction()],
     ['selectPaymentTypePBA', new FeeAndPayAction()],
     ['selectPaymentByCard', new FeeAndPayAction()],
-    ['enterPaymentDetails', new FeeAndPayAction()]
+    ['enterPaymentDetails', new FeeAndPayAction()],
+    ['verifyStatusInHistoryAndSummaryTab', new FeeAndPayAction()],
+    ['clickPayNowLink', new FeeAndPayAction()],
+    ['backDateTheCasePaymentAPI', new FeeAndPayAction()],
+    ['whereShouldThisFlagBeAdded', new CaseFlagAction()],
+    ['selectFlagType', new CaseFlagAction()],
+    ['selectSpecialMeasureForFlag', new CaseFlagAction()],
+    ['addCommentsForFlag', new CaseFlagAction()],
+    ['clickChangeLinkForRow', new CaseFlagAction()],
+    ['reviewFlagDetails', new CaseFlagAction()],
+    ['viewCaseFlags', new CaseFlagAction()],
+    ['manageCaseFlags', new CaseFlagAction()],
+    ['makeFlagInactive', new CaseFlagAction()],
+    ['navigateToCaseSummary', new CaseFlagAction()],
+    ['canCreateCaseLevelFlag', new CaseFlagAction()],
+    ['canCreatePartyLevelFlag', new CaseFlagAction()],
+    ['canManageCaseLevelFlag', new CaseFlagAction()],
+    ['canManagePartyLevelFlag', new CaseFlagAction()],
+    ['canViewCaseAndPartyFlag', new CaseFlagAction()],
+    ['selectCasesToLink', new CaseLinking()],
+    ['selectCasesToUnLink', new CaseLinking()],
+    ['verifyLinkedCases', new CaseLinking()],
+    ['handleJudgeBookingPage', new CaseFlagAction()],
+    ['searchResults', new GlobalSearchCaseAction()],
+    ['enterPaymentDetails', new FeeAndPayAction()],
+    ['requestRemission', new FeeAndPayAction()],
+    ['requestRefund', new FeeAndPayAction()],
+    ['approveRefund', new FeeAndPayAction()],
+    ['rejectRefund', new FeeAndPayAction()]
   ]);
 
   static getAction(actionName: string): IAction {

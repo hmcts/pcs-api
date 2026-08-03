@@ -2,7 +2,6 @@ package uk.gov.hmcts.reform.pcs.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyAccessCodeEntity;
@@ -11,9 +10,11 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.PartyAccessCodeRepository;
 import java.util.Optional;
 import java.util.UUID;
 
+/**
+ * Stores access codes BCrypt-encoded. Plaintext never lives in {@code party_access_code.code}.
+ */
 @Service
 @RequiredArgsConstructor
-@ConditionalOnProperty(name = "access-code.hash-pins-enabled", havingValue = "true")
 @Slf4j
 public class HashingPartyAccessCodeService implements PartyAccessCodeHashingService {
 

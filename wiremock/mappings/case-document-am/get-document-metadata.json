@@ -1,0 +1,20 @@
+{
+  "request": {
+    "method": "GET",
+    "urlPath": "/cases/documents/11111111-2222-3333-4444-555555555555"
+  },
+  "response": {
+    "status": 200,
+    "headers": { "Content-Type": "application/json" },
+    "jsonBody": {
+      "classification": "PUBLIC",
+      "size": 51391,
+      "mimeType": "application/pdf",
+      "originalDocumentName": "Counterclaim - Defendant 2.pdf",
+      "_links": {
+        "self":   { "href": "http://localhost:8083/cases/documents/11111111-2222-3333-4444-555555555555" },
+        "binary": { "href": "http://localhost:8083/cases/documents/11111111-2222-3333-4444-555555555555/binary" }
+      }
+    }
+  }
+}

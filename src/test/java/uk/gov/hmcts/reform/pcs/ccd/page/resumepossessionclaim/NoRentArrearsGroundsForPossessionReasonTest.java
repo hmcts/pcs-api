@@ -10,7 +10,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.domain.model.NoRentArrearsReasonForGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.NoRentArrearsGroundsReasons;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
@@ -66,7 +66,7 @@ class NoRentArrearsGroundsForPossessionReasonTest extends BasePageTest {
         void shouldValidateAllTextAreaFieldsWhenNoRentArrearsReasonsAreProvided() {
             // Given
             PCSCase caseData = PCSCase.builder()
-                .noRentArrearsReasonForGrounds(NoRentArrearsReasonForGrounds.builder()
+                .noRentArrearsGroundsReasons(NoRentArrearsGroundsReasons.builder()
                     .ownerOccupier("Owner occupier reason")
                     .repossessionByLender("Repossession reason")
                     .holidayLet("Holiday let reason")
@@ -101,7 +101,7 @@ class NoRentArrearsGroundsForPossessionReasonTest extends BasePageTest {
         void shouldHandleNullNoRentArrearsReasonsGracefully() {
             // Given
             PCSCase caseData = PCSCase.builder()
-                .noRentArrearsReasonForGrounds(null)
+                .noRentArrearsGroundsReasons(null)
                 .build();
 
             // When
@@ -117,7 +117,7 @@ class NoRentArrearsGroundsForPossessionReasonTest extends BasePageTest {
         void shouldHandleEmptyNoRentArrearsReasonsGracefully() {
             // Given
             PCSCase caseData = PCSCase.builder()
-                .noRentArrearsReasonForGrounds(NoRentArrearsReasonForGrounds.builder().build())
+                .noRentArrearsGroundsReasons(NoRentArrearsGroundsReasons.builder().build())
                 .build();
 
             // When
@@ -133,7 +133,7 @@ class NoRentArrearsGroundsForPossessionReasonTest extends BasePageTest {
         void shouldHandlePartialNoRentArrearsReasonsGracefully() {
             // Given
             PCSCase caseData = PCSCase.builder()
-                .noRentArrearsReasonForGrounds(NoRentArrearsReasonForGrounds.builder()
+                .noRentArrearsGroundsReasons(NoRentArrearsGroundsReasons.builder()
                     .ownerOccupier("Only owner occupier reason")
                     .repossessionByLender("Only repossession reason")
                     .build())
@@ -152,7 +152,7 @@ class NoRentArrearsGroundsForPossessionReasonTest extends BasePageTest {
         void shouldHandleMandatoryGroundsOnly() {
             // Given
             PCSCase caseData = PCSCase.builder()
-                .noRentArrearsReasonForGrounds(NoRentArrearsReasonForGrounds.builder()
+                .noRentArrearsGroundsReasons(NoRentArrearsGroundsReasons.builder()
                     .ownerOccupier("Owner occupier")
                     .holidayLet("Holiday let")
                     .deathOfTenant("Death of tenant")
@@ -173,7 +173,7 @@ class NoRentArrearsGroundsForPossessionReasonTest extends BasePageTest {
         void shouldHandleDiscretionaryGroundsOnly() {
             // Given
             PCSCase caseData = PCSCase.builder()
-                .noRentArrearsReasonForGrounds(NoRentArrearsReasonForGrounds.builder()
+                .noRentArrearsGroundsReasons(NoRentArrearsGroundsReasons.builder()
                     .suitableAlternativeAccomodation("Suitable accommodation")
                     .breachOfTenancyConditions("Breach of tenancy")
                     .propertyDeterioration("Property deterioration")

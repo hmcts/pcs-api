@@ -18,7 +18,6 @@ public class StartTheService implements CcdPageConfiguration {
     private static final String HEADING_L = "govuk-heading-l";
     private static final String HEADING_M = "govuk-heading-m";
     private static final String BODY = "govuk-body";
-    private static final String LINK = "govuk-link";
     private static final String LIST_ITEM = "govuk-list govuk-!-font-size-19";
     private static final String PADDING_TOP_0 = "govuk-!-padding-top-0";
 
@@ -35,8 +34,9 @@ public class StartTheService implements CcdPageConfiguration {
                    + "<p class=\"" + BODY + "\">Solicitors or legal representatives must continue to submit claims "
                    + "using Possession Claim Online (PCOL) or by using a claim form with the relevant particulars "
                    + "of claim form.</p>"
-                   + "<p class=\"" + BODY + "\">This service is also available "
-                   + "<a href=\"javascript:void(0)\" class=\"" + LINK + "\">in Welsh (Cymraeg)</a>.</p>"
+                   + "<p class=\"" + BODY + "\"> This service is also available in Welsh (Cymraeg). "
+                   + "Select the 'Cymraeg' option in the top right corner of this screen to use this service in Welsh."
+                   + "</p>"
             )
             .label("feePaymentWithAmount",
             "<p class=\"" + BODY + "\">The claim fee is ${feeAmount}. "

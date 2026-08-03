@@ -1,0 +1,18 @@
+{
+  "request": {
+    "method": "POST",
+    "urlPathTemplate": "/payments/service-request/{serviceRequestReference}/card-payments"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "payment_reference": "payment-ref-{{request.path.serviceRequestReference}}",
+      "status": "Initiated",
+      "next_url": "{{request.baseUrl}}/payment-web/card-payment?return={{urlEncode (jsonPath request.body '$.return-url')}}"
+    },
+    "transformers": ["response-template"]
+  }
+}

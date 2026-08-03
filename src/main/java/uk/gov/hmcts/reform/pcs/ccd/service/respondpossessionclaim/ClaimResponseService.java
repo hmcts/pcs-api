@@ -13,12 +13,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaim
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ContactPreferencesEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
-import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
-import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.Optional;
-import java.util.UUID;
 
 /**
  * Service for managing defendant contact preferences.
@@ -29,56 +25,54 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class ClaimResponseService {
 
-    private final PartyService partyService;
-    private final PartyRepository partyRepository;
-    private final SecurityContextService securityContextService;
     private final ModelMapper modelMapper;
 
     /**
-     * Saves defendant's contact preferences and contact details.
-     * Finds the defendant party by the current user's IDAM ID and case reference updates their information.
+     * Saves defendant's contact preferences and contact details for the given defendant party.
      *
-     * @throws IllegalStateException if no party found for the current user's IDAM ID
+     * @throws IllegalStateException if no party is found
      */
-    public void saveDraftData(PossessionClaimResponse dataFromDraftTable, long caseReference) {
-        UUID currentUserIdamId = securityContextService.getCurrentUserId();
+    public void saveDraftDataForParty(PossessionClaimResponse dataFromDraftTable, PartyEntity defendantParty) {
 
-        if (currentUserIdamId == null) {
-            log.error("Cannot save contact preferences: current user IDAM ID is null");
-            throw new IllegalStateException("Current user IDAM ID is null");
+        if (defendantParty == null) {
+            throw new IllegalStateException("defendant party is null");
         }
 
-        PartyEntity defendant = partyService.getPartyEntityByIdamId(currentUserIdamId, caseReference);
+        saveContactPreferences(defendantParty, dataFromDraftTable.getDefendantResponses());
+        updatePartyContactDetails(defendantParty, dataFromDraftTable.getDefendantContactDetails(), dataFromDraftTable
+            .getDefendantResponses());
 
-        //save to relevant tables
-        saveContactPreferences(defendant, dataFromDraftTable.getDefendantResponses());
-        updatePartyContactDetails(defendant, dataFromDraftTable.getDefendantContactDetails(),
-                                  dataFromDraftTable.getDefendantResponses());
-
-        // Copy dateOfBirth from defendantResponses to party entity if present
         if (dataFromDraftTable.getDefendantResponses() != null
             && dataFromDraftTable.getDefendantResponses().getDateOfBirth() != null) {
-            defendant.setDateOfBirth(dataFromDraftTable.getDefendantResponses().getDateOfBirth());
-            log.debug("Updated date of birth from defendantResponses for party ID: {}", defendant.getId());
+            defendantParty.setDateOfBirth(dataFromDraftTable.getDefendantResponses().getDateOfBirth());
+            log.debug("Updated date of birth from defendantResponses for party ID: {}", defendantParty.getId());
         }
-
-        log.debug("Successfully saved contact preferences for defendant with IDAM ID: {}", currentUserIdamId);
     }
 
     /**
      * Updates party's contact details (phone number, email address, first name, and last name).
+     * Name and address are only updated if the claimant did not provide them, indicated by the
+     * confirmation fields being null (the confirmation question is only shown when the claimant provided the value).
      * Only updates if the values are provided (non-blank).
      */
     private void updatePartyContactDetails(PartyEntity party, DefendantContactDetails defendantContactDetails,
                                            DefendantResponses defendantResponses) {
-        if (StringUtils.isNotBlank(defendantContactDetails.getParty().getFirstName())) {
+        boolean nameNotConfirmed = defendantResponses.getDefendantNameConfirmation() != VerticalYesNo.YES;
+
+        if (nameNotConfirmed && StringUtils.isNotBlank(defendantContactDetails.getParty().getFirstName())) {
             party.setFirstName(defendantContactDetails.getParty().getFirstName());
             log.debug("Updated first name for party ID: {}", party.getId());
         }
 
-        if (StringUtils.isNotBlank(defendantContactDetails.getParty().getLastName())) {
+        if (nameNotConfirmed && StringUtils.isNotBlank(defendantContactDetails.getParty().getLastName())) {
             party.setLastName(defendantContactDetails.getParty().getLastName());
             log.debug("Updated last name for party ID: {}", party.getId());
+        }
+
+        if (nameNotConfirmed
+            && (StringUtils.isNotBlank(defendantContactDetails.getParty().getFirstName())
+                || StringUtils.isNotBlank(defendantContactDetails.getParty().getLastName()))) {
+            party.setNameKnown(VerticalYesNo.YES);
         }
 
         if (defendantContactDetails.getParty().getDateOfBirth() != null) {
@@ -98,8 +92,12 @@ public class ClaimResponseService {
         }
 
         AddressUK newAddress = defendantContactDetails.getParty().getAddress();
+        boolean isFallbackScenario = defendantResponses.getPropertyAddressConfirmation() != null;
+        boolean disputedCorrespondenceAddress =
+            defendantResponses.getCorrespondenceAddressConfirmation() == VerticalYesNo.NO;
+        boolean hasNewAddress = newAddress != null && StringUtils.isNotBlank(newAddress.getAddressLine1());
 
-        if (newAddress != null && StringUtils.isNotBlank(newAddress.getAddressLine1())) {
+        if ((isFallbackScenario || disputedCorrespondenceAddress) && hasNewAddress) {
             AddressEntity existingAddress = party.getAddress();
 
             if (existingAddress != null) {
@@ -112,9 +110,12 @@ public class ClaimResponseService {
                 existingAddress.setCountry(newAddress.getCountry());
             } else {
                 party.setAddress(modelMapper.map(newAddress, AddressEntity.class));
-                //only need to trigger save when object is newly created
-                partyRepository.save(party);
             }
+            party.setAddressKnown(VerticalYesNo.YES);
+        }
+
+        if (disputedCorrespondenceAddress) {
+            party.setAddressSameAsProperty(VerticalYesNo.NO);
         }
     }
 
@@ -124,12 +125,10 @@ public class ClaimResponseService {
      */
     private void saveContactPreferences(PartyEntity party, DefendantResponses defendantResponse) {
         ContactPreferencesEntity contactPrefs = party.getContactPreferences();
-        boolean saveNeeded = false;
 
         if (contactPrefs == null) {
             contactPrefs = new ContactPreferencesEntity();
             party.setContactPreferences(contactPrefs);
-            saveNeeded = true;
         }
 
         contactPrefs.setContactByEmail(defendantResponse.getContactByEmail());
@@ -138,11 +137,6 @@ public class ClaimResponseService {
 
         if (isContactByPhoneSelected(defendantResponse.getContactByPhone())) {
             contactPrefs.setContactByText(defendantResponse.getContactByText());
-        }
-
-        //only need to trigger save when object is newly created
-        if (saveNeeded) {
-            partyRepository.save(party);
         }
 
         log.debug("Saved contact preferences for party ID: {}", party.getId());

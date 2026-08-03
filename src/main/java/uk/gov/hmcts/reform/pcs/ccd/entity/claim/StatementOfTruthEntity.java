@@ -23,7 +23,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 
-import java.util.UUID;
+import java.time.LocalDateTime;
 
 @Entity
 @Builder
@@ -35,8 +35,8 @@ import java.util.UUID;
 public class StatementOfTruthEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
 
     @OneToOne
     @JsonBackReference
@@ -62,5 +62,7 @@ public class StatementOfTruthEntity {
     private String firmName;
 
     private String positionHeld;
+
+    private LocalDateTime completedDate;
 
 }

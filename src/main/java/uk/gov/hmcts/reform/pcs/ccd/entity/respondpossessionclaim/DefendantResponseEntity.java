@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EntityListeners;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
@@ -14,6 +15,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -27,14 +29,15 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoPreferNotToSay;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponseStatus;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.StatementOfTruthEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.notify.listener.DefendantResponseEntityListener;
 
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 import static jakarta.persistence.CascadeType.ALL;
 
@@ -45,11 +48,12 @@ import static jakarta.persistence.CascadeType.ALL;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@EntityListeners(DefendantResponseEntityListener.class)
 public class DefendantResponseEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "claim_id", nullable = false)
@@ -81,6 +85,12 @@ public class DefendantResponseEntity {
     @JsonManagedReference
     private ReasonableAdjustmentEntity reasonableAdjustment;
 
+    // Link to the generated defence PDF. The document is owned by PcsCaseEntity.documents,
+    // so no cascade here; the FK is SET NULL on delete.
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "submission_document_id")
+    private DocumentEntity submissionDocument;
+
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @Column(name = "free_legal_advice")
@@ -91,13 +101,18 @@ public class DefendantResponseEntity {
     @Column(name = "tenancy_start_date_confirmation")
     private YesNoNotSure tenancyStartDateConfirmation;
 
-    @Column(name = "tenancy_start_date")
-    private LocalDate tenancyStartDate;
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    @Column(name = "tenancy_type_confirmation")
+    private YesNoNotSure tenancyTypeConfirmation;
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    @Column(name = "tenancy_type_correct")
-    private YesNoNotSure tenancyTypeCorrect;
+    @Column(name = "possession_notice_received")
+    private YesNoNotSure possessionNoticeReceived;
+
+    @Column(name = "notice_received_date")
+    private LocalDate noticeReceivedDate;
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
@@ -107,12 +122,6 @@ public class DefendantResponseEntity {
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private VerticalYesNo correspondenceAddressConfirmation;
-
-    @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private YesNoNotSure possessionNoticeReceived;
-
-    private LocalDate noticeReceivedDate;
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
@@ -148,7 +157,15 @@ public class DefendantResponseEntity {
     private VerticalYesNo makeCounterClaim;
 
     @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    @Column(name = "counter_claim_want_to_upload_files")
+    private VerticalYesNo counterClaimWantToUploadFiles;
+
+    @Enumerated(EnumType.STRING)
     private DefendantResponseStatus status;
+
+    @Transient
+    private DefendantResponseStatus previousStatus;
 
     private LocalDateTime responseSubmittedDate;
 
