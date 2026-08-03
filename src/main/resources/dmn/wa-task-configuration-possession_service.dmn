@@ -457,7 +457,7 @@ Short name</description>
           <text></text>
         </inputEntry>
         <inputEntry id="UnaryTests_0me6dcy">
-          <text>"ReviewAdjournGenApp", "ReviewSetAsideGenApp"</text>
+          <text>"ReviewAdjournGenApp", "ReviewSetAsideGenApp", "ReviewGenApp"</text>
         </inputEntry>
         <outputEntry id="LiteralExpression_0e40xlr">
           <text>"dueDateIntervalDays"</text>
@@ -466,26 +466,6 @@ Short name</description>
           <text>1</text>
         </outputEntry>
         <outputEntry id="LiteralExpression_0lj2iff">
-          <text></text>
-        </outputEntry>
-      </rule>
-      <rule id="DecisionRule_11ufh5s">
-        <inputEntry id="UnaryTests_0i3s0kg">
-          <text></text>
-        </inputEntry>
-        <inputEntry id="UnaryTests_1auv6lk">
-          <text></text>
-        </inputEntry>
-        <inputEntry id="UnaryTests_1sbrx6l">
-          <text>"ReviewGenApp"</text>
-        </inputEntry>
-        <outputEntry id="LiteralExpression_1lplgfi">
-          <text>"dueDateIntervalDays"</text>
-        </outputEntry>
-        <outputEntry id="LiteralExpression_06936ne">
-          <text>2</text>
-        </outputEntry>
-        <outputEntry id="LiteralExpression_1hvizm3">
           <text></text>
         </outputEntry>
       </rule>
