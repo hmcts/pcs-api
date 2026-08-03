@@ -26,9 +26,6 @@ global:
 wa:
   enabled: true
 
-  eventHandler:
-    enabled: false
-
   camunda-bpm:
     java:
       image: hmctsprod.azurecr.io/camunda/bpm:pr-1025
@@ -110,6 +107,8 @@ wa:
   #disable wa db as we are using the postgres flexible server
   wa:
     postgresql:
+      enabled: false
+    eventHandler:
       enabled: false
 
 am-org-role-mapping-service:
