@@ -303,7 +303,7 @@ public class PartyService {
         return claim.getClaimParties().stream()
             .filter(claimPartyEntity -> partyId.equals(claimPartyEntity.getParty().getId()))
             .findFirst()
-            .orElseThrow(() -> new PartyNotFoundException("Party not found"));
+            .orElseThrow(() -> new PartyNotFoundException(PARTY_NOT_FOUND));
     }
 
 }

@@ -41,7 +41,10 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.DocumentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.GenAppRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentNameService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
+import uk.gov.hmcts.reform.pcs.exception.ErrorCode;
+import uk.gov.hmcts.reform.pcs.exception.ExceptionRedaction;
 import uk.gov.hmcts.reform.pcs.exception.GenAppException;
+import uk.gov.hmcts.reform.pcs.exception.ResetExceptionRedactionExtension;
 
 import java.math.BigDecimal;
 import java.time.Clock;
@@ -69,11 +72,11 @@ import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState.GEN_APP_ISSUED;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState.PENDING_GEN_APP_ISSUED;
 
-@ExtendWith(MockitoExtension.class)
+@ExtendWith({MockitoExtension.class, ResetExceptionRedactionExtension.class})
 class GenAppServiceTest {
 
     private static final LocalDateTime TEST_UTC_DATE_TIME = LocalDate.of(2025, 8, 27)
-            .atTime(12, 51, 19);
+        .atTime(12, 51, 19);
 
     @Mock
     private GenAppRepository genAppRepository;
@@ -100,6 +103,7 @@ class GenAppServiceTest {
 
     @BeforeEach
     void setUp() {
+        ExceptionRedaction.setShowFullExceptionsForTesting(true);
         stubUtcClock(TEST_UTC_DATE_TIME);
         when(pcsCaseEntity.getClaims()).thenReturn(List.of(mainClaim));
 
@@ -472,10 +476,10 @@ class GenAppServiceTest {
             // When
             underTest.createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty, PENDING_GEN_APP_ISSUED);
 
-        // Then
-        GenAppEntity genAppEntity = getSavedGenAppEntity();
-        assertThat(genAppEntity.getDocuments()).isEmpty();
-    }
+            // Then
+            GenAppEntity genAppEntity = getSavedGenAppEntity();
+            assertThat(genAppEntity.getDocuments()).isEmpty();
+        }
 
         @Test
         void shouldAddGenAppToCaseEntityBeforeRenamingDocuments() {
@@ -558,9 +562,8 @@ class GenAppServiceTest {
             // Then
             assertThat(throwable)
                 .isInstanceOf(GenAppException.class)
-                .hasMessage("REDACTED [GEN_APP]");
+                .hasMessage("Statement of truth must be accepted to create a gen app");
         }
-    }
 
         @Test
         void shouldCreateAndSetStatementOfTruthForCuiJourney() {
@@ -595,11 +598,11 @@ class GenAppServiceTest {
                 () -> underTest.createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty, PENDING_GEN_APP_ISSUED)
             );
 
-        // Then
-        assertThat(throwable)
-            .isInstanceOf(GenAppException.class)
-            .hasMessage("REDACTED [GEN_APP]");
-    }
+            // Then
+            assertThat(throwable)
+                .isInstanceOf(GenAppException.class)
+                .hasMessage(ErrorCode.GEN_APP.safeDescription());
+        }
 
         @Test
         void shouldCreateAndSetStatementOfTruthForXuiJourney() {
