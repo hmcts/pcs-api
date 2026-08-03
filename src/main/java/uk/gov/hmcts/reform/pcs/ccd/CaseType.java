@@ -119,36 +119,7 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
         builder.searchResultFields()
             .caseReferenceField();
 
-        builder.accessType("create-cases")
-            .organisationProfileId("LOCALAUTH_PROFILE")
-            .accessMandatory(true)
-            .accessDefault(true)
-            .display(false)
-            .hintText("Access to create cases")
-            .displayOrder(1)
-            .liveTo("01/01/2027");
-        builder.accessType("prof-org-access")
-            .organisationProfileId("LOCALAUTH_PROFILE")
-            .accessMandatory(false)
-            .accessDefault(false)
-            .display(true)
-            .description("Can manage all cases associated with this organisation")
-            .hintText("Assign to Users to enable access to all cases associated with this organisation")
-            .displayOrder(2)
-            .liveTo("01/01/2027");
-
-        builder.accessTypeRole("create-cases")
-            .organisationProfileId("LOCALAUTH_PROFILE")
-            .organisationalRoleName(UserRole.SOLICITOR.getRole())
-            .liveTo("01/01/2027");
-        builder.accessTypeRole("prof-org-access")
-            .organisationProfileId("LOCALAUTH_PROFILE")
-            .groupRoleName(UserRole.SOLICITOR.getRole())
-            .caseAssignedRoleField(UserRole.PROFESSIONA_USER.getRole())
-            .groupAccessEnabled(true)
-            .caseAccessGroupIdTemplate("PCS:PCS:prof-org-access:solicitor:$ORGID$")
-            .liveTo("01/01/2027");
-
+        configureGaAccessTypes(builder);
 
         buildCaseListView(builder);
 
@@ -202,6 +173,38 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
         }
 
         configureCaseFileCategories(builder);
+    }
+
+    private static void configureGaAccessTypes(ConfigBuilder<PCSCase, State, AccessProfile> builder) {
+        builder.accessType("create-cases")
+            .organisationProfileId("LOCALAUTH_PROFILE")
+            .accessMandatory(true)
+            .accessDefault(true)
+            .display(false)
+            .hintText("Access to create cases")
+            .displayOrder(1)
+            .liveTo("01/01/2027");
+        builder.accessType("prof-org-claimant-access")
+            .organisationProfileId("LOCALAUTH_PROFILE")
+            .accessMandatory(false)
+            .accessDefault(false)
+            .display(true)
+            .description("Can manage all cases associated with this organisation")
+            .hintText("Assign to Users to enable access to all cases associated with this organisation")
+            .displayOrder(2)
+            .liveTo("01/01/2027");
+
+        builder.accessTypeRole("create-cases")
+            .organisationProfileId("LOCALAUTH_PROFILE")
+            .organisationalRoleName("PCS_Solicitor_Org")
+            .liveTo("01/01/2027");
+        builder.accessTypeRole("prof-org-claimant-access")
+            .organisationProfileId("LOCALAUTH_PROFILE")
+            .groupRoleName("PCS_Solicitor_Group")
+            .caseAssignedRoleField("PCS_Solicitor_Group")
+            .groupAccessEnabled(true)
+            .caseAccessGroupIdTemplate("pcs:pcs:prof-org-claimant-access:PCS_Solicitor_Group:$ORGID$")
+            .liveTo("01/01/2027");
     }
 
     private void configureCaseFileCategories(ConfigBuilder<PCSCase, State, AccessProfile> builder) {
