@@ -78,7 +78,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
         EventBuilder<PCSCase, UserRole, State> eventBuilder =
             configBuilder
                 .decentralisedEvent(resumePossessionClaim.name(), this::submit, this::start)
-                .forStates(MergedEventStates.resumePossessionClaim())
+                .forStates(EventStates.resumePossessionClaim())
                 .name("Make a claim")
                 .showCondition(ShowConditions.and(
                     ShowConditions.NEVER_SHOW,

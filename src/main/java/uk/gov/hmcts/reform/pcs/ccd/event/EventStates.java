@@ -4,7 +4,7 @@ import lombok.experimental.UtilityClass;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 
 @UtilityClass
-public class MergedEventStates {
+public class EventStates {
 
     public static State[] addCaseNote() {
         return new State[] {

@@ -12,7 +12,7 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.event.MergedEventStates;
+import uk.gov.hmcts.reform.pcs.ccd.event.EventStates;
 import uk.gov.hmcts.reform.pcs.ccd.page.makeanapplication.AppliedForHelpWithFees;
 import uk.gov.hmcts.reform.pcs.ccd.page.makeanapplication.ChooseAnApplication;
 import uk.gov.hmcts.reform.pcs.ccd.page.makeanapplication.DocumentUploadWanted;
@@ -52,7 +52,7 @@ public class MakeAnApplication implements CCDConfig<PCSCase, State, UserRole> {
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         EventBuilder<PCSCase, UserRole, State> eventBuilder = configBuilder
             .decentralisedEvent(makeAnApplication.name(), submitEventHandler, startEventHandler)
-            .forStates(MergedEventStates.makeAnApplication())
+            .forStates(EventStates.makeAnApplication())
             .name("Make an application")
             .showCondition(ShowConditions.featureFlagsEnabled(RELEASE_1_DOT_2, CASEWORKER_EVENTS))
             .grant(Permission.CRUD, UserRole.DEFENDANT)

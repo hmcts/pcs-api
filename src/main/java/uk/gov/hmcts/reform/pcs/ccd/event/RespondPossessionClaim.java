@@ -42,7 +42,7 @@ public class RespondPossessionClaim implements CCDConfig<PCSCase, State, UserRol
     public void configureDecentralised(final DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         Event.EventBuilder<PCSCase, UserRole, State> eventBuilder = configBuilder
             .decentralisedEvent(respondPossessionClaim.name(), submitEventHandler, startEventHandler)
-            .forStates(MergedEventStates.respondPossessionClaim())
+            .forStates(EventStates.respondPossessionClaim())
             .showCondition(ShowConditions.and(
                 ShowConditions.NEVER_SHOW,
                 ShowConditions.featureFlagsEnabled(RELEASE_1_DOT_2, CASEWORKER_EVENTS)

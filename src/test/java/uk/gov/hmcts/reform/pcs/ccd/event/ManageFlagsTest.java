@@ -31,8 +31,8 @@ class ManageFlagsTest extends BaseEventTest {
     }
 
     @Test
-    void shouldBeConfiguredForMergedEventStates() {
-        assertConfiguredForStates(MergedEventStates.amendFlags());
+    void shouldBeConfiguredForEventStates() {
+        assertConfiguredForStates(EventStates.amendFlags());
     }
 
     @Test

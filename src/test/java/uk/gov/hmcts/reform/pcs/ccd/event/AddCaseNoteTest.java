@@ -32,8 +32,8 @@ public class AddCaseNoteTest extends BaseEventTest {
     }
 
     @Test
-    void shouldBeConfiguredForMergedEventStates() {
-        assertConfiguredForStates(MergedEventStates.addCaseNote());
+    void shouldBeConfiguredForEventStates() {
+        assertConfiguredForStates(EventStates.addCaseNote());
     }
 
     @Test

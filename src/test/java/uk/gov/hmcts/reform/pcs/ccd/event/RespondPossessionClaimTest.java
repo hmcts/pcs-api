@@ -221,8 +221,8 @@ class RespondPossessionClaimTest extends BaseEventTest {
     }
 
     @Test
-    void shouldBeConfiguredForMergedEventStates() {
-        assertConfiguredForStates(MergedEventStates.respondPossessionClaim());
+    void shouldBeConfiguredForEventStates() {
+        assertConfiguredForStates(EventStates.respondPossessionClaim());
     }
 
     @Test

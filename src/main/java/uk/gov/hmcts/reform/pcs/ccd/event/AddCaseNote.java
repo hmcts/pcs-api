@@ -33,7 +33,7 @@ public class AddCaseNote implements CCDConfig<PCSCase, State, UserRole> {
         Event.EventBuilder<PCSCase, UserRole, State> eventBuilder =
                 configBuilder
                         .decentralisedEvent(addCaseNote.name(), this::submit)
-                        .forStates(MergedEventStates.addCaseNote())
+                        .forStates(EventStates.addCaseNote())
                         .name("Add a case note")
                         .showCondition(ShowConditions.featureFlagsEnabled(RELEASE_1_DOT_2, CASEWORKER_EVENTS))
                         .grant(Permission.CRUD, UserRole.PCS_SOLICITOR)
