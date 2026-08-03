@@ -297,6 +297,68 @@ public class DataTest extends CftlibTest {
         );
     }
 
+    // party table validation
+
+    @Test
+    @DisplayName("validate public.party - schema, names, and relationship rules")
+    void validatePartyTable() {
+        List<String> expectedColumns = List.of(
+            "id", "version", "case_id", "type", "idam_id", "first_name",
+            "last_name", "org_name", "email_address", "phone_number"
+        );
+
+        int totalRows = runCountQuery("SELECT COUNT(*) FROM public.party");
+
+        int createdCasePresent = runCountQuery(
+            "SELECT COUNT(*) FROM public.party p "
+                + "JOIN public.pcs_case c ON p.case_id = c.id "
+                + "WHERE c.case_reference = '" + caseReference + "'"
+        );
+
+        //        int validDefendant = runCountQuery(
+        //        "SELECT COUNT(*) FROM public.party p "
+        //            + "JOIN public.pcs_case c ON p.case_id = c.id "
+        //            + "WHERE c.case_reference = '" + caseReference + "' "
+        //            + "AND p.first_name = 'Dominic' "
+        //            + "AND p.last_name = 'Defendant' "
+        //            + "AND p.name_known = 'YES' "
+        //            + "AND p.name_overridden = 'NO' " // Fixed spelling: double 'd'
+        //            + "AND p.address_known = 'YES' "
+        //            + "AND p.address_same_as_property = 'YES' "
+        //            + "AND p.phone_number_provided = 'YES' "
+        //            + "AND p.phone_number = '00000000000'"
+        //    );
+
+        int validDefendant = runCountQuery(
+            "SELECT COUNT(*) FROM public.party p "
+                + "JOIN public.pcs_case c ON p.case_id = c.id "
+                + "WHERE c.case_reference = " + caseReference + " "
+                + "AND p.first_name = 'Dominic' "
+                + "AND p.last_name = 'Defendant'"
+        );
+
+        int validClaimant = runCountQuery(
+            "SELECT COUNT(*) FROM public.party p "
+                + "JOIN public.pcs_case c ON p.case_id = c.id "
+                + "WHERE c.case_reference = " + caseReference + " "
+                + "AND p.org_name = 'TreeTops Housing'"
+        );
+
+        String msgCount = "Expected party to have a row, found " + totalRows;
+        String msgCasePresent = "Expected party case_reference " + caseReference + " to exist and have 2 rows";
+        String msgValidDefendant = "Defendant row party fields linked to case are incorrectly populated";
+        String msgValidClaimant = "Claimant row party fields linked to case are incorrectly populated";
+
+        org.junit.jupiter.api.Assertions.assertAll("party validations",
+                                                   () -> assertHasColumns("public.party", expectedColumns),
+                                                   () -> assertTrue(totalRows > 0, msgCount),
+                                                   () -> assertTrue(createdCasePresent >= 2, msgCasePresent),
+                                                   () -> assertEquals(1, validDefendant,  msgValidDefendant),
+                                                   () -> assertEquals(1, validClaimant,  msgValidClaimant)
+        );
+    }
+
+
     // helper
 
     private void assertHasColumns(String qualifiedTable, List<String> expectedColumns) {
