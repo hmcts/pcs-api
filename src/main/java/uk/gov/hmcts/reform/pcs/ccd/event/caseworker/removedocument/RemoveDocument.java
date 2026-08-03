@@ -81,7 +81,7 @@ public class RemoveDocument implements CCDConfig<PCSCase, State, UserRole> {
         return """
             ---
             <div class="govuk-panel govuk-panel--confirmation govuk-!-padding-top-3 govuk-!-padding-bottom-3">
-            <span class="govuk-panel__title govuk-!-font-size-32">%s removed </span><br>
+            <span class="govuk-panel__title govuk-!-font-size-36">%s removed </span><br>
             <span class="govuk-panel__body govuk-!-font-size-24">Case number: %s</span><br>
             <span class="govuk-panel__body govuk-!-font-size-24">Property address: %s</span>
             <span class="govuk-panel__body govuk-!-font-size-24">%s</span>
