@@ -323,7 +323,6 @@ class NotificationPersonalisationFactoryTest {
         @Test
         @DisplayName("Should include base fields and the formatted property address")
         void shouldIncludeFormattedPropertyAddress() {
-            PartyEntity partyEntity = createParty("Another", "Party");
             stubClaimantParty();
             stubDefendantParty();
 
@@ -335,25 +334,26 @@ class NotificationPersonalisationFactoryTest {
                 .postCode("EX1 2AB")
                 .build());
 
+            PartyEntity partyEntity = createParty("Another", "Party");
             NoticeOfChangeCompletedPersonalisation result =
                 factory.noticeOfChangeCompleted(partyEntity, pcsCaseEntity);
 
             assertThat(result.toMap())
                 .containsEntry("firstName", "Another")
                 .containsEntry("caseNumber", "1234-5678-90")
-                .containsEntry("claimantName", "Jane Smith")
-                .containsEntry("primaryDefendantName", "John Doe")
+                .containsEntry("claimantName", "JANE SMITH")
+                .containsEntry("primaryDefendantName", "JOHN DOE")
                 .containsEntry("address", "10 Example Street, Example Town, EX1 2AB");
         }
 
         @Test
         @DisplayName("Should use an empty address when the case has no property address")
         void shouldUseEmptyAddressWhenPropertyAddressIsNull() {
-            PartyEntity partyEntity = createParty("Another", "Party");
             stubClaimantParty();
             stubDefendantParty();
             when(pcsCaseEntity.getPropertyAddress()).thenReturn(null);
 
+            PartyEntity partyEntity = createParty("Another", "Party");
             assertThat(factory.noticeOfChangeCompleted(partyEntity, pcsCaseEntity).toMap())
                 .containsEntry("address", "");
         }
