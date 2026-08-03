@@ -20,6 +20,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 
+import java.util.Optional;
 import java.util.UUID;
 
 @Component
@@ -67,7 +68,6 @@ public class ManagePartyOptionsPage implements CcdPageConfiguration {
 
         // Same party re-selected, preserve the in-progress edits.
         if (partyId.toString().equals(updatePartyDetails.getPreviouslySelectedPartyId())) {
-            updatePartyDetails.setDateOfBirth(partyEntity.getDateOfBirth());
             return;
         }
 
@@ -82,7 +82,7 @@ public class ManagePartyOptionsPage implements CcdPageConfiguration {
         updatePartyDetails.setAddress(clearPreviousAddress(partyEntity.getAddress()));
         updatePartyDetails.setEmail(blankIfNull(partyEntity.getEmailAddress()));
         updatePartyDetails.setPhoneNumber(blankIfNull(partyEntity.getPhoneNumber()));
-        updatePartyDetails.setDateOfBirth(partyEntity.getDateOfBirth());
+        updatePartyDetails.setDateOfBirth(Optional.ofNullable(partyEntity.getDateOfBirth()));
         updatePartyDetails.setPreviouslySelectedPartyId(partyId.toString());
     }
 

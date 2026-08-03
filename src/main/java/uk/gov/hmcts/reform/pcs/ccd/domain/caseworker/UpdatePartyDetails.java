@@ -1,7 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.domain.caseworker;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -9,8 +9,10 @@ import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.DynamicList;
+import uk.gov.hmcts.ccd.sdk.type.FieldType;
 
 import java.time.LocalDate;
+import java.util.Optional;
 
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.DynamicRadioList;
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.FixedRadioList;
@@ -49,9 +51,9 @@ public class UpdatePartyDetails {
     private String phoneNumber;
 
     @JsonProperty("updateParty_DateOfBirth")
-    @CCD(label = "Date of birth", hint = "For example, 16 4 2021")
-    @JsonInclude(JsonInclude.Include.ALWAYS)
-    private LocalDate dateOfBirth;
+    @CCD(label = "Date of birth", hint = "For example, 16 4 2021", typeOverride = FieldType.Date)
+    @JsonSerialize(using = EmptyStringLocalDateSerializer.class)
+    private Optional<LocalDate> dateOfBirth;
 
     @JsonProperty("updateParty_PreviouslySelectedPartyId")
     @CCD(label = "Previously selected party")

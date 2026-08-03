@@ -12,6 +12,8 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 
+import java.time.LocalDate;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
@@ -39,7 +41,8 @@ public class UpdatePartyService {
         partyEntity.setEmailAddress(updatePartyDetails.getEmail());
 
         if (updatePartyDetails.getPartyType() == PartyType.DEFENDANT) {
-            partyEntity.setDateOfBirth(updatePartyDetails.getDateOfBirth());
+            Optional<LocalDate> dateOfBirth = updatePartyDetails.getDateOfBirth();
+            partyEntity.setDateOfBirth(dateOfBirth == null ? null : dateOfBirth.orElse(null));
         }
 
         partyRepository.save(partyEntity);

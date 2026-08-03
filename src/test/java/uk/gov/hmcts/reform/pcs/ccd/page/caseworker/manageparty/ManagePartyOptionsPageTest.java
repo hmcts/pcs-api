@@ -101,7 +101,7 @@ class ManagePartyOptionsPageTest extends BasePageTest {
         assertThat(updatePartyDetails.getAddress().getPostTown()).isEqualTo("Testville");
         assertThat(updatePartyDetails.getEmail()).isEqualTo("john@test.com");
         assertThat(updatePartyDetails.getPhoneNumber()).isEqualTo("07000000000");
-        assertThat(updatePartyDetails.getDateOfBirth()).isEqualTo(dateOfBirth);
+        assertThat(updatePartyDetails.getDateOfBirth()).contains(dateOfBirth);
         assertThat(updatePartyDetails.getPreviouslySelectedPartyId()).isEqualTo(partyId.toString());
     }
 

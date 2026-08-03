@@ -20,6 +20,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 
 import java.time.LocalDate;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -65,7 +66,7 @@ class UpdatePartyServiceTest {
             .address(address)
             .email("john@test.com")
             .phoneNumber("07000000000")
-            .dateOfBirth(dateOfBirth)
+            .dateOfBirth(Optional.of(dateOfBirth))
             .build();
 
         // When
@@ -117,7 +118,7 @@ class UpdatePartyServiceTest {
         UpdatePartyDetails updatePartyDetails = UpdatePartyDetails.builder()
             .partyToUpdate(buildPartyRadioList(partyId))
             .partyType(PartyType.CLAIMANT)
-            .dateOfBirth(LocalDate.of(1990, 1, 1))
+            .dateOfBirth(Optional.of(LocalDate.of(1990, 1, 1)))
             .build();
 
         // When
