@@ -7,5 +7,9 @@ export default {
   'enterGenAppapplicationFee': 'enterGenAppapplicationFee',
   'enterGenAppconsentAndNotice': 'enterGenAppconsentAndNotice',
   'caseworkerUploadDocumentsuploadADocument': 'uploadADocument',
-  'caseworkerUploadDocuments/confirm' : 'confirmUpload'
+  'caseworkerUploadDocuments/confirm' : 'confirmUpload',
+  'enterGenAppuploadGeneralApplication': 'enterGenAppUploadGeneralApplication',
+  'enterGenAppuploadRelatedEvidence': 'enterGenAppUploadRelatedEvidence',
+  'enterGenAppreferApplicationToJudge': 'enterGenAppPreferApplicationToJudge',
+  'enterGenApp/submit': 'genAppsCheckYouAnswers',
 };

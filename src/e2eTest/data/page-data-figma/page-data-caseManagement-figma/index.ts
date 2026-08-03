@@ -10,3 +10,7 @@ export * from './enterGenAppconsentAndNotice.page.data';
 export * from './uploadADocument.page.data';
 export * from './checkYourAnswersUploadADocument.page.data';
 export * from './confirmUpload.page.data';
+export * from './enterGenAppUploadGeneralApplication.page.data';
+export * from './enterGenAppUploadRelatedEvidence.page.data';
+export * from './enterGenAppPreferApplicationToJudge.page.data'
+export * from './genAppsCheckYouAnswers.page.data'
