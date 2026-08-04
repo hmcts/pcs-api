@@ -9,6 +9,7 @@ package uk.gov.hmcts.reform.pcs;
  * View test results by running "open build/reports/tests/cftlibTest/index.html"
  * */
 
+import feign.FeignException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -89,9 +90,11 @@ public class DataTest extends CftlibTest {
             System.out.println("==============================================");
             System.out.println("DATA TEST CREATED CASE REF: " + caseReference);
             System.out.println("==============================================");
-        } catch (Exception e) {
-            System.err.println("FAILED TO CREATE CASE IN DATA TEST SETUP: " + e.getMessage());
-            e.printStackTrace();
+        } catch (FeignException e) {
+            System.err.println("===================ERROR CREATING MAX CASE===================");
+            System.err.println("Status: " + e.status());
+            System.err.println("Response Body: " + e.contentUTF8());
+            System.err.println("=============================================================");
             throw e;
         }
     }
