@@ -37,7 +37,7 @@ test.afterEach(async () => {
 
 });
 
-test.describe('Make an Application - LR - e2e Journey @nightly @noticeOfChangeLR', async () => {
+test.describe('Make an Application - LR - e2e Journey @nightly @noticeOfChange', async () => {
   test('Notice of change - Change link - Same Org LR submits another NOC - LR', async () => {
     await performAction('noticeOfChange', { caseRefNo: caseInfo.id } );
     await performAction('clientDetails', { firstName: 'Peter' , lastName: 'Parker' });
@@ -93,4 +93,12 @@ test.describe('Make an Application - LR - e2e Journey @nightly @noticeOfChangeLR
     await performAction('clickButton', checkAndSubmit.submitButton);
     await performValidation('text', { elementType: 'link', text: checkAndSubmit.tickTheBoxErrorMessage });
   });
+
+  test('Notice of change - Content Validation - LR', async () => {
+    await performAction('noticeOfChange', { caseRefNo: caseInfo.id } );
+    await performAction('clientDetails', { firstName: 'Peter' , lastName: 'Parker' });
+    await performAction('checkAndSubmit', { caseRefNo: caseInfo.id, firstName: 'Peter' , lastName: 'Parker' } );
+    await performAction('noticeOfChangeSuccessful', { caseRefNo: caseInfo.fid } );
+  });
+
 });
