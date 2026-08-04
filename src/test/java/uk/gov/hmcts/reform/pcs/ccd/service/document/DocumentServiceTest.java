@@ -284,8 +284,9 @@ class DocumentServiceTest {
             .containsExactly(expectedDocumentType);
     }
     
-    @Test
-    void shouldMapAllAdditionalDocumentTypesForEngland() {
+    @ParameterizedTest
+    @EnumSource(AdditionalDocumentTypeEngland.class)
+    void shouldMapAllAdditionalDocumentTypesForEngland(AdditionalDocumentTypeEngland additionalDocumentType) {
         PCSCase pcsCase = mock(PCSCase.class);
         AdditionalDocumentEngland additionalDocument = AdditionalDocumentEngland.builder()
             .document(Document.builder()
@@ -295,7 +296,7 @@ class DocumentServiceTest {
                     .binaryUrl("someUrl")
                     .categoryId("uploaded-category")
                     .build())
-            .documentType(AdditionalDocumentTypeEngland.TENANCY_AGREEMENT)
+            .documentType(additionalDocumentType)
             .build();
 
         when(pcsCase.getLegislativeCountry()).thenReturn(LegislativeCountry.ENGLAND);
@@ -312,11 +313,12 @@ class DocumentServiceTest {
 
         assertThat(capturedEntities)
             .extracting(DocumentEntity::getType)
-            .containsExactly(DocumentType.TENANCY_AGREEMENT);
+            .containsExactly(DocumentType.valueOf(additionalDocumentType.name()));
     }
 
-    @Test
-    void shouldMapAllAdditionalDocumentTypesForWales() {
+    @ParameterizedTest
+    @EnumSource(AdditionalDocumentTypeWales.class)
+    void shouldMapAllAdditionalDocumentTypesForWales(AdditionalDocumentTypeWales additionalDocumentType) {
         PCSCase pcsCase = mock(PCSCase.class);
         AdditionalDocumentWales additionalDocument = AdditionalDocumentWales.builder()
             .document(Document.builder()
@@ -326,7 +328,7 @@ class DocumentServiceTest {
                 .binaryUrl("someUrl")
                 .categoryId("uploaded-category")
                 .build())
-            .documentType(AdditionalDocumentTypeWales.OCCUPATION_LICENCE)
+            .documentType(additionalDocumentType)
             .build();
 
         when(pcsCase.getLegislativeCountry()).thenReturn(LegislativeCountry.WALES);
@@ -341,7 +343,7 @@ class DocumentServiceTest {
 
         assertThat(capturedEntities)
             .extracting(DocumentEntity::getType)
-            .containsExactly(DocumentType.OCCUPATION_LICENCE);
+            .containsExactly(DocumentType.valueOf(additionalDocumentType.name()));
     }
 
     @Test
