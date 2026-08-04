@@ -281,9 +281,7 @@ public class DocumentService {
             .toList();
 
         if (documentEntities.isEmpty()) {
-            log.info("All additional documents for case {} already persisted; nothing to save",
-                     caseReference
-            );
+            log.info("All additional documents for case {} already persisted; nothing to save", caseReference);
             return Collections.emptyList();
         }
 
