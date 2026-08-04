@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.strategy.LegalRepSubmissionEventStrategy;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DefendantResponseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.feeandpay.FeePaymentRepository;
 import uk.gov.hmcts.reform.pcs.notify.model.EmailNotificationResponse;
@@ -28,13 +29,16 @@ public class NotifyController {
     private final NotificationService notificationService;
     private final DefendantResponseRepository defendantResponseRepository;
     private final FeePaymentRepository feePaymentRepository;
+//    private final LegalRepSubmissionEventStrategy legalRepSubmissionEventStrategy;
 
     public NotifyController(NotificationService notificationService,
                             DefendantResponseRepository defendantResponseRepository,
                             FeePaymentRepository feePaymentRepository) {
+//                            LegalRepSubmissionEventStrategy legalRepSubmissionEventStrategy) {
         this.notificationService = notificationService;
         this.defendantResponseRepository = defendantResponseRepository;
         this.feePaymentRepository = feePaymentRepository;
+//        this.legalRepSubmissionEventStrategy = legalRepSubmissionEventStrategy;
     }
 
     @PostMapping(value = "send-defendant-response-emails")
@@ -42,6 +46,41 @@ public class NotifyController {
         @RequestHeader(value = AUTHORIZATION, defaultValue = "DummyId") String authorisation,
         @RequestHeader(value = "ServiceAuthorization") String serviceAuthorization,
         @RequestParam Integer defendantResponseId) {
+
+        log.info("Received request to send all defendant response emails for {}", defendantResponseId);
+        // temporary endpoint to test sending emails
+
+        Optional<DefendantResponseEntity> optDefendantResponse =
+            defendantResponseRepository.findById(defendantResponseId);
+
+        if (optDefendantResponse.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        DefendantResponseEntity defendantResponse = optDefendantResponse.get();
+        List<EmailNotificationResponse> responses = List.of(
+            notificationService.sendDefendantResponseNoCounterclaimEmailNotification(defendantResponse),
+            notificationService.sendDefendantResponseCounterclaimPaymentRequiredEmailNotification(defendantResponse),
+            notificationService.sendDefendantResponseCounterclaimPaymentSuccessEmailNotification(
+                defendantResponse,
+                "PAY-123"
+            ),
+            notificationService.sendDefendantResponseCounterclaimNoPaymentRequiredEmailNotification(defendantResponse)
+        );
+
+        return ResponseEntity.ok(responses);
+    }
+
+    // this is for manually testing the LR changes - I haven't actually configured this correctly. It should jump
+    // into LegalRepSubmissionEventStrategy.process(). I wasn't able to get it working, if you do manage it, answers
+    // on a postcard, please.
+    @PostMapping(value = "testLegalRepEndPoint")
+    public ResponseEntity<List<EmailNotificationResponse>> sendDefendantResponseEmailss(
+        @RequestHeader(value = AUTHORIZATION, defaultValue = "DummyId") String authorisation,
+        @RequestHeader(value = "ServiceAuthorization") String serviceAuthorization,
+        @RequestParam Integer defendantResponseId) {
+
+//        legalRepSubmissionEventStrategy.process(null);
 
         log.info("Received request to send all defendant response emails for {}", defendantResponseId);
         // temporary endpoint to test sending emails

@@ -5,10 +5,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.CounterClaimRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.LegalRepresentativeRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.party.LegalRepForDefendantAccessValidator;
+import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.UUID;
 
@@ -19,6 +23,8 @@ public class PaymentNotificationService {
 
     private final NotificationService notificationService;
     private final CounterClaimRepository counterClaimRepository;
+    private final SecurityContextService securityContextService;
+    private final LegalRepresentativeRepository legalRepresentativeRepository;
 
     @Transactional
     public void sendCounterClaimPaymentSuccessNotification(UUID counterClaimId, String paymentReference) {
@@ -38,8 +44,28 @@ public class PaymentNotificationService {
             return;
         }
 
+        UUID userUUID = securityContextService.getCurrentUserId();
+        LegalRepresentativeEntity legalRepresentative = legalRepresentativeRepository
+            .findByPartyLinkedToLegalRepresentativeAndActive(defendantResponse.getParty().getId()).orElse(null);
+
         log.info("Sending counterclaim payment success email case reference {}", pcsCase.getCaseReference());
-        notificationService
-            .sendDefendantResponseCounterclaimPaymentSuccessEmailNotification(defendantResponse, paymentReference);
+
+        if (defendant.getId().equals(userUUID)) {
+            log.info("Sending counterclaim payment success email case reference {}", pcsCase.getCaseReference());
+            notificationService
+                .sendDefendantResponseCounterclaimPaymentSuccessEmailNotification(defendantResponse, paymentReference);
+        } else {
+            log.info("Sending counterclaim payment success email to legal representative case reference {}", pcsCase.getCaseReference());
+            notificationService.sendDefendantResponseCounterclaimPaymentSuccessEmailNotificationToLegalRep(
+                legalRepresentative,
+                defendantResponse.getPcsCase(),
+                defendant,
+                defendantResponse,
+                paymentReference);
+        }
+
+
+//        notificationService
+//            .sendDefendantResponseCounterclaimPaymentSuccessEmailNotification(defendantResponse, paymentReference);
     }
 }
