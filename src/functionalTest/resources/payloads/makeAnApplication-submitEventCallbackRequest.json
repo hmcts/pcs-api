@@ -1,7 +1,7 @@
 {
   "event_id": "makeAnApplication",
   "event_details": {
-    "case_type": "PCS",
+    "case_type": "${caseTypeId}",
     "event_name": "makeAnApplication",
     "event_id": "makeAnApplication"},
   "internal_case_id": "${internalCaseId}",
@@ -12,7 +12,7 @@
     "jurisdiction": "PCS",
     "state": "PENDING_CASE_ISSUED",
     "version": 2,
-    "case_type_id": "PCS",
+    "case_type_id": "${caseTypeId}",
     "security_classification": "PUBLIC",
     "case_data": {
       "featureFlags": {
