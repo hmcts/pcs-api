@@ -31,6 +31,7 @@
     <cve>CVE-2025-37731</cve>
     <cve>CVE-2025-68384</cve>
     <cve>CVE-2025-68390</cve>
+    <cve>CVE-2026-63263</cve>
   </suppress>
   <suppress until="2026-08-15">
     <notes><![CDATA[angus-activation-2.0.3.jar]]></notes>
