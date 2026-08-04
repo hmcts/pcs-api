@@ -44,6 +44,7 @@ import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 import static uk.gov.hmcts.reform.pcs.ccd.domain.CompletionNextStep.SUBMIT_AND_PAY_NOW;
@@ -81,6 +82,10 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
                 .name("Make a claim")
                 .showCondition(ShowConditions.NEVER_SHOW)
                 .grant(Permission.CRUD, UserRole.PCS_SOLICITOR)
+                // Case-scoped, so the creator can finish their own claim without org-wide read.
+                .grant(Permission.CRUD, UserRole.CREATOR)
+                .grant(Permission.CRUD, UserRole.CLAIMANT_SOLICITOR)
+                .grant(Set.of(Permission.C), UserRole.PCS_SOLICITOR_ORG)
                 .grantHistoryOnly(JUDICIAL_HISTORY_ROLES)
                 .showSummary()
                 .endButtonLabel("${endButtonLabel}");

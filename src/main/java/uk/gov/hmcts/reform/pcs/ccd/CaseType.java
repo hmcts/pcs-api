@@ -11,8 +11,10 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 
 import java.util.Arrays;
 import java.util.EnumSet;
+import java.util.List;
 
 import static java.lang.System.getenv;
+import static uk.gov.hmcts.ccd.sdk.api.Permission.CRU;
 import static java.util.Optional.ofNullable;
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.State.AWAITING_SUBMISSION_TO_HMCTS;
@@ -33,6 +35,7 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
         AccessProfile.CITIZEN,
         AccessProfile.DEFENDANT,
         AccessProfile.PCS_SOLICITOR,
+        AccessProfile.PROFESSIONAL_USER,
         AccessProfile.JUDGE,
         AccessProfile.FEE_PAID_JUDGE,
         AccessProfile.CIRCUIT_JUDGE,
@@ -120,6 +123,11 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
 
         configureGaAccessTypes(builder);
 
+        // State ACLs for the group-access profile, else the data store filters matched cases out.
+        for (State state : State.values()) {
+            builder.grant(state, CRU, AccessProfile.PROFESSIONAL_USER);
+        }
+
         buildCaseListView(builder);
 
         builder.tab("nextSteps", "Next steps")
@@ -174,36 +182,99 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
         configureCaseFileCategories(builder);
     }
 
+    // Organisations that are themselves the claimant - councils, housing associations and the
+    // "other" categories. A solicitor firm is never here; it represents a party rather than being one.
+    private static final List<String> CLAIMANT_ORG_PROFILES = List.of(
+        "LOCALAUTH_PROFILE",
+        "OTHER_REALT_PROFILE",
+        "OTHER_PROP_PROFILE",
+        "OTHER_NFP_PROFILE",
+        "OTHER_CHARITY_PROFILE"
+    );
+
+    private static final String SOLICITOR_PROFILE = "SOLICITOR_PROFILE";
+    private static final String LIVE_TO = "01/01/2027";
+
+    // Substituted by CCD with the organisation id from the matching organisation policy.
+    public static final String ORG_ID_PLACEHOLDER = "$ORGID$";
+
+    // The group role is what RAS validates against its catalogue, and only PCS_Solicitor_Group is
+    // registered today (POFCC-368 adds claimant / claimant-solicitor / defendant-solicitor).
+    // Capacity is carried by the template rather than the role name, so all three access types can
+    // share one registered role until that lands.
+    private static final String GROUP_ROLE = "PCS_Solicitor_Group";
+
     private static void configureGaAccessTypes(ConfigBuilder<PCSCase, State, AccessProfile> builder) {
+        // Def store rejects the import unless every AccessType row has a unique DisplayOrder,
+        // so the counter runs across every row rather than restarting per access type.
+        int displayOrder = 1;
+
         builder.accessType("create-cases")
             .organisationProfileId("LOCALAUTH_PROFILE")
             .accessMandatory(true)
             .accessDefault(true)
             .display(false)
             .hintText("Access to create cases")
-            .displayOrder(1)
-            .liveTo("01/01/2027");
-        builder.accessType("prof-org-claimant-access")
-            .organisationProfileId("LOCALAUTH_PROFILE")
-            .accessMandatory(false)
-            .accessDefault(false)
-            .display(true)
-            .description("Can manage all cases associated with this organisation")
-            .hintText("Assign to Users to enable access to all cases associated with this organisation")
-            .displayOrder(2)
-            .liveTo("01/01/2027");
+            .displayOrder(displayOrder++)
+            .liveTo(LIVE_TO);
 
         builder.accessTypeRole("create-cases")
             .organisationProfileId("LOCALAUTH_PROFILE")
             .organisationalRoleName("PCS_Solicitor_Org")
-            .liveTo("01/01/2027");
-        builder.accessTypeRole("prof-org-claimant-access")
-            .organisationProfileId("LOCALAUTH_PROFILE")
-            .groupRoleName("PCS_Solicitor_Group")
-            .caseAssignedRoleField("PCS_Solicitor_Group")
+            .liveTo(LIVE_TO);
+
+        // A solicitor firm can act on either side, and on opposite sides of different cases, so the
+        // two capacities are separate options for the organisation's admin to assign per user.
+        displayOrder = addSolicitorAccessType(builder, "solicitor-org-claimant-access",
+            "claimant-solicitor", "as claimant for", displayOrder);
+        displayOrder = addSolicitorAccessType(builder, "solicitor-org-defendant-access",
+            "defendant-solicitor", "as defendant for", displayOrder);
+
+        for (String orgProfile : CLAIMANT_ORG_PROFILES) {
+            builder.accessType("prof-org-claimant-access")
+                .organisationProfileId(orgProfile)
+                .accessMandatory(true)
+                .accessDefault(false)
+                .display(true)
+                .description("Can manage all cases associated with this organisation as claimant")
+                .hintText("Assign to Users to enable access to all cases associated with this organisation")
+                .displayOrder(displayOrder++)
+                .liveTo(LIVE_TO);
+
+            builder.accessTypeRole("prof-org-claimant-access")
+                .organisationProfileId(orgProfile)
+                .groupRoleName(GROUP_ROLE)
+                .caseAssignedRoleField("claimant")
+                .groupAccessEnabled(true)
+                .caseAccessGroupIdTemplate("PCS:PCS:prof-org-claimant-access:claimant:" + ORG_ID_PLACEHOLDER)
+                .liveTo(LIVE_TO);
+        }
+    }
+
+    private static int addSolicitorAccessType(ConfigBuilder<PCSCase, State, AccessProfile> builder,
+                                              String accessTypeId,
+                                              String caseRole,
+                                              String descriptionSuffix,
+                                              int displayOrder) {
+        builder.accessType(accessTypeId)
+            .organisationProfileId(SOLICITOR_PROFILE)
+            .accessMandatory(false)
+            .accessDefault(false)
+            .display(true)
+            .description("Can manage all cases this organisation acts " + descriptionSuffix)
+            .hintText("Assign to Users to enable access to all cases associated with this organisation")
+            .displayOrder(displayOrder)
+            .liveTo(LIVE_TO);
+
+        builder.accessTypeRole(accessTypeId)
+            .organisationProfileId(SOLICITOR_PROFILE)
+            .groupRoleName(GROUP_ROLE)
+            .caseAssignedRoleField(caseRole)
             .groupAccessEnabled(true)
-            .caseAccessGroupIdTemplate("pcs:pcs:prof-org-claimant-access:PCS_Solicitor_Group:$ORGID$")
-            .liveTo("01/01/2027");
+            .caseAccessGroupIdTemplate("PCS:PCS:" + accessTypeId + ":" + caseRole + ":" + ORG_ID_PLACEHOLDER)
+            .liveTo(LIVE_TO);
+
+        return displayOrder + 1;
     }
 
     private void configureCaseFileCategories(ConfigBuilder<PCSCase, State, AccessProfile> builder) {

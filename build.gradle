@@ -21,7 +21,7 @@ plugins {
   id 'org.flywaydb.flyway' version "$flywayVersion"
   id 'org.sonarqube' version '7.3.1.8318'
   id 'net.serenity-bdd.serenity-gradle-plugin' version "$serenityBddVersion"
-  id 'hmcts.ccd.sdk' version 'HDPI-6258-generate-accessType-accessTypeRole-json-74.1-20933aed'
+  id 'hmcts.ccd.sdk' version 'HDPI-6258-generate-accessType-accessTypeRole-json-106.2-ba6305ba'
   id 'com.github.hmcts.rse-cft-lib' version '0.19.2297'
   id 'io.freefair.lombok' version '9.5.0'
   id 'au.com.dius.pact' version '4.7.3'
@@ -567,8 +567,17 @@ tasks.withType(CftlibExec).configureEach {
   environment 'DATA_STORE_S2S_AUTHORISED_SERVICES', 'ccd_data,ccd_gw,pcs_frontend,pcs_api,wa_task_management_api'
   environment 'CCD_S2S-AUTHORISED_SERVICES_CASE_USER_ROLES', 'aac_manage_case_assignment,pcs_api'
 
+  // Group access is gated behind a flag in both CCD services, and they read different env vars:
+  // def store skips the AccessType sheets on import without it, data store skips deriving
+  // CaseAccessGroups from the organisation policies.
+  environment 'ENABLE_CASE_GROUP_ACCESS', 'true'
+  environment 'ENABLE_CASE_GROUP_ACCESS_FILTERING', 'true'
+
   // ExUI config overrides
   environment 'XUI_JURISDICTIONS', 'PCS'
+  // Manage Org has no reference data service locally - cftlib ships the UI but not
+  // rd-professional-api, so point it at the shared wiremock instead of AAT.
+  environment 'RD_PROFESSIONAL_API_URL', 'http://host.docker.internal:8083'
   environment 'XUI_DOCUMENTS_API_V2', 'http://ccd-case-document-am-api-aat.service.core-compute-aat.internal'
   environment 'STAFF_SUPPORTED_JURISDICTIONS', 'PCS'
   environment 'XUI_SYSTEM_USER_NAME', 'exui-system-user@localhost'

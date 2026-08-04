@@ -1,0 +1,20 @@
+{
+  "priority": 4,
+  "request": {
+    "method": "GET",
+    "urlPathPattern": "/refdata/external/v1/organisations/users/[0-9a-fA-F-]+"
+  },
+  "response": {
+    "status": 200,
+    "headers": { "Content-Type": "application/json" },
+    "jsonBody": {
+      "userIdentifier": "22222222-2222-2222-2222-222222222222",
+      "firstName": "Sol",
+      "lastName": "Caseworker",
+      "email": "sol-user@test.local",
+      "idamStatus": "ACTIVE",
+      "roles": ["pui-case-manager"],
+      "userAccessTypes": []
+    }
+  }
+}

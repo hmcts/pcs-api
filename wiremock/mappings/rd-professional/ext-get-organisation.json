@@ -1,0 +1,36 @@
+{
+  "priority": 5,
+  "request": {
+    "method": "GET",
+    "urlPath": "/refdata/external/v1/organisations"
+  },
+  "response": {
+    "status": 200,
+    "headers": { "Content-Type": "application/json" },
+    "jsonBody": {
+      "organisationIdentifier": "LOCALSOL1",
+      "name": "Local Test Solicitors",
+      "status": "ACTIVE",
+      "orgType": "SOLICITOR_ORG",
+      "organisationProfileIds": ["SOLICITOR_PROFILE", "ORGANISATION_PROFILE"],
+      "sraId": "SRA-LOCAL-1",
+      "sraRegulated": true,
+      "companyNumber": "12345678",
+      "companyUrl": "http://localhost",
+      "superUser": {
+        "userIdentifier": "11111111-1111-1111-1111-111111111111",
+        "firstName": "Sol",
+        "lastName": "Admin",
+        "email": "sol-admin@test.local"
+      },
+      "paymentAccount": [],
+      "contactInformation": [
+        {
+          "addressLine1": "1 Solicitor Street",
+          "townCity": "Cardiff",
+          "postCode": "CF24 5JT"
+        }
+      ]
+    }
+  }
+}

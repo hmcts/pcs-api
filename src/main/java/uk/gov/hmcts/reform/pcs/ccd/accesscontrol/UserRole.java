@@ -23,8 +23,17 @@ public enum UserRole implements HasRole {
     RAS_VALIDATOR("caseworker-ras-validation", Set.of(R), IDAM),
 
     CITIZEN("citizen", CRU, IDAM),
-    SOLICITOR("[SOLICITOR]", CRU, RAS),
-    PROFESSIONA_USER("professional-user", CRU, RAS),
+    PROFESSIONAL_USER("professional-user", CRU, RAS),
+    PCS_SOLICITOR_ORG("PCS_Solicitor_Org", Set.of(Permission.C), RAS),
+    PCS_SOLICITOR_GROUP("PCS_Solicitor_Group", CRU, RAS, AccessProfile.PROFESSIONAL_USER),
+
+    // The organisation-to-case relationships group access is scoped by. Def store rejects an
+    // AccessTypeRole whose CaseAssignedRoleField is not also a RoleToAccessProfiles entry, so
+    // these have to exist as roles, not just as values in the organisation policies.
+    CLAIMANT("claimant", CRU, RAS, AccessProfile.PROFESSIONAL_USER),
+    CLAIMANT_SOLICITOR_GROUP("claimant-solicitor", CRU, RAS, AccessProfile.PROFESSIONAL_USER),
+    DEFENDANT_SOLICITOR_GROUP("defendant-solicitor", CRU, RAS, AccessProfile.PROFESSIONAL_USER),
+
     DEFENDANT("[DEFENDANT]", CRU, RAS),
     CLAIMANT_SOLICITOR("[CLAIMANTSOLICITOR]", CRU, RAS),
     DEFENDANT_SOLICITOR("[DEFENDANTSOLICITOR]", CRU, RAS),

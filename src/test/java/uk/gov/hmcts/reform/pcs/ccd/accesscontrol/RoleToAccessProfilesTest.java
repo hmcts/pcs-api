@@ -64,4 +64,22 @@ class RoleToAccessProfilesTest {
             .containsExactly(AccessProfile.HEARING_CENTRE_ADMIN.getRole());
         assertThat(UserRole.WLU_TEAM_LEADER.getAccessProfiles()).containsExactly(AccessProfile.WLU_ADMIN.getRole());
     }
+
+    @Test
+    void shouldMapGroupAccessRolesToProfilesWithCaseTypeAcls() {
+        assertThat(UserRole.PCS_SOLICITOR_ORG.getAccessProfiles())
+            .containsExactly(AccessProfile.PCS_SOLICITOR_ORG.getRole());
+        assertThat(UserRole.PCS_SOLICITOR_GROUP.getAccessProfiles())
+            .containsExactly(AccessProfile.PROFESSIONAL_USER.getRole());
+    }
+
+    /**
+     * The organisation role is granted to every professional user and its role assignment is
+     * unscoped, so it must not carry read - organisation-wide reading comes from the group role.
+     */
+    @Test
+    void shouldGiveTheOrganisationRoleCreateOnlyAndTheGroupRoleRead() {
+        assertThat(AccessProfile.PCS_SOLICITOR_ORG.getCaseTypePermissions()).isEqualTo("C");
+        assertThat(AccessProfile.PROFESSIONAL_USER.getCaseTypePermissions()).contains("R");
+    }
 }
