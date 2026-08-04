@@ -167,7 +167,7 @@ public class NotificationService {
         );
     }
 
-    public void sendNoticeOfChangeOtherPartiesEmailNotification(PartyEntity representedDefendant) {
+    public void sendNoticeOfChangeNonRepresentedPartiesEmailNotification(PartyEntity representedDefendant) {
         PcsCaseEntity pcsCase = representedDefendant.getPcsCase();
 
         List<PartyEntity> recipients = new ArrayList<>();
@@ -181,6 +181,7 @@ public class NotificationService {
 
         for (PartyEntity recipient : recipients) {
             if (recipient.getEmailAddress() == null) {
+                log.info("Skipping notice of change email to party {}: no email address", recipient.getId());
                 continue;
             }
 

@@ -131,7 +131,7 @@ class LegalRepresentativePartyLinkServiceTest {
         assertEquals(partyEntity, actual.getClaimPartyLegalRepresentativeList().getFirst().getParty());
         verify(caseRoleAssignmentService, never()).revokeRasRole(anyLong(), anyString(), any(UserRole.class));
         verify(notificationService).sendNoticeOfChangeCompletedEmailNotification(partyEntity);
-        verify(notificationService).sendNoticeOfChangeOtherPartiesEmailNotification(partyEntity);
+        verify(notificationService).sendNoticeOfChangeNonRepresentedPartiesEmailNotification(partyEntity);
     }
 
     @Test
@@ -341,7 +341,7 @@ class LegalRepresentativePartyLinkServiceTest {
         verify(addressMapper, never()).toAddressEntityAndNormalise(any(AddressUK.class));
         verify(legalRepresentativeRepository, never()).save(any());
         verify(notificationService, never()).sendNoticeOfChangeCompletedEmailNotification(any());
-        verify(notificationService, never()).sendNoticeOfChangeOtherPartiesEmailNotification(any());
+        verify(notificationService, never()).sendNoticeOfChangeNonRepresentedPartiesEmailNotification(any());
     }
 
     @Test

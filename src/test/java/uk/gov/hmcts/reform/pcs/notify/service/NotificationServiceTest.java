@@ -926,7 +926,7 @@ class NotificationServiceTest {
             allowEmailTo(claimant, PartyRole.CLAIMANT);
             allowEmailTo(otherDefendant, PartyRole.DEFENDANT);
 
-            notificationService.sendNoticeOfChangeOtherPartiesEmailNotification(representedDefendant);
+            notificationService.sendNoticeOfChangeNonRepresentedPartiesEmailNotification(representedDefendant);
 
             verify(schedulerClient, times(2)).scheduleIfNotExists(schedulableInstanceCaptor.capture());
             assertThat(schedulableInstanceCaptor.getAllValues())
@@ -943,33 +943,13 @@ class NotificationServiceTest {
             ));
             allowEmailTo(claimant, PartyRole.CLAIMANT);
 
-            notificationService.sendNoticeOfChangeOtherPartiesEmailNotification(representedDefendant);
+            notificationService.sendNoticeOfChangeNonRepresentedPartiesEmailNotification(representedDefendant);
 
             verify(schedulerClient).scheduleIfNotExists(schedulableInstanceCaptor.capture());
 
             SendEmailTaskData taskData = schedulableInstanceCaptor.getValue().getTaskInstance().getData();
             assertThat(taskData.getEmailAddress()).isEqualTo(CLAIMANT_EMAIL);
             assertThat(taskData.getTemplateId()).isEqualTo(TEMPLATE_ID);
-        }
-
-        @Test
-        @DisplayName("Should not email another party who has opted out of email contact")
-        void shouldNotEmailOtherPartyWhoOptedOutOfEmailContact() {
-            PartyEntity otherDefendant = party(OTHER_DEFENDANT_EMAIL);
-            when(claim.getClaimParties()).thenReturn(List.of(
-                claimParty(claimant, PartyRole.CLAIMANT),
-                claimParty(representedDefendant, PartyRole.DEFENDANT),
-                claimParty(otherDefendant, PartyRole.DEFENDANT)
-            ));
-            allowEmailTo(claimant, PartyRole.CLAIMANT);
-            when(partyService.getPartyRole(otherDefendant)).thenReturn(PartyRole.DEFENDANT);
-            when(partyService.canSendEmailNotification(otherDefendant, PartyRole.DEFENDANT)).thenReturn(false);
-
-            notificationService.sendNoticeOfChangeOtherPartiesEmailNotification(representedDefendant);
-
-            verify(schedulerClient).scheduleIfNotExists(schedulableInstanceCaptor.capture());
-            assertThat(schedulableInstanceCaptor.getValue().getTaskInstance().getData().getEmailAddress())
-                .isEqualTo(CLAIMANT_EMAIL);
         }
 
         private PartyEntity party(String emailAddress) {

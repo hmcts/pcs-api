@@ -86,7 +86,7 @@ public class LegalRepresentativePartyLinkService {
         legalRepresentativeRepository.save(legalRepresentative);
         revokeDefendantAccessForRepresentedParty(caseReference, defendantPartyEntity);
         notificationService.sendNoticeOfChangeCompletedEmailNotification(defendantPartyEntity);
-        notificationService.sendNoticeOfChangeOtherPartiesEmailNotification(defendantPartyEntity);
+        notificationService.sendNoticeOfChangeNonRepresentedPartiesEmailNotification(defendantPartyEntity);
     }
 
     private void revokeDefendantAccessForRepresentedParty(long caseReference, PartyEntity defendantPartyEntity) {
