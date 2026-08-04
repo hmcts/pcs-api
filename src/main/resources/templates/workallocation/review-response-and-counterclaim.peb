@@ -5,3 +5,12 @@ Review {{partyLabel}}’s response and counterclaim in
 further case action is required, and take the appropriate action before closing the task. Only mark the task as
 complete once the review is finished and any required action has been completed.
 
+{% if filenames is not empty %}
+#### Documents
+
+<ul class="govuk-list govuk-list--bullet">
+  {% for filename in filenames %}
+  <li class="govuk-!-font-size-19">{{filename}}</li>
+  {% endfor %}
+</ul>
+{% endif %}

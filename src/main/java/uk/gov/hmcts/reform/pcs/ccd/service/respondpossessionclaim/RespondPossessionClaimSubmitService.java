@@ -9,6 +9,7 @@ import uk.gov.hmcts.reform.pcs.camunda.TaskType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaim;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
+import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
@@ -18,6 +19,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TaskDescriptionService;
 import uk.gov.hmcts.reform.pcs.model.JourneyType;
 
+import java.util.List;
 import java.util.Optional;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.respondPossessionClaim;
@@ -52,21 +54,22 @@ public class RespondPossessionClaimSubmitService {
         Optional<CounterClaimEntity> savedCounterClaim =
             counterClaimService.saveCounterClaim(caseReference, counterClaim, defendantParty);
 
-        savedCounterClaim.ifPresent(counterClaimEntity -> documentService.createCounterClaimUploadedDocuments(
-            defendantResponses.getCounterClaimDocuments(),
-            counterClaimEntity,
-            counterClaimEntity.getPcsCase(),
-            counterClaimEntity.getParty()
-        ));
-
         CounterClaimEntity counterClaimEntity = savedCounterClaim.orElse(null);
         boolean hwfReferencePresent = counterClaimFeeCalculator.isHwfReferencePresent(counterClaim);
 
         boolean paymentRequired = false;
 
         if (counterClaimEntity != null) {
+
+            List<DocumentEntity> counterClaimDocuments = documentService.createCounterClaimUploadedDocuments(
+                defendantResponses.getCounterClaimDocuments(),
+                counterClaimEntity,
+                counterClaimEntity.getPcsCase(),
+                counterClaimEntity.getParty()
+            );
+
             if (hwfReferencePresent) {
-                createCounterclaimReviewWaTask(caseReference, counterClaimEntity);
+                createCounterclaimReviewWaTask(caseReference, counterClaimEntity, counterClaimDocuments);
             } else {
                 paymentRequired = true;
             }
@@ -91,13 +94,17 @@ public class RespondPossessionClaimSubmitService {
         );
     }
 
-    private void createCounterclaimReviewWaTask(long caseReference, CounterClaimEntity counterClaimEntity) {
+    private void createCounterclaimReviewWaTask(long caseReference,
+                                                CounterClaimEntity counterClaimEntity,
+                                                List<DocumentEntity> counterClaimDocuments) {
+
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
 
         String taskDescription = taskDescriptionService.createReviewResponseAndCounterclaimDescription(
             caseReference,
             pcsCaseEntity.getMainClaim(),
-            counterClaimEntity.getParty()
+            counterClaimEntity.getParty(),
+            counterClaimDocuments
         );
 
         camundaService.createTask(

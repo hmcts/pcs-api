@@ -17,6 +17,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimTyp
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
@@ -24,6 +25,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TaskDescriptionService;
+import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
 import uk.gov.hmcts.reform.pcs.model.JourneyType;
 
 import java.math.BigDecimal;
@@ -202,26 +204,46 @@ class RespondPossessionClaimSubmitServiceTest {
             .claimType(CounterClaimType.PAYMENT_OR_COMPENSATION)
             .hwfReferenceNumber("HWF-123-456")
             .build();
+
+        List<ListValue<UploadedDocument>> counterClaimDocuments = ListValueUtils.wrapListItems(List.of(mock(
+            UploadedDocument.class)));
+
         DefendantResponses defendantResponses = DefendantResponses.builder()
             .counterClaim(counterClaim)
+            .counterClaimDocuments(counterClaimDocuments)
             .build();
         PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
             .defendantResponses(defendantResponses)
             .build();
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().build();
         CounterClaimEntity savedCounterClaim = CounterClaimEntity.builder()
             .id(UUID.randomUUID())
             .status(CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED)
             .party(partyEntity)
+            .pcsCase(pcsCaseEntity)
             .build();
 
         when(counterClaimService.saveCounterClaim(CASE_REFERENCE, counterClaim, partyEntity))
             .thenReturn(Optional.of(savedCounterClaim));
         when(counterClaimFeeCalculator.isHwfReferencePresent(counterClaim)).thenReturn(true);
 
+        List<DocumentEntity> documentEntities = List.of(mock(DocumentEntity.class));
+        when(documentService.createCounterClaimUploadedDocuments(
+            counterClaimDocuments,
+            savedCounterClaim,
+            pcsCaseEntity,
+            partyEntity
+        )).thenReturn(documentEntities);
+
         String expectedDescription = "some description";
         ClaimEntity mainClaim = stubMainClaim();
         when(taskDescriptionService
-                 .createReviewResponseAndCounterclaimDescription(CASE_REFERENCE, mainClaim, partyEntity))
+                 .createReviewResponseAndCounterclaimDescription(
+                     CASE_REFERENCE,
+                     mainClaim,
+                     partyEntity,
+                     documentEntities
+                 ))
             .thenReturn(expectedDescription);
 
 

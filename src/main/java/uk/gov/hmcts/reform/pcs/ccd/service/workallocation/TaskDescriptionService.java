@@ -33,9 +33,7 @@ public class TaskDescriptionService {
 
         String partyLabel = partyService.getPartyLabel(mainClaim, partyEntity.getId());
 
-        List<String> filenames = documentEntities.stream()
-            .map(DocumentEntity::getFileName)
-            .toList();
+        List<String> filenames = extractFilenames(documentEntities);
 
         Map<String, Object> context = Map.of(
             "caseReference", caseReference,
@@ -50,13 +48,17 @@ public class TaskDescriptionService {
 
     public String createReviewResponseAndCounterclaimDescription(long caseReference,
                                                                  ClaimEntity mainClaim,
-                                                                 PartyEntity partyEntity) {
+                                                                 PartyEntity partyEntity,
+                                                                 List<DocumentEntity> documentEntities) {
 
         String partyLabel = partyService.getPartyLabel(mainClaim, partyEntity.getId());
 
+        List<String> filenames = extractFilenames(documentEntities);
+
         Map<String, Object> context = Map.of(
                 "caseReference", caseReference,
-                "partyLabel", partyLabel
+                "partyLabel", partyLabel,
+                "filenames", filenames
         );
 
         String templateName = "review-response-and-counterclaim";
@@ -74,6 +76,12 @@ public class TaskDescriptionService {
         }
 
         return writer.toString();
+    }
+
+    private static List<String> extractFilenames(List<DocumentEntity> documentEntities) {
+        return documentEntities.stream()
+            .map(DocumentEntity::getFileName)
+            .toList();
     }
 
 }

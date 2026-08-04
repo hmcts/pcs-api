@@ -175,7 +175,8 @@ class TaskDescriptionServiceTest {
                 .createReviewResponseAndCounterclaimDescription(
                     CASE_REFERENCE,
                     mainClaim,
-                    partyEntity
+                    partyEntity,
+                    List.of()
                 );
 
             // Then
@@ -208,7 +209,8 @@ class TaskDescriptionServiceTest {
                 () -> underTest.createReviewResponseAndCounterclaimDescription(
                     CASE_REFERENCE,
                     mainClaim,
-                    partyEntity
+                    partyEntity,
+                    List.of()
                 ));
 
             // Then
