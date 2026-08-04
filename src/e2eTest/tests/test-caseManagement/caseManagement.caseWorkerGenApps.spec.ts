@@ -53,7 +53,7 @@ test.afterEach(async () => {
 test.describe('Case management - Case Worker Enter a General application @nightly', async () => {
   test('Case management - Case Worker Enter a General application ADJOURN Journey @CM @regression', async () => {
     let fileName = enterGenAppUploadGeneralApplication.uploadDocHiddenOption[3];
-    let date = CaseManagementCommonUtils.getRandomDate(enterGenAppUploadGeneralApplication.dateTypeHiddenUserInput);
+    let date = CaseManagementCommonUtils.getRandomDate(enterGenappApplication.dateTypeHiddenUserInput);
     await performAction('selectAnEvent', { eventType: caseSummary.enterAGenApp });
     await performValidation('mainHeader', enterGenappApplication.mainHeader);
     await performAction('errorValidationEnterGeneralAppPage', enterGenappApplication.errorValidation);
@@ -108,8 +108,7 @@ test.describe('Case management - Case Worker Enter a General application @nightl
 
 
   test('Case management - Case Worker Enter a General application ADJOURN Journey - Application Fee Received - NO @CM', async () => {
-    let fileName = enterGenAppUploadGeneralApplication.uploadDocHiddenOption[3];
-    let date = CaseManagementCommonUtils.getRandomDate(enterGenAppUploadGeneralApplication.dateTypeHiddenUserInput);
+    let date = CaseManagementCommonUtils.getRandomDate(enterGenappApplication.dateTypeHiddenUserInput);
     await performAction('selectAnEvent', { eventType: caseSummary.enterAGenApp });
     await performValidation('mainHeader', enterGenappApplication.mainHeader);
     await performAction('enterApplicationDetails', {
@@ -139,7 +138,7 @@ test.describe('Case management - Case Worker Enter a General application @nightl
 
   test('Case management - Case Worker Enter a General application ADJOURN Journey - Fee Reference included - NO @CM', async () => {
     let fileName = enterGenAppUploadGeneralApplication.uploadDocHiddenOption[3];
-    let date = CaseManagementCommonUtils.getRandomDate(enterGenAppUploadGeneralApplication.dateTypeHiddenUserInput);
+    let date = CaseManagementCommonUtils.getRandomDate(enterGenappApplication.dateTypeHiddenUserInput);
     await performAction('selectAnEvent', { eventType: caseSummary.enterAGenApp });
     await performValidation('mainHeader', enterGenappApplication.mainHeader);
     await performAction('enterApplicationDetails', {
@@ -184,7 +183,7 @@ test.describe('Case management - Case Worker Enter a General application @nightl
 
   test('Case management - Case Worker Enter a General application SET ASIDE Journey @CM', async () => {
     let fileName = enterGenAppUploadGeneralApplication.uploadDocHiddenOption[1];
-    let date = CaseManagementCommonUtils.getRandomDate(enterGenAppUploadGeneralApplication.dateTypeHiddenUserInput);
+    let date = CaseManagementCommonUtils.getRandomDate(enterGenappApplication.dateTypeHiddenUserInput);
     await performAction('selectAnEvent', { eventType: caseSummary.enterAGenApp });
     await performValidation('mainHeader', enterGenappApplication.mainHeader);
     await performAction('enterApplicationDetails', {
@@ -228,7 +227,7 @@ test.describe('Case management - Case Worker Enter a General application @nightl
 
   test('Case management - Case Worker Enter a General application SOMETHING ELSE Journey @CM', async () => {
     let fileName = enterGenAppUploadGeneralApplication.uploadDocHiddenOption[2];
-    let date = CaseManagementCommonUtils.getRandomDate(enterGenAppUploadGeneralApplication.dateTypeHiddenUserInput);
+    let date = CaseManagementCommonUtils.getRandomDate(enterGenappApplication.dateTypeHiddenUserInput);
     await performAction('selectAnEvent', { eventType: caseSummary.enterAGenApp });
     await performValidation('mainHeader', enterGenappApplication.mainHeader);
     await performAction('enterApplicationDetails', {
