@@ -59,6 +59,7 @@ export class ActionCMRegistry {
     ['errorValidationApplicationConsentAndNotice', new ErrorValidationAction()],
     ['inputErrorValidation', new CaseManagementAction()],
     ['reTryOnCallBackError', new RetryOnCallBackError()],
+    ['getAddressInfo', new CaseManagementAction()],
 
   ]);
 

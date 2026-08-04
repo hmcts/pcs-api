@@ -17,12 +17,7 @@ import { CaseManagementCommonUtils } from './caseManagementUtils.action';
 import path from 'path';
 
 
-export const addressInfo = {
-  buildingStreet: createCaseApiData.createCasePayload.propertyAddress.AddressLine1,
-  addressLine2: createCaseApiData.createCasePayload.propertyAddress.AddressLine2,
-  townCity: createCaseApiData.createCasePayload.propertyAddress.PostTown,
-  engOrWalPostcode: createCaseApiData.createCasePayload.propertyAddress.PostCode
-};
+export let addressInfo: { buildingStreet: string; addressLine2: string; townCity: string; engOrWalPostcode: string; };
 const cyaMap = new Map<string, string>();
 export let allPartyDetails: string[] = [];
 
@@ -44,6 +39,7 @@ export class CaseManagementAction implements IAction {
       ['enterApplicationConsentAndNotice', () => this.enterApplicationConsentAndNotice(fieldName as actionRecord)],
       ['verifyReferToJudge', () => this.verifyReferToJudge(fieldName as actionRecord)],
       ['inputErrorValidation', () => this.inputErrorValidation(page, fieldName as actionRecord)],
+      ['getAddressInfo', () => this.getAddressInfo(fieldName as actionRecord)],
 
     ]);
     const actionToPerform = actionsMap.get(action);
@@ -129,7 +125,7 @@ export class CaseManagementAction implements IAction {
     }
 
     allPartyDetails = [...new Set(originalDefendantDetails.filter(n => n.trim().toLowerCase() !== "null null")),
-      ...originalDefendantDetails.filter(n => n.trim().toLowerCase() === "null null")
+    ...originalDefendantDetails.filter(n => n.trim().toLowerCase() === "null null")
     ];
     allPartyDetails.push(`${payLoad.claimantName} - Claimant 1`);
   }
@@ -192,7 +188,7 @@ export class CaseManagementAction implements IAction {
   }
 
   private async enterApplicationConsentAndNotice(confirmApplicationConsent: actionRecord) {
-    await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid});
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', {
       elementType: 'paragraph',
       text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
@@ -201,7 +197,7 @@ export class CaseManagementAction implements IAction {
       question: confirmApplicationConsent.question1,
       option: confirmApplicationConsent.option1,
     });
-    if(confirmApplicationConsent.option1 ==='No') {
+    if (confirmApplicationConsent.option1 === 'No') {
       await performAction('clickRadioButton', {
         question: confirmApplicationConsent.question2,
         option: confirmApplicationConsent.option2,
@@ -211,7 +207,7 @@ export class CaseManagementAction implements IAction {
   }
 
   private async verifyReferToJudge(referToJudgeData: actionRecord) {
-    await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid});
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', {
       elementType: 'paragraph',
       text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
@@ -230,8 +226,8 @@ export class CaseManagementAction implements IAction {
     if (selectApp.option === 'Not related to an application or counterclaim') {
       await performAction('select', selectApp.dropQn, selectApp.selectOption);
     }
-    if(selectApp.date){
-    await performAction('inputDate', selectApp.label as string, selectApp.date);
+    if (selectApp.date) {
+      await performAction('inputDate', selectApp.label as string, selectApp.date);
     }
 
     await performAction('clickRadioButton', { question: selectApp.question1, option: selectApp.option1 });
@@ -271,10 +267,10 @@ export class CaseManagementAction implements IAction {
     });
     const baseName = String(confirm.fileName).replace(/\.pdf$/i, '');
     const gaNumber = String(confirm.app).match(/\bGA\d+\b/i)?.[0] ?? '';
-    if(confirm.fileDate){
-    const [day, month, year] = String(confirm.fileDate).split('/');
-    formattedDate = `${day.padStart(2, '0')}${month.padStart(2, '0')}${year}`;
-    }else{
+    if (confirm.fileDate) {
+      const [day, month, year] = String(confirm.fileDate).split('/');
+      formattedDate = `${day.padStart(2, '0')}${month.padStart(2, '0')}${year}`;
+    } else {
       formattedDate = '';
     }
     const role = String(confirm.party).split(' - ')[1] ?? '';
@@ -442,5 +438,16 @@ export class CaseManagementAction implements IAction {
       await performAction('removeFile');
       await page.waitForTimeout(6000);
     }
+  }
+
+  private async getAddressInfo(address: actionRecord) {
+    let createCasePayLoad = address.data as Record<string, any>;
+    addressInfo = {
+      buildingStreet: createCasePayLoad.propertyAddress.AddressLine1,
+      addressLine2: createCasePayLoad.propertyAddress.AddressLine2,
+      townCity: createCasePayLoad.propertyAddress.PostTown,
+      engOrWalPostcode: createCasePayLoad.propertyAddress.PostCode
+    };
+
   }
 }

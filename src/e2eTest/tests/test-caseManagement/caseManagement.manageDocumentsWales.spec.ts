@@ -20,6 +20,7 @@ test.beforeEach(async ({ page, context }) => {
   initializeCMExecutor(page);
   await performAction('createCaseAPI', { data: createCaseApiWalesData.createCasePayload });
   await performAction('submitCaseAPI', { data: submitCaseApiDataWales.submitCasePayloadCaseFileView });
+  await performAction('getAddressInfo', { data: createCaseApiWalesData.createCasePayload });
   await performAction('updatePaymentAPI');
   await performAction('getCaseAPI', 'Link Solicitor');
   await performAction('getAllPartyDetails', {
@@ -30,7 +31,7 @@ test.beforeEach(async ({ page, context }) => {
 
   for (const defendant of defendantUserDetails) {
     await performAction('makeAnApplicationAPI', {
-      data: makeAnApplicationApiData.makeAnApplicationAdjournPayload(
+      data: makeAnApplicationApiData.makeAnApplicationAdjournWalesPayload(
         defendant.id,
         defendant.name
       ),
@@ -53,14 +54,13 @@ test.afterEach(async () => {
 });
 
 test.describe('Case management - Manage documents Wales Journey @nightly', async () => {
-  test.skip('Case management - Manage documents - Upload Wales Journey @CM @regression', async () => {
+  test('Case management - Manage documents - Upload Wales Journey @CM @regression', async () => {
     let date = CaseManagementCommonUtils.getRandomDate(uploadADocument.dateTypeHiddenUserInput);    
     let appType = CaseManagementCommonUtils.getGenApplicationType(defendantUserDetails.length)[1];
     let party = allPartyDetails[1];
     let fileName = uploadADocument.uploadDocHiddenOption[1];
     await performAction('selectAnEvent', { eventType: caseSummary.manageDocuments.upload });
     await performValidation('mainHeader', uploadADocument.mainHeader);
-    // await performAction('errorValidationSelectDocumentPage', selectDocument.errorValidation);
     await performAction('uploadADocument', { label: uploadADocument.uploadADocumentTextLabel, file: fileName })
     await performAction('selectDynamicAppAndPartyDocRelatedTo', {
       question: uploadADocument.whichAppOrCounterClaimThisRelateToQuestion,
@@ -78,9 +78,71 @@ test.describe('Case management - Manage documents Wales Journey @nightly', async
     await performAction('validateCaseFileViewFolders', home.caseFileFolders);
     await performAction('validateCaseFileViewIndividualFolder', {
       folder: 'Applications',
-      submitPayload: makeAnApplicationApiData.makeAnApplicationAdjournPayload(defendantUserDetails[1].id,defendantUserDetails[1].name),
+      submitPayload: makeAnApplicationApiData.makeAnApplicationAdjournWalesPayload(defendantUserDetails[1].id,defendantUserDetails[1].name),
       caseWorkerUpload: CaseManagementCommonUtils.renameDocument(fileName, date, appType)
     });
 
   });
+
+  test('Case management - Manage documents - Upload Document not related to any App or Counterclaim Wales Journey @CM', async () => {
+      let date = CaseManagementCommonUtils.getRandomDate(uploadADocument.dateTypeHiddenUserInput);
+      let appType = uploadADocument.notRelatedToAppRadioOption;
+      let party = allPartyDetails[1];
+      let fileName = uploadADocument.uploadDocHiddenOption[1];
+      await performAction('selectAnEvent', { eventType: caseSummary.manageDocuments.upload });
+      await performValidation('mainHeader', uploadADocument.mainHeader);
+      await performAction('uploadADocument', { label: uploadADocument.uploadADocumentTextLabel, file: fileName })
+      await performAction('selectDynamicAppAndPartyDocRelatedTo', {
+        question: uploadADocument.whichAppOrCounterClaimThisRelateToQuestion,
+        option: appType,
+        label: uploadADocument.addIssueDateTextLabel,
+        date: date,
+        question1: uploadADocument.partyDocRelatedToQuestion,
+        option1: party,
+        dropQn: uploadADocument.whichTypeOfDocHiddenQuestion,
+        selectOption: uploadADocument.whichTypeHiddenOption[0],
+        nextPage: checkYourAnswersUploadADocument.mainHeader
+      });
+      await performAction('clickButton', checkYourAnswersUploadADocument.submitButton);
+      await performAction('confirmUpload', { fileName: fileName, app: appType, party: party, fileDate: date, submitPayload: submitCaseApiDataWales.submitCasePayloadCaseFileView, });
+      await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage documents: Upload');
+      await performAction('clickTab', home.caseFileView);
+      await performAction('validateCaseFileViewFolders', home.caseFileFolders);
+      await performAction('validateCaseFileViewIndividualFolder', {
+        folder: 'Property documents',
+        submitPayload: submitCaseApiDataWales.submitCasePayloadCaseFileView,
+        caseWorkerUpload: CaseManagementCommonUtils.renameDocument(fileName, date)
+      });
+    });
+  
+    test('Case management - Manage documents - Upload Document without any Issue date Wales Journey @CM', async () => {
+      let date = '';
+      let appType = uploadADocument.notRelatedToAppRadioOption;
+      let party = allPartyDetails[2];
+      let fileName = uploadADocument.uploadDocHiddenOption[2];
+      await performAction('selectAnEvent', { eventType: caseSummary.manageDocuments.upload });
+      await performValidation('mainHeader', uploadADocument.mainHeader);
+      await performAction('uploadADocument', { label: uploadADocument.uploadADocumentTextLabel, file: fileName })
+      await performAction('selectDynamicAppAndPartyDocRelatedTo', {
+        question: uploadADocument.whichAppOrCounterClaimThisRelateToQuestion,
+        option: appType,
+        label: uploadADocument.addIssueDateTextLabel,
+        date: date,
+        question1: uploadADocument.partyDocRelatedToQuestion,
+        option1: party,
+        dropQn: uploadADocument.whichTypeOfDocHiddenQuestion,
+        selectOption: uploadADocument.whichTypeHiddenOption[1],
+        nextPage: checkYourAnswersUploadADocument.mainHeader
+      });
+      await performAction('clickButton', checkYourAnswersUploadADocument.submitButton);
+      await performAction('confirmUpload', { fileName: fileName, app: appType, party: party, fileDate: date, submitPayload: submitCaseApiDataWales.submitCasePayloadCaseFileView, });
+      await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage documents: Upload');
+      await performAction('clickTab', home.caseFileView);
+      await performAction('validateCaseFileViewFolders', home.caseFileFolders);
+      await performAction('validateCaseFileViewIndividualFolder', {
+        folder: 'Evidence',
+        submitPayload: submitCaseApiDataWales.submitCasePayloadCaseFileView,
+        caseWorkerUpload: CaseManagementCommonUtils.renameDocument(fileName)
+      });
+    });
 });
