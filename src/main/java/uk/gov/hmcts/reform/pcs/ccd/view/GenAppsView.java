@@ -11,7 +11,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GeneralApplication;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.service.CurrentUserRoles;
+import uk.gov.hmcts.reform.pcs.ccd.service.UserRoles;
 import uk.gov.hmcts.reform.pcs.ccd.service.UserRoleService;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
 
@@ -29,15 +29,15 @@ public class GenAppsView {
     private final GenAppVisibilityService genAppVisibilityService;
 
     public void setCaseFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
-        CurrentUserRoles currentUserRoles =
+        UserRoles userRoles =
             userRoleService.getCurrentUserCaseRoles(pcsCaseEntity.getCaseReference());
 
         List<ListValue<GeneralApplication>> genApps = pcsCaseEntity.getGenApps().stream()
             .sorted(Comparator.comparing(GenAppEntity::getApplicationSubmittedDate).reversed())
             .filter(genAppEntity -> genAppVisibilityService.isGenAppVisibleToUser(
                 genAppEntity,
-                currentUserRoles.userId(),
-                currentUserRoles.roles()
+                userRoles.userId(),
+                userRoles.roles()
             ))
             .map(this::createListValue)
             .toList();

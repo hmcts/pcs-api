@@ -16,6 +16,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class UserRoleService {
@@ -25,7 +26,7 @@ public class UserRoleService {
     private final SecurityContextService securityContextService;
     private final AuthTokenGenerator authTokenGenerator;
     private final CaseAssignmentApi caseAssignmentApi;
-    private final Cache<CacheKey, List<String>> rasRoleCache;
+    private final Cache<CacheKey, Set<String>> rasRoleCache;
 
     public UserRoleService(SecurityContextService securityContextService,
                            AuthTokenGenerator authTokenGenerator,
@@ -38,7 +39,7 @@ public class UserRoleService {
             .build();
     }
 
-    public CurrentUserRoles getCurrentUserCaseRoles(long caseReference) {
+    public UserRoles getCurrentUserCaseRoles(long caseReference) {
         UserInfo currentUserDetails = securityContextService.getCurrentUserDetails();
         String currentUserId = currentUserDetails.getUid();
 
@@ -48,10 +49,10 @@ public class UserRoleService {
             this::getRasRoles
         ));
 
-        return new CurrentUserRoles(UUID.fromString(currentUserId), List.copyOf(roles));
+        return new UserRoles(UUID.fromString(currentUserId), List.copyOf(roles));
     }
 
-    private List<String> getRasRoles(CacheKey cacheKey) {
+    private Set<String> getRasRoles(CacheKey cacheKey) {
         CaseAssignmentUserRolesResource userRoles = caseAssignmentApi.getUserRoles(
             securityContextService.getCurrentUserAuthToken(),
             authTokenGenerator.generate(),
@@ -60,13 +61,12 @@ public class UserRoleService {
         );
 
         if (userRoles == null || userRoles.getCaseAssignmentUserRoles() == null) {
-            return List.of();
+            return Set.of();
         }
 
         return userRoles.getCaseAssignmentUserRoles().stream()
             .map(CaseAssignmentUserRole::getCaseRole)
-            .distinct()
-            .toList();
+            .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
     private static Collection<String> safeRoles(Collection<String> roles) {

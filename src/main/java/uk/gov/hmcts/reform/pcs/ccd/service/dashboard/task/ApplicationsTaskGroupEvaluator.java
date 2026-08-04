@@ -5,7 +5,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.Task;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.TaskGroup;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.TaskGroupId;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.TaskStatus;
-import uk.gov.hmcts.reform.pcs.ccd.service.CurrentUserRoles;
+import uk.gov.hmcts.reform.pcs.ccd.service.UserRoles;
 import uk.gov.hmcts.reform.pcs.ccd.service.UserRoleService;
 import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.DashboardContext;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
@@ -58,13 +58,13 @@ public class ApplicationsTaskGroupEvaluator implements TaskGroupEvaluator {
             return false;
         }
 
-        CurrentUserRoles currentUserRoles =
+        UserRoles userRoles =
             userRoleService.getCurrentUserCaseRoles(ctx.caseReference());
 
         return !genAppVisibilityService.getVisibleGenAppsToUser(
             ctx.caseEntity().getGenApps(),
-            currentUserRoles.userId(),
-            currentUserRoles.roles()
+            userRoles.userId(),
+            userRoles.roles()
         ).isEmpty();
     }
 }

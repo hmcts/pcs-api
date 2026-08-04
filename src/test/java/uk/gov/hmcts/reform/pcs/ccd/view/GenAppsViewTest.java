@@ -16,7 +16,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.service.CurrentUserRoles;
+import uk.gov.hmcts.reform.pcs.ccd.service.UserRoles;
 import uk.gov.hmcts.reform.pcs.ccd.service.UserRoleService;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
 
@@ -55,7 +55,7 @@ class GenAppsViewTest {
     void setUp() {
         lenient().when(pcsCaseEntity.getCaseReference()).thenReturn(TEST_CASE_REFERENCE);
         when(userRoleService.getCurrentUserCaseRoles(TEST_CASE_REFERENCE))
-            .thenReturn(new CurrentUserRoles(CURRENT_USER_IDAM_ID, List.of()));
+            .thenReturn(new UserRoles(CURRENT_USER_IDAM_ID, List.of()));
         when(genAppVisibilityService.isGenAppVisibleToUser(
             isA(GenAppEntity.class),
             eq(CURRENT_USER_IDAM_ID),

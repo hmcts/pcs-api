@@ -9,7 +9,6 @@ import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.ccd.client.CaseAssignmentApi;
 import uk.gov.hmcts.reform.ccd.client.model.CaseAssignmentUserRole;
 import uk.gov.hmcts.reform.ccd.client.model.CaseAssignmentUserRolesResource;
-import uk.gov.hmcts.reform.pcs.ccd.service.CurrentUserRoles;
 import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
@@ -48,10 +47,10 @@ class UserRoleServiceTest {
         stubCurrentUserDetails(List.of("caseworker-pcs"));
         stubRasRoles("[DEFENDANT]", "caseworker-pcs");
 
-        CurrentUserRoles currentUserRoles = underTest.getCurrentUserCaseRoles(CASE_REFERENCE);
+        UserRoles userRoles = underTest.getCurrentUserCaseRoles(CASE_REFERENCE);
 
-        assertThat(currentUserRoles.userId()).isEqualTo(CURRENT_USER_ID);
-        assertThat(currentUserRoles.roles()).containsExactly("caseworker-pcs", "[DEFENDANT]");
+        assertThat(userRoles.userId()).isEqualTo(CURRENT_USER_ID);
+        assertThat(userRoles.roles()).containsExactly("caseworker-pcs", "[DEFENDANT]");
     }
 
     @Test
@@ -82,9 +81,9 @@ class UserRoleServiceTest {
             List.of(CURRENT_USER_ID.toString())
         )).thenReturn(CaseAssignmentUserRolesResource.builder().build());
 
-        CurrentUserRoles currentUserRoles = underTest.getCurrentUserCaseRoles(CASE_REFERENCE);
+        UserRoles userRoles = underTest.getCurrentUserCaseRoles(CASE_REFERENCE);
 
-        assertThat(currentUserRoles.roles()).isEmpty();
+        assertThat(userRoles.roles()).isEmpty();
     }
 
     private void stubCurrentUserDetails(List<String> roles) {

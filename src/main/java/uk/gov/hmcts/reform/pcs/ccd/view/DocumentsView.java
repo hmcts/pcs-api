@@ -13,13 +13,11 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
-import uk.gov.hmcts.reform.pcs.ccd.service.CurrentUserRoles;
+import uk.gov.hmcts.reform.pcs.ccd.service.UserRoles;
 import uk.gov.hmcts.reform.pcs.ccd.service.UserRoleService;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
 
-import java.util.Collection;
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Component
@@ -39,15 +37,11 @@ public class DocumentsView {
             return List.of();
         }
 
-        CurrentUserRoles currentUserRoles =
+        UserRoles userRoles =
             userRoleService.getCurrentUserCaseRoles(pcsCaseEntity.getCaseReference());
 
         return pcsCaseEntity.getDocuments().stream()
-            .filter(documentEntity -> this.isDocumentVisibleToUser(
-                documentEntity,
-                currentUserRoles.userId(),
-                currentUserRoles.roles()
-            ))
+            .filter(documentEntity -> this.isDocumentVisibleToUser(documentEntity, userRoles))
             .filter(this::isNotInCaseDetailsTab)
             .map(entity -> ListValue.<Document>builder()
                 .id(entity.getId().toString())
@@ -65,9 +59,7 @@ public class DocumentsView {
             .collect(Collectors.toList());
     }
 
-    private boolean isDocumentVisibleToUser(DocumentEntity documentEntity,
-                                            UUID currentUserId,
-                                            Collection<String> currentUserRoles) {
+    private boolean isDocumentVisibleToUser(DocumentEntity documentEntity, UserRoles userRoles) {
         if (isExcludedFromCaseFile(documentEntity)) {
             return false;
         }
@@ -75,12 +67,16 @@ public class DocumentsView {
         GenAppEntity genAppEntity = documentEntity.getGeneralApplication();
 
         if (genAppEntity != null) {
-            return genAppVisibilityService.isGenAppDocumentVisibleToUser(genAppEntity, currentUserId, currentUserRoles);
+            return genAppVisibilityService.isGenAppDocumentVisibleToUser(
+                genAppEntity,
+                userRoles.userId(),
+                userRoles.roles()
+            );
         }
 
         if (documentEntity.getType() == DocumentType.WITHOUT_NOTICE_ORDER) {
             PartyEntity party = documentEntity.getParty();
-            return genAppVisibilityService.isWithoutNoticeVisibleToUser(party, currentUserId, currentUserRoles);
+            return genAppVisibilityService.isWithoutNoticeVisibleToUser(party, userRoles.userId(), userRoles.roles());
         }
 
         CounterClaimEntity counterClaim = documentEntity.getCounterClaim();

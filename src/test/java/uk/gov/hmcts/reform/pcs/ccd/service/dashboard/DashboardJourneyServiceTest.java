@@ -21,7 +21,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.LegalRepresentativeRepository;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.service.CurrentUserRoles;
+import uk.gov.hmcts.reform.pcs.ccd.service.UserRoles;
 import uk.gov.hmcts.reform.pcs.ccd.service.UserRoleService;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.ApplicationsTaskGroupEvaluator;
@@ -172,7 +172,7 @@ class DashboardJourneyServiceTest {
             .genApps(Set.of(GenAppEntity.builder().state(GenAppState.GEN_APP_ISSUED).build()))
             .build();
 
-        stubCurrentUserRoles(viewerId);
+        stubUserRoles(viewerId);
         PartyEntity defendant = PartyEntity.builder().idamId(viewerId).build();
         DashboardData result = underTest.computeDashboardData(
             CASE_REFERENCE,
@@ -204,7 +204,7 @@ class DashboardJourneyServiceTest {
             .genApps(Set.of(genApp))
             .build();
 
-        stubCurrentUserRoles(viewerId);
+        stubUserRoles(viewerId);
         PartyEntity defendant = PartyEntity.builder().idamId(viewerId).build();
         DashboardData result = underTest.computeDashboardData(
             CASE_REFERENCE,
@@ -245,7 +245,7 @@ class DashboardJourneyServiceTest {
             .genApps(Set.of(olderGenApp, newerGenApp))
             .build();
 
-        stubCurrentUserRoles(viewerId);
+        stubUserRoles(viewerId);
         PartyEntity defendant = PartyEntity.builder().idamId(viewerId).build();
         DashboardData result = underTest.computeDashboardData(
             CASE_REFERENCE,
@@ -281,7 +281,7 @@ class DashboardJourneyServiceTest {
             .genApps(Set.of(hiddenGenApp))
             .build();
 
-        stubCurrentUserRoles(viewerId);
+        stubUserRoles(viewerId);
         PartyEntity defendant = PartyEntity.builder().idamId(viewerId).build();
         DashboardData result = underTest.computeDashboardData(
             CASE_REFERENCE,
@@ -317,7 +317,7 @@ class DashboardJourneyServiceTest {
             .genApps(Set.of(ownGenApp))
             .build();
 
-        stubCurrentUserRoles(applicantId);
+        stubUserRoles(applicantId);
         PartyEntity defendant = PartyEntity.builder().idamId(applicantId).build();
         DashboardData result = underTest.computeDashboardData(
             CASE_REFERENCE,
@@ -377,9 +377,9 @@ class DashboardJourneyServiceTest {
             );
     }
 
-    private void stubCurrentUserRoles(UUID userId) {
+    private void stubUserRoles(UUID userId) {
         when(userRoleService.getCurrentUserCaseRoles(CASE_REFERENCE))
-            .thenReturn(new CurrentUserRoles(userId, List.of()));
+            .thenReturn(new UserRoles(userId, List.of()));
     }
 
 }
