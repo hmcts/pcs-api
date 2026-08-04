@@ -198,37 +198,25 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
     // Substituted by CCD with the organisation id from the matching organisation policy.
     public static final String ORG_ID_PLACEHOLDER = "$ORGID$";
 
-    // The group role is what RAS validates against its catalogue, and only PCS_Solicitor_Group is
-    // registered today (POFCC-368 adds claimant / claimant-solicitor / defendant-solicitor).
-    // Capacity is carried by the template rather than the role name, so all three access types can
-    // share one registered role until that lands.
-    private static final String GROUP_ROLE = "PCS_Solicitor_Group";
+    // The group role name is the capacity itself, so the role a user is given already resolves to an
+    // access profile and no separate grant is needed. POFCC-368 registers these in the RAS catalogue.
 
     private static void configureGaAccessTypes(ConfigBuilder<PCSCase, State, AccessProfile> builder) {
         // Def store rejects the import unless every AccessType row has a unique DisplayOrder,
         // so the counter runs across every row rather than restarting per access type.
         int displayOrder = 1;
 
-        builder.accessType("create-cases")
-            .organisationProfileId("LOCALAUTH_PROFILE")
-            .accessMandatory(true)
-            .accessDefault(true)
-            .display(false)
-            .hintText("Access to create cases")
-            .displayOrder(displayOrder++)
-            .liveTo(LIVE_TO);
-
-        builder.accessTypeRole("create-cases")
-            .organisationProfileId("LOCALAUTH_PROFILE")
-            .organisationalRoleName("PCS_Solicitor_Org")
-            .liveTo(LIVE_TO);
+        // No create-cases access type: case creation is evaluated against the case type, not a case,
+        // and organisation-type role assignments - which group roles are - pass that filter with the
+        // caseAccessGroupId attribute ignored. So the mandatory claimant group role below already
+        // carries creation permission and a separate access type would be redundant.
 
         // A solicitor firm can act on either side, and on opposite sides of different cases, so the
         // two capacities are separate options for the organisation's admin to assign per user.
         displayOrder = addSolicitorAccessType(builder, "solicitor-org-claimant-access",
-            "claimant-solicitor", "as claimant for", displayOrder);
+            "claimant-solicitor", "claimant", displayOrder);
         displayOrder = addSolicitorAccessType(builder, "solicitor-org-defendant-access",
-            "defendant-solicitor", "as defendant for", displayOrder);
+            "defendant-solicitor", "defendant", displayOrder);
 
         for (String orgProfile : CLAIMANT_ORG_PROFILES) {
             builder.accessType("prof-org-claimant-access")
@@ -243,7 +231,7 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
 
             builder.accessTypeRole("prof-org-claimant-access")
                 .organisationProfileId(orgProfile)
-                .groupRoleName(GROUP_ROLE)
+                .groupRoleName("claimant")
                 .caseAssignedRoleField("claimant")
                 .groupAccessEnabled(true)
                 .caseAccessGroupIdTemplate("PCS:PCS:prof-org-claimant-access:claimant:" + ORG_ID_PLACEHOLDER)
@@ -254,21 +242,21 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
     private static int addSolicitorAccessType(ConfigBuilder<PCSCase, State, AccessProfile> builder,
                                               String accessTypeId,
                                               String caseRole,
-                                              String descriptionSuffix,
+                                              String party,
                                               int displayOrder) {
         builder.accessType(accessTypeId)
             .organisationProfileId(SOLICITOR_PROFILE)
-            .accessMandatory(false)
+            .accessMandatory(true)
             .accessDefault(false)
             .display(true)
-            .description("Can manage all cases this organisation acts " + descriptionSuffix)
+            .description("Can manage all cases associated with this organisation as " + party)
             .hintText("Assign to Users to enable access to all cases associated with this organisation")
             .displayOrder(displayOrder)
             .liveTo(LIVE_TO);
 
         builder.accessTypeRole(accessTypeId)
             .organisationProfileId(SOLICITOR_PROFILE)
-            .groupRoleName(GROUP_ROLE)
+            .groupRoleName(caseRole)
             .caseAssignedRoleField(caseRole)
             .groupAccessEnabled(true)
             .caseAccessGroupIdTemplate("PCS:PCS:" + accessTypeId + ":" + caseRole + ":" + ORG_ID_PLACEHOLDER)

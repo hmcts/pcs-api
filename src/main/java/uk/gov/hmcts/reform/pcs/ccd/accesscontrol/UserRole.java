@@ -30,9 +30,9 @@ public enum UserRole implements HasRole {
     // The organisation-to-case relationships group access is scoped by. Def store rejects an
     // AccessTypeRole whose CaseAssignedRoleField is not also a RoleToAccessProfiles entry, so
     // these have to exist as roles, not just as values in the organisation policies.
-    CLAIMANT("claimant", CRU, RAS, AccessProfile.PROFESSIONAL_USER),
-    CLAIMANT_SOLICITOR_GROUP("claimant-solicitor", CRU, RAS, AccessProfile.PROFESSIONAL_USER),
-    DEFENDANT_SOLICITOR_GROUP("defendant-solicitor", CRU, RAS, AccessProfile.PROFESSIONAL_USER),
+    CLAIMANT_ORG("claimant", CRU, RAS, AccessProfile.PROFESSIONAL_USER),
+    CLAIMANT_SOLICITOR_ORG("claimant-solicitor", CRU, RAS, AccessProfile.PROFESSIONAL_USER),
+    DEFENDANT_SOLICITOR_ORG("defendant-solicitor", CRU, RAS, AccessProfile.PROFESSIONAL_USER),
 
     DEFENDANT("[DEFENDANT]", CRU, RAS),
     CLAIMANT_SOLICITOR("[CLAIMANTSOLICITOR]", CRU, RAS),

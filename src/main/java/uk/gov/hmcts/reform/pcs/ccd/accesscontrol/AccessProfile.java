@@ -26,6 +26,12 @@ public enum AccessProfile implements HasRole {
     PCS_SOLICITOR_ORG("PCS_Solicitor_Org", Set.of(C)),
     PROFESSIONAL_USER("professional-user", CRU),
 
+    // The organisation-to-case relationships group access is scoped by. Used as the assigned role
+    // on an organisation policy, which is what CCD matches against CaseAssignedRoleField.
+    CLAIMANT_ORG("claimant", CRU),
+    CLAIMANT_SOLICITOR_ORG("claimant-solicitor", CRU),
+    DEFENDANT_SOLICITOR_ORG("defendant-solicitor", CRU),
+
     JUDGE("judge", CRU),
     FEE_PAID_JUDGE("fee-paid-judge", CRU),
     CIRCUIT_JUDGE("circuit-judge", CRU),
