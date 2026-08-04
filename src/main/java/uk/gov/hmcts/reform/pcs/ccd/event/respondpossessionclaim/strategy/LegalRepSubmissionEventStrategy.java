@@ -113,13 +113,13 @@ public class LegalRepSubmissionEventStrategy implements RespondPossessionClaimSu
 
         // Schedule this as a task
 //        legalRepHelper.submit(legalRepresentativeEntity, pcsCaseEntity, legalRepresentativePartyEntity, defendantResponse);
-        EmailNotificationResponse response = pickTemplate(legalRepresentativeEntity, pcsCaseEntity, defendantParty, defendantResponse);
+        EmailNotificationResponse response = pickTemplate(legalRepresentativeEntity, pcsCaseEntity, defendantResponse);
 
         return submitResponse;
     }
 
     private EmailNotificationResponse noCounterClaim(LegalRepresentativeEntity legalRepresentativeEntity, PcsCaseEntity pcsCaseEntity,
-                                DefendantResponseEntity defendantResponse) {
+                                                     DefendantResponseEntity defendantResponse) {
         return notificationService
             .sendDefendantResponseConfirmationToLegalRepresentativeNoCounterClaim(legalRepresentativeEntity,
                                                                                                  pcsCaseEntity,
@@ -127,43 +127,41 @@ public class LegalRepSubmissionEventStrategy implements RespondPossessionClaimSu
     }
 
     private EmailNotificationResponse counterClaimPaymentSuccess(LegalRepresentativeEntity legalRepresentativeEntity, PcsCaseEntity pcsCaseEntity,
-                                PartyEntity legalRepresentativePartyEntity, DefendantResponseEntity defendantResponse) {
+                                                                 DefendantResponseEntity defendantResponse) {
         return notificationService
             .sendDefendantResponseConfirmationToLegalRepresentativePaymentSuccess(legalRepresentativeEntity,
                                                                                   pcsCaseEntity,
-                                                                                  legalRepresentativePartyEntity,
                                                                                   defendantResponse);
     }
 
     private EmailNotificationResponse counterClaimPaymentRequired(LegalRepresentativeEntity legalRepresentativeEntity, PcsCaseEntity pcsCaseEntity,
-                                            PartyEntity legalRepresentativePartyEntity, DefendantResponseEntity defendantResponse) {
+                                                                  DefendantResponseEntity defendantResponse) {
         return notificationService
             .sendDefendantResponseConfirmationToLegalRepresentativePaymentRequired(legalRepresentativeEntity,
                                                                                   pcsCaseEntity,
-                                                                                  legalRepresentativePartyEntity,
                                                                                   defendantResponse);
     }
 
-    private EmailNotificationResponse counterClaimNotSubmitted(LegalRepresentativeEntity legalRepresentativeEntity, PcsCaseEntity pcsCaseEntity,
-                                PartyEntity legalRepresentativePartyEntity, DefendantResponseEntity defendantResponse) {
-        return notificationService
-            .sendDefendantResponseConfirmationToLegalRepresentativeCounterClaimNotSubmitted(legalRepresentativeEntity,
-                                                                                  pcsCaseEntity,
-                                                                                  legalRepresentativePartyEntity,
-                                                                                  defendantResponse);
-    }
+//    No AC provided fot this template - to check with Nafees
+//    private EmailNotificationResponse counterClaimNotSubmitted(LegalRepresentativeEntity legalRepresentativeEntity, PcsCaseEntity pcsCaseEntity,
+//                                PartyEntity legalRepresentativePartyEntity, DefendantResponseEntity defendantResponse) {
+//        return notificationService
+//            .sendDefendantResponseConfirmationToLegalRepresentativeCounterClaimNotSubmitted(legalRepresentativeEntity,
+//                                                                                  pcsCaseEntity,
+//                                                                                  legalRepresentativePartyEntity,
+//                                                                                  defendantResponse);
+//    }
 
     private EmailNotificationResponse counterClaimNoPaymentRequired(LegalRepresentativeEntity legalRepresentativeEntity, PcsCaseEntity pcsCaseEntity,
-                                             PartyEntity legalRepresentativePartyEntity, DefendantResponseEntity defendantResponse) {
+                                                                    DefendantResponseEntity defendantResponse) {
         return notificationService
             .sendDefendantResponseConfirmationToLegalRepresentativeNoPaymentRequired(legalRepresentativeEntity,
                                                                                    pcsCaseEntity,
-                                                                                   legalRepresentativePartyEntity,
                                                                                    defendantResponse);
     }
 
     private EmailNotificationResponse pickTemplate(LegalRepresentativeEntity legalRepresentativeEntity, PcsCaseEntity pcsCaseEntity,
-                                                   PartyEntity legalRepresentativePartyEntity, DefendantResponseEntity defendantResponse) {
+                                                   DefendantResponseEntity defendantResponse) {
         Optional<CounterClaimEntity> counterClaimEntityOptional = getCounterClaim(pcsCaseEntity);
 
         // NO Counter Claim
@@ -177,7 +175,7 @@ public class LegalRepSubmissionEventStrategy implements RespondPossessionClaimSu
 //        if (/*isCounterClaimIssued(counterClaimEntity) && */isHwfBlank(counterClaimEntity)) {
 //            return counterClaimPaymentSuccess(legalRepresentativeEntity, pcsCaseEntity, legalRepresentativePartyEntity, defendantResponse);
 //        }
-        return counterClaimNoPaymentRequired(legalRepresentativeEntity, pcsCaseEntity, legalRepresentativePartyEntity, defendantResponse);
+        return counterClaimNoPaymentRequired(legalRepresentativeEntity, pcsCaseEntity, defendantResponse);
     }
 
     private Optional<CounterClaimEntity> getCounterClaim(PcsCaseEntity pcsCaseEntity) {

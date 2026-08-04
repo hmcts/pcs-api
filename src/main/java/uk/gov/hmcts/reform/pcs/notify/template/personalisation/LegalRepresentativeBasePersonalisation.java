@@ -10,13 +10,11 @@ public class LegalRepresentativeBasePersonalisation implements TemplatePersonali
 
     private final BasePersonalisation base;
     private final String organisationName;
-    private final String paymentReference;
 
     @Override
     public Map<String, Object> toMap() {
         Map<String, Object> map = new HashMap<>(base.toMap());
         map.put("organisationName", organisationName);
-        map.put("paymentReference", paymentReference);
         return Map.copyOf(map);
     }
 }
