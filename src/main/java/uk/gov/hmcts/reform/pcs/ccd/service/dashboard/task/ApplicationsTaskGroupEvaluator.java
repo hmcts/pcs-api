@@ -5,8 +5,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.Task;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.TaskGroup;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.TaskGroupId;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.TaskStatus;
-import uk.gov.hmcts.reform.pcs.ccd.service.CurrentUserCaseRoleService;
-import uk.gov.hmcts.reform.pcs.ccd.service.CurrentUserCaseRoleService.CurrentUserCaseRoles;
+import uk.gov.hmcts.reform.pcs.ccd.service.CurrentUserRoles;
+import uk.gov.hmcts.reform.pcs.ccd.service.UserRoleService;
 import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.DashboardContext;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
@@ -19,14 +19,14 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.DashboardTaskTemplate
 @Component
 public class ApplicationsTaskGroupEvaluator implements TaskGroupEvaluator {
 
-    private final CurrentUserCaseRoleService currentUserCaseRoleService;
+    private final UserRoleService userRoleService;
     private final GenAppVisibilityService genAppVisibilityService;
 
     public ApplicationsTaskGroupEvaluator(
-        CurrentUserCaseRoleService currentUserCaseRoleService,
+        UserRoleService userRoleService,
         GenAppVisibilityService genAppVisibilityService
     ) {
-        this.currentUserCaseRoleService = currentUserCaseRoleService;
+        this.userRoleService = userRoleService;
         this.genAppVisibilityService = genAppVisibilityService;
     }
 
@@ -58,13 +58,13 @@ public class ApplicationsTaskGroupEvaluator implements TaskGroupEvaluator {
             return false;
         }
 
-        CurrentUserCaseRoles currentUserCaseRoles =
-            currentUserCaseRoleService.getCurrentUserCaseRoles(ctx.caseReference());
+        CurrentUserRoles currentUserRoles =
+            userRoleService.getCurrentUserCaseRoles(ctx.caseReference());
 
         return !genAppVisibilityService.getVisibleGenAppsToUser(
             ctx.caseEntity().getGenApps(),
-            currentUserCaseRoles.userId(),
-            currentUserCaseRoles.roles()
+            currentUserRoles.userId(),
+            currentUserRoles.roles()
         ).isEmpty();
     }
 }

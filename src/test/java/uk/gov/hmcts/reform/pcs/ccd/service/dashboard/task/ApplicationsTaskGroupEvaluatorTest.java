@@ -12,8 +12,8 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.LegalRepresentativeRepository;
-import uk.gov.hmcts.reform.pcs.ccd.service.CurrentUserCaseRoleService;
-import uk.gov.hmcts.reform.pcs.ccd.service.CurrentUserCaseRoleService.CurrentUserCaseRoles;
+import uk.gov.hmcts.reform.pcs.ccd.service.CurrentUserRoles;
+import uk.gov.hmcts.reform.pcs.ccd.service.UserRoleService;
 import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.DashboardContext;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
 
@@ -34,13 +34,13 @@ class ApplicationsTaskGroupEvaluatorTest {
     private static final UUID OTHER_USER_ID = UUID.fromString("00000000-0000-0000-0000-000000000002");
     private static final long TEST_CASE_REFERENCE = 100L;
 
-    private final CurrentUserCaseRoleService currentUserCaseRoleService = mock(CurrentUserCaseRoleService.class);
+    private final UserRoleService userRoleService = mock(UserRoleService.class);
     private final LegalRepresentativeRepository legalRepresentativeRepository =
         mock(LegalRepresentativeRepository.class);
     private final GenAppVisibilityService genAppVisibilityService =
         new GenAppVisibilityService(legalRepresentativeRepository);
     private final ApplicationsTaskGroupEvaluator underTest =
-        new ApplicationsTaskGroupEvaluator(currentUserCaseRoleService, genAppVisibilityService);
+        new ApplicationsTaskGroupEvaluator(userRoleService, genAppVisibilityService);
 
     @Test
     void shouldReturnApplicationsGroupId() {
@@ -49,7 +49,7 @@ class ApplicationsTaskGroupEvaluatorTest {
 
     @Test
     void shouldMarkViewApplicationsAsAvailableWhenCaseHasVisibleApplication() {
-        stubCurrentUserCaseRoles();
+        stubCurrentUserRoles();
         GenAppEntity visibleGenApp = createGenApp(VerticalYesNo.NO, OTHER_USER_ID);
 
         TaskGroup taskGroup = underTest.evaluate(contextWith(visibleGenApp));
@@ -59,7 +59,7 @@ class ApplicationsTaskGroupEvaluatorTest {
 
     @Test
     void shouldUseSecurityContextUserWhenCheckingWithoutNoticeApplicationVisibility() {
-        stubCurrentUserCaseRoles();
+        stubCurrentUserRoles();
         GenAppEntity visibleGenApp = createGenApp(VerticalYesNo.YES, CURRENT_USER_ID);
 
         TaskGroup taskGroup = underTest.evaluate(contextWith(visibleGenApp));
@@ -69,7 +69,7 @@ class ApplicationsTaskGroupEvaluatorTest {
 
     @Test
     void shouldMarkViewApplicationsAsNotAvailableWhenOnlyApplicationIsHiddenFromCurrentUser() {
-        stubCurrentUserCaseRoles();
+        stubCurrentUserRoles();
         GenAppEntity hiddenGenApp = createGenApp(VerticalYesNo.YES, OTHER_USER_ID);
 
         TaskGroup taskGroup = underTest.evaluate(contextWith(hiddenGenApp));
@@ -79,7 +79,7 @@ class ApplicationsTaskGroupEvaluatorTest {
 
     @Test
     void shouldCountOnlyVisibleApplicationsWhenDeterminingAvailability() {
-        stubCurrentUserCaseRoles();
+        stubCurrentUserRoles();
         GenAppEntity hiddenGenApp = createGenApp(VerticalYesNo.YES, OTHER_USER_ID);
         GenAppEntity visibleGenApp = createGenApp(VerticalYesNo.YES, CURRENT_USER_ID);
 
@@ -121,9 +121,9 @@ class ApplicationsTaskGroupEvaluatorTest {
             .build();
     }
 
-    private void stubCurrentUserCaseRoles() {
-        when(currentUserCaseRoleService.getCurrentUserCaseRoles(TEST_CASE_REFERENCE))
-            .thenReturn(new CurrentUserCaseRoles(CURRENT_USER_ID, List.of()));
+    private void stubCurrentUserRoles() {
+        when(userRoleService.getCurrentUserCaseRoles(TEST_CASE_REFERENCE))
+            .thenReturn(new CurrentUserRoles(CURRENT_USER_ID, List.of()));
     }
 
     private void assertTaskStatuses(TaskGroup taskGroup, TaskStatus viewApplicationsStatus) {

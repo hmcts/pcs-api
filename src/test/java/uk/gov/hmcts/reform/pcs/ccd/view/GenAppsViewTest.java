@@ -16,8 +16,8 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.service.CurrentUserCaseRoleService;
-import uk.gov.hmcts.reform.pcs.ccd.service.CurrentUserCaseRoleService.CurrentUserCaseRoles;
+import uk.gov.hmcts.reform.pcs.ccd.service.CurrentUserRoles;
+import uk.gov.hmcts.reform.pcs.ccd.service.UserRoleService;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
 
 import java.time.LocalDateTime;
@@ -41,7 +41,7 @@ class GenAppsViewTest {
     @Mock
     private ModelMapper modelMapper;
     @Mock
-    private CurrentUserCaseRoleService currentUserCaseRoleService;
+    private UserRoleService userRoleService;
     @Mock
     private GenAppVisibilityService genAppVisibilityService;
     @Mock
@@ -54,8 +54,8 @@ class GenAppsViewTest {
     @BeforeEach
     void setUp() {
         lenient().when(pcsCaseEntity.getCaseReference()).thenReturn(TEST_CASE_REFERENCE);
-        when(currentUserCaseRoleService.getCurrentUserCaseRoles(TEST_CASE_REFERENCE))
-            .thenReturn(new CurrentUserCaseRoles(CURRENT_USER_IDAM_ID, List.of()));
+        when(userRoleService.getCurrentUserCaseRoles(TEST_CASE_REFERENCE))
+            .thenReturn(new CurrentUserRoles(CURRENT_USER_IDAM_ID, List.of()));
         when(genAppVisibilityService.isGenAppVisibleToUser(
             isA(GenAppEntity.class),
             eq(CURRENT_USER_IDAM_ID),
@@ -65,7 +65,7 @@ class GenAppsViewTest {
 
         pcsCase = PCSCase.builder().build();
 
-        underTest = new GenAppsView(modelMapper, currentUserCaseRoleService, genAppVisibilityService);
+        underTest = new GenAppsView(modelMapper, userRoleService, genAppVisibilityService);
     }
 
     @Test

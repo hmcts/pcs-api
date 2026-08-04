@@ -13,8 +13,8 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
-import uk.gov.hmcts.reform.pcs.ccd.service.CurrentUserCaseRoleService;
-import uk.gov.hmcts.reform.pcs.ccd.service.CurrentUserCaseRoleService.CurrentUserCaseRoles;
+import uk.gov.hmcts.reform.pcs.ccd.service.CurrentUserRoles;
+import uk.gov.hmcts.reform.pcs.ccd.service.UserRoleService;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
 
 import java.util.Collection;
@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class DocumentsView {
 
-    private final CurrentUserCaseRoleService currentUserCaseRoleService;
+    private final UserRoleService userRoleService;
     private final GenAppVisibilityService genAppVisibilityService;
 
     public void setCaseFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
@@ -39,14 +39,14 @@ public class DocumentsView {
             return List.of();
         }
 
-        CurrentUserCaseRoles currentUserCaseRoles =
-            currentUserCaseRoleService.getCurrentUserCaseRoles(pcsCaseEntity.getCaseReference());
+        CurrentUserRoles currentUserRoles =
+            userRoleService.getCurrentUserCaseRoles(pcsCaseEntity.getCaseReference());
 
         return pcsCaseEntity.getDocuments().stream()
             .filter(documentEntity -> this.isDocumentVisibleToUser(
                 documentEntity,
-                currentUserCaseRoles.userId(),
-                currentUserCaseRoles.roles()
+                currentUserRoles.userId(),
+                currentUserRoles.roles()
             ))
             .filter(this::isNotInCaseDetailsTab)
             .map(entity -> ListValue.<Document>builder()

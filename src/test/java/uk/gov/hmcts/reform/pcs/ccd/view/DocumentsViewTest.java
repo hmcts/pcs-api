@@ -18,8 +18,8 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
-import uk.gov.hmcts.reform.pcs.ccd.service.CurrentUserCaseRoleService;
-import uk.gov.hmcts.reform.pcs.ccd.service.CurrentUserCaseRoleService.CurrentUserCaseRoles;
+import uk.gov.hmcts.reform.pcs.ccd.service.CurrentUserRoles;
+import uk.gov.hmcts.reform.pcs.ccd.service.UserRoleService;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
 
 import java.time.Instant;
@@ -40,7 +40,7 @@ class DocumentsViewTest {
     private static final long TEST_CASE_REFERENCE = 123456789L;
 
     @Mock
-    private CurrentUserCaseRoleService currentUserCaseRoleService;
+    private UserRoleService userRoleService;
     @Mock
     private GenAppVisibilityService genAppVisibilityService;
     @Mock
@@ -53,12 +53,12 @@ class DocumentsViewTest {
     @BeforeEach
     void setUp() {
         lenient().when(pcsCaseEntity.getCaseReference()).thenReturn(TEST_CASE_REFERENCE);
-        lenient().when(currentUserCaseRoleService.getCurrentUserCaseRoles(TEST_CASE_REFERENCE))
-            .thenReturn(new CurrentUserCaseRoles(CURRENT_USER_ID, List.of()));
+        lenient().when(userRoleService.getCurrentUserCaseRoles(TEST_CASE_REFERENCE))
+            .thenReturn(new CurrentUserRoles(CURRENT_USER_ID, List.of()));
 
         pcsCase = PCSCase.builder().build();
 
-        underTest = new DocumentsView(currentUserCaseRoleService, genAppVisibilityService);
+        underTest = new DocumentsView(userRoleService, genAppVisibilityService);
     }
 
     @Test

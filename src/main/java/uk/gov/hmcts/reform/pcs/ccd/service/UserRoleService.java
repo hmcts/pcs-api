@@ -18,7 +18,7 @@ import java.util.Set;
 import java.util.UUID;
 
 @Service
-public class CurrentUserCaseRoleService {
+public class UserRoleService {
 
     private static final Duration RAS_ROLE_CACHE_TTL = Duration.ofMinutes(1);
 
@@ -27,9 +27,9 @@ public class CurrentUserCaseRoleService {
     private final CaseAssignmentApi caseAssignmentApi;
     private final Cache<CacheKey, List<String>> rasRoleCache;
 
-    public CurrentUserCaseRoleService(SecurityContextService securityContextService,
-                                      AuthTokenGenerator authTokenGenerator,
-                                      CaseAssignmentApi caseAssignmentApi) {
+    public UserRoleService(SecurityContextService securityContextService,
+                           AuthTokenGenerator authTokenGenerator,
+                           CaseAssignmentApi caseAssignmentApi) {
         this.securityContextService = securityContextService;
         this.authTokenGenerator = authTokenGenerator;
         this.caseAssignmentApi = caseAssignmentApi;
@@ -38,7 +38,7 @@ public class CurrentUserCaseRoleService {
             .build();
     }
 
-    public CurrentUserCaseRoles getCurrentUserCaseRoles(long caseReference) {
+    public CurrentUserRoles getCurrentUserCaseRoles(long caseReference) {
         UserInfo currentUserDetails = securityContextService.getCurrentUserDetails();
         String currentUserId = currentUserDetails.getUid();
 
@@ -48,7 +48,7 @@ public class CurrentUserCaseRoleService {
             this::getRasRoles
         ));
 
-        return new CurrentUserCaseRoles(UUID.fromString(currentUserId), List.copyOf(roles));
+        return new CurrentUserRoles(UUID.fromString(currentUserId), List.copyOf(roles));
     }
 
     private List<String> getRasRoles(CacheKey cacheKey) {
@@ -74,8 +74,5 @@ public class CurrentUserCaseRoleService {
     }
 
     private record CacheKey(long caseReference, String userId) {
-    }
-
-    public record CurrentUserCaseRoles(UUID userId, Collection<String> roles) {
     }
 }

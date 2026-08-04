@@ -21,8 +21,8 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.LegalRepresentativeRepository;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.service.CurrentUserCaseRoleService;
-import uk.gov.hmcts.reform.pcs.ccd.service.CurrentUserCaseRoleService.CurrentUserCaseRoles;
+import uk.gov.hmcts.reform.pcs.ccd.service.CurrentUserRoles;
+import uk.gov.hmcts.reform.pcs.ccd.service.UserRoleService;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.ApplicationsTaskGroupEvaluator;
 import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.ClaimTaskGroupEvaluator;
@@ -57,7 +57,7 @@ class DashboardJourneyServiceTest {
     private DefendantResponseService defendantResponseService;
 
     @Mock
-    private CurrentUserCaseRoleService currentUserCaseRoleService;
+    private UserRoleService userRoleService;
 
     @Mock
     private LegalRepresentativeRepository legalRepresentativeRepository;
@@ -72,7 +72,7 @@ class DashboardJourneyServiceTest {
                 new ClaimTaskGroupEvaluator(),
                 new DocumentsTaskGroupEvaluator(),
                 new ResponseTaskGroupEvaluator(),
-                new ApplicationsTaskGroupEvaluator(currentUserCaseRoleService, genAppVisibilityService),
+                new ApplicationsTaskGroupEvaluator(userRoleService, genAppVisibilityService),
                 new HearingsTaskGroupEvaluator(),
                 new NoticesTaskGroupEvaluator()
         ));
@@ -172,7 +172,7 @@ class DashboardJourneyServiceTest {
             .genApps(Set.of(GenAppEntity.builder().state(GenAppState.GEN_APP_ISSUED).build()))
             .build();
 
-        stubCurrentUserCaseRoles(viewerId);
+        stubCurrentUserRoles(viewerId);
         PartyEntity defendant = PartyEntity.builder().idamId(viewerId).build();
         DashboardData result = underTest.computeDashboardData(
             CASE_REFERENCE,
@@ -204,7 +204,7 @@ class DashboardJourneyServiceTest {
             .genApps(Set.of(genApp))
             .build();
 
-        stubCurrentUserCaseRoles(viewerId);
+        stubCurrentUserRoles(viewerId);
         PartyEntity defendant = PartyEntity.builder().idamId(viewerId).build();
         DashboardData result = underTest.computeDashboardData(
             CASE_REFERENCE,
@@ -245,7 +245,7 @@ class DashboardJourneyServiceTest {
             .genApps(Set.of(olderGenApp, newerGenApp))
             .build();
 
-        stubCurrentUserCaseRoles(viewerId);
+        stubCurrentUserRoles(viewerId);
         PartyEntity defendant = PartyEntity.builder().idamId(viewerId).build();
         DashboardData result = underTest.computeDashboardData(
             CASE_REFERENCE,
@@ -281,7 +281,7 @@ class DashboardJourneyServiceTest {
             .genApps(Set.of(hiddenGenApp))
             .build();
 
-        stubCurrentUserCaseRoles(viewerId);
+        stubCurrentUserRoles(viewerId);
         PartyEntity defendant = PartyEntity.builder().idamId(viewerId).build();
         DashboardData result = underTest.computeDashboardData(
             CASE_REFERENCE,
@@ -317,7 +317,7 @@ class DashboardJourneyServiceTest {
             .genApps(Set.of(ownGenApp))
             .build();
 
-        stubCurrentUserCaseRoles(applicantId);
+        stubCurrentUserRoles(applicantId);
         PartyEntity defendant = PartyEntity.builder().idamId(applicantId).build();
         DashboardData result = underTest.computeDashboardData(
             CASE_REFERENCE,
@@ -377,9 +377,9 @@ class DashboardJourneyServiceTest {
             );
     }
 
-    private void stubCurrentUserCaseRoles(UUID userId) {
-        when(currentUserCaseRoleService.getCurrentUserCaseRoles(CASE_REFERENCE))
-            .thenReturn(new CurrentUserCaseRoles(userId, List.of()));
+    private void stubCurrentUserRoles(UUID userId) {
+        when(userRoleService.getCurrentUserCaseRoles(CASE_REFERENCE))
+            .thenReturn(new CurrentUserRoles(userId, List.of()));
     }
 
 }

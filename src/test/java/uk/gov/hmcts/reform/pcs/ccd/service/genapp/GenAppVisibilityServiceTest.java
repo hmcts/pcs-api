@@ -19,6 +19,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.LegalRepresentativeRepository;
 
 import java.util.Arrays;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
@@ -184,6 +185,76 @@ class GenAppVisibilityServiceTest {
         assertThat(documentVisibleToUser).isTrue();
     }
 
+    @Test
+    void shouldHideNullGenAppDocument() {
+        assertThat(underTest.isGenAppDocumentVisibleToUser(null, CURRENT_USER_ID, List.of())).isFalse();
+    }
+
+    @Test
+    void shouldReturnVisibleGenAppsForUserUsingDefaultRoles() {
+        // Given
+        GenAppEntity visibleWithNoticeGenApp = createGenApp(
+            GEN_APP_ISSUED,
+            VerticalYesNo.NO,
+            LocalDateTime.of(2026, 6, 1, 10, 0),
+            null
+        );
+        GenAppEntity hiddenWithoutNoticeGenApp = createGenApp(
+            GEN_APP_ISSUED,
+            VerticalYesNo.YES,
+            LocalDateTime.of(2026, 6, 2, 10, 0),
+            PartyEntity.builder().idamId(UUID.randomUUID()).build()
+        );
+        GenAppEntity pendingGenApp = createGenApp(
+            GenAppState.PENDING_GEN_APP_ISSUED,
+            VerticalYesNo.NO,
+            LocalDateTime.of(2026, 6, 3, 10, 0),
+            null
+        );
+
+        // When
+        List<GenAppEntity> visibleGenApps = underTest.getVisibleGenAppsToUser(
+            List.of(pendingGenApp, hiddenWithoutNoticeGenApp, visibleWithNoticeGenApp),
+            CURRENT_USER_ID
+        );
+
+        // Then
+        assertThat(visibleGenApps).containsExactly(visibleWithNoticeGenApp);
+    }
+
+    @Test
+    void shouldReturnVisibleGenAppsForUserUsingRoles() {
+        // Given
+        GenAppEntity olderWithoutNoticeGenApp = createGenApp(
+            GEN_APP_ISSUED,
+            VerticalYesNo.YES,
+            LocalDateTime.of(2026, 6, 1, 10, 0),
+            null
+        );
+        GenAppEntity newerWithoutNoticeGenApp = createGenApp(
+            GEN_APP_ISSUED,
+            VerticalYesNo.YES,
+            LocalDateTime.of(2026, 6, 2, 10, 0),
+            null
+        );
+
+        // When
+        List<GenAppEntity> visibleGenApps = underTest.getVisibleGenAppsToUser(
+            Arrays.asList(olderWithoutNoticeGenApp, null, newerWithoutNoticeGenApp),
+            CURRENT_USER_ID,
+            List.of(UserRole.JUDGE.getRole())
+        );
+
+        // Then
+        assertThat(visibleGenApps).containsExactly(newerWithoutNoticeGenApp, olderWithoutNoticeGenApp);
+    }
+
+    @Test
+    void shouldReturnEmptyVisibleGenAppsWhenInputIsNullOrEmpty() {
+        assertThat(underTest.getVisibleGenAppsToUser(null, CURRENT_USER_ID)).isEmpty();
+        assertThat(underTest.getVisibleGenAppsToUser(List.of(), CURRENT_USER_ID, List.of())).isEmpty();
+    }
+
     private static Stream<Arguments> withoutNoticeScenarios() {
         UUID differentApplicantUserId = UUID.randomUUID();
 
@@ -214,6 +285,18 @@ class GenAppVisibilityServiceTest {
             Arrays.stream(CASEWORKER_ROLES),
             Arrays.stream(JUDICIAL_HISTORY_ROLES)
         ).distinct();
+    }
+
+    private static GenAppEntity createGenApp(GenAppState state,
+                                             VerticalYesNo withoutNotice,
+                                             LocalDateTime submittedDate,
+                                             PartyEntity party) {
+        return GenAppEntity.builder()
+            .state(state)
+            .withoutNotice(withoutNotice)
+            .applicationSubmittedDate(submittedDate)
+            .party(party)
+            .build();
     }
 
 }

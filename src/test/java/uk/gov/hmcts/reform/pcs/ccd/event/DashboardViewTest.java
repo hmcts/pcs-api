@@ -13,7 +13,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.dashboard.StartDashboardViewHandler;
 import uk.gov.hmcts.reform.pcs.ccd.event.dashboard.SubmitDashboardViewHandler;
-import uk.gov.hmcts.reform.pcs.ccd.service.CurrentUserCaseRoleService;
+import uk.gov.hmcts.reform.pcs.ccd.service.UserRoleService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.DashboardJourneyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.ApplicationsTaskGroupEvaluator;
@@ -54,7 +54,7 @@ class DashboardViewTest extends BaseEventTest {
     private LegalRepresentativeRepository legalRepresentativeRepository;
 
     @Mock
-    private CurrentUserCaseRoleService currentUserCaseRoleService;
+    private UserRoleService userRoleService;
 
     private DashboardJourneyService dashboardJourneyService;
 
@@ -76,7 +76,7 @@ class DashboardViewTest extends BaseEventTest {
                 new ClaimTaskGroupEvaluator(),
                 new DocumentsTaskGroupEvaluator(),
                 new HearingsTaskGroupEvaluator(),
-                new ApplicationsTaskGroupEvaluator(currentUserCaseRoleService, genAppVisibilityService),
+                new ApplicationsTaskGroupEvaluator(userRoleService, genAppVisibilityService),
                 new ResponseTaskGroupEvaluator(),
                 new NoticesTaskGroupEvaluator()
             )

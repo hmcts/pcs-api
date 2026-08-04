@@ -9,7 +9,7 @@ import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.ccd.client.CaseAssignmentApi;
 import uk.gov.hmcts.reform.ccd.client.model.CaseAssignmentUserRole;
 import uk.gov.hmcts.reform.ccd.client.model.CaseAssignmentUserRolesResource;
-import uk.gov.hmcts.reform.pcs.ccd.service.CurrentUserCaseRoleService.CurrentUserCaseRoles;
+import uk.gov.hmcts.reform.pcs.ccd.service.CurrentUserRoles;
 import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
@@ -22,7 +22,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class CurrentUserCaseRoleServiceTest {
+class UserRoleServiceTest {
 
     private static final long CASE_REFERENCE = 123456789L;
     private static final UUID CURRENT_USER_ID = UUID.randomUUID();
@@ -36,11 +36,11 @@ class CurrentUserCaseRoleServiceTest {
     @Mock
     private CaseAssignmentApi caseAssignmentApi;
 
-    private CurrentUserCaseRoleService underTest;
+    private UserRoleService underTest;
 
     @BeforeEach
     void setUp() {
-        underTest = new CurrentUserCaseRoleService(securityContextService, authTokenGenerator, caseAssignmentApi);
+        underTest = new UserRoleService(securityContextService, authTokenGenerator, caseAssignmentApi);
     }
 
     @Test
@@ -48,10 +48,10 @@ class CurrentUserCaseRoleServiceTest {
         stubCurrentUserDetails(List.of("caseworker-pcs"));
         stubRasRoles("[DEFENDANT]", "caseworker-pcs");
 
-        CurrentUserCaseRoles currentUserCaseRoles = underTest.getCurrentUserCaseRoles(CASE_REFERENCE);
+        CurrentUserRoles currentUserRoles = underTest.getCurrentUserCaseRoles(CASE_REFERENCE);
 
-        assertThat(currentUserCaseRoles.userId()).isEqualTo(CURRENT_USER_ID);
-        assertThat(currentUserCaseRoles.roles()).containsExactly("caseworker-pcs", "[DEFENDANT]");
+        assertThat(currentUserRoles.userId()).isEqualTo(CURRENT_USER_ID);
+        assertThat(currentUserRoles.roles()).containsExactly("caseworker-pcs", "[DEFENDANT]");
     }
 
     @Test
@@ -82,9 +82,9 @@ class CurrentUserCaseRoleServiceTest {
             List.of(CURRENT_USER_ID.toString())
         )).thenReturn(CaseAssignmentUserRolesResource.builder().build());
 
-        CurrentUserCaseRoles currentUserCaseRoles = underTest.getCurrentUserCaseRoles(CASE_REFERENCE);
+        CurrentUserRoles currentUserRoles = underTest.getCurrentUserCaseRoles(CASE_REFERENCE);
 
-        assertThat(currentUserCaseRoles.roles()).isEmpty();
+        assertThat(currentUserRoles.roles()).isEmpty();
     }
 
     private void stubCurrentUserDetails(List<String> roles) {

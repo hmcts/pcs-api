@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.pcs.ccd.service.genapp;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
@@ -30,7 +31,7 @@ public class GenAppVisibilityService {
     private static final Set<String> INTERNAL_ROLES = Stream.concat(
         Arrays.stream(CASEWORKER_ROLES),
         Arrays.stream(JUDICIAL_HISTORY_ROLES)
-    ).map(role -> role.getRole()).collect(Collectors.toUnmodifiableSet());
+    ).map(UserRole::getRole).collect(Collectors.toUnmodifiableSet());
 
     public boolean isGenAppVisibleToUser(GenAppEntity genAppEntity, UUID currentUserId) {
         return isGenAppVisibleToUser(genAppEntity, currentUserId, List.of());
