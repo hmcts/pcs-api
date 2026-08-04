@@ -55,4 +55,18 @@ class CaseTitleServiceTest {
         assertThat(actualCaseTitle).contains(expectedPropertyAddress);
     }
 
+    @Test
+    void shouldIncludeCaseNameInPageTitleWhenAvailable() {
+        // Given
+        String expectedCaseName = "Claimant v Defendant";
+        when(pcsCase.getCaseNameHmctsInternal()).thenReturn(expectedCaseName);
+
+        // When
+        String actualCaseTitle = underTest.buildCaseTitle(pcsCase);
+
+        // Then
+        assertThat(actualCaseTitle).contains(expectedCaseName);
+        assertThat(actualCaseTitle).contains("govuk-!-font-size-24");
+    }
+
 }
