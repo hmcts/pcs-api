@@ -8,6 +8,7 @@ import uk.gov.hmcts.ccd.sdk.api.Event;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
+import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -15,6 +16,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.addcasereviewdate.AddCaseReviewDateConfigurer;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseReviewDateService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
+import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.addCaseReviewDate;
@@ -37,7 +39,7 @@ public class AddCaseReviewDate implements CCDConfig<PCSCase, State, UserRole> {
                 .grant(Permission.CRUD, UserRole.CTSC_ADMIN, UserRole.HEARING_CENTRE_ADMIN, UserRole.WLU_ADMIN)
                 .grantHistoryOnly(JUDICIAL_HISTORY_ROLES)
                 .showSummary()
-                .showCondition("featureFlags.caseWorkerEventsEnabled=\"YES\"")
+                .showCondition(ShowConditions.featureFlagsEnabled(FeatureFlag.CASEWORKER_EVENTS))
                 .endButtonLabel("Submit");
         addCaseReviewDateConfigurer.configurePages(new PageBuilder(eventBuilder));
     }
