@@ -353,6 +353,48 @@ public class DataTest extends CftlibTest {
         );
     }
 
+    // document table validation
+
+    @Test
+    @DisplayName("validate public.document - schema, URLs, and relationship rules")
+    void validateDocumentTable() {
+        List<String> expectedColumns = List.of(
+            "file_name", "url", "binary_url", "category_id",
+            "type", "document_id", "submitted_date"
+        );
+
+        int totalRows = runCountQuery("SELECT COUNT(*) FROM public.document");
+
+        int createdCasePresent = runCountQuery(
+            "SELECT COUNT(*) FROM public.document d "
+                + "JOIN public.pcs_case c ON d.case_id = c.id "
+                + "WHERE c.case_reference = '" + caseReference + "'"
+        );
+
+        int validDocument = runCountQuery(
+            "SELECT COUNT(*) FROM public.document d "
+                + "JOIN public.pcs_case c ON d.case_id = c.id "
+                + "WHERE c.case_reference = '" + caseReference + "'"
+                + "AND d.url = 'https://docstore/document/00000000-AA00-0000-A000-A0AA000A0000' "
+                + "AND d.file_name = 'rent-statement - Claimant 1.pdf' "
+                + "AND d.binary_url = 'https://docstore/document/00000000-AA00-0000-A000-A0AA000A0000/binary' "
+                + "AND d.category_id = 'propertyDocuments' "
+                + "AND d.type = 'RENT_STATEMENT' "
+                + "AND d.document_id = '00000000-aa00-0000-a000-a0aa000a0000' "
+                + "AND date_trunc('hour', d.submitted_date) = date_trunc('hour', CURRENT_TIMESTAMP)"
+        );
+
+        String msgCount = "Expected document table to have rows";
+        String msgCasePresent = "Expected created case to have at least 1 document";
+        String msgValidDocument = "Document detail fields linked to case are incorrectly populated";
+
+        org.junit.jupiter.api.Assertions.assertAll("document validations",
+                                                   () -> assertHasColumns("public.document", expectedColumns),
+                                                   () -> assertTrue(totalRows > 0, msgCount),
+                                                   () -> assertEquals(1, createdCasePresent, msgCasePresent),
+                                                   () -> assertEquals(1, validDocument,  msgValidDocument)
+        );
+    }
 
     // helper
 
