@@ -385,7 +385,7 @@ public class DataTest extends CftlibTest {
         );
 
         String msgCount = "Expected document table to have rows";
-        String msgCasePresent = "Expected created case to have at least 1 document";
+        String msgCasePresent = "Expected created case" + caseReference + "to exist";
         String msgValidDocument = "Document detail fields linked to case are incorrectly populated";
 
         org.junit.jupiter.api.Assertions.assertAll("document validations",
@@ -393,6 +393,47 @@ public class DataTest extends CftlibTest {
                                                    () -> assertTrue(totalRows > 0, msgCount),
                                                    () -> assertEquals(1, createdCasePresent, msgCasePresent),
                                                    () -> assertEquals(1, validDocument,  msgValidDocument)
+        );
+    }
+
+    // statement of truth
+    @Test
+    @DisplayName("validate public.statement_of_truth - schema, URLs, and relationship rules")
+    void validateStatementOfTruthTable() {
+        List<String> expectedColumns = List.of(
+            "id", "claim_id", "completed_by", "accepted",
+            "full_name", "firm_name", "position_held"
+        );
+
+        int totalRows = runCountQuery("SELECT COUNT(*) FROM public.statement_of_truth");
+
+        int createdCasePresent = runCountQuery(
+            "SELECT COUNT(*) FROM public.statement_of_truth s "
+                + "JOIN public.claim cl ON s.claim_id = cl.id "
+                + "JOIN public.pcs_case c ON cl.case_id = c.id "
+                + "WHERE c.case_reference = '" + caseReference + "'"
+        );
+
+        int validStatementOfTruth = runCountQuery(
+            "SELECT COUNT(*) FROM public.statement_of_truth s "
+                + "JOIN public.claim cl ON s.claim_id = cl.id "
+                + "JOIN public.pcs_case c ON cl.case_id = c.id "
+                + "WHERE c.case_reference = '" + caseReference + "'"
+                + "AND s.completed_by = 'CLAIMANT' "
+                + "AND s.accepted = 'YES' "
+                + "AND s.full_name = 'TreeTops Housing Representative' "
+                + "AND s.position_held = 'Housing Manager' "
+        );
+
+        String msgCount = "Expected statement_of_truth table to have rows";
+        String msgCasePresent = "Expected statement_of_truth case_reference " + caseReference + " to exist";
+        String msgValidSoT = "Statement of truth detail fields linked to case are incorrectly populated";
+
+        org.junit.jupiter.api.Assertions.assertAll("statement_of_truth validations",
+                                                   () -> assertHasColumns("public.statement_of_truth", expectedColumns),
+                                                   () -> assertTrue(totalRows > 0, msgCount),
+                                                   () -> assertEquals(1, createdCasePresent, msgCasePresent),
+                                                   () -> assertEquals(1, validStatementOfTruth,  msgValidSoT)
         );
     }
 
