@@ -13,14 +13,20 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.TestInstance;
+import uk.gov.hmcts.reform.pcs.ccd.CaseType;
 import uk.gov.hmcts.reform.pcs.functional.config.TestConstants;
 import uk.gov.hmcts.reform.pcs.functional.steps.ApiSteps;
 import uk.gov.hmcts.reform.pcs.functional.steps.BaseApi;
 import uk.gov.hmcts.reform.pcs.functional.testutils.PayloadLoader;
 import uk.gov.hmcts.reform.pcs.functional.testutils.PcsIdamTokenClient;
 
+import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
+import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
+
 @Slf4j
 @Tag("Functional")
+@EnabledIfEnvironmentVariable(named = "CCD_ENABLED", matches = "true")
+@DisabledIfEnvironmentVariable(named = "SHUTTER_SERVICE", matches = "true")
 @ExtendWith(SerenityJUnit5Extension.class)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -30,6 +36,7 @@ public class MakeAnApplicationEventCallbackTests extends BaseApi {
     ApiSteps apiSteps;
 
     private Long caseReference;
+    private static final String caseType = CaseType.getCaseType();
 
     @BeforeAll
     void setUp() {
@@ -46,7 +53,8 @@ public class MakeAnApplicationEventCallbackTests extends BaseApi {
         String makeApplicationRequestBody = PayloadLoader.load(
             "/payloads/makeAnApplication-startEventCallbackRequest.json",
             Map.of(
-                "caseId", caseReference
+                "caseId", caseReference,
+                "caseTypeId", caseType
             )
         );
 
@@ -72,7 +80,8 @@ public class MakeAnApplicationEventCallbackTests extends BaseApi {
             "/payloads/makeAnApplication-submitEventCallbackRequest.json",
             Map.of(
                 "caseId", String.valueOf(caseReference),
-                "internalCaseId", decodedCaseId
+                "internalCaseId", decodedCaseId,
+                "caseTypeId", caseType
             )
         );
 

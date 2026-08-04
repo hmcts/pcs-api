@@ -1,6 +1,6 @@
 #!groovy
 
-@Library("Infrastructure@2.4.4")
+@Library("Infrastructure@2.4.8")
 
 import uk.gov.hmcts.contino.AppPipelineDsl
 import uk.gov.hmcts.contino.GithubAPI
@@ -25,13 +25,6 @@ def secrets = [
     secret('s2s-expired-service-token', 'S2S_EXPIRED_TOKEN'),
     secret('definition-importer-username', 'DEFINITION_IMPORTER_USERNAME'),
     secret('definition-importer-password', 'DEFINITION_IMPORTER_PASSWORD'),
-  ],
-  // WA org-role-mapping seeding (setup-role-assignments) needs the shared CCD system-user
-  // credentials, which live in the ccd-${env} vault rather than pcs-${env}.
-  'ccd-${env}': [
-    secret('ccd-api-gateway-oauth2-client-secret', 'CCD_API_GATEWAY_IDAM_CLIENT_SECRET'),
-    secret('idam-data-store-system-user-username', 'IDAM_DATA_STORE_SYSTEM_USER_USERNAME'),
-    secret('idam-data-store-system-user-password', 'IDAM_DATA_STORE_SYSTEM_USER_PASSWORD'),
   ]
 ]
 
@@ -74,11 +67,10 @@ withPipeline(type, product, component) {
     } else {
       env.CCD_ENABLED = "false"
     }
-    // Work Allocation preview (pr-values:wa) — WA pods, Camunda and am-org-role-mapping-service
+    // Work Allocation preview (pr-values:wa) — WA pods and Camunda
     env.CAMUNDA_BASE_URL = "https://camunda-pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
     env.TASK_MONITOR_API_URL = "https://wa-task-monitor-pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
     env.TASK_MANAGEMENT_API_URL = "https://wa-task-management-api-pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
-    env.ROLE_ASSIGNMENT_API_URL = "https://am-org-role-mapping-service-pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
     def waPRLabels = githubApi.getLabelsbyPattern(env.BRANCH_NAME, "pr-values:wa")
     if (waPRLabels.contains("pr-values:wa-ft-tests")) {
       env.WA_FUNCTIONAL_TESTS_ENABLED = true
@@ -190,14 +182,12 @@ withPipeline(type, product, component) {
         println """After akschartsinstall upload DMN and BPMN diagrams""".stripIndent()
         uploadDmnDiagrams()
         uploadBpmnDiagram()
-        setupRoleAssignments()
       }
     }
   }
 
-  // WA DMN/BPMN deployment for AAT. Unlike preview these always run (WA is part of the
-  // AAT/prod topology, not label-gated) and role-assignment seeding is omitted — AAT/prod
-  // role mappings are managed outside this pipeline.
+  // WA DMN/BPMN deployment for AAT. Unlike preview these always run — WA is part of the
+  // AAT/prod topology, not label-gated.
   before('functionalTest:aat') {
     uploadDmnDiagrams()
     uploadBpmnDiagram()
@@ -322,14 +312,6 @@ def uploadBpmnDiagram() {
       ./wa/pull-latest-camunda-wa-files.sh ${bpmnBranch}
       ./wa/import-wa-bpmn-diagram.sh .
     """
-  }
-}
-
-def setupRoleAssignments() {
-  dir("${WORKSPACE}/bin") {
-    withEnv(["ORG_ROLE_MAPPING_SERVICE_URL=${env.ROLE_ASSIGNMENT_API_URL}"]) {
-      sh "./setup-role-assignments"
-    }
   }
 }
 
