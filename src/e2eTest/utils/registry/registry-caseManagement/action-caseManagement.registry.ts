@@ -48,6 +48,7 @@ export class ActionCMRegistry {
     ['selectDynamicAppAndPartyDocRelatedTo', new CaseManagementAction()],
     ['uploadADocument', new CaseManagementAction()],
     ['confirmUpload', new CaseManagementAction()],
+    ['confirmAmend', new CaseManagementAction()],
     ['errorValidationSelectDocumentPage', new ErrorValidationAction()],
     ['errorValidationChangeCaseStatePage', new ErrorValidationAction()],
     ['errorValidationEnterGeneralAppPage', new ErrorValidationAction()],

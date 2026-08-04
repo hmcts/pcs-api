@@ -6,7 +6,7 @@ import { getCaseTypeId } from '@utils/common/caseType.utils';
 import { performAction, performActions, performValidation } from '@utils/controller-caseManagement';
 import { VERY_LONG_TIMEOUT } from 'playwright.config';
 import { caseSummary, home } from '@data/page-data';
-import { changeCaseState, confirmCaseStateChange, confirmUpload, enterGenappApplication, enterGenAppapplicationFee, enterGenAppHearingDate, selectDocument, uploadADocument } from '@data/page-data-figma/page-data-caseManagement-figma';
+import { changeCaseState, confirmAmend, confirmCaseStateChange, confirmUpload, enterGenappApplication, enterGenAppapplicationFee, enterGenAppHearingDate, selectDocument, uploadADocument } from '@data/page-data-figma/page-data-caseManagement-figma';
 import { caseInfo } from '../createCaseAPI.action';
 import { CaseManagementCommonUtils } from './caseManagementUtils.action';
 import path from 'path';
@@ -36,6 +36,7 @@ export class CaseManagementAction implements IAction {
       ['selectDynamicAppAndPartyDocRelatedTo', () => this.selectDynamicAppAndPartyDocRelatedTo(fieldName as actionRecord)],
       ['uploadADocument', () => this.uploadADocument(page, fieldName as actionRecord)],
       ['confirmUpload', () => this.confirmUpload(fieldName as actionRecord)],
+      ['confirmAmend', () => this.confirmAmend(fieldName as actionRecord)],
       ['inputErrorValidation', () => this.inputErrorValidation(page, fieldName as actionRecord)],
 
     ]);
@@ -292,6 +293,35 @@ export class CaseManagementAction implements IAction {
     }
     return defendantText;
 
+  }
+
+  private async confirmAmend(confirm: actionRecord): Promise<void> {
+    let submitPayLoad = confirm.submitPayload as Record<string, any>;
+    let formattedDate;
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
+    await performValidation('text', {
+      elementType: 'paragraph',
+      text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
+    });
+    const baseName = String(confirm.fileName);
+    if(confirm.fileDate){
+    const [day, month, year] = String(confirm.fileDate).split('/');
+    formattedDate = `${day.padStart(2, '0')}${month.padStart(2, '0')}${year}`;
+    }else{
+      formattedDate = '';
+    }
+    const role = String(confirm.party).split(' - ')[0] ?? '';
+
+    const amendedFileName = `${baseName} ${formattedDate}`;
+    await performValidation('text', { elementType: 'inlineText', text: 'Case number #' + caseInfo.fid });
+    await performValidation('text', {
+      elementType: 'inlineText',
+      text: `${addressInfo.buildingStreet}, ${addressInfo.addressLine2}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
+    });
+    await performValidation('text', { elementType: 'inlineText', text: `Document ${amendedFileName} amended` });
+    await performValidation('text', { elementType: 'inlineText', text: `${role}` });
+    await performValidation('mainHeader', confirmAmend.mainHeader);
+    await performAction('clickButton', confirmAmend.closeAndReturnToCaseOverviewButton);
   }
 
   private async inputErrorValidation(page: Page, validationArr: actionRecord) {

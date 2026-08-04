@@ -54,7 +54,8 @@ test.describe('Case management - Manage documents e2e Journey @nightly', async (
   test('Case management - Manage documents - Amend @CM @regression', async () => {
     let date = CaseManagementCommonUtils.getRandomDate(uploadADocument.dateTypeHiddenUserInput);
     let appType = CaseManagementCommonUtils.getGenApplicationType(defendantUserDetails.length)[0];
-    let party = allPartyDetails[0]
+    let party = allPartyDetails[0];
+    let fileName = (selectDocument.typeOfDocumentHiddenRadioOption).split('-')[0];
     await performAction('selectAnEvent', { eventType: caseSummary.manageDocuments.amend });
     await performValidation('mainHeader', selectDocument.mainHeader);
     await performAction('errorValidationSelectDocumentPage', selectDocument.errorValidation);
@@ -63,7 +64,7 @@ test.describe('Case management - Manage documents e2e Journey @nightly', async (
       question1: selectDocument.documentToAmendHiddenQuestion, option1: selectDocument.typeOfDocumentHiddenRadioOption,
       nextPage: amendDocumentDetails.mainHeader
     });
-    await performAction('inputText', amendDocumentDetails.fileNameInputTextLabel, (selectDocument.typeOfDocumentHiddenRadioOption).split('-')[0]);
+    await performAction('inputText', amendDocumentDetails.fileNameInputTextLabel, fileName);
     await performAction('selectDynamicAppAndPartyDocRelatedTo', {
       question: amendDocumentDetails.whichAppOrCounterClaimThisRelateToQuestion,
       option: appType,
@@ -74,6 +75,8 @@ test.describe('Case management - Manage documents e2e Journey @nightly', async (
       nextPage: checkYourAnswersAmendDocument.mainHeader
     });
     await performAction('clickButton', checkYourAnswersAmendDocument.submitButton);
+    await performAction('confirmAmend', { fileName: fileName, party: party, fileDate: date, submitPayload: submitCaseApiData.submitCasePayloadCaseFileView });
+    await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage documents: Amend');
   });
 
   test('Case management - Manage documents - Upload @CM @regression', async () => {
@@ -95,7 +98,7 @@ test.describe('Case management - Manage documents e2e Journey @nightly', async (
       nextPage: checkYourAnswersUploadADocument.mainHeader
     });
     await performAction('clickButton', checkYourAnswersUploadADocument.submitButton);
-    await performAction('confirmUpload', { fileName: fileName, app: appType, party: party, fileDate: date, submitPayload: submitCaseApiData.submitCasePayloadCaseFileView, });
+    await performAction('confirmUpload', { fileName: fileName, app: appType, party: party, fileDate: date, submitPayload: submitCaseApiData.submitCasePayloadCaseFileView });
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage documents: Upload');
     await performAction('clickTab', home.caseFileView);
     await performAction('validateCaseFileViewFolders', home.caseFileFolders);
