@@ -11,7 +11,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEnt
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.CounterClaimRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.LegalRepresentativeRepository;
-import uk.gov.hmcts.reform.pcs.ccd.service.party.LegalRepForDefendantAccessValidator;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.UUID;
@@ -55,7 +54,8 @@ public class PaymentNotificationService {
             notificationService
                 .sendDefendantResponseCounterclaimPaymentSuccessEmailNotification(defendantResponse, paymentReference);
         } else {
-            log.info("Sending counterclaim payment success email to legal representative case reference {}", pcsCase.getCaseReference());
+            log.info("Sending counterclaim payment success email to legal representative case reference {}",
+                     pcsCase.getCaseReference());
             notificationService.sendDefendantResponseCounterclaimPaymentSuccessEmailNotificationToLegalRep(
                 legalRepresentative,
                 defendantResponse.getPcsCase(),

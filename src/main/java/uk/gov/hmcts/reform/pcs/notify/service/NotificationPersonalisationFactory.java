@@ -3,7 +3,6 @@ package uk.gov.hmcts.reform.pcs.notify.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import uk.gov.hmcts.reform.pcs.LegalRepresentative;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantInformation;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -13,14 +12,11 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.LegalRepresentativeRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
-import uk.gov.hmcts.reform.pcs.feesandpay.service.PaymentService;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.BasePersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.ClaimantBasePersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.CounterclaimPaymentSuccessPersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.LegalRepresentativeBasePersonalisation;
-import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationDetailsService;
 
 import java.util.Locale;
@@ -69,7 +65,9 @@ public class NotificationPersonalisationFactory {
         return buildPersonalisation(partyEntity, pcsCaseEntity);
     }
 
-    public LegalRepresentativeBasePersonalisation forLegalRepresentative(PartyEntity legalRepresentativePartyEntity, PcsCaseEntity pcsCaseEntity) {
+    public LegalRepresentativeBasePersonalisation forLegalRepresentative(PartyEntity legalRepresentativePartyEntity,
+                                                                         PcsCaseEntity pcsCaseEntity
+    ) {
         UUID userId = legalRepresentativePartyEntity.getIdamId();
         String organisationDetailsResponse = organisationDetailsService.getOrganisationName(userId.toString());
         return LegalRepresentativeBasePersonalisation.builder()
@@ -87,25 +85,15 @@ public class NotificationPersonalisationFactory {
             .build();
     }
 
-    public CounterclaimPaymentSuccessPersonalisation counterclaimSuccessLR(DefendantResponseEntity defendantResponse,
-                                                                         String paymentReference, LegalRepresentativeEntity legalRepresentative) {
+    public CounterclaimPaymentSuccessPersonalisation counterclaimSuccessLegalRep(
+        DefendantResponseEntity defendantResponse, String paymentReference,
+         LegalRepresentativeEntity legalRepresentative
+    ) {
 
         return  CounterclaimPaymentSuccessPersonalisation.builder()
             .base(buildPersonalisation(defendantResponse.getPcsCase(),legalRepresentative))
             .paymentReferenceNumber(paymentReference)
-            .build();
-    }
-
-    public CounterclaimPaymentSuccessPersonalisation counterclaimSuccessForLegalRep(PartyEntity legalRepParty,
-                                                                                    PcsCaseEntity pcsCaseEntity,
-                                                                                    String paymentReference) {
-
-        String organisationName = organisationDetailsService.getOrganisationName(legalRepParty.getIdamId().toString());
-
-        return CounterclaimPaymentSuccessPersonalisation.builder()
-            .base(buildPersonalisation(legalRepParty, pcsCaseEntity))
-            .paymentReferenceNumber(paymentReference)
-            .organisationName(organisationName)
+            .organisationName(legalRepresentative.getOrganisationName())
             .build();
     }
 

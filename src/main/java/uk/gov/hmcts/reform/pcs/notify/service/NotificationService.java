@@ -60,9 +60,11 @@ public class NotificationService {
         );
     }
 
-    public EmailNotificationResponse sendDefendantResponseConfirmationToLegalRepresentativeNoCounterClaim(LegalRepresentativeEntity legalRepresentativeEntity,
-                                                                                                          PcsCaseEntity pcsCaseEntity, PartyEntity legalRepresentativePartyEntity,
-                                                                                                          DefendantResponseEntity defendantResponse) {
+    public EmailNotificationResponse sendDefendantResponseConfirmationToLegalRepresentativeNoCounterClaim(
+        LegalRepresentativeEntity legalRepresentativeEntity,
+        PcsCaseEntity pcsCaseEntity,
+        PartyEntity legalRepresentativePartyEntity,
+        DefendantResponseEntity defendantResponse) {
         return sendEmail(
             legalRepresentativeRecipient(
                 legalRepresentativeEntity,
@@ -109,9 +111,11 @@ public class NotificationService {
         );
     }
 
-    public EmailNotificationResponse sendDefendantResponseCounterClaimNoPaymentToLegalRepresentative(LegalRepresentativeEntity legalRepresentativeEntity,
-                                                                                            PcsCaseEntity pcsCaseEntity, PartyEntity legalRepresentativePartyEntity,
-                                                                                            DefendantResponseEntity defendantResponse) {
+    public EmailNotificationResponse sendDefendantResponseCounterClaimNoPaymentToLegalRepresentative(
+        LegalRepresentativeEntity legalRepresentativeEntity,
+        PcsCaseEntity pcsCaseEntity,
+        PartyEntity legalRepresentativePartyEntity,
+        DefendantResponseEntity defendantResponse) {
         return sendEmail(
             legalRepresentativeRecipient(
                 legalRepresentativeEntity,
@@ -124,9 +128,10 @@ public class NotificationService {
             notificationPersonalisationFactory.forLegalRepresentative(legalRepresentativePartyEntity, pcsCaseEntity));
     }
 
-    public EmailNotificationResponse sendDefendantResponseCounterClaimPaymentRequiredToLegalRepresentative(LegalRepresentativeEntity legalRepresentativeEntity,
-                                                                                                     PcsCaseEntity pcsCaseEntity, PartyEntity legalRepresentativePartyEntity,
-                                                                                                     DefendantResponseEntity defendantResponse) {
+    public EmailNotificationResponse sendDefendantResponseCounterClaimPaymentRequiredToLegalRepresentative(
+        LegalRepresentativeEntity legalRepresentativeEntity,
+        PcsCaseEntity pcsCaseEntity, PartyEntity legalRepresentativePartyEntity,
+        DefendantResponseEntity defendantResponse) {
         return sendEmail(
             legalRepresentativeRecipient(
                 legalRepresentativeEntity,
@@ -154,7 +159,8 @@ public class NotificationService {
                 defendantResponse),
             EmailTemplate.COUNTERCLAIM_PAYMENT_SUCCESS,
             NotificationClaimType.COUNTER_CLAIM,
-            notificationPersonalisationFactory.counterclaimSuccessLR(defendantResponse,paymentReference, legalRepresentativeEntity)
+            notificationPersonalisationFactory.counterclaimSuccessLegalRep(defendantResponse,paymentReference,
+                                                                           legalRepresentativeEntity)
         );
     }
 

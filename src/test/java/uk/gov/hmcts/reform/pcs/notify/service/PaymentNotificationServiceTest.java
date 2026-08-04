@@ -10,6 +10,8 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.CounterClaimRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.LegalRepresentativeRepository;
+import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.List;
 import java.util.Optional;
@@ -30,13 +32,21 @@ class PaymentNotificationServiceTest {
     @Mock
     private CounterClaimRepository counterClaimRepository;
 
+    @Mock
+    private LegalRepresentativeRepository legalRepresentativeRepository;
+
+    @Mock
+    private SecurityContextService securityContextService;
+
     private PaymentNotificationService underTest;
 
     @BeforeEach
     void setUp() {
         underTest = new PaymentNotificationService(
             notificationService,
-            counterClaimRepository
+            counterClaimRepository,
+            securityContextService,
+            legalRepresentativeRepository
         );
     }
 
