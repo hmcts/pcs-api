@@ -161,18 +161,6 @@ withPipeline(type, product, component) {
     }
   }
 
-  // PR builds no longer run High Level Data Setup, so the onPR block inside
-  // before('highleveldatasetup') never fires and DATA_STORE_URL_BASE stays
-  // unset. Functional tests that resolve internal case ids via the CCD data
-  // store (ApiSteps.getInternalCaseId, CaseRoleCleanUp) then fail with
-  // "Base URI cannot be null". Set the preview URLs where functional tests
-  // can rely on them regardless of which stages ran earlier.
-  before('functionalTest:preview') {
-    env.DEFINITION_STORE_URL_BASE = "https://ccd-definition-store-pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
-    env.CASE_API_URL = "https://pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
-    env.DATA_STORE_URL_BASE = "https://ccd-data-store-api-pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
-  }
-
   before('smoketest:aat') {
     env.CASE_TYPE_SUFFIX="staging"
     env.CCD_ENABLED = "true"
