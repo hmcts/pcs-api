@@ -438,6 +438,34 @@ class DocumentServiceTest {
     }
 
     @Test
+    void shouldReturnUncategorisedCategoryIdWhenAdditionalDocumentTypeIsNull() {
+        PCSCase pcsCase = mock(PCSCase.class);
+        AdditionalDocumentEngland additionalDocument = AdditionalDocumentEngland.builder()
+            .document(Document.builder()
+                .url("https://host/" + UUID.randomUUID())
+                .filename("filename.txt")
+                .categoryId("uploaded-category")
+                .build())
+            .documentType(null)
+            .build();
+
+        when(pcsCase.getLegislativeCountry()).thenReturn(LegislativeCountry.ENGLAND);
+        when(pcsCase.getAdditionalDocumentsEngland()).thenReturn(List.of(
+            ListValue.<AdditionalDocumentEngland>builder().value(additionalDocument).build()
+        ));
+
+        underTest.createAllDocuments(pcsCase);
+
+        verify(documentRepository).saveAll(documentEntityListCaptor.capture());
+        List<DocumentEntity> capturedEntities = documentEntityListCaptor.getValue();
+
+        assertThat(capturedEntities).hasSize(1);
+        assertThat(capturedEntities.getFirst().getType()).isNull();
+        assertThat(capturedEntities.getFirst().getCategoryId())
+            .isEqualTo(CaseFileCategory.UNCATEGORISED_DOCUMENTS.getId());
+    }
+
+    @Test
     void shouldSaveRentStatementDocuments() {
         // Given
         PCSCase pcsCase = mock(PCSCase.class);
@@ -599,6 +627,60 @@ class DocumentServiceTest {
         List<DocumentEntity> entities = underTest.createAllDocuments(pcsCase);
 
         // Then
+        assertThat(entities).isEmpty();
+        verify(documentRepository, never()).saveAll(anyList());
+    }
+
+    @Test
+    void shouldReturnEmptyListWhenAdditionalDocumentEnglandIsEmpty() {
+        PCSCase pcsCase = mock(PCSCase.class);
+
+        when(pcsCase.getLegislativeCountry()).thenReturn(LegislativeCountry.ENGLAND);
+        when(pcsCase.getAdditionalDocumentsEngland()).thenReturn(Collections.emptyList());
+
+        List<DocumentEntity> entities = underTest.createAllDocuments(pcsCase);
+
+        assertThat(entities).isEmpty();
+        verify(documentRepository, never()).saveAll(anyList());
+    }
+
+    @Test
+    void shouldReturnEmptyListWhenAdditionalDocumentWalesIsEmpty() {
+        PCSCase pcsCase = mock(PCSCase.class);
+
+        when(pcsCase.getLegislativeCountry()).thenReturn(LegislativeCountry.WALES);
+        when(pcsCase.getAdditionalDocumentsWales()).thenReturn(Collections.emptyList());
+
+        List<DocumentEntity> entities = underTest.createAllDocuments(pcsCase);
+
+        assertThat(entities).isEmpty();
+        verify(documentRepository, never()).saveAll(anyList());
+    }
+
+    @Test
+    void shouldReturnEmptyListWhenAdditionalDocumentsEnglandAndLegacyAdditionalDocumentsIsEmpty() {
+        PCSCase pcsCase = mock(PCSCase.class);
+
+        when(pcsCase.getLegislativeCountry()).thenReturn(LegislativeCountry.ENGLAND);
+        when(pcsCase.getAdditionalDocumentsEngland()).thenReturn(Collections.emptyList());
+        when(pcsCase.getAdditionalDocuments()).thenReturn(Collections.emptyList());
+
+        List<DocumentEntity> entities = underTest.createAllDocuments(pcsCase);
+
+        assertThat(entities).isEmpty();
+        verify(documentRepository, never()).saveAll(anyList());
+    }
+
+    @Test
+    void shouldReturnEmptyListWhenAdditionalDocumentsWalesandAdditionalDocumentsLegacyIsEmpty() {
+        PCSCase pcsCase = mock(PCSCase.class);
+
+        when(pcsCase.getLegislativeCountry()).thenReturn(LegislativeCountry.WALES);
+        when(pcsCase.getAdditionalDocumentsWales()).thenReturn(Collections.emptyList());
+        when(pcsCase.getAdditionalDocuments()).thenReturn(Collections.emptyList());
+
+        List<DocumentEntity> entities = underTest.createAllDocuments(pcsCase);
+
         assertThat(entities).isEmpty();
         verify(documentRepository, never()).saveAll(anyList());
     }
