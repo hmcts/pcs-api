@@ -18,6 +18,9 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.RentArrearsEntity;
 
 import java.math.BigDecimal;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.UUID;
 
@@ -29,6 +32,8 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class RentArrearsViewTest {
+
+    private static final Instant DOCUMENT_SUBMITTED_DATE = Instant.parse("2026-05-14T09:30:00Z");
 
     @Mock
     private PCSCase pcsCase;
@@ -90,6 +95,7 @@ class RentArrearsViewTest {
                 DocumentEntity.builder()
                     .id(rentDocumentId)
                     .type(DocumentType.RENT_STATEMENT)
+                    .submittedDate(DOCUMENT_SUBMITTED_DATE)
                     .build()
             )
         );
@@ -109,6 +115,9 @@ class RentArrearsViewTest {
         List<ListValue<Document>> statementDocuments = rentArrears.getStatementDocuments();
         assertThat(statementDocuments).hasSize(1);
         assertThat(statementDocuments.getFirst().getId()).isEqualTo(rentDocumentId.toString());
+        // Case File View 1.1 sorts on upload_timestamp - PCS must set it, CCD will not
+        assertThat(statementDocuments.getFirst().getValue().getUploadTimestamp())
+            .isEqualTo(LocalDateTime.ofInstant(DOCUMENT_SUBMITTED_DATE, ZoneOffset.UTC));
 
         verify(pcsCase).setArrearsJudgmentWanted(VerticalYesNo.YES);
     }
