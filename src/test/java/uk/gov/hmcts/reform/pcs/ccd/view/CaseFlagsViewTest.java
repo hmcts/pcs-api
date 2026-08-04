@@ -198,7 +198,6 @@ class CaseFlagsViewTest {
 
     @Test
     void shouldKeepPathValuesContainingThePathDelimiter() {
-        PCSCase pcsCase = PCSCase.builder().build();
 
         CaseFlagEntity caseFlagEntity = new CaseFlagEntity();
         caseFlagEntity.setId(UUID.randomUUID());
@@ -208,6 +207,7 @@ class CaseFlagsViewTest {
         PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
         pcsCaseEntity.setCaseFlags(List.of(caseFlagEntity));
 
+        PCSCase pcsCase = PCSCase.builder().build();
         underTest.setCaseFields(pcsCase, pcsCaseEntity);
 
         List<ListValue<String>> paths = pcsCase.getCaseFlags().getDetails().getFirst().getValue().getPath();
