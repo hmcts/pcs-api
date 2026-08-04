@@ -8,6 +8,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.camunda.CamundaService;
 import uk.gov.hmcts.reform.pcs.camunda.TaskType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
@@ -66,6 +67,27 @@ class FeePaymentNotificationServiceTest {
 
         verify(notificationService).sendClaimantClaimIssuedEmailNotification(claim);
         verify(camundaService, never()).createTask(1234L, TaskType.NEW_CLAIM_CREATE_NEW_HEARING);
+    }
+
+    @Test
+    void shouldDelayCreatingWaTaskByOneDayIfGenAppExpected() {
+        Integer feePaymentId = 1;
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().caseReference(1234L).build();
+        ClaimEntity claim = ClaimEntity.builder()
+            .pcsCase(pcsCaseEntity)
+            .languageUsed(LanguageUsed.ENGLISH)
+            .genAppExpected(VerticalYesNo.YES)
+            .build();
+        FeePaymentEntity feePayment = FeePaymentEntity.builder()
+            .id(feePaymentId)
+            .claim(claim)
+            .build();
+        when(feePaymentRepository.findById(feePaymentId)).thenReturn(Optional.of(feePayment));
+
+        underTest.sendClaimantPaidCaseIssuedNotification(feePaymentId);
+
+        verify(notificationService).sendClaimantClaimIssuedEmailNotification(claim);
+        verify(camundaService).createTask(1234L, TaskType.NEW_CLAIM_CREATE_NEW_HEARING, 1);
     }
 
     @Test
