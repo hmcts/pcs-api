@@ -16,8 +16,6 @@
       }else if(typeof files === 'object' && 'files' in files){
         await this.uploadFile(page, files.files as string);
       }
-    }else if(typeof files === 'object' && 'files' in files){
-      await this.uploadFile(page, files.files as string);
     }
 
     private async uploadFile(page: Page, file: string): Promise<void> {
@@ -39,7 +37,7 @@
           await fileInput.last().setInputFiles(filePath);
           await performValidation('waitUntilElementDisappears', 'Uploading...');
           limit = await rateLimit.count();
-        };
+        }
       }).toPass({
         timeout: VERY_LONG_TIMEOUT,
       });
