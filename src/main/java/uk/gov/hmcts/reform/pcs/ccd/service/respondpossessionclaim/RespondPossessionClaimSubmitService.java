@@ -88,6 +88,7 @@ public class RespondPossessionClaimSubmitService {
             issuedWithoutPayment
         );
     }
+
     private void schedulePendingCounterClaimIssuedNotification(CounterClaimEntity entity) {
         if (nonNull(entity) && CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED == entity.getStatus()) {
             String taskId = UUID.randomUUID().toString();
