@@ -22,6 +22,9 @@ import uk.gov.hmcts.reform.pcs.functional.steps.BaseApi;
 import uk.gov.hmcts.reform.pcs.functional.testutils.PayloadLoader;
 import uk.gov.hmcts.reform.pcs.functional.testutils.PcsIdamTokenClient;
 
+import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
+import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
+
 @Slf4j
 @Tag("Functional")
 @EnabledIfEnvironmentVariable(named = "CCD_ENABLED", matches = "true")
