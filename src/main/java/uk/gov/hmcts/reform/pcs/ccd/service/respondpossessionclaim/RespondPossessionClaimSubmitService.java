@@ -46,8 +46,6 @@ public class RespondPossessionClaimSubmitService {
         JourneyType journeyType
     ) {
         claimResponseService.saveDraftDataForParty(responseDraftData, defendantParty);
-        DefendantResponseEntity defendantResponseEntity = defendantResponseService
-            .saveDefendantResponse(caseReference, responseDraftData, defendantParty, journeyType);
 
         DefendantResponses defendantResponses = responseDraftData.getDefendantResponses();
         CounterClaim counterClaim = defendantResponses.getCounterClaim();
@@ -79,6 +77,9 @@ public class RespondPossessionClaimSubmitService {
         } else {
             draftCaseDataService.deleteUnsubmittedCaseData(caseReference, respondPossessionClaim);
         }
+
+        DefendantResponseEntity defendantResponseEntity = defendantResponseService
+            .saveDefendantResponse(caseReference, responseDraftData, defendantParty, journeyType);
 
         log.info("Successfully saved defendant response for case: {}", caseReference);
 
