@@ -412,7 +412,8 @@ class RespondPossessionClaimTest extends BaseEventTest {
         when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
         when(securityContextService.getCurrentUserId()).thenReturn(UUID.randomUUID());
         when(userInfo.getRoles()).thenReturn(List.of(UserRole.CITIZEN.getRole()));
-        when(defendantResponseService.saveDefendantResponse(anyLong(), any(), any(), any())).thenReturn(new DefendantResponseEntity());
+        when(defendantResponseService.saveDefendantResponse(anyLong(), any(), any(), any()))
+            .thenReturn(new DefendantResponseEntity());
 
         PCSCase caseData = PCSCase.builder()
             .possessionClaimResponse(null)
@@ -1013,7 +1014,8 @@ class RespondPossessionClaimTest extends BaseEventTest {
 
         when(counterClaimService.saveCounterClaim(TEST_CASE_REFERENCE, responses.getCounterClaim(), representedParty))
             .thenReturn(Optional.of(counterClaimEntity));
-        when(defendantResponseService.saveDefendantResponse(anyLong(), any(), any(), any())).thenReturn(new DefendantResponseEntity());
+        when(defendantResponseService.saveDefendantResponse(anyLong(), any(), any(), any()))
+            .thenReturn(new DefendantResponseEntity());
 
         // when
         var response = callSubmitHandler(caseData);

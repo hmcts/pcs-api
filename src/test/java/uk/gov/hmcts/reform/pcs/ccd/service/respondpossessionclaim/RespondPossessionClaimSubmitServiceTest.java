@@ -75,7 +75,8 @@ class RespondPossessionClaimSubmitServiceTest {
 
     @Test
     void shouldPersistResponseWithoutCounterClaimCitizen() {
-        when(defendantResponseService.saveDefendantResponse(anyLong(), any(), any(), any())).thenReturn(new DefendantResponseEntity());
+        when(defendantResponseService.saveDefendantResponse(anyLong(), any(), any(), any()))
+            .thenReturn(new DefendantResponseEntity());
         this.shouldPersistResponseWithoutCounterClaim(JourneyType.CITIZEN);
         verify(draftCaseDataService).deleteUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim);
     }
@@ -83,7 +84,8 @@ class RespondPossessionClaimSubmitServiceTest {
     @Test
     void shouldPersistResponseWithoutCounterClaimLegalRepresentative() {
         when(partyEntity.getId()).thenReturn(UUID.randomUUID());
-        when(defendantResponseService.saveDefendantResponse(anyLong(), any(), any(), any())).thenReturn(new DefendantResponseEntity());
+        when(defendantResponseService.saveDefendantResponse(anyLong(), any(), any(), any()))
+            .thenReturn(new DefendantResponseEntity());
 
         this.shouldPersistResponseWithoutCounterClaim(JourneyType.LEGAL_REPRESENTATIVE);
         verify(draftCaseDataService)
@@ -133,7 +135,8 @@ class RespondPossessionClaimSubmitServiceTest {
         when(counterClaimService.saveCounterClaim(CASE_REFERENCE, counterClaim, partyEntity))
             .thenReturn(Optional.of(savedCounterClaim));
         when(counterClaimFeeCalculator.isPaymentRequired(counterClaim)).thenReturn(true);
-        when(defendantResponseService.saveDefendantResponse(anyLong(), any(), any(), any())).thenReturn(new DefendantResponseEntity());
+        when(defendantResponseService.saveDefendantResponse(anyLong(), any(), any(), any()))
+            .thenReturn(new DefendantResponseEntity());
 
         RespondPossessionClaimSubmitPersistenceResult result =
             underTest.persistFinalSubmit(CASE_REFERENCE, possessionClaimResponse, partyEntity, journeyType);
@@ -168,7 +171,8 @@ class RespondPossessionClaimSubmitServiceTest {
         when(counterClaimService.saveCounterClaim(CASE_REFERENCE, counterClaim, partyEntity))
             .thenReturn(Optional.of(savedCounterClaim));
         when(counterClaimFeeCalculator.isPaymentRequired(counterClaim)).thenReturn(true);
-        when(defendantResponseService.saveDefendantResponse(anyLong(), any(), any(), any())).thenReturn(new DefendantResponseEntity());
+        when(defendantResponseService.saveDefendantResponse(anyLong(), any(), any(), any()))
+            .thenReturn(new DefendantResponseEntity());
 
         RespondPossessionClaimSubmitPersistenceResult result =
             underTest.persistFinalSubmit(CASE_REFERENCE, possessionClaimResponse, partyEntity, journeyType);
@@ -207,7 +211,8 @@ class RespondPossessionClaimSubmitServiceTest {
             .thenReturn(Optional.of(savedCounterClaim));
         when(counterClaimFeeCalculator.isPaymentRequired(counterClaim)).thenReturn(false);
         when(counterClaimService.issueCounterClaim(savedCounterClaim)).thenReturn(issuedCounterClaim);
-        when(defendantResponseService.saveDefendantResponse(anyLong(), any(), any(), any())).thenReturn(new DefendantResponseEntity());
+        when(defendantResponseService.saveDefendantResponse(anyLong(), any(), any(), any()))
+            .thenReturn(new DefendantResponseEntity());
 
         RespondPossessionClaimSubmitPersistenceResult result =
             underTest.persistFinalSubmit(CASE_REFERENCE, possessionClaimResponse, partyEntity, journeyType);
@@ -219,8 +224,6 @@ class RespondPossessionClaimSubmitServiceTest {
 
     @Test
     void shouldSaveCounterClaimDocumentsWhenPresent() {
-        JourneyType journeyType = JourneyType.CITIZEN;
-
         CounterClaim counterClaim = CounterClaim.builder()
             .claimType(CounterClaimType.SOMETHING_ELSE)
             .build();
@@ -234,9 +237,6 @@ class RespondPossessionClaimSubmitServiceTest {
             .counterClaim(counterClaim)
             .counterClaimDocuments(counterClaimDocuments)
             .build();
-        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
-            .defendantResponses(defendantResponses)
-            .build();
         PartyEntity partyEntity = PartyEntity.builder().id(UUID.randomUUID()).build();
         PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().build();
         CounterClaimEntity savedCounterClaim = CounterClaimEntity.builder()
@@ -249,9 +249,14 @@ class RespondPossessionClaimSubmitServiceTest {
         when(counterClaimService.saveCounterClaim(CASE_REFERENCE, counterClaim, partyEntity))
             .thenReturn(Optional.of(savedCounterClaim));
         when(counterClaimFeeCalculator.isPaymentRequired(counterClaim)).thenReturn(true);
-        when(defendantResponseService.saveDefendantResponse(anyLong(), any(), any(), any())).thenReturn(new DefendantResponseEntity());
+        when(defendantResponseService.saveDefendantResponse(anyLong(), any(), any(), any()))
+            .thenReturn(new DefendantResponseEntity());
 
-        underTest.persistFinalSubmit(CASE_REFERENCE, possessionClaimResponse, partyEntity, journeyType);
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .defendantResponses(defendantResponses)
+            .build();
+
+        underTest.persistFinalSubmit(CASE_REFERENCE, possessionClaimResponse, partyEntity, JourneyType.CITIZEN);
 
         verify(documentService).createCounterClaimUploadedDocuments(
             defendantResponses.getCounterClaimDocuments(),
