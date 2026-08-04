@@ -4,6 +4,10 @@ import com.github.kagkarlsson.scheduler.SchedulerClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
@@ -17,11 +21,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.UploadedDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
-import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaim;
-import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimType;
-import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantContactDetails;
-import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
-import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.*;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.idam.UserInfo;
@@ -69,6 +69,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -1015,7 +1016,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
         when(counterClaimService.saveCounterClaim(TEST_CASE_REFERENCE, responses.getCounterClaim(), representedParty))
             .thenReturn(Optional.of(counterClaimEntity));
         when(defendantResponseService.saveDefendantResponse(anyLong(), any(), any(), any()))
-            .thenReturn(new DefendantResponseEntity());
+            .thenReturn(DefendantResponseEntity.builder().status(DefendantResponseStatus.SUBMITTED).build());
 
         // when
         var response = callSubmitHandler(caseData);
@@ -1027,6 +1028,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
         verify(draftCaseDataService).deleteUnsubmittedCaseData(TEST_CASE_REFERENCE, respondPossessionClaim,
                                                                representedPartyId);
         verify(draftCaseDataService, never()).getUnsubmittedCaseData(TEST_CASE_REFERENCE, respondPossessionClaim);
+        verify(schedulerClient).scheduleIfNotExists(any());
 
         // counterclaim
         verify(counterClaimService).saveCounterClaim(
@@ -1037,6 +1039,53 @@ class RespondPossessionClaimTest extends BaseEventTest {
             counterClaimEntity.getPcsCase(),
             counterClaimEntity.getParty()
         );
+    }
+
+    @ParameterizedTest
+    @MethodSource("nonMatchingDefendantResponseEntity")
+    void doNotScheduleDefendantResponseNotification(DefendantResponseEntity defendantResponseEntity) {
+        // given
+        UUID legalRepUserId = UUID.randomUUID();
+        UUID representedPartyId = UUID.randomUUID();
+        PartyEntity representedParty = PartyEntity.builder().id(representedPartyId).build();
+
+        when(securityContextService.getCurrentUserId()).thenReturn(legalRepUserId);
+        when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
+        when(userInfo.getRoles()).thenReturn(List.of(UserRole.DEFENDANT_SOLICITOR.getRole()));
+
+        DefendantResponses responses = DefendantResponses.builder()
+            .build();
+
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .defendantResponses(responses)
+            .build();
+
+        PCSCase caseData = PCSCase.builder()
+            .possessionClaimResponse(possessionClaimResponse)
+            .build();
+
+        when(selectedPartyRetriever.getCurrentRepresentedPartyId(caseData))
+            .thenReturn(Optional.of(representedPartyId));
+        when(draftCaseDataService.getUnsubmittedCaseData(TEST_CASE_REFERENCE, respondPossessionClaim,
+                                                         representedPartyId))
+            .thenReturn(Optional.of(caseData));
+        when(partyService.getPartyEntityById(representedPartyId, TEST_CASE_REFERENCE)).thenReturn(representedParty);
+        when(defendantResponseService.saveDefendantResponse(anyLong(), any(), any(), any()))
+            .thenReturn(defendantResponseEntity);
+
+        // when
+        var response = callSubmitHandler(caseData);
+
+        // then
+
+        verify(schedulerClient, never()).scheduleIfNotExists(any());
+    }
+
+
+    public static Stream<Arguments> nonMatchingDefendantResponseEntity() {
+        return Stream.of(
+            Arguments.of(DefendantResponseEntity.builder().status(DefendantResponseStatus.CREATED).build()),
+            Arguments.of((Object) null));
     }
 
     @Test
