@@ -189,11 +189,11 @@ public class DocumentService {
         }
 
         return ListValueUtils.unwrapListItems(documents).stream()
-            .map(doc -> DocumentHolder.builder()
-                .document(getAdditionalDocument(doc).getDocument())
-                .type(getAdditionalDocumentType(documentTypeExtractor.apply(doc)))
-                .description(getAdditionalDocument(doc).getDescription())
-                .build())
+            .map(doc -> {
+                DocumentHolder additionalDocument = getAdditionalDocument(doc);
+                additionalDocument.setType(getAdditionalDocumentType(documentTypeExtractor.apply(doc)));
+                return additionalDocument;
+            })
             .toList();
     }
 
@@ -215,16 +215,16 @@ public class DocumentService {
             .toList();
     }
 
-    private AdditionalDocument getAdditionalDocument(Object document) {
+    private DocumentHolder getAdditionalDocument(Object document) {
         if (document instanceof AdditionalDocumentEngland englandDocument) {
-            return AdditionalDocument.builder()
+            return DocumentHolder.builder()
                 .document(englandDocument.getDocument())
                 .description(englandDocument.getDescription())
                 .build();
         }
 
         if (document instanceof AdditionalDocumentWales walesDocument) {
-            return AdditionalDocument.builder()
+            return DocumentHolder.builder()
                 .document(walesDocument.getDocument())
                 .description(walesDocument.getDescription())
                 .build();
@@ -523,7 +523,6 @@ public class DocumentService {
     @Data
     private static class DocumentHolder {
         private Document document;
-        private AdditionalDocumentType additionalDocumentType;
         private DocumentType type;
         private String description;
     }
