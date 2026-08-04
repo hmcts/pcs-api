@@ -41,6 +41,8 @@ export class CaseManagementAction implements IAction {
       ['uploadRelativeEvidence',() => this.uploadRelativeEvidence(fieldName as actionRecord)],
       ['uploadADocument',() => this.uploadADocument(page, fieldName as actionRecord)],
       ['verifyReferToJudge', () => this.verifyReferToJudge(fieldName as actionRecord)],
+      ['uploadADocument', () => this.uploadADocument(page, fieldName as actionRecord)],
+      ['uploadRelativeEvidence', () => this.uploadRelativeEvidence(fieldName as actionRecord)],
       ['inputErrorValidation', () => this.inputErrorValidation(page, fieldName as actionRecord)],
 
     ]);
@@ -135,11 +137,7 @@ export class CaseManagementAction implements IAction {
   private async enterApplicationDetails(appDetails: actionRecord) {
     let date = CaseManagementCommonUtils.getRandomDate(appDetails.dateType as string);
     await performAction('clickRadioButton', { question: appDetails.question1, option: appDetails.option1 });
-
-    await performActions('Enter Date',
-      ['inputText', appDetails.label1, date.split('/')[0]],
-      ['inputText', appDetails.label2, date.split('/')[1]],
-      ['inputText', appDetails.label3, date.split('/')[2]]);
+    await performAction('inputDate', appDetails.label1 as string, appDetails.date);
     await performAction('clickRadioButton', { question: appDetails.question2, option: appDetails.option2 });
     if (appDetails.option2 === 'Something else') {
       performAction('inputText', appDetails.label, CaseManagementCommonUtils.generateRandomString(appDetails.input as number))
@@ -251,10 +249,7 @@ export class CaseManagementAction implements IAction {
     await performAction('reTryOnCallBackError', enterGenAppPreferApplicationToJudge.continueButton, referToJudgeData.nextPage as string);
   }
 
-
-
-
-
+  
   private async inputErrorValidation(page: Page, validationArr: actionRecord) {
 
     if (Array.isArray(validationArr.inputArray)) {

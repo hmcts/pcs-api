@@ -16,6 +16,7 @@ import {
   enterGenAppUploadRelatedEvidence, genAppsCheckYourAnswers
 } from '@data/page-data-figma/page-data-caseManagement-figma';
 import { label } from 'allure-js-commons';
+import { CaseManagementCommonUtils } from '@utils/actions/custom-actions/custom-actions-caseManagement/caseManagementUtils.action';
 
 test.use({ storageState: undefined })
 
@@ -52,6 +53,7 @@ test.afterEach(async () => {
 test.describe('Case management - Case Worker Enter a General application @nightly', async () => {
   test('Case management - Case Worker Enter a General application ADJOURN Journey @CM @regression', async () => {
     let fileName = enterGenAppUploadGeneralApplication.uploadDocHiddenOption[3];
+    let date = CaseManagementCommonUtils.getRandomDate(enterGenAppUploadGeneralApplication.dateTypeHiddenUserInput);
     await performAction('selectAnEvent', { eventType: caseSummary.enterAGenApp });
     await performValidation('mainHeader', enterGenappApplication.mainHeader);
     await performAction('errorValidationEnterGeneralAppPage', enterGenappApplication.errorValidation);
@@ -60,9 +62,8 @@ test.describe('Case management - Case Worker Enter a General application @nightl
       question2: enterGenappApplication.typeOfAppQuestion, option2: enterGenappApplication.adjournRadioOption,
       label: enterGenappApplication.whichCategoriesHiddenTextLabel,
       input: enterGenappApplication.whichCategoriesHiddenTextInput,
-      label1: enterGenappApplication.dayTextLabel,
-      label2: enterGenappApplication.monthTextLabel,
-      label3: enterGenappApplication.yearTextLabel,
+      label1: enterGenappApplication.whatDateAppReceivedQuestion,
+      date: date,
       dateType: enterGenappApplication.dateTypeHiddenUserInput,
       nextPage: enterGenAppHearingDate.mainHeader
     })
@@ -101,13 +102,14 @@ test.describe('Case management - Case Worker Enter a General application @nightl
     await performAction('verifyReferToJudge',{
       nextPage: genAppsCheckYourAnswers.mainHeader
     });
-    await performValidation('mainHeader', genAppsCheckYourAnswers.mainHeader);
     await performAction('clickButton', genAppsCheckYourAnswers.submitButton);
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Enter a general application');
   });
 
 
   test('Case management - Case Worker Enter a General application ADJOURN Journey - Application Fee Received - NO @CM', async () => {
+    let fileName = enterGenAppUploadGeneralApplication.uploadDocHiddenOption[3];
+    let date = CaseManagementCommonUtils.getRandomDate(enterGenAppUploadGeneralApplication.dateTypeHiddenUserInput);
     await performAction('selectAnEvent', { eventType: caseSummary.enterAGenApp });
     await performValidation('mainHeader', enterGenappApplication.mainHeader);
     await performAction('enterApplicationDetails', {
@@ -115,9 +117,8 @@ test.describe('Case management - Case Worker Enter a General application @nightl
       question2: enterGenappApplication.typeOfAppQuestion, option2: enterGenappApplication.adjournRadioOption,
       label: enterGenappApplication.whichCategoriesHiddenTextLabel,
       input: enterGenappApplication.whichCategoriesHiddenTextInput,
-      label1: enterGenappApplication.dayTextLabel,
-      label2: enterGenappApplication.monthTextLabel,
-      label3: enterGenappApplication.yearTextLabel,
+      label1: enterGenappApplication.whatDateAppReceivedQuestion,
+      date: date,
       dateType: enterGenappApplication.dateTypeHiddenUserInput,
       nextPage: enterGenAppHearingDate.mainHeader
     });
@@ -137,7 +138,8 @@ test.describe('Case management - Case Worker Enter a General application @nightl
   });
 
   test('Case management - Case Worker Enter a General application ADJOURN Journey - Fee Reference included - NO @CM', async () => {
-    let fileName = enterGenAppUploadGeneralApplication.uploadDocHiddenOption[2];
+    let fileName = enterGenAppUploadGeneralApplication.uploadDocHiddenOption[3];
+    let date = CaseManagementCommonUtils.getRandomDate(enterGenAppUploadGeneralApplication.dateTypeHiddenUserInput);
     await performAction('selectAnEvent', { eventType: caseSummary.enterAGenApp });
     await performValidation('mainHeader', enterGenappApplication.mainHeader);
     await performAction('enterApplicationDetails', {
@@ -145,9 +147,8 @@ test.describe('Case management - Case Worker Enter a General application @nightl
       question2: enterGenappApplication.typeOfAppQuestion, option2: enterGenappApplication.adjournRadioOption,
       label: enterGenappApplication.whichCategoriesHiddenTextLabel,
       input: enterGenappApplication.whichCategoriesHiddenTextInput,
-      label1: enterGenappApplication.dayTextLabel,
-      label2: enterGenappApplication.monthTextLabel,
-      label3: enterGenappApplication.yearTextLabel,
+      label1: enterGenappApplication.whatDateAppReceivedQuestion,
+      date: date,
       dateType: enterGenappApplication.dateTypeHiddenUserInput,
       nextPage: enterGenAppHearingDate.mainHeader
     });
@@ -183,6 +184,7 @@ test.describe('Case management - Case Worker Enter a General application @nightl
 
   test('Case management - Case Worker Enter a General application SET ASIDE Journey @CM', async () => {
     let fileName = enterGenAppUploadGeneralApplication.uploadDocHiddenOption[1];
+    let date = CaseManagementCommonUtils.getRandomDate(enterGenAppUploadGeneralApplication.dateTypeHiddenUserInput);
     await performAction('selectAnEvent', { eventType: caseSummary.enterAGenApp });
     await performValidation('mainHeader', enterGenappApplication.mainHeader);
     await performAction('enterApplicationDetails', {
@@ -190,9 +192,8 @@ test.describe('Case management - Case Worker Enter a General application @nightl
       question2: enterGenappApplication.typeOfAppQuestion, option2: enterGenappApplication.setAsideRadioOption,
       label: enterGenappApplication.whichCategoriesHiddenTextLabel,
       input: enterGenappApplication.whichCategoriesHiddenTextInput,
-      label1: enterGenappApplication.dayTextLabel,
-      label2: enterGenappApplication.monthTextLabel,
-      label3: enterGenappApplication.yearTextLabel,
+      label1: enterGenappApplication.whatDateAppReceivedQuestion,
+      date: date,
       dateType: enterGenappApplication.dateTypeHiddenUserInput,
       nextPage: enterGenAppapplicationFee.mainHeader
     })
@@ -221,13 +222,13 @@ test.describe('Case management - Case Worker Enter a General application @nightl
     await performAction('verifyReferToJudge',{
       nextPage: genAppsCheckYourAnswers.mainHeader
     });
-    await performValidation('mainHeader', genAppsCheckYourAnswers.mainHeader);
     await performAction('clickButton', genAppsCheckYourAnswers.submitButton);
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Enter a general application');
   });
 
   test('Case management - Case Worker Enter a General application SOMETHING ELSE Journey @CM', async () => {
     let fileName = enterGenAppUploadGeneralApplication.uploadDocHiddenOption[2];
+    let date = CaseManagementCommonUtils.getRandomDate(enterGenAppUploadGeneralApplication.dateTypeHiddenUserInput);
     await performAction('selectAnEvent', { eventType: caseSummary.enterAGenApp });
     await performValidation('mainHeader', enterGenappApplication.mainHeader);
     await performAction('enterApplicationDetails', {
@@ -235,9 +236,8 @@ test.describe('Case management - Case Worker Enter a General application @nightl
       question2: enterGenappApplication.typeOfAppQuestion, option2: enterGenappApplication.somethingElseRadioOption,
       label: enterGenappApplication.whichCategoriesHiddenTextLabel,
       input: enterGenappApplication.whichCategoriesHiddenTextInput,
-      label1: enterGenappApplication.dayTextLabel,
-      label2: enterGenappApplication.monthTextLabel,
-      label3: enterGenappApplication.yearTextLabel,
+      label1: enterGenappApplication.whatDateAppReceivedQuestion,
+      date: date,
       dateType: enterGenappApplication.dateTypeHiddenUserInput,
       nextPage: enterGenAppapplicationFee.mainHeader
     })
@@ -266,7 +266,6 @@ test.describe('Case management - Case Worker Enter a General application @nightl
     await performAction('verifyReferToJudge',{
       nextPage: genAppsCheckYourAnswers.mainHeader
     });
-    await performValidation('mainHeader', genAppsCheckYourAnswers.mainHeader);
     await performAction('clickButton', genAppsCheckYourAnswers.submitButton);
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Enter a general application');
   });
