@@ -311,6 +311,7 @@ class DocumentServiceTest {
         verify(documentRepository).saveAll(documentEntityListCaptor.capture());
         List<DocumentEntity> capturedEntities = documentEntityListCaptor.getValue();
 
+        // Assert
         assertThat(capturedEntities)
             .extracting(DocumentEntity::getType)
             .containsExactly(DocumentType.valueOf(additionalDocumentType.name()));
