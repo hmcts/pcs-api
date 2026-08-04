@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
+import uk.gov.hmcts.reform.pcs.LegalRepresentative;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantContactPreferences;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
@@ -21,13 +22,7 @@ import uk.gov.hmcts.reform.pcs.config.NotificationTemplateConfiguration;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 import uk.gov.hmcts.reform.pcs.notify.entities.CaseNotification;
 import uk.gov.hmcts.reform.pcs.notify.exception.NotificationException;
-import uk.gov.hmcts.reform.pcs.notify.model.EmailNotificationRequest;
-import uk.gov.hmcts.reform.pcs.notify.model.EmailNotificationResponse;
-import uk.gov.hmcts.reform.pcs.notify.model.NotificationClaimType;
-import uk.gov.hmcts.reform.pcs.notify.model.NotificationRecipient;
-import uk.gov.hmcts.reform.pcs.notify.model.NotificationStatus;
-import uk.gov.hmcts.reform.pcs.notify.model.NotificationType;
-import uk.gov.hmcts.reform.pcs.notify.model.SendEmailTaskData;
+import uk.gov.hmcts.reform.pcs.notify.model.*;
 import uk.gov.hmcts.reform.pcs.notify.repository.NotificationRepository;
 import uk.gov.hmcts.reform.pcs.notify.task.SendEmailTaskComponent;
 import uk.gov.hmcts.reform.pcs.notify.template.EmailTemplate;
@@ -36,6 +31,8 @@ import uk.gov.hmcts.reform.pcs.notify.template.personalisation.TemplatePersonali
 import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
+
+import static org.apache.commons.lang3.StringUtils.isBlank;
 
 @Service
 @Slf4j
@@ -58,23 +55,6 @@ public class NotificationService {
             NotificationClaimType.NO_COUNTER_CLAIM,
             notificationPersonalisationFactory.forDefendant(defendantResponse)
         );
-    }
-
-    public EmailNotificationResponse sendDefendantResponseConfirmationToLegalRepresentativeNoCounterClaim(
-        LegalRepresentativeEntity legalRepresentativeEntity,
-        PcsCaseEntity pcsCaseEntity,
-        PartyEntity legalRepresentativePartyEntity,
-        DefendantResponseEntity defendantResponse) {
-        return sendEmail(
-            legalRepresentativeRecipient(
-                legalRepresentativeEntity,
-                pcsCaseEntity,
-                legalRepresentativePartyEntity,
-                defendantResponse
-            ),
-            EmailTemplate.RESPONSE_NO_COUNTERCLAIM,
-            NotificationClaimType.NO_COUNTER_CLAIM,
-            notificationPersonalisationFactory.forLegalRepresentative(legalRepresentativePartyEntity, pcsCaseEntity));
     }
 
     public EmailNotificationResponse sendDefendantResponseCounterclaimPaymentRequiredEmailNotification(
@@ -111,57 +91,65 @@ public class NotificationService {
         );
     }
 
-    public EmailNotificationResponse sendDefendantResponseCounterClaimNoPaymentToLegalRepresentative(
-        LegalRepresentativeEntity legalRepresentativeEntity,
-        PcsCaseEntity pcsCaseEntity,
-        PartyEntity legalRepresentativePartyEntity,
-        DefendantResponseEntity defendantResponse) {
-        return sendEmail(
+
+    public EmailNotificationResponse sendDefendantResponseConfirmationToLegalRepresentativeNoCounterClaim(LegalRepresentativeEntity legalRepresentativeEntity,
+                                                                                            PcsCaseEntity pcsCaseEntity,
+                                                                                            DefendantResponseEntity defendantResponse) {
+        return sendEmailForLegalRepresentative(
             legalRepresentativeRecipient(
                 legalRepresentativeEntity,
                 pcsCaseEntity,
-                legalRepresentativePartyEntity,
+                defendantResponse.getParty(),
                 defendantResponse
             ),
-            EmailTemplate.RESPONSE_WITH_COUNTERCLAIM_NO_PAYMENT_REQUIRED,
-            NotificationClaimType.COUNTER_CLAIM,
-            notificationPersonalisationFactory.forLegalRepresentative(legalRepresentativePartyEntity, pcsCaseEntity));
+            EmailTemplate.RESPONSE_NO_COUNTERCLAIM,
+            NotificationClaimType.NO_COUNTER_CLAIM,
+            notificationPersonalisationFactory.forLegalRepresentative(legalRepresentativeEntity, pcsCaseEntity));
     }
 
-    public EmailNotificationResponse sendDefendantResponseCounterClaimPaymentRequiredToLegalRepresentative(
-        LegalRepresentativeEntity legalRepresentativeEntity,
-        PcsCaseEntity pcsCaseEntity, PartyEntity legalRepresentativePartyEntity,
-        DefendantResponseEntity defendantResponse) {
-        return sendEmail(
+    public EmailNotificationResponse sendDefendantResponseConfirmationToLegalRepresentativePaymentSuccess(LegalRepresentativeEntity legalRepresentativeEntity,
+                                                                                                          PcsCaseEntity pcsCaseEntity,
+                                                                                                          DefendantResponseEntity defendantResponse) {
+        return sendEmailForLegalRepresentative(
             legalRepresentativeRecipient(
                 legalRepresentativeEntity,
                 pcsCaseEntity,
-                legalRepresentativePartyEntity,
+                defendantResponse.getParty(),
+                defendantResponse
+            ),
+            EmailTemplate.COUNTERCLAIM_PAYMENT_SUCCESS,
+            NotificationClaimType.COUNTER_CLAIM,
+            notificationPersonalisationFactory.counterclaimSuccessLegalRep(legalRepresentativeEntity, pcsCaseEntity));
+    }
+
+    public EmailNotificationResponse sendDefendantResponseConfirmationToLegalRepresentativePaymentRequired(LegalRepresentativeEntity legalRepresentativeEntity,
+                                                                                                          PcsCaseEntity pcsCaseEntity,
+                                                                                                          DefendantResponseEntity defendantResponse) {
+        return sendEmailForLegalRepresentative(
+            legalRepresentativeRecipient(
+                legalRepresentativeEntity,
+                pcsCaseEntity,
+                defendantResponse.getParty(),
                 defendantResponse
             ),
             EmailTemplate.RESPONSE_WITH_COUNTERCLAIM_PAYMENT_REQUIRED,
             NotificationClaimType.COUNTER_CLAIM,
-            notificationPersonalisationFactory.forLegalRepresentative(legalRepresentativePartyEntity, pcsCaseEntity));
+            notificationPersonalisationFactory.forLegalRepresentative(legalRepresentativeEntity, pcsCaseEntity));
     }
 
-
-    public EmailNotificationResponse sendDefendantResponseCounterclaimPaymentSuccessEmailNotificationToLegalRep(
-        LegalRepresentativeEntity legalRepresentativeEntity,
-        PcsCaseEntity pcsCaseEntity, PartyEntity legalRepresentativePartyEntity,
-        DefendantResponseEntity defendantResponse,
-        String paymentReference
-    ) {
-        return sendEmail(
+    public EmailNotificationResponse sendDefendantResponseConfirmationToLegalRepresentativeNoPaymentRequired(LegalRepresentativeEntity legalRepresentativeEntity,
+                                                                                                           PcsCaseEntity pcsCaseEntity,
+                                                                                                           DefendantResponseEntity defendantResponse) {
+        return sendEmailForLegalRepresentative(
             legalRepresentativeRecipient(
                 legalRepresentativeEntity,
                 pcsCaseEntity,
-                legalRepresentativePartyEntity,
-                defendantResponse),
-            EmailTemplate.COUNTERCLAIM_PAYMENT_SUCCESS,
+                defendantResponse.getParty(),
+                defendantResponse
+            ),
+            EmailTemplate.RESPONSE_WITH_COUNTERCLAIM_NO_PAYMENT_REQUIRED,
             NotificationClaimType.COUNTER_CLAIM,
-            notificationPersonalisationFactory.counterclaimSuccessLegalRep(defendantResponse,paymentReference,
-                                                                           legalRepresentativeEntity)
-        );
+            notificationPersonalisationFactory.forLegalRepresentative(legalRepresentativeEntity, pcsCaseEntity));
     }
 
     public EmailNotificationResponse sendClaimantDraftSavedForLaterEmailNotification(
@@ -450,6 +438,31 @@ public class NotificationService {
         }
     }
 
+    public EmailNotificationResponse sendEmailForLegalRepresentative(
+        LegalRepresentativeNotificationRecipient recipient,
+        EmailTemplate template,
+        NotificationClaimType claimType,
+        TemplatePersonalisation personalisation
+    ) {
+
+        if (isBlank(recipient.email())) {
+            log.info("Skipping email notification because recipient email is null");
+            return null;
+        }
+
+        return scheduleEmailNotification(
+            buildRequest(
+                templateConfiguration.getTemplateId(template),
+                recipient.email(),
+                claimType,
+                personalisation
+            ),
+            recipient.pcsCase(),
+            recipient.claim(),
+            recipient.party()
+        );
+    }
+
     public EmailNotificationResponse sendEmail(
         NotificationRecipient recipient,
         EmailTemplate template,
@@ -546,20 +559,19 @@ public class NotificationService {
         );
     }
 
-    private NotificationRecipient legalRepresentativeRecipient(LegalRepresentativeEntity legalRepresentativeEntity,
+    private LegalRepresentativeNotificationRecipient legalRepresentativeRecipient(LegalRepresentativeEntity legalRepresentativeEntity,
                                                                 PcsCaseEntity pcsCaseEntity,
-                                                                PartyEntity legalRepresentativePartyEntity,
+                                                                PartyEntity defendantParty,
                                                                 DefendantResponseEntity defendantResponse) {
         if (legalRepresentativeEntity == null) {
             throw new IllegalStateException("No legal representative found for response: " + defendantResponse.getId());
         }
 
-        return new NotificationRecipient(
+        return new LegalRepresentativeNotificationRecipient(
             legalRepresentativeEntity.getEmail(),
-            legalRepresentativePartyEntity, // was defendant party
+            defendantParty,
             pcsCaseEntity,
-            defendantResponse.getClaim(),
-            PartyRole.LEGAL_REPRESENTATIVE
+            defendantResponse.getClaim()
         );
     }
 }

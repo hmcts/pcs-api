@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.pcs.notify.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import uk.gov.hmcts.reform.pcs.LegalRepresentative;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantInformation;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -65,14 +66,14 @@ public class NotificationPersonalisationFactory {
         return buildPersonalisation(partyEntity, pcsCaseEntity);
     }
 
-    public LegalRepresentativeBasePersonalisation forLegalRepresentative(PartyEntity legalRepresentativePartyEntity,
-                                                                         PcsCaseEntity pcsCaseEntity
-    ) {
-        UUID userId = legalRepresentativePartyEntity.getIdamId();
-        String organisationDetailsResponse = organisationDetailsService.getOrganisationName(userId.toString());
+    public LegalRepresentativeBasePersonalisation forLegalRepresentative(LegalRepresentativeEntity legalRepresentativeEntity, PcsCaseEntity pcsCaseEntity) {
+//        UUID userId = defendantParty.getIdamId();
+//        String organisationName = organisationDetailsService.getOrganisationName(userId.toString()); // unsure?
+        String organisationName = legalRepresentativeEntity.getOrganisationName();
+
         return LegalRepresentativeBasePersonalisation.builder()
-            .base(buildPersonalisation(legalRepresentativePartyEntity, pcsCaseEntity))
-            .organisationName(organisationDetailsResponse)
+            .base(buildPersonalisation(pcsCaseEntity, legalRepresentativeEntity))
+            .organisationName(organisationName)
             .build();
     }
 
@@ -94,6 +95,33 @@ public class NotificationPersonalisationFactory {
             .base(buildPersonalisation(defendantResponse.getPcsCase(),legalRepresentative))
             .paymentReferenceNumber(paymentReference)
             .organisationName(legalRepresentative.getOrganisationName())
+            .build();
+    }
+
+    private BasePersonalisation buildPersonalisation(
+        PcsCaseEntity pcsCaseEntity,
+        LegalRepresentativeEntity legalRepresentative
+    ) {
+        PartyEntity primaryClaimant = partyService.getPrimaryClaimantPartyEntity(pcsCaseEntity);
+        PartyEntity primaryDefendant = partyService.getPrimaryDefendantPartyEntity(pcsCaseEntity);
+
+        String claimantName = primaryClaimant.getOrgName() != null
+            ? primaryClaimant.getOrgName().toUpperCase(Locale.ROOT)
+            : formatNameUpperForNotification(primaryClaimant.getFirstName(), primaryClaimant.getLastName());
+
+        String primaryDefendantName = getDefendantName(
+            primaryDefendant.getNameKnown() != null && primaryDefendant.getNameKnown().toBoolean(),
+            primaryDefendant.getFirstName(),
+            primaryDefendant.getLastName());
+
+        return BasePersonalisation.builder()
+            .firstName(legalRepresentative.getFirstName() != null
+                           ? legalRepresentative.getFirstName() : legalRepresentative.getOrganisationName())
+            .lastName(legalRepresentative.getLastName() != null
+                          ? legalRepresentative.getLastName() : "")
+            .caseNumber(formatCaseReference(pcsCaseEntity.getCaseReference().toString()))
+            .claimantName(claimantName)
+            .primaryDefendantName(primaryDefendantName)
             .build();
     }
 

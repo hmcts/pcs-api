@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.strategy.LegalRepSubmissionEventStrategy;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DefendantResponseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.feeandpay.FeePaymentRepository;
 import uk.gov.hmcts.reform.pcs.notify.model.EmailNotificationResponse;
@@ -28,13 +29,16 @@ public class NotifyController {
     private final NotificationService notificationService;
     private final DefendantResponseRepository defendantResponseRepository;
     private final FeePaymentRepository feePaymentRepository;
+//    private final LegalRepSubmissionEventStrategy legalRepSubmissionEventStrategy;
 
     public NotifyController(NotificationService notificationService,
                             DefendantResponseRepository defendantResponseRepository,
                             FeePaymentRepository feePaymentRepository) {
+//                            LegalRepSubmissionEventStrategy legalRepSubmissionEventStrategy) {
         this.notificationService = notificationService;
         this.defendantResponseRepository = defendantResponseRepository;
         this.feePaymentRepository = feePaymentRepository;
+//        this.legalRepSubmissionEventStrategy = legalRepSubmissionEventStrategy;
     }
 
     @PostMapping(value = "send-defendant-response-emails")

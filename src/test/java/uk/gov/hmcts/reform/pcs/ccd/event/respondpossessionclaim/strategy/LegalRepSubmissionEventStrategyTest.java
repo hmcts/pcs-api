@@ -23,6 +23,8 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEnt
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
+import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.ClaimResponseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.DefendantResponseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.CounterClaimSubmitConfirmationService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.RespondPossessionClaimSubmitPersistenceResult;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.RespondPossessionClaimSubmitService;
@@ -55,6 +57,10 @@ class LegalRepSubmissionEventStrategyTest {
     @Mock
     private DraftCaseDataService draftCaseDataService;
     @Mock
+    private ClaimResponseService claimResponseService;
+    @Mock
+    private DefendantResponseService defendantResponseService;
+    @Mock
     private SelectedPartyRetriever selectedPartyRetriever;
     @Mock
     private PartyService partyService;
@@ -64,6 +70,8 @@ class LegalRepSubmissionEventStrategyTest {
     private PcsCaseService pcsCaseService;
     @Mock
     private SubmitResponseFactory submitResponseFactory;
+    @Mock
+    private LegalRepHelper legalRepHelper;
     @Mock
     private EventPayload<PCSCase, State> eventPayload;
     @Mock

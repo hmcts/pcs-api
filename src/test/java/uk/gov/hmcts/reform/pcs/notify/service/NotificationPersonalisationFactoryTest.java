@@ -296,22 +296,13 @@ class NotificationPersonalisationFactoryTest {
         @Test
         @DisplayName("Should build correct base personalisation for legal representative")
         void shouldBuildCorrectLegalRepresentativeBasePersonalisation() {
-//            PartyEntity claimantParty = stubClaimantParty();
-//            PartyEntity defendantParty = stubDefendantParty();
-//            DefendantResponseEntity response = createDefendantResponse(claimantParty, defendantParty);
-//
-//            BasePersonalisation result = factory.forDefendant(response);
-//
-//            Map<String, Object> map = result.toMap();
-//            assertThat(map)
-//                .containsEntry("firstName", "John")
-//                .containsEntry("lastName", "Doe")
-//                .containsEntry("caseNumber", "1234-5678-90")
-//                .containsEntry("claimantName", "JANE SMITH")
-//                .containsEntry("primaryDefendantName", "JOHN DOE");
-
             PartyEntity legalRepParty = stubLegalRepParty();
-            PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().build();
+
+            PartyEntity claimantParty = stubClaimantParty();
+            PartyEntity defendantParty = stubDefendantParty();
+            PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().caseReference(CASE_REFERENCE).build();
+            when(partyService.getPrimaryClaimantPartyEntity(pcsCaseEntity)).thenReturn(claimantParty);
+            when(partyService.getPrimaryDefendantPartyEntity(pcsCaseEntity)).thenReturn(defendantParty);
 
             LegalRepresentativeBasePersonalisation result = factory.forLegalRepresentative(legalRepParty, pcsCaseEntity);
             Map<String, Object> map = result.toMap();
@@ -320,7 +311,9 @@ class NotificationPersonalisationFactoryTest {
                 .containsEntry("lastName", "de Kermeur")
                 .containsEntry("caseNumber", "1234-5678-90")
                 .containsEntry("claimantName", "JANE SMITH")
-                .containsEntry("primaryDefendantName", "JOHN DOE");
+                .containsEntry("primaryDefendantName", "JOHN DOE")
+                .containsEntry("organisationName", "HMCTS")
+                .containsEntry("paymentReference", "??????"); // this needs to be fixed
         }
     }
 
@@ -383,12 +376,15 @@ class NotificationPersonalisationFactoryTest {
         return defendantParty;
     }
 
-    private PartyEntity stubLegalRepParty(/*VerticalYesNo nameKnown*/) {
-        PartyEntity legalRepParty = createParty("Legall", "de Kermeur");
-//        legalRepParty.setNameKnown(nameKnown);
-        when(partyService.getPrimaryDefendantPartyEntity(pcsCaseEntity)).thenReturn(legalRepParty);
-        return legalRepParty;
-    }
+    // private PartyEntity stubLegalRepParty(/*VerticalYesNo nameKnown*/) {
+    //     PartyEntity legalRepParty = createParty("Legall", "de Kermeur");
+    //     UUID idamId = UUID.randomUUID();
+    //     legalRepParty.setIdamId(idamId);
+
+    //     when(organisationDetailsService.getOrganisationName(idamId.toString())).thenReturn("HMCTS");
+    //     when(partyService.getPrimaryDefendantPartyEntity(pcsCaseEntity)).thenReturn(legalRepParty);
+    //     return legalRepParty;
+    // }
 
     private PartyEntity createParty(String firstName, String lastName) {
         PartyEntity party = new PartyEntity();
