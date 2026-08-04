@@ -318,26 +318,15 @@ public class DataTest extends CftlibTest {
                 + "WHERE c.case_reference = '" + caseReference + "'"
         );
 
-        //        int validDefendant = runCountQuery(
-        //        "SELECT COUNT(*) FROM public.party p "
-        //            + "JOIN public.pcs_case c ON p.case_id = c.id "
-        //            + "WHERE c.case_reference = '" + caseReference + "' "
-        //            + "AND p.first_name = 'Dominic' "
-        //            + "AND p.last_name = 'Defendant' "
-        //            + "AND p.name_known = 'YES' "
-        //            + "AND p.name_overridden = 'NO' " // Fixed spelling: double 'd'
-        //            + "AND p.address_known = 'YES' "
-        //            + "AND p.address_same_as_property = 'YES' "
-        //            + "AND p.phone_number_provided = 'YES' "
-        //            + "AND p.phone_number = '00000000000'"
-        //    );
-
         int validDefendant = runCountQuery(
             "SELECT COUNT(*) FROM public.party p "
                 + "JOIN public.pcs_case c ON p.case_id = c.id "
                 + "WHERE c.case_reference = " + caseReference + " "
                 + "AND p.first_name = 'Dominic' "
                 + "AND p.last_name = 'Defendant'"
+                + "AND p.address_known = 'YES' "
+                + "AND p.address_same_as_property = 'YES' "
+                + "AND p.name_known = 'YES' "
         );
 
         int validClaimant = runCountQuery(
@@ -345,6 +334,9 @@ public class DataTest extends CftlibTest {
                 + "JOIN public.pcs_case c ON p.case_id = c.id "
                 + "WHERE c.case_reference = " + caseReference + " "
                 + "AND p.org_name = 'TreeTops Housing'"
+                + "AND p.phone_number_provided = 'YES' "
+                + "AND p.phone_number = '00000000000'"
+                + "AND p.name_overridden = 'NO' "
         );
 
         String msgCount = "Expected party to have a row, found " + totalRows;
