@@ -177,7 +177,7 @@ public class NotificationService {
             legalRepresentativeRecipient(outgoingRepresentative, representedDefendant),
             EmailTemplate.NOTICE_OF_CHANGE_NO_LONGER_REPRESENTING,
             NotificationClaimType.NOTICE_OF_CHANGE,
-            // notificationPersonalisationFactory.noticeOfChangeNoLongerRepresenting(outgoingRepresentative, pcsCase)
+            notificationPersonalisationFactory.noticeOfChangeNoLongerRepresenting(outgoingRepresentative, pcsCase)
         );
     }
 

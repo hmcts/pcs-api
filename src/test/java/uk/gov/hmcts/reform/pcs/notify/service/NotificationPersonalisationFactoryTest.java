@@ -15,6 +15,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
@@ -356,6 +357,43 @@ class NotificationPersonalisationFactoryTest {
             PartyEntity partyEntity = createParty("Another", "Party");
             assertThat(factory.noticeOfChangeCompleted(partyEntity, pcsCaseEntity).toMap())
                 .containsEntry("address", "");
+        }
+    }
+
+    @Nested
+    @DisplayName("noticeOfChangeNoLongerRepresenting")
+    class NoticeOfChangeNoLongerRepresentingTests {
+
+        @Test
+        @DisplayName("Should address the organisation, which has no personal name recorded")
+        void shouldAddressTheOrganisation() {
+            stubClaimantParty();
+            stubDefendantParty();
+            when(pcsCaseEntity.getPropertyAddress()).thenReturn(null);
+
+            LegalRepresentativeEntity legalRepresentative = LegalRepresentativeEntity.builder()
+                .organisationName("Test Solicitors LLP")
+                .build();
+
+            assertThat(factory.noticeOfChangeNoLongerRepresenting(legalRepresentative, pcsCaseEntity).toMap())
+                .containsEntry("firstName", "Test Solicitors LLP")
+                .containsEntry("lastName", "")
+                .containsEntry("caseNumber", "1234-5678-90")
+                .containsEntry("claimantName", "JANE SMITH")
+                .containsEntry("primaryDefendantName", "JOHN DOE");
+        }
+
+        @Test
+        @DisplayName("Should fall back to an empty name when no organisation name is recorded")
+        void shouldFallBackToEmptyNameWhenOrganisationNameIsMissing() {
+            stubClaimantParty();
+            stubDefendantParty();
+            when(pcsCaseEntity.getPropertyAddress()).thenReturn(null);
+
+            LegalRepresentativeEntity legalRepresentative = LegalRepresentativeEntity.builder().build();
+
+            assertThat(factory.noticeOfChangeNoLongerRepresenting(legalRepresentative, pcsCaseEntity).toMap())
+                .containsEntry("firstName", "");
         }
     }
 

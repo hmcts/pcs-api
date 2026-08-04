@@ -21,6 +21,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ContactPreferencesEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
@@ -841,6 +842,7 @@ class NotificationServiceTest {
     class NoticeOfChangeTests {
 
         private static final String REPRESENTED_DEFENDANT_EMAIL = "represented@example.com";
+        private static final String OUTGOING_REPRESENTATIVE_EMAIL = "outgoing@example.com";
 
         private PcsCaseEntity pcsCase;
         private PartyEntity representedDefendant;
@@ -851,10 +853,14 @@ class NotificationServiceTest {
             representedDefendant = party(REPRESENTED_DEFENDANT_EMAIL);
 
             when(pcsCase.getClaims()).thenReturn(List.of(mock(ClaimEntity.class)));
-            when(notificationPersonalisationFactory.noticeOfChangeCompleted(representedDefendant, pcsCase))
+            lenient().when(notificationPersonalisationFactory.noticeOfChangeCompleted(representedDefendant, pcsCase))
+                .thenReturn(mock(NoticeOfChangeCompletedPersonalisation.class));
+            lenient().when(notificationPersonalisationFactory.noticeOfChangeNoLongerRepresenting(any(), any()))
                 .thenReturn(mock(NoticeOfChangeCompletedPersonalisation.class));
             lenient().when(templateConfiguration.getTemplateId(EmailTemplate.NOTICE_OF_CHANGE_COMPLETED))
                 .thenReturn(TEMPLATE_ID);
+            lenient().when(templateConfiguration.getTemplateId(
+                EmailTemplate.NOTICE_OF_CHANGE_NO_LONGER_REPRESENTING)).thenReturn(TEMPLATE_ID);
             lenient().when(notificationRepository.save(any())).thenReturn(mock(CaseNotification.class));
         }
 
@@ -903,11 +909,52 @@ class NotificationServiceTest {
             verify(notificationRepository, never()).save(any());
         }
 
+        @Test
+        @DisplayName("Should email the outgoing legal representative and record it against the represented defendant")
+        void shouldEmailOutgoingLegalRepresentative() {
+            notificationService.sendNoticeOfChangeNoLongerRepresentingEmailNotification(
+                legalRepresentative(OUTGOING_REPRESENTATIVE_EMAIL), representedDefendant);
+
+            verify(schedulerClient).scheduleIfNotExists(schedulableInstanceCaptor.capture());
+
+            SendEmailTaskData taskData = schedulableInstanceCaptor.getValue().getTaskInstance().getData();
+            assertThat(taskData.getEmailAddress()).isEqualTo(OUTGOING_REPRESENTATIVE_EMAIL);
+            assertThat(taskData.getTemplateId()).isEqualTo(TEMPLATE_ID);
+
+            ArgumentCaptor<CaseNotification> notificationCaptor =
+                ArgumentCaptor.forClass(CaseNotification.class);
+            verify(notificationRepository, atLeastOnce()).save(notificationCaptor.capture());
+
+            CaseNotification created = notificationCaptor.getAllValues().getFirst();
+            assertThat(created.getClaimType()).isEqualTo(NotificationClaimType.NOTICE_OF_CHANGE);
+            assertThat(created.getRecipient()).isEqualTo(OUTGOING_REPRESENTATIVE_EMAIL);
+            assertThat(created.getPartyId()).isEqualTo(representedDefendant);
+            assertThat(created.getPcsCase()).isEqualTo(pcsCase);
+        }
+
+        @Test
+        @DisplayName("Should not email an outgoing legal representative with no recorded email address")
+        void shouldNotEmailOutgoingLegalRepresentativeWithoutAnEmailAddress() {
+            notificationService.sendNoticeOfChangeNoLongerRepresentingEmailNotification(
+                legalRepresentative(null), representedDefendant);
+
+            verify(schedulerClient, never()).scheduleIfNotExists(any());
+            verify(notificationRepository, never()).save(any());
+        }
+
         private PartyEntity party(String emailAddress) {
             return PartyEntity.builder()
                 .id(UUID.randomUUID())
                 .emailAddress(emailAddress)
                 .pcsCase(pcsCase)
+                .build();
+        }
+
+        private LegalRepresentativeEntity legalRepresentative(String email) {
+            return LegalRepresentativeEntity.builder()
+                .id(UUID.randomUUID())
+                .organisationName("Test Solicitors LLP")
+                .email(email)
                 .build();
         }
 
