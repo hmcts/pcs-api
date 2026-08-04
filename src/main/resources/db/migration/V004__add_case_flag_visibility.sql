@@ -1,0 +1,5 @@
+ALTER TABLE case_flag
+  ADD COLUMN IF NOT EXISTS visibility VARCHAR(20) DEFAULT 'Internal' NOT NULL;
+
+ALTER TABLE case_party_flag
+  ADD COLUMN IF NOT EXISTS visibility VARCHAR(20) DEFAULT 'Internal' NOT NULL;

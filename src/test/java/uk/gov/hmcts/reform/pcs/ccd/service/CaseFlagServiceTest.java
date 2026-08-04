@@ -29,6 +29,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
 //import static org.assertj.core.api.Assertions.assertE;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -206,6 +207,109 @@ class CaseFlagServiceTest {
 
     }
 
+
+    @Test
+    void shouldRecordCaseFlagsAsInternal() {
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().build();
+
+        Flags incomingFlags = Flags.builder()
+            .details(createFlagDetail(null, "CF0002", "Complex Case", "Complicated case", "Requested"))
+            .build();
+
+        List<CaseFlagEntity> savedFlags = underTest.mergeCaseFlags(incomingFlags, pcsCaseEntity);
+
+        assertThat(savedFlags.getFirst().getVisibility()).isEqualTo("Internal");
+        assertThat(savedFlags.getFirst().getDefaultStatus()).isEqualTo("Requested");
+    }
+
+    @Test
+    void shouldMergeInternalAndExternalPartyFlagsIntoOneCollection() {
+        UUID partyId = UUID.randomUUID();
+        Set<PartyEntity> partyEntities = createPartyEntities(partyId);
+
+        Party incomingParty = Party.builder()
+            .defendantFlags(Flags.builder()
+                                .visibility(FlagVisibility.INTERNAL)
+                                .details(createFlagDetail(null, "PF0002", "Vulnerable user",
+                                                          "Internal only flag", "Active"))
+                                .build())
+            .defendantFlagsExternal(Flags.builder()
+                                        .visibility(FlagVisibility.EXTERNAL)
+                                        .details(createFlagDetail(null, "PF0015", "Language Interpreter",
+                                                                  "Externally visible flag", "Requested"))
+                                        .build())
+            .build();
+
+        underTest.mergePartyFlags(List.of(createPartyListValue(partyId.toString(), incomingParty)), partyEntities);
+
+        List<CasePartyFlagEntity> savedFlags = partyEntities.iterator().next().getDefendantFlags();
+        assertThat(savedFlags).hasSize(2);
+        assertThat(savedFlags)
+            .extracting(BaseCaseFlag::getFlagComment, BaseCaseFlag::getVisibility)
+            .containsExactlyInAnyOrder(
+                tuple("Internal only flag", "Internal"),
+                tuple("Externally visible flag", "External"));
+    }
+
+    @Test
+    void shouldRetainExternalPartyFlagsWhenOnlyInternalFlagsSubmitted() {
+        UUID partyId = UUID.randomUUID();
+        CasePartyFlagEntity existingExternalFlag = createCasePartyFlagEntity(
+            UUID.randomUUID(), "Active", "Existing external flag");
+        existingExternalFlag.setVisibility("External");
+
+        PartyEntity existingParty = PartyEntity.builder()
+            .id(partyId)
+            .defendantFlags(new ArrayList<>(List.of(existingExternalFlag)))
+            .build();
+
+        Party incomingParty = Party.builder()
+            .defendantFlags(Flags.builder()
+                                .visibility(FlagVisibility.INTERNAL)
+                                .details(createFlagDetail(null, "PF0002", "Vulnerable user",
+                                                          "New internal flag", "Active"))
+                                .build())
+            .build();
+
+        underTest.mergePartyFlags(
+            List.of(createPartyListValue(partyId.toString(), incomingParty)), Set.of(existingParty));
+
+        assertThat(existingParty.getDefendantFlags())
+            .extracting(BaseCaseFlag::getFlagComment, BaseCaseFlag::getVisibility)
+            .containsExactlyInAnyOrder(
+                tuple("New internal flag", "Internal"),
+                tuple("Existing external flag", "External"));
+    }
+
+    @Test
+    void shouldRetainInternalPartyFlagsWhenOnlyExternalFlagsSubmitted() {
+        UUID partyId = UUID.randomUUID();
+        CasePartyFlagEntity existingInternalFlag = createCasePartyFlagEntity(
+            UUID.randomUUID(), "Active", "Existing internal flag");
+        existingInternalFlag.setVisibility("Internal");
+
+        PartyEntity existingParty = PartyEntity.builder()
+            .id(partyId)
+            .defendantFlags(new ArrayList<>(List.of(existingInternalFlag)))
+            .build();
+
+        Party incomingParty = Party.builder()
+            .defendantFlagsExternal(Flags.builder()
+                                        .visibility(FlagVisibility.EXTERNAL)
+                                        .details(createFlagDetail(null, "PF0015", "Language Interpreter",
+                                                                  "New external flag", "Requested"))
+                                        .build())
+            .build();
+
+        underTest.mergePartyFlags(
+            List.of(createPartyListValue(partyId.toString(), incomingParty)), Set.of(existingParty));
+
+        assertThat(existingParty.getDefendantFlags())
+            .extracting(BaseCaseFlag::getFlagComment, BaseCaseFlag::getVisibility)
+            .containsExactlyInAnyOrder(
+                tuple("Existing internal flag", "Internal"),
+                tuple("New external flag", "External"));
+    }
 
     @Test
     void testMergePartyFlags_NoIncomingChanges() {

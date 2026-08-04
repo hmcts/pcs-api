@@ -17,6 +17,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
+import static uk.gov.hmcts.reform.pcs.ccd.event.CaseFlagStates.CASE_FLAG_STATES;
 
 @Component
 @Slf4j
@@ -28,7 +29,7 @@ public class ManageFlags implements CCDConfig<PCSCase, State, UserRole> {
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         new PageBuilder(configBuilder
                             .decentralisedEvent(EventId.amendFlags.name(), this::submit)
-                            .forState(State.PENDING_CASE_ISSUED)
+                            .forStates(CASE_FLAG_STATES)
                             .name("Manage case flags")
                             .description("To manage flags")
                             .showSummary()
@@ -42,9 +43,10 @@ public class ManageFlags implements CCDConfig<PCSCase, State, UserRole> {
             .optional(PCSCase::getParties, ShowConditions.NEVER_SHOW, true, true)
             .list(PCSCase::getAllDefendants, ShowConditions.NEVER_SHOW)
                 .optional(Party::getDefendantFlags, ShowConditions.NEVER_SHOW, true)
+                .optional(Party::getDefendantFlagsExternal, ShowConditions.NEVER_SHOW, true)
             .done()
             .optional(PCSCase::getFlagLauncherInternal,null, null,
-                null, null, "#ARGUMENT(UPDATE)");
+                null, null, "#ARGUMENT(UPDATE,VERSION2.1)");
     }
 
     private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {

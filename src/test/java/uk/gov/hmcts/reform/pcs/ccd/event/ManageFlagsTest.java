@@ -10,12 +10,15 @@ import uk.gov.hmcts.ccd.sdk.type.FlagDetail;
 import uk.gov.hmcts.ccd.sdk.type.Flags;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 
 import java.util.List;
 import java.util.UUID;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
+import static uk.gov.hmcts.reform.pcs.ccd.event.CaseFlagStates.CASE_FLAG_STATES;
 
 @ExtendWith(MockitoExtension.class)
 class ManageFlagsTest extends BaseEventTest {
@@ -45,6 +48,25 @@ class ManageFlagsTest extends BaseEventTest {
 
         // Then
         verify(pcsCaseService).patchCaseFlags(TEST_CASE_REFERENCE, pcsCase);
+    }
+
+    @Test
+    void shouldUseCaseFlagsVersion2Point1UpdateJourney() {
+        assertThat(getDisplayContextParameter("flagLauncherInternal"))
+            .isEqualTo("#ARGUMENT(UPDATE,VERSION2.1)");
+    }
+
+    @Test
+    void shouldConfigureBothInternalAndExternalPartyFlagCollections() {
+        assertThat(getSubFieldIds("allDefendants"))
+            .contains("defendantFlags", "defendantFlagsExternal");
+    }
+
+    @Test
+    void shouldBeAvailableFromPendingCaseIssuedOnwards() {
+        assertThat(configuredEvent.getPreState())
+            .containsExactlyInAnyOrder(CASE_FLAG_STATES)
+            .doesNotContain(State.AWAITING_SUBMISSION_TO_HMCTS);
     }
 
     private List<ListValue<FlagDetail>> createFlagDetails() {

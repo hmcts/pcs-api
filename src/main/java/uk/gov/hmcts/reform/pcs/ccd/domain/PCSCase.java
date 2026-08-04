@@ -726,6 +726,12 @@ public class PCSCase {
 
     private FlagLauncher flagLauncherInternal;
 
+    @CCD(
+        access = {InternalCaseFlagAccess.class},
+        label = "Launch the external flags screen"
+    )
+    private FlagLauncher flagLauncherExternal;
+
     @CCD(access = {DefendantSolicitorAccess.class})
     private List<ListValue<Party>> allLinkedDefendants;
 

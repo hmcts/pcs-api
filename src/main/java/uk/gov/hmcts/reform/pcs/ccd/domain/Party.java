@@ -53,4 +53,11 @@ public class Party {
     )
     private Flags defendantFlags;
 
+    @CCD(
+        access = {InternalCaseFlagAccess.class},
+        label = "Party Flags (external)",
+        retainHiddenValue = true
+    )
+    private Flags defendantFlagsExternal;
+
 }

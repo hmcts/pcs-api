@@ -4,6 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.ccd.sdk.type.FlagVisibility;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
@@ -194,6 +195,80 @@ class CaseFlagsViewTest {
         Party party = pcsCase.getParties().getFirst().getValue();
         assertNotNull(party.getDefendantFlags());
         assertEquals(0, party.getDefendantFlags().getDetails().size());
+        assertNotNull(party.getDefendantFlagsExternal());
+        assertEquals(0, party.getDefendantFlagsExternal().getDetails().size());
+    }
+
+    @Test
+    void shouldSplitPartyFlagsIntoInternalAndExternalCollections() {
+        CasePartyFlagEntity internalFlag = createMockCasePartyFlagsEntity();
+        internalFlag.setVisibility("Internal");
+        CasePartyFlagEntity externalFlag = createMockCasePartyFlagsEntity();
+        externalFlag.setVisibility("External");
+        externalFlag.setFlagRefData(createMockRefDataFlagsEntity("RA0042", "Reasonable adjustment"));
+
+        PartyEntity defendantEntity = createPartyEntity(null);
+        defendantEntity.setDefendantFlags(List.of(internalFlag, externalFlag));
+
+        PCSCase pcsCase = PCSCase.builder()
+            .parties(List.of(mappedParty(defendantEntity)))
+            .build();
+        PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
+        pcsCaseEntity.setParties(Set.of(defendantEntity));
+        setClaimParties(pcsCaseEntity, createClaimParty(defendantEntity, PartyRole.DEFENDANT));
+
+        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+
+        Party mappedDefendant = pcsCase.getParties().getFirst().getValue();
+
+        assertEquals(1, mappedDefendant.getDefendantFlags().getDetails().size());
+        assertEquals("PF0015",
+            mappedDefendant.getDefendantFlags().getDetails().getFirst().getValue().getFlagCode());
+        assertEquals(FlagVisibility.INTERNAL, mappedDefendant.getDefendantFlags().getVisibility());
+
+        assertEquals(1, mappedDefendant.getDefendantFlagsExternal().getDetails().size());
+        assertEquals("RA0042",
+            mappedDefendant.getDefendantFlagsExternal().getDetails().getFirst().getValue().getFlagCode());
+        assertEquals(FlagVisibility.EXTERNAL, mappedDefendant.getDefendantFlagsExternal().getVisibility());
+    }
+
+    @Test
+    void shouldGroupInternalAndExternalPartyFlagsByPartyId() {
+        PartyEntity defendantEntity = createPartyEntity(null);
+
+        PCSCase pcsCase = PCSCase.builder()
+            .parties(List.of(mappedParty(defendantEntity)))
+            .build();
+        PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
+        pcsCaseEntity.setParties(Set.of(defendantEntity));
+        setClaimParties(pcsCaseEntity, createClaimParty(defendantEntity, PartyRole.DEFENDANT));
+
+        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+
+        Party mappedDefendant = pcsCase.getParties().getFirst().getValue();
+
+        assertEquals(defendantEntity.getId(), mappedDefendant.getDefendantFlags().getGroupId());
+        assertEquals(defendantEntity.getId(), mappedDefendant.getDefendantFlagsExternal().getGroupId());
+    }
+
+    @Test
+    void shouldTreatPartyFlagsWithNoVisibilityAsInternal() {
+        PartyEntity defendantEntity = createPartyEntity(null);
+        defendantEntity.setDefendantFlags(List.of(createMockCasePartyFlagsEntity()));
+
+        PCSCase pcsCase = PCSCase.builder()
+            .parties(List.of(mappedParty(defendantEntity)))
+            .build();
+        PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
+        pcsCaseEntity.setParties(Set.of(defendantEntity));
+        setClaimParties(pcsCaseEntity, createClaimParty(defendantEntity, PartyRole.DEFENDANT));
+
+        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+
+        Party mappedDefendant = pcsCase.getParties().getFirst().getValue();
+
+        assertEquals(1, mappedDefendant.getDefendantFlags().getDetails().size());
+        assertEquals(0, mappedDefendant.getDefendantFlagsExternal().getDetails().size());
     }
 
     @Test
