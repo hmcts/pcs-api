@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.accesscontrol;
 
 import static java.util.Arrays.stream;
+import static uk.gov.hmcts.ccd.sdk.api.Permission.C;
 import static uk.gov.hmcts.ccd.sdk.api.Permission.CRU;
 import static uk.gov.hmcts.ccd.sdk.api.Permission.R;
 
@@ -21,9 +22,15 @@ public enum AccessProfile implements HasRole {
     DEFENDANT_SOLICITOR("[DEFENDANTSOLICITOR]", CRU),
     PCS_CASE_WORKER("caseworker-pcs", Set.of(R)),
     PCS_SOLICITOR("caseworker-pcs-solicitor", CRU),
+    // Create only: the org-wide role is unscoped, so it must confer no read.
+    PCS_SOLICITOR_ORG("PCS_Solicitor_Org", Set.of(C)),
+    PROFESSIONAL_USER("professional-user", CRU),
 
-    PCS_SOLICITOR_ORG("PCS_Solicitor_Org", CRU),
-    PCS_SOLICITOR_GROUP("PCS_Solicitor_Group", CRU),
+    // The organisation-to-case relationships group access is scoped by. Used as the assigned role
+    // on an organisation policy, which is what CCD matches against CaseAssignedRoleField.
+    CLAIMANT_ORG("claimant", CRU),
+    CLAIMANT_SOLICITOR_ORG("claimant-solicitor", CRU),
+    DEFENDANT_SOLICITOR_ORG("defendant-solicitor", CRU),
 
     JUDGE("judge", CRU),
     FEE_PAID_JUDGE("fee-paid-judge", CRU),

@@ -2,29 +2,41 @@ package uk.gov.hmcts.reform.pcs.ccd.domain;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
+import lombok.Data;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.api.HasRole;
 import uk.gov.hmcts.ccd.sdk.type.CaseAccessGroup;
-import uk.gov.hmcts.ccd.sdk.type.ChangeOrganisationRequest;
-import uk.gov.hmcts.ccd.sdk.type.Organisation;
+import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.OrganisationPolicy;
-import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.AccessProfile;
 
+/**
+ * How organisations are involved in the case, and the access that follows from it.
+ *
+ * <p>One organisation policy per kind of relationship an organisation can have with the case. CCD
+ * reads these on every event and derives {@code CaseAccessGroups} from them using the templates in
+ * the AccessTypeRole configuration, matching on the policy's case assigned role. So the policies
+ * are the input this service owns; the groups are output it should not write itself.
+ */
+@Data
 public class GroupAccessFields<R extends HasRole> {
 
+    /**
+     * Derived by CCD from the policies below - declared so the field exists on the case, but never
+     * populated here.
+     */
     @JsonProperty("CaseAccessGroups")
     @CCD
-    private List<CaseAccessGroup> caseAccessGroups;
+    private List<ListValue<CaseAccessGroup>> caseAccessGroups;
 
-    @JsonProperty("OrganisationField")
+    @JsonProperty("ClaimantOrganisationPolicy")
     @CCD
-    private Organisation organisationField;
+    private OrganisationPolicy<R> claimantOrganisationPolicy;
 
-    @JsonProperty("OrganisationPolicyField")
+    @JsonProperty("ClaimantSolicitorOrganisationPolicy")
     @CCD
-    private OrganisationPolicy<R> organisationPolicyField;
+    private OrganisationPolicy<R> claimantSolicitorOrganisationPolicy;
 
-    @JsonProperty("ChangeOrganisationRequestField")
+    @JsonProperty("DefendantSolicitorOrganisationPolicy")
     @CCD
-    private ChangeOrganisationRequest<AccessProfile> changeOrganisationRequestField;
+    private OrganisationPolicy<R> defendantSolicitorOrganisationPolicy;
 }
