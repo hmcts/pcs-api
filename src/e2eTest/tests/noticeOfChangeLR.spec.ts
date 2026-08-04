@@ -37,8 +37,8 @@ test.afterEach(async () => {
 
 });
 
-test.describe('Make an Application - LR - e2e Journey @nightly', async () => {
-  test('Notice of change - Change link - Same Org LR submits another NOC - LR @nightly', async () => {
+test.describe('Make an Application - LR - e2e Journey @nightly @noticeOfChangeLR', async () => {
+  test('Notice of change - Change link - Same Org LR submits another NOC - LR', async () => {
     await performAction('noticeOfChange', { caseRefNo: caseInfo.id } );
     await performAction('clientDetails', { firstName: 'Peter' , lastName: 'Parker' });
     await performAction('verifyChangeLink', { caseRefNo: caseInfo.id, firstName: 'Peter' , lastName: 'Parker' });
@@ -58,7 +58,7 @@ test.describe('Make an Application - LR - e2e Journey @nightly', async () => {
     await performAction('noticeOfChangeSuccessful', { caseRefNo: caseInfo.fid } );
   });
 
-  test('Notice of change - Error message validations - LR @nightly', async () => {
+  test('Notice of change - Error message validations - LR', async () => {
     await performAction('clickButton', noc.continueButton);
     await performValidation('text', { elementType: 'link', text: noc.errMessage });
     await performAction('noticeOfChange', { caseRefNo: '1111-2222-3333-4444-5555' } );
