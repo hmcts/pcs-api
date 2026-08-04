@@ -146,6 +146,80 @@ class TaskDescriptionServiceTest {
 
     }
 
+    @Nested
+    @DisplayName("Get description for Review Response and Counterclaim task")
+    class ReviewResponseAndCounterclaimTests {
+
+        @Mock
+        private ClaimEntity mainClaim;
+        @Mock
+        private PartyEntity partyEntity;
+
+        @Test
+        void shouldRenderTaskDescription() throws IOException {
+            // Given
+            UUID partyId = UUID.randomUUID();
+            when(partyEntity.getId()).thenReturn(partyId);
+
+            String expectedPartyLabel = "some party label";
+            when(partyService.getPartyLabel(mainClaim, partyId)).thenReturn(expectedPartyLabel);
+
+            String expectedRenderedContent = "some rendered content";
+            PebbleTemplate pebbleTemplate = stubPebbleTemplate(
+                "review-response-and-counterclaim",
+                expectedRenderedContent
+            );
+
+            // When
+            String description = underTest
+                .createReviewResponseAndCounterclaimDescription(
+                    CASE_REFERENCE,
+                    mainClaim,
+                    partyEntity
+                );
+
+            // Then
+            assertThat(description).isEqualTo(expectedRenderedContent);
+
+            verify(pebbleTemplate).evaluate(isA(StringWriter.class), contextMapCaptor.capture());
+            Map<String, Object> contextMap = contextMapCaptor.getValue();
+            assertThat(contextMap)
+                .containsEntry("caseReference", CASE_REFERENCE)
+                .containsEntry("partyLabel", expectedPartyLabel);
+        }
+
+        @Test
+        void shouldThrowExceptionWhenUnableToRenderTemplate() throws IOException {
+            // Given
+            PebbleTemplate pebbleTemplate = stubPebbleTemplate(
+                "review-response-and-counterclaim",
+                "some content"
+            );
+
+            IOException pebbleException = mock(IOException.class);
+            doThrow(pebbleException).when(pebbleTemplate).evaluate(any(StringWriter.class), anyMap());
+
+            UUID partyId = UUID.randomUUID();
+            when(partyEntity.getId()).thenReturn(partyId);
+            when(partyService.getPartyLabel(mainClaim, partyId)).thenReturn("some party label");
+
+            // When
+            Throwable throwable = catchThrowable(
+                () -> underTest.createReviewResponseAndCounterclaimDescription(
+                    CASE_REFERENCE,
+                    mainClaim,
+                    partyEntity
+                ));
+
+            // Then
+            assertThat(throwable)
+                .isInstanceOf(TemplateRenderingException.class)
+                .hasMessage("Failed to render template")
+                .hasCause(pebbleException);
+        }
+
+    }
+
     private PebbleTemplate stubPebbleTemplate(String templateName, String renderedContent) throws IOException {
         PebbleTemplate pebbleTemplate = mock(PebbleTemplate.class, withSettings().strictness(LENIENT));
         when(pebbleEngine.getTemplate("workallocation/" + templateName)).thenReturn(pebbleTemplate);

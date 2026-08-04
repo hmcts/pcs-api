@@ -48,6 +48,21 @@ public class TaskDescriptionService {
         return renderTemplate(templateName, context);
     }
 
+    public String createReviewResponseAndCounterclaimDescription(long caseReference,
+                                                                 ClaimEntity mainClaim,
+                                                                 PartyEntity partyEntity) {
+
+        String partyLabel = partyService.getPartyLabel(mainClaim, partyEntity.getId());
+
+        Map<String, Object> context = Map.of(
+                "caseReference", caseReference,
+                "partyLabel", partyLabel
+        );
+
+        String templateName = "review-response-and-counterclaim";
+        return renderTemplate(templateName, context);
+    }
+
     private String renderTemplate(String templateName, Map<String, Object> context) {
         PebbleTemplate compiledTemplate = pebbleEngine.getTemplate("workallocation/" + templateName);
         Writer writer = new StringWriter();
