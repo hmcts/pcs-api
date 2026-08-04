@@ -18,8 +18,9 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.service.CurrentUserCaseRoleService;
+import uk.gov.hmcts.reform.pcs.ccd.service.CurrentUserCaseRoleService.CurrentUserCaseRoles;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
-import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -28,6 +29,7 @@ import java.util.UUID;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -35,9 +37,10 @@ import static org.mockito.Mockito.when;
 class DocumentsViewTest {
 
     private static final UUID CURRENT_USER_ID = UUID.randomUUID();
+    private static final long TEST_CASE_REFERENCE = 123456789L;
 
     @Mock
-    private SecurityContextService securityContextService;
+    private CurrentUserCaseRoleService currentUserCaseRoleService;
     @Mock
     private GenAppVisibilityService genAppVisibilityService;
     @Mock
@@ -49,9 +52,13 @@ class DocumentsViewTest {
 
     @BeforeEach
     void setUp() {
+        lenient().when(pcsCaseEntity.getCaseReference()).thenReturn(TEST_CASE_REFERENCE);
+        lenient().when(currentUserCaseRoleService.getCurrentUserCaseRoles(TEST_CASE_REFERENCE))
+            .thenReturn(new CurrentUserCaseRoles(CURRENT_USER_ID, List.of()));
+
         pcsCase = PCSCase.builder().build();
 
-        underTest = new DocumentsView(securityContextService, genAppVisibilityService);
+        underTest = new DocumentsView(currentUserCaseRoleService, genAppVisibilityService);
     }
 
     @Test
@@ -155,8 +162,6 @@ class DocumentsViewTest {
     @Test
     void shouldShowCounterClaimDocumentWhenStateIsIssued() {
         // Given
-        when(securityContextService.getCurrentUserId()).thenReturn(CURRENT_USER_ID);
-
         CounterClaimEntity counterClaim = mock(CounterClaimEntity.class);
         when(counterClaim.getStatus()).thenReturn(CounterClaimState.COUNTER_CLAIM_ISSUED);
 
@@ -178,8 +183,6 @@ class DocumentsViewTest {
     @Test
     void shouldHideCounterClaimDocumentWhenStateIsNotIssued() {
         // Given
-        when(securityContextService.getCurrentUserId()).thenReturn(CURRENT_USER_ID);
-
         CounterClaimEntity counterClaim = mock(CounterClaimEntity.class);
         when(counterClaim.getStatus()).thenReturn(CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED);
 
@@ -201,9 +204,6 @@ class DocumentsViewTest {
     @Test
     void shoulFilterGenAppDocumentsBasedOnVisibilitty() {
         // Given
-        when(securityContextService.getCurrentUserId()).thenReturn(CURRENT_USER_ID);
-        when(securityContextService.getCurrentUserRoles()).thenReturn(List.of());
-
         GenAppEntity genAppEntity1 = mock(GenAppEntity.class);
         when(genAppVisibilityService.isGenAppDocumentVisibleToUser(genAppEntity1, CURRENT_USER_ID, List.of()))
             .thenReturn(true);
@@ -257,9 +257,6 @@ class DocumentsViewTest {
     @Test
     void shouldHideDocumentLinkedToWithoutNoticeGenAppWhenGenAppIsNotVisibleToUser() {
         // Given
-        when(securityContextService.getCurrentUserId()).thenReturn(CURRENT_USER_ID);
-        when(securityContextService.getCurrentUserRoles()).thenReturn(List.of());
-
         GenAppEntity withoutNoticeGenApp = mock(GenAppEntity.class);
         when(genAppVisibilityService.isGenAppDocumentVisibleToUser(withoutNoticeGenApp, CURRENT_USER_ID, List.of()))
             .thenReturn(false);
@@ -283,9 +280,6 @@ class DocumentsViewTest {
     @Test
     void shouldHideStandaloneWithoutNoticeOrderWhenPartyScopedRuleDoesNotAllowAccess() {
         // Given
-        when(securityContextService.getCurrentUserId()).thenReturn(CURRENT_USER_ID);
-        when(securityContextService.getCurrentUserRoles()).thenReturn(List.of());
-
         PartyEntity relatedParty = PartyEntity.builder().id(UUID.randomUUID()).build();
         when(genAppVisibilityService.isWithoutNoticeVisibleToUser(relatedParty, CURRENT_USER_ID, List.of()))
             .thenReturn(false);
@@ -310,9 +304,6 @@ class DocumentsViewTest {
     @Test
     void shouldShowStandaloneWithoutNoticeOrderWhenPartyScopedRuleAllowsAccess() {
         // Given
-        when(securityContextService.getCurrentUserId()).thenReturn(CURRENT_USER_ID);
-        when(securityContextService.getCurrentUserRoles()).thenReturn(List.of());
-
         PartyEntity relatedParty = PartyEntity.builder().id(UUID.randomUUID()).build();
         when(genAppVisibilityService.isWithoutNoticeVisibleToUser(relatedParty, CURRENT_USER_ID, List.of()))
             .thenReturn(true);

@@ -16,8 +16,9 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.service.CurrentUserCaseRoleService;
+import uk.gov.hmcts.reform.pcs.ccd.service.CurrentUserCaseRoleService.CurrentUserCaseRoles;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
-import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -27,6 +28,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isA;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -34,11 +36,12 @@ import static org.mockito.Mockito.when;
 class GenAppsViewTest {
 
     private static final UUID CURRENT_USER_IDAM_ID = UUID.randomUUID();
+    private static final long TEST_CASE_REFERENCE = 123456789L;
 
     @Mock
     private ModelMapper modelMapper;
     @Mock
-    private SecurityContextService securityContextService;
+    private CurrentUserCaseRoleService currentUserCaseRoleService;
     @Mock
     private GenAppVisibilityService genAppVisibilityService;
     @Mock
@@ -50,8 +53,9 @@ class GenAppsViewTest {
 
     @BeforeEach
     void setUp() {
-        when(securityContextService.getCurrentUserId()).thenReturn(CURRENT_USER_IDAM_ID);
-        when(securityContextService.getCurrentUserRoles()).thenReturn(List.of());
+        lenient().when(pcsCaseEntity.getCaseReference()).thenReturn(TEST_CASE_REFERENCE);
+        when(currentUserCaseRoleService.getCurrentUserCaseRoles(TEST_CASE_REFERENCE))
+            .thenReturn(new CurrentUserCaseRoles(CURRENT_USER_IDAM_ID, List.of()));
         when(genAppVisibilityService.isGenAppVisibleToUser(
             isA(GenAppEntity.class),
             eq(CURRENT_USER_IDAM_ID),
@@ -61,7 +65,7 @@ class GenAppsViewTest {
 
         pcsCase = PCSCase.builder().build();
 
-        underTest = new GenAppsView(modelMapper, securityContextService, genAppVisibilityService);
+        underTest = new GenAppsView(modelMapper, currentUserCaseRoleService, genAppVisibilityService);
     }
 
     @Test

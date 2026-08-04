@@ -11,8 +11,9 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GeneralApplication;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.service.CurrentUserCaseRoleService;
+import uk.gov.hmcts.reform.pcs.ccd.service.CurrentUserCaseRoleService.CurrentUserCaseRoles;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
-import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.Comparator;
 import java.util.List;
@@ -24,19 +25,19 @@ import java.util.UUID;
 public class GenAppsView {
 
     private final ModelMapper modelMapper;
-    private final SecurityContextService securityContextService;
+    private final CurrentUserCaseRoleService currentUserCaseRoleService;
     private final GenAppVisibilityService genAppVisibilityService;
 
     public void setCaseFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
-        UUID currentUserId = securityContextService.getCurrentUserId();
-        List<String> currentUserRoles = securityContextService.getCurrentUserRoles();
+        CurrentUserCaseRoles currentUserCaseRoles =
+            currentUserCaseRoleService.getCurrentUserCaseRoles(pcsCaseEntity.getCaseReference());
 
         List<ListValue<GeneralApplication>> genApps = pcsCaseEntity.getGenApps().stream()
             .sorted(Comparator.comparing(GenAppEntity::getApplicationSubmittedDate).reversed())
             .filter(genAppEntity -> genAppVisibilityService.isGenAppVisibleToUser(
                 genAppEntity,
-                currentUserId,
-                currentUserRoles
+                currentUserCaseRoles.userId(),
+                currentUserCaseRoles.roles()
             ))
             .map(this::createListValue)
             .toList();

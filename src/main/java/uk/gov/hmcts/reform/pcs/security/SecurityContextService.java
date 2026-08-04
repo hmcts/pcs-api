@@ -8,7 +8,6 @@ import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.exception.SecurityContextException;
 import uk.gov.hmcts.reform.pcs.idam.User;
 
-import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -24,9 +23,8 @@ public class SecurityContextService {
         return userDetails != null ? UUID.fromString(userDetails.getUid()) : null;
     }
 
-    public List<String> getCurrentUserRoles() {
-        UserInfo userDetails = getCurrentUserDetails();
-        return userDetails != null && userDetails.getRoles() != null ? userDetails.getRoles() : List.of();
+    public String getCurrentUserAuthToken() {
+        return getCurrentUser().getAuthToken();
     }
 
     /**
@@ -35,6 +33,10 @@ public class SecurityContextService {
      * @throws SecurityContextException if the security principal is not set or is not a {@link User} type
      */
     public UserInfo getCurrentUserDetails() {
+        return getCurrentUser().getUserDetails();
+    }
+
+    private User getCurrentUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         if (authentication == null) {
@@ -42,7 +44,7 @@ public class SecurityContextService {
         }
 
         if (authentication.getPrincipal() instanceof User user) {
-            return user.getUserDetails();
+            return user;
         } else {
             throw new SecurityContextException("Authentication principal is null or not of the expected type");
         }

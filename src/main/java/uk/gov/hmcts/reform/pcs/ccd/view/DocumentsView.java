@@ -13,8 +13,9 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.service.CurrentUserCaseRoleService;
+import uk.gov.hmcts.reform.pcs.ccd.service.CurrentUserCaseRoleService.CurrentUserCaseRoles;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
-import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.Collection;
 import java.util.List;
@@ -25,7 +26,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class DocumentsView {
 
-    private final SecurityContextService securityContextService;
+    private final CurrentUserCaseRoleService currentUserCaseRoleService;
     private final GenAppVisibilityService genAppVisibilityService;
 
     public void setCaseFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
@@ -38,11 +39,15 @@ public class DocumentsView {
             return List.of();
         }
 
-        UUID currentUserId = securityContextService.getCurrentUserId();
-        Collection<String> currentUserRoles = securityContextService.getCurrentUserRoles();
+        CurrentUserCaseRoles currentUserCaseRoles =
+            currentUserCaseRoleService.getCurrentUserCaseRoles(pcsCaseEntity.getCaseReference());
 
         return pcsCaseEntity.getDocuments().stream()
-            .filter(documentEntity -> this.isDocumentVisibleToUser(documentEntity, currentUserId, currentUserRoles))
+            .filter(documentEntity -> this.isDocumentVisibleToUser(
+                documentEntity,
+                currentUserCaseRoles.userId(),
+                currentUserCaseRoles.roles()
+            ))
             .filter(this::isNotInCaseDetailsTab)
             .map(entity -> ListValue.<Document>builder()
                 .id(entity.getId().toString())
@@ -60,13 +65,9 @@ public class DocumentsView {
             .collect(Collectors.toList());
     }
 
-    public boolean isDocumentVisibleToUser(DocumentEntity documentEntity, UUID currentUserId) {
-        return isDocumentVisibleToUser(documentEntity, currentUserId, List.of());
-    }
-
-    public boolean isDocumentVisibleToUser(DocumentEntity documentEntity,
-                                           UUID currentUserId,
-                                           Collection<String> currentUserRoles) {
+    private boolean isDocumentVisibleToUser(DocumentEntity documentEntity,
+                                            UUID currentUserId,
+                                            Collection<String> currentUserRoles) {
         if (isExcludedFromCaseFile(documentEntity)) {
             return false;
         }
