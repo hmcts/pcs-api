@@ -176,7 +176,7 @@ db-scheduler:
   enabled: false # This disables the autoconfiguration of DB Scheduler. Always off.
   executor-enabled: ${DB_SCHEDULER_EXECUTOR_ENABLED:true}
   polling-interval-seconds: ${DB_SCHEDULER_POLLING_INTERVAL_SECONDS:10}
-  threads: 10
+  threads: ${DB_SCHEDULER_THREADS:10}
 
 doc_assembly:
   url: ${DOC_ASSEMBLY_URL:http://localhost:8080}
