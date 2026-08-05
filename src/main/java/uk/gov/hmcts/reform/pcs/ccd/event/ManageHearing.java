@@ -62,7 +62,6 @@ public class ManageHearing implements CCDConfig<PCSCase, State, UserRole> {
                 .name("Manage hearing")
                 .showCondition(ShowConditions.featureFlagsEnabled(RELEASE_1_DOT_2, CASEWORKER_EVENTS))
                 .grant(Permission.CRUD, CASEWORKER_ROLES)
-                .grant(Permission.CRUD, UserRole.PCS_SOLICITOR)
                 .grantHistoryOnly(JUDICIAL_HISTORY_ROLES)
                 .showSummary()
                 .endButtonLabel("Submit");
