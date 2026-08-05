@@ -55,13 +55,13 @@ test.describe('Case management - Manage documents e2e Journey @nightly', async (
     let date = CaseManagementCommonUtils.getRandomDate(uploadADocument.dateTypeHiddenUserInput);
     let appType = CaseManagementCommonUtils.getGenApplicationType(defendantUserDetails.length)[0];
     let party = allPartyDetails[0];
-    let fileName = (selectDocument.typeOfDocumentHiddenRadioOption).split('-')[0];
+    let fileName = (selectDocument.typeOfDocumentHiddenRadioOption)[0].split('-')[0].trim();
     await performAction('selectAnEvent', { eventType: caseSummary.manageDocuments.amend });
     await performValidation('mainHeader', selectDocument.mainHeader);
     await performAction('errorValidationSelectDocumentPage', selectDocument.errorValidation);
     await performAction('selectDocumentToAmend', {
-      question: selectDocument.whichFolderQuestion, option: selectDocument.docFolderHiddenOption,
-      question1: selectDocument.documentToAmendHiddenQuestion, option1: selectDocument.typeOfDocumentHiddenRadioOption,
+      question: selectDocument.whichFolderQuestion, option: (selectDocument.docFolderHiddenOption)[0],
+      question1: selectDocument.documentToAmendHiddenQuestion, option1: (selectDocument.typeOfDocumentHiddenRadioOption)[0],
       nextPage: amendDocumentDetails.mainHeader
     });
     await performAction('inputText', amendDocumentDetails.fileNameInputTextLabel, fileName);
@@ -77,6 +77,49 @@ test.describe('Case management - Manage documents e2e Journey @nightly', async (
     await performAction('clickButton', checkYourAnswersAmendDocument.submitButton);
     await performAction('confirmAmend', { fileName: fileName, party: party, fileDate: date, submitPayload: submitCaseApiData.submitCasePayloadCaseFileView });
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage documents: Amend');
+    await performAction('clickTab', home.caseFileView);
+    await performAction('validateCaseFileViewFolders', home.caseFileFolders);
+    await performAction('validateCaseFileViewIndividualFolder', {
+      folder: 'Applications',
+      submitPayload: makeAnApplicationApiData.makeAnApplicationAdjournPayload(defendantUserDetails[0].id, defendantUserDetails[0].name),
+      caseWorkerUpload: CaseManagementCommonUtils.renameDocument(fileName, date, appType)
+    });
+  });
+
+  test('Case management - Manage documents - Amend Document not related to any App or Counterclaim @CM @regression', async () => {
+    let date = CaseManagementCommonUtils.getRandomDate(uploadADocument.dateTypeHiddenUserInput);
+    let appType = amendDocumentDetails.notRelatedToAppRadioOption;
+    let party = allPartyDetails[1];
+    let fileName = (selectDocument.typeOfDocumentHiddenRadioOption)[2].split('-')[0].trim();
+    await performAction('selectAnEvent', { eventType: caseSummary.manageDocuments.amend });
+    await performValidation('mainHeader', selectDocument.mainHeader);
+    await performAction('selectDocumentToAmend', {
+      question: selectDocument.whichFolderQuestion, option: (selectDocument.docFolderHiddenOption)[2],
+      question1: selectDocument.documentToAmendHiddenQuestion, option1: (selectDocument.typeOfDocumentHiddenRadioOption)[2],
+      nextPage: amendDocumentDetails.mainHeader
+    });
+    await performAction('inputText', amendDocumentDetails.fileNameInputTextLabel, fileName);
+    await performAction('selectDynamicAppAndPartyDocRelatedTo', {
+      question: amendDocumentDetails.whichAppOrCounterClaimThisRelateToQuestion,
+      option: appType,
+      label: amendDocumentDetails.addIssueDateTextLabel,
+      date: date,
+      question1: amendDocumentDetails.partyDocRelatedToQuestion,
+      option1: party,
+      dropQn: amendDocumentDetails.whichTypeOfDocHiddenQuestion,
+      selectOption: (amendDocumentDetails.whichTypeHiddenOption)[2],
+      nextPage: checkYourAnswersAmendDocument.mainHeader
+    });
+    await performAction('clickButton', checkYourAnswersAmendDocument.submitButton);
+    await performAction('confirmAmend', { fileName: fileName, party: party, fileDate: date, submitPayload: submitCaseApiData.submitCasePayloadCaseFileView });
+    await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage documents: Amend');
+    await performAction('clickTab', home.caseFileView);
+    await performAction('validateCaseFileViewFolders', home.caseFileFolders);
+    await performAction('validateCaseFileViewIndividualFolder', {
+      folder: 'Evidence',
+      submitPayload: submitCaseApiData.submitCasePayloadCaseFileView,
+      caseWorkerUpload: CaseManagementCommonUtils.renameDocument(fileName, date)
+    });
   });
 
   test('Case management - Manage documents - Upload @CM @regression', async () => {
@@ -118,15 +161,15 @@ test.describe('Case management - Manage documents e2e Journey @nightly', async (
     await performValidation('mainHeader', uploadADocument.mainHeader);
     await performAction('uploadADocument', { label: uploadADocument.uploadADocumentTextLabel, file: fileName })
     await performAction('selectDynamicAppAndPartyDocRelatedTo', {
-      question: uploadADocument.whichAppOrCounterClaimThisRelateToQuestion,
-      option: appType,
-      label: uploadADocument.addIssueDateTextLabel,
-      date: date,
-      question1: uploadADocument.partyDocRelatedToQuestion,
-      option1: party,
-      dropQn: uploadADocument.whichTypeOfDocHiddenQuestion,
-      selectOption: uploadADocument.whichTypeHiddenOption[0],
-      nextPage: checkYourAnswersUploadADocument.mainHeader
+        question: uploadADocument.whichAppOrCounterClaimThisRelateToQuestion,
+        option: appType,
+        label: uploadADocument.addIssueDateTextLabel,
+        date: date,
+        question1: uploadADocument.partyDocRelatedToQuestion,
+        option1: party,
+        dropQn: uploadADocument.whichTypeOfDocHiddenQuestion,
+        selectOption: uploadADocument.whichTypeHiddenOption[0],
+        nextPage: checkYourAnswersUploadADocument.mainHeader
     });
     await performAction('clickButton', checkYourAnswersUploadADocument.submitButton);
     await performAction('confirmUpload', { fileName: fileName, app: appType, party: party, fileDate: date, submitPayload: submitCaseApiData.submitCasePayloadCaseFileView, });

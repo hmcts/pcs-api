@@ -9,4 +9,5 @@ export default {
   'caseworkerUploadDocumentsuploadADocument': 'uploadADocument',
   'caseworkerUploadDocuments/confirm' : 'confirmUpload',
   'amendDocuments/confirm': 'confirmAmend',
+  'amendDocumentsamendDocumentDetails': 'amendDocumentDetails'
 };

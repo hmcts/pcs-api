@@ -1602,8 +1602,10 @@ export class CreateCaseAction implements IAction {
         this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad.walesDocs_GasSafetyReport);
         this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad.walesDocs_ElectricalInstallation);
         this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad.licenceDocuments);
-        if(caseFile.caseWorkerUpload){
+        if (caseFile.caseWorkerUpload) {
           userInputFiles.push(caseFile.caseWorkerUpload as string);
+        } else if (caseFile.caseWorkerAmend) {
+          userInputFiles.filter(file => file !== caseFile.caseWorkerAmend as string);
         }
         break;
 

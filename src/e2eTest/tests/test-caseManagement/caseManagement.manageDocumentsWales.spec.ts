@@ -30,7 +30,7 @@ test.beforeEach(async ({ page, context }) => {
 
   for (const defendant of defendantUserDetails) {
     await performAction('makeAnApplicationAPI', {
-      data: makeAnApplicationApiData.makeAnApplicationAdjournPayload(
+      data: makeAnApplicationApiData.makeAnApplicationAdjournWalesPayload(
         defendant.id,
         defendant.name
       ),
@@ -78,7 +78,7 @@ test.describe('Case management - Manage documents Wales Journey @nightly', async
     await performAction('validateCaseFileViewFolders', home.caseFileFolders);
     await performAction('validateCaseFileViewIndividualFolder', {
       folder: 'Applications',
-      submitPayload: makeAnApplicationApiData.makeAnApplicationAdjournPayload(defendantUserDetails[1].id,defendantUserDetails[1].name),
+      submitPayload: makeAnApplicationApiData.makeAnApplicationAdjournWalesPayload(defendantUserDetails[1].id,defendantUserDetails[1].name),
       caseWorkerUpload: CaseManagementCommonUtils.renameDocument(fileName, date, appType)
     });
 
