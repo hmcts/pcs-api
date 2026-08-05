@@ -9,6 +9,9 @@ import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.callback.Submit;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.reform.payments.response.PaymentServiceResponse;
+import uk.gov.hmcts.reform.pcs.camunda.CamundaService;
+import uk.gov.hmcts.reform.pcs.camunda.TaskType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppRequest;
@@ -29,8 +32,8 @@ import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.PaymentService;
-import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
 import uk.gov.hmcts.reform.pcs.idam.UserInfo;
+import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.time.Instant;
@@ -60,6 +63,7 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
     private final SchedulerClient schedulerClient;
     private final NotificationService notificationService;
     private final ObjectMapper objectMapper;
+    private final CamundaService camundaService;
 
     @Override
     public SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
@@ -84,6 +88,11 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
 
         GenAppEntity genAppEntity = genAppService
             .createGenAppEntity(createGenAppRequest, pcsCaseEntity, applicantParty, initialState);
+
+        if (createGenAppRequest.getLanguageUsed() != null
+            && createGenAppRequest.getLanguageUsed() != LanguageUsed.ENGLISH) {
+            camundaService.createTask(caseReference, TaskType.TRANSLATE_CLAIMANT_SUBMITTED_DOCUMENT);
+        }
 
         if (isXuiJourney(createGenAppRequest)) {
             return handleXuiSubmit(paymentRequired, caseReference, createGenAppRequest, genAppEntity, feeDetails);

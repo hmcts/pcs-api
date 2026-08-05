@@ -23,7 +23,9 @@ public enum TaskType {
             action is required, and take the appropriate action. Only mark the task as complete once the documents
             have been reviewed and any required action has been completed.
             """
-    );
+    ),
+    TRANSLATE_CLAIMANT_SUBMITTED_DOCUMENT("TranslateClaimantSubmittedDocument","Translate Claimant Submitted Document",
+                                          "Translate Claimant Submitted Document");
 
     private final String id;
     private final String name;
