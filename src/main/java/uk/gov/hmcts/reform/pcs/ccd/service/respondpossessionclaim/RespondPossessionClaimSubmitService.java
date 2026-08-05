@@ -4,13 +4,15 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaim;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
+import uk.gov.hmcts.reform.pcs.model.JourneyType;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 
 import java.util.Optional;
 
@@ -27,55 +29,52 @@ public class RespondPossessionClaimSubmitService {
     private final CounterClaimFeeCalculator counterClaimFeeCalculator;
     private final DocumentService documentService;
     private final DraftCaseDataService draftCaseDataService;
+    private final OrganisationService organisationService;
 
     @Transactional
     public RespondPossessionClaimSubmitPersistenceResult persistFinalSubmit(
         long caseReference,
-        PossessionClaimResponse responseDraftData
+        PossessionClaimResponse responseDraftData,
+        PartyEntity defendantParty,
+        JourneyType journeyType
     ) {
-        claimResponseService.saveDraftData(responseDraftData, caseReference);
-        defendantResponseService.saveDefendantResponse(caseReference, responseDraftData);
+        claimResponseService.saveDraftDataForParty(responseDraftData, defendantParty);
+        defendantResponseService.saveDefendantResponse(caseReference, responseDraftData, defendantParty, journeyType);
 
         DefendantResponses defendantResponses = responseDraftData.getDefendantResponses();
         CounterClaim counterClaim = defendantResponses.getCounterClaim();
         Optional<CounterClaimEntity> savedCounterClaim =
-            counterClaimService.saveCounterClaim(caseReference, counterClaim);
+            counterClaimService.saveCounterClaim(caseReference, counterClaim, defendantParty);
 
-        savedCounterClaim.ifPresent(counterClaimEntity -> saveCounterClaimDocuments(
-            defendantResponses,
-            counterClaimEntity
+        savedCounterClaim.ifPresent(counterClaimEntity -> documentService.createCounterClaimUploadedDocuments(
+            defendantResponses.getCounterClaimDocuments(),
+            counterClaimEntity,
+            counterClaimEntity.getPcsCase(),
+            counterClaimEntity.getParty()
         ));
 
         CounterClaimEntity counterClaimEntity = savedCounterClaim.orElse(null);
-        boolean issuedWithoutPayment = false;
+        boolean paymentRequired = counterClaimEntity != null
+            && counterClaimFeeCalculator.isPaymentRequired(counterClaim);
 
-        if (counterClaimEntity != null
-            && !counterClaimFeeCalculator.isPaymentRequired(counterClaim)) {
-            counterClaimEntity = counterClaimService.issueCounterClaim(counterClaimEntity);
-            issuedWithoutPayment = true;
+        if (JourneyType.LEGAL_REPRESENTATIVE.equals(journeyType)) {
+            draftCaseDataService.deleteUnsubmittedCaseData(
+                caseReference,
+                respondPossessionClaim,
+                defendantParty.getId(),
+                organisationService.getOrganisationIdForCurrentUser()
+            );
+        } else {
+            draftCaseDataService.deleteUnsubmittedCaseData(caseReference, respondPossessionClaim);
         }
 
-        draftCaseDataService.deleteUnsubmittedCaseData(caseReference, respondPossessionClaim);
         log.info("Successfully saved defendant response for case: {}", caseReference);
 
         return new RespondPossessionClaimSubmitPersistenceResult(
             responseDraftData,
             counterClaimEntity,
-            issuedWithoutPayment
+            paymentRequired
         );
     }
 
-    private void saveCounterClaimDocuments(DefendantResponses defendantResponses,
-                                           CounterClaimEntity counterClaimEntity) {
-        if (CollectionUtils.isEmpty(defendantResponses.getCounterClaimDocuments())) {
-            return;
-        }
-
-        documentService.createCounterClaimUploadedDocuments(
-            defendantResponses.getCounterClaimDocuments(),
-            counterClaimEntity,
-            counterClaimEntity.getPcsCase(),
-            counterClaimEntity.getParty()
-        );
-    }
 }

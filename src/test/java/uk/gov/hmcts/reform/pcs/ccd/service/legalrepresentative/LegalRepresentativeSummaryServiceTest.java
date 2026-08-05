@@ -35,7 +35,7 @@ class LegalRepresentativeSummaryServiceTest {
         <a href="testUrl/case/${[CASE_REFERENCE]}/respond-to-claim/start-now"
         role="button"
         class="govuk-link govuk-link--no-visited-state">
-        Respond to the claim</a>
+        Respond to the claim.</a>
         </p>
         """;
 
