@@ -13,6 +13,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
@@ -47,7 +48,12 @@ public class RespondPossessionClaimSubmitService {
         JourneyType journeyType
     ) {
         claimResponseService.saveDraftDataForParty(responseDraftData, defendantParty);
-        defendantResponseService.saveDefendantResponse(caseReference, responseDraftData, defendantParty, journeyType);
+        DefendantResponseEntity defendantResponseEntity = defendantResponseService.saveDefendantResponse(
+            caseReference,
+            responseDraftData,
+            defendantParty,
+            journeyType
+        );
 
         DefendantResponses defendantResponses = responseDraftData.getDefendantResponses();
         CounterClaim counterClaim = defendantResponses.getCounterClaim();
@@ -69,7 +75,12 @@ public class RespondPossessionClaimSubmitService {
             );
 
             if (hwfReferencePresent) {
-                createCounterclaimReviewWaTask(caseReference, counterClaimEntity, counterClaimDocuments);
+                createCounterclaimReviewWaTask(
+                    caseReference,
+                    defendantResponseEntity,
+                    counterClaimEntity,
+                    counterClaimDocuments
+                );
             } else {
                 paymentRequired = true;
             }
@@ -95,15 +106,19 @@ public class RespondPossessionClaimSubmitService {
     }
 
     private void createCounterclaimReviewWaTask(long caseReference,
+                                                DefendantResponseEntity defendantResponseEntity,
                                                 CounterClaimEntity counterClaimEntity,
                                                 List<DocumentEntity> counterClaimDocuments) {
 
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
 
+
+
         String taskDescription = taskDescriptionService.createReviewResponseAndCounterclaimDescription(
             caseReference,
             pcsCaseEntity.getMainClaim(),
             counterClaimEntity.getParty(),
+            defendantResponseEntity,
             counterClaimDocuments
         );
 

@@ -15,6 +15,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.exception.TemplateRenderingException;
 
@@ -76,10 +77,8 @@ class TaskDescriptionServiceTest {
             int expectedGenAppRank = 4;
             when(genAppEntity.getRank()).thenReturn(expectedGenAppRank);
 
-            List<DocumentEntity> documentEntityList = List.of(
-                DocumentEntity.builder().fileName("filename1.pdf").build(),
-                DocumentEntity.builder().fileName("filename2.csv").build()
-            );
+            List<String> expectedFilenames = List.of("filename1.pdf", "filename2.csv");
+            List<DocumentEntity> documentEntityList = createDocumentEntities(expectedFilenames);
 
             String expectedPartyLabel = "some party label";
             when(partyService.getPartyLabel(mainClaim, partyId)).thenReturn(expectedPartyLabel);
@@ -109,7 +108,7 @@ class TaskDescriptionServiceTest {
                 .containsEntry("caseReference", CASE_REFERENCE)
                 .containsEntry("partyLabel", expectedPartyLabel)
                 .containsEntry("genAppRank", expectedGenAppRank)
-                .containsEntry("filenames", List.of("filename1.pdf", "filename2.csv"));
+                .containsEntry("filenames", expectedFilenames);
         }
 
         @Test
@@ -164,6 +163,19 @@ class TaskDescriptionServiceTest {
             String expectedPartyLabel = "some party label";
             when(partyService.getPartyLabel(mainClaim, partyId)).thenReturn(expectedPartyLabel);
 
+            DocumentEntity responseSubmissionDocument
+                = DocumentEntity.builder().fileName("submission.pdf").build();
+            List<DocumentEntity> uploadedDocumentEntityList
+                = createDocumentEntities(List.of("filename1.pdf", "filename2.csv"));
+
+            DefendantResponseEntity defendantResponseEntity = DefendantResponseEntity.builder()
+                .submissionDocument(responseSubmissionDocument)
+                .uploadedDocuments(uploadedDocumentEntityList)
+                .build();
+
+            List<DocumentEntity> counterClaimDocumentEntityList
+                = createDocumentEntities(List.of("filename3.txt", "filename4.pdf"));
+
             String expectedRenderedContent = "some rendered content";
             PebbleTemplate pebbleTemplate = stubPebbleTemplate(
                 "review-response-and-counterclaim",
@@ -176,7 +188,8 @@ class TaskDescriptionServiceTest {
                     CASE_REFERENCE,
                     mainClaim,
                     partyEntity,
-                    List.of()
+                    defendantResponseEntity,
+                    counterClaimDocumentEntityList
                 );
 
             // Then
@@ -186,7 +199,9 @@ class TaskDescriptionServiceTest {
             Map<String, Object> contextMap = contextMapCaptor.getValue();
             assertThat(contextMap)
                 .containsEntry("caseReference", CASE_REFERENCE)
-                .containsEntry("partyLabel", expectedPartyLabel);
+                .containsEntry("partyLabel", expectedPartyLabel)
+                .containsEntry("responseDocumentFilenames", List.of("submission.pdf", "filename1.pdf", "filename2.csv"))
+                .containsEntry("counterClaimDocumentFilenames", List.of("filename3.txt", "filename4.pdf"));
         }
 
         @Test
@@ -210,6 +225,7 @@ class TaskDescriptionServiceTest {
                     CASE_REFERENCE,
                     mainClaim,
                     partyEntity,
+                    mock(DefendantResponseEntity.class),
                     List.of()
                 ));
 
@@ -233,4 +249,11 @@ class TaskDescriptionServiceTest {
 
         return pebbleTemplate;
     }
+
+    private List<DocumentEntity> createDocumentEntities(List<String> filenames) {
+        return filenames.stream()
+            .map(filename -> DocumentEntity.builder().fileName(filename).build())
+            .toList();
+    }
+
 }

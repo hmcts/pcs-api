@@ -3,6 +3,8 @@ package uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.Document;
@@ -21,6 +23,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
@@ -195,10 +198,9 @@ class RespondPossessionClaimSubmitServiceTest {
         assertThat(result.paymentRequired()).isTrue();
     }
 
-    @Test
-    void shouldNotIssueCounterClaimWhenHelpWithFeesApplies() {
-        JourneyType journeyType = JourneyType.CITIZEN;
-
+    @ParameterizedTest
+    @EnumSource(JourneyType.class)
+    void shouldNotIssueCounterClaimWhenHelpWithFeesApplies(JourneyType journeyType) {
         CounterClaim counterClaim = CounterClaim.builder()
             .claimType(CounterClaimType.PAYMENT_OR_COMPENSATION)
             .hwfReferenceNumber("HWF-123-456")
@@ -222,17 +224,21 @@ class RespondPossessionClaimSubmitServiceTest {
             .pcsCase(pcsCaseEntity)
             .build();
 
+        DefendantResponseEntity defendantResponseEntity = mock(DefendantResponseEntity.class);
+        when(defendantResponseService
+                 .saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse, partyEntity, journeyType))
+            .thenReturn(defendantResponseEntity);
         when(counterClaimService.saveCounterClaim(CASE_REFERENCE, counterClaim, partyEntity))
             .thenReturn(Optional.of(savedCounterClaim));
         when(counterClaimFeeCalculator.isHwfReferencePresent(counterClaim)).thenReturn(true);
 
-        List<DocumentEntity> documentEntities = List.of(mock(DocumentEntity.class));
+        List<DocumentEntity> counterClaimDocumentEntities = List.of(mock(DocumentEntity.class));
         when(documentService.createCounterClaimUploadedDocuments(
             counterClaimDocuments,
             savedCounterClaim,
             pcsCaseEntity,
             partyEntity
-        )).thenReturn(documentEntities);
+        )).thenReturn(counterClaimDocumentEntities);
 
         String expectedDescription = "some description";
         ClaimEntity mainClaim = stubMainClaim();
@@ -241,7 +247,8 @@ class RespondPossessionClaimSubmitServiceTest {
                      CASE_REFERENCE,
                      mainClaim,
                      partyEntity,
-                     documentEntities
+                     defendantResponseEntity,
+                     counterClaimDocumentEntities
                  ))
             .thenReturn(expectedDescription);
 
