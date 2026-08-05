@@ -202,7 +202,7 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
             .groupRoleName(AccessProfile.CLAIMANT.getRole())
             .caseAssignedRoleField(AccessProfile.CLAIMANT.getRole())
             .groupAccessEnabled(true)
-            .caseAccessGroupIdTemplate("pcs:pcs:prof-org-claimant-access:claimant:$ORGID$")
+            .caseAccessGroupIdTemplate("PCS:PCS:prof-org-claimant-access:claimant:$ORGID$")
             .liveTo("01/01/2027");
     }
 
