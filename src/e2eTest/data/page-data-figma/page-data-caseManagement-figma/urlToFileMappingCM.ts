@@ -15,4 +15,4 @@ export default {
   'manageHearingcancelHearing': 'cancelHearing',
   'manageHearing/submit': 'checkYourAnswersCancelHearing',
   'manageHearing/confirm': 'confirmCancelHearing'
-}
+};
