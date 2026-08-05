@@ -1,6 +1,6 @@
 #!groovy
 
-@Library("Infrastructure@2.4.8")
+@Library("Infrastructure@2.4.9")
 
 import uk.gov.hmcts.contino.AppPipelineDsl
 import uk.gov.hmcts.contino.GithubAPI
@@ -52,7 +52,7 @@ withPipeline(type, product, component) {
   enableDbMigration('pcs')
 
   //skipping sync with demo/perftest during SIT testing/DB migration
-  syncBranchesWithMaster(['ithc', 'perftest'])
+  syncBranchesWithMaster(['ithc', 'perftest', 'demo'])
 
 
   onPR() {
@@ -98,9 +98,8 @@ withPipeline(type, product, component) {
   }
 
   onDemo {
-    // disabling new case definition uploads to demo during SIT testing/DB migration
-    //    setDemoEnvVars()
-    //    enableHighLevelDataSetup()
+    setDemoEnvVars()
+    enableHighLevelDataSetup()
   }
 
   onIthc {
