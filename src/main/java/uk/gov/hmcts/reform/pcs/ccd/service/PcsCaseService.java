@@ -100,7 +100,7 @@ public class PcsCaseService {
     public void deleteCase(long caseReference) {
         PcsCaseEntity pcsCaseEntity = loadCase(caseReference);
         pcsCaseRepository.delete(pcsCaseEntity);
-        log.info("Deleted case with reference: {}", caseReference);
+        log.debug("Deleted case with reference: {}", caseReference);
     }
 
     public void deleteDocuments(long caseReference) {
@@ -109,7 +109,7 @@ public class PcsCaseService {
                 .stream()
                 .map(DocumentEntity::getUrl)
                 .forEach(documentImportService::deleteDocument);
-        log.info("Deleted documents for case with reference: {}", caseReference);
+        log.debug("Deleted documents for case with reference: {}", caseReference);
     }
 
     public void allocateCaseManagementLocation(PCSCase pcsCase) {

@@ -25,7 +25,7 @@ public class CaseDeletionService {
 
     @Transactional
     public void performCaseDeletionTasks(long caseRef) {
-        log.info("Performing case deletion tasks for case: {}", caseRef);
+        log.debug("Performing case deletion tasks for case: {}", caseRef);
         try {
             ccdCaseDataDeletionService.markCaseForDeletion(caseRef);
             ccdCaseDataDeletionService.confirmCaseDisposal(caseRef);

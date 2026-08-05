@@ -49,17 +49,17 @@ public class CcdCaseDataDeletionService {
 
     public void deleteCcdCaseData(long caseReference) {
         ccdCaseRepository.deleteCcdCaseData(caseReference);
-        log.info("Deleted case data for case reference: {}", caseReference);
+        log.debug("Deleted case data for case reference: {}", caseReference);
     }
 
     public CaseResource markCaseForDeletion(long caseRef) {
-        log.info("Marking following case for deletion: {} ", caseRef);
+        log.debug("Marking following case for deletion: {} ", caseRef);
 
         return performEvent(markCaseForDeletion, caseRef);
     }
 
     public CaseResource confirmCaseDisposal(long caseRef) {
-        log.info("Confirming disposal for case: {} ", caseRef);
+        log.debug("Confirming disposal for case: {} ", caseRef);
 
         return performEvent(confirmCaseDisposal, caseRef);
     }
@@ -80,7 +80,7 @@ public class CcdCaseDataDeletionService {
 
             CaseResource caseResource = coreCaseDataApi.createEvent(idamToken, serviceAuthorization,
                     String.valueOf(caseRef), submitContent);
-            log.info("Completed event: {} for case: {}", eventId.name(), caseRef);
+            log.debug("Completed event: {} for case: {}", eventId.name(), caseRef);
             return caseResource;
         } catch (FeignException e) {
             log.error("Error running event: {} for case: {}.", eventId.name(), caseRef, e);

@@ -50,7 +50,7 @@ public class CaseDeletionScheduledTask {
             List<Long> caseReferences = ccdCaseDataDeletionService.findExpiredDraftCases(discardAfterDays).stream()
                     .toList();
             if (!caseReferences.isEmpty()) {
-                log.info("Found {} expired draft cases to delete", caseReferences.size());
+                log.debug("Found {} expired draft cases to delete", caseReferences.size());
 
                 List<CompletableFuture<Void>> futures = caseReferences.stream()
                         .map(caseRef -> CompletableFuture.runAsync(() ->
@@ -63,14 +63,14 @@ public class CaseDeletionScheduledTask {
                         .toList();
 
                 CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
-                log.info("Completed processing cases for deletion at {}", Instant.now());
+                log.debug("Completed processing cases for deletion at {}", Instant.now());
             }
 
             List<Long> discardedCaseReferences =
                     ccdCaseDataDeletionService.findExpiredDraftCasesInDraftDiscardedState();
 
             if (!discardedCaseReferences.isEmpty()) {
-                log.info("Found {} discarded cases to delete", discardedCaseReferences.size());
+                log.debug("Found {} discarded cases to delete", discardedCaseReferences.size());
                 List<CompletableFuture<Void>> futures = discardedCaseReferences.stream()
                         .map(caseRef -> CompletableFuture.runAsync(() ->
                                         caseDeletionService.cleanupDiscardedDraftCases(caseRef))
@@ -82,7 +82,7 @@ public class CaseDeletionScheduledTask {
                         .toList();
 
                 CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
-                log.info("Completed processing cases for cleanup at {}", Instant.now());
+                log.debug("Completed processing cases for cleanup at {}", Instant.now());
             }
         } finally {
             MDC.remove(MDC_TASK_NAME);
