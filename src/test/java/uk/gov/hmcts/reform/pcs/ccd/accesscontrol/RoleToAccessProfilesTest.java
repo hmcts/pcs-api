@@ -65,21 +65,24 @@ class RoleToAccessProfilesTest {
         assertThat(UserRole.WLU_TEAM_LEADER.getAccessProfiles()).containsExactly(AccessProfile.WLU_ADMIN.getRole());
     }
 
-    @Test
-    void shouldMapGroupAccessRolesToProfilesWithCaseTypeAcls() {
-        assertThat(UserRole.PCS_SOLICITOR_ORG.getAccessProfiles())
-            .containsExactly(AccessProfile.PCS_SOLICITOR_ORG.getRole());
-        assertThat(UserRole.PCS_SOLICITOR_GROUP.getAccessProfiles())
-            .containsExactly(AccessProfile.PROFESSIONAL_USER.getRole());
-    }
-
     /**
-     * The organisation role is granted to every professional user and its role assignment is
-     * unscoped, so it must not carry read - organisation-wide reading comes from the group role.
+     * One name per capacity: each group-access role resolves to the access profile of the same
+     * name, which is where its permissions attach.
      */
     @Test
-    void shouldGiveTheOrganisationRoleCreateOnlyAndTheGroupRoleRead() {
-        assertThat(AccessProfile.PCS_SOLICITOR_ORG.getCaseTypePermissions()).isEqualTo("C");
-        assertThat(AccessProfile.PROFESSIONAL_USER.getCaseTypePermissions()).contains("R");
+    void shouldMapGroupAccessRolesToProfilesOfTheSameName() {
+        assertThat(UserRole.CLAIMANT_ORG.getAccessProfiles())
+            .containsExactly(AccessProfile.CLAIMANT_ORG.getRole());
+        assertThat(UserRole.CLAIMANT_SOLICITOR_ORG.getAccessProfiles())
+            .containsExactly(AccessProfile.CLAIMANT_SOLICITOR_ORG.getRole());
+        assertThat(UserRole.DEFENDANT_SOLICITOR_ORG.getAccessProfiles())
+            .containsExactly(AccessProfile.DEFENDANT_SOLICITOR_ORG.getRole());
+    }
+
+    @Test
+    void shouldGiveTheGroupAccessProfilesRead() {
+        assertThat(AccessProfile.CLAIMANT_ORG.getCaseTypePermissions()).contains("R");
+        assertThat(AccessProfile.CLAIMANT_SOLICITOR_ORG.getCaseTypePermissions()).contains("R");
+        assertThat(AccessProfile.DEFENDANT_SOLICITOR_ORG.getCaseTypePermissions()).contains("R");
     }
 }

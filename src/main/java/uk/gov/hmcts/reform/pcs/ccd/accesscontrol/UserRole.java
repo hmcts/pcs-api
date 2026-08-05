@@ -23,21 +23,13 @@ public enum UserRole implements HasRole {
     RAS_VALIDATOR("caseworker-ras-validation", Set.of(R), IDAM),
 
     CITIZEN("citizen", CRU, IDAM),
-    PROFESSIONAL_USER("professional-user", CRU, RAS),
-    PCS_SOLICITOR_ORG("PCS_Solicitor_Org", Set.of(Permission.C), RAS),
-    PCS_SOLICITOR_GROUP("PCS_Solicitor_Group", CRU, RAS, AccessProfile.PROFESSIONAL_USER),
 
-    // The organisation-to-case relationships group access is scoped by. Def store rejects an
-    // AccessTypeRole whose CaseAssignedRoleField is not also a RoleToAccessProfiles entry, so
-    // these have to exist as roles, not just as values in the organisation policies.
-    CLAIMANT_ORG("claimant", CRU, RAS, AccessProfile.PROFESSIONAL_USER),
-    CLAIMANT_SOLICITOR_ORG("claimant-solicitor", CRU, RAS, AccessProfile.PROFESSIONAL_USER),
-    DEFENDANT_SOLICITOR_ORG("defendant-solicitor", CRU, RAS, AccessProfile.PROFESSIONAL_USER),
-
-    // The group role names PRM assigns to users (POFCC-368 catalogue naming). Mapped so the role
-    // assignment a matched user holds resolves to an access profile with permissions.
-    CLAIMANT_SOLICITOR_GROUP("claimant_solicitor", CRU, RAS, AccessProfile.PROFESSIONAL_USER),
-    DEFENDANT_SOLICITOR_GROUP("defendant_solicitor", CRU, RAS, AccessProfile.PROFESSIONAL_USER),
+    // The group-access capacities (POFCC-368 catalogue names). Each maps to itself as access
+    // profile: the same name is the case role on the organisation policy, the group role PRM
+    // assigns, and the profile permissions attach to.
+    CLAIMANT_ORG("claimant", CRU, RAS),
+    CLAIMANT_SOLICITOR_ORG("claimant_solicitor", CRU, RAS),
+    DEFENDANT_SOLICITOR_ORG("defendant_solicitor", CRU, RAS),
 
     DEFENDANT("[DEFENDANT]", CRU, RAS),
     CLAIMANT_SOLICITOR("[CLAIMANTSOLICITOR]", CRU, RAS),

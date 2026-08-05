@@ -122,9 +122,11 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
 
         configureGaAccessTypes(builder);
 
-        // State ACLs for the group-access profile, else the data store filters matched cases out.
+        // State ACLs for the group-access capacities, else the data store filters matched cases out.
         for (State state : State.values()) {
-            builder.grant(state, CRU, AccessProfile.PROFESSIONAL_USER);
+            builder.grant(state, CRU, AccessProfile.CLAIMANT_ORG);
+            builder.grant(state, CRU, AccessProfile.CLAIMANT_SOLICITOR_ORG);
+            builder.grant(state, CRU, AccessProfile.DEFENDANT_SOLICITOR_ORG);
         }
 
         buildCaseListView(builder);
@@ -224,13 +226,13 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
             .liveTo(LIVE_TO);
 
         // A solicitor firm can act on either side, and on opposite sides of different cases, so the
-        // two capacities are separate options for the organisation's admin to assign per user. The
-        // group role names are the ones POFCC-368 registers in the RAS catalogue; the case roles
-        // stay kebab-case per the current CCD naming standard.
+        // two capacities are separate options for the organisation's admin to assign per user. One
+        // name per capacity, everywhere: case role, group role and access profile are all the name
+        // POFCC-368 registers in the RAS catalogue.
         displayOrder = addSolicitorAccessType(builder, "solicitor-org-claimant-access",
-            "claimant-solicitor", "claimant_solicitor", "claimant", displayOrder);
+            "claimant_solicitor", "claimant", displayOrder);
         displayOrder = addSolicitorAccessType(builder, "solicitor-org-defendant-access",
-            "defendant-solicitor", "defendant_solicitor", "defendant", displayOrder);
+            "defendant_solicitor", "defendant", displayOrder);
 
         for (String orgProfile : CLAIMANT_ORG_PROFILES) {
             builder.accessType("prof-org-claimant-access")
@@ -255,8 +257,7 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
 
     private static int addSolicitorAccessType(ConfigBuilder<PCSCase, State, AccessProfile> builder,
                                               String accessTypeId,
-                                              String caseRole,
-                                              String groupRole,
+                                              String role,
                                               String party,
                                               int displayOrder) {
         builder.accessType(accessTypeId)
@@ -271,10 +272,10 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
 
         builder.accessTypeRole(accessTypeId)
             .organisationProfileId(SOLICITOR_PROFILE)
-            .groupRoleName(groupRole)
-            .caseAssignedRoleField(caseRole)
+            .groupRoleName(role)
+            .caseAssignedRoleField(role)
             .groupAccessEnabled(true)
-            .caseAccessGroupIdTemplate("PCS:PCS:" + accessTypeId + ":" + caseRole + ":" + ORG_ID_PLACEHOLDER)
+            .caseAccessGroupIdTemplate("PCS:PCS:" + accessTypeId + ":" + role + ":" + ORG_ID_PLACEHOLDER)
             .liveTo(LIVE_TO);
 
         return displayOrder + 1;
