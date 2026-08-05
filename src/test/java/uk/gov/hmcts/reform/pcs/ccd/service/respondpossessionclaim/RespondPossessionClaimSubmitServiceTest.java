@@ -197,7 +197,6 @@ class RespondPossessionClaimSubmitServiceTest {
 
     @Test
     void shouldNotIssueCounterClaimWhenHelpWithFeesApplies() {
-        // Given
         JourneyType journeyType = JourneyType.CITIZEN;
 
         CounterClaim counterClaim = CounterClaim.builder()
