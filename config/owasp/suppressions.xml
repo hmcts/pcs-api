@@ -25,6 +25,8 @@
     <notes><![CDATA[elasticsearch-java-9.4.2.jar/elasticsearch-rest5-client-9.4.2.jar]]></notes>
     <cve>CVE-2026-56148</cve>
     <cve>CVE-2026-56149</cve>
+    <cve>CVE-2026-63144</cve>
+    <cve>CVE-2026-63263</cve>
   </suppress>
   <suppress until="2026-08-15">
     <notes><![CDATA[angus-activation-2.0.3.jar]]></notes>
