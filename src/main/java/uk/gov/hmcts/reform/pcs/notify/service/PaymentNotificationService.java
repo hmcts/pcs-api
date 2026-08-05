@@ -49,23 +49,20 @@ public class PaymentNotificationService {
 
         log.info("Sending counterclaim payment success email case reference {}", pcsCase.getCaseReference());
 
-        if (defendant.getId().equals(userUUID)) {
+        if (userUUID.equals(defendant.getIdamId())) {
             log.info("Sending counterclaim payment success email case reference {}", pcsCase.getCaseReference());
             notificationService
                 .sendDefendantResponseCounterclaimPaymentSuccessEmailNotification(defendantResponse, paymentReference);
-        } else {
+        } else if (userUUID.equals(legalRepresentative.getIdamId())) {
             log.info("Sending counterclaim payment success email to legal representative case reference {}",
                      pcsCase.getCaseReference());
-            notificationService.sendDefendantResponseCounterclaimPaymentSuccessEmailNotificationToLegalRep(
+            notificationService.sendDefendantResponseCounterclaimToLegalRepresentativePaymentSuccess(
                 legalRepresentative,
+                paymentReference,
                 defendantResponse.getPcsCase(),
-                defendant,
-                defendantResponse,
-                paymentReference);
+                defendantResponse);
+        } else {
+            throw new RuntimeException();
         }
-
-
-//        notificationService
-//            .sendDefendantResponseCounterclaimPaymentSuccessEmailNotification(defendantResponse, paymentReference);
     }
 }

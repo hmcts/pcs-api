@@ -112,10 +112,6 @@ class NotificationServiceTest {
     @Mock
     private DefendantResponseEntity defendantResponseEntity;
 
-    private final EmailTemplate EMAIL_TEMPLATE = EmailTemplate.RESPONSE_NO_COUNTERCLAIM;
-
-    private final NotificationClaimType NOTIFICATION_CLAIM_TYPE = NotificationClaimType.NO_COUNTER_CLAIM;
-
     @Captor
     private ArgumentCaptor<SchedulableInstance<SendEmailTaskData>> schedulableInstanceCaptor;
 
@@ -782,29 +778,6 @@ class NotificationServiceTest {
         }
 
         @Test
-        @DisplayName("Should send defendant response to legal representative email")
-        void shouldSendLegalRepEmail() {
-
-            EmailNotificationResponse response = notificationService.sendDefendantResponseConfirmationToLegalRepresentative(legalRepresentativeEntity, pcsCaseEntity,
-                                                                                       legalRepresentativePartyEntity, defendantResponse,
-                                                                                       EMAIL_TEMPLATE, NOTIFICATION_CLAIM_TYPE);
-
-            verify(notificationPersonalisationFactory).forLegalRepresentative(legalRepresentativePartyEntity, pcsCaseEntity);
-        }
-
-        @Test
-        @DisplayName("Email is null, no email sent to legal representative")
-        void shouldSendLegalRepEmail_nullLREntity() {
-            when(defendantResponseEntity.getId()).thenReturn(123456);
-
-            assertThatThrownBy(() -> notificationService.
-                sendDefendantResponseConfirmationToLegalRepresentative(null, pcsCaseEntity,
-                                                                       legalRepresentativePartyEntity, defendantResponseEntity,
-                                                                       EMAIL_TEMPLATE, NOTIFICATION_CLAIM_TYPE))
-                .hasMessage("No legal representative found for response: 123456");
-        }
-
-        @Test
         @DisplayName("Should send gen app received email")
         void shouldSendGenAppReceivedEmail() {
             // Given
@@ -1057,7 +1030,7 @@ class NotificationServiceTest {
     @DisplayName("TemplatePersonalisation Method Tests")
     class TemplatePersonalisationMethodTests {
         private final NotificationPersonalisationFactory factory =
-            new NotificationPersonalisationFactory(partyService, organisationDetailsService);
+            new NotificationPersonalisationFactory(partyService);
 
         @Test
         @DisplayName("Should use overridden claimant name when name flag is NO")

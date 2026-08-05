@@ -13,6 +13,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
@@ -49,7 +50,7 @@ class NotificationPersonalisationFactoryTest {
     void setUp() {
         when(pcsCaseEntity.getCaseReference()).thenReturn(CASE_REFERENCE);
 
-        factory = new NotificationPersonalisationFactory(partyService, organisationDetailsService);
+        factory = new NotificationPersonalisationFactory(partyService);
     }
 
     @Nested
@@ -296,7 +297,7 @@ class NotificationPersonalisationFactoryTest {
         @Test
         @DisplayName("Should build correct base personalisation for legal representative")
         void shouldBuildCorrectLegalRepresentativeBasePersonalisation() {
-            PartyEntity legalRepParty = stubLegalRepParty();
+            LegalRepresentativeEntity legalRepParty = stubLegalRepParty();
 
             PartyEntity claimantParty = stubClaimantParty();
             PartyEntity defendantParty = stubDefendantParty();
@@ -304,16 +305,16 @@ class NotificationPersonalisationFactoryTest {
             when(partyService.getPrimaryClaimantPartyEntity(pcsCaseEntity)).thenReturn(claimantParty);
             when(partyService.getPrimaryDefendantPartyEntity(pcsCaseEntity)).thenReturn(defendantParty);
 
-            LegalRepresentativeBasePersonalisation result = factory.forLegalRepresentative(legalRepParty, pcsCaseEntity);
+            LegalRepresentativeBasePersonalisation result = factory.forLegalRepresentative(legalRepParty,
+                                                                                           pcsCaseEntity);
             Map<String, Object> map = result.toMap();
-                        assertThat(map)
-                .containsEntry("firstName", "Legall")
-                .containsEntry("lastName", "de Kermeur")
+            assertThat(map)
+                .containsEntry("firstName", "Legal")
+                .containsEntry("lastName", "Rep")
                 .containsEntry("caseNumber", "1234-5678-90")
                 .containsEntry("claimantName", "JANE SMITH")
                 .containsEntry("primaryDefendantName", "JOHN DOE")
-                .containsEntry("organisationName", "HMCTS")
-                .containsEntry("paymentReference", "??????"); // this needs to be fixed
+                .containsEntry("organisationName", "HMCTS");
         }
     }
 
@@ -338,7 +339,34 @@ class NotificationPersonalisationFactoryTest {
                 .containsEntry("claimantName", "JANE SMITH")
                 .containsEntry("primaryDefendantName", "JOHN DOE");
         }
+    }
 
+    @Nested
+    @DisplayName("counterclaimSuccessLegalRep")
+    class CounterclaimSuccessForLegalRepTests {
+        @Test
+        @DisplayName("Should include base legal rep fields, organisationName, and paymentReferenceNumber")
+        void shouldIncludePaymentReferenceNumber() {
+            LegalRepresentativeEntity legalRepresentative = stubLegalRepParty();
+            PartyEntity claimantParty = stubClaimantParty();
+            PartyEntity defendantParty = stubDefendantParty();
+            DefendantResponseEntity response = createDefendantResponse(claimantParty, defendantParty);
+
+            String paymentReference = "PAY-456";
+
+            CounterclaimPaymentSuccessPersonalisation result = factory.counterclaimSuccessLegalRep(response,
+                                                                                                   paymentReference,
+                                                                                                   legalRepresentative);
+
+            Map<String, Object> map = result.toMap();
+            assertThat(map)
+                .containsEntry("paymentReferenceNumber", paymentReference)
+                .containsEntry("firstName", "Legal")
+                .containsEntry("lastName", "Rep")
+                .containsEntry("claimantName", "JANE SMITH")
+                .containsEntry("primaryDefendantName", "JOHN DOE")
+                .containsEntry("organisationName", "HMCTS");
+        }
     }
 
     @Nested
@@ -376,15 +404,13 @@ class NotificationPersonalisationFactoryTest {
         return defendantParty;
     }
 
-    // private PartyEntity stubLegalRepParty(/*VerticalYesNo nameKnown*/) {
-    //     PartyEntity legalRepParty = createParty("Legall", "de Kermeur");
-    //     UUID idamId = UUID.randomUUID();
-    //     legalRepParty.setIdamId(idamId);
+    private LegalRepresentativeEntity stubLegalRepParty() {
+        LegalRepresentativeEntity legalRepParty = createLegalRep("Legal", "Rep","HMCTS");
+        UUID idamId = UUID.randomUUID();
+        legalRepParty.setIdamId(idamId);
 
-    //     when(organisationDetailsService.getOrganisationName(idamId.toString())).thenReturn("HMCTS");
-    //     when(partyService.getPrimaryDefendantPartyEntity(pcsCaseEntity)).thenReturn(legalRepParty);
-    //     return legalRepParty;
-    // }
+        return legalRepParty;
+    }
 
     private PartyEntity createParty(String firstName, String lastName) {
         PartyEntity party = new PartyEntity();
@@ -393,6 +419,15 @@ class NotificationPersonalisationFactoryTest {
         party.setLastName(lastName);
         party.setNameKnown(VerticalYesNo.YES);
         return party;
+    }
+
+    private LegalRepresentativeEntity createLegalRep(String firstName, String lastName, String organisationName) {
+        LegalRepresentativeEntity legalRep = new LegalRepresentativeEntity();
+        legalRep.setId(UUID.randomUUID());
+        legalRep.setFirstName(firstName);
+        legalRep.setLastName(lastName);
+        legalRep.setOrganisationName(organisationName);
+        return legalRep;
     }
 
     private ClaimEntity createClaim(PartyEntity claimantParty) {

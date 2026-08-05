@@ -71,8 +71,6 @@ class LegalRepSubmissionEventStrategyTest {
     @Mock
     private SubmitResponseFactory submitResponseFactory;
     @Mock
-    private LegalRepHelper legalRepHelper;
-    @Mock
     private EventPayload<PCSCase, State> eventPayload;
     @Mock
     private SecurityContextService securityContextService;
@@ -139,12 +137,12 @@ class LegalRepSubmissionEventStrategyTest {
         when(selectedPartyRetriever.getCurrentRepresentedPartyId(caseData)).thenReturn(Optional.of(representedPartyId));
         when(draftCaseDataService.getUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim, representedPartyId))
             .thenReturn(Optional.of(caseData));
-//        when(submitResponseFactory.success()).thenReturn(submitResponse);
+        // when(submitResponseFactory.success()).thenReturn(submitResponse);
         when(eventPayload.caseReference()).thenReturn(CASE_REFERENCE);
         when(eventPayload.caseData()).thenReturn(caseData);
-        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(aPcsCaseEntity(representedPartyId));
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity(representedPartyId));
         when(legalRepresentativeRepository.findByPartyLinkedToLegalRepresentativeAndActive(representedPartyId))
-            .thenReturn(aLegalRepresentativeEntity());
+            .thenReturn(legalRepresentativeEntity());
 
         when(partyService.getPartyEntityById(representedPartyId, CASE_REFERENCE)).thenReturn(representedParty);
         when(respondPossessionClaimSubmitService.persistFinalSubmit(
@@ -276,11 +274,11 @@ class LegalRepSubmissionEventStrategyTest {
         assertThat(underTest.supports(List.of(UserRole.CITIZEN.getRole()))).isFalse();
     }
 
-    private Optional<LegalRepresentativeEntity> aLegalRepresentativeEntity() {
+    private Optional<LegalRepresentativeEntity> legalRepresentativeEntity() {
         return Optional.of(LegalRepresentativeEntity.builder().build());
     }
 
-    private PcsCaseEntity aPcsCaseEntity(UUID representedPartyId) {
+    private PcsCaseEntity pcsCaseEntity(UUID representedPartyId) {
         return PcsCaseEntity.builder()
             .defendantResponses(List.of(
                 DefendantResponseEntity.builder()
