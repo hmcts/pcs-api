@@ -9,8 +9,8 @@ import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.type.DynamicListElement;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.AddPartyDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.UpdatePartyDetails;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
@@ -48,9 +48,9 @@ class StartEventHandlerTest {
     void shouldBuildPartyRadioList() {
         // Given
         PartyEntity claimantParty = PartyEntity.builder()
-            .id(UUID.randomUUID()).nameKnown(VerticalYesNo.YES).build();
+            .id(UUID.randomUUID()).firstName("Jane").lastName("Doe").build();
         PartyEntity defendantParty = PartyEntity.builder()
-            .id(UUID.randomUUID()).nameKnown(VerticalYesNo.NO).build();
+            .id(UUID.randomUUID()).build();
         PartyEntity litigationFriendParty = PartyEntity.builder().id(UUID.randomUUID()).build();
 
         ClaimEntity mainClaim = ClaimEntity.builder()
@@ -68,7 +68,10 @@ class StartEventHandlerTest {
         when(partyService.getPartyLabel(mainClaim, claimantParty.getId())).thenReturn("Claimant 1");
         when(partyService.getPartyLabel(mainClaim, defendantParty.getId())).thenReturn("Defendant 1");
 
-        PCSCase caseData = PCSCase.builder().addPartyDetails(AddPartyDetails.builder().build()).build();
+        PCSCase caseData = PCSCase.builder()
+            .addPartyDetails(AddPartyDetails.builder().build())
+            .updatePartyDetails(UpdatePartyDetails.builder().build())
+            .build();
         EventPayload<PCSCase, State> eventPayload = new EventPayload<>(TEST_CASE_REFERENCE, caseData, null);
 
         // When
