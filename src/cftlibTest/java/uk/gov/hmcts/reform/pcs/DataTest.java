@@ -396,10 +396,10 @@ public class DataTest extends CftlibTest {
         );
     }
 
-    // statement of truth
+    // statement of truth table validation
     @Test
     @DisplayName("validate public.statement_of_truth - schema, URLs, and relationship rules")
-    void validateStatementOfTruthTable() {
+     void validateStatementOfTruthTable() {
         List<String> expectedColumns = List.of(
             "id", "claim_id", "completed_by", "accepted",
             "full_name", "firm_name", "position_held"
@@ -434,6 +434,128 @@ public class DataTest extends CftlibTest {
                                                    () -> assertTrue(totalRows > 0, msgCount),
                                                    () -> assertEquals(1, createdCasePresent, msgCasePresent),
                                                    () -> assertEquals(1, validStatementOfTruth,  msgValidSoT)
+        );
+    }
+
+    // rent_arrears table validation
+    @Test
+    @DisplayName("validate public.rent_arrears - schema, completeness, and relationship rules")
+    void validateRentArrearsTable() {
+        List<String> expectedColumns = List.of(
+            "id", "total_rent_arrears", "arrears_judgment_wanted",
+            "recovery_attempted", "recovery_attempt_details"
+        );
+
+        int totalRows = runCountQuery("SELECT COUNT(*) FROM public.rent_arrears");
+
+        int createdCasePresent = runCountQuery(
+            "SELECT COUNT(*) FROM public.rent_arrears ra "
+                + "JOIN public.claim cl ON ra.claim_id = cl.id "
+                + "JOIN public.pcs_case c ON cl.case_id = c.id "
+                + "WHERE c.case_reference = " + caseReference
+        );
+
+        int validRentArrears = runCountQuery(
+            "SELECT COUNT(*) FROM public.rent_arrears ra "
+                + "JOIN public.claim cl ON ra.claim_id = cl.id "
+                + "JOIN public.pcs_case c ON cl.case_id = c.id "
+                + "WHERE c.case_reference = " + caseReference + " "
+                + "AND ra.total_rent_arrears = 2000.00 "
+                + "AND ra.arrears_judgment_wanted = 'YES' "
+                + "AND ra.recovery_attempted = 'NO'"
+        );
+
+        String msgCount = "Expected rent_arrears table to have rows";
+        String msgCasePresent = "Expected rent_arrears case_reference " + caseReference + " to exist";
+        String msgValidArrears = "Rent arrears detail fields linked to case are incorrectly populated";
+
+        org.junit.jupiter.api.Assertions.assertAll("rent_arrears validations",
+                                                   () -> assertHasColumns("public.rent_arrears", expectedColumns),
+                                                   () -> assertTrue(totalRows > 0, msgCount),
+                                                   () -> assertEquals(1, createdCasePresent, msgCasePresent),
+                                                   () -> assertEquals(1, validRentArrears, msgValidArrears)
+        );
+    }
+
+    // claim_ground table validation
+    @Test
+    @DisplayName("validate public.claim_ground - schema, completeness, and relationship rules")
+    void validateClaimGroundTable() {
+        List<String> expectedColumns = List.of(
+            "id", "claim_id", "category", "code", "reason", "description", "is_rent_arrears"
+        );
+
+        int totalRows = runCountQuery("SELECT COUNT(*) FROM public.claim_ground");
+
+        int createdCasePresent = runCountQuery(
+            "SELECT COUNT(*) FROM public.claim_ground cg "
+                + "JOIN public.claim cl ON cg.claim_id = cl.id "
+                + "JOIN public.pcs_case c ON cl.case_id = c.id "
+                + "WHERE c.case_reference = " + caseReference
+        );
+
+        int validClaimGround = runCountQuery(
+            "SELECT COUNT(*) FROM public.claim_ground cg "
+                + "JOIN public.claim cl ON cg.claim_id = cl.id "
+                + "JOIN public.pcs_case c ON cl.case_id = c.id "
+                + "WHERE c.case_reference = " + caseReference + " "
+                + "AND cg.category = 'ASSURED_MANDATORY' "
+                + "AND cg.code = 'SERIOUS_RENT_ARREARS_GROUND8' "
+                + "AND cg.is_rent_arrears = true"
+        );
+
+        String msgCount = "Expected claim_ground table to have rows";
+        String msgCasePresent = "Expected claim_ground case_reference " + caseReference + " to exist";
+        String msgValidGround = "Claim ground detail fields linked to case are incorrectly populated";
+
+        org.junit.jupiter.api.Assertions.assertAll("claim_ground validations",
+                                                   () -> assertHasColumns("public.claim_ground", expectedColumns),
+                                                   () -> assertTrue(totalRows > 0, msgCount),
+                                                   () -> assertEquals(1, createdCasePresent, msgCasePresent),
+                                                   () -> assertEquals(1, validClaimGround, msgValidGround)
+        );
+    }
+
+    // notice_of_possession table validation
+    @Test
+    @DisplayName("validate public.notice_of_possession - schema, completeness, and relationship rules")
+    void validateNoticeOfPossessionTable() {
+        List<String> expectedColumns = List.of(
+            "id", "claim_id", "notice_served", "notice_type", "serving_method",
+            "notice_details", "notice_date", "notice_date_time", "notice_statement",
+            "unable_to_upload_reason", "is_able_to_upload_document"
+        );
+
+        int totalRows = runCountQuery("SELECT COUNT(*) FROM public.notice_of_possession");
+
+        int createdCasePresent = runCountQuery(
+            "SELECT COUNT(*) FROM public.notice_of_possession np "
+                + "JOIN public.claim cl ON np.claim_id = cl.id "
+                + "JOIN public.pcs_case c ON cl.case_id = c.id "
+                + "WHERE c.case_reference = " + caseReference
+        );
+
+        int validNoticeOfPossession = runCountQuery(
+            "SELECT COUNT(*) FROM public.notice_of_possession np "
+                + "JOIN public.claim cl ON np.claim_id = cl.id "
+                + "JOIN public.pcs_case c ON cl.case_id = c.id "
+                + "WHERE c.case_reference = " + caseReference + " "
+                + "AND np.notice_served = 'YES'"
+                + "AND np.serving_method = 'PERSONALLY_HANDED' "
+                + "AND np.notice_details = 'Dominic Defendant' "
+                + "AND np.is_able_to_upload_document = 'NO' "
+                + "AND np.unable_to_upload_reason = 'Notice was served by hand, no digital copy available' "
+        );
+
+        String msgCount = "Expected notice_of_possession table to have rows";
+        String msgCasePresent = "Expected notice_of_possession case_reference " + caseReference + " to exist";
+        String msgValidNotice = "Notice of possession detail fields linked to case are incorrectly populated";
+
+        org.junit.jupiter.api.Assertions.assertAll("notice_of_possession validations",
+                                                   () -> assertHasColumns("public.notice_of_possession", expectedColumns),
+                                                   () -> assertTrue(totalRows > 0, msgCount),
+                                                   () -> assertEquals(1, createdCasePresent, msgCasePresent),
+                                                   () -> assertEquals(1, validNoticeOfPossession, msgValidNotice)
         );
     }
 
