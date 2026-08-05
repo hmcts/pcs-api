@@ -5,9 +5,9 @@ import java.io.PrintWriter;
 import java.io.Serial;
 import java.util.Objects;
 
-import static uk.gov.hmcts.reform.pcs.exception.ExceptionRedaction.cause;
-import static uk.gov.hmcts.reform.pcs.exception.ExceptionRedaction.message;
-import static uk.gov.hmcts.reform.pcs.exception.ExceptionRedaction.stackTrace;
+import static uk.gov.hmcts.reform.pcs.exception.RedactionGate.cause;
+import static uk.gov.hmcts.reform.pcs.exception.RedactionGate.message;
+import static uk.gov.hmcts.reform.pcs.exception.RedactionGate.stackTrace;
 
 /**
  * Looks to make data-leak prevention structural rather than developer discipline which can slip passed code review.
@@ -22,7 +22,7 @@ import static uk.gov.hmcts.reform.pcs.exception.ExceptionRedaction.stackTrace;
  * than spreading domain knowledge to a caller or serialisation.</p>
  *
  * <p>Visibility is still possible with other environments via the configuration noted in
- * {@link uk.gov.hmcts.reform.pcs.exception.ExceptionRedaction}</p>
+ * {@link RedactionGate}</p>
  */
 public class RedactedRuntimeException extends RuntimeException {
 
@@ -45,7 +45,7 @@ public class RedactedRuntimeException extends RuntimeException {
     }
 
     public RedactedRuntimeException(ErrorCode code, RedactionContext context, Throwable debugCause) {
-        super(ExceptionRedaction.safeMessage(code), null, false, true);
+        super(RedactionGate.safeMessage(code), null, false, true);
         this.code = Objects.requireNonNull(code);
         this.context = context;
         this.debugCause = debugCause;
@@ -87,12 +87,12 @@ public class RedactedRuntimeException extends RuntimeException {
 
     @Override
     public void printStackTrace(PrintStream stream) {
-        ExceptionRedaction.printStackTrace(this, stream, super::printStackTrace);
+        RedactionGate.printStackTrace(this, stream, super::printStackTrace);
     }
 
     @Override
     public void printStackTrace(PrintWriter writer) {
-        ExceptionRedaction.printStackTrace(this, writer, super::printStackTrace);
+        RedactionGate.printStackTrace(this, writer, super::printStackTrace);
     }
 
     @Override

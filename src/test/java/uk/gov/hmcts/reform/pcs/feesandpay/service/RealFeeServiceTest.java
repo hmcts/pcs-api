@@ -11,7 +11,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.fees.client.model.FeeLookupResponseDto;
-import uk.gov.hmcts.reform.pcs.exception.ExceptionRedaction;
+import uk.gov.hmcts.reform.pcs.exception.RedactionGate;
 import uk.gov.hmcts.reform.pcs.exception.ResetExceptionRedactionExtension;
 import uk.gov.hmcts.reform.pcs.feesandpay.client.PCSFeesClient;
 import uk.gov.hmcts.reform.pcs.feesandpay.exception.FeeNotFoundException;
@@ -70,7 +70,7 @@ class RealFeeServiceTest {
 
     @Test
     void shouldThrowFeeNotFoundExceptionWhenFeignCallFails() {
-        ExceptionRedaction.setShowFullExceptionsForTesting(true);
+        RedactionGate.setShowFullExceptionsForTesting(true);
         Request request = Request.create(
             Request.HttpMethod.GET,
             "/fees/lookup",
@@ -101,7 +101,7 @@ class RealFeeServiceTest {
 
     @Test
     void shouldThrowFeeNotFoundExceptionWhenFeignReturnsServerError() {
-        ExceptionRedaction.setShowFullExceptionsForTesting(true);
+        RedactionGate.setShowFullExceptionsForTesting(true);
         Request request = Request.create(
             Request.HttpMethod.GET,
             "/fees/lookup",

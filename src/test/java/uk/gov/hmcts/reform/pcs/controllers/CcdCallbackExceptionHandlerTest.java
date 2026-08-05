@@ -7,7 +7,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
-import uk.gov.hmcts.reform.pcs.exception.ExceptionRedaction;
+import uk.gov.hmcts.reform.pcs.exception.RedactionGate;
 import uk.gov.hmcts.reform.pcs.exception.ResetExceptionRedactionExtension;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -24,7 +24,7 @@ class CcdCallbackExceptionHandlerTest {
     @NullSource
     void shouldReturnForbiddenWhenCaseAccessExceptionThrownOnCallback(Boolean show) {
         // Setup
-        ExceptionRedaction.setShowFullExceptionsForTesting(show);
+        RedactionGate.setShowFullExceptionsForTesting(show);
 
         // Given
         String message = "User is not linked as a defendant on this case";
@@ -45,7 +45,7 @@ class CcdCallbackExceptionHandlerTest {
     @NullSource
     void shouldReturnForbiddenWhenCaseAccessExceptionHasCause(Boolean show) {
         // Setup
-        ExceptionRedaction.setShowFullExceptionsForTesting(show);
+        RedactionGate.setShowFullExceptionsForTesting(show);
 
         // Given
         CaseAccessException exception = new CaseAccessException(DEFENDANT_PARTY_EXTRACTOR_NO_DEFENDANTS,

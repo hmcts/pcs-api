@@ -29,6 +29,9 @@ public final class RedactionContext {
     }
 
     public String asDebugString() {
+        if (values == null || values.isEmpty()) {
+            return "";
+        }
         StringJoiner joiner = new StringJoiner(", ");
         values.forEach((key, value) -> joiner.add(key + "=" + value));
         return joiner.toString();

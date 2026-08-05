@@ -13,7 +13,7 @@ import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
 import org.springframework.security.oauth2.core.OAuth2AccessToken;
 import org.springframework.security.oauth2.core.OAuth2AuthorizationException;
 import org.springframework.security.oauth2.core.OAuth2Error;
-import uk.gov.hmcts.reform.pcs.exception.ExceptionRedaction;
+import uk.gov.hmcts.reform.pcs.exception.RedactionGate;
 import uk.gov.hmcts.reform.pcs.exception.IdamException;
 import uk.gov.hmcts.reform.pcs.exception.ResetExceptionRedactionExtension;
 
@@ -41,7 +41,7 @@ class IdamTokenProviderTest {
 
     @AfterEach
     void afterEach() {
-        ExceptionRedaction.setShowFullExceptionsForTesting(null);
+        RedactionGate.setShowFullExceptionsForTesting(null);
     }
 
     @Test
@@ -87,7 +87,7 @@ class IdamTokenProviderTest {
     @Test
     @DisplayName("Should wrap OAuth2AuthorizationException thrown when fetching system update user token")
     void shouldWrapOAuth2AuthorizationExceptionGettingAuthToken() {
-        ExceptionRedaction.setShowFullExceptionsForTesting(true);
+        RedactionGate.setShowFullExceptionsForTesting(true);
         OAuth2Error error = new OAuth2Error("invalid_token_response", "throttled", null);
         OAuth2AuthorizationException oauthException = new OAuth2AuthorizationException(error);
         given(authorizedClientManager.authorize(any(OAuth2AuthorizeRequest.class))).willThrow(oauthException);

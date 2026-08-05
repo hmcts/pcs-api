@@ -60,7 +60,7 @@ public class SanitisingErrorDecoder implements ErrorDecoder {
             String host = uri.getHost().contains(":") ? "[%s]".formatted(uri.getHost()) : uri.getHost();
             String port = uri.getPort() == -1 ? "" : ":%d".formatted(uri.getPort());
             return "%s://%s%s".formatted(uri.getScheme(), host, port);
-        } catch (IllegalArgumentException e) {
+        } catch (Exception e) {
             return INVALID_URI;
         }
     }

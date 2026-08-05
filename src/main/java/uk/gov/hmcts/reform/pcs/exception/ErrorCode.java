@@ -40,7 +40,7 @@ public enum ErrorCode {
     GEN_APP_NOT_FOUND("GEN_APP_NOT_FOUND", "Unable to find gen app"),
     POST_CODE("POST_CODE","Postcode can’t be empty or null"),
     SECURITY_CONTEXT("SECURITY_CONTEXT", "No authentication instance found"),
-    AUTHENTICATION_PRINCIPAL("AUTHENTICATION PRINCIPLE",
+    AUTHENTICATION_PRINCIPAL("AUTHENTICATION_PRINCIPLE",
                              "Authentication principal is null or not of the expected type"),
     TEMPLATE_RENDERING("TEMPLATE_RENDERING", "Failed to render template"),
     UNSUBMITTED_DATA("UNSUBMITTED_DATA_01", "Failed to save answers"),
@@ -92,7 +92,7 @@ public enum ErrorCode {
     REMOTE_CALL("REMOTE_CALL", "Remote call"),
     STATE("STATE", "Conflict state"),
 
-    TEST_CASE_SUPPORT("", "");
+    TEST_CASE_SUPPORT("TEST_CASE_SUPPORT", "TEST_CASE_SUPPORT");
 
     private final String internalCode;
     private final String safeDescription;

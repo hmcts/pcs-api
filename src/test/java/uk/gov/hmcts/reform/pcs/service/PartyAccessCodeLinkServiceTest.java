@@ -17,7 +17,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseRoleAssignmentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.exception.AccessCodeAlreadyUsedException;
-import uk.gov.hmcts.reform.pcs.exception.ExceptionRedaction;
+import uk.gov.hmcts.reform.pcs.exception.RedactionGate;
 import uk.gov.hmcts.reform.pcs.exception.InvalidAccessCodeException;
 import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 
@@ -133,7 +133,7 @@ class PartyAccessCodeLinkServiceTest {
         // WHEN + THEN
         assertThatThrownBy(() -> service.linkPartyByAccessCode(CASE_REFERENCE, ACCESS_CODE, testUser))
             .isInstanceOf(InvalidAccessCodeException.class)
-            .hasMessageContaining(ExceptionRedaction.safeMessage(ACCESS_CODE_ISSUE));
+            .hasMessageContaining(RedactionGate.safeMessage(ACCESS_CODE_ISSUE));
     }
 
     @Test

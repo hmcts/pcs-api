@@ -11,7 +11,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.autoconfigure.flyway.FlywayMigrationStrategy;
-import uk.gov.hmcts.reform.pcs.exception.ExceptionRedaction;
+import uk.gov.hmcts.reform.pcs.exception.RedactionGate;
 import uk.gov.hmcts.reform.pcs.exception.PendingMigrationScriptException;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -61,6 +61,6 @@ class FlywayNoOpStrategyTest {
         Throwable exception = catchThrowable(() -> strategy.migrate(flyway));
         assertThat(exception)
             .isInstanceOf(PendingMigrationScriptException.class)
-            .hasMessageStartingWith(ExceptionRedaction.safeMessage(MIGRATION_NOT_YET_APPLIED));
+            .hasMessageStartingWith(RedactionGate.safeMessage(MIGRATION_NOT_YET_APPLIED));
     }
 }

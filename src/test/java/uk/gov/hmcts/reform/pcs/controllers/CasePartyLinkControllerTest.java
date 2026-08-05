@@ -9,7 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.exception.ErrorCode;
-import uk.gov.hmcts.reform.pcs.exception.ExceptionRedaction;
+import uk.gov.hmcts.reform.pcs.exception.RedactionGate;
 import uk.gov.hmcts.reform.pcs.exception.InvalidAccessCodeException;
 import uk.gov.hmcts.reform.pcs.exception.InvalidAuthTokenException;
 import uk.gov.hmcts.reform.pcs.idam.IdamAuthenticator;
@@ -97,7 +97,7 @@ class CasePartyLinkControllerTest {
         assertThatThrownBy(() ->
             underTest.validateAccessCode(CASE_REFERENCE, request, AUTH_HEADER, S2S_TOKEN))
             .isInstanceOf(InvalidAccessCodeException.class)
-            .hasMessageContaining(ExceptionRedaction.safeMessage(ACCESS_CODE_ISSUE));
+            .hasMessageContaining(RedactionGate.safeMessage(ACCESS_CODE_ISSUE));
     }
 
     @Test

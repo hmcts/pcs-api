@@ -42,7 +42,7 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.GenAppRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentNameService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
 import uk.gov.hmcts.reform.pcs.exception.ErrorCode;
-import uk.gov.hmcts.reform.pcs.exception.ExceptionRedaction;
+import uk.gov.hmcts.reform.pcs.exception.RedactionGate;
 import uk.gov.hmcts.reform.pcs.exception.GenAppException;
 import uk.gov.hmcts.reform.pcs.exception.ResetExceptionRedactionExtension;
 
@@ -103,7 +103,7 @@ class GenAppServiceTest {
 
     @BeforeEach
     void setUp() {
-        ExceptionRedaction.setShowFullExceptionsForTesting(true);
+        RedactionGate.setShowFullExceptionsForTesting(true);
         stubUtcClock(TEST_UTC_DATE_TIME);
         when(pcsCaseEntity.getClaims()).thenReturn(List.of(mainClaim));
 

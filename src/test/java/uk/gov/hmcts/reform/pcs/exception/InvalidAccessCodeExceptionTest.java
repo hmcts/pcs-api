@@ -16,14 +16,14 @@ class InvalidAccessCodeExceptionTest {
 
         // Then
         assertThat(exception).isNotNull();
-        assertThat(exception.getMessage()).isEqualTo(ExceptionRedaction.safeMessage(ACCESS_CODE_ISSUE));
+        assertThat(exception.getMessage()).isEqualTo(RedactionGate.safeMessage(ACCESS_CODE_ISSUE));
         assertThat(exception.getCause()).isNull();
     }
 
     @Test
     void shouldCreateExceptionWithMessageAndCause() {
         // Given
-        ExceptionRedaction.setShowFullExceptionsForTesting(true);
+        RedactionGate.setShowFullExceptionsForTesting(true);
         Throwable cause = new RuntimeException("Root cause");
 
         // When
@@ -42,14 +42,14 @@ class InvalidAccessCodeExceptionTest {
 
         // Then
         assertThat(exception).isNotNull();
-        assertThat(exception.getMessage()).isEqualTo(ExceptionRedaction.safeMessage(ACCESS_CODE_ISSUE));
+        assertThat(exception.getMessage()).isEqualTo(RedactionGate.safeMessage(ACCESS_CODE_ISSUE));
         assertThat(exception.getCause()).isNull();
     }
 
     @Test
     void shouldCreateExceptionWithMessageAndCauseChain() {
         // Given
-        ExceptionRedaction.setShowFullExceptionsForTesting(true);
+        RedactionGate.setShowFullExceptionsForTesting(true);
         Throwable rootCause = new IllegalStateException("Root cause");
         Throwable cause = new RuntimeException("Intermediate cause", rootCause);
 

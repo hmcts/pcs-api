@@ -1,5 +1,7 @@
 package uk.gov.hmcts.reform.pcs.exception;
 
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.Context;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.PrintStream;
@@ -32,14 +34,14 @@ import java.util.function.Consumer;
  * <p>NOTE: Consider {@link uk.gov.hmcts.reform.pcs.exception.RedactingThrowableConverter} also when looking to see
  * what is happening.</p>
  */
-public class ExceptionRedaction {
+public class RedactionGate {
 
     static final String REDACTED = "REDACTED";
     private static final boolean SHOW_FULL_EXCEPTIONS =
         parseShowFullExceptions(System.getenv("LOG_SHOW_FULL_EXCEPTIONS"));
     private static volatile Boolean overrideForTesting; // Not for prod code
 
-    private ExceptionRedaction() {
+    private RedactionGate() {
 
     }
 
@@ -72,6 +74,15 @@ public class ExceptionRedaction {
         return override != null ? override : SHOW_FULL_EXCEPTIONS;
     }
 
+    /**
+     * Logger-aware variant used by the Logback converters. Un-redacts when either the global
+     * {@code LOG_SHOW_FULL_EXCEPTIONS} switch is on, or the specific logger for this event has
+     * DEBUG enabled (see {@link LoggerGate}).
+     */
+    public static boolean showFullExceptions(Context context, ILoggingEvent event) {
+        return showFullExceptions() || isDebugEnabled(context, event);
+    }
+
     public static void printStackTrace(Throwable throwable, PrintStream stream, Consumer<PrintStream> fullPrinter) {
         printStackTrace(throwable, stream, fullPrinter, stream::println, stream::println);
     }
@@ -81,7 +92,7 @@ public class ExceptionRedaction {
     }
 
     private static <T> void printStackTrace(Throwable throwable, T destination, Consumer<T> fullPrinter,
-                                                    Consumer<Object> printlnObject, Consumer<String> printlnLine) {
+                                            Consumer<Object> printlnObject, Consumer<String> printlnLine) {
         if (showFullExceptions()) {
             try {
                 fullPrinter.accept(destination);
@@ -104,4 +115,9 @@ public class ExceptionRedaction {
     public static void setShowFullExceptionsForTesting(Boolean value) {
         overrideForTesting = value; // pass null to reset
     }
+
+    public static boolean isDebugEnabled(Context context, ILoggingEvent event) {
+        return LoggerGate.isDebugEnabled(context, event.getLoggerName());
+    }
+
 }

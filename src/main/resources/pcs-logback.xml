@@ -6,6 +6,8 @@
 
   <conversionRule conversionWord="msg" converterClass="uk.gov.hmcts.reform.pcs.exception.RedactingMessageConverter"/>
 
+  <contextListener class="uk.gov.hmcts.reform.pcs.exception.LoggerGate" />
+
   <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
     <encoder>
       <pattern>%d{ISO8601} %-5level [%thread] %logger{36} - %msg%n%exception</pattern>

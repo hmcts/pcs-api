@@ -30,7 +30,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
-import uk.gov.hmcts.reform.pcs.exception.ExceptionRedaction;
+import uk.gov.hmcts.reform.pcs.exception.RedactionGate;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 import uk.gov.hmcts.reform.pcs.exception.ResetExceptionRedactionExtension;
 
@@ -170,7 +170,7 @@ class PartyServiceTest {
         @Test
         void shouldThrowExceptionWhenNoPartyEntityById() {
             // Given
-            ExceptionRedaction.setShowFullExceptionsForTesting(true);
+            RedactionGate.setShowFullExceptionsForTesting(true);
             UUID id = UUID.randomUUID();
             long caseReference = 1234L;
 

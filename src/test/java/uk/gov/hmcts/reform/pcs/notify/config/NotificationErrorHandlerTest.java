@@ -8,7 +8,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.gov.hmcts.reform.pcs.exception.ExceptionRedaction;
+import uk.gov.hmcts.reform.pcs.exception.RedactionGate;
 import uk.gov.hmcts.reform.pcs.exception.ResetExceptionRedactionExtension;
 import uk.gov.hmcts.reform.pcs.notify.entities.CaseNotification;
 import uk.gov.hmcts.reform.pcs.notify.exception.NotificationException;
@@ -94,7 +94,7 @@ class NotificationErrorHandlerTest {
         @Test
         @DisplayName("Should throw TemporaryNotificationException for 429 status code")
         void shouldThrowTemporaryNotificationExceptionFor429StatusCode() {
-            ExceptionRedaction.setShowFullExceptionsForTesting(true);
+            RedactionGate.setShowFullExceptionsForTesting(true);
             NotificationClientException clientException = mock(NotificationClientException.class);
             when(clientException.getHttpResult()).thenReturn(429);
             when(clientException.getMessage()).thenReturn("Too Many Requests");
@@ -117,7 +117,7 @@ class NotificationErrorHandlerTest {
         @Test
         @DisplayName("Should throw TemporaryNotificationException for 500 status code")
         void shouldThrowTemporaryNotificationExceptionFor500StatusCode() {
-            ExceptionRedaction.setShowFullExceptionsForTesting(true);
+            RedactionGate.setShowFullExceptionsForTesting(true);
             NotificationClientException clientException = mock(NotificationClientException.class);
             when(clientException.getHttpResult()).thenReturn(500);
             when(clientException.getMessage()).thenReturn("Internal Server Error");
@@ -141,7 +141,7 @@ class NotificationErrorHandlerTest {
         @Test
         @DisplayName("Should throw NotificationException for unknown status codes")
         void shouldThrowNotificationExceptionForUnknownStatusCodes() {
-            ExceptionRedaction.setShowFullExceptionsForTesting(true);
+            RedactionGate.setShowFullExceptionsForTesting(true);
             NotificationClientException clientException = mock(NotificationClientException.class);
             when(clientException.getHttpResult()).thenReturn(502);
             when(clientException.getMessage()).thenReturn("Bad Gateway");
@@ -164,7 +164,7 @@ class NotificationErrorHandlerTest {
         @Test
         @DisplayName("Should handle multiple different status codes correctly")
         void shouldHandleMultipleDifferentStatusCodesCorrectly() {
-            ExceptionRedaction.setShowFullExceptionsForTesting(true);
+            RedactionGate.setShowFullExceptionsForTesting(true);
             int[] statusCodes = {401, 404, 503, 999};
 
             for (int statusCode : statusCodes) {
@@ -190,7 +190,7 @@ class NotificationErrorHandlerTest {
         @Test
         @DisplayName("Should throw NotificationException for fetch failures")
         void shouldThrowNotificationExceptionForFetchFailures() {
-            ExceptionRedaction.setShowFullExceptionsForTesting(true);
+            RedactionGate.setShowFullExceptionsForTesting(true);
             NotificationClientException clientException = mock(NotificationClientException.class);
             when(clientException.getHttpResult()).thenReturn(404);
             when(clientException.getMessage()).thenReturn("Not Found");
@@ -205,7 +205,7 @@ class NotificationErrorHandlerTest {
         @Test
         @DisplayName("Should handle different fetch error status codes")
         void shouldHandleDifferentFetchErrorStatusCodes() {
-            ExceptionRedaction.setShowFullExceptionsForTesting(true);
+            RedactionGate.setShowFullExceptionsForTesting(true);
             int[] statusCodes = {400, 401, 403, 500, 502, 503};
 
             for (int statusCode : statusCodes) {

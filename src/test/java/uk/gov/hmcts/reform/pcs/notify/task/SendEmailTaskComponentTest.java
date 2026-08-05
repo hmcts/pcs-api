@@ -14,7 +14,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
-import uk.gov.hmcts.reform.pcs.exception.ExceptionRedaction;
+import uk.gov.hmcts.reform.pcs.exception.RedactionGate;
 import uk.gov.hmcts.reform.pcs.exception.ResetExceptionRedactionExtension;
 import uk.gov.hmcts.reform.pcs.notify.config.NotificationErrorHandler;
 import uk.gov.hmcts.reform.pcs.notify.config.NotificationErrorHandler.NotificationStatusUpdate;
@@ -229,7 +229,7 @@ class SendEmailTaskComponentTest {
         @Test
         @DisplayName("Should throw PermanentNotificationException when notification ID is null")
         void shouldThrowPermanentNotificationExceptionWhenNotificationIdIsNull() throws Exception {
-            ExceptionRedaction.setShowFullExceptionsForTesting(true);
+            RedactionGate.setShowFullExceptionsForTesting(true);
             when(notificationRepository.findById(dbNotificationId)).thenReturn(Optional.of(caseNotification));
             when(sendEmailResponse.getNotificationId()).thenReturn(null);
             when(notificationClient.sendEmail(eq(templateId), eq(emailAddress), eq(personalisation), anyString()))
@@ -292,7 +292,7 @@ class SendEmailTaskComponentTest {
         @Test
         @DisplayName("Should throw TemporaryNotificationException for temporary failure status codes")
         void shouldThrowTemporaryNotificationExceptionForTemporaryFailureStatusCodes() throws Exception {
-            ExceptionRedaction.setShowFullExceptionsForTesting(true);
+            RedactionGate.setShowFullExceptionsForTesting(true);
             int[] temporaryFailureStatusCodes = {429, 500, 502, 503, 999};
 
             for (int statusCode : temporaryFailureStatusCodes) {
@@ -473,7 +473,7 @@ class SendEmailTaskComponentTest {
         @Test
         @DisplayName("Should handle temporary failure flow with retry")
         void shouldHandleTemporaryFailureFlowWithRetry() throws Exception {
-            ExceptionRedaction.setShowFullExceptionsForTesting(true);
+            RedactionGate.setShowFullExceptionsForTesting(true);
             NotificationClientException exception = mock(NotificationClientException.class);
             when(exception.getHttpResult()).thenReturn(500);
             when(exception.getMessage()).thenReturn("Internal Server Error");

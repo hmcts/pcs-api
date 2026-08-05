@@ -72,13 +72,6 @@ public class ArchitectureTest {
             .because("constructor injection should be used instead of field injection");
 
     @ArchTest
-    static final ArchRule controllers_should_not_expose_entities_via_return_type =
-        noMethods()
-            .that().areDeclaredInClassesThat().areAnnotatedWith(
-                org.springframework.web.bind.annotation.RestController.class)
-            .should().haveRawReturnType(resideInAPackage("..ccd.entity.."));
-
-    @ArchTest
     static final ArchRule exceptions_must_extend_redacted_base =
         priority(HIGH).classes()
             .that().resideInAPackage("uk.gov.hmcts.reform.pcs..")

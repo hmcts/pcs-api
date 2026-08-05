@@ -86,7 +86,7 @@ class SecurityContextServiceTest {
 
         assertThat(exception)
             .isInstanceOf(SecurityContextException.class)
-            .hasMessage("REDACTED [AUTHENTICATION PRINCIPLE]");
+            .hasMessage("REDACTED [AUTHENTICATION_PRINCIPLE]");
     }
 
     @Test
@@ -99,7 +99,7 @@ class SecurityContextServiceTest {
 
         assertThat(exception)
             .isInstanceOf(SecurityContextException.class)
-            .hasMessage("REDACTED [AUTHENTICATION PRINCIPLE]");
+            .hasMessage("REDACTED [AUTHENTICATION_PRINCIPLE]");
     }
 
     @Test
@@ -140,7 +140,7 @@ class SecurityContextServiceTest {
 
         assertThat(exception)
             .isInstanceOf(SecurityContextException.class)
-            .hasMessage("REDACTED [AUTHENTICATION PRINCIPLE]");
+            .hasMessage("REDACTED [AUTHENTICATION_PRINCIPLE]");
     }
 
     @Test
@@ -153,7 +153,7 @@ class SecurityContextServiceTest {
 
         assertThat(exception)
             .isInstanceOf(SecurityContextException.class)
-            .hasMessage("REDACTED [AUTHENTICATION PRINCIPLE]");
+            .hasMessage("REDACTED [AUTHENTICATION_PRINCIPLE]");
     }
 
 }

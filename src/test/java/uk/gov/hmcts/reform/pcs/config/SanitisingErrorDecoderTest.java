@@ -16,6 +16,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class SanitisingErrorDecoderTest {
 
+    private static final String EXCEPTION_BODY = "PII details like email address etc etc";
     private SanitisingErrorDecoder underTest;
 
     @BeforeEach
@@ -27,7 +28,7 @@ class SanitisingErrorDecoderTest {
     void shouldDecodeToRemoteCallExceptionWithBody() {
         // Given
         String methodKey = "xyz";
-        Response response = buildResponse("error");
+        Response response = buildResponse();
 
         // When
         Exception exception = underTest.decode(methodKey, response);
@@ -47,9 +48,10 @@ class SanitisingErrorDecoderTest {
         assertThat(remoteCallException.getContext().getValue("Content-Length")).contains("5");
         assertThat(remoteCallException.getContext().getValue("Correlation Id")).contains("123");
         assertThat(remoteCallException.getContext().getValue("Retry-After")).contains("120");
+        assertThat(remoteCallException.getContext().asDebugString()).doesNotContain(EXCEPTION_BODY);
     }
 
-    private Response buildResponse(String body) {
+    private Response buildResponse() {
         Map<String, Collection<String>> headers = Map.of(
             "content-type", List.of("application/json"),
             "content-length", List.of("5"),
@@ -57,7 +59,7 @@ class SanitisingErrorDecoderTest {
             "retry-after", List.of("120")
         );
         return Response.builder().status(500).reason("Internal Server Error").request(request())
-            .headers(headers).body(body, StandardCharsets.UTF_8).build();
+            .headers(headers).body(EXCEPTION_BODY, StandardCharsets.UTF_8).build();
     }
 
     private Request request() {

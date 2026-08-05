@@ -19,7 +19,7 @@ import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.PARTY_NOT_FOUND;
-import static uk.gov.hmcts.reform.pcs.exception.ExceptionRedaction.REDACTED;
+import static uk.gov.hmcts.reform.pcs.exception.RedactionGate.REDACTED;
 
 @ExtendWith(ResetExceptionRedactionExtension.class)
 class RedactingThrowableConverterTest {
@@ -62,7 +62,7 @@ class RedactingThrowableConverterTest {
     void showsFullExceptionWhenLoggerIsAtShowFullExceptions(Throwable throwable, String expectType) {
         // Given
         RedactingThrowableConverter.setShowFullExceptionsForTesting(true);
-        ExceptionRedaction.setShowFullExceptionsForTesting(true);
+        RedactionGate.setShowFullExceptionsForTesting(true);
 
         // When
         String output = underTest.convert(errorEventWithException(throwable));

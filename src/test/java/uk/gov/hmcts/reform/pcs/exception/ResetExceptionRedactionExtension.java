@@ -8,13 +8,13 @@ public class ResetExceptionRedactionExtension implements BeforeEachCallback, Aft
 
     @Override
     public void beforeEach(ExtensionContext context) {
-        ExceptionRedaction.setShowFullExceptionsForTesting(null);
+        RedactionGate.setShowFullExceptionsForTesting(null);
         RedactingThrowableConverter.setShowFullExceptionsForTesting(null);
     }
 
     @Override
     public void afterEach(ExtensionContext context) {
-        ExceptionRedaction.setShowFullExceptionsForTesting(null);
+        RedactionGate.setShowFullExceptionsForTesting(null);
         RedactingThrowableConverter.setShowFullExceptionsForTesting(null);
     }
 

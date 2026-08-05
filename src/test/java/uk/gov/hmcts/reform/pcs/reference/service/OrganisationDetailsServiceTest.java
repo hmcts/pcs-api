@@ -14,7 +14,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
-import uk.gov.hmcts.reform.pcs.exception.ExceptionRedaction;
+import uk.gov.hmcts.reform.pcs.exception.RedactionGate;
 import uk.gov.hmcts.reform.pcs.exception.OrganisationDetailsException;
 import uk.gov.hmcts.reform.pcs.exception.ResetExceptionRedactionExtension;
 import uk.gov.hmcts.reform.pcs.reference.api.RdProfessionalApi;
@@ -67,7 +67,7 @@ class OrganisationDetailsServiceTest {
     @DisplayName("Should successfully retrieve organisation details")
     void shouldSuccessfullyRetrieveOrganisationDetails(Boolean show) {
         // Setup
-        ExceptionRedaction.setShowFullExceptionsForTesting(show);
+        RedactionGate.setShowFullExceptionsForTesting(show);
 
         // Given
         OrganisationDetailsResponse expectedResponse = OrganisationDetailsResponse.builder()
@@ -101,7 +101,7 @@ class OrganisationDetailsServiceTest {
     @DisplayName("Should successfully get organisation name")
     void shouldSuccessfullyGetOrganisationName(Boolean show) {
         // Setup
-        ExceptionRedaction.setShowFullExceptionsForTesting(show);
+        RedactionGate.setShowFullExceptionsForTesting(show);
 
         // Given
         OrganisationDetailsResponse response = OrganisationDetailsResponse.builder()
@@ -146,7 +146,7 @@ class OrganisationDetailsServiceTest {
     @DisplayName("Should throw OrganisationDetailsException when Feign client throws exception")
     void shouldThrowOrganisationDetailsExceptionWhenFeignClientThrowsException() {
         // Given
-        ExceptionRedaction.setShowFullExceptionsForTesting(true);
+        RedactionGate.setShowFullExceptionsForTesting(true);
         RuntimeException runtimeException = new RuntimeException("Feign client error");
 
         when(authTokenGenerator.generate()).thenReturn(S2S_TOKEN);
@@ -167,7 +167,7 @@ class OrganisationDetailsServiceTest {
     @DisplayName("Should throw OrganisationDetailsException when general exception occurs")
     void shouldThrowOrganisationDetailsExceptionWhenGeneralExceptionOccurs(Boolean show) {
         // Setup
-        ExceptionRedaction.setShowFullExceptionsForTesting(show);
+        RedactionGate.setShowFullExceptionsForTesting(show);
 
         // Given
         RuntimeException generalException = new RuntimeException("Connection failed");
@@ -265,7 +265,7 @@ class OrganisationDetailsServiceTest {
     @DisplayName("Should wrap FeignException as OrganisationDetailsException with feign cause")
     void shouldWrapFeignExceptionAsOrganisationDetailsException(Boolean show) {
         // Setup
-        ExceptionRedaction.setShowFullExceptionsForTesting(show);
+        RedactionGate.setShowFullExceptionsForTesting(show);
 
         // Given
         String userId = "dc3f786d-4ad4-4b5d-a79f-6e35a6520ace";
@@ -298,7 +298,7 @@ class OrganisationDetailsServiceTest {
     @DisplayName("Should wrap unexpected RuntimeException as OrganisationDetailsException")
     void shouldWrapUnexpectedExceptionAsOrganisationDetailsException(Boolean show) {
         // Setup
-        ExceptionRedaction.setShowFullExceptionsForTesting(show);
+        RedactionGate.setShowFullExceptionsForTesting(show);
 
         // Given — anything other than FeignException must hit the generic catch (Exception) branch.
         RuntimeException unexpected = new RuntimeException("token generator blew up");
@@ -318,7 +318,7 @@ class OrganisationDetailsServiceTest {
     @DisplayName("getOrganisationName should propagate OrganisationDetailsException when underlying call throws Feign")
     void getOrganisationNameShouldPropagateOrganisationDetailsExceptionOnFeignFailure(Boolean show) {
         // Show
-        ExceptionRedaction.setShowFullExceptionsForTesting(show);
+        RedactionGate.setShowFullExceptionsForTesting(show);
 
         // Given
         FeignException feignEx = mock(FeignException.class);

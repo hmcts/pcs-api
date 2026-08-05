@@ -5,7 +5,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.ACCESS_CODE_ALREADY_IN_USE;
-import static uk.gov.hmcts.reform.pcs.exception.ExceptionRedaction.safeMessage;
+import static uk.gov.hmcts.reform.pcs.exception.RedactionGate.safeMessage;
 
 @ExtendWith(ResetExceptionRedactionExtension.class)
 class AccessCodeAlreadyUsedExceptionTest {
@@ -13,7 +13,7 @@ class AccessCodeAlreadyUsedExceptionTest {
     @Test
     void shouldReturnUnredactedMessageWhenShowFullExceptionsIsTrue() {
         // Given
-        ExceptionRedaction.setShowFullExceptionsForTesting(true);
+        RedactionGate.setShowFullExceptionsForTesting(true);
 
         // When
         AccessCodeAlreadyUsedException exception = new AccessCodeAlreadyUsedException(ACCESS_CODE_ALREADY_IN_USE);
@@ -28,8 +28,8 @@ class AccessCodeAlreadyUsedExceptionTest {
     @Test
     void shouldReturnExpectedMessageWhenShowFullExceptionsOverrideIsNull() {
         // Given
-        ExceptionRedaction.setShowFullExceptionsForTesting(null);
-        boolean showFull = ExceptionRedaction.showFullExceptions();
+        RedactionGate.setShowFullExceptionsForTesting(null);
+        boolean showFull = RedactionGate.showFullExceptions();
 
         // When
         AccessCodeAlreadyUsedException exception = new AccessCodeAlreadyUsedException(ACCESS_CODE_ALREADY_IN_USE);
@@ -45,7 +45,7 @@ class AccessCodeAlreadyUsedExceptionTest {
     @Test
     void shouldKeepCauseWhenShowFullExceptionsIsTrue() {
         // Given
-        ExceptionRedaction.setShowFullExceptionsForTesting(true);
+        RedactionGate.setShowFullExceptionsForTesting(true);
         Throwable cause = new RuntimeException("Root cause");
 
         // When
@@ -61,8 +61,8 @@ class AccessCodeAlreadyUsedExceptionTest {
     @Test
     void shouldApplyExpectedCauseBehaviorWhenShowFullExceptionsOverrideIsNull() {
         // Given
-        ExceptionRedaction.setShowFullExceptionsForTesting(null);
-        boolean showFull = ExceptionRedaction.showFullExceptions();
+        RedactionGate.setShowFullExceptionsForTesting(null);
+        boolean showFull = RedactionGate.showFullExceptions();
         Throwable rootCause = new IllegalStateException("Root cause");
         Throwable cause = new RuntimeException("Intermediate cause", rootCause);
 

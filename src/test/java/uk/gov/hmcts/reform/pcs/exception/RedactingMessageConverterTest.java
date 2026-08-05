@@ -14,7 +14,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
-import static uk.gov.hmcts.reform.pcs.exception.ExceptionRedaction.REDACTED;
+import static uk.gov.hmcts.reform.pcs.exception.RedactionGate.REDACTED;
 
 @ExtendWith(MockitoExtension.class)
 class RedactingMessageConverterTest {
