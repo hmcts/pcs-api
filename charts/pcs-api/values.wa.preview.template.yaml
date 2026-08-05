@@ -111,7 +111,7 @@ wa:
       enabled: false
     messageCron:
       enabled: false
-
+      
 xui-webapp:
   nodejs:
     environment:
