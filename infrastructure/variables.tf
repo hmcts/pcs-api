@@ -25,3 +25,7 @@ variable "pgsql_version" {
   type        = string
   default     = "16"
 }
+
+variable "postgres_geo_redundant_backups" {
+  default = false
+}
