@@ -2,18 +2,14 @@ package uk.gov.hmcts.reform.pcs.ccd.page.caseworker.entergenapp;
 
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.fieldEquals;
 
 public class ReferApplicationToJudge implements CcdPageConfiguration {
 
-    private static final String PLACEHOLDER_BANNER = """
-        <div class="govuk-notification-banner" role="region"
-        aria-labelledby="govuk-notification-banner-title" data-module="govuk-notification-banner">
-          <div class="govuk-notification-banner__content">
-            <p class="govuk-notification-banner__heading">
-              Placeholder
-            </p>
-          </div>
-        </div>
+    private static final String MESSAGE_TEXT = """
+            <p class="body">You must refer this application to a judge.</p>
         """;
 
     @Override
@@ -21,8 +17,10 @@ public class ReferApplicationToJudge implements CcdPageConfiguration {
         pageBuilder
             .page("referApplicationToJudge")
             .pageLabel("Refer without notice application to judge")
+            .showCondition(fieldEquals("enter_genapp_AllPartiesAgree", VerticalYesNo.NO)
+                + " AND " + fieldEquals("enter_genapp_WithoutNotice", VerticalYesNo.YES))
             .label("referApplicationToJudge-lineSeparator", "---")
-            .label("referApplicationToJudge-placeholder", PLACEHOLDER_BANNER);
+            .label("referApplicationToJudge-message", MESSAGE_TEXT);
     }
 
 }
