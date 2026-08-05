@@ -206,7 +206,6 @@ class RespondPossessionClaimSubmitServiceTest {
         when(counterClaimService.saveCounterClaim(CASE_REFERENCE, counterClaim, partyEntity))
             .thenReturn(Optional.of(savedCounterClaim));
         when(counterClaimFeeCalculator.isPaymentRequired(counterClaim)).thenReturn(false);
-        when(counterClaimService.issueCounterClaim(savedCounterClaim)).thenReturn(issuedCounterClaim);
         when(defendantResponseService.saveDefendantResponse(anyLong(), any(), any(), any()))
             .thenReturn(new DefendantResponseEntity());
 
