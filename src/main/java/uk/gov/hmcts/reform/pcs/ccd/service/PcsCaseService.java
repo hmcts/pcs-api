@@ -99,9 +99,17 @@ public class PcsCaseService {
     @Transactional
     public void deleteCase(long caseReference) {
         PcsCaseEntity pcsCaseEntity = loadCase(caseReference);
-        deleteDocuments(pcsCaseEntity);
         pcsCaseRepository.delete(pcsCaseEntity);
-        log.debug("Deleted case with reference: {}", caseReference);
+        log.info("Deleted case with reference: {}", caseReference);
+    }
+
+    public void deleteDocuments(long caseReference) {
+        PcsCaseEntity pcsCaseEntity = loadCase(caseReference);
+        pcsCaseEntity.getDocuments()
+                .stream()
+                .map(DocumentEntity::getUrl)
+                .forEach(documentImportService::deleteDocument);
+        log.info("Deleted documents for case with reference: {}", caseReference);
     }
 
     public void allocateCaseManagementLocation(PCSCase pcsCase) {
@@ -153,12 +161,5 @@ public class PcsCaseService {
     public void setCaseIssuedDate(long caseReference) {
         PcsCaseEntity pcsCaseEntity = loadCase(caseReference);
         claimService.setClaimIssuedDate(pcsCaseEntity.getClaims().getFirst());
-    }
-
-    private void deleteDocuments(PcsCaseEntity pcsCaseEntity) {
-        pcsCaseEntity.getDocuments()
-                .stream()
-                .map(DocumentEntity::getUrl)
-                .forEach(documentImportService::deleteDocument);
     }
 }

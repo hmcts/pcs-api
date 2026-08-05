@@ -14,9 +14,8 @@ import uk.gov.hmcts.reform.ccd.client.model.Event;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
-import uk.gov.hmcts.reform.pcs.ccd.model.DraftCasesToDiscard;
 import uk.gov.hmcts.reform.pcs.ccd.repository.CcdCaseRepository;
-import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
+import uk.gov.hmcts.reform.pcs.exception.CcdCaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
 
 import java.util.List;
@@ -40,23 +39,27 @@ public class CcdCaseDataDeletionService {
     private final ObjectMapper objectMapper;
     private final CcdCaseRepository ccdCaseRepository;
 
-    public List<DraftCasesToDiscard> findExpiredDraftCases(int discardAfterDays) {
+    public List<Long> findExpiredDraftCases(int discardAfterDays) {
         return ccdCaseRepository.findExpiredDraftCases(discardAfterDays);
+    }
+
+    public List<Long> findExpiredDraftCasesInDraftDiscardedState() {
+        return ccdCaseRepository.findExpiredDraftCasesInDraftDiscardedState();
     }
 
     public void deleteCcdCaseData(long caseReference) {
         ccdCaseRepository.deleteCcdCaseData(caseReference);
-        log.debug("Deleted case data for case reference: {}", caseReference);
+        log.info("Deleted case data for case reference: {}", caseReference);
     }
 
-    public CaseResource markCaseForDeletion(long caseRef) throws CaseNotFoundException {
-        log.debug("Marking following case for deletion: {} ", caseRef);
+    public CaseResource markCaseForDeletion(long caseRef) {
+        log.info("Marking following case for deletion: {} ", caseRef);
 
         return performEvent(markCaseForDeletion, caseRef);
     }
 
-    public CaseResource confirmCaseDisposal(long caseRef) throws CaseNotFoundException {
-        log.debug("Confirming disposal for case: {} ", caseRef);
+    public CaseResource confirmCaseDisposal(long caseRef) {
+        log.info("Confirming disposal for case: {} ", caseRef);
 
         return performEvent(confirmCaseDisposal, caseRef);
     }
@@ -77,15 +80,16 @@ public class CcdCaseDataDeletionService {
 
             CaseResource caseResource = coreCaseDataApi.createEvent(idamToken, serviceAuthorization,
                     String.valueOf(caseRef), submitContent);
-            log.debug("Completed event: {} for case: {}", eventId.name(), caseRef);
+            log.info("Completed event: {} for case: {}", eventId.name(), caseRef);
             return caseResource;
         } catch (FeignException e) {
+            log.error("Error running event: {} for case: {}.", eventId.name(), caseRef, e);
             if (e.getMessage().contains("Case ID is not valid")) {
-                throw new CaseNotFoundException(caseRef);
+                throw new CcdCaseNotFoundException(caseRef);
+            } else {
+                throw e;
             }
-            log.error("Error running event: {} for case: {}. Error: {}", eventId.name(), caseRef, e.getMessage());
         }
-        return null;
     }
 
     private JsonNode toJsonNode(PCSCase pcsCase) {

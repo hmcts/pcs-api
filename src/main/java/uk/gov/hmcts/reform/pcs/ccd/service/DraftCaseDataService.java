@@ -16,6 +16,7 @@ import uk.gov.hmcts.reform.pcs.exception.UnsubmittedDataException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
@@ -335,12 +336,14 @@ public class DraftCaseDataService {
 
     @Transactional
     public void deleteUnsubmittedCaseDataBySystemUser(long caseReference, EventId eventId) {
-        draftCaseDataRepository.findByCaseReferenceAndEventId(caseReference, eventId)
-                        .ifPresent(draftCaseDataEntity -> {
-                            log.debug("Deleting draft case data for caseReference={}, eventId={}, userId={}",
-                                    caseReference, eventId, draftCaseDataEntity.getIdamUserId());
-                            draftCaseDataRepository.delete(draftCaseDataEntity);
-                        });
+        List<DraftCaseDataEntity> drafts =
+                draftCaseDataRepository.findByCaseReferenceAndEventId(caseReference, eventId);
+
+        drafts.forEach(draft -> {
+            log.debug("Deleting draft case data for caseReference={}, eventId={}, userId={}",
+                    caseReference, eventId, draft.getIdamUserId());
+            draftCaseDataRepository.delete(draft);
+        });
 
     }
 

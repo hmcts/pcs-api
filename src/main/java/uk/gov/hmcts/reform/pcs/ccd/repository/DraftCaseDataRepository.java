@@ -4,12 +4,13 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DraftCaseDataEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 public interface DraftCaseDataRepository extends JpaRepository<DraftCaseDataEntity, Integer> {
 
-    Optional<DraftCaseDataEntity> findByCaseReferenceAndEventId(
+    List<DraftCaseDataEntity> findByCaseReferenceAndEventId(
             long caseReference, EventId eventId);
 
     Optional<DraftCaseDataEntity> findByCaseReferenceAndEventIdAndIdamUserId(

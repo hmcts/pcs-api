@@ -20,6 +20,7 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.DraftCaseDataRepository;
 import uk.gov.hmcts.reform.pcs.exception.UnsubmittedDataException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -249,7 +250,7 @@ class DraftCaseDataServiceTest {
         DraftCaseDataEntity draftCaseDataEntity =
                 new DraftCaseDataEntity(1234, CASE_REFERENCE, "Some case data", eventId, USER_ID, null);
         when(draftCaseDataRepository.findByCaseReferenceAndEventId(CASE_REFERENCE, eventId))
-            .thenReturn(Optional.of(draftCaseDataEntity));
+            .thenReturn(List.of(draftCaseDataEntity));
         // When
         underTest.deleteUnsubmittedCaseDataBySystemUser(CASE_REFERENCE, eventId);
 

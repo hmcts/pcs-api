@@ -6,7 +6,6 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.stereotype.Repository;
-import uk.gov.hmcts.reform.pcs.ccd.model.DraftCasesToDiscard;
 
 import java.util.List;
 
@@ -17,7 +16,7 @@ public class CcdCaseRepository {
     private final JdbcTemplate jdbcTemplate;
     private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
-    public List<DraftCasesToDiscard> findExpiredDraftCases(int discardAfterDays) {
+    public List<Long> findExpiredDraftCases(int discardAfterDays) {
         SqlParameterSource namedParameters = new MapSqlParameterSource()
                 .addValue("discardDaysAfter", discardAfterDays);
         return namedParameterJdbcTemplate.query(
@@ -28,12 +27,18 @@ public class CcdCaseRepository {
                    AND cd.state in ('AWAITING_SUBMISSION_TO_HMCTS', 'PENDING_CASE_ISSUED')
                 """,
                 namedParameters,
-                (rs, rowNum) -> {
-                    long caseRef = rs.getLong("reference");
-                    return DraftCasesToDiscard.builder()
-                            .caseReference(caseRef)
-                            .build();
-                }
+                (rs, rowNum) -> rs.getLong("reference")
+        );
+    }
+
+    public List<Long> findExpiredDraftCasesInDraftDiscardedState() {
+        return jdbcTemplate.query(
+                """
+                   SELECT cd.reference
+                   FROM ccd.case_data cd
+                   WHERE cd.state in ('DRAFT_DISCARDED')
+                """,
+                (rs, rowNum) -> rs.getLong("reference")
         );
     }
 

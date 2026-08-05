@@ -566,12 +566,11 @@ class PcsCaseServiceTest {
         when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
 
         // When
-        underTest.deleteCase(CASE_REFERENCE);
+        underTest.deleteDocuments(CASE_REFERENCE);
 
         // Then
         verify(documentImportService).deleteDocument("url1");
         verify(documentImportService).deleteDocument("url2");
-        verify(pcsCaseRepository).delete(pcsCaseEntity);
     }
 
     private Flags createFlags(List<ListValue<FlagDetail>> flagDetails) {
