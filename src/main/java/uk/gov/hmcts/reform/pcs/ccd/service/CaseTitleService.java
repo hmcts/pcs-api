@@ -2,7 +2,6 @@ package uk.gov.hmcts.reform.pcs.ccd.service;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 
@@ -21,12 +20,6 @@ public class CaseTitleService {
      * @return A markdown string for the case title
      */
     public String buildCaseTitle(PCSCase pcsCase) {
-        String caseNameMarkdown = StringUtils.hasText(pcsCase.getCaseNameHmctsInternal())
-            ? """
-                <p class="govuk-!-font-size-24 govuk-!-margin-bottom-0">
-                    %s
-                </p>""".formatted(pcsCase.getCaseNameHmctsInternal())
-            : "";
 
         return """
                 <p class="govuk-!-font-size-24 govuk-!-margin-top-0 govuk-!-margin-bottom-1">
@@ -34,11 +27,7 @@ public class CaseTitleService {
                 </p>
                 <p class="govuk-!-font-size-24 govuk-!-margin-bottom-0">
                     Property address: %s
-                </p>
-                %s""".formatted(
-            addressFormatter.formatShortAddress(pcsCase.getPropertyAddress(), COMMA_DELIMITER),
-            caseNameMarkdown
-        );
+                </p>""".formatted(addressFormatter.formatShortAddress(pcsCase.getPropertyAddress(), COMMA_DELIMITER));
     }
 
 }
