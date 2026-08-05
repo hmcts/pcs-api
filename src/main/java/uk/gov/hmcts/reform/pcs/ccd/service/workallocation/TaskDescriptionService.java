@@ -8,7 +8,9 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
+import uk.gov.hmcts.reform.pcs.exception.ClaimNotFoundException;
 import uk.gov.hmcts.reform.pcs.exception.TemplateRenderingException;
 
 import java.io.IOException;
@@ -24,9 +26,12 @@ public class TaskDescriptionService {
 
     private final PartyService partyService;
     private final PebbleEngine pebbleEngine;
+    private final ClaimRepository claimRepository;
 
     public String createReviewGenAppDescription(long caseReference,
                                                 GenAppEntity genAppEntity) {
+
+        String partyLabel = getPartyLabel(genAppEntity.getParty(), caseReference);
 
         List<String> additionalDocumentFilenames = genAppEntity.getDocuments().stream()
             .map(DocumentEntity::getFileName)
@@ -38,6 +43,7 @@ public class TaskDescriptionService {
 
         Map<String, Object> context = Map.of(
             "caseReference", caseReference,
+            "partyLabel", partyLabel,
             "filenames", filenames
         );
 
@@ -84,6 +90,13 @@ public class TaskDescriptionService {
         }
 
         return writer.toString();
+    }
+
+    private String getPartyLabel(PartyEntity partyEntity, long caseReference) {
+        ClaimEntity mainClaim = claimRepository.findClaimByCaseReference(caseReference)
+                .orElseThrow(() -> new ClaimNotFoundException(caseReference));
+
+        return partyService.getPartyLabel(mainClaim, partyEntity.getId());
     }
 
 }
