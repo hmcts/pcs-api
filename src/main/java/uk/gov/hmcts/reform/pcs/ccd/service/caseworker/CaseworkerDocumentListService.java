@@ -159,7 +159,7 @@ public class CaseworkerDocumentListService {
         return getOpenGenApps(genApps).stream()
             .map(genAppListValue -> {
                 GeneralApplication genApp = genAppListValue.getValue();
-                String displayLabel = "Gen app GA%d".formatted(genApp.getRank());
+                String displayLabel = "General Application GA%d".formatted(genApp.getRank());
 
                 LocalDateTime submittedDate = genApp.getSubmittedOn();
                 displayLabel += " - submitted %s".formatted(RELATED_ENTITY_DATE_FORMATTER.format(submittedDate));
