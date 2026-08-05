@@ -286,7 +286,7 @@ class DocumentServiceTest {
 
     @ParameterizedTest
     @EnumSource(AdditionalDocumentType.class)
-    void shouldMapAdditionalDocumentTypeToDocumentType(AdditionalDocumentType additionalDocumentType) {
+    void shouldMapAdditionalDocumentTypeEnumToDocumentType(AdditionalDocumentType additionalDocumentType) {
         assertThat(underTest.mapAdditionalDocumentTypeToDocumentType(additionalDocumentType))
             .isEqualTo(DocumentType.valueOf(additionalDocumentType.name()));
     }
@@ -480,6 +480,43 @@ class DocumentServiceTest {
         assertThat(capturedEntities)
             .extracting(DocumentEntity::getCategoryId)
             .containsExactly(CaseFileCategory.PROPERTY_DOCUMENTS.getId());
+    }
+
+    @ParameterizedTest
+    @MethodSource("additionalDocumentCategoryScenarios")
+    void shouldMapAdditionalDocumentsToCaseFileCategories(AdditionalDocumentType additionalDocumentType,
+                                                          String expectedCategoryId) {
+        // Given
+        PCSCase pcsCase = mock(PCSCase.class);
+
+        DynamicList documentTypeList = new DynamicList(
+                new DynamicListElement(UUID.randomUUID(), additionalDocumentType.getLabel()),
+                new ArrayList<>()
+        );
+        AdditionalDocument additionalDocument = AdditionalDocument.builder()
+            .document(Document.builder()
+                        .url("https://host/" + UUID.randomUUID())
+                        .filename("filename.txt")
+                        .categoryId("uploaded-category")
+                        .build())
+            .documentType(documentTypeList)
+            .build();
+
+        when(pcsCase.getAdditionalDocuments()).thenReturn(List.of(
+            ListValue.<AdditionalDocument>builder().value(additionalDocument).build()
+        ));
+
+        // When
+        underTest.createAllDocuments(pcsCase);
+
+        // Then
+        verify(documentRepository).saveAll(documentEntityListCaptor.capture());
+        List<DocumentEntity> capturedEntities = documentEntityListCaptor.getValue();
+
+        assertThat(capturedEntities)
+            .extracting(DocumentEntity::getCategoryId)
+            .containsExactly(expectedCategoryId);
+
     }
 
     @Test
@@ -1503,7 +1540,7 @@ class DocumentServiceTest {
     @ParameterizedTest
     @MethodSource("additionalDocumentTypeScenarios")
     void shouldMapAdditionalDocumentTypeToDocumentType(AdditionalDocumentType additionalDocumentType,
-                                                       DocumentType expectedDocumentType) {
+                                                               DocumentType expectedDocumentType) {
         // When
         DocumentType actualDocumentType = underTest.mapAdditionalDocumentTypeToDocumentType(additionalDocumentType);
 
