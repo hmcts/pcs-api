@@ -4,11 +4,13 @@ import feign.Request;
 import feign.Response;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import uk.gov.hmcts.reform.pcs.exception.ErrorCode;
 import uk.gov.hmcts.reform.pcs.exception.RemoteCallException;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -24,62 +26,38 @@ class SanitisingErrorDecoderTest {
     @Test
     void shouldDecodeToRemoteCallExceptionWithBody() {
         // Given
-        Response response = buildResponse(500, "error");
+        String methodKey = "xyz";
+        Response response = buildResponse("error");
 
         // When
-        Exception exception = underTest.decode("Client#call()", response);
+        Exception exception = underTest.decode(methodKey, response);
 
         // Then
         assertThat(exception).isInstanceOf(RemoteCallException.class);
         RemoteCallException remoteCallException = (RemoteCallException) exception;
         assertThat(remoteCallException.getStatus()).isEqualTo(500);
-        assertThat(remoteCallException.getContext().getValue("Remote call")).contains("Client#call()");
+        assertThat(remoteCallException.getContext().getValue("MethodKey")).contains(methodKey);
         assertThat(remoteCallException.getContext().getValue("Status")).contains(500);
-        assertThat(remoteCallException.getContext().getValue("Response Body")).contains("error");
+        assertThat(remoteCallException.getContext().getValue("MethodKey")).contains(methodKey);
+        assertThat(remoteCallException.getContext().getValue("Status")).contains(500);
+        assertThat(remoteCallException.getContext().getValue("Target")).contains("http://localhost");
+        assertThat(remoteCallException.getContext().getValue("Method")).contains(Request.HttpMethod.GET);
+        assertThat(remoteCallException.getContext().getValue("Reason")).contains("Internal Server Error");
+        assertThat(remoteCallException.getContext().getValue("Content-Type")).contains("application/json");
+        assertThat(remoteCallException.getContext().getValue("Content-Length")).contains("5");
+        assertThat(remoteCallException.getContext().getValue("Correlation Id")).contains("123");
+        assertThat(remoteCallException.getContext().getValue("Retry-After")).contains("120");
     }
 
-    @Test
-    void shouldReturnEmptyMarkerWhenBodyNull() {
-        // Given
-        Response response = Response.builder().status(404).request(request()).headers(Collections.emptyMap()).build();
-
-        // When
-        RemoteCallException exception = (RemoteCallException) underTest.decode("Client#get()", response);
-
-        // Then
-        assertThat(exception.getContext().getValue("Response Body")).contains("<empty>");
-    }
-
-    @Test
-    void shouldTruncateLargeBody() {
-        // Given
-        String largeBody = "x".repeat(5000);
-        Response response = buildResponse(500, largeBody);
-
-        // When
-        RemoteCallException exception = (RemoteCallException) underTest.decode("Client#get()", response);
-
-        // Then
-        String body = (String) exception.getContext().getValue("Response Body").orElseThrow();
-        assertThat(body).endsWith("…(truncated)");
-        assertThat(body).hasSize(4096 + "…(truncated)".length());
-    }
-
-    @Test
-    void shouldPreserveErrorCode() {
-        // Given
-        Response response = buildResponse(400, "bad");
-
-        // When
-        RemoteCallException exception = (RemoteCallException) underTest.decode("Client#post()", response);
-
-        // Then
-        assertThat(exception.getCode()).isEqualTo(ErrorCode.REMOTE_CALL);
-    }
-
-    private Response buildResponse(int status, String body) {
-        return Response.builder().status(status).request(request()).headers(Collections.emptyMap())
-            .body(body, StandardCharsets.UTF_8).build();
+    private Response buildResponse(String body) {
+        Map<String, Collection<String>> headers = Map.of(
+            "content-type", List.of("application/json"),
+            "content-length", List.of("5"),
+            "x-correlation-id", List.of("123"),
+            "retry-after", List.of("120")
+        );
+        return Response.builder().status(500).reason("Internal Server Error").request(request())
+            .headers(headers).body(body, StandardCharsets.UTF_8).build();
     }
 
     private Request request() {

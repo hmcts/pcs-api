@@ -15,6 +15,7 @@ public final class RedactingThrowableConverter extends ThrowableProxyConverter {
 
     private static final boolean SHOW_FULL_EXCEPTIONS = "true"
         .equalsIgnoreCase(System.getenv("LOG_SHOW_FULL_EXCEPTIONS"));
+    private static volatile Boolean overrideForTesting;
 
     @Override
     public String convert(ILoggingEvent event) {
@@ -22,11 +23,9 @@ public final class RedactingThrowableConverter extends ThrowableProxyConverter {
         if (proxy == null) {
             return EMPTY_STRING;
         }
-        // Global override (LOG_SHOW_FULL_EXCEPTIONS) OR DEBUG on the emitting logger -> full trace
-        if (SHOW_FULL_EXCEPTIONS || isDebugEnabled(event)) {
+        if (showFullExceptions() || isDebugEnabled(event)) {
             return super.convert(event);
         }
-
         if (proxy instanceof ThrowableProxy throwableProxy) {
             Throwable source = throwableProxy.getThrowable();
             if (source instanceof RedactedRuntimeException) {
@@ -37,12 +36,20 @@ public final class RedactingThrowableConverter extends ThrowableProxyConverter {
     }
 
     private boolean isDebugEnabled(ILoggingEvent event) {
-        Logger logger = ((LoggerContext) getContext()).getLogger(event.getLoggerName());
+        if (!(getContext() instanceof LoggerContext loggerContext)) {
+            return false;
+        }
+        Logger logger = loggerContext.getLogger(event.getLoggerName());
         return logger.isDebugEnabled();
     }
 
-    static boolean parseShowFullExceptions(String raw) {
-        return "true".equalsIgnoreCase(raw);
+    public static boolean showFullExceptions() {
+        Boolean override = overrideForTesting;
+        return override != null ? override : SHOW_FULL_EXCEPTIONS;
+    }
+
+    public static void setShowFullExceptionsForTesting(Boolean value) {
+        overrideForTesting = value; // pass null to reset
     }
 
 }
