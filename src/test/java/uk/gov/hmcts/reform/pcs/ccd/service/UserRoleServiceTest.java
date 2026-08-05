@@ -46,7 +46,7 @@ class UserRoleServiceTest {
     void shouldReturnCurrentUserIdAndCombinedIdamAndRasRoles() {
         stubCurrentUserDetails(List.of("caseworker-pcs"));
         stubRasRoles("[DEFENDANT]", "caseworker-pcs");
-//
+
         UserRoles userRoles = underTest.getCurrentUserCaseRoles(CASE_REFERENCE);
 
         assertThat(userRoles.userId()).isEqualTo(CURRENT_USER_ID);
