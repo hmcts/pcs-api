@@ -195,14 +195,14 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
 
         builder.accessTypeRole("create-cases")
             .organisationProfileId("LOCALAUTH_PROFILE")
-            .organisationalRoleName(AccessProfile.PCS_SOLICITOR_ORG.getRole())
+            .organisationalRoleName(AccessProfile.CLAIMANT.getRole())
             .liveTo("01/01/2027");
         builder.accessTypeRole("prof-org-claimant-access")
             .organisationProfileId("LOCALAUTH_PROFILE")
-            .groupRoleName(AccessProfile.PCS_SOLICITOR_GROUP.getRole())
-            .caseAssignedRoleField(AccessProfile.PCS_SOLICITOR_GROUP.getRole())
+            .groupRoleName(AccessProfile.CLAIMANT.getRole())
+            .caseAssignedRoleField(AccessProfile.CLAIMANT.getRole())
             .groupAccessEnabled(true)
-            .caseAccessGroupIdTemplate("pcs:pcs:prof-org-claimant-access:PCS_Solicitor_Group:$ORGID$")
+            .caseAccessGroupIdTemplate("pcs:pcs:prof-org-claimant-access:claimant:$ORGID$")
             .liveTo("01/01/2027");
     }
 
