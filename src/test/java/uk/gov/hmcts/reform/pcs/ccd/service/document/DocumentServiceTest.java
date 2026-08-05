@@ -283,6 +283,13 @@ class DocumentServiceTest {
             .extracting(DocumentEntity::getType)
             .containsExactly(expectedDocumentType);
     }
+
+    @ParameterizedTest
+    @EnumSource(AdditionalDocumentType.class)
+    void shouldMapAdditionalDocumentTypeToDocumentType(AdditionalDocumentType additionalDocumentType) {
+        assertThat(underTest.mapAdditionalDocumentTypeToDocumentType(additionalDocumentType))
+            .isEqualTo(DocumentType.valueOf(additionalDocumentType.name()));
+    }
     
     @ParameterizedTest
     @EnumSource(AdditionalDocumentTypeEngland.class)
@@ -348,7 +355,7 @@ class DocumentServiceTest {
     }
 
     @Test
-    void shouldMapLegacyAdditionalDocumentsWhenPresent() {
+    void shouldMapLegacyAdditionalDocumentsWhenPresentForEngland() {
         PCSCase pcsCase = mock(PCSCase.class);
         AdditionalDocument additionalDocument = AdditionalDocument.builder()
             .document(Document.builder()
@@ -364,6 +371,7 @@ class DocumentServiceTest {
             .description("Legacy tenancy agreement")
             .build();
 
+        when(pcsCase.getLegislativeCountry()).thenReturn(LegislativeCountry.ENGLAND);
         when(pcsCase.getAdditionalDocuments()).thenReturn(List.of(
             ListValue.<AdditionalDocument>builder().value(additionalDocument).build()
         ));
@@ -380,6 +388,43 @@ class DocumentServiceTest {
             .extracting(DocumentEntity::getDescription)
             .containsExactly("Legacy tenancy agreement");
     }
+
+    @Test
+    void shouldMapLegacyAdditionalDocumentsWhenPresentForWales() {
+        PCSCase pcsCase = mock(PCSCase.class);
+        AdditionalDocument additionalDocument = AdditionalDocument.builder()
+            .document(Document.builder()
+                .filename("legacy-user-entered-details.pdf")
+                .uploadTimestamp(LocalDateTime.now())
+                .url("https://host/" + UUID.randomUUID())
+                .binaryUrl("someUrl")
+                .categoryId("uploaded-category")
+                .build())
+            .documentType(DynamicList.builder()
+                .value(DynamicListElement.builder().label("Occupation contract or licence").build())
+                .build())
+            .description("Legacy tenancy agreement")
+            .build();
+
+        when(pcsCase.getLegislativeCountry()).thenReturn(LegislativeCountry.WALES);
+        when(pcsCase.getAdditionalDocuments()).thenReturn(List.of(
+            ListValue.<AdditionalDocument>builder().value(additionalDocument).build()
+        ));
+
+        underTest.createAllDocuments(pcsCase);
+
+        verify(documentRepository).saveAll(documentEntityListCaptor.capture());
+        List<DocumentEntity> capturedEntities = documentEntityListCaptor.getValue();
+
+        assertThat(capturedEntities)
+            .extracting(DocumentEntity::getType)
+            .containsExactly(DocumentType.OCCUPATION_LICENCE);
+        assertThat(capturedEntities)
+            .extracting(DocumentEntity::getDescription)
+            .containsExactly("Legacy tenancy agreement");
+    }
+
+
 
     @Test
     void shouldMapAdditionalDocumentsToCaseFileCategoriesForEngland() {
