@@ -357,7 +357,8 @@ class SubmitEventHandlerTest {
             assertThat(submitResponse.getErrors())
                 .containsExactly("Application already exists for client reference");
 
-            verify(genAppService, never()).createGenAppEntity(any(), any(), any(), any());
+            verify(genAppService, never())
+                .createGenAppEntity(any(GenAppRequest.class), any(), any(), any());
         }
 
         @Test

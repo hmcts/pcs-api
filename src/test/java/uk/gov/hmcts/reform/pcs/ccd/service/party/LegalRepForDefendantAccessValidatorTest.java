@@ -13,6 +13,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.PartyLegalRepresen
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
+import uk.gov.hmcts.reform.pcs.ccd.repository.DefendantResponseRepository;
 import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
 
 import java.util.List;
@@ -29,12 +30,14 @@ class LegalRepForDefendantAccessValidatorTest {
 
     @Mock
     private DefendantPartyExtractor defendantPartyExtractor;
+    @Mock
+    private DefendantResponseRepository defendantResponseRepository;
 
     private LegalRepForDefendantAccessValidator underTest;
 
     @BeforeEach
     void setUp() {
-        underTest = new LegalRepForDefendantAccessValidator(defendantPartyExtractor);
+        underTest = new LegalRepForDefendantAccessValidator(defendantPartyExtractor, defendantResponseRepository);
     }
 
     @Test
