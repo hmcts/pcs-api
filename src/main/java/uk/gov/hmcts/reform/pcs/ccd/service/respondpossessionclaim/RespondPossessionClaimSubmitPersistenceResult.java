@@ -6,6 +6,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEnt
 public record RespondPossessionClaimSubmitPersistenceResult(
     PossessionClaimResponse possessionClaimResponse,
     CounterClaimEntity counterClaimEntity,
-    boolean issuedWithoutPayment
+    boolean paymentRequired
 ) {
 }
