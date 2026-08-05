@@ -7,7 +7,7 @@ export const amendDocumentDetails = {
   notRelatedToAppRadioOption: `Not related to an application or counterclaim`,
   addIssueDateTextLabel: `Add an issue date to the file name (Optional)`,
   whichTypeOfDocHiddenQuestion:`Which type of document is this?`,
-  whichTypeHiddenOption: [`Possession notice`,`Certificate of service`,`Inspection or report`],
+  whichTypeHiddenOption: [`Possession notice`,`Certificate of service`,`Inspection or report`, `Other document`],
   dayTextLabel: `Day`,
   monthTextLabel: `Month`,
   yearTextLabel: `Year`,

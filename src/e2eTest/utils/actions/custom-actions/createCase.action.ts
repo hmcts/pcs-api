@@ -1630,6 +1630,11 @@ export class CreateCaseAction implements IAction {
 
       case 'Uncategorised documents':
         this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad.additionalDocuments, 'Other document');
+        if(caseFile.caseWorkerUpload){
+          userInputFiles.push(caseFile.caseWorkerUpload as string);
+        } else if (caseFile.caseWorkerAmend) {
+          userInputFiles.push(caseFile.caseWorkerAmend as string);
+        }
         break;
       
       case 'Applications':
@@ -1637,6 +1642,8 @@ export class CreateCaseAction implements IAction {
         userInputFiles=this.cleanGenAppFilesArray(userInputFiles,defendantUserDetails.length);
         if(caseFile.caseWorkerUpload){
           userInputFiles.push(caseFile.caseWorkerUpload as string);
+        } else if (caseFile.caseWorkerAmend) {
+          userInputFiles.push(caseFile.caseWorkerAmend as string);
         }
         break;
 

@@ -122,6 +122,42 @@ test.describe('Case management - Manage documents e2e Journey @nightly', async (
     });
   });
 
+  test('Case management - Manage documents - Amend Document without any Issue date @CM', async () => {
+    let date = '';
+    let appType = amendDocumentDetails.notRelatedToAppRadioOption;
+    let party = allPartyDetails[0];
+    let fileName = (selectDocument.typeOfDocumentHiddenRadioOption)[1].split('-')[0].trim();
+    await performAction('selectAnEvent', { eventType: caseSummary.manageDocuments.amend });
+    await performValidation('mainHeader', selectDocument.mainHeader);
+    await performAction('selectDocumentToAmend', {
+      question: selectDocument.whichFolderQuestion, option: (selectDocument.docFolderHiddenOption)[1],
+      question1: selectDocument.documentToAmendHiddenQuestion, option1: (selectDocument.typeOfDocumentHiddenRadioOption)[1],
+      nextPage: amendDocumentDetails.mainHeader
+    });
+    await performAction('inputText', amendDocumentDetails.fileNameInputTextLabel, fileName);
+    await performAction('selectDynamicAppAndPartyDocRelatedTo', {
+      question: amendDocumentDetails.whichAppOrCounterClaimThisRelateToQuestion,
+      option: appType,
+      label: amendDocumentDetails.addIssueDateTextLabel,
+      date: date,
+      question1: amendDocumentDetails.partyDocRelatedToQuestion,
+      option1: party,
+      dropQn: amendDocumentDetails.whichTypeOfDocHiddenQuestion,
+      selectOption: (amendDocumentDetails.whichTypeHiddenOption)[3],
+      nextPage: checkYourAnswersAmendDocument.mainHeader
+    });
+    await performAction('clickButton', checkYourAnswersAmendDocument.submitButton);
+    await performAction('confirmAmend', { fileName: fileName, party: party, fileDate: date, submitPayload: submitCaseApiData.submitCasePayloadCaseFileView });
+    await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage documents: Amend');
+    await performAction('clickTab', home.caseFileView);
+    await performAction('validateCaseFileViewFolders', home.caseFileFolders);
+    await performAction('validateCaseFileViewIndividualFolder', {
+      folder: 'Uncategorised documents',
+      submitPayload: submitCaseApiData.submitCasePayloadCaseFileView,
+      caseWorkerAmend: CaseManagementCommonUtils.renameDocument(fileName)
+    });
+  });
+
   test('Case management - Manage documents - Upload @CM @regression', async () => {
     let date = CaseManagementCommonUtils.getRandomDate(uploadADocument.dateTypeHiddenUserInput);
     let appType = CaseManagementCommonUtils.getGenApplicationType(defendantUserDetails.length)[0];

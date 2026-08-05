@@ -27,14 +27,14 @@ export class ErrorValidationAction implements IAction {
         validationType: selectDocument.errorValidationType.four,
         inputArray: selectDocument.errorValidationField.errorDropDown,
         dropQn: selectDocument.whichFolderQuestion,
-        option: selectDocument.docFolderHiddenOption,
+        option: (selectDocument.docFolderHiddenOption)[0],
         button: selectDocument.continueButton
       });
       await performAction('inputErrorValidation', {
         validationType: selectDocument.errorValidationType.two,
         inputArray: selectDocument.errorValidationField.errorRadioOption,
         question: selectDocument.documentToAmendHiddenQuestion,
-        option: selectDocument.typeOfDocumentHiddenRadioOption,
+        option: (selectDocument.typeOfDocumentHiddenRadioOption)[0],
         button: selectDocument.continueButton
       });
     }
