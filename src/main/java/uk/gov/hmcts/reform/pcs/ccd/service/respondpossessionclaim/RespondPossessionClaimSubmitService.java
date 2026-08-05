@@ -60,8 +60,6 @@ public class RespondPossessionClaimSubmitService {
         ));
 
         CounterClaimEntity counterClaimEntity = savedCounterClaim.orElse(null);
-        boolean paymentRequired = counterClaimEntity != null
-            && counterClaimFeeCalculator.isPaymentRequired(counterClaim);
 
         if (JourneyType.LEGAL_REPRESENTATIVE.equals(journeyType)) {
             draftCaseDataService.deleteUnsubmittedCaseData(
@@ -72,6 +70,9 @@ public class RespondPossessionClaimSubmitService {
         } else {
             draftCaseDataService.deleteUnsubmittedCaseData(caseReference, respondPossessionClaim);
         }
+
+        boolean paymentRequired = counterClaimEntity != null
+            && counterClaimFeeCalculator.isPaymentRequired(counterClaim);
 
         DefendantResponseEntity defendantResponseEntity = defendantResponseService
             .saveDefendantResponse(caseReference, responseDraftData, defendantParty, journeyType);
