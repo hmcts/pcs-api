@@ -92,7 +92,7 @@ class CounterClaimSubmitConfirmationServiceTest {
     }
 
     @Test
-    void shouldReturnIssuedConfirmationWhenCounterClaimIssuedWithoutPayment() {
+    void shouldReturnConfirmationWithoutPaymentDetailsWhenPaymentNotRequired() {
         PartyEntity partyEntity = PartyEntity.builder().build();
         CounterClaimEntity counterClaimEntity = CounterClaimEntity.builder()
             .id(COUNTER_CLAIM_ID)
@@ -103,7 +103,7 @@ class CounterClaimSubmitConfirmationServiceTest {
             new RespondPossessionClaimSubmitPersistenceResult(
                 possessionClaimResponse,
                 counterClaimEntity,
-                true
+                false
             );
 
         SubmitResponse<State> response = underTest.buildSubmitResponse(CASE_REFERENCE, persistenceResult, partyEntity);
@@ -137,7 +137,7 @@ class CounterClaimSubmitConfirmationServiceTest {
             new RespondPossessionClaimSubmitPersistenceResult(
                 possessionClaimResponse,
                 counterClaimEntity,
-                false
+                true
             );
         PartyEntity partyEntity = PartyEntity.builder().id(PARTY_ID).build();
         FeeDetails feeDetails = FeeDetails.builder()
@@ -197,7 +197,7 @@ class CounterClaimSubmitConfirmationServiceTest {
             new RespondPossessionClaimSubmitPersistenceResult(
                 possessionClaimResponse,
                 counterClaimEntity,
-                false
+                true
             );
 
         assertThatThrownBy(() -> underTest.buildSubmitResponse(CASE_REFERENCE, persistenceResult, null))
@@ -224,7 +224,7 @@ class CounterClaimSubmitConfirmationServiceTest {
             new RespondPossessionClaimSubmitPersistenceResult(
                 PossessionClaimResponse.builder().build(),
                 counterClaimEntity,
-                true
+                false
             );
 
         doThrow(new JsonProcessingException("serialisation failed") {})
