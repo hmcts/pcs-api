@@ -8,10 +8,11 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.strategy.LegalRepSubmissionEventStrategy;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DefendantResponseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.feeandpay.FeePaymentRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.LegalRepresentativeRepository;
 import uk.gov.hmcts.reform.pcs.notify.model.EmailNotificationResponse;
 import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
 
@@ -29,16 +30,15 @@ public class NotifyController {
     private final NotificationService notificationService;
     private final DefendantResponseRepository defendantResponseRepository;
     private final FeePaymentRepository feePaymentRepository;
-//    private final LegalRepSubmissionEventStrategy legalRepSubmissionEventStrategy;
+    private final LegalRepresentativeRepository legalRepresentativeRepository;
 
     public NotifyController(NotificationService notificationService,
                             DefendantResponseRepository defendantResponseRepository,
-                            FeePaymentRepository feePaymentRepository) {
-//                            LegalRepSubmissionEventStrategy legalRepSubmissionEventStrategy) {
+                            FeePaymentRepository feePaymentRepository, LegalRepresentativeRepository legalRepresentativeRepository) {
         this.notificationService = notificationService;
         this.defendantResponseRepository = defendantResponseRepository;
         this.feePaymentRepository = feePaymentRepository;
-//        this.legalRepSubmissionEventStrategy = legalRepSubmissionEventStrategy;
+        this.legalRepresentativeRepository = legalRepresentativeRepository;
     }
 
     @PostMapping(value = "send-defendant-response-emails")
@@ -80,7 +80,7 @@ public class NotifyController {
         @RequestHeader(value = "ServiceAuthorization") String serviceAuthorization,
         @RequestParam Integer defendantResponseId) {
 
-//        legalRepSubmissionEventStrategy.process(null);
+        //        legalRepSubmissionEventStrategy.process(null);
 
         log.info("Received request to send all defendant response emails for {}", defendantResponseId);
         // temporary endpoint to test sending emails
@@ -88,19 +88,26 @@ public class NotifyController {
         Optional<DefendantResponseEntity> optDefendantResponse =
             defendantResponseRepository.findById(defendantResponseId);
 
+        Optional<LegalRepresentativeEntity> optionalLegalRepresentativeEntity =
+            legalRepresentativeRepository.findByPartyLinkedToLegalRepresentativeAndActive(optDefendantResponse.
+                                                                                              get().getParty().getId());
+
         if (optDefendantResponse.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
-
+        LegalRepresentativeEntity legalRepresentativeEntity = optionalLegalRepresentativeEntity.get();
         DefendantResponseEntity defendantResponse = optDefendantResponse.get();
         List<EmailNotificationResponse> responses = List.of(
-            notificationService.sendDefendantResponseNoCounterclaimEmailNotification(defendantResponse),
-            notificationService.sendDefendantResponseCounterclaimPaymentRequiredEmailNotification(defendantResponse),
-            notificationService.sendDefendantResponseCounterclaimPaymentSuccessEmailNotification(
-                defendantResponse,
-                "PAY-123"
+            notificationService
+                .sendDefendantResponseConfirmationToLegalRepresentativeNoCounterClaim(legalRepresentativeEntity,defendantResponse.getPcsCase(),defendantResponse),
+            notificationService.sendDefendantResponseConfirmationToLegalRepresentativeNoPaymentRequired(legalRepresentativeEntity,defendantResponse.getPcsCase(),defendantResponse),
+            notificationService.sendDefendantResponseCounterclaimToLegalRepresentativePaymentSuccess(
+                legalRepresentativeEntity,
+                "PAY-123",
+                defendantResponse.getPcsCase(),
+                defendantResponse
             ),
-            notificationService.sendDefendantResponseCounterclaimNoPaymentRequiredEmailNotification(defendantResponse)
+            notificationService.sendDefendantResponseConfirmationToLegalRepresentativePaymentRequired(legalRepresentativeEntity,defendantResponse.getPcsCase(),defendantResponse)
         );
 
         return ResponseEntity.ok(responses);
