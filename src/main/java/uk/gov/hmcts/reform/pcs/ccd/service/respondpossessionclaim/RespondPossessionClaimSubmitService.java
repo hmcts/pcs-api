@@ -60,13 +60,8 @@ public class RespondPossessionClaimSubmitService {
         ));
 
         CounterClaimEntity counterClaimEntity = savedCounterClaim.orElse(null);
-        boolean issuedWithoutPayment = false;
-
-        if (counterClaimEntity != null
-            && !counterClaimFeeCalculator.isPaymentRequired(counterClaim)) {
-            counterClaimEntity = counterClaimService.issueCounterClaim(counterClaimEntity);
-            issuedWithoutPayment = true;
-        }
+        boolean paymentRequired = counterClaimEntity != null
+            && counterClaimFeeCalculator.isPaymentRequired(counterClaim);
 
         if (JourneyType.LEGAL_REPRESENTATIVE.equals(journeyType)) {
             draftCaseDataService.deleteUnsubmittedCaseData(
@@ -87,7 +82,7 @@ public class RespondPossessionClaimSubmitService {
         return new RespondPossessionClaimSubmitPersistenceResult(
             responseDraftData,
             counterClaimEntity,
-            issuedWithoutPayment
+            paymentRequired
         );
     }
 
