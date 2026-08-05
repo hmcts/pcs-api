@@ -82,7 +82,7 @@ test.describe('Case management - Manage documents e2e Journey @nightly', async (
     await performAction('validateCaseFileViewIndividualFolder', {
       folder: 'Applications',
       submitPayload: makeAnApplicationApiData.makeAnApplicationAdjournPayload(defendantUserDetails[0].id, defendantUserDetails[0].name),
-      caseWorkerUpload: CaseManagementCommonUtils.renameDocument(fileName, date, appType)
+      caseWorkerAmend: CaseManagementCommonUtils.renameDocument(fileName, date, appType)
     });
   });
 
@@ -118,7 +118,7 @@ test.describe('Case management - Manage documents e2e Journey @nightly', async (
     await performAction('validateCaseFileViewIndividualFolder', {
       folder: 'Evidence',
       submitPayload: submitCaseApiData.submitCasePayloadCaseFileView,
-      caseWorkerUpload: CaseManagementCommonUtils.renameDocument(fileName, date)
+      caseWorkerAmend: CaseManagementCommonUtils.renameDocument(fileName, date)
     });
   });
 

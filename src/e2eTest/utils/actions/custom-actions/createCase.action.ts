@@ -1605,7 +1605,8 @@ export class CreateCaseAction implements IAction {
         if (caseFile.caseWorkerUpload) {
           userInputFiles.push(caseFile.caseWorkerUpload as string);
         } else if (caseFile.caseWorkerAmend) {
-          userInputFiles.filter(file => file !== caseFile.caseWorkerAmend as string);
+          userInputFiles.push(caseFile.caseWorkerAmend as string);
+          userInputFiles = userInputFiles.filter(file => file === caseFile.caseWorkerAmend as string);
         }
         break;
 
@@ -1617,6 +1618,9 @@ export class CreateCaseAction implements IAction {
         this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad.additionalDocuments, 'Inspection or report');
         if(caseFile.caseWorkerUpload){
           userInputFiles.push(caseFile.caseWorkerUpload as string);
+        } else if (caseFile.caseWorkerAmend) {
+          userInputFiles.push(caseFile.caseWorkerAmend as string);
+          userInputFiles = userInputFiles.filter(file => file === caseFile.caseWorkerAmend as string);
         }
         break;
 
