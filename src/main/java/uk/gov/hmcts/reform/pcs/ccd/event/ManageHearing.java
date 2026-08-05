@@ -62,6 +62,7 @@ public class ManageHearing implements CCDConfig<PCSCase, State, UserRole> {
                 .name("Manage hearing")
                 .showCondition(ShowConditions.featureFlagsEnabled(RELEASE_1_DOT_2, CASEWORKER_EVENTS))
                 .grant(Permission.CRUD, CASEWORKER_ROLES)
+                .grant(Permission.CRUD, UserRole.PCS_SOLICITOR)
                 .grantHistoryOnly(JUDICIAL_HISTORY_ROLES)
                 .showSummary()
                 .endButtonLabel("Submit");
@@ -132,30 +133,30 @@ public class ManageHearing implements CCDConfig<PCSCase, State, UserRole> {
             return """
                 ---
                 <div class="govuk-panel govuk-panel--confirmation govuk-!-padding-top-3 govuk-!-padding-bottom-3">
-                <span class="govuk-panel__title govuk-!-font-size-36">Hearing edited</span><br>
-                <span class="govuk-panel__body">Case number #%s</span><br>
-                <span class="govuk-panel__body">%s</span><br>
-                <span class="govuk-panel__body">%s</span><br>
+                <span class="govuk-panel__title govuk-!-font-size-32">Hearing edited</span><br>
+                <span class="govuk-panel__body govuk-!-font-size-24">Case number #%s</span><br>
+                <span class="govuk-panel__body govuk-!-font-size-24">%s</span><br>
+                <span class="govuk-panel__body govuk-!-font-size-24">%s</span><br>
                 </div>
 
-                <h3 class="govuk-heading-s">What happens next</h3>
+                <h3>What happens next</h3>
 
-                <p class="govuk-body">A hearing notice will be issued if you specified one is needed.</p>
+                A hearing notice will be issued if you specified one is needed.
                 """.formatted(caseId, address, caseData.getCaseNameHmctsInternal());
         }
 
         return """
             ---
             <div class="govuk-panel govuk-panel--confirmation govuk-!-padding-top-3 govuk-!-padding-bottom-3">
-            <span class="govuk-panel__title govuk-!-font-size-36">Hearing added</span><br>
-            <span class="govuk-panel__body">Case number #%s</span><br>
-            <span class="govuk-panel__body">%s</span><br>
-            <span class="govuk-panel__body">%s</span><br>
+            <span class="govuk-panel__title govuk-!-font-size-32">Hearing added</span><br>
+            <span class="govuk-panel__body govuk-!-font-size-24">Case number #%s</span><br>
+            <span class="govuk-panel__body govuk-!-font-size-24">%s</span><br>
+            <span class="govuk-panel__body govuk-!-font-size-24">%s</span><br>
             </div>
 
-            <h3 class="govuk-heading-s">What happens next</h3>
+            <h3>What happens next</h3>
 
-            <p class="govuk-body">A hearing notice will be issued if you specified one is needed.</p>
+            A hearing notice will be issued if you specified one is needed.
             """.formatted(caseId, address, caseData.getCaseNameHmctsInternal());
     }
 
