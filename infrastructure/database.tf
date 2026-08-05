@@ -41,6 +41,7 @@ module "postgresql" {
 
   pgsql_version        = var.pgsql_version
   admin_user_object_id = var.jenkins_AAD_objectId
+  geo_redundant_backups = var.postgres_geo_redundant_backups
 }
 
 # FlexibleServer v14 creds
