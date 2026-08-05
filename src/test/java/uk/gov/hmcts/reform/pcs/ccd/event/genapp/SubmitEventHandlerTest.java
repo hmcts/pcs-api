@@ -19,6 +19,7 @@ import org.mockito.quality.Strictness;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.reform.payments.response.PaymentServiceResponse;
+import uk.gov.hmcts.reform.pcs.camunda.CamundaService;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.CitizenGenAppRequest;
@@ -98,6 +99,8 @@ class SubmitEventHandlerTest {
     private SchedulerClient schedulerClient;
     @Mock
     private ObjectMapper objectMapper;
+    @Mock
+    private CamundaService camundaService;
     @Captor
     private ArgumentCaptor<SchedulableInstance<FeesAndPayTaskData>> schedulableInstanceCaptor;
 
@@ -110,7 +113,8 @@ class SubmitEventHandlerTest {
         underTest = new SubmitEventHandler(pcsCaseService, partyService, securityContextService, genAppService,
                                            genAppRepository, genAppDocumentGenerator, genAppFeeCalculator,
                                            legalRepresentativeRepository, confirmationScreenFactory,
-                                           paymentService, schedulerClient, notificationService, objectMapper
+                                           paymentService, schedulerClient, notificationService, objectMapper,
+                                           camundaService
         );
     }
 

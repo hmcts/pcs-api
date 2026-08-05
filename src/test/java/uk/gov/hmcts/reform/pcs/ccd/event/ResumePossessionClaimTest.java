@@ -18,6 +18,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.camunda.CamundaService;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantInformation;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CompletionNextStep;
@@ -101,6 +102,8 @@ class ResumePossessionClaimTest extends BaseEventTest {
     private ResumePossessionClaimConfigurer resumePossessionClaimConfigurer;
     @Mock
     private NotificationService notificationService;
+    @Mock
+    private CamundaService camundaService;
 
     @BeforeEach
     void setUp() {
@@ -114,7 +117,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
             pcsCaseService, partyService, securityContextService,
             savingPageBuilderFactory,
             organisationService, schedulerClient, draftCaseDataService, addressFormatter, feeService,
-            moneyFormatter, resumePossessionClaimConfigurer, notificationService
+            moneyFormatter, resumePossessionClaimConfigurer, notificationService, camundaService
         );
 
         setEventUnderTest(underTest);
