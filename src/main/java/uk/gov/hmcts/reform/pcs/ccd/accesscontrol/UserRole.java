@@ -27,13 +27,10 @@ public enum UserRole implements HasRole {
     DEFENDANT("[DEFENDANT]", CRU, RAS),
     CLAIMANT_SOLICITOR("[CLAIMANTSOLICITOR]", CRU, RAS),
     DEFENDANT_SOLICITOR("[DEFENDANTSOLICITOR]", CRU, RAS),
+    CLAIMANT("claimant", CRU, IDAM),
 
     PCS_CASE_WORKER("caseworker-pcs", Set.of(R), IDAM),
     PCS_SOLICITOR("caseworker-pcs-solicitor", CRU, IDAM),
-
-    PCS_SOLICITOR_ORG("PCS_Solicitor_Org", CRU, IDAM),
-    PCS_SOLICITOR_GROUP("PCS_Solicitor_Group", CRU, IDAM),
-
     HMCTS_ADMIN("hmcts-admin", Set.of(R), RAS, GS_PROFILE),
     HMCTS_JUDICIARY("hmcts-judiciary", Set.of(R), RAS, GS_PROFILE),
     HMCTS_CTSC("hmcts-ctsc", Set.of(R), RAS, GS_PROFILE),
