@@ -7,6 +7,8 @@ import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponseStatus;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.utils.PossessionClaimMerger;
@@ -42,15 +44,24 @@ public class LegalRepPartySelectionService {
         }
 
         PartyEntity matchedDefendant = findMatchedDefendant(defendantPartiesLinkedAndActive, selectedPartyId.get());
-        validateResponseNotAlreadySubmitted(caseReference, matchedDefendant.getId());
 
         return getDraftCaseData(caseReference, pcsCase, matchedDefendant, defendantPartiesLinkedAndActive);
     }
 
-    public void validateResponseNotAlreadySubmitted(long caseReference, UUID partyId) {
-        if (defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyId(caseReference, partyId)) {
-            throw new IllegalStateException("A response has already been submitted for this case.");
+    public boolean hasSubmittedResponse(long caseReference, PCSCase pcsCase,
+                                        List<PartyEntity> defendantPartiesLinkedAndActive) {
+
+        Optional<UUID> selectedPartyId = selectedPartyRetriever.getSelectedPartyId(pcsCase);
+
+        if (selectedPartyId.isEmpty()) {
+            log.warn("No selected party id for case reference [{}] when checking for submitted response",
+                     caseReference);
+            return false;
         }
+
+        PartyEntity matchedDefendant = findMatchedDefendant(defendantPartiesLinkedAndActive, selectedPartyId.get());
+        return defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyId(
+            caseReference, matchedDefendant.getId());
     }
 
     public PCSCase getDraftCaseData(long caseReference, PCSCase pcsCase, PartyEntity matchedDefendant,
@@ -67,6 +78,17 @@ public class LegalRepPartySelectionService {
         }
 
         return initialiseDraft(caseReference, pcsCase, matchedDefendant);
+    }
+
+    public PCSCase buildSubmittedResponseCase(PCSCase pcsCase) {
+        return pcsCase.toBuilder()
+            .possessionClaimResponse(PossessionClaimResponse.builder()
+                                         .defendantResponses(DefendantResponses.builder()
+                                                                 .status(DefendantResponseStatus.SUBMITTED)
+                                                                 .build())
+                                         .build())
+            .hasUnsubmittedCaseData(YesOrNo.NO)
+            .build();
     }
 
     private PartyEntity findMatchedDefendant(List<PartyEntity> parties, UUID selectedPartyId) {

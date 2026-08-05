@@ -13,7 +13,7 @@ public class PbaPaymentRequest {
     @NotNull
     private BigDecimal amount;
     @NotNull
-    private String accountNumber;
+    private String pbaAccount;
     @NotNull
     private String customerReference;
 

@@ -121,10 +121,7 @@ public class PaymentService {
     public CreateCardPaymentResponse createPaymentRequest(String serviceRequestReference,
                                                           CreateCardPaymentRequest createCardPaymentRequest) {
 
-        FeePaymentEntity feePaymentEntity = feePaymentRepository.findByServiceRequestReference(serviceRequestReference)
-            .orElseThrow(
-                () -> new FeePaymentNotFoundException("No fee payment entity found for " + serviceRequestReference)
-            );
+        FeePaymentEntity feePaymentEntity = getFeePayment(serviceRequestReference);
 
         CardPaymentServiceRequestDTO paymentRequest = CardPaymentServiceRequestDTO.builder()
             .amount(createCardPaymentRequest.getAmount())
@@ -132,11 +129,7 @@ public class PaymentService {
             .returnUrl(createCardPaymentRequest.getReturnUrl())
             .build();
 
-        PaymentStatus paymentStatus = feePaymentEntity.getPaymentStatus();
-        if (paymentStatus == PaymentStatus.PAID || paymentStatus == PaymentStatus.PARTIALLY_PAID) {
-            throw new IllegalStateException("Service request " + serviceRequestReference
-                                                + " already has a completed status");
-        }
+        verifyNotPaidFee(feePaymentEntity.getPaymentStatus(), serviceRequestReference);
 
         CardPaymentServiceRequestResponse govPayCardPaymentResponse = paymentsClient.createGovPayCardPaymentRequest(
             serviceRequestReference,
@@ -174,26 +167,19 @@ public class PaymentService {
                                                              PbaPaymentRequest pbaPaymentRequest) {
         User user = idamAuthenticator.validateAuthToken(authToken);
 
-        FeePaymentEntity feePaymentEntity = feePaymentRepository.findByServiceRequestReference(serviceRequestReference)
-            .orElseThrow(
-                () -> new FeePaymentNotFoundException("No fee payment entity found for " + serviceRequestReference)
-            );
+        FeePaymentEntity feePaymentEntity = getFeePayment(serviceRequestReference);
 
         String organisationName = organisationDetailsService.getOrganisationName(user.getUserDetails().getUid());
 
         PBAServiceRequestDTO paymentRequest = PBAServiceRequestDTO.builder()
-            .accountNumber(pbaPaymentRequest.getAccountNumber())
+            .accountNumber(pbaPaymentRequest.getPbaAccount())
             .amount(pbaPaymentRequest.getAmount())
             .customerReference(pbaPaymentRequest.getCustomerReference())
             .idempotencyKey(UUID.randomUUID().toString())
             .organisationName(organisationName)
             .build();
 
-        PaymentStatus paymentStatus = feePaymentEntity.getPaymentStatus();
-        if (paymentStatus == PaymentStatus.PAID || paymentStatus == PaymentStatus.PARTIALLY_PAID) {
-            throw new IllegalStateException("Service request " + serviceRequestReference
-                                                + " already has a completed status");
-        }
+        verifyNotPaidFee(feePaymentEntity.getPaymentStatus(), serviceRequestReference);
 
         PBAServiceRequestResponse pbaPaymentResponse = paymentsClient.createPbaPayment(
             serviceRequestReference,
@@ -278,6 +264,20 @@ public class PaymentService {
         }
 
         return optionalFeePaymentEntity;
+    }
+
+    private FeePaymentEntity getFeePayment(String serviceRequestReference) {
+        return feePaymentRepository.findByServiceRequestReference(serviceRequestReference)
+            .orElseThrow(
+                () -> new FeePaymentNotFoundException("No fee payment entity found for " + serviceRequestReference)
+            );
+    }
+
+    private void verifyNotPaidFee(PaymentStatus paymentStatus, String serviceRequestReference) {
+        if (paymentStatus == PaymentStatus.PAID || paymentStatus == PaymentStatus.PARTIALLY_PAID) {
+            throw new IllegalStateException("Service request " + serviceRequestReference);
+
+        }
     }
 
 }

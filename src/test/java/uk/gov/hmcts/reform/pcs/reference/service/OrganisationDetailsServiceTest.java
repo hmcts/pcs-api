@@ -286,4 +286,26 @@ class OrganisationDetailsServiceTest {
             .isInstanceOf(OrganisationDetailsException.class)
             .hasCause(feignEx);
     }
+
+    @Test
+    @DisplayName("Should return pba accounts")
+    void shouldReturnPbaAccounts() {
+        // Given
+        List<String> paymentAccounts = List.of("pba123", "pba321");
+
+        OrganisationDetailsResponse response = OrganisationDetailsResponse.builder()
+            .paymentAccount(paymentAccounts)
+            .build();
+
+        when(authTokenGenerator.generate()).thenReturn(S2S_TOKEN);
+        when(prdAdminTokenProvider.getAuthToken()).thenReturn(PRD_ADMIN_TOKEN);
+        when(rdProfessionalApi.getOrganisationDetails(anyString(), anyString(), anyString()))
+            .thenReturn(response);
+
+        // When
+        List<String> result = organisationDetailsService.getOrganisationPaymentAccount(USER_ID);
+
+        // Then
+        assertThat(result).isEqualTo(paymentAccounts);
+    }
 }

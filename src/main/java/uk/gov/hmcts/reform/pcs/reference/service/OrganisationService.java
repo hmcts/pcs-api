@@ -8,7 +8,6 @@ import uk.gov.hmcts.reform.pcs.exception.OrganisationDetailsException;
 import uk.gov.hmcts.reform.pcs.exception.SecurityContextException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
-import java.util.List;
 import java.util.UUID;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
@@ -102,23 +101,6 @@ public class OrganisationService {
             }
 
             return organisationAddress;
-
-        } catch (Exception ex) {
-            log.error("Error retrieving organisation address from rd-professional API. Error: {}",
-                      ex.getMessage(), ex);
-            return null;
-        }
-    }
-
-    public List<String> getPbaAccountsForCurrentUser() {
-        try {
-            UUID userId = resolveUserId();
-
-            if (userId == null) {
-                return null;
-            }
-
-            return organisationDetailsService.getOrganisationPaymentAccount(userId.toString());
 
         } catch (Exception ex) {
             log.error("Error retrieving organisation address from rd-professional API. Error: {}",
