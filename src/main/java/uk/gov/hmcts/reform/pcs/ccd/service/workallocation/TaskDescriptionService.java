@@ -15,9 +15,10 @@ import uk.gov.hmcts.reform.pcs.exception.TemplateRenderingException;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
+import static uk.gov.hmcts.reform.pcs.ccd.service.defenceform.DefenceFormDocumentGenerator.OUTPUT_FILENAME_PREFIX;
 
 @Service
 @RequiredArgsConstructor
@@ -50,26 +51,21 @@ public class TaskDescriptionService {
 
     public String createReviewResponseAndCounterclaimDescription(long caseReference,
                                                                  ClaimEntity mainClaim,
-                                                                 PartyEntity partyEntity,
                                                                  DefendantResponseEntity defendantResponseEntity,
                                                                  List<DocumentEntity> counterClaimDocumentEntities) {
 
-        String partyLabel = partyService.getPartyLabel(mainClaim, partyEntity.getId());
+        String partyLabel = partyService.getPartyLabel(mainClaim, defendantResponseEntity.getParty().getId());
 
-        List<DocumentEntity> responseDocumentEntities = new ArrayList<>();
-        if (defendantResponseEntity.getSubmissionDocument() != null) {
-            responseDocumentEntities.add(defendantResponseEntity.getSubmissionDocument());
-        }
-        responseDocumentEntities.addAll(defendantResponseEntity.getUploadedDocuments());
-
-        List<String> responseDocumentFilenames = extractFilenames(responseDocumentEntities);
+        String responseSubmissionFilename = OUTPUT_FILENAME_PREFIX + " - " + partyLabel + ".pdf";
+        List<String> responseDocumentFilenames = extractFilenames(defendantResponseEntity.getUploadedDocuments());
         List<String> counterClaimDocumentFilenames = extractFilenames(counterClaimDocumentEntities);
 
         Map<String, Object> context = Map.of(
-                "caseReference", caseReference,
-                "partyLabel", partyLabel,
-                "responseDocumentFilenames", responseDocumentFilenames,
-                "counterClaimDocumentFilenames", counterClaimDocumentFilenames
+            "caseReference", caseReference,
+            "partyLabel", partyLabel,
+            "responseSubmissionFilename", responseSubmissionFilename,
+            "responseDocumentFilenames", responseDocumentFilenames,
+            "counterClaimDocumentFilenames", counterClaimDocumentFilenames
         );
 
         String templateName = "review-response-and-counterclaim";

@@ -225,6 +225,7 @@ class RespondPossessionClaimSubmitServiceTest {
             .build();
 
         DefendantResponseEntity defendantResponseEntity = mock(DefendantResponseEntity.class);
+
         when(defendantResponseService
                  .saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse, partyEntity, journeyType))
             .thenReturn(defendantResponseEntity);
@@ -246,7 +247,6 @@ class RespondPossessionClaimSubmitServiceTest {
                  .createReviewResponseAndCounterclaimDescription(
                      CASE_REFERENCE,
                      mainClaim,
-                     partyEntity,
                      defendantResponseEntity,
                      counterClaimDocumentEntities
                  ))

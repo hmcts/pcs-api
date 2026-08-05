@@ -163,18 +163,18 @@ class TaskDescriptionServiceTest {
             String expectedPartyLabel = "some party label";
             when(partyService.getPartyLabel(mainClaim, partyId)).thenReturn(expectedPartyLabel);
 
-            DocumentEntity responseSubmissionDocument
-                = DocumentEntity.builder().fileName("submission.pdf").build();
+            List<String> expectedResponseDocumentFilenames = List.of("filename1.pdf", "filename2.csv");
             List<DocumentEntity> uploadedDocumentEntityList
-                = createDocumentEntities(List.of("filename1.pdf", "filename2.csv"));
+                = createDocumentEntities(expectedResponseDocumentFilenames);
 
             DefendantResponseEntity defendantResponseEntity = DefendantResponseEntity.builder()
-                .submissionDocument(responseSubmissionDocument)
+                .party(partyEntity)
                 .uploadedDocuments(uploadedDocumentEntityList)
                 .build();
 
+            List<String> expectedCounterClaimDocumentFilenames = List.of("filename3.txt", "filename4.pdf");
             List<DocumentEntity> counterClaimDocumentEntityList
-                = createDocumentEntities(List.of("filename3.txt", "filename4.pdf"));
+                = createDocumentEntities(expectedCounterClaimDocumentFilenames);
 
             String expectedRenderedContent = "some rendered content";
             PebbleTemplate pebbleTemplate = stubPebbleTemplate(
@@ -187,7 +187,6 @@ class TaskDescriptionServiceTest {
                 .createReviewResponseAndCounterclaimDescription(
                     CASE_REFERENCE,
                     mainClaim,
-                    partyEntity,
                     defendantResponseEntity,
                     counterClaimDocumentEntityList
                 );
@@ -200,8 +199,9 @@ class TaskDescriptionServiceTest {
             assertThat(contextMap)
                 .containsEntry("caseReference", CASE_REFERENCE)
                 .containsEntry("partyLabel", expectedPartyLabel)
-                .containsEntry("responseDocumentFilenames", List.of("submission.pdf", "filename1.pdf", "filename2.csv"))
-                .containsEntry("counterClaimDocumentFilenames", List.of("filename3.txt", "filename4.pdf"));
+                .containsEntry("responseSubmissionFilename", "Defence - " + expectedPartyLabel + ".pdf")
+                .containsEntry("responseDocumentFilenames", expectedResponseDocumentFilenames)
+                .containsEntry("counterClaimDocumentFilenames", expectedCounterClaimDocumentFilenames);
         }
 
         @Test
@@ -219,13 +219,16 @@ class TaskDescriptionServiceTest {
             when(partyEntity.getId()).thenReturn(partyId);
             when(partyService.getPartyLabel(mainClaim, partyId)).thenReturn("some party label");
 
+            DefendantResponseEntity defendantResponseEntity = DefendantResponseEntity.builder()
+                .party(partyEntity)
+                .build();
+
             // When
             Throwable throwable = catchThrowable(
                 () -> underTest.createReviewResponseAndCounterclaimDescription(
                     CASE_REFERENCE,
                     mainClaim,
-                    partyEntity,
-                    mock(DefendantResponseEntity.class),
+                    defendantResponseEntity,
                     List.of()
                 ));
 

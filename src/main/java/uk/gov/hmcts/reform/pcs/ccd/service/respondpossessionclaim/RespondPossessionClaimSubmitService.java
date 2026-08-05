@@ -78,7 +78,6 @@ public class RespondPossessionClaimSubmitService {
                 createCounterclaimReviewWaTask(
                     caseReference,
                     defendantResponseEntity,
-                    counterClaimEntity,
                     counterClaimDocuments
                 );
             } else {
@@ -107,7 +106,6 @@ public class RespondPossessionClaimSubmitService {
 
     private void createCounterclaimReviewWaTask(long caseReference,
                                                 DefendantResponseEntity defendantResponseEntity,
-                                                CounterClaimEntity counterClaimEntity,
                                                 List<DocumentEntity> counterClaimDocuments) {
 
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
@@ -117,7 +115,6 @@ public class RespondPossessionClaimSubmitService {
         String taskDescription = taskDescriptionService.createReviewResponseAndCounterclaimDescription(
             caseReference,
             pcsCaseEntity.getMainClaim(),
-            counterClaimEntity.getParty(),
             defendantResponseEntity,
             counterClaimDocuments
         );
