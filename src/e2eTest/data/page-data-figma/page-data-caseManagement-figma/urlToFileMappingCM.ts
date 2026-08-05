@@ -1,3 +1,4 @@
+
 export default {
   'amendDocumentsselectDocument': 'selectDocument',
   'changeCaseStatechangeCaseStatePage': 'changeCaseState',
@@ -10,4 +11,8 @@ export default {
   'enterGenAppuploadRelatedEvidence': 'enterGenAppUploadRelatedEvidence',
   'enterGenAppreferApplicationToJudge': 'enterGenAppPreferApplicationToJudge',
   'enterGenApp/submit': 'genAppsCheckYouAnswers',
-};
+  'manageHearingmanageHearing': 'manageHearing',
+  'manageHearingcancelHearing': 'cancelHearing',
+  'manageHearing/submit': 'checkYourAnswersCancelHearing',
+  'manageHearing/confirm': 'confirmCancelHearing'
+}
