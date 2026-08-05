@@ -46,7 +46,7 @@ public class CamundaService {
     public void createTask(long caseId, TaskType taskType, Integer daysDelayed) {
         Instant scheduledTo = Instant.now(utcClock);
 
-        if (TestSupportEnvironment.isPreview() || TestSupportEnvironment.isDev()) {
+        if (TestSupportEnvironment.isNonProdTestSupportEnabled()) {
             scheduledTo = scheduledTo.plus(5, ChronoUnit.MINUTES);
         } else {
             scheduledTo = scheduledTo.plus(daysDelayed, ChronoUnit.DAYS);

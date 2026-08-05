@@ -296,8 +296,7 @@ public class CamundaServiceTest {
     void shouldScheduleCamundaCreateRequestTaskWithDelay() {
         try (MockedStatic<TestSupportEnvironment> mockedTestSupport = mockStatic(TestSupportEnvironment.class)) {
             // When
-            mockedTestSupport.when(TestSupportEnvironment::isPreview).thenReturn(false);
-            mockedTestSupport.when(TestSupportEnvironment::isDev).thenReturn(false);
+            mockedTestSupport.when(TestSupportEnvironment::isNonProdTestSupportEnabled).thenReturn(false);
             stubWaFeatureFlag(true);
             camundaService.createTask(CASE_REFERENCE, TaskType.NEW_CLAIM_CREATE_NEW_HEARING, 1);
 
@@ -319,31 +318,7 @@ public class CamundaServiceTest {
     void shouldScheduleCamundaCreateRequestTaskWithDelayPreview() {
         try (MockedStatic<TestSupportEnvironment> mockedTestSupport = mockStatic(TestSupportEnvironment.class)) {
             // When
-            mockedTestSupport.when(TestSupportEnvironment::isPreview).thenReturn(true);
-            mockedTestSupport.when(TestSupportEnvironment::isDev).thenReturn(false);
-            stubWaFeatureFlag(true);
-            camundaService.createTask(CASE_REFERENCE, TaskType.NEW_CLAIM_CREATE_NEW_HEARING, 1);
-
-            // Then
-            verify(schedulerClient).scheduleIfNotExists(schedulableInstanceCaptor.capture());
-
-            SchedulableInstance<CamundaRequestTaskData> schedulableInstance = schedulableInstanceCaptor.getValue();
-
-            CamundaRequestTaskData taskData = schedulableInstance.getTaskInstance().getData();
-            assertThat(taskData.getAction()).isEqualTo(Action.CREATE);
-            assertThat(taskData.getCaseReference()).isEqualTo(CASE_REFERENCE);
-            assertThat(taskData.getTaskType()).isEqualTo(TaskType.NEW_CLAIM_CREATE_NEW_HEARING);
-            assertThat(schedulableInstance.getNextExecutionTime(Instant.now()))
-                .isEqualTo(Instant.parse("2025-08-27T12:56:19Z"));
-        }
-    }
-
-    @Test
-    void shouldScheduleCamundaCreateRequestTaskWithDelayDev() {
-        try (MockedStatic<TestSupportEnvironment> mockedTestSupport = mockStatic(TestSupportEnvironment.class)) {
-            // When
-            mockedTestSupport.when(TestSupportEnvironment::isPreview).thenReturn(false);
-            mockedTestSupport.when(TestSupportEnvironment::isDev).thenReturn(true);
+            mockedTestSupport.when(TestSupportEnvironment::isNonProdTestSupportEnabled).thenReturn(true);
             stubWaFeatureFlag(true);
             camundaService.createTask(CASE_REFERENCE, TaskType.NEW_CLAIM_CREATE_NEW_HEARING, 1);
 
