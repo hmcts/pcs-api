@@ -54,30 +54,6 @@ wa:
         CAMUNDA_BPM_JOB_EXECUTION_CORE_POOL_SIZE: "1"
         CAMUNDA_BPM_JOB_EXECUTION_MAX_POOL_SIZE: "2"
 
-  wa-case-event-handler:
-    java:
-      secrets:
-        AZURE_SERVICE_BUS_CONNECTION_STRING:
-          secretRef: pcs-sb-preview
-          key: connectionString
-      environment:
-        AZURE_SERVICE_BUS_TOPIC_NAME: ${SERVICE_NAME}-asb-ccd-case-events
-        AZURE_SERVICE_BUS_SUBSCRIPTION_NAME: ${SERVICE_NAME}-asb-ccd-case-events
-        AZURE_SERVICE_BUS_CCD_CASE_EVENTS_SUBSCRIPTION_NAME: ${SERVICE_NAME}-asb-ccd-case-events
-        SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE: "4"
-        SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE: "1"
-      keyVaults:
-        wa:
-          secrets:
-            - name: app-insights-connection-string
-              alias: app-insights-connection-string
-            - name: s2s-secret-case-event-handler
-              alias: S2S_SECRET_CASE_EVENT_HANDLER
-            - name: ld-secret
-              alias: LAUNCH_DARKLY_SDK_KEY
-            - name: wa-idam-client-secret
-              alias: WA_IDAM_CLIENT_SECRET
-
   wa-task-management-api:
     java:
       ingressHost: wa-task-management-api-${SERVICE_FQDN}
@@ -155,7 +131,11 @@ wa:
   wa:
     postgresql:
       enabled: false
-
+    eventHandler:
+      enabled: false
+    messageCron:
+      enabled: false
+      
 xui-webapp:
   nodejs:
     environment:
