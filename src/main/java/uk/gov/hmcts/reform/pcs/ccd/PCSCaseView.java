@@ -7,11 +7,7 @@ import uk.gov.hmcts.ccd.sdk.CaseView;
 import uk.gov.hmcts.ccd.sdk.CaseViewRequest;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
-import uk.gov.hmcts.ccd.sdk.type.Organisation;
-import uk.gov.hmcts.ccd.sdk.type.OrganisationPolicy;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.AccessProfile;
-import uk.gov.hmcts.reform.pcs.ccd.domain.GroupAccessFields;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
@@ -20,7 +16,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseTitleService;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
@@ -58,7 +53,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import static org.apache.commons.lang3.StringUtils.isBlank;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.resumePossessionClaim;
 import static uk.gov.hmcts.reform.pcs.config.ClockConfiguration.UK_ZONE_ID;
 
@@ -157,7 +151,6 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
             .build();
 
         setDerivedProperties(pcsCase, pcsCaseEntity);
-        setOrganisationPolicies(pcsCase, pcsCaseEntity);
 
         partiesView.setCaseFields(pcsCase, pcsCaseEntity);
         claimView.setCaseFields(pcsCase, pcsCaseEntity);
@@ -204,43 +197,6 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
                 .withZoneSameInstant(UK_ZONE_ID)
                 .toLocalDate())
             .orElse(null);
-    }
-
-    /**
-     * Record which organisation is involved with the case and in what capacity.
-     *
-     * <p>Only the policies are set here. CCD derives the CaseAccessGroups from them on submission,
-     * matching each AccessTypeRole's CaseAssignedRoleField against the policy's assigned role, so
-     * writing that collection here would only be overwritten.
-     *
-     * <p>The organisation comes from the claimant party, which carries the creating user's
-     * organisation from claim submission. Before submission there is no claimant party and so no
-     * policy - group access starts when the claim does.
-     */
-    private void setOrganisationPolicies(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
-        findClaimantOrganisationId(pcsCaseEntity).ifPresent(claimantOrgId -> {
-            GroupAccessFields<AccessProfile> groupAccessFields = new GroupAccessFields<>();
-            groupAccessFields.setClaimantOrganisationPolicy(
-                organisationPolicy(claimantOrgId, AccessProfile.CLAIMANT_ORG));
-
-            pcsCase.setGroupAccessFields(groupAccessFields);
-        });
-    }
-
-    private Optional<String> findClaimantOrganisationId(PcsCaseEntity pcsCaseEntity) {
-        return pcsCaseEntity.getClaims().stream().findFirst()
-            .flatMap(claim -> claim.getClaimParties().stream()
-                .filter(claimParty -> claimParty.getRole() == PartyRole.CLAIMANT)
-                .map(claimParty -> claimParty.getParty().getOrganisationId())
-                .filter(orgId -> !isBlank(orgId))
-                .findFirst());
-    }
-
-    private OrganisationPolicy<AccessProfile> organisationPolicy(String organisationId, AccessProfile caseRole) {
-        return OrganisationPolicy.<AccessProfile>builder()
-            .organisation(Organisation.builder().organisationId(organisationId).build())
-            .orgPolicyCaseAssignedRole(caseRole)
-            .build();
     }
 
     private void setDerivedProperties(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
