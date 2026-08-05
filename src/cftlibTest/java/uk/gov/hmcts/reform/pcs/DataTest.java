@@ -520,7 +520,7 @@ public class DataTest extends CftlibTest {
     @Test
     @DisplayName("validate public.notice_of_possession - schema, completeness, and relationship rules")
     void validateNoticeOfPossessionTable() {
-        List<String> expectedColumns = List.of(
+        List<String> expectedCols = List.of(
             "id", "claim_id", "notice_served", "notice_type", "serving_method",
             "notice_details", "notice_date", "notice_date_time", "notice_statement",
             "unable_to_upload_reason", "is_able_to_upload_document"
@@ -552,7 +552,7 @@ public class DataTest extends CftlibTest {
         String msgValidNotice = "Notice of possession detail fields linked to case are incorrectly populated";
 
         org.junit.jupiter.api.Assertions.assertAll("notice_of_possession validations",
-                                                   () -> assertHasColumns("public.notice_of_possession", expectedColumns),
+                                                   () -> assertHasColumns("public.notice_of_possession", expectedCols),
                                                    () -> assertTrue(totalRows > 0, msgCount),
                                                    () -> assertEquals(1, createdCasePresent, msgCasePresent),
                                                    () -> assertEquals(1, validNoticeOfPossession, msgValidNotice)
