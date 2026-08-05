@@ -6,6 +6,8 @@ import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.UploadedDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.EnterGenAppRequest;
+import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.EnterGenAppType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
@@ -118,6 +120,45 @@ public class GenAppService {
         genAppEntity.setStatementOfTruth(statementOfTruthEntity);
 
         return genAppRepository.save(genAppEntity);
+    }
+
+    public void createGenAppEntity(EnterGenAppRequest enterGenAppRequest,
+                                   PcsCaseEntity pcsCaseEntity,
+                                   PartyEntity applicantParty,
+                                   GenAppState initialState) {
+
+        GenAppEntity genAppEntity = GenAppEntity.builder()
+            .type(enterGenAppRequest.getApplicationTypeOption().getStandardGenAppType())
+            .applicationSubmittedDate(LocalDateTime.now(utcClock))
+            .party(applicantParty)
+            .applicationReceivedDate(enterGenAppRequest.getDateReceived())
+            .within14Days(enterGenAppRequest.getWithin14Days())
+            .applicationSubmittedDate(LocalDateTime.now(utcClock))
+            .state(initialState)
+            .feeAmountReceived(enterGenAppRequest.getFeeAmountReceived())
+            .appliedForHwf(enterGenAppRequest.getAppliedForHwf())
+            .otherPartiesAgreed(enterGenAppRequest.getAllPartiesAgree())
+            .build();
+
+        if (enterGenAppRequest.getApplicationTypeOption() == EnterGenAppType.SOMETHING_ELSE) {
+            genAppEntity.setSomethingElseDetails(enterGenAppRequest.getSomethingElseDetails());
+        }
+
+        // Adding the Gen App to the PcsCaseEntity allocates it a rank,
+        // which we rely on later on in this method to rename the supporting documents
+        pcsCaseEntity.addGenApp(genAppEntity);
+
+        if (enterGenAppRequest.getAppliedForHwf() == VerticalYesNo.YES) {
+            HelpWithFeesEntity helpWithFeesEntity = new HelpWithFeesEntity();
+            helpWithFeesEntity.setHwfReference(enterGenAppRequest.getHwfReference());
+            genAppEntity.setHelpWithFeesEntity(helpWithFeesEntity);
+        }
+
+        if (enterGenAppRequest.getAllPartiesAgree() == VerticalYesNo.NO) {
+            genAppEntity.setWithoutNotice(enterGenAppRequest.getWithoutNotice());
+        }
+
+        genAppRepository.save(genAppEntity);
     }
 
     private List<DocumentEntity> createDocumentEntities(List<ListValue<UploadedDocument>> uploadedDocuments,

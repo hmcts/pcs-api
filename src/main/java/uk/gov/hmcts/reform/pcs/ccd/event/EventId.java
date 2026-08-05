@@ -21,5 +21,6 @@ public enum EventId {
     amendFlags,
     claimIssuePayment,
     changeCaseState,
-    manageHearing
+    manageHearing,
+    enterGenApp
 }
