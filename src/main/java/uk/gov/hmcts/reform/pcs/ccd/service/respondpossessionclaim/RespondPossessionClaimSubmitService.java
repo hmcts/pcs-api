@@ -59,10 +59,6 @@ public class RespondPossessionClaimSubmitService {
             counterClaimEntity.getParty()
         ));
 
-        CounterClaimEntity counterClaimEntity = savedCounterClaim.orElse(null);
-        boolean paymentRequired = counterClaimEntity != null
-            && counterClaimFeeCalculator.isPaymentRequired(counterClaim);
-
         if (JourneyType.LEGAL_REPRESENTATIVE.equals(journeyType)) {
             draftCaseDataService.deleteUnsubmittedCaseData(
                 caseReference,
@@ -72,6 +68,10 @@ public class RespondPossessionClaimSubmitService {
         } else {
             draftCaseDataService.deleteUnsubmittedCaseData(caseReference, respondPossessionClaim);
         }
+
+        CounterClaimEntity counterClaimEntity = savedCounterClaim.orElse(null);
+        boolean paymentRequired = counterClaimEntity != null
+            && counterClaimFeeCalculator.isPaymentRequired(counterClaim);
 
         log.info("Successfully saved defendant response for case: {}", caseReference);
 
