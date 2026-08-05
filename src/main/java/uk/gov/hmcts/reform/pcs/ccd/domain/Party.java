@@ -8,6 +8,7 @@ import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.Flags;
 import uk.gov.hmcts.reform.pcs.LegalRepresentative;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.ExternalCaseFlagAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.InternalCaseFlagAccess;
 
 import java.time.LocalDate;
@@ -52,5 +53,12 @@ public class Party {
         retainHiddenValue = true
     )
     private Flags defendantFlags;
+
+    @CCD(
+        access = {ExternalCaseFlagAccess.class},
+        label = "Party Flags (External)",
+        retainHiddenValue = true
+    )
+    private Flags defendantFlagsExternal;
 
 }

@@ -30,14 +30,17 @@ public class CreateFlags implements CCDConfig<PCSCase, State, UserRole> {
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         new PageBuilder(configBuilder
                 .decentralisedEvent(EventId.createFlags.name(), this::submit)
-                .forState(State.PENDING_CASE_ISSUED)
+                .forAllStates()
                 .name("Create case flags")
                 .description("To create flags")
                 .showSummary()
                 .grant(Permission.CRU,
                        UserRole.CTSC_ADMIN,
                        UserRole.HEARING_CENTRE_ADMIN,
-                       UserRole.WLU_ADMIN)
+                       UserRole.WLU_ADMIN,
+                       UserRole.PCS_CASE_WORKER,
+                       UserRole.PCS_SOLICITOR,
+                       UserRole.HMCTS_CTSC)
                 .grantHistoryOnly(JUDICIAL_HISTORY_ROLES))
                 .page("caseworkerCaseFlag")
                 .optional(PCSCase::getCaseFlags, ShowConditions.NEVER_SHOW, true, true)
@@ -47,7 +50,7 @@ public class CreateFlags implements CCDConfig<PCSCase, State, UserRole> {
                 .done()
                 .optional(PCSCase::getFlagLauncherInternal,
                       null, null, null, null,
-                      "#ARGUMENT(CREATE)");
+                      "#ARGUMENT(CREATE,VERSION2.1)");
 
     }
 
