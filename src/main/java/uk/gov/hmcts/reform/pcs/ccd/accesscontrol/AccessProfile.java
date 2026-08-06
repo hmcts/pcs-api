@@ -21,9 +21,9 @@ public enum AccessProfile implements HasRole {
     DEFENDANT_SOLICITOR("[DEFENDANTSOLICITOR]", CRU),
     PCS_CASE_WORKER("caseworker-pcs", Set.of(R)),
     PCS_SOLICITOR("caseworker-pcs-solicitor", CRU),
-    // The group-access capacities: one name per capacity, used as the case role on the
-    // organisation policies, the group role PRM assigns (POFCC-368 catalogue), and the access
-    // profile permissions attach to.
+    // The group-access capacities: one name per capacity, used as the group role PRM assigns
+    // (POFCC-368 catalogue), the CaseAssignedRoleField that CCD matches against an organisation
+    // policy when deriving CaseAccessGroups, and the access profile permissions attach to.
     CLAIMANT_ORG("claimant", CRU),
     CLAIMANT_SOLICITOR_ORG("claimant_solicitor", CRU),
     DEFENDANT_SOLICITOR_ORG("defendant_solicitor", CRU),

@@ -25,12 +25,16 @@ public enum UserRole implements HasRole {
     CITIZEN("citizen", CRU, IDAM),
 
     // The group-access capacities (POFCC-368 catalogue names). Each maps to itself as access
-    // profile: the same name is the case role on the organisation policy, the group role PRM
-    // assigns, and the profile permissions attach to.
+    // profile: the same name is the group role PRM assigns, the CaseAssignedRoleField that CCD
+    // matches against an organisation policy when deriving CaseAccessGroups, and the profile
+    // permissions attach to.
     CLAIMANT_ORG("claimant", CRU, RAS),
     CLAIMANT_SOLICITOR_ORG("claimant_solicitor", CRU, RAS),
     DEFENDANT_SOLICITOR_ORG("defendant_solicitor", CRU, RAS),
 
+    // Legacy per-case roles. [DEFENDANT] is the citizen defendant's role and stays; the two
+    // solicitor roles are superseded by the group-access capacities and go once the creator and
+    // defendant-solicitor flows assign the capacity roles instead.
     DEFENDANT("[DEFENDANT]", CRU, RAS),
     CLAIMANT_SOLICITOR("[CLAIMANTSOLICITOR]", CRU, RAS),
     DEFENDANT_SOLICITOR("[DEFENDANTSOLICITOR]", CRU, RAS),
