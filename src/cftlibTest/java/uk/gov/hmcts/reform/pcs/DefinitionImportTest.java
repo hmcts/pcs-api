@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import uk.gov.hmcts.rse.ccd.lib.test.CftlibTest;
 
 /**
@@ -9,6 +10,7 @@ import uk.gov.hmcts.rse.ccd.lib.test.CftlibTest;
  * in this source set while the create/citizen journeys are disabled for the
  * capacity-only access experiment.
  */
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class DefinitionImportTest extends CftlibTest {
 
     @Test
