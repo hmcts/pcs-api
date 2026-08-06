@@ -37,6 +37,7 @@ public class CaseworkerDocumentService {
     public static final String GEN_APP_ID_PREFIX = "GEN_APP";
     public static final String COUNTERCLAIM_ID_PREFIX = "COUNTERCLAIM";
     public static final String NONE_PREFIX = "NONE";
+    private static final CaseFileCategory DEFAULT_CATEGORY = CaseFileCategory.UNCATEGORISED_DOCUMENTS;
 
     private final PcsCaseService pcsCaseService;
     private final DocumentService documentService;
@@ -103,7 +104,7 @@ public class CaseworkerDocumentService {
         }
 
         documentEntity.setFileName(documentFilename);
-        documentEntity.setCategoryId(caseFileCategory != null ? caseFileCategory.getId() : null);
+        documentEntity.setCategoryId(caseFileCategory != null ? caseFileCategory.getId() : DEFAULT_CATEGORY.getId());
 
         PartyEntity partyEntity = partyRepository.getReferenceById(partyId);
         documentEntity.setParty(partyEntity);
