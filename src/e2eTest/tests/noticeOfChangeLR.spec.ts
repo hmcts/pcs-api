@@ -44,7 +44,7 @@ test.describe('Make an Application - LR - e2e Journey @nightly', async () => {
     await performAction('verifyChangeLink', { caseRefNo: caseInfo.id, firstName: 'Peter' , lastName: 'Parker' });
     await performAction('noticeOfChange', { caseRefNo: caseInfo.id } );
     await performAction('clientDetails', { firstName: 'Jen' , lastName: 'Parker' });
-    await performAction('checkAndSubmit' );
+    await performAction('checkAndSubmit', { caseRefNo: caseInfo.id, firstName: 'Jen' , lastName: 'Parker' });
     await performAction('clickTab', home.noticeOfChangeTab);
     await performAction('noticeOfChange', { caseRefNo: caseInfo.id } );
     await performAction('clientDetails', { firstName: 'Jen' , lastName: 'Parker' });
