@@ -229,12 +229,14 @@ class NoticeOfPossessionViewTest {
     }
 
     @Test
-    void shouldSetNoticeServedDateForOtherElectronic() {
+    void shouldSetNoticeServedDateAndDetailsForOtherElectronic() {
         // Given
         LocalDateTime otherElectronicDateTime = mock(LocalDateTime.class);
+        String otherElectronicExplanation = "some other electronic details";
 
         when(noticeOfPossessionEntity.getServingMethod()).thenReturn(OTHER_ELECTRONIC);
         when(noticeOfPossessionEntity.getNoticeDateTime()).thenReturn(otherElectronicDateTime);
+        when(noticeOfPossessionEntity.getNoticeDetails()).thenReturn(otherElectronicExplanation);
 
         // When
         underTest.setCaseFields(pcsCase, pcsCaseEntity);
@@ -245,6 +247,7 @@ class NoticeOfPossessionViewTest {
         NoticeServedDetails noticeServedDetails = noticeServedDetailsCaptor.getValue();
         assertThat(noticeServedDetails.getServiceMethod()).isEqualTo(OTHER_ELECTRONIC);
         assertThat(noticeServedDetails.getOtherElectronicDateTime()).isSameAs(otherElectronicDateTime);
+        assertThat(noticeServedDetails.getOtherElectronicExplanation()).isEqualTo(otherElectronicExplanation);
     }
 
     @Test
