@@ -16,6 +16,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.UserRoleService;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
 
 import java.util.Comparator;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -29,7 +30,8 @@ public class GenAppsView {
     private final GenAppVisibilityService genAppVisibilityService;
 
     public void setCaseFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
-        if (pcsCaseEntity.getGenApps().isEmpty()) {
+        Collection<GenAppEntity> genAppEntities = pcsCaseEntity.getGenApps();
+        if (genAppEntities == null || genAppEntities.isEmpty()) {
             pcsCase.setGenApps(List.of());
             return;
         }
@@ -37,7 +39,7 @@ public class GenAppsView {
         UserRoles userRoles =
             userRoleService.getCurrentUserCaseRoles(pcsCaseEntity.getCaseReference());
 
-        List<ListValue<GeneralApplication>> genApps = pcsCaseEntity.getGenApps().stream()
+        List<ListValue<GeneralApplication>> genApps = genAppEntities.stream()
             .sorted(Comparator.comparing(GenAppEntity::getApplicationSubmittedDate).reversed())
             .filter(genAppEntity -> genAppVisibilityService.isGenAppVisibleToUser(
                 genAppEntity,
