@@ -183,8 +183,7 @@ xui-webapp:
   nodejs:
     imagePullPolicy: Always
     releaseNameOverride: ${SERVICE_NAME}-xui-webapp
-    # Pin to same version as AAT until latest ExUI changes are released there
-    image: hmctsprod.azurecr.io/xui/webapp:prod-5038207-20260806091919
+    image: hmctsprod.azurecr.io/xui/webapp:latest
     ingressHost: xui-${SERVICE_FQDN}
     devmemoryRequests: 2Gi
     devcpuRequests: 500m
