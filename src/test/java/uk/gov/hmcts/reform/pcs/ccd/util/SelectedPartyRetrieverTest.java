@@ -65,7 +65,7 @@ class SelectedPartyRetrieverTest {
         long caseRef = 1L;
         when(pcsCaseService.loadCase(caseRef)).thenReturn(pcsCaseEntity);
         when(securityContextService.getCurrentUserId()).thenReturn(userId);
-        when(legalRepForDefendantAccessValidator.validateAndGetDefendants(pcsCaseEntity, userId))
+        when(legalRepForDefendantAccessValidator.validateAndGetDefendants(pcsCaseEntity, userId, true))
             .thenReturn(List.of(partyEntity));
         when(partyEntity.getId()).thenReturn(partyId);
 
@@ -86,7 +86,7 @@ class SelectedPartyRetrieverTest {
         long caseRef = 1L;
         when(pcsCaseService.loadCase(caseRef)).thenReturn(pcsCaseEntity);
         when(securityContextService.getCurrentUserId()).thenReturn(userId);
-        when(legalRepForDefendantAccessValidator.validateAndGetDefendants(pcsCaseEntity, userId))
+        when(legalRepForDefendantAccessValidator.validateAndGetDefendants(pcsCaseEntity, userId, true))
             .thenReturn(List.of(partyEntity, partyEntity2));
         when(clientContextRetriever.getClientContext()).thenReturn(clientContext);
         when(clientContext.getSelectedPartyId()).thenReturn(partyId.toString());

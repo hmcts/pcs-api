@@ -48,19 +48,16 @@ public class LegalRepPartySelectionService {
         return getDraftCaseData(caseReference, pcsCase, matchedDefendant, defendantPartiesLinkedAndActive);
     }
 
-    public boolean hasSubmittedResponse(long caseReference, PCSCase pcsCase,
-                                        List<PartyEntity> defendantPartiesLinkedAndActive) {
-        Optional<UUID> selectedPartyId = selectedPartyRetriever.getSelectedPartyId(pcsCase);
-
+    public boolean hasSubmittedResponseForCurrentlySelectedParty(long caseReference) {
+        Optional<UUID> selectedPartyId = selectedPartyRetriever.getRequiredPartyId();
         if (selectedPartyId.isEmpty()) {
             log.warn("No selected party id for case reference [{}] when checking for submitted response",
                      caseReference);
             return false;
         }
 
-        PartyEntity matchedDefendant = findMatchedDefendant(defendantPartiesLinkedAndActive, selectedPartyId.get());
         return defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyId(
-            caseReference, matchedDefendant.getId());
+            caseReference, selectedPartyId.get());
     }
 
     public PCSCase getDraftCaseData(long caseReference, PCSCase pcsCase, PartyEntity matchedDefendant,
@@ -76,10 +73,13 @@ public class LegalRepPartySelectionService {
             return restoreDraft(caseReference, pcsCase, matchedDefendant, linkedDefendants);
         }
 
-        return initialiseDraft(caseReference, pcsCase, matchedDefendant);
+        return initialiseDraft(caseReference, pcsCase, matchedDefendant, linkedDefendants);
     }
 
-    public PCSCase buildSubmittedResponseCase(PCSCase pcsCase) {
+    public PCSCase buildSubmittedResponseCase(PCSCase pcsCase, List<PartyEntity> linkedDefendants) {
+        List<ListValue<Party>> representedPartyList = linkedDefendants.stream()
+            .map(this::toRepresentedPartyListValue)
+            .toList();
         return pcsCase.toBuilder()
             .possessionClaimResponse(PossessionClaimResponse.builder()
                                          .defendantResponses(DefendantResponses.builder()
@@ -87,6 +87,7 @@ public class LegalRepPartySelectionService {
                                                                  .build())
                                          .build())
             .hasUnsubmittedCaseData(YesOrNo.NO)
+            .allLinkedDefendants(representedPartyList)
             .build();
     }
 
@@ -155,7 +156,8 @@ public class LegalRepPartySelectionService {
             .build();
     }
 
-    private PCSCase initialiseDraft(long caseReference, PCSCase pcsCase, PartyEntity defendant) {
+    private PCSCase initialiseDraft(long caseReference, PCSCase pcsCase, PartyEntity defendant,
+                                    List<PartyEntity> linkedDefendants) {
         PossessionClaimResponse response = responseMapper.mapFrom(pcsCase, defendant);
 
         PCSCase draft = PCSCase.builder()
@@ -164,8 +166,13 @@ public class LegalRepPartySelectionService {
 
         draftCaseDataService.patchUnsubmittedEventData(caseReference, draft, respondPossessionClaim, defendant.getId());
 
+        List<ListValue<Party>> representedPartyList = linkedDefendants.stream()
+            .map(this::toRepresentedPartyListValue)
+            .toList();
+
         return pcsCase.toBuilder()
             .possessionClaimResponse(response)
+            .allLinkedDefendants(representedPartyList)
             .build();
     }
 

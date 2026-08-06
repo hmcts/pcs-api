@@ -257,12 +257,16 @@ class LegalRepPartySelectionServiceTest {
         // given
         PCSCase pcsCase = PCSCase.builder().build();
 
+        PartyEntity defendant = PartyEntity.builder().id(UUID.randomUUID()).build();
+        List<PartyEntity> defendants = List.of(defendant);
+
         // when
-        pcsCase = underTest.buildSubmittedResponseCase(pcsCase);
+        pcsCase = underTest.buildSubmittedResponseCase(pcsCase, defendants);
 
         // then
         assertThat(pcsCase.getHasUnsubmittedCaseData()).isEqualTo(YesOrNo.NO);
         assertThat(pcsCase.getPossessionClaimResponse().getDefendantResponses().getStatus()).isEqualTo(
             DefendantResponseStatus.SUBMITTED);
+        assertThat(pcsCase.getAllLinkedDefendants().size()).isEqualTo(1);
     }
 }

@@ -78,7 +78,7 @@ class LegalRepStartEventStrategyTest {
         List<PartyEntity> defendants = List.of(defendant);
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(caseEntity);
         when(securityContextService.getCurrentUserId()).thenReturn(userId);
-        when(legalRepForDefendantAccessValidator.validateAndGetDefendants(caseEntity, userId))
+        when(legalRepForDefendantAccessValidator.validateAndGetDefendants(caseEntity, userId, true))
             .thenReturn(defendants);
 
         when(legalRepPartySelectionService.getDraftCaseData(CASE_REFERENCE, pcsCase,
@@ -107,7 +107,7 @@ class LegalRepStartEventStrategyTest {
         List<PartyEntity> defendants = List.of(defendant1, defendant2);
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(caseEntity);
         when(securityContextService.getCurrentUserId()).thenReturn(userId);
-        when(legalRepForDefendantAccessValidator.validateAndGetDefendants(caseEntity, userId))
+        when(legalRepForDefendantAccessValidator.validateAndGetDefendants(caseEntity, userId, true))
             .thenReturn(defendants);
 
         when(legalRepPartySelectionService.getDraft(pcsCase, defendants, CASE_REFERENCE))
@@ -128,21 +128,22 @@ class LegalRepStartEventStrategyTest {
         UUID defendantId = UUID.randomUUID();
         UUID representativeId = UUID.randomUUID();
         PartyEntity defendantEntity = PartyEntity.builder().id(defendantId).build();
-        PCSCase pcsCase = PCSCase.builder().build();
+        List<PartyEntity> defendantParties = List.of(defendantEntity);
         PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().build();
 
         when(securityContextService.getCurrentUserId()).thenReturn(representativeId);
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
-        when(legalRepForDefendantAccessValidator.validateAndGetDefendants(pcsCaseEntity, representativeId))
-            .thenReturn(List.of(defendantEntity));
-        when(legalRepPartySelectionService.hasSubmittedResponse(CASE_REFERENCE, pcsCase, List.of(defendantEntity)))
+        when(legalRepForDefendantAccessValidator.validateAndGetDefendants(pcsCaseEntity, representativeId, false))
+            .thenReturn(defendantParties);
+        when(legalRepPartySelectionService.hasSubmittedResponseForCurrentlySelectedParty(CASE_REFERENCE))
             .thenReturn(true);
 
+        PCSCase pcsCase = PCSCase.builder().build();
         // When
         underTest.loadDraft(CASE_REFERENCE, pcsCase);
 
         // Then
-        verify(legalRepPartySelectionService).buildSubmittedResponseCase(pcsCase);
+        verify(legalRepPartySelectionService).buildSubmittedResponseCase(pcsCase, defendantParties);
     }
 
 }
