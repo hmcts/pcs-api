@@ -13,6 +13,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.Hearing;
 import uk.gov.hmcts.reform.pcs.ccd.page.CcdPage;
+import uk.gov.hmcts.reform.pcs.ccd.service.HearingService;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
 import java.util.List;
@@ -24,6 +25,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 public class HearingDetailsPage implements CcdPageConfiguration, CcdPage {
 
     private final TextAreaValidationService textAreaValidationService;
+    private final HearingService hearingService;
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -94,6 +96,7 @@ public class HearingDetailsPage implements CcdPageConfiguration, CcdPage {
                     TextAreaValidationService.MEDIUM_TEXT_LIMIT
                 )
         );
+        hearingService.storeDraftHearingForm(caseData);
         return textAreaValidationService.createValidationResponse(caseData, validationErrors);
     }
 }

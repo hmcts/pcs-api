@@ -74,7 +74,9 @@ public class HearingService {
 
     public void clearHearingForm(PCSCase pcsCase) {
         pcsCase.setHearing(Hearing.builder().build());
+        pcsCase.setManageHearingDraft(null);
         pcsCase.setPartyMultiSelectionList(clearSelectedParties(pcsCase.getPartyMultiSelectionList()));
+        pcsCase.setMhDraftPartyList(null);
     }
 
     public void setSelectedEditableHearingId(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
@@ -83,9 +85,37 @@ public class HearingService {
         );
     }
 
-    public void prepopulateEditableHearing(long caseReference, PCSCase pcsCase) {
+    public void initialiseEditableHearing(long caseReference, PCSCase pcsCase, String previouslySelectedHearingId) {
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
 
+        setSelectedEditableHearingId(pcsCase, pcsCaseEntity);
+        if (!Objects.equals(previouslySelectedHearingId, pcsCase.getSelectedHearingId())) {
+            prepopulateEditableHearing(pcsCase, pcsCaseEntity);
+        } else {
+            restoreDraftHearingForm(pcsCase);
+        }
+    }
+
+    public void storeDraftHearingForm(PCSCase pcsCase) {
+        pcsCase.setManageHearingDraft(copyHearing(pcsCase.getHearing()));
+        pcsCase.setMhDraftPartyList(pcsCase.getPartyMultiSelectionList());
+    }
+
+    private void restoreDraftHearingForm(PCSCase pcsCase) {
+        if (pcsCase.getManageHearingDraft() != null) {
+            pcsCase.setHearing(copyHearing(pcsCase.getManageHearingDraft()));
+        }
+        if (pcsCase.getMhDraftPartyList() != null) {
+            pcsCase.setPartyMultiSelectionList(pcsCase.getMhDraftPartyList());
+        }
+    }
+
+    public void prepopulateEditableHearing(long caseReference, PCSCase pcsCase) {
+        PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
+        prepopulateEditableHearing(pcsCase, pcsCaseEntity);
+    }
+
+    private void prepopulateEditableHearing(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
         editableHearing(pcsCaseEntity, pcsCase.getSelectedHearingId()).ifPresent(selectedHearing -> {
             pcsCase.setSelectedHearingId(selectedHearing.getId().toString());
             pcsCase.setHearing(mapToHearing(selectedHearing));
@@ -212,6 +242,26 @@ public class HearingService {
             .otherHearingType(hearing.getOtherHearingType())
             .noticeWording(hearing.getNoticeWording())
             .date(hearing.getHearingDate())
+            .durationDays(hearing.getDurationDays())
+            .durationHours(hearing.getDurationHours())
+            .durationMinutes(hearing.getDurationMinutes())
+            .notes(hearing.getNotes())
+            .issueNotice(hearing.getIssueNotice())
+            .isWithoutNotice(hearing.getIsWithoutNotice())
+            .additionalInformation(hearing.getAdditionalInformation())
+            .build();
+    }
+
+    private Hearing copyHearing(Hearing hearing) {
+        if (hearing == null) {
+            return null;
+        }
+
+        return Hearing.builder()
+            .type(hearing.getType())
+            .otherHearingType(hearing.getOtherHearingType())
+            .noticeWording(hearing.getNoticeWording())
+            .date(hearing.getDate())
             .durationDays(hearing.getDurationDays())
             .durationHours(hearing.getDurationHours())
             .durationMinutes(hearing.getDurationMinutes())

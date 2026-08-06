@@ -377,7 +377,14 @@ public class HearingServiceTest {
                 .isWithoutNotice(VerticalYesNo.YES)
                 .additionalInformation("stale information")
                 .build())
+            .manageHearingDraft(Hearing.builder()
+                .notes("draft notes")
+                .build())
             .partyMultiSelectionList(DynamicMultiSelectStringList.builder()
+                .value(List.of(selectedParty))
+                .listItems(List.of(selectedParty))
+                .build())
+            .mhDraftPartyList(DynamicMultiSelectStringList.builder()
                 .value(List.of(selectedParty))
                 .listItems(List.of(selectedParty))
                 .build())
@@ -389,8 +396,10 @@ public class HearingServiceTest {
         // Then
         assertThat(pcsCase.getHearing()).usingRecursiveComparison()
             .isEqualTo(Hearing.builder().build());
+        assertThat(pcsCase.getManageHearingDraft()).isNull();
         assertThat(pcsCase.getPartyMultiSelectionList().getValue()).isEmpty();
         assertThat(pcsCase.getPartyMultiSelectionList().getListItems()).containsExactly(selectedParty);
+        assertThat(pcsCase.getMhDraftPartyList()).isNull();
     }
 
     @Test
@@ -531,6 +540,107 @@ public class HearingServiceTest {
         assertThat(pcsCase.getPartyMultiSelectionList().getValue())
             .extracting(DynamicStringListElement::getCode)
             .containsExactly(selectedPartyId.toString());
+    }
+
+    @Test
+    void shouldInitialiseEditableHearingAndPrepopulateWhenSelectedHearingChanges() {
+        // Given
+        long caseReference = 12345L;
+        HearingEntity selectedHearing = HearingEntity.builder()
+            .id(1)
+            .type(HearingType.APPLICATION)
+            .noticeWording(HearingNoticeWording.TPL)
+            .hearingDate(LocalDateTime.of(2026, 8, 3, 14, 30))
+            .durationDays(0)
+            .durationHours(1)
+            .durationMinutes(30)
+            .notes("existing notes")
+            .issueNotice(VerticalYesNo.NO)
+            .additionalInformation("existing information")
+            .build();
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
+            .hearings(List.of(selectedHearing))
+            .build();
+        when(pcsCaseService.loadCase(caseReference)).thenReturn(pcsCaseEntity);
+
+        PCSCase pcsCase = PCSCase.builder()
+            .partyMultiSelectionList(DynamicMultiSelectStringList.builder()
+                .listItems(List.of(DynamicStringListElement.builder()
+                    .code(UUID.randomUUID().toString())
+                    .build()))
+                .build())
+            .build();
+
+        // When
+        hearingService.initialiseEditableHearing(caseReference, pcsCase, null);
+
+        // Then
+        assertThat(pcsCase.getSelectedHearingId()).isEqualTo("1");
+        assertThat(pcsCase.getHearing().getNotes()).isEqualTo("existing notes");
+        assertThat(pcsCase.getHearing().getAdditionalInformation()).isEqualTo("existing information");
+    }
+
+    @Test
+    void shouldInitialiseEditableHearingWithoutReplacingDraftChangesWhenSelectedHearingIsUnchanged() {
+        // Given
+        long caseReference = 12345L;
+        HearingEntity selectedHearing = HearingEntity.builder()
+            .id(1)
+            .type(HearingType.APPLICATION)
+            .noticeWording(HearingNoticeWording.TPL)
+            .hearingDate(LocalDateTime.of(2026, 8, 3, 14, 30))
+            .durationDays(0)
+            .durationHours(1)
+            .durationMinutes(30)
+            .notes("existing notes")
+            .issueNotice(VerticalYesNo.NO)
+            .additionalInformation("existing information")
+            .build();
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
+            .hearings(List.of(selectedHearing))
+            .build();
+        when(pcsCaseService.loadCase(caseReference)).thenReturn(pcsCaseEntity);
+
+        PCSCase pcsCase = PCSCase.builder()
+            .selectedHearingId("1")
+            .manageHearingDraft(Hearing.builder()
+                .notes("draft notes")
+                .additionalInformation("draft information")
+                .build())
+            .build();
+
+        // When
+        hearingService.initialiseEditableHearing(caseReference, pcsCase, "1");
+
+        // Then
+        assertThat(pcsCase.getSelectedHearingId()).isEqualTo("1");
+        assertThat(pcsCase.getHearing().getNotes()).isEqualTo("draft notes");
+        assertThat(pcsCase.getHearing().getAdditionalInformation()).isEqualTo("draft information");
+    }
+
+    @Test
+    void shouldStoreDraftHearingForm() {
+        // Given
+        DynamicMultiSelectStringList selectedParties = DynamicMultiSelectStringList.builder()
+            .value(List.of(DynamicStringListElement.builder()
+                .code(UUID.randomUUID().toString())
+                .build()))
+            .build();
+        PCSCase pcsCase = PCSCase.builder()
+            .hearing(Hearing.builder()
+                .notes("draft notes")
+                .additionalInformation("draft information")
+                .build())
+            .partyMultiSelectionList(selectedParties)
+            .build();
+
+        // When
+        hearingService.storeDraftHearingForm(pcsCase);
+
+        // Then
+        assertThat(pcsCase.getManageHearingDraft()).usingRecursiveComparison()
+            .isEqualTo(pcsCase.getHearing());
+        assertThat(pcsCase.getMhDraftPartyList()).isSameAs(selectedParties);
     }
 
     @Test

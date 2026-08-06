@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.Hearing;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
+import uk.gov.hmcts.reform.pcs.ccd.service.HearingService;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
 import java.util.List;
@@ -27,6 +28,9 @@ public class HearingDetailsPageTest extends BasePageTest {
     @Mock
     private TextAreaValidationService textAreaValidationService;
 
+    @Mock
+    private HearingService hearingService;
+
     @BeforeEach
     void setUp() {
         lenient().doAnswer(invocation -> {
@@ -37,7 +41,7 @@ public class HearingDetailsPageTest extends BasePageTest {
                 .errors(errors.isEmpty() ? null : errors)
                 .build();
         }).when(textAreaValidationService).createValidationResponse(any(), any());
-        setPageUnderTest(new HearingDetailsPage(textAreaValidationService));
+        setPageUnderTest(new HearingDetailsPage(textAreaValidationService, hearingService));
     }
 
     @Test
@@ -81,5 +85,6 @@ public class HearingDetailsPageTest extends BasePageTest {
                 && f.fieldLabel.equals("Enter any additional information")
                 && f.maxCharacters == 500)
         );
+        verify(hearingService).storeDraftHearingForm(caseData);
     }
 }

@@ -76,7 +76,6 @@ public class ManageHearing implements CCDConfig<PCSCase, State, UserRole> {
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
 
         pcsCase.setPartyMultiSelectionList(hearingService.buildPartyList(pcsCaseEntity));
-        hearingService.clearHearingForm(pcsCase);
 
         List<Integer> baseLocation = List.of(Integer.parseInt(pcsCase.getCaseManagementLocation().getBaseLocation()));
 
@@ -96,12 +95,12 @@ public class ManageHearing implements CCDConfig<PCSCase, State, UserRole> {
         }
 
         if (CollectionUtils.isEmpty(pcsCase.getHearingList())) {
+            hearingService.clearHearingForm(pcsCase);
             pcsCase.setShowManageHearingPage(VerticalYesNo.NO);
             pcsCase.setManageHearingOption(ManageHearingOption.ADD);
             pcsCase.setSelectedHearingId(null);
         } else {
             pcsCase.setShowManageHearingPage(VerticalYesNo.YES);
-            hearingService.setSelectedEditableHearingId(pcsCase, pcsCaseEntity);
         }
 
         return pcsCase;

@@ -39,7 +39,6 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -138,20 +137,6 @@ public class ManageHearingTest extends BaseEventTest {
                 .listItems(List.of())
                 .build());
             when(caseLocation.getBaseLocation()).thenReturn(Integer.toString(BASE_LOCATION_ID));
-            doAnswer(invocation -> {
-                PCSCase caseData = invocation.getArgument(0);
-                caseData.setHearing(Hearing.builder().build());
-
-                DynamicMultiSelectStringList partyList = caseData.getPartyMultiSelectionList();
-                if (partyList != null) {
-                    caseData.setPartyMultiSelectionList(DynamicMultiSelectStringList.builder()
-                        .value(List.of())
-                        .listItems(partyList.getListItems())
-                        .build());
-                }
-
-                return null;
-            }).when(hearingService).clearHearingForm(any(PCSCase.class));
         }
 
         @Test
@@ -173,12 +158,12 @@ public class ManageHearingTest extends BaseEventTest {
             // Then
             assertThat(response.getShowManageHearingPage()).isEqualTo(VerticalYesNo.YES);
             assertThat(response.getManageHearingOption()).isNull();
-            verify(hearingService).clearHearingForm(response);
-            verify(hearingService).setSelectedEditableHearingId(response, pcsCaseEntity);
+            verify(hearingService, never()).setSelectedEditableHearingId(response, pcsCaseEntity);
+            verify(hearingService, never()).clearHearingForm(response);
         }
 
         @Test
-        void shouldClearStaleHearingFormDataWhenHearingExists() {
+        void shouldRetainDraftHearingFormDataWhenHearingExists() {
             // Given
             PCSCase pcsCase = PCSCase.builder()
                 .caseManagementLocation(caseLocation)
@@ -201,13 +186,13 @@ public class ManageHearingTest extends BaseEventTest {
             PCSCase response = callStartHandler(pcsCase);
 
             // Then
-            verify(hearingService).clearHearingForm(response);
-            assertThat(response.getHearing()).usingRecursiveComparison()
-                .isEqualTo(Hearing.builder().build());
+            verify(hearingService, never()).clearHearingForm(response);
+            assertThat(response.getHearing().getNotes()).isEqualTo("stale notes");
+            assertThat(response.getHearing().getAdditionalInformation()).isEqualTo("stale information");
         }
 
         @Test
-        void shouldSerialiseClearedHearingFormDataAsNullFields() throws Exception {
+        void shouldSerialiseRetainedHearingFormData() throws Exception {
             // Given
             PCSCase pcsCase = PCSCase.builder()
                 .caseManagementLocation(caseLocation)
@@ -223,10 +208,8 @@ public class ManageHearingTest extends BaseEventTest {
             JsonNode serialisedResponse = objectMapper.valueToTree(response);
 
             // Then
-            assertThat(serialisedResponse.has("hearing_Type")).isTrue();
-            assertThat(serialisedResponse.get("hearing_Type").isNull()).isTrue();
-            assertThat(serialisedResponse.has("hearing_NoticeWording")).isTrue();
-            assertThat(serialisedResponse.get("hearing_NoticeWording").isNull()).isTrue();
+            assertThat(serialisedResponse.get("hearing_Type").asText()).isEqualTo("POSSESSION");
+            assertThat(serialisedResponse.get("hearing_NoticeWording").asText()).isEqualTo("TPL");
         }
 
         @Test
@@ -241,7 +224,7 @@ public class ManageHearingTest extends BaseEventTest {
             PCSCase response = callStartHandler(pcsCase);
 
             // Then
-            verify(hearingService).setSelectedEditableHearingId(response, pcsCaseEntity);
+            verify(hearingService, never()).setSelectedEditableHearingId(response, pcsCaseEntity);
             assertThat(response.getPartyMultiSelectionList().getValue()).isEmpty();
         }
 
@@ -260,8 +243,7 @@ public class ManageHearingTest extends BaseEventTest {
             assertThat(response.getShowManageHearingPage()).isEqualTo(VerticalYesNo.NO);
             assertThat(response.getManageHearingOption()).isEqualTo(ManageHearingOption.ADD);
             assertThat(response.getSelectedHearingId()).isNull();
-            assertThat(response.getHearing()).usingRecursiveComparison()
-                .isEqualTo(Hearing.builder().build());
+            verify(hearingService).clearHearingForm(response);
         }
 
         @Test

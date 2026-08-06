@@ -761,6 +761,10 @@ public class PCSCase {
     @CCD(searchable = false)
     private Hearing hearing;
 
+    @JsonUnwrapped(prefix = "mhDraft_")
+    @CCD(searchable = false)
+    private Hearing manageHearingDraft;
+
     @CCD(searchable = false)
     private List<ListValue<Hearing>> hearingList;
 
@@ -778,4 +782,10 @@ public class PCSCase {
         typeOverride = FieldType.DynamicMultiSelectList
     )
     private DynamicMultiSelectStringList partyMultiSelectionList;
+
+    @CCD(
+        searchable = false,
+        typeOverride = FieldType.DynamicMultiSelectList
+    )
+    private DynamicMultiSelectStringList mhDraftPartyList;
 }

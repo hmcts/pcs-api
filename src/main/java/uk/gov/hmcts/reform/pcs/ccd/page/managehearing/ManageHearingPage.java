@@ -8,6 +8,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.Hearing;
 import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.ManageHearingOption;
 import uk.gov.hmcts.reform.pcs.ccd.page.CcdPage;
 import uk.gov.hmcts.reform.pcs.ccd.service.HearingService;
@@ -30,7 +31,21 @@ public class ManageHearingPage implements CcdPageConfiguration, CcdPage {
             .label("manageHearingSeparator", "---")
             .mandatory(PCSCase::getManageHearingOption)
             .readonly(PCSCase::getShowManageHearingPage, NEVER_SHOW)
-            .readonly(PCSCase::getSelectedHearingId, NEVER_SHOW, true);
+            .readonly(PCSCase::getSelectedHearingId, NEVER_SHOW, true)
+            .readonly(PCSCase::getMhDraftPartyList, NEVER_SHOW, true)
+            .complex(PCSCase::getManageHearingDraft)
+                .readonly(Hearing::getType, NEVER_SHOW, true)
+                .readonly(Hearing::getOtherHearingType, NEVER_SHOW, true)
+                .readonly(Hearing::getNoticeWording, NEVER_SHOW, true)
+                .readonly(Hearing::getDate, NEVER_SHOW, true)
+                .readonly(Hearing::getDurationDays, NEVER_SHOW, true)
+                .readonly(Hearing::getDurationHours, NEVER_SHOW, true)
+                .readonly(Hearing::getDurationMinutes, NEVER_SHOW, true)
+                .readonly(Hearing::getNotes, NEVER_SHOW, true)
+                .readonly(Hearing::getIssueNotice, NEVER_SHOW, true)
+                .readonly(Hearing::getIsWithoutNotice, NEVER_SHOW, true)
+                .readonly(Hearing::getAdditionalInformation, NEVER_SHOW, true)
+            .done();
     }
 
     @Override
@@ -45,7 +60,8 @@ public class ManageHearingPage implements CcdPageConfiguration, CcdPage {
         if (caseData.getManageHearingOption() == ManageHearingOption.ADD) {
             hearingService.clearHearingForm(caseData);
         } else if (caseData.getManageHearingOption() == ManageHearingOption.EDIT) {
-            hearingService.prepopulateEditableHearing(details.getId(), caseData);
+            String previouslySelectedHearingId = caseData.getSelectedHearingId();
+            hearingService.initialiseEditableHearing(details.getId(), caseData, previouslySelectedHearingId);
         }
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
