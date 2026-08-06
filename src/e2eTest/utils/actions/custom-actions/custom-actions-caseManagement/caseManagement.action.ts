@@ -1,7 +1,6 @@
 
 import { expect, Page } from '@playwright/test';
 import { IAction, actionData, actionRecord } from '@utils/interfaces';
-import { createCaseApiData } from '@data/api-data';
 import { getCaseTypeId } from '@utils/common/caseType.utils';
 import { performAction, performActions, performValidation } from '@utils/controller-caseManagement';
 import { VERY_LONG_TIMEOUT } from 'playwright.config';
@@ -18,7 +17,7 @@ import path from 'path';
 
 
 export let addressInfo: { buildingStreet: string; addressLine2: string; townCity: string; engOrWalPostcode: string; };
-const cyaMap = new Map<string, string>();
+
 export let allPartyDetails: string[] = [];
 
 export class CaseManagementAction implements IAction {
