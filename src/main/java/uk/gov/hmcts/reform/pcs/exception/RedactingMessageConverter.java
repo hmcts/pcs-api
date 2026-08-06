@@ -8,15 +8,13 @@ import java.util.Arrays;
 
 import static uk.gov.hmcts.reform.pcs.exception.RedactionGate.REDACTED;
 import static uk.gov.hmcts.reform.pcs.exception.RedactionGate.isDebugEnabled;
+import static uk.gov.hmcts.reform.pcs.exception.RedactionGate.showFullExceptions;
 
 public final class RedactingMessageConverter extends ClassicConverter {
 
-    private static final boolean SHOW_FULL_EXCEPTIONS = "true"
-        .equalsIgnoreCase(System.getenv("LOG_SHOW_FULL_EXCEPTIONS"));
-
     @Override
     public String convert(ILoggingEvent event) {
-        if (SHOW_FULL_EXCEPTIONS || isDebugEnabled(getContext(), event)) {
+        if (showFullExceptions() || isDebugEnabled(getContext(), event)) {
             return event.getFormattedMessage();
         }
         Object[] arguments = event.getArgumentArray();

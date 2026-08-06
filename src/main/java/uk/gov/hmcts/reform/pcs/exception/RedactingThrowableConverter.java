@@ -9,12 +9,9 @@ import static ch.qos.logback.core.CoreConstants.EMPTY_STRING;
 import static ch.qos.logback.core.CoreConstants.LINE_SEPARATOR;
 import static uk.gov.hmcts.reform.pcs.exception.RedactionGate.REDACTED;
 import static uk.gov.hmcts.reform.pcs.exception.RedactionGate.isDebugEnabled;
+import static uk.gov.hmcts.reform.pcs.exception.RedactionGate.showFullExceptions;
 
 public final class RedactingThrowableConverter extends ThrowableProxyConverter {
-
-    private static final boolean SHOW_FULL_EXCEPTIONS = "true"
-        .equalsIgnoreCase(System.getenv("LOG_SHOW_FULL_EXCEPTIONS"));
-    private static volatile Boolean overrideForTesting;
 
     @Override
     public String convert(ILoggingEvent event) {
@@ -32,15 +29,6 @@ public final class RedactingThrowableConverter extends ThrowableProxyConverter {
             }
         }
         return REDACTED + LINE_SEPARATOR;
-    }
-
-    public static boolean showFullExceptions() {
-        Boolean override = overrideForTesting;
-        return override != null ? override : SHOW_FULL_EXCEPTIONS;
-    }
-
-    public static void setShowFullExceptionsForTesting(Boolean value) {
-        overrideForTesting = value; // pass null to reset
     }
 
 }

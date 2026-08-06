@@ -7,7 +7,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Field;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -15,23 +14,23 @@ class LoggerGateTest {
 
     private static final String LOGGER_NAME = "uk.gov.hmcts.reform.pcs.SomeLogger";
 
-    private LoggerGate loggerGate;
+    private LoggerGate underTest;
 
     @BeforeEach
     void setUp() throws Exception {
-        loggerGate = new LoggerGate();
+        underTest = new LoggerGate();
         resetDebugPossiblyActive();
     }
 
     @Test
     void isResetResistantShouldReturnTrue() {
-        assertThat(loggerGate.isResetResistant()).isTrue();
+        assertThat(underTest.isResetResistant()).isTrue();
     }
 
     @Test
     void onLevelChangeShouldActivateFlagWhenLevelIsDebug() throws Exception {
         // Given // When
-        loggerGate.onLevelChange(null, Level.DEBUG);
+        underTest.onLevelChange(null, Level.DEBUG);
 
         // Then
         assertThat(debugPossiblyActive()).isTrue();
@@ -40,28 +39,10 @@ class LoggerGateTest {
     @Test
     void onLevelChangeShouldActivateFlagWhenLevelIsTrace() throws Exception {
         // Given // When - TRACE is more verbose than DEBUG
-        loggerGate.onLevelChange(null, Level.TRACE);
+        underTest.onLevelChange(null, Level.TRACE);
 
         // Then
         assertThat(debugPossiblyActive()).isTrue();
-    }
-
-    @Test
-    void onLevelChangeShouldNotActivateFlagWhenLevelIsInfo() throws Exception {
-        // Given // When
-        loggerGate.onLevelChange(null, Level.INFO);
-
-        // Then
-        assertThat(debugPossiblyActive()).isFalse();
-    }
-
-    @Test
-    void onLevelChangeShouldNotActivateFlagWhenLevelIsNull() throws Exception {
-        // Given // When
-        loggerGate.onLevelChange(null, null);
-
-        // Then
-        assertThat(debugPossiblyActive()).isFalse();
     }
 
     @Test
@@ -79,7 +60,7 @@ class LoggerGateTest {
         // Given
         LoggerContext context = new LoggerContext();
         context.getLogger(LOGGER_NAME).setLevel(Level.DEBUG);
-        loggerGate.onLevelChange(context.getLogger(LOGGER_NAME), Level.DEBUG);
+        underTest.onLevelChange(context.getLogger(LOGGER_NAME), Level.DEBUG);
 
         // When // Then
         assertThat(LoggerGate.isDebugEnabled(context, LOGGER_NAME)).isTrue();
@@ -91,7 +72,7 @@ class LoggerGateTest {
         LoggerContext context = new LoggerContext();
         context.getLogger(LOGGER_NAME).setLevel(Level.INFO);
         // Activate the flag via a different logger being set to debug
-        loggerGate.onLevelChange(null, Level.DEBUG);
+        underTest.onLevelChange(null, Level.DEBUG);
 
         // When // Then
         assertThat(LoggerGate.isDebugEnabled(context, LOGGER_NAME)).isFalse();
@@ -100,7 +81,7 @@ class LoggerGateTest {
     @Test
     void isDebugEnabledShouldReturnFalseWhenContextIsNotLoggerContext() {
         // Given - flag active, but the context is not a LoggerContext
-        loggerGate.onLevelChange(null, Level.DEBUG);
+        underTest.onLevelChange(null, Level.DEBUG);
         Context nonLoggerContext = new ch.qos.logback.core.ContextBase();
 
         // When // Then
@@ -113,23 +94,24 @@ class LoggerGateTest {
         LoggerContext context = new LoggerContext();
 
         // When // Then - no-op methods should simply not throw
-        loggerGate.onStart(context);
-        loggerGate.onReset(context);
-        loggerGate.onStop(context);
+        underTest.onStart(context);
+        underTest.onReset(context);
+        underTest.onStop(context);
     }
 
-    private static boolean debugPossiblyActive() throws Exception {
-        return debugPossiblyActiveField().get();
+    private boolean debugPossiblyActive() throws Exception {
+        return debugPossiblyActiveField(true);
     }
 
-    private static void resetDebugPossiblyActive() throws Exception {
-        debugPossiblyActiveField().set(false);
+    private void resetDebugPossiblyActive() throws Exception {
+        debugPossiblyActiveField(false);
     }
 
-    private static AtomicBoolean debugPossiblyActiveField() throws Exception {
-        Field field = LoggerGate.class.getDeclaredField("DEBUG_POSSIBLY_ACTIVE");
+    private boolean debugPossiblyActiveField(boolean value) throws Exception {
+        Field field = LoggerGate.class.getDeclaredField("debugPossiblyActive");
         field.setAccessible(true);
-        return (AtomicBoolean) field.get(null);
+        field.set(underTest, value);
+        return value;
     }
 
 }

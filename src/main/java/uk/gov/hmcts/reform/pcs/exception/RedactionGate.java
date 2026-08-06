@@ -84,27 +84,28 @@ public class RedactionGate {
     }
 
     public static void printStackTrace(Throwable throwable, PrintStream stream, Consumer<PrintStream> fullPrinter) {
-        printStackTrace(throwable, stream, fullPrinter, stream::println, stream::println);
+        printStackTrace(throwable, stream, fullPrinter, stream::println);
     }
 
     public static void printStackTrace(Throwable throwable, PrintWriter writer, Consumer<PrintWriter> fullPrinter) {
-        printStackTrace(throwable, writer, fullPrinter, writer::println, writer::println);
+        printStackTrace(throwable, writer, fullPrinter, writer::println);
     }
 
     private static <T> void printStackTrace(Throwable throwable, T destination, Consumer<T> fullPrinter,
-                                            Consumer<Object> printlnObject, Consumer<String> printlnLine) {
-        if (showFullExceptions()) {
-            try {
-                fullPrinter.accept(destination);
-            } catch (NullPointerException ex) {
-                printlnObject.accept(throwable);
-                Throwable c = throwable.getCause();
-                if (c != null) {
-                    printlnLine.accept("Caused by: " + c.getClass().getName() + ": " + c.getMessage());
-                }
+                                            Consumer<Object> println) {
+        if (!showFullExceptions()) {
+            println.accept(throwable);
+            return;
+        }
+        try {
+            fullPrinter.accept(destination);
+        } catch (NullPointerException ex) {
+            println.accept(throwable);
+            Throwable c = throwable.getCause();
+            if (c != null) {
+                println.accept("Caused by: " + c);
             }
-        } else {
-            printlnObject.accept(throwable);
+            println.accept("(full stack trace unavailable: " + ex + ")");
         }
     }
 
