@@ -555,7 +555,7 @@ class PaymentServiceTest {
 
     @Nested
     @DisplayName("create PBA payment")
-    class createPbaPaymentRequest {
+    class CreatePbaPaymentRequest {
 
         @Test
         void createPbaPaymentRequest_WithUnpaidFee_ReturnsPBAServiceRequestResponse() {

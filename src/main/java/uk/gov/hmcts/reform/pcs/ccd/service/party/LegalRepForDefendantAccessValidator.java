@@ -50,8 +50,8 @@ public class LegalRepForDefendantAccessValidator {
                                   organisationId
                               )
                 ))
-//            .filter(party -> !defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyId(
-//                caseReference, party.getId()))
+            .filter(party -> !defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyId(
+                caseReference, party.getId()))
             .toList();
 
         if (linkedDefendants.isEmpty()) {

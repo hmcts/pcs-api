@@ -117,7 +117,7 @@ public class OrganisationDetailsService {
         return details.getOrganisationIdentifier();
     }
 
-    public List<String> getOrganisationPaymentAccount(String userId){
+    public List<String> getOrganisationPaymentAccount(String userId) {
         OrganisationDetailsResponse response = getOrganisationDetails(userId);
         return response.getPaymentAccount();
     }
