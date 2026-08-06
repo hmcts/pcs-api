@@ -2,7 +2,6 @@ package uk.gov.hmcts.reform.pcs.notify.template.personalisation;
 
 import lombok.Builder;
 
-import java.util.HashMap;
 import java.util.Map;
 
 @Builder
