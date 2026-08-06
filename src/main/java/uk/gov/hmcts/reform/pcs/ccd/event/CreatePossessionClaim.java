@@ -56,6 +56,10 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
                 .showSummary()
                 .name("Make a claim")
                 .grant(Permission.CRUD, UserRole.PCS_SOLICITOR)
+                // Group access: creation is authorised by the PRM-assigned claimant capacities
+                // alone; there is no case yet, so RAS evaluates the org/group role directly.
+                .grant(Permission.CRU, UserRole.CLAIMANT_ORG)
+                .grant(Permission.CRU, UserRole.CLAIMANT_SOLICITOR_ORG)
                 .grantHistoryOnly(JUDICIAL_HISTORY_ROLES);
 
         new PageBuilder(eventBuilder)
