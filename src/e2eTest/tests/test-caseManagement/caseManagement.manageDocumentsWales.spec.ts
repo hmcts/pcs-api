@@ -20,7 +20,7 @@ test.beforeEach(async ({ page, context }) => {
   initializeCMExecutor(page);
   await performAction('createCaseAPI', { data: createCaseApiWalesData.createCasePayload });
   await performAction('submitCaseAPI', { data: submitCaseApiDataWales.submitCasePayloadCaseFileView });
-  await performAction('getAddressInfo', { data: createCaseApiData.createCasePayload });
+  await performAction('getAddressInfo', { data: createCaseApiWalesData.createCasePayload });
   await performAction('updatePaymentAPI');
   await performAction('getCaseAPI', 'Link Solicitor');
   await performAction('getAllPartyDetails', {
@@ -84,7 +84,7 @@ test.describe('Case management - Manage documents Wales Journey @nightly', async
       await performAction('validateCaseFileViewFolders', home.caseFileFolders);
       await performAction('validateCaseFileViewIndividualFolder', {
         folder: 'Applications',
-        submitPayload: makeAnApplicationApiData.makeAnApplicationAdjournPayload(defendantUserDetails[0].id, defendantUserDetails[0].name),
+        submitPayload: makeAnApplicationApiData.makeAnApplicationAdjournWalesPayload(defendantUserDetails[0].id, defendantUserDetails[0].name),
         caseWorkerAmend: CaseManagementCommonUtils.renameDocument(fileName, date, appType)
       });
     });
