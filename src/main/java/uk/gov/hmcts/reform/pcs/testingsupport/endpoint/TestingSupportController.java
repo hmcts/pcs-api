@@ -69,6 +69,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
+import static uk.gov.hmcts.reform.pcs.camunda.CamundaRequestTaskComponent.CAMUNDA_REQUEST_TASK_DESCRIPTOR;
 
 @Slf4j
 @AllArgsConstructor
@@ -506,6 +507,53 @@ public class TestingSupportController {
         partyRepository.save(partyEntity);
 
         return ResponseEntity.ok().build();
+    }
+
+    @Operation(
+        summary = "Reschedule Camunda request",
+        description = "Reschedules Camunda requests in the db scheduler to be triggered immediately"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Camunda request tasks rescheduled successfully"),
+        @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing authorization token"),
+        @ApiResponse(responseCode = "403", description = "Forbidden - Invalid or missing service authorization token"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    @PostMapping("/reschedule-camunda-request")
+    public ResponseEntity<String> rescheduleCamundaRequest(
+        @Parameter(
+            description = "Service-to-Service (S2S) authorization token",
+            example = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+            required = true
+        )
+        @RequestHeader(value = "ServiceAuthorization") String serviceAuthorization) {
+        try {
+
+            List<String> taskIds = jdbcTemplate.query(
+                """
+                    SELECT task_instance
+                    FROM scheduled_tasks
+                    WHERE execution_time <= ? AND task_name = 'camunda-request-task'
+                """,
+                (rs, rowNum) -> rs.getString("task_instance"),
+                Instant.now()
+            );
+
+            for (String taskId : taskIds) {
+                schedulerClient.reschedule(
+                    CAMUNDA_REQUEST_TASK_DESCRIPTOR.instance(taskId).build(),
+                    Instant.now()
+                );
+
+                log.info("Rescheduled Camunda request task with ID: {}", taskId);
+            }
+
+            return ResponseEntity.ok("Camunda request rescheduled successfully");
+        } catch (Exception e) {
+            log.error("Failed to reschedule Camunda request task", e);
+            return ResponseEntity.internalServerError()
+                .body("Failed to reschedule Camunda request task: " + e.getMessage());
+        }
     }
 
 }

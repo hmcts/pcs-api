@@ -498,6 +498,53 @@ class TestingSupportControllerTest {
         verify(accessCodeGenerationService).createAccessCodesForParties(String.valueOf(caseReference), true);
     }
 
+    @SuppressWarnings("unchecked")
+    @Test
+    void shouldRescheduleCamundaRequest() {
+        // Given
+        when(jdbcTemplate.query(anyString(), any(RowMapper.class), any(Instant.class)))
+            .thenReturn(List.of("db-task-id"));
+
+        // When
+        ResponseEntity<String> response = underTest.rescheduleCamundaRequest(SERVICE_AUTH_TOKEN);
+
+        // Then
+        assertThat(response).isNotNull();
+        assertThat(response.getStatusCode()).isEqualTo(org.springframework.http.HttpStatus.OK);
+        assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
+        assertThat(response.getBody()).contains("Camunda request rescheduled successfully");
+
+        ArgumentCaptor<TaskInstance<Void>> taskInstanceCaptor = ArgumentCaptor.forClass(TaskInstance.class);
+        ArgumentCaptor<Instant> instantCaptor = ArgumentCaptor.forClass(Instant.class);
+
+        verify(schedulerClient).reschedule(taskInstanceCaptor.capture(), instantCaptor.capture());
+
+        TaskInstance<Void> capturedTaskInstance = taskInstanceCaptor.getValue();
+        Instant scheduledInstant = instantCaptor.getValue();
+
+        assertThat(capturedTaskInstance.getId()).isSameAs("db-task-id");
+        assertThat(scheduledInstant).isBeforeOrEqualTo(Instant.now());
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    void shouldHandleRescheduleCamundaRequestFailure() {
+        // Given
+        when(jdbcTemplate.query(anyString(), any(RowMapper.class), any(Instant.class)))
+            .thenReturn(List.of("db-task-id"));
+
+        doThrow(new RuntimeException("Scheduler failure")).when(schedulerClient)
+            .reschedule(any(TaskInstance.class), any(Instant.class));
+
+        ResponseEntity<String> response = underTest.rescheduleCamundaRequest(SERVICE_AUTH_TOKEN);
+
+        assertThat(response).isNotNull();
+        assertThat(response.getStatusCode()).isEqualTo(org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR);
+        assertThat(response.getStatusCode().is5xxServerError()).isTrue();
+        assertThat(response.getBody()).contains("Failed to reschedule Camunda request task");
+        assertThat(response.getBody()).contains("Scheduler failure");
+    }
+
     @Nested
     @DisplayName("Set party email")
     class SetPartyEmailTests {
