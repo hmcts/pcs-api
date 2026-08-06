@@ -27,7 +27,7 @@ public enum UserRole implements HasRole {
     DEFENDANT("[DEFENDANT]", CRU, RAS),
     CLAIMANT_SOLICITOR("[CLAIMANTSOLICITOR]", CRU, RAS),
     DEFENDANT_SOLICITOR("[DEFENDANTSOLICITOR]", CRU, RAS),
-    CLAIMANT("claimant", CRU, RAS),
+    GA_CLAIMANT_SOLICITOR("claimant_solicitor", CRU, RAS),
 
     PCS_CASE_WORKER("caseworker-pcs", Set.of(R), IDAM),
     PCS_SOLICITOR("caseworker-pcs-solicitor", CRU, IDAM),

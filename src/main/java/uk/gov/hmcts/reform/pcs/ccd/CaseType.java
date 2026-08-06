@@ -204,6 +204,23 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
             .groupAccessEnabled(true)
             .caseAccessGroupIdTemplate("PCS:PCS:prof-org-claimant-access:claimant:$ORGID$")
             .liveTo("01/01/2027");
+
+        builder.accessType("solicitor-org-claimant-access")
+            .organisationProfileId("SOLICITOR_PROFILE")
+            .accessMandatory(false)
+            .accessDefault(false)
+            .display(true)
+            .description("Can manage all cases associated with this organisation")
+            .hintText("Assign to Users to enable access to all cases associated with this organisation")
+            .displayOrder(2)
+            .liveTo("01/01/2027");
+        builder.accessTypeRole("solicitor-org-claimant-access")
+            .organisationProfileId("SOLICITOR_PROFILE")
+            .groupRoleName(AccessProfile.GA_CLAIMANT_SOLICITOR.getRole())
+            .caseAssignedRoleField(AccessProfile.GA_CLAIMANT_SOLICITOR.getRole())
+            .groupAccessEnabled(true)
+            .caseAccessGroupIdTemplate("PCS:PCS:solicitor-org-claimant-access:claimant_solicitor:$ORGID$")
+            .liveTo("01/01/2027");
     }
 
     private void configureCaseFileCategories(ConfigBuilder<PCSCase, State, AccessProfile> builder) {
