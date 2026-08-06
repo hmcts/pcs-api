@@ -1,6 +1,9 @@
 global:
   postgresSecret: ${SERVICE_NAME}-postgresql
 java:
+  devmemoryRequests: '1024Mi'
+  devmemoryLimits: '2048Mi'
+  devcpuRequests: '500m'
   # Don't modify below here
   image: ${IMAGE_NAME}
   ingressHost: ${SERVICE_FQDN}

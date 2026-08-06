@@ -202,7 +202,8 @@ ccd:
         RAS_ENV: pr
       devmemoryRequests: 1024Mi
       devcpuRequests: 250m
-      devmemoryLimits: 2048Mi
+      # 2048Mi OOM-killed the pod (exit 137) during the drools/catalogue startup spike
+      devmemoryLimits: 3072Mi
       devcpuLimits: 1500m
       keyVaults:
         am:
