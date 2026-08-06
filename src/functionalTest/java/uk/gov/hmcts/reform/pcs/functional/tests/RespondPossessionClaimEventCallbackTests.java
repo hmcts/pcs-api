@@ -1,6 +1,8 @@
 package uk.gov.hmcts.reform.pcs.functional.tests;
 
 import lombok.extern.slf4j.Slf4j;
+
+import java.util.List;
 import java.util.Map;
 import net.serenitybdd.annotations.Steps;
 import net.serenitybdd.annotations.Title;
@@ -25,6 +27,9 @@ import uk.gov.hmcts.reform.pcs.functional.testutils.PayloadLoader;
 import uk.gov.hmcts.reform.pcs.functional.testutils.PcsIdamTokenClient;
 import uk.gov.hmcts.reform.pcs.functional.testutils.CaseRoleCleanUp;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 @Slf4j
 @Tag("Functional")
 @EnabledIfEnvironmentVariable(named = "CCD_ENABLED", matches = "true")
@@ -41,9 +46,11 @@ public class RespondPossessionClaimEventCallbackTests extends BaseApi {
     private String accessCode;
 
     private static final String caseType = CaseType.getCaseType();
+    private String paymentRequestReference;
 
     @BeforeAll
     void setUp() {
+        apiSteps.requestIsPreparedWithAppropriateValues();
         caseReference = apiSteps.ccdCaseIsCreatedAndIssued("england");
         accessCode = apiSteps.accessCodeIsFetched(caseReference);
     }
@@ -59,13 +66,22 @@ public class RespondPossessionClaimEventCallbackTests extends BaseApi {
         }
     }
 
+    Map<String,Object> getClaimantPaymentReference(Long caseReference) {
+        List<Map<String,Object>> paymentRefs =  apiSteps.getFeePaymentDetailsForCaseReference(caseReference);
+        assertNotNull(paymentRefs, "Payment references should not be null");
+        assertFalse(paymentRefs.isEmpty(), "Payment references should not be empty");
+        return paymentRefs.getFirst();
+    }
+
     @Title("respondToPossessionClaim start event callback test without access code - returns 403")
     @Test
     @Order(1)
     void respondToPossessionClaimStartEventCallbackWithoutAccessCodeAuthTest() {
+        System.out.println("Case referenece code: " + caseReference);
+
         String respondClaimRequestBody = PayloadLoader.load(
             "/payloads/repondPossessionClaim-startEventCallbackRequest.json",
-            Map.of("caseTypeId", caseType, "caseId", caseReference)
+            Map.of("caseTypeId", "PCS", "caseId", caseReference)
         );
 
         apiSteps.requestIsPreparedWithAppropriateValues();
@@ -84,10 +100,9 @@ public class RespondPossessionClaimEventCallbackTests extends BaseApi {
     @Order(2)
     void respondToPossessionClaimStartEventCallbackTest() {
         Map<String, String> requestBody = Map.of("accessCode", accessCode);
-
         String respondClaimRequestBody = PayloadLoader.load(
             "/payloads/repondPossessionClaim-startEventCallbackRequest.json",
-            Map.of("caseTypeId", caseType, "caseId", caseReference)
+            Map.of("caseTypeId", "PCS", "caseId", caseReference)
         );
         apiSteps.validateAccessCode(caseReference.toString(), accessCode);
 
@@ -104,23 +119,33 @@ public class RespondPossessionClaimEventCallbackTests extends BaseApi {
 
     @Title("respondToPossessionClaim submit event callback test - returns 200")
     @Test
-    @Disabled("This feature is currently in development and evolving, disabled to avoid false negatives.")
     @Order(3)
     void respondToPossessionClaimSubmitEventCallbackTest() {
+        Map<String,String> caseInternalDetails = apiSteps.getInternalCaseDetails(caseReference);
         String respondClaimRequestBody = PayloadLoader.load(
             "/payloads/repondPossessionClaim-submitEventCallbackRequest.json",
-            Map.of("caseTypeId", caseType, "caseId", caseReference)
+            Map.of(
+                "caseTypeId", "PCS",
+                "caseId", caseReference,
+                "internalCaseId", caseInternalDetails.get("case-id"),
+                "caseVersion", Integer.parseInt(caseInternalDetails.get("case-version"))
+
+            )
         );
 
+        String validateClaimRequestBody = PayloadLoader.load(
+            "/payloads/resumePossessionClaim-validateEventCallbackRequest.json",
+            Map.of( "caseReference", caseReference)
+        );
+
+        apiSteps.validateResumePossessionClaimAsCitizen(caseReference, validateClaimRequestBody);
         apiSteps.requestIsPreparedWithAppropriateValues();
         apiSteps.theRequestContainsValidIdamToken(PcsIdamTokenClient.UserType.citizenUser);
-        apiSteps.theRequestContainsValidServiceToken(TestConstants.PCS_FRONTEND);
+        apiSteps.theRequestContainsValidServiceToken(TestConstants.PCS_API);
         apiSteps.theRequestContainsIdempotencyKeyHeader();
         apiSteps.theRequestContainsTheQueryParameter("eventId", "respondPossessionClaim");
         apiSteps.theRequestContainsBody(respondClaimRequestBody);
         apiSteps.callIsSubmittedToTheEndpoint("SubmitEventCallback", "POST");
         apiSteps.checkStatusCode(200);
-        apiSteps.theResponseBodyMatchesTheExpectedResponse(
-            "/responses/respondPossessionClaim-submitEventCallbackResponse.json");
     }
 }

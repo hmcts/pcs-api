@@ -1,39 +1,73 @@
 {
-  "case_details_before": {},
+
   "case_details": {
     "id": "${caseId}",
     "jurisdiction": "PCS",
-    "case_type_id": "${caseTypeId}",
-    "state": "AWAITING_SUBMISSION_TO_HMCTS",
+    "case_type_id": "PCS",
+    "state": "CASE_ISSUED",
     "security_classification": "PUBLIC",
+    "version": "${caseVersion}",
     "case_data": {
       "possessionClaimResponse": {
+        "defendantContactDetails": {
+          "party": {
+            "firstName": "Jane",
+            "lastName": "Doe",
+            "nameKnown": "YES",
+            "address": {},
+            "addressKnown": "NO"
+          }
+        },
         "defendantResponses": {
           "tenancyTypeConfirmation": "YES",
-          "tenancyType": "Assured Shorthold Tenancy",
-          "tenancyStartDate": "2020-01-01",
-          "defendantContactDetails": {
-            "party": {
-              "address": {},
-              "lastName": "Doe",
-              "firstName": "Jane",
-              "nameKnown": "YES",
-              "addressKnown": "NO"
-            }
-          }
+          "rentArrearsAmountConfirmation": "YES",
+          "possessionNoticeReceived": "YES",
+          "contactByPhone": "NO",
+          "contactByEmail": "YES",
+          "contactByPost": "NO",
+          "freeLegalAdvice": "NO",
+          "defendantNameConfirmation": "YES",
+          "correspondenceAddressConfirmation": "YES",
+          "hasSolicitor": "NO",
+          "householdCircumstances": {
+            "dependantChildren": "No",
+            "shareAdditionalCircumstances": "No",
+            "exceptionalHardship": "No",
+            "otherDependants": "No",
+            "otherTenants": "No",
+            "alternativeAccommodation": "NO",
+            "shareIncomeExpenseDetails": "No"
+          },
+          "paymentAgreement": {
+            "anyPaymentsMade": "NO",
+            "repaymentPlanAgreed": "NO",
+            "repayArrearsInstalments": "NO"
+          },
+          "defendantDocuments": [],
+          "languageUsed": "ENGLISH",
+          "otherConsiderations": "NO",
+          "makeCounterClaim": "NO",
+          "completedSections": [
+            "START_NOW_AND_DETAILS",
+            "PERSONAL_DETAILS",
+            "DISPUTE_AND_TENANCY",
+            "PAYMENTS",
+            "SITUATION_AND_CIRCUMSTANCES",
+            "INCOME_AND_EXPENDITURE",
+            "UPLOAD_FILES"
+          ]
         }
-
       }
     }
-
   },
   "event_details": {
     "case_type": "${caseTypeId}",
     "event_name": "respondPossessionClaim",
     "event_id": "respondPossessionClaim"
   },
-  "internal_case_id": "${caseId}",
-  "start_revision": 1,
-  "merge_revision": 1
+  "event_id": "respondPossessionClaim",
+  "internal_case_id": "${internalCaseId}",
+  "start_revision": "${caseVersion}",
+  "merge_revision": "${caseVersion}",
+  "revision": "${caseVersion}"
 }
-

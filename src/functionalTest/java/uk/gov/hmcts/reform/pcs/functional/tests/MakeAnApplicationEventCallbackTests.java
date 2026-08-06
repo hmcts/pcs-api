@@ -74,13 +74,13 @@ public class MakeAnApplicationEventCallbackTests extends BaseApi {
     @Test
     @Order(2)
     void makeAnApplicationSubmitEventCallbackTest() {
-        String decodedCaseId = apiSteps.getInternalCaseId(caseReference);
+        Map<String,String> caseInternalDetails = apiSteps.getInternalCaseDetails(caseReference);
 
         String submitApplicationRequestBody = PayloadLoader.load(
             "/payloads/makeAnApplication-submitEventCallbackRequest.json",
             Map.of(
                 "caseId", String.valueOf(caseReference),
-                "internalCaseId", decodedCaseId,
+                "internalCaseId", caseInternalDetails.get("case-id"),
                 "caseTypeId", caseType
             )
         );

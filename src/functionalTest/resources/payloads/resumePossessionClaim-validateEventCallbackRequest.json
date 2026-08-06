@@ -1,0 +1,79 @@
+{
+  "event": {
+    "id": "respondPossessionClaim",
+    "summary": "string",
+    "description": "string"
+  },
+    "data": {
+    "orgNameFound": "Yes",
+    "claimantName": "Possession Claims Solicitor Org",
+    "isClaimantNameCorrect": "YES"
+  },
+  "ignore_warning": false,
+  "case_reference": "${caseReference}",
+  "event_data": {
+      "propertyAddress": {
+        "AddressLine1": "1",
+        "AddressLine2": "Exton Gardens",
+        "AddressLine3": "70 Knyveton Road",
+        "PostTown": "Bournemouth",
+        "PostCode": "BH1 3BP",
+        "Country": "United Kingdom"
+      },
+      "legislativeCountry": "England",
+        "possessionClaimResponse": {
+            "defendantResponses": {
+
+                "hasSolicitor": "NO",
+                "languageUsed": "ENGLISH",
+                "contactByPost": "NO",
+                "contactByEmail": "YES",
+                "contactByPhone": "NO",
+                "freeLegalAdvice": "NO",
+                "makeCounterClaim": "NO",
+                "paymentAgreement": {
+                    "anyPaymentsMade": "NO",
+                    "repaymentPlanAgreed": "NO",
+                    "repayArrearsInstalments": "NO"
+                },
+                "completedSections": [
+                    "START_NOW_AND_DETAILS",
+                    "PERSONAL_DETAILS",
+                    "DISPUTE_AND_TENANCY",
+                    "PAYMENTS",
+                    "SITUATION_AND_CIRCUMSTANCES",
+                    "INCOME_AND_EXPENDITURE",
+                    "UPLOAD_FILES"
+                ],
+                "defendantDocuments": [],
+                "otherConsiderations": "NO",
+                "householdCircumstances": {
+                    "otherTenants": "NO",
+                    "otherDependants": "NO",
+                    "dependantChildren": "NO",
+                    "exceptionalHardship": "NO",
+                    "alternativeAccommodation": "NO",
+                    "shareIncomeExpenseDetails": "NO",
+                    "shareAdditionalCircumstances": "NO"
+                },
+                "tenancyTypeConfirmation": "YES",
+                "possessionNoticeReceived": "YES",
+                "defendantNameConfirmation": "YES",
+                "rentArrearsAmountConfirmation": "YES",
+                "correspondenceAddressConfirmation": "YES"
+
+            },
+             "defendantContactDetails": {
+                    "party": {
+                    "address": {},
+                    "lastName": "Doe",
+                    "firstName": "Jane",
+                    "nameKnown": "YES",
+                    "addressKnown": "NO"
+                    }
+                }
+        }
+
+      }
+
+}
