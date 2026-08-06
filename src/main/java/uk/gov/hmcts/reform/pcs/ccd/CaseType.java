@@ -298,7 +298,13 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
                 "detailsTab_RequiredDocumentsDetails!=\"\"",
                 "## Required Documents"
             )
-            .field("detailsTab_RequiredDocumentsDetails");
+            .field("detailsTab_RequiredDocumentsDetails")
+            .label(
+                "Documents you've uploaded",
+                "detailsTab_UploadedDocumentsChecklistDetails!=\"\"",
+                "## Documents you've uploaded"
+            )
+            .field("detailsTab_UploadedDocumentsChecklistDetails");
     }
 
     private void buildCaseListView(ConfigBuilder<PCSCase, State, AccessProfile> builder) {

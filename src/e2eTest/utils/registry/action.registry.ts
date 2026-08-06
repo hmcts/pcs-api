@@ -110,6 +110,7 @@ export class ActionRegistry {
     ['selectClaimingCosts', new CreateCaseAction()],
     ['wantToUploadDocuments', new CreateCaseAction()],
     ['uploadAdditionalDocs', new CreateCaseAction()],
+    ['selectDocumentsYouveUploadedChecklist', new CreateCaseWalesAction()],
     ['clickButtonAndWaitForElement', new ClickButtonAction()],
     ['selectProhibitedConductStandardContract', new CreateCaseWalesAction()],
     ['selectOccupationContractOrLicenceDetails', new CreateCaseWalesAction()],

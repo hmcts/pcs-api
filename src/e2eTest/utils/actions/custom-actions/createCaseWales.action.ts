@@ -5,6 +5,7 @@ import {addressInfo, caseNumber, CreateCaseAction} from "@utils/actions/custom-a
 import {
   // migration (page-data → page-data-figma)
   contactPreferences,
+  documentsYouveUploadedChecklist,
   exemptLandlord,
   occupationLicenceDetailsWales,
   prohibitedConductWales, uploadRequiredDocumentsWales
