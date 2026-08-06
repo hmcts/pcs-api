@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.pcs.testingsupport.endpoint;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.github.kagkarlsson.scheduler.SchedulerClient;
 import com.github.kagkarlsson.scheduler.task.Task;
+import com.github.kagkarlsson.scheduler.testhelper.SettableClock;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -56,7 +57,9 @@ import uk.gov.hmcts.reform.pcs.service.LegalRepresentativePartyLinkService;
 import uk.gov.hmcts.reform.pcs.testingsupport.model.PartyEmail;
 import uk.gov.hmcts.reform.pcs.testingsupport.service.CcdTestCaseOrchestrator;
 
+import java.time.Duration;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -94,6 +97,7 @@ public class TestingSupportController {
     private final PcsCaseService pcsCaseService;
     private final AccessCodeGenerationService accessCodeGenerationService;
     private final FeatureToggleService featureToggleService;
+    private final SettableClock clock;
 
     @Operation(
         summary = "Schedule a Hello World task",
@@ -548,6 +552,51 @@ public class TestingSupportController {
             }
 
             return ResponseEntity.ok("Camunda request rescheduled successfully");
+        } catch (Exception e) {
+            log.error("Failed to reschedule Camunda request task", e);
+            return ResponseEntity.internalServerError()
+                .body("Failed to reschedule Camunda request task: " + e.getMessage());
+        }
+    }
+
+    @Operation(
+        summary = "Add to time to system clock",
+        description = "Add time to system clock to trigger db schedular tasks"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Camunda request tasks rescheduled successfully"),
+        @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing authorization token"),
+        @ApiResponse(responseCode = "403", description = "Forbidden - Invalid or missing service authorization token"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    @PostMapping("/add-time")
+    public ResponseEntity<String> addTime(
+        @Parameter(
+            description = "Days to add to current time (default: 0)",
+            example = "1"
+        )
+        @RequestParam(value = "delaySeconds", defaultValue = "0") int days,
+        @Parameter(
+            description = "Hours to add to current time (default: 0)",
+            example = "10"
+        )
+        @RequestParam(value = "delaySeconds", defaultValue = "0") int hours,
+        @Parameter(
+            description = "Hours to add to current time (default: 0)",
+            example = "10"
+        )
+        @RequestParam(value = "delaySeconds", defaultValue = "0") int minutes,
+        @Parameter(
+            description = "Service-to-Service (S2S) authorization token",
+            example = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+            required = true
+        )
+        @RequestHeader(value = "ServiceAuthorization") String serviceAuthorization) {
+        try {
+            clock.tick(Duration.ofDays(days));
+            clock.tick(Duration.ofHours(hours));
+            clock.tick(Duration.ofMinutes(minutes));
+            return ResponseEntity.ok("Clock set successfully");
         } catch (Exception e) {
             log.error("Failed to reschedule Camunda request task", e);
             return ResponseEntity.internalServerError()

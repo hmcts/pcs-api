@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.kagkarlsson.scheduler.SchedulerClient;
 import com.github.kagkarlsson.scheduler.task.Task;
 import com.github.kagkarlsson.scheduler.task.TaskInstance;
+import com.github.kagkarlsson.scheduler.testhelper.SettableClock;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -46,6 +47,7 @@ import uk.gov.hmcts.reform.pcs.testingsupport.model.PartyEmail;
 import uk.gov.hmcts.reform.pcs.testingsupport.model.TestingSupportAccessCode;
 import uk.gov.hmcts.reform.pcs.testingsupport.service.CcdTestCaseOrchestrator;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -106,6 +108,8 @@ class TestingSupportControllerTest {
     private AccessCodeGenerationService accessCodeGenerationService;
     @Mock
     private FeatureToggleService featureToggleService;
+    @Mock
+    private SettableClock clock;
 
     private TestingSupportController underTest;
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -122,7 +126,8 @@ class TestingSupportControllerTest {
                                                  organisationDetailsService,
                                                  pcsCaseService,
                                                  accessCodeGenerationService,
-                                                 featureToggleService
+                                                 featureToggleService,
+                                                 clock
         );
     }
 
@@ -543,6 +548,17 @@ class TestingSupportControllerTest {
         assertThat(response.getStatusCode().is5xxServerError()).isTrue();
         assertThat(response.getBody()).contains("Failed to reschedule Camunda request task");
         assertThat(response.getBody()).contains("Scheduler failure");
+    }
+
+    @Test
+    void shouldAddTimeToClock() {
+        // When
+        underTest.addTime(1, 2, 3, SERVICE_AUTH_TOKEN);
+
+        // Then
+        verify(clock).tick(Duration.ofDays(1));
+        verify(clock).tick(Duration.ofHours(2));
+        verify(clock).tick(Duration.ofMinutes(3));
     }
 
     @Nested
