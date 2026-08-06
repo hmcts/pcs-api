@@ -23,6 +23,8 @@ import uk.gov.hmcts.reform.pcs.functional.testutils.ServiceAuthenticationGenerat
 
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static uk.gov.hmcts.reform.pcs.functional.testutils.PcsIdamTokenClient.UserType.citizenUser;
 import static uk.gov.hmcts.reform.pcs.functional.testutils.PcsIdamTokenClient.UserType.systemUser;
 import static uk.gov.hmcts.reform.pcs.functional.testutils.PcsIdamTokenClient.UserType.solicitorUser;
@@ -359,5 +361,6 @@ public class ApiSteps {
 
         return result;
     }
+
 
 }
