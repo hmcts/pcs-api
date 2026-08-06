@@ -23,8 +23,6 @@ import uk.gov.hmcts.reform.pcs.functional.testutils.ServiceAuthenticationGenerat
 
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static uk.gov.hmcts.reform.pcs.functional.testutils.PcsIdamTokenClient.UserType.citizenUser;
 import static uk.gov.hmcts.reform.pcs.functional.testutils.PcsIdamTokenClient.UserType.systemUser;
 import static uk.gov.hmcts.reform.pcs.functional.testutils.PcsIdamTokenClient.UserType.solicitorUser;
@@ -58,7 +56,7 @@ public class ApiSteps {
 
     @Step("a request is prepared with appropriate values")
     public void requestIsPreparedWithAppropriateValues() {
-        request = SerenityRest.given().log().all()
+        request = SerenityRest.given()
             .baseUri(baseUrl)
             .contentType(ContentType.JSON);
     }
@@ -112,7 +110,6 @@ public class ApiSteps {
             case "PUT" -> request.when().put(resourceAPI.getResource());
             default -> throw new IllegalStateException("Unexpected value: " + method.toUpperCase());
         };
-        System.out.println(response.getBody().prettyPrint());
     }
 
     @Step("Check status code is {0}")
@@ -201,7 +198,6 @@ public class ApiSteps {
                 .queryParam("issueAndGenerateAccessCodes", issueAndGenerateAccessCodes)
                 .when()
                 .post(Endpoints.CreateTestCase.getResource());
-            System.out.println(response.getBody().prettyPrint());
             if (response.statusCode() == 201) {
                 return response.then().extract().path("caseId");
             }
@@ -216,7 +212,7 @@ public class ApiSteps {
     @Step("a pin is fetched")
     public String accessCodeIsFetched(Long caseReference) {
         Callable<String> fetchPins = () -> {
-            Map<String, Object> pins = SerenityRest.given().log().all()
+            Map<String, Object> pins = SerenityRest.given()
                 .baseUri(baseUrl)
                 .contentType(ContentType.JSON)
                 .header(TestConstants.SERVICE_AUTHORIZATION, pcsApiS2sToken)
@@ -252,7 +248,7 @@ public class ApiSteps {
     public String validateAccessCode(String caseReference, String accessCode) {
         String idempotencyKey = UUID.randomUUID().toString();
         Callable<String> validateCode = () -> {
-            SerenityRest.given().log().all()
+            SerenityRest.given()
                 .baseUri(baseUrl)
                 .contentType(ContentType.JSON)
                 .header(TestConstants.AUTHORIZATION, "Bearer " + citizenUserIdamToken)
@@ -345,12 +341,13 @@ public class ApiSteps {
     @Step("As citizen validate resumePossessionClaim submit request")
     public String validateResumePossessionClaimAsCitizen(Long caseReference, Object body) {
         String dataStoreUrl = System.getenv("DATA_STORE_URL_BASE");
+        String acceptVal = "application/vnd.uk.gov.hmcts.ccd-data-store-api.case-data-validate.v2+json;charset=UTF-8";
         String result = SerenityRest.given()
             .baseUri(dataStoreUrl)
             .header(TestConstants.AUTHORIZATION, "Bearer " + citizenUserIdamToken)
             .header(TestConstants.SERVICE_AUTHORIZATION, pcsApiS2sToken)
             .header("Experimental", "True")
-            .header("Accept", "application/vnd.uk.gov.hmcts.ccd-data-store-api.case-data-validate.v2+json;charset=UTF-8")
+            .header("Accept",acceptVal)
             .header("Content-Type","application/json")
             .body(body)
             .when()
