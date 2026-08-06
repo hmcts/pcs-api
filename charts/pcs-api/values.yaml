@@ -66,3 +66,5 @@ wiremock:
   enabled: false
 ccd-case-document-am-api:
   enabled: false
+wa:
+  enabled: false
