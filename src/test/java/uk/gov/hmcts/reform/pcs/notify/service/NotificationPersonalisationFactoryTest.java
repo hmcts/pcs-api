@@ -306,8 +306,6 @@ class NotificationPersonalisationFactoryTest {
                                                                                            pcsCaseEntity);
             Map<String, Object> map = result.toMap();
             assertThat(map)
-                .containsEntry("firstName", "Legal")
-                .containsEntry("lastName", "Rep")
                 .containsEntry("caseNumber", "1234-5678-90")
                 .containsEntry("claimantName", "JANE SMITH")
                 .containsEntry("primaryDefendantName", "JOHN DOE")

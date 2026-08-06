@@ -9,13 +9,11 @@ import java.util.Map;
 public class CounterclaimPaymentSuccessPersonalisation implements TemplatePersonalisation {
     private final BasePersonalisation base;
     private final String paymentReferenceNumber;
-    private final String organisationName;
 
     @Override
     public Map<String, Object> toMap() {
         Map<String, Object> map = new HashMap<>(base.toMap());
         map.put("paymentReferenceNumber", paymentReferenceNumber);
-        map.put("organisationName", organisationName);
         return Map.copyOf(map);
     }
 }

@@ -64,12 +64,8 @@ public class NotificationPersonalisationFactory {
 
     public LegalRepresentativeBasePersonalisation forLegalRepresentative(
         LegalRepresentativeOrganisationEntity legalRepresentativeOrganisationEntity, PcsCaseEntity pcsCaseEntity) {
-        String organisationName = legalRepresentativeOrganisationEntity.getOrganisationName();
 
-        return LegalRepresentativeBasePersonalisation.builder()
-            .base(buildPersonalisation(pcsCaseEntity, legalRepresentativeOrganisationEntity))
-            .organisationName(organisationName)
-            .build();
+        return buildPersonalisation(pcsCaseEntity, legalRepresentativeOrganisationEntity);
     }
 
     public CounterclaimPaymentSuccessPersonalisation counterclaimSuccess(DefendantResponseEntity defendantResponse,
@@ -81,7 +77,7 @@ public class NotificationPersonalisationFactory {
             .build();
     }
 
-    private BasePersonalisation buildPersonalisation(
+    private LegalRepresentativeBasePersonalisation buildPersonalisation(
         PcsCaseEntity pcsCaseEntity,
         LegalRepresentativeOrganisationEntity legalRepresentativeOrganisationEntity
     ) {
@@ -97,12 +93,11 @@ public class NotificationPersonalisationFactory {
             primaryDefendant.getFirstName(),
             primaryDefendant.getLastName());
 
-        return BasePersonalisation.builder()
-            .firstName(legalRepresentativeOrganisationEntity.getOrganisationName() != null
-                           ? legalRepresentativeOrganisationEntity.getOrganisationName() : null)
+        return LegalRepresentativeBasePersonalisation.builder()
             .caseNumber(formatCaseReference(pcsCaseEntity.getCaseReference().toString()))
             .claimantName(claimantName)
             .primaryDefendantName(primaryDefendantName)
+            .organisationName(legalRepresentativeOrganisationEntity.getOrganisationName())
             .build();
     }
 
