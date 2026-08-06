@@ -8,11 +8,11 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeOrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DefendantResponseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.feeandpay.FeePaymentRepository;
-import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.LegalRepresentativeRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.LegalRepresentativeOrganisationRepository;
 import uk.gov.hmcts.reform.pcs.notify.model.EmailNotificationResponse;
 import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
 
@@ -30,15 +30,16 @@ public class NotifyController {
     private final NotificationService notificationService;
     private final DefendantResponseRepository defendantResponseRepository;
     private final FeePaymentRepository feePaymentRepository;
-    private final LegalRepresentativeRepository legalRepresentativeRepository;
+    private final LegalRepresentativeOrganisationRepository legalRepresentativeOrganisationRepository;
 
     public NotifyController(NotificationService notificationService,
                             DefendantResponseRepository defendantResponseRepository,
-                            FeePaymentRepository feePaymentRepository, LegalRepresentativeRepository legalRepresentativeRepository) {
+                            FeePaymentRepository feePaymentRepository,
+                            LegalRepresentativeOrganisationRepository legalRepresentativeOrganisationRepository) {
         this.notificationService = notificationService;
         this.defendantResponseRepository = defendantResponseRepository;
         this.feePaymentRepository = feePaymentRepository;
-        this.legalRepresentativeRepository = legalRepresentativeRepository;
+        this.legalRepresentativeOrganisationRepository = legalRepresentativeOrganisationRepository;
     }
 
     @PostMapping(value = "send-defendant-response-emails")
@@ -71,11 +72,9 @@ public class NotifyController {
         return ResponseEntity.ok(responses);
     }
 
-    // this is for manually testing the LR changes - I haven't actually configured this correctly. It should jump
-    // into LegalRepSubmissionEventStrategy.process(). I wasn't able to get it working, if you do manage it, answers
-    // on a postcard, please.
+
     @PostMapping(value = "testLegalRepEndPoint")
-    public ResponseEntity<List<EmailNotificationResponse>> sendDefendantResponseEmailss(
+    public ResponseEntity<List<EmailNotificationResponse>> sendDefendantResponseEmailsToLegalRep(
         @RequestHeader(value = AUTHORIZATION, defaultValue = "DummyId") String authorisation,
         @RequestHeader(value = "ServiceAuthorization") String serviceAuthorization,
         @RequestParam Integer defendantResponseId) {
@@ -88,26 +87,23 @@ public class NotifyController {
         Optional<DefendantResponseEntity> optDefendantResponse =
             defendantResponseRepository.findById(defendantResponseId);
 
-        Optional<LegalRepresentativeEntity> optionalLegalRepresentativeEntity =
-            legalRepresentativeRepository.findByPartyLinkedToLegalRepresentativeAndActive(optDefendantResponse.
-                                                                                              get().getParty().getId());
+        Optional<LegalRepresentativeOrganisationEntity> optionalLegalRepresentativeOrganisationEntity =
+            legalRepresentativeOrganisationRepository.findByPartyLinkedToLegalRepresentativeOrganisationAndActive(
+                optDefendantResponse.get().getParty().getId());
 
         if (optDefendantResponse.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
-        LegalRepresentativeEntity legalRepresentativeEntity = optionalLegalRepresentativeEntity.get();
+        LegalRepresentativeOrganisationEntity legalRepresentativeOrganisationEntity =
+            optionalLegalRepresentativeOrganisationEntity.get();
         DefendantResponseEntity defendantResponse = optDefendantResponse.get();
         List<EmailNotificationResponse> responses = List.of(
-            notificationService
-                .sendDefendantResponseConfirmationToLegalRepresentativeNoCounterClaim(legalRepresentativeEntity,defendantResponse.getPcsCase(),defendantResponse),
-            notificationService.sendDefendantResponseConfirmationToLegalRepresentativeNoPaymentRequired(legalRepresentativeEntity,defendantResponse.getPcsCase(),defendantResponse),
             notificationService.sendDefendantResponseCounterclaimToLegalRepresentativePaymentSuccess(
-                legalRepresentativeEntity,
+                legalRepresentativeOrganisationEntity,
                 "PAY-123",
                 defendantResponse.getPcsCase(),
                 defendantResponse
-            ),
-            notificationService.sendDefendantResponseConfirmationToLegalRepresentativePaymentRequired(legalRepresentativeEntity,defendantResponse.getPcsCase(),defendantResponse)
+            )
         );
 
         return ResponseEntity.ok(responses);

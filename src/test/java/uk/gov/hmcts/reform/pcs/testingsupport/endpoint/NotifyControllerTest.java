@@ -16,7 +16,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantRespon
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.PaymentAgreementEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DefendantResponseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.feeandpay.FeePaymentRepository;
-import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.LegalRepresentativeRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.LegalRepresentativeOrganisationRepository;
 import uk.gov.hmcts.reform.pcs.notify.model.EmailNotificationRequest;
 import uk.gov.hmcts.reform.pcs.notify.model.EmailNotificationResponse;
 import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
@@ -47,7 +47,7 @@ class NotifyControllerTest {
     private FeePaymentRepository feePaymentRepository;
 
     @Mock
-    private LegalRepresentativeRepository legalRepresentativeRepository;
+    private LegalRepresentativeOrganisationRepository legalRepresentativeOrganisationRepository;
 
     private NotifyController notifyController;
 
@@ -60,7 +60,8 @@ class NotifyControllerTest {
 
     @BeforeEach
     void setUp() {
-        notifyController = new NotifyController(notificationService, defendantResponseRepository, feePaymentRepository, legalRepresentativeRepository);
+        notifyController = new NotifyController(notificationService, defendantResponseRepository, feePaymentRepository,
+                                                legalRepresentativeOrganisationRepository);
     }
 
     @Nested
@@ -158,7 +159,7 @@ class NotifyControllerTest {
                 notificationService,
                 defendantResponseRepository,
                 feePaymentRepository,
-                legalRepresentativeRepository
+                legalRepresentativeOrganisationRepository
             );
 
             assertThat(controller).isNotNull();

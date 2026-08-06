@@ -47,7 +47,6 @@ import uk.gov.hmcts.reform.pcs.notify.template.personalisation.BasePersonalisati
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.ClaimantBasePersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.CounterclaimPaymentSuccessPersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.TemplatePersonalisation;
-import uk.gov.hmcts.reform.pcs.reference.service.OrganisationDetailsService;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -90,9 +89,6 @@ class NotificationServiceTest {
 
     @Mock
     private PartyService partyService;
-
-    @Mock
-    private OrganisationDetailsService organisationDetailsService;
 
     @Mock
     private PcsCaseService pcsCaseService;

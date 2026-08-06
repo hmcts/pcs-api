@@ -18,13 +18,10 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.LegalRepresentativeRepository;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
-import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.ClaimResponseService;
-import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.DefendantResponseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.CounterClaimSubmitConfirmationService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.RespondPossessionClaimSubmitPersistenceResult;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.RespondPossessionClaimSubmitService;
@@ -34,7 +31,6 @@ import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 import uk.gov.hmcts.reform.pcs.model.JourneyType;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
-import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.List;
 import java.util.Optional;
@@ -59,15 +55,9 @@ class LegalRepSubmissionEventStrategyTest {
     @Mock
     private DraftCaseDataService draftCaseDataService;
     @Mock
-    private ClaimResponseService claimResponseService;
-    @Mock
-    private DefendantResponseService defendantResponseService;
-    @Mock
     private SelectedPartyRetriever selectedPartyRetriever;
     @Mock
     private PartyService partyService;
-    @Mock
-    private LegalRepresentativeRepository legalRepresentativeRepository;
     @Mock
     private PcsCaseService pcsCaseService;
     @Mock
@@ -93,14 +83,13 @@ class LegalRepSubmissionEventStrategyTest {
         underTest = new LegalRepSubmissionEventStrategy(
             draftCaseDataService,
             partyService,
-            legalRepresentativeRepository,
             pcsCaseService,
             selectedPartyRetriever,
             submitResponseFactory,
             respondPossessionClaimSubmitService,
             counterClaimSubmitConfirmationService,
             securityContextService,
-            notificationService
+            notificationService,
             organisationService
         );
     }
@@ -148,11 +137,7 @@ class LegalRepSubmissionEventStrategyTest {
         // when(submitResponseFactory.success()).thenReturn(submitResponse);
         when(eventPayload.caseReference()).thenReturn(CASE_REFERENCE);
         when(eventPayload.caseData()).thenReturn(caseData);
-        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity(representedPartyId));
-        when(legalRepresentativeRepository.findByPartyLinkedToLegalRepresentativeAndActive(representedPartyId))
-            .thenReturn(legalRepresentativeEntity());
         when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(organisationId);
-
         when(partyService.getPartyEntityById(representedPartyId, CASE_REFERENCE)).thenReturn(representedParty);
         when(respondPossessionClaimSubmitService.persistFinalSubmit(
             CASE_REFERENCE,

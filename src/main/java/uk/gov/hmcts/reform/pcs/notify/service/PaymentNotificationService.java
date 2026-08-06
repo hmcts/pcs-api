@@ -5,12 +5,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeOrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.CounterClaimRepository;
-import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.LegalRepresentativeRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.LegalRepresentativeOrganisationRepository;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.UUID;
@@ -23,7 +23,7 @@ public class PaymentNotificationService {
     private final NotificationService notificationService;
     private final CounterClaimRepository counterClaimRepository;
     private final SecurityContextService securityContextService;
-    private final LegalRepresentativeRepository legalRepresentativeRepository;
+    private final LegalRepresentativeOrganisationRepository legalRepresentativeOrganisationRepository;
 
     @Transactional
     public void sendCounterClaimPaymentSuccessNotification(UUID counterClaimId, String paymentReference) {
@@ -44,8 +44,9 @@ public class PaymentNotificationService {
         }
 
         UUID userUUID = securityContextService.getCurrentUserId();
-        LegalRepresentativeEntity legalRepresentative = legalRepresentativeRepository
-            .findByPartyLinkedToLegalRepresentativeAndActive(defendantResponse.getParty().getId()).orElse(null);
+        LegalRepresentativeOrganisationEntity legalRepresentativeOrganisationEntity =
+            legalRepresentativeOrganisationRepository.findByPartyLinkedToLegalRepresentativeOrganisationAndActive(
+                defendantResponse.getParty().getId()).orElse(null);
 
         log.info("Sending counterclaim payment success email case reference {}", pcsCase.getCaseReference());
 
@@ -53,11 +54,11 @@ public class PaymentNotificationService {
             log.info("Sending counterclaim payment success email case reference {}", pcsCase.getCaseReference());
             notificationService
                 .sendDefendantResponseCounterclaimPaymentSuccessEmailNotification(defendantResponse, paymentReference);
-        } else if (userUUID.equals(legalRepresentative.getIdamId())) {
+        } else if (userUUID.equals(legalRepresentativeOrganisationEntity.getId())) {
             log.info("Sending counterclaim payment success email to legal representative case reference {}",
                      pcsCase.getCaseReference());
             notificationService.sendDefendantResponseCounterclaimToLegalRepresentativePaymentSuccess(
-                legalRepresentative,
+                legalRepresentativeOrganisationEntity,
                 paymentReference,
                 defendantResponse.getPcsCase(),
                 defendantResponse);
