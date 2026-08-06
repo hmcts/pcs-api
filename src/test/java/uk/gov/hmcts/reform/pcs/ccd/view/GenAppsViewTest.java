@@ -30,6 +30,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -54,9 +55,9 @@ class GenAppsViewTest {
     @BeforeEach
     void setUp() {
         lenient().when(pcsCaseEntity.getCaseReference()).thenReturn(TEST_CASE_REFERENCE);
-        when(userRoleService.getCurrentUserCaseRoles(TEST_CASE_REFERENCE))
+        lenient().when(userRoleService.getCurrentUserCaseRoles(TEST_CASE_REFERENCE))
             .thenReturn(new UserRoles(CURRENT_USER_IDAM_ID, List.of()));
-        when(genAppVisibilityService.isGenAppVisibleToUser(
+        lenient().when(genAppVisibilityService.isGenAppVisibleToUser(
             isA(GenAppEntity.class),
             eq(CURRENT_USER_IDAM_ID),
             eq(List.of())
@@ -66,6 +67,19 @@ class GenAppsViewTest {
         pcsCase = PCSCase.builder().build();
 
         underTest = new GenAppsView(modelMapper, userRoleService, genAppVisibilityService);
+    }
+
+    @Test
+    void shouldNotFetchUserRolesWhenCaseHasNoGeneralApplications() {
+        // Given
+        when(pcsCaseEntity.getGenApps()).thenReturn(Set.of());
+
+        // When
+        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+
+        // Then
+        assertThat(pcsCase.getGenApps()).isEmpty();
+        verifyNoInteractions(userRoleService, genAppVisibilityService);
     }
 
     @Test

@@ -29,6 +29,11 @@ public class GenAppsView {
     private final GenAppVisibilityService genAppVisibilityService;
 
     public void setCaseFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
+        if (pcsCaseEntity.getGenApps().isEmpty()) {
+            pcsCase.setGenApps(List.of());
+            return;
+        }
+
         UserRoles userRoles =
             userRoleService.getCurrentUserCaseRoles(pcsCaseEntity.getCaseReference());
 
