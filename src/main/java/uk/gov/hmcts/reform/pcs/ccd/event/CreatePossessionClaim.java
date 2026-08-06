@@ -10,8 +10,11 @@ import uk.gov.hmcts.ccd.sdk.api.Event.EventBuilder;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
+import uk.gov.hmcts.ccd.sdk.type.OrganisationPolicy;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.AccessProfile;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
+import uk.gov.hmcts.reform.pcs.ccd.domain.GroupAccessFields;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.model.RoleAssignmentTaskData;
@@ -24,11 +27,13 @@ import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.task.CaseRoleAssignmentTaskComponent;
 import uk.gov.hmcts.reform.pcs.ccd.util.FeeApplier;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.time.Instant;
 import java.util.UUID;
 
+import static java.util.Optional.ofNullable;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.createPossessionClaim;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
 
@@ -39,6 +44,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUD
 public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole> {
 
     private final PcsCaseService pcsCaseService;
+    private final OrganisationService organisationService;
     private final FeeApplier feeApplier;
     private final EnterPropertyAddress enterPropertyAddress;
     private final CrossBorderPostcodeSelection crossBorderPostcodeSelection;
@@ -55,7 +61,6 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
                 .initialState(State.AWAITING_SUBMISSION_TO_HMCTS)
                 .showSummary()
                 .name("Make a claim")
-                .grant(Permission.CRUD, UserRole.PCS_SOLICITOR)
                 // Group access: creation is authorised by the PRM-assigned claimant capacities
                 // alone; there is no case yet, so RAS evaluates the org/group role directly.
                 .grant(Permission.CRU, UserRole.CLAIMANT_ORG)
@@ -93,6 +98,7 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
         pcsCaseService.createCase(caseReference, caseData.getPropertyAddress(), caseData.getLegislativeCountry());
 
         String userId = securityContextService.getCurrentUserDetails().getUid();
+        setOrganisationPolicy(caseData);
         scheduleRoleAssignment(caseReference, userId);
 
         return SubmitResponse.defaultResponse();
@@ -112,5 +118,20 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
                 .data(taskData)
                 .scheduledTo(Instant.now())
         );
+    }
+
+    private void setOrganisationPolicy(PCSCase caseData) {
+        String organisationIdForCurrentUser = organisationService.getOrganisationIdForCurrentUser();
+        if (organisationIdForCurrentUser != null) {
+            log.info("Organisation ID for current user is {}.", organisationIdForCurrentUser);
+            ofNullable(caseData.getGroupAccessFields())
+                .orElse(GroupAccessFields.<AccessProfile>builder().build())
+                .setOrganisationPolicyField(
+                    OrganisationPolicy.<AccessProfile>builder().orgPolicyReference(organisationIdForCurrentUser)
+                        .orgPolicyCaseAssignedRole(AccessProfile.CLAIMANT_SOLICITOR).build()
+                );
+        } else {
+            log.warn("Organisation ID for current user is null. Organisation policy will not be set.");
+        }
     }
 }
