@@ -65,6 +65,7 @@ test.describe('Case management - Case Worker Manage Hearing @nightly', async () 
     });
     await performAction('clickButton', checkYourAnswersCancelHearing.submitButton);
     await performAction('confirmHearingCancelled');
+    await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage hearing');
   })
 });
 
