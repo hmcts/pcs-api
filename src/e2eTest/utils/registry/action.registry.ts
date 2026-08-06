@@ -21,6 +21,7 @@ import {FeeAndPayAction } from '@utils/actions/custom-actions/commonComponent/fe
 import {CaseFlagAction } from '@utils/actions/custom-actions/commonComponent/caseFlag.action';
 import {CaseLinking } from '@utils/actions/custom-actions/commonComponent/caseLinking.action';
 import { LinkSolicitorAPIAction } from '@utils/actions/custom-actions/linkSolicitorAPI.action';
+import {DocumentsAction} from "@utils/actions/custom-actions";
 
 
 export class ActionRegistry {
@@ -159,7 +160,9 @@ export class ActionRegistry {
     ['requestRemission', new FeeAndPayAction()],
     ['requestRefund', new FeeAndPayAction()],
     ['approveRefund', new FeeAndPayAction()],
-    ['rejectRefund', new FeeAndPayAction()]
+    ['rejectRefund', new FeeAndPayAction()],
+    ['uploadAdditionalDocumentsInfo', new DocumentsAction()],
+    ['verifyDocumentRelatesToApplication', new DocumentsAction()],
   ]);
 
   static getAction(actionName: string): IAction {
