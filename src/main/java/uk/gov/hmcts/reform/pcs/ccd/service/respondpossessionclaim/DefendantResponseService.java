@@ -104,11 +104,11 @@ public class DefendantResponseService {
      * <p>This approach ensures concurrent defendants can submit simultaneously
      * without blocking each other or other case operations.
      *
-     * @param caseReference           The case reference number
-     * @param possessionClaimResponse the possession claim response from draft data
-     * @return DefendantResponseEntity The saved entiry
-     * @throws IllegalStateException if user ID is null, response already exists,
-     *                               party not found, or claim not found
+     * @param caseReference             The case reference number
+     * @param possessionClaimResponse   The possession claim response from draft data
+     * @return DefendantResponseEntity  The saved entity
+     * @throws IllegalStateException    If user ID is null, response already exists,
+     *                                  party not found, or claim not found
      */
     public DefendantResponseEntity saveDefendantResponse(long caseReference,
                                                          PossessionClaimResponse possessionClaimResponse,

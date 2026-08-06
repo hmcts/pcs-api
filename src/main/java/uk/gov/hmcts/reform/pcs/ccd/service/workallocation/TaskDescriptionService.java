@@ -49,7 +49,7 @@ public class TaskDescriptionService {
         return renderTemplate(templateName, context);
     }
 
-    public String createReviewResponseAndCounterclaimDescription(long caseReference,
+    public String createReviewResponseAndCounterClaimDescription(long caseReference,
                                                                  ClaimEntity mainClaim,
                                                                  DefendantResponseEntity defendantResponseEntity,
                                                                  List<DocumentEntity> counterClaimDocumentEntities) {

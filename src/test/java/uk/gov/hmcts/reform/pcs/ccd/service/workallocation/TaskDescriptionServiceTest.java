@@ -184,7 +184,7 @@ class TaskDescriptionServiceTest {
 
             // When
             String description = underTest
-                .createReviewResponseAndCounterclaimDescription(
+                .createReviewResponseAndCounterClaimDescription(
                     CASE_REFERENCE,
                     mainClaim,
                     defendantResponseEntity,
@@ -225,7 +225,7 @@ class TaskDescriptionServiceTest {
 
             // When
             Throwable throwable = catchThrowable(
-                () -> underTest.createReviewResponseAndCounterclaimDescription(
+                () -> underTest.createReviewResponseAndCounterClaimDescription(
                     CASE_REFERENCE,
                     mainClaim,
                     defendantResponseEntity,

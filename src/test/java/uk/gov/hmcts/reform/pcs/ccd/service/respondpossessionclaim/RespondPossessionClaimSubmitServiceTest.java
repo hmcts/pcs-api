@@ -244,7 +244,7 @@ class RespondPossessionClaimSubmitServiceTest {
         String expectedDescription = "some description";
         ClaimEntity mainClaim = stubMainClaim();
         when(taskDescriptionService
-                 .createReviewResponseAndCounterclaimDescription(
+                 .createReviewResponseAndCounterClaimDescription(
                      CASE_REFERENCE,
                      mainClaim,
                      defendantResponseEntity,

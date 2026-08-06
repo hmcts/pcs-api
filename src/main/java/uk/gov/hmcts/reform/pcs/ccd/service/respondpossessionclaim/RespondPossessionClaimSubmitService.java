@@ -112,7 +112,7 @@ public class RespondPossessionClaimSubmitService {
 
 
 
-        String taskDescription = taskDescriptionService.createReviewResponseAndCounterclaimDescription(
+        String taskDescription = taskDescriptionService.createReviewResponseAndCounterClaimDescription(
             caseReference,
             pcsCaseEntity.getMainClaim(),
             defendantResponseEntity,
