@@ -159,7 +159,7 @@ class CaseworkerDocumentServiceTest {
     }
 
     @Test
-    void shouldNotModifyNameOrSetCategoryForUnknownRelatedSubmissionPrefix() {
+    void shouldNotModifyNameForUnknownRelatedSubmissionPrefix() {
         // Given
         DynamicList relatedPartyList = dynamicListWithSelection(SELECTED_PARTY_ID);
 
@@ -184,7 +184,7 @@ class CaseworkerDocumentServiceTest {
         // Then
         DocumentEntity savedDocumentEntity = getSavedDocumentEntity();
         assertThat(savedDocumentEntity.getFileName()).isEqualTo(originalFilename);
-        assertThat(savedDocumentEntity.getCategoryId()).isNull();
+        assertThat(savedDocumentEntity.getCategoryId()).isEqualTo(CaseFileCategory.UNCATEGORISED_DOCUMENTS.getId());
     }
 
     @ParameterizedTest
