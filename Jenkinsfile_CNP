@@ -52,7 +52,7 @@ withPipeline(type, product, component) {
   enableDbMigration('pcs')
 
   //skipping sync with demo/perftest during SIT testing/DB migration
-  syncBranchesWithMaster(['ithc', 'perftest'])
+  syncBranchesWithMaster(['ithc', 'perftest', 'demo'])
 
 
   onPR() {
@@ -107,9 +107,8 @@ withPipeline(type, product, component) {
   }
 
   onDemo {
-    // disabling new case definition uploads to demo during SIT testing/DB migration
-    //    setDemoEnvVars()
-    //    enableHighLevelDataSetup()
+    setDemoEnvVars()
+    enableHighLevelDataSetup()
   }
 
   onIthc {
@@ -177,7 +176,7 @@ withPipeline(type, product, component) {
 
   afterSuccess('akschartsinstall') {
     onPR {
-      for (label in githubApi.getLabelsbyPattern(env.BRANCH_NAME, "pr-values:wa") ) {
+      if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "pr-values:wa").size() > 0) {
         env.CAMUNDA_BASE_URL = "https://camunda-pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
         println """After akschartsinstall upload DMN and BPMN diagrams""".stripIndent()
         uploadDmnDiagrams()
@@ -301,7 +300,7 @@ def uploadDmnDiagrams() {
   dir("${WORKSPACE}/bin") {
     tenantId = "pcs"
     product = "pcs"
-    sh "./wa/import-dmn-diagram.sh ${WORKSPACE} ${env.ENVIRONMENT} ${tenantId} ${product}"
+    sh "./wa/import-dmn-diagrams.sh ${WORKSPACE} ${env.ENVIRONMENT} ${tenantId} ${product}"
   }
 }
 
