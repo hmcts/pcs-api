@@ -174,7 +174,24 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
         configureCaseFileCategories(builder);
     }
 
+    /**
+     * Group access: the access types each organisation profile gets, and the roles they map to.
+     *
+     * <p>One name per capacity - claimant, claimant_solicitor, defendant_solicitor - used as the
+     * group role PRM assigns to users, the CaseAssignedRoleField that CCD matches against an
+     * organisation policy when deriving CaseAccessGroups, and the access profile that permissions
+     * attach to. These are the names POFCC-368 registers in the RAS catalogue; assignments with
+     * any other name are rejected.
+     *
+     * <p>claimant is shared by every organisation that IS the claimant (local authorities and the
+     * "other" profiles); the solicitor roles are for organisations representing a party, who can
+     * act on either side. Display orders must be unique across all AccessType rows or the def
+     * store rejects the import.
+     */
     private static void configureGaAccessTypes(ConfigBuilder<PCSCase, State, AccessProfile> builder) {
+        // Case creation has no case to evaluate against, so it is authorised by the plain
+        // organisational role. POFCC-368 registers claimant with caseAccessGroupId optional for
+        // exactly this: the same role name, held without a group id.
         builder.accessType("create-cases")
             .organisationProfileId("LOCALAUTH_PROFILE")
             .accessMandatory(true)
@@ -183,24 +200,125 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
             .hintText("Access to create cases")
             .displayOrder(1)
             .liveTo("01/01/2027");
-        builder.accessType("prof-org-claimant-access")
-            .organisationProfileId("LOCALAUTH_PROFILE")
-            .accessMandatory(false)
+
+        // A solicitor firm can act on either side, and on opposite sides of different cases, so the
+        // two capacities are separate options for the organisation's admin. One name per capacity,
+        // everywhere: case role, group role and access profile are all the name POFCC-368 registers
+        // in the RAS catalogue.
+        builder.accessType("solicitor-org-claimant-access")
+            .organisationProfileId("SOLICITOR_PROFILE")
+            .accessMandatory(true)
             .accessDefault(false)
             .display(true)
-            .description("Can manage all cases associated with this organisation")
+            .description("Can manage all cases associated with this organisation as claimant")
             .hintText("Assign to Users to enable access to all cases associated with this organisation")
             .displayOrder(2)
+            .liveTo("01/01/2027");
+        builder.accessType("solicitor-org-defendant-access")
+            .organisationProfileId("SOLICITOR_PROFILE")
+            .accessMandatory(true)
+            .accessDefault(false)
+            .display(true)
+            .description("Can manage all cases associated with this organisation as defendant")
+            .hintText("Assign to Users to enable access to all cases associated with this organisation")
+            .displayOrder(3)
+            .liveTo("01/01/2027");
+        builder.accessType("prof-org-claimant-access")
+            .organisationProfileId("LOCALAUTH_PROFILE")
+            .accessMandatory(true)
+            .accessDefault(false)
+            .display(true)
+            .description("Can manage all cases associated with this organisation as claimant")
+            .hintText("Assign to Users to enable access to all cases associated with this organisation")
+            .displayOrder(4)
+            .liveTo("01/01/2027");
+        builder.accessType("prof-org-claimant-access")
+            .organisationProfileId("OTHER_REALT_PROFILE")
+            .accessMandatory(true)
+            .accessDefault(false)
+            .display(true)
+            .description("Can manage all cases associated with this organisation as claimant")
+            .hintText("Assign to Users to enable access to all cases associated with this organisation")
+            .displayOrder(5)
+            .liveTo("01/01/2027");
+        builder.accessType("prof-org-claimant-access")
+            .organisationProfileId("OTHER_PROP_PROFILE")
+            .accessMandatory(true)
+            .accessDefault(false)
+            .display(true)
+            .description("Can manage all cases associated with this organisation as claimant")
+            .hintText("Assign to Users to enable access to all cases associated with this organisation")
+            .displayOrder(6)
+            .liveTo("01/01/2027");
+        builder.accessType("prof-org-claimant-access")
+            .organisationProfileId("OTHER_NFP_PROFILE")
+            .accessMandatory(true)
+            .accessDefault(false)
+            .display(true)
+            .description("Can manage all cases associated with this organisation as claimant")
+            .hintText("Assign to Users to enable access to all cases associated with this organisation")
+            .displayOrder(7)
+            .liveTo("01/01/2027");
+        builder.accessType("prof-org-claimant-access")
+            .organisationProfileId("OTHER_CHARITY_PROFILE")
+            .accessMandatory(true)
+            .accessDefault(false)
+            .display(true)
+            .description("Can manage all cases associated with this organisation as claimant")
+            .hintText("Assign to Users to enable access to all cases associated with this organisation")
+            .displayOrder(8)
             .liveTo("01/01/2027");
 
         builder.accessTypeRole("create-cases")
             .organisationProfileId("LOCALAUTH_PROFILE")
-            .organisationalRoleName(AccessProfile.CLAIMANT.getRole())
+            .organisationalRoleName("claimant")
+            .liveTo("01/01/2027");
+        builder.accessTypeRole("solicitor-org-claimant-access")
+            .organisationProfileId("SOLICITOR_PROFILE")
+            .groupRoleName("claimant_solicitor")
+            .caseAssignedRoleField("claimant_solicitor")
+            .groupAccessEnabled(true)
+            .caseAccessGroupIdTemplate("PCS:PCS:solicitor-org-claimant-access:claimant_solicitor:$ORGID$")
+            .liveTo("01/01/2027");
+        builder.accessTypeRole("solicitor-org-defendant-access")
+            .organisationProfileId("SOLICITOR_PROFILE")
+            .groupRoleName("defendant_solicitor")
+            .caseAssignedRoleField("defendant_solicitor")
+            .groupAccessEnabled(true)
+            .caseAccessGroupIdTemplate("PCS:PCS:solicitor-org-defendant-access:defendant_solicitor:$ORGID$")
             .liveTo("01/01/2027");
         builder.accessTypeRole("prof-org-claimant-access")
             .organisationProfileId("LOCALAUTH_PROFILE")
-            .groupRoleName(AccessProfile.CLAIMANT.getRole())
-            .caseAssignedRoleField(AccessProfile.CLAIMANT.getRole())
+            .groupRoleName("claimant")
+            .caseAssignedRoleField("claimant")
+            .groupAccessEnabled(true)
+            .caseAccessGroupIdTemplate("PCS:PCS:prof-org-claimant-access:claimant:$ORGID$")
+            .liveTo("01/01/2027");
+        builder.accessTypeRole("prof-org-claimant-access")
+            .organisationProfileId("OTHER_REALT_PROFILE")
+            .groupRoleName("claimant")
+            .caseAssignedRoleField("claimant")
+            .groupAccessEnabled(true)
+            .caseAccessGroupIdTemplate("PCS:PCS:prof-org-claimant-access:claimant:$ORGID$")
+            .liveTo("01/01/2027");
+        builder.accessTypeRole("prof-org-claimant-access")
+            .organisationProfileId("OTHER_PROP_PROFILE")
+            .groupRoleName("claimant")
+            .caseAssignedRoleField("claimant")
+            .groupAccessEnabled(true)
+            .caseAccessGroupIdTemplate("PCS:PCS:prof-org-claimant-access:claimant:$ORGID$")
+            .liveTo("01/01/2027");
+        builder.accessTypeRole("prof-org-claimant-access")
+            .organisationProfileId("OTHER_NFP_PROFILE")
+            .groupRoleName("claimant")
+            .caseAssignedRoleField("claimant")
+            .groupAccessEnabled(true)
+            .caseAccessGroupIdTemplate("PCS:PCS:prof-org-claimant-access:claimant:$ORGID$")
+            .liveTo("01/01/2027");
+        builder.accessTypeRole("prof-org-claimant-access")
+            .organisationProfileId("OTHER_CHARITY_PROFILE")
+            .groupRoleName("claimant")
+            .caseAssignedRoleField("claimant")
             .groupAccessEnabled(true)
             .caseAccessGroupIdTemplate("PCS:PCS:prof-org-claimant-access:claimant:$ORGID$")
             .liveTo("01/01/2027");

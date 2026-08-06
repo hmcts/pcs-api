@@ -87,6 +87,8 @@ ccd:
         ELASTIC_SEARCH_INDEX_SHARDS: 1
         ELASTIC_SEARCH_INDEX_SHARDS_REPLICAS: 0
         DEFINITION_STORE_S2S_AUTHORISED_SERVICES: "ccd_data,ccd_gw,ccd_admin,jui_webapp,pui_webapp,aac_manage_case_assignment,xui_webapp,am_org_role_mapping_service,pcs_api"
+        # Without this def store parses but silently discards the AccessType sheets.
+        ENABLE_CASE_GROUP_ACCESS: true
       ingressHost: ccd-definition-store-${SERVICE_FQDN}
       keyVaults:
         ccd:
@@ -119,6 +121,9 @@ ccd:
         ELASTIC_SEARCH_HOSTS: "http://{{ .Release.Name }}-es-master:9200"
         CCD_S2S_AUTHORISED_SERVICES_CASE_USER_ROLES: "aac_manage_case_assignment,pcs_api,pcs_frontend"
         CASE_DOCUMENT_AM_URL: http://${SERVICE_NAME}-cdam
+        ENABLE_CASE_GROUP_ACCESS_FILTERING: true
+        # Group access roles only exist in the per-PR RAS (POFCC-368 image), not AAT.
+        ROLE_ASSIGNMENT_URL: http://${SERVICE_NAME}-am-role-assignment-service
       ingressHost: ccd-data-store-api-${SERVICE_FQDN}
       autoscaling:
         enabled: false
@@ -197,7 +202,8 @@ ccd:
         RAS_ENV: pr
       devmemoryRequests: 1024Mi
       devcpuRequests: 250m
-      devmemoryLimits: 2048Mi
+      # 2048Mi OOM-killed the pod (exit 137) during the drools/catalogue startup spike
+      devmemoryLimits: 3072Mi
       devcpuLimits: 1500m
       keyVaults:
         am:
@@ -348,6 +354,10 @@ am-org-role-mapping-service:
       REFRESH_BULK_ASSIGNMENT_INCLUDE_BOOKINGS: true
       DB_FEATURE_FLAG_ENABLE: st_cic_wa_1_0
       ORM_ENV: pr
+      CCD_DEF_STORE_APP_URL: http://${SERVICE_NAME}-ccd-definition-store
+      PROFESSIONAL_REF_APP_URL: http://rd-professional-api-aat.service.core-compute-aat.internal
+      PROFESSIONAL_SCHEDULING_ENABLED: true
+      PROFESSIONAL_REFRESH_API_ENABLED: true
 
 aac-manage-case-assignment:
   enabled: true

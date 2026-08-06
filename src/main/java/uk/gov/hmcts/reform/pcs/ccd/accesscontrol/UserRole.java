@@ -23,14 +23,25 @@ public enum UserRole implements HasRole {
     RAS_VALIDATOR("caseworker-ras-validation", Set.of(R), IDAM),
 
     CITIZEN("citizen", CRU, IDAM),
-    SOLICITOR("[SOLICITOR]", CRU, RAS),
+
+    // The group-access capacities (POFCC-368 catalogue names). Each maps to itself as access
+    // profile: the same name is the group role PRM assigns, the CaseAssignedRoleField that CCD
+    // matches against an organisation policy when deriving CaseAccessGroups, and the profile
+    // permissions attach to.
+    CLAIMANT_ORG("claimant", CRU, RAS),
+    CLAIMANT_SOLICITOR_ORG("claimant_solicitor", CRU, RAS),
+    DEFENDANT_SOLICITOR_ORG("defendant_solicitor", CRU, RAS),
+
+    // Legacy per-case roles. [DEFENDANT] is the citizen defendant's role and stays; the two
+    // solicitor roles are superseded by the group-access capacities and go once the creator and
+    // defendant-solicitor flows assign the capacity roles instead.
     DEFENDANT("[DEFENDANT]", CRU, RAS),
     CLAIMANT_SOLICITOR("[CLAIMANTSOLICITOR]", CRU, RAS),
     DEFENDANT_SOLICITOR("[DEFENDANTSOLICITOR]", CRU, RAS),
-    CLAIMANT("claimant", CRU, RAS),
 
     PCS_CASE_WORKER("caseworker-pcs", Set.of(R), IDAM),
     PCS_SOLICITOR("caseworker-pcs-solicitor", CRU, IDAM),
+
     HMCTS_ADMIN("hmcts-admin", Set.of(R), RAS, GS_PROFILE),
     HMCTS_JUDICIARY("hmcts-judiciary", Set.of(R), RAS, GS_PROFILE),
     HMCTS_CTSC("hmcts-ctsc", Set.of(R), RAS, GS_PROFILE),

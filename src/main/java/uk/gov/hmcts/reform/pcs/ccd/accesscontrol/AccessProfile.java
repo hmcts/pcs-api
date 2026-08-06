@@ -16,12 +16,17 @@ public enum AccessProfile implements HasRole {
     CREATOR("[CREATOR]", CRU),
     RAS_VALIDATOR("caseworker-ras-validation", Set.of(R)),
     CITIZEN("citizen", CRU),
-    CLAIMANT("claimant", CRU),
     DEFENDANT("[DEFENDANT]", CRU),
     CLAIMANT_SOLICITOR("[CLAIMANTSOLICITOR]", CRU),
     DEFENDANT_SOLICITOR("[DEFENDANTSOLICITOR]", CRU),
     PCS_CASE_WORKER("caseworker-pcs", Set.of(R)),
     PCS_SOLICITOR("caseworker-pcs-solicitor", CRU),
+    // The group-access capacities: one name per capacity, used as the group role PRM assigns
+    // (POFCC-368 catalogue), the CaseAssignedRoleField that CCD matches against an organisation
+    // policy when deriving CaseAccessGroups, and the access profile permissions attach to.
+    CLAIMANT_ORG("claimant", CRU),
+    CLAIMANT_SOLICITOR_ORG("claimant_solicitor", CRU),
+    DEFENDANT_SOLICITOR_ORG("defendant_solicitor", CRU),
 
     JUDGE("judge", CRU),
     FEE_PAID_JUDGE("fee-paid-judge", CRU),

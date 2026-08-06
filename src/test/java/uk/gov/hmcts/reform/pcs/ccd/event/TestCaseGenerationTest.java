@@ -111,7 +111,7 @@ class TestCaseGenerationTest {
         verify(typeBuilder).initialState(AWAITING_SUBMISSION_TO_HMCTS);
         verify(eventBuilder).showSummary();
         verify(eventBuilder).name(EVENT_NAME);
-        verify(eventBuilder).grant(Permission.CRUD, UserRole.PCS_SOLICITOR);
+        verify(eventBuilder).grant(Permission.CRUD, UserRole.CLAIMANT_SOLICITOR_ORG);
     }
 
     @Test
