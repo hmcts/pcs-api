@@ -22,7 +22,6 @@ import uk.gov.hmcts.reform.pcs.notify.template.personalisation.BasePersonalisati
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.ClaimantBasePersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.CounterclaimPaymentSuccessPersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.LegalRepresentativeBasePersonalisation;
-import uk.gov.hmcts.reform.pcs.reference.service.OrganisationDetailsService;
 
 import java.util.Map;
 import java.util.UUID;
