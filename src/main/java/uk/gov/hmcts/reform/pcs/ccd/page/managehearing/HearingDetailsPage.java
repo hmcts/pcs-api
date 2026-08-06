@@ -3,13 +3,17 @@ package uk.gov.hmcts.reform.pcs.ccd.page.managehearing;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
+import uk.gov.hmcts.ccd.sdk.api.Event.EventBuilder;
+import uk.gov.hmcts.ccd.sdk.api.FieldCollection.FieldCollectionBuilder;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
-import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.Hearing;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.Hearing;
 import uk.gov.hmcts.reform.pcs.ccd.page.CcdPage;
+import uk.gov.hmcts.reform.pcs.ccd.service.HearingService;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
 import java.util.List;
@@ -18,17 +22,26 @@ import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 
 @AllArgsConstructor
 @Component
-public class AddHearingPage implements CcdPageConfiguration, CcdPage {
+public class HearingDetailsPage implements CcdPageConfiguration, CcdPage {
 
     private final TextAreaValidationService textAreaValidationService;
+    private final HearingService hearingService;
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
         String pageKey = getPageKey();
-        pageBuilder
-            .page(pageKey, this::midEvent)
-            .showCondition("manageHearingOption=\"ADD\"")
-            .pageLabel("Add a hearing")
+        configureHearingDetailsPage(
+            pageBuilder
+                .page(pageKey, this::midEvent)
+                .showCondition("manageHearingOption=\"ADD\" OR manageHearingOption=\"EDIT\"")
+                .pageLabel("Manage hearing")
+        );
+    }
+
+    static void configureHearingDetailsPage(
+        FieldCollectionBuilder<PCSCase, State, EventBuilder<PCSCase, UserRole, State>> page
+    ) {
+        page
             .readonly(PCSCase::getHearingLocation, NEVER_SHOW)
             .label("separator", "---")
             .label(
@@ -47,13 +60,15 @@ public class AddHearingPage implements CcdPageConfiguration, CcdPage {
                     <span class="form-hint ng-star-inserted">Enter duration</span>
                 """
             )
+            .mandatory(Hearing::getDurationDays)
             .mandatory(Hearing::getDurationHours)
             .mandatory(Hearing::getDurationMinutes)
             .optional(Hearing::getNotes)
             .mandatory(Hearing::getIssueNotice)
             .mandatory(Hearing::getIsWithoutNotice, "hearing_IssueNotice=\"YES\"")
             .done()
-            .mandatory(PCSCase::getPartyMultiSelectionList, "hearing_IsWithoutNotice=\"YES\"", null,
+            .mandatory(PCSCase::getPartyMultiSelectionList,
+                       "hearing_IssueNotice=\"YES\" AND hearing_IsWithoutNotice=\"YES\"", null,
                        "Who should receive the hearing notice?", "Select all that apply")
             .complex(PCSCase::getHearing)
             .optional(Hearing::getAdditionalInformation)
@@ -81,6 +96,7 @@ public class AddHearingPage implements CcdPageConfiguration, CcdPage {
                     TextAreaValidationService.MEDIUM_TEXT_LIMIT
                 )
         );
+        hearingService.storeDraftHearingForm(caseData);
         return textAreaValidationService.createValidationResponse(caseData, validationErrors);
     }
 }

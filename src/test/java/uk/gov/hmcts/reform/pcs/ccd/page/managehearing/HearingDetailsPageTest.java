@@ -5,11 +5,13 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.ccd.sdk.api.Field;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.Hearing;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
+import uk.gov.hmcts.reform.pcs.ccd.service.HearingService;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
 import java.util.List;
@@ -21,10 +23,13 @@ import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
-public class AddHearingPageTest extends BasePageTest {
+public class HearingDetailsPageTest extends BasePageTest {
 
     @Mock
     private TextAreaValidationService textAreaValidationService;
+
+    @Mock
+    private HearingService hearingService;
 
     @BeforeEach
     void setUp() {
@@ -36,7 +41,20 @@ public class AddHearingPageTest extends BasePageTest {
                 .errors(errors.isEmpty() ? null : errors)
                 .build();
         }).when(textAreaValidationService).createValidationResponse(any(), any());
-        setPageUnderTest(new AddHearingPage(textAreaValidationService));
+        setPageUnderTest(new HearingDetailsPage(textAreaValidationService, hearingService));
+    }
+
+    @Test
+    void shouldOnlyShowNoticeRecipientsWhenNoticeIsIssuedWithoutNotice() {
+        List<Field> fields = event.getFields().getFields().stream()
+            .map(Field.FieldBuilder::build)
+            .toList();
+
+        assertThat(fields)
+            .filteredOn(field -> "partyMultiSelectionList".equals(field.getId()))
+            .singleElement()
+            .satisfies(field -> assertThat(field.getShowCondition())
+                .isEqualTo("hearing_IssueNotice=\"YES\" AND hearing_IsWithoutNotice=\"YES\""));
     }
 
     @Test
@@ -67,5 +85,6 @@ public class AddHearingPageTest extends BasePageTest {
                 && f.fieldLabel.equals("Enter any additional information")
                 && f.maxCharacters == 500)
         );
+        verify(hearingService).storeDraftHearingForm(caseData);
     }
 }
