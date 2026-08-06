@@ -502,7 +502,7 @@ class TestingSupportControllerTest {
     @Test
     void shouldRescheduleCamundaRequest() {
         // Given
-        when(jdbcTemplate.query(anyString(), any(RowMapper.class), any(Instant.class)))
+        when(jdbcTemplate.query(anyString(), any(RowMapper.class)))
             .thenReturn(List.of("db-task-id"));
 
         // When
@@ -530,7 +530,7 @@ class TestingSupportControllerTest {
     @Test
     void shouldHandleRescheduleCamundaRequestFailure() {
         // Given
-        when(jdbcTemplate.query(anyString(), any(RowMapper.class), any(Instant.class)))
+        when(jdbcTemplate.query(anyString(), any(RowMapper.class)))
             .thenReturn(List.of("db-task-id"));
 
         doThrow(new RuntimeException("Scheduler failure")).when(schedulerClient)

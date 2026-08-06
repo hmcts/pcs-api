@@ -533,10 +533,9 @@ public class TestingSupportController {
                 """
                     SELECT task_instance
                     FROM scheduled_tasks
-                    WHERE execution_time <= ? AND task_name = 'camunda-request-task'
+                    ask_name = 'camunda-request-task'
                 """,
-                (rs, rowNum) -> rs.getString("task_instance"),
-                Instant.now()
+                (rs, rowNum) -> rs.getString("task_instance")
             );
 
             for (String taskId : taskIds) {
