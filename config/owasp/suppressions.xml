@@ -28,7 +28,7 @@
     <cve>CVE-2026-63144</cve>
     <cve>CVE-2026-63263</cve>
   </suppress>
-  <suppress until="2026-08-15">
+  <suppress until="2026-08-18">
     <notes><![CDATA[elasticsearch-rest-client-8.18.8.jar]]></notes>
     <cve>CVE-2025-37731</cve>
     <cve>CVE-2025-68384</cve>
@@ -43,7 +43,7 @@
     <cve>CVE-2026-66299</cve>
   </suppress>
   <!--End of false positives section -->
-   <suppress>
+   <suppress until="2026-08-18">
       <notes><![CDATA[
       HDPI-8150: CVE-2026-66299 against embedded Tomcat 11.0.24. No fixed
       Tomcat release published yet; suppression is temporary and MUST be
