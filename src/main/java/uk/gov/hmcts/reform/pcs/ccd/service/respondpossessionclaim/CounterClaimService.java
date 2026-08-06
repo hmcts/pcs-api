@@ -66,9 +66,9 @@ public class CounterClaimService {
         return Optional.of(savedCounterClaim);
     }
 
-    public CounterClaimEntity buildCounterClaimEntity(CounterClaim counterClaim,
-                                                      PartyEntity partyRef,
-                                                      LocalDateTime submittedAt) {
+    private CounterClaimEntity buildCounterClaimEntity(CounterClaim counterClaim,
+                                                       PartyEntity partyRef,
+                                                       LocalDateTime submittedAt) {
         boolean claimAmountApplies = counterClaim.getClaimType() != null
             && counterClaim.getClaimType() != CounterClaimType.SOMETHING_ELSE;
 
@@ -108,11 +108,4 @@ public class CounterClaimService {
         return counterClaimEntity;
     }
 
-    public CounterClaimEntity issueCounterClaim(CounterClaimEntity counterClaimEntity) {
-        counterClaimEntity.setStatus(CounterClaimState.COUNTER_CLAIM_ISSUED);
-        counterClaimEntity.setClaimIssuedDate(LocalDateTime.now(utcClock));
-        CounterClaimEntity issuedCounterClaim = counterClaimRepository.save(counterClaimEntity);
-        log.info("Issued counterclaim {}", issuedCounterClaim.getId());
-        return issuedCounterClaim;
-    }
 }

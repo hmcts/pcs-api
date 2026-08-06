@@ -24,7 +24,6 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
@@ -40,8 +39,6 @@ import static org.mockito.Mockito.when;
 class CounterClaimServiceTest {
 
     private static final long CASE_REFERENCE = 1234567890L;
-    private static final UUID USER_ID = UUID.randomUUID();
-    private static final UUID PARTY_ID = UUID.randomUUID();
     private static final UUID CLAIM_ID = UUID.randomUUID();
     private static final UUID COUNTER_CLAIM_ID = UUID.randomUUID();
     private static final Clock FIXED_UTC_CLOCK = Clock.fixed(
@@ -111,22 +108,6 @@ class CounterClaimServiceTest {
     @Test
     void shouldReturnEmptyWhenCounterClaimIsNull() {
         assertThat(underTest.saveCounterClaim(CASE_REFERENCE, null, partyEntity)).isEmpty();
-    }
-
-    @Test
-    void shouldIssueCounterClaim() {
-        CounterClaimEntity pendingCounterClaim = CounterClaimEntity.builder()
-            .id(COUNTER_CLAIM_ID)
-            .status(CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED)
-            .build();
-
-        when(counterClaimRepository.save(pendingCounterClaim)).thenAnswer(invocation -> invocation.getArgument(0));
-
-        CounterClaimEntity issued = underTest.issueCounterClaim(pendingCounterClaim);
-
-        assertThat(issued.getStatus()).isEqualTo(CounterClaimState.COUNTER_CLAIM_ISSUED);
-        assertThat(issued.getClaimIssuedDate()).isEqualTo(LocalDateTime.of(2026, 4, 22, 21, 0));
-        verify(counterClaimRepository).save(pendingCounterClaim);
     }
 
     @Test
