@@ -57,6 +57,7 @@ export class ActionCMRegistry {
     ['errorValidationUploadADocumentPage', new ErrorValidationAction()],
     ['inputErrorValidation', new CaseManagementAction()],
     ['reTryOnCallBackError', new RetryOnCallBackError()],
+    ['getAddressInfo', new CaseManagementAction()],
 
   ]);
 

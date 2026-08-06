@@ -1,7 +1,6 @@
 
 import { expect, Page } from '@playwright/test';
 import { IAction, actionData, actionRecord } from '@utils/interfaces';
-import { createCaseApiData } from '@data/api-data';
 import { getCaseTypeId } from '@utils/common/caseType.utils';
 import { performAction, performActions, performValidation } from '@utils/controller-caseManagement';
 import { VERY_LONG_TIMEOUT } from 'playwright.config';
@@ -11,14 +10,8 @@ import { caseInfo } from '../createCaseAPI.action';
 import { CaseManagementCommonUtils } from './caseManagementUtils.action';
 import path from 'path';
 
+export let addressInfo: { buildingStreet: string; addressLine2: string; townCity: string; engOrWalPostcode: string; };
 
-export const addressInfo = {
-  buildingStreet: createCaseApiData.createCasePayload.propertyAddress.AddressLine1,
-  addressLine2: createCaseApiData.createCasePayload.propertyAddress.AddressLine2,
-  townCity: createCaseApiData.createCasePayload.propertyAddress.PostTown,
-  engOrWalPostcode: createCaseApiData.createCasePayload.propertyAddress.PostCode
-};
-const cyaMap = new Map<string, string>();
 export let allPartyDetails: string[] = [];
 
 export class CaseManagementAction implements IAction {
@@ -38,7 +31,7 @@ export class CaseManagementAction implements IAction {
       ['confirmUpload', () => this.confirmUpload(fieldName as actionRecord)],
       ['confirmAmend', () => this.confirmAmend(fieldName as actionRecord)],
       ['inputErrorValidation', () => this.inputErrorValidation(page, fieldName as actionRecord)],
-
+      ['getAddressInfo', () => this.getAddressInfo(fieldName as actionRecord)],
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) {
@@ -196,8 +189,8 @@ export class CaseManagementAction implements IAction {
     if (selectApp.option === 'Not related to an application or counterclaim') {
       await performAction('select', selectApp.dropQn, selectApp.selectOption);
     }
-    if(selectApp.date){
-    await performAction('inputDate', selectApp.label as string, selectApp.date as string);
+    if (selectApp.date) {
+      await performAction('inputDate', selectApp.label as string, selectApp.date as string);
     }
 
     await performAction('clickRadioButton', { question: selectApp.question1, option: selectApp.option1 });
@@ -237,10 +230,10 @@ export class CaseManagementAction implements IAction {
     });
     const baseName = String(confirm.fileName).replace(/\.pdf$/i, '');
     const gaNumber = String(confirm.app).match(/\bGA\d+\b/i)?.[0] ?? '';
-    if(confirm.fileDate){
-    const [day, month, year] = String(confirm.fileDate).split('/');
-    formattedDate = `${day.padStart(2, '0')}${month.padStart(2, '0')}${year}`;
-    }else{
+    if (confirm.fileDate) {
+      const [day, month, year] = String(confirm.fileDate).split('/');
+      formattedDate = `${day.padStart(2, '0')}${month.padStart(2, '0')}${year}`;
+    } else {
       formattedDate = '';
     }
     const role = String(confirm.party).split(' - ')[1] ?? '';
@@ -304,10 +297,10 @@ export class CaseManagementAction implements IAction {
       text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
     });
     const baseName = String(confirm.fileName);
-    if(confirm.fileDate){
-    const [day, month, year] = String(confirm.fileDate).split('/');
-    formattedDate = `${day.padStart(2, '0')}${month.padStart(2, '0')}${year}`;
-    }else{
+    if (confirm.fileDate) {
+      const [day, month, year] = String(confirm.fileDate).split('/');
+      formattedDate = `${day.padStart(2, '0')}${month.padStart(2, '0')}${year}`;
+    } else {
       formattedDate = '';
     }
     const role = String(confirm.party).split(' - ')[0] ?? '';
@@ -437,5 +430,16 @@ export class CaseManagementAction implements IAction {
       await performAction('removeFile');
       await page.waitForTimeout(6000);
     }
+  }
+
+  private async getAddressInfo(address: actionRecord) {
+    let createCasePayLoad = address.data as Record<string, any>;
+    addressInfo = {
+      buildingStreet: createCasePayLoad.propertyAddress.AddressLine1,
+      addressLine2: createCasePayLoad.propertyAddress.AddressLine2,
+      townCity: createCasePayLoad.propertyAddress.PostTown,
+      engOrWalPostcode: createCasePayLoad.propertyAddress.PostCode
+    };
+
   }
 }
