@@ -6,6 +6,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeOrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
@@ -54,11 +55,13 @@ class PaymentNotificationServiceTest {
     void shouldSendCounterClaimPaymentSuccessEmail() {
         UUID counterClaimId = UUID.randomUUID();
         UUID defendantId = UUID.randomUUID();
+        UUID defendantIdamId = UUID.randomUUID();
         PcsCaseEntity pcsCase = mock(PcsCaseEntity.class);
 
         CounterClaimEntity counterClaim = mock(CounterClaimEntity.class);
         PartyEntity defendant = mock(PartyEntity.class);
         when(defendant.getId()).thenReturn(defendantId);
+        when(defendant.getIdamId()).thenReturn(defendantIdamId);
         when(counterClaim.getParty()).thenReturn(defendant);
         when(counterClaim.getPcsCase()).thenReturn(pcsCase);
 
@@ -67,6 +70,7 @@ class PaymentNotificationServiceTest {
 
         when(counterClaimRepository.findById(counterClaimId)).thenReturn(Optional.of(counterClaim));
         when(pcsCase.getDefendantResponses()).thenReturn(List.of(defendantResponse));
+        when(securityContextService.getCurrentUserId()).thenReturn(defendantIdamId);
 
         String paymentReference = "PAY-1234";
 
@@ -74,6 +78,41 @@ class PaymentNotificationServiceTest {
 
         verify(notificationService)
             .sendDefendantResponseCounterclaimPaymentSuccessEmailNotification(defendantResponse, paymentReference);
+    }
+
+    @Test
+    void shouldSendCounterClaimPaymentSuccessEmailToLegalRep() {
+        UUID counterClaimId = UUID.randomUUID();
+        UUID defendantId = UUID.randomUUID();
+        UUID legalRepId = UUID.randomUUID();
+        PcsCaseEntity pcsCase = mock(PcsCaseEntity.class);
+        LegalRepresentativeOrganisationEntity legalRep = mock(LegalRepresentativeOrganisationEntity.class);
+
+        CounterClaimEntity counterClaim = mock(CounterClaimEntity.class);
+        PartyEntity defendant = mock(PartyEntity.class);
+        when(defendant.getId()).thenReturn(defendantId);
+        when(legalRep.getId()).thenReturn(legalRepId);
+        when(counterClaim.getParty()).thenReturn(defendant);
+        when(counterClaim.getPcsCase()).thenReturn(pcsCase);
+
+        DefendantResponseEntity defendantResponse = mock(DefendantResponseEntity.class);
+        when(defendantResponse.getParty()).thenReturn(defendant);
+        when(defendantResponse.getPcsCase()).thenReturn(pcsCase);
+
+        when(counterClaimRepository.findById(counterClaimId)).thenReturn(Optional.of(counterClaim));
+        when(pcsCase.getDefendantResponses()).thenReturn(List.of(defendantResponse));
+        when(securityContextService.getCurrentUserId()).thenReturn(legalRepId);
+        when(legalRepresentativeOrganisationRepository
+                 .findByPartyLinkedToLegalRepresentativeOrganisationAndActive(defendantId))
+            .thenReturn(Optional.of(legalRep));
+
+        String paymentReference = "PAY-1234";
+
+        underTest.sendCounterClaimPaymentSuccessNotification(counterClaimId, paymentReference);
+
+        verify(notificationService)
+            .sendDefendantResponseCounterclaimToLegalRepresentativePaymentSuccess(legalRep, paymentReference,pcsCase,
+                                                                                  defendantResponse);
     }
 
     @Test

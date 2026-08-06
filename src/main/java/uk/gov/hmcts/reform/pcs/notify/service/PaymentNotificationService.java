@@ -13,6 +13,7 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.CounterClaimRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.LegalRepresentativeOrganisationRepository;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
+import java.util.Objects;
 import java.util.UUID;
 
 @Slf4j
@@ -50,11 +51,12 @@ public class PaymentNotificationService {
 
         log.info("Sending counterclaim payment success email case reference {}", pcsCase.getCaseReference());
 
-        if (userUUID.equals(defendant.getIdamId())) {
+        if (Objects.equals(userUUID, defendant.getIdamId())) {
             log.info("Sending counterclaim payment success email case reference {}", pcsCase.getCaseReference());
             notificationService
                 .sendDefendantResponseCounterclaimPaymentSuccessEmailNotification(defendantResponse, paymentReference);
-        } else if (userUUID.equals(legalRepresentativeOrganisationEntity.getId())) {
+        } else if (legalRepresentativeOrganisationEntity != null
+            && Objects.equals(userUUID,legalRepresentativeOrganisationEntity.getId())) {
             log.info("Sending counterclaim payment success email to legal representative case reference {}",
                      pcsCase.getCaseReference());
             notificationService.sendDefendantResponseCounterclaimToLegalRepresentativePaymentSuccess(
@@ -63,7 +65,7 @@ public class PaymentNotificationService {
                 defendantResponse.getPcsCase(),
                 defendantResponse);
         } else {
-            throw new RuntimeException();
+            throw new RuntimeException("Current user does not match defendant or legal representative");
         }
     }
 }

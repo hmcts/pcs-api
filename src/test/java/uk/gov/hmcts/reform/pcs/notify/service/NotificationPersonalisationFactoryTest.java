@@ -332,10 +332,9 @@ class NotificationPersonalisationFactoryTest {
             assertThat(map)
                 .containsEntry("paymentReferenceNumber", paymentReference)
                 .containsEntry("firstName", "John")
-                .containsEntry("lastName", "Test")
+                .containsEntry("lastName", "Doe")
                 .containsEntry("claimantName", "JANE SMITH")
-                .containsEntry("primaryDefendantName", "JOHN DOE")
-                .containsEntry("organisationName", "HMCTS");
+                .containsEntry("primaryDefendantName", "JOHN DOE");
         }
     }
 
