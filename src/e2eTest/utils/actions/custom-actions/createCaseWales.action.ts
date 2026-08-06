@@ -5,10 +5,10 @@ import {addressInfo, caseNumber, CreateCaseAction} from "@utils/actions/custom-a
 import {
   // migration (page-data → page-data-figma)
   contactPreferences,
-  documentsYouveUploadedChecklist,
+  documentsYouVeUploadedCheckListWales,
   exemptLandlord,
   occupationLicenceDetailsWales,
-  prohibitedConductWales, uploadRequiredDocumentsWales
+  prohibitedConductWales,
 } from '@data/page-data-figma';
 import {asbQuestionsWales} from '@data/page-data/asbQuestionsWales.page.data';
 
@@ -20,7 +20,7 @@ export class CreateCaseWalesAction extends CreateCaseAction implements IAction {
       ['selectOccupationContractOrLicenceDetails', () => this.selectOccupationContractOrLicenceDetails(fieldName as actionRecord)],
       ['selectAsb', () => this.selectAsb(fieldName as actionRecord)],
       ['requiredDocumentsUpload', () => this.requiredDocumentsUpload(fieldName as actionRecord)],
-      ['selectDocumentsYouVeUploadedWales', () => this.selectDocumentsYouVeUploadedWales(fieldName as actionRecord)]
+      ['selectDocumentsYouVeUploadedCheckList', () => this.selectDocumentsYouVeUploadedCheckList(fieldName as actionRecord)]
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -119,7 +119,7 @@ export class CreateCaseWalesAction extends CreateCaseAction implements IAction {
 
   }
 
-  private async selectDocumentsYouVeUploadedWales(documents: actionRecord) {
+  private async selectDocumentsYouVeUploadedCheckList(documents: actionRecord) {
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseNumber });
     await performValidation('text', {
       elementType: 'paragraph',
@@ -134,6 +134,6 @@ export class CreateCaseWalesAction extends CreateCaseAction implements IAction {
       throw new Error('uploadedDocuments must be an array');
     }
 
-    await performAction('clickButton', uploadRequiredDocumentsWales.continueButton);
+    await performAction('clickButton', documentsYouVeUploadedCheckListWales.continueButton);
   }
 }

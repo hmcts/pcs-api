@@ -1,4 +1,4 @@
-export const documentsYouveUploadedChecklist = {
+export const documentsYouVeUploadedCheckListWales = {
   makeAClaimCaption: `Make a claim`,
   mainHeader: `Documents you've uploaded`,
   whichDocumentsHaveYouUploadedQuestion: `Which documents have you uploaded as part of your claim?`,

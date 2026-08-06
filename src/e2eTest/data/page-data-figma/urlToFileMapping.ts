@@ -26,7 +26,7 @@ export default {
   'resumePossessionClaimunderlesseeMortgageeEntitledToClaimRelief': 'underlesseeMortgageeEntitledToClaimRelief',
   'resumePossessionClaimwantToUploadDocuments': 'wantToUploadDocuments',
   'resumePossessionClaimuploadAdditionalDocuments': 'uploadAdditionalDocuments',
-  'resumePossessionClaimdocumentsYouveUploadedChecklist': 'documentsYouveUploadedChecklist',
+  'resumePossessionClaimdocumentsYoueUploadedChecklist': 'documentsYouVeUploadedCheckListWales',
   'resumePossessionClaimgeneralApplication': 'generalApplication',
   'resumePossessionClaimlanguageUsed': 'claimLanguageUsed',
   'resumePossessionClaimcompletingYourClaim': 'completingYourClaim',
@@ -54,5 +54,5 @@ export default {
   'addCaseNoteaddCaseNote': 'addCaseNote',
   'booking': 'workAccess',
   'noresults': 'noResultFound',
-  'results': 'searchResults'
+  'results': 'searchResults',
 };
