@@ -3,7 +3,6 @@ package uk.gov.hmcts.reform.pcs.notify.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import uk.gov.hmcts.reform.pcs.LegalRepresentative;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantInformation;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -18,10 +17,8 @@ import uk.gov.hmcts.reform.pcs.notify.template.personalisation.BasePersonalisati
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.ClaimantBasePersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.CounterclaimPaymentSuccessPersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.LegalRepresentativeBasePersonalisation;
-import uk.gov.hmcts.reform.pcs.reference.service.OrganisationDetailsService;
 
 import java.util.Locale;
-import java.util.UUID;
 
 @Slf4j
 @Service
@@ -29,7 +26,6 @@ import java.util.UUID;
 public class NotificationPersonalisationFactory {
 
     private final PartyService partyService;
-    private final OrganisationDetailsService organisationDetailsService;
 
     public BasePersonalisation forDefendant(DefendantResponseEntity defendantResponse) {
         PartyEntity defendant = defendantResponse.getParty();
@@ -66,9 +62,8 @@ public class NotificationPersonalisationFactory {
         return buildPersonalisation(partyEntity, pcsCaseEntity);
     }
 
-    public LegalRepresentativeBasePersonalisation forLegalRepresentative(LegalRepresentativeEntity legalRepresentativeEntity, PcsCaseEntity pcsCaseEntity) {
-//        UUID userId = defendantParty.getIdamId();
-//        String organisationName = organisationDetailsService.getOrganisationName(userId.toString()); // unsure?
+    public LegalRepresentativeBasePersonalisation forLegalRepresentative(
+        LegalRepresentativeEntity legalRepresentativeEntity, PcsCaseEntity pcsCaseEntity) {
         String organisationName = legalRepresentativeEntity.getOrganisationName();
 
         return LegalRepresentativeBasePersonalisation.builder()
