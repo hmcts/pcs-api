@@ -212,7 +212,7 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
             .display(true)
             .description("Can manage all cases associated with this organisation")
             .hintText("Assign to Users to enable access to all cases associated with this organisation")
-            .displayOrder(2)
+            .displayOrder(3)
             .liveTo("01/01/2027");
         builder.accessTypeRole("solicitor-org-claimant-access")
             .organisationProfileId("SOLICITOR_PROFILE")
