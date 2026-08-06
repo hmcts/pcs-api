@@ -13,7 +13,6 @@ import java.util.Arrays;
 import java.util.EnumSet;
 
 import static java.lang.System.getenv;
-import static uk.gov.hmcts.ccd.sdk.api.Permission.CRU;
 import static java.util.Optional.ofNullable;
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.State.AWAITING_SUBMISSION_TO_HMCTS;
@@ -120,12 +119,6 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
             .caseReferenceField();
 
         configureGaAccessTypes(builder);
-
-        // State ACLs for the group-access capacities, else the data store filters matched cases out.
-        for (State state : State.values()) {
-            builder.grant(state, CRU, AccessProfile.CLAIMANT_ORG);
-            builder.grant(state, CRU, AccessProfile.DEFENDANT_SOLICITOR_ORG);
-        }
 
         buildCaseListView(builder);
 
