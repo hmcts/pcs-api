@@ -14,7 +14,6 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
-import jakarta.persistence.Transient;
 import jakarta.persistence.Version;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -118,9 +117,6 @@ public class CounterClaimEntity {
     @JsonManagedReference
     @Builder.Default
     private List<CounterClaimPartyEntity> counterClaimParties = new ArrayList<>();
-
-    @Transient
-    private CounterClaimState previousStatus;
 
     public Optional<DefendantResponseEntity> findAssociatedDefendantResponse() {
         if (party == null || pcsCase == null || pcsCase.getDefendantResponses() == null) {
