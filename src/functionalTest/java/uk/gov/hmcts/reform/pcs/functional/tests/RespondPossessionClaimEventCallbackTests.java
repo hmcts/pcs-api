@@ -13,7 +13,6 @@ import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import org.junit.jupiter.api.TestMethodOrder;
@@ -27,8 +26,8 @@ import uk.gov.hmcts.reform.pcs.functional.testutils.PayloadLoader;
 import uk.gov.hmcts.reform.pcs.functional.testutils.PcsIdamTokenClient;
 import uk.gov.hmcts.reform.pcs.functional.testutils.CaseRoleCleanUp;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 @Slf4j
 @Tag("Functional")
@@ -132,12 +131,10 @@ public class RespondPossessionClaimEventCallbackTests extends BaseApi {
 
             )
         );
-
         String validateClaimRequestBody = PayloadLoader.load(
             "/payloads/resumePossessionClaim-validateEventCallbackRequest.json",
-            Map.of( "caseReference", caseReference)
+            Map.of("caseReference",caseReference)
         );
-
         apiSteps.validateResumePossessionClaimAsCitizen(caseReference, validateClaimRequestBody);
         apiSteps.requestIsPreparedWithAppropriateValues();
         apiSteps.theRequestContainsValidIdamToken(PcsIdamTokenClient.UserType.citizenUser);
