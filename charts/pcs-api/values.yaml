@@ -70,3 +70,5 @@ aac-manage-case-assignment:
   enabled: false
 am-org-role-mapping-service:
   enabled: false
+wa:
+  enabled: false
