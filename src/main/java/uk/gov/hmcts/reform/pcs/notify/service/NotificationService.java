@@ -158,8 +158,8 @@ public class NotificationService {
         );
     }
 
-    public EmailNotificationResponse sendNoticeOfChangeCompletedEmailNotification(PartyEntity defendant) {
-        return sendEmail(
+    public void sendNoticeOfChangeCompletedEmailNotification(PartyEntity defendant) {
+        sendEmail(
             partyRecipient(defendant),
             EmailTemplate.NOTICE_OF_CHANGE_COMPLETED,
             NotificationClaimType.NOTICE_OF_CHANGE,
