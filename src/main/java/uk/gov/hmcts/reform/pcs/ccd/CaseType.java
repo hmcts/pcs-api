@@ -192,6 +192,15 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
             .hintText("Assign to Users to enable access to all cases associated with this organisation")
             .displayOrder(2)
             .liveTo("01/01/2027");
+        builder.accessType("solicitor-org-claimant-access")
+            .organisationProfileId("SOLICITOR_PROFILE")
+            .accessMandatory(false)
+            .accessDefault(false)
+            .display(true)
+            .description("Can manage all cases associated with this organisation")
+            .hintText("Assign to Users to enable access to all cases associated with this organisation")
+            .displayOrder(3)
+            .liveTo("01/01/2027");
 
         builder.accessTypeRole("create-cases")
             .organisationProfileId("LOCALAUTH_PROFILE")
@@ -203,16 +212,6 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
             .caseAssignedRoleField(AccessProfile.CLAIMANT.getRole())
             .groupAccessEnabled(true)
             .caseAccessGroupIdTemplate("PCS:PCS:prof-org-claimant-access:claimant:$ORGID$")
-            .liveTo("01/01/2027");
-
-        builder.accessType("solicitor-org-claimant-access")
-            .organisationProfileId("SOLICITOR_PROFILE")
-            .accessMandatory(false)
-            .accessDefault(false)
-            .display(true)
-            .description("Can manage all cases associated with this organisation")
-            .hintText("Assign to Users to enable access to all cases associated with this organisation")
-            .displayOrder(3)
             .liveTo("01/01/2027");
         builder.accessTypeRole("solicitor-org-claimant-access")
             .organisationProfileId("SOLICITOR_PROFILE")
