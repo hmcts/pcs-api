@@ -22,15 +22,17 @@
     <cve>CVE-2026-53914</cve>
   </suppress>
   <suppress until="2026-08-15">
-    <notes><![CDATA[elasticsearch-java-9.4.2.jar/elasticsearch-rest5-client-9.4.2.jar]]></notes>
-    <cve>CVE-2026-56148</cve>
-    <cve>CVE-2026-56149</cve>
-    <cve>CVE-2026-63144</cve>
-    <cve>CVE-2026-63263</cve>
-  </suppress>
-  <suppress until="2026-08-15">
     <notes><![CDATA[angus-activation-2.0.3.jar]]></notes>
     <cve>CVE-2025-7962</cve>
   </suppress>
   <!--End of false positives section -->
+   <suppress>
+      <notes><![CDATA[
+      HDPI-8150: CVE-2026-66299 against embedded Tomcat 11.0.24. No fixed
+      Tomcat release published yet; suppression is temporary and MUST be
+      removed when tomcatEmbedVersion is bumped to the fixed version.
+      ]]></notes>
+      <packageUrl regex="true">^pkg:maven/org\.apache\.tomcat\.embed/tomcat\-embed\-.*$</packageUrl>
+      <cve>CVE-2026-66299</cve>
+   </suppress>
 </suppressions>
