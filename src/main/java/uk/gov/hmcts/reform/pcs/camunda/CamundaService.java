@@ -7,14 +7,13 @@ import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.pcs.camunda.CamundaRequestTaskData.Action;
 import uk.gov.hmcts.reform.pcs.ccd.CaseType;
-import uk.gov.hmcts.reform.pcs.ccd.testcasesupport.TestSupportEnvironment;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.time.Clock;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -43,16 +42,8 @@ public class CamundaService {
         scheduleCamundaRequest(Action.CREATE, caseId, taskType, Instant.now(utcClock));
     }
 
-    public void createTask(long caseId, TaskType taskType, Integer daysDelayed) {
-        Instant scheduledTo = Instant.now(utcClock);
-
-        if (TestSupportEnvironment.isNonProdTestSupportEnabled()) {
-            scheduledTo = scheduledTo.plus(5, ChronoUnit.MINUTES);
-        } else {
-            scheduledTo = scheduledTo.plus(daysDelayed, ChronoUnit.DAYS);
-        }
-
-        scheduleCamundaRequest(Action.CREATE, caseId, taskType, scheduledTo);
+    public void createTask(long caseId, TaskType taskType, Duration delay) {
+        scheduleCamundaRequest(Action.CREATE, caseId, taskType, Instant.now(utcClock).plus(delay));
     }
 
     public void cancelTask(long caseId, TaskType taskType) {

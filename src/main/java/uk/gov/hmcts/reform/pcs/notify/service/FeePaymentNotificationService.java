@@ -14,6 +14,8 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.feeandpay.FeePaymentRepository;
 import uk.gov.hmcts.reform.pcs.exception.FeePaymentNotFoundException;
 
+import java.time.Duration;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -37,7 +39,8 @@ public class FeePaymentNotificationService {
             PcsCaseEntity pcsCaseEntity = claimEntity.getPcsCase();
 
             if (claimEntity.getGenAppExpected() == VerticalYesNo.YES) {
-                camundaService.createTask(pcsCaseEntity.getCaseReference(), TaskType.NEW_CLAIM_CREATE_NEW_HEARING, 1);
+                camundaService.createTask(pcsCaseEntity.getCaseReference(), TaskType.NEW_CLAIM_CREATE_NEW_HEARING,
+                                          Duration.ofDays(1));
             } else {
                 camundaService.createTask(pcsCaseEntity.getCaseReference(), TaskType.NEW_CLAIM_CREATE_NEW_HEARING);
             }

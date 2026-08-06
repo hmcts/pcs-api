@@ -15,6 +15,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.feeandpay.FeePaymentRepository;
 import uk.gov.hmcts.reform.pcs.exception.FeePaymentNotFoundException;
 
+import java.time.Duration;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -87,7 +88,7 @@ class FeePaymentNotificationServiceTest {
         underTest.sendClaimantPaidCaseIssuedNotification(feePaymentId);
 
         verify(notificationService).sendClaimantClaimIssuedEmailNotification(claim);
-        verify(camundaService).createTask(1234L, TaskType.NEW_CLAIM_CREATE_NEW_HEARING, 1);
+        verify(camundaService).createTask(1234L, TaskType.NEW_CLAIM_CREATE_NEW_HEARING, Duration.ofDays(1));
     }
 
     @Test

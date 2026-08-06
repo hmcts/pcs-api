@@ -24,6 +24,7 @@ import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.time.Clock;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -294,46 +295,21 @@ public class CamundaServiceTest {
 
     @Test
     void shouldScheduleCamundaCreateRequestTaskWithDelay() {
-        try (MockedStatic<TestSupportEnvironment> mockedTestSupport = mockStatic(TestSupportEnvironment.class)) {
-            // When
-            mockedTestSupport.when(TestSupportEnvironment::isNonProdTestSupportEnabled).thenReturn(false);
-            stubWaFeatureFlag(true);
-            camundaService.createTask(CASE_REFERENCE, TaskType.NEW_CLAIM_CREATE_NEW_HEARING, 1);
+        // When
+        stubWaFeatureFlag(true);
+        camundaService.createTask(CASE_REFERENCE, TaskType.NEW_CLAIM_CREATE_NEW_HEARING, Duration.ofDays(1));
 
-            // Then
-            verify(schedulerClient).scheduleIfNotExists(schedulableInstanceCaptor.capture());
+        // Then
+        verify(schedulerClient).scheduleIfNotExists(schedulableInstanceCaptor.capture());
 
-            SchedulableInstance<CamundaRequestTaskData> schedulableInstance = schedulableInstanceCaptor.getValue();
+        SchedulableInstance<CamundaRequestTaskData> schedulableInstance = schedulableInstanceCaptor.getValue();
 
-            CamundaRequestTaskData taskData = schedulableInstance.getTaskInstance().getData();
-            assertThat(taskData.getAction()).isEqualTo(Action.CREATE);
-            assertThat(taskData.getCaseReference()).isEqualTo(CASE_REFERENCE);
-            assertThat(taskData.getTaskType()).isEqualTo(TaskType.NEW_CLAIM_CREATE_NEW_HEARING);
-            assertThat(schedulableInstance.getNextExecutionTime(Instant.now()))
-                .isEqualTo(Instant.parse("2025-08-28T12:51:19Z"));
-        }
-    }
-
-    @Test
-    void shouldScheduleCamundaCreateRequestTaskWithDelayPreview() {
-        try (MockedStatic<TestSupportEnvironment> mockedTestSupport = mockStatic(TestSupportEnvironment.class)) {
-            // When
-            mockedTestSupport.when(TestSupportEnvironment::isNonProdTestSupportEnabled).thenReturn(true);
-            stubWaFeatureFlag(true);
-            camundaService.createTask(CASE_REFERENCE, TaskType.NEW_CLAIM_CREATE_NEW_HEARING, 1);
-
-            // Then
-            verify(schedulerClient).scheduleIfNotExists(schedulableInstanceCaptor.capture());
-
-            SchedulableInstance<CamundaRequestTaskData> schedulableInstance = schedulableInstanceCaptor.getValue();
-
-            CamundaRequestTaskData taskData = schedulableInstance.getTaskInstance().getData();
-            assertThat(taskData.getAction()).isEqualTo(Action.CREATE);
-            assertThat(taskData.getCaseReference()).isEqualTo(CASE_REFERENCE);
-            assertThat(taskData.getTaskType()).isEqualTo(TaskType.NEW_CLAIM_CREATE_NEW_HEARING);
-            assertThat(schedulableInstance.getNextExecutionTime(Instant.now()))
-                .isEqualTo(Instant.parse("2025-08-27T12:56:19Z"));
-        }
+        CamundaRequestTaskData taskData = schedulableInstance.getTaskInstance().getData();
+        assertThat(taskData.getAction()).isEqualTo(Action.CREATE);
+        assertThat(taskData.getCaseReference()).isEqualTo(CASE_REFERENCE);
+        assertThat(taskData.getTaskType()).isEqualTo(TaskType.NEW_CLAIM_CREATE_NEW_HEARING);
+        assertThat(schedulableInstance.getNextExecutionTime(Instant.now()))
+            .isEqualTo(Instant.parse("2025-08-28T12:51:19Z"));
     }
 
     private static CamundaRequestTaskData buildTaskDataForCreate(TaskType taskType) {
