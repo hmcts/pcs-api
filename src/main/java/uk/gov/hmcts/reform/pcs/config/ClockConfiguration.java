@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.config;
 
+import com.github.kagkarlsson.scheduler.testhelper.SettableClock;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -19,6 +20,11 @@ public class ClockConfiguration {
     @Bean
     public Clock ukClock() {
         return Clock.system(UK_ZONE_ID);
+    }
+
+    @Bean
+    public SettableClock settableClock() {
+        return new SettableClock();
     }
 
 }

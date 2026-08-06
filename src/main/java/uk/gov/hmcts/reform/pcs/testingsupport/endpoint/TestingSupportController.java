@@ -59,7 +59,6 @@ import uk.gov.hmcts.reform.pcs.testingsupport.service.CcdTestCaseOrchestrator;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -97,7 +96,7 @@ public class TestingSupportController {
     private final PcsCaseService pcsCaseService;
     private final AccessCodeGenerationService accessCodeGenerationService;
     private final FeatureToggleService featureToggleService;
-    private final SettableClock clock;
+    private final SettableClock settableClock;
 
     @Operation(
         summary = "Schedule a Hello World task",
@@ -593,9 +592,9 @@ public class TestingSupportController {
         )
         @RequestHeader(value = "ServiceAuthorization") String serviceAuthorization) {
         try {
-            clock.tick(Duration.ofDays(days));
-            clock.tick(Duration.ofHours(hours));
-            clock.tick(Duration.ofMinutes(minutes));
+            settableClock.tick(Duration.ofDays(days));
+            settableClock.tick(Duration.ofHours(hours));
+            settableClock.tick(Duration.ofMinutes(minutes));
             return ResponseEntity.ok("Clock set successfully");
         } catch (Exception e) {
             log.error("Failed to reschedule Camunda request task", e);
