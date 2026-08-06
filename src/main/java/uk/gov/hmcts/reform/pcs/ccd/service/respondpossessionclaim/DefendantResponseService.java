@@ -222,7 +222,7 @@ public class DefendantResponseService {
             .noticeReceivedDate(responses.getNoticeReceivedDate())
             .defendantNameConfirmation(responses.getDefendantNameConfirmation())
             .correspondenceAddressConfirmation(responses.getCorrespondenceAddressConfirmation())
-            .landlordRegistered(responses.getLandlordRegistered())
+            .landlordRegistered(ExemptLandlordResolver.fromResponses(responses))
             .writtenTerms(responses.getWrittenTerms())
             .disputeClaim(responses.getDisputeClaim())
             .disputeClaimDetails(responses.getDisputeClaimDetails())
