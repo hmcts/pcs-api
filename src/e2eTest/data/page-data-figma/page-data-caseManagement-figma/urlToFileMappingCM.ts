@@ -1,5 +1,8 @@
 export default {
   'amendDocumentsselectDocument': 'selectDocument',
+  'addCaseReviewDateaddCaseReviewDate': 'addReviewDates',
+  'addCaseReviewDate/submit' : 'checkYourAnswersAddReviewDates',
+  'addCaseReviewDate/confirm': 'confirmReviewDatesAdded',
   'changeCaseStatechangeCaseStatePage': 'changeCaseState',
   'changeCaseState/confirm': 'confirmCaseStateChange',
   'enterGenAppapplicationDetails': 'enterGenAppapplicationDetails',
@@ -8,7 +11,7 @@ export default {
   'enterGenAppconsentAndNotice': 'enterGenAppconsentAndNotice',
   'caseworkerUploadDocumentsuploadADocument': 'uploadADocument',
   'caseworkerUploadDocuments/confirm' : 'confirmUpload',
-  'enterGenAppuploadGeneralApplication': 'enterGenAppUploadGeneralApplication',
+  'enterGenAppuploadGeneralApplication': 'enterGenAppuploadGeneralApplication',
   'enterGenAppuploadRelatedEvidence': 'enterGenAppUploadRelatedEvidence',
   'enterGenAppreferApplicationToJudge': 'enterGenAppPreferApplicationToJudge',
   'enterGenApp/submit': 'genAppsCheckYouAnswers',
