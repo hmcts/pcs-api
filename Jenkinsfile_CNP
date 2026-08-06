@@ -52,7 +52,7 @@ withPipeline(type, product, component) {
   enableDbMigration('pcs')
 
   //skipping sync with demo/perftest during SIT testing/DB migration
-  syncBranchesWithMaster(['ithc', 'perftest'])
+  syncBranchesWithMaster(['ithc', 'perftest', 'demo'])
 
 
   onPR() {
@@ -107,9 +107,8 @@ withPipeline(type, product, component) {
   }
 
   onDemo {
-    // disabling new case definition uploads to demo during SIT testing/DB migration
-    //    setDemoEnvVars()
-    //    enableHighLevelDataSetup()
+    setDemoEnvVars()
+    enableHighLevelDataSetup()
   }
 
   onIthc {
@@ -177,7 +176,7 @@ withPipeline(type, product, component) {
 
   afterSuccess('akschartsinstall') {
     onPR {
-      for (label in githubApi.getLabelsbyPattern(env.BRANCH_NAME, "pr-values:wa") ) {
+      if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "pr-values:wa").size() > 0) {
         env.CAMUNDA_BASE_URL = "https://camunda-pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
         println """After akschartsinstall upload DMN and BPMN diagrams""".stripIndent()
         uploadDmnDiagrams()
@@ -201,49 +200,21 @@ withPipeline(type, product, component) {
     uploadBpmnDiagram()
   }
 
-  // HDPI-7989: slim the workspace between agent hops. withEnvironmentAgent
-  // (lib 2.4.4) stashes the whole workspace on entry and exit of every stage
-  // that switches agent pools. build/ alone is 742MB of a 767MB workspace
-  // (~18 min per stash at degraded controller IO; 22MB after cleanup). Any
-  // stage that runs gradle regenerates build/, so cleanup runs after each:
-  // downstream stages recompile from source and never read a stashed build/.
-  def slimWorkspace = {
-    sh '''
-      echo "Workspace size breakdown (MB):"
-      du -sm * .[!.]* 2>/dev/null | sort -rn | sed -n 1,15p
-      rm -rf build .scannerwork .sonar test-results allure-results functional-output e2e-output output
-      echo "After cleanup:"
-      du -sm . 2>/dev/null
-      true
-    '''
-  }
-
-  afterAlways('akschartsinstall') {
-    slimWorkspace()
-  }
-
-  afterAlways('highleveldatasetup') {
-    slimWorkspace()
-  }
 
   afterAlways('smoketest:preview') {
     archiveSmokeTestReports()
-    slimWorkspace()
   }
 
   afterAlways('smoketest:aat') {
     archiveSmokeTestReports()
-    slimWorkspace()
   }
 
   afterAlways('functionalTest:preview') {
     archiveFunctionalTestReports()
-    slimWorkspace()
   }
 
   afterAlways('functionalTest:aat') {
     archiveFunctionalTestReports()
-    slimWorkspace()
   }
 
   afterAlways('E2eTest:aat') {
@@ -301,7 +272,7 @@ def uploadDmnDiagrams() {
   dir("${WORKSPACE}/bin") {
     tenantId = "pcs"
     product = "pcs"
-    sh "./wa/import-dmn-diagram.sh ${WORKSPACE} ${env.ENVIRONMENT} ${tenantId} ${product}"
+    sh "./wa/import-dmn-diagrams.sh ${WORKSPACE} ${env.ENVIRONMENT} ${tenantId} ${product}"
   }
 }
 
