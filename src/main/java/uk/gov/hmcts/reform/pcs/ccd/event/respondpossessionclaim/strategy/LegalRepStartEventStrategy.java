@@ -8,7 +8,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.LegalRepPartySelectionService;
-import uk.gov.hmcts.reform.pcs.ccd.repository.DefendantResponseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.LegalRepForDefendantAccessValidator;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
@@ -24,7 +23,6 @@ public class LegalRepStartEventStrategy implements RespondPossessionClaimStartEv
     private final LegalRepForDefendantAccessValidator legalRepForDefendantAccessValidator;
     private final SecurityContextService securityContextService;
     private final LegalRepPartySelectionService legalRepPartySelectionService;
-    private final DefendantResponseRepository defendantResponseRepository;
 
     @Override
     public boolean supports(List<String> roles) {
@@ -41,17 +39,13 @@ public class LegalRepStartEventStrategy implements RespondPossessionClaimStartEv
             return legalRepPartySelectionService.buildSubmittedResponseCase(pcsCase);
         }
 
-
-        List<PartyEntity> defendantsNotYetResponded = defendantPartiesLinkedAndActive.stream().filter(party -> !defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyId(
-            caseReference, party.getId())).toList();
-
-        if (defendantsNotYetResponded.size() == 1) {
+        if (defendantPartiesLinkedAndActive.size() == 1) {
             PartyEntity defendant = defendantPartiesLinkedAndActive.getFirst();
             return legalRepPartySelectionService.getDraftCaseData(caseReference, pcsCase, defendant,
-                                                                  defendantsNotYetResponded);
+                                                                  defendantPartiesLinkedAndActive);
         }
 
-        return legalRepPartySelectionService.getDraft(pcsCase, defendantsNotYetResponded, caseReference);
+        return legalRepPartySelectionService.getDraft(pcsCase, defendantPartiesLinkedAndActive, caseReference);
     }
 
     private List<PartyEntity> loadAndValidateDefendants(long caseReference) {

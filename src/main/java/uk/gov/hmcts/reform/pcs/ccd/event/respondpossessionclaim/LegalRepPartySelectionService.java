@@ -50,7 +50,6 @@ public class LegalRepPartySelectionService {
 
     public boolean hasSubmittedResponse(long caseReference, PCSCase pcsCase,
                                         List<PartyEntity> defendantPartiesLinkedAndActive) {
-
         Optional<UUID> selectedPartyId = selectedPartyRetriever.getSelectedPartyId(pcsCase);
 
         if (selectedPartyId.isEmpty()) {
