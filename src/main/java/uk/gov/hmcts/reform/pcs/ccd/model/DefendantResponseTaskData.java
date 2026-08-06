@@ -12,7 +12,7 @@ import java.io.Serializable;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class DefendantResponseStatusChangeTaskData implements Serializable {
+public class DefendantResponseTaskData implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
     private Integer defendantResponseId;

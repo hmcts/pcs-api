@@ -153,4 +153,5 @@ public class LegalRepPartySelectionService {
             .defendantContactDetails(response.getDefendantContactDetails())
             .build();
     }
+
 }

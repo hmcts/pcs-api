@@ -6,13 +6,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaim;
-import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponseStatus;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.model.DefendantResponseStatusChangeTaskData;
+import uk.gov.hmcts.reform.pcs.ccd.model.DefendantResponseTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
 import uk.gov.hmcts.reform.pcs.ccd.task.DefendantResponseSubmittedNotificationTaskComponent;
@@ -22,7 +21,6 @@ import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 
-import static java.util.Objects.nonNull;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.respondPossessionClaim;
 
 @Service
@@ -88,24 +86,22 @@ public class RespondPossessionClaimSubmitService {
     }
 
     private void scheduleDefendantResponseSubmittedNotification(DefendantResponseEntity defendantResponse) {
-        if (nonNull(defendantResponse) && DefendantResponseStatus.SUBMITTED == defendantResponse.getStatus()) {
-            String taskId = UUID.randomUUID().toString();
+        String taskId = UUID.randomUUID().toString();
 
-            Integer defendantResponseId = defendantResponse.getId();
-            log.info(
-                "Scheduling defendant response submitted notification for: {}, with task id: {}",
-                defendantResponseId,
-                taskId
-            );
+        Integer defendantResponseId = defendantResponse.getId();
+        log.info(
+            "Scheduling defendant response submitted notification for: {}, with task id: {}",
+            defendantResponseId,
+            taskId
+        );
 
-            schedulerClient.scheduleIfNotExists(
-                DefendantResponseSubmittedNotificationTaskComponent.DEFENDANT_RESPONSE_SUBMITTED_TASK_DESCRIPTOR
-                    .instance(taskId)
-                    .data(DefendantResponseStatusChangeTaskData.builder()
-                              .defendantResponseId(defendantResponseId)
-                              .build())
-                    .scheduledTo(Instant.now())
-            );
-        }
+        schedulerClient.scheduleIfNotExists(
+            DefendantResponseSubmittedNotificationTaskComponent.DEFENDANT_RESPONSE_SUBMITTED_TASK_DESCRIPTOR
+                .instance(taskId)
+                .data(DefendantResponseTaskData.builder()
+                          .defendantResponseId(defendantResponseId)
+                          .build())
+                .scheduledTo(Instant.now())
+        );
     }
 }

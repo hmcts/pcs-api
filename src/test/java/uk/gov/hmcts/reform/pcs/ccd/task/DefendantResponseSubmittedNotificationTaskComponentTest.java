@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.gov.hmcts.reform.pcs.ccd.model.DefendantResponseStatusChangeTaskData;
+import uk.gov.hmcts.reform.pcs.ccd.model.DefendantResponseTaskData;
 import uk.gov.hmcts.reform.pcs.notify.service.DefendantResponseNotificationService;
 
 import java.time.Duration;
@@ -32,7 +32,7 @@ class DefendantResponseSubmittedNotificationTaskComponentTest {
     private DefendantResponseNotificationService defendantResponseNotificationService;
 
     @Mock
-    private TaskInstance<DefendantResponseStatusChangeTaskData> taskInstance;
+    private TaskInstance<DefendantResponseTaskData> taskInstance;
 
     @Mock
     private ExecutionContext executionContext;
@@ -54,20 +54,20 @@ class DefendantResponseSubmittedNotificationTaskComponentTest {
         assertThat(DEFENDANT_RESPONSE_SUBMITTED_TASK_DESCRIPTOR.getTaskName())
             .isEqualTo("defendant-response-submitted-task");
         assertThat(DEFENDANT_RESPONSE_SUBMITTED_TASK_DESCRIPTOR.getDataClass())
-            .isEqualTo(DefendantResponseStatusChangeTaskData.class);
+            .isEqualTo(DefendantResponseTaskData.class);
     }
 
     @Test
     @DisplayName("Should send notification when task executes")
     void shouldSendNotificationWhenTaskExecutes() {
         Integer defendantResponseId = 1;
-        DefendantResponseStatusChangeTaskData taskData = DefendantResponseStatusChangeTaskData.builder()
+        DefendantResponseTaskData taskData = DefendantResponseTaskData.builder()
             .defendantResponseId(defendantResponseId)
             .build();
         when(taskInstance.getData()).thenReturn(taskData);
 
-        CustomTask<DefendantResponseStatusChangeTaskData> task = underTest.defendantResponseSubmittedNotificationTask();
-        CompletionHandler<DefendantResponseStatusChangeTaskData> completionHandler =
+        CustomTask<DefendantResponseTaskData> task = underTest.defendantResponseSubmittedNotificationTask();
+        CompletionHandler<DefendantResponseTaskData> completionHandler =
             task.execute(taskInstance, executionContext);
 
         assertThat(completionHandler).isInstanceOf(CompletionHandler.OnCompleteRemove.class);
@@ -79,7 +79,7 @@ class DefendantResponseSubmittedNotificationTaskComponentTest {
     @DisplayName("Should rethrow exception when notification service fails")
     void shouldRethrowExceptionWhenNotificationServiceFails() {
         Integer defendantResponseId = 1;
-        DefendantResponseStatusChangeTaskData taskData = DefendantResponseStatusChangeTaskData.builder()
+        DefendantResponseTaskData taskData = DefendantResponseTaskData.builder()
             .defendantResponseId(defendantResponseId)
             .build();
         when(taskInstance.getData()).thenReturn(taskData);
@@ -87,7 +87,7 @@ class DefendantResponseSubmittedNotificationTaskComponentTest {
         doThrow(new RuntimeException("Service failure")).when(defendantResponseNotificationService)
             .sendEmailNotificationForNoCounterClaim(defendantResponseId);
 
-        CustomTask<DefendantResponseStatusChangeTaskData> task = underTest.defendantResponseSubmittedNotificationTask();
+        CustomTask<DefendantResponseTaskData> task = underTest.defendantResponseSubmittedNotificationTask();
 
         assertThatThrownBy(() -> task.execute(taskInstance, executionContext))
             .isInstanceOf(RuntimeException.class)

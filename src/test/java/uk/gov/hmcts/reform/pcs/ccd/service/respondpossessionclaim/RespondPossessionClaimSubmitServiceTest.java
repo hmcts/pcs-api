@@ -1,9 +1,14 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim;
 
 import com.github.kagkarlsson.scheduler.SchedulerClient;
+import com.github.kagkarlsson.scheduler.task.SchedulableInstance;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.Document;
@@ -19,6 +24,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.model.DefendantResponseTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
 import uk.gov.hmcts.reform.pcs.model.JourneyType;
@@ -57,6 +63,8 @@ class RespondPossessionClaimSubmitServiceTest {
     private PartyEntity partyEntity;
     @Mock
     private SchedulerClient schedulerClient;
+    @Captor
+    private ArgumentCaptor<SchedulableInstance<DefendantResponseTaskData>> schedulableInstanceCaptor;
 
     private RespondPossessionClaimSubmitService underTest;
 
@@ -261,6 +269,37 @@ class RespondPossessionClaimSubmitServiceTest {
             savedCounterClaim.getPcsCase(),
             savedCounterClaim.getParty()
         );
+    }
+
+    @ParameterizedTest
+    @EnumSource(JourneyType.class)
+    void shouldScheduleDefendantResponseEmail(JourneyType journeyType) {
+        // Given
+        DefendantResponses defendantResponses = DefendantResponses.builder()
+            .build();
+
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .defendantResponses(defendantResponses)
+            .build();
+
+        int defendantResponseId = 8001;
+        DefendantResponseEntity savedDefendantResponseEntity = DefendantResponseEntity.builder()
+            .id(defendantResponseId)
+            .build();
+
+        when(defendantResponseService
+                 .saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse, partyEntity, journeyType))
+            .thenReturn(savedDefendantResponseEntity);
+
+        // When
+        underTest.persistFinalSubmit(CASE_REFERENCE, possessionClaimResponse, partyEntity, journeyType);
+
+        // Then
+        verify(schedulerClient).scheduleIfNotExists(schedulableInstanceCaptor.capture());
+        SchedulableInstance<DefendantResponseTaskData> schedulableInstance = schedulableInstanceCaptor.getValue();
+
+        DefendantResponseTaskData taskData = schedulableInstance.getTaskInstance().getData();
+        assertThat(taskData.getDefendantResponseId()).isEqualTo(defendantResponseId);
     }
 
 }
