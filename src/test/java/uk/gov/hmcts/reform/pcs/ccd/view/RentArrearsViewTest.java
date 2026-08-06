@@ -115,7 +115,6 @@ class RentArrearsViewTest {
         List<ListValue<Document>> statementDocuments = rentArrears.getStatementDocuments();
         assertThat(statementDocuments).hasSize(1);
         assertThat(statementDocuments.getFirst().getId()).isEqualTo(rentDocumentId.toString());
-        // Case File View 1.1 sorts on upload_timestamp - PCS must set it, CCD will not
         assertThat(statementDocuments.getFirst().getValue().getUploadTimestamp())
             .isEqualTo(LocalDateTime.ofInstant(DOCUMENT_SUBMITTED_DATE, ZoneOffset.UTC));
 

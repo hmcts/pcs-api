@@ -297,7 +297,6 @@ class ClaimViewTest {
                 assertThat(document.getUrl()).isEqualTo("http://dm-store/documents/" + fileName);
                 assertThat(document.getBinaryUrl()).isEqualTo("http://dm-store/documents/" + fileName + "/binary");
                 assertThat(document.getCategoryId()).isEqualTo("category-" + fileName);
-                // Case File View 1.1 sorts on upload_timestamp - PCS must set it, CCD will not
                 assertThat(document.getUploadTimestamp())
                     .isEqualTo(LocalDateTime.ofInstant(DOCUMENT_SUBMITTED_DATE, ZoneOffset.UTC));
             });

@@ -303,7 +303,6 @@ class NoticeOfPossessionViewTest {
         List<ListValue<Document>> noticeDocuments = noticeServedDetails.getDocuments();
         assertThat(noticeDocuments).hasSize(1);
         assertThat(noticeDocuments.getFirst().getId()).isEqualTo(noticeDocumentId.toString());
-        // Case File View 1.1 sorts on upload_timestamp - PCS must set it, CCD will not
         assertThat(noticeDocuments.getFirst().getValue().getUploadTimestamp())
             .isEqualTo(LocalDateTime.ofInstant(DOCUMENT_SUBMITTED_DATE, ZoneOffset.UTC));
     }

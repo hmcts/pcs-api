@@ -166,7 +166,6 @@ class TenancyLicenceViewTest {
         List<ListValue<Document>> tenancyLicenceDocuments = tenancyLicenceDetails.getTenancyLicenceDocuments();
         assertThat(tenancyLicenceDocuments).hasSize(1);
         assertThat(tenancyLicenceDocuments.getFirst().getId()).isEqualTo(tenancyLicenceDocumentId.toString());
-        // Case File View 1.1 sorts on upload_timestamp - PCS must set it, CCD will not
         assertThat(tenancyLicenceDocuments.getFirst().getValue().getUploadTimestamp())
             .isEqualTo(LocalDateTime.ofInstant(DOCUMENT_SUBMITTED_DATE, ZoneOffset.UTC));
     }
@@ -213,7 +212,6 @@ class TenancyLicenceViewTest {
         List<ListValue<Document>> licenceDocuments = occupationLicenceDetails.getLicenceDocuments();
         assertThat(licenceDocuments).hasSize(1);
         assertThat(licenceDocuments.getFirst().getId()).isEqualTo(tenancyLicenceDocumentId.toString());
-        // Case File View 1.1 sorts on upload_timestamp - PCS must set it, CCD will not
         assertThat(licenceDocuments.getFirst().getValue().getUploadTimestamp())
             .isEqualTo(LocalDateTime.ofInstant(DOCUMENT_SUBMITTED_DATE, ZoneOffset.UTC));
     }
