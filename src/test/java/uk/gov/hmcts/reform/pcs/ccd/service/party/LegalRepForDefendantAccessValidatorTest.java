@@ -37,7 +37,8 @@ class LegalRepForDefendantAccessValidatorTest {
 
     @BeforeEach
     void setUp() {
-        underTest = new LegalRepForDefendantAccessValidator(defendantPartyExtractor, defendantResponseRepository);
+        underTest = new LegalRepForDefendantAccessValidator(defendantPartyExtractor,
+                                                            defendantResponseRepository);
     }
 
     @Test

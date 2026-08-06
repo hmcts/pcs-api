@@ -183,6 +183,41 @@ class RespondPossessionClaimSubmitServiceTest {
 
         CounterClaim counterClaim = CounterClaim.builder()
             .claimType(CounterClaimType.PAYMENT_OR_COMPENSATION)
+            .isClaimAmountKnown(VerticalYesNo.YES)
+            .claimAmount(new BigDecimal("2500.00"))
+            .build();
+        DefendantResponses defendantResponses = DefendantResponses.builder()
+            .counterClaim(counterClaim)
+            .build();
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .defendantResponses(defendantResponses)
+            .build();
+        CounterClaimEntity savedCounterClaim = CounterClaimEntity.builder()
+            .id(UUID.randomUUID())
+            .status(CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED)
+            .build();
+
+        when(partyEntity.getId()).thenReturn(UUID.randomUUID());
+        when(counterClaimService.saveCounterClaim(CASE_REFERENCE, counterClaim, partyEntity))
+            .thenReturn(Optional.of(savedCounterClaim));
+        when(counterClaimFeeCalculator.isPaymentRequired(counterClaim)).thenReturn(true);
+
+        RespondPossessionClaimSubmitPersistenceResult result =
+            underTest.persistFinalSubmit(CASE_REFERENCE, possessionClaimResponse, partyEntity, journeyType);
+
+        verify(counterClaimService, never()).issueCounterClaim(any());
+        verify(draftCaseDataService).deleteUnsubmittedCaseData(
+            CASE_REFERENCE, respondPossessionClaim, partyEntity.getId());
+        assertThat(result.counterClaimEntity()).isEqualTo(savedCounterClaim);
+        assertThat(result.paymentRequired()).isTrue();
+    }
+
+    @Test
+    void shouldNotIssueCounterClaimWhenHelpWithFeesApplies() {
+        JourneyType journeyType = JourneyType.CITIZEN;
+
+        CounterClaim counterClaim = CounterClaim.builder()
+            .claimType(CounterClaimType.PAYMENT_OR_COMPENSATION)
             .hwfReferenceNumber("HWF-123-456")
             .build();
         DefendantResponses defendantResponses = DefendantResponses.builder()
