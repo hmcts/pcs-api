@@ -113,7 +113,8 @@ public class NotificationService {
             ),
             EmailTemplate.RESPONSE_NO_COUNTERCLAIM,
             NotificationClaimType.NO_COUNTER_CLAIM,
-            notificationPersonalisationFactory.forLegalRepresentative(legalRepresentativeOrganisationEntity, pcsCaseEntity));
+            notificationPersonalisationFactory.forLegalRepresentative(legalRepresentativeOrganisationEntity,
+                                                                      pcsCaseEntity));
     }
 
     public EmailNotificationResponse sendDefendantResponseConfirmationToLegalRepresentativePaymentRequired(
@@ -130,7 +131,8 @@ public class NotificationService {
             ),
             EmailTemplate.RESPONSE_WITH_COUNTERCLAIM_PAYMENT_REQUIRED,
             NotificationClaimType.COUNTER_CLAIM,
-            notificationPersonalisationFactory.forLegalRepresentative(legalRepresentativeOrganisationEntity, pcsCaseEntity));
+            notificationPersonalisationFactory.forLegalRepresentative(legalRepresentativeOrganisationEntity,
+                                                                      pcsCaseEntity));
     }
 
     public EmailNotificationResponse sendDefendantResponseConfirmationToLegalRepresentativeNoPaymentRequired(
@@ -147,7 +149,8 @@ public class NotificationService {
             ),
             EmailTemplate.RESPONSE_WITH_COUNTERCLAIM_NO_PAYMENT_REQUIRED,
             NotificationClaimType.COUNTER_CLAIM,
-            notificationPersonalisationFactory.forLegalRepresentative(legalRepresentativeOrganisationEntity, pcsCaseEntity));
+            notificationPersonalisationFactory.forLegalRepresentative(legalRepresentativeOrganisationEntity,
+                                                                      pcsCaseEntity));
     }
 
     public EmailNotificationResponse sendClaimantDraftSavedForLaterEmailNotification(

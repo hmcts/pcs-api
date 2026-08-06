@@ -144,7 +144,8 @@ class LegalRepSubmissionEventStrategyTest {
         when(eventPayload.caseReference()).thenReturn(CASE_REFERENCE);
         when(eventPayload.caseData()).thenReturn(caseData);
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity(representedPartyId));
-        when(legalRepresentativeOrganisationRepository.findByPartyLinkedToLegalRepresentativeOrganisationAndActive(representedPartyId))
+        when(legalRepresentativeOrganisationRepository
+                 .findByPartyLinkedToLegalRepresentativeOrganisationAndActive(representedPartyId))
             .thenReturn(legalRepresentativeOrganisationEntity());
 
         when(partyService.getPartyEntityById(representedPartyId, CASE_REFERENCE)).thenReturn(representedParty);

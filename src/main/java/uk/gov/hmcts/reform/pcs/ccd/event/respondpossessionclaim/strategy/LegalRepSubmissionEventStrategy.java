@@ -129,35 +129,33 @@ public class LegalRepSubmissionEventStrategy implements RespondPossessionClaimSu
     }
 
 
-    private EmailNotificationResponse noCounterClaim(LegalRepresentativeOrganisationEntity legalRepresentativeOrganisationEntity,
-                                                     PcsCaseEntity pcsCaseEntity,
-                                                     DefendantResponseEntity defendantResponse) {
+    private EmailNotificationResponse noCounterClaim(
+        LegalRepresentativeOrganisationEntity legalRepresentativeOrganisationEntity, PcsCaseEntity pcsCaseEntity,
+        DefendantResponseEntity defendantResponse) {
         return notificationService
             .sendDefendantResponseConfirmationToLegalRepresentativeNoCounterClaim(legalRepresentativeOrganisationEntity,
                                                                                                  pcsCaseEntity,
                                                                                                  defendantResponse);
     }
 
-    private EmailNotificationResponse counterClaimPaymentRequired(LegalRepresentativeOrganisationEntity legalRepresentativeOrganisationEntity,
-                                                                  PcsCaseEntity pcsCaseEntity,
-                                                                  DefendantResponseEntity defendantResponse) {
+    private EmailNotificationResponse counterClaimPaymentRequired(
+        LegalRepresentativeOrganisationEntity legalRepresentativeOrganisationEntity,
+        PcsCaseEntity pcsCaseEntity, DefendantResponseEntity defendantResponse) {
         return notificationService
-            .sendDefendantResponseConfirmationToLegalRepresentativePaymentRequired(legalRepresentativeOrganisationEntity,
-                                                                                  pcsCaseEntity,
-                                                                                  defendantResponse);
+            .sendDefendantResponseConfirmationToLegalRepresentativePaymentRequired(
+                legalRepresentativeOrganisationEntity, pcsCaseEntity, defendantResponse);
     }
 
-    private EmailNotificationResponse counterClaimNoPaymentRequired(LegalRepresentativeOrganisationEntity legalRepresentativeOrganisationEntity,
-                                                                    PcsCaseEntity pcsCaseEntity,
-                                                                    DefendantResponseEntity defendantResponse) {
+    private EmailNotificationResponse counterClaimNoPaymentRequired(
+        LegalRepresentativeOrganisationEntity legalRepresentativeOrganisationEntity,
+        PcsCaseEntity pcsCaseEntity, DefendantResponseEntity defendantResponse) {
         return notificationService
-            .sendDefendantResponseConfirmationToLegalRepresentativeNoPaymentRequired(legalRepresentativeOrganisationEntity,
-                                                                                   pcsCaseEntity,
-                                                                                   defendantResponse);
+            .sendDefendantResponseConfirmationToLegalRepresentativeNoPaymentRequired(
+                legalRepresentativeOrganisationEntity, pcsCaseEntity, defendantResponse);
     }
 
-    private void pickTemplate(LegalRepresentativeOrganisationEntity legalRepresentativeOrganisationEntity, PcsCaseEntity pcsCaseEntity,
-                                                   DefendantResponseEntity defendantResponse) {
+    private void pickTemplate(LegalRepresentativeOrganisationEntity legalRepresentativeOrganisationEntity,
+                              PcsCaseEntity pcsCaseEntity, DefendantResponseEntity defendantResponse) {
         Optional<CounterClaimEntity> counterClaimEntityOptional = getCounterClaim(pcsCaseEntity);
 
         if (counterClaimEntityOptional.isEmpty()) {
@@ -171,11 +169,13 @@ public class LegalRepSubmissionEventStrategy implements RespondPossessionClaimSu
                 if (!isHwfBlank(counterClaimEntity)) {
                     // email notification for the “Response and counterclaim submitted"
                     // RESPONSE_WITH_COUNTERCLAIM_NO_PAYMENT_REQUIRED
-                    counterClaimNoPaymentRequired(legalRepresentativeOrganisationEntity, pcsCaseEntity, defendantResponse);
+                    counterClaimNoPaymentRequired(legalRepresentativeOrganisationEntity,
+                                                  pcsCaseEntity, defendantResponse);
                 } else {
                     //  email notification for "Response submitted - payment required for your counterclaim"
                     //  RESPONSE_WITH_COUNTERCLAIM_PAYMENT_REQUIRED
-                    counterClaimPaymentRequired(legalRepresentativeOrganisationEntity, pcsCaseEntity, defendantResponse);
+                    counterClaimPaymentRequired(legalRepresentativeOrganisationEntity,
+                                                pcsCaseEntity, defendantResponse);
                 }
             }
         }
