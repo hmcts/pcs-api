@@ -56,8 +56,8 @@ spring:
     properties:
       charSet: UTF-8
     hikari:
-      minimumIdle: 2
-      maximumPoolSize: 10
+      minimumIdle: ${PCS_DB_POOL_MIN_IDLE:2}
+      maximumPoolSize: ${PCS_DB_POOL_MAX_SIZE:10}
       idleTimeout: 10000
       poolName: PCSHikariCP
       maxLifetime: 7200000
@@ -178,7 +178,7 @@ db-scheduler:
   enabled: false # This disables the autoconfiguration of DB Scheduler. Always off.
   executor-enabled: ${DB_SCHEDULER_EXECUTOR_ENABLED:true}
   polling-interval-seconds: ${DB_SCHEDULER_POLLING_INTERVAL_SECONDS:10}
-  threads: 10
+  threads: ${DB_SCHEDULER_THREADS:10}
 
 doc_assembly:
   url: ${DOC_ASSEMBLY_URL:http://localhost:8080}
