@@ -20,6 +20,7 @@ import uk.gov.hmcts.reform.pcs.exception.AccessCodeAlreadyUsedException;
 import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
 import uk.gov.hmcts.reform.pcs.exception.CaseAssignmentException;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
+import uk.gov.hmcts.reform.pcs.exception.FeePaymentNotFoundException;
 import uk.gov.hmcts.reform.pcs.exception.IdamException;
 import uk.gov.hmcts.reform.pcs.exception.InvalidAccessCodeException;
 import uk.gov.hmcts.reform.pcs.exception.InvalidAuthTokenException;
@@ -55,6 +56,19 @@ class RestExceptionHandlerTest {
             = underTest.handleCaseNotFoundException(caseNotFoundException);
 
         // Then
+        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+        assertThat(responseEntity.getBody()).isNotNull();
+        assertThat(responseEntity.getBody().message()).isEqualTo(expectedErrorMessage);
+    }
+
+    @Test
+    void shouldHandleFeePaymentNotFoundException() {
+        String expectedErrorMessage = "No outstanding counterclaim payment found for case 12345";
+        FeePaymentNotFoundException exception = new FeePaymentNotFoundException(expectedErrorMessage);
+
+        ResponseEntity<RestExceptionHandler.Error> responseEntity
+            = underTest.handleFeePaymentNotFoundException(exception);
+
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
         assertThat(responseEntity.getBody()).isNotNull();
         assertThat(responseEntity.getBody().message()).isEqualTo(expectedErrorMessage);
