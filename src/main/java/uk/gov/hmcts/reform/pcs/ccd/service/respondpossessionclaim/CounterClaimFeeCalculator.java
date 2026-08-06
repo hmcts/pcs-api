@@ -13,12 +13,12 @@ public class CounterClaimFeeCalculator {
 
     private static final BigDecimal RANGED_FEE_UPPER_BOUND_POUNDS = new BigDecimal("5000");
 
-    public boolean isPaymentRequired(CounterClaim counterClaim) {
+    public boolean isHwfReferencePresent(CounterClaim counterClaim) {
         if (counterClaim == null) {
             return false;
         }
         String hwfReference = counterClaim.getHwfReferenceNumber();
-        return hwfReference == null || hwfReference.trim().isEmpty();
+        return hwfReference != null && !hwfReference.trim().isEmpty();
     }
 
     public FeeType resolveFeeType(CounterClaim counterClaim) {

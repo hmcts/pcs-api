@@ -4,6 +4,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
+import org.junit.jupiter.params.provider.ValueSource;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaim;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimType;
@@ -67,22 +69,25 @@ class CounterClaimFeeCalculatorTest {
     }
 
     @Test
-    void shouldNotRequirePaymentWhenHwfReferenceIsPresent() {
+    void shouldDetectWhenHwfReferenceIsPresent() {
         CounterClaim counterClaim = CounterClaim.builder()
             .claimType(CounterClaimType.PAYMENT_OR_COMPENSATION)
             .hwfReferenceNumber("HWF-123-456")
             .build();
 
-        assertThat(underTest.isPaymentRequired(counterClaim)).isFalse();
+        assertThat(underTest.isHwfReferencePresent(counterClaim)).isTrue();
     }
 
-    @Test
-    void shouldRequirePaymentWhenHwfReferenceIsMissing() {
+    @ParameterizedTest
+    @NullAndEmptySource
+    @ValueSource(strings = " ")
+    void shouldDetectWhenHwfReferenceIsNotProvided(String hwfReference) {
         CounterClaim counterClaim = CounterClaim.builder()
             .claimType(CounterClaimType.PAYMENT_OR_COMPENSATION)
+            .hwfReferenceNumber(hwfReference)
             .build();
 
-        assertThat(underTest.isPaymentRequired(counterClaim)).isTrue();
+        assertThat(underTest.isHwfReferencePresent(counterClaim)).isFalse();
     }
 
     @Test
@@ -97,21 +102,6 @@ class CounterClaimFeeCalculatorTest {
         assertThatThrownBy(() -> underTest.resolveFeeType(null))
             .isInstanceOf(IllegalStateException.class)
             .hasMessageContaining("claim type");
-    }
-
-    @Test
-    void shouldNotRequirePaymentWhenCounterClaimIsNull() {
-        assertThat(underTest.isPaymentRequired(null)).isFalse();
-    }
-
-    @Test
-    void shouldRequirePaymentWhenHwfReferenceIsBlank() {
-        CounterClaim counterClaim = CounterClaim.builder()
-            .claimType(CounterClaimType.PAYMENT_OR_COMPENSATION)
-            .hwfReferenceNumber("   ")
-            .build();
-
-        assertThat(underTest.isPaymentRequired(counterClaim)).isTrue();
     }
 
     @Test

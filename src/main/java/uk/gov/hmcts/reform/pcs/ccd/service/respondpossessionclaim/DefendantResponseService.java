@@ -13,6 +13,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantRespon
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.StatementOfTruthEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
@@ -103,15 +104,16 @@ public class DefendantResponseService {
      * <p>This approach ensures concurrent defendants can submit simultaneously
      * without blocking each other or other case operations.
      *
-     * @param caseReference The case reference number
-     * @param possessionClaimResponse the possession claim response from draft data
-     * @throws IllegalStateException if user ID is null, response already exists,
-     *         party not found, or claim not found
+     * @param caseReference             The case reference number
+     * @param possessionClaimResponse   The possession claim response from draft data
+     * @return DefendantResponseEntity  The saved entity
+     * @throws IllegalStateException    If user ID is null, response already exists,
+     *                                  party not found, or claim not found
      */
-    public void saveDefendantResponse(long caseReference,
-                                      PossessionClaimResponse possessionClaimResponse,
-                                      PartyEntity defendantParty,
-                                      JourneyType journeyType) {
+    public DefendantResponseEntity saveDefendantResponse(long caseReference,
+                                                         PossessionClaimResponse possessionClaimResponse,
+                                                         PartyEntity defendantParty,
+                                                         JourneyType journeyType) {
 
         UUID userId = requireCurrentUserId();
 
@@ -134,6 +136,8 @@ public class DefendantResponseService {
             scheduleAfterCommit(() -> defenceFormScheduler.scheduleDefenceFormGeneration(
                 caseReference, defendantResponseId, defendantPartyId));
         }
+
+        return savedResponse;
     }
 
     private void scheduleAfterCommit(Runnable schedule) {
@@ -179,12 +183,14 @@ public class DefendantResponseService {
         DefendantResponseEntity savedResponse = defendantResponseRepository.save(responseEntity);
 
         if (!CollectionUtils.isEmpty(responses.getDefendantDocuments())) {
-            documentService.createDefendantUploadedDocuments(
+            List<DocumentEntity> uploadedDocuments = documentService.createDefendantUploadedDocuments(
                 responses.getDefendantDocuments(),
                 savedResponse,
                 claimRef.getPcsCase(),
                 defendantParty
             );
+
+            savedResponse.setUploadedDocuments(uploadedDocuments);
         }
 
         partyAttributeAssertationService.buildPartyAttributeEntities(possessionClaimResponse, defendantParty);

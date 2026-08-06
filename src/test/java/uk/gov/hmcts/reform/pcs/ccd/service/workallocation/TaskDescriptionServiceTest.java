@@ -15,6 +15,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.exception.TemplateRenderingException;
 
@@ -76,10 +77,8 @@ class TaskDescriptionServiceTest {
             int expectedGenAppRank = 4;
             when(genAppEntity.getRank()).thenReturn(expectedGenAppRank);
 
-            List<DocumentEntity> documentEntityList = List.of(
-                DocumentEntity.builder().fileName("filename1.pdf").build(),
-                DocumentEntity.builder().fileName("filename2.csv").build()
-            );
+            List<String> expectedFilenames = List.of("filename1.pdf", "filename2.csv");
+            List<DocumentEntity> documentEntityList = createDocumentEntities(expectedFilenames);
 
             String expectedPartyLabel = "some party label";
             when(partyService.getPartyLabel(mainClaim, partyId)).thenReturn(expectedPartyLabel);
@@ -109,7 +108,7 @@ class TaskDescriptionServiceTest {
                 .containsEntry("caseReference", CASE_REFERENCE)
                 .containsEntry("partyLabel", expectedPartyLabel)
                 .containsEntry("genAppRank", expectedGenAppRank)
-                .containsEntry("filenames", List.of("filename1.pdf", "filename2.csv"));
+                .containsEntry("filenames", expectedFilenames);
         }
 
         @Test
@@ -146,6 +145,102 @@ class TaskDescriptionServiceTest {
 
     }
 
+    @Nested
+    @DisplayName("Get description for Review Response and Counterclaim task")
+    class ReviewResponseAndCounterclaimTests {
+
+        @Mock
+        private ClaimEntity mainClaim;
+        @Mock
+        private PartyEntity partyEntity;
+
+        @Test
+        void shouldRenderTaskDescription() throws IOException {
+            // Given
+            UUID partyId = UUID.randomUUID();
+            when(partyEntity.getId()).thenReturn(partyId);
+
+            String expectedPartyLabel = "some party label";
+            when(partyService.getPartyLabel(mainClaim, partyId)).thenReturn(expectedPartyLabel);
+
+            List<String> expectedResponseDocumentFilenames = List.of("filename1.pdf", "filename2.csv");
+            List<DocumentEntity> uploadedDocumentEntityList
+                = createDocumentEntities(expectedResponseDocumentFilenames);
+
+            DefendantResponseEntity defendantResponseEntity = DefendantResponseEntity.builder()
+                .party(partyEntity)
+                .uploadedDocuments(uploadedDocumentEntityList)
+                .build();
+
+            List<String> expectedCounterClaimDocumentFilenames = List.of("filename3.txt", "filename4.pdf");
+            List<DocumentEntity> counterClaimDocumentEntityList
+                = createDocumentEntities(expectedCounterClaimDocumentFilenames);
+
+            String expectedRenderedContent = "some rendered content";
+            PebbleTemplate pebbleTemplate = stubPebbleTemplate(
+                "review-response-and-counterclaim",
+                expectedRenderedContent
+            );
+
+            // When
+            String description = underTest
+                .createReviewResponseAndCounterClaimDescription(
+                    CASE_REFERENCE,
+                    mainClaim,
+                    defendantResponseEntity,
+                    counterClaimDocumentEntityList
+                );
+
+            // Then
+            assertThat(description).isEqualTo(expectedRenderedContent);
+
+            verify(pebbleTemplate).evaluate(isA(StringWriter.class), contextMapCaptor.capture());
+            Map<String, Object> contextMap = contextMapCaptor.getValue();
+            assertThat(contextMap)
+                .containsEntry("caseReference", CASE_REFERENCE)
+                .containsEntry("partyLabel", expectedPartyLabel)
+                .containsEntry("responseSubmissionFilename", "Defence - " + expectedPartyLabel + ".pdf")
+                .containsEntry("responseDocumentFilenames", expectedResponseDocumentFilenames)
+                .containsEntry("counterClaimDocumentFilenames", expectedCounterClaimDocumentFilenames);
+        }
+
+        @Test
+        void shouldThrowExceptionWhenUnableToRenderTemplate() throws IOException {
+            // Given
+            PebbleTemplate pebbleTemplate = stubPebbleTemplate(
+                "review-response-and-counterclaim",
+                "some content"
+            );
+
+            IOException pebbleException = mock(IOException.class);
+            doThrow(pebbleException).when(pebbleTemplate).evaluate(any(StringWriter.class), anyMap());
+
+            UUID partyId = UUID.randomUUID();
+            when(partyEntity.getId()).thenReturn(partyId);
+            when(partyService.getPartyLabel(mainClaim, partyId)).thenReturn("some party label");
+
+            DefendantResponseEntity defendantResponseEntity = DefendantResponseEntity.builder()
+                .party(partyEntity)
+                .build();
+
+            // When
+            Throwable throwable = catchThrowable(
+                () -> underTest.createReviewResponseAndCounterClaimDescription(
+                    CASE_REFERENCE,
+                    mainClaim,
+                    defendantResponseEntity,
+                    List.of()
+                ));
+
+            // Then
+            assertThat(throwable)
+                .isInstanceOf(TemplateRenderingException.class)
+                .hasMessage("Failed to render template")
+                .hasCause(pebbleException);
+        }
+
+    }
+
     private PebbleTemplate stubPebbleTemplate(String templateName, String renderedContent) throws IOException {
         PebbleTemplate pebbleTemplate = mock(PebbleTemplate.class, withSettings().strictness(LENIENT));
         when(pebbleEngine.getTemplate("workallocation/" + templateName)).thenReturn(pebbleTemplate);
@@ -157,4 +252,11 @@ class TaskDescriptionServiceTest {
 
         return pebbleTemplate;
     }
+
+    private List<DocumentEntity> createDocumentEntities(List<String> filenames) {
+        return filenames.stream()
+            .map(filename -> DocumentEntity.builder().fileName(filename).build())
+            .toList();
+    }
+
 }

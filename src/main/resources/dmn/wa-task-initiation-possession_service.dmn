@@ -187,7 +187,7 @@ else
       </rule>
       <rule id="DecisionRule_0v14k8l">
         <inputEntry id="UnaryTests_125bf6j">
-          <text>"Respond to claim" (Respone and counterclaim submitted)</text>
+          <text>respondPossessionClaim</text>
         </inputEntry>
         <inputEntry id="UnaryTests_0ttsckb">
           <text></text>
@@ -208,7 +208,7 @@ else
           <text></text>
         </inputEntry>
         <outputEntry id="LiteralExpression_1krqf3d">
-          <text>"Review DefendantResponseAndCounterclaim"</text>
+          <text>"ReviewDefendantResponseAndCounterclaim"</text>
         </outputEntry>
         <outputEntry id="LiteralExpression_0jeqot3">
           <text>"Review Defendant response and counterclaim" </text>
