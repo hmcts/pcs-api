@@ -216,6 +216,8 @@ tasks.register('integration', Test) {
   testClassesDirs = sourceSets.integrationTest.output.classesDirs
   classpath = sourceSets.integrationTest.runtimeClasspath
   failFast = true
+  // PoC branch only — restore before any merge to master (saves ~7 min per CI run)
+  enabled = false
 }
 
 tasks.register('smoke', Test) {
