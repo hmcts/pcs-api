@@ -20,6 +20,7 @@ import uk.gov.hmcts.reform.pcs.notify.template.personalisation.BasePersonalisati
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.ClaimantBasePersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.CounterclaimPaymentSuccessPersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.NoticeOfChangeCompletedPersonalisation;
+import uk.gov.hmcts.reform.pcs.notify.template.personalisation.NoticeOfChangeNoLongerRepresentingPersonalisation;
 
 import java.util.Locale;
 
@@ -85,15 +86,15 @@ public class NotificationPersonalisationFactory {
             .build();
     }
 
-    public NoticeOfChangeCompletedPersonalisation noticeOfChangeNoLongerRepresenting(
+    public NoticeOfChangeNoLongerRepresentingPersonalisation noticeOfChangeNoLongerRepresenting(
         LegalRepresentativeEntity legalRepresentative,
         PcsCaseEntity pcsCaseEntity
     ) {
         String organisationName = legalRepresentative.getOrganisationName();
 
-        return NoticeOfChangeCompletedPersonalisation.builder()
-            .base(buildPersonalisation(organisationName != null ? organisationName : "", "", pcsCaseEntity))
-            .address(formatPropertyAddress(pcsCaseEntity))
+        return NoticeOfChangeNoLongerRepresentingPersonalisation.builder()
+            .base(buildPersonalisation("", "", pcsCaseEntity))
+            .organisationName(organisationName != null ? organisationName : "")
             .build();
     }
 

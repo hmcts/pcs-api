@@ -369,15 +369,13 @@ class NotificationPersonalisationFactoryTest {
         void shouldAddressTheOrganisation() {
             stubClaimantParty();
             stubDefendantParty();
-            when(pcsCaseEntity.getPropertyAddress()).thenReturn(null);
 
             LegalRepresentativeEntity legalRepresentative = LegalRepresentativeEntity.builder()
                 .organisationName("Test Solicitors LLP")
                 .build();
 
             assertThat(factory.noticeOfChangeNoLongerRepresenting(legalRepresentative, pcsCaseEntity).toMap())
-                .containsEntry("firstName", "Test Solicitors LLP")
-                .containsEntry("lastName", "")
+                .containsEntry("organisationName", "Test Solicitors LLP")
                 .containsEntry("caseNumber", "1234-5678-90")
                 .containsEntry("claimantName", "JANE SMITH")
                 .containsEntry("primaryDefendantName", "JOHN DOE");
@@ -388,12 +386,11 @@ class NotificationPersonalisationFactoryTest {
         void shouldFallBackToEmptyNameWhenOrganisationNameIsMissing() {
             stubClaimantParty();
             stubDefendantParty();
-            when(pcsCaseEntity.getPropertyAddress()).thenReturn(null);
 
             LegalRepresentativeEntity legalRepresentative = LegalRepresentativeEntity.builder().build();
 
             assertThat(factory.noticeOfChangeNoLongerRepresenting(legalRepresentative, pcsCaseEntity).toMap())
-                .containsEntry("firstName", "");
+                .containsEntry("organisationName", "");
         }
     }
 

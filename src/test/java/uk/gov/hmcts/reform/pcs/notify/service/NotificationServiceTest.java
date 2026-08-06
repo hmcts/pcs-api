@@ -49,6 +49,7 @@ import uk.gov.hmcts.reform.pcs.notify.template.personalisation.BasePersonalisati
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.ClaimantBasePersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.CounterclaimPaymentSuccessPersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.NoticeOfChangeCompletedPersonalisation;
+import uk.gov.hmcts.reform.pcs.notify.template.personalisation.NoticeOfChangeNoLongerRepresentingPersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.TemplatePersonalisation;
 
 import java.time.Instant;
@@ -856,7 +857,7 @@ class NotificationServiceTest {
             lenient().when(notificationPersonalisationFactory.noticeOfChangeCompleted(representedDefendant, pcsCase))
                 .thenReturn(mock(NoticeOfChangeCompletedPersonalisation.class));
             lenient().when(notificationPersonalisationFactory.noticeOfChangeNoLongerRepresenting(any(), any()))
-                .thenReturn(mock(NoticeOfChangeCompletedPersonalisation.class));
+                .thenReturn(mock(NoticeOfChangeNoLongerRepresentingPersonalisation.class));
             lenient().when(templateConfiguration.getTemplateId(EmailTemplate.NOTICE_OF_CHANGE_COMPLETED))
                 .thenReturn(TEMPLATE_ID);
             lenient().when(templateConfiguration.getTemplateId(
