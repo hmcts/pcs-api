@@ -57,10 +57,11 @@ public class PcsCaseService {
         return pcsCaseRepository.save(pcsCaseEntity);
     }
 
+    @Transactional
     public void createMainClaimOnCase(long caseReference, PCSCase pcsCase, String organisationIdForCurrentUser) {
         PcsCaseEntity pcsCaseEntity = loadCase(caseReference);
         ClaimEntity claimEntity = claimService.createMainClaimEntity(pcsCase);
-        List<DocumentEntity> documentEntities = documentService.createAllDocuments(pcsCase);
+        List<DocumentEntity> documentEntities = documentService.buildDocumentEntitiesForCase(pcsCase);
         documentEntities.forEach(doc -> doc.setClaim(claimEntity));
         pcsCaseEntity.addDocuments(documentEntities);
         claimEntity.addClaimDocuments(documentEntities);
@@ -70,6 +71,8 @@ public class PcsCaseService {
         pcsCaseEntity.setRegionId(pcsCase.getRegionId());
         pcsCaseEntity.setBaseLocation(pcsCase.getCaseManagementLocationNumber());
         pcsCaseEntity.setCaseManagementLocation(pcsCase.getCaseManagementLocationNumber());
+
+        pcsCaseRepository.save(pcsCaseEntity);
     }
 
     public void patchCaseFlags(long caseReference, PCSCase pcsCase) {
