@@ -346,6 +346,7 @@ am-org-role-mapping-service:
       ORG_ROLE_MAPPING_DB_OPTIONS: "?stringtype=unspecified&reWriteBatchedInserts=true&sslmode=require"
       TESTING_SUPPORT_ENABLED: true
       REFRESH_BULK_ASSIGNMENT_INCLUDE_BOOKINGS: true
+      PROFESSIONAL_REFRESH_API_ENABLED: true
       DB_FEATURE_FLAG_ENABLE: st_cic_wa_1_0
       ORM_ENV: pr
 
