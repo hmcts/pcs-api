@@ -13,14 +13,11 @@ import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.pcs.camunda.CamundaService;
-import uk.gov.hmcts.reform.pcs.camunda.TaskType;
 import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantContactPreferences;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantInformation;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
-import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -74,7 +71,6 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final MoneyFormatter moneyFormatter;
     private final ResumePossessionClaimConfigurer resumePossessionClaimConfigurer;
     private final NotificationService notificationService;
-    private final CamundaService camundaService;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -188,10 +184,6 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
         draftCaseDataService.deleteUnsubmittedCaseData(caseReference, resumePossessionClaim);
 
         FeeDetails feeDetails = scheduleCaseIssueFeePayment(caseReference, getClaimantParty(caseReference));
-
-        if (pcsCase.getLanguageUsed() != null && pcsCase.getLanguageUsed() != LanguageUsed.ENGLISH) {
-            camundaService.createTask(caseReference, TaskType.TRANSLATE_CLAIMANT_SUBMITTED_DOCUMENT);
-        }
 
         String caseIssueFee = moneyFormatter.formatFee(feeDetails.getFeeAmount());
         return SubmitResponse.<State>builder()
