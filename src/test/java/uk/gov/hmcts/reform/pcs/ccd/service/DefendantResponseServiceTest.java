@@ -298,6 +298,28 @@ class DefendantResponseServiceTest {
         assertThat(savedResponse.getLandlordRegistered()).isEqualTo(landlordRegistered);
     }
 
+    @ParameterizedTest(name = "exemptLandlord={0}")
+    @MethodSource("landlordRegisteredPersistenceScenarios")
+    void shouldPersistExemptLandlordToLandlordRegisteredColumn(YesNoNotSure exemptLandlord) {
+        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
+        stubClaimLookup();
+
+        DefendantResponses responses = DefendantResponses.builder()
+            .exemptLandlord(exemptLandlord)
+            .build();
+
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .defendantResponses(responses)
+            .build();
+
+        underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse, partyEntity, JOURNEY_TYPE);
+
+        verify(defendantResponseRepository).save(responseCaptor.capture());
+        DefendantResponseEntity savedResponse = responseCaptor.getValue();
+
+        assertThat(savedResponse.getLandlordRegistered()).isEqualTo(exemptLandlord);
+    }
+
     private static Stream<Arguments> landlordRegisteredPersistenceScenarios() {
         return Stream.of(
             Arguments.of(YesNoNotSure.YES),
