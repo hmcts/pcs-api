@@ -1,5 +1,8 @@
 export default {
   'amendDocumentsselectDocument': 'selectDocument',
+  'addCaseReviewDateaddCaseReviewDate': 'addReviewDates',
+  'addCaseReviewDate/submit' : 'checkYourAnswersAddReviewDates',
+  'addCaseReviewDate/confirm': 'confirmReviewDatesAdded',
   'changeCaseStatechangeCaseStatePage': 'changeCaseState',
   'changeCaseState/confirm': 'confirmCaseStateChange',
   'enterGenAppapplicationDetails': 'enterGenAppapplicationDetails',
@@ -9,5 +12,9 @@ export default {
   'caseworkerUploadDocumentsuploadADocument': 'uploadADocument',
   'caseworkerUploadDocuments/confirm' : 'confirmUpload',
   'amendDocuments/confirm': 'confirmAmend',
-  'amendDocumentsamendDocumentDetails': 'amendDocumentDetails'
+  'amendDocumentsamendDocumentDetails': 'amendDocumentDetails',
+  'enterGenAppuploadGeneralApplication': 'enterGenAppuploadGeneralApplication',
+  'enterGenAppuploadRelatedEvidence': 'enterGenAppUploadRelatedEvidence',
+  'enterGenAppreferApplicationToJudge': 'enterGenAppPreferApplicationToJudge',
+  'enterGenApp/submit': 'genAppsCheckYouAnswers',
 };

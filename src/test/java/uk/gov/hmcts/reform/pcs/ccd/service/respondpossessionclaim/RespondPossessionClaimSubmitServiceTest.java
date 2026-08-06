@@ -19,6 +19,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
+import uk.gov.hmcts.reform.pcs.model.JourneyType;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -49,6 +50,8 @@ class RespondPossessionClaimSubmitServiceTest {
     private DocumentService documentService;
     @Mock
     private DraftCaseDataService draftCaseDataService;
+    @Mock
+    private PartyEntity partyEntity;
 
     private RespondPossessionClaimSubmitService underTest;
 
@@ -65,28 +68,44 @@ class RespondPossessionClaimSubmitServiceTest {
     }
 
     @Test
-    void shouldPersistResponseWithoutCounterClaim() {
+    void shouldPersistResponseWithoutCounterClaimCitizen() {
+        this.shouldPersistResponseWithoutCounterClaim(JourneyType.CITIZEN);
+        verify(draftCaseDataService).deleteUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim);
+    }
+
+    @Test
+    void shouldPersistResponseWithoutCounterClaimLegalRepresentative() {
+        when(partyEntity.getId()).thenReturn(UUID.randomUUID());
+
+        this.shouldPersistResponseWithoutCounterClaim(JourneyType.LEGAL_REPRESENTATIVE);
+        verify(draftCaseDataService)
+            .deleteUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim, partyEntity.getId());
+    }
+
+    void shouldPersistResponseWithoutCounterClaim(JourneyType journeyType) {
         PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
             .defendantResponses(DefendantResponses.builder().build())
             .build();
 
-        when(counterClaimService.saveCounterClaim(CASE_REFERENCE, null)).thenReturn(Optional.empty());
+        when(counterClaimService.saveCounterClaim(CASE_REFERENCE, null, partyEntity)).thenReturn(Optional.empty());
 
         RespondPossessionClaimSubmitPersistenceResult result =
-            underTest.persistFinalSubmit(CASE_REFERENCE, possessionClaimResponse);
+            underTest.persistFinalSubmit(CASE_REFERENCE, possessionClaimResponse, partyEntity, journeyType);
 
-        verify(claimResponseService).saveDraftData(possessionClaimResponse, CASE_REFERENCE);
-        verify(defendantResponseService).saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse);
-        verify(draftCaseDataService).deleteUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim);
+        verify(claimResponseService).saveDraftDataForParty(possessionClaimResponse, partyEntity);
+        verify(defendantResponseService)
+            .saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse, partyEntity, journeyType);
         verify(documentService, never()).createCounterClaimUploadedDocuments(any(), any(), any(), any());
         verify(counterClaimService, never()).issueCounterClaim(any());
         assertThat(result.counterClaimEntity()).isNull();
-        assertThat(result.issuedWithoutPayment()).isFalse();
+        assertThat(result.paymentRequired()).isFalse();
         assertThat(result.possessionClaimResponse()).isEqualTo(possessionClaimResponse);
     }
 
     @Test
-    void shouldPersistCounterClaimAndCreatePaymentWhenFeeIsRequired() {
+    void shouldPersistCounterClaimAndCreatePaymentWhenFeeIsRequiredForCitizenJourney() {
+        JourneyType journeyType = JourneyType.CITIZEN;
+
         CounterClaim counterClaim = CounterClaim.builder()
             .claimType(CounterClaimType.PAYMENT_OR_COMPENSATION)
             .isClaimAmountKnown(VerticalYesNo.YES)
@@ -103,20 +122,58 @@ class RespondPossessionClaimSubmitServiceTest {
             .status(CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED)
             .build();
 
-        when(counterClaimService.saveCounterClaim(CASE_REFERENCE, counterClaim))
+        when(counterClaimService.saveCounterClaim(CASE_REFERENCE, counterClaim, partyEntity))
             .thenReturn(Optional.of(savedCounterClaim));
         when(counterClaimFeeCalculator.isPaymentRequired(counterClaim)).thenReturn(true);
 
         RespondPossessionClaimSubmitPersistenceResult result =
-            underTest.persistFinalSubmit(CASE_REFERENCE, possessionClaimResponse);
+            underTest.persistFinalSubmit(CASE_REFERENCE, possessionClaimResponse, partyEntity, journeyType);
 
         verify(counterClaimService, never()).issueCounterClaim(any());
+        verify(draftCaseDataService).deleteUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim);
         assertThat(result.counterClaimEntity()).isEqualTo(savedCounterClaim);
-        assertThat(result.issuedWithoutPayment()).isFalse();
+        assertThat(result.paymentRequired()).isTrue();
     }
 
     @Test
-    void shouldIssueCounterClaimImmediatelyWhenHelpWithFeesApplies() {
+    void shouldPersistCounterClaimAndCreatePaymentWhenFeeIsRequiredForLegalRepJourney() {
+        JourneyType journeyType = JourneyType.LEGAL_REPRESENTATIVE;
+
+        CounterClaim counterClaim = CounterClaim.builder()
+            .claimType(CounterClaimType.PAYMENT_OR_COMPENSATION)
+            .isClaimAmountKnown(VerticalYesNo.YES)
+            .claimAmount(new BigDecimal("2500.00"))
+            .build();
+        DefendantResponses defendantResponses = DefendantResponses.builder()
+            .counterClaim(counterClaim)
+            .build();
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .defendantResponses(defendantResponses)
+            .build();
+        CounterClaimEntity savedCounterClaim = CounterClaimEntity.builder()
+            .id(UUID.randomUUID())
+            .status(CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED)
+            .build();
+
+        when(partyEntity.getId()).thenReturn(UUID.randomUUID());
+        when(counterClaimService.saveCounterClaim(CASE_REFERENCE, counterClaim, partyEntity))
+            .thenReturn(Optional.of(savedCounterClaim));
+        when(counterClaimFeeCalculator.isPaymentRequired(counterClaim)).thenReturn(true);
+
+        RespondPossessionClaimSubmitPersistenceResult result =
+            underTest.persistFinalSubmit(CASE_REFERENCE, possessionClaimResponse, partyEntity, journeyType);
+
+        verify(counterClaimService, never()).issueCounterClaim(any());
+        verify(draftCaseDataService).deleteUnsubmittedCaseData(
+            CASE_REFERENCE, respondPossessionClaim, partyEntity.getId());
+        assertThat(result.counterClaimEntity()).isEqualTo(savedCounterClaim);
+        assertThat(result.paymentRequired()).isTrue();
+    }
+
+    @Test
+    void shouldNotIssueCounterClaimWhenHelpWithFeesApplies() {
+        JourneyType journeyType = JourneyType.CITIZEN;
+
         CounterClaim counterClaim = CounterClaim.builder()
             .claimType(CounterClaimType.PAYMENT_OR_COMPENSATION)
             .hwfReferenceNumber("HWF-123-456")
@@ -131,26 +188,25 @@ class RespondPossessionClaimSubmitServiceTest {
             .id(UUID.randomUUID())
             .status(CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED)
             .build();
-        CounterClaimEntity issuedCounterClaim = CounterClaimEntity.builder()
-            .id(savedCounterClaim.getId())
-            .status(CounterClaimState.COUNTER_CLAIM_ISSUED)
-            .build();
 
-        when(counterClaimService.saveCounterClaim(CASE_REFERENCE, counterClaim))
+        when(counterClaimService.saveCounterClaim(CASE_REFERENCE, counterClaim, partyEntity))
             .thenReturn(Optional.of(savedCounterClaim));
         when(counterClaimFeeCalculator.isPaymentRequired(counterClaim)).thenReturn(false);
-        when(counterClaimService.issueCounterClaim(savedCounterClaim)).thenReturn(issuedCounterClaim);
 
         RespondPossessionClaimSubmitPersistenceResult result =
-            underTest.persistFinalSubmit(CASE_REFERENCE, possessionClaimResponse);
+            underTest.persistFinalSubmit(CASE_REFERENCE, possessionClaimResponse, partyEntity, journeyType);
 
-        verify(counterClaimService).issueCounterClaim(savedCounterClaim);
-        assertThat(result.counterClaimEntity()).isEqualTo(issuedCounterClaim);
-        assertThat(result.issuedWithoutPayment()).isTrue();
+        verify(counterClaimService, never()).issueCounterClaim(any());
+        assertThat(result.counterClaimEntity()).isEqualTo(savedCounterClaim);
+        assertThat(result.counterClaimEntity().getStatus())
+            .isEqualTo(CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED);
+        assertThat(result.paymentRequired()).isFalse();
     }
 
     @Test
     void shouldSaveCounterClaimDocumentsWhenPresent() {
+        JourneyType journeyType = JourneyType.CITIZEN;
+
         CounterClaim counterClaim = CounterClaim.builder()
             .claimType(CounterClaimType.SOMETHING_ELSE)
             .build();
@@ -176,43 +232,18 @@ class RespondPossessionClaimSubmitServiceTest {
             .status(CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED)
             .build();
 
-        when(counterClaimService.saveCounterClaim(CASE_REFERENCE, counterClaim))
+        when(counterClaimService.saveCounterClaim(CASE_REFERENCE, counterClaim, partyEntity))
             .thenReturn(Optional.of(savedCounterClaim));
         when(counterClaimFeeCalculator.isPaymentRequired(counterClaim)).thenReturn(true);
 
-        underTest.persistFinalSubmit(CASE_REFERENCE, possessionClaimResponse);
+        underTest.persistFinalSubmit(CASE_REFERENCE, possessionClaimResponse, partyEntity, journeyType);
 
         verify(documentService).createCounterClaimUploadedDocuments(
-            counterClaimDocuments,
+            defendantResponses.getCounterClaimDocuments(),
             savedCounterClaim,
-            pcsCaseEntity,
-            partyEntity
+            savedCounterClaim.getPcsCase(),
+            savedCounterClaim.getParty()
         );
     }
 
-    @Test
-    void shouldSkipDocumentSaveWhenCounterClaimDocumentsAreEmpty() {
-        CounterClaim counterClaim = CounterClaim.builder()
-            .claimType(CounterClaimType.SOMETHING_ELSE)
-            .build();
-        DefendantResponses defendantResponses = DefendantResponses.builder()
-            .counterClaim(counterClaim)
-            .counterClaimDocuments(List.of())
-            .build();
-        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
-            .defendantResponses(defendantResponses)
-            .build();
-        CounterClaimEntity savedCounterClaim = CounterClaimEntity.builder()
-            .id(UUID.randomUUID())
-            .status(CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED)
-            .build();
-
-        when(counterClaimService.saveCounterClaim(CASE_REFERENCE, counterClaim))
-            .thenReturn(Optional.of(savedCounterClaim));
-        when(counterClaimFeeCalculator.isPaymentRequired(counterClaim)).thenReturn(true);
-
-        underTest.persistFinalSubmit(CASE_REFERENCE, possessionClaimResponse);
-
-        verify(documentService, never()).createCounterClaimUploadedDocuments(any(), any(), any(), any());
-    }
 }

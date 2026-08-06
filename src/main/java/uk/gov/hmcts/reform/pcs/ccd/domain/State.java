@@ -37,7 +37,7 @@ public enum State {
     @CCD(
         label = "Case Issued",
         access = {CaseworkerReadAccess.class, ClaimantAccess.class, DefendantAccess.class, RasValidationAccess.class,
-            GlobalSearchAccess.class},
+            InternalCaseFlagAccess.class, GlobalSearchAccess.class},
         hint = "${caseTitleMarkdown}"
     )
     CASE_ISSUED,
@@ -104,5 +104,11 @@ public enum State {
             GlobalSearchAccess.class},
         hint = "${caseTitleMarkdown}"
     )
-    BREATHING_SPACE
+    BREATHING_SPACE,
+
+    @CCD(
+        label = "Closed",
+        hint = "${caseTitleMarkdown}"
+    )
+    CLOSED
 }
