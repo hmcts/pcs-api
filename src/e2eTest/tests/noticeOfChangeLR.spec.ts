@@ -37,8 +37,8 @@ test.afterEach(async () => {
 
 });
 
-test.describe('Make an Application - LR - e2e Journey @nightly @noticeOfChange', async () => {
-  test('Notice of change - Change link - Same Org LR submits another NOC - LR', async () => {
+test.describe('Make an Application - LR - e2e Journey @nightly', async () => {
+  test('Notice of change - Change link - Same Org LR submits another NOC - LR @noticeOfChange', async () => {
     await performAction('noticeOfChange', { caseRefNo: caseInfo.id } );
     await performAction('clientDetails', { firstName: 'Peter' , lastName: 'Parker' });
     await performAction('verifyChangeLink', { caseRefNo: caseInfo.id, firstName: 'Peter' , lastName: 'Parker' });
@@ -51,14 +51,14 @@ test.describe('Make an Application - LR - e2e Journey @nightly @noticeOfChange',
     await performAction('validateErrorPage' );
   });
 
-  test('Notice of change - successful - LR - @regression @smoke', async () => {
+  test('Notice of change - successful - LR - @regression @smoke @noticeOfChange', async () => {
     await performAction('noticeOfChange', { caseRefNo: caseInfo.id } );
     await performAction('clientDetails', { firstName: 'Peter' , lastName: 'Parker' });
     await performAction('checkAndSubmit', { caseRefNo: caseInfo.id, firstName: 'Peter' , lastName: 'Parker' } );
     await performAction('noticeOfChangeSuccessful', { caseRefNo: caseInfo.fid } );
   });
 
-  test('Notice of change - Error message validations - LR', async () => {
+  test('Notice of change - Error message validations - LR @noticeOfChange', async () => {
     await performAction('clickButton', noc.continueButton);
     await performValidation('text', { elementType: 'link', text: noc.errMessage });
     await performAction('noticeOfChange', { caseRefNo: '1111-2222-3333-4444-5555' } );
@@ -94,11 +94,23 @@ test.describe('Make an Application - LR - e2e Journey @nightly @noticeOfChange',
     await performValidation('text', { elementType: 'link', text: checkAndSubmit.tickTheBoxErrorMessage });
   });
 
-  test('Notice of change - Content Validation - LR', async () => {
+  test('Notice of change - Content Validation - LR @noticeOfChange' , async () => {
+    await performValidation('text', { elementType: 'heading', text: noc.mainHeader });
+    await performValidation('text', { elementType: 'paragraph', text: noc.youCanUseThisNoticeParagraph });
+    await performValidation('text', { elementType: 'listItem', text: noc.aClientActingInPersonListItem });
+    await performValidation('text', { elementType: 'listItem', text: noc.aLegalRepresentativeListItem });
+    await performValidation('text', { elementType: 'hintText', text: noc.thisIsHintText });
     await performAction('noticeOfChange', { caseRefNo: caseInfo.id } );
+
+    await performValidation('text', { elementType: 'heading', text: clientDetails.mainHeader });
+    await performValidation('text', { elementType: 'paragraph', text: clientDetails.youMustEnterParagraph });
     await performAction('clientDetails', { firstName: 'Peter' , lastName: 'Parker' });
+
+    await performValidation('text', { elementType: 'heading', text: checkAndSubmit.mainHeader });
+    await performValidation('text', { elementType: 'paragraph', text: checkAndSubmit.afterYouSubmitParagraph });
+    await performValidation('text', { elementType: 'tableElement', text: checkAndSubmit.requestTableElement });
+
     await performAction('checkAndSubmit', { caseRefNo: caseInfo.id, firstName: 'Peter' , lastName: 'Parker' } );
     await performAction('noticeOfChangeSuccessful', { caseRefNo: caseInfo.fid } );
   });
-
 });

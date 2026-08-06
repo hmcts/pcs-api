@@ -38,6 +38,9 @@ export class TextValidation implements IValidation {
         break;
       case 'link':
         data.elementType = 'a';
+        break;
+      case 'hintText':
+        data.elementType = '';
     }
     const text = String(data.text);
     const locator = data.elementType === 'p'
