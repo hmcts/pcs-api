@@ -83,6 +83,9 @@ public class DefendantResponses {
     private YesNoNotSure landlordRegistered;
 
     @CCD
+    private YesNoNotSure exemptLandlord;
+
+    @CCD
     private YesNoNotSure writtenTerms;
 
     @CCD
