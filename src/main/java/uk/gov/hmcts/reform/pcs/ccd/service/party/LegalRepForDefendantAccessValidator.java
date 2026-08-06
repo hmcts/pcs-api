@@ -25,17 +25,26 @@ public class LegalRepForDefendantAccessValidator {
     private final DefendantResponseRepository defendantResponseRepository;
 
     public List<PartyEntity> validateAndGetDefendants(PcsCaseEntity caseEntity, UUID authenticatedUserId) {
+        return this.validateAndGetDefendants(caseEntity, authenticatedUserId, true);
+    }
+
+    public List<PartyEntity> validateAndGetDefendants(
+        PcsCaseEntity caseEntity,
+        UUID authenticatedUserId,
+        boolean validate
+    ) {
         long caseReference = caseEntity.getCaseReference();
         List<PartyEntity> defendants = defendantPartyExtractor.extractDefendants(caseEntity, caseReference);
         String organisationId = organisationDetailsService.getOrganisationIdentifier(authenticatedUserId.toString());
-        return findMatchingLinkedDefendants(defendants, authenticatedUserId, organisationId, caseReference);
+        return findMatchingLinkedDefendants(defendants, authenticatedUserId, organisationId, caseReference, validate);
     }
 
     private List<PartyEntity> findMatchingLinkedDefendants(
         List<PartyEntity> defendants,
         UUID authenticatedUserId,
         String organisationId,
-        long caseReference
+        long caseReference,
+        boolean validate
     ) {
         List<PartyEntity> linkedDefendants =  defendants
             .stream()
@@ -54,14 +63,13 @@ public class LegalRepForDefendantAccessValidator {
                 caseReference, party.getId()))
             .toList();
 
-        if (linkedDefendants.isEmpty()) {
+        if (validate && linkedDefendants.isEmpty()) {
             log.error(
                 "Access denied: User {} is not linked as a defendant on case {}",
                 authenticatedUserId,
                 caseReference
             );
             throw new CaseAccessException("User is not linked as a defendant solicitor on this case");
-
         }
         return linkedDefendants;
     }
