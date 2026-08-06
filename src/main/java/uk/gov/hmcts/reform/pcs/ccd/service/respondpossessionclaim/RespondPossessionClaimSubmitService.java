@@ -12,6 +12,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEnt
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
 import uk.gov.hmcts.reform.pcs.model.JourneyType;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 
 import java.util.Optional;
 
@@ -28,6 +29,7 @@ public class RespondPossessionClaimSubmitService {
     private final CounterClaimFeeCalculator counterClaimFeeCalculator;
     private final DocumentService documentService;
     private final DraftCaseDataService draftCaseDataService;
+    private final OrganisationService organisationService;
 
     @Transactional
     public RespondPossessionClaimSubmitPersistenceResult persistFinalSubmit(
@@ -52,19 +54,15 @@ public class RespondPossessionClaimSubmitService {
         ));
 
         CounterClaimEntity counterClaimEntity = savedCounterClaim.orElse(null);
-        boolean issuedWithoutPayment = false;
-
-        if (counterClaimEntity != null
-            && !counterClaimFeeCalculator.isPaymentRequired(counterClaim)) {
-            counterClaimEntity = counterClaimService.issueCounterClaim(counterClaimEntity);
-            issuedWithoutPayment = true;
-        }
+        boolean paymentRequired = counterClaimEntity != null
+            && counterClaimFeeCalculator.isPaymentRequired(counterClaim);
 
         if (JourneyType.LEGAL_REPRESENTATIVE.equals(journeyType)) {
             draftCaseDataService.deleteUnsubmittedCaseData(
                 caseReference,
                 respondPossessionClaim,
-                defendantParty.getId()
+                defendantParty.getId(),
+                organisationService.getOrganisationIdForCurrentUser()
             );
         } else {
             draftCaseDataService.deleteUnsubmittedCaseData(caseReference, respondPossessionClaim);
@@ -75,7 +73,7 @@ public class RespondPossessionClaimSubmitService {
         return new RespondPossessionClaimSubmitPersistenceResult(
             responseDraftData,
             counterClaimEntity,
-            issuedWithoutPayment
+            paymentRequired
         );
     }
 

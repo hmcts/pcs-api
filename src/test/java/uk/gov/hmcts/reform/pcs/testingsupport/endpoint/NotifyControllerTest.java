@@ -157,7 +157,8 @@ class NotifyControllerTest {
             NotifyController controller = new NotifyController(
                 notificationService,
                 defendantResponseRepository,
-                feePaymentRepository
+                feePaymentRepository,
+                legalRepresentativeRepository
             );
 
             assertThat(controller).isNotNull();
