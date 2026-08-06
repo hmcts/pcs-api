@@ -110,7 +110,7 @@ public class LegalRepSubmissionEventStrategy implements RespondPossessionClaimSu
             .buildSubmitResponse(caseReference, persistenceResult, defendantParty);
 
         // Schedule this as a task
-        pickTemplate(legalRepresentativeOrganisationEntity,pcsCaseEntity,defendantResponse);
+        pickTemplate(legalRepresentativeOrganisationEntity, pcsCaseEntity, defendantResponse);
 
         return submitResponse;
     }
@@ -127,7 +127,6 @@ public class LegalRepSubmissionEventStrategy implements RespondPossessionClaimSu
     private boolean isHwfBlank(CounterClaimEntity counterClaim) {
         return isBlank(counterClaim.getHwfReferenceNumber());
     }
-
 
     private EmailNotificationResponse noCounterClaim(
         LegalRepresentativeOrganisationEntity legalRepresentativeOrganisationEntity, PcsCaseEntity pcsCaseEntity,

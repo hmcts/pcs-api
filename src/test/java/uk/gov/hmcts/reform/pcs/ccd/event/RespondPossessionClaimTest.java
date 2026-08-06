@@ -10,6 +10,7 @@ import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeOrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.LegalRepresentativeOrganisationRepository;
 import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
@@ -73,8 +74,7 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -1027,6 +1027,9 @@ class RespondPossessionClaimTest extends BaseEventTest {
 
         when(counterClaimService.saveCounterClaim(TEST_CASE_REFERENCE, responses.getCounterClaim(), representedParty))
             .thenReturn(Optional.of(counterClaimEntity));
+        when(legalRepresentativeOrganisationRepository.findByPartyLinkedToLegalRepresentativeOrganisationAndActive(
+            any())).thenReturn(Optional.of(new LegalRepresentativeOrganisationEntity()));
+        when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(new PcsCaseEntity());
 
         // when
         callSubmitHandler(caseData);
