@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim;
 
 import com.github.kagkarlsson.scheduler.SchedulerClient;
 import com.github.kagkarlsson.scheduler.task.SchedulableInstance;
+import com.github.kagkarlsson.scheduler.task.TaskInstance;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -39,6 +40,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.respondPossessionClaim;
+import static uk.gov.hmcts.reform.pcs.ccd.task.PendingCounterClaimIssuedNotificationTaskComponent.PENDING_COUNTER_CLAIM_ISSUED_TASK_DESCRIPTOR;
 
 @ExtendWith(MockitoExtension.class)
 class RespondPossessionClaimSubmitServiceTest {
@@ -286,8 +288,9 @@ class RespondPossessionClaimSubmitServiceTest {
         verify(schedulerClient).scheduleIfNotExists(schedulableInstanceCaptor.capture());
         SchedulableInstance<CounterClaimTaskData> schedulableInstance = schedulableInstanceCaptor.getValue();
 
-        CounterClaimTaskData taskData = schedulableInstance.getTaskInstance().getData();
-        assertThat(taskData.getCounterClaimId()).isEqualTo(savedCounterClaimId);
+        TaskInstance<CounterClaimTaskData> taskInstance = schedulableInstance.getTaskInstance();
+        assertThat(taskInstance.getTaskName()).isEqualTo(PENDING_COUNTER_CLAIM_ISSUED_TASK_DESCRIPTOR.getTaskName());
+        assertThat(taskInstance.getData().getCounterClaimId()).isEqualTo(savedCounterClaimId);
     }
 
     @ParameterizedTest
