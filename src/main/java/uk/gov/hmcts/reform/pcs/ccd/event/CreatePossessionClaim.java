@@ -10,6 +10,7 @@ import uk.gov.hmcts.ccd.sdk.api.Event.EventBuilder;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
+import uk.gov.hmcts.ccd.sdk.type.Organisation;
 import uk.gov.hmcts.ccd.sdk.type.OrganisationPolicy;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.AccessProfile;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
@@ -124,12 +125,17 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
         String organisationIdForCurrentUser = organisationService.getOrganisationIdForCurrentUser();
         if (organisationIdForCurrentUser != null) {
             log.info("Organisation ID for current user is {}.", organisationIdForCurrentUser);
-            ofNullable(caseData.getGroupAccessFields())
-                .orElse(GroupAccessFields.<AccessProfile>builder().build())
-                .setOrganisationPolicyField(
-                    OrganisationPolicy.<AccessProfile>builder().orgPolicyReference(organisationIdForCurrentUser)
-                        .orgPolicyCaseAssignedRole(AccessProfile.CLAIMANT_SOLICITOR).build()
-                );
+            GroupAccessFields<AccessProfile> groupAccessFields = ofNullable(caseData.getGroupAccessFields())
+                .orElseGet(() -> GroupAccessFields.<AccessProfile>builder().build());
+            groupAccessFields.setOrganisationPolicyField(
+                OrganisationPolicy.<AccessProfile>builder()
+                    .organisation(Organisation.builder()
+                                      .organisationId(organisationIdForCurrentUser)
+                                      .build())
+                    .orgPolicyCaseAssignedRole(AccessProfile.CLAIMANT_SOLICITOR_ORG)
+                    .build()
+            );
+            caseData.setGroupAccessFields(groupAccessFields);
         } else {
             log.warn("Organisation ID for current user is null. Organisation policy will not be set.");
         }
