@@ -19,6 +19,7 @@ import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.BasePersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.ClaimantBasePersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.CounterclaimPaymentSuccessPersonalisation;
+import uk.gov.hmcts.reform.pcs.notify.template.personalisation.NoticeOfChangeCompleteLegalRepPersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.NoticeOfChangeCompletedPersonalisation;
 
 import java.util.Locale;
@@ -85,13 +86,19 @@ public class NotificationPersonalisationFactory {
             .build();
     }
 
-    public NoticeOfChangeCompletedPersonalisation noticeOfChangeCompleteLegalRep(
+    public NoticeOfChangeCompleteLegalRepPersonalisation noticeOfChangeCompleteLegalRep(
         LegalRepresentativeEntity legalRepresentative,
-        PcsCaseEntity pcsCaseEntity
+        PartyEntity representedDefendant
     ) {
-        return NoticeOfChangeCompletedPersonalisation.builder()
-            .base(buildPersonalisation(legalRepresentative.getOrganisationName(), "", pcsCaseEntity))
-            .address(formatPropertyAddress(pcsCaseEntity))
+        String organisationName = legalRepresentative.getOrganisationName();
+
+        return NoticeOfChangeCompleteLegalRepPersonalisation.builder()
+            .base(buildPersonalisation("", "", representedDefendant.getPcsCase()))
+            .organisationName(organisationName != null ? organisationName : "")
+            .partyName(getDefendantName(
+                representedDefendant.getNameKnown() != null && representedDefendant.getNameKnown().toBoolean(),
+                representedDefendant.getFirstName(),
+                representedDefendant.getLastName()))
             .build();
     }
 

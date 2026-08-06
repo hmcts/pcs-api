@@ -170,13 +170,12 @@ public class NotificationService {
         LegalRepresentativeEntity legalRepresentative,
         PartyEntity representedDefendant
     ) {
-        PcsCaseEntity pcsCase = representedDefendant.getPcsCase();
-
         return sendEmail(
             legalRepresentativeRecipient(legalRepEmail, representedDefendant),
             EmailTemplate.NOTICE_OF_CHANGE_COMPLETE_LEGAL_REP,
             NotificationClaimType.NOTICE_OF_CHANGE,
-            notificationPersonalisationFactory.noticeOfChangeCompleteLegalRep(legalRepresentative, pcsCase)
+            notificationPersonalisationFactory.noticeOfChangeCompleteLegalRep(
+                legalRepresentative, representedDefendant)
         );
     }
 
