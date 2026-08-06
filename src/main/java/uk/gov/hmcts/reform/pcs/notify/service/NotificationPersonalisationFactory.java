@@ -9,7 +9,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeOrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
@@ -63,11 +63,11 @@ public class NotificationPersonalisationFactory {
     }
 
     public LegalRepresentativeBasePersonalisation forLegalRepresentative(
-        LegalRepresentativeEntity legalRepresentativeEntity, PcsCaseEntity pcsCaseEntity) {
-        String organisationName = legalRepresentativeEntity.getOrganisationName();
+        LegalRepresentativeOrganisationEntity legalRepresentativeOrganisationEntity, PcsCaseEntity pcsCaseEntity) {
+        String organisationName = legalRepresentativeOrganisationEntity.getOrganisationName();
 
         return LegalRepresentativeBasePersonalisation.builder()
-            .base(buildPersonalisation(pcsCaseEntity, legalRepresentativeEntity))
+            .base(buildPersonalisation(pcsCaseEntity, legalRepresentativeOrganisationEntity))
             .organisationName(organisationName)
             .build();
     }
@@ -83,7 +83,7 @@ public class NotificationPersonalisationFactory {
 
     private BasePersonalisation buildPersonalisation(
         PcsCaseEntity pcsCaseEntity,
-        LegalRepresentativeEntity legalRepresentative
+        LegalRepresentativeOrganisationEntity legalRepresentativeOrganisationEntity
     ) {
         PartyEntity primaryClaimant = partyService.getPrimaryClaimantPartyEntity(pcsCaseEntity);
         PartyEntity primaryDefendant = partyService.getPrimaryDefendantPartyEntity(pcsCaseEntity);
@@ -98,10 +98,8 @@ public class NotificationPersonalisationFactory {
             primaryDefendant.getLastName());
 
         return BasePersonalisation.builder()
-            .firstName(legalRepresentative.getFirstName() != null
-                           ? legalRepresentative.getFirstName() : legalRepresentative.getOrganisationName())
-            .lastName(legalRepresentative.getLastName() != null
-                          ? legalRepresentative.getLastName() : "")
+            .firstName(legalRepresentativeOrganisationEntity.getOrganisationName() != null
+                           ? legalRepresentativeOrganisationEntity.getOrganisationName() : null)
             .caseNumber(formatCaseReference(pcsCaseEntity.getCaseReference().toString()))
             .claimantName(claimantName)
             .primaryDefendantName(primaryDefendantName)

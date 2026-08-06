@@ -200,6 +200,9 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
     private void buildSummaryTab(ConfigBuilder<PCSCase, State, AccessProfile> builder) {
         builder.tab("summary", "Summary")
             .forRoles(PARTY_VISIBLE_TAB_ROLES)
+            .label("summaryLegalRepresentativeMarkdownLabel", null,
+                   "${summaryLegalRepresentativeMarkdown}")
+            .field("summaryLegalRepresentativeMarkdown", NEVER_SHOW)
             .label("confirmEvictionSummaryMarkupLabel", null, "${confirmEvictionSummaryMarkup}")
             .field("confirmEvictionSummaryMarkup", NEVER_SHOW)
             .label("Summary", null, "# Summary")

@@ -11,7 +11,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeOrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
@@ -100,54 +100,54 @@ public class NotificationService {
 
 
     public EmailNotificationResponse sendDefendantResponseConfirmationToLegalRepresentativeNoCounterClaim(
-        LegalRepresentativeEntity legalRepresentativeEntity,
+        LegalRepresentativeOrganisationEntity legalRepresentativeOrganisationEntity,
         PcsCaseEntity pcsCaseEntity,
         DefendantResponseEntity defendantResponse) {
 
         return sendEmailForLegalRepresentative(
             legalRepresentativeRecipient(
-                legalRepresentativeEntity,
+                legalRepresentativeOrganisationEntity,
                 pcsCaseEntity,
                 defendantResponse.getParty(),
                 defendantResponse
             ),
             EmailTemplate.RESPONSE_NO_COUNTERCLAIM,
             NotificationClaimType.NO_COUNTER_CLAIM,
-            notificationPersonalisationFactory.forLegalRepresentative(legalRepresentativeEntity, pcsCaseEntity));
+            notificationPersonalisationFactory.forLegalRepresentative(legalRepresentativeOrganisationEntity, pcsCaseEntity));
     }
 
     public EmailNotificationResponse sendDefendantResponseConfirmationToLegalRepresentativePaymentRequired(
-        LegalRepresentativeEntity legalRepresentativeEntity,
+        LegalRepresentativeOrganisationEntity legalRepresentativeOrganisationEntity,
         PcsCaseEntity pcsCaseEntity,
         DefendantResponseEntity defendantResponse) {
 
         return sendEmailForLegalRepresentative(
             legalRepresentativeRecipient(
-                legalRepresentativeEntity,
+                legalRepresentativeOrganisationEntity,
                 pcsCaseEntity,
                 defendantResponse.getParty(),
                 defendantResponse
             ),
             EmailTemplate.RESPONSE_WITH_COUNTERCLAIM_PAYMENT_REQUIRED,
             NotificationClaimType.COUNTER_CLAIM,
-            notificationPersonalisationFactory.forLegalRepresentative(legalRepresentativeEntity, pcsCaseEntity));
+            notificationPersonalisationFactory.forLegalRepresentative(legalRepresentativeOrganisationEntity, pcsCaseEntity));
     }
 
     public EmailNotificationResponse sendDefendantResponseConfirmationToLegalRepresentativeNoPaymentRequired(
-        LegalRepresentativeEntity legalRepresentativeEntity,
+        LegalRepresentativeOrganisationEntity legalRepresentativeOrganisationEntity,
         PcsCaseEntity pcsCaseEntity,
         DefendantResponseEntity defendantResponse) {
 
         return sendEmailForLegalRepresentative(
             legalRepresentativeRecipient(
-                legalRepresentativeEntity,
+                legalRepresentativeOrganisationEntity,
                 pcsCaseEntity,
                 defendantResponse.getParty(),
                 defendantResponse
             ),
             EmailTemplate.RESPONSE_WITH_COUNTERCLAIM_NO_PAYMENT_REQUIRED,
             NotificationClaimType.COUNTER_CLAIM,
-            notificationPersonalisationFactory.forLegalRepresentative(legalRepresentativeEntity, pcsCaseEntity));
+            notificationPersonalisationFactory.forLegalRepresentative(legalRepresentativeOrganisationEntity, pcsCaseEntity));
     }
 
     public EmailNotificationResponse sendClaimantDraftSavedForLaterEmailNotification(
@@ -558,17 +558,17 @@ public class NotificationService {
     }
 
     private LegalRepresentativeNotificationRecipient legalRepresentativeRecipient(
-        LegalRepresentativeEntity legalRepresentativeEntity,
+        LegalRepresentativeOrganisationEntity legalRepresentativeOrganisationEntity,
         PcsCaseEntity pcsCaseEntity,
         PartyEntity defendantParty,
         DefendantResponseEntity defendantResponse) {
 
-        if (legalRepresentativeEntity == null) {
+        if (legalRepresentativeOrganisationEntity == null) {
             throw new IllegalStateException("No legal representative found for response: " + defendantResponse.getId());
         }
 
         return new LegalRepresentativeNotificationRecipient(
-            legalRepresentativeEntity.getEmail(),
+            legalRepresentativeOrganisationEntity.getEmail(),
             defendantParty,
             pcsCaseEntity,
             defendantResponse.getClaim()

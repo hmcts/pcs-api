@@ -367,6 +367,9 @@ public class PCSCase {
     @CCD(searchable = false)
     private String nextStepsMarkdown;
 
+    @CCD(searchable = false, access = DefendantSolicitorAccess.class)
+    private String summaryLegalRepresentativeMarkdown;
+
     @JsonUnwrapped(prefix = "rentArrears_")
     @CCD
     private RentArrearsSection rentArrears;
@@ -746,4 +749,13 @@ public class PCSCase {
         typeParameterOverride = "CaseStateOption"
     )
     private CaseStateOption targetState;
+
+    /**
+     * The legal representative for a defendant on the case.
+     */
+    @JsonUnwrapped
+    private LegalRepresentativeDetails legalRepresentativeDetails;
+
+    @CCD(searchable = false, access = {DefendantSolicitorAccess.class})
+    private YesOrNo legalRepUpdatedDetails;
 }

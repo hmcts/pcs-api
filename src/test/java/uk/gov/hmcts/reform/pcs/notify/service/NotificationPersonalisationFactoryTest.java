@@ -13,7 +13,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeOrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
@@ -294,7 +294,7 @@ class NotificationPersonalisationFactoryTest {
         @Test
         @DisplayName("Should build correct base personalisation for legal representative")
         void shouldBuildCorrectLegalRepresentativeBasePersonalisation() {
-            LegalRepresentativeEntity legalRepParty = stubLegalRepParty();
+            LegalRepresentativeOrganisationEntity legalRepParty = stubLegalRepParty();
 
             PartyEntity claimantParty = stubClaimantParty();
             PartyEntity defendantParty = stubDefendantParty();
@@ -374,10 +374,10 @@ class NotificationPersonalisationFactoryTest {
         return defendantParty;
     }
 
-    private LegalRepresentativeEntity stubLegalRepParty() {
-        LegalRepresentativeEntity legalRepParty = createLegalRep("Legal", "Rep","HMCTS");
-        UUID idamId = UUID.randomUUID();
-        legalRepParty.setIdamId(idamId);
+    private LegalRepresentativeOrganisationEntity stubLegalRepParty() {
+        LegalRepresentativeOrganisationEntity legalRepParty = createLegalRep("HMCTS");
+        UUID id = UUID.randomUUID();
+        legalRepParty.setId(id);
 
         return legalRepParty;
     }
@@ -391,11 +391,9 @@ class NotificationPersonalisationFactoryTest {
         return party;
     }
 
-    private LegalRepresentativeEntity createLegalRep(String firstName, String lastName, String organisationName) {
-        LegalRepresentativeEntity legalRep = new LegalRepresentativeEntity();
+    private LegalRepresentativeOrganisationEntity createLegalRep(String organisationName) {
+        LegalRepresentativeOrganisationEntity legalRep = new LegalRepresentativeOrganisationEntity();
         legalRep.setId(UUID.randomUUID());
-        legalRep.setFirstName(firstName);
-        legalRep.setLastName(lastName);
         legalRep.setOrganisationName(organisationName);
         return legalRep;
     }
