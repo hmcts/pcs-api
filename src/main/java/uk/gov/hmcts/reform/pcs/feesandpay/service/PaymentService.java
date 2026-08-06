@@ -37,6 +37,7 @@ import uk.gov.hmcts.reform.pcs.reference.service.OrganisationDetailsService;
 import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -158,8 +159,11 @@ public class PaymentService {
     public PbaAccountsResponse getPbaAccounts(String authToken) {
         User user = idamAuthenticator.validateAuthToken(authToken);
 
+        List<String> pbaAccounts = organisationDetailsService
+            .getOrganisationPaymentAccount(user.getUserDetails().getUid());
+
         return PbaAccountsResponse.builder()
-            .pbaAccounts(organisationDetailsService.getOrganisationPaymentAccount(user.getUserDetails().getUid()))
+            .pbaAccounts(pbaAccounts != null ? pbaAccounts : List.of())
             .build();
     }
 
@@ -168,6 +172,7 @@ public class PaymentService {
         User user = idamAuthenticator.validateAuthToken(authToken);
 
         FeePaymentEntity feePaymentEntity = getFeePayment(serviceRequestReference);
+        verifyNotPaidFee(feePaymentEntity.getPaymentStatus(), serviceRequestReference);
 
         String organisationName = organisationDetailsService.getOrganisationName(user.getUserDetails().getUid());
 
@@ -178,8 +183,6 @@ public class PaymentService {
             .idempotencyKey(UUID.randomUUID().toString())
             .organisationName(organisationName)
             .build();
-
-        verifyNotPaidFee(feePaymentEntity.getPaymentStatus(), serviceRequestReference);
 
         PBAServiceRequestResponse pbaPaymentResponse = paymentsClient.createPbaPayment(
             serviceRequestReference,

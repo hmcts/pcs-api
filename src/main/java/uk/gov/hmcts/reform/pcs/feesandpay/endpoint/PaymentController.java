@@ -95,10 +95,10 @@ public class PaymentController {
 
     @GetMapping(path = "pba-accounts")
     @Operation(
-        summary = "Get list of PBA account details from ref data"
+        summary = "Get list of PBA account details"
     )
     @ApiResponses({
-        @ApiResponse(responseCode = "201", description = "Payment request created successfully"),
+        @ApiResponse(responseCode = "200", description = "PBA accounts returned successfully"),
         @ApiResponse(responseCode = "403", description = "Forbidden - Invalid or missing service authorization token"),
         @ApiResponse(responseCode = "500", description = "Internal server error")
     })
@@ -108,7 +108,7 @@ public class PaymentController {
 
         PbaAccountsResponse pbaPaymentRequest = paymentService.getPbaAccounts(authorization);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(pbaPaymentRequest);
+        return ResponseEntity.status(HttpStatus.OK).body(pbaPaymentRequest);
     }
 
     @PostMapping(path = "service-request/{serviceRequestReference}/pba", consumes = APPLICATION_JSON_VALUE)

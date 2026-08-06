@@ -551,6 +551,23 @@ class PaymentServiceTest {
             assertThat(response.getPbaAccounts()).isEqualTo(pbaAccounts);
         }
 
+        @Test
+        void shouldGetPbaAccounts_WithNullPbaAccounts() {
+            // Given
+            String authToken = UUID.randomUUID().toString();
+            String uid = UUID.randomUUID().toString();
+
+            when(idamAuthenticator.validateAuthToken(authToken)).thenReturn(user);
+            when(user.getUserDetails()).thenReturn(userDetails);
+            when(userDetails.getUid()).thenReturn(uid);
+
+            // When
+            PbaAccountsResponse response = underTest.getPbaAccounts(authToken);
+
+            // Then
+            assertThat(response.getPbaAccounts()).isEqualTo(List.of());
+        }
+
     }
 
     @Nested
@@ -611,12 +628,9 @@ class PaymentServiceTest {
         void shouldThrowExceptionIfServiceRequestAlreadyHasAPaymentStatus(PaymentStatus paymentStatus) {
             // Given
             String authToken = UUID.randomUUID().toString();
-            String uid = UUID.randomUUID().toString();
             String serviceRequestReference = "abc";
 
             when(idamAuthenticator.validateAuthToken(authToken)).thenReturn(user);
-            when(user.getUserDetails()).thenReturn(userDetails);
-            when(userDetails.getUid()).thenReturn(uid);
             FeePaymentEntity feePaymentEntity = mock(FeePaymentEntity.class);
             when(feePaymentRepository.findByServiceRequestReference(serviceRequestReference))
                 .thenReturn(Optional.of(feePaymentEntity));
@@ -635,7 +649,7 @@ class PaymentServiceTest {
             ));
 
             // Then
-            verify(organisationDetailsService).getOrganisationName(uid);
+            verify(organisationDetailsService, never()).getOrganisationName(anyString());
             assertThat(throwable).isInstanceOf(IllegalStateException.class);
         }
 
