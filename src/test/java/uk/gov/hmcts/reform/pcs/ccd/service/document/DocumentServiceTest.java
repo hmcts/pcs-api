@@ -15,6 +15,8 @@ import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.DynamicList;
 import uk.gov.hmcts.ccd.sdk.type.DynamicListElement;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.reform.pcs.camunda.CamundaService;
+import uk.gov.hmcts.reform.pcs.camunda.TaskType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
@@ -40,6 +42,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DocumentRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TaskDescriptionService;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
 import uk.gov.hmcts.reform.pcs.exception.ClaimNotFoundException;
 
@@ -55,6 +58,7 @@ import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mock.Strictness.LENIENT;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -63,12 +67,21 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class DocumentServiceTest {
 
+    private static final long CASE_REFERENCE = 1234L;
+
     @Mock
     private DocumentRepository documentRepository;
     @Mock
     private DocumentIdExtractor documentIdExtractor;
     @Mock
     private DocumentNameService documentNameService;
+    @Mock
+    private TaskDescriptionService taskDescriptionService;
+    @Mock
+    private CamundaService camundaService;
+    @Mock(strictness = LENIENT)
+    private PcsCaseEntity pcsCase;
+
     @Captor
     private ArgumentCaptor<List<DocumentEntity>> documentEntityListCaptor;
 
@@ -76,7 +89,10 @@ class DocumentServiceTest {
 
     @BeforeEach
     void setUp() {
-        underTest = new DocumentService(documentRepository, documentIdExtractor, documentNameService);
+        when(pcsCase.getCaseReference()).thenReturn(CASE_REFERENCE);
+
+        underTest = new DocumentService(documentRepository, documentIdExtractor, documentNameService,
+                                        taskDescriptionService, camundaService);
     }
 
     @Test
@@ -732,7 +748,6 @@ class DocumentServiceTest {
     void shouldSaveDefendantEvidenceDocuments() {
         // Given
         DefendantResponseEntity response = mock(DefendantResponseEntity.class);
-        PcsCaseEntity pcsCase = mock(PcsCaseEntity.class);
         PartyEntity party = mock(PartyEntity.class);
         when(response.getId()).thenReturn(1);
         setUpDefendantParty(pcsCase, party, 2);
@@ -799,7 +814,6 @@ class DocumentServiceTest {
     void shouldReturnEmptyListWhenNoDefendantEvidenceDocuments() {
         // Given
         DefendantResponseEntity response = mock(DefendantResponseEntity.class);
-        PcsCaseEntity pcsCase = mock(PcsCaseEntity.class);
         PartyEntity party = mock(PartyEntity.class);
 
         // When
@@ -814,7 +828,6 @@ class DocumentServiceTest {
     void shouldReturnEmptyListWhenDefendantEvidenceDocumentsIsEmpty() {
         // Given
         DefendantResponseEntity response = mock(DefendantResponseEntity.class);
-        PcsCaseEntity pcsCase = mock(PcsCaseEntity.class);
         PartyEntity party = mock(PartyEntity.class);
 
         // When
@@ -830,7 +843,6 @@ class DocumentServiceTest {
     void shouldReturnEmptyListWhenNoClaimsOnCase() {
         // Given
         DefendantResponseEntity response = mock(DefendantResponseEntity.class);
-        PcsCaseEntity pcsCase = mock(PcsCaseEntity.class);
         PartyEntity party = mock(PartyEntity.class);
         when(pcsCase.getClaims()).thenReturn(Collections.emptyList());
 
@@ -855,7 +867,6 @@ class DocumentServiceTest {
     void shouldFilterOutNullValuesFromDefendantEvidenceDocuments() {
         // Given
         DefendantResponseEntity response = mock(DefendantResponseEntity.class);
-        PcsCaseEntity pcsCase = mock(PcsCaseEntity.class);
         PartyEntity party = mock(PartyEntity.class);
         when(response.getId()).thenReturn(1);
         setUpDefendantParty(pcsCase, party, 1);
@@ -890,7 +901,6 @@ class DocumentServiceTest {
     void shouldSaveDefendantEvidenceWithNullMetadata() {
         // Given
         DefendantResponseEntity response = mock(DefendantResponseEntity.class);
-        PcsCaseEntity pcsCase = mock(PcsCaseEntity.class);
         PartyEntity party = mock(PartyEntity.class);
         when(response.getId()).thenReturn(1);
         setUpDefendantParty(pcsCase, party, 1);
@@ -939,7 +949,6 @@ class DocumentServiceTest {
     @Test
     void shouldSaveAdditionalDocumentsForPartyAsOtherTypeWithPartyPostfixWhenNoGenAppSelected() {
         // Given
-        PcsCaseEntity pcsCase = mock(PcsCaseEntity.class);
         PartyEntity party = mock(PartyEntity.class);
         UUID partyId = UUID.randomUUID();
         ClaimEntity mainClaim = mock(ClaimEntity.class);
@@ -985,7 +994,6 @@ class DocumentServiceTest {
     @Test
     void shouldAttachGenAppAndApplicationsCategoryWhenGenAppSelected() {
         // Given
-        PcsCaseEntity pcsCase = mock(PcsCaseEntity.class);
         PartyEntity party = mock(PartyEntity.class);
         UUID partyId = UUID.randomUUID();
         ClaimEntity mainClaim = mock(ClaimEntity.class);
@@ -1009,6 +1017,11 @@ class DocumentServiceTest {
 
         when(documentRepository.saveAll(anyList())).thenAnswer(inv -> inv.getArgument(0));
 
+        String expectedTaskDescription = "some task description";
+        when(taskDescriptionService.createGenAppAdditionalDocumentsDescription(
+            eq(CASE_REFERENCE), eq(mainClaim), eq(party), eq(selectedGenApp), anyList()
+        )).thenReturn(expectedTaskDescription);
+
         // When
         underTest.linkAdditionalDocumentsToCase(uploadedDocs, pcsCase, party, selectedGenApp);
 
@@ -1021,12 +1034,14 @@ class DocumentServiceTest {
         assertThat(entity.getCategoryId()).isEqualTo(CaseFileCategory.APPLICATIONS.getId());
         assertThat(entity.getGeneralApplication()).isSameAs(selectedGenApp);
         assertThat(entity.getFileName()).isEqualTo("file-new GA1 - Defendant 1.pdf");
+
+        verify(camundaService)
+            .createTask(CASE_REFERENCE, TaskType.REVIEW_ADDITIONAL_DOCS_GEN_APP, expectedTaskDescription);
     }
 
     @Test
     void shouldSkipAdditionalDocumentsAlreadyPersistedByUrl() {
         // Given
-        PcsCaseEntity pcsCase = mock(PcsCaseEntity.class);
         ClaimEntity mainClaim = mock(ClaimEntity.class);
 
         DocumentEntity existing = DocumentEntity.builder().url("url-existing").build();
@@ -1069,8 +1084,6 @@ class DocumentServiceTest {
     @Test
     void shouldNotCallRepositoryWhenAllAdditionalDocumentsAreDuplicates() {
         // Given
-        PcsCaseEntity pcsCase = mock(PcsCaseEntity.class);
-
         List<DocumentEntity> existingDocs = new ArrayList<>();
         existingDocs.add(DocumentEntity.builder().url("url-existing").build());
         when(pcsCase.getDocuments()).thenReturn(existingDocs);
@@ -1096,7 +1109,6 @@ class DocumentServiceTest {
     @Test
     void shouldReturnEmptyListWhenAdditionalDocumentsInputIsNullOrEmpty() {
         // Given
-        PcsCaseEntity pcsCase = mock(PcsCaseEntity.class);
         PartyEntity party = mock(PartyEntity.class);
 
         // When
@@ -1110,12 +1122,9 @@ class DocumentServiceTest {
     @Test
     void shouldThrowClaimNotFoundExceptionWhenCaseHasNoClaims() {
         // Given
-        long caseReference = 1234567890123456L;
-        PcsCaseEntity pcsCase = mock(PcsCaseEntity.class);
         PartyEntity party = mock(PartyEntity.class);
         when(pcsCase.getDocuments()).thenReturn(new ArrayList<>());
         when(pcsCase.getClaims()).thenReturn(Collections.emptyList());
-        when(pcsCase.getCaseReference()).thenReturn(caseReference);
 
         UploadedDocument uploaded = UploadedDocument.builder()
             .document(Document.builder()
@@ -1129,7 +1138,7 @@ class DocumentServiceTest {
         assertThatThrownBy(() ->
             underTest.linkAdditionalDocumentsToCase(uploadedDocs, pcsCase, party, null))
             .isInstanceOf(ClaimNotFoundException.class)
-            .hasMessageContaining(String.valueOf(caseReference));
+            .hasMessageContaining(String.valueOf(CASE_REFERENCE));
 
         verify(documentRepository, never()).saveAll(anyList());
     }
@@ -1243,7 +1252,6 @@ class DocumentServiceTest {
     void shouldReturnEmptyListWhenNoCounterClaimDocuments() {
         // Given
         CounterClaimEntity counterClaim = mock(CounterClaimEntity.class);
-        PcsCaseEntity pcsCase = mock(PcsCaseEntity.class);
         PartyEntity party = mock(PartyEntity.class);
 
         // When
@@ -1259,7 +1267,6 @@ class DocumentServiceTest {
     void shouldReturnEmptyListWhenCounterClaimDocumentsIsEmpty() {
         // Given
         CounterClaimEntity counterClaim = mock(CounterClaimEntity.class);
-        PcsCaseEntity pcsCase = mock(PcsCaseEntity.class);
         PartyEntity party = mock(PartyEntity.class);
 
         // When
