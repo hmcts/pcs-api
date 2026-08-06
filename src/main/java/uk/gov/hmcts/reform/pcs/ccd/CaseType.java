@@ -182,11 +182,20 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
         configureCaseFileCategories(builder);
     }
 
-    // The group role name is the capacity itself, matching what POFCC-368 registers in the RAS
-    // catalogue: claimant is common to every organisation that IS the claimant regardless of org
-    // profile, while claimant_solicitor / defendant_solicitor are for organisations representing one.
-
-    // Display orders must be unique across every AccessType row or the def store rejects the import.
+    /**
+     * Group access: the access types each organisation profile gets, and the roles they map to.
+     *
+     * <p>One name per capacity - claimant, claimant_solicitor, defendant_solicitor - used as the
+     * group role PRM assigns to users, the CaseAssignedRoleField that CCD matches against an
+     * organisation policy when deriving CaseAccessGroups, and the access profile that permissions
+     * attach to. These are the names POFCC-368 registers in the RAS catalogue; assignments with
+     * any other name are rejected.
+     *
+     * <p>claimant is shared by every organisation that IS the claimant (local authorities and the
+     * "other" profiles); the solicitor roles are for organisations representing a party, who can
+     * act on either side. Display orders must be unique across all AccessType rows or the def
+     * store rejects the import.
+     */
     private static void configureGaAccessTypes(ConfigBuilder<PCSCase, State, AccessProfile> builder) {
         // Case creation has no case to evaluate against, so it is authorised by the plain
         // organisational role. POFCC-368 registers claimant with caseAccessGroupId optional for
