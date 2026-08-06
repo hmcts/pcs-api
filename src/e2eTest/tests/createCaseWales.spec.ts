@@ -174,6 +174,11 @@ test.describe('[Create Case - Wales]', async () => {
       input: uploadRequiredDocumentsWales.currentEICRTextInput,
       file: ['inspectionOrReport.pdf'],
     })
+    await performAction('selectDocumentsYouVeUploadedWales', {
+      uploadedDocuments: ['Energy performance certificate',
+          'Current gas safety report',
+          'Current Electrical Installation Condition Report (EICR)']
+    });
     await performAction('clickButton', uploadRequiredDocumentsWales.continueButton);
     await performValidation('mainHeader', wantToUploadDocuments.mainHeader);
     await performAction('wantToUploadDocuments', {
@@ -310,6 +315,11 @@ test.describe('[Create Case - Wales]', async () => {
       input: uploadRequiredDocumentsWales.currentEICRTextInput,
       file: ['inspectionOrReport.pdf'],
     })
+    await performAction('selectDocumentsYouVeUploadedWales', {
+      uploadedDocuments: ['Energy performance certificate',
+        'Current gas safety report',
+        'Current Electrical Installation Condition Report (EICR)']
+    });
     await performAction('clickButton', uploadRequiredDocumentsWales.continueButton);
     await performValidation('mainHeader', wantToUploadDocuments.mainHeader);
     await performAction('wantToUploadDocuments', {
@@ -443,6 +453,11 @@ test.describe('[Create Case - Wales]', async () => {
       input: uploadRequiredDocumentsWales.currentEICRTextInput,
       file: ['inspectionOrReport.pdf'],
     })
+    await performAction('selectDocumentsYouVeUploadedWales', {
+      uploadedDocuments: ['Energy performance certificate',
+        'Current gas safety report',
+        'Current Electrical Installation Condition Report (EICR)']
+    });
     await performAction('clickButton', uploadRequiredDocumentsWales.continueButton);
     await performValidation('mainHeader', wantToUploadDocuments.mainHeader);
     await performAction('wantToUploadDocuments', {
@@ -566,6 +581,11 @@ test.describe('[Create Case - Wales]', async () => {
       input: uploadRequiredDocumentsWales.currentEICRTextInput,
       file: ['inspectionOrReport.pdf'],
     })
+    await performAction('selectDocumentsYouVeUploadedWales', {
+      uploadedDocuments: ['Energy performance certificate',
+        'Current gas safety report',
+        'Current Electrical Installation Condition Report (EICR)']
+    });
     await performAction('clickButton', uploadRequiredDocumentsWales.continueButton);
     await performValidation('mainHeader', wantToUploadDocuments.mainHeader);
     await performAction('wantToUploadDocuments', {
@@ -705,6 +725,11 @@ test.describe('[Create Case - Wales]', async () => {
       input: uploadRequiredDocumentsWales.currentEICRTextInput,
       file: ['inspectionOrReport.pdf'],
     })
+    await performAction('selectDocumentsYouVeUploadedWales', {
+      uploadedDocuments: ['Energy performance certificate',
+        'Current gas safety report',
+        'Current Electrical Installation Condition Report (EICR)']
+    });
     await performAction('clickButton', uploadRequiredDocumentsWales.continueButton);
     await performValidation('mainHeader', wantToUploadDocuments.mainHeader);
     await performAction('wantToUploadDocuments', {
@@ -831,6 +856,11 @@ test.describe('[Create Case - Wales]', async () => {
       input: uploadRequiredDocumentsWales.currentEICRTextInput,
       file: ['inspectionOrReport.pdf'],
     })
+    await performAction('selectDocumentsYouVeUploadedWales', {
+      uploadedDocuments: ['Energy performance certificate',
+        'Current gas safety report',
+        'Current Electrical Installation Condition Report (EICR)']
+    });
     await performAction('clickButton', uploadRequiredDocumentsWales.continueButton);
     await performValidation('mainHeader', wantToUploadDocuments.mainHeader);
     await performAction('wantToUploadDocuments', {
@@ -961,6 +991,11 @@ test.describe('[Create Case - Wales]', async () => {
       input: uploadRequiredDocumentsWales.currentEICRTextInput,
       file: ['inspectionOrReport.pdf'],
     })
+    await performAction('selectDocumentsYouVeUploadedWales', {
+      uploadedDocuments: ['Energy performance certificate',
+        'Current gas safety report',
+        'Current Electrical Installation Condition Report (EICR)']
+    });
     await performAction('clickButton', uploadRequiredDocumentsWales.continueButton);
     await performValidation('mainHeader', wantToUploadDocuments.mainHeader);
     await performAction('wantToUploadDocuments', {
