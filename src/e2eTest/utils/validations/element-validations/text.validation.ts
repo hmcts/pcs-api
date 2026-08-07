@@ -16,7 +16,7 @@ export class TextValidation implements IValidation {
   private async textValidation(page: Page, data: validationRecord): Promise<void> {
     switch (data.elementType) {
       case 'heading':
-        data.elementType = 'h1.govuk-heading-l';
+        data.elementType = 'h1.govuk-heading-l, h1.govuk-panel__title, h1.govuk-heading-xl';
         break;
       case 'subHeader':
         data.elementType = 'h3';
@@ -32,6 +32,23 @@ export class TextValidation implements IValidation {
         break;
       case 'listItem':
         data.elementType = 'li';
+        break;
+      case 'tableElement':
+        data.elementType = 'div';
+        break;
+      case 'link':
+        data.elementType = 'a';
+        break;
+      case 'hintText':
+        data.elementType = 'span.govuk-hint'
+        break;
+      case 'warningText':
+        const locator = page.locator('.govuk-warning-text__text');
+        const actualText = (await locator.textContent())
+          ?.replace(/^Warning\s*/, '')
+          .trim();
+        expect(actualText).toBe(data.text);
+        return;
     }
     const text = String(data.text);
     const locator = data.elementType === 'p'
