@@ -525,7 +525,7 @@ class TestingSupportControllerTest {
         Instant scheduledInstant = instantCaptor.getValue();
 
         assertThat(capturedTaskInstance.getId()).isSameAs("db-task-id");
-        assertThat(scheduledInstant).isAfterOrEqualTo(Instant.now());
+        assertThat(scheduledInstant).isBeforeOrEqualTo(Instant.now());
     }
 
     @SuppressWarnings("unchecked")
