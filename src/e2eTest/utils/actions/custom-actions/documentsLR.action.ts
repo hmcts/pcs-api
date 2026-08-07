@@ -1,14 +1,19 @@
-import { Page } from '@playwright/test';
+import {expect, Page} from '@playwright/test';
 
 import { confirmIfTheseDocumentsRelateToAnApplication } from "@data/page-data-figma/page-data-legalRepresentative";
 import { performAction, performValidation } from '../../controller';
 import { IAction, actionRecord } from '../../interfaces';
 import {uploadAdditionalDocumentsInformation} from "@data/page-data-figma/page-data-legalRepresentative";
+import {getCaseTypeId} from "@utils/common/caseType.utils";
+import {VERY_LONG_TIMEOUT} from "../../../playwright.config";
+import {home} from "@data/page-data";
 
 export class DocumentsAction implements IAction {
   async execute(page: Page, action: string, fieldName: actionRecord): Promise<void> {
     const actionsMap = new Map<string, () => Promise<void>>([
       ['uploadAdditionalDocumentsInfo', () => this.uploadAdditionalDocumentsInfo()],
+      ['navigateToSummaryPage', () => this.navigateToSummaryPage(page)],
+
       [
         'verifyDocumentRelatesToApplication',
         () => this.verifyDocumentRelatesToApplication(page, fieldName as actionRecord),
@@ -91,5 +96,17 @@ Actual: "${actualText}"`
       option: selectOption,
     });
     await performAction('clickButton', confirmIfTheseDocumentsRelateToAnApplication.continueButton);
+  }
+
+  private async navigateToSummaryPage(page: Page) {
+    await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/${getCaseTypeId()}/${process.env.CASE_NUMBER}#Summary`);
+    await expect(async () => {
+      await page.waitForURL(`${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/${getCaseTypeId()}/${process.env.CASE_NUMBER}#Summary`, { waitUntil: 'domcontentloaded' });
+    }).toPass({
+      timeout: VERY_LONG_TIMEOUT,
+    });
+    await page.waitForLoadState();
+    await page.locator('.spinner-container').waitFor({ state: 'detached' });
+    await performValidation('mainHeader', home.caseSummary);
   }
 }

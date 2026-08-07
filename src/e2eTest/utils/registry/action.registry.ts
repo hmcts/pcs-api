@@ -161,6 +161,7 @@ export class ActionRegistry {
     ['requestRefund', new FeeAndPayAction()],
     ['approveRefund', new FeeAndPayAction()],
     ['rejectRefund', new FeeAndPayAction()],
+    ['navigateToSummaryPage', new DocumentsAction()],
     ['uploadAdditionalDocumentsInfo', new DocumentsAction()],
     ['verifyDocumentRelatesToApplication', new DocumentsAction()],
   ]);
