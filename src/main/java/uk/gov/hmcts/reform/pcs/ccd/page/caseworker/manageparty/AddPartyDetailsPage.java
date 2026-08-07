@@ -1,6 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.caseworker.manageparty;
 
-import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
@@ -15,21 +15,31 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.PartyType;
 import uk.gov.hmcts.reform.pcs.ccd.service.AddressValidator;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
+import java.time.Clock;
+import java.time.LocalDate;
 import java.util.List;
 
 import static uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService.EXTRA_SHORT_TEXT_LIMIT;
 import static uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService.FieldValidation;
 
-@AllArgsConstructor
 @Component
 public class AddPartyDetailsPage implements CcdPageConfiguration {
 
+    private final Clock ukClock;
     private final TextAreaValidationService textAreaValidationService;
     private final AddressValidator addressValidator;
 
     private static final String ORGANISATION_NAME_LABEL = "Organisation name";
     private static final String EMAIL_ADDRESS_LABEL = "Email address";
-    private static final String PHONE_NUMBER_LABEL = "Phone number";
+    private static final String DATE_OF_BIRTH_PAST_ERROR_MESSAGE = "Date of birth must be in the past";
+
+    public AddPartyDetailsPage(@Qualifier("ukClock") Clock ukClock,
+                               TextAreaValidationService textAreaValidationService,
+                               AddressValidator addressValidator) {
+        this.ukClock = ukClock;
+        this.textAreaValidationService = textAreaValidationService;
+        this.addressValidator = addressValidator;
+    }
 
     private static final String CLAIMANT_SELECTED =
         ShowConditions.fieldEquals("addParty_AddPartyType", PartyType.CLAIMANT);
@@ -106,15 +116,16 @@ public class AddPartyDetailsPage implements CcdPageConfiguration {
             FieldValidation.of(
                 partyDetails.getClaimantOrganisationName(), ORGANISATION_NAME_LABEL, EXTRA_SHORT_TEXT_LIMIT),
             FieldValidation.of(partyDetails.getClaimantEmail(), EMAIL_ADDRESS_LABEL, EXTRA_SHORT_TEXT_LIMIT),
-            FieldValidation.of(partyDetails.getClaimantPhoneNumber(), PHONE_NUMBER_LABEL, EXTRA_SHORT_TEXT_LIMIT),
             FieldValidation.of(partyDetails.getDefendantEmail(), EMAIL_ADDRESS_LABEL, EXTRA_SHORT_TEXT_LIMIT),
-            FieldValidation.of(partyDetails.getDefendantPhoneNumber(), PHONE_NUMBER_LABEL, EXTRA_SHORT_TEXT_LIMIT),
             FieldValidation.of(
                 partyDetails.getLitigationFriendOrganisationName(), ORGANISATION_NAME_LABEL, EXTRA_SHORT_TEXT_LIMIT),
-            FieldValidation.of(partyDetails.getLitigationFriendEmail(), EMAIL_ADDRESS_LABEL, EXTRA_SHORT_TEXT_LIMIT),
-            FieldValidation.of(
-                partyDetails.getLitigationFriendPhoneNumber(), PHONE_NUMBER_LABEL, EXTRA_SHORT_TEXT_LIMIT)
+            FieldValidation.of(partyDetails.getLitigationFriendEmail(), EMAIL_ADDRESS_LABEL, EXTRA_SHORT_TEXT_LIMIT)
         );
+
+        LocalDate defendantDateOfBirth = partyDetails.getDefendantDateOfBirth();
+        if (defendantDateOfBirth != null && !defendantDateOfBirth.isBefore(LocalDate.now(ukClock))) {
+            validationErrors.add(DATE_OF_BIRTH_PAST_ERROR_MESSAGE);
+        }
 
         AddressUK address = switch (partyDetails.getAddPartyType()) {
             case CLAIMANT -> partyDetails.getClaimantAddress();
