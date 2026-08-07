@@ -48,7 +48,8 @@ public class NotificationPersonalisationFactory {
         String primaryDefendantName = getDefendantName(
             isNameKnown,
             primaryDefendantDetails.getFirstName(),
-            primaryDefendantDetails.getLastName());
+            primaryDefendantDetails.getLastName()
+        );
 
         return ClaimantBasePersonalisation.builder()
             .toLineClaimantName(toLineClaimantName)
@@ -84,14 +85,8 @@ public class NotificationPersonalisationFactory {
         PartyEntity primaryClaimant = partyService.getPrimaryClaimantPartyEntity(pcsCaseEntity);
         PartyEntity primaryDefendant = partyService.getPrimaryDefendantPartyEntity(pcsCaseEntity);
 
-        String claimantName = primaryClaimant.getOrgName() != null
-            ? primaryClaimant.getOrgName().toUpperCase(Locale.ROOT)
-            : formatNameUpperForNotification(primaryClaimant.getFirstName(), primaryClaimant.getLastName());
-
-        String primaryDefendantName = getDefendantName(
-            primaryDefendant.getNameKnown() != null && primaryDefendant.getNameKnown().toBoolean(),
-            primaryDefendant.getFirstName(),
-            primaryDefendant.getLastName());
+        String claimantName = getClaimantName(primaryClaimant);
+        String primaryDefendantName = getPrimaryDefendantName(primaryDefendant);
 
         return LegalRepresentativeBasePersonalisation.builder()
             .caseNumber(formatCaseReference(pcsCaseEntity.getCaseReference().toString()))
@@ -108,14 +103,8 @@ public class NotificationPersonalisationFactory {
         PartyEntity primaryClaimant = partyService.getPrimaryClaimantPartyEntity(pcsCaseEntity);
         PartyEntity primaryDefendant = partyService.getPrimaryDefendantPartyEntity(pcsCaseEntity);
 
-        String claimantName = primaryClaimant.getOrgName() != null
-            ? primaryClaimant.getOrgName().toUpperCase(Locale.ROOT)
-            : formatNameUpperForNotification(primaryClaimant.getFirstName(), primaryClaimant.getLastName());
-
-        String primaryDefendantName = getDefendantName(
-            primaryDefendant.getNameKnown() != null && primaryDefendant.getNameKnown().toBoolean(),
-            primaryDefendant.getFirstName(),
-            primaryDefendant.getLastName());
+        String claimantName = getClaimantName(primaryClaimant);
+        String primaryDefendantName = getPrimaryDefendantName(primaryDefendant);
 
         return BasePersonalisation.builder()
             .firstName(emailRecipient.getFirstName() != null
@@ -126,6 +115,13 @@ public class NotificationPersonalisationFactory {
             .claimantName(claimantName)
             .primaryDefendantName(primaryDefendantName)
             .build();
+    }
+
+
+    private String getClaimantName(PartyEntity primaryClaimant) {
+        return primaryClaimant.getOrgName() != null
+            ? primaryClaimant.getOrgName().toUpperCase(Locale.ROOT)
+            : formatNameUpperForNotification(primaryClaimant.getFirstName(), primaryClaimant.getLastName());
     }
 
     private static String getClaimantName(ClaimantInformation claimantInformation) {
@@ -139,6 +135,14 @@ public class NotificationPersonalisationFactory {
         return isNameKnown && firstName != null && lastName != null
             ? formatNameUpperForNotification(firstName, lastName)
             : "PERSONS UNKNOWN";
+    }
+
+    private String getPrimaryDefendantName(PartyEntity primaryDefendant) {
+        return getDefendantName(
+            primaryDefendant.getNameKnown() != null && primaryDefendant.getNameKnown().toBoolean(),
+            primaryDefendant.getFirstName(),
+            primaryDefendant.getLastName()
+        );
     }
 
     private static String formatNameUpperForNotification(String firstName, String lastName) {
