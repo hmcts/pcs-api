@@ -16,7 +16,7 @@ import {GlobalSearchCaseAction} from '@utils/actions/custom-actions/commonCompon
 import {ClickLinkAndVerifyNewTabTitleAction} from '@utils/actions/element-actions/clickLinkAndVerifyNewTabTitle.action';
 import {ClickLinkAction} from '@utils/actions/element-actions/clickLink.action';
 import {CreateCaseAPIAction} from '@utils/actions/custom-actions/createCaseAPI.action';
-import {ExpandSummaryAction} from '@utils/actions/element-actions';
+import {ExpandSummaryAction, InputDateAction} from '@utils/actions/element-actions';
 import {FeeAndPayAction } from '@utils/actions/custom-actions/commonComponent/feeAndPay.action';
 import {CaseFlagAction } from '@utils/actions/custom-actions/commonComponent/caseFlag.action';
 import {CaseLinking } from '@utils/actions/custom-actions/commonComponent/caseLinking.action';
@@ -31,6 +31,7 @@ export class ActionRegistry {
     ['clickTab', new ClickTabAction()],
     ['clickRadioButton', new ClickRadioButtonAction()],
     ['inputText', new InputTextAction()],
+    ['inputDate', new InputDateAction()],
     ['check', new CheckAction()],
     ['select', new SelectAction()],
     ['expandSummary', new ExpandSummaryAction()],
@@ -109,7 +110,6 @@ export class ActionRegistry {
     ['selectClaimingCosts', new CreateCaseAction()],
     ['wantToUploadDocuments', new CreateCaseAction()],
     ['uploadAdditionalDocs', new CreateCaseAction()],
-    ['selectDocumentsYouveUploadedChecklist', new CreateCaseWalesAction()],
     ['clickButtonAndWaitForElement', new ClickButtonAction()],
     ['selectProhibitedConductStandardContract', new CreateCaseWalesAction()],
     ['selectOccupationContractOrLicenceDetails', new CreateCaseWalesAction()],

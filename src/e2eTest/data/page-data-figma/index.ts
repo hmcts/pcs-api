@@ -30,7 +30,6 @@ export * from '@data/page-data-figma/claimLanguageUsed.page.data';
 export * from '@data/page-data-figma/confirm.page.data';
 export * from '@data/page-data-figma/underlesseeMortgageeEntitledToClaimRelief.page.data';
 export * from '@data/page-data-figma/wantToUploadDocuments.page.data';
-export * from '@data/page-data-figma/documentsYouveUploadedChecklist.page.data';
 export * from '@data/page-data-figma/statementOfTruth.page.data';
 export * from '@data/page-data-figma/uploadAdditionalDocuments.page.data';
 export * from '@data/page-data-figma/statementOfExpressTerms.page.data';

@@ -5,7 +5,6 @@ import {addressInfo, caseNumber, CreateCaseAction} from "@utils/actions/custom-a
 import {
   // migration (page-data → page-data-figma)
   contactPreferences,
-  documentsYouveUploadedChecklist,
   exemptLandlord,
   occupationLicenceDetailsWales,
   prohibitedConductWales} from '@data/page-data-figma';
@@ -19,7 +18,6 @@ export class CreateCaseWalesAction extends CreateCaseAction implements IAction {
       ['selectOccupationContractOrLicenceDetails', () => this.selectOccupationContractOrLicenceDetails(fieldName as actionRecord)],
       ['selectAsb', () => this.selectAsb(fieldName as actionRecord)],
       ['requiredDocumentsUpload', () => this.requiredDocumentsUpload(fieldName as actionRecord)],
-      ['selectDocumentsYouveUploadedChecklist', () => this.selectDocumentsYouveUploadedChecklist(fieldName as actionRecord)],
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -116,20 +114,5 @@ export class CreateCaseWalesAction extends CreateCaseAction implements IAction {
       await performAction('inputText', reqDocs.label, reqDocs.input);
     }   
 
-  }
-
-  private async selectDocumentsYouveUploadedChecklist(checklistData: actionRecord) {
-    await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseNumber});
-    await performValidation('text', {
-      elementType: 'paragraph',
-      text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
-    });
-    if (checklistData.option) {
-      await performAction('check', {
-        question: checklistData.question ?? documentsYouveUploadedChecklist.whichDocumentsHaveYouUploadedQuestion,
-        option: checklistData.option
-      });
-    }
-    await performAction('clickButton', documentsYouveUploadedChecklist.continueButton);
   }
 }
