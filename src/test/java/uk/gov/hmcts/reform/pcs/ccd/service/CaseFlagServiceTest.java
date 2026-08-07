@@ -12,6 +12,7 @@ import uk.gov.hmcts.ccd.sdk.type.Flags;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
+import uk.gov.hmcts.reform.pcs.ccd.domain.PartySupport;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseFlagEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CasePartyFlagEntity;
@@ -19,6 +20,8 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.BaseCaseFlag;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.FlagRefDataEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.FlagRefDataRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.party.PartySupportOwnershipResolver;
+import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -29,24 +32,30 @@ import java.util.HashSet;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.assertj.core.api.Assertions.tuple;
-//import static org.assertj.core.api.Assertions.assertE;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class CaseFlagServiceTest {
 
+    private static final UUID USER_ID = UUID.randomUUID();
+
     @Mock
     private FlagRefDataRepository flagRefDataRepository;
+
+    @Mock
+    private PartySupportOwnershipResolver partySupportOwnershipResolver;
 
     @InjectMocks
     private CaseFlagService underTest;
 
     @BeforeEach
     void setUp() {
-        underTest = new CaseFlagService(flagRefDataRepository);
+        underTest = new CaseFlagService(flagRefDataRepository, partySupportOwnershipResolver);
     }
 
     @Test
@@ -234,7 +243,7 @@ class CaseFlagServiceTest {
                                 .details(createFlagDetail(null, "PF0002", "Vulnerable user",
                                                           "Internal only flag", "Active"))
                                 .build())
-            .defendantFlagsExternal(Flags.builder()
+            .partyFlagsExternal(Flags.builder()
                                         .visibility(FlagVisibility.EXTERNAL)
                                         .details(createFlagDetail(null, "PF0015", "Language Interpreter",
                                                                   "Externally visible flag", "Requested"))
@@ -295,7 +304,7 @@ class CaseFlagServiceTest {
             .build();
 
         Party incomingParty = Party.builder()
-            .defendantFlagsExternal(Flags.builder()
+            .partyFlagsExternal(Flags.builder()
                                         .visibility(FlagVisibility.EXTERNAL)
                                         .details(createFlagDetail(null, "PF0015", "Language Interpreter",
                                                                   "New external flag", "Requested"))
@@ -347,7 +356,7 @@ class CaseFlagServiceTest {
 
         Party incomingParty = Party.builder()
             .defendantFlags(Flags.builder().visibility(FlagVisibility.INTERNAL).details(List.of()).build())
-            .defendantFlagsExternal(Flags.builder().visibility(FlagVisibility.EXTERNAL).details(List.of()).build())
+            .partyFlagsExternal(Flags.builder().visibility(FlagVisibility.EXTERNAL).details(List.of()).build())
             .build();
 
         underTest.mergePartyFlags(
@@ -457,6 +466,215 @@ class CaseFlagServiceTest {
         return ListValue.<Party>builder()
             .id(id)
             .value(party)
+            .build();
+    }
+
+    @Test
+    void shouldMergePartySupportFlagsAndRetainInternalFlags() {
+        UUID partyId = UUID.randomUUID();
+        CasePartyFlagEntity existingInternalFlag = createCasePartyFlagEntity(
+            UUID.randomUUID(), "Active", "Existing internal flag");
+        existingInternalFlag.setVisibility("Internal");
+
+        PartyEntity existingParty = PartyEntity.builder()
+            .id(partyId)
+            .defendantFlags(new ArrayList<>(List.of(existingInternalFlag)))
+            .build();
+
+        PartySupport incomingSupport = PartySupport.builder()
+            .supportFlags(Flags.builder()
+                              .visibility(FlagVisibility.EXTERNAL)
+                              .details(createFlagDetail(null, "RA0042", "Reasonable adjustment",
+                                                        "New support request", "Requested"))
+                              .build())
+            .build();
+
+        underTest.mergePartySupportFlags(
+            List.of(createPartySupportListValue(partyId.toString(), incomingSupport)),
+            Set.of(existingParty), USER_ID, false);
+
+        assertThat(existingParty.getDefendantFlags())
+            .extracting(BaseCaseFlag::getFlagComment, BaseCaseFlag::getVisibility)
+            .containsExactlyInAnyOrder(
+                tuple("Existing internal flag", "Internal"),
+                tuple("New support request", "External"));
+    }
+
+    @Test
+    void shouldRejectPartySupportForPartyNotOnTheCase() {
+        PartyEntity existingParty = PartyEntity.builder()
+            .id(UUID.randomUUID())
+            .defendantFlags(new ArrayList<>())
+            .build();
+
+        List<ListValue<PartySupport>> incoming =
+            List.of(createPartySupportListValue(UUID.randomUUID().toString(), supportRequest()));
+        Set<PartyEntity> existingParties = Set.of(existingParty);
+
+        Throwable throwable = catchThrowable(
+            () -> underTest.mergePartySupportFlags(incoming, existingParties, USER_ID, false));
+
+        assertThat(throwable)
+            .isInstanceOf(CaseAccessException.class)
+            .hasMessage("Support submitted for a party that is not on this case");
+        assertThat(existingParty.getDefendantFlags()).isEmpty();
+        verifyNoInteractions(flagRefDataRepository);
+    }
+
+    @Test
+    void shouldRejectPartySupportWithMalformedPartyId() {
+        PartyEntity existingParty = PartyEntity.builder()
+            .id(UUID.randomUUID())
+            .defendantFlags(new ArrayList<>())
+            .build();
+
+        List<ListValue<PartySupport>> incoming =
+            List.of(createPartySupportListValue("not-a-uuid", supportRequest()));
+        Set<PartyEntity> existingParties = Set.of(existingParty);
+
+        Throwable throwable = catchThrowable(
+            () -> underTest.mergePartySupportFlags(incoming, existingParties, USER_ID, false));
+
+        assertThat(throwable)
+            .isInstanceOf(CaseAccessException.class)
+            .hasMessage("Support submitted for an invalid party reference");
+        verifyNoInteractions(flagRefDataRepository);
+    }
+
+    @Test
+    void shouldAllowOwnSideRequestSupportWhenOtherSideEntriesAreUnchanged() {
+        // Given
+        UUID ownPartyId = UUID.randomUUID();
+        UUID otherPartyId = UUID.randomUUID();
+
+        CasePartyFlagEntity otherSideFlag = createCasePartyFlagEntity(
+            UUID.randomUUID(), "Active", "Other side existing support");
+        otherSideFlag.setVisibility("External");
+
+        PartyEntity ownParty = PartyEntity.builder()
+            .id(ownPartyId)
+            .defendantFlags(new ArrayList<>())
+            .build();
+        PartyEntity otherParty = PartyEntity.builder()
+            .id(otherPartyId)
+            .defendantFlags(new ArrayList<>(List.of(otherSideFlag)))
+            .build();
+
+        when(partySupportOwnershipResolver.isOwnedByUser(ownParty, USER_ID)).thenReturn(true);
+        when(partySupportOwnershipResolver.isOwnedByUser(otherParty, USER_ID)).thenReturn(false);
+
+        // When
+        underTest.mergePartySupportFlags(
+            List.of(createPartySupportListValue(ownPartyId.toString(), supportRequest()),
+                    createPartySupportListValue(otherPartyId.toString(), unchangedSupport(otherSideFlag))),
+            new HashSet<>(List.of(ownParty, otherParty)), USER_ID, true);
+
+        // Then
+        assertThat(ownParty.getDefendantFlags())
+            .extracting(BaseCaseFlag::getFlagComment)
+            .containsExactly("New support request");
+        assertThat(otherParty.getDefendantFlags()).containsExactly(otherSideFlag);
+    }
+
+    @Test
+    void shouldRejectRequestSupportCreatedAgainstTheOtherSide() {
+        // Given
+        UUID otherPartyId = UUID.randomUUID();
+        PartyEntity otherParty = PartyEntity.builder()
+            .id(otherPartyId)
+            .defendantFlags(new ArrayList<>())
+            .build();
+
+        when(partySupportOwnershipResolver.isOwnedByUser(otherParty, USER_ID)).thenReturn(false);
+
+        List<ListValue<PartySupport>> incoming =
+            List.of(createPartySupportListValue(otherPartyId.toString(), supportRequest()));
+        Set<PartyEntity> existingParties = Set.of(otherParty);
+
+        // When
+        Throwable throwable = catchThrowable(
+            () -> underTest.mergePartySupportFlags(incoming, existingParties, USER_ID, true));
+
+        // Then
+        assertThat(throwable)
+            .isInstanceOf(CaseAccessException.class)
+            .hasMessage("User cannot change support for this party on this case");
+        assertThat(otherParty.getDefendantFlags()).isEmpty();
+    }
+
+    @Test
+    void shouldRejectManageSupportForAnotherPartysSupport() {
+        UUID partyId = UUID.randomUUID();
+        PartyEntity otherSideParty = PartyEntity.builder()
+            .id(partyId)
+            .defendantFlags(new ArrayList<>())
+            .build();
+
+        when(partySupportOwnershipResolver.isOwnedByUser(otherSideParty, USER_ID)).thenReturn(false);
+
+        List<ListValue<PartySupport>> incoming =
+            List.of(createPartySupportListValue(partyId.toString(), supportRequest()));
+        Set<PartyEntity> existingParties = Set.of(otherSideParty);
+
+        Throwable throwable = catchThrowable(
+            () -> underTest.mergePartySupportFlags(incoming, existingParties, USER_ID, true));
+
+        assertThat(throwable)
+            .isInstanceOf(CaseAccessException.class)
+            .hasMessage("User cannot change support for this party on this case");
+        assertThat(otherSideParty.getDefendantFlags()).isEmpty();
+        verifyNoInteractions(flagRefDataRepository);
+    }
+
+    @Test
+    void shouldAllowManageSupportForOwnParty() {
+        UUID partyId = UUID.randomUUID();
+        PartyEntity ownParty = PartyEntity.builder()
+            .id(partyId)
+            .defendantFlags(new ArrayList<>())
+            .build();
+
+        when(partySupportOwnershipResolver.isOwnedByUser(ownParty, USER_ID)).thenReturn(true);
+
+        underTest.mergePartySupportFlags(
+            List.of(createPartySupportListValue(partyId.toString(), supportRequest())),
+            Set.of(ownParty), USER_ID, true);
+
+        assertThat(ownParty.getDefendantFlags())
+            .extracting(BaseCaseFlag::getFlagComment, BaseCaseFlag::getVisibility)
+            .containsExactly(tuple("New support request", "External"));
+    }
+
+    private PartySupport unchangedSupport(CasePartyFlagEntity existingFlag) {
+        return PartySupport.builder()
+            .supportFlags(Flags.builder()
+                              .visibility(FlagVisibility.EXTERNAL)
+                              .details(List.of(ListValue.<FlagDetail>builder()
+                                  .id(existingFlag.getId().toString())
+                                  .value(FlagDetail.builder()
+                                      .status(existingFlag.getDefaultStatus())
+                                      .flagComment(existingFlag.getFlagComment())
+                                      .flagUpdateComment(existingFlag.getFlagUpdateComment())
+                                      .build())
+                                  .build()))
+                              .build())
+            .build();
+    }
+
+    private PartySupport supportRequest() {
+        return PartySupport.builder()
+            .supportFlags(Flags.builder()
+                              .visibility(FlagVisibility.EXTERNAL)
+                              .details(createFlagDetail(null, "RA0042", "Reasonable adjustment",
+                                                        "New support request", "Requested"))
+                              .build())
+            .build();
+    }
+
+    private ListValue<PartySupport> createPartySupportListValue(String id, PartySupport partySupport) {
+        return ListValue.<PartySupport>builder()
+            .id(id)
+            .value(partySupport)
             .build();
     }
 }

@@ -59,7 +59,7 @@ class ManageFlagsTest extends BaseEventTest {
     @Test
     void shouldConfigureBothInternalAndExternalPartyFlagCollections() {
         assertThat(getSubFieldIds("allDefendants"))
-            .contains("defendantFlags", "defendantFlagsExternal");
+            .contains("defendantFlags", "partyFlagsExternal");
     }
 
     @Test

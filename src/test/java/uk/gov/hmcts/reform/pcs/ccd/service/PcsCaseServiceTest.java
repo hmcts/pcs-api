@@ -17,6 +17,7 @@ import uk.gov.hmcts.ccd.sdk.type.LinkReason;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
+import uk.gov.hmcts.reform.pcs.ccd.domain.PartySupport;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseFlagEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseLinkEntity;
@@ -35,6 +36,7 @@ import uk.gov.hmcts.reform.pcs.location.model.CourtVenue;
 import uk.gov.hmcts.reform.pcs.location.service.LocationReferenceService;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.postcodecourt.service.PostCodeCourtService;
+import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -46,6 +48,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -80,6 +83,8 @@ class PcsCaseServiceTest {
     private PostCodeCourtService postCodeCourtService;
     @Mock
     private LocationReferenceService locationReferenceService;
+    @Mock
+    private SecurityContextService securityContextService;
 
     @Captor
     private ArgumentCaptor<PcsCaseEntity> pcsCaseEntityCaptor;
@@ -99,7 +104,8 @@ class PcsCaseServiceTest {
             caseLinkService,
             caseFlagService,
             postCodeCourtService,
-            locationReferenceService
+            locationReferenceService,
+            securityContextService
         );
     }
 
@@ -285,7 +291,7 @@ class PcsCaseServiceTest {
 
         List<ListValue<CaseLink>> caseLinks = List.of(createCaseLinkValue(caseLink));
 
-        PcsCaseEntity pcsCaseEntity =  PcsCaseEntity.builder()//mock(PcsCaseEntity.class);
+        PcsCaseEntity pcsCaseEntity =  PcsCaseEntity.builder()
             .caseReference(CASE_REFERENCE)
             .build();
 
@@ -311,7 +317,7 @@ class PcsCaseServiceTest {
                                                           () -> underTest.patchCaseFlags(CASE_REFERENCE, null));
 
         // Then
-        assertThat("PCSCase cannot be null").isEqualTo(exception.getMessage());
+        assertThat(exception.getMessage()).isEqualTo("PCSCase cannot be null");
     }
 
     @Test
@@ -538,6 +544,24 @@ class PcsCaseServiceTest {
                 .name("Complex Case")
                 .build())
             .build();
+    }
+
+    @Test
+    void shouldNotMergeSupportFlagsOnTheInternalCaseFlagsPath() {
+        // Given
+        stubFindCase();
+        PCSCase pcsCase = PCSCase.builder()
+            .partySupport(List.of(ListValue.<PartySupport>builder()
+                .id(UUID.randomUUID().toString())
+                .value(PartySupport.builder().build())
+                .build()))
+            .build();
+
+        // When
+        underTest.patchCaseFlags(CASE_REFERENCE, pcsCase);
+
+        // Then
+        verify(caseFlagService, never()).mergePartySupportFlags(anyList(), any(), any(), anyBoolean());
     }
 
     private PcsCaseEntity stubFindCase() {
