@@ -37,7 +37,7 @@
           await fileInput.last().setInputFiles(filePath);
           await performValidation('waitUntilElementDisappears', 'Uploading...');
           limit = await rateLimit.count();
-        }
+        };
       }).toPass({
         timeout: VERY_LONG_TIMEOUT,
       });

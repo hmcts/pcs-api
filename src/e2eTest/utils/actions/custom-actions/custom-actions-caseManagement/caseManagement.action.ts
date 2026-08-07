@@ -282,7 +282,7 @@ export class CaseManagementAction implements IAction {
     await performAction('reTryOnCallBackError', enterGenAppPreferApplicationToJudge.continueButton, uploadEvidence.nextPage as string);
   }
 
-  private async verifyReferToJudge(referToJudgeData: actionRecord) {
+    private async verifyReferToJudge(referToJudgeData: actionRecord) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid});
     await performValidation('text', {
       elementType: 'paragraph',
