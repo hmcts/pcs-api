@@ -4,7 +4,6 @@ package uk.gov.hmcts.reform.pcs;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -38,7 +37,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @Slf4j
-@Disabled("PoC branch: capacity-only access experiment - cftlib has no PRM to assign group roles")
 class CitizenMakeAnApplicationTest extends CftlibTest {
 
     private static final String CITIZEN_EMAIL_ADDRESS = "test@test.com";

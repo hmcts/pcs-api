@@ -1,5 +1,25 @@
 [
   {
+    "email": "pcs-solicitor1@test.com",
+    "id": "f6484bbb-c10e-319b-ab8d-14361a7d2a23",
+    "roleAssignments": [
+      {
+        "roleType": "ORGANISATION",
+        "roleName": "claimant_solicitor",
+        "grantType": "STANDARD",
+        "roleCategory": "PROFESSIONAL",
+        "classification": "RESTRICTED",
+        "readOnly": false,
+        "attributes": {
+          "jurisdiction": "PCS",
+          "caseType": "PCS",
+          "caseAccessGroupId": "PCS:PCS:solicitor-org-claimant-access:claimant_solicitor:TEST-123"
+        },
+        "authorisations": []
+      }
+    ]
+  },
+  {
     "email": "citizen@pcs.com",
     "id": "355fe639-be35-3723-b802-c91d3a9372e7",
     "roleAssignments": [
