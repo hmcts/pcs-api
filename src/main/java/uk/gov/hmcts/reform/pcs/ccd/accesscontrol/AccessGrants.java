@@ -6,6 +6,9 @@ import uk.gov.hmcts.ccd.sdk.api.HasRole;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CIRCUIT_JUDGE;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CLAIMANT_ORG;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CLAIMANT_SOLICITOR_ORG;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.DEFENDANT_SOLICITOR_ORG;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CITIZEN;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CLAIMANT_SOLICITOR;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CTSC_ADMIN;
@@ -24,6 +27,9 @@ final class AccessGrants {
         CITIZEN,
         DEFENDANT,
         PCS_SOLICITOR,
+        CLAIMANT_ORG,
+        CLAIMANT_SOLICITOR_ORG,
+        DEFENDANT_SOLICITOR_ORG,
         JUDGE,
         FEE_PAID_JUDGE,
         CIRCUIT_JUDGE,
