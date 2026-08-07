@@ -14,16 +14,10 @@ public final class ExemptLandlordResolver {
     }
 
     public static YesNoNotSure fromResponses(DefendantResponses responses) {
-        if (responses == null) {
-            return null;
-        }
         return responses.getExemptLandlord();
     }
 
     public static YesNoNotSure fromEntity(DefendantResponseEntity entity) {
-        if (entity == null) {
-            return null;
-        }
         return entity.getExemptLandlord();
     }
 }

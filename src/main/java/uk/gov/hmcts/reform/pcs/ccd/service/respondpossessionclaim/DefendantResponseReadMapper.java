@@ -111,11 +111,12 @@ public class DefendantResponseReadMapper {
         PartyEntity party,
         List<PartyAttributeAssertationEntity> assertions
     ) {
+        YesNoNotSure exemptLandlord = ExemptLandlordResolver.fromEntity(entity);
         DefendantResponses.DefendantResponsesBuilder builder = DefendantResponses.builder()
             .tenancyTypeConfirmation(entity.getTenancyTypeConfirmation())
             .tenancyStartDateConfirmation(entity.getTenancyStartDateConfirmation())
             .rentArrearsAmountConfirmation(entity.getRentArrearsAmountConfirmation())
-            .exemptLandlord(ExemptLandlordResolver.fromEntity(entity))
+            .exemptLandlord(exemptLandlord)
             .landlordLicensed(entity.getLandlordLicensed())
             .writtenTerms(entity.getWrittenTerms())
             .disputeClaim(entity.getDisputeClaim())

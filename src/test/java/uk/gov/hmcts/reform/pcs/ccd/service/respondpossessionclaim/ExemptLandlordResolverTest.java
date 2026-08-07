@@ -10,16 +10,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 class ExemptLandlordResolverTest {
 
     @Test
-    void shouldReturnNullWhenResponsesAreNull() {
-        assertThat(ExemptLandlordResolver.fromResponses(null)).isNull();
-    }
-
-    @Test
-    void shouldReturnNullWhenEntityIsNull() {
-        assertThat(ExemptLandlordResolver.fromEntity(null)).isNull();
-    }
-
-    @Test
     void shouldReadExemptLandlordFromResponses() {
         DefendantResponses responses = DefendantResponses.builder()
             .exemptLandlord(YesNoNotSure.NO)
@@ -29,11 +19,25 @@ class ExemptLandlordResolverTest {
     }
 
     @Test
+    void shouldReturnNullWhenExemptLandlordMissingInResponses() {
+        DefendantResponses responses = DefendantResponses.builder().build();
+
+        assertThat(ExemptLandlordResolver.fromResponses(responses)).isNull();
+    }
+
+    @Test
     void shouldReadExemptLandlordFromEntity() {
         DefendantResponseEntity entity = DefendantResponseEntity.builder()
             .exemptLandlord(YesNoNotSure.YES)
             .build();
 
         assertThat(ExemptLandlordResolver.fromEntity(entity)).isEqualTo(YesNoNotSure.YES);
+    }
+
+    @Test
+    void shouldReturnNullWhenEntityHasNoExemptLandlord() {
+        DefendantResponseEntity entity = DefendantResponseEntity.builder().build();
+
+        assertThat(ExemptLandlordResolver.fromEntity(entity)).isNull();
     }
 }
