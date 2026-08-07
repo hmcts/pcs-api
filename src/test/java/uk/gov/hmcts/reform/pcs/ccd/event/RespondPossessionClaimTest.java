@@ -220,6 +220,16 @@ class RespondPossessionClaimTest extends BaseEventTest {
         setupDefaultExistingDraft();
     }
 
+    @Test
+    void shouldBeConfiguredForEventStates() {
+        assertConfiguredForStates(EventStates.respondPossessionClaim());
+    }
+
+    @Test
+    void shouldBeConfiguredAsNeverShow() {
+        assertConfiguredAsNeverShow();
+    }
+
     private void setupDefaultExistingDraft() {
         PossessionClaimResponse defaultResponse = PossessionClaimResponse.builder()
             .defendantContactDetails(DefendantContactDetails.builder().build())
@@ -1048,4 +1058,3 @@ class RespondPossessionClaimTest extends BaseEventTest {
             .hasMessage("No selected responding party id for respond to claim");
     }
 }
-

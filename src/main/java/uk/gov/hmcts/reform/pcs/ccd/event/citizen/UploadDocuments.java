@@ -21,6 +21,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.event.EventStates;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
@@ -49,7 +50,7 @@ public class UploadDocuments implements CCDConfig<PCSCase, State, UserRole> {
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         configBuilder
             .decentralisedEvent(uploadDocuments.name(), this::submit, this::start)
-            .forStates(State.CASE_ISSUED)
+            .forStates(EventStates.uploadDocuments())
             .name("Upload additional documents")
             .showCondition(ShowConditions.NEVER_SHOW)
             .grant(Permission.CRU, UserRole.DEFENDANT);
