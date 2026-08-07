@@ -1,6 +1,6 @@
 ### Translate Documents
 
-{{partyLabel}} has uploaded the following documents to the claim that require translation:
+Claimant 1 has uploaded the following documents to the claim that require translation:
 
 <ul class="govuk-list govuk-list--bullet">
   {% for filename in filenames %}

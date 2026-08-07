@@ -150,24 +150,13 @@ class TaskDescriptionServiceTest {
     @DisplayName("Get description for Translate Claimant Document task")
     class TranslateClaimantDocumentTests {
 
-        @Mock
-        private ClaimEntity mainClaim;
-        @Mock
-        private PartyEntity partyEntity;
-
         @Test
         void shouldRenderTaskDescription() throws IOException {
             // Given
-            UUID partyId = UUID.randomUUID();
-            when(partyEntity.getId()).thenReturn(partyId);
-
             List<DocumentEntity> documentEntityList = List.of(
                 DocumentEntity.builder().fileName("filename1.pdf").build(),
                 DocumentEntity.builder().fileName("filename2.csv").build()
             );
-
-            String expectedPartyLabel = "some party label";
-            when(partyService.getPartyLabel(mainClaim, partyId)).thenReturn(expectedPartyLabel);
 
             String expectedRenderedContent = "some rendered content";
             PebbleTemplate pebbleTemplate = stubPebbleTemplate(
@@ -177,7 +166,7 @@ class TaskDescriptionServiceTest {
 
             // When
             String description = underTest.createTranslateClaimantDocumentDescription(
-                CASE_REFERENCE, mainClaim, partyEntity, documentEntityList);
+                CASE_REFERENCE, documentEntityList);
 
             // Then
             assertThat(description).isEqualTo(expectedRenderedContent);
@@ -186,7 +175,6 @@ class TaskDescriptionServiceTest {
             Map<String, Object> contextMap = contextMapCaptor.getValue();
             assertThat(contextMap)
                 .containsEntry("caseReference", CASE_REFERENCE)
-                .containsEntry("partyLabel", expectedPartyLabel)
                 .containsEntry("filenames", List.of("filename1.pdf", "filename2.csv"));
         }
 
@@ -201,14 +189,10 @@ class TaskDescriptionServiceTest {
             IOException pebbleException = mock(IOException.class);
             doThrow(pebbleException).when(pebbleTemplate).evaluate(any(StringWriter.class), anyMap());
 
-            UUID partyId = UUID.randomUUID();
-            when(partyEntity.getId()).thenReturn(partyId);
-            when(partyService.getPartyLabel(mainClaim, partyId)).thenReturn("some party label");
-
             // When
             Throwable throwable = catchThrowable(
                 () -> underTest.createTranslateClaimantDocumentDescription(
-                    CASE_REFERENCE, mainClaim, partyEntity, List.of()));
+                    CASE_REFERENCE, List.of()));
 
             // Then
             assertThat(throwable)

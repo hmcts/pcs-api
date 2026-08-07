@@ -43,19 +43,18 @@ public class FeePaymentNotificationService {
             case ENGLISH -> camundaService.createTask(
                 pcsCaseEntity.getCaseReference(), TaskType.NEW_CLAIM_CREATE_NEW_HEARING);
             case WELSH, ENGLISH_AND_WELSH -> createTranslateClaimantDocumentTask(
-                pcsCaseEntity.getCaseReference(), claimEntity, feePayment);
+                pcsCaseEntity.getCaseReference(), claimEntity);
         }
     }
 
-    private void createTranslateClaimantDocumentTask(long caseReference, ClaimEntity claimEntity,
-                                                      FeePaymentEntity feePayment) {
+    private void createTranslateClaimantDocumentTask(long caseReference, ClaimEntity claimEntity) {
         List<DocumentEntity> documents = claimEntity.getClaimDocuments().stream()
             .map(ClaimDocumentEntity::getDocument)
             .toList();
 
         if (!documents.isEmpty()) {
             String description = taskDescriptionService.createTranslateClaimantDocumentDescription(
-                caseReference, claimEntity, feePayment.getParty(), documents);
+                caseReference, documents);
             camundaService.createTask(caseReference, TaskType.TRANSLATE_CLAIMANT_SUBMITTED_DOCUMENT, description);
         }
     }
