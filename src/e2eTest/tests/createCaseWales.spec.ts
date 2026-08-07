@@ -174,7 +174,7 @@ test.describe('[Create Case - Wales]', async () => {
       input: uploadRequiredDocumentsWales.currentEICRTextInput,
       file: ['inspectionOrReport.pdf'],
     })
-    await performAction('selectDocumentsYouVeUploadedWales', {
+    await performAction('selectDocumentsYouVeUploadedCheckList', {
       uploadedDocuments: ['Energy performance certificate',
           'Current gas safety report',
           'Current Electrical Installation Condition Report (EICR)']
@@ -315,7 +315,7 @@ test.describe('[Create Case - Wales]', async () => {
       input: uploadRequiredDocumentsWales.currentEICRTextInput,
       file: ['inspectionOrReport.pdf'],
     })
-    await performAction('selectDocumentsYouVeUploadedWales', {
+    await performAction('selectDocumentsYouVeUploadedCheckList', {
       uploadedDocuments: ['Energy performance certificate',
         'Current gas safety report',
         'Current Electrical Installation Condition Report (EICR)']
@@ -453,7 +453,7 @@ test.describe('[Create Case - Wales]', async () => {
       input: uploadRequiredDocumentsWales.currentEICRTextInput,
       file: ['inspectionOrReport.pdf'],
     })
-    await performAction('selectDocumentsYouVeUploadedWales', {
+    await performAction('selectDocumentsYouVeUploadedCheckList', {
       uploadedDocuments: ['Energy performance certificate',
         'Current gas safety report',
         'Current Electrical Installation Condition Report (EICR)']
@@ -581,7 +581,7 @@ test.describe('[Create Case - Wales]', async () => {
       input: uploadRequiredDocumentsWales.currentEICRTextInput,
       file: ['inspectionOrReport.pdf'],
     })
-    await performAction('selectDocumentsYouVeUploadedWales', {
+    await performAction('selectDocumentsYouVeUploadedCheckList', {
       uploadedDocuments: ['Energy performance certificate',
         'Current gas safety report',
         'Current Electrical Installation Condition Report (EICR)']
@@ -725,7 +725,7 @@ test.describe('[Create Case - Wales]', async () => {
       input: uploadRequiredDocumentsWales.currentEICRTextInput,
       file: ['inspectionOrReport.pdf'],
     })
-    await performAction('selectDocumentsYouVeUploadedWales', {
+    await performAction('selectDocumentsYouVeUploadedCheckList', {
       uploadedDocuments: ['Energy performance certificate',
         'Current gas safety report',
         'Current Electrical Installation Condition Report (EICR)']
@@ -856,7 +856,7 @@ test.describe('[Create Case - Wales]', async () => {
       input: uploadRequiredDocumentsWales.currentEICRTextInput,
       file: ['inspectionOrReport.pdf'],
     })
-    await performAction('selectDocumentsYouVeUploadedWales', {
+    await performAction('selectDocumentsYouVeUploadedCheckList', {
       uploadedDocuments: ['Energy performance certificate',
         'Current gas safety report',
         'Current Electrical Installation Condition Report (EICR)']
@@ -991,7 +991,7 @@ test.describe('[Create Case - Wales]', async () => {
       input: uploadRequiredDocumentsWales.currentEICRTextInput,
       file: ['inspectionOrReport.pdf'],
     })
-    await performAction('selectDocumentsYouVeUploadedWales', {
+    await performAction('selectDocumentsYouVeUploadedCheckList', {
       uploadedDocuments: ['Energy performance certificate',
         'Current gas safety report',
         'Current Electrical Installation Condition Report (EICR)']
