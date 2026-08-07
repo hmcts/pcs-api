@@ -558,7 +558,7 @@ public class TestingSupportController {
             for (String taskId : taskIds) {
                 schedulerClient.reschedule(
                     CAMUNDA_REQUEST_TASK_DESCRIPTOR.instance(taskId).build(),
-                    taskTriggerTime
+                    Instant.now()
                 );
 
                 log.info("Rescheduled Camunda request task with ID: {}", taskId);
