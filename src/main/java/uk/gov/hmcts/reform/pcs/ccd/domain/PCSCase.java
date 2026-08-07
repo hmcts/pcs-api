@@ -663,7 +663,7 @@ public class PCSCase {
 
     @CCD(
         label = "CaseNameHmctsInternal",
-        access = {GlobalSearchAccess.class}
+        access = {GlobalSearchAccess.class, CaseLinkingAccess.class}
     )
     private String caseNameHmctsInternal;
 
@@ -721,6 +721,12 @@ public class PCSCase {
     List<ListValue<CaseNote>> caseNotes;
 
     @CCD(
+        label = "Review date",
+        min = 1
+    )
+    private List<ListValue<ReviewDate>> reviewDates;
+
+    @CCD(
         access = {InternalCaseFlagAccess.class},
         label = "Case Flags"
     )
@@ -753,6 +759,13 @@ public class PCSCase {
         typeParameterOverride = "CaseStateOption"
     )
     private CaseStateOption targetState;
+
+    @CCD(
+        label = "Add document",
+        hint = "Upload a document to the system",
+        searchable = false
+    )
+    private Document uploadSingleDocument;
 
     @JsonUnwrapped
     private AddPartyDetails addPartyDetails;
