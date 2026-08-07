@@ -9,8 +9,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.exception.OrganisationDetailsException;
 import uk.gov.hmcts.reform.pcs.exception.SecurityContextException;
+import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
+import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -57,6 +59,39 @@ class OrganisationServiceTest {
         assertThat(result).isEqualTo(ORGANISATION_NAME);
         verify(securityContextService).getCurrentUserId();
         verify(organisationDetailsService).getOrganisationName(USER_ID.toString());
+    }
+
+    @Test
+    @DisplayName("Should retrieve organisation summary skipping the generic profile")
+    void shouldRetrieveOrganisationSummarySkippingGenericProfile() {
+        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
+        when(organisationDetailsService.getOrganisationDetails(USER_ID.toString()))
+            .thenReturn(OrganisationDetailsResponse.builder()
+                            .organisationIdentifier(ORGANISATION_IDENTIFIER)
+                            .organisationProfileIds(List.of("ORGANISATION_PROFILE", "LOCALAUTH_PROFILE"))
+                            .build());
+
+        OrganisationService.OrganisationSummary result =
+            organisationService.getOrganisationSummaryForCurrentUser();
+
+        assertThat(result.organisationId()).isEqualTo(ORGANISATION_IDENTIFIER);
+        assertThat(result.organisationProfileId()).isEqualTo("LOCALAUTH_PROFILE");
+    }
+
+    @Test
+    @DisplayName("Should return null profile in summary when profile ids are absent")
+    void shouldReturnNullProfileInSummaryWhenProfileIdsAbsent() {
+        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
+        when(organisationDetailsService.getOrganisationDetails(USER_ID.toString()))
+            .thenReturn(OrganisationDetailsResponse.builder()
+                            .organisationIdentifier(ORGANISATION_IDENTIFIER)
+                            .build());
+
+        OrganisationService.OrganisationSummary result =
+            organisationService.getOrganisationSummaryForCurrentUser();
+
+        assertThat(result.organisationId()).isEqualTo(ORGANISATION_IDENTIFIER);
+        assertThat(result.organisationProfileId()).isNull();
     }
 
     @Test

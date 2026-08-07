@@ -55,6 +55,8 @@ public class PcsCaseEntity {
 
     private String organisationId;
 
+    private String organisationProfileId;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "claimant_type")
     private ClaimantType claimantType;

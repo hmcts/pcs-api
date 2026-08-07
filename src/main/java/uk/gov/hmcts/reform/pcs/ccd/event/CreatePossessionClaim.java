@@ -91,9 +91,12 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
         long caseReference = eventPayload.caseReference();
         PCSCase caseData = eventPayload.caseData();
 
-        String organisationId = organisationService.getOrganisationIdForCurrentUser();
+        OrganisationService.OrganisationSummary organisation =
+            organisationService.getOrganisationSummaryForCurrentUser();
         pcsCaseService.createCase(caseReference, caseData.getPropertyAddress(),
-                                  caseData.getLegislativeCountry(), organisationId);
+                                  caseData.getLegislativeCountry(),
+                                  organisation == null ? null : organisation.organisationId(),
+                                  organisation == null ? null : organisation.organisationProfileId());
 
         String userId = securityContextService.getCurrentUserDetails().getUid();
         scheduleRoleAssignment(caseReference, userId);

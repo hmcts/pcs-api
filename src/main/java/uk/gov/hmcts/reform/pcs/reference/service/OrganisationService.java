@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.exception.OrganisationDetailsException;
 import uk.gov.hmcts.reform.pcs.exception.SecurityContextException;
+import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.UUID;
@@ -19,6 +20,8 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 @Slf4j
 @AllArgsConstructor
 public class OrganisationService {
+
+    private static final String GENERIC_ORGANISATION_PROFILE = "ORGANISATION_PROFILE";
 
     private final SecurityContextService securityContextService;
     private final OrganisationDetailsService organisationDetailsService;
@@ -74,6 +77,40 @@ public class OrganisationService {
                 ex.getMessage(), ex);
             return null;
         }
+    }
+
+    /**
+     * Retrieves the organisation identifier and organisation profile for the current user in a
+     * single rd-professional call. The profile is the one PRM keys the group access catalogue on;
+     * every organisation also carries the generic ORGANISATION_PROFILE, which is skipped.
+     *
+     * @return The organisation summary, or null if it cannot be resolved
+     */
+    public OrganisationSummary getOrganisationSummaryForCurrentUser() {
+        try {
+            UUID userId = resolveUserId();
+
+            if (userId == null) {
+                return null;
+            }
+
+            OrganisationDetailsResponse details = organisationDetailsService.getOrganisationDetails(userId.toString());
+            String profileId = details.getOrganisationProfileIds() == null ? null
+                : details.getOrganisationProfileIds().stream()
+                    .filter(profile -> !GENERIC_ORGANISATION_PROFILE.equals(profile))
+                    .findFirst()
+                    .orElse(null);
+
+            return new OrganisationSummary(details.getOrganisationIdentifier(), profileId);
+
+        } catch (OrganisationDetailsException | SecurityContextException ex) {
+            log.error("Error retrieving organisation summary from rd-professional API. Error: {}",
+                ex.getMessage(), ex);
+            return null;
+        }
+    }
+
+    public record OrganisationSummary(String organisationId, String organisationProfileId) {
     }
 
     /**
