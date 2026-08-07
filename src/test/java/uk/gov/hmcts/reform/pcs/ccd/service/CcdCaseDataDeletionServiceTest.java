@@ -208,9 +208,29 @@ class CcdCaseDataDeletionServiceTest {
     }
 
     @Test
-    void shouldThrpwCcdCaseNotFoundExceptionIfCaseIDFoundToBeInvalid() throws Exception {
+    void shouldThrowCcdCaseNotFoundExceptionIfCaseIDFoundToBeInvalid() throws Exception {
         // Given
         String errorMsg = "Case ID is not valid";
+        final FeignException feignException = createMockFeignException(errorMsg);
+
+        final StartEventResponse startEventResponse = StartEventResponse.builder().token("event-token").build();
+
+        when(authTokenGenerator.generate()).thenReturn(serviceAuth);
+        when(systemUpdateUserTokenProvider.getAuthToken()).thenReturn(idamToken);
+        when(coreCaseDataApi.startEvent(idamToken, serviceAuth, caseReference, EventId.markCaseForDeletion.name()))
+                .thenReturn(startEventResponse);
+        when(coreCaseDataApi.createEvent(eq(idamToken), eq(serviceAuth), eq(caseReference), any(CaseDataContent.class)))
+                .thenThrow(feignException);
+        when(objectMapper.valueToTree(any(PCSCase.class))).thenReturn(new ObjectMapper().readTree("{}"));
+
+        // When & Then
+        assertThrows(CcdCaseNotFoundException.class, () -> underTest.markCaseForDeletion(caseRef));
+    }
+
+    @Test
+    void shouldThrowCcdCaseNotFoundExceptionIfNoCaseFoundForReference() throws Exception {
+        // Given
+        String errorMsg = "No case found for reference";
         final FeignException feignException = createMockFeignException(errorMsg);
 
         final StartEventResponse startEventResponse = StartEventResponse.builder().token("event-token").build();

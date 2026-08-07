@@ -84,7 +84,8 @@ public class CcdCaseDataDeletionService {
             return caseResource;
         } catch (FeignException e) {
             log.error("Error running event: {} for case: {}.", eventId.name(), caseRef, e);
-            if (e.getMessage().contains("Case ID is not valid")) {
+            String message = e.getMessage();
+            if (message.contains("Case ID is not valid") || message.contains("No case found for reference")) {
                 throw new CcdCaseNotFoundException(caseRef);
             } else {
                 throw e;
