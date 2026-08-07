@@ -52,7 +52,7 @@ test.afterEach(async () => {
 
 });
 test.describe('Legal Representative - Upload Documents- e2e Journey @nightly', async () => {
-  test('Upload documents when GenApps submitted @smoke @regression @WIP', async () => {
+  test('Upload documents when GenApps submitted @smoke @regression', async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.uploadAdditionalDocuments);
     await performAction('clickButton', caseSummary.go);
     //await performAction('clickButton', uploadAdditionalDocumentsInformation.continueButton);
