@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.time.Clock;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.Map;
@@ -38,11 +39,15 @@ public class CamundaService {
     private final Clock utcClock;
 
     public void createTask(long caseId, TaskType taskType) {
-        scheduleCamundaRequest(Action.CREATE, caseId, taskType);
+        scheduleCamundaRequest(Action.CREATE, caseId, taskType, Instant.now(utcClock));
+    }
+
+    public void createTask(long caseId, TaskType taskType, Duration delay) {
+        scheduleCamundaRequest(Action.CREATE, caseId, taskType, Instant.now(utcClock).plus(delay));
     }
 
     public void cancelTask(long caseId, TaskType taskType) {
-        scheduleCamundaRequest(Action.CANCEL, caseId, taskType);
+        scheduleCamundaRequest(Action.CANCEL, caseId, taskType, Instant.now(utcClock));
     }
 
     void handleRequest(CamundaRequestTaskData taskData) {
@@ -52,7 +57,7 @@ public class CamundaService {
         }
     }
 
-    private void scheduleCamundaRequest(Action action, long caseId, TaskType taskType) {
+    private void scheduleCamundaRequest(Action action, long caseId, TaskType taskType, Instant scheduledTo) {
         if (!featureToggleService.isEnabled(FeatureFlag.CASEWORKER_WA)) {
             log.info("Skipped scheduling Camunda request for {}", caseId);
             return;
@@ -68,7 +73,7 @@ public class CamundaService {
             CAMUNDA_REQUEST_TASK_DESCRIPTOR
                 .instance(UUID.randomUUID().toString())
                 .data(taskData)
-                .scheduledTo(Instant.now(utcClock)));
+                .scheduledTo(scheduledTo));
     }
 
     private void requestTaskCreation(Long caseId, TaskType taskType) {
