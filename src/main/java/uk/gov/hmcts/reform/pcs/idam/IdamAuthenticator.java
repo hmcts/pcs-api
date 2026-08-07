@@ -39,14 +39,20 @@ public class IdamAuthenticator {
             log.error("The Authorization token provided is expired or invalid", ex);
             throw new InvalidAuthTokenException(AUTH_UNAUTHORIZED, ex);
         } catch (FeignException ex) {
-            // Any other Feign error (timeout, 5xx, network) — surface as IdamException so the
-            // controller advice returns 503 + Retry-After instead of a raw 500. The token might
-            // still be valid; this is an upstream-IDAM problem, not a client problem.
+            int status = ex.status();
+            if (status >= 400 && status < 500 && status != 429) {
+                // IDAM actively rejected the request — the caller's token cannot be
+                // validated, so this is a client auth failure (401), not a server fault.
+                log.error("IDAM rejected token validation with status {}", status, ex);
+                throw new InvalidAuthTokenException(AUTH_UNAUTHORIZED, ex);
+            }
+            // No response (status < 0), throttle (429) or 5xx — an upstream-IDAM problem;
+            // surface as IdamException so the controller advice returns 503 + Retry-After.
             log.error("IDAM /o/userinfo call failed while validating Authorization token", ex);
             throw new IdamException(AUTH_VALIDATION, RedactionContext.builder()
                 .value("message", AUTH_VALIDATION.safeDescription())
-                .value("statusCode", ex.status())
-                    .build(),
+                .value(IdamException.AUTH_VALIDATION_STATUS_CODE, status)
+                .build(),
                 ex);
         }
     }

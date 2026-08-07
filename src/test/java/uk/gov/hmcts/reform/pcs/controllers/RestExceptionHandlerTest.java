@@ -336,6 +336,7 @@ class RestExceptionHandlerTest {
             exception, headers, status, request);
 
         // Then
+        assertThat(responseEntity).isNotNull();
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
         assertThat(responseEntity.getBody()).isNotNull();
         assertThat(responseEntity.getBody()).isInstanceOf(RestExceptionHandler.Error.class);
@@ -449,14 +450,17 @@ class RestExceptionHandlerTest {
         // Setup
         RedactionGate.setShowFullExceptionsForTesting(show);
 
-        // Real production shape: Spring's OAuth2 password client wraps a RestClient 429 in
-        // OAuth2AuthorizationException, then SystemUpdateUserTokenProvider wraps that in IdamException.
+        // Real production shape (IdamTokenProvider): Spring's OAuth2 password client wraps a
+        // RestClient 429 in OAuth2AuthorizationException, which is wrapped in
+        // IdamException(AUTH_TOKEN_RETRIEVAL_FAIL) with the OAuth2 error code string stored
+        // under OAUTH2_ERROR_CODE.
         HttpClientErrorException tooMany = HttpClientErrorException.create(
             TOO_MANY_REQUESTS, "Too Many Requests", HttpHeaders.EMPTY, new byte[0], null);
         OAuth2Error oauthError = new OAuth2Error("invalid_token_response", "throttled by IDAM", null);
         OAuth2AuthorizationException oauthEx = new OAuth2AuthorizationException(oauthError, tooMany);
-        IdamException ex = new IdamException(AUTH_TOKEN_EMPTY,
-                                             RedactionContext.of(OAUTH2_ERROR_CODE, TOO_MANY_REQUESTS), oauthEx);
+        IdamException ex = new IdamException(AUTH_TOKEN_RETRIEVAL_FAIL,
+                                             RedactionContext.of(OAUTH2_ERROR_CODE, oauthError.getErrorCode()),
+                                             oauthEx);
 
         // When
         ResponseEntity<RestExceptionHandler.Error> response = underTest.handleIdamException(ex);
@@ -467,7 +471,22 @@ class RestExceptionHandlerTest {
         assertThat(response.getHeaders().getFirst(HttpHeaders.RETRY_AFTER)).isEqualTo("30");
         assertThat(response.getBody()).isNotNull();
         assertThat(response.getBody().message())
-            .isEqualTo(isShow ? "errorCode=429 TOO_MANY_REQUESTS" : "REDACTED [IDAM_EMPTY_TOKEN]");
+            .isEqualTo(isShow ? "errorCode=invalid_token_response" : safeMessage(AUTH_TOKEN_RETRIEVAL_FAIL));
+    }
+
+    @Test
+    void shouldMapIdamExceptionWithEmptyTokenToServiceUnavailable() {
+        // Production shape (IdamTokenProvider): a null authorized client / access token throws
+        // new IdamException(AUTH_TOKEN_EMPTY) with no context or cause. An empty token always
+        // counts as upstream-unavailable.
+        IdamException ex = new IdamException(AUTH_TOKEN_EMPTY);
+
+        // When
+        ResponseEntity<RestExceptionHandler.Error> response = underTest.handleIdamException(ex);
+
+        // Then
+        assertThat(response.getStatusCode()).isEqualTo(SERVICE_UNAVAILABLE);
+        assertThat(response.getHeaders().getFirst(HttpHeaders.RETRY_AFTER)).isEqualTo("30");
     }
 
     @ParameterizedTest
@@ -499,7 +518,8 @@ class RestExceptionHandlerTest {
     void shouldMapIdamExceptionWithOAuth2ThrottleCodeToServiceUnavailable(String errorCode) {
         OAuth2Error oauthError = new OAuth2Error(errorCode, "throttled by IDAM", null);
         OAuth2AuthorizationException oauthEx = new OAuth2AuthorizationException(oauthError);
-        IdamException ex = new IdamException(AUTH_TOKEN_EMPTY, RedactionContext.of(OAUTH2_ERROR_CODE, errorCode),
+        IdamException ex = new IdamException(AUTH_TOKEN_RETRIEVAL_FAIL,
+                                             RedactionContext.of(OAUTH2_ERROR_CODE, errorCode),
                                              oauthEx);
 
         ResponseEntity<RestExceptionHandler.Error> response = underTest.handleIdamException(ex);
@@ -507,7 +527,7 @@ class RestExceptionHandlerTest {
         assertThat(response.getStatusCode()).isEqualTo(SERVICE_UNAVAILABLE);
         assertThat(response.getHeaders().getFirst(HttpHeaders.RETRY_AFTER)).isEqualTo("30");
         assertThat(response.getBody()).isNotNull();
-        assertThat(response.getBody().message()).isEqualTo("REDACTED [IDAM_EMPTY_TOKEN]");
+        assertThat(response.getBody().message()).isEqualTo(safeMessage(AUTH_TOKEN_RETRIEVAL_FAIL));
     }
 
     // Non-throttle OAuth2 error codes must NOT return 503 — these are not transient.
