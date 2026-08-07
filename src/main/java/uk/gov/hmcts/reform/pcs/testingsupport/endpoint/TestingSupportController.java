@@ -1,10 +1,8 @@
 package uk.gov.hmcts.reform.pcs.testingsupport.endpoint;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.github.kagkarlsson.scheduler.Scheduler;
 import com.github.kagkarlsson.scheduler.SchedulerClient;
 import com.github.kagkarlsson.scheduler.task.Task;
-import com.github.kagkarlsson.scheduler.testhelper.SettableClock;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
