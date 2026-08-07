@@ -23,8 +23,8 @@ public class ExtResumeResponse implements CCDConfig<PCSCase, State, UserRole> {
             .decentralisedEvent(EVENT_ID, new NoopSubmitHandler())
             .forState(State.CASE_ISSUED)
             .showCondition(ShowConditions.featureFlagsEnabled(RELEASE_1_DOT_2))
-            .name("Resume response")
-            .description("Exposes event to redirect to pcs-frontend")
+            .name("Resume response application")
+            .description("Resume response application")
             .grant(Permission.CRU, UserRole.DEFENDANT_SOLICITOR);
     }
 
