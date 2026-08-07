@@ -15,3 +15,5 @@ export * from './enterGenAppPreferApplicationToJudge.page.data'
 export * from './genAppsCheckYouAnswers.page.data';
 export * from './enterGenAppuploadGeneralApplication.page.data';
 export * from './manageHearing.page.data';
+export * from './addHearing.page.data';
+export * from './checkYourAnswersManageHearing.page.data';

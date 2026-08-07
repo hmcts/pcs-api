@@ -47,20 +47,81 @@ export class CaseManagementCommonUtils {
   // }
 
 
-  public static getRandomDate(type: string): string {
+  // public static getRandomDate(type: string, format?: string): string {
+
+  //   if (type === 'invalid') {
+  //     return '32/13/9999';
+  //   }
+
+  //   const today = new Date();
+
+  //   if (type === 'present') {
+  //     const day = String(today.getDate()).padStart(2, '0');
+  //     const month = String(today.getMonth() + 1).padStart(2, '0');
+  //     const year = today.getFullYear();
+
+  //     return `${day}/${month}/${year}`;
+  //   }
+
+  //   let minDate: Date;
+  //   let maxDate: Date;
+
+  //   if (type === 'future') {
+  //     minDate = today;
+  //     maxDate = new Date(
+  //       today.getFullYear() + 10,
+  //       today.getMonth(),
+  //       today.getDate()
+  //     );
+  //   } else {
+  //     minDate = new Date(
+  //       today.getFullYear() - 10,
+  //       today.getMonth(),
+  //       today.getDate()
+  //     );
+  //     maxDate = today;
+  //   }
+
+  //   const randomTime =
+  //     minDate.getTime() +
+  //     Math.random() * (maxDate.getTime() - minDate.getTime());
+
+  //   const randomDate = new Date(randomTime);
+
+  //   const day = String(randomDate.getDate()).padStart(2, '0');
+  //   const month = String(randomDate.getMonth() + 1).padStart(2, '0');
+  //   const year = randomDate.getFullYear();
+
+  //   return `${day}/${month}/${year}`;
+  // }
+
+  public static getRandomDate(type: string, format?: string): string {
+    const formatDate = (date: Date): string => {
+      const day = String(date.getDate()).padStart(2, '0');
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const year = date.getFullYear();
+
+      if (format) {
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        const seconds = String(date.getSeconds()).padStart(2, '0');
+
+        return `${day}/${month}/${year}/${hours}/${minutes}/${seconds}`;
+      }
+
+      return `${day}/${month}/${year}`;
+    };
 
     if (type === 'invalid') {
-      return '32/13/9999';
+      return format
+        ? '32/13/9999/25/61/61'
+        : '32/13/9999';
     }
 
     const today = new Date();
 
     if (type === 'present') {
-      const day = String(today.getDate()).padStart(2, '0');
-      const month = String(today.getMonth() + 1).padStart(2, '0');
-      const year = today.getFullYear();
-
-      return `${day}/${month}/${year}`;
+      return formatDate(today);
     }
 
     let minDate: Date;
@@ -88,11 +149,7 @@ export class CaseManagementCommonUtils {
 
     const randomDate = new Date(randomTime);
 
-    const day = String(randomDate.getDate()).padStart(2, '0');
-    const month = String(randomDate.getMonth() + 1).padStart(2, '0');
-    const year = randomDate.getFullYear();
-
-    return `${day}/${month}/${year}`;
+    return formatDate(randomDate);
   }
 
   public static getRandomElementForAnArray<T>(arr: T[]): T | undefined {

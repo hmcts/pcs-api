@@ -7,7 +7,8 @@ import { caseSummary, user } from '@data/page-data';
 import { dismissCookieBanner } from '@config/cookie-banner';
 import { initializeCMExecutor, performAction, performValidation } from '@utils/controller-caseManagement';
 import { allPartyDetails } from '@utils/actions/custom-actions/custom-actions-caseManagement';
-import { manageHearing } from '@data/page-data-figma/page-data-caseManagement-figma';
+import { addHearing, checkYourAnswersManageHearing, manageHearing } from '@data/page-data-figma/page-data-caseManagement-figma';
+import { CaseManagementCommonUtils } from '@utils/actions/custom-actions/custom-actions-caseManagement/caseManagementUtils.action';
 
 
 
@@ -44,12 +45,21 @@ test.describe('Case management - Case Worker Manage Hearing @nightly', async () 
   })
 
   test('Case management - Case Worker Add a hearing @CM @regression', async () => {
+    let date = CaseManagementCommonUtils.getRandomDate(addHearing.dateTypeHiddenUserInput,'dateTime');
+    let typeOfHearing = addHearing.typeOfHearingOption[0]
     await performAction('selectAnEvent', {eventType: caseSummary.manageHearing});
-    await performValidation('mainHeader', manageHearing.mainHeader);
-    await performAction('selectManageHearing',{
-      question: manageHearing.doYouWantToAddQuestion,
-      option: manageHearing.addAHearingRadioOption,
-      nextPage: manageHearing.mainHeader
-    });
+    await performValidation('mainHeader', addHearing.mainHeader);
+    await performAction('addAHearing', {
+      question: addHearing.typeOfHearingQuestion, option: typeOfHearing,
+      question1: addHearing.wordingForHearingNoticeTextLabel, option1: addHearing.wordingForHearingHiddenOption,
+      label1: addHearing.whenIsTheHearingQuestion,
+      date: date,
+      label2: addHearing.hourTextLabel,
+      input2: CaseManagementCommonUtils.getRandomNumberAsString(1, 5),
+      label3: addHearing.minutesTextLabel,
+      input3: CaseManagementCommonUtils.getRandomNumberAsString(1, 60),
+      question2: addHearing.hearingNoticeQuestion, option2: addHearing.hearingNoticeNoRadioOption,
+      nextPage: checkYourAnswersManageHearing.mainHeader
+    })
   })
 });

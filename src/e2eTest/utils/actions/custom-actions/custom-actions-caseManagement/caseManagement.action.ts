@@ -12,7 +12,8 @@ import {
   addReviewDates, confirmReviewDatesAdded, changeCaseState, confirmCaseStateChange, enterGenappApplication, enterGenAppapplicationFee,
   enterGenAppConsentAndNotice, enterGenAppHearingDate,
   enterGenAppPreferApplicationToJudge, selectDocument,
-  manageHearing
+  manageHearing,
+  addHearing
 } from '@data/page-data-figma/page-data-caseManagement-figma';
 import { caseInfo } from '../createCaseAPI.action';
 import { CaseManagementCommonUtils } from './caseManagementUtils.action';
@@ -44,6 +45,7 @@ export class CaseManagementAction implements IAction {
       ['enterApplicationConsentAndNotice', () => this.enterApplicationConsentAndNotice(fieldName as actionRecord)],
       ['verifyReferToJudge', () => this.verifyReferToJudge(fieldName as actionRecord)],
       ['selectManageHearing', () => this.selectManageHearing(fieldName as actionRecord)],
+      ['addAHearing', () => this.addAHearing(fieldName as actionRecord)],
       ['inputErrorValidation', () => this.inputErrorValidation(page, fieldName as actionRecord)],
 
     ]);
@@ -272,6 +274,27 @@ export class CaseManagementAction implements IAction {
       option: manageHearingOption.option,
     });
     await performAction('reTryOnCallBackError', manageHearing.continueButton, manageHearingOption.nextPage as string);
+  }
+
+  private async addAHearing(addAHearing: actionRecord){
+    await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid});
+    await performValidation('text', {
+      elementType: 'paragraph',
+      text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
+    });
+    await performAction('clickRadioButton', {
+      question: addAHearing.question,
+      option: addAHearing.option,
+    });
+    await performAction('select', addAHearing.question1, addAHearing.option1);
+    await performAction('inputDate', addAHearing.label1 as string, addAHearing.date);    
+    await performAction('inputText', { textLabel: addAHearing.label2, index: 1 },addAHearing.input2);
+    await performAction('inputText', { textLabel: addAHearing.label3, index: 1 },addAHearing.input3);
+    await performAction('clickRadioButton', {
+      question: addAHearing.question2,
+      option: addAHearing.option2,
+    });
+    await performAction('reTryOnCallBackError', addHearing.continueButton, addAHearing.nextPage as string);
   }
 
   private async inputErrorValidation(page: Page, validationArr: actionRecord) {

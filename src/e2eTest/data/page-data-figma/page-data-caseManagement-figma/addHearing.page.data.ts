@@ -1,6 +1,7 @@
 export const addHearing= {
   mainHeader: `Add a hearing`,
-  typeOfQuestion: `Which type of hearing is this?`,
+  typeOfHearingQuestion: `Which type of hearing is this?`,
+  typeOfHearingOption: ['Possession first hearing', 'Application', 'Adjourned first hearing', 'Other'],
   wordingForHearingNoticeTextLabel: `Wording for hearing notice`,
   wordingForHearingHiddenOption: `TPL - will take place on`,
   whenIsTheHearingQuestion: `When is the hearing?`,
@@ -10,6 +11,7 @@ export const addHearing= {
   hourTextLabel: `Hour`,
   minutesTextLabel: `Minute`,
   secondsTextLabel: `Second`,
+  dateTypeHiddenUserInput: `future`,
   hearingNotesTextLabel : `Hearing notes (Optional)`,
   hearingNotesTextInput: 10,
   hearingNoticeQuestion: `Does a hearing notice need to be issued?`,
