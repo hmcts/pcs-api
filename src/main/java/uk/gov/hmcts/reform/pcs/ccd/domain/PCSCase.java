@@ -31,6 +31,7 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.InternalCaseFlagAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.InternalTabAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.PartyVisibleTabAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.RasValidationAccess;
+import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.EnterGenAppRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.DashboardData;
 import uk.gov.hmcts.reform.pcs.ccd.domain.documentupload.DocumentUploadDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.documentamend.DocumentAmendDetails;
@@ -628,6 +629,18 @@ public class PCSCase {
     private CitizenGenAppRequest citizenGenAppRequest;
 
     @CCD(
+        searchable = false
+    )
+    @JsonUnwrapped(prefix = "enter_genapp_")
+    private EnterGenAppRequest enterGenAppRequest;
+
+    @CCD(label = "Which party made the application?",
+        searchable = false,
+        typeOverride = DynamicRadioList
+    )
+    private DynamicList partyRadioList;
+
+    @CCD(
         label = "Search Criteria",
         access = {GlobalSearchAccess.class}
     )
@@ -643,7 +656,7 @@ public class PCSCase {
 
     @CCD(
         label = "CaseNameHmctsInternal",
-        access = {GlobalSearchAccess.class}
+        access = {GlobalSearchAccess.class, CaseLinkingAccess.class}
     )
     private String caseNameHmctsInternal;
 
@@ -701,6 +714,12 @@ public class PCSCase {
     List<ListValue<CaseNote>> caseNotes;
 
     @CCD(
+        label = "Review date",
+        min = 1
+    )
+    private List<ListValue<ReviewDate>> reviewDates;
+
+    @CCD(
         access = {InternalCaseFlagAccess.class},
         label = "Case Flags"
     )
@@ -733,4 +752,11 @@ public class PCSCase {
         typeParameterOverride = "CaseStateOption"
     )
     private CaseStateOption targetState;
+
+    @CCD(
+        label = "Add document",
+        hint = "Upload a document to the system",
+        searchable = false
+    )
+    private Document uploadSingleDocument;
 }

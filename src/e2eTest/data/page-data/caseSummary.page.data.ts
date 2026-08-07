@@ -16,5 +16,7 @@ export const caseSummary = {
   manageDocuments:{
     amend : 'Manage documents: Amend'
   },
-  changeCaseState: 'Change case state'
+  addReviewDates: 'Add review date',
+  changeCaseState: 'Change case state',
+  enterAGenApp: 'Enter a general application'
 }
