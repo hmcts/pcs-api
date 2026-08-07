@@ -21,7 +21,7 @@ export class UploadFileAction implements IAction {
     const fileInput = page.locator('input[type="file"].form-control.bottom-30');
     const filePath = path.resolve(__dirname, '../../../data/inputFiles', file);
     await fileInput.last().setInputFiles(filePath);
-    let timeout = 6000;
+    let timeout = 10000;
     await performValidation('waitUntilElementDisappears', 'Uploading...');
     await page.waitForTimeout(timeout);
     await expect(async () => {
