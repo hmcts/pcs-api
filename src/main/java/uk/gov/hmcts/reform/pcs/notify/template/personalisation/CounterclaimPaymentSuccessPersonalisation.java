@@ -15,7 +15,6 @@ public class CounterclaimPaymentSuccessPersonalisation implements TemplatePerson
     public Map<String, Object> toMap() {
         Map<String, Object> map = new HashMap<>(base.toMap());
         map.put("paymentReferenceNumber", paymentReferenceNumber);
-        // map.put("organisationName", organisationName);
         return Map.copyOf(map);
     }
 }

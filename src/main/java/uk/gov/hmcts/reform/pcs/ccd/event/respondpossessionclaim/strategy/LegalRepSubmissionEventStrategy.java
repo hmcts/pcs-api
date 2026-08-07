@@ -15,10 +15,8 @@ import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.CounterClaimSubmitConfirmationService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.RespondPossessionClaimSubmitPersistenceResult;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.RespondPossessionClaimSubmitService;
-import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.util.SelectedPartyRetriever;
 import uk.gov.hmcts.reform.pcs.exception.DraftNotFoundException;
-import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 import uk.gov.hmcts.reform.pcs.model.JourneyType;
@@ -35,14 +33,12 @@ import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.respondPossessionClaim;
 public class LegalRepSubmissionEventStrategy implements RespondPossessionClaimSubmissionEventStrategy {
 
     private final DraftCaseDataService draftCaseDataService;
-    private final PartyService partyService;
-    private final PcsCaseService pcsCaseService;
     private final SelectedPartyRetriever selectedPartyRetriever;
     private final SubmitResponseFactory submitResponseFactory;
+    private final PartyService partyService;
     private final RespondPossessionClaimSubmitService respondPossessionClaimSubmitService;
     private final CounterClaimSubmitConfirmationService counterClaimSubmitConfirmationService;
     private final SecurityContextService securityContextService;
-    private final NotificationService notificationService;
     private final OrganisationService organisationService;
 
     @Override
@@ -83,9 +79,8 @@ public class LegalRepSubmissionEventStrategy implements RespondPossessionClaimSu
         RespondPossessionClaimSubmitPersistenceResult persistenceResult = respondPossessionClaimSubmitService
             .persistFinalSubmit(caseReference, responseDraftData, defendantParty, JourneyType.LEGAL_REPRESENTATIVE);
 
-        SubmitResponse<State> submitResponse =  counterClaimSubmitConfirmationService
+        return counterClaimSubmitConfirmationService
             .buildSubmitResponse(caseReference, persistenceResult, defendantParty);
-
-        return submitResponse;
     }
+
 }

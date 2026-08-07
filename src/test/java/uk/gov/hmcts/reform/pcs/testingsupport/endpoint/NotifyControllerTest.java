@@ -16,7 +16,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantRespon
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.PaymentAgreementEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DefendantResponseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.feeandpay.FeePaymentRepository;
-import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.LegalRepresentativeOrganisationRepository;
 import uk.gov.hmcts.reform.pcs.notify.model.EmailNotificationRequest;
 import uk.gov.hmcts.reform.pcs.notify.model.EmailNotificationResponse;
 import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
@@ -46,9 +45,6 @@ class NotifyControllerTest {
     @Mock
     private FeePaymentRepository feePaymentRepository;
 
-    @Mock
-    private LegalRepresentativeOrganisationRepository legalRepresentativeOrganisationRepository;
-
     private NotifyController notifyController;
 
     private static final String AUTH_HEADER = "Bearer test-token";
@@ -60,8 +56,7 @@ class NotifyControllerTest {
 
     @BeforeEach
     void setUp() {
-        notifyController = new NotifyController(notificationService, defendantResponseRepository, feePaymentRepository,
-                                                legalRepresentativeOrganisationRepository);
+        notifyController = new NotifyController(notificationService, defendantResponseRepository, feePaymentRepository);
     }
 
     @Nested
@@ -158,8 +153,7 @@ class NotifyControllerTest {
             NotifyController controller = new NotifyController(
                 notificationService,
                 defendantResponseRepository,
-                feePaymentRepository,
-                legalRepresentativeOrganisationRepository
+                feePaymentRepository
             );
 
             assertThat(controller).isNotNull();

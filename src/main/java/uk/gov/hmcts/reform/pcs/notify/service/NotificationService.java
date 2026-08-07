@@ -111,7 +111,7 @@ public class NotificationService {
                 defendantResponse.getParty(),
                 defendantResponse
             ),
-            EmailTemplate.COUNTERCLAIM_PAYMENT_SUCCESS,
+            EmailTemplate.COUNTERCLAIM_PAYMENT_SUCCESS_LEGAL_REP,
             NotificationClaimType.COUNTER_CLAIM,
             notificationPersonalisationFactory.counterclaimSuccessLegalRep(defendantResponse,
                                                                            paymentReference,

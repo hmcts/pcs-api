@@ -14,23 +14,18 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
-import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
-import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.CounterClaimSubmitConfirmationService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.RespondPossessionClaimSubmitPersistenceResult;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.RespondPossessionClaimSubmitService;
 import uk.gov.hmcts.reform.pcs.ccd.util.SelectedPartyRetriever;
 import uk.gov.hmcts.reform.pcs.exception.DraftNotFoundException;
-import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
-import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 import uk.gov.hmcts.reform.pcs.model.JourneyType;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
+import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.List;
 import java.util.Optional;
@@ -57,21 +52,17 @@ class LegalRepSubmissionEventStrategyTest {
     @Mock
     private SelectedPartyRetriever selectedPartyRetriever;
     @Mock
-    private PartyService partyService;
-    @Mock
-    private PcsCaseService pcsCaseService;
-    @Mock
     private SubmitResponseFactory submitResponseFactory;
     @Mock
     private EventPayload<PCSCase, State> eventPayload;
     @Mock
     private SecurityContextService securityContextService;
     @Mock
+    private PartyService partyService;
+    @Mock
     private RespondPossessionClaimSubmitService respondPossessionClaimSubmitService;
     @Mock
     private CounterClaimSubmitConfirmationService counterClaimSubmitConfirmationService;
-    @Mock
-    private NotificationService notificationService;
 
     private LegalRepSubmissionEventStrategy underTest;
     @Mock
@@ -82,14 +73,12 @@ class LegalRepSubmissionEventStrategyTest {
     void setUp() {
         underTest = new LegalRepSubmissionEventStrategy(
             draftCaseDataService,
-            partyService,
-            pcsCaseService,
             selectedPartyRetriever,
             submitResponseFactory,
+            partyService,
             respondPossessionClaimSubmitService,
             counterClaimSubmitConfirmationService,
             securityContextService,
-            notificationService,
             organisationService
         );
     }
@@ -134,10 +123,8 @@ class LegalRepSubmissionEventStrategyTest {
         when(draftCaseDataService.getUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim, representedPartyId,
                                                          organisationId))
             .thenReturn(Optional.of(caseData));
-        // when(submitResponseFactory.success()).thenReturn(submitResponse);
-        when(eventPayload.caseReference()).thenReturn(CASE_REFERENCE);
-        when(eventPayload.caseData()).thenReturn(caseData);
         when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(organisationId);
+
         when(partyService.getPartyEntityById(representedPartyId, CASE_REFERENCE)).thenReturn(representedParty);
         when(respondPossessionClaimSubmitService.persistFinalSubmit(
             CASE_REFERENCE,
@@ -271,20 +258,5 @@ class LegalRepSubmissionEventStrategyTest {
     void supports_WithNonDefendantSolicitorUser_ReturnsFalse() {
         // when / then
         assertThat(underTest.supports(List.of(UserRole.CITIZEN.getRole()))).isFalse();
-    }
-
-    private Optional<LegalRepresentativeEntity> legalRepresentativeEntity() {
-        return Optional.of(LegalRepresentativeEntity.builder().build());
-    }
-
-    private PcsCaseEntity pcsCaseEntity(UUID representedPartyId) {
-        return PcsCaseEntity.builder()
-            .defendantResponses(List.of(
-                DefendantResponseEntity.builder()
-                    .party(PartyEntity.builder()
-                               .id(representedPartyId)
-                               .build())
-                    .build()))
-            .build();
     }
 }

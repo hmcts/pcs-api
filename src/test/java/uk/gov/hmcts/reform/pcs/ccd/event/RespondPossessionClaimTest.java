@@ -10,7 +10,6 @@ import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
@@ -58,11 +57,9 @@ import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.PossessionClai
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.RespondPossessionClaimSubmitService;
 import uk.gov.hmcts.reform.pcs.ccd.util.SelectedPartyRetriever;
 import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
-import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.PaymentService;
-import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 import uk.gov.hmcts.reform.pcs.model.JourneyType;
 
@@ -148,9 +145,6 @@ class RespondPossessionClaimTest extends BaseEventTest {
     @Mock
     private OrganisationService organisationService;
 
-    @Mock
-    private NotificationService notificationService;
-
     @BeforeEach
     void setUp() {
 
@@ -210,14 +204,12 @@ class RespondPossessionClaimTest extends BaseEventTest {
                 ),
                 new LegalRepSubmissionEventStrategy(
                     draftCaseDataService,
-                    partyService,
-                    pcsCaseService,
                     selectedPartyRetriever,
                     submitResponseFactory,
+                    partyService,
                     submitService,
                     confirmationService,
                     securityContextService,
-                    notificationService,
                     organisationService
                 )
             ),

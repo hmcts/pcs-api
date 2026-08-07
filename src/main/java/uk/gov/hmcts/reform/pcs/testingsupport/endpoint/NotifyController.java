@@ -8,11 +8,9 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeOrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DefendantResponseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.feeandpay.FeePaymentRepository;
-import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.LegalRepresentativeOrganisationRepository;
 import uk.gov.hmcts.reform.pcs.notify.model.EmailNotificationResponse;
 import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
 
@@ -30,16 +28,13 @@ public class NotifyController {
     private final NotificationService notificationService;
     private final DefendantResponseRepository defendantResponseRepository;
     private final FeePaymentRepository feePaymentRepository;
-    private final LegalRepresentativeOrganisationRepository legalRepresentativeOrganisationRepository;
 
     public NotifyController(NotificationService notificationService,
                             DefendantResponseRepository defendantResponseRepository,
-                            FeePaymentRepository feePaymentRepository,
-                            LegalRepresentativeOrganisationRepository legalRepresentativeOrganisationRepository) {
+                            FeePaymentRepository feePaymentRepository) {
         this.notificationService = notificationService;
         this.defendantResponseRepository = defendantResponseRepository;
         this.feePaymentRepository = feePaymentRepository;
-        this.legalRepresentativeOrganisationRepository = legalRepresentativeOrganisationRepository;
     }
 
     @PostMapping(value = "send-defendant-response-emails")
@@ -67,43 +62,6 @@ public class NotifyController {
                 "PAY-123"
             ),
             notificationService.sendDefendantResponseCounterclaimNoPaymentRequiredEmailNotification(defendantResponse)
-        );
-
-        return ResponseEntity.ok(responses);
-    }
-
-
-    @PostMapping(value = "testLegalRepEndPoint")
-    public ResponseEntity<List<EmailNotificationResponse>> sendDefendantResponseEmailsToLegalRep(
-        @RequestHeader(value = AUTHORIZATION, defaultValue = "DummyId") String authorisation,
-        @RequestHeader(value = "ServiceAuthorization") String serviceAuthorization,
-        @RequestParam Integer defendantResponseId) {
-
-        //        legalRepSubmissionEventStrategy.process(null);
-
-        log.info("Received request to send all defendant response emails for {}", defendantResponseId);
-        // temporary endpoint to test sending emails
-
-        Optional<DefendantResponseEntity> optDefendantResponse =
-            defendantResponseRepository.findById(defendantResponseId);
-
-        Optional<LegalRepresentativeOrganisationEntity> optionalLegalRepresentativeOrganisationEntity =
-            legalRepresentativeOrganisationRepository.findByPartyLinkedToLegalRepresentativeOrganisationAndActive(
-                optDefendantResponse.get().getParty().getId());
-
-        if (optDefendantResponse.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-        LegalRepresentativeOrganisationEntity legalRepresentativeOrganisationEntity =
-            optionalLegalRepresentativeOrganisationEntity.get();
-        DefendantResponseEntity defendantResponse = optDefendantResponse.get();
-        List<EmailNotificationResponse> responses = List.of(
-            notificationService.sendDefendantResponseCounterclaimToLegalRepresentativePaymentSuccess(
-                legalRepresentativeOrganisationEntity,
-                "PAY-123",
-                defendantResponse.getPcsCase(),
-                defendantResponse
-            )
         );
 
         return ResponseEntity.ok(responses);
