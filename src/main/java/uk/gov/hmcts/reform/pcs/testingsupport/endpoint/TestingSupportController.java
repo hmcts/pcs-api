@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.testingsupport.endpoint;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.github.kagkarlsson.scheduler.Scheduler;
 import com.github.kagkarlsson.scheduler.SchedulerClient;
 import com.github.kagkarlsson.scheduler.task.Task;
 import com.github.kagkarlsson.scheduler.testhelper.SettableClock;
@@ -97,6 +98,7 @@ public class TestingSupportController {
     private final AccessCodeGenerationService accessCodeGenerationService;
     private final FeatureToggleService featureToggleService;
     private final SettableClock settableClock;
+    private final Scheduler scheduler;
 
     @Operation(
         summary = "Schedule a Hello World task",
@@ -524,6 +526,7 @@ public class TestingSupportController {
     })
     @PostMapping("/reschedule-camunda-request")
     public ResponseEntity<String> rescheduleCamundaRequest(
+        @RequestParam(value = "minutes", defaultValue = "0") int minutes,
         @Parameter(
             description = "Service-to-Service (S2S) authorization token",
             example = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
@@ -536,7 +539,7 @@ public class TestingSupportController {
                 """
                     SELECT task_instance
                     FROM scheduled_tasks
-                    ask_name = 'camunda-request-task'
+                    task_name = 'camunda-request-task'
                 """,
                 (rs, rowNum) -> rs.getString("task_instance")
             );
@@ -596,6 +599,8 @@ public class TestingSupportController {
             settableClock.tick(Duration.ofHours(hours));
             settableClock.tick(Duration.ofMinutes(minutes));
             log.info("Clock set to {}", settableClock.now());
+
+            scheduler.triggerCheckForDueExecutions();
             return ResponseEntity.ok("Clock set successfully to " + settableClock.now());
         } catch (Exception e) {
             log.error("Failed to reschedule Camunda request task", e);
