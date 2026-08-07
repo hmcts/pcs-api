@@ -3,5 +3,6 @@
   "extends": [
     "local>hmcts/.github:renovate-config",
     "local>hmcts/.github//renovate/automerge-all"
-  ]
+  ],
+  "platformAutomerge": false
 }
