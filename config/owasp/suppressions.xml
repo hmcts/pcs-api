@@ -28,4 +28,13 @@
     <cve>CVE-2026-63144</cve>
   </suppress>
   <!--End of false positives section -->
+   <suppress>
+      <notes><![CDATA[
+      HDPI-8150: CVE-2026-66299 against embedded Tomcat 11.0.24. No fixed
+      Tomcat release published yet; suppression is temporary and MUST be
+      removed when tomcatEmbedVersion is bumped to the fixed version.
+      ]]></notes>
+      <packageUrl regex="true">^pkg:maven/org\.apache\.tomcat\.embed/tomcat\-embed\-.*$</packageUrl>
+      <cve>CVE-2026-66299</cve>
+   </suppress>
 </suppressions>
