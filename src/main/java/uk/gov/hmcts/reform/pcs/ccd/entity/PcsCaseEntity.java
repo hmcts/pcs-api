@@ -179,14 +179,14 @@ public class PcsCaseEntity {
         caseNote.setPcsCase(this);
     }
 
-    public void addHearing(HearingEntity hearing) {
-        hearings.add(hearing);
-        hearing.setPcsCase(this);
-    }
-
     public void addCaseReviewDate(CaseReviewDateEntity reviewDate) {
         reviewDates.add(reviewDate);
         reviewDate.setPcsCase(this);
+    }
+
+    public void addHearing(HearingEntity hearing) {
+        hearings.add(hearing);
+        hearing.setPcsCase(this);
     }
 
 }
