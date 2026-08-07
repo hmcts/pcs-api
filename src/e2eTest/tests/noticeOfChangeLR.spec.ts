@@ -130,6 +130,5 @@ test.describe('Make an Application - LR - e2e Journey @nightly', async () => {
     await performValidation('text', { elementType: 'paragraph', text: noticeOfChangeSuccessful.thisIsNewOnlineProcessParagraph });
     await performValidation('text', { elementType: 'link', text: noticeOfChangeSuccessful.viewCaseListLink });
     await performValidation('text', { elementType: 'link', text: noticeOfChangeSuccessful.viewThisCaseLink });
-
   });
 });
