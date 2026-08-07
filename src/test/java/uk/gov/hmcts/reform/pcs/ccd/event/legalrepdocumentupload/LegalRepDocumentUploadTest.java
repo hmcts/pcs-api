@@ -146,7 +146,7 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
                                 .equals(item.getCode()))
             .extracting(DynamicStringListElement::getLabel)
             .containsExactly(
-                "No, the documents I’m uploading relate to the main claim or counterclaim"
+                "No, the documents I’m uploading relate to the claim or counterclaim"
             );
 
         assertThat(result.getLegalRepDocumentUploadDetails().getShowExistingApplicationPage())
