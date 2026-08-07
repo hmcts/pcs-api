@@ -41,6 +41,7 @@ export class DocumentsAction implements IAction {
       elementType: 'paragraph',
       text: confirmIfTheseDocumentsRelateToAnApplication.ifYourApplicationParagraph,
     });
+
     const formattedDate = new Intl.DateTimeFormat('en-GB', {
       weekday: 'long',
       day: 'numeric',
@@ -51,25 +52,27 @@ export class DocumentsAction implements IAction {
       .replace(',', '');
 
     const expectedOptions: string[] = [];
-    // 1st radio -> option
     const optionText = `${confirmDocumentData.option} ${formattedDate}`;
-    expectedOptions.push(optionText);
 
-    // 2nd radio -> previousApplicationOption (if passed)
+    // repeat the primary option once per application (e.g. once per defendant that submitted one)
+    const repeatCount = Number(confirmDocumentData.count ?? 1);
+    for (let i = 0; i < repeatCount; i++) {
+      expectedOptions.push(optionText);
+    }
+
+    // optional 2nd distinct option (if a different application type was also submitted)
     if (confirmDocumentData.previousApplicationOption) {
       expectedOptions.push(`${confirmDocumentData.previousApplicationOption} ${formattedDate}`);
     }
 
-    // 3rd radio -> noOption (always visible)
+    // fixed "No" option, always last
     expectedOptions.push(confirmIfTheseDocumentsRelateToAnApplication.noRadioOption);
 
     console.log('Expected radio order:', expectedOptions);
 
-    // Verify UI order
-    const radioLabels = page.locator('.govuk-radios__label');
+    const radioLabels = page.locator('.govuk-radios__label, label.form-label');
     for (let i = 0; i < expectedOptions.length; i++) {
       const actualText = ((await radioLabels.nth(i).textContent()) ?? '').replace(/\s+/g, ' ').trim();
-
       const expectedText = expectedOptions[i].replace(/\s+/g, ' ').trim();
 
       console.log(`Radio ${i}:`, actualText);
@@ -77,9 +80,7 @@ export class DocumentsAction implements IAction {
 
       if (!actualText.includes(expectedText)) {
         throw new Error(
-          `Radio order mismatch at index ${i}.
-Expected: "${expectedText}"
-Actual: "${actualText}"`
+          `Radio order mismatch at index ${i}.\nExpected: "${expectedText}"\nActual: "${actualText}"`
         );
       }
     }
@@ -87,9 +88,10 @@ Actual: "${actualText}"`
     const selectOption =
       confirmDocumentData.option === confirmIfTheseDocumentsRelateToAnApplication.noRadioOption
         ? confirmDocumentData.option
-        : `${confirmDocumentData.option} ${formattedDate}`;
-
-    // VERIFY option is visible on UI BEFORE clicking
+        : optionText;
+    console.log('confirmDocumentData:', confirmDocumentData);
+    console.log('optionText:', optionText);
+    console.log('selectOption:', selectOption);
     await performValidation('elementToBeVisible', { elementType: 'radio', text: selectOption });
     await performAction('clickRadioButton', {
       question: confirmDocumentData.question,
