@@ -31,12 +31,16 @@ public class LegalRepStartEventStrategy implements RespondPossessionClaimStartEv
 
     @Override
     public PCSCase loadDraft(long caseReference, PCSCase pcsCase) {
+        // return defendants who have submitted
+        if (this.legalRepPartySelectionService.hasSubmittedResponseForCurrentlySelectedParty(caseReference)) {
+            List<PartyEntity> defendantPartiesLinkedAndActive = this.loadAndValidateDefendants(caseReference, false);
+            return legalRepPartySelectionService.buildSubmittedResponseCase(pcsCase, defendantPartiesLinkedAndActive);
+        }
 
-        List<PartyEntity> defendantPartiesLinkedAndActive = loadAndValidateDefendants(caseReference);
-
+        // return drafts that have not been submitted
+        List<PartyEntity> defendantPartiesLinkedAndActive = this.loadAndValidateDefendants(caseReference, true);
         if (defendantPartiesLinkedAndActive.size() == 1) {
             PartyEntity defendant = defendantPartiesLinkedAndActive.getFirst();
-            legalRepPartySelectionService.validateResponseNotAlreadySubmitted(caseReference, defendant.getId());
             return legalRepPartySelectionService.getDraftCaseData(caseReference, pcsCase, defendant,
                                                                   defendantPartiesLinkedAndActive);
         }
@@ -44,11 +48,18 @@ public class LegalRepStartEventStrategy implements RespondPossessionClaimStartEv
         return legalRepPartySelectionService.getDraft(pcsCase, defendantPartiesLinkedAndActive, caseReference);
     }
 
-    private List<PartyEntity> loadAndValidateDefendants(long caseReference) {
+    /**
+     * Returns defendant parties that do not have a submitted response for the organisation of the current user.
+     *
+     * @param caseReference the case reference
+     * @param validate if true and there are no defendants then an exception will be thrown,
+     *           if false no exception will be thrown
+     * @return the list of defendant parties
+     */
+    private List<PartyEntity> loadAndValidateDefendants(long caseReference, boolean validate) {
         PcsCaseEntity caseEntity = pcsCaseService.loadCase(caseReference);
 
-        return legalRepForDefendantAccessValidator.validateAndGetDefendants(caseEntity,
-                                                                            securityContextService.getCurrentUserId());
+        return legalRepForDefendantAccessValidator.validateAndGetDefendants(
+            caseEntity, securityContextService.getCurrentUserId(), validate);
     }
-
 }
