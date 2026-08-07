@@ -1,0 +1,18 @@
+{
+  "request": {
+    "method": "POST",
+    "urlPathTemplate": "/payments/service-request/{serviceRequestReference}/pba-payments"
+  },
+  "response": {
+    "status": 201,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "payment_reference": "payment-ref-{{request.path.serviceRequestReference}}",
+      "status": "Initiated",
+      "date_created": "2026-08-03T10:21:50.085Z"
+    },
+    "transformers": ["response-template"]
+  }
+}

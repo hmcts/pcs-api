@@ -11,6 +11,8 @@ import uk.gov.hmcts.reform.pcs.reference.api.RdProfessionalApi;
 import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
 import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
 
+import java.util.List;
+
 @Service
 @Slf4j
 public class OrganisationDetailsService {
@@ -113,5 +115,10 @@ public class OrganisationDetailsService {
     public String getOrganisationIdentifier(String userId) {
         OrganisationDetailsResponse details = getOrganisationDetails(userId);
         return details.getOrganisationIdentifier();
+    }
+
+    public List<String> getOrganisationPaymentAccount(String userId) {
+        OrganisationDetailsResponse response = getOrganisationDetails(userId);
+        return response.getPaymentAccount();
     }
 }
