@@ -17,8 +17,6 @@ import {
 
 test.use({ storageState: undefined })
 
-const { email: userEmail, password: userPassword } = user.hearingCenterAdmin;
-
 test.beforeEach(async ({ page, context }) => {
   await context.clearCookies();
   initializeExecutor(page);
@@ -29,7 +27,11 @@ test.beforeEach(async ({ page, context }) => {
   console.log(`Case created with case number: ${process.env.CASE_NUMBER}`);
   await performAction('updatePaymentAPI');
   await performAction('getCaseAPI', 'Link Solicitor');
-  await performAction('manageHearingAPI', {data: manageHearingApiData.AddHearingPayload, email: userEmail, password: userPassword});
+  await performAction('manageHearingAPI', {
+    data: manageHearingApiData.AddHearingPayload,
+    email: user.hearingCenterAdmin.email,
+    password: user.hearingCenterAdmin.password
+  });
   console.log(`Case has been associated with hearing`);
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
   await dismissCookieBanner(page, 'additional');
