@@ -187,20 +187,12 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
      * "other" profiles); the solicitor roles are for organisations representing a party, who can
      * act on either side. Display orders must be unique across all AccessType rows or the def
      * store rejects the import.
+     *
+     * <p>All access is group access - there is no plain organisational role: creation needs none
+     * because the data store ignores caseAccessGroupId when no case exists yet, so a group role
+     * authorises case creation by itself.
      */
     private static void configureGaAccessTypes(ConfigBuilder<PCSCase, State, AccessProfile> builder) {
-        // Case creation has no case to evaluate against, so it is authorised by the plain
-        // organisational role. POFCC-368 registers claimant with caseAccessGroupId optional for
-        // exactly this: the same role name, held without a group id.
-        builder.accessType("create-cases")
-            .organisationProfileId("LOCALAUTH_PROFILE")
-            .accessMandatory(true)
-            .accessDefault(true)
-            .display(false)
-            .hintText("Access to create cases")
-            .displayOrder(1)
-            .liveTo("01/01/2027");
-
         // A solicitor firm can act on either side, and on opposite sides of different cases, so the
         // two capacities are separate options for the organisation's admin. One name per capacity,
         // everywhere: case role, group role and access profile are all the name POFCC-368 registers
@@ -269,10 +261,6 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
             .displayOrder(8)
             .liveTo("01/01/2027");
 
-        builder.accessTypeRole("create-cases")
-            .organisationProfileId("LOCALAUTH_PROFILE")
-            .organisationalRoleName("claimant")
-            .liveTo("01/01/2027");
         builder.accessTypeRole("solicitor-org-claimant-access")
             .organisationProfileId("SOLICITOR_PROFILE")
             .groupRoleName("claimant_solicitor")
