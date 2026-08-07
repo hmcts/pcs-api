@@ -34,12 +34,15 @@ public class CreateFlags implements CCDConfig<PCSCase, State, UserRole> {
                 .name("Create case flags")
                 .description("To create flags")
                 .showSummary()
+                .endButtonLabel("Submit")
                 .grant(Permission.CRU,
                        UserRole.CTSC_ADMIN,
                        UserRole.HEARING_CENTRE_ADMIN,
                        UserRole.WLU_ADMIN)
                 .grantHistoryOnly(JUDICIAL_HISTORY_ROLES))
                 .page("caseworkerCaseFlag")
+                .pageLabel("Create case flags")
+                .label("caseworkerCaseFlag-lineSeparator", "---")
                 .optional(PCSCase::getCaseFlags, ShowConditions.NEVER_SHOW, true, true)
                 .optional(PCSCase::getParties, ShowConditions.NEVER_SHOW, true, true)
                 .list(PCSCase::getAllDefendants, ShowConditions.NEVER_SHOW)
