@@ -143,7 +143,7 @@ class EnterGenAppTest extends BaseEventTest {
 
         // Then
         verify(genAppService)
-            .createGenAppEntity(enterGenAppRequest, pcsCaseEntity, applicantParty, GEN_APP_ISSUED);
+            .createGenAppEntity(caseData, pcsCaseEntity, applicantParty, GEN_APP_ISSUED);
     }
 
 }
