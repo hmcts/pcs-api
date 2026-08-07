@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.pcs.testingsupport.endpoint;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.kagkarlsson.scheduler.Scheduler;
 import com.github.kagkarlsson.scheduler.SchedulerClient;
 import com.github.kagkarlsson.scheduler.task.Task;
 import com.github.kagkarlsson.scheduler.task.TaskInstance;
@@ -110,6 +111,8 @@ class TestingSupportControllerTest {
     private FeatureToggleService featureToggleService;
     @Mock
     private SettableClock clock;
+    @Mock
+    private Scheduler scheduler;
 
     private TestingSupportController underTest;
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -127,7 +130,8 @@ class TestingSupportControllerTest {
                                                  pcsCaseService,
                                                  accessCodeGenerationService,
                                                  featureToggleService,
-                                                 clock
+                                                 clock,
+                                                 scheduler
         );
     }
 
@@ -507,11 +511,13 @@ class TestingSupportControllerTest {
     @Test
     void shouldRescheduleCamundaRequest() {
         // Given
-        when(jdbcTemplate.query(anyString(), any(RowMapper.class)))
+        when(clock.now()).thenReturn(Instant.now());
+        when(jdbcTemplate.query(anyString(), any(RowMapper.class), any(Instant.class)))
             .thenReturn(List.of("db-task-id"));
 
         // When
-        ResponseEntity<String> response = underTest.rescheduleCamundaRequest(SERVICE_AUTH_TOKEN);
+        ResponseEntity<String> response = underTest.rescheduleCamundaRequest(1, 2, 3,
+                                                                             SERVICE_AUTH_TOKEN);
 
         // Then
         assertThat(response).isNotNull();
@@ -535,13 +541,15 @@ class TestingSupportControllerTest {
     @Test
     void shouldHandleRescheduleCamundaRequestFailure() {
         // Given
-        when(jdbcTemplate.query(anyString(), any(RowMapper.class)))
+        when(clock.now()).thenReturn(Instant.now());
+        when(jdbcTemplate.query(anyString(), any(RowMapper.class), any(Instant.class)))
             .thenReturn(List.of("db-task-id"));
 
         doThrow(new RuntimeException("Scheduler failure")).when(schedulerClient)
             .reschedule(any(TaskInstance.class), any(Instant.class));
 
-        ResponseEntity<String> response = underTest.rescheduleCamundaRequest(SERVICE_AUTH_TOKEN);
+        ResponseEntity<String> response = underTest.rescheduleCamundaRequest(1, 2, 3,
+                                                                             SERVICE_AUTH_TOKEN);
 
         assertThat(response).isNotNull();
         assertThat(response.getStatusCode()).isEqualTo(org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR);
@@ -556,9 +564,7 @@ class TestingSupportControllerTest {
         underTest.addTime(1, 2, 3, SERVICE_AUTH_TOKEN);
 
         // Then
-        verify(clock).tick(Duration.ofDays(1));
-        verify(clock).tick(Duration.ofHours(2));
-        verify(clock).tick(Duration.ofMinutes(3));
+        verify(clock).tick(Duration.ofDays(1).plusHours(2).plusMinutes(3));
     }
 
     @Nested

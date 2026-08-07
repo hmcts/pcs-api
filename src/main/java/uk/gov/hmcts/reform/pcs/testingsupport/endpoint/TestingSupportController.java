@@ -526,22 +526,37 @@ public class TestingSupportController {
     })
     @PostMapping("/reschedule-camunda-request")
     public ResponseEntity<String> rescheduleCamundaRequest(
-        @RequestParam(value = "minutes", defaultValue = "0") int minutes,
         @Parameter(
-            description = "Service-to-Service (S2S) authorization token",
-            example = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-            required = true
+            description = "Days to add to current time (default: 0)",
+            example = "1"
         )
+        @RequestParam(value = "days", defaultValue = "0") int days,
+        @Parameter(
+            description = "Hours to add to current time (default: 0)",
+            example = "10"
+        )
+        @RequestParam(value = "hours", defaultValue = "0") int hours,
+        @Parameter(
+            description = "Minutes to add to current time (default: 0)",
+            example = "10"
+        )
+        @RequestParam(value = "minutes", defaultValue = "0") int minutes,
         @RequestHeader(value = "ServiceAuthorization") String serviceAuthorization) {
         try {
+
+            settableClock.tick(Duration.ofDays(days)
+                                   .plusHours(hours)
+                                   .plusMinutes(minutes));
+            log.info("Clock set to {}", settableClock.now());
 
             List<String> taskIds = jdbcTemplate.query(
                 """
                     SELECT task_instance
                     FROM scheduled_tasks
-                    task_name = 'camunda-request-task'
+                    WHERE task_name = 'camunda-request-task' and execution_time <= ?
                 """,
-                (rs, rowNum) -> rs.getString("task_instance")
+                (rs, rowNum) -> rs.getString("task_instance"),
+                settableClock.now()
             );
 
             for (String taskId : taskIds) {
@@ -580,11 +595,11 @@ public class TestingSupportController {
         @RequestParam(value = "days", defaultValue = "0") int days,
         @Parameter(
             description = "Hours to add to current time (default: 0)",
-            example = "10"
+            example = "2"
         )
-        @RequestParam(value = "hours", defaultValue = "0") int hours,
+        @RequestParam(value = "minutes", defaultValue = "0") int hours,
         @Parameter(
-            description = "Hours to add to current time (default: 0)",
+            description = "Minutes to add to current time (default: 0)",
             example = "10"
         )
         @RequestParam(value = "minutes", defaultValue = "0") int minutes,
@@ -595,9 +610,9 @@ public class TestingSupportController {
         )
         @RequestHeader(value = "ServiceAuthorization") String serviceAuthorization) {
         try {
-            settableClock.tick(Duration.ofDays(days));
-            settableClock.tick(Duration.ofHours(hours));
-            settableClock.tick(Duration.ofMinutes(minutes));
+            settableClock.tick(Duration.ofDays(days)
+                                   .plusHours(hours)
+                                   .plusMinutes(minutes));
             log.info("Clock set to {}", settableClock.now());
 
             scheduler.triggerCheckForDueExecutions();
