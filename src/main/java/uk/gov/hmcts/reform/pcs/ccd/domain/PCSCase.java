@@ -659,7 +659,7 @@ public class PCSCase {
 
     @CCD(
         label = "CaseNameHmctsInternal",
-        access = {GlobalSearchAccess.class}
+        access = {GlobalSearchAccess.class, CaseLinkingAccess.class}
     )
     private String caseNameHmctsInternal;
 
@@ -755,6 +755,14 @@ public class PCSCase {
         typeParameterOverride = "CaseStateOption"
     )
     private CaseStateOption targetState;
+
+
+    @CCD(
+        label = "Add document",
+        hint = "Upload a document to the system",
+        searchable = false
+    )
+    private Document uploadSingleDocument;
 
     /**
      * The legal representative for a defendant on the case.
