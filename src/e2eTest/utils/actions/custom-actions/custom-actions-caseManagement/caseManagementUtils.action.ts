@@ -56,7 +56,7 @@ export class CaseManagementCommonUtils {
     const today = new Date();
 
     if (type === 'present') {
-      const day = String(today.getDate()).padStart(2, '0');
+      const day = String(today.getDate());
       const month = String(today.getMonth() + 1).padStart(2, '0');
       const year = today.getFullYear();
 
@@ -88,7 +88,7 @@ export class CaseManagementCommonUtils {
 
     const randomDate = new Date(randomTime);
 
-    const day = String(randomDate.getDate()).padStart(2, '0');
+    const day = String(randomDate.getDate());
     const month = String(randomDate.getMonth() + 1).padStart(2, '0');
     const year = randomDate.getFullYear();
 
@@ -126,4 +126,4 @@ export class CaseManagementCommonUtils {
     return (Math.floor(Math.random() * (max - min + 1)) + min).toString();
   }
 
-} 
+}
