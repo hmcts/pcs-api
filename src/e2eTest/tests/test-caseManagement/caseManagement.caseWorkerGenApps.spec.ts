@@ -107,6 +107,7 @@ test.describe('Case management - Case Worker Enter a General application @nightl
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Enter a general application');
   });
 
+
   test('Case management - Case Worker Enter a General application ADJOURN Journey - Application Fee Received - NO @CM', async () => {
     let date = CaseManagementCommonUtils.getRandomDate(enterGenappApplication.dateTypeHiddenUserInput);
     await performAction('selectAnEvent', { eventType: caseSummary.enterAGenApp });
@@ -217,7 +218,6 @@ test.describe('Case management - Case Worker Enter a General application @nightl
     await performAction('reTryOnCallBackError', enterGenAppUploadGeneralApplication.continueButton, enterGenAppUploadRelatedEvidence.mainHeader);
     await performAction('uploadRelativeEvidence',{
       label : enterGenAppUploadRelatedEvidence.uploadADocumentHiddenTextLabel,
-      files: enterGenAppUploadRelatedEvidence.uploadDocHiddenOption,
       nextPage:enterGenAppPreferApplicationToJudge.mainHeader
     });
     await performAction('verifyReferToJudge',{
@@ -263,7 +263,6 @@ test.describe('Case management - Case Worker Enter a General application @nightl
     await performAction('reTryOnCallBackError', enterGenAppUploadGeneralApplication.continueButton, enterGenAppUploadRelatedEvidence.mainHeader);
     await performAction('uploadRelativeEvidence',{
       label : enterGenAppUploadRelatedEvidence.uploadADocumentHiddenTextLabel,
-      files: enterGenAppUploadRelatedEvidence.uploadDocHiddenOption,
       nextPage:enterGenAppPreferApplicationToJudge.mainHeader
     });
     await performAction('verifyReferToJudge',{
