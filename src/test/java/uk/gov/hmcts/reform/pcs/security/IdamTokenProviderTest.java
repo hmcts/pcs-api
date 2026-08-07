@@ -1,13 +1,10 @@
 package uk.gov.hmcts.reform.pcs.security;
 
-import feign.FeignException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.oauth2.client.OAuth2AuthorizeRequest;
@@ -16,19 +13,15 @@ import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
 import org.springframework.security.oauth2.core.OAuth2AccessToken;
 import org.springframework.security.oauth2.core.OAuth2AuthorizationException;
 import org.springframework.security.oauth2.core.OAuth2Error;
-import uk.gov.hmcts.reform.pcs.exception.InvalidAuthTokenException;
-import uk.gov.hmcts.reform.pcs.exception.RedactionGate;
 import uk.gov.hmcts.reform.pcs.exception.IdamException;
+import uk.gov.hmcts.reform.pcs.exception.RedactionGate;
 import uk.gov.hmcts.reform.pcs.exception.ResetExceptionRedactionExtension;
 
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 @ExtendWith({MockitoExtension.class, ResetExceptionRedactionExtension.class})
 class IdamTokenProviderTest {
