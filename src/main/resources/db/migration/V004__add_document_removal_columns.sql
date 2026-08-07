@@ -1,0 +1,12 @@
+ALTER TABLE document
+ADD COLUMN removed BOOLEAN,
+ADD COLUMN removal_reason VARCHAR(250),
+ADD COLUMN removed_at TIMESTAMP;
+
+UPDATE document
+SET removed = FALSE
+WHERE removed IS NULL;
+
+ALTER TABLE document
+ALTER COLUMN removed SET DEFAULT FALSE,
+ALTER COLUMN removed SET NOT NULL;

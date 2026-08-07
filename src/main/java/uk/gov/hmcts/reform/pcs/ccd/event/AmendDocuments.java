@@ -13,9 +13,10 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.documentamend.DocumentAmendDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.documentamend.AmendDocumentDetailsPlaceholderPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.documentamend.SelectDocumentPage;
-import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentAmendSelectionService;
+import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentSelectionService;
 
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerRoles.CASEWORKER_ROLES;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.amendDocuments;
@@ -26,7 +27,7 @@ import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.RELEASE_1_DOT_2;
 @AllArgsConstructor
 public class AmendDocuments implements CCDConfig<PCSCase, State, UserRole> {
 
-    private final DocumentAmendSelectionService documentAmendSelectionService;
+    private final DocumentSelectionService documentSelectionService;
     private final SelectDocumentPage selectDocumentPage;
     private final AmendDocumentDetailsPlaceholderPage amendDocumentDetailsPlaceholderPage;
 
@@ -48,7 +49,13 @@ public class AmendDocuments implements CCDConfig<PCSCase, State, UserRole> {
 
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
         PCSCase caseData = eventPayload.caseData();
-        documentAmendSelectionService.initialise(eventPayload.caseReference(), caseData);
+
+        if (caseData.getDocumentAmendDetails() == null) {
+            caseData.setDocumentAmendDetails(new DocumentAmendDetails());
+        }
+        DocumentAmendDetails details = caseData.getDocumentAmendDetails();
+
+        documentSelectionService.initialise(eventPayload.caseReference(), caseData, details);
         return caseData;
     }
 
