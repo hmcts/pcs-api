@@ -60,6 +60,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.wales.GroundsReasonsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.PeriodicContractTermsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractGroundsForPossessionWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.UploadedDocumentChecklistType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.WalesDocuments;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
@@ -464,6 +465,14 @@ public class PCSCase {
             + "receive before the hearing (the bundle)"
     )
     private VerticalYesNo wantToUploadDocuments;
+
+    @CCD(
+        label = "Which documents have you uploaded as part of your claim?",
+        hint = "Select all that apply",
+        typeOverride = MultiSelectList,
+        typeParameterOverride = "UploadedDocumentChecklistType"
+    )
+    private Set<UploadedDocumentChecklistType> documentsYouveUploaded;
 
     @CCD(
         label = "Add document",
