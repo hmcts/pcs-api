@@ -47,6 +47,8 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class LegalRepresentativePartyLinkServiceTest {
 
+    private static final String LEGAL_REP_EMAIL = "solicitor@example.com";
+
     @InjectMocks
     private LegalRepresentativePartyLinkService legalRepresentativePartyLinkService;
 
@@ -116,6 +118,7 @@ class LegalRepresentativePartyLinkServiceTest {
             caseReference,
             partyId.toString(),
             userUid,
+            LEGAL_REP_EMAIL,
             organisationDetails
         );
 
@@ -171,6 +174,7 @@ class LegalRepresentativePartyLinkServiceTest {
             caseReference,
             partyId.toString(),
             userUid,
+            LEGAL_REP_EMAIL,
             organisationDetails
         );
 
@@ -231,6 +235,7 @@ class LegalRepresentativePartyLinkServiceTest {
             caseReference,
             partyId.toString(),
             userUid,
+            LEGAL_REP_EMAIL,
             organisationDetails
         );
 
@@ -295,6 +300,7 @@ class LegalRepresentativePartyLinkServiceTest {
             caseReference,
             partyId.toString(),
             userUid,
+            LEGAL_REP_EMAIL,
             organisationDetails
         );
 
@@ -331,6 +337,7 @@ class LegalRepresentativePartyLinkServiceTest {
             caseReference,
             partyId.toString(),
             userUid,
+            LEGAL_REP_EMAIL,
             organisationDetails
         )).isInstanceOf(LegalRepresentativeAlreadyLinkedToPartyException.class)
             .hasMessage("Legal Representative or organisation already linked to Party [" + partyId + "]");
@@ -369,6 +376,7 @@ class LegalRepresentativePartyLinkServiceTest {
             caseReference,
             partyId.toString(),
             userUid,
+            LEGAL_REP_EMAIL,
             organisationDetails
         )).isInstanceOf(PartyNotFoundException.class)
             .hasMessage("Unable to find Party with Id [" + partyId + "]");
@@ -406,6 +414,7 @@ class LegalRepresentativePartyLinkServiceTest {
             caseReference,
             partyId.toString(),
             userUid,
+            LEGAL_REP_EMAIL,
             organisationDetails
         )).isInstanceOf(PartyNotFoundException.class)
             .hasMessage("Unable to find Party with Id [" + partyId + "]");
@@ -461,7 +470,7 @@ class LegalRepresentativePartyLinkServiceTest {
 
         // when
         legalRepresentativePartyLinkService.linkLegalRepresentativeToParty(caseReference, partyId.toString(), userUid,
-                                                                           organisationDetails);
+                                                                           LEGAL_REP_EMAIL, organisationDetails);
 
         // then
         verify(legalRepresentativeRepository, times(2))
@@ -529,7 +538,7 @@ class LegalRepresentativePartyLinkServiceTest {
 
         // when
         legalRepresentativePartyLinkService.linkLegalRepresentativeToParty(caseReference, partyId.toString(), userUid,
-                                                                           organisationDetails);
+                                                                           LEGAL_REP_EMAIL, organisationDetails);
 
         // then
         verify(legalRepresentativeRepository, times(1))

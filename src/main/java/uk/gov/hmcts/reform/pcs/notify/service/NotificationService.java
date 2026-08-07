@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
@@ -161,6 +162,20 @@ public class NotificationService {
             EmailTemplate.NOTICE_OF_CHANGE_COMPLETED,
             NotificationClaimType.NOTICE_OF_CHANGE,
             notificationPersonalisationFactory.noticeOfChangeCompleted(defendant, defendant.getPcsCase())
+        );
+    }
+
+    public EmailNotificationResponse sendNoticeOfChangeCompleteLegalRepEmailNotification(
+        String legalRepEmail,
+        LegalRepresentativeEntity legalRepresentative,
+        PartyEntity representedDefendant
+    ) {
+        return sendEmail(
+            legalRepresentativeRecipient(legalRepEmail, representedDefendant),
+            EmailTemplate.NOTICE_OF_CHANGE_COMPLETE_LEGAL_REP,
+            NotificationClaimType.NOTICE_OF_CHANGE,
+            notificationPersonalisationFactory.noticeOfChangeCompleteLegalRep(
+                legalRepresentative, representedDefendant)
         );
     }
 
@@ -466,6 +481,18 @@ public class NotificationService {
             claim.getPcsCase(),
             claim,
             PartyRole.CLAIMANT
+        );
+    }
+
+    private NotificationRecipient legalRepresentativeRecipient(String email, PartyEntity representedDefendant) {
+        PcsCaseEntity pcsCase = representedDefendant.getPcsCase();
+
+        return new NotificationRecipient(
+            email,
+            representedDefendant,
+            pcsCase,
+            pcsCase.getClaims().getFirst(),
+            null
         );
     }
 

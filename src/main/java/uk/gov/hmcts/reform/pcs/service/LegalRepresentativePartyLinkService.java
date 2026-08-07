@@ -44,6 +44,7 @@ public class LegalRepresentativePartyLinkService {
 
     @Transactional
     public void linkLegalRepresentativeToParty(long caseReference, String partyId, UUID idamId,
+                                               String legalRepEmail,
                                                OrganisationDetailsResponse organisationDetails) {
         String organisationId = organisationDetails.getOrganisationIdentifier();
         if (isAlreadyLinkedToParty(idamId, partyId, organisationId)) {
@@ -86,6 +87,8 @@ public class LegalRepresentativePartyLinkService {
         legalRepresentativeRepository.save(legalRepresentative);
         revokeDefendantAccessForRepresentedParty(caseReference, defendantPartyEntity);
         notificationService.sendNoticeOfChangeCompletedEmailNotification(defendantPartyEntity);
+        notificationService.sendNoticeOfChangeCompleteLegalRepEmailNotification(
+            legalRepEmail, legalRepresentative, defendantPartyEntity);
     }
 
     private void revokeDefendantAccessForRepresentedParty(long caseReference, PartyEntity defendantPartyEntity) {
