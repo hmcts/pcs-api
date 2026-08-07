@@ -48,6 +48,7 @@ import uk.gov.hmcts.reform.pcs.testingsupport.model.PartyEmail;
 import uk.gov.hmcts.reform.pcs.testingsupport.model.TestingSupportAccessCode;
 import uk.gov.hmcts.reform.pcs.testingsupport.service.CcdTestCaseOrchestrator;
 
+import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -512,7 +513,7 @@ class TestingSupportControllerTest {
     void shouldRescheduleCamundaRequest() {
         // Given
         when(clock.now()).thenReturn(Instant.now());
-        when(jdbcTemplate.query(anyString(), any(RowMapper.class), any(Instant.class)))
+        when(jdbcTemplate.query(anyString(), any(RowMapper.class), any(Timestamp.class)))
             .thenReturn(List.of("db-task-id"));
 
         // When
@@ -542,7 +543,7 @@ class TestingSupportControllerTest {
     void shouldHandleRescheduleCamundaRequestFailure() {
         // Given
         when(clock.now()).thenReturn(Instant.now());
-        when(jdbcTemplate.query(anyString(), any(RowMapper.class), any(Instant.class)))
+        when(jdbcTemplate.query(anyString(), any(RowMapper.class), any(Timestamp.class)))
             .thenReturn(List.of("db-task-id"));
 
         doThrow(new RuntimeException("Scheduler failure")).when(schedulerClient)

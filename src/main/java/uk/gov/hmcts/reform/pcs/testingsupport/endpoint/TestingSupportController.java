@@ -58,6 +58,7 @@ import uk.gov.hmcts.reform.pcs.service.LegalRepresentativePartyLinkService;
 import uk.gov.hmcts.reform.pcs.testingsupport.model.PartyEmail;
 import uk.gov.hmcts.reform.pcs.testingsupport.service.CcdTestCaseOrchestrator;
 
+import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.HashMap;
@@ -556,7 +557,7 @@ public class TestingSupportController {
                     WHERE task_name = 'camunda-request-task' and execution_time <= ?
                 """,
                 (rs, rowNum) -> rs.getString("task_instance"),
-                settableClock.now()
+                Timestamp.from(settableClock.now())
             );
 
             for (String taskId : taskIds) {
