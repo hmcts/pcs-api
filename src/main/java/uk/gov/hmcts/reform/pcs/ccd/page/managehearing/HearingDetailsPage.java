@@ -47,12 +47,9 @@ public class HearingDetailsPage implements CcdPageConfiguration, CcdPage {
             .label(
                 "hearingLocationHeading",
                 "<span class=\"form-label ng-star-inserted "
-                    + "govuk-!-font-weight-bold govuk-!-margin-bottom-1\">"
-                    + "Hearing location:</span>"
-            )
-            .label(
-                "hearingLocationbody",
-                "<span class=\"form-label ng-star-inserted govuk-!-font-weight-regular\">${hearingLocation}</span>"
+                    + "govuk-!-font-weight-bold govuk-!-margin-bottom-1\">Hearing location:</span>"
+                    + "<span class=\"form-label ng-star-inserted govuk-!-font-weight-regular "
+                    + "govuk-!-margin-top-0\">${hearingLocation}</span>"
             )
             .complex(PCSCase::getHearing)
             .mandatory(Hearing::getType)
