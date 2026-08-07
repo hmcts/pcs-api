@@ -754,9 +754,16 @@ public class PCSCase {
     )
     private CaseStateOption targetState;
 
+    @CCD(
+        label = "Add document",
+        hint = "Upload a document to the system",
+        searchable = false
+    )
+    private Document uploadSingleDocument;
+
     @JsonProperty("TTL")
     @CCD(
-        typeOverride = FieldType.TTL
+            typeOverride = FieldType.TTL
     )
     private TTL ttl;
 }
