@@ -3,9 +3,12 @@ import { performAction } from '@utils/controller-caseManagement';
 import { IAction, actionData, actionRecord } from '@utils/interfaces/action.interface';
 import {
   addReviewDates, changeCaseState, enterGenappApplication, enterGenAppapplicationFee,
-  enterGenAppConsentAndNotice, enterGenAppHearingDate, enterGenAppUploadGeneralApplication, selectDocument
+  enterGenAppConsentAndNotice, enterGenAppHearingDate, selectDocument, uploadADocument,
+  enterGenAppUploadGeneralApplication
 } from '@data/page-data-figma/page-data-caseManagement-figma';
 import { allPartyDetails } from './caseManagement.action';
+import { CaseManagementCommonUtils } from './caseManagementUtils.action';
+import { defendantUserDetails } from '../createCaseAPI.action';
 
 export class ErrorValidationAction implements IAction {
   async execute(page: Page, action: string, errorFlag: string | actionRecord, roles?: actionData): Promise<void> {
@@ -16,6 +19,7 @@ export class ErrorValidationAction implements IAction {
       ['errorValidationEnterGeneralAppPage', () => this.errorValidationEnterGeneralAppPage(errorFlag as string)],
       ['errorValidationHearingDatePage', () => this.errorValidationHearingDatePage(errorFlag as string)],
       ['errorValidationApplicationFeePage', () => this.errorValidationApplicationFeePage(errorFlag as string)],
+      ['errorValidationUploadADocumentPage', () => this.errorValidationUploadADocumentPage(errorFlag as string)],
       ['errorValidationApplicationConsentAndNotice', () => this.errorValidationApplicationConsentAndNotice(errorFlag as string)],
       ['errorValidationUploadGenAppsFile', () => this.errorValidationUploadGenAppsFile(errorFlag as string)],
     ]);
@@ -185,6 +189,50 @@ export class ErrorValidationAction implements IAction {
 
     }
   }
+
+  private async errorValidationUploadADocumentPage(validationReq: string) {
+    let appType = CaseManagementCommonUtils.getGenApplicationType(defendantUserDetails.length)[0];
+    if (validationReq === 'YES') {
+      await performAction('inputErrorValidation', {
+        validationType: uploadADocument.errorValidationType.eight,
+        inputArray: uploadADocument.errorValidationField.errorUploadADocument,
+        button: uploadADocument.continueButton
+      });
+      await performAction('inputErrorValidation', {
+        validationType: uploadADocument.errorValidationType.two,
+        inputArray: uploadADocument.errorValidationField.errorRadioOption1,
+        question: uploadADocument.whichAppOrCounterClaimThisRelateToQuestion,
+        option: uploadADocument.notRelatedToAppRadioOption,
+        button: uploadADocument.continueButton
+      });
+      await performAction('inputErrorValidation', {
+        validationType: uploadADocument.errorValidationType.four,
+        inputArray: uploadADocument.errorValidationField.errorDropDown,
+        dropQn: uploadADocument.whichTypeOfDocHiddenQuestion,
+        option: uploadADocument.whichTypeHiddenOption,
+        button: uploadADocument.continueButton
+      });
+      await performAction('inputErrorValidation', {
+        validationType: uploadADocument.errorValidationType.five,
+        inputArray: uploadADocument.errorValidationField.errorDateField,
+        header: enterGenappApplication.eventCouldNotBeCreatedErrorMessageHeader,
+        header1: uploadADocument.thereIsProbErrorMessageHeader,
+        question: uploadADocument.addIssueDateTextLabel,
+        label1: enterGenappApplication.dayTextLabel,
+        label2: enterGenappApplication.monthTextLabel,
+        label3: enterGenappApplication.yearTextLabel,
+        button: enterGenappApplication.continueButton
+      });
+      await performAction('inputErrorValidation', {
+        validationType: uploadADocument.errorValidationType.two,
+        inputArray: uploadADocument.errorValidationField.errorRadioOption2,
+        question: uploadADocument.partyDocRelatedToQuestion,
+        option: appType,
+        button: uploadADocument.continueButton
+      });
+    }
+  }
+
   private async errorValidationApplicationConsentAndNotice(validationReq: string) {
     if (validationReq === 'YES') {
       await performAction('inputErrorValidation', {

@@ -9,6 +9,8 @@ export default {
   'enterGenApphearingDate': 'enterGenApphearingDate',
   'enterGenAppapplicationFee': 'enterGenAppapplicationFee',
   'enterGenAppconsentAndNotice': 'enterGenAppconsentAndNotice',
+  'caseworkerUploadDocumentsuploadADocument': 'uploadADocument',
+  'caseworkerUploadDocuments/confirm' : 'confirmUpload',
   'enterGenAppuploadGeneralApplication': 'enterGenAppuploadGeneralApplication',
   'enterGenAppuploadRelatedEvidence': 'enterGenAppUploadRelatedEvidence',
   'enterGenAppreferApplicationToJudge': 'enterGenAppPreferApplicationToJudge',
