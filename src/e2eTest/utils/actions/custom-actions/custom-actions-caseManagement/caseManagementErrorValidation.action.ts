@@ -3,7 +3,8 @@ import { performAction } from '@utils/controller-caseManagement';
 import { IAction, actionData, actionRecord } from '@utils/interfaces/action.interface';
 import {
   addReviewDates, changeCaseState, enterGenappApplication, enterGenAppapplicationFee,
-  enterGenAppConsentAndNotice, enterGenAppHearingDate, selectDocument, uploadADocument
+  enterGenAppConsentAndNotice, enterGenAppHearingDate, selectDocument, uploadADocument,
+  enterGenAppUploadGeneralApplication
 } from '@data/page-data-figma/page-data-caseManagement-figma';
 import { allPartyDetails } from './caseManagement.action';
 import { CaseManagementCommonUtils } from './caseManagementUtils.action';
@@ -20,6 +21,7 @@ export class ErrorValidationAction implements IAction {
       ['errorValidationApplicationFeePage', () => this.errorValidationApplicationFeePage(errorFlag as string)],
       ['errorValidationUploadADocumentPage', () => this.errorValidationUploadADocumentPage(errorFlag as string)],
       ['errorValidationApplicationConsentAndNotice', () => this.errorValidationApplicationConsentAndNotice(errorFlag as string)],
+      ['errorValidationUploadGenAppsFile', () => this.errorValidationUploadGenAppsFile(errorFlag as string)],
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -250,4 +252,14 @@ export class ErrorValidationAction implements IAction {
 
     }
   }
+  private async errorValidationUploadGenAppsFile(validationReq: string) {
+    if (validationReq === 'YES') {
+      await performAction('inputErrorValidation', {
+        validationType: enterGenAppUploadGeneralApplication.errorValidationType.eight,
+        inputArray: enterGenAppUploadGeneralApplication.errorValidationField.errorUploadADocument,
+        button: enterGenAppUploadGeneralApplication.continueButton
+      });
+    }
+  }
+
 }

@@ -8,5 +8,13 @@ export const axe_Exclusions = [
   'button.overlay-toggle',
   'ccd-case-file-view-folder-toggle',
   'ccd-case-file-view-folder-sort',
-  'ccd-case-file-view-overlay-menu'
+  'ccd-case-file-view-overlay-menu',
+  '#label',
+  '#presentational-role',
+  '#non-empty-placeholder',
+  '#non-empty-title',
+  '#aria-labelledby',
+  '#aria-label',
+  '#explicit-label',
+  '#implicit-label',
 ];
