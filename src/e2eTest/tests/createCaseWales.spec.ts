@@ -175,15 +175,15 @@ test.describe('[Create Case - Wales]', async () => {
       file: ['inspectionOrReport.pdf'],
     })
     await performAction('clickButton', uploadRequiredDocumentsWales.continueButton);
-    await performAction('selectDocumentsYouVeUploadedCheckList', {
-      uploadedDocuments: ['Energy performance certificate',
-        'Current gas safety report',
-        'Current Electrical Installation Condition Report (EICR)']
-    });
     await performValidation('mainHeader', wantToUploadDocuments.mainHeader);
     await performAction('wantToUploadDocuments', {
       question: wantToUploadDocuments.uploadAnyAdditionalDocumentsQuestion,
       option: wantToUploadDocuments.noRadioOption
+    });
+    await performAction('selectDocumentsYouVeUploadedCheckList', {
+      uploadedDocuments: ['Energy performance certificate',
+        'Current gas safety report',
+        'Current Electrical Installation Condition Report (EICR)']
     });
     await performAction('selectApplications', generalApplication.yesRadioOption);
     await performValidation('mainHeader', claimLanguageUsed.mainHeader);
@@ -316,15 +316,15 @@ test.describe('[Create Case - Wales]', async () => {
       file: ['inspectionOrReport.pdf'],
     })
     await performAction('clickButton', uploadRequiredDocumentsWales.continueButton);
-    await performAction('selectDocumentsYouVeUploadedCheckList', {
-      uploadedDocuments: ['Energy performance certificate',
-        'Current gas safety report',
-        'Current Electrical Installation Condition Report (EICR)']
-    });
     await performValidation('mainHeader', wantToUploadDocuments.mainHeader);
     await performAction('wantToUploadDocuments', {
       question: wantToUploadDocuments.uploadAnyAdditionalDocumentsQuestion,
       option: wantToUploadDocuments.noRadioOption
+    });
+    await performAction('selectDocumentsYouVeUploadedCheckList', {
+      uploadedDocuments: ['Energy performance certificate',
+        'Current gas safety report',
+        'Current Electrical Installation Condition Report (EICR)']
     });
     await performAction('selectApplications', generalApplication.yesRadioOption);
     await performValidation('mainHeader', claimLanguageUsed.mainHeader);
@@ -454,15 +454,15 @@ test.describe('[Create Case - Wales]', async () => {
       file: ['inspectionOrReport.pdf'],
     })
     await performAction('clickButton', uploadRequiredDocumentsWales.continueButton);
-    await performAction('selectDocumentsYouVeUploadedCheckList', {
-      uploadedDocuments: ['Energy performance certificate',
-        'Current gas safety report',
-        'Current Electrical Installation Condition Report (EICR)']
-    });
     await performValidation('mainHeader', wantToUploadDocuments.mainHeader);
     await performAction('wantToUploadDocuments', {
       question: wantToUploadDocuments.uploadAnyAdditionalDocumentsQuestion,
       option: wantToUploadDocuments.noRadioOption
+    });
+    await performAction('selectDocumentsYouVeUploadedCheckList', {
+      uploadedDocuments: ['Energy performance certificate',
+        'Current gas safety report',
+        'Current Electrical Installation Condition Report (EICR)']
     });
     await performAction('selectApplications', generalApplication.yesRadioOption);
     await performValidation('mainHeader', claimLanguageUsed.mainHeader);
@@ -582,15 +582,15 @@ test.describe('[Create Case - Wales]', async () => {
       file: ['inspectionOrReport.pdf'],
     })
     await performAction('clickButton', uploadRequiredDocumentsWales.continueButton);
-    await performAction('selectDocumentsYouVeUploadedCheckList', {
-      uploadedDocuments: ['Energy performance certificate',
-        'Current gas safety report',
-        'Current Electrical Installation Condition Report (EICR)']
-    });
     await performValidation('mainHeader', wantToUploadDocuments.mainHeader);
     await performAction('wantToUploadDocuments', {
       question: wantToUploadDocuments.uploadAnyAdditionalDocumentsQuestion,
       option: wantToUploadDocuments.noRadioOption
+    });
+    await performAction('selectDocumentsYouVeUploadedCheckList', {
+      uploadedDocuments: ['Energy performance certificate',
+        'Current gas safety report',
+        'Current Electrical Installation Condition Report (EICR)']
     });
     await performAction('selectApplications', generalApplication.yesRadioOption);
     await performValidation('mainHeader', claimLanguageUsed.mainHeader);
@@ -613,7 +613,7 @@ test.describe('[Create Case - Wales]', async () => {
     await performAction('submitAddressCheckYourAnswers');
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
-    await performAction('provideMoreDetailsOfClaim');
+    //await performAction('provideMoreDetailsOfClaim');
     await performAction('selectClaimantName', claimantInformation.yesRadioOption);
     await performValidation('mainHeader', claimantType.mainHeader);
     await performAction('selectClaimantType', claimantType.walesCommunityLandlordDynamicRadioOption);
@@ -726,15 +726,15 @@ test.describe('[Create Case - Wales]', async () => {
       file: ['inspectionOrReport.pdf'],
     })
     await performAction('clickButton', uploadRequiredDocumentsWales.continueButton);
-    await performAction('selectDocumentsYouVeUploadedCheckList', {
-      uploadedDocuments: ['Energy performance certificate',
-        'Current gas safety report',
-        'Current Electrical Installation Condition Report (EICR)']
-    });
     await performValidation('mainHeader', wantToUploadDocuments.mainHeader);
     await performAction('wantToUploadDocuments', {
       question: wantToUploadDocuments.uploadAnyAdditionalDocumentsQuestion,
       option: wantToUploadDocuments.noRadioOption
+    });
+    await performAction('selectDocumentsYouVeUploadedCheckList', {
+      uploadedDocuments: ['Energy performance certificate',
+        'Current gas safety report',
+        'Current Electrical Installation Condition Report (EICR)']
     });
     await performAction('selectApplications', generalApplication.yesRadioOption);
     await performValidation('mainHeader', claimLanguageUsed.mainHeader);
@@ -857,15 +857,15 @@ test.describe('[Create Case - Wales]', async () => {
       file: ['inspectionOrReport.pdf'],
     })
     await performAction('clickButton', uploadRequiredDocumentsWales.continueButton);
-    await performAction('selectDocumentsYouVeUploadedCheckList', {
-      uploadedDocuments: ['Energy performance certificate',
-        'Current gas safety report',
-        'Current Electrical Installation Condition Report (EICR)']
-    });
     await performValidation('mainHeader', wantToUploadDocuments.mainHeader);
     await performAction('wantToUploadDocuments', {
       question: wantToUploadDocuments.uploadAnyAdditionalDocumentsQuestion,
       option: wantToUploadDocuments.noRadioOption
+    });
+    await performAction('selectDocumentsYouVeUploadedCheckList', {
+      uploadedDocuments: ['Energy performance certificate',
+        'Current gas safety report',
+        'Current Electrical Installation Condition Report (EICR)']
     });
     await performAction('selectApplications', generalApplication.yesRadioOption);
     await performValidation('mainHeader', claimLanguageUsed.mainHeader);
@@ -992,15 +992,15 @@ test.describe('[Create Case - Wales]', async () => {
       file: ['inspectionOrReport.pdf'],
     })
     await performAction('clickButton', uploadRequiredDocumentsWales.continueButton);
-    await performAction('selectDocumentsYouVeUploadedCheckList', {
-      uploadedDocuments: ['Energy performance certificate',
-        'Current gas safety report',
-        'Current Electrical Installation Condition Report (EICR)']
-    });
     await performValidation('mainHeader', wantToUploadDocuments.mainHeader);
     await performAction('wantToUploadDocuments', {
       question: wantToUploadDocuments.uploadAnyAdditionalDocumentsQuestion,
       option: wantToUploadDocuments.noRadioOption
+    });
+    await performAction('selectDocumentsYouVeUploadedCheckList', {
+      uploadedDocuments: ['Energy performance certificate',
+        'Current gas safety report',
+        'Current Electrical Installation Condition Report (EICR)']
     });
     await performAction('selectApplications', generalApplication.yesRadioOption);
     await performValidation('mainHeader', claimLanguageUsed.mainHeader);

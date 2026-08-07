@@ -128,7 +128,7 @@ export class CreateCaseWalesAction extends CreateCaseAction implements IAction {
 
     if (Array.isArray(documents.uploadedDocuments)) {
       for (const document of documents.uploadedDocuments) {
-        await performAction('clickCheckbox', { label: document });
+        await performAction('check', { label: document });
       }
     } else {
       throw new Error('uploadedDocuments must be an array');
