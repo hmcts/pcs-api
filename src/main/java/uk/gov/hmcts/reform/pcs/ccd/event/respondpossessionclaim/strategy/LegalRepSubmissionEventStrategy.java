@@ -126,14 +126,14 @@ public class LegalRepSubmissionEventStrategy implements RespondPossessionClaimSu
                 legalRepresentativeOrganisationEntity,
                 pcsCaseEntity,
                 defendantResponse
-            );
+        );
     }
 
     private void sendCounterClaimNoPaymentRequiredNotification(
         LegalRepresentativeOrganisationEntity legalRepresentativeOrganisationEntity,
         PcsCaseEntity pcsCaseEntity, DefendantResponseEntity defendantResponse) {
         notificationService
-            .sendDefendantResponseConfirmationToLegalRepresentativePaymentRequired(
+            .sendDefendantResponseConfirmationToLegalRepresentativeNoPaymentRequired(
                 legalRepresentativeOrganisationEntity, pcsCaseEntity, defendantResponse);
     }
 
@@ -141,7 +141,7 @@ public class LegalRepSubmissionEventStrategy implements RespondPossessionClaimSu
         LegalRepresentativeOrganisationEntity legalRepresentativeOrganisationEntity,
         PcsCaseEntity pcsCaseEntity, DefendantResponseEntity defendantResponse) {
         notificationService
-            .sendDefendantResponseConfirmationToLegalRepresentativeNoPaymentRequired(
+            .sendDefendantResponseConfirmationToLegalRepresentativePaymentRequired(
                 legalRepresentativeOrganisationEntity, pcsCaseEntity, defendantResponse);
     }
 
@@ -159,7 +159,7 @@ public class LegalRepSubmissionEventStrategy implements RespondPossessionClaimSu
                 () ->
                     sendNoCounterClaimNotification(
                         legalRepresentativeOrganisationEntity, pcsCaseEntity, defendantResponse)
-            );
+        );
     }
 
     private void sendCounterClaimNotification(CounterClaimEntity counterClaimEntity,
