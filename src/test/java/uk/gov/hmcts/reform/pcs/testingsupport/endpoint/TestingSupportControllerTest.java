@@ -2,11 +2,9 @@ package uk.gov.hmcts.reform.pcs.testingsupport.endpoint;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.kagkarlsson.scheduler.Scheduler;
 import com.github.kagkarlsson.scheduler.SchedulerClient;
 import com.github.kagkarlsson.scheduler.task.Task;
 import com.github.kagkarlsson.scheduler.task.TaskInstance;
-import com.github.kagkarlsson.scheduler.testhelper.SettableClock;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -110,8 +108,6 @@ class TestingSupportControllerTest {
     private AccessCodeGenerationService accessCodeGenerationService;
     @Mock
     private FeatureToggleService featureToggleService;
-    @Mock
-    private SettableClock clock;
 
     private TestingSupportController underTest;
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -508,7 +504,6 @@ class TestingSupportControllerTest {
     @Test
     void shouldRescheduleCamundaRequest() {
         // Given
-        when(clock.now()).thenReturn(Instant.now());
         when(jdbcTemplate.query(anyString(), any(RowMapper.class), any(Timestamp.class)))
             .thenReturn(List.of("db-task-id"));
 
@@ -538,7 +533,6 @@ class TestingSupportControllerTest {
     @Test
     void shouldHandleRescheduleCamundaRequestFailure() {
         // Given
-        when(clock.now()).thenReturn(Instant.now());
         when(jdbcTemplate.query(anyString(), any(RowMapper.class), any(Timestamp.class)))
             .thenReturn(List.of("db-task-id"));
 
