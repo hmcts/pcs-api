@@ -57,7 +57,6 @@ import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.PossessionClai
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.RespondPossessionClaimSubmitService;
 import uk.gov.hmcts.reform.pcs.ccd.util.SelectedPartyRetriever;
 import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
-import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.PaymentService;

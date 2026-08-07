@@ -21,6 +21,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ContactPreferencesEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
@@ -94,6 +95,18 @@ class NotificationServiceTest {
 
     @Mock
     private NotificationPersonalisationFactory notificationPersonalisationFactory;
+
+    @Mock
+    private LegalRepresentativeEntity legalRepresentativeEntity;
+
+    @Mock
+    private PcsCaseEntity pcsCaseEntity;
+
+    @Mock
+    private PartyEntity legalRepresentativePartyEntity;
+
+    @Mock
+    private DefendantResponseEntity defendantResponseEntity;
 
     @Captor
     private ArgumentCaptor<SchedulableInstance<SendEmailTaskData>> schedulableInstanceCaptor;
