@@ -585,6 +585,7 @@ tasks.withType(CftlibExec).configureEach {
   // Point XUI's location reference data (orgServices - needed before the case-linking
   // reasons are fetched) at the local wiremock stub
   environment 'SERVICES_LOCATION_REF_API_URL', 'http://host.docker.internal:8083'
+  environment 'RSE_LIB_XUI_ENV_DECENTRALISED_CASE_TYPE_CONFIG', '{"PCS":{"webUrl":"http://localhost:3209","nocBaseUrl":"http://host.docker.internal:3206"}}'
 
   // wa-task-management-api overrides
   environment 'IDAM_SECURITY_ALLOWED_ISSUER_0', 'http://localhost:5062/o'
