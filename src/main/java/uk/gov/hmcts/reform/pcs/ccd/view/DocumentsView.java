@@ -85,6 +85,7 @@ public class DocumentsView {
                 || documentEntity.getDescription().trim().isEmpty();
     }
 
+
     private boolean isNotInCaseDetailsTab(DocumentEntity documentEntity) {
         List<DocumentType> caseDetailsDocuments = List.of(
             DocumentType.TENANCY_AGREEMENT,
