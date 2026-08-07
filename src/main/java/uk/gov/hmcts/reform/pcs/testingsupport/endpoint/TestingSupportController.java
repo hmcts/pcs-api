@@ -595,7 +595,8 @@ public class TestingSupportController {
             settableClock.tick(Duration.ofDays(days));
             settableClock.tick(Duration.ofHours(hours));
             settableClock.tick(Duration.ofMinutes(minutes));
-            return ResponseEntity.ok("Clock set successfully");
+            log.info("Clock set to {}", settableClock.now());
+            return ResponseEntity.ok("Clock set successfully to " + settableClock.now());
         } catch (Exception e) {
             log.error("Failed to reschedule Camunda request task", e);
             return ResponseEntity.internalServerError()
