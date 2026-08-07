@@ -11,7 +11,8 @@ import {performActions} from "@utils/controller";
 import {
   addReviewDates, confirmReviewDatesAdded, changeCaseState, confirmCaseStateChange, enterGenappApplication, enterGenAppapplicationFee,
   enterGenAppConsentAndNotice, enterGenAppHearingDate,
-  enterGenAppPreferApplicationToJudge, selectDocument
+  enterGenAppPreferApplicationToJudge, selectDocument,
+  manageHearing
 } from '@data/page-data-figma/page-data-caseManagement-figma';
 import { caseInfo } from '../createCaseAPI.action';
 import { CaseManagementCommonUtils } from './caseManagementUtils.action';
@@ -42,6 +43,7 @@ export class CaseManagementAction implements IAction {
       ['enterApplicationFeeDetails', () => this.enterApplicationFeeDetails(fieldName as actionRecord)],
       ['enterApplicationConsentAndNotice', () => this.enterApplicationConsentAndNotice(fieldName as actionRecord)],
       ['verifyReferToJudge', () => this.verifyReferToJudge(fieldName as actionRecord)],
+      ['selectManageHearing', () => this.selectManageHearing(fieldName as actionRecord)],
       ['inputErrorValidation', () => this.inputErrorValidation(page, fieldName as actionRecord)],
 
     ]);
@@ -257,6 +259,19 @@ export class CaseManagementAction implements IAction {
     });
     await performValidation('mainHeader', enterGenAppPreferApplicationToJudge.mainHeader);
     await performAction('reTryOnCallBackError', enterGenAppPreferApplicationToJudge.continueButton, referToJudgeData.nextPage as string);
+  }
+
+  private async selectManageHearing(manageHearingOption: actionRecord) {
+    await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid});
+    await performValidation('text', {
+      elementType: 'paragraph',
+      text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
+    });
+    await performAction('clickRadioButton', {
+      question: manageHearingOption.question,
+      option: manageHearingOption.option,
+    });
+    await performAction('reTryOnCallBackError', manageHearing.continueButton, manageHearingOption.nextPage as string);
   }
 
   private async inputErrorValidation(page: Page, validationArr: actionRecord) {
