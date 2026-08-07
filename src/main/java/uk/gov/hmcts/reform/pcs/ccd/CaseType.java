@@ -197,7 +197,7 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
             .accessMandatory(false)
             .accessDefault(false)
             .display(true)
-            .description("Can manage all cases associated with this organisation")
+            .description("Can manage all cases associated with this organisation as claimant")
             .hintText("Assign to Users to enable access to all cases associated with this organisation")
             .displayOrder(3)
             .liveTo("01/01/2027");
