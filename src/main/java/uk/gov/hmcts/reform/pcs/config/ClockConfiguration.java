@@ -1,11 +1,9 @@
 package uk.gov.hmcts.reform.pcs.config;
 
-import com.github.kagkarlsson.scheduler.testhelper.SettableClock;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import java.time.Clock;
-import java.time.Instant;
 import java.time.ZoneId;
 
 @Configuration
