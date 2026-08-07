@@ -421,6 +421,8 @@ public class DocumentService {
                 WITHOUT_NOTICE_ORDER,
                 NOTICE_OF_ALLOCATION_TO_TRACK ->
                 Optional.of(CaseFileCategory.ORDERS_AND_NOTICE_OF_HEARINGS);
+            case GENERAL_APPLICATION ->
+                Optional.of(CaseFileCategory.APPLICATIONS);
             case NOTICE_SERVED,
                  POLICE_REPORT,
                  // Defendant access-code letters aren't shown on the case file
