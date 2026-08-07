@@ -112,8 +112,6 @@ class TestingSupportControllerTest {
     private FeatureToggleService featureToggleService;
     @Mock
     private SettableClock clock;
-    @Mock
-    private Scheduler scheduler;
 
     private TestingSupportController underTest;
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -130,9 +128,7 @@ class TestingSupportControllerTest {
                                                  organisationDetailsService,
                                                  pcsCaseService,
                                                  accessCodeGenerationService,
-                                                 featureToggleService,
-                                                 clock,
-                                                 scheduler
+                                                 featureToggleService
         );
     }
 

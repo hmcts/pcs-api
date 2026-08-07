@@ -23,11 +23,4 @@ public class ClockConfiguration {
         return Clock.system(UK_ZONE_ID);
     }
 
-    @Bean
-    public SettableClock settableClock() {
-        SettableClock settableClock = new SettableClock();
-        settableClock.set(Instant.now());
-        return settableClock;
-    }
-
 }

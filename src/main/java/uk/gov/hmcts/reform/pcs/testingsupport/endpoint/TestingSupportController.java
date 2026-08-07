@@ -98,8 +98,6 @@ public class TestingSupportController {
     private final PcsCaseService pcsCaseService;
     private final AccessCodeGenerationService accessCodeGenerationService;
     private final FeatureToggleService featureToggleService;
-    private final SettableClock settableClock;
-    private final Scheduler scheduler;
 
     @Operation(
         summary = "Schedule a Hello World task",
@@ -545,10 +543,9 @@ public class TestingSupportController {
         @RequestHeader(value = "ServiceAuthorization") String serviceAuthorization) {
         try {
 
-            settableClock.tick(Duration.ofDays(days)
+            Instant taskTriggerTime = Instant.now().plus(Duration.ofDays(days)
                                    .plusHours(hours)
                                    .plusMinutes(minutes));
-            log.info("Clock set to {}", settableClock.now());
 
             List<String> taskIds = jdbcTemplate.query(
                 """
@@ -563,7 +560,7 @@ public class TestingSupportController {
             for (String taskId : taskIds) {
                 schedulerClient.reschedule(
                     CAMUNDA_REQUEST_TASK_DESCRIPTOR.instance(taskId).build(),
-                    Instant.now()
+                    taskTriggerTime
                 );
 
                 log.info("Rescheduled Camunda request task with ID: {}", taskId);
