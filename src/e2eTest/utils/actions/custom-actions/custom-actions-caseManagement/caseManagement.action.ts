@@ -14,6 +14,8 @@ import {
 import { caseInfo } from '../createCaseAPI.action';
 import { CaseManagementCommonUtils } from './caseManagementUtils.action';
 import path from "path";
+import {performActions} from "@utils/controller";
+import {generateRandomString} from "@utils/common/string.utils";
 
 
 export const addressInfo = {
@@ -43,7 +45,7 @@ export class CaseManagementAction implements IAction {
       ['uploadRelativeEvidence',() => this.uploadRelativeEvidence(fieldName as actionRecord)],
       ['uploadADocument',() => this.uploadADocument(page, fieldName as actionRecord)],
       ['verifyReferToJudge', () => this.verifyReferToJudge(fieldName as actionRecord)],
-      ['verifyGenAppConfirm', () => this.verifyGenAppConfirm(fieldName as actionRecord)],
+      ['verifyGenAppConfirm', () => this.verifyGenAppConfirm()],
       ['inputErrorValidation', () => this.inputErrorValidation(page, fieldName as actionRecord)],
 
     ]);
@@ -246,7 +248,7 @@ export class CaseManagementAction implements IAction {
     }
     await performAction('reTryOnCallBackError', enterGenAppConsentAndNotice.continueButton, confirmApplicationConsent.nextPage as string);
   }
-  
+
   private async uploadADocument(page: Page, upload: actionRecord): Promise<void> {
     const fileInput = page.locator('input[type="file"].form-control.bottom-30');
     const filePath = path.resolve(__dirname, '../../../../data/inputFiles', upload.file as string);
@@ -290,7 +292,7 @@ export class CaseManagementAction implements IAction {
     await performAction('reTryOnCallBackError', enterGenAppPreferApplicationToJudge.continueButton, referToJudgeData.nextPage as string);
   }
 
-  private async verifyGenAppConfirm(p0: actionRecord): Promise<void> {
+  private async verifyGenAppConfirm(): Promise<void> {
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', {
       elementType: 'paragraph',
@@ -306,7 +308,7 @@ export class CaseManagementAction implements IAction {
     await performAction('clickButton', enterGenAppConfirmation.closeAndReturnToCaseOverviewButton);
   }
 
-  
+
   private async inputErrorValidation(page: Page, validationArr: actionRecord) {
     if (Array.isArray(validationArr.inputArray)) {
       for (const item of validationArr.inputArray) {
@@ -415,14 +417,6 @@ export class CaseManagementAction implements IAction {
               await performAction('clickButton', validationArr.button);
               //await performValidation('errorMessage', { header: !validationArr?.header ? validationArr.header = 'The event could not be created' : validationArr.header, message: item.errMessage });
               await performValidation('inputError', validationArr.label, item.errMessage);
-            }).toPass({
-              timeout: VERY_LONG_TIMEOUT,
-            });
-            break;
-          case 'uploadADocument':
-            await expect(async () => {
-              await performAction('clickButton', validationArr.button);
-              await performValidation('errorMessage', !validationArr?.header ? validationArr.header = 'There is a problem' : validationArr.header, item.errMessage);
             }).toPass({
               timeout: VERY_LONG_TIMEOUT,
             });
