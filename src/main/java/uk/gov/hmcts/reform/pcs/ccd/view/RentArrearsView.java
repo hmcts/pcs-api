@@ -65,6 +65,7 @@ public class RentArrearsView {
                     .filename(documentEntity.getFileName())
                     .binaryUrl(documentEntity.getBinaryUrl())
                     .categoryId(documentEntity.getCategoryId())
+                    .uploadTimestamp(DocumentViewUtil.uploadTimestamp(documentEntity))
                     .build()
             ).build();
     }
