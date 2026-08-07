@@ -559,15 +559,6 @@ class TestingSupportControllerTest {
         assertThat(response.getBody()).contains("Scheduler failure");
     }
 
-    @Test
-    void shouldAddTimeToClock() {
-        // When
-        underTest.addTime(1, 2, 3, SERVICE_AUTH_TOKEN);
-
-        // Then
-        verify(clock).tick(Duration.ofDays(1).plusHours(2).plusMinutes(3));
-    }
-
     @Nested
     @DisplayName("Set party email")
     class SetPartyEmailTests {

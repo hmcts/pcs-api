@@ -534,7 +534,7 @@ public class TestingSupportController {
         @RequestParam(value = "days", defaultValue = "0") int days,
         @Parameter(
             description = "Hours to add to current time (default: 0)",
-            example = "10"
+            example = "2"
         )
         @RequestParam(value = "hours", defaultValue = "0") int hours,
         @Parameter(
@@ -570,54 +570,6 @@ public class TestingSupportController {
             }
 
             return ResponseEntity.ok("Camunda request rescheduled successfully");
-        } catch (Exception e) {
-            log.error("Failed to reschedule Camunda request task", e);
-            return ResponseEntity.internalServerError()
-                .body("Failed to reschedule Camunda request task: " + e.getMessage());
-        }
-    }
-
-    @Operation(
-        summary = "Add to time to system clock",
-        description = "Add time to system clock to trigger db schedular tasks"
-    )
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Camunda request tasks rescheduled successfully"),
-        @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing authorization token"),
-        @ApiResponse(responseCode = "403", description = "Forbidden - Invalid or missing service authorization token"),
-        @ApiResponse(responseCode = "500", description = "Internal server error")
-    })
-    @PostMapping("/add-time")
-    public ResponseEntity<String> addTime(
-        @Parameter(
-            description = "Days to add to current time (default: 0)",
-            example = "1"
-        )
-        @RequestParam(value = "days", defaultValue = "0") int days,
-        @Parameter(
-            description = "Hours to add to current time (default: 0)",
-            example = "2"
-        )
-        @RequestParam(value = "minutes", defaultValue = "0") int hours,
-        @Parameter(
-            description = "Minutes to add to current time (default: 0)",
-            example = "10"
-        )
-        @RequestParam(value = "minutes", defaultValue = "0") int minutes,
-        @Parameter(
-            description = "Service-to-Service (S2S) authorization token",
-            example = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-            required = true
-        )
-        @RequestHeader(value = "ServiceAuthorization") String serviceAuthorization) {
-        try {
-            settableClock.tick(Duration.ofDays(days)
-                                   .plusHours(hours)
-                                   .plusMinutes(minutes));
-            log.info("Clock set to {}", settableClock.now());
-
-            scheduler.triggerCheckForDueExecutions();
-            return ResponseEntity.ok("Clock set successfully to " + settableClock.now());
         } catch (Exception e) {
             log.error("Failed to reschedule Camunda request task", e);
             return ResponseEntity.internalServerError()
