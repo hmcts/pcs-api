@@ -554,7 +554,7 @@ public class TestingSupportController {
                     WHERE task_name = 'camunda-request-task' and execution_time <= ?
                 """,
                 (rs, rowNum) -> rs.getString("task_instance"),
-                Timestamp.from(settableClock.now())
+                Timestamp.from(taskTriggerTime)
             );
 
             for (String taskId : taskIds) {
