@@ -25,6 +25,20 @@ public interface LegalRepresentativeOrganisationRepository extends JpaRepository
         @Param("partyId") UUID partyId);
 
     @Query("""
+        SELECT lro
+        FROM LegalRepresentativeOrganisationEntity lro
+        JOIN lro.partyLegalRepresentativeOrganisationList plro
+        JOIN plro.party p
+        JOIN p.pcsCase pcsCase
+        WHERE p.id = :partyId
+        AND pcsCase.caseReference = :caseReference
+        AND plro.active = 'YES'
+        """)
+    Optional<LegalRepresentativeOrganisationEntity> findByPartyLinkedToLegalRepresentativeOrganisationAndCaseAndActive(
+        @Param("partyId") UUID partyId,
+        @Param("caseReference") long caseReference);
+
+    @Query("""
         SELECT COUNT(lro) > 0
         FROM LegalRepresentativeOrganisationEntity lro
         JOIN lro.partyLegalRepresentativeOrganisationList plro
