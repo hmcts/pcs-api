@@ -174,12 +174,12 @@ test.describe('[Create Case - Wales]', async () => {
       input: uploadRequiredDocumentsWales.currentEICRTextInput,
       file: ['inspectionOrReport.pdf'],
     })
+    await performAction('clickButton', uploadRequiredDocumentsWales.continueButton);
     await performAction('selectDocumentsYouVeUploadedCheckList', {
       uploadedDocuments: ['Energy performance certificate',
-          'Current gas safety report',
-          'Current Electrical Installation Condition Report (EICR)']
+        'Current gas safety report',
+        'Current Electrical Installation Condition Report (EICR)']
     });
-    await performAction('clickButton', uploadRequiredDocumentsWales.continueButton);
     await performValidation('mainHeader', wantToUploadDocuments.mainHeader);
     await performAction('wantToUploadDocuments', {
       question: wantToUploadDocuments.uploadAnyAdditionalDocumentsQuestion,
@@ -315,12 +315,12 @@ test.describe('[Create Case - Wales]', async () => {
       input: uploadRequiredDocumentsWales.currentEICRTextInput,
       file: ['inspectionOrReport.pdf'],
     })
+    await performAction('clickButton', uploadRequiredDocumentsWales.continueButton);
     await performAction('selectDocumentsYouVeUploadedCheckList', {
       uploadedDocuments: ['Energy performance certificate',
         'Current gas safety report',
         'Current Electrical Installation Condition Report (EICR)']
     });
-    await performAction('clickButton', uploadRequiredDocumentsWales.continueButton);
     await performValidation('mainHeader', wantToUploadDocuments.mainHeader);
     await performAction('wantToUploadDocuments', {
       question: wantToUploadDocuments.uploadAnyAdditionalDocumentsQuestion,
@@ -453,12 +453,12 @@ test.describe('[Create Case - Wales]', async () => {
       input: uploadRequiredDocumentsWales.currentEICRTextInput,
       file: ['inspectionOrReport.pdf'],
     })
+    await performAction('clickButton', uploadRequiredDocumentsWales.continueButton);
     await performAction('selectDocumentsYouVeUploadedCheckList', {
       uploadedDocuments: ['Energy performance certificate',
         'Current gas safety report',
         'Current Electrical Installation Condition Report (EICR)']
     });
-    await performAction('clickButton', uploadRequiredDocumentsWales.continueButton);
     await performValidation('mainHeader', wantToUploadDocuments.mainHeader);
     await performAction('wantToUploadDocuments', {
       question: wantToUploadDocuments.uploadAnyAdditionalDocumentsQuestion,
@@ -581,12 +581,12 @@ test.describe('[Create Case - Wales]', async () => {
       input: uploadRequiredDocumentsWales.currentEICRTextInput,
       file: ['inspectionOrReport.pdf'],
     })
+    await performAction('clickButton', uploadRequiredDocumentsWales.continueButton);
     await performAction('selectDocumentsYouVeUploadedCheckList', {
       uploadedDocuments: ['Energy performance certificate',
         'Current gas safety report',
         'Current Electrical Installation Condition Report (EICR)']
     });
-    await performAction('clickButton', uploadRequiredDocumentsWales.continueButton);
     await performValidation('mainHeader', wantToUploadDocuments.mainHeader);
     await performAction('wantToUploadDocuments', {
       question: wantToUploadDocuments.uploadAnyAdditionalDocumentsQuestion,
@@ -725,12 +725,12 @@ test.describe('[Create Case - Wales]', async () => {
       input: uploadRequiredDocumentsWales.currentEICRTextInput,
       file: ['inspectionOrReport.pdf'],
     })
+    await performAction('clickButton', uploadRequiredDocumentsWales.continueButton);
     await performAction('selectDocumentsYouVeUploadedCheckList', {
       uploadedDocuments: ['Energy performance certificate',
         'Current gas safety report',
         'Current Electrical Installation Condition Report (EICR)']
     });
-    await performAction('clickButton', uploadRequiredDocumentsWales.continueButton);
     await performValidation('mainHeader', wantToUploadDocuments.mainHeader);
     await performAction('wantToUploadDocuments', {
       question: wantToUploadDocuments.uploadAnyAdditionalDocumentsQuestion,
@@ -856,12 +856,12 @@ test.describe('[Create Case - Wales]', async () => {
       input: uploadRequiredDocumentsWales.currentEICRTextInput,
       file: ['inspectionOrReport.pdf'],
     })
+    await performAction('clickButton', uploadRequiredDocumentsWales.continueButton);
     await performAction('selectDocumentsYouVeUploadedCheckList', {
       uploadedDocuments: ['Energy performance certificate',
         'Current gas safety report',
         'Current Electrical Installation Condition Report (EICR)']
     });
-    await performAction('clickButton', uploadRequiredDocumentsWales.continueButton);
     await performValidation('mainHeader', wantToUploadDocuments.mainHeader);
     await performAction('wantToUploadDocuments', {
       question: wantToUploadDocuments.uploadAnyAdditionalDocumentsQuestion,
@@ -991,12 +991,12 @@ test.describe('[Create Case - Wales]', async () => {
       input: uploadRequiredDocumentsWales.currentEICRTextInput,
       file: ['inspectionOrReport.pdf'],
     })
+    await performAction('clickButton', uploadRequiredDocumentsWales.continueButton);
     await performAction('selectDocumentsYouVeUploadedCheckList', {
       uploadedDocuments: ['Energy performance certificate',
         'Current gas safety report',
         'Current Electrical Installation Condition Report (EICR)']
     });
-    await performAction('clickButton', uploadRequiredDocumentsWales.continueButton);
     await performValidation('mainHeader', wantToUploadDocuments.mainHeader);
     await performAction('wantToUploadDocuments', {
       question: wantToUploadDocuments.uploadAnyAdditionalDocumentsQuestion,
