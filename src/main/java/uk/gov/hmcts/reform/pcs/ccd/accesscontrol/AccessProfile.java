@@ -22,10 +22,10 @@ public enum AccessProfile implements HasRole {
     PCS_CASE_WORKER("caseworker-pcs", Set.of(R)),
     PCS_SOLICITOR("caseworker-pcs-solicitor", CRU),
 
-    JUDGE("judge", CRU),
-    FEE_PAID_JUDGE("fee-paid-judge", CRU),
-    CIRCUIT_JUDGE("circuit-judge", CRU),
-    LEADERSHIP_JUDGE("leadership-judge", CRU),
+    JUDGE("judge", Set.of(R)),
+    FEE_PAID_JUDGE("fee-paid-judge", Set.of(R)),
+    CIRCUIT_JUDGE("circuit-judge", Set.of(R)),
+    LEADERSHIP_JUDGE("leadership-judge", Set.of(R)),
     CTSC_TEAM_LEADER("ctsc-team-leader", Permission.CRU),
     CTSC_ADMIN("ctsc", Permission.CRU),
     HEARING_CENTRE_TEAM_LEADER("hearing-centre-team-leader", Permission.CRU),
@@ -33,7 +33,8 @@ public enum AccessProfile implements HasRole {
     WLU_TEAM_LEADER("wlu-team-leader", Permission.CRU),
     WLU_ADMIN("wlu-admin", Permission.CRU),
     GS_PROFILE("GS_profile", Set.of(R)),
-    SYSTEM_USER("pcs-system-update", CRU);
+    SYSTEM_USER("pcs-system-update", CRU),
+    ORGANISATION_CASE_ACCESS_ADMINISTRATOR("caseworker-caa", CRU);
 
 
     @JsonValue
