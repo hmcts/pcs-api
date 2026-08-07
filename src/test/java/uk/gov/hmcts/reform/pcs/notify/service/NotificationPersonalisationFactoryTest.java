@@ -7,19 +7,24 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantInformation;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
+import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
+import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.BasePersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.ClaimantBasePersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.CounterclaimPaymentSuccessPersonalisation;
+import uk.gov.hmcts.reform.pcs.notify.template.personalisation.NoticeOfChangeCompletedPersonalisation;
 
 import java.util.Map;
 import java.util.UUID;
@@ -38,6 +43,8 @@ class NotificationPersonalisationFactoryTest {
     private PartyService partyService;
     @Mock(strictness = LENIENT)
     private PcsCaseEntity pcsCaseEntity;
+    @Mock(strictness = LENIENT)
+    private AddressMapper addressMapper;
 
     private NotificationPersonalisationFactory factory;
 
@@ -45,7 +52,7 @@ class NotificationPersonalisationFactoryTest {
     void setUp() {
         when(pcsCaseEntity.getCaseReference()).thenReturn(CASE_REFERENCE);
 
-        factory = new NotificationPersonalisationFactory(partyService);
+        factory = new NotificationPersonalisationFactory(partyService, new AddressFormatter(), addressMapper);
     }
 
     @Nested
@@ -307,6 +314,49 @@ class NotificationPersonalisationFactoryTest {
                 .containsEntry("primaryDefendantName", "JOHN DOE");
         }
 
+    }
+
+    @Nested
+    @DisplayName("noticeOfChangeCompleted")
+    class NoticeOfChangeCompletedTests {
+
+        @Test
+        @DisplayName("Should include base fields and the formatted property address")
+        void shouldIncludeFormattedPropertyAddress() {
+            stubClaimantParty();
+            stubDefendantParty();
+
+            AddressEntity propertyAddress = new AddressEntity();
+            when(pcsCaseEntity.getPropertyAddress()).thenReturn(propertyAddress);
+            when(addressMapper.toAddressUK(propertyAddress)).thenReturn(AddressUK.builder()
+                .addressLine1("10 Example Street")
+                .postTown("Example Town")
+                .postCode("EX1 2AB")
+                .build());
+
+            PartyEntity partyEntity = createParty("Another", "Party");
+            NoticeOfChangeCompletedPersonalisation result =
+                factory.noticeOfChangeCompleted(partyEntity, pcsCaseEntity);
+
+            assertThat(result.toMap())
+                .containsEntry("firstName", "Another")
+                .containsEntry("caseNumber", "1234-5678-90")
+                .containsEntry("claimantName", "JANE SMITH")
+                .containsEntry("primaryDefendantName", "JOHN DOE")
+                .containsEntry("address", "10 Example Street, Example Town, EX1 2AB");
+        }
+
+        @Test
+        @DisplayName("Should use an empty address when the case has no property address")
+        void shouldUseEmptyAddressWhenPropertyAddressIsNull() {
+            stubClaimantParty();
+            stubDefendantParty();
+            when(pcsCaseEntity.getPropertyAddress()).thenReturn(null);
+
+            PartyEntity partyEntity = createParty("Another", "Party");
+            assertThat(factory.noticeOfChangeCompleted(partyEntity, pcsCaseEntity).toMap())
+                .containsEntry("address", "");
+        }
     }
 
     @Nested

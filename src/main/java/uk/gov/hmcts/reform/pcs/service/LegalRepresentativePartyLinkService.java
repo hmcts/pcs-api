@@ -20,6 +20,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 import uk.gov.hmcts.reform.pcs.exception.LegalRepresentativeAlreadyLinkedToPartyException;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
+import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
 import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationDetailsService;
 
@@ -39,6 +40,7 @@ public class LegalRepresentativePartyLinkService {
     private final OrganisationDetailsService organisationDetailsService;
     private final AddressMapper addressMapper;
     private final CaseRoleAssignmentService caseRoleAssignmentService;
+    private final NotificationService notificationService;
 
     @Transactional
     public void linkLegalRepresentativeToParty(long caseReference, String partyId, UUID idamId,
@@ -83,6 +85,7 @@ public class LegalRepresentativePartyLinkService {
 
         legalRepresentativeRepository.save(legalRepresentative);
         revokeDefendantAccessForRepresentedParty(caseReference, defendantPartyEntity);
+        notificationService.sendNoticeOfChangeCompletedEmailNotification(defendantPartyEntity);
     }
 
     private void revokeDefendantAccessForRepresentedParty(long caseReference, PartyEntity defendantPartyEntity) {
