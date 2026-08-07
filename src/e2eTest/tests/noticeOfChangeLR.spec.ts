@@ -12,6 +12,9 @@ import { home } from '@data/page-data';
 import {noc} from "@data/page-data-figma/page-data-legalRepresentative/noc.page.data";
 import {clientDetails} from "@data/page-data-figma/page-data-legalRepresentative/clientDetails.page.data";
 import {checkAndSubmit} from "@data/page-data-figma/page-data-legalRepresentative/checkAndSubmit.page.data";
+import {
+  noticeOfChangeSuccessful
+} from "@data/page-data-figma/page-data-legalRepresentative/noticeOfChangeSuccessful.page.data";
 
 
 test.use({ storageState: undefined })
@@ -94,13 +97,14 @@ test.describe('Make an Application - LR - e2e Journey @nightly', async () => {
     await performValidation('text', { elementType: 'link', text: checkAndSubmit.tickTheBoxErrorMessage });
   });
 
-  test('Notice of change - Content Validation - LR @noticeOfChange' , async () => {
+  test('Notice of change - Content Validation - LR @noticeOfChange' , async ({ page }) => {
     await performValidation('text', { elementType: 'heading', text: noc.mainHeader });
     await performValidation('text', { elementType: 'paragraph', text: noc.youCanUseThisNoticeParagraph });
     await performValidation('text', { elementType: 'listItem', text: noc.aClientActingInPersonListItem });
     await performValidation('text', { elementType: 'listItem', text: noc.aLegalRepresentativeListItem });
     await performValidation('text', { elementType: 'hintText', text: noc.thisIsHintText });
     await performAction('noticeOfChange', { caseRefNo: caseInfo.id } );
+
 
     await performValidation('text', { elementType: 'heading', text: clientDetails.mainHeader });
     await performValidation('text', { elementType: 'paragraph', text: clientDetails.youMustEnterParagraph });
@@ -109,8 +113,23 @@ test.describe('Make an Application - LR - e2e Journey @nightly', async () => {
     await performValidation('text', { elementType: 'heading', text: checkAndSubmit.mainHeader });
     await performValidation('text', { elementType: 'paragraph', text: checkAndSubmit.afterYouSubmitParagraph });
     await performValidation('text', { elementType: 'tableElement', text: checkAndSubmit.requestTableElement });
-
+    await performValidation('text', { elementType: 'tableElement', text: checkAndSubmit.caseNumberTableElement });
+    await performValidation('text', { elementType: 'tableElement', text: checkAndSubmit.clientFirstNameTableElement });
+    await performValidation('text', { elementType: 'tableElement', text: checkAndSubmit.clientLastNameTableElement });
+    await performValidation('text', { elementType: 'subHeading', text: checkAndSubmit.notificationsHeader });
+    await performValidation('text', { elementType: 'paragraph', text: checkAndSubmit.ifTheClientParagraph });
+    await performValidation('text', { elementType: 'tableElement', text: checkAndSubmit.afterYouSubmitParagraph });
     await performAction('checkAndSubmit', { caseRefNo: caseInfo.id, firstName: 'Peter' , lastName: 'Parker' } );
+
     await performAction('noticeOfChangeSuccessful', { caseRefNo: caseInfo.fid } );
+    await performValidation('text', { elementType: 'subHeading', text: noticeOfChangeSuccessful.whatHappensNextHeading });
+    await performValidation('text', { elementType: 'paragraph', text: noticeOfChangeSuccessful.ifTheClientHadParagraph });
+    await performValidation('text', { elementType: 'paragraph', text: noticeOfChangeSuccessful.thisCaseWillNowParagraph });
+    await performValidation('text', { elementType: 'warningText',text: noticeOfChangeSuccessful.youShouldNowAmendWarningText });
+    await performValidation('text', { elementType: 'paragraph', text: noticeOfChangeSuccessful.youMustNowInformParagraph });
+    await performValidation('text', { elementType: 'paragraph', text: noticeOfChangeSuccessful.thisIsNewOnlineProcessParagraph });
+    await performValidation('text', { elementType: 'link', text: noticeOfChangeSuccessful.viewCaseListLink });
+    await performValidation('text', { elementType: 'link', text: noticeOfChangeSuccessful.viewThisCaseLink });
+
   });
 });
