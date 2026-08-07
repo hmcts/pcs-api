@@ -198,7 +198,6 @@ public class ApiSteps {
                 .queryParam("issueAndGenerateAccessCodes", issueAndGenerateAccessCodes)
                 .when()
                 .post(Endpoints.CreateTestCase.getResource());
-
             if (response.statusCode() == 201) {
                 return response.then().extract().path("caseId");
             }
@@ -312,11 +311,11 @@ public class ApiSteps {
         }
     }
 
-    @Step("retrieving internal case id from ccd data store")
-    public String getInternalCaseId(Long caseReference) {
+    @Step("retrieving internal details from ccd data store")
+    public Map<String,String> getInternalCaseDetails(Long caseReference) {
         String dataStoreUrl = System.getenv("DATA_STORE_URL_BASE");
         //NB: event permissions don't apply for this call, any valid IDAM token can be used
-        String liveCaseNoteToken = SerenityRest.given()
+        Response response = SerenityRest.given()
             .baseUri(dataStoreUrl)
             .header(TestConstants.AUTHORIZATION, "Bearer " + citizenUserIdamToken)
             .header(TestConstants.SERVICE_AUTHORIZATION, pcsApiS2sToken)
@@ -327,10 +326,38 @@ public class ApiSteps {
             .then()
             .statusCode(200)
             .extract()
+            .response();
+        String liveCaseNoteToken = response.jsonPath().getString("token");
+        String caseVersion = response.jsonPath().getString("case_details.version");
+        DecodedJWT decodedJWT = JWT.decode(liveCaseNoteToken);
+        String caseId = decodedJWT.getClaim("case-id").asString();
+
+        return Map.of(
+            "case-id", caseId,
+            "case-version", caseVersion
+        );
+    }
+
+    @Step("As citizen validate resumePossessionClaim submit request")
+    public String validateResumePossessionClaimAsCitizen(Long caseReference, Object body) {
+        String dataStoreUrl = System.getenv("DATA_STORE_URL_BASE");
+        String acceptVal = "application/vnd.uk.gov.hmcts.ccd-data-store-api.case-data-validate.v2+json;charset=UTF-8";
+        String result = SerenityRest.given()
+            .baseUri(dataStoreUrl)
+            .header(TestConstants.AUTHORIZATION, "Bearer " + citizenUserIdamToken)
+            .header(TestConstants.SERVICE_AUTHORIZATION, pcsApiS2sToken)
+            .header("Experimental", "True")
+            .header("Accept",acceptVal)
+            .header("Content-Type","application/json")
+            .body(body)
+            .when()
+            .post("/case-types/PCS/validate?pageId=respondPossessionClaimrespondToPossessionDraftSavePage")
+            .then()
+            .statusCode(200)
+            .extract()
             .path("token");
 
-        DecodedJWT decodedJWT = JWT.decode(liveCaseNoteToken);
-        return decodedJWT.getClaim("case-id").asString();
+        return result;
     }
 
 }
