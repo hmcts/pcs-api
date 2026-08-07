@@ -3,7 +3,11 @@ package uk.gov.hmcts.reform.pcs.ccd.service;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import uk.gov.hmcts.ccd.sdk.SystemCaseEvent;
+import uk.gov.hmcts.ccd.sdk.SystemCaseEventOutcome;
+import uk.gov.hmcts.ccd.sdk.SystemCaseEventService;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -22,6 +26,7 @@ import java.util.UUID;
 public class AccessCodeGenerationService {
 
     private final DefendantAccessCodeService defendantAccessCodeService;
+    private final SystemCaseEventService systemCaseEventService;
 
     public void createAccessCodesForParties(String caseReference, boolean finalAttempt) {
         long caseReferenceNumber = Long.parseLong(caseReference);
@@ -33,8 +38,17 @@ public class AccessCodeGenerationService {
         for (UUID defendantPartyId : defendantPartyIds) {
             try {
                 // synchronous single-shot: this call is its own first attempt
-                defendantAccessCodeService.generateForDefendant(caseReferenceNumber, defendantPartyId,
-                                                                true, finalAttempt);
+                systemCaseEventService.submit(
+                    caseReferenceNumber,
+                    new SystemCaseEvent("testAccessCodeGenerated", "Test access code generated"),
+                    idempotencyKey(caseReferenceNumber, defendantPartyId),
+                    context -> {
+                        defendantAccessCodeService.generateForDefendant(
+                            caseReferenceNumber, defendantPartyId, true, finalAttempt
+                        );
+                        return SystemCaseEventOutcome.noStateChange();
+                    }
+                );
             } catch (Exception e) {
                 failedDefendantPartyIds.add(defendantPartyId);
             }
@@ -49,5 +63,12 @@ public class AccessCodeGenerationService {
             log.debug("Generated {} defendant access-code letter(s) for parties {} on case {}",
                       defendantPartyIds.size(), defendantPartyIds, caseReference);
         }
+    }
+
+    private UUID idempotencyKey(long caseReference, UUID partyId) {
+        return UUID.nameUUIDFromBytes(
+            ("pcs:test-access-code-generated:" + caseReference + ":" + partyId)
+                .getBytes(StandardCharsets.UTF_8)
+        );
     }
 }

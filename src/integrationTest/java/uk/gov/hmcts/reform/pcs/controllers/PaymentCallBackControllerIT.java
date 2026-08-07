@@ -2,7 +2,6 @@ package uk.gov.hmcts.reform.pcs.controllers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.transaction.Transactional;
 import org.instancio.Instancio;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -13,10 +12,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import uk.gov.hmcts.reform.payments.client.models.FeeDto;
+import uk.gov.hmcts.reform.authorisation.validators.AuthTokenValidator;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
@@ -69,8 +70,12 @@ public class PaymentCallBackControllerIT extends AbstractPostgresContainerIT {
     private CaseCreationHelper caseCreationHelper;
     @Autowired
     private FeePaymentRepository feePaymentRepository;
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
     @MockitoBean
     private PaymentCallbackStrategyFactory paymentCallbackStrategyFactory;
+    @MockitoBean
+    private AuthTokenValidator serviceAuthTokenValidator;
     @Mock
     private PaymentCallbackStrategy pretendStrategy;
 
@@ -96,11 +101,12 @@ public class PaymentCallBackControllerIT extends AbstractPostgresContainerIT {
             .build();
 
         Mockito.when(paymentCallbackStrategyFactory.getStrategy(any())).thenReturn(pretendStrategy);
+        Mockito.when(serviceAuthTokenValidator.getServiceName("Bearer " + SERVICE_AUTH_HEADER))
+            .thenReturn("payment_app");
         establishFeePayment(serviceCaseReference);
     }
 
     @Test
-    @Transactional
     void shouldProcessPaymentCallback() throws Exception {
         // Given
         PaymentStatusCallback paymentStatusCallback = Instancio.create(PaymentStatusCallback.class);
@@ -122,6 +128,16 @@ public class PaymentCallBackControllerIT extends AbstractPostgresContainerIT {
         assertThat(byRequestReference.isPresent()).isTrue();
         FeePaymentEntity feePaymentEntity = byRequestReference.get();
         assertThat(feePaymentEntity.getPaymentStatus()).isEqualTo(PaymentStatus.PAID);
+        assertThat(jdbcTemplate.queryForObject("""
+            select count(*)
+            from ccd.audit_log audit
+            join ccd.case_event event on event.id = audit.case_event_id
+            where event.event_id = 'feePaymentStatusUpdated'
+              and event.user_id = 'system:payment_app'
+              and event.proxied_by = 'system:pcs-api'
+              and audit.table_name = 'fee_payment'
+              and audit.operation = 'UPDATE'
+            """, Integer.class)).isOne();
     }
 
     PcsCaseEntity establishTestCase() {
@@ -131,6 +147,13 @@ public class PaymentCallBackControllerIT extends AbstractPostgresContainerIT {
 
     void establishFeePayment(String serviceCaseReference) throws JsonProcessingException {
         String asString = objectMapper.writeValueAsString(feesAndPayTaskData);
-        paymentService.saveNewFeePayment(asString, feesAndPayTaskData, claimEntity, serviceCaseReference);
+        caseCreationHelper.runUnaudited(
+            () -> paymentService.saveNewFeePayment(
+                asString,
+                feesAndPayTaskData,
+                claimEntity,
+                serviceCaseReference
+            )
+        );
     }
 }

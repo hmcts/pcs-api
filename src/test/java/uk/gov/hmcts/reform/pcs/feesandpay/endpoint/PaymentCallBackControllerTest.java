@@ -9,6 +9,8 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.ccd.sdk.SystemCaseEventActor;
+import uk.gov.hmcts.reform.authorisation.validators.AuthTokenValidator;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.Payment;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatusCallback;
@@ -18,6 +20,7 @@ import java.math.BigDecimal;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
@@ -27,12 +30,15 @@ class PaymentCallBackControllerTest {
 
     @Mock
     private PaymentService paymentService;
+    @Mock
+    private AuthTokenValidator serviceAuthTokenValidator;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @BeforeEach
     void setUp() {
-        underTest = new PaymentCallBackController(objectMapper, paymentService);
+        underTest = new PaymentCallBackController(objectMapper, paymentService, serviceAuthTokenValidator);
+        lenient().when(serviceAuthTokenValidator.getServiceName("Bearer s2s")).thenReturn("payment_app");
     }
 
     @Test
@@ -60,7 +66,10 @@ class PaymentCallBackControllerTest {
         underTest.processPaymentCallback("s2s", requestBody);
 
         // Then
-        verify(paymentService).processPaymentResponse(any(PaymentStatusCallback.class));
+        verify(paymentService).processPaymentResponse(
+            any(PaymentStatusCallback.class),
+            any(SystemCaseEventActor.Service.class)
+        );
     }
 
     @ParameterizedTest
@@ -86,10 +95,13 @@ class PaymentCallBackControllerTest {
         String requestBody = objectMapper.writeValueAsString(paymentStatusCallback);
 
         // When
-        underTest.processRequestBody(requestBody);
+        underTest.processRequestBody(requestBody, new SystemCaseEventActor.Service("payment_app"));
 
         // Then
-        verify(paymentService).processPaymentResponse(any(PaymentStatusCallback.class));
+        verify(paymentService).processPaymentResponse(
+            any(PaymentStatusCallback.class),
+            any(SystemCaseEventActor.Service.class)
+        );
     }
 
     @Test

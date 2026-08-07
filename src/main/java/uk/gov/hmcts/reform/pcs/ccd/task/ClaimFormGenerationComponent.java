@@ -10,6 +10,9 @@ import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
+import uk.gov.hmcts.ccd.sdk.SystemCaseEvent;
+import uk.gov.hmcts.ccd.sdk.SystemCaseEventOutcome;
+import uk.gov.hmcts.ccd.sdk.SystemCaseEventService;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.GenerationDetails;
 import uk.gov.hmcts.reform.pcs.ccd.model.ClaimFormTaskData;
@@ -17,6 +20,8 @@ import uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimActivityLogService;
 import uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimFormService;
 
 import java.time.Duration;
+import java.nio.charset.StandardCharsets;
+import java.util.UUID;
 
 /**
  * db-scheduler {@code CustomTask} bean for claim form generation. Mirrors
@@ -40,17 +45,20 @@ public class ClaimFormGenerationComponent {
 
     private final ClaimFormService claimFormService;
     private final ClaimActivityLogService claimActivityLogService;
+    private final SystemCaseEventService systemCaseEventService;
     private final int maxRetries;
     private final Duration backoffDelay;
 
     public ClaimFormGenerationComponent(
         ClaimFormService claimFormService,
         ClaimActivityLogService claimActivityLogService,
+        SystemCaseEventService systemCaseEventService,
         @Value("${claim-form.request.max-retries}") int maxRetries,
         @Value("${claim-form.request.backoff-delay-seconds}") Duration backoffDelay
     ) {
         this.claimFormService = claimFormService;
         this.claimActivityLogService = claimActivityLogService;
+        this.systemCaseEventService = systemCaseEventService;
         this.maxRetries = maxRetries;
         this.backoffDelay = backoffDelay;
     }
@@ -109,10 +117,25 @@ public class ClaimFormGenerationComponent {
 
     private void recordGenerationFailure(long caseReference, Exception cause, boolean terminal) {
         try {
-            claimActivityLogService.logGenerationFailure(caseReference,
-                GenerationDetails.forFailure(DocumentType.CLAIM, cause, terminal));
+            systemCaseEventService.submit(
+                caseReference,
+                new SystemCaseEvent("claimFormGenerationFailed", "Claim form generation failed"),
+                failureIdempotencyKey(caseReference, terminal),
+                event -> {
+                    claimActivityLogService.logGenerationFailure(caseReference,
+                        GenerationDetails.forFailure(DocumentType.CLAIM, cause, terminal));
+                    return SystemCaseEventOutcome.noStateChange();
+                }
+            );
         } catch (Exception e) {
             log.error("Failed to record claim form generation failure for case {}", caseReference, e);
         }
+    }
+
+    private UUID failureIdempotencyKey(long caseReference, boolean terminal) {
+        return UUID.nameUUIDFromBytes(
+            ("pcs:claim-form-generation-failed:" + caseReference + ":" + terminal)
+                .getBytes(StandardCharsets.UTF_8)
+        );
     }
 }

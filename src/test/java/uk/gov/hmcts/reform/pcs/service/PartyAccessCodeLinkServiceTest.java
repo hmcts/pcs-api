@@ -7,6 +7,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.ccd.sdk.SystemCaseEventAction;
+import uk.gov.hmcts.ccd.sdk.SystemCaseEventContext;
+import uk.gov.hmcts.ccd.sdk.SystemCaseEventResult;
+import uk.gov.hmcts.ccd.sdk.SystemCaseEventService;
 import uk.gov.hmcts.reform.ccd.client.model.CaseAssignmentUserRolesResponse;
 import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
@@ -26,6 +30,9 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -46,6 +53,9 @@ class PartyAccessCodeLinkServiceTest {
     @Mock
     private CaseRoleAssignmentService caseRoleAssignmentService;
 
+    @Mock
+    private SystemCaseEventService systemCaseEventService;
+
     private static final long CASE_REFERENCE = 123456L;
     private static final String ACCESS_CODE = "ABCD1234";
     private static final UUID USER_ID = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
@@ -55,6 +65,11 @@ class PartyAccessCodeLinkServiceTest {
     @BeforeEach
     void setUp() {
         testUser = createUser();
+        doAnswer(invocation -> {
+            SystemCaseEventAction<Object, Object> action = invocation.getArgument(4);
+            action.execute(new SystemCaseEventContext<>(CASE_REFERENCE, null, null));
+            return new SystemCaseEventResult(CASE_REFERENCE, 1L, false);
+        }).when(systemCaseEventService).submitOnBehalfOf(anyLong(), any(), any(), any(), any());
     }
 
     private UserInfo createUser() {

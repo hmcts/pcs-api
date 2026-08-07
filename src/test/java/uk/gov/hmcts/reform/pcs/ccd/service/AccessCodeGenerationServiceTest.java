@@ -5,6 +5,10 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.ccd.sdk.SystemCaseEventAction;
+import uk.gov.hmcts.ccd.sdk.SystemCaseEventContext;
+import uk.gov.hmcts.ccd.sdk.SystemCaseEventResult;
+import uk.gov.hmcts.ccd.sdk.SystemCaseEventService;
 
 import java.util.List;
 import java.util.UUID;
@@ -15,6 +19,7 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -23,12 +28,19 @@ class AccessCodeGenerationServiceTest {
 
     @Mock
     private DefendantAccessCodeService defendantAccessCodeService;
+    @Mock
+    private SystemCaseEventService systemCaseEventService;
 
     private AccessCodeGenerationService underTest;
 
     @BeforeEach
     void setUp() {
-        underTest = new AccessCodeGenerationService(defendantAccessCodeService);
+        underTest = new AccessCodeGenerationService(defendantAccessCodeService, systemCaseEventService);
+        lenient().doAnswer(invocation -> {
+            SystemCaseEventAction<Object, Object> action = invocation.getArgument(3);
+            action.execute(new SystemCaseEventContext<>(1L, null, null));
+            return new SystemCaseEventResult(1L, 1L, false);
+        }).when(systemCaseEventService).submit(anyLong(), any(), any(), any());
     }
 
     @Test

@@ -26,6 +26,10 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import uk.gov.hmcts.ccd.sdk.SystemCaseEvent;
+import uk.gov.hmcts.ccd.sdk.SystemCaseEventActor;
+import uk.gov.hmcts.ccd.sdk.SystemCaseEventOutcome;
+import uk.gov.hmcts.ccd.sdk.SystemCaseEventService;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
@@ -57,6 +61,7 @@ import uk.gov.hmcts.reform.pcs.testingsupport.model.PartyEmail;
 import uk.gov.hmcts.reform.pcs.testingsupport.service.CcdTestCaseOrchestrator;
 
 import java.time.Instant;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -93,6 +98,7 @@ public class TestingSupportController {
     private final PcsCaseService pcsCaseService;
     private final AccessCodeGenerationService accessCodeGenerationService;
     private final FeatureToggleService featureToggleService;
+    private final SystemCaseEventService systemCaseEventService;
 
     @Operation(
         summary = "Schedule a Hello World task",
@@ -386,8 +392,16 @@ public class TestingSupportController {
      * scheduler (skips defendants that already have a code).
      */
     private void issueCaseAndGenerateAccessCodes(long caseReference) {
-        pcsCaseService.allocateCaseManagementLocation(caseReference);
-        pcsCaseService.setCaseIssuedDate(caseReference);
+        systemCaseEventService.submit(
+            caseReference,
+            new SystemCaseEvent("testCaseIssued", "Test case issued"),
+            idempotencyKey("test-case-issued", String.valueOf(caseReference)),
+            context -> {
+                pcsCaseService.allocateCaseManagementLocation(caseReference);
+                pcsCaseService.setCaseIssuedDate(caseReference);
+                return SystemCaseEventOutcome.noStateChange();
+            }
+        );
         accessCodeGenerationService.createAccessCodesForParties(String.valueOf(caseReference), true);
     }
 
@@ -428,11 +442,20 @@ public class TestingSupportController {
         OrganisationDetailsResponse organisationDetails = organisationDetailsService
             .getOrganisationDetails(userDetails.getUid());
 
-        legalRepresentativePartyLinkService.linkLegalRepresentativeToParty(
+        systemCaseEventService.submitOnBehalfOf(
             caseReference,
-            partyId,
-            userDetails,
-            organisationDetails
+            new SystemCaseEvent("testSolicitorLinked", "Test solicitor linked"),
+            idempotencyKey("test-solicitor-linked", caseReference + ":" + partyId + ":" + userDetails.getUid()),
+            actor(userDetails),
+            context -> {
+                legalRepresentativePartyLinkService.linkLegalRepresentativeToParty(
+                    caseReference,
+                    partyId,
+                    userDetails,
+                    organisationDetails
+                );
+                return SystemCaseEventOutcome.noStateChange();
+            }
         );
         return ResponseEntity.ok().build();
     }
@@ -491,21 +514,50 @@ public class TestingSupportController {
             return ResponseEntity.badRequest().body("Party ID in payload does not match URL");
         }
 
-        PartyEntity partyEntity = partyRepository.findById(partyId)
+        long caseReference = partyRepository.findCaseReferenceById(partyId)
             .orElseThrow(() -> new PartyNotFoundException("No party found for provided ID"));
 
-        partyEntity.setEmailAddress(partyEmail.getEmailAddress());
-        ContactPreferencesEntity contactPreferences = partyEntity.getContactPreferences();
-        if (contactPreferences == null) {
-            contactPreferences = ContactPreferencesEntity.builder().build();
-            partyEntity.setContactPreferences(contactPreferences);
-        }
+        systemCaseEventService.submit(
+            caseReference,
+            new SystemCaseEvent("testPartyContactSet", "Test party contact set"),
+            idempotencyKey("test-party-contact", partyId + ":" + partyEmail.getEmailAddress()),
+            context -> {
+                PartyEntity partyEntity = partyRepository.findById(partyId)
+                    .orElseThrow(() -> new PartyNotFoundException("No party found for provided ID"));
 
-        contactPreferences.setContactByEmail(VerticalYesNo.YES);
+                partyEntity.setEmailAddress(partyEmail.getEmailAddress());
+                ContactPreferencesEntity contactPreferences = partyEntity.getContactPreferences();
+                if (contactPreferences == null) {
+                    contactPreferences = ContactPreferencesEntity.builder().build();
+                    partyEntity.setContactPreferences(contactPreferences);
+                }
 
-        partyRepository.save(partyEntity);
+                contactPreferences.setContactByEmail(VerticalYesNo.YES);
+                partyRepository.save(partyEntity);
+                return SystemCaseEventOutcome.noStateChange();
+            }
+        );
 
         return ResponseEntity.ok().build();
+    }
+
+    private UUID idempotencyKey(String operation, String naturalKey) {
+        return UUID.nameUUIDFromBytes(
+            ("pcs:" + operation + ":" + naturalKey).getBytes(StandardCharsets.UTF_8)
+        );
+    }
+
+    private SystemCaseEventActor actor(UserInfo userInfo) {
+        return new SystemCaseEventActor.IdamUser(
+            new uk.gov.hmcts.reform.idam.client.models.UserInfo(
+                userInfo.getSub(),
+                userInfo.getUid(),
+                userInfo.getName(),
+                userInfo.getGivenName(),
+                userInfo.getFamilyName(),
+                userInfo.getRoles()
+            )
+        );
     }
 
 }

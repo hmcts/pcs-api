@@ -7,5 +7,5 @@ import uk.gov.hmcts.reform.pcs.document.model.defenceform.DefenceFormPayload;
  * itself runs with no transaction and no lazy JPA access — the payload plus the responding
  * defendant's position used in the filename.
  */
-public record DefenceFormRenderContext(DefenceFormPayload payload, int defendantNumber) {
+public record DefenceFormRenderContext(long caseReference, DefenceFormPayload payload, int defendantNumber) {
 }

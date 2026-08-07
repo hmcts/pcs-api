@@ -16,6 +16,10 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.ccd.sdk.SystemCaseEventAction;
+import uk.gov.hmcts.ccd.sdk.SystemCaseEventContext;
+import uk.gov.hmcts.ccd.sdk.SystemCaseEventResult;
+import uk.gov.hmcts.ccd.sdk.SystemCaseEventService;
 import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.GenerationDetails;
 import org.slf4j.LoggerFactory;
 import uk.gov.hmcts.reform.pcs.ccd.model.DefenceFormTaskData;
@@ -33,6 +37,7 @@ import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -52,6 +57,8 @@ class DefenceFormGenerationComponentTest {
 
     @Mock
     private ClaimActivityLogService claimActivityLogService;
+    @Mock
+    private SystemCaseEventService systemCaseEventService;
 
     @Mock
     private TaskInstance<DefenceFormTaskData> taskInstance;
@@ -71,7 +78,12 @@ class DefenceFormGenerationComponentTest {
     @BeforeEach
     void setUp() {
         component = new DefenceFormGenerationComponent(
-            defenceFormService, claimActivityLogService, maxRetries, backoffDelay);
+            defenceFormService, claimActivityLogService, systemCaseEventService, maxRetries, backoffDelay);
+        lenient().doAnswer(invocation -> {
+            SystemCaseEventAction<Object, Object> action = invocation.getArgument(3);
+            action.execute(new SystemCaseEventContext<>(1234567812345678L, null, null));
+            return new SystemCaseEventResult(1234567812345678L, 1L, false);
+        }).when(systemCaseEventService).submit(anyLong(), any(), any(), any());
 
         componentLogger = (Logger) LoggerFactory.getLogger(DefenceFormGenerationComponent.class);
         logAppender = new ListAppender<>();

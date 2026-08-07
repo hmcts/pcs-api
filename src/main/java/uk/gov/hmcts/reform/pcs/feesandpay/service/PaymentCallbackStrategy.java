@@ -7,4 +7,9 @@ public interface PaymentCallbackStrategy {
 
     void handle(PaymentStatusCallback paymentStatusCallback, FeePaymentEntity feePaymentEntity);
 
+    default void afterSystemEvent(PaymentStatusCallback paymentStatusCallback,
+                                  FeePaymentEntity feePaymentEntity) {
+        // Most payment journeys complete entirely inside the system-event transaction.
+    }
+
 }

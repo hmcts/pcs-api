@@ -6,16 +6,22 @@ import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.ccd.sdk.SystemCaseEventAction;
+import uk.gov.hmcts.ccd.sdk.SystemCaseEventContext;
+import uk.gov.hmcts.ccd.sdk.SystemCaseEventResult;
+import uk.gov.hmcts.ccd.sdk.SystemCaseEventService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentImportService;
 import uk.gov.hmcts.reform.pcs.document.model.claimform.ClaimFormPayload;
 
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -33,9 +39,20 @@ class ClaimFormServiceTest {
     private ClaimFormDocumentGenerator documentGenerator;
     @Mock
     private DocumentImportService documentImportService;
+    @Mock
+    private SystemCaseEventService systemCaseEventService;
 
     @InjectMocks
     private ClaimFormService claimFormService;
+
+    @org.junit.jupiter.api.BeforeEach
+    void runSystemEventActions() {
+        lenient().doAnswer(invocation -> {
+            SystemCaseEventAction<Object, Object> action = invocation.getArgument(3);
+            action.execute(new SystemCaseEventContext<>(CASE_REFERENCE, null, null));
+            return new SystemCaseEventResult(CASE_REFERENCE, 1L, false);
+        }).when(systemCaseEventService).submit(anyLong(), any(), any(), any());
+    }
 
     @Test
     void buildsThenRendersOutsideTransactionThenAttaches() {

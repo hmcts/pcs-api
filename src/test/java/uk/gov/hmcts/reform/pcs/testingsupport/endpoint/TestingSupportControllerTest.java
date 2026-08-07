@@ -19,6 +19,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
+import uk.gov.hmcts.ccd.sdk.SystemCaseEventAction;
+import uk.gov.hmcts.ccd.sdk.SystemCaseEventActor;
+import uk.gov.hmcts.ccd.sdk.SystemCaseEventContext;
+import uk.gov.hmcts.ccd.sdk.SystemCaseEventResult;
+import uk.gov.hmcts.ccd.sdk.SystemCaseEventService;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
@@ -59,7 +64,9 @@ import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -106,6 +113,8 @@ class TestingSupportControllerTest {
     private AccessCodeGenerationService accessCodeGenerationService;
     @Mock
     private FeatureToggleService featureToggleService;
+    @Mock
+    private SystemCaseEventService systemCaseEventService;
 
     private TestingSupportController underTest;
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -122,7 +131,20 @@ class TestingSupportControllerTest {
                                                  organisationDetailsService,
                                                  pcsCaseService,
                                                  accessCodeGenerationService,
-                                                 featureToggleService
+                                                 featureToggleService,
+                                                 systemCaseEventService
+        );
+        lenient().doAnswer(invocation -> {
+            SystemCaseEventAction<Object, Object> action = invocation.getArgument(3);
+            action.execute(new SystemCaseEventContext<>(1L, null, null));
+            return new SystemCaseEventResult(1L, 1L, false);
+        }).when(systemCaseEventService).submit(anyLong(), any(), any(), any());
+        lenient().doAnswer(invocation -> {
+            SystemCaseEventAction<Object, Object> action = invocation.getArgument(4);
+            action.execute(new SystemCaseEventContext<>(1L, null, null));
+            return new SystemCaseEventResult(1L, 1L, false);
+        }).when(systemCaseEventService).submitOnBehalfOf(
+            anyLong(), any(), any(), any(SystemCaseEventActor.class), any()
         );
     }
 
@@ -513,6 +535,7 @@ class TestingSupportControllerTest {
                 .build();
 
             PartyEntity partyEntity = mock(PartyEntity.class);
+            when(partyRepository.findCaseReferenceById(partyId)).thenReturn(Optional.of(1234567812345678L));
             when(partyRepository.findById(partyId)).thenReturn(Optional.of(partyEntity));
 
             // When
@@ -560,7 +583,7 @@ class TestingSupportControllerTest {
                 .emailAddress(emailAddress)
                 .build();
 
-            when(partyRepository.findById(partyId)).thenReturn(Optional.empty());
+            when(partyRepository.findCaseReferenceById(partyId)).thenReturn(Optional.empty());
 
             // When
             Throwable throwable = catchThrowable(

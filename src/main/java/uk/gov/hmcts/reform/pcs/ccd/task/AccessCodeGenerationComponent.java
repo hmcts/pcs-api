@@ -10,10 +10,14 @@ import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
+import uk.gov.hmcts.ccd.sdk.SystemCaseEvent;
+import uk.gov.hmcts.ccd.sdk.SystemCaseEventOutcome;
+import uk.gov.hmcts.ccd.sdk.SystemCaseEventService;
 import uk.gov.hmcts.reform.pcs.ccd.model.AccessCodeTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.service.DefendantAccessCodeService;
 
 import java.time.Duration;
+import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
 /**
@@ -40,15 +44,18 @@ public class AccessCodeGenerationComponent {
         TaskDescriptor.of(ACCESS_CODE_GENERATION_TASK_NAME, AccessCodeTaskData.class);
 
     private final DefendantAccessCodeService defendantAccessCodeService;
+    private final SystemCaseEventService systemCaseEventService;
     private final int maxRetries;
     private final Duration backoffDelay;
 
     public AccessCodeGenerationComponent(
         DefendantAccessCodeService defendantAccessCodeService,
+        SystemCaseEventService systemCaseEventService,
         @Value("${access-code.request.max-retries}") int maxRetries,
         @Value("${access-code.request.backoff-delay-seconds}") Duration backoffDelay
     ) {
         this.defendantAccessCodeService = defendantAccessCodeService;
+        this.systemCaseEventService = systemCaseEventService;
         this.maxRetries = maxRetries;
         this.backoffDelay = backoffDelay;
     }
@@ -82,8 +89,17 @@ public class AccessCodeGenerationComponent {
 
                 try {
                     log.debug("Starting access code generation for case: {}", caseReference);
-                    defendantAccessCodeService.generateForDefendant(caseReference, defendantPartyId,
-                                                                    attempt == 1, finalAttempt);
+                    systemCaseEventService.submit(
+                        caseReference,
+                        new SystemCaseEvent("accessCodeGenerated", "Access code generated"),
+                        idempotencyKey(caseReference, defendantPartyId),
+                        context -> {
+                            defendantAccessCodeService.generateForDefendant(
+                                caseReference, defendantPartyId, attempt == 1, finalAttempt
+                            );
+                            return SystemCaseEventOutcome.noStateChange();
+                        }
+                    );
                     log.info("Access code generated for case {} party {}", caseReference, defendantPartyId);
                     return new CompletionHandler.OnCompleteRemove<>();
                 } catch (Exception e) {
@@ -95,6 +111,9 @@ public class AccessCodeGenerationComponent {
                         MDC.put(MDC_FAILURE_REASON, String.valueOf(e.getMessage()));
                         log.error("Access code generation permanently failed for case {} party {} after {} "
                                   + "attempts: {}", caseReference, defendantPartyId, attempt, e.getMessage(), e);
+                    }
+                    if (attempt == 1 || finalAttempt) {
+                        recordGenerationFailure(caseReference, defendantPartyId, e, finalAttempt);
                     }
                     throw e;
                 } finally {
@@ -112,5 +131,36 @@ public class AccessCodeGenerationComponent {
     // the second-to-last attempt, double-recording the failure (HDPI-6478).
     private boolean isFinalAttempt(int attempt) {
         return attempt > maxRetries;
+    }
+
+    private UUID idempotencyKey(long caseReference, UUID partyId) {
+        return UUID.nameUUIDFromBytes(
+            ("pcs:access-code-generated:" + caseReference + ":" + partyId).getBytes(StandardCharsets.UTF_8)
+        );
+    }
+
+    private void recordGenerationFailure(long caseReference, UUID partyId,
+                                         Exception cause, boolean terminal) {
+        try {
+            systemCaseEventService.submit(
+                caseReference,
+                new SystemCaseEvent("accessCodeGenerationFailed", "Access code generation failed"),
+                failureIdempotencyKey(caseReference, partyId, terminal),
+                event -> {
+                    defendantAccessCodeService.recordGenerationFailure(caseReference, partyId, cause, terminal);
+                    return SystemCaseEventOutcome.noStateChange();
+                }
+            );
+        } catch (Exception failureRecordingException) {
+            log.error("Failed to record access code generation failure for case {} party {}",
+                      caseReference, partyId, failureRecordingException);
+        }
+    }
+
+    private UUID failureIdempotencyKey(long caseReference, UUID partyId, boolean terminal) {
+        return UUID.nameUUIDFromBytes(
+            ("pcs:access-code-generation-failed:" + caseReference + ":" + partyId + ":" + terminal)
+                .getBytes(StandardCharsets.UTF_8)
+        );
     }
 }

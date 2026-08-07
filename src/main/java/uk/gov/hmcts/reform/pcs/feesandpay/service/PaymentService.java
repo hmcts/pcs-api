@@ -6,6 +6,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import uk.gov.hmcts.ccd.sdk.SystemCaseEvent;
+import uk.gov.hmcts.ccd.sdk.SystemCaseEventActor;
+import uk.gov.hmcts.ccd.sdk.SystemCaseEventOutcome;
+import uk.gov.hmcts.ccd.sdk.SystemCaseEventService;
 import uk.gov.hmcts.reform.payments.client.PaymentsClient;
 import uk.gov.hmcts.reform.payments.client.models.CasePaymentRequestDto;
 import uk.gov.hmcts.reform.payments.client.models.FeeDto;
@@ -30,7 +34,10 @@ import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatusCallback;
 import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Optional;
+import java.util.UUID;
+import java.util.concurrent.atomic.AtomicReference;
 
 @Slf4j
 @Service
@@ -43,6 +50,7 @@ public class PaymentService {
     private final PcsCaseService pcsCaseService;
     private final PaymentCallbackStrategyFactory paymentCallbackStrategyFactory;
     private final ObjectMapper objectMapper;
+    private final SystemCaseEventService systemCaseEventService;
 
     @Value("${payments.api.callback-url}")
     private String callbackUrl;
@@ -53,7 +61,8 @@ public class PaymentService {
     public PaymentService(PaymentsClient paymentsClient, PaymentRequestMapper paymentRequestMapper,
         @Qualifier("systemUpdateUserTokenProvider") IdamTokenProvider systemUpdateUserTokenProvider,
         FeePaymentRepository feePaymentRepository, PcsCaseService pcsCaseService,
-        PaymentCallbackStrategyFactory paymentCallbackStrategyFactory, ObjectMapper objectMapper) {
+        PaymentCallbackStrategyFactory paymentCallbackStrategyFactory, ObjectMapper objectMapper,
+        SystemCaseEventService systemCaseEventService) {
         this.paymentsClient = paymentsClient;
         this.paymentRequestMapper = paymentRequestMapper;
         this.systemUpdateUserTokenProvider = systemUpdateUserTokenProvider;
@@ -61,6 +70,7 @@ public class PaymentService {
         this.pcsCaseService = pcsCaseService;
         this.paymentCallbackStrategyFactory = paymentCallbackStrategyFactory;
         this.objectMapper = objectMapper;
+        this.systemCaseEventService = systemCaseEventService;
     }
 
     /**
@@ -75,7 +85,6 @@ public class PaymentService {
      * @param feesAndPayTaskData Holds all the details for the payment to be made and stored
      * @return {@link PaymentServiceResponse} containing the service request reference
      */
-    @Transactional
     public PaymentServiceResponse createServiceRequest(FeesAndPayTaskData feesAndPayTaskData) {
         log.info("Building payload for caseReference: {}", feesAndPayTaskData);
         FeeDto feeDto = paymentRequestMapper.toFeeDto(feesAndPayTaskData.getFeeDetails(),
@@ -97,10 +106,18 @@ public class PaymentService {
                  callbackUrl, hmctsOrgId, caseReference);
         PaymentServiceResponse paymentServiceResponse = paymentsClient.createServiceRequest(
             systemUpdateUserTokenProvider.getAuthToken(), requestDto);
-        ClaimEntity claimEntity = retrieveClaimEntity(caseReference);
         log.info("Response received for caseReference: {} - Response : {}", caseReference, paymentServiceResponse);
-        saveNewFeePayment(feesAndPayTaskDataAsString, feesAndPayTaskData, claimEntity,
-                          paymentServiceResponse.getServiceRequestReference());
+        systemCaseEventService.submit(
+            caseReference,
+            new SystemCaseEvent("feePaymentCreated", "Fee payment created"),
+            feePaymentIdempotencyKey(feesAndPayTaskData),
+            context -> {
+                ClaimEntity claimEntity = retrieveClaimEntity(caseReference);
+                saveNewFeePayment(feesAndPayTaskDataAsString, feesAndPayTaskData, claimEntity,
+                                  paymentServiceResponse.getServiceRequestReference());
+                return SystemCaseEventOutcome.noStateChange();
+            }
+        );
         return paymentServiceResponse;
     }
 
@@ -156,10 +173,39 @@ public class PaymentService {
         }
     }
 
-    @Transactional
-    public void processPaymentResponse(PaymentStatusCallback paymentStatusCallback) {
+    public void processPaymentResponse(PaymentStatusCallback paymentStatusCallback, SystemCaseEventActor actor) {
         log.info("PaymentStatusCallback status: {}", paymentStatusCallback.getServiceRequestStatus());
 
+        feePaymentRepository.findCaseReferenceByServiceRequestReference(
+            paymentStatusCallback.getServiceRequestReference()
+        ).ifPresentOrElse(
+            caseReference -> processPaymentResponse(caseReference, paymentStatusCallback, actor),
+            () -> log.error("Unable to find a payment with the service request reference : {}",
+                            paymentStatusCallback.getServiceRequestReference())
+        );
+    }
+
+    private void processPaymentResponse(long caseReference, PaymentStatusCallback paymentStatusCallback,
+                                        SystemCaseEventActor actor) {
+        AtomicReference<PaymentCallbackCompletion> completion = new AtomicReference<>();
+        var result = systemCaseEventService.submitOnBehalfOf(
+            caseReference,
+            new SystemCaseEvent("feePaymentStatusUpdated", "Fee payment status updated"),
+            paymentCallbackIdempotencyKey(paymentStatusCallback),
+            actor,
+            context -> {
+                applyPaymentResponse(paymentStatusCallback, completion);
+                return SystemCaseEventOutcome.noStateChange();
+            }
+        );
+
+        if (!result.replayed() && completion.get() != null) {
+            completion.get().strategy().afterSystemEvent(paymentStatusCallback, completion.get().payment());
+        }
+    }
+
+    private void applyPaymentResponse(PaymentStatusCallback paymentStatusCallback,
+                                      AtomicReference<PaymentCallbackCompletion> completion) {
         getFeePaymentEntity(paymentStatusCallback.getServiceRequestReference())
             .ifPresent(
                 feePaymentEntity -> {
@@ -167,14 +213,35 @@ public class PaymentService {
                     feePaymentEntity
                         .setPaymentStatus(PaymentStatus.fromValue(paymentStatusCallback.getServiceRequestStatus()));
 
-                    callPaymentCallbackHandler(paymentStatusCallback, feePaymentEntity);
+                    PaymentCallbackStrategy strategy = callPaymentCallbackHandler(
+                        paymentStatusCallback, feePaymentEntity
+                    );
 
                     feePaymentRepository.save(feePaymentEntity);
+                    if (strategy != null) {
+                        completion.set(new PaymentCallbackCompletion(strategy, feePaymentEntity));
+                    }
                 });
     }
 
-    private void callPaymentCallbackHandler(PaymentStatusCallback paymentStatusCallback,
-                                            FeePaymentEntity feePaymentEntity) {
+    private UUID feePaymentIdempotencyKey(FeesAndPayTaskData taskData) {
+        return UUID.nameUUIDFromBytes(
+            ("pcs:fee-payment-created:" + taskData.getCaseReference() + ":"
+                + taskData.getPaymentCallbackHandlerType() + ":" + taskData.getRelatedEntityId())
+                .getBytes(StandardCharsets.UTF_8)
+        );
+    }
+
+    private UUID paymentCallbackIdempotencyKey(PaymentStatusCallback callback) {
+        return UUID.nameUUIDFromBytes(
+            ("pcs:fee-payment-status:" + callback.getServiceRequestReference() + ":"
+                + callback.getServiceRequestStatus() + ":" + callback.getPaymentReference())
+                .getBytes(StandardCharsets.UTF_8)
+        );
+    }
+
+    private PaymentCallbackStrategy callPaymentCallbackHandler(PaymentStatusCallback paymentStatusCallback,
+                                                               FeePaymentEntity feePaymentEntity) {
 
         PaymentCallbackStrategy paymentCallbackStrategy = paymentCallbackStrategyFactory
             .getStrategy(feePaymentEntity.getPaymentCallbackHandlerType());
@@ -184,6 +251,7 @@ public class PaymentService {
         } else {
             log.warn("No handler found for type {}", feePaymentEntity.getPaymentCallbackHandlerType());
         }
+        return paymentCallbackStrategy;
     }
 
     @Transactional
@@ -218,6 +286,12 @@ public class PaymentService {
         }
 
         return optionalFeePaymentEntity;
+    }
+
+    private record PaymentCallbackCompletion(
+        PaymentCallbackStrategy strategy,
+        FeePaymentEntity payment
+    ) {
     }
 
 }

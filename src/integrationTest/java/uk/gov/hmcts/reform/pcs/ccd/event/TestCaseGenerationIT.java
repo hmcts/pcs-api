@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.pcs.ccd.event;
 
-import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -22,6 +21,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.testcasesupport.TestCaseSupportHelper;
 import uk.gov.hmcts.reform.pcs.config.AbstractPostgresContainerIT;
+import uk.gov.hmcts.reform.pcs.controllers.CaseCreationHelper;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
@@ -69,6 +69,8 @@ public class TestCaseGenerationIT extends AbstractPostgresContainerIT {
     private TestCaseSupportHelper testCaseSupportHelper;
     @Autowired
     private IdamHelper idamHelper;
+    @Autowired
+    private CaseCreationHelper caseCreationHelper;
     @MockitoBean
     private FeeService feeService;
     @MockitoBean
@@ -90,14 +92,16 @@ public class TestCaseGenerationIT extends AbstractPostgresContainerIT {
     }
 
     @Test
-    @Transactional
     void shouldSubmitMakeAClaim() {
         // Given
         String label = selectLabelStartingWith(MAKE_A_CLAIM_CASE_GENERATOR);
         EventPayload<PCSCase, State> eventPayload = buildEventPayload(label);
 
         // When
-        SubmitResponse<State> response = underTest.submit(eventPayload);
+        SubmitResponse<State> response = caseCreationHelper.createUnauditedCase(
+            CASE_REFERENCE,
+            () -> underTest.submit(eventPayload)
+        );
 
         // Then
         assertThat(response).isNotNull();
@@ -105,14 +109,16 @@ public class TestCaseGenerationIT extends AbstractPostgresContainerIT {
     }
 
     @Test
-    @Transactional
     void shouldSubmitEnforcement() {
         // Given
         String label = selectLabelStartingWith(ENFORCEMENT_CASE_GENERATOR);
         EventPayload<PCSCase, State> eventPayload = buildEventPayload(label);
 
         // When
-        SubmitResponse<State> response = underTest.submit(eventPayload);
+        SubmitResponse<State> response = caseCreationHelper.createUnauditedCase(
+            CASE_REFERENCE,
+            () -> underTest.submit(eventPayload)
+        );
 
         // Then
         assertThat(response).isNotNull();
@@ -120,7 +126,6 @@ public class TestCaseGenerationIT extends AbstractPostgresContainerIT {
     }
 
     @Test
-    @Transactional
     void shouldThrowWhenNoTestFilesListAvailable() {
         // Given
         PCSCase pcsCase = PCSCase.builder().build();

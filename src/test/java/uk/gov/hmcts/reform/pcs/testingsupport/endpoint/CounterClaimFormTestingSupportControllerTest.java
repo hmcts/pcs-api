@@ -7,6 +7,10 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import uk.gov.hmcts.ccd.sdk.SystemCaseEventAction;
+import uk.gov.hmcts.ccd.sdk.SystemCaseEventContext;
+import uk.gov.hmcts.ccd.sdk.SystemCaseEventResult;
+import uk.gov.hmcts.ccd.sdk.SystemCaseEventService;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.CounterClaimRepository;
@@ -22,7 +26,9 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -38,6 +44,9 @@ class CounterClaimFormTestingSupportControllerTest {
     @Mock
     private CounterClaimFormScheduler counterClaimFormScheduler;
 
+    @Mock
+    private SystemCaseEventService systemCaseEventService;
+
     private final Clock utcClock = Clock.fixed(
         FIXED_NOW.toInstant(ZoneOffset.UTC), ZoneOffset.UTC);
 
@@ -46,7 +55,12 @@ class CounterClaimFormTestingSupportControllerTest {
     @BeforeEach
     void setUp() {
         controller = new CounterClaimFormTestingSupportController(
-            counterClaimRepository, counterClaimFormScheduler, utcClock);
+            counterClaimRepository, counterClaimFormScheduler, systemCaseEventService, utcClock);
+        lenient().doAnswer(invocation -> {
+            SystemCaseEventAction<Object, Object> action = invocation.getArgument(3);
+            action.execute(new SystemCaseEventContext<>(1234L, null, null));
+            return new SystemCaseEventResult(1234L, 1L, false);
+        }).when(systemCaseEventService).submit(anyLong(), any(), any(), any());
     }
 
     @Test
@@ -55,6 +69,7 @@ class CounterClaimFormTestingSupportControllerTest {
             .id(COUNTER_CLAIM_ID)
             .status(CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED)
             .build();
+        when(counterClaimRepository.findCaseReferenceById(COUNTER_CLAIM_ID)).thenReturn(Optional.of(1234L));
         when(counterClaimRepository.findById(COUNTER_CLAIM_ID)).thenReturn(Optional.of(counterClaim));
 
         ResponseEntity<UUID> response = controller.issueAndSchedule(COUNTER_CLAIM_ID);
@@ -75,6 +90,7 @@ class CounterClaimFormTestingSupportControllerTest {
             .status(CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED)
             .claimIssuedDate(preExisting)
             .build();
+        when(counterClaimRepository.findCaseReferenceById(COUNTER_CLAIM_ID)).thenReturn(Optional.of(1234L));
         when(counterClaimRepository.findById(COUNTER_CLAIM_ID)).thenReturn(Optional.of(counterClaim));
 
         controller.issueAndSchedule(COUNTER_CLAIM_ID);
@@ -85,7 +101,7 @@ class CounterClaimFormTestingSupportControllerTest {
 
     @Test
     void throwsWhenCounterClaimNotFound() {
-        when(counterClaimRepository.findById(COUNTER_CLAIM_ID)).thenReturn(Optional.empty());
+        when(counterClaimRepository.findCaseReferenceById(COUNTER_CLAIM_ID)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> controller.issueAndSchedule(COUNTER_CLAIM_ID))
             .isInstanceOf(IllegalArgumentException.class)

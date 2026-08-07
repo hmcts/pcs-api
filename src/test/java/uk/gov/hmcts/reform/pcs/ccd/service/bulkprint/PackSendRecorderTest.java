@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.bulkprint;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -8,6 +9,10 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.ccd.sdk.SystemCaseEventAction;
+import uk.gov.hmcts.ccd.sdk.SystemCaseEventContext;
+import uk.gov.hmcts.ccd.sdk.SystemCaseEventResult;
+import uk.gov.hmcts.ccd.sdk.SystemCaseEventService;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.FailureReason;
 import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.PackDetails;
@@ -25,8 +30,10 @@ import java.util.function.Supplier;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
@@ -34,6 +41,8 @@ class PackSendRecorderTest {
 
     @Mock
     private AccessCodeActivityLogService accessCodeActivityLogService;
+    @Mock
+    private SystemCaseEventService systemCaseEventService;
 
     @InjectMocks
     private PackSendRecorder underTest;
@@ -45,6 +54,15 @@ class PackSendRecorderTest {
     private final PartyEntity recipient = PartyEntity.builder().id(UUID.randomUUID()).build();
     private final DocumentEntity document = DocumentEntity.builder()
         .id(UUID.randomUUID()).type(DocumentType.DEFENDANT_RESPONSE).build();
+
+    @BeforeEach
+    void executeSystemEventActions() {
+        lenient().doAnswer(invocation -> {
+            SystemCaseEventAction<Object, Object> action = invocation.getArgument(3);
+            action.execute(new SystemCaseEventContext<>(pcsCase.getCaseReference(), null, null));
+            return new SystemCaseEventResult(pcsCase.getCaseReference(), 1L, false);
+        }).when(systemCaseEventService).submit(anyLong(), any(), any(), any());
+    }
 
     @Test
     @DisplayName("Records a PACK_SENT row carrying the letterId and documents on success")

@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
+import uk.gov.hmcts.ccd.sdk.SystemCaseEventActor;
+import uk.gov.hmcts.reform.authorisation.validators.AuthTokenValidator;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatusCallback;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.PaymentService;
 
@@ -28,6 +30,7 @@ public class PaymentCallBackController {
 
     private final ObjectMapper objectMapper;
     private final PaymentService paymentService;
+    private final AuthTokenValidator serviceAuthTokenValidator;
 
     @PutMapping(path = PAYMENT_UPDATE_PATH, consumes = APPLICATION_JSON_VALUE)
     @Operation(
@@ -65,18 +68,23 @@ public class PaymentCallBackController {
         @RequestHeader(value = SERVICE_AUTHORIZATION) String s2sToken,
         @RequestBody String serviceRequestUpdate) throws JsonProcessingException {
         log.info("Payment Callback Received For Case: {}", serviceRequestUpdate);
-        processRequestBody(serviceRequestUpdate);
+        String serviceName = serviceAuthTokenValidator.getServiceName(asBearerToken(s2sToken));
+        processRequestBody(serviceRequestUpdate, new SystemCaseEventActor.Service(serviceName));
         return ResponseEntity.noContent().build();
     }
 
-    void processRequestBody(String serviceRequestUpdate) throws JsonProcessingException {
+    void processRequestBody(String serviceRequestUpdate, SystemCaseEventActor actor) throws JsonProcessingException {
         try {
             PaymentStatusCallback update = objectMapper.readValue(serviceRequestUpdate, PaymentStatusCallback.class);
-            paymentService.processPaymentResponse(update);
+            paymentService.processPaymentResponse(update, actor);
         } catch (JsonProcessingException e) {
             log.error("Failed to process payment update request message", e);
             throw e;
         }
+    }
+
+    private String asBearerToken(String token) {
+        return token.startsWith("Bearer ") ? token : "Bearer " + token;
     }
 
 }

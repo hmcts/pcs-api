@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.ActivityDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.ClaimActivityStatus;
@@ -38,7 +37,7 @@ public class AccessCodeActivityLogService {
     /**
      * Uses REQUIRES_NEW so the failure row survives a rollback in the caller's transaction.
      */
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Transactional
     public void logFailure(PcsCaseEntity pcsCase, PartyEntity party, ClaimActivityType activityType) {
         save(pcsCase, party, activityType, ClaimActivityStatus.FAILURE, null);
     }
@@ -47,7 +46,7 @@ public class AccessCodeActivityLogService {
      * Generation failure with {@link GenerationDetails} (which document type, why, terminal); REQUIRES_NEW
      * so the row survives the caller's rollback.
      */
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Transactional
     public void logFailure(PcsCaseEntity pcsCase, PartyEntity party, ClaimActivityType activityType,
                            GenerationDetails details) {
         save(pcsCase, party, activityType, ClaimActivityStatus.FAILURE, details);
@@ -58,7 +57,7 @@ public class AccessCodeActivityLogService {
      * and is the bulk-print dedup source, so it commits in its own transaction: the post is irreversible,
      * and the send runs outside any caller transaction.
      */
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Transactional
     public void recordPackSent(PcsCaseEntity pcsCase, PartyEntity recipient, PackDetails details) {
         save(pcsCase, recipient, ClaimActivityType.PACK_SENT, ClaimActivityStatus.SUCCESS, details);
     }
@@ -67,7 +66,7 @@ public class AccessCodeActivityLogService {
      * One pack dispatch to a recipient failed; {@link PackDetails} carries failureReason + terminal.
      * REQUIRES_NEW so the row survives the caller's rollback.
      */
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Transactional
     public void recordPackFailed(PcsCaseEntity pcsCase, PartyEntity recipient, PackDetails details) {
         save(pcsCase, recipient, ClaimActivityType.PACK_FAILED, ClaimActivityStatus.FAILURE, details);
     }

@@ -1,11 +1,16 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.counterclaimform;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.ccd.sdk.SystemCaseEventAction;
+import uk.gov.hmcts.ccd.sdk.SystemCaseEventContext;
+import uk.gov.hmcts.ccd.sdk.SystemCaseEventResult;
+import uk.gov.hmcts.ccd.sdk.SystemCaseEventService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentImportService;
 import uk.gov.hmcts.reform.pcs.document.model.counterclaimform.CounterClaimFormPayload;
 
@@ -17,9 +22,11 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -38,14 +45,25 @@ class CounterClaimFormServiceTest {
     private CounterClaimFormDocumentGenerator documentGenerator;
     @Mock
     private DocumentImportService documentImportService;
+    @Mock
+    private SystemCaseEventService systemCaseEventService;
 
     @InjectMocks
     private CounterClaimFormService underTest;
 
+    @BeforeEach
+    void executeSystemEventActions() {
+        lenient().doAnswer(invocation -> {
+            SystemCaseEventAction<Object, Object> action = invocation.getArgument(3);
+            action.execute(new SystemCaseEventContext<>(1234567812345678L, null, null));
+            return new SystemCaseEventResult(1234567812345678L, 1L, false);
+        }).when(systemCaseEventService).submit(anyLong(), any(), any(), any());
+    }
+
     @Test
     void buildsThenRendersThenAttaches() {
         CounterClaimFormPayload payload = CounterClaimFormPayload.builder().build();
-        CounterClaimFormRenderContext context = new CounterClaimFormRenderContext(payload, 2);
+        CounterClaimFormRenderContext context = new CounterClaimFormRenderContext(1234567812345678L, payload, 2);
         when(persistenceService.buildContextIfNotAttached(COUNTER_CLAIM_ID)).thenReturn(Optional.of(context));
         when(documentGenerator.generate(payload, 2)).thenReturn(DM_STORE_URL);
 
@@ -71,7 +89,7 @@ class CounterClaimFormServiceTest {
     @Test
     void deletesRenderedDocumentWhenAttachFails() {
         CounterClaimFormPayload payload = CounterClaimFormPayload.builder().build();
-        CounterClaimFormRenderContext context = new CounterClaimFormRenderContext(payload, 1);
+        CounterClaimFormRenderContext context = new CounterClaimFormRenderContext(1234567812345678L, payload, 1);
         when(persistenceService.buildContextIfNotAttached(COUNTER_CLAIM_ID)).thenReturn(Optional.of(context));
         when(documentGenerator.generate(any(), anyInt())).thenReturn(DM_STORE_URL);
         doThrow(new RuntimeException("attach failed"))
@@ -87,7 +105,7 @@ class CounterClaimFormServiceTest {
     @Test
     void orphanCleanupFailureDoesNotMaskOriginalException() {
         CounterClaimFormPayload payload = CounterClaimFormPayload.builder().build();
-        CounterClaimFormRenderContext context = new CounterClaimFormRenderContext(payload, 1);
+        CounterClaimFormRenderContext context = new CounterClaimFormRenderContext(1234567812345678L, payload, 1);
         when(persistenceService.buildContextIfNotAttached(COUNTER_CLAIM_ID)).thenReturn(Optional.of(context));
         when(documentGenerator.generate(any(), anyInt())).thenReturn(DM_STORE_URL);
         doThrow(new RuntimeException("attach failed"))
@@ -102,8 +120,7 @@ class CounterClaimFormServiceTest {
 
     @Test
     void recordGenerationFailureDelegatesAndReturnsCaseReference() {
-        when(persistenceService.recordGenerationFailure(eq(COUNTER_CLAIM_ID), any(), anyBoolean()))
-            .thenReturn(1234567812345678L);
+        when(persistenceService.caseReference(COUNTER_CLAIM_ID)).thenReturn(1234567812345678L);
 
         long caseReference = underTest.recordGenerationFailure(COUNTER_CLAIM_ID, new RuntimeException("boom"), true);
 
@@ -112,6 +129,7 @@ class CounterClaimFormServiceTest {
 
     @Test
     void recordGenerationFailureSwallowsLoggingFailureAndReturnsZero() {
+        when(persistenceService.caseReference(COUNTER_CLAIM_ID)).thenReturn(1234567812345678L);
         when(persistenceService.recordGenerationFailure(eq(COUNTER_CLAIM_ID), any(), anyBoolean()))
             .thenThrow(new RuntimeException("log write failed"));
 

@@ -18,6 +18,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.slf4j.LoggerFactory;
+import uk.gov.hmcts.ccd.sdk.SystemCaseEventAction;
+import uk.gov.hmcts.ccd.sdk.SystemCaseEventContext;
+import uk.gov.hmcts.ccd.sdk.SystemCaseEventResult;
+import uk.gov.hmcts.ccd.sdk.SystemCaseEventService;
 import uk.gov.hmcts.reform.pcs.ccd.model.AccessCodeTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.service.DefendantAccessCodeService;
 
@@ -27,8 +31,11 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -45,6 +52,9 @@ class AccessCodeGenerationComponentTest {
 
     @Mock
     private DefendantAccessCodeService defendantAccessCodeService;
+
+    @Mock
+    private SystemCaseEventService systemCaseEventService;
 
     @Mock
     private TaskInstance<AccessCodeTaskData> taskInstance;
@@ -66,9 +76,15 @@ class AccessCodeGenerationComponentTest {
     void setUp() {
         accessCodeGenerationComponent = new AccessCodeGenerationComponent(
             defendantAccessCodeService,
+            systemCaseEventService,
             maxRetries,
             backoffDelay
         );
+        lenient().doAnswer(invocation -> {
+            SystemCaseEventAction<Object, Object> action = invocation.getArgument(3);
+            action.execute(new SystemCaseEventContext<>(Long.parseLong(CASE_REFERENCE), null, null));
+            return new SystemCaseEventResult(Long.parseLong(CASE_REFERENCE), 1L, false);
+        }).when(systemCaseEventService).submit(anyLong(), any(), any(), any());
 
         componentLogger = (Logger) LoggerFactory.getLogger(AccessCodeGenerationComponent.class);
         logAppender = new ListAppender<>();

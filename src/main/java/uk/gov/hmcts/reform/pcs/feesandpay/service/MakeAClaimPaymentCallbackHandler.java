@@ -28,6 +28,12 @@ public class MakeAClaimPaymentCallbackHandler implements PaymentCallbackStrategy
         FeesAndPayTaskData feesAndPayTaskData = toFeesAndPayTaskData(feePaymentEntity);
         PartyEntity claimParty = getResponsibleParty(feesAndPayTaskData);
         feePaymentEntity.setParty(claimParty);
+    }
+
+    @Override
+    public void afterSystemEvent(PaymentStatusCallback paymentStatusCallback,
+                                 FeePaymentEntity feePaymentEntity) {
+        FeesAndPayTaskData feesAndPayTaskData = toFeesAndPayTaskData(feePaymentEntity);
         if (PaymentStatus.PAID == feePaymentEntity.getPaymentStatus()) {
             ccdPaymentStateUpdateService.submitPaymentSuccess(feesAndPayTaskData.getCaseReference());
         } else {

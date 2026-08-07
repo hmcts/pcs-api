@@ -50,10 +50,10 @@ class PartyAccessCodeConstraintIT extends AbstractPostgresContainerIT {
             1781000000000003L, UUID.randomUUID(), UUID.randomUUID());
         PartyEntity defendant = caseCreationHelper.getDefendants(caseEntity).get(0);
 
-        partyAccessCodeRepository.saveAndFlush(accessCode(caseEntity, defendant, "CODE_A"));
-
-        assertThatThrownBy(() ->
-            partyAccessCodeRepository.saveAndFlush(accessCode(caseEntity, defendant, "CODE_B")))
+        assertThatThrownBy(() -> caseCreationHelper.runUnaudited(() -> {
+            partyAccessCodeRepository.saveAndFlush(accessCode(caseEntity, defendant, "CODE_A"));
+            partyAccessCodeRepository.saveAndFlush(accessCode(caseEntity, defendant, "CODE_B"));
+        }))
             .isInstanceOf(DataIntegrityViolationException.class);
     }
 
@@ -64,8 +64,10 @@ class PartyAccessCodeConstraintIT extends AbstractPostgresContainerIT {
             1781000000000004L, UUID.randomUUID(), UUID.randomUUID());
         List<PartyEntity> defendants = caseCreationHelper.getDefendants(caseEntity);
 
-        partyAccessCodeRepository.saveAndFlush(accessCode(caseEntity, defendants.get(0), "CODE_1"));
-        partyAccessCodeRepository.saveAndFlush(accessCode(caseEntity, defendants.get(1), "CODE_2"));
+        caseCreationHelper.runUnaudited(() -> {
+            partyAccessCodeRepository.saveAndFlush(accessCode(caseEntity, defendants.get(0), "CODE_1"));
+            partyAccessCodeRepository.saveAndFlush(accessCode(caseEntity, defendants.get(1), "CODE_2"));
+        });
 
         assertThat(partyAccessCodeRepository.findAllByPcsCase_Id(caseEntity.getId())).hasSize(2);
     }

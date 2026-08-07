@@ -3,8 +3,12 @@ package uk.gov.hmcts.reform.pcs.ccd.service.counterclaimform;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import uk.gov.hmcts.ccd.sdk.SystemCaseEvent;
+import uk.gov.hmcts.ccd.sdk.SystemCaseEventOutcome;
+import uk.gov.hmcts.ccd.sdk.SystemCaseEventService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentImportService;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -15,6 +19,7 @@ public class CounterClaimFormService {
     private final CounterClaimFormPersistenceService persistenceService;
     private final CounterClaimFormDocumentGenerator documentGenerator;
     private final DocumentImportService documentImportService;
+    private final SystemCaseEventService systemCaseEventService;
 
     public void generateAndAttach(UUID counterClaimId) {
         Optional<CounterClaimFormRenderContext> context =
@@ -26,7 +31,15 @@ public class CounterClaimFormService {
         CounterClaimFormRenderContext renderContext = context.get();
         String dmStoreUrl = documentGenerator.generate(renderContext.payload(), renderContext.defendantNumber());
         try {
-            persistenceService.attach(counterClaimId, dmStoreUrl);
+            systemCaseEventService.submit(
+                renderContext.caseReference(),
+                new SystemCaseEvent("counterClaimFormGenerated", "Counter claim form generated"),
+                idempotencyKey("generated", counterClaimId),
+                event -> {
+                    persistenceService.attach(counterClaimId, dmStoreUrl);
+                    return SystemCaseEventOutcome.noStateChange();
+                }
+            );
         } catch (RuntimeException e) {
             deleteOrphanedDocument(counterClaimId, dmStoreUrl);
             throw e;
@@ -35,12 +48,28 @@ public class CounterClaimFormService {
 
     public long recordGenerationFailure(UUID counterClaimId, Exception cause, boolean terminal) {
         try {
-            return persistenceService.recordGenerationFailure(counterClaimId, cause, terminal);
+            long caseReference = persistenceService.caseReference(counterClaimId);
+            systemCaseEventService.submit(
+                caseReference,
+                new SystemCaseEvent("counterClaimFormGenerationFailed", "Counter claim form generation failed"),
+                idempotencyKey("failed:" + terminal, counterClaimId),
+                event -> {
+                    persistenceService.recordGenerationFailure(counterClaimId, cause, terminal);
+                    return SystemCaseEventOutcome.noStateChange();
+                }
+            );
+            return caseReference;
         } catch (RuntimeException e) {
             log.error("Failed to record counter claim form generation failure for counter claim {}",
                       counterClaimId, e);
             return 0L;
         }
+    }
+
+    private UUID idempotencyKey(String outcome, UUID counterClaimId) {
+        return UUID.nameUUIDFromBytes(
+            ("pcs:counter-claim-form:" + outcome + ":" + counterClaimId).getBytes(StandardCharsets.UTF_8)
+        );
     }
 
     private void deleteOrphanedDocument(UUID counterClaimId, String dmStoreUrl) {

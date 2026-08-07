@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.ClaimActivityStatus;
 import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.ClaimActivityType;
@@ -52,13 +51,13 @@ public class ClaimActivityLogService {
         record(pcsCase, party, ClaimActivityStatus.SUCCESS, null);
     }
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Transactional
     public void logGenerationFailure(long caseReference, GenerationDetails details) {
         PcsCaseEntity pcsCase = pcsCaseService.loadCase(caseReference);
         record(pcsCase, claimantParty(pcsCase), ClaimActivityStatus.FAILURE, details);
     }
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Transactional
     public void logGenerationFailure(long caseReference, UUID partyId, GenerationDetails details) {
         PartyEntity party = partyId == null ? null : partyRepository.getReferenceById(partyId);
         record(pcsCaseService.loadCase(caseReference), party, ClaimActivityStatus.FAILURE, details);

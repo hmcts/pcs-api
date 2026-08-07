@@ -77,60 +77,43 @@ public class DefendantAccessCodeService {
         ClaimEntity mainClaim = getMainClaim(pcsCaseEntity);
         PartyEntity defendant = findDefendant(mainClaim, defendantPartyId);
 
-        try {
-            String plaintextAccessCode = accessCodeGenerator.generateAccessCode();
+        String plaintextAccessCode = accessCodeGenerator.generateAccessCode();
 
-            String documentUrl = accessCodeFormDocumentGenerator
-                .generate(pcsCaseEntity, mainClaim, defendant, plaintextAccessCode);
+        String documentUrl = accessCodeFormDocumentGenerator
+            .generate(pcsCaseEntity, mainClaim, defendant, plaintextAccessCode);
 
-            documentRepository.save(
-                DocumentEntity.builder()
-                    .pcsCase(pcsCaseEntity)
-                    .party(defendant)
-                    .url(documentUrl)
-                    .documentId(documentIdExtractor.extractDocumentId(documentUrl))
-                    .type(DocumentType.DEFENDANT_ACCESS_CODE)
-                    .categoryId(CaseFileCategory.UNCATEGORISED_DOCUMENTS.getId())
-                    .build()
-            );
+        documentRepository.save(
+            DocumentEntity.builder()
+                .pcsCase(pcsCaseEntity)
+                .party(defendant)
+                .url(documentUrl)
+                .documentId(documentIdExtractor.extractDocumentId(documentUrl))
+                .type(DocumentType.DEFENDANT_ACCESS_CODE)
+                .categoryId(CaseFileCategory.UNCATEGORISED_DOCUMENTS.getId())
+                .build()
+        );
 
-            partyAccessCodeRepo.save(
-                PartyAccessCodeEntity.builder()
-                    .partyId(defendant.getId())
-                    .pcsCase(pcsCaseEntity)
-                    .code(hashingService.encodeForStorage(plaintextAccessCode))
-                    .role(PartyRole.DEFENDANT)
-                    .build()
-            );
+        partyAccessCodeRepo.save(
+            PartyAccessCodeEntity.builder()
+                .partyId(defendant.getId())
+                .pcsCase(pcsCaseEntity)
+                .code(hashingService.encodeForStorage(plaintextAccessCode))
+                .role(PartyRole.DEFENDANT)
+                .build()
+        );
 
-            testAccessCodeRecorder.record(pcsCaseEntity.getId(), defendant.getId(), plaintextAccessCode);
+        testAccessCodeRecorder.record(pcsCaseEntity.getId(), defendant.getId(), plaintextAccessCode);
 
-            accessCodeActivityLogService.logSuccess(pcsCaseEntity, defendant, ClaimActivityType.DOCUMENTS_CREATED);
-
-        } catch (Exception e) {
-            // First + terminal recording: the first failure makes the reason visible immediately
-            // (terminal:false = still retrying); intermediate retries stay in scheduled_tasks/logs;
-            // the final attempt writes the terminal row. Mirrors the claim-form task.
-            if (finalAttempt) {
-                log.error("Access-code letter generation permanently failed for party {} on case {}",
-                          defendant.getId(), pcsCaseEntity.getCaseReference(), e);
-            }
-            if (firstAttempt || finalAttempt) {
-                recordFailureSafely(pcsCaseEntity, defendant, e, finalAttempt);
-            }
-            throw e;
-        }
+        accessCodeActivityLogService.logSuccess(pcsCaseEntity, defendant, ClaimActivityType.DOCUMENTS_CREATED);
     }
 
-    private void recordFailureSafely(PcsCaseEntity pcsCaseEntity, PartyEntity defendant, Exception cause,
-                                     boolean terminal) {
-        try {
-            accessCodeActivityLogService.logFailure(pcsCaseEntity, defendant, ClaimActivityType.DOCUMENTS_CREATED,
-                GenerationDetails.forFailure(DocumentType.DEFENDANT_ACCESS_CODE, cause, terminal));
-        } catch (Exception e) {
-            log.error("Failed to record access-code FAILURE for party {} on case {}",
-                      defendant.getId(), pcsCaseEntity.getCaseReference(), e);
-        }
+    @Transactional
+    public void recordGenerationFailure(long caseReference, UUID defendantPartyId,
+                                        Exception cause, boolean terminal) {
+        PcsCaseEntity pcsCase = pcsCaseService.loadCase(caseReference);
+        PartyEntity defendant = findDefendant(getMainClaim(pcsCase), defendantPartyId);
+        accessCodeActivityLogService.logFailure(pcsCase, defendant, ClaimActivityType.DOCUMENTS_CREATED,
+            GenerationDetails.forFailure(DocumentType.DEFENDANT_ACCESS_CODE, cause, terminal));
     }
 
     private static PartyEntity findDefendant(ClaimEntity mainClaim, UUID defendantPartyId) {

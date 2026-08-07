@@ -15,6 +15,11 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.ccd.sdk.SystemCaseEventAction;
+import uk.gov.hmcts.ccd.sdk.SystemCaseEventActor;
+import uk.gov.hmcts.ccd.sdk.SystemCaseEventContext;
+import uk.gov.hmcts.ccd.sdk.SystemCaseEventResult;
+import uk.gov.hmcts.ccd.sdk.SystemCaseEventService;
 import uk.gov.hmcts.reform.payments.client.PaymentsClient;
 import uk.gov.hmcts.reform.payments.client.models.CasePaymentRequestDto;
 import uk.gov.hmcts.reform.payments.client.models.FeeDto;
@@ -78,6 +83,7 @@ class PaymentServiceTest {
     private static final String SERVICE_REQUEST_REFERENCE = "SR-123";
     private static final String CALLBACK_URL = "https://etc:123/service-request-update";
     private static final String HMCTS_ORG_ID = "TEST_ORG";
+    private static final SystemCaseEventActor PAYMENT_ACTOR = new SystemCaseEventActor.Service("payment_app");
 
     @Mock
     private PaymentsClient paymentsClient;
@@ -91,6 +97,8 @@ class PaymentServiceTest {
     private PcsCaseService pcsCaseService;
     @Mock
     private PaymentCallbackStrategyFactory paymentCallbackStrategyFactory;
+    @Mock
+    private SystemCaseEventService systemCaseEventService;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -105,6 +113,18 @@ class PaymentServiceTest {
     @BeforeEach
     void setUp() {
         lenient().when(systemUpdateUserTokenProvider.getAuthToken()).thenReturn(SYSTEM_TOKEN);
+        lenient().when(feePaymentRepository.findCaseReferenceByServiceRequestReference(anyString()))
+            .thenReturn(Optional.of(CASE_REFERENCE));
+        lenient().doAnswer(invocation -> {
+            SystemCaseEventAction<Object, Object> action = invocation.getArgument(3);
+            action.execute(new SystemCaseEventContext<>(CASE_REFERENCE, null, null));
+            return new SystemCaseEventResult(CASE_REFERENCE, 1L, false);
+        }).when(systemCaseEventService).submit(anyLong(), any(), any(), any());
+        lenient().doAnswer(invocation -> {
+            SystemCaseEventAction<Object, Object> action = invocation.getArgument(4);
+            action.execute(new SystemCaseEventContext<>(CASE_REFERENCE, null, null));
+            return new SystemCaseEventResult(CASE_REFERENCE, 1L, false);
+        }).when(systemCaseEventService).submitOnBehalfOf(anyLong(), any(), any(), any(), any());
 
         setPrivateField(underTest, "callbackUrl", CALLBACK_URL);
         setPrivateField(underTest, "hmctsOrgId", HMCTS_ORG_ID);
@@ -213,7 +233,7 @@ class PaymentServiceTest {
                 .thenReturn(mock(MakeAClaimPaymentCallbackHandler.class));
 
             // When
-            underTest.processPaymentResponse(paymentStatusCallback);
+            underTest.processPaymentResponse(paymentStatusCallback, PAYMENT_ACTOR);
 
             // Then
             verify(feePaymentRepository).findByServiceRequestReference(requestReference);
@@ -238,7 +258,7 @@ class PaymentServiceTest {
             when(feePaymentRepository.findByServiceRequestReference(requestReference)).thenReturn(Optional.empty());
 
             // When
-            underTest.processPaymentResponse(paymentStatusCallback);
+            underTest.processPaymentResponse(paymentStatusCallback, PAYMENT_ACTOR);
 
             // Then
             verify(feePaymentRepository).findByServiceRequestReference(requestReference);
@@ -262,10 +282,11 @@ class PaymentServiceTest {
             when(paymentCallbackStrategyFactory.getStrategy(CLAIM)).thenReturn(strategy);
 
             // When
-            underTest.processPaymentResponse(paymentStatusCallback);
+            underTest.processPaymentResponse(paymentStatusCallback, PAYMENT_ACTOR);
 
             // Then
             verify(strategy).handle(paymentStatusCallback, feePaymentEntity);
+            verify(strategy).afterSystemEvent(paymentStatusCallback, feePaymentEntity);
             verify(feePaymentRepository).save(feePaymentEntity);
         }
 
@@ -285,7 +306,7 @@ class PaymentServiceTest {
             when(paymentCallbackStrategyFactory.getStrategy(CLAIM)).thenReturn(null);
 
             // When
-            underTest.processPaymentResponse(paymentStatusCallback);
+            underTest.processPaymentResponse(paymentStatusCallback, PAYMENT_ACTOR);
 
             // Then
             verify(feePaymentRepository).save(feePaymentEntity);

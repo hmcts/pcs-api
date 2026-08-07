@@ -47,7 +47,9 @@ public class CounterClaimFormPersistenceService {
             return Optional.empty();
         }
         CounterClaimFormPayload payload = payloadBuilder.build(counterClaim);
-        return Optional.of(new CounterClaimFormRenderContext(payload, defendantNumber(counterClaim)));
+        return Optional.of(new CounterClaimFormRenderContext(
+            counterClaim.getPcsCase().getCaseReference(), payload, defendantNumber(counterClaim)
+        ));
     }
 
     @Transactional
@@ -72,6 +74,11 @@ public class CounterClaimFormPersistenceService {
         claimActivityLogService.logGenerationFailure(caseReference, counterClaim.getParty().getId(),
             GenerationDetails.forFailure(DocumentType.COUNTERCLAIM, cause, terminal));
         return caseReference;
+    }
+
+    @Transactional(readOnly = true)
+    public long caseReference(UUID counterClaimId) {
+        return loadCounterClaim(counterClaimId).getPcsCase().getCaseReference();
     }
 
     private boolean isAlreadyAttached(UUID counterClaimId) {

@@ -3,6 +3,9 @@ package uk.gov.hmcts.reform.pcs.ccd.service.bulkprint;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
 import org.springframework.stereotype.Service;
+import uk.gov.hmcts.ccd.sdk.SystemCaseEvent;
+import uk.gov.hmcts.ccd.sdk.SystemCaseEventOutcome;
+import uk.gov.hmcts.ccd.sdk.SystemCaseEventService;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.PackDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.PackDocumentRef;
@@ -13,6 +16,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.service.AccessCodeActivityLogService;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -37,9 +41,12 @@ public class PackSendRecorder {
     private static final String MDC_FAILURE_REASON = "failureReason";
 
     private final AccessCodeActivityLogService accessCodeActivityLogService;
+    private final SystemCaseEventService systemCaseEventService;
 
-    public PackSendRecorder(AccessCodeActivityLogService accessCodeActivityLogService) {
+    public PackSendRecorder(AccessCodeActivityLogService accessCodeActivityLogService,
+                            SystemCaseEventService systemCaseEventService) {
         this.accessCodeActivityLogService = accessCodeActivityLogService;
+        this.systemCaseEventService = systemCaseEventService;
     }
 
     public void sendAndRecord(PcsCaseEntity pcsCase, PartyEntity recipient, LetterType letterType,
@@ -50,8 +57,10 @@ public class PackSendRecorder {
         try {
             UUID letterId = sendAction.get();
             MDC.put(MDC_LETTER_ID, String.valueOf(letterId));
-            accessCodeActivityLogService.recordPackSent(pcsCase, recipient,
-                PackDetails.sent(letterType, packDocumentRefs(pcsCase, recipient, documents), letterId));
+            PackDetails details = PackDetails.sent(
+                letterType, packDocumentRefs(pcsCase, recipient, documents), letterId
+            );
+            recordOutcome(pcsCase, recipient, details, true);
             log.info("Pack sent - case: {}, party: {}, letterType: {}, letterId: {}, documents: {}",
                 pcsCase.getCaseReference(), recipient.getId(), letterType.getCode(), letterId,
                 documentSummary(documents));
@@ -74,8 +83,10 @@ public class PackSendRecorder {
                                List<DocumentEntity> documents, Exception cause, boolean terminal) {
         MDC.put(MDC_TERMINAL_FAILURE, String.valueOf(terminal));
         MDC.put(MDC_FAILURE_REASON, String.valueOf(cause.getMessage()));
-        accessCodeActivityLogService.recordPackFailed(pcsCase, recipient,
-            PackDetails.failed(letterType, packDocumentRefs(pcsCase, recipient, documents), cause));
+        PackDetails details = PackDetails.failed(
+            letterType, packDocumentRefs(pcsCase, recipient, documents), cause
+        );
+        recordOutcome(pcsCase, recipient, details, false);
         if (terminal) {
             log.error("Pack send failed (terminal) - case: {}, party: {}, letterType: {}, documents: {}: {}",
                 pcsCase.getCaseReference(), recipient.getId(), letterType.getCode(),
@@ -85,6 +96,33 @@ public class PackSendRecorder {
                 pcsCase.getCaseReference(), recipient.getId(), letterType.getCode(),
                 documentSummary(documents), cause.getMessage());
         }
+    }
+
+    private void recordOutcome(PcsCaseEntity pcsCase, PartyEntity recipient,
+                               PackDetails details, boolean sent) {
+        systemCaseEventService.submit(
+            pcsCase.getCaseReference(),
+            new SystemCaseEvent(
+                sent ? "bulkPrintPackSent" : "bulkPrintPackFailed",
+                sent ? "Bulk print pack sent" : "Bulk print pack failed"
+            ),
+            outcomeIdempotencyKey(pcsCase, recipient, details),
+            event -> {
+                if (sent) {
+                    accessCodeActivityLogService.recordPackSent(pcsCase, recipient, details);
+                } else {
+                    accessCodeActivityLogService.recordPackFailed(pcsCase, recipient, details);
+                }
+                return SystemCaseEventOutcome.noStateChange();
+            }
+        );
+    }
+
+    private UUID outcomeIdempotencyKey(PcsCaseEntity pcsCase, PartyEntity recipient, PackDetails details) {
+        return UUID.nameUUIDFromBytes(
+            ("pcs:bulk-print:" + pcsCase.getCaseReference() + ":" + recipient.getId() + ":" + details)
+                .getBytes(StandardCharsets.UTF_8)
+        );
     }
 
     private void logDocumentSent(PcsCaseEntity pcsCase, PartyEntity recipient, DocumentEntity document,

@@ -74,7 +74,9 @@ class ClaimFormPersistenceServiceIT extends AbstractPostgresContainerIT {
         doThrow(new RuntimeException("activity log write failed"))
             .when(claimActivityLogService).logGenerationSuccess(caseReference);
 
-        assertThrows(RuntimeException.class, () -> claimFormPersistenceService.attach(caseReference, DM_STORE_URL));
+        assertThrows(RuntimeException.class, () -> caseCreationHelper.runUnaudited(
+            () -> claimFormPersistenceService.attach(caseReference, DM_STORE_URL)
+        ));
 
         UUID claimId = caseEntity.getClaims().getFirst().getId();
         assertThat(claimRepository.findById(claimId).orElseThrow().getClaimFormDocument())
@@ -91,7 +93,7 @@ class ClaimFormPersistenceServiceIT extends AbstractPostgresContainerIT {
         when(documentImportService.addDocumentToCase(eq(caseReference), anyString(), any()))
             .thenReturn(importedDocument());
 
-        claimFormPersistenceService.attach(caseReference, DM_STORE_URL);
+        caseCreationHelper.runUnaudited(() -> claimFormPersistenceService.attach(caseReference, DM_STORE_URL));
 
         UUID claimId = caseEntity.getClaims().getFirst().getId();
         assertThat(claimRepository.findById(claimId).orElseThrow().getClaimFormDocument())

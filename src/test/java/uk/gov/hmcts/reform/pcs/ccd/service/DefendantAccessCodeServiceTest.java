@@ -133,6 +133,7 @@ class DefendantAccessCodeServiceTest {
         RuntimeException thrown = assertThrows(RuntimeException.class,
             () -> underTest.generateForDefendant(5L, partyId, false, true));
         assertThat(thrown).hasMessage("docmosis down");
+        underTest.recordGenerationFailure(5L, partyId, thrown, true);
 
         verify(accessCodeActivityLogService).logFailure(eq(caseEntity), any(PartyEntity.class),
                                                    eq(ClaimActivityType.DOCUMENTS_CREATED),
@@ -150,7 +151,9 @@ class DefendantAccessCodeServiceTest {
         when(accessCodeFormDocumentGenerator.generate(any(), any(), any(), anyString()))
             .thenThrow(new RuntimeException("docmosis down"));
 
-        assertThrows(RuntimeException.class, () -> underTest.generateForDefendant(5L, partyId, true, false));
+        RuntimeException thrown = assertThrows(RuntimeException.class,
+            () -> underTest.generateForDefendant(5L, partyId, true, false));
+        underTest.recordGenerationFailure(5L, partyId, thrown, false);
 
         verify(accessCodeActivityLogService).logFailure(eq(caseEntity), any(PartyEntity.class),
                                                    eq(ClaimActivityType.DOCUMENTS_CREATED),

@@ -10,6 +10,9 @@ import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
+import uk.gov.hmcts.ccd.sdk.SystemCaseEvent;
+import uk.gov.hmcts.ccd.sdk.SystemCaseEventOutcome;
+import uk.gov.hmcts.ccd.sdk.SystemCaseEventService;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.GenerationDetails;
 import uk.gov.hmcts.reform.pcs.ccd.model.DefenceFormTaskData;
@@ -17,6 +20,8 @@ import uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimActivityLogService;
 import uk.gov.hmcts.reform.pcs.ccd.service.defenceform.DefenceFormService;
 
 import java.time.Duration;
+import java.nio.charset.StandardCharsets;
+import java.util.UUID;
 
 /**
  * db-scheduler {@code CustomTask} bean for defence form generation. Mirrors
@@ -40,17 +45,20 @@ public class DefenceFormGenerationComponent {
 
     private final DefenceFormService defenceFormService;
     private final ClaimActivityLogService claimActivityLogService;
+    private final SystemCaseEventService systemCaseEventService;
     private final int maxRetries;
     private final Duration backoffDelay;
 
     public DefenceFormGenerationComponent(
         DefenceFormService defenceFormService,
         ClaimActivityLogService claimActivityLogService,
+        SystemCaseEventService systemCaseEventService,
         @Value("${defence-form.request.max-retries}") int maxRetries,
         @Value("${defence-form.request.backoff-delay-seconds}") Duration backoffDelay
     ) {
         this.defenceFormService = defenceFormService;
         this.claimActivityLogService = claimActivityLogService;
+        this.systemCaseEventService = systemCaseEventService;
         this.maxRetries = maxRetries;
         this.backoffDelay = backoffDelay;
     }
@@ -108,11 +116,26 @@ public class DefenceFormGenerationComponent {
     private void recordGenerationFailure(DefenceFormTaskData data, Exception cause, boolean terminal) {
         try {
             long caseReference = Long.parseLong(data.getCaseReference());
-            claimActivityLogService.logGenerationFailure(caseReference, data.getDefendantPartyId(),
-                GenerationDetails.forFailure(DocumentType.DEFENDANT_RESPONSE, cause, terminal));
+            systemCaseEventService.submit(
+                caseReference,
+                new SystemCaseEvent("defenceFormGenerationFailed", "Defence form generation failed"),
+                failureIdempotencyKey(data.getDefendantResponseId(), terminal),
+                event -> {
+                    claimActivityLogService.logGenerationFailure(caseReference, data.getDefendantPartyId(),
+                        GenerationDetails.forFailure(DocumentType.DEFENDANT_RESPONSE, cause, terminal));
+                    return SystemCaseEventOutcome.noStateChange();
+                }
+            );
         } catch (Exception e) {
             log.error("Failed to record defence form generation failure for defendant response {}",
                       data.getDefendantResponseId(), e);
         }
+    }
+
+    private UUID failureIdempotencyKey(Integer responseId, boolean terminal) {
+        return UUID.nameUUIDFromBytes(
+            ("pcs:defence-form-generation-failed:" + responseId + ":" + terminal)
+                .getBytes(StandardCharsets.UTF_8)
+        );
     }
 }

@@ -51,7 +51,9 @@ public class DefenceFormPersistenceService {
             return Optional.empty();
         }
         DefenceFormPayload payload = payloadBuilder.build(response);
-        return Optional.of(new DefenceFormRenderContext(payload, defendantNumber(response)));
+        return Optional.of(new DefenceFormRenderContext(
+            response.getPcsCase().getCaseReference(), payload, defendantNumber(response)
+        ));
     }
 
     @Transactional

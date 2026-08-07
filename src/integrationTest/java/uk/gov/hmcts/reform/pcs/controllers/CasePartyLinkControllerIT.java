@@ -12,7 +12,6 @@ import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.ccd.client.CaseAssignmentApi;
 import uk.gov.hmcts.reform.ccd.client.model.CaseAssignmentUserRolesRequest;
@@ -114,7 +113,6 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
 
     @Test
     @DisplayName("Should successfully validate and link party with valid access code")
-    @Transactional
     void shouldSuccessfullyValidateAndLinkPartyWithValidAccessCode() throws Exception {
         // Given
         long caseReference = 12345L;
@@ -267,7 +265,6 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
 
     @Test
     @DisplayName("Should return 409 when user ID already linked to another defendant")
-    @Transactional
     void shouldReturn409WhenUserIdAlreadyLinkedToAnotherDefendant() throws Exception {
         // Given
         long caseReference = 12348L;
@@ -341,7 +338,6 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
 
     @Test
     @DisplayName("Should rollback transaction when exception occurs - no partial data saved")
-    @Transactional
     void shouldRollbackTransactionWhenExceptionOccurs() throws Exception {
         // Given - Create a case with a defendant that's already linked
         // This will cause an exception when trying to link again
@@ -383,7 +379,6 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
 
     @Test
     @DisplayName("Should commit transaction when operation succeeds - data persisted correctly")
-    @Transactional
     void shouldCommitTransactionWhenOperationSucceeds() throws Exception {
         // Given
         long caseReference = 12353L;
@@ -413,7 +408,7 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
         // Then - Verify transaction committed: data persisted
         PcsCaseEntity caseAfter = pcsCaseRepository.findByCaseReference(caseReference)
                 .orElseThrow();
-        assertThat(getDefendants(caseAfter).getFirst().getIdamId()).isEqualTo(USER_ID);
+        assertThat(caseCreationHelper.getDefendants(caseAfter).getFirst().getIdamId()).isEqualTo(USER_ID);
     }
 
     // Helper methods

@@ -74,6 +74,7 @@ class MakeAClaimPaymentCallbackHandlerTest {
 
         // When
         underTest.handle(callback, feePaymentEntity);
+        underTest.afterSystemEvent(callback, feePaymentEntity);
 
         // Then
         assertThat(feePaymentEntity.getParty()).isSameAs(partyEntity);
