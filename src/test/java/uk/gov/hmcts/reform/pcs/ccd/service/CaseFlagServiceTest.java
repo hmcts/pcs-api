@@ -33,6 +33,7 @@ import static org.assertj.core.api.Assertions.tuple;
 //import static org.assertj.core.api.Assertions.assertE;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.verifyNoInteractions;
 
 @ExtendWith(MockitoExtension.class)
 class CaseFlagServiceTest {
@@ -309,6 +310,51 @@ class CaseFlagServiceTest {
             .containsExactlyInAnyOrder(
                 tuple("Existing internal flag", "Internal"),
                 tuple("New external flag", "External"));
+    }
+
+    @Test
+    void shouldRetainPartyFlagsWhenIncomingPartyHasNoFlagCollections() {
+        UUID partyId = UUID.randomUUID();
+        CasePartyFlagEntity existingFlag = createCasePartyFlagEntity(
+            UUID.randomUUID(), "Active", "Existing internal flag");
+        existingFlag.setVisibility("Internal");
+
+        PartyEntity existingParty = PartyEntity.builder()
+            .id(partyId)
+            .defendantFlags(new ArrayList<>(List.of(existingFlag)))
+            .build();
+
+        Party incomingParty = Party.builder().build();
+
+        underTest.mergePartyFlags(
+            List.of(createPartyListValue(partyId.toString(), incomingParty)), Set.of(existingParty));
+
+        assertThat(existingParty.getDefendantFlags()).containsExactly(existingFlag);
+        verifyNoInteractions(flagRefDataRepository);
+    }
+
+    @Test
+    void shouldRetainPartyFlagsWhenIncomingFlagCollectionsAreEmpty() {
+        UUID partyId = UUID.randomUUID();
+        CasePartyFlagEntity existingFlag = createCasePartyFlagEntity(
+            UUID.randomUUID(), "Active", "Existing external flag");
+        existingFlag.setVisibility("External");
+
+        PartyEntity existingParty = PartyEntity.builder()
+            .id(partyId)
+            .defendantFlags(new ArrayList<>(List.of(existingFlag)))
+            .build();
+
+        Party incomingParty = Party.builder()
+            .defendantFlags(Flags.builder().visibility(FlagVisibility.INTERNAL).details(List.of()).build())
+            .defendantFlagsExternal(Flags.builder().visibility(FlagVisibility.EXTERNAL).details(List.of()).build())
+            .build();
+
+        underTest.mergePartyFlags(
+            List.of(createPartyListValue(partyId.toString(), incomingParty)), Set.of(existingParty));
+
+        assertThat(existingParty.getDefendantFlags()).containsExactly(existingFlag);
+        verifyNoInteractions(flagRefDataRepository);
     }
 
     @Test
