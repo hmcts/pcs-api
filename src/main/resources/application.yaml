@@ -143,8 +143,7 @@ location-reference:
 
 notify:
   api-url: ${NOTIFY_URL:http://localhost:8083}
-  # PLEASE DON'T CHECK IN
-  api-key: lucastestkey-d83dc897-57d7-4093-891e-2367b79f22a9-cf2f5419-2568-4e2d-8510-bf207c90810b
+  api-key: ${PCS_NOTIFY_API_KEY:AAAAAAAA-AAAA-AAAA-AAAA-AAAAAAAAAAAA}
   send-email:
     max-retries: ${NOTIFY_SEND_EMAIL_MAX_RETRIES:5}
     backoff-delay-seconds: ${NOTIFY_SEND_EMAIL_BACKOFF_DELAY_SECONDS:300s}
