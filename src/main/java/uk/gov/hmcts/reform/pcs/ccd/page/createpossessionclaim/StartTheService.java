@@ -26,9 +26,6 @@ public class StartTheService implements CcdPageConfiguration {
         pageBuilder
             .page("startTheService")
             .readonly(PCSCase::getFeeAmount, NEVER_SHOW, true)
-            // Hidden so XUI round-trips the start-populated organisation policy into the
-            // submitted payload, where CCD derives CaseAccessGroups from it at creation.
-            .readonly(PCSCase::getOrganisationPolicyField, NEVER_SHOW, true)
             .label("mainContentTop",
                "<h1 class=\"" + HEADING_L + "\">Make a housing possession claim online</h1>"
                    + "<p class=\"" + BODY + "\">You can use this online service if you’re a registered provider of "

@@ -17,7 +17,6 @@ import uk.gov.hmcts.ccd.sdk.type.FieldType;
 import uk.gov.hmcts.ccd.sdk.type.FlagLauncher;
 import uk.gov.hmcts.ccd.sdk.type.Flags;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
-import uk.gov.hmcts.ccd.sdk.type.OrganisationPolicy;
 import uk.gov.hmcts.ccd.sdk.type.SearchCriteria;
 import uk.gov.hmcts.ccd.sdk.type.WaysToPay;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
@@ -732,10 +731,6 @@ public class PCSCase {
 
     @JsonUnwrapped
     private GroupAccessFields<AccessProfile> groupAccessFields;
-
-    @JsonProperty("OrganisationPolicyField")
-    @CCD
-    private OrganisationPolicy<AccessProfile> organisationPolicyField;
   
     @CCD
     private String postCode;

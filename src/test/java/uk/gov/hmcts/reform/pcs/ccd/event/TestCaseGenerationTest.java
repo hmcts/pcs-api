@@ -28,6 +28,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.event.enforcetheorder.EnforceTheOrder;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.ccd.testcasesupport.TestCaseSupportException;
 import uk.gov.hmcts.reform.pcs.ccd.testcasesupport.TestCaseSupportHelper;
 import uk.gov.hmcts.reform.pcs.ccd.testcasesupport.TestSupportEnvironment;
@@ -73,6 +74,8 @@ class TestCaseGenerationTest {
     private DraftCaseDataService draftCaseDataService;
     @Mock
     private PcsCaseService pcsCaseService;
+    @Mock
+    private OrganisationService organisationService;
     @Mock
     private ResumePossessionClaim resumePossessionClaim;
     @Mock
@@ -196,7 +199,7 @@ class TestCaseGenerationTest {
 
         // Then
         InOrder inOrder = inOrder(pcsCaseService, resumePossessionClaim);
-        inOrder.verify(pcsCaseService).createCase(caseReference, address, country);
+        inOrder.verify(pcsCaseService).createCase(eq(caseReference), eq(address), eq(country), any());
         inOrder.verify(resumePossessionClaim).submitClaim(caseReference, loadedCase);
     }
 

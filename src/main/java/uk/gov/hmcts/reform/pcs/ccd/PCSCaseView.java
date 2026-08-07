@@ -9,6 +9,8 @@ import uk.gov.hmcts.ccd.sdk.CaseViewRequest;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.AccessProfile;
+import uk.gov.hmcts.reform.pcs.ccd.domain.GroupAccessFields;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
@@ -20,6 +22,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseTitleService;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
+import uk.gov.hmcts.reform.pcs.ccd.util.CaseAccessGroupsUtil;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
 import uk.gov.hmcts.reform.pcs.ccd.view.AlternativesToPossessionView;
 import uk.gov.hmcts.reform.pcs.ccd.view.AsbProhibitedConductView;
@@ -93,25 +96,6 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
     private final FeatureFlagView featureFlagView;
 
     /**
-     * Invoked by CCD to load PCS cases by reference. The organisation policy and the
-     * CaseAccessGroups CCD derives from it live in the stored case data and are owned by
-     * CCD (notice of change rewrites them), so they are carried over onto the projection
-     * rather than rebuilt here.
-     * @param request encapsulates the CCD case reference and state
-     * @param storedCase case data as last persisted for the case
-     */
-    @Override
-    @Transactional(readOnly = true)
-    public PCSCase getCase(CaseViewRequest<State> request, PCSCase storedCase) {
-        PCSCase pcsCase = getCase(request);
-        if (storedCase != null) {
-            pcsCase.setOrganisationPolicyField(storedCase.getOrganisationPolicyField());
-            pcsCase.setGroupAccessFields(storedCase.getGroupAccessFields());
-        }
-        return pcsCase;
-    }
-
-    /**
      * Invoked by CCD to load PCS cases by reference.
      * @param request encapsulates the CCD case reference and state
      */
@@ -142,12 +126,28 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
 
         caseFieldsView.setCaseFields(pcsCase);
 
+        applyCaseAccessGroups(pcsCase, submittedCase.pcsCaseEntity());
+
         // Only the canonical PCS case type is indexed into the shared global_search index.
         if (!CaseType.isSuffixedCaseType()) {
             pcsCase.setSearchCriteria(searchCriteriaIndexer.buildSearchCriteria(pcsCase));
         }
 
         return pcsCase;
+    }
+
+    /**
+     * The group matcher in the data store compares users' caseAccessGroupId role
+     * assignment attributes against these values; deriving them from the organisation
+     * captured at creation gives the whole organisation access from the draft onwards.
+     */
+    private void applyCaseAccessGroups(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
+        String organisationId = pcsCaseEntity.getOrganisationId();
+        if (organisationId != null) {
+            pcsCase.setGroupAccessFields(GroupAccessFields.<AccessProfile>builder()
+                .caseAccessGroups(CaseAccessGroupsUtil.deriveCaseAccessGroups(organisationId))
+                .build());
+        }
     }
 
     private boolean caseHasUnsubmittedData(long caseReference, State state) {
