@@ -6,7 +6,6 @@
   ],
   "platformAutomerge": false,
   "automergeSchedule": [
-    "after 6pm every weekday",
-    "every weekend"
+    "after 5am and before 8am every weekday"
   ]
 }
