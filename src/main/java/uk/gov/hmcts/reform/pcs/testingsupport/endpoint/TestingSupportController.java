@@ -574,17 +574,17 @@ public class TestingSupportController {
             description = "Days to add to current time (default: 0)",
             example = "1"
         )
-        @RequestParam(value = "delaySeconds", defaultValue = "0") int days,
+        @RequestParam(value = "days", defaultValue = "0") int days,
         @Parameter(
             description = "Hours to add to current time (default: 0)",
             example = "10"
         )
-        @RequestParam(value = "delaySeconds", defaultValue = "0") int hours,
+        @RequestParam(value = "hours", defaultValue = "0") int hours,
         @Parameter(
             description = "Hours to add to current time (default: 0)",
             example = "10"
         )
-        @RequestParam(value = "delaySeconds", defaultValue = "0") int minutes,
+        @RequestParam(value = "minutes", defaultValue = "0") int minutes,
         @Parameter(
             description = "Service-to-Service (S2S) authorization token",
             example = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
