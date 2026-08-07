@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.event;
 
+import com.github.kagkarlsson.scheduler.SchedulerClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -141,6 +142,8 @@ class RespondPossessionClaimTest extends BaseEventTest {
 
     @Mock
     private SubmitResponseFactory submitResponseFactory;
+    @Mock
+    private SchedulerClient schedulerClient;
 
     @BeforeEach
     void setUp() {
@@ -176,7 +179,8 @@ class RespondPossessionClaimTest extends BaseEventTest {
             counterClaimService,
             feeCalculator,
             documentService,
-            draftCaseDataService
+            draftCaseDataService,
+            schedulerClient
         );
 
         CounterClaimSubmitConfirmationService confirmationService = new CounterClaimSubmitConfirmationService(

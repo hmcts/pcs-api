@@ -11,5 +11,5 @@ public enum CounterClaimState implements HasLabel {
     PENDING_COUNTER_CLAIM_ISSUED("Pending counter claim issued"),
     COUNTER_CLAIM_ISSUED("Counter claim issued");
 
-    private String label;
+    private final String label;
 }
