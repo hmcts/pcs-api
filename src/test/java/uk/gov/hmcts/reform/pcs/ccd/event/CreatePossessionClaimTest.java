@@ -16,7 +16,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.CrossBorderPostcod
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.EnterPropertyAddress;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.PropertyNotEligible;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
-import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
+import uk.gov.hmcts.reform.pcs.ccd.util.OrganisationPolicyUtil;
 import uk.gov.hmcts.reform.pcs.ccd.task.CaseRoleAssignmentTaskComponent;
 import uk.gov.hmcts.reform.pcs.ccd.util.FeeApplier;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
@@ -36,7 +36,7 @@ class CreatePossessionClaimTest extends BaseEventTest {
     @Mock
     private PcsCaseService pcsCaseService;
     @Mock
-    private OrganisationService organisationService;
+    private OrganisationPolicyUtil organisationPolicyUtil;
     @Mock
     private FeeApplier feeApplier;
     @Mock
@@ -57,7 +57,7 @@ class CreatePossessionClaimTest extends BaseEventTest {
         when(userDetails.getUid()).thenReturn(USER_ID);
 
         CreatePossessionClaim underTest = new CreatePossessionClaim(
-            pcsCaseService, organisationService, feeApplier, enterPropertyAddress,
+            pcsCaseService, organisationPolicyUtil, feeApplier, enterPropertyAddress,
             crossBorderPostcodeSelection, propertyNotEligible,
             schedulerClient, securityContextService
         );

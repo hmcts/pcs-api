@@ -93,6 +93,25 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
     private final FeatureFlagView featureFlagView;
 
     /**
+     * Invoked by CCD to load PCS cases by reference. The organisation policy and the
+     * CaseAccessGroups CCD derives from it live in the stored case data and are owned by
+     * CCD (notice of change rewrites them), so they are carried over onto the projection
+     * rather than rebuilt here.
+     * @param request encapsulates the CCD case reference and state
+     * @param storedCase case data as last persisted for the case
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public PCSCase getCase(CaseViewRequest<State> request, PCSCase storedCase) {
+        PCSCase pcsCase = getCase(request);
+        if (storedCase != null) {
+            pcsCase.setOrganisationPolicyField(storedCase.getOrganisationPolicyField());
+            pcsCase.setGroupAccessFields(storedCase.getGroupAccessFields());
+        }
+        return pcsCase;
+    }
+
+    /**
      * Invoked by CCD to load PCS cases by reference.
      * @param request encapsulates the CCD case reference and state
      */
