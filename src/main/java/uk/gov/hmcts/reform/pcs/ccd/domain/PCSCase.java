@@ -18,6 +18,7 @@ import uk.gov.hmcts.ccd.sdk.type.FlagLauncher;
 import uk.gov.hmcts.ccd.sdk.type.Flags;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.SearchCriteria;
+import uk.gov.hmcts.ccd.sdk.type.TTL;
 import uk.gov.hmcts.ccd.sdk.type.WaysToPay;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseLinkingAccess;
@@ -759,4 +760,10 @@ public class PCSCase {
         searchable = false
     )
     private Document uploadSingleDocument;
+
+    @JsonProperty("TTL")
+    @CCD(
+            typeOverride = FieldType.TTL
+    )
+    private TTL ttl;
 }

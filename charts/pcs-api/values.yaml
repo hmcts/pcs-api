@@ -66,3 +66,5 @@ ccd-case-document-am-api:
   enabled: false
 wa:
   enabled: false
+ccd-case-disposer:
+  enabled: false

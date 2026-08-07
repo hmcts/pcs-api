@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
@@ -27,6 +26,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.FlagRefDataEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.TenancyLicenceEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentImportService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
@@ -47,6 +47,7 @@ import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -69,6 +70,8 @@ class PcsCaseServiceTest {
     @Mock
     private DocumentService documentService;
     @Mock
+    private DocumentImportService documentImportService;
+    @Mock
     private TenancyLicenceService tenancyLicenceService;
     @Mock
     private AddressMapper addressMapper;
@@ -84,7 +87,6 @@ class PcsCaseServiceTest {
     @Captor
     private ArgumentCaptor<PcsCaseEntity> pcsCaseEntityCaptor;
 
-    @InjectMocks
     private PcsCaseService underTest;
 
     @BeforeEach
@@ -94,6 +96,7 @@ class PcsCaseServiceTest {
             claimService,
             partyService,
             documentService,
+            documentImportService,
             tenancyLicenceService,
             addressMapper,
             caseLinkService,
@@ -285,7 +288,7 @@ class PcsCaseServiceTest {
 
         List<ListValue<CaseLink>> caseLinks = List.of(createCaseLinkValue(caseLink));
 
-        PcsCaseEntity pcsCaseEntity =  PcsCaseEntity.builder()//mock(PcsCaseEntity.class);
+        PcsCaseEntity pcsCaseEntity =  PcsCaseEntity.builder()
             .caseReference(CASE_REFERENCE)
             .build();
 
@@ -518,6 +521,57 @@ class PcsCaseServiceTest {
         verify(postCodeCourtService).getCourtManagementLocation(postCode, ENGLAND);
         verify(locationReferenceService, never()).getCourtVenues(anyList());
         assertThat(caseData.getRegionId()).isNull();
+    }
+
+    @Test
+    void shouldHandleDeleteCaseIfCaseNotFound() {
+        // Given
+        when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.empty());
+
+        // When
+        Throwable throwable = catchThrowable(() -> underTest.deleteCase(CASE_REFERENCE));
+
+        // Then
+        assertThat(throwable)
+            .isInstanceOf(CaseNotFoundException.class)
+            .hasMessage("No case found with reference %s", CASE_REFERENCE);
+    }
+
+    @Test
+    void shouldHandleDeleteCaseIfNoDocumentsFound() {
+        // Given
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
+                .caseReference(CASE_REFERENCE)
+                .documents(List.of())
+                .build();
+
+        when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
+
+        // When
+        underTest.deleteCase(CASE_REFERENCE);
+
+        // Then
+        verify(documentImportService, never()).deleteDocument(anyString());
+        verify(pcsCaseRepository).delete(pcsCaseEntity);
+    }
+
+    @Test
+    void shouldDeleteDocumentsIfFound() {
+        // Given
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
+                .caseReference(CASE_REFERENCE)
+                .documents(List.of(DocumentEntity.builder().url("url1").build(),
+                        DocumentEntity.builder().url("url2").build()))
+                .build();
+
+        when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
+
+        // When
+        underTest.deleteDocuments(CASE_REFERENCE);
+
+        // Then
+        verify(documentImportService).deleteDocument("url1");
+        verify(documentImportService).deleteDocument("url2");
     }
 
     private Flags createFlags(List<ListValue<FlagDetail>> flagDetails) {
