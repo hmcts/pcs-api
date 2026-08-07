@@ -3,7 +3,7 @@ import { performAction } from '@utils/controller-caseManagement';
 import { IAction, actionData, actionRecord } from '@utils/interfaces/action.interface';
 import {
   addReviewDates, changeCaseState, enterGenappApplication, enterGenAppapplicationFee,
-enterGenAppConsentAndNotice, enterGenAppHearingDate, enterGenAppUploadGeneralApplication, selectDocument
+  enterGenAppConsentAndNotice, enterGenAppHearingDate, enterGenAppUploadGeneralApplication, selectDocument
 } from '@data/page-data-figma/page-data-caseManagement-figma';
 import { allPartyDetails } from './caseManagement.action';
 
