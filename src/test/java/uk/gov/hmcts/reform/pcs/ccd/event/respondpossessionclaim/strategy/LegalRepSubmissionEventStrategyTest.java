@@ -23,9 +23,9 @@ import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.RespondPossess
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.RespondPossessionClaimSubmitService;
 import uk.gov.hmcts.reform.pcs.ccd.util.SelectedPartyRetriever;
 import uk.gov.hmcts.reform.pcs.exception.DraftNotFoundException;
-import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 import uk.gov.hmcts.reform.pcs.model.JourneyType;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
+import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.List;
 import java.util.Optional;
