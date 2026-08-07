@@ -51,11 +51,11 @@
         "valueCode": "PROVIDER_OF_SOCIAL_HOUSING"
       },
       "claimAgainstTrespassers": "NO",
-      "organisationName": "Possession Claims Solicitor Org",
+      "organisationName": "Eviction Solicitor",
       "isClaimantNameCorrect": "YES",
       "claimantContactEmail": "pcs-solicitor1@test.com",
       "isCorrectClaimantContactEmail": "YES",
-      "formattedClaimantContactAddress": "Ministry Of Justice<br>Seventh Floor 102 Petty France<br>London<br>SW1H 9AJ",
+      "formattedClaimantContactAddress": "50 Wiltshire Close<br>Woolston<br>London<br>WA1 4DA",
       "isCorrectClaimantContactAddress": "YES",
       "claimantProvidePhoneNumber": "NO",
       "defendant1": {
@@ -92,7 +92,7 @@
       "mediationAttempted": "NO",
       "settlementAttempted": "NO",
       "noticeServed": "No",
-      "claimantNamePossessiveForm": "Possession Claims Solicitor Org’s",
+      "claimantNamePossessiveForm": "Eviction Solicitor’s",
       "claimantCircumstancesSelect": "NO",
       "hasDefendantCircumstancesInfo": "NO",
       "showSuspensionOfRightToBuyHousingActsPage": "No",

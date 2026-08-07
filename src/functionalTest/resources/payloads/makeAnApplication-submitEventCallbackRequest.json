@@ -21,13 +21,13 @@
       "allClaimants": [
         {
           "value": {
-            "orgName": "Possession Claims Solicitor Org",
+            "orgName": "Eviction Solicitor",
             "emailAddress": "pcs-solicitor1@test.com",
             "address": {
-              "AddressLine1": "Ministry Of Justice",
-              "AddressLine2": "Seventh Floor 102 Petty France",
-              "PostTown": "London",
-              "PostCode": "SW1H 9AJ",
+              "AddressLine1": "50 Wiltshire Close",
+              "AddressLine3": "Woolston",
+              "PostTown": "Warrington",
+              "PostCode": "WA1 4DA",
               "Country": "United Kingdom"},
             "phoneNumberProvided": "NO"}
         }
@@ -57,13 +57,13 @@
         },
         {
           "value": {
-            "orgName": "Possession Claims Solicitor Org",
+            "orgName": "Eviction Solicitor",
             "emailAddress": "pcs-solicitor1@test.com",
             "address": {
-              "AddressLine1": "Ministry Of Justice",
-              "AddressLine2": "Seventh Floor 102 Petty France",
-              "PostTown": "London",
-              "PostCode": "SW1H 9AJ",
+              "AddressLine1": "50 Wiltshire Close",
+              "AddressLine3": "Woolston",
+              "PostTown": "Warrington",
+              "PostCode": "WA1 4DA",
               "Country": "United Kingdom"},
             "phoneNumberProvided": "NO"}
         }
@@ -89,12 +89,12 @@
             "nameKnown": "YES",
             "addressKnown": "NO",
             "legalRepresentative": {
-              "organisationName": "Possession Claims Solicitor Org",
+              "organisationName": "Eviction Solicitor",
               "address": {
-                "AddressLine1": "Ministry Of Justice",
-                "AddressLine2": "Seventh Floor 102 Petty France",
-                "PostTown": "London",
-                "PostCode": "SW1H 9AJ",
+                "AddressLine1": "50 Wiltshire Close",
+                "AddressLine3": "Woolston",
+                "PostTown": "Warrington",
+                "PostCode": "WA1 4DA",
                 "Country": "United Kingdom"}
             }
           }
@@ -143,10 +143,10 @@
           },
           {
             "value": {
-              "Name": "Possession Claims Solicitor Org",
+              "Name": "Eviction Solicitor",
               "EmailAddress": "pcs-solicitor1@test.com",
-              "AddressLine1": "Ministry Of Justice",
-              "PostCode": "SW1H 9AJ"}
+              "AddressLine1": "50 Wiltshire Close",
+              "PostCode": "WA1 4DA"}
           },
           {
             "value": {
@@ -155,9 +155,9 @@
           }
         ]
       },
-      "caseNameHmctsRestricted": "Possession Claims Solicitor Org vs Jane Doe",
-      "caseNameHmctsInternal": "Possession Claims Solicitor Org vs Jane Doe",
-      "caseNamePublic": "Possession Claims Solicitor Org vs Jane Doe",
+      "caseNameHmctsRestricted": "Eviction Solicitor vs Jane Doe",
+      "caseNameHmctsInternal": "Eviction Solicitor vs Jane Doe",
+      "caseNamePublic": "Eviction Solicitor vs Jane Doe",
       "caseManagementLocation": {
         "region": "1",
         "baseLocation": "20262"},
@@ -174,12 +174,12 @@
         "valueCode": "2f9b6dcf-45e5-433f-a1bf-bff0d8d8a78a"},
       "genApps": [],
       "casePartiesTab_ClaimantDetails": {
-        "name": "Possession Claims Solicitor Org",
+        "name": "Eviction Solicitor",
         "serviceAddress": {
-          "AddressLine1": "Ministry Of Justice",
-          "AddressLine2": "Seventh Floor 102 Petty France",
-          "PostTown": "London",
-          "PostCode": "SW1H 9AJ",
+          "AddressLine1": "50 Wiltshire Close",
+          "AddressLine3": "Woolston",
+          "PostTown": "Warrington",
+          "PostCode": "WA1 4DA",
           "Country": "United Kingdom"},
         "emailAddress": "pcs-solicitor1@test.com"},
       "casePartiesTab_DefendantOneDetails": {
@@ -192,12 +192,12 @@
           "Country": "United Kingdom"},
         "representative": {
           "organisation": {
-            "name": "Possession Claims Solicitor Org",
+            "name": "Eviction Solicitor",
             "address": {
-              "AddressLine1": "Ministry Of Justice",
-              "AddressLine2": "Seventh Floor 102 Petty France",
-              "PostTown": "London",
-              "PostCode": "SW1H 9AJ",
+              "AddressLine1": "50 Wiltshire Close",
+              "AddressLine3": "Woolston",
+              "PostTown": "Warrington",
+              "PostCode": "WA1 4DA",
               "Country": "United Kingdom"}
           }
         }
@@ -213,7 +213,7 @@
       "summaryTab_ReasonsForPossession": {
         "condition1OfSection84A": "Antisocial behaviour reasons."},
       "summaryTab_ClaimantDetails": {
-        "claimantName": "Possession Claims Solicitor Org"},
+        "claimantName": "Eviction Solicitor"},
       "summaryTab_DefendantDetails": {
         "nameKnown": "Yes",
         "firstName": "Jane",
@@ -260,12 +260,12 @@
       "detailsTab_ApplicationsDetails": {
         "planToMakeGeneralApplication": "No"},
       "detailsTab_ClaimantInformation": {
-        "claimantName": "Possession Claims Solicitor Org"},
+        "claimantName": "Eviction Solicitor"},
       "detailsTab_ClaimantAddress": {
-        "AddressLine1": "Ministry Of Justice",
-        "AddressLine2": "Seventh Floor 102 Petty France",
-        "PostTown": "London",
-        "PostCode": "SW1H 9AJ",
+        "AddressLine1": "50 Wiltshire Close",
+        "AddressLine3": "Woolston",
+        "PostTown": "Warrington",
+        "PostCode": "WA1 4DA",
         "Country": "United Kingdom"},
       "detailsTab_ClaimantContactDetails": {
         "emailAddress": "pcs-solicitor1@test.com",
@@ -285,7 +285,7 @@
       "caseNotes": [],
       "caseFlags": {},
       "postCode": "W3 7RX",
-      "claimantNames": "Possession Claims Solicitor Org",
+      "claimantNames": "Eviction Solicitor",
       "defendantNames": "Doe",
       "xui_genapp_MaxFee": "£321",
       "xui_genapp_ApplicationType": "SOMETHING_ELSE",
