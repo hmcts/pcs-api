@@ -7,6 +7,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.exception.ErrorCode;
+import uk.gov.hmcts.reform.pcs.exception.RedactionContext;
 import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -29,6 +31,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.PARTY_LINK_EXISTS;
 
 @Service
 @RequiredArgsConstructor
@@ -47,7 +50,12 @@ public class LegalRepresentativePartyLinkService {
         String organisationId = organisationDetails.getOrganisationIdentifier();
         if (isAlreadyLinkedToParty(user, partyId, organisationId)) {
             throw new LegalRepresentativeAlreadyLinkedToPartyException(
-                "Legal Representative or organisation already linked to Party [" + partyId + "]");
+                PARTY_LINK_EXISTS,
+                RedactionContext.builder()
+                    .value("Legal Representative or organisation already linked to Party", partyId)
+                    .value("case reference", caseReference)
+                    .value("organisation id", organisationId)
+                    .build());
         }
         PcsCaseEntity caseEntity = pcsCaseService.loadCase(caseReference);
 
@@ -161,7 +169,8 @@ public class LegalRepresentativePartyLinkService {
             .findFirst()
             .orElseThrow(() -> {
                 log.error("Unable to find Party [{}]", partyId);
-                return new PartyNotFoundException("Unable to find Party with Id [" + partyId + "]");
+                return new PartyNotFoundException(ErrorCode.PARTY_NOT_FOUND,
+                                                  RedactionContext.of("Unable to find Party with Id", partyId));
             });
     }
 

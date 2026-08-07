@@ -6,6 +6,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.oauth2.core.OAuth2AuthorizationException;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientResponseException;
+import uk.gov.hmcts.reform.pcs.exception.IdamException;
+import uk.gov.hmcts.reform.pcs.exception.RedactedRuntimeException;
 
 import java.util.Set;
 
@@ -41,6 +43,11 @@ class UpstreamThrottling {
     }
 
     boolean isUpstreamUnavailable(Throwable ex) {
+        if (ex instanceof RedactedRuntimeException) {
+            return ex instanceof IdamException idamEx
+                && idamEx.indicatesUpstreamUnavailable(oauth2ThrottleErrorCodes);
+        }
+
         Throwable cause = ex;
         int depth = 0;
         while (cause != null && depth++ < 10) {

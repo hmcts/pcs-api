@@ -10,6 +10,8 @@ import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
 import java.util.List;
 import java.util.UUID;
 
+import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.DEFENDANT_ACCESS_VALIDATOR;
+
 /**
  * Validates that the authenticated user has defendant access to a case.
  *
@@ -53,7 +55,7 @@ public class DefendantAccessValidator {
                     authenticatedUserId,
                     caseReference
                 );
-                return new CaseAccessException("User is not linked as a defendant on this case");
+                return new CaseAccessException(DEFENDANT_ACCESS_VALIDATOR);
             });
     }
 }

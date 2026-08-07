@@ -1,8 +1,8 @@
 package uk.gov.hmcts.reform.pcs.exception;
 
-public class ClaimNotFoundException extends RuntimeException {
+public class ClaimNotFoundException extends RedactedRuntimeException {
 
-    public ClaimNotFoundException(long caseReference) {
-        super("No claim found for case reference " + caseReference);
+    public ClaimNotFoundException(ErrorCode errorCode, RedactionContext redactionContext) {
+        super(errorCode, redactionContext);
     }
 }

@@ -1,9 +1,9 @@
 package uk.gov.hmcts.reform.pcs.exception;
 
-public class OrganisationDetailsException extends RuntimeException {
+public class OrganisationDetailsException extends RedactedRuntimeException {
 
-    public OrganisationDetailsException(String message, Throwable cause) {
-        super(message, cause);
+    public OrganisationDetailsException(ErrorCode errorCode, Throwable cause) {
+        super(errorCode, cause);
     }
 
 }

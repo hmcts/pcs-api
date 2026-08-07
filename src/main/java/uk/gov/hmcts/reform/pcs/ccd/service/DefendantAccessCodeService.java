@@ -21,6 +21,8 @@ import uk.gov.hmcts.reform.pcs.ccd.service.accesscode.AccessCodeFormDocumentGene
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentIdExtractor;
 import uk.gov.hmcts.reform.pcs.ccd.util.AccessCodeGenerator;
 import uk.gov.hmcts.reform.pcs.exception.ClaimNotFoundException;
+import uk.gov.hmcts.reform.pcs.exception.ErrorCode;
+import uk.gov.hmcts.reform.pcs.exception.RedactionContext;
 import uk.gov.hmcts.reform.pcs.service.PartyAccessCodeHashingService;
 import uk.gov.hmcts.reform.pcs.testingsupport.service.TestAccessCodeRecorder;
 
@@ -151,6 +153,7 @@ public class DefendantAccessCodeService {
     private static ClaimEntity getMainClaim(PcsCaseEntity pcsCaseEntity) {
         return pcsCaseEntity.getClaims().stream()
             .findFirst()
-            .orElseThrow(() -> new ClaimNotFoundException(pcsCaseEntity.getCaseReference()));
+            .orElseThrow(() -> new ClaimNotFoundException(ErrorCode.CLAIM_NOT_FOUND,
+                RedactionContext.of("No claim found for case reference", pcsCaseEntity.getCaseReference())));
     }
 }

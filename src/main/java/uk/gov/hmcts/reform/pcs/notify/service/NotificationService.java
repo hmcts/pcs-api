@@ -18,6 +18,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.config.NotificationTemplateConfiguration;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
+import uk.gov.hmcts.reform.pcs.exception.RedactionContext;
 import uk.gov.hmcts.reform.pcs.notify.entities.CaseNotification;
 import uk.gov.hmcts.reform.pcs.notify.exception.NotificationException;
 import uk.gov.hmcts.reform.pcs.notify.model.EmailNotificationRequest;
@@ -35,6 +36,9 @@ import uk.gov.hmcts.reform.pcs.notify.template.personalisation.TemplatePersonali
 import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
+
+import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.FAILED_SAVE_CASE;
+import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.PARTY_NOT_FOUND;
 
 @Service
 @Slf4j
@@ -266,8 +270,7 @@ public class NotificationService {
 
         CaseNotification notification = notificationOpt.get();
         updateNotificationStatus(notification, NotificationStatus.PERMANENT_FAILURE, null);
-        log.error("Email sending failed for notification ID: {}, error: {}",
-                    dbNotificationId, exception.getMessage());
+        log.error("Email sending failed for notification ID: {}", dbNotificationId, exception);
     }
 
     /**
@@ -308,12 +311,9 @@ public class NotificationService {
             return savedNotification;
         } catch (DataAccessException dataAccessException) {
             log.error(
-                "Failed to save Case Notification with Case ID: {}. Reason: {}",
-                toSaveNotification.getPcsCase(),
-                dataAccessException.getMessage(),
-                dataAccessException
-            );
-            throw new NotificationException("Failed to save Case Notification.", dataAccessException);
+                "Failed to save Case Notification with Case ID: {}", toSaveNotification.getPcsCase(),
+                dataAccessException);
+            throw new NotificationException(FAILED_SAVE_CASE, dataAccessException);
         }
     }
 
@@ -371,11 +371,9 @@ public class NotificationService {
             }
 
             notificationRepository.save(notification);
-            log.info("Updated notification status to {} for notification ID: {}",
-                        status, notification.getId());
+            log.info("Updated notification status to {} for notification ID: {}", status, notification.getId());
         } catch (Exception e) {
-            log.error("Error updating notification status to {}: {}",
-                        status, e.getMessage(), e);
+            log.error("Error updating notification status to {}", status, e);
         }
     }
 
@@ -447,7 +445,8 @@ public class NotificationService {
         PartyEntity claimant = partyService.getPrimaryClaimantPartyEntity(claim.getPcsCase());
 
         if (claimant == null) {
-            throw new PartyNotFoundException("No claimant party found for claim: " + claim.getId());
+            throw new PartyNotFoundException(PARTY_NOT_FOUND,
+                                             RedactionContext.of("No claimant party found for claim", claim.getId()));
         }
 
         return new NotificationRecipient(
@@ -463,7 +462,8 @@ public class NotificationService {
         PartyEntity defendant = response.getParty();
 
         if (defendant == null) {
-            throw new PartyNotFoundException("No defendant party found for response: " + response.getId());
+            throw new PartyNotFoundException(PARTY_NOT_FOUND,
+                RedactionContext.of("No defendant party found for response", response.getId()));
         }
 
         return new NotificationRecipient(

@@ -128,7 +128,7 @@ class LegalRepForDefendantAccessValidatorTest {
 
         assertThatThrownBy(() -> underTest.validateAndGetDefendants(caseEntity, authenticatedUserId))
             .isInstanceOf(CaseAccessException.class)
-            .hasMessage("User is not linked as a defendant solicitor on this case");
+            .hasMessage("REDACTED [LEGAL_REP_FOR_DEFENDANT_ACCESS]");
     }
 
     @Test
@@ -154,7 +154,7 @@ class LegalRepForDefendantAccessValidatorTest {
 
         assertThatThrownBy(() -> underTest.validateAndGetDefendants(caseEntity, authenticatedUserId))
             .isInstanceOf(CaseAccessException.class)
-            .hasMessage("User is not linked as a defendant solicitor on this case");
+            .hasMessage("REDACTED [LEGAL_REP_FOR_DEFENDANT_ACCESS]");
     }
 
     @Test
@@ -192,7 +192,7 @@ class LegalRepForDefendantAccessValidatorTest {
         assertThatThrownBy(() ->
                                underTest.validateAndGetDefendants(caseEntity, authenticatedUserId))
             .isInstanceOf(CaseAccessException.class)
-            .hasMessage("User is not linked as a defendant solicitor on this case");
+            .hasMessage("REDACTED [LEGAL_REP_FOR_DEFENDANT_ACCESS]");
     }
 
     @Test
@@ -230,7 +230,7 @@ class LegalRepForDefendantAccessValidatorTest {
         assertThatThrownBy(() ->
                                underTest.validateAndGetDefendants(caseEntity, authenticatedUserId))
             .isInstanceOf(CaseAccessException.class)
-            .hasMessage("User is not linked as a defendant solicitor on this case");
+            .hasMessage("REDACTED [LEGAL_REP_FOR_DEFENDANT_ACCESS]");
     }
 
     private PcsCaseEntity createCaseWithDefendant(PartyEntity defendant) {

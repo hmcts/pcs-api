@@ -124,8 +124,7 @@ class CitizenSubmissionEventStrategyTest {
         assertThat(assertThrows(
             DraftNotFoundException.class,
             () -> underTest.process(eventPayload)
-        )).hasMessage(String.format("No draft found for this case reference %s, eventId %s, and user ",
-                                    CASE_REFERENCE, respondPossessionClaim));
+        )).hasMessage("REDACTED [DRAFT_NOT_FOUND]");
 
         verify(submitResponseFactory, never()).validate(any(), anyLong());
         verify(respondPossessionClaimSubmitService, never()).persistFinalSubmit(anyLong(), any(), any(), any());

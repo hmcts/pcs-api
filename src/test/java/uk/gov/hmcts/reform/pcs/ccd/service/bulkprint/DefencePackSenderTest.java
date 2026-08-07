@@ -12,6 +12,8 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.AccessCodeActivityLogService;
+import uk.gov.hmcts.reform.pcs.exception.ErrorCode;
+import uk.gov.hmcts.reform.pcs.exception.RedactionContext;
 
 import java.util.List;
 import java.util.UUID;
@@ -80,7 +82,7 @@ class DefencePackSenderTest {
             new ResolvedRecipient(pcsCase, defendant, LetterType.DEFENCE_PACK, List.of(defenceForm),
                 "Bob Tenant", address)));
         when(bulkPrintService.sendPack(any(), any(), any(), any(), any(), any()))
-            .thenThrow(new MissingPostalAddressException("no address"));
+            .thenThrow(new MissingPostalAddressException(ErrorCode.MISSING_POSTAL_ADDRESS, RedactionContext.empty()));
 
         underTest.sendDefencePacks(CASE_ID);
 

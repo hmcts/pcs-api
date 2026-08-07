@@ -20,9 +20,9 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseTitleService;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
+import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.view.AlternativesToPossessionView;
 import uk.gov.hmcts.reform.pcs.ccd.view.AsbProhibitedConductView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseFlagsView;
@@ -45,6 +45,7 @@ import uk.gov.hmcts.reform.pcs.ccd.view.TenancyLicenceView;
 import uk.gov.hmcts.reform.pcs.ccd.view.globalsearch.CaseFieldsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.globalsearch.SearchCriteriaIndexer;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
+import uk.gov.hmcts.reform.pcs.exception.RedactionContext;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
@@ -64,6 +65,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.resumePossessionClaim;
+import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.CASE_NOT_FOUND;
 
 @ExtendWith(MockitoExtension.class)
 class PCSCaseViewTest {
@@ -72,7 +74,7 @@ class PCSCaseViewTest {
     private static final State DEFAULT_STATE = State.CASE_ISSUED;
 
     @Mock
-    private PcsCaseRepository pcsCaseRepository;
+    private PcsCaseService pcsCaseService;
     @Mock
     private SecurityContextService securityContextService;
     @Mock
@@ -103,7 +105,6 @@ class PCSCaseViewTest {
     private StatementOfTruthView statementOfTruthView;
     @Mock
     private GenAppsView genAppsView;
-
     @Mock(strictness = LENIENT)
     private PcsCaseEntity pcsCaseEntity;
     @Mock
@@ -135,10 +136,10 @@ class PCSCaseViewTest {
 
     @BeforeEach
     void setUp() {
-        when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
         when(pcsCaseEntity.getClaims()).thenReturn(List.of(claimEntity));
 
-        underTest = new PCSCaseView(pcsCaseRepository, securityContextService, modelMapper, draftCaseDataService,
+        underTest = new PCSCaseView(pcsCaseService, securityContextService, modelMapper, draftCaseDataService,
                                     caseTitleService, claimView, documentsView, tenancyLicenceView, claimGroundsView,
                                     rentDetailsView, alternativesToPossessionView, asbProhibitedConductView,
                                     rentArrearsView, noticeOfPossessionView,
@@ -152,7 +153,9 @@ class PCSCaseViewTest {
     @Test
     void shouldThrowExceptionForUnknownCaseReference() {
         // Given
-        when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.empty());
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenThrow(new CaseNotFoundException(
+            CASE_NOT_FOUND,
+            RedactionContext.of("Case Reference", String.valueOf(CASE_REFERENCE))));
 
         // When
         CaseViewRequest<State> request = request(CASE_REFERENCE, DEFAULT_STATE);
@@ -160,7 +163,7 @@ class PCSCaseViewTest {
         // Then
         assertThatThrownBy(() -> underTest.getCase(request))
             .isInstanceOf(CaseNotFoundException.class)
-            .hasMessage("No case found with reference %s", CASE_REFERENCE);
+            .hasMessage("REDACTED [CASE_NOT_FOUND]", CASE_REFERENCE);
     }
 
     @Test

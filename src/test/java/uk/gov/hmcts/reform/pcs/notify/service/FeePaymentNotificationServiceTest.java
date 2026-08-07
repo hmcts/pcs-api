@@ -49,6 +49,6 @@ class FeePaymentNotificationServiceTest {
 
         assertThatThrownBy(() -> underTest.sendClaimantPaidCaseIssuedNotification(feePaymentId))
             .isInstanceOf(FeePaymentNotFoundException.class)
-            .hasMessageContaining("Fee payment not found: " + feePaymentId);
+            .hasMessageContaining("REDACTED [FEE_PAYMENT_02]");
     }
 }

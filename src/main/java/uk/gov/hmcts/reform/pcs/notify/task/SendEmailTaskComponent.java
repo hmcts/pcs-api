@@ -15,14 +15,14 @@ import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.pcs.notify.config.NotificationErrorHandler;
 import uk.gov.hmcts.reform.pcs.notify.config.NotificationErrorHandler.NotificationStatusUpdate;
 import uk.gov.hmcts.reform.pcs.notify.entities.CaseNotification;
-import uk.gov.hmcts.reform.pcs.notify.model.SendEmailTaskData;
 import uk.gov.hmcts.reform.pcs.notify.exception.PermanentNotificationException;
 import uk.gov.hmcts.reform.pcs.notify.exception.TemporaryNotificationException;
+import uk.gov.hmcts.reform.pcs.notify.model.SendEmailTaskData;
 import uk.gov.hmcts.reform.pcs.notify.repository.NotificationRepository;
 import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
+import uk.gov.service.notify.NotificationClient;
 import uk.gov.service.notify.NotificationClientException;
 import uk.gov.service.notify.SendEmailResponse;
-import uk.gov.service.notify.NotificationClient;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -30,6 +30,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
+import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.NOTIFICATION_ERROR;
+import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.TEMP_EMAIL_SEND;
 import static uk.gov.hmcts.reform.pcs.notify.task.VerifyEmailTaskComponent.verifyEmailTask;
 
 @Component
@@ -115,9 +117,9 @@ public class SendEmailTaskComponent {
 
                     if (response.getNotificationId() == null) {
                         log.error("Email service returned null notification ID for task: {}", taskData.getId());
-                        throw new PermanentNotificationException("Null notification ID from email service",
-                                                                    new IllegalStateException(
-                                                                        "Email service returned null notification ID"));
+                        throw new PermanentNotificationException(
+                            NOTIFICATION_ERROR,
+                            new IllegalStateException("Email service returned null notification ID"));
                     }
 
                     notificationService.updateNotificationAfterSending(
@@ -142,7 +144,7 @@ public class SendEmailTaskComponent {
                         )
                     );
                 } catch (NotificationClientException e) {
-                    log.error("NotificationClient error sending email: {}", e.getMessage(), e);
+                    log.error("NotificationClient error sending email", e);
 
                     if (isPermanentFailure(e)) {
                         errorHandler.handleSendEmailException(
@@ -153,7 +155,7 @@ public class SendEmailTaskComponent {
                         );
                         return new CompletionHandler.OnCompleteRemove<>();
                     } else {
-                        throw new TemporaryNotificationException("Email temporarily failed to send.", e);
+                        throw new TemporaryNotificationException(TEMP_EMAIL_SEND, e);
                     }
                 }
             });

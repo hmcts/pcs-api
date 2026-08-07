@@ -19,7 +19,9 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.feeandpay.FeePaymentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.exception.ErrorCode;
 import uk.gov.hmcts.reform.pcs.exception.FeePaymentNotFoundException;
+import uk.gov.hmcts.reform.pcs.exception.RedactionContext;
 import uk.gov.hmcts.reform.pcs.feesandpay.mapper.PaymentRequestMapper;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.CardPaymentStatusResponse;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.CreateCardPaymentRequest;
@@ -31,6 +33,8 @@ import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
 
 import java.io.IOException;
 import java.util.Optional;
+
+import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.FEE_TASK_DATA_ISSUE;
 
 @Slf4j
 @Service
@@ -109,7 +113,8 @@ public class PaymentService {
 
         FeePaymentEntity feePaymentEntity = feePaymentRepository.findByServiceRequestReference(serviceRequestReference)
             .orElseThrow(
-                () -> new FeePaymentNotFoundException("No fee payment entity found for " + serviceRequestReference)
+                () -> new FeePaymentNotFoundException(ErrorCode.FEE_PAYMENT,
+                    RedactionContext.of("No fee payment entity found for ", serviceRequestReference))
             );
 
         CardPaymentServiceRequestDTO paymentRequest = CardPaymentServiceRequestDTO.builder()
@@ -152,7 +157,7 @@ public class PaymentService {
         try {
             return objectMapper.writeValueAsString(feesAndPayTaskData);
         } catch (IOException e) {
-            throw new PaymentException("Unable to write to json the FeesAndPayTaskData", e);
+            throw new PaymentException(FEE_TASK_DATA_ISSUE, e);
         }
     }
 

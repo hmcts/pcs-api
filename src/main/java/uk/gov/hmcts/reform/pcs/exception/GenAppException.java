@@ -1,9 +1,9 @@
 package uk.gov.hmcts.reform.pcs.exception;
 
-public class GenAppException extends RuntimeException {
+public class GenAppException extends RedactedRuntimeException {
 
-    public GenAppException(String message) {
-        super(message);
+    public GenAppException(ErrorCode errorCode) {
+        super(errorCode);
     }
 
 }

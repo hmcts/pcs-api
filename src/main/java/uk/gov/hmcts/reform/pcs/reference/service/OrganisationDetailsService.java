@@ -11,6 +11,8 @@ import uk.gov.hmcts.reform.pcs.reference.api.RdProfessionalApi;
 import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
 import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
 
+import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.ORGANISATION_DETAILS;
+
 @Service
 @Slf4j
 public class OrganisationDetailsService {
@@ -49,13 +51,13 @@ public class OrganisationDetailsService {
             return details;
 
         } catch (FeignException ex) {
-            log.error("Feign error retrieving organisation details for userId: {}. Status: {}, Message: {}",
-                userId, ex.status(), ex.getMessage(), ex);
-            throw new OrganisationDetailsException("Failed to retrieve organisation details", ex);
+            log.error("Feign error retrieving organisation details for userId: {}. Status: {}",
+                      userId, ex.status(), ex);
+            throw new OrganisationDetailsException(ORGANISATION_DETAILS, ex);
         } catch (Exception ex) {
-            log.error("Unexpected error retrieving organisation details for userId: {}. Error: {}",
-                userId, ex.getMessage(), ex);
-            throw new OrganisationDetailsException("Unexpected error retrieving organisation details", ex);
+            log.error("Unexpected error retrieving organisation details for userId: {}",
+                userId, ex);
+            throw new OrganisationDetailsException(ORGANISATION_DETAILS, ex);
         }
     }
 

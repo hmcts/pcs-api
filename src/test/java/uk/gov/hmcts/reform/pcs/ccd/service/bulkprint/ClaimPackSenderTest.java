@@ -12,6 +12,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.AccessCodeActivityLogService;
+import uk.gov.hmcts.reform.pcs.exception.RedactionContext;
 
 import java.util.List;
 import java.util.UUID;
@@ -22,6 +23,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.MISSING_POSTAL_ADDRESS;
 
 @ExtendWith(MockitoExtension.class)
 class ClaimPackSenderTest {
@@ -77,7 +79,7 @@ class ClaimPackSenderTest {
     void shouldRecordFailureWhenSendThrowsMissingAddress() {
         when(packRecipientResolver.resolveClaimRecipients(CASE_ID)).thenReturn(List.of(resolvedRecipient()));
         when(bulkPrintService.sendPack(any(), any(), any(), any(), any(), any()))
-            .thenThrow(new MissingPostalAddressException("no address"));
+            .thenThrow(new MissingPostalAddressException(MISSING_POSTAL_ADDRESS, RedactionContext.empty()));
 
         underTest.sendClaimPacks(CASE_ID);
 

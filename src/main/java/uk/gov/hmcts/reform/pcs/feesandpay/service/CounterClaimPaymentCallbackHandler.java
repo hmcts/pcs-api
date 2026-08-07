@@ -12,6 +12,7 @@ import uk.gov.hmcts.reform.pcs.ccd.model.CounterClaimStatusChangeTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.repository.CounterClaimRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.counterclaimform.CounterClaimFormScheduler;
 import uk.gov.hmcts.reform.pcs.ccd.task.CounterClaimIssuedNotificationTaskComponent;
+import uk.gov.hmcts.reform.pcs.exception.RedactionContext;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatusCallback;
@@ -21,6 +22,9 @@ import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.UUID;
+
+import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.COUNTER_CLAIM_CALLBACK;
+import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.COUNTER_CLAIM_TASK_DATA;
 
 @Component
 @Slf4j
@@ -49,10 +53,7 @@ public class CounterClaimPaymentCallbackHandler implements PaymentCallbackStrate
         FeesAndPayTaskData feesAndPayTaskData = toFeesAndPayTaskData(feePaymentEntity.getTaskData());
         UUID counterClaimId = feesAndPayTaskData.getRelatedEntityId();
         if (counterClaimId == null) {
-            throw new PaymentCallbackException(
-                "Counterclaim payment callback missing relatedEntityId in task data",
-                null
-            );
+            throw new PaymentCallbackException(COUNTER_CLAIM_CALLBACK);
         }
 
         CounterClaimEntity counterClaimEntity = counterClaimRepository.findById(counterClaimId)
@@ -86,7 +87,8 @@ public class CounterClaimPaymentCallbackHandler implements PaymentCallbackStrate
         try {
             return objectMapper.readValue(feesAndPayTaskDataAsString, FeesAndPayTaskData.class);
         } catch (IOException e) {
-            throw new PaymentCallbackException("Unable to process: " + feesAndPayTaskDataAsString, e);
+            throw new PaymentCallbackException(COUNTER_CLAIM_TASK_DATA,
+                RedactionContext.of("Unable to process: ", feesAndPayTaskDataAsString), e);
         }
     }
 

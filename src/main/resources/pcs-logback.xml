@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+  <conversionRule conversionWord="exception"
+                  converterClass="uk.gov.hmcts.reform.pcs.exception.RedactingThrowableConverter"/>
+
+  <conversionRule conversionWord="msg" converterClass="uk.gov.hmcts.reform.pcs.exception.RedactingMessageConverter"/>
+
+  <contextListener class="uk.gov.hmcts.reform.pcs.exception.LoggerGate" />
+
+  <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+    <encoder>
+      <pattern>%d{ISO8601} %-5level [%thread] %logger{36} - %msg%n%exception</pattern>
+    </encoder>
+  </appender>
+
+  <root level="${ROOT_LOG_LEVEL:-INFO}">
+    <appender-ref ref="CONSOLE"/>
+  </root>
+
+  <logger name="uk.gov.hmcts.reform.docassembly.DocAssemblyClient" level="OFF"/>
+
+</configuration>

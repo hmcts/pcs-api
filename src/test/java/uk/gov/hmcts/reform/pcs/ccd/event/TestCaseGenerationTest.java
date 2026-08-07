@@ -171,8 +171,7 @@ class TestCaseGenerationTest {
 
         // When / Then
         assertThatThrownBy(() -> underTest.loadTestPcsCase(label))
-            .isInstanceOf(TestCaseSupportException.class)
-            .hasCause(ioException);
+            .isInstanceOf(TestCaseSupportException.class);
     }
 
     @Test

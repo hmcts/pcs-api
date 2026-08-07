@@ -110,7 +110,7 @@ class PCSFeesClientTest {
         // When & Then
         assertThatThrownBy(() -> underTest.lookupFee(FeeType.CASE_ISSUE_FEE))
             .isInstanceOf(FeeNotFoundException.class)
-            .hasMessageContaining("Fee not found for feeType: CASE_ISSUE_FEE");
+            .hasMessageContaining("REDACTED [FEE_NOT_FOUND]");
 
         verify(feesConfiguration).getLookup(FeeType.CASE_ISSUE_FEE);
         verify(feesApi, never()).lookupFee(any(), any(), any(), any(), any(), any(), any(), any());

@@ -8,7 +8,9 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.GenAppRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppDocumentGenerator;
+import uk.gov.hmcts.reform.pcs.exception.ErrorCode;
 import uk.gov.hmcts.reform.pcs.exception.GenAppNotFoundException;
+import uk.gov.hmcts.reform.pcs.exception.RedactionContext;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatusCallback;
 import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
@@ -49,7 +51,8 @@ public class GenAppPaymentCallbackHandler implements PaymentCallbackStrategy {
 
     private GenAppEntity findGenAppEntity(UUID genAppId) {
         return genAppRepository.findById(genAppId)
-            .orElseThrow(() -> new GenAppNotFoundException("Unable to find gen app with ID " + genAppId));
+            .orElseThrow(() -> new GenAppNotFoundException(ErrorCode.GEN_APP,
+                RedactionContext.of("Unable to find gen app with ID", genAppId)));
     }
 
 }

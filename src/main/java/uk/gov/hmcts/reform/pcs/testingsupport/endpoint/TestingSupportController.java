@@ -69,6 +69,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
+import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.PARTY_NOT_FOUND;
 
 @Slf4j
 @AllArgsConstructor
@@ -492,7 +493,7 @@ public class TestingSupportController {
         }
 
         PartyEntity partyEntity = partyRepository.findById(partyId)
-            .orElseThrow(() -> new PartyNotFoundException("No party found for provided ID"));
+            .orElseThrow(() -> new PartyNotFoundException(PARTY_NOT_FOUND));
 
         partyEntity.setEmailAddress(partyEmail.getEmailAddress());
         ContactPreferencesEntity contactPreferences = partyEntity.getContactPreferences();

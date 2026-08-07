@@ -198,7 +198,7 @@ class NotificationServiceTest {
             assertThatThrownBy(() -> notificationService
                 .scheduleEmailNotification(request, createCase(), new ClaimEntity(), createParty()))
                 .isInstanceOf(NotificationException.class)
-                .hasMessage("Failed to save Case Notification.");
+                .hasMessage("REDACTED [FAILED_SAVE]");
 
             verify(notificationRepository).save(any(CaseNotification.class));
         }
@@ -589,7 +589,7 @@ class NotificationServiceTest {
             assertThatThrownBy(
                 () -> notificationService.sendClaimantDefendantHasMadeCounterclaimEmailNotification(claim))
                 .isInstanceOf(PartyNotFoundException.class)
-                .hasMessage("No claimant party found for claim: " + claimId);
+                .hasMessage("REDACTED [PARTY_NOT_FOUND]");
 
             verify(partyService).getPrimaryClaimantPartyEntity(any());
             verifyNoInteractions(templateConfiguration);
@@ -607,7 +607,7 @@ class NotificationServiceTest {
             assertThatThrownBy(
                 () -> notificationService.sendDefendantResponseNoCounterclaimEmailNotification(defendantResponse))
                 .isInstanceOf(PartyNotFoundException.class)
-                .hasMessage("No defendant party found for response: " + responseId);
+                .hasMessage("REDACTED [PARTY_NOT_FOUND]");
 
             verifyNoInteractions(partyService);
             verifyNoInteractions(templateConfiguration);

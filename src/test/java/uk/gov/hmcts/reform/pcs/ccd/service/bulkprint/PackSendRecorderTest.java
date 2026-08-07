@@ -18,6 +18,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.service.AccessCodeActivityLogService;
+import uk.gov.hmcts.reform.pcs.exception.RedactionContext;
 
 import java.util.List;
 import java.util.UUID;
@@ -28,6 +29,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.MISSING_POSTAL_ADDRESS;
 
 @ExtendWith(MockitoExtension.class)
 class PackSendRecorderTest {
@@ -133,7 +135,7 @@ class PackSendRecorderTest {
     @DisplayName("Records a terminal PACK_FAILED row when the recipient has no postal address")
     void shouldRecordTerminalFailureOnMissingAddress() {
         Supplier<UUID> sendAction = () -> {
-            throw new MissingPostalAddressException("no usable address");
+            throw new MissingPostalAddressException(MISSING_POSTAL_ADDRESS, RedactionContext.empty());
         };
 
         underTest.sendAndRecord(pcsCase, recipient, LetterType.DEFENCE_PACK, List.of(document), sendAction);
@@ -144,6 +146,7 @@ class PackSendRecorderTest {
         PackDetails details = packDetailsCaptor.getValue();
         assertThat(details.terminal()).isTrue();
         assertThat(details.failureReason()).isEqualTo(FailureReason.MISSING_ADDRESS);
-        assertThat(details.errorDetail()).isEqualTo("MissingPostalAddressException: no usable address");
+        assertThat(details.errorDetail())
+            .isEqualTo("MissingPostalAddressException: REDACTED [MISSING_POSTAL_ADDRESS]");
     }
 }

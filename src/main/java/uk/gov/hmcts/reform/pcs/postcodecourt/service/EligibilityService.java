@@ -16,6 +16,8 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
+import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.POST_CODE;
+
 @Service
 @Slf4j
 public class EligibilityService {
@@ -43,7 +45,7 @@ public class EligibilityService {
      */
     public EligibilityResult checkEligibility(String postcode, LegislativeCountry providedLegislativeCountry) {
         if (postcode == null || postcode.isBlank()) {
-            throw new InvalidPostCodeException("Postcode can’t be empty or null");
+            throw new InvalidPostCodeException(POST_CODE);
         }
 
         List<PostcodeCourtMapping> postcodeMappings = findMatchingMappings(postcode, providedLegislativeCountry);

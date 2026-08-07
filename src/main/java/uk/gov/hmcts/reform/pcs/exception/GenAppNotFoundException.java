@@ -1,9 +1,9 @@
 package uk.gov.hmcts.reform.pcs.exception;
 
-public class GenAppNotFoundException extends RuntimeException {
+public class GenAppNotFoundException extends RedactedRuntimeException {
 
-    public GenAppNotFoundException(String message) {
-        super(message);
+    public GenAppNotFoundException(ErrorCode errorCode, RedactionContext redactionContext) {
+        super(errorCode, redactionContext);
     }
 
 }

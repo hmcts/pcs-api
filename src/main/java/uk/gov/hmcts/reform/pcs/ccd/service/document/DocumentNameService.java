@@ -10,6 +10,8 @@ import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 
 import java.util.UUID;
 
+import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.PARTY_NOT_FOUND;
+
 @Service
 public class DocumentNameService {
 
@@ -112,7 +114,7 @@ public class DocumentNameService {
         return claim.getClaimParties().stream()
             .filter(claimPartyEntity -> partyId.equals(claimPartyEntity.getParty().getId()))
             .findFirst()
-            .orElseThrow(() -> new PartyNotFoundException("Party not found"));
+            .orElseThrow(() -> new PartyNotFoundException(PARTY_NOT_FOUND));
     }
 
 }

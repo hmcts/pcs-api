@@ -46,7 +46,7 @@ class DefendantPartyExtractorTest {
         assertThatThrownBy(() ->
                                underTest.extractDefendants(caseEntity, CASE_REFERENCE))
             .isInstanceOf(CaseAccessException.class)
-            .hasMessage("No defendants associated with this case");
+            .hasMessage("REDACTED [DEFENDANT_PARTY_EXTRACTOR_02]");
     }
 
     @Test
@@ -61,7 +61,7 @@ class DefendantPartyExtractorTest {
         assertThatThrownBy(() ->
                                underTest.extractDefendants(caseEntity, CASE_REFERENCE))
             .isInstanceOf(CaseAccessException.class)
-            .hasMessage("No claim found for this case");
+            .hasMessage("REDACTED [DEFENDANT_PARTY_EXTRACTOR_01]");
     }
 
     @Test

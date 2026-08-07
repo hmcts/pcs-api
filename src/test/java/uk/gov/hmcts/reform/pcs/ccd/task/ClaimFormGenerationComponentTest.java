@@ -207,7 +207,9 @@ class ClaimFormGenerationComponentTest {
         assertThat(terminalErrors).hasSize(1);
 
         ILoggingEvent event = terminalErrors.getFirst();
-        assertThat(event.getFormattedMessage()).contains("999").contains("docassembly 500");
+        assertThat(event.getFormattedMessage()).contains("999");
+        assertThat(event.getThrowableProxy()).isNotNull();
+        assertThat(event.getThrowableProxy().getMessage()).contains("docassembly 500");
         assertThat(event.getMDCPropertyMap())
             .containsEntry("caseReference", "999")
             .containsEntry("taskName", "claim-form-generation-task")

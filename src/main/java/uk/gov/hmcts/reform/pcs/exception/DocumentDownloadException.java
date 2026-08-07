@@ -1,9 +1,9 @@
 package uk.gov.hmcts.reform.pcs.exception;
 
-public class DocumentDownloadException extends RuntimeException {
+public class DocumentDownloadException extends RedactedRuntimeException {
 
-    public DocumentDownloadException(String message, Throwable cause) {
-        super(message, cause);
+    public DocumentDownloadException(ErrorCode errorCode, Throwable cause) {
+        super(errorCode, cause);
     }
 
 }
