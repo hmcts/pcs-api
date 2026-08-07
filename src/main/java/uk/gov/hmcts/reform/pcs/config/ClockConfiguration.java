@@ -5,6 +5,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import java.time.Clock;
+import java.time.Instant;
 import java.time.ZoneId;
 
 @Configuration
@@ -24,7 +25,9 @@ public class ClockConfiguration {
 
     @Bean
     public SettableClock settableClock() {
-        return new SettableClock();
+        SettableClock settableClock = new SettableClock();
+        settableClock.set(Instant.now());
+        return settableClock;
     }
 
 }
