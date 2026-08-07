@@ -89,15 +89,24 @@ export class DocumentsAction implements IAction {
       confirmDocumentData.option === confirmIfTheseDocumentsRelateToAnApplication.noRadioOption
         ? confirmDocumentData.option
         : optionText;
-    console.log('confirmDocumentData:', confirmDocumentData);
-    console.log('optionText:', optionText);
-    console.log('selectOption:', selectOption);
-    await performValidation('elementToBeVisible', { elementType: 'radio', text: selectOption });
-    await performAction('clickRadioButton', {
-      question: confirmDocumentData.question,
-      option: selectOption,
-    });
-    await performAction('clickButton', confirmIfTheseDocumentsRelateToAnApplication.continueButton);
+
+// Find which radio should be selected
+    const radioIndex = expectedOptions.findIndex(
+      option =>
+        option.replace(/\s+/g, ' ').trim() ===
+        selectOption.replace(/\s+/g, ' ').trim()
+    );
+
+    if (radioIndex === -1) {
+      throw new Error(`Could not find radio option: ${selectOption}`);
+    }
+
+    await page.locator('input[type="radio"]').nth(radioIndex).check();
+
+    await performAction(
+      'clickButton',
+      confirmIfTheseDocumentsRelateToAnApplication.continueButton
+    );
   }
 
   private async navigateToSummaryPage(page: Page) {
