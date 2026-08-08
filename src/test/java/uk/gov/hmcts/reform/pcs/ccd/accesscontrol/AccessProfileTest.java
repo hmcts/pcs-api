@@ -31,4 +31,12 @@ class AccessProfileTest {
         assertThat(AccessProfile.LEADERSHIP_JUDGE.getCaseTypePermissions())
             .isEqualTo(Permission.toString(Permission.CRU));
     }
+
+    @Test
+    void shouldMapEveryJudicialRoleToTheSingleJudgeAccessProfile() {
+        assertThat(UserRole.JUDGE.getAccessProfiles()).containsExactly("judge");
+        assertThat(UserRole.FEE_PAID_JUDGE.getAccessProfiles()).containsExactly("judge");
+        assertThat(UserRole.CIRCUIT_JUDGE.getAccessProfiles()).containsExactly("judge");
+        assertThat(UserRole.LEADERSHIP_JUDGE.getAccessProfiles()).containsExactly("judge");
+    }
 }
