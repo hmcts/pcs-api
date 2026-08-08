@@ -10,6 +10,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.core.parameters.P;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
@@ -38,6 +39,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.PaymentAgreemen
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.ReasonableAdjustmentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DefendantResponseRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.defenceform.DefenceFormScheduler;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.DefendantResponseReadMapper;
@@ -83,6 +85,8 @@ class DefendantResponseServiceTest {
     private DefendantResponseRepository defendantResponseRepository;
     @Mock
     private DefendantResponseReadMapper defendantResponseReadMapper;
+    @Mock
+    private PartyRepository partyRepository;
     @Mock
     private SecurityContextService securityContextService;
     @Mock
@@ -1038,10 +1042,7 @@ class DefendantResponseServiceTest {
     @Test
     void shouldSetCompletedByToLegalRepresentativeWhenHasLegalRepresentationIsYes() {
         // Given
-        UUID representedPartyId = UUID.randomUUID();
         when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
-        when(partyRepository.findByIdAndPcsCaseCaseReference(representedPartyId, CASE_REFERENCE))
-            .thenReturn(Optional.of(partyEntity));
         stubClaimLookup();
 
         DefendantResponses responses = DefendantResponses.builder()
@@ -1059,7 +1060,7 @@ class DefendantResponseServiceTest {
             .build();
 
         // When — legal rep path (passes party ID explicitly)
-        underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse, representedPartyId);
+        underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse, partyEntity, JourneyType.LEGAL_REPRESENTATIVE);
 
         // Then
         verify(defendantResponseRepository).save(responseCaptor.capture());
@@ -1078,10 +1079,7 @@ class DefendantResponseServiceTest {
     @Test
     void shouldNotSetCompletedByWhenHasLegalRepresentationIsAbsent() {
         // Given
-        UUID representedPartyId = UUID.randomUUID();
         when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
-        when(partyRepository.findByIdAndPcsCaseCaseReference(representedPartyId, CASE_REFERENCE))
-            .thenReturn(Optional.of(partyEntity));
         stubClaimLookup();
 
         DefendantResponses responses = DefendantResponses.builder()
@@ -1099,7 +1097,7 @@ class DefendantResponseServiceTest {
             .build();
 
         // When
-        underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse, representedPartyId);
+        underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse, partyEntity, JourneyType.CITIZEN);
 
         // Then
         verify(defendantResponseRepository).save(responseCaptor.capture());
