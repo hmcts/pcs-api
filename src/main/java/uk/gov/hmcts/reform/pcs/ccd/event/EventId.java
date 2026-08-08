@@ -15,8 +15,13 @@ public enum EventId {
     dashboardView,
     confirmEviction,
     uploadDocuments,
+    amendDocuments,
     addCaseNote,
+    addCaseReviewDate,
     createFlags,
     amendFlags,
-    claimIssuePayment
+    claimIssuePayment,
+    changeCaseState,
+    enterGenApp,
+    legalRepresentativeContactDetails
 }

@@ -26,8 +26,8 @@ import java.util.UUID;
 public class DraftCaseDataEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
 
     private Long caseReference;
 
@@ -40,5 +40,7 @@ public class DraftCaseDataEntity {
     private UUID idamUserId;
 
     private UUID partyId;
+
+    private String legalRepresentativeOrganisationId;
 
 }

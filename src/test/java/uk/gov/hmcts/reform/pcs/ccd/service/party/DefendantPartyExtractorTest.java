@@ -105,4 +105,86 @@ class DefendantPartyExtractorTest {
         assertThat(result)
             .containsExactly(defendant1, defendant2);
     }
+
+    @Test
+    void summaryScreenSafeExtractDefendants_shouldReturnDefendantsWhenDefendantsExist() {
+        // Given
+        PartyEntity defendant1 = PartyEntity.builder().build();
+        PartyEntity defendant2 = PartyEntity.builder().build();
+
+        ClaimPartyEntity defendantParty1 = ClaimPartyEntity.builder()
+            .role(PartyRole.DEFENDANT)
+            .party(defendant1)
+            .build();
+
+        ClaimPartyEntity defendantParty2 = ClaimPartyEntity.builder()
+            .role(PartyRole.DEFENDANT)
+            .party(defendant2)
+            .build();
+
+        ClaimPartyEntity claimantParty = ClaimPartyEntity.builder()
+            .role(PartyRole.CLAIMANT)
+            .party(PartyEntity.builder().build())
+            .build();
+
+        ClaimEntity claimEntity = ClaimEntity.builder()
+            .claimParties(List.of(
+                claimantParty,
+                defendantParty1,
+                defendantParty2
+            ))
+            .build();
+
+        PcsCaseEntity caseEntity = PcsCaseEntity.builder()
+            .claims(List.of(claimEntity))
+            .build();
+
+        // When
+        List<PartyEntity> result =
+            underTest.summaryScreenSafeExtractDefendants(caseEntity);
+
+        // Then
+        assertThat(result)
+            .containsExactly(defendant1, defendant2);
+    }
+
+    @Test
+    void summaryScreenSafeExtractDefendants_shouldReturnEmptyListWhenNoDefendantsExist() {
+        // Given
+        ClaimPartyEntity claimantParty = ClaimPartyEntity.builder()
+            .role(PartyRole.CLAIMANT)
+            .party(PartyEntity.builder().build())
+            .build();
+
+        ClaimEntity claimEntity = ClaimEntity.builder()
+            .claimParties(List.of(
+                claimantParty
+            ))
+            .build();
+
+        PcsCaseEntity caseEntity = PcsCaseEntity.builder()
+            .claims(List.of(claimEntity))
+            .build();
+
+        // When
+        List<PartyEntity> result =
+            underTest.summaryScreenSafeExtractDefendants(caseEntity);
+
+        // Then
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    void summaryScreenSafeExtractDefendants_shouldReturnEmptyListWhenNoClaimExist() {
+        // Given
+        PcsCaseEntity caseEntity = PcsCaseEntity.builder()
+            .build();
+
+        // When
+        List<PartyEntity> result =
+            underTest.summaryScreenSafeExtractDefendants(caseEntity);
+
+        // Then
+        assertThat(result).isEmpty();
+    }
 }

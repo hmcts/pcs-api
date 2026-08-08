@@ -18,6 +18,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeOrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
@@ -84,6 +85,11 @@ public class PcsCaseEntity {
     @OneToMany(mappedBy = "pcsCase", fetch = LAZY, cascade = ALL)
     @Builder.Default
     @JsonManagedReference
+    private List<CaseReviewDateEntity> reviewDates = new ArrayList<>();
+
+    @OneToMany(mappedBy = "pcsCase", fetch = LAZY, cascade = ALL)
+    @Builder.Default
+    @JsonManagedReference
     @OrderBy("rank ASC")
     private Set<GenAppEntity> genApps = new HashSet<>();
 
@@ -113,6 +119,11 @@ public class PcsCaseEntity {
     @OneToMany(mappedBy = "pcsCase", cascade = ALL, orphanRemoval = true)
     @Builder.Default
     private List<CaseFlagEntity> caseFlags = new ArrayList<>();
+
+    @OneToMany(mappedBy = "pcsCase", fetch = LAZY, cascade = ALL)
+    @Builder.Default
+    @JsonManagedReference
+    private Set<LegalRepresentativeOrganisationEntity> legalRepresentativeOrganisations = new HashSet<>();
 
     public void setTenancyLicence(TenancyLicenceEntity tenancyLicence) {
         if (this.tenancyLicence != null) {
@@ -165,4 +176,14 @@ public class PcsCaseEntity {
         caseNote.setPcsCase(this);
     }
 
+    public void addCaseReviewDate(CaseReviewDateEntity reviewDate) {
+        reviewDates.add(reviewDate);
+        reviewDate.setPcsCase(this);
+    }
+
+    public void addLegalRepresentativeOrganisation(LegalRepresentativeOrganisationEntity
+                                                       legalRepresentativeOrganisation) {
+        legalRepresentativeOrganisations.add(legalRepresentativeOrganisation);
+        legalRepresentativeOrganisation.setPcsCase(this);
+    }
 }

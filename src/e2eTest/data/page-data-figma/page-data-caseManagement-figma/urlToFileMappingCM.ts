@@ -1,0 +1,16 @@
+export default {
+  'amendDocumentsselectDocument': 'selectDocument',
+  'addCaseReviewDateaddCaseReviewDate': 'addReviewDates',
+  'addCaseReviewDate/submit' : 'checkYourAnswersAddReviewDates',
+  'addCaseReviewDate/confirm': 'confirmReviewDatesAdded',
+  'changeCaseStatechangeCaseStatePage': 'changeCaseState',
+  'changeCaseState/confirm': 'confirmCaseStateChange',
+  'enterGenAppapplicationDetails': 'enterGenAppapplicationDetails',
+  'enterGenApphearingDate': 'enterGenApphearingDate',
+  'enterGenAppapplicationFee': 'enterGenAppapplicationFee',
+  'enterGenAppconsentAndNotice': 'enterGenAppconsentAndNotice',
+  'enterGenAppuploadGeneralApplication': 'enterGenAppuploadGeneralApplication',
+  'enterGenAppuploadRelatedEvidence': 'enterGenAppUploadRelatedEvidence',
+  'enterGenAppreferApplicationToJudge': 'enterGenAppPreferApplicationToJudge',
+  'enterGenApp/submit': 'genAppsCheckYourAnswers',
+};

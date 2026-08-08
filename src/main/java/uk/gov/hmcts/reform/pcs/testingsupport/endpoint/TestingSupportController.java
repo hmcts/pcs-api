@@ -27,21 +27,30 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.ContactPreferencesEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.AccessCodeGenerationService;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseRoleAssignmentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 import uk.gov.hmcts.reform.pcs.idam.IdamAuthenticator;
+import uk.gov.hmcts.reform.pcs.idam.User;
+import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityResult;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.postcodecourt.service.EligibilityService;
-import uk.gov.hmcts.reform.pcs.reference.service.OrganisationDetailsService;
+import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 import uk.gov.hmcts.reform.pcs.service.LegalRepresentativePartyLinkService;
+import uk.gov.hmcts.reform.pcs.testingsupport.model.PartyEmail;
 import uk.gov.hmcts.reform.pcs.testingsupport.model.TestingSupportAccessCode;
 import uk.gov.hmcts.reform.pcs.testingsupport.service.CcdTestCaseOrchestrator;
 
@@ -72,14 +81,15 @@ public class TestingSupportController {
     private final EligibilityService eligibilityService;
     private final PcsCaseRepository pcsCaseRepository;
     private final JdbcTemplate jdbcTemplate;
+    private final PartyRepository partyRepository;
     private final ModelMapper modelMapper;
     private final CcdTestCaseOrchestrator ccdTestCaseOrchestrator;
     private final CaseRoleAssignmentService caseRoleAssignmentService;
     private final LegalRepresentativePartyLinkService legalRepresentativePartyLinkService;
     private final IdamAuthenticator idamAuthenticator;
-    private final OrganisationDetailsService organisationDetailsService;
     private final PcsCaseService pcsCaseService;
     private final AccessCodeGenerationService accessCodeGenerationService;
+    private final FeatureToggleService featureToggleService;
 
     @Operation(
         summary = "Schedule a Hello World task",
@@ -378,6 +388,48 @@ public class TestingSupportController {
         accessCodeGenerationService.createAccessCodesForParties(String.valueOf(caseReference), true);
     }
 
+    @PostMapping(
+        value = "/link-defendant-solicitor-to-party/{caseReference}/{partyId}",
+        produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    @Operation(
+        summary = "Link a defendant solicitor to a party for a case"
+    )
+    @ApiResponse(responseCode = "200", description = "Successful assignment",
+        content = @Content())
+    @ApiResponse(responseCode = "401", description = "Invalid access token",
+        content = @Content())
+    @ApiResponse(responseCode = "412", description = "Feature not enabled",
+        content = @Content())
+    public ResponseEntity<Void> linkDefendantSolicitorToParty(
+        @Parameter(description = "The 12-digit case reference number", required = true)
+        @PathVariable long caseReference,
+        @Parameter(description = "Id of Party to link", required = true)
+        @PathVariable String partyId,
+        @RequestHeader(value = AUTHORIZATION) String authorization,
+        @RequestHeader(value = "ServiceAuthorization") String serviceAuthorization
+    ) {
+
+        if (!this.featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_2)
+            || !this.featureToggleService.isEnabled(FeatureFlag.CUI_RESPOND_TO_CLAIM_LR)) {
+            log.warn("Feature flags are disabled for [{}] [{}]", FeatureFlag.RELEASE_1_DOT_2.key(),
+                     FeatureFlag.CUI_RESPOND_TO_CLAIM_LR.key());
+            return ResponseEntity.status(HttpStatus.PRECONDITION_FAILED).build();
+        }
+
+        User user = idamAuthenticator.validateAuthToken(authorization);
+        UserInfo userDetails = user.getUserDetails();
+
+        caseRoleAssignmentService.assignRasRole(caseReference, userDetails.getUid(), UserRole.DEFENDANT_SOLICITOR);
+
+        legalRepresentativePartyLinkService.linkLegalRepresentativeToParty(
+            caseReference,
+            partyId,
+            userDetails
+        );
+        return ResponseEntity.ok().build();
+    }
+
     @GetMapping("/fee-payment-info/{caseReference}")
     public ResponseEntity<List<FeePaymentEntity>> getFeePaymentInfo(
         @Parameter(
@@ -410,4 +462,43 @@ public class TestingSupportController {
             return ResponseEntity.internalServerError().build();
         }
     }
+
+    @Operation(
+        summary = "Set a party email address and contact preference"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Email set successfully", content = @Content()),
+        @ApiResponse(
+            responseCode = "400", description = "Bad request", content = @Content()),
+        @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing authorization token"),
+        @ApiResponse(responseCode = "404", description = "Party not found"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    @PostMapping("/party/{partyId}/email-address")
+    public ResponseEntity<String> setPartyEmail(
+        @RequestHeader(value = "ServiceAuthorization") String serviceAuthorization,
+        @PathVariable UUID partyId,
+        @RequestBody PartyEmail partyEmail
+    ) {
+        if (!partyId.equals(partyEmail.getPartyId())) {
+            return ResponseEntity.badRequest().body("Party ID in payload does not match URL");
+        }
+
+        PartyEntity partyEntity = partyRepository.findById(partyId)
+            .orElseThrow(() -> new PartyNotFoundException("No party found for provided ID"));
+
+        partyEntity.setEmailAddress(partyEmail.getEmailAddress());
+        ContactPreferencesEntity contactPreferences = partyEntity.getContactPreferences();
+        if (contactPreferences == null) {
+            contactPreferences = ContactPreferencesEntity.builder().build();
+            partyEntity.setContactPreferences(contactPreferences);
+        }
+
+        contactPreferences.setContactByEmail(VerticalYesNo.YES);
+
+        partyRepository.save(partyEntity);
+
+        return ResponseEntity.ok().build();
+    }
+
 }

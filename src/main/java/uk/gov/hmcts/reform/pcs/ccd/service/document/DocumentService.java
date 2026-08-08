@@ -53,9 +53,9 @@ public class DocumentService {
     private final DocumentNameService documentNameService;
 
     private static final String CLAIMANT_1 = "Claimant 1";
+    private static final String DEFAULT_CATEGORY_ID = CaseFileCategory.UNCATEGORISED_DOCUMENTS.getId();
 
-    public List<DocumentEntity> createAllDocuments(PCSCase pcsCase) {
-
+    public List<DocumentEntity> buildDocumentEntitiesForCase(PCSCase pcsCase) {
         List<DocumentHolder> allDocuments = getPcsCaseDocuments(pcsCase);
 
         if (allDocuments.isEmpty()) {
@@ -64,18 +64,22 @@ public class DocumentService {
 
         applyClaimFilename(allDocuments);
 
-        return documentRepository.saveAll(createDocumentEntities(allDocuments));
+        return createDocumentEntities(allDocuments);
+    }
+
+    /**
+     * Convenience wrapper that builds and persists document entities for a {@link PCSCase}.
+     * Production code uses {@link #buildDocumentEntitiesForCase(PCSCase)} directly; this overload
+     * remains for tests and callers that need persisted entities in one step.
+     */
+    public List<DocumentEntity> createAllDocuments(PCSCase pcsCase) {
+        return documentRepository.saveAll(buildDocumentEntitiesForCase(pcsCase));
     }
 
     public List<DocumentEntity> createAllDocuments(EnforcementOrder enforcementOrder) {
-
-        List<DocumentHolder> allDocuments = getWarrantOfRestitutionDocuments(enforcementOrder);
-
-        if (allDocuments.isEmpty()) {
-            return List.of();
-        }
-
-        return documentRepository.saveAll(createDocumentEntities(allDocuments));
+        return documentRepository.saveAll(
+            createDocumentEntities(getWarrantOfRestitutionDocuments(enforcementOrder))
+        );
     }
 
     private List<DocumentHolder> getPcsCaseDocuments(PCSCase pcsCase) {
@@ -187,9 +191,7 @@ public class DocumentService {
                         .documentId(documentIdExtractor.extractDocumentId(holder.getDocument().getUrl()))
                         .fileName(holder.getDocument().getFilename())
                         .binaryUrl(holder.getDocument().getBinaryUrl())
-                        .categoryId(mapDocumentTypeToCategory(holder.getType())
-                                        .map(CaseFileCategory::getId)
-                                        .orElse(null))
+                        .categoryId(categoryIdFor(holder.getType()))
                         .type(holder.getType())
                         .description(StringUtils.isEmpty(holder.getDescription()) ? null : holder.getDescription())
                         .build())
@@ -248,8 +250,6 @@ public class DocumentService {
             .collect(Collectors.toSet());
 
         ClaimEntity mainClaim = getMainClaim(pcsCase);
-        String applicationsCategoryId = CaseFileCategory.APPLICATIONS.getId();
-
         List<DocumentEntity> documentEntities = uploadedDocuments.stream()
             .map(ListValue::getValue)
             .filter(Objects::nonNull)
@@ -271,7 +271,7 @@ public class DocumentService {
                     .contentType(uploaded.getContentType())
                     .size(uploaded.getSizeInBytes())
                     .type(DocumentType.OTHER)
-                    .categoryId(selectedGenApp != null ? applicationsCategoryId : null)
+                    .categoryId(selectedGenApp != null ? CaseFileCategory.APPLICATIONS.getId() : DEFAULT_CATEGORY_ID)
                     .build();
             })
             .toList();
@@ -328,6 +328,7 @@ public class DocumentService {
                     .binaryUrl(defDoc.getDocument().getBinaryUrl())
                     .contentType(defDoc.getContentType())
                     .size(defDoc.getSizeInBytes())
+                    .categoryId(DEFAULT_CATEGORY_ID)
                     .build();
             })
             .toList();
@@ -405,6 +406,8 @@ public class DocumentService {
             case CERTIFICATE_OF_SUITABILITY_AS_LF,
                  LEGAL_AID_CERTIFICATE ->
                 Optional.of(CaseFileCategory.CORRESPONDENCE);
+            case GENERAL_APPLICATION ->
+                Optional.of(CaseFileCategory.APPLICATIONS);
             case NOTICE_SERVED,
                  POLICE_REPORT,
                  // Defendant access-code letters aren't shown on the case file
@@ -415,6 +418,16 @@ public class DocumentService {
                  OTHER ->
                 Optional.empty();
         };
+    }
+
+    private String categoryIdFor(DocumentType documentType) {
+        if (documentType == null) {
+            return DEFAULT_CATEGORY_ID;
+        }
+
+        return mapDocumentTypeToCategory(documentType)
+            .map(CaseFileCategory::getId)
+            .orElse(DEFAULT_CATEGORY_ID);
     }
 
     private DocumentType mapEvidenceDocumentTypeToDocumentType(EvidenceDocumentType evidenceDocumentType) {

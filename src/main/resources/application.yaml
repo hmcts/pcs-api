@@ -56,8 +56,8 @@ spring:
     properties:
       charSet: UTF-8
     hikari:
-      minimumIdle: 2
-      maximumPoolSize: 10
+      minimumIdle: ${PCS_DB_POOL_MIN_IDLE:2}
+      maximumPoolSize: ${PCS_DB_POOL_MAX_SIZE:10}
       idleTimeout: 10000
       poolName: PCSHikariCP
       maxLifetime: 7200000
@@ -142,6 +142,7 @@ location-reference:
   court-county-type-id: ${COURT_COUNTY_TYPE_ID:10}
 
 notify:
+  api-url: ${NOTIFY_URL:http://localhost:8083}
   api-key: ${PCS_NOTIFY_API_KEY:AAAAAAAA-AAAA-AAAA-AAAA-AAAAAAAAAAAA}
   send-email:
     max-retries: ${NOTIFY_SEND_EMAIL_MAX_RETRIES:5}
@@ -174,8 +175,8 @@ access-code-test-table:
 db-scheduler:
   enabled: false # This disables the autoconfiguration of DB Scheduler. Always off.
   executor-enabled: ${DB_SCHEDULER_EXECUTOR_ENABLED:true}
-  polling-interval-seconds: 10
-  threads: 10
+  polling-interval-seconds: ${DB_SCHEDULER_POLLING_INTERVAL_SECONDS:10}
+  threads: ${DB_SCHEDULER_THREADS:10}
 
 doc_assembly:
   url: ${DOC_ASSEMBLY_URL:http://localhost:8080}
@@ -333,3 +334,12 @@ core_case_data:
 caseApi:
   url: ${CASE_API_URL:http://localhost:3206}
 
+shutter:
+  service: ${SHUTTER_SERVICE:false}
+
+cache:
+  organisationDetails:
+    ttlInMinutes: ${CACHED_ORGANISATION_DETAILS_RESPONSE_TTL_IN_MINUTES:5}
+
+frontend:
+  url: ${PCS_FRONTEND_URL:http://localhost:3209}
