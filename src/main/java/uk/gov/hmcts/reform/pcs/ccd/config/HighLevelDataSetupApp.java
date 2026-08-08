@@ -25,6 +25,7 @@ public class HighLevelDataSetupApp extends DataLoaderToDefinitionStore {
         new CcdRoleConfig("caseworker-ras-validation", "PUBLIC"),
         new CcdRoleConfig("citizen", "PUBLIC"),
         new CcdRoleConfig("caseworker", "PUBLIC"),
+        new CcdRoleConfig("claimant", "PUBLIC"),
         new CcdRoleConfig("GS_profile", "PUBLIC"),
         new CcdRoleConfig("ctsc-team-leader", "PUBLIC"),
         new CcdRoleConfig("ctsc", "PUBLIC"),
@@ -36,7 +37,9 @@ public class HighLevelDataSetupApp extends DataLoaderToDefinitionStore {
         new CcdRoleConfig("fee-paid-judge", "PUBLIC"),
         new CcdRoleConfig("circuit-judge", "PUBLIC"),
         new CcdRoleConfig("leadership-judge", "PUBLIC"),
-        new CcdRoleConfig("pcs-system-update", "PUBLIC")
+        new CcdRoleConfig("pcs-system-update", "PUBLIC"),
+        new CcdRoleConfig("claimant_solicitor", "PUBLIC"),
+        new CcdRoleConfig("[SOLICITOR]", "PUBLIC")
     };
 
 

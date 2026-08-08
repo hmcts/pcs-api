@@ -16,9 +16,11 @@ public enum AccessProfile implements HasRole {
     CREATOR("[CREATOR]", CRU),
     RAS_VALIDATOR("caseworker-ras-validation", Set.of(R)),
     CITIZEN("citizen", CRU),
+    CLAIMANT("claimant", CRU),
     DEFENDANT("[DEFENDANT]", CRU),
     CLAIMANT_SOLICITOR("[CLAIMANTSOLICITOR]", CRU),
     DEFENDANT_SOLICITOR("[DEFENDANTSOLICITOR]", CRU),
+    GA_CLAIMANT_SOLICITOR("claimant_solicitor", CRU),
     PCS_CASE_WORKER("caseworker-pcs", Set.of(R)),
     PCS_SOLICITOR("caseworker-pcs-solicitor", CRU),
 

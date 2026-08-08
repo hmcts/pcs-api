@@ -119,6 +119,8 @@ public class PcsCaseEntity {
     @Builder.Default
     private List<CaseFlagEntity> caseFlags = new ArrayList<>();
 
+    private String organisationId;
+
     public void setTenancyLicence(TenancyLicenceEntity tenancyLicence) {
         if (this.tenancyLicence != null) {
             this.tenancyLicence.setPcsCase(null);

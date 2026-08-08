@@ -101,7 +101,7 @@ public class TestCaseGeneration implements CCDConfig<PCSCase, State, UserRole> {
         loadedCase.setFeeAmount(TEST_FEE_AMOUNT);
         pcsCaseService.createCase(
             caseReference, loadedCase.getPropertyAddress(),
-            loadedCase.getLegislativeCountry());
+            loadedCase.getLegislativeCountry(), Optional.empty());
 
         resumePossessionClaim.submitClaim(caseReference, loadedCase);
     }

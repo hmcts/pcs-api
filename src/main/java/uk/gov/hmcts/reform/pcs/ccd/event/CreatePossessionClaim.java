@@ -24,11 +24,13 @@ import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.task.CaseRoleAssignmentTaskComponent;
 import uk.gov.hmcts.reform.pcs.ccd.util.FeeApplier;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.time.Instant;
 import java.util.UUID;
 
+import static java.util.Optional.ofNullable;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.createPossessionClaim;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
 
@@ -39,6 +41,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUD
 public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole> {
 
     private final PcsCaseService pcsCaseService;
+    private final OrganisationService organisationService;
     private final FeeApplier feeApplier;
     private final EnterPropertyAddress enterPropertyAddress;
     private final CrossBorderPostcodeSelection crossBorderPostcodeSelection;
@@ -55,7 +58,8 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
                 .initialState(State.AWAITING_SUBMISSION_TO_HMCTS)
                 .showSummary()
                 .name("Make a claim")
-                .grant(Permission.CRUD, UserRole.PCS_SOLICITOR)
+                .grant(Permission.CRUD, UserRole.SOLICITOR)
+                .grant(Permission.CRUD, UserRole.GA_CLAIMANT_SOLICITOR)
                 .grantHistoryOnly(JUDICIAL_HISTORY_ROLES);
 
         new PageBuilder(eventBuilder)
@@ -86,7 +90,9 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
         long caseReference = eventPayload.caseReference();
         PCSCase caseData = eventPayload.caseData();
 
-        pcsCaseService.createCase(caseReference, caseData.getPropertyAddress(), caseData.getLegislativeCountry());
+        pcsCaseService.createCase(caseReference, caseData.getPropertyAddress(),
+                                  caseData.getLegislativeCountry(),
+                                  ofNullable(organisationService.getOrganisationIdForCurrentUser()));
 
         String userId = securityContextService.getCurrentUserDetails().getUid();
         scheduleRoleAssignment(caseReference, userId);
