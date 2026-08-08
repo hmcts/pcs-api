@@ -10,7 +10,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.core.parameters.P;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
@@ -1060,7 +1059,8 @@ class DefendantResponseServiceTest {
             .build();
 
         // When — legal rep path (passes party ID explicitly)
-        underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse, partyEntity, JourneyType.LEGAL_REPRESENTATIVE);
+        underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse, partyEntity,
+                                        JourneyType.LEGAL_REPRESENTATIVE);
 
         // Then
         verify(defendantResponseRepository).save(responseCaptor.capture());
