@@ -20,6 +20,8 @@ public class Party {
 
     private String id;
 
+    private Integer rank;
+
     private String idamId;
 
     private String firstName;
