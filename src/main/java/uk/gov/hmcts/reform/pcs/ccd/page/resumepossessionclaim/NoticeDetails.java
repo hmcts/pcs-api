@@ -12,10 +12,14 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServiceMethod;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
+import uk.gov.hmcts.reform.pcs.ccd.service.FileUploadValidationService;
+import uk.gov.hmcts.reform.pcs.ccd.service.FileUploadValidationService.ConditionalDocumentUpload;
 import uk.gov.hmcts.reform.pcs.ccd.service.NoticeDetailsService;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
 import java.util.List;
+
+import static uk.gov.hmcts.reform.pcs.ccd.service.FileUploadValidationService.NOTICE_DOCUMENT_REQUIRED;
 
 @Component
 @RequiredArgsConstructor
@@ -23,6 +27,7 @@ public class NoticeDetails implements CcdPageConfiguration {
 
     private final NoticeDetailsService noticeDetailsService;
     private final TextAreaValidationService textAreaValidationService;
+    private final FileUploadValidationService fileUploadValidationService;
 
     private static final String NOTICE_SERVICE_METHOD_CONDITION = "notice_ServiceMethod=\"";
 
@@ -111,7 +116,7 @@ public class NoticeDetails implements CcdPageConfiguration {
             // Document upload section
             .label("noticeDetails-document-separator", "---")
             .mandatory(NoticeServedDetails::getAbleToUploadDocument)
-            .mandatory(NoticeServedDetails::getDocuments,
+            .optional(NoticeServedDetails::getDocuments,
                     "notice_AbleToUploadDocument=\"Yes\"")
             .mandatory(NoticeServedDetails::getUnableToUploadReason,
                     "notice_AbleToUploadDocument=\"No\"")
@@ -122,11 +127,23 @@ public class NoticeDetails implements CcdPageConfiguration {
                                                                   CaseDetails<PCSCase, State> detailsBefore) {
         PCSCase caseData = details.getData();
 
-        if (CanUploadNoticeServedDocument.Yes.equals(caseData.getNoticeServedDetails().getAbleToUploadDocument())) {
-            caseData.getNoticeServedDetails().setUnableToUploadReason(null);
+        NoticeServedDetails noticeServedDetails = caseData.getNoticeServedDetails();
+        boolean ableToUploadDocument =
+            CanUploadNoticeServedDocument.Yes.equals(noticeServedDetails.getAbleToUploadDocument());
+
+        if (ableToUploadDocument) {
+            noticeServedDetails.setUnableToUploadReason(null);
         }
 
         List<String> validationErrors = noticeDetailsService.validateNoticeDetails(caseData);
+
+        if (ableToUploadDocument) {
+            validationErrors.addAll(
+                fileUploadValidationService.validateConditionalDocuments(List.of(
+                    new ConditionalDocumentUpload(true, noticeServedDetails.getDocuments(),
+                        NOTICE_DOCUMENT_REQUIRED)))
+            );
+        }
 
         return textAreaValidationService.createValidationResponse(caseData, validationErrors);
     }
