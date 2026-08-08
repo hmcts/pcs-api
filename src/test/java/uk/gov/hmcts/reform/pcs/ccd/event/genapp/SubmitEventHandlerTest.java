@@ -285,6 +285,15 @@ class SubmitEventHandlerTest {
 
     }
 
+    private FeeDetails stubApplicationFeeCalculation(GenAppRequest genAppRequest) {
+        BigDecimal applicationFee = new BigDecimal("55.00");
+        FeeDetails feeDetails = FeeDetails.builder()
+            .feeAmount(applicationFee)
+            .build();
+        when(genAppFeeCalculator.getApplicationFeeDetails(genAppRequest)).thenReturn(Optional.of(feeDetails));
+        return feeDetails;
+    }
+
     @Nested
     @DisplayName("Citizen submit event tests")
     class CitizenSubmitEventTests {
@@ -504,15 +513,6 @@ class SubmitEventHandlerTest {
 
     private void stubNoApplicationFee(GenAppRequest genAppRequest) {
         when(genAppFeeCalculator.getApplicationFeeDetails(genAppRequest)).thenReturn(Optional.empty());
-    }
-
-    private FeeDetails stubApplicationFeeCalculation(GenAppRequest genAppRequest) {
-        BigDecimal applicationFee = new BigDecimal("55.00");
-        FeeDetails feeDetails = FeeDetails.builder()
-            .feeAmount(applicationFee)
-            .build();
-        when(genAppFeeCalculator.getApplicationFeeDetails(genAppRequest)).thenReturn(Optional.of(feeDetails));
-        return feeDetails;
     }
 
     private GenAppEntity stubCreateGenAppEntity(GenAppRequest genAppRequest,

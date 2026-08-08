@@ -293,4 +293,5 @@ class CaseFlagsViewTest {
             .flagName(flagName)
             .build();
     }
+
 }

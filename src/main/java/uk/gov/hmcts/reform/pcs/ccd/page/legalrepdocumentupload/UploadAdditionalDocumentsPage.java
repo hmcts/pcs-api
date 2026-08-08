@@ -8,7 +8,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocumentUploadDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.CcdPage;
-import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 
@@ -16,8 +15,6 @@ import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 @AllArgsConstructor
 public class UploadAdditionalDocumentsPage implements CcdPageConfiguration, CcdPage {
 
-    private static final String DESCRIPTION_LABEL = "Short description";
-    private final TextAreaValidationService textAreaValidationService;
     public static final String DOCUMENT_DETAILS_CONTENT  = """
                     <p class="govuk-body">
                         You should only upload documents that are relevant to the claim.
@@ -67,5 +64,4 @@ public class UploadAdditionalDocumentsPage implements CcdPageConfiguration, CcdP
     public String getPageKey() {
         return CcdPage.derivePageKey(this.getClass());
     }
-
 }
