@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
@@ -35,6 +36,8 @@ import uk.gov.hmcts.reform.pcs.notify.template.personalisation.TemplatePersonali
 import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
+
+import static org.apache.commons.lang3.StringUtils.isBlank;
 
 @Service
 @Slf4j
@@ -161,6 +164,35 @@ public class NotificationService {
             EmailTemplate.NOTICE_OF_CHANGE_COMPLETED,
             NotificationClaimType.NOTICE_OF_CHANGE,
             notificationPersonalisationFactory.noticeOfChangeCompleted(defendant, defendant.getPcsCase())
+        );
+    }
+
+    public EmailNotificationResponse sendNoticeOfChangeNoLongerRepresentingEmailNotification(
+        LegalRepresentativeEntity outgoingRepresentative,
+        PartyEntity representedDefendant
+    ) {
+        PcsCaseEntity pcsCase = representedDefendant.getPcsCase();
+
+        return sendEmail(
+            legalRepresentativeRecipient(outgoingRepresentative, representedDefendant),
+            EmailTemplate.NOTICE_OF_CHANGE_NO_LONGER_REPRESENTING,
+            NotificationClaimType.NOTICE_OF_CHANGE,
+            notificationPersonalisationFactory.noticeOfChangeNoLongerRepresenting(outgoingRepresentative, pcsCase)
+        );
+    }
+
+    private NotificationRecipient legalRepresentativeRecipient(
+        LegalRepresentativeEntity legalRepresentative,
+        PartyEntity representedParty
+    ) {
+        PcsCaseEntity pcsCase = representedParty.getPcsCase();
+
+        return new NotificationRecipient(
+            legalRepresentative.getEmail(),
+            representedParty,
+            pcsCase,
+            pcsCase.getClaims().getFirst(),
+            null
         );
     }
 
@@ -400,6 +432,11 @@ public class NotificationService {
         if (party == null) {
             if (recipient.email() == null) {
                 log.info("Skipping email notification because both party and recipient email are null");
+                return null;
+            }
+        } else if (recipient.recipientRole() == null) {
+            if (isBlank(recipient.email())) {
+                log.info("Skipping email notification because no recipient email address is recorded");
                 return null;
             }
         } else if (!partyService.canSendEmailNotification(party, recipient.recipientRole())) {

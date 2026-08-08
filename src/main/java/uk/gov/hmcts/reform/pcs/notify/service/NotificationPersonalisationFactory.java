@@ -10,6 +10,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
@@ -19,6 +20,7 @@ import uk.gov.hmcts.reform.pcs.notify.template.personalisation.BasePersonalisati
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.ClaimantBasePersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.CounterclaimPaymentSuccessPersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.NoticeOfChangeCompletedPersonalisation;
+import uk.gov.hmcts.reform.pcs.notify.template.personalisation.NoticeOfChangeNoLongerRepresentingPersonalisation;
 
 import java.util.Locale;
 
@@ -84,6 +86,18 @@ public class NotificationPersonalisationFactory {
             .build();
     }
 
+    public NoticeOfChangeNoLongerRepresentingPersonalisation noticeOfChangeNoLongerRepresenting(
+        LegalRepresentativeEntity legalRepresentative,
+        PcsCaseEntity pcsCaseEntity
+    ) {
+        String organisationName = legalRepresentative.getOrganisationName();
+
+        return NoticeOfChangeNoLongerRepresentingPersonalisation.builder()
+            .base(buildPersonalisation("", "", pcsCaseEntity))
+            .organisationName(organisationName != null ? organisationName : "")
+            .build();
+    }
+
     private String formatPropertyAddress(PcsCaseEntity pcsCaseEntity) {
         AddressEntity propertyAddress = pcsCaseEntity.getPropertyAddress();
 
@@ -101,6 +115,18 @@ public class NotificationPersonalisationFactory {
         PartyEntity emailRecipient,
         PcsCaseEntity pcsCaseEntity
     ) {
+        return buildPersonalisation(
+            emailRecipient.getFirstName() != null ? emailRecipient.getFirstName() : emailRecipient.getOrgName(),
+            emailRecipient.getLastName() != null ? emailRecipient.getLastName() : "",
+            pcsCaseEntity
+        );
+    }
+
+    private BasePersonalisation buildPersonalisation(
+        String recipientFirstName,
+        String recipientLastName,
+        PcsCaseEntity pcsCaseEntity
+    ) {
         PartyEntity primaryClaimant = partyService.getPrimaryClaimantPartyEntity(pcsCaseEntity);
         PartyEntity primaryDefendant = partyService.getPrimaryDefendantPartyEntity(pcsCaseEntity);
 
@@ -114,10 +140,8 @@ public class NotificationPersonalisationFactory {
             primaryDefendant.getLastName());
 
         return BasePersonalisation.builder()
-            .firstName(emailRecipient.getFirstName() != null
-                           ? emailRecipient.getFirstName() : emailRecipient.getOrgName())
-            .lastName(emailRecipient.getLastName() != null
-                          ? emailRecipient.getLastName() : "")
+            .firstName(recipientFirstName)
+            .lastName(recipientLastName)
             .caseNumber(formatCaseReference(pcsCaseEntity.getCaseReference().toString()))
             .claimantName(claimantName)
             .primaryDefendantName(primaryDefendantName)
