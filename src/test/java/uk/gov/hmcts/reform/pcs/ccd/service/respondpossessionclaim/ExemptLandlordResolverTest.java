@@ -10,42 +10,32 @@ import static org.assertj.core.api.Assertions.assertThat;
 class ExemptLandlordResolverTest {
 
     @Test
-    void shouldPreferExemptLandlordWhenBothPresentInResponses() {
+    void shouldReadExemptLandlordFromResponses() {
         DefendantResponses responses = DefendantResponses.builder()
             .exemptLandlord(YesNoNotSure.NO)
-            .landlordRegistered(YesNoNotSure.YES)
             .build();
 
         assertThat(ExemptLandlordResolver.fromResponses(responses)).isEqualTo(YesNoNotSure.NO);
     }
 
     @Test
-    void shouldFallBackToLandlordRegisteredWhenExemptLandlordMissing() {
-        DefendantResponses responses = DefendantResponses.builder()
-            .landlordRegistered(YesNoNotSure.NOT_SURE)
-            .build();
-
-        assertThat(ExemptLandlordResolver.fromResponses(responses)).isEqualTo(YesNoNotSure.NOT_SURE);
-    }
-
-    @Test
-    void shouldReturnNullWhenNeitherAnswerPresentInResponses() {
+    void shouldReturnNullWhenExemptLandlordMissingInResponses() {
         DefendantResponses responses = DefendantResponses.builder().build();
 
         assertThat(ExemptLandlordResolver.fromResponses(responses)).isNull();
     }
 
     @Test
-    void shouldReadLandlordRegisteredFromEntityDuringCompatPhase() {
+    void shouldReadExemptLandlordFromEntity() {
         DefendantResponseEntity entity = DefendantResponseEntity.builder()
-            .landlordRegistered(YesNoNotSure.YES)
+            .exemptLandlord(YesNoNotSure.YES)
             .build();
 
         assertThat(ExemptLandlordResolver.fromEntity(entity)).isEqualTo(YesNoNotSure.YES);
     }
 
     @Test
-    void shouldReturnNullWhenEntityHasNoLandlordRegistered() {
+    void shouldReturnNullWhenEntityHasNoExemptLandlord() {
         DefendantResponseEntity entity = DefendantResponseEntity.builder().build();
 
         assertThat(ExemptLandlordResolver.fromEntity(entity)).isNull();

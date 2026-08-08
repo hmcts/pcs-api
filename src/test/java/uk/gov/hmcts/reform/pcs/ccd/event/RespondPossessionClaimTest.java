@@ -25,6 +25,10 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantContac
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponseStatus;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.CaseDetailsTab;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
+import uk.gov.hmcts.reform.pcs.idam.UserInfo;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -60,6 +64,9 @@ import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.DefendantRespo
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.PossessionClaimResponseMapper;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.RespondPossessionClaimSubmitService;
 import uk.gov.hmcts.reform.pcs.ccd.util.SelectedPartyRetriever;
+import uk.gov.hmcts.reform.pcs.ccd.view.CaseDetailsTabView;
+import uk.gov.hmcts.reform.pcs.ccd.view.RentArrearsView;
+import uk.gov.hmcts.reform.pcs.ccd.view.TenancyLicenceView;
 import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.PaymentService;
@@ -78,6 +85,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -147,6 +155,12 @@ class RespondPossessionClaimTest extends BaseEventTest {
 
     @Mock
     private SubmitResponseFactory submitResponseFactory;
+    @Mock
+    private CaseDetailsTabView caseDetailsTabView;
+    @Mock
+    private TenancyLicenceView tenancyLicenceView;
+    @Mock
+    private RentArrearsView rentArrearsView;
 
     @Mock
     private SchedulerClient schedulerClient;
@@ -166,7 +180,10 @@ class RespondPossessionClaimTest extends BaseEventTest {
                                                   possessionClaimMerger,
                                                   possessionClaimDraftBuilder,
                                                   defendantOnlyDraftBuilder,
-                                                  defendantResponseRepository),
+                                                  defendantResponseRepository,
+                                                  caseDetailsTabView,
+                                                  tenancyLicenceView,
+                                                  rentArrearsView),
                     new LegalRepStartEventStrategy(pcsCaseService,
                                                             legalRepForDefendantAccessValidator,
                                                             securityContextService,
@@ -302,6 +319,10 @@ class RespondPossessionClaimTest extends BaseEventTest {
         when(responseMapper.mapFrom(any(PCSCase.class), eq(matchingDefendant))).thenReturn(mockResponse);
         when(draftCaseDataService.hasUnsubmittedCaseData(TEST_CASE_REFERENCE, EventId.respondPossessionClaim))
             .thenReturn(false); // No draft exists yet - should seed
+        doNothing().when(tenancyLicenceView).setCaseFields(any(PCSCase.class), any(PcsCaseEntity.class));
+        doNothing().when(rentArrearsView).setCaseFields(any(PCSCase.class), any(PcsCaseEntity.class));
+        when(caseDetailsTabView.buildCaseDetailsTab(any(PCSCase.class), any(Boolean.class)))
+            .thenReturn(new CaseDetailsTab());
 
         PCSCase caseData = PCSCase.builder().build();
 
@@ -489,6 +510,10 @@ class RespondPossessionClaimTest extends BaseEventTest {
         when(responseMapper.mapFrom(any(PCSCase.class), eq(matchingDefendant))).thenReturn(mockResponse);
         when(draftCaseDataService.hasUnsubmittedCaseData(TEST_CASE_REFERENCE, EventId.respondPossessionClaim))
             .thenReturn(false); // No draft exists yet - should seed
+        doNothing().when(tenancyLicenceView).setCaseFields(any(PCSCase.class), any(PcsCaseEntity.class));
+        doNothing().when(rentArrearsView).setCaseFields(any(PCSCase.class), any(PcsCaseEntity.class));
+        when(caseDetailsTabView.buildCaseDetailsTab(any(PCSCase.class), any(Boolean.class)))
+            .thenReturn(new CaseDetailsTab());
 
         PCSCase caseData = PCSCase.builder().build();
 
@@ -555,6 +580,10 @@ class RespondPossessionClaimTest extends BaseEventTest {
         when(responseMapper.mapFrom(any(PCSCase.class), eq(matchingDefendant))).thenReturn(mockResponse);
         when(draftCaseDataService.hasUnsubmittedCaseData(TEST_CASE_REFERENCE, EventId.respondPossessionClaim))
             .thenReturn(false); // No draft exists yet - should seed
+        doNothing().when(tenancyLicenceView).setCaseFields(any(PCSCase.class), any(PcsCaseEntity.class));
+        doNothing().when(rentArrearsView).setCaseFields(any(PCSCase.class), any(PcsCaseEntity.class));
+        when(caseDetailsTabView.buildCaseDetailsTab(any(PCSCase.class), any(Boolean.class)))
+            .thenReturn(new CaseDetailsTab());
 
         PCSCase caseData = PCSCase.builder().build();
 
@@ -644,6 +673,14 @@ class RespondPossessionClaimTest extends BaseEventTest {
 
         PCSCase caseData = PCSCase.builder().build();
         when(possessionClaimMerger.mergeLatestCaseData(caseData, draftResponse, defendantId)).thenReturn(draftResponse);
+        when(possessionClaimDraftBuilder.buildCaseWithDraft(eq(caseData), any(PossessionClaimResponse.class)))
+            .thenReturn(PCSCase.builder()
+                            .possessionClaimResponse(draftResponse)
+                            .build());
+        doNothing().when(tenancyLicenceView).setCaseFields(any(PCSCase.class), any(PcsCaseEntity.class));
+        doNothing().when(rentArrearsView).setCaseFields(any(PCSCase.class), any(PcsCaseEntity.class));
+        when(caseDetailsTabView.buildCaseDetailsTab(any(PCSCase.class), any(Boolean.class)))
+            .thenReturn(new CaseDetailsTab());
 
         callStartHandler(caseData);
 
@@ -1062,4 +1099,3 @@ class RespondPossessionClaimTest extends BaseEventTest {
             .hasMessage("No selected responding party id for respond to claim");
     }
 }
-
