@@ -5,5 +5,4 @@ public enum PartyRole {
     CLAIMANT,
     DEFENDANT,
     UNDERLESSEE_OR_MORTGAGEE
-
 }
