@@ -742,7 +742,7 @@ public class PCSCase {
 
     @JsonProperty("OrganisationPolicyField")
     @CCD
-    private OrganisationPolicy<HasRole> organisationPolicyField;
+    private OrganisationPolicy<AccessProfile> organisationPolicyField;
 
     @CCD
     private String postCode;
