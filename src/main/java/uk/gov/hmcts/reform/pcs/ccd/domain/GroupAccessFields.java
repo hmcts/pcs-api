@@ -9,7 +9,6 @@ import uk.gov.hmcts.ccd.sdk.api.HasRole;
 import uk.gov.hmcts.ccd.sdk.type.CaseAccessGroup;
 import uk.gov.hmcts.ccd.sdk.type.ChangeOrganisationRequest;
 import uk.gov.hmcts.ccd.sdk.type.Organisation;
-import uk.gov.hmcts.ccd.sdk.type.OrganisationPolicy;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.AccessProfile;
 
 @Data
@@ -23,10 +22,6 @@ public class GroupAccessFields<R extends HasRole> {
     @JsonProperty("OrganisationField")
     @CCD
     private Organisation organisationField;
-
-    @JsonProperty("OrganisationPolicyField")
-    @CCD
-    private OrganisationPolicy<R> organisationPolicyField;
 
     @JsonProperty("ChangeOrganisationRequestField")
     @CCD

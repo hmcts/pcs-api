@@ -122,6 +122,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         enforcementOrderMediator.handleEnforcementRequirements(submittedCase.pcsCaseEntity(), pcsCase);
 
         caseFieldsView.setCaseFields(pcsCase);
+        caseFieldsView.setOrganisationPolicy(pcsCase, submittedCase.pcsCaseEntity().getOrganisationId());
 
         // Only the canonical PCS case type is indexed into the shared global_search index.
         if (!CaseType.isSuffixedCaseType()) {

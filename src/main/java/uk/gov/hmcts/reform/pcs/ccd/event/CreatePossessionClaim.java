@@ -10,11 +10,8 @@ import uk.gov.hmcts.ccd.sdk.api.Event.EventBuilder;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
-import uk.gov.hmcts.ccd.sdk.type.OrganisationPolicy;
-import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.AccessProfile;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
-import uk.gov.hmcts.reform.pcs.ccd.domain.GroupAccessFields;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.model.RoleAssignmentTaskData;
@@ -93,24 +90,14 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
         long caseReference = eventPayload.caseReference();
         PCSCase caseData = eventPayload.caseData();
 
-        pcsCaseService.createCase(caseReference, caseData.getPropertyAddress(), caseData.getLegislativeCountry());
+        pcsCaseService.createCase(caseReference, caseData.getPropertyAddress(),
+                                  caseData.getLegislativeCountry(),
+                                  ofNullable(organisationService.getOrganisationIdForCurrentUser()));
 
         String userId = securityContextService.getCurrentUserDetails().getUid();
-        setOrgPolicy(caseData);
         scheduleRoleAssignment(caseReference, userId);
 
         return SubmitResponse.defaultResponse();
-    }
-
-    private void setOrgPolicy(PCSCase caseData) {
-        String orgId = organisationService.getOrganisationIdForCurrentUser();
-        var groupAccessFields = ofNullable(caseData.getGroupAccessFields())
-            .orElse(GroupAccessFields.<AccessProfile>builder().build());
-        groupAccessFields.setOrganisationPolicyField(
-            OrganisationPolicy.<AccessProfile>builder()
-                .orgPolicyCaseAssignedRole(AccessProfile.GA_CLAIMANT_SOLICITOR)
-                .orgPolicyReference(orgId).build()
-        );
     }
 
     private void scheduleRoleAssignment(long caseReference, String userId) {
