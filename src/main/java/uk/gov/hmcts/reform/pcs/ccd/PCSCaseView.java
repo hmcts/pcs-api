@@ -145,8 +145,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         String organisationId = pcsCaseEntity.getOrganisationId();
         if (organisationId != null) {
             pcsCase.setGroupAccessFields(GroupAccessFields.<AccessProfile>builder()
-                .caseAccessGroups(CaseAccessGroupsUtil.deriveCaseAccessGroups(
-                    organisationId, pcsCaseEntity.getOrganisationProfileId()))
+                .caseAccessGroups(CaseAccessGroupsUtil.deriveCaseAccessGroups(pcsCaseEntity.getParties()))
                 .build());
         }
     }

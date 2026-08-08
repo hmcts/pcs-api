@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
@@ -36,10 +37,12 @@ public class PartyService {
 
     private final PartyRepository partyRepository;
     private final AddressMapper addressMapper;
+    private final OrganisationService organisationService;
 
     public void createAllParties(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity, ClaimEntity claimEntity,
                                  String organisationIdForCurrentUser) {
-        PartyEntity claimant = createClaimant(pcsCase, organisationIdForCurrentUser);
+        List<String> orgProfileIds = organisationService.getOrgProfileIdsForCurrentUser();
+        PartyEntity claimant = createClaimant(pcsCase, organisationIdForCurrentUser, orgProfileIds);
         pcsCaseEntity.addParty(claimant);
         claimEntity.addParty(claimant, PartyRole.CLAIMANT);
 
@@ -141,7 +144,7 @@ public class PartyService {
             ));
     }
 
-    private PartyEntity createClaimant(PCSCase pcsCase, String organisationIdForCurrentUser) {
+    private PartyEntity createClaimant(PCSCase pcsCase, String organisationIdForCurrentUser, List<String> orgProfileIds) {
 
         ClaimantInformation claimantInformation = pcsCase.getClaimantInformation();
         Objects.requireNonNull(claimantInformation, "Claimant must be provided");
@@ -150,6 +153,7 @@ public class PartyService {
 
         setClaimantOrgName(claimantInformation, claimantParty);
         claimantParty.setOrganisationId(organisationIdForCurrentUser);
+        claimantParty.setOrganisationProfileIds(orgProfileIds);
 
         ClaimantContactPreferences claimantContactPreferences = pcsCase.getClaimantContactPreferences();
         AddressUK contactAddress = resolveContactAddress(claimantContactPreferences);
@@ -206,6 +210,7 @@ public class PartyService {
     }
 
     private PartyEntity createDefendant(DefendantDetails defendantDetails) {
+        //
         PartyEntity defendantEntity = new PartyEntity();
 
         VerticalYesNo nameKnown = defendantDetails.getNameKnown();

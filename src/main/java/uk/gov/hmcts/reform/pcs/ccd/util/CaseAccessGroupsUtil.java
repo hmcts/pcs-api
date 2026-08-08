@@ -1,10 +1,17 @@
 package uk.gov.hmcts.reform.pcs.ccd.util;
 
+import static com.nimbusds.oauth2.sdk.util.CollectionUtils.isEmpty;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Set;
 import uk.gov.hmcts.ccd.sdk.type.CaseAccessGroup;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 
 import java.util.List;
 import java.util.UUID;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.AccessTypes;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 
 /**
  * Derives the CaseAccessGroups the data store's group matcher compares against the
@@ -15,11 +22,7 @@ import java.util.UUID;
 public final class CaseAccessGroupsUtil {
 
     public static final String CCD_ALL_CASES_ACCESS = "CCD:all-cases-access";
-    static final String SOLICITOR_PROFILE = "SOLICITOR_PROFILE";
-    static final String CLAIMANT_SOLICITOR_GROUP_ID_TEMPLATE =
-        "PCS:PCS:solicitor-org-claimant-access:claimant_solicitor:%s";
-    static final String PROF_ORG_CLAIMANT_GROUP_ID_TEMPLATE =
-        "PCS:PCS:prof-org-claimant-access:claimant:%s";
+    static final String ORGANISATION_PROFILE = "ORGANISATION_PROFILE";
 
     private CaseAccessGroupsUtil() {
     }
@@ -29,23 +32,33 @@ public final class CaseAccessGroupsUtil {
      * derives at least one profile for an organisation, so a case holding an organisation without
      * a profile is broken data - better to fail than mint a group id the matcher can never match.
      */
-    public static List<ListValue<CaseAccessGroup>> deriveCaseAccessGroups(String organisationId,
-                                                                          String organisationProfileId) {
-        if (organisationProfileId == null) {
-            throw new IllegalArgumentException(
-                "Organisation profile id is required to derive case access groups for organisation "
-                    + organisationId);
-        }
-        String template = SOLICITOR_PROFILE.equals(organisationProfileId)
-            ? CLAIMANT_SOLICITOR_GROUP_ID_TEMPLATE
-            : PROF_ORG_CLAIMANT_GROUP_ID_TEMPLATE;
-        CaseAccessGroup group = new CaseAccessGroup(
-            CCD_ALL_CASES_ACCESS,
-            template.formatted(organisationId)
-        );
-        return List.of(ListValue.<CaseAccessGroup>builder()
-                           .id(UUID.randomUUID().toString())
-                           .value(group)
-                           .build());
+    public static List<ListValue<CaseAccessGroup>> deriveCaseAccessGroups(Set<PartyEntity> parties) {
+        List<CaseAccessGroup> caseAccessGroups = new ArrayList<>();
+        parties.forEach(party -> {
+            var organisationId = party.getOrganisationId();
+            List<String> organisationProfileIds = party.getOrganisationProfileIds();
+            if (isEmpty(organisationProfileIds)) {
+                throw new IllegalArgumentException(
+                    "Organisation id and profile ids are required to derive case access groups for party "
+                        + party.getId());
+            }
+
+            String orgProfileId = organisationProfileIds.stream()
+                .filter(profileId -> !profileId.equals(ORGANISATION_PROFILE))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("No valid organisation profile id found for organisation " + organisationId));
+
+            Arrays.stream(AccessTypes.values())
+                .filter(accessType -> accessType.getOrganisationProfileId().equals(orgProfileId))
+                .map(AccessTypes::getCaseAccessGroupIdTemplate).findFirst()
+                .ifPresent(template -> {
+                    CaseAccessGroup group = new CaseAccessGroup(CCD_ALL_CASES_ACCESS, template.formatted(organisationId));
+                    caseAccessGroups.add(group);
+                });
+        });
+        return caseAccessGroups.stream()
+            .map(group ->
+                     ListValue.<CaseAccessGroup>builder().id(UUID.randomUUID().toString()).value(group).build()
+            ).toList();
     }
 }

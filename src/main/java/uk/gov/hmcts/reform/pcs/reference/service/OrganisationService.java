@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.reference.service;
 
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -86,7 +87,7 @@ public class OrganisationService {
      *
      * @return The organisation summary, or null if it cannot be resolved
      */
-    public OrganisationSummary getOrganisationSummaryForCurrentUser() {
+    public List<String> getOrgProfileIdsForCurrentUser() {
         try {
             UUID userId = resolveUserId();
 
@@ -95,22 +96,15 @@ public class OrganisationService {
             }
 
             OrganisationDetailsResponse details = organisationDetailsService.getOrganisationDetails(userId.toString());
-            String profileId = details.getOrganisationProfileIds() == null ? null
+            return details.getOrganisationProfileIds() == null ? null
                 : details.getOrganisationProfileIds().stream()
-                    .filter(profile -> !GENERIC_ORGANISATION_PROFILE.equals(profile))
-                    .findFirst()
-                    .orElse(null);
-
-            return new OrganisationSummary(details.getOrganisationIdentifier(), profileId);
+                    .filter(profile -> !GENERIC_ORGANISATION_PROFILE.equals(profile)).toList();
 
         } catch (OrganisationDetailsException | SecurityContextException ex) {
             log.error("Error retrieving organisation summary from rd-professional API. Error: {}",
                 ex.getMessage(), ex);
             return null;
         }
-    }
-
-    public record OrganisationSummary(String organisationId, String organisationProfileId) {
     }
 
     /**
