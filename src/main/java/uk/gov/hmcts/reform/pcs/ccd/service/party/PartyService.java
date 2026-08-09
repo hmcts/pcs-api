@@ -144,7 +144,8 @@ public class PartyService {
             ));
     }
 
-    private PartyEntity createClaimant(PCSCase pcsCase, String organisationIdForCurrentUser, List<String> orgProfileIds) {
+    private PartyEntity createClaimant(PCSCase pcsCase, String organisationIdForCurrentUser,
+                                       List<String> orgProfileIds) {
 
         ClaimantInformation claimantInformation = pcsCase.getClaimantInformation();
         Objects.requireNonNull(claimantInformation, "Claimant must be provided");

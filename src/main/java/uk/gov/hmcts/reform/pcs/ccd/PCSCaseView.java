@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.ccd.sdk.CaseView;
 import uk.gov.hmcts.ccd.sdk.CaseViewRequest;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.ccd.sdk.type.CaseAccessGroup;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.AccessProfile;
@@ -138,14 +139,16 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
 
     /**
      * The group matcher in the data store compares users' caseAccessGroupId role
-     * assignment attributes against these values; deriving them from the organisation
-     * captured at creation gives the whole organisation access from the draft onwards.
+     * assignment attributes against these values, derived from the parties' organisations.
+     * Drafts have no parties yet, so no groups derive and only the creator (via the
+     * auto-assigned CREATOR case role) can reach the case until submission.
      */
     private void applyCaseAccessGroups(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
-        String organisationId = pcsCaseEntity.getOrganisationId();
-        if (organisationId != null) {
+        List<ListValue<CaseAccessGroup>> caseAccessGroups =
+            CaseAccessGroupsUtil.deriveCaseAccessGroups(pcsCaseEntity.getParties());
+        if (!caseAccessGroups.isEmpty()) {
             pcsCase.setGroupAccessFields(GroupAccessFields.<AccessProfile>builder()
-                .caseAccessGroups(CaseAccessGroupsUtil.deriveCaseAccessGroups(pcsCaseEntity.getParties()))
+                .caseAccessGroups(caseAccessGroups)
                 .build());
         }
     }

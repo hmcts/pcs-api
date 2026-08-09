@@ -113,7 +113,7 @@ class PcsCaseServiceTest {
         when(addressMapper.toAddressEntityAndNormalise(propertyAddress)).thenReturn(propertyAddressEntity);
 
         // When
-        underTest.createCase(CASE_REFERENCE, propertyAddress, legislativeCountry, "ORG1", "SOLICITOR_PROFILE");
+        underTest.createCase(CASE_REFERENCE, propertyAddress, legislativeCountry);
 
         // Then
         verify(pcsCaseRepository).save(pcsCaseEntityCaptor.capture());
@@ -121,8 +121,6 @@ class PcsCaseServiceTest {
         assertThat(savedEntity.getCaseReference()).isEqualTo(CASE_REFERENCE);
         assertThat(savedEntity.getPropertyAddress()).isEqualTo(propertyAddressEntity);
         assertThat(savedEntity.getLegislativeCountry()).isEqualTo(legislativeCountry);
-        assertThat(savedEntity.getOrganisationId()).isEqualTo("ORG1");
-        assertThat(savedEntity.getOrganisationProfileId()).isEqualTo("SOLICITOR_PROFILE");
     }
 
     @Test

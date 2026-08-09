@@ -62,8 +62,8 @@ class OrganisationServiceTest {
     }
 
     @Test
-    @DisplayName("Should retrieve organisation summary skipping the generic profile")
-    void shouldRetrieveOrganisationSummarySkippingGenericProfile() {
+    @DisplayName("Should retrieve organisation profile ids skipping the generic profile")
+    void shouldRetrieveOrgProfileIdsSkippingGenericProfile() {
         when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
         when(organisationDetailsService.getOrganisationDetails(USER_ID.toString()))
             .thenReturn(OrganisationDetailsResponse.builder()
@@ -71,27 +71,23 @@ class OrganisationServiceTest {
                             .organisationProfileIds(List.of("ORGANISATION_PROFILE", "LOCALAUTH_PROFILE"))
                             .build());
 
-        OrganisationService.OrganisationSummary result =
-            organisationService.getOrganisationSummaryForCurrentUser();
+        List<String> result = organisationService.getOrgProfileIdsForCurrentUser();
 
-        assertThat(result.organisationId()).isEqualTo(ORGANISATION_IDENTIFIER);
-        assertThat(result.organisationProfileId()).isEqualTo("LOCALAUTH_PROFILE");
+        assertThat(result).containsExactly("LOCALAUTH_PROFILE");
     }
 
     @Test
-    @DisplayName("Should return null profile in summary when profile ids are absent")
-    void shouldReturnNullProfileInSummaryWhenProfileIdsAbsent() {
+    @DisplayName("Should return null profile ids when absent from the organisation details")
+    void shouldReturnNullWhenProfileIdsAbsent() {
         when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
         when(organisationDetailsService.getOrganisationDetails(USER_ID.toString()))
             .thenReturn(OrganisationDetailsResponse.builder()
                             .organisationIdentifier(ORGANISATION_IDENTIFIER)
                             .build());
 
-        OrganisationService.OrganisationSummary result =
-            organisationService.getOrganisationSummaryForCurrentUser();
+        List<String> result = organisationService.getOrgProfileIdsForCurrentUser();
 
-        assertThat(result.organisationId()).isEqualTo(ORGANISATION_IDENTIFIER);
-        assertThat(result.organisationProfileId()).isNull();
+        assertThat(result).isNull();
     }
 
     @Test

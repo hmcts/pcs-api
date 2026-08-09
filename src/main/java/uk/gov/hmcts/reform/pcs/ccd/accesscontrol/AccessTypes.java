@@ -17,7 +17,72 @@ public enum AccessTypes {
         1,
         UserRole.CLAIMANT_SOLICITOR_ORG,
         true,
-        "PUBLICLAW:CARE_SUPERVISION_EPO:caseworker-approver-group:$ORGID$");
+        "PCS:PCS:solicitor-org-claimant-access:claimant_solicitor:$ORGID$"),
+
+    PROF_ORG_CLAIMANT_ACCESS_LOCALAUTH(
+        "prof-org-claimant-access",
+        "LOCALAUTH_PROFILE",
+        true,
+        true,
+        true,
+        "Can manage all cases associated with this organisation as claimant",
+        "Assign to Users to enable claimant access to all cases associated with this organisation",
+        2,
+        UserRole.CLAIMANT_ORG,
+        true,
+        "PCS:PCS:prof-org-claimant-access:claimant:$ORGID$"),
+
+    PROF_ORG_CLAIMANT_ACCESS_OTHER_REALT(
+        "prof-org-claimant-access",
+        "OTHER_REALT_PROFILE",
+        true,
+        true,
+        true,
+        "Can manage all cases associated with this organisation as claimant",
+        "Assign to Users to enable claimant access to all cases associated with this organisation",
+        3,
+        UserRole.CLAIMANT_ORG,
+        true,
+        "PCS:PCS:prof-org-claimant-access:claimant:$ORGID$"),
+
+    PROF_ORG_CLAIMANT_ACCESS_OTHER_PROP(
+        "prof-org-claimant-access",
+        "OTHER_PROP_PROFILE",
+        true,
+        true,
+        true,
+        "Can manage all cases associated with this organisation as claimant",
+        "Assign to Users to enable claimant access to all cases associated with this organisation",
+        4,
+        UserRole.CLAIMANT_ORG,
+        true,
+        "PCS:PCS:prof-org-claimant-access:claimant:$ORGID$"),
+
+    PROF_ORG_CLAIMANT_ACCESS_OTHER_NFP(
+        "prof-org-claimant-access",
+        "OTHER_NFP_PROFILE",
+        true,
+        true,
+        true,
+        "Can manage all cases associated with this organisation as claimant",
+        "Assign to Users to enable claimant access to all cases associated with this organisation",
+        5,
+        UserRole.CLAIMANT_ORG,
+        true,
+        "PCS:PCS:prof-org-claimant-access:claimant:$ORGID$"),
+
+    PROF_ORG_CLAIMANT_ACCESS_OTHER_CHARITY(
+        "prof-org-claimant-access",
+        "OTHER_CHARITY_PROFILE",
+        true,
+        true,
+        true,
+        "Can manage all cases associated with this organisation as claimant",
+        "Assign to Users to enable claimant access to all cases associated with this organisation",
+        6,
+        UserRole.CLAIMANT_ORG,
+        true,
+        "PCS:PCS:prof-org-claimant-access:claimant:$ORGID$");
 
     private final String accessTypeId;
     private final String organisationProfileId;

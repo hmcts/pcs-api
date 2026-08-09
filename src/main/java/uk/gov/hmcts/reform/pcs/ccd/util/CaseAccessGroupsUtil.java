@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.pcs.ccd.util;
 
-import static com.nimbusds.oauth2.sdk.util.CollectionUtils.isEmpty;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -23,36 +22,47 @@ public final class CaseAccessGroupsUtil {
 
     public static final String CCD_ALL_CASES_ACCESS = "CCD:all-cases-access";
     static final String ORGANISATION_PROFILE = "ORGANISATION_PROFILE";
+    static final String ORG_IDENTIFIER_TEMPLATE = "$ORGID$";
 
     private CaseAccessGroupsUtil() {
     }
 
     /**
-     * Selects the claimant-side template matching the creating organisation's profile. PRD always
-     * derives at least one profile for an organisation, so a case holding an organisation without
-     * a profile is broken data - better to fail than mint a group id the matcher can never match.
+     * Derives one group per party organisation, the template chosen by the organisation's
+     * profile. Parties without an organisation (citizens, unrepresented defendants) contribute
+     * nothing - they keep their per-case access routes. PRD always derives at least one profile
+     * for an organisation, so a party holding an organisation without profiles is broken data -
+     * better to fail than mint a group id the matcher can never match.
      */
     public static List<ListValue<CaseAccessGroup>> deriveCaseAccessGroups(Set<PartyEntity> parties) {
         List<CaseAccessGroup> caseAccessGroups = new ArrayList<>();
         parties.forEach(party -> {
             var organisationId = party.getOrganisationId();
+            if (organisationId == null) {
+                return;
+            }
             List<String> organisationProfileIds = party.getOrganisationProfileIds();
-            if (isEmpty(organisationProfileIds)) {
+            if (organisationProfileIds == null || organisationProfileIds.isEmpty()) {
                 throw new IllegalArgumentException(
-                    "Organisation id and profile ids are required to derive case access groups for party "
+                    "Organisation profile ids are required to derive case access groups for party "
                         + party.getId());
             }
 
             String orgProfileId = organisationProfileIds.stream()
                 .filter(profileId -> !profileId.equals(ORGANISATION_PROFILE))
                 .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("No valid organisation profile id found for organisation " + organisationId));
+                .orElseThrow(() -> new IllegalArgumentException(
+                    "No valid organisation profile id found for organisation " + organisationId));
 
+            // Same token replacement the data store's CaseAccessGroupUtils applies centrally, so
+            // the enum's template strings stay identical to the AccessTypeRole config.
             Arrays.stream(AccessTypes.values())
                 .filter(accessType -> accessType.getOrganisationProfileId().equals(orgProfileId))
                 .map(AccessTypes::getCaseAccessGroupIdTemplate).findFirst()
                 .ifPresent(template -> {
-                    CaseAccessGroup group = new CaseAccessGroup(CCD_ALL_CASES_ACCESS, template.formatted(organisationId));
+                    CaseAccessGroup group = new CaseAccessGroup(
+                        CCD_ALL_CASES_ACCESS,
+                        template.replace(ORG_IDENTIFIER_TEMPLATE, organisationId));
                     caseAccessGroups.add(group);
                 });
         });

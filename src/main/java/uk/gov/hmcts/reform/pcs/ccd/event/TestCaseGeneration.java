@@ -20,7 +20,6 @@ import uk.gov.hmcts.reform.pcs.ccd.event.enforcetheorder.EnforceTheOrder;
 import uk.gov.hmcts.reform.pcs.ccd.page.testcasesupport.TestCaseSelectionPage;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
-import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.ccd.testcasesupport.TestCaseSupportException;
 import uk.gov.hmcts.reform.pcs.ccd.testcasesupport.TestCaseSupportHelper;
 
@@ -52,7 +51,6 @@ public class TestCaseGeneration implements CCDConfig<PCSCase, State, UserRole> {
 
     private final DraftCaseDataService draftCaseDataService;
     private final PcsCaseService pcsCaseService;
-    private final OrganisationService organisationService;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -101,13 +99,9 @@ public class TestCaseGeneration implements CCDConfig<PCSCase, State, UserRole> {
     void makeAClaimTestCreation(String label, Long caseReference) {
         PCSCase loadedCase = loadTestPcsCase(label);
         loadedCase.setFeeAmount(TEST_FEE_AMOUNT);
-        OrganisationService.OrganisationSummary organisation =
-            organisationService.getOrganisationSummaryForCurrentUser();
         pcsCaseService.createCase(
             caseReference, loadedCase.getPropertyAddress(),
-            loadedCase.getLegislativeCountry(),
-            organisation == null ? null : organisation.organisationId(),
-            organisation == null ? null : organisation.organisationProfileId());
+            loadedCase.getLegislativeCountry());
 
         resumePossessionClaim.submitClaim(caseReference, loadedCase);
     }

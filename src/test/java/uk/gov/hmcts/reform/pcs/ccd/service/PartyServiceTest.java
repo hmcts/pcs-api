@@ -30,6 +30,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 
 import java.util.List;
@@ -62,6 +63,8 @@ class PartyServiceTest {
     private PartyRepository partyRepository;
     @Mock
     private AddressMapper addressMapper;
+    @Mock
+    private OrganisationService organisationService;
     @Mock(strictness = LENIENT)
     private PCSCase pcsCase;
     @Mock
@@ -77,7 +80,7 @@ class PartyServiceTest {
 
     @BeforeEach
     void setUp() {
-        underTest = new PartyService(partyRepository, addressMapper);
+        underTest = new PartyService(partyRepository, addressMapper, organisationService);
     }
 
     @Nested

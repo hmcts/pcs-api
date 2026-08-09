@@ -3,8 +3,10 @@ package uk.gov.hmcts.reform.pcs.ccd.util;
 import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.ccd.sdk.type.CaseAccessGroup;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 
 import java.util.List;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -12,9 +14,10 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class CaseAccessGroupsUtilTest {
 
     @Test
-    void shouldDeriveSolicitorGroupIdForSolicitorProfile() {
-        List<ListValue<CaseAccessGroup>> groups =
-            CaseAccessGroupsUtil.deriveCaseAccessGroups("J1XJ9VJ", "SOLICITOR_PROFILE");
+    void shouldDeriveSolicitorGroupIdForSolicitorProfileParty() {
+        Set<PartyEntity> parties = Set.of(party("J1XJ9VJ", List.of("SOLICITOR_PROFILE", "ORGANISATION_PROFILE")));
+
+        List<ListValue<CaseAccessGroup>> groups = CaseAccessGroupsUtil.deriveCaseAccessGroups(parties);
 
         assertThat(groups).hasSize(1);
         CaseAccessGroup group = groups.getFirst().getValue();
@@ -24,9 +27,10 @@ class CaseAccessGroupsUtilTest {
     }
 
     @Test
-    void shouldDeriveProfOrgGroupIdForNonSolicitorProfile() {
-        List<ListValue<CaseAccessGroup>> groups =
-            CaseAccessGroupsUtil.deriveCaseAccessGroups("WK8GIHE", "LOCALAUTH_PROFILE");
+    void shouldDeriveProfOrgGroupIdForLocalAuthorityParty() {
+        Set<PartyEntity> parties = Set.of(party("WK8GIHE", List.of("LOCALAUTH_PROFILE", "ORGANISATION_PROFILE")));
+
+        List<ListValue<CaseAccessGroup>> groups = CaseAccessGroupsUtil.deriveCaseAccessGroups(parties);
 
         assertThat(groups).hasSize(1);
         assertThat(groups.getFirst().getValue().getCaseAccessGroupId())
@@ -34,19 +38,47 @@ class CaseAccessGroupsUtilTest {
     }
 
     @Test
-    void shouldThrowWhenProfileIsNull() {
-        assertThatThrownBy(() -> CaseAccessGroupsUtil.deriveCaseAccessGroups("J1XJ9VJ", null))
-            .isInstanceOf(IllegalArgumentException.class)
-            .hasMessageContaining("J1XJ9VJ");
+    void shouldDeriveNothingWhenNoPartiesExistYet() {
+        // The draft phase: no parties, no groups, only the CREATOR role reaches the case.
+        assertThat(CaseAccessGroupsUtil.deriveCaseAccessGroups(Set.of())).isEmpty();
+    }
+
+    @Test
+    void shouldSkipPartiesWithoutAnOrganisation() {
+        // Citizens and unrepresented defendants have no organisation - they keep per-case access.
+        Set<PartyEntity> parties = Set.of(
+            party(null, null),
+            party("J1XJ9VJ", List.of("SOLICITOR_PROFILE")));
+
+        List<ListValue<CaseAccessGroup>> groups = CaseAccessGroupsUtil.deriveCaseAccessGroups(parties);
+
+        assertThat(groups).hasSize(1);
+        assertThat(groups.getFirst().getValue().getCaseAccessGroupId()).endsWith(":J1XJ9VJ");
+    }
+
+    @Test
+    void shouldThrowWhenPartyHasOrganisationButNoProfiles() {
+        Set<PartyEntity> parties = Set.of(party("J1XJ9VJ", null));
+
+        assertThatThrownBy(() -> CaseAccessGroupsUtil.deriveCaseAccessGroups(parties))
+            .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
     void shouldWrapGroupsAsCollectionItemsWithIds() {
-        List<ListValue<CaseAccessGroup>> groups =
-            CaseAccessGroupsUtil.deriveCaseAccessGroups("ORG1", "SOLICITOR_PROFILE");
+        Set<PartyEntity> parties = Set.of(party("ORG1", List.of("SOLICITOR_PROFILE")));
+
+        List<ListValue<CaseAccessGroup>> groups = CaseAccessGroupsUtil.deriveCaseAccessGroups(parties);
 
         // The data store's matcher silently skips collection items without an id.
         assertThat(groups.getFirst().getId()).isNotBlank();
         assertThat(groups.getFirst().getValue()).isNotNull();
+    }
+
+    private PartyEntity party(String organisationId, List<String> organisationProfileIds) {
+        return PartyEntity.builder()
+            .organisationId(organisationId)
+            .organisationProfileIds(organisationProfileIds)
+            .build();
     }
 }

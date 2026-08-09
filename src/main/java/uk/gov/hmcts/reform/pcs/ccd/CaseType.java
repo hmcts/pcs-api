@@ -31,6 +31,9 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
     private static final String JURISDICTION_DESCRIPTION = "Civil Possession Jurisdiction";
     static final AccessProfile[] PARTY_VISIBLE_TAB_ROLES = {
         AccessProfile.CITIZEN,
+        // The creator's only access during the draft phase - parties do not exist yet, so no
+        // CaseAccessGroups derive and the org-wide capacities cannot see the case.
+        AccessProfile.CREATOR,
         AccessProfile.DEFENDANT,
         AccessProfile.PCS_SOLICITOR,
         AccessProfile.CLAIMANT_ORG,
