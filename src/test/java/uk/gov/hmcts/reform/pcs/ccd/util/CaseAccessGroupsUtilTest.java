@@ -39,13 +39,11 @@ class CaseAccessGroupsUtilTest {
 
     @Test
     void shouldDeriveNothingWhenNoPartiesExistYet() {
-        // The draft phase: no parties, no groups, only the CREATOR role reaches the case.
         assertThat(CaseAccessGroupsUtil.deriveCaseAccessGroups(Set.of())).isEmpty();
     }
 
     @Test
     void shouldSkipPartiesWithoutAnOrganisation() {
-        // Citizens and unrepresented defendants have no organisation - they keep per-case access.
         Set<PartyEntity> parties = Set.of(
             party(null, null),
             party("J1XJ9VJ", List.of("SOLICITOR_PROFILE")));

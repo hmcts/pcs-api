@@ -137,12 +137,6 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         return pcsCase;
     }
 
-    /**
-     * The group matcher in the data store compares users' caseAccessGroupId role
-     * assignment attributes against these values, derived from the parties' organisations.
-     * Drafts have no parties yet, so no groups derive and only the creator (via the
-     * auto-assigned CREATOR case role) can reach the case until submission.
-     */
     private void applyCaseAccessGroups(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
         List<ListValue<CaseAccessGroup>> caseAccessGroups =
             CaseAccessGroupsUtil.deriveCaseAccessGroups(pcsCaseEntity.getParties());

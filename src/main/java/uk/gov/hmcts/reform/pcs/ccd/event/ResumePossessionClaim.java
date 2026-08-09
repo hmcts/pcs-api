@@ -187,8 +187,6 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
         String organisationIdForCurrentUser = organisationService.getOrganisationIdForCurrentUser();
         pcsCaseService.createMainClaimOnCase(caseReference, pcsCase, organisationIdForCurrentUser);
 
-        // The claimant party's organisation now derives the CaseAccessGroups, so the whole
-        // organisation has access and the creator's draft-phase CREATOR role can be revoked.
         scheduleCreatorRoleRevocation(caseReference);
 
         draftCaseDataService.deleteUnsubmittedCaseData(caseReference, resumePossessionClaim);
@@ -225,6 +223,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
         RoleAssignmentTaskData taskData = RoleAssignmentTaskData.builder()
             .caseReference(String.valueOf(caseReference))
             .userId(userId)
+            .action(RoleAssignmentTaskData.RoleAssignmentAction.REVOKE_CREATOR)
             .build();
 
         schedulerClient.scheduleIfNotExists(

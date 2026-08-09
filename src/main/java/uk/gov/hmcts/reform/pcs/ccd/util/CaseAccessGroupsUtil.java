@@ -29,10 +29,7 @@ public final class CaseAccessGroupsUtil {
 
     /**
      * Derives one group per party organisation, the template chosen by the organisation's
-     * profile. Parties without an organisation (citizens, unrepresented defendants) contribute
-     * nothing - they keep their per-case access routes. PRD always derives at least one profile
-     * for an organisation, so a party holding an organisation without profiles is broken data -
-     * better to fail than mint a group id the matcher can never match.
+     * profile. Parties without an organisation (citizens) contribute nothing.
      */
     public static List<ListValue<CaseAccessGroup>> deriveCaseAccessGroups(Set<PartyEntity> parties) {
         List<CaseAccessGroup> caseAccessGroups = new ArrayList<>();
@@ -54,8 +51,6 @@ public final class CaseAccessGroupsUtil {
                 .orElseThrow(() -> new IllegalArgumentException(
                     "No valid organisation profile id found for organisation " + organisationId));
 
-            // Same token replacement the data store's CaseAccessGroupUtils applies centrally, so
-            // the enum's template strings stay identical to the AccessTypeRole config.
             Arrays.stream(AccessTypes.values())
                 .filter(accessType -> accessType.getOrganisationProfileId().equals(orgProfileId))
                 .map(AccessTypes::getCaseAccessGroupIdTemplate).findFirst()
