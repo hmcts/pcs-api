@@ -22,7 +22,7 @@ plugins {
   id 'org.sonarqube' version '7.3.1.8318'
   id 'net.serenity-bdd.serenity-gradle-plugin' version "$serenityBddVersion"
   // Pinned: per-org-profile AccessType rows need this build. Try release 6.13.0 before unpinning.
-  id 'hmcts.ccd.sdk' version 'HDPI-6258-generate-accessType-accessTypeRole-json-106.2-ba6305ba'
+  id 'hmcts.ccd.sdk' version 'HDPI-6258-generate-accessType-accessTypeRole-json-fix-113.1-3949a9fa'
   id 'com.github.hmcts.rse-cft-lib' version '0.19.2306'
   id 'io.freefair.lombok' version '9.5.0'
   id 'au.com.dius.pact' version '4.7.3'
