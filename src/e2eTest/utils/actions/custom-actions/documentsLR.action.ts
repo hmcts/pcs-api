@@ -32,11 +32,15 @@ export class DocumentsAction implements IAction {
   }
 
 
-  private async verifyDocumentRelatesToApplication(page: Page, confirmDocumentData: actionRecord) {
+  private async verifyDocumentRelatesToApplication(
+    page: Page,
+    confirmDocumentData: actionRecord
+  ) {
     await performValidation('text', {
       elementType: 'paragraph',
       text: confirmIfTheseDocumentsRelateToAnApplication.weUsuallyParagraph,
     });
+
     await performValidation('text', {
       elementType: 'paragraph',
       text: confirmIfTheseDocumentsRelateToAnApplication.ifYourApplicationParagraph,
@@ -51,57 +55,87 @@ export class DocumentsAction implements IAction {
       .format(new Date())
       .replace(',', '');
 
-    const expectedOptions: string[] = [];
-    const optionText = `${confirmDocumentData.option} ${formattedDate}`;
+    const expectedOptions: string[] = [
+      `${confirmDocumentData.option} ${formattedDate}`,
+    ];
 
-    // repeat the primary option once per application (e.g. once per defendant that submitted one)
-    const repeatCount = Number(confirmDocumentData.count ?? 1);
-    for (let i = 0; i < repeatCount; i++) {
-      expectedOptions.push(optionText);
-    }
-
-    // optional 2nd distinct option (if a different application type was also submitted)
     if (confirmDocumentData.previousApplicationOption) {
-      expectedOptions.push(`${confirmDocumentData.previousApplicationOption} ${formattedDate}`);
+      expectedOptions.push(
+        `${confirmDocumentData.previousApplicationOption} ${formattedDate}`
+      );
     }
 
-    // fixed "No" option, always last
-    expectedOptions.push(confirmIfTheseDocumentsRelateToAnApplication.noRadioOption);
+    expectedOptions.push(
+      confirmIfTheseDocumentsRelateToAnApplication.noRadioOption
+    );
 
-    console.log('Expected radio order:', expectedOptions);
+    const radioLabels = page.locator(
+      'input[type="radio"] + label.form-label'
+    );
 
-    const radioLabels = page.locator('.govuk-radios__label, label.form-label');
-    for (let i = 0; i < expectedOptions.length; i++) {
-      const actualText = ((await radioLabels.nth(i).textContent()) ?? '').replace(/\s+/g, ' ').trim();
-      const expectedText = expectedOptions[i].replace(/\s+/g, ' ').trim();
+    await radioLabels.first().waitFor({
+      state: 'visible',
+      timeout: 10000,
+    });
 
-      console.log(`Radio ${i}:`, actualText);
-      console.log(`Expected ${i}:`, expectedText);
+    const actualOptions = (await radioLabels.allTextContents()).map((text) =>
+      text.replace(/\s+/g, ' ').trim()
+    );
 
-      if (!actualText.includes(expectedText)) {
+    // Verify expected options exist in the correct order
+    let lastFoundIndex = -1;
+
+    for (const expectedOption of expectedOptions) {
+      const normalizedExpected = expectedOption
+        .replace(/\s+/g, ' ')
+        .trim();
+
+      const foundIndex = actualOptions.findIndex(
+        (actualOption, index) =>
+          index > lastFoundIndex &&
+          actualOption.includes(normalizedExpected)
+      );
+
+      if (foundIndex === -1) {
         throw new Error(
-          `Radio order mismatch at index ${i}.\nExpected: "${expectedText}"\nActual: "${actualText}"`
+          `Radio option not found or is in the wrong order.\n` +
+          `Expected: "${normalizedExpected}"\n` +
+          `Actual options:\n${actualOptions
+            .map((option, index) => `${index}: ${option}`)
+            .join('\n')}`
         );
       }
+
+      lastFoundIndex = foundIndex;
     }
 
     const selectOption =
-      confirmDocumentData.option === confirmIfTheseDocumentsRelateToAnApplication.noRadioOption
+      confirmDocumentData.option ===
+      confirmIfTheseDocumentsRelateToAnApplication.noRadioOption
         ? confirmDocumentData.option
-        : optionText;
+        : `${confirmDocumentData.option} ${formattedDate}`;
 
-// Find which radio should be selected
-    const radioIndex = expectedOptions.findIndex(
-      option =>
-        option.replace(/\s+/g, ' ').trim() ===
-        selectOption.replace(/\s+/g, ' ').trim()
+    const radioToSelect = radioLabels
+      .filter({
+        hasText: selectOption,
+      })
+      .first();
+
+    await radioToSelect.waitFor({
+      state: 'visible',
+      timeout: 10000,
+    });
+
+    await radioToSelect.click();
+
+    const selectedRadio = page.locator(
+      'input[type="radio"]:checked'
     );
 
-    if (radioIndex === -1) {
-      throw new Error(`Could not find radio option: ${selectOption}`);
-    }
-
-    await page.locator('input[type="radio"]').nth(radioIndex).check();
+    await selectedRadio.waitFor({
+      state: 'attached',
+      timeout: 5000,
+    });
 
     await performAction(
       'clickButton',

@@ -27,14 +27,25 @@ test.beforeEach(async ({ page, context }, testInfo) => {
   await performAction('updatePaymentAPI');
   await performAction('getCaseAPI', 'Link Solicitor');
   if (testInfo.title.includes('GenApps submitted')) {
-    for (const defendant of defendantUserDetails) {
-      await performAction('makeAnApplicationAPI', {
-        data: makeAnApplicationApiData.makeAnApplicationAdjournPayload(
-          defendant.id,
-          defendant.name
-        ),
-      });
-    }
+    const defendant = defendantUserDetails[0];
+    await performAction('makeAnApplicationAPI', {
+      data: makeAnApplicationApiData.makeAnApplicationAdjournPayload(
+        defendant.id,
+        defendant.name
+      ),
+    });
+    await performAction('makeAnApplicationAPI', {
+      data: makeAnApplicationApiData.makeAnApplicationstartSetAsidePayload(
+        defendant.id,
+        defendant.name
+      ),
+    });
+    await performAction('makeAnApplicationAPI', {
+      data: makeAnApplicationApiData.makeAnApplicationstartSomethingElsePayload(
+        defendant.id,
+        defendant.name
+      ),
+    });
   }
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
   await dismissCookieBanner(page, 'additional');
