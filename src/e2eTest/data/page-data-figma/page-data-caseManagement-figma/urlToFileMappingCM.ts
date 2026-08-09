@@ -16,5 +16,5 @@ export default {
   'manageHearingmanageHearing': 'manageHearing',
   'manageHearingaddHearing': 'addHearing',
   'manageHearing/submit': 'checkYourAnswersManageHearing',
-  'manageHearing/confirm': 'confirmCancelHearing'
+  'manageHearing/confirm': 'confirmHearing'
 };

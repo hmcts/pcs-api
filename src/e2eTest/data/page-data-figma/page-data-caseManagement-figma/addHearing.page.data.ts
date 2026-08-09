@@ -17,6 +17,8 @@ export const addHearing= {
   hearingNoticeQuestion: `Does a hearing notice need to be issued?`,
   hearingNoticeYesRadioOption: `Yes`,
   hearingNoticeNoRadioOption: `No`,
+  hearingWithOutNoticeHiddenQuestion: `Is the hearing without notice?`,
+  whoShouldReceiveHiddenQuestion : `Who should receive the hearing notice?`,
   enterAdditionalInfoTextLabel: `Enter any additional information (Optional)`,
   enterAdditionalInfoTextInput: 100,
   continueButton: `Continue`,

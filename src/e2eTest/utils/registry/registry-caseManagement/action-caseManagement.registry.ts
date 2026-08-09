@@ -52,6 +52,7 @@ export class ActionCMRegistry {
     ['addReviewDates', new CaseManagementAction()],
     ['confirmReviewDatesAdded', new CaseManagementAction()],
     ['addAHearing', new CaseManagementAction()],
+    ['confirmAddHearing', new CaseManagementAction()],
     ['errorValidationAddReviewDatesPage', new ErrorValidationAction()],
     ['errorValidationEnterGeneralAppPage', new ErrorValidationAction()],
     ['errorValidationHearingDatePage', new ErrorValidationAction()],

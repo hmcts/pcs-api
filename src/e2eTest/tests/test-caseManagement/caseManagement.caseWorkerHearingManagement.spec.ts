@@ -23,6 +23,11 @@ test.beforeEach(async ({ page, context }) => {
   await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayloadCaseFileView });
   await performAction('updatePaymentAPI');
   await performAction('getCaseAPI', 'Link Solicitor');
+  await performAction('getAllPartyDetails', {
+    defendant1NameKnown: submitCaseApiData.submitCasePayloadCaseFileView.defendant1.nameKnown,
+    additionalDefendants: submitCaseApiData.submitCasePayloadCaseFileView.addAnotherDefendant,
+    payLoad: submitCaseApiData.submitCasePayloadCaseFileView
+  });
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
   await dismissCookieBanner(page, 'additional');
   await performAction('login', user.hearingCenterAdmin);
@@ -50,16 +55,49 @@ test.describe('Case management - Case Worker Manage Hearing @nightly', async () 
     await performAction('selectAnEvent', {eventType: caseSummary.manageHearing});
     await performValidation('mainHeader', addHearing.mainHeader);
     await performAction('addAHearing', {
-      question: addHearing.typeOfHearingQuestion, option: typeOfHearing,
-      question1: addHearing.wordingForHearingNoticeTextLabel, option1: addHearing.wordingForHearingHiddenOption,
-      label1: addHearing.whenIsTheHearingQuestion,
+      hearingQuestion: addHearing.typeOfHearingQuestion, option: typeOfHearing,
+      wordingQuestion: addHearing.wordingForHearingNoticeTextLabel, option1: addHearing.wordingForHearingHiddenOption,
+      whenIsHearingLabel: addHearing.whenIsTheHearingQuestion,
       date: date,
-      label2: addHearing.hourTextLabel,
-      input2: CaseManagementCommonUtils.getRandomNumberAsString(1, 5),
-      label3: addHearing.minutesTextLabel,
-      input3: CaseManagementCommonUtils.getRandomNumberAsString(1, 60),
-      question2: addHearing.hearingNoticeQuestion, option2: addHearing.hearingNoticeNoRadioOption,
+      hourLabel: addHearing.hourTextLabel,
+      minsLabel: addHearing.minutesTextLabel,
+      hearingNotesLabel: addHearing.hearingNotesTextLabel,
+      hearingNotesInput: addHearing.hearingNotesTextInput,
+      noticeQuestion: addHearing.hearingNoticeQuestion, option2: addHearing.hearingNoticeYesRadioOption,
+      withoutNoticeQuestion: addHearing.hearingWithOutNoticeHiddenQuestion, options3: addHearing.hearingNoticeNoRadioOption,
+      additionalInfoLabel: addHearing.enterAdditionalInfoTextLabel,
+      additionalInfoInput: addHearing.enterAdditionalInfoTextInput,
       nextPage: checkYourAnswersManageHearing.mainHeader
-    })
+    });
+    await performAction('clickButton', checkYourAnswersManageHearing.submitButton);
+    await performAction('confirmAddHearing', { submitPayload: submitCaseApiData.submitCasePayloadCaseFileView });
+    await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage hearing');
+  })
+
+  test('Case management - Case Worker Add a hearing without Notice @CM @regression', async () => {
+    let date = CaseManagementCommonUtils.getRandomDate(addHearing.dateTypeHiddenUserInput,'dateTime');
+    let party = allPartyDetails[0]
+    let typeOfHearing = addHearing.typeOfHearingOption[0]
+    await performAction('selectAnEvent', {eventType: caseSummary.manageHearing});
+    await performValidation('mainHeader', addHearing.mainHeader);
+    await performAction('addAHearing', {
+      hearingQuestion: addHearing.typeOfHearingQuestion, option: typeOfHearing,
+      wordingQuestion: addHearing.wordingForHearingNoticeTextLabel, option1: addHearing.wordingForHearingHiddenOption,
+      whenIsHearingLabel: addHearing.whenIsTheHearingQuestion,
+      date: date,
+      hourLabel: addHearing.hourTextLabel,
+      minsLabel: addHearing.minutesTextLabel,
+      hearingNotesLabel: addHearing.hearingNotesTextLabel,
+      hearingNotesInput: addHearing.hearingNotesTextInput,
+      noticeQuestion: addHearing.hearingNoticeQuestion, option2: addHearing.hearingNoticeYesRadioOption,
+      withoutNoticeQuestion: addHearing.hearingWithOutNoticeHiddenQuestion, option3: addHearing.hearingNoticeYesRadioOption,
+      whoShouldReceiveNoticeQuestion : addHearing.whoShouldReceiveHiddenQuestion, option4: party,
+      additionalInfoLabel: addHearing.enterAdditionalInfoTextLabel,
+      additionalInfoInput: addHearing.enterAdditionalInfoTextInput,
+      nextPage: checkYourAnswersManageHearing.mainHeader
+    });
+    await performAction('clickButton', checkYourAnswersManageHearing.submitButton);
+    await performAction('confirmAddHearing', { submitPayload: submitCaseApiData.submitCasePayloadCaseFileView });
+    await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage hearing');
   })
 });
