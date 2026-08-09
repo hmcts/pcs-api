@@ -737,13 +737,6 @@ public class PCSCase {
     @CCD(access = {DefendantSolicitorAccess.class})
     private List<ListValue<Party>> allLinkedDefendants;
 
-    @JsonUnwrapped
-    private GroupAccessFields<AccessProfile> groupAccessFields;
-
-    @JsonProperty("OrganisationPolicyField")
-    @CCD
-    private OrganisationPolicy<AccessProfile> organisationPolicyField;
-
     @CCD
     private String postCode;
 

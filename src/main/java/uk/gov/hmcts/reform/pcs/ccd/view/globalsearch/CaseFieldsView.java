@@ -34,14 +34,6 @@ public class CaseFieldsView {
         setCaseManagementCategory(pcsCase);
     }
 
-    public void setOrganisationPolicy(PCSCase pcsCase, String organisationId) {
-        pcsCase.setOrganisationPolicyField(
-            OrganisationPolicy.builder()
-                .orgPolicyCaseAssignedRole(GA_CLAIMANT_SOLICITOR)
-                .orgPolicyReference(organisationId)
-                .build());
-    }
-
     private void setCaseNameHmctsField(final PCSCase pcsCase) {
         final String formattedCaseName = caseNameFormatter.formatCaseName(pcsCase);
 
