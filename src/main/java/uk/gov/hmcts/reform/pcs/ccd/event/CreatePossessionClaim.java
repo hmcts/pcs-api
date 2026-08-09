@@ -20,6 +20,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.PostcodeNotAssigne
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.PropertyNotEligible;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.StartTheService;
 import uk.gov.hmcts.reform.pcs.ccd.model.RoleAssignmentTaskData;
+import uk.gov.hmcts.reform.pcs.ccd.service.CaseRoleAssignmentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.task.CaseRoleAssignmentTaskComponent;
 import uk.gov.hmcts.reform.pcs.ccd.util.FeeApplier;
@@ -44,6 +45,7 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final EnterPropertyAddress enterPropertyAddress;
     private final CrossBorderPostcodeSelection crossBorderPostcodeSelection;
     private final PropertyNotEligible propertyNotEligible;
+    private final CaseRoleAssignmentService caseRoleAssignmentService;
     private final SchedulerClient schedulerClient;
     private final SecurityContextService securityContextService;
 
@@ -93,9 +95,16 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
         pcsCaseService.createCase(caseReference, caseData.getPropertyAddress(),
                                   caseData.getLegislativeCountry());
 
-        // Decentralised case creation does not auto-grant CREATOR, so assign it ourselves
+        // Decentralised CCD doesn't auto-grant CREATOR, so grant it before the create returns -
+        // the creator's next read depends on it. On RAS failure fall back to the scheduled task:
+        // the draft appears a few seconds late instead of the creation failing.
         String userId = securityContextService.getCurrentUserDetails().getUid();
-        scheduleCreatorRoleAssignment(caseReference, userId);
+        try {
+            caseRoleAssignmentService.assignRasRole(caseReference, userId, UserRole.CREATOR);
+        } catch (Exception e) {
+            log.error("Inline CREATOR assignment failed for case {}, falling back to task", caseReference, e);
+            scheduleCreatorRoleAssignment(caseReference, userId);
+        }
 
         return SubmitResponse.defaultResponse();
     }
