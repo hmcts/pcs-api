@@ -34,6 +34,13 @@
     <cve>CVE-2025-68384</cve>
     <cve>CVE-2025-68390</cve>
   </suppress>
+  <suppress until="2026-08-23">
+    <notes><![CDATA[elasticsearch-rest-client-8.18.8.jar]]></notes>
+    <cve>CVE-2026-56144</cve>
+    <cve>CVE-2026-56145</cve>
+    <cve>CVE-2026-63136</cve>
+    <cve>CVE-2026-63140</cve>
+  </suppress>
   <suppress until="2026-08-18">
     <notes><![CDATA[angus-activation-2.0.3.jar]]></notes>
     <cve>CVE-2025-7962</cve>
