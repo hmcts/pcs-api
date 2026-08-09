@@ -10,13 +10,11 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
-import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.model.RoleAssignmentTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.CrossBorderPostcodeSelection;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.EnterPropertyAddress;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.PropertyNotEligible;
-import uk.gov.hmcts.reform.pcs.ccd.service.CaseRoleAssignmentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.task.CaseRoleAssignmentTaskComponent;
 import uk.gov.hmcts.reform.pcs.ccd.util.FeeApplier;
@@ -27,10 +25,8 @@ import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -49,8 +45,6 @@ class CreatePossessionClaimTest extends BaseEventTest {
     @Mock
     private PropertyNotEligible propertyNotEligible;
     @Mock
-    private CaseRoleAssignmentService caseRoleAssignmentService;
-    @Mock
     private SchedulerClient schedulerClient;
     @Mock
     private SecurityContextService securityContextService;
@@ -64,14 +58,14 @@ class CreatePossessionClaimTest extends BaseEventTest {
         CreatePossessionClaim underTest = new CreatePossessionClaim(
             pcsCaseService, feeApplier, enterPropertyAddress,
             crossBorderPostcodeSelection, propertyNotEligible,
-            caseRoleAssignmentService, schedulerClient, securityContextService
+            schedulerClient, securityContextService
         );
 
         setEventUnderTest(underTest);
     }
 
     @Test
-    void shouldCreateCaseAndAssignCreatorRoleOnSubmit() {
+    void shouldCreateCaseAndScheduleCreatorRoleAssignmentOnSubmit() {
         // Given
         AddressUK propertyAddress = AddressUK.builder().addressLine1("1 Test Street").build();
         PCSCase caseData = PCSCase.builder()
@@ -84,25 +78,6 @@ class CreatePossessionClaimTest extends BaseEventTest {
 
         // Then
         verify(pcsCaseService).createCase(TEST_CASE_REFERENCE, propertyAddress, LegislativeCountry.ENGLAND);
-        verify(caseRoleAssignmentService).assignRasRole(TEST_CASE_REFERENCE, USER_ID, UserRole.CREATOR);
-        verifyNoInteractions(schedulerClient);
-    }
-
-    @Test
-    void shouldFallBackToScheduledTaskWhenInlineCreatorAssignmentFails() {
-        // Given
-        AddressUK propertyAddress = AddressUK.builder().addressLine1("1 Test Street").build();
-        PCSCase caseData = PCSCase.builder()
-            .propertyAddress(propertyAddress)
-            .legislativeCountry(LegislativeCountry.ENGLAND)
-            .build();
-        doThrow(new RuntimeException("RAS unavailable"))
-            .when(caseRoleAssignmentService).assignRasRole(TEST_CASE_REFERENCE, USER_ID, UserRole.CREATOR);
-
-        // When
-        callSubmitHandler(caseData);
-
-        // Then
         RoleAssignmentTaskData taskData = getCapturedRoleAssignmentTaskData();
         assertThat(taskData.getCaseReference()).isEqualTo(String.valueOf(TEST_CASE_REFERENCE));
         assertThat(taskData.getUserId()).isEqualTo(USER_ID);
