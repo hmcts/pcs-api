@@ -136,8 +136,8 @@ public class HearingService {
         hearingEntity.setNoticeWording(hearing.getNoticeWording());
         hearingEntity.setHearingDate(hearing.getDate());
         hearingEntity.setDurationDays(hearing.getDurationDays());
-        hearingEntity.setDurationHours(hearing.getDurationHours());
-        hearingEntity.setDurationMinutes(hearing.getDurationMinutes());
+        hearingEntity.setDurationHours(hearing.getDurationHours().intValue());
+        hearingEntity.setDurationMinutes(hearing.getDurationMinutes().intValue());
         hearingEntity.setIssueNotice(issueNotice);
         hearingEntity.setNotes(hearing.getNotes());
         hearingEntity.setIsWithoutNotice(isWithoutNotice);
@@ -243,8 +243,8 @@ public class HearingService {
             .noticeWording(hearing.getNoticeWording())
             .date(hearing.getHearingDate())
             .durationDays(hearing.getDurationDays())
-            .durationHours(hearing.getDurationHours())
-            .durationMinutes(hearing.getDurationMinutes())
+            .durationHours(hearing.getDurationHours().floatValue())
+            .durationMinutes(hearing.getDurationMinutes().floatValue())
             .notes(hearing.getNotes())
             .issueNotice(hearing.getIssueNotice())
             .isWithoutNotice(hearing.getIsWithoutNotice())

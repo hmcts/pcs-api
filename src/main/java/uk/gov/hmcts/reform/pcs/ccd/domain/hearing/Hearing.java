@@ -27,6 +27,10 @@ public class Hearing {
     public static final String NOTES_LABEL = "Hearing notes";
     @CCD(ignore = true)
     public static final String ADDITIONAL_INFORMATION_LABEL = "Enter any additional information";
+    @CCD(ignore = true)
+    public static final String HOUR_LABEL = "Hour";
+    @CCD(ignore = true)
+    public static final String MINUTE_LABEL = "Minute";
 
     @CCD(label = "Which type of hearing is this?")
     private HearingType type;
@@ -57,18 +61,16 @@ public class Hearing {
     private Integer durationDays;
 
     @CCD(
-        label = "Hours",
-        max = 23,
-        regex = "^\\d*$"
+        label = HOUR_LABEL,
+        max = 23
     )
-    private Integer durationHours;
+    private Float durationHours;
 
     @CCD(
-        label = "Minutes",
-        max = 59,
-        regex = "^\\d*$"
+        label = MINUTE_LABEL,
+        max = 59
     )
-    private Integer durationMinutes;
+    private Float durationMinutes;
 
     @CCD(
         label = NOTES_LABEL,
