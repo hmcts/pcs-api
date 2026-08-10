@@ -5,18 +5,18 @@ import { getCaseTypeId } from '@utils/common/caseType.utils';
 import { performAction, performValidation } from '@utils/controller-caseManagement';
 import { VERY_LONG_TIMEOUT } from 'playwright.config';
 import { caseSummary, home } from '@data/page-data';
-import {generateRandomString} from "@utils/common/string.utils";
-import {performActions} from "@utils/controller";
 import {
   changeCaseState, confirmCaseStateChange, confirmUpload, enterGenappApplication, enterGenAppapplicationFee,
-  addReviewDates, confirmReviewDatesAdded,
+  addReviewDates, confirmReviewDatesAdded, enterGenAppConfirmation,
   enterGenAppConsentAndNotice, enterGenAppHearingDate,
   enterGenAppPreferApplicationToJudge, selectDocument,
   uploadADocument
 } from '@data/page-data-figma/page-data-caseManagement-figma';
 import { caseInfo } from '../createCaseAPI.action';
 import { CaseManagementCommonUtils } from './caseManagementUtils.action';
-import path from 'path';
+import path from "path";
+import {performActions} from "@utils/controller";
+import {generateRandomString} from "@utils/common/string.utils";
 
 
 export let addressInfo: { buildingStreet: string; addressLine2: string; townCity: string; engOrWalPostcode: string; };
@@ -44,8 +44,7 @@ export class CaseManagementAction implements IAction {
       ['uploadRelativeEvidence',() => this.uploadRelativeEvidence(fieldName as actionRecord)],
       ['uploadADocument',() => this.uploadADocument(page, fieldName as actionRecord)],
       ['verifyReferToJudge', () => this.verifyReferToJudge(fieldName as actionRecord)],
-      ['uploadADocument', () => this.uploadADocument(page, fieldName as actionRecord)],
-      ['uploadRelativeEvidence', () => this.uploadRelativeEvidence(fieldName as actionRecord)],
+      ['verifyGenAppConfirm', () => this.verifyGenAppConfirm()],
       ['inputErrorValidation', () => this.inputErrorValidation(page, fieldName as actionRecord)],
       ['getAddressInfo', () => this.getAddressInfo(fieldName as actionRecord)],
 
@@ -292,6 +291,23 @@ export class CaseManagementAction implements IAction {
     await performValidation('mainHeader', enterGenAppPreferApplicationToJudge.mainHeader);
     await performAction('reTryOnCallBackError', enterGenAppPreferApplicationToJudge.continueButton, referToJudgeData.nextPage as string);
   }
+
+  private async verifyGenAppConfirm(): Promise<void> {
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
+    await performValidation('text', {
+      elementType: 'paragraph',
+      text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
+    });
+    await performValidation('text', { elementType: 'inlineText', text: 'Case number: ' + caseInfo.fid });
+    await performValidation('text', {
+      elementType: 'inlineText',
+      text: `${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
+    });
+    await performValidation('mainHeader', enterGenAppConfirmation.mainHeader);
+    await performValidation('text', { elementType: 'inlineText', text: enterGenAppConfirmation.applicationEnteredText });
+    await performAction('clickButton', enterGenAppConfirmation.closeAndReturnToCaseOverviewButton);
+  }
+
 
   private async selectDynamicAppAndPartyDocRelatedTo(selectApp: actionRecord) {
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
