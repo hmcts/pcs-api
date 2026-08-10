@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.WalesDocuments;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimUploadedDocumentChecklistEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
@@ -18,6 +19,8 @@ import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Component
 public class ClaimView {
@@ -67,6 +70,15 @@ public class ClaimView {
                 .reasons(claim.getAdditionalReasons())
                 .build()
         );
+
+        Set<ClaimUploadedDocumentChecklistEntity> checklistItems = claim.getUploadedDocumentChecklist();
+        if (!CollectionUtils.isEmpty(checklistItems)) {
+            pcsCase.setDocumentsYouveUploaded(
+                checklistItems.stream()
+                    .map(ClaimUploadedDocumentChecklistEntity::getDocumentType)
+                    .collect(Collectors.toSet())
+            );
+        }
 
         pcsCase.setRequiredDocumentsWales(
             WalesDocuments.builder()
