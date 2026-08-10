@@ -21,6 +21,8 @@ import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.TaskGroupEvaluator;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.OutstandingCounterClaimPayment;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.OutstandingCounterClaimPaymentService;
+import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.util.Comparator;
 import java.util.List;
@@ -51,16 +53,19 @@ public class DashboardJourneyService {
     private final DraftCaseDataService draftCaseDataService;
     private final DefendantResponseService defendantResponseService;
     private final OutstandingCounterClaimPaymentService outstandingCounterClaimPaymentService;
+    private final FeatureToggleService featureToggleService;
 
     public DashboardJourneyService(
         DraftCaseDataService draftCaseDataService,
         DefendantResponseService defendantResponseService,
         OutstandingCounterClaimPaymentService outstandingCounterClaimPaymentService,
+        FeatureToggleService featureToggleService,
         List<TaskGroupEvaluator> evaluators
     ) {
         this.draftCaseDataService = draftCaseDataService;
         this.defendantResponseService = defendantResponseService;
         this.outstandingCounterClaimPaymentService = outstandingCounterClaimPaymentService;
+        this.featureToggleService = featureToggleService;
         this.evaluatorsInOrder = evaluators.stream()
             .sorted(Comparator.comparingInt(e -> orderIndex(e.groupId())))
             .toList();
@@ -146,6 +151,10 @@ public class DashboardJourneyService {
         ResponseStatus responseStatus,
         DashboardContext ctx
     ) {
+        if (!featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_2)) {
+            return Optional.empty();
+        }
+
         if (responseStatus != ResponseStatus.SUBMITTED
             || ctx == null
             || ctx.defendant() == null

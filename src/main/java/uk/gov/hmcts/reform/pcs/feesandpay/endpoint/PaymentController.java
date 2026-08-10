@@ -27,6 +27,8 @@ import uk.gov.hmcts.reform.pcs.feesandpay.model.OutstandingCounterClaimPayment;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.OutstandingCounterClaimPaymentService;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.PaymentService;
 import uk.gov.hmcts.reform.pcs.idam.IdamAuthenticator;
+import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.util.UUID;
 
@@ -45,6 +47,7 @@ public class PaymentController {
     private final PaymentService paymentService;
     private final OutstandingCounterClaimPaymentService outstandingCounterClaimPaymentService;
     private final IdamAuthenticator idamAuthenticator;
+    private final FeatureToggleService featureToggleService;
 
     @PostMapping(path = "service-request/{serviceRequestReference}/card-payment", consumes = APPLICATION_JSON_VALUE)
     @Operation(
@@ -120,6 +123,10 @@ public class PaymentController {
         @RequestHeader(value = SERVICE_AUTHORIZATION) String s2sToken,
         @PathVariable("caseReference") long caseReference
     ) {
+        if (!featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_2)) {
+            return ResponseEntity.notFound().build();
+        }
+
         UUID idamUserId = UUID.fromString(
             idamAuthenticator.validateAuthToken(authorization).getUserDetails().getUid()
         );
