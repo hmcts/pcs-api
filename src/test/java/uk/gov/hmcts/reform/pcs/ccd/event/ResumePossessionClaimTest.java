@@ -33,6 +33,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.util.MoneyFormatter;
+import uk.gov.hmcts.reform.pcs.ccd.view.FeatureFlagView;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
@@ -101,6 +102,8 @@ class ResumePossessionClaimTest extends BaseEventTest {
     private ResumePossessionClaimConfigurer resumePossessionClaimConfigurer;
     @Mock
     private NotificationService notificationService;
+    @Mock
+    private FeatureFlagView featureFlagView;
 
     @BeforeEach
     void setUp() {
@@ -114,7 +117,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
             pcsCaseService, partyService, securityContextService,
             savingPageBuilderFactory,
             organisationService, schedulerClient, draftCaseDataService, addressFormatter, feeService,
-            moneyFormatter, resumePossessionClaimConfigurer, notificationService
+            moneyFormatter, resumePossessionClaimConfigurer, notificationService, featureFlagView
         );
 
         setEventUnderTest(underTest);

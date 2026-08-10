@@ -31,6 +31,7 @@ import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.util.MoneyFormatter;
+import uk.gov.hmcts.reform.pcs.ccd.view.FeatureFlagView;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
@@ -70,6 +71,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final MoneyFormatter moneyFormatter;
     private final ResumePossessionClaimConfigurer resumePossessionClaimConfigurer;
     private final NotificationService notificationService;
+    private final FeatureFlagView featureFlagView;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -93,6 +95,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
         long caseReference = eventPayload.caseReference();
         PCSCase caseData = eventPayload.caseData();
 
+        featureFlagView.setCaseFields(caseData);
         setUnsubmittedCaseDataFlag(caseReference, caseData);
 
         String userEmail = securityContextService.getCurrentUserDetails().getSub();

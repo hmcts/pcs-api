@@ -35,12 +35,15 @@ public class ManageFlags implements CCDConfig<PCSCase, State, UserRole> {
                             .description("To manage flags")
                             .showCondition(ShowConditions.featureFlagsEnabled(RELEASE_1_DOT_2, CASEWORKER_EVENTS))
                             .showSummary()
+                            .endButtonLabel("Submit")
                             .grant(Permission.CRU,
                                    UserRole.CTSC_ADMIN,
                                    UserRole.HEARING_CENTRE_ADMIN,
                                    UserRole.WLU_ADMIN)
                             .grantHistoryOnly(JUDICIAL_HISTORY_ROLES))
             .page("caseworkerCaseFlag")
+            .pageLabel("Manage case flags")
+            .label("caseworkerCaseFlag-lineSeparator", "---")
             .optional(PCSCase::getCaseFlags, ShowConditions.NEVER_SHOW, true, true)
             .optional(PCSCase::getParties, ShowConditions.NEVER_SHOW, true, true)
             .list(PCSCase::getAllDefendants, ShowConditions.NEVER_SHOW)
