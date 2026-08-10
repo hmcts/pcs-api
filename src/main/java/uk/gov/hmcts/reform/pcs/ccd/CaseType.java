@@ -112,9 +112,10 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
         builder.caseType(getCaseType(), getCaseTypeName(), CASE_TYPE_DESCRIPTION);
         builder.jurisdiction(JURISDICTION_ID, JURISDICTION_NAME, JURISDICTION_DESCRIPTION);
         builder.hmctsServiceId(hmctsServiceId);
-        // Capacity-only users lose their group role on group-less drafts, so the creator's
-        // case role must pass case-type authorisation by itself
-        builder.grantCaseTypeAccessToCaseRoles(AccessProfile.CREATOR);
+        // Case roles whose holders have no other route past case-type authorisation:
+        // CREATOR on group-less drafts, DEFENDANT / DEFENDANTSOLICITOR on issued cases.
+        builder.grantCaseTypeAccessToCaseRoles(AccessProfile.CREATOR,
+            AccessProfile.DEFENDANT, AccessProfile.DEFENDANT_SOLICITOR);
 
         builder.searchInputFields()
             .caseReferenceField();
