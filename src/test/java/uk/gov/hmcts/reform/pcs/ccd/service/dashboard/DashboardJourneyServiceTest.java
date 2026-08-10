@@ -34,6 +34,7 @@ import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.OutstandingCounterClaimPayment;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.OutstandingCounterClaimPaymentService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -47,6 +48,7 @@ import static org.assertj.core.api.Assertions.tuple;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.service.dashboard.DashboardJourneyService.COUNTER_CLAIM_FEE_UNPAID_TEMPLATE_ID;
+import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.RELEASE_1_DOT_2;
 
 @ExtendWith(MockitoExtension.class)
 class DashboardJourneyServiceTest {
@@ -65,6 +67,9 @@ class DashboardJourneyServiceTest {
     private OutstandingCounterClaimPaymentService outstandingCounterClaimPaymentService;
 
     @Mock
+    private FeatureToggleService featureToggleService;
+
+    @Mock
     private SecurityContextService securityContextService;
 
     @Mock
@@ -75,10 +80,12 @@ class DashboardJourneyServiceTest {
     @BeforeEach
     void setUp() {
         genAppVisibilityService = new GenAppVisibilityService(legalRepresentativeRepository);
+        when(featureToggleService.isEnabled(RELEASE_1_DOT_2)).thenReturn(true);
         underTest = new DashboardJourneyService(
             draftCaseDataService,
             defendantResponseService,
             outstandingCounterClaimPaymentService,
+            featureToggleService,
             List.of(
                 new ClaimTaskGroupEvaluator(),
                 new DocumentsTaskGroupEvaluator(),
@@ -414,6 +421,32 @@ class DashboardJourneyServiceTest {
         ))
             .extracting(tv -> tv.getKey(), tv -> tv.getValue())
             .containsExactly(tuple("feeAmount", "404.00"));
+    }
+
+    @Test
+    void shouldReturnResponseSubmittedWhenRelease12DisabledEvenIfOutstandingPaymentExists() {
+        when(featureToggleService.isEnabled(RELEASE_1_DOT_2)).thenReturn(false);
+        when(draftCaseDataService.hasMeaningfulRespondDraft(CASE_REFERENCE, EventId.respondPossessionClaim))
+            .thenReturn(false);
+        when(defendantResponseService.hasSubmittedResponse(CASE_REFERENCE)).thenReturn(true);
+
+        UUID partyId = UUID.randomUUID();
+        PartyEntity defendant = PartyEntity.builder().id(partyId).idamId(UUID.randomUUID()).build();
+
+        DashboardData result = underTest.computeDashboardData(
+            CASE_REFERENCE,
+            PCSCase.builder().build(),
+            PcsCaseEntity.builder().build(),
+            defendant
+        );
+
+        assertThat(ListValueUtils.unwrapListItems(result.getNotifications()))
+            .extracting(n -> n.getTemplateId())
+            .containsExactly(
+                "Defendant.NoHearingArranged",
+                "Defendant.ResponseSubmitted"
+            );
+        verifyNoInteractions(outstandingCounterClaimPaymentService);
     }
 
     @Test

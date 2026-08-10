@@ -29,6 +29,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.DefendantRespo
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.OutstandingCounterClaimPaymentService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.util.List;
 import java.util.UUID;
@@ -64,6 +65,9 @@ class DashboardViewTest extends BaseEventTest {
     @Mock
     private OutstandingCounterClaimPaymentService outstandingCounterClaimPaymentService;
 
+    @Mock
+    private FeatureToggleService featureToggleService;
+
     private GenAppVisibilityService genAppVisibilityService;
 
     @BeforeEach
@@ -73,6 +77,7 @@ class DashboardViewTest extends BaseEventTest {
             draftCaseDataService,
             defendantResponseService,
             outstandingCounterClaimPaymentService,
+            featureToggleService,
             List.of(
                 new ClaimTaskGroupEvaluator(),
                 new DocumentsTaskGroupEvaluator(),

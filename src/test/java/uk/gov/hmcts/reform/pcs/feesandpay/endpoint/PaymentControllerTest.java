@@ -16,12 +16,15 @@ import uk.gov.hmcts.reform.pcs.feesandpay.service.PaymentService;
 import uk.gov.hmcts.reform.pcs.idam.IdamAuthenticator;
 import uk.gov.hmcts.reform.pcs.idam.User;
 import uk.gov.hmcts.reform.pcs.idam.UserInfo;
+import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.math.BigDecimal;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -39,6 +42,9 @@ class PaymentControllerTest {
     @Mock
     private IdamAuthenticator idamAuthenticator;
 
+    @Mock
+    private FeatureToggleService featureToggleService;
+
     private PaymentController underTest;
 
     @BeforeEach
@@ -46,7 +52,8 @@ class PaymentControllerTest {
         underTest = new PaymentController(
             paymentService,
             outstandingCounterClaimPaymentService,
-            idamAuthenticator
+            idamAuthenticator,
+            featureToggleService
         );
     }
 
@@ -88,6 +95,7 @@ class PaymentControllerTest {
 
     @Test
     void shouldReturnOutstandingCounterClaimPaymentForAuthenticatedDefendant() {
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_2)).thenReturn(true);
         long caseReference = 12_345_678L;
         UUID idamUserId = UUID.randomUUID();
         OutstandingCounterClaimPayment outstandingPayment = OutstandingCounterClaimPayment.builder()
@@ -111,6 +119,21 @@ class PaymentControllerTest {
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isEqualTo(outstandingPayment);
+    }
+
+    @Test
+    void shouldReturnNotFoundWhenRelease12DisabledForOutstandingCounterClaimPayment() {
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_2)).thenReturn(false);
+
+        ResponseEntity<OutstandingCounterClaimPayment> response = underTest.getOutstandingCounterClaimPayment(
+            AUTHORIZATION,
+            S2S_TOKEN,
+            12_345_678L
+        );
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+        assertThat(response.getBody()).isNull();
+        verifyNoInteractions(idamAuthenticator, outstandingCounterClaimPaymentService);
     }
 
 }
