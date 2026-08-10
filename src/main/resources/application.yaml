@@ -278,7 +278,6 @@ expired-case-deletion:
   queue-capacity: ${EXPIRED_CASE_DELETION_QUEUE_CAPACITY:0}
   task-timeout-seconds: ${EXPIRED_CASE_DELETION_TASK_TIMEOUT:45}
   global-timeout-seconds: ${EXPIRED_CASE_DELETION_GLOBAL_TIMEOUT:300}
-  max-batch-limit: ${EXPIRED_CASE_DELETION_MAX_BATCH_LIMIT:10}
 
 send-letter:
   # Default to localhost so a higher environment fails loudly if SEND_LETTER_URL is not set, rather than

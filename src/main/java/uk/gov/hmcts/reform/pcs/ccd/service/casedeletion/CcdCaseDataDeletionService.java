@@ -39,12 +39,12 @@ public class CcdCaseDataDeletionService {
     private final ObjectMapper objectMapper;
     private final CcdCaseRepository ccdCaseRepository;
 
-    public List<Long> findExpiredDraftCases(int discardAfterDays, int maxBatchLimit) {
-        return ccdCaseRepository.findExpiredDraftCases(discardAfterDays, maxBatchLimit);
+    public List<Long> findExpiredDraftCases(int discardAfterDays) {
+        return ccdCaseRepository.findExpiredDraftCases(discardAfterDays);
     }
 
-    public List<Long> findExpiredDraftCasesInDraftDiscardedState(int maxBatchLimit) {
-        return ccdCaseRepository.findExpiredDraftCasesInDraftDiscardedState(maxBatchLimit);
+    public List<Long> findExpiredDraftCasesInDraftDiscardedState() {
+        return ccdCaseRepository.findExpiredDraftCasesInDraftDiscardedState();
     }
 
     public void deleteCcdCaseData(long caseReference) {

@@ -16,10 +16,9 @@ public class CcdCaseRepository {
     private final JdbcTemplate jdbcTemplate;
     private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
-    public List<Long> findExpiredDraftCases(int discardAfterDays, int maxBatchLimit) {
+    public List<Long> findExpiredDraftCases(int discardAfterDays) {
         SqlParameterSource namedParameters = new MapSqlParameterSource()
-                .addValue("discardDaysAfter", discardAfterDays)
-                .addValue("batchLimit", maxBatchLimit);
+                .addValue("discardDaysAfter", discardAfterDays);
         return namedParameterJdbcTemplate.query(
                 """
                    SELECT cd.reference
@@ -32,16 +31,13 @@ public class CcdCaseRepository {
         );
     }
 
-    public List<Long> findExpiredDraftCasesInDraftDiscardedState(int maxBatchLimit) {
-        SqlParameterSource namedParameters = new MapSqlParameterSource()
-                .addValue("batchLimit", maxBatchLimit);
-        return namedParameterJdbcTemplate.query(
+    public List<Long> findExpiredDraftCasesInDraftDiscardedState() {
+        return jdbcTemplate.query(
                 """
                    SELECT cd.reference
                    FROM ccd.case_data cd
                    WHERE cd.state in ('DRAFT_DISCARDED')
                 """,
-                namedParameters,
                 (rs, rowNum) -> rs.getLong("reference")
         );
     }

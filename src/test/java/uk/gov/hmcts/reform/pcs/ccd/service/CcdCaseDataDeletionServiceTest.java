@@ -54,7 +54,6 @@ class CcdCaseDataDeletionServiceTest {
     private CcdCaseDataDeletionService underTest;
 
     private final int discardAfterDays = 30;
-    private final int maxBatchLimit = 50;
     private final long caseRef = 123456789L;
     private final long caseRef2 = 987654321L;
     private final String caseReference = "123456789";
@@ -75,9 +74,9 @@ class CcdCaseDataDeletionServiceTest {
     @Test
     void shouldReturnEmptyListWhenNoExpiredCasesFound() {
         // Given
-        when(ccdCaseRepository.findExpiredDraftCases(discardAfterDays, maxBatchLimit)).thenReturn(List.of());
+        when(ccdCaseRepository.findExpiredDraftCases(discardAfterDays)).thenReturn(List.of());
         // When
-        List<Long> result = underTest.findExpiredDraftCases(discardAfterDays, maxBatchLimit);
+        List<Long> result = underTest.findExpiredDraftCases(discardAfterDays);
 
         // Then
         assertThat(result).isEmpty();
@@ -86,10 +85,10 @@ class CcdCaseDataDeletionServiceTest {
     @Test
     void shouldReturnValidListWhenExpiredCasesFound() {
         // Given
-        when(ccdCaseRepository.findExpiredDraftCases(discardAfterDays, maxBatchLimit))
+        when(ccdCaseRepository.findExpiredDraftCases(discardAfterDays))
                 .thenReturn(List.of(caseRef, caseRef2));
         // When
-        List<Long> result = underTest.findExpiredDraftCases(discardAfterDays, maxBatchLimit);
+        List<Long> result = underTest.findExpiredDraftCases(discardAfterDays);
 
         // Then
         assertThat(result).hasSize(2);
@@ -98,9 +97,9 @@ class CcdCaseDataDeletionServiceTest {
     @Test
     void shouldReturnEmptyListWhenNoDiscardedCasesFound() {
         // Given
-        when(ccdCaseRepository.findExpiredDraftCasesInDraftDiscardedState(maxBatchLimit)).thenReturn(List.of());
+        when(ccdCaseRepository.findExpiredDraftCasesInDraftDiscardedState()).thenReturn(List.of());
         // When
-        List<Long> result = underTest.findExpiredDraftCasesInDraftDiscardedState(maxBatchLimit);
+        List<Long> result = underTest.findExpiredDraftCasesInDraftDiscardedState();
 
         // Then
         assertThat(result).isEmpty();
@@ -109,10 +108,10 @@ class CcdCaseDataDeletionServiceTest {
     @Test
     void shouldReturnValidListWhenDiscardedCasesFound() {
         // Given
-        when(ccdCaseRepository.findExpiredDraftCasesInDraftDiscardedState(maxBatchLimit))
+        when(ccdCaseRepository.findExpiredDraftCasesInDraftDiscardedState())
                 .thenReturn(List.of(caseRef, caseRef2));
         // When
-        List<Long> result = underTest.findExpiredDraftCasesInDraftDiscardedState(maxBatchLimit);
+        List<Long> result = underTest.findExpiredDraftCasesInDraftDiscardedState();
 
         // Then
         assertThat(result).hasSize(2);

@@ -10,6 +10,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.service.casedeletion.CaseDeletionService;
 import uk.gov.hmcts.reform.pcs.ccd.service.casedeletion.CcdCaseDataDeletionService;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -25,7 +26,6 @@ import static org.mockito.Mockito.when;
 class CaseDeletionScheduledTaskTest {
 
     private final int discardAfterDays = 30;
-    private final int maxBatchLimit = 50;
 
     @Mock
     private CcdCaseDataDeletionService ccdCaseDataDeletionService;
@@ -37,7 +37,7 @@ class CaseDeletionScheduledTaskTest {
     @BeforeEach
     void setUp() {
         String validSchedule = "DAILY|00:00";
-        underTest = new CaseDeletionScheduledTask(validSchedule, discardAfterDays, 5, 10, 20, 45, 300, maxBatchLimit,
+        underTest = new CaseDeletionScheduledTask(validSchedule, discardAfterDays, 5, 10, 20, 45, 300,
                 ccdCaseDataDeletionService, caseDeletionService);
     }
 
@@ -53,14 +53,14 @@ class CaseDeletionScheduledTaskTest {
         @Test
         void shouldProcessCasesForDeletionIfListOfExpiredCasesNotEmpty() {
             // Given
-            when(ccdCaseDataDeletionService.findExpiredDraftCases(discardAfterDays, maxBatchLimit))
+            when(ccdCaseDataDeletionService.findExpiredDraftCases(discardAfterDays))
                     .thenReturn(List.of(1L, 2L));
 
             // When
             underTest.runSweep();
 
             // Then
-            verify(ccdCaseDataDeletionService).findExpiredDraftCases(discardAfterDays, maxBatchLimit);
+            verify(ccdCaseDataDeletionService).findExpiredDraftCases(discardAfterDays);
             verify(caseDeletionService).performCaseDeletionTasks(1L);
             verify(caseDeletionService).performCaseDeletionTasks(2L);
         }
@@ -68,22 +68,25 @@ class CaseDeletionScheduledTaskTest {
         @Test
         void shouldHandleEmptyListOfExpiredCases() {
             // Given
-            when(ccdCaseDataDeletionService.findExpiredDraftCases(discardAfterDays, maxBatchLimit))
+            when(ccdCaseDataDeletionService.findExpiredDraftCases(discardAfterDays))
                     .thenReturn(List.of());
 
             // When
             underTest.runSweep();
 
             // Then
-            verify(ccdCaseDataDeletionService).findExpiredDraftCases(discardAfterDays, maxBatchLimit);
+            verify(ccdCaseDataDeletionService).findExpiredDraftCases(discardAfterDays);
             verifyNoInteractions(caseDeletionService);
         }
 
         @Test
         void shouldContinueProcessingWhenIndividualDeletionThrowsException() {
             // Given
-            List<Long> caseRefs = List.of(111L, 222L, 333L);
-            when(ccdCaseDataDeletionService.findExpiredDraftCases(discardAfterDays, maxBatchLimit))
+            List<Long> caseRefs = new ArrayList<>();
+            caseRefs.add(111L);
+            caseRefs.add(222L);
+            caseRefs.add(333L);
+            when(ccdCaseDataDeletionService.findExpiredDraftCases(discardAfterDays))
                     .thenReturn(caseRefs);
 
             doThrow(new RuntimeException("Database down or API failure"))
@@ -105,14 +108,14 @@ class CaseDeletionScheduledTaskTest {
         @Test
         void shouldProcessCasesForCleanupIfListOfDiscardedCasesNotEmpty() {
             // Given
-            when(ccdCaseDataDeletionService.findExpiredDraftCasesInDraftDiscardedState(maxBatchLimit))
+            when(ccdCaseDataDeletionService.findExpiredDraftCasesInDraftDiscardedState())
                     .thenReturn(List.of(1L, 2L));
 
             // When
             underTest.runSweep();
 
             // Then
-            verify(ccdCaseDataDeletionService).findExpiredDraftCasesInDraftDiscardedState(maxBatchLimit);
+            verify(ccdCaseDataDeletionService).findExpiredDraftCasesInDraftDiscardedState();
             verify(caseDeletionService).cleanupDiscardedDraftCases(1L);
             verify(caseDeletionService).cleanupDiscardedDraftCases(2L);
         }
@@ -120,14 +123,14 @@ class CaseDeletionScheduledTaskTest {
         @Test
         void shouldHandleEmptyListOfDiscardedCases() {
             // Given
-            when(ccdCaseDataDeletionService.findExpiredDraftCasesInDraftDiscardedState(maxBatchLimit))
+            when(ccdCaseDataDeletionService.findExpiredDraftCasesInDraftDiscardedState())
                     .thenReturn(List.of());
 
             // When
             underTest.runSweep();
 
             // Then
-            verify(ccdCaseDataDeletionService).findExpiredDraftCasesInDraftDiscardedState(maxBatchLimit);
+            verify(ccdCaseDataDeletionService).findExpiredDraftCasesInDraftDiscardedState();
             verifyNoInteractions(caseDeletionService);
         }
 
@@ -135,7 +138,7 @@ class CaseDeletionScheduledTaskTest {
         void shouldContinueProcessingWhenIndividualDeletionThrowsException() {
             // Given
             List<Long> caseRefs = List.of(111L, 222L, 333L);
-            when(ccdCaseDataDeletionService.findExpiredDraftCasesInDraftDiscardedState(maxBatchLimit))
+            when(ccdCaseDataDeletionService.findExpiredDraftCasesInDraftDiscardedState())
                     .thenReturn(caseRefs);
 
             doThrow(new RuntimeException("Database down or API failure"))
