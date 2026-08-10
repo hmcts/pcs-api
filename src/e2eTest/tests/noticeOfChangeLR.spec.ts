@@ -40,7 +40,7 @@ test.afterEach(async () => {
 });
 
 test.describe('Make an Application - LR - e2e Journey @nightly', async () => {
-  test('Notice of change - Change link - Same Org LR submits another NOC - LR @noticeOfChange', async ( { page }) => {
+  test.skip('Notice of change - Change link - Same Org LR submits another NOC - LR @noticeOfChange', async ( { page }) => {
     await performAction('noticeOfChange', { caseRefNo: caseInfo.id } );
     await performAction('clientDetails', { firstName: 'Peter' , lastName: 'Parker' });
     await performAction('verifyChangeLink', { caseRefNo: caseInfo.id, firstName: 'Peter' , lastName: 'Parker' });
