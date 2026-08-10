@@ -269,11 +269,12 @@ class DocumentsViewTest {
 
     @ParameterizedTest
     @MethodSource("caseDetailsTabDocuments")
-    void shouldFilterOutDocumentsThatAppearInCaseDetailsTab(DocumentType documentType) {
+    void shouldNotFilterOutDocumentsByType(DocumentType documentType) {
         // Given
         UUID document1Id = UUID.randomUUID();
         DocumentEntity documentEntity = DocumentEntity.builder()
             .id(document1Id)
+            .fileName("filename")
             .type(documentType)
             .build();
 
@@ -284,7 +285,8 @@ class DocumentsViewTest {
 
         // Then
         List<ListValue<Document>> allDocuments = pcsCase.getAllDocuments();
-        assertThat(allDocuments).hasSize(0);
+        assertThat(allDocuments).hasSize(1);
+        assertThat(allDocuments.getFirst().getValue().getFilename()).isEqualTo("filename");
     }
 
     @ParameterizedTest

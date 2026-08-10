@@ -7,8 +7,10 @@ import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.ccd.sdk.CaseView;
 import uk.gov.hmcts.ccd.sdk.CaseViewRequest;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentWithId;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
@@ -45,10 +47,16 @@ import uk.gov.hmcts.reform.pcs.ccd.view.globalsearch.SearchCriteriaIndexer;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
+import java.lang.reflect.Field;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.time.temporal.Temporal;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -173,8 +181,104 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         caseListView.setCaseFields(pcsCase);
         defendantResponseView.setCaseFields(pcsCase, pcsCaseEntity);
         featureFlagView.setCaseFields(pcsCase);
+        removeDocumentsAlreadyPresentInOtherCaseFields(pcsCase);
 
         return new SubmittedCase(pcsCase, pcsCaseEntity);
+    }
+
+    private void removeDocumentsAlreadyPresentInOtherCaseFields(PCSCase pcsCase) {
+        List<ListValue<Document>> allDocuments = pcsCase.getAllDocuments();
+
+        if (allDocuments == null || allDocuments.isEmpty()) {
+            return;
+        }
+
+        Set<String> documentIdsInOtherFields = findDocumentIdsOutsideAllDocuments(pcsCase);
+
+        pcsCase.setAllDocuments(allDocuments.stream()
+                                    .filter(document -> !documentIdsInOtherFields.contains(document.getId()))
+                                    .toList());
+    }
+
+    private Set<String> findDocumentIdsOutsideAllDocuments(PCSCase pcsCase) {
+        Set<String> documentIds = new HashSet<>();
+        Set<Object> visited = Collections.newSetFromMap(new IdentityHashMap<>());
+
+        for (Field field : PCSCase.class.getDeclaredFields()) {
+            if ("allDocuments".equals(field.getName())) {
+                continue;
+            }
+
+            field.trySetAccessible();
+            try {
+                collectDocumentIds(field.get(pcsCase), documentIds, visited);
+            } catch (IllegalAccessException e) {
+                throw new IllegalStateException("Unable to inspect PCSCase document fields", e);
+            }
+        }
+
+        return documentIds;
+    }
+
+    private void collectDocumentIds(Object value, Set<String> documentIds, Set<Object> visited) {
+        if (value == null || isSimpleValue(value) || value instanceof Document || !visited.add(value)) {
+            return;
+        }
+
+        if (value instanceof DocumentWithId documentWithId) {
+            addDocumentId(documentIds, documentWithId.getId());
+            return;
+        }
+
+        if (value instanceof ListValue<?> listValue) {
+            if (listValue.getValue() instanceof Document) {
+                addDocumentId(documentIds, listValue.getId());
+            } else {
+                collectDocumentIds(listValue.getValue(), documentIds, visited);
+            }
+            return;
+        }
+
+        if (value instanceof Iterable<?> iterable) {
+            iterable.forEach(item -> collectDocumentIds(item, documentIds, visited));
+            return;
+        }
+
+        if (value instanceof Map<?, ?> map) {
+            map.forEach((key, mapValue) -> {
+                collectDocumentIds(key, documentIds, visited);
+                collectDocumentIds(mapValue, documentIds, visited);
+            });
+            return;
+        }
+
+        if (!value.getClass().getPackageName().startsWith("uk.gov.hmcts.reform.pcs")) {
+            return;
+        }
+
+        for (Field field : value.getClass().getDeclaredFields()) {
+            field.trySetAccessible();
+            try {
+                collectDocumentIds(field.get(value), documentIds, visited);
+            } catch (IllegalAccessException e) {
+                throw new IllegalStateException("Unable to inspect PCSCase document fields", e);
+            }
+        }
+    }
+
+    private boolean isSimpleValue(Object value) {
+        return value instanceof String
+            || value instanceof Number
+            || value instanceof Boolean
+            || value instanceof Enum<?>
+            || value instanceof UUID
+            || value instanceof Temporal;
+    }
+
+    private void addDocumentId(Set<String> documentIds, String documentId) {
+        if (documentId != null) {
+            documentIds.add(documentId);
+        }
     }
 
     private LocalDateTime getClaimSubmittedDate(PcsCaseEntity pcsCaseEntity) {

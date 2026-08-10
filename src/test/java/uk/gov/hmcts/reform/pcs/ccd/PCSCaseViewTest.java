@@ -10,10 +10,12 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
 import uk.gov.hmcts.ccd.sdk.CaseViewRequest;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.SearchCriteria;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
+import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsSection;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.enforcementorder.EnforcementOrderMediator;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
@@ -57,6 +59,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mock.Strictness.LENIENT;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
@@ -321,6 +324,49 @@ class PCSCaseViewTest {
     }
 
     @Test
+    void shouldKeepDocumentInAllDocumentsWhenItDoesNotAppearInAnotherCaseField() {
+        // Given
+        ListValue<Document> uploadedDocument = documentListValue("document-id", "genApps.docx");
+        doAnswer(invocation -> {
+            PCSCase pcsCase = invocation.getArgument(0);
+            pcsCase.setAllDocuments(List.of(uploadedDocument));
+            return null;
+        }).when(documentsView).setCaseFields(any(PCSCase.class), any(PcsCaseEntity.class));
+
+        // When
+        PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
+
+        // Then
+        assertThat(pcsCase.getAllDocuments()).containsExactly(uploadedDocument);
+    }
+
+    @Test
+    void shouldRemoveDocumentFromAllDocumentsWhenItAppearsInAnotherCaseField() {
+        // Given
+        ListValue<Document> duplicatedDocument = documentListValue("duplicate-document-id", "rent-statement.pdf");
+        ListValue<Document> otherDocument = documentListValue("other-document-id", "genApps.docx");
+        doAnswer(invocation -> {
+            PCSCase pcsCase = invocation.getArgument(0);
+            pcsCase.setAllDocuments(List.of(duplicatedDocument, otherDocument));
+            return null;
+        }).when(documentsView).setCaseFields(any(PCSCase.class), any(PcsCaseEntity.class));
+
+        doAnswer(invocation -> {
+            PCSCase pcsCase = invocation.getArgument(0);
+            pcsCase.setRentArrears(RentArrearsSection.builder()
+                                      .statementDocuments(List.of(duplicatedDocument))
+                                      .build());
+            return null;
+        }).when(rentArrearsView).setCaseFields(any(PCSCase.class), any(PcsCaseEntity.class));
+
+        // When
+        PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
+
+        // Then
+        assertThat(pcsCase.getAllDocuments()).containsExactly(otherDocument);
+    }
+
+    @Test
     void shouldSetCaseFields() {
         // When
         doNothing().when(caseFieldsView).setCaseFields(any(PCSCase.class));
@@ -404,6 +450,15 @@ class PCSCaseViewTest {
         AddressUK addressUK = mock(AddressUK.class);
         when(modelMapper.map(addressEntity, AddressUK.class)).thenReturn(addressUK);
         return addressUK;
+    }
+
+    private static ListValue<Document> documentListValue(String id, String filename) {
+        return ListValue.<Document>builder()
+            .id(id)
+            .value(Document.builder()
+                       .filename(filename)
+                       .build())
+            .build();
     }
 
     @SuppressWarnings("SameParameterValue")
