@@ -3,19 +3,25 @@ package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
-import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
-import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocument;
+import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocumentEngland;
+import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocumentWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 import uk.gov.hmcts.reform.pcs.ccd.util.StringUtils;
+import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
+
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.WALES;
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.ENGLAND;
+import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 
 @AllArgsConstructor
 @Component
@@ -46,15 +52,16 @@ public class UploadAdditionalDocumentsDetails implements CcdPageConfiguration {
                    <p class="govuk-body govuk-!-font-size-19">Give your document a name that explains what it is.</p>
                    """
             )
-            .mandatory(PCSCase::getAdditionalDocuments)
-            .label("uploadAdditionalDocuments-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
+            .mandatory(PCSCase::getAdditionalDocumentsEngland, ENGLAND)
+            .mandatory(PCSCase::getAdditionalDocumentsWales, WALES)
+            .label("uploadAdditionalDocuments-saveAndReturn", SAVE_AND_RETURN);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
                                                                   CaseDetails<PCSCase, State> detailsBefore) {
         PCSCase caseData = details.getData();
 
-        List<String> errors = validateDocumentDescription(caseData.getAdditionalDocuments(), DESCRIPTION_LABEL);
+        List<String> errors = validateDocumentDescription(caseData, DESCRIPTION_LABEL);
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .errorMessageOverride(StringUtils.joinIfNotEmpty("\n", errors))
@@ -63,19 +70,47 @@ public class UploadAdditionalDocumentsDetails implements CcdPageConfiguration {
     }
 
     private List<String> validateDocumentDescription(
-        List<ListValue<AdditionalDocument>> additionalDocuments,
+        PCSCase caseData,
         String sectionLabel) {
 
+        if (caseData.getLegislativeCountry() == LegislativeCountry.ENGLAND) {
+            return validateDocumentDescriptions(
+                caseData.getAdditionalDocumentsEngland(),
+                AdditionalDocumentEngland::getDescription,
+                sectionLabel
+            );
+        }
+
+        if (caseData.getLegislativeCountry() == LegislativeCountry.WALES) {
+            return validateDocumentDescriptions(
+                caseData.getAdditionalDocumentsWales(),
+                AdditionalDocumentWales::getDescription,
+                sectionLabel
+            );
+        }
+
+        return List.of();
+    }
+
+    private <T> List<String> validateDocumentDescriptions(
+        List<ListValue<T>> additionalDocuments,
+        Function<T, String> descriptionExtractor,
+        String sectionLabel
+    ) {
         List<String> validationErrors = new ArrayList<>();
 
+        if (additionalDocuments == null) {
+            return validationErrors;
+        }
+
         for (int i = 0; i < additionalDocuments.size(); i++) {
-            String docDescription = additionalDocuments.get(i).getValue().getDescription();
+            String docDescription = descriptionExtractor.apply(additionalDocuments.get(i).getValue());
             String sectionHint = "Additional document %d".formatted(i + 1) + "'s " + sectionLabel;
             validationErrors.addAll(textAreaValidationService.validateSingleTextArea(
                 docDescription, sectionHint, TextAreaValidationService.EXTRA_SHORT_TEXT_LIMIT)
             );
         }
+
         return validationErrors;
     }
-
 }
