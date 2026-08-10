@@ -350,6 +350,7 @@ am-org-role-mapping-service:
       REFRESH_BULK_ASSIGNMENT_INCLUDE_BOOKINGS: true
       DB_FEATURE_FLAG_ENABLE: st_cic_wa_1_0
       ORM_ENV: pr
+      PROFESSIONAL_REFRESH_API_ENABLED: true
 
 aac-manage-case-assignment:
   enabled: true
