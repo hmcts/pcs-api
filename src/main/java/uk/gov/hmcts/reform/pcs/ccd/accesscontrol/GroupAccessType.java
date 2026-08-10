@@ -68,7 +68,7 @@ public enum GroupAccessType implements CCDAccessGroup {
     DUTY_ADVISOR_ACCESS(
         SOLICITOR_PROFILE.getId(), "duty-advisor-access",
         "Grants solicitors access to request time-bound duty-advisor role", "",
-        1, true, true, true, true
+        8, true, true, true, true
     );
 
     private final String organisationProfileId;
