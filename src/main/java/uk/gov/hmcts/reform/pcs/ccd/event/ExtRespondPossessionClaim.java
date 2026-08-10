@@ -28,7 +28,7 @@ public class ExtRespondPossessionClaim implements CCDConfig<PCSCase, State, User
                 "legalRepUpdatedDetails=\"Yes\"",
                 ShowConditions.featureFlagsEnabled(RELEASE_1_DOT_2)))
             .name("Respond to claim")
-            .description("Exposes event to redirect to pcs-frontend")
+            .description("Respond to claim")
             .grant(Permission.CRU, UserRole.DEFENDANT_SOLICITOR);
     }
 
