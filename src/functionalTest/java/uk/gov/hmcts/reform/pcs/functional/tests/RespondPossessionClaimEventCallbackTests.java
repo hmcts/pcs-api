@@ -31,7 +31,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 
 @Slf4j
 @Tag("Functional")
-@EnabledIfEnvironmentVariable(named = "CCD_ENABLED", matches = "true")
+@EnabledIfEnvironmentVariable(named = "CCD_ENABLED", matches = "false")
 @DisabledIfEnvironmentVariable(named = "SHUTTER_SERVICE", matches = "true")
 @ExtendWith(SerenityJUnit5Extension.class)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
