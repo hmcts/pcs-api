@@ -74,7 +74,7 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
     }
 
     private static String withSuffix(String base, String separator) {
-        String caseTypeSuffix = "-staging"; // getenv().get("CASE_TYPE_SUFFIX");
+        String caseTypeSuffix = "staging"; // getenv().get("CASE_TYPE_SUFFIX");
         return Optional.of(caseTypeSuffix)
             .map(changeId -> base + separator + changeId)
             .orElse(base);
