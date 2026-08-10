@@ -22,12 +22,12 @@ public enum AccessProfile implements HasRole {
     CREATOR("[CREATOR]", CRU),
     RAS_VALIDATOR("caseworker-ras-validation", Set.of(R)),
     CITIZEN("citizen", CRU),
-    CLAIMANT("claimant", CRU),
+    CLAIMANT("claimant", CRU, GroupAccessType.LOCAL_AUTHORITY_CLAIMANT_ACCESS),
     DEFENDANT("[DEFENDANT]", CRU),
     CLAIMANT_SOLICITOR("[CLAIMANTSOLICITOR]", CRU),
     DEFENDANT_SOLICITOR("[DEFENDANTSOLICITOR]", CRU),
-    GA_CLAIMANT_SOLICITOR("claimant_solicitor", CRU),
-    DUTY_ADVISOR_REQUEST("duty-advisor-request", Set.of(R)),
+    GA_CLAIMANT_SOLICITOR("claimant_solicitor", CRU, GroupAccessType.SOLICITOR_ORG_CLAIMANT_ACCESS),
+    DUTY_ADVISOR_REQUEST("duty-advisor-request", Set.of(R), GroupAccessType.DUTY_ADVISOR_ACCESS),
     PCS_CASE_WORKER("caseworker-pcs", Set.of(R)),
     PCS_SOLICITOR("caseworker-pcs-solicitor", CRU),
 
@@ -49,24 +49,21 @@ public enum AccessProfile implements HasRole {
     private final String role;
     private final Set<Permission> caseTypePermissions;
 
+    /**
+     * The access type this role participates in, or null if none. Safe to hold as a field because
+     * {@link GroupAccessType} resolves its own roles in method bodies: its static initialisation
+     * never reads this enum, so only one side of the cycle has to be lazy.
+     */
+    private final CCDAccessGroup accessGroup;
+
     AccessProfile(String role, Set<Permission> permissions) {
-        this.role = role;
-        this.caseTypePermissions = permissions;
+        this(role, permissions, null);
     }
 
-    /**
-     * The access type this role participates in, or null if none. Returned from a method body rather
-     * than captured as a constructor argument: this enum and {@link GroupAccessType} reference each
-     * other, so a value read during static initialisation is null in whichever initialises second.
-     */
-    @Override
-    public CCDAccessGroup getAccessGroup() {
-        return switch (this) {
-            case CLAIMANT -> GroupAccessType.LOCAL_AUTHORITY_CLAIMANT_ACCESS;
-            case GA_CLAIMANT_SOLICITOR -> GroupAccessType.SOLICITOR_ORG_CLAIMANT_ACCESS;
-            case DUTY_ADVISOR_REQUEST -> GroupAccessType.DUTY_ADVISOR_ACCESS;
-            default -> null;
-        };
+    AccessProfile(String role, Set<Permission> permissions, CCDAccessGroup accessGroup) {
+        this.role = role;
+        this.caseTypePermissions = permissions;
+        this.accessGroup = accessGroup;
     }
 
     public static String[] toRoles(AccessProfile... profiles) {
