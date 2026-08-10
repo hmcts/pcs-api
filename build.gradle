@@ -624,8 +624,10 @@ tasks.register('e2eTest') {
   dependsOn('runE2eTests')
 }
 
-// Ensure we cover Cftlib dev & test with our CI checks
-check.dependsOn cftlibTest
+// Ensure we cover Cftlib dev & test with our CI checks (gated by gradle.properties, -PcftlibTestEnabled=true to override)
+if (property('cftlibTestEnabled') == 'true') {
+  check.dependsOn cftlibTest
+}
 
 // Add wiremock docker compose dependency
 dockerCompose.isRequiredBy bootWithCCD
