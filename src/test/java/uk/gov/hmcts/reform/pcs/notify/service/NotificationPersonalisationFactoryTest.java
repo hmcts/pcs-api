@@ -395,6 +395,36 @@ class NotificationPersonalisationFactoryTest {
     }
 
     @Nested
+    @DisplayName("noticeOfChangeCompleteLegalRep")
+    class NoticeOfChangeCompleteLegalRepTests {
+
+        @Test
+        @DisplayName("Should address the organisation and name the party it now represents")
+        void shouldAddressTheOrganisationAndNameTheRepresentedParty() {
+            stubClaimantParty();
+            stubDefendantParty();
+
+            LegalRepresentativeEntity legalRepresentative = LegalRepresentativeEntity.builder()
+                .organisationName("Test Solicitors LLP")
+                .build();
+
+            assertThat(factory.noticeOfChangeCompleteLegalRep(
+                legalRepresentative, createRepresentedDefendant("Sam", "Jones")).toMap())
+                .containsEntry("organisationName", "Test Solicitors LLP")
+                .containsEntry("partyName", "SAM JONES")
+                .containsEntry("caseNumber", "1234-5678-90")
+                .containsEntry("claimantName", "JANE SMITH")
+                .containsEntry("primaryDefendantName", "JOHN DOE");
+        }
+
+        private PartyEntity createRepresentedDefendant(String firstName, String lastName) {
+            PartyEntity representedDefendant = createParty(firstName, lastName);
+            representedDefendant.setPcsCase(pcsCaseEntity);
+            return representedDefendant;
+        }
+    }
+
+    @Nested
     @DisplayName("formatCaseReference")
     class FormatCaseReferenceTests {
 

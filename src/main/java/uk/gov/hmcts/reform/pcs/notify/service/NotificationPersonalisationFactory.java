@@ -19,10 +19,12 @@ import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.BasePersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.ClaimantBasePersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.CounterclaimPaymentSuccessPersonalisation;
+import uk.gov.hmcts.reform.pcs.notify.template.personalisation.NoticeOfChangeCompleteLegalRepPersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.NoticeOfChangeCompletedPersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.NoticeOfChangeNoLongerRepresentingPersonalisation;
 
 import java.util.Locale;
+import java.util.Objects;
 
 @Slf4j
 @Service
@@ -98,6 +100,22 @@ public class NotificationPersonalisationFactory {
             .build();
     }
 
+    public NoticeOfChangeCompleteLegalRepPersonalisation noticeOfChangeCompleteLegalRep(
+        LegalRepresentativeEntity legalRepresentative,
+        PartyEntity representedDefendant
+    ) {
+        String organisationName = legalRepresentative.getOrganisationName();
+
+        return NoticeOfChangeCompleteLegalRepPersonalisation.builder()
+            .base(buildPersonalisation("", "", representedDefendant.getPcsCase()))
+            .organisationName(organisationName != null ? organisationName : "")
+            .partyName(getDefendantName(
+                representedDefendant.getNameKnown() != null && representedDefendant.getNameKnown().toBoolean(),
+                representedDefendant.getFirstName(),
+                representedDefendant.getLastName()))
+            .build();
+    }
+
     private String formatPropertyAddress(PcsCaseEntity pcsCaseEntity) {
         AddressEntity propertyAddress = pcsCaseEntity.getPropertyAddress();
 
@@ -117,7 +135,7 @@ public class NotificationPersonalisationFactory {
     ) {
         return buildPersonalisation(
             emailRecipient.getFirstName() != null ? emailRecipient.getFirstName() : emailRecipient.getOrgName(),
-            emailRecipient.getLastName() != null ? emailRecipient.getLastName() : "",
+            Objects.toString(emailRecipient.getLastName(), ""),
             pcsCaseEntity
         );
     }

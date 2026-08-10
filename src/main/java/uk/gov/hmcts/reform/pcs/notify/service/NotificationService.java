@@ -181,18 +181,16 @@ public class NotificationService {
         );
     }
 
-    private NotificationRecipient legalRepresentativeRecipient(
+    public EmailNotificationResponse sendNoticeOfChangeCompleteLegalRepEmailNotification(
         LegalRepresentativeEntity legalRepresentative,
-        PartyEntity representedParty
+        PartyEntity representedDefendant
     ) {
-        PcsCaseEntity pcsCase = representedParty.getPcsCase();
-
-        return new NotificationRecipient(
-            legalRepresentative.getEmail(),
-            representedParty,
-            pcsCase,
-            pcsCase.getClaims().getFirst(),
-            null
+        return sendEmail(
+            legalRepresentativeRecipient(legalRepresentative, representedDefendant),
+            EmailTemplate.NOTICE_OF_CHANGE_COMPLETE_LEGAL_REP,
+            NotificationClaimType.NOTICE_OF_CHANGE,
+            notificationPersonalisationFactory.noticeOfChangeCompleteLegalRep(
+                legalRepresentative, representedDefendant)
         );
     }
 
@@ -503,6 +501,19 @@ public class NotificationService {
             claim.getPcsCase(),
             claim,
             PartyRole.CLAIMANT
+        );
+    }
+
+    private NotificationRecipient legalRepresentativeRecipient(LegalRepresentativeEntity legalRepresentative,
+                                                               PartyEntity representedDefendant) {
+        PcsCaseEntity pcsCase = representedDefendant.getPcsCase();
+
+        return new NotificationRecipient(
+            legalRepresentative.getEmail(),
+            representedDefendant,
+            pcsCase,
+            pcsCase.getClaims().getFirst(),
+            null
         );
     }
 

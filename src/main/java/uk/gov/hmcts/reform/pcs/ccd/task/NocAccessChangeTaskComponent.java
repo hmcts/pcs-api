@@ -62,6 +62,7 @@ public class NocAccessChangeTaskComponent {
                             caseReference,
                             taskData.getPartyId(),
                             UUID.fromString(taskData.getUserId()),
+                            taskData.getEmail(),
                             taskData.getOrganisationDetailsResponse());
 
                     return new CompletionHandler.OnCompleteRemove<>();
