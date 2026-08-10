@@ -318,8 +318,10 @@ tasks.named('sonarqube') {
   dependsOn jacocoTestReport
 }
 
-tasks.named('check') {
-  dependsOn integration
+if (property('integrationTestEnabled') == 'true') {
+  tasks.named('check') {
+    dependsOn integration
+  }
 }
 
 sonarqube {

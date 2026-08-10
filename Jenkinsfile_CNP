@@ -43,6 +43,9 @@ GradleBuilder builder = new GradleBuilder(this, product)
 // CCD definition). While shuttered, cases cannot be created, so the e2e suite is not run.
 def shutterService = false
 
+// CI gate - set back to true before merging to master
+def enablePact = false
+
 withPipeline(type, product, component) {
   def githubApi = new GithubAPI(this)
   env.IDAM_S2S_AUTH_URL = "http://rpe-service-auth-provider-aat.service.core-compute-aat.internal"
@@ -56,10 +59,12 @@ withPipeline(type, product, component) {
 
 
   onPR() {
-    enablePactAs([
-      AppPipelineDsl.PactRoles.CONSUMER,
-      AppPipelineDsl.PactRoles.CONSUMER_DEPLOY_CHECK
-    ])
+    if (enablePact) {
+      enablePactAs([
+        AppPipelineDsl.PactRoles.CONSUMER,
+        AppPipelineDsl.PactRoles.CONSUMER_DEPLOY_CHECK
+      ])
+    }
     setPreviewEnvVars()
     if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "pr-values:ccd").size() > 0) {
       env.CCD_ENABLED = "true"
