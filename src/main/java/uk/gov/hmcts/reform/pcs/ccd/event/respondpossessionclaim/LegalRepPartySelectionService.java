@@ -36,7 +36,8 @@ public class LegalRepPartySelectionService {
     private final PossessionClaimResponseMapper responseMapper;
     private final PossessionClaimMerger possessionClaimMerger;
 
-    public PCSCase getDraft(PCSCase pcsCase, List<PartyEntity> defendantPartiesLinkedAndActive, long caseReference) {
+    public PCSCase getDraft(PCSCase pcsCase, List<PartyEntity> defendantPartiesLinkedAndActive, long caseReference,
+                            String legalRepresentativeOrganisationId) {
         Optional<UUID> selectedPartyId = selectedPartyRetriever.getSelectedPartyId(pcsCase);
 
         if (selectedPartyId.isEmpty()) {
@@ -45,7 +46,8 @@ public class LegalRepPartySelectionService {
 
         PartyEntity matchedDefendant = findMatchedDefendant(defendantPartiesLinkedAndActive, selectedPartyId.get());
 
-        return getDraftCaseData(caseReference, pcsCase, matchedDefendant, defendantPartiesLinkedAndActive);
+        return getDraftCaseData(caseReference, pcsCase, matchedDefendant, defendantPartiesLinkedAndActive,
+                                legalRepresentativeOrganisationId);
     }
 
     public boolean hasSubmittedResponseForCurrentlySelectedParty(long caseReference) {
@@ -61,19 +63,22 @@ public class LegalRepPartySelectionService {
     }
 
     public PCSCase getDraftCaseData(long caseReference, PCSCase pcsCase, PartyEntity matchedDefendant,
-                                    List<PartyEntity> linkedDefendants) {
+                                    List<PartyEntity> linkedDefendants, String legalRepresentativeOrganisationId) {
 
         boolean hasDraft = draftCaseDataService.hasUnsubmittedCaseData(
             caseReference,
             respondPossessionClaim,
-            matchedDefendant.getId()
+            matchedDefendant.getId(),
+            legalRepresentativeOrganisationId
         );
 
         if (hasDraft) {
-            return restoreDraft(caseReference, pcsCase, matchedDefendant, linkedDefendants);
+            return restoreDraft(caseReference, pcsCase, matchedDefendant, linkedDefendants,
+                                legalRepresentativeOrganisationId);
         }
 
-        return initialiseDraft(caseReference, pcsCase, matchedDefendant, linkedDefendants);
+        return initialiseDraft(caseReference, pcsCase, matchedDefendant, linkedDefendants,
+                               legalRepresentativeOrganisationId);
     }
 
     public PCSCase buildSubmittedResponseCase(PCSCase pcsCase, List<PartyEntity> linkedDefendants) {
@@ -99,12 +104,13 @@ public class LegalRepPartySelectionService {
     }
 
     private PCSCase restoreDraft(long caseReference, PCSCase pcsCase, PartyEntity matchedDefendant,
-                                 List<PartyEntity> linkedDefendants) {
+                                 List<PartyEntity> linkedDefendants, String legalRepresentativeOrganisationId) {
 
         PCSCase savedDraft = draftCaseDataService.getUnsubmittedCaseData(
             caseReference,
             respondPossessionClaim,
-            matchedDefendant.getId()
+            matchedDefendant.getId(),
+            legalRepresentativeOrganisationId
         ).orElseThrow(() -> new DraftNotFoundException(caseReference, respondPossessionClaim));
 
         PossessionClaimResponse mergedResponse = possessionClaimMerger
@@ -157,14 +163,16 @@ public class LegalRepPartySelectionService {
     }
 
     private PCSCase initialiseDraft(long caseReference, PCSCase pcsCase, PartyEntity defendant,
-                                    List<PartyEntity> linkedDefendants) {
+                                    List<PartyEntity> linkedDefendants,
+                                    String legalRepresentativeOrganisationId) {
         PossessionClaimResponse response = responseMapper.mapFrom(pcsCase, defendant);
 
         PCSCase draft = PCSCase.builder()
             .possessionClaimResponse(createDefendantOnlyDraft(response))
             .build();
 
-        draftCaseDataService.patchUnsubmittedEventData(caseReference, draft, respondPossessionClaim, defendant.getId());
+        draftCaseDataService.patchUnsubmittedEventData(caseReference, draft, respondPossessionClaim, defendant.getId(),
+                                                       legalRepresentativeOrganisationId);
 
         List<ListValue<Party>> representedPartyList = linkedDefendants.stream()
             .map(this::toRepresentedPartyListValue)

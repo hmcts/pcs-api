@@ -367,6 +367,9 @@ public class PCSCase {
     @CCD(searchable = false)
     private String nextStepsMarkdown;
 
+    @CCD(searchable = false, access = DefendantSolicitorAccess.class)
+    private String summaryLegalRepresentativeMarkdown;
+
     @JsonUnwrapped(prefix = "rentArrears_")
     @CCD
     private RentArrearsSection rentArrears;
@@ -753,10 +756,20 @@ public class PCSCase {
     )
     private CaseStateOption targetState;
 
+
     @CCD(
         label = "Add document",
         hint = "Upload a document to the system",
         searchable = false
     )
     private Document uploadSingleDocument;
+
+    /**
+     * The legal representative for a defendant on the case.
+     */
+    @JsonUnwrapped
+    private LegalRepresentativeDetails legalRepresentativeDetails;
+
+    @CCD(searchable = false, access = {DefendantSolicitorAccess.class})
+    private YesOrNo legalRepUpdatedDetails;
 }
