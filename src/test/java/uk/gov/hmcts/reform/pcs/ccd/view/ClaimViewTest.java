@@ -16,12 +16,15 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.UploadedDocumentChecklistType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.WalesDocuments;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimUploadedDocumentChecklistEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -81,6 +84,26 @@ class ClaimViewTest {
         assertThat(pcsCase.getWantToUploadDocuments()).isEqualTo(VerticalYesNo.YES);
         assertThat(pcsCase.getPreActionProtocolIncompleteExplanation()).isEqualTo("explanation");
         assertThat(pcsCase.getIsExemptLandlord()).isEqualTo(VerticalYesNo.NO);
+    }
+
+    @Test
+    void shouldMapUploadedDocumentChecklist() {
+        when(pcsCaseEntity.getClaims()).thenReturn(List.of(claimEntity));
+        when(claimEntity.getUploadedDocumentChecklist()).thenReturn(Set.of(
+            ClaimUploadedDocumentChecklistEntity.builder()
+                .documentType(UploadedDocumentChecklistType.ENERGY_PERFORMANCE_CERTIFICATE)
+                .build(),
+            ClaimUploadedDocumentChecklistEntity.builder()
+                .documentType(UploadedDocumentChecklistType.NOTICE_SERVED)
+                .build()
+        ));
+
+        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+
+        assertThat(pcsCase.getDocumentsYouveUploaded()).containsExactlyInAnyOrder(
+            UploadedDocumentChecklistType.ENERGY_PERFORMANCE_CERTIFICATE,
+            UploadedDocumentChecklistType.NOTICE_SERVED
+        );
     }
 
     @ParameterizedTest

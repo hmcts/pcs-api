@@ -54,6 +54,7 @@ import uk.gov.hmcts.reform.pcs.ccd.view.builder.NoticeDetailsBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.view.builder.ReasonsForPossessionTabDetailsBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.view.builder.RequiredDocumentsTabDetailsBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.view.builder.RentArrearsTabDetailsBuilder;
+import uk.gov.hmcts.reform.pcs.ccd.view.builder.UploadedDocumentsChecklistTabDetailsBuilder;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.math.BigDecimal;
@@ -98,6 +99,9 @@ class CaseDetailsTabViewTest {
 
     @Spy
     private RequiredDocumentsTabDetailsBuilder requiredDocumentsTabDetailsBuilder;
+
+    @Spy
+    private UploadedDocumentsChecklistTabDetailsBuilder uploadedDocumentsChecklistTabDetailsBuilder;
 
     @InjectMocks
     private CaseDetailsTabView caseDetailsTabView;
