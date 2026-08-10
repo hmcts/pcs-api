@@ -44,7 +44,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         log.error("Fee payment not found", ex);
         return ResponseEntity
             .status(HttpStatus.NOT_FOUND)
-            .body(new Error(ex.getMessage()));
+            .body(new Error("Fee payment not found"));
     }
 
     @ExceptionHandler(InvalidAccessCodeException.class)

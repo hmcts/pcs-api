@@ -63,15 +63,16 @@ class RestExceptionHandlerTest {
 
     @Test
     void shouldHandleFeePaymentNotFoundException() {
-        String expectedErrorMessage = "No outstanding counterclaim payment found for case 12345";
-        FeePaymentNotFoundException exception = new FeePaymentNotFoundException(expectedErrorMessage);
+        FeePaymentNotFoundException exception = new FeePaymentNotFoundException(
+            "No outstanding counterclaim payment found for case 12345"
+        );
 
         ResponseEntity<RestExceptionHandler.Error> responseEntity
             = underTest.handleFeePaymentNotFoundException(exception);
 
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
         assertThat(responseEntity.getBody()).isNotNull();
-        assertThat(responseEntity.getBody().message()).isEqualTo(expectedErrorMessage);
+        assertThat(responseEntity.getBody().message()).isEqualTo("Fee payment not found");
     }
 
     @Test
