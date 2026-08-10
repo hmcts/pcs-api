@@ -70,7 +70,7 @@ async function validatePageIfNavigated(action: string): Promise<void> {
 }
 
 function captureDataForCYA(action: string, fieldName?: actionData | actionRecord, value?: actionData | actionRecord): void {
-  if (action === 'changeCaseState' || action === 'enterAppDetails' || action === 'selectManageHearing' || action === 'editHearing') {
+  if (action === 'changeCaseState' || action === 'enterApplicationDetails' || action === 'uploadADocument' || action === 'selectManageHearing' || action === 'editHearing') {
     captureDataForCYAPage = true;
   }
 
@@ -78,7 +78,7 @@ function captureDataForCYA(action: string, fieldName?: actionData | actionRecord
     captureDataForCYAPage = false;
   }
 
-  if (captureDataForCYAPage && ['clickRadioButton', 'inputText', 'check', 'select', 'uploadFile'].includes(action)) {
+  if (captureDataForCYAPage && ['clickRadioButton', 'inputText', 'check', 'select', 'uploadFile', 'uploadADocument', 'inputDate'].includes(action)) {
     cyaStore.captureAnswer(action, fieldName, value);
   }
 }

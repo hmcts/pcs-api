@@ -4,6 +4,8 @@ import { IAction, actionData, actionRecord } from '@utils/interfaces/action.inte
 import {
   changeCaseState, enterGenappApplication, enterGenAppapplicationFee,
   enterGenAppConsentAndNotice, enterGenAppHearingDate, manageHearing, selectDocument
+  addReviewDates, changeCaseState, enterGenappApplication, enterGenAppapplicationFee,
+  enterGenAppConsentAndNotice, enterGenAppHearingDate, enterGenAppUploadGeneralApplication, selectDocument
 } from '@data/page-data-figma/page-data-caseManagement-figma';
 import { allPartyDetails } from './caseManagement.action';
 
@@ -11,12 +13,14 @@ export class ErrorValidationAction implements IAction {
   async execute(page: Page, action: string, errorFlag: string | actionRecord, roles?: actionData): Promise<void> {
     const actionsMap = new Map<string, () => Promise<void>>([
       ['errorValidationSelectDocumentPage', () => this.errorValidationSelectDocumentPage(errorFlag as string)],
+      ['errorValidationAddReviewDatesPage', () => this.errorValidationAddReviewDatesPage(errorFlag as string)],
       ['errorValidationChangeCaseStatePage', () => this.errorValidationChangeCaseStatePage(errorFlag as string)],
       ['errorValidationEnterGeneralAppPage', () => this.errorValidationEnterGeneralAppPage(errorFlag as string)],
       ['errorValidationHearingDatePage', () => this.errorValidationHearingDatePage(errorFlag as string)],
       ['errorValidationApplicationFeePage', () => this.errorValidationApplicationFeePage(errorFlag as string)],
       ['errorValidationApplicationConsentAndNotice', () => this.errorValidationApplicationConsentAndNotice(errorFlag as string)],
       ['errorValidationManageHearing', () => this.errorValidationManageHearing(errorFlag as string)],
+      ['errorValidationUploadGenAppsFile', () => this.errorValidationUploadGenAppsFile(errorFlag as string)],
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -42,6 +46,49 @@ export class ErrorValidationAction implements IAction {
     }
   }
 
+  private async errorValidationAddReviewDatesPage(validationReq: string) {
+    if (validationReq === 'YES') {
+      await performAction('inputErrorValidation',{
+        validationType: addReviewDates.errorValidationType.five,
+        inputArray: addReviewDates.errorValidationField.errorDateField,
+        question: addReviewDates.dateOfReviewHiddenLabel,
+        header1: addReviewDates.thereIsProbErrorMessageHeader,
+        label1: addReviewDates.dayHiddenTextLabel,
+        label2: addReviewDates.monthHiddenTextLabel,
+        label3: addReviewDates.yearHiddenTextLabel,
+        button: addReviewDates.continueButton
+      });
+
+      await performAction('inputErrorValidation',{
+        validationType: addReviewDates.errorValidationType.two,
+        inputArray: addReviewDates.errorValidationField.errorRadioOption,
+        question: addReviewDates.reasonHiddenLabel,
+        option: addReviewDates.unlessOrderHiddenRadioOption,
+        button: addReviewDates.continueButton
+      });
+
+      await performAction('inputErrorValidation', {
+        validationType: addReviewDates.errorValidationType.one,
+        inputArray: addReviewDates.errorValidationField.errorTextField,
+        header: addReviewDates.eventCouldNotBeCreatedErrorMessageHeader,
+        label: addReviewDates.descriptionHiddenTextLabel,
+        button: addReviewDates.continueButton
+      });
+
+      await performAction('inputErrorValidation', {
+        validationType: addReviewDates.errorValidationType.six,
+        inputArray: addReviewDates.errorValidationField.errorDateRadioOption,
+        header: addReviewDates.eventCouldNotBeCreatedErrorMessageHeader,
+        label1: addReviewDates.dayHiddenTextLabel,
+        label2: addReviewDates.monthHiddenTextLabel,
+        label3: addReviewDates.yearHiddenTextLabel,
+        label: addReviewDates.descriptionHiddenTextLabel,
+        question: addReviewDates.reasonHiddenLabel,
+        option: addReviewDates.OtherHiddenRadioOption,
+        button: addReviewDates.continueButton
+      });
+    }
+  }
   private async errorValidationChangeCaseStatePage(validationReq: string) {
     if (validationReq === 'YES') {
       await performAction('inputErrorValidation', {
@@ -141,7 +188,6 @@ export class ErrorValidationAction implements IAction {
 
     }
   }
-
   private async errorValidationApplicationConsentAndNotice(validationReq: string) {
     if (validationReq === 'YES') {
       await performAction('inputErrorValidation', {
@@ -158,7 +204,6 @@ export class ErrorValidationAction implements IAction {
         option: enterGenAppConsentAndNotice.noHiddenRadioOption,
         button: enterGenAppConsentAndNotice.continueButton
       });
-
     }
   }
 
@@ -173,4 +218,14 @@ export class ErrorValidationAction implements IAction {
       });
     }
   }
+  private async errorValidationUploadGenAppsFile(validationReq: string) {
+    if (validationReq === 'YES') {
+      await performAction('inputErrorValidation', {
+        validationType: enterGenAppUploadGeneralApplication.errorValidationType.eight,
+        inputArray: enterGenAppUploadGeneralApplication.errorValidationField.errorUploadADocument,
+        button: enterGenAppUploadGeneralApplication.continueButton
+      });
+    }
+  }
+
 }

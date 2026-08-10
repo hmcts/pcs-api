@@ -1,15 +1,19 @@
 export default {
   'amendDocumentsselectDocument': 'selectDocument',
+  'addCaseReviewDateaddCaseReviewDate': 'addReviewDates',
+  'addCaseReviewDate/submit' : 'checkYourAnswersAddReviewDates',
+  'addCaseReviewDate/confirm': 'confirmReviewDatesAdded',
   'changeCaseStatechangeCaseStatePage': 'changeCaseState',
   'changeCaseState/confirm': 'confirmCaseStateChange',
   'enterGenAppapplicationDetails': 'enterGenAppapplicationDetails',
   'enterGenApphearingDate': 'enterGenApphearingDate',
   'enterGenAppapplicationFee': 'enterGenAppapplicationFee',
   'enterGenAppconsentAndNotice': 'enterGenAppconsentAndNotice',
-  'enterGenAppuploadGeneralApplication': 'enterGenAppUploadGeneralApplication',
+  'enterGenAppuploadGeneralApplication': 'enterGenAppuploadGeneralApplication',
   'enterGenAppuploadRelatedEvidence': 'enterGenAppUploadRelatedEvidence',
   'enterGenAppreferApplicationToJudge': 'enterGenAppPreferApplicationToJudge',
-  'enterGenApp/submit': 'genAppsCheckYouAnswers',
+  'enterGenApp/submit': 'genAppsCheckYourAnswers',
   'manageHearingmanageHearing': 'manageHearing',
-  'manageHearinghearingDetails': 'editHearing'
+  'manageHearinghearingDetails': 'editHearing',
+  'enterGenApp/confirm': 'enterGenAppConfirmation'
 };

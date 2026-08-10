@@ -1,5 +1,8 @@
 export * from './selectDocument.page.data';
 export * from './amendDocumentDetails.page.data';
+export * from './addReviewDates.page.data';
+export * from './checkYourAnswersAddReviewDates.page.data'
+export * from './confirmReviewDatesAdded.page.data'
 export * from './changeCaseState.page.data';
 export * from './checkYourAnswersChangeState.page.data';
 export * from './confirmCaseStateChange.page.data';
@@ -11,6 +14,7 @@ export * from './enterGenAppuploadGeneralApplication.page.data';
 export * from './enterGenAppUploadRelatedEvidence.page.data';
 export * from './enterGenAppPreferApplicationToJudge.page.data'
 export * from './genAppsCheckYouAnswers.page.data';
+export * from './enterGenAppConfirmation.page.data'
 export * from './manageHearing.page.data'
 export * from './editHearing.page.data';
-export * from './checkYourAnswersEditHearing.page.data'
+export * from './checkYourAnswersEditHearing.page.data';
