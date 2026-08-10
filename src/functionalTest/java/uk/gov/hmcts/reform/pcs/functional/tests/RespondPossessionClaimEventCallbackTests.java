@@ -76,8 +76,6 @@ public class RespondPossessionClaimEventCallbackTests extends BaseApi {
     @Test
     @Order(1)
     void respondToPossessionClaimStartEventCallbackWithoutAccessCodeAuthTest() {
-        System.out.println("Case referenece code: " + caseReference);
-
         String respondClaimRequestBody = PayloadLoader.load(
             "/payloads/repondPossessionClaim-startEventCallbackRequest.json",
             Map.of("caseTypeId", "PCS", "caseId", caseReference)
