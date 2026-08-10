@@ -127,7 +127,8 @@ class ShowConditionsTest {
             arguments(List.of(RELEASE_1_DOT_3, CASEWORKER_EVENTS),
                       "featureFlags.release1dot3Enabled=\"YES\" AND featureFlags.caseWorkerEventsEnabled=\"YES\""),
             arguments(List.of(RELEASE_1_DOT_2, RELEASE_1_DOT_3, CASEWORKER_EVENTS),
-                      "featureFlags.release1dot2Enabled=\"YES\" AND featureFlags.release1dot3Enabled=\"YES\" AND featureFlags.caseWorkerEventsEnabled=\"YES\"")
+                      "featureFlags.release1dot2Enabled=\"YES\" AND featureFlags.release1dot3Enabled=\"YES\" "
+                          + "AND featureFlags.caseWorkerEventsEnabled=\"YES\"")
         );
     }
 
