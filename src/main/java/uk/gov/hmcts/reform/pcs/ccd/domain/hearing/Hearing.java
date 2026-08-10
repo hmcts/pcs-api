@@ -50,13 +50,15 @@ public class Hearing {
 
     @CCD(
         label = "Hour",
-        max = 23
+        max = 23,
+        regex = "^\\d*$"
     )
     private Integer durationHours;
 
     @CCD(
         label = "Minute",
-        max = 59
+        max = 59,
+        regex = "^\\d*$"
     )
     private Integer durationMinutes;
 
