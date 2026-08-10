@@ -2,10 +2,8 @@ import { Page } from '@playwright/test';
 import { performAction } from '@utils/controller-caseManagement';
 import { IAction, actionData, actionRecord } from '@utils/interfaces/action.interface';
 import {
-  changeCaseState, enterGenappApplication, enterGenAppapplicationFee,
-  enterGenAppConsentAndNotice, enterGenAppHearingDate, manageHearing, selectDocument
   addReviewDates, changeCaseState, enterGenappApplication, enterGenAppapplicationFee,
-  enterGenAppConsentAndNotice, enterGenAppHearingDate, enterGenAppUploadGeneralApplication, selectDocument
+  enterGenAppConsentAndNotice, enterGenAppHearingDate, manageHearing, enterGenAppUploadGeneralApplication, selectDocument
 } from '@data/page-data-figma/page-data-caseManagement-figma';
 import { allPartyDetails } from './caseManagement.action';
 

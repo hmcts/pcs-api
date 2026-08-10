@@ -296,8 +296,6 @@ export class CaseManagementAction implements IAction {
 
   private async selectManageHearing(manageHearingOption: actionRecord) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid});
-  private async verifyGenAppConfirm(): Promise<void> {
-    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', {
       elementType: 'paragraph',
       text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
@@ -341,7 +339,8 @@ export class CaseManagementAction implements IAction {
 
   }
 
-  private async inputErrorValidation(page: Page, validationArr: actionRecord) {
+  private async verifyGenAppConfirm(): Promise<void> {
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', { elementType: 'inlineText', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', {
       elementType: 'inlineText',
