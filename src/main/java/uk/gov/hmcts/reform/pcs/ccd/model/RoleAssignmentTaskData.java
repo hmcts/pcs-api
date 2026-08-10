@@ -14,7 +14,6 @@ public class RoleAssignmentTaskData {
     private final RoleAssignmentAction action;
 
     public enum RoleAssignmentAction {
-        ASSIGN_CREATOR,
         REVOKE_CREATOR
     }
 

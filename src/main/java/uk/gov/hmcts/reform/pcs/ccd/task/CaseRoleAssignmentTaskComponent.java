@@ -53,8 +53,6 @@ public class CaseRoleAssignmentTaskComponent {
 
                 try {
                     switch (taskData.getAction()) {
-                        case ASSIGN_CREATOR ->
-                            caseRoleAssignmentService.assignRasRole(caseReference, userId, UserRole.CREATOR);
                         case REVOKE_CREATOR ->
                             caseRoleAssignmentService.revokeRasRole(caseReference, userId, UserRole.CREATOR);
                     }

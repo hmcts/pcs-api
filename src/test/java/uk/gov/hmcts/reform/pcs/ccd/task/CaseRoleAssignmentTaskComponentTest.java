@@ -64,27 +64,6 @@ class CaseRoleAssignmentTaskComponentTest {
     }
 
     @Test
-    @DisplayName("Should assign creator role when the task action is ASSIGN_CREATOR")
-    void shouldAssignCreatorRoleOnAssignAction() {
-        // Given
-        RoleAssignmentTaskData data = RoleAssignmentTaskData.builder()
-            .caseReference("1234")
-            .userId("user-abc")
-            .action(RoleAssignmentTaskData.RoleAssignmentAction.ASSIGN_CREATOR)
-            .build();
-
-        when(taskInstance.getData()).thenReturn(data);
-        CustomTask<RoleAssignmentTaskData> task = caseRoleAssignmentTaskComponent.roleAssignmentTask();
-
-        // When
-        CompletionHandler<RoleAssignmentTaskData> result = task.execute(taskInstance, executionContext);
-
-        // Then
-        verify(caseRoleAssignmentService).assignRasRole(1234L, "user-abc", UserRole.CREATOR);
-        assertThat(result).isInstanceOf(CompletionHandler.OnCompleteRemove.class);
-    }
-
-    @Test
     @DisplayName("Should revoke creator role when the task action is REVOKE_CREATOR")
     void shouldExecuteTaskAndCallCaseRoleAssignmentService() {
         // Given

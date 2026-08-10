@@ -302,7 +302,7 @@ counter-claim-form:
 role-assignment:
   request:
     max-retries: ${ROLE_ASSIGNMENT_MAX_RETRIES:5}
-    backoff-delay-seconds: ${ROLE_ASSIGNMENT_BACKOFF_DELAY_SECONDS:3600s}
+    backoff-delay-seconds: ${ROLE_ASSIGNMENT_BACKOFF_DELAY_SECONDS:2s}
 
 counter-claim-notification:
   request:

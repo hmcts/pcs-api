@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.pcs.ccd.event;
 
-import com.github.kagkarlsson.scheduler.SchedulerClient;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -19,16 +18,9 @@ import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.EnterPropertyAddre
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.PostcodeNotAssignedToCourt;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.PropertyNotEligible;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.StartTheService;
-import uk.gov.hmcts.reform.pcs.ccd.model.RoleAssignmentTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
-import uk.gov.hmcts.reform.pcs.ccd.task.CaseRoleAssignmentTaskComponent;
 import uk.gov.hmcts.reform.pcs.ccd.util.FeeApplier;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
-import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
-
-import java.time.Instant;
-import java.util.UUID;
-
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.createPossessionClaim;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
@@ -44,8 +36,6 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final EnterPropertyAddress enterPropertyAddress;
     private final CrossBorderPostcodeSelection crossBorderPostcodeSelection;
     private final PropertyNotEligible propertyNotEligible;
-    private final SchedulerClient schedulerClient;
-    private final SecurityContextService securityContextService;
 
 
     @Override
@@ -58,7 +48,7 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
                 .name("Make a claim")
                 .grant(Permission.CRU, UserRole.CLAIMANT_ORG)
                 .grant(Permission.CRU, UserRole.CLAIMANT_SOLICITOR_ORG)
-                // CREATOR is the creator's only access to the draft - no groups until submission
+                // CREATOR (granted by CCD in the create transaction) is the creator's only draft access
                 .grant(Permission.CRU, UserRole.CREATOR)
                 .grantHistoryOnly(JUDICIAL_HISTORY_ROLES);
 
@@ -93,25 +83,6 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
         pcsCaseService.createCase(caseReference, caseData.getPropertyAddress(),
                                   caseData.getLegislativeCountry());
 
-        // Decentralised case creation does not auto-grant CREATOR, so assign it ourselves
-        String userId = securityContextService.getCurrentUserDetails().getUid();
-        scheduleCreatorRoleAssignment(caseReference, userId);
-
         return SubmitResponse.defaultResponse();
-    }
-
-    private void scheduleCreatorRoleAssignment(long caseReference, String userId) {
-        RoleAssignmentTaskData taskData = RoleAssignmentTaskData.builder()
-            .caseReference(String.valueOf(caseReference))
-            .userId(userId)
-            .action(RoleAssignmentTaskData.RoleAssignmentAction.ASSIGN_CREATOR)
-            .build();
-
-        schedulerClient.scheduleIfNotExists(
-            CaseRoleAssignmentTaskComponent.ROLE_ASSIGNMENT_TASK_DESCRIPTOR
-                .instance(UUID.randomUUID().toString())
-                .data(taskData)
-                .scheduledTo(Instant.now())
-        );
     }
 }
