@@ -15,6 +15,10 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.wales.LegalRepD
 @AllArgsConstructor
 public class LegalRepDocument {
 
+    @CCD(ignore = true)
+    private static final String ACCEPT_TYPES = ".doc,.docx,.xls,.xlsx,.ppt,.pptx,.pdf,.rtf,.txt,.csv,"
+        + ".jpg,.jpeg,.png,.bmp,.tif,.tiff";
+
     @CCD(
         label = "Type of document",
         typeOverride = FieldType.FixedList,
@@ -29,7 +33,8 @@ public class LegalRepDocument {
     )
     private LegalRepDocumentTypeWales legalRepDocumentTypeWales;
 
-    @CCD(label = "Document")
+    @CCD(label = "Document",
+    regex = ACCEPT_TYPES)
     private Document document;
 
     @CCD(label = "Short description",
