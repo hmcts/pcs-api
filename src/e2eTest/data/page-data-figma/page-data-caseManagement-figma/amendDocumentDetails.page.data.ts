@@ -1,3 +1,18 @@
 export const amendDocumentDetails = {
   mainHeader: `Amend document details`,
+  fileNameInputTextLabel: `File name`,
+  fileNameHintText: `File name should only be edited in exceptional circumstances, for example if it contains profanity`,
+  whichAppOrCounterClaimThisRelateToQuestion: `Which application or counterclaim does this document relate to?`,
+  partyDocRelatedToQuestion: `Which party does this document relate to?`,
+  notRelatedToAppRadioOption: `Not related to an application or counterclaim`,
+  addIssueDateTextLabel: `Add an issue date to the file name (Optional)`,
+  whichTypeOfDocHiddenQuestion:`Which type of document is this?`,
+  whichTypeHiddenOption: [`Possession notice`,`Certificate of service`,`Inspection or report`, `Other document`],
+  dayTextLabel: `Day`,
+  monthTextLabel: `Month`,
+  yearTextLabel: `Year`,
+  dateTypeHiddenUserInput: `past`,
+  continueButton: `Continue`,
+  previousButton: `Previous`,
+  cancelLink: `Cancel`,
 };
