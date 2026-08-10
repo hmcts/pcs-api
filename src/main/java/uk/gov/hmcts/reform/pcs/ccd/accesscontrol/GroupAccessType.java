@@ -16,9 +16,14 @@ import uk.gov.hmcts.ccd.sdk.api.HasRole;
  * Organisational access types for group access.
  *
  * <p>A constant reaches the generated definition by being returned from
- * {@link AccessProfile#getAccessGroup()}: the SDK derives {@code AccessType} and
+ * {@link AccessProfile#getAccessGroups()}: the SDK derives {@code AccessType} and
  * {@code AccessTypeRole} rows by walking the case's role class, so an access type no role points at
  * is silently dropped.</p>
+ *
+ * <p>The five claimant constants share the {@code prof-org-claimant-access} access type ID and
+ * differ only by organisation profile, which the definition store treats as five distinct access
+ * types — its {@code AccessTypesValidator} keys on
+ * {@code (caseType, jurisdiction, accessTypeId, organisationProfileId)}.</p>
  *
  * <p>The role-valued members are resolved in method bodies rather than captured as constructor
  * arguments. This enum and {@link AccessProfile} reference each other, so their static
