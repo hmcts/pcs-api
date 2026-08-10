@@ -27,5 +27,5 @@ export const uploadAdditionalDocumentsInformation = {
   previousButton: `Previous`,
   cymraegLink: `Cymraeg`,
   cancelLink: `Cancel`,
-  feedbackLink: `feedback (opens in new tab)`,
+  feedbackLink: `feedback`,
 };
