@@ -14,7 +14,6 @@ import java.util.EnumSet;
 import java.util.Optional;
 
 import static java.lang.System.getenv;
-import static java.util.Optional.ofNullable;
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.State.AWAITING_SUBMISSION_TO_HMCTS;
 
