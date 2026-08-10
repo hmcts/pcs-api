@@ -18,6 +18,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 
+import static java.lang.Math.min;
+
 @Slf4j
 @Component
 public class CaseDeletionScheduledTask {
@@ -68,6 +70,7 @@ public class CaseDeletionScheduledTask {
     }
 
     protected void runSweep() {
+        int microBatchSize = 2;
         MDC.put(MDC_TASK_NAME, CASE_DELETION_TASK_NAME);
         try {
             List<Long> caseReferences = ccdCaseDataDeletionService.findExpiredDraftCases(
@@ -77,40 +80,50 @@ public class CaseDeletionScheduledTask {
             if (!caseReferences.isEmpty()) {
                 log.debug("Found {} expired draft cases to delete", caseReferences.size());
 
-                List<CompletableFuture<Void>> futures = caseReferences.stream()
-                        .map(caseRef -> CompletableFuture.runAsync(() ->
-                                        caseDeletionService.performCaseDeletionTasks(caseRef), deletionExecutor)
-                                .orTimeout(taskTimeoutSeconds, TimeUnit.SECONDS)
-                                .exceptionally(ex -> {
-                                    log.error("Case deletion timed out or failed for case: {}", caseRef, ex);
-                                    return null;
-                                }))
-                        .toList();
+                for (int i = 0; i < caseReferences.size(); i += microBatchSize) {
+                    List<Long> microBatch = caseReferences.subList(i, min(i + microBatchSize, caseReferences.size()));
 
-                CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
-                        .orTimeout(globalTimeoutSeconds, TimeUnit.SECONDS)
-                        .join();
+                    List<CompletableFuture<Void>> futures = microBatch.stream()
+                            .map(caseRef -> CompletableFuture.runAsync(() ->
+                                            caseDeletionService.performCaseDeletionTasks(caseRef), deletionExecutor)
+                                    .orTimeout(taskTimeoutSeconds, TimeUnit.SECONDS)
+                                    .exceptionally(ex -> {
+                                        log.error("Case deletion timed out or failed for case: {}", caseRef, ex);
+                                        return null;
+                                    }))
+                            .toList();
+
+                    CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
+                            .join();
+                }
                 log.debug("Completed processing cases for deletion at {}", Instant.now());
             }
 
-            List<Long> discardedCaseReferences =
+            List<Long> discardedCaseRefs =
                     ccdCaseDataDeletionService.findExpiredDraftCasesInDraftDiscardedState(maxBatchLimit);
 
-            if (!discardedCaseReferences.isEmpty()) {
-                log.debug("Found {} discarded cases to delete", discardedCaseReferences.size());
-                List<CompletableFuture<Void>> futures = discardedCaseReferences.stream()
-                        .map(caseRef -> CompletableFuture.runAsync(() ->
-                                        caseDeletionService.cleanupDiscardedDraftCases(caseRef), deletionExecutor)
-                                .orTimeout(taskTimeoutSeconds, TimeUnit.SECONDS)
-                                .exceptionally(ex -> {
-                                    log.error("Case cleanup timed out or failed for case: {}", caseRef, ex);
-                                    return null;
-                                }))
-                        .toList();
+            if (!discardedCaseRefs.isEmpty()) {
+                log.debug("Found {} discarded cases to delete", discardedCaseRefs.size());
 
-                CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
-                        .orTimeout(globalTimeoutSeconds, TimeUnit.SECONDS)
-                        .join();
+                for (int i = 0; i < discardedCaseRefs.size(); i += microBatchSize) {
+                    List<Long> microBatch =
+                            discardedCaseRefs.subList(i, min(i + microBatchSize, discardedCaseRefs.size()));
+
+                    List<CompletableFuture<Void>> futures = microBatch.stream()
+                            .map(caseRef -> CompletableFuture.runAsync(() ->
+                                            caseDeletionService.cleanupDiscardedDraftCases(caseRef), deletionExecutor)
+                                    .orTimeout(taskTimeoutSeconds, TimeUnit.SECONDS)
+                                    .exceptionally(ex -> {
+                                        log.error("Case cleanup timed out or failed for case: {}", caseRef, ex);
+                                        return null;
+                                    }))
+                            .toList();
+
+                    CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
+                            .orTimeout(globalTimeoutSeconds, TimeUnit.SECONDS)
+                            .join();
+                }
+
                 log.debug("Completed processing cases for cleanup at {}", Instant.now());
             }
         } finally {
