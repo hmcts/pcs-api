@@ -451,6 +451,35 @@ class CaseFlagsViewTest {
             mappedClaimant.getPartyFlagsExternal().getDetails().getFirst().getValue().getFlagCode());
     }
 
+    @Test
+    void shouldSkipDomainPartiesWithMissingOrMalformedIds() {
+        // Given
+        PartyEntity defendantEntity = createPartyEntity(null);
+
+        ListValue<Party> noId = ListValue.<Party>builder()
+            .value(Party.builder().firstName("No").lastName("Id").build())
+            .build();
+        ListValue<Party> malformedId = ListValue.<Party>builder()
+            .value(Party.builder().id("not-a-uuid").firstName("Bad").lastName("Id").build())
+            .build();
+        ListValue<Party> noValue = ListValue.<Party>builder().build();
+
+        PCSCase pcsCase = PCSCase.builder()
+            .parties(List.of(noId, malformedId, noValue, mappedParty(defendantEntity)))
+            .build();
+        PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
+        pcsCaseEntity.setParties(new LinkedHashSet<>(List.of(defendantEntity)));
+        setClaimParties(pcsCaseEntity, createClaimParty(defendantEntity, PartyRole.DEFENDANT));
+
+        // When
+        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+
+        // Then
+        assertNull(noId.getValue().getPartyFlagsExternal());
+        assertNull(malformedId.getValue().getPartyFlagsExternal());
+        assertNotNull(findPartyById(pcsCase, defendantEntity.getId().toString()).getPartyFlagsExternal());
+    }
+
     private PartyEntity createPartyEntity(String orgName) {
         return PartyEntity.builder()
             .id(UUID.randomUUID())

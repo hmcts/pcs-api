@@ -551,13 +551,17 @@ class CaseFlagServiceTest {
             UUID.randomUUID(), "Active", "Other side existing support");
         otherSideFlag.setVisibility("External");
 
+        CasePartyFlagEntity otherSideInternalFlag = createCasePartyFlagEntity(
+            UUID.randomUUID(), "Active", "Other side internal flag");
+        otherSideInternalFlag.setVisibility("Internal");
+
         PartyEntity ownParty = PartyEntity.builder()
             .id(ownPartyId)
             .defendantFlags(new ArrayList<>())
             .build();
         PartyEntity otherParty = PartyEntity.builder()
             .id(otherPartyId)
-            .defendantFlags(new ArrayList<>(List.of(otherSideFlag)))
+            .defendantFlags(new ArrayList<>(List.of(otherSideFlag, otherSideInternalFlag)))
             .build();
 
         when(partySupportOwnershipResolver.isOwnedByUser(ownParty, USER_ID)).thenReturn(true);
@@ -573,7 +577,76 @@ class CaseFlagServiceTest {
         assertThat(ownParty.getDefendantFlags())
             .extracting(BaseCaseFlag::getFlagComment)
             .containsExactly("New support request");
+        assertThat(otherParty.getDefendantFlags())
+            .containsExactlyInAnyOrder(otherSideFlag, otherSideInternalFlag);
+    }
+
+    @Test
+    void shouldRejectCrossSideChangeToAnExistingSupportFlag() {
+        // Given
+        UUID otherPartyId = UUID.randomUUID();
+        CasePartyFlagEntity otherSideFlag = createCasePartyFlagEntity(
+            UUID.randomUUID(), "Active", "Other side existing support");
+        otherSideFlag.setVisibility("External");
+
+        PartyEntity otherParty = PartyEntity.builder()
+            .id(otherPartyId)
+            .defendantFlags(new ArrayList<>(List.of(otherSideFlag)))
+            .build();
+
+        when(partySupportOwnershipResolver.isOwnedByUser(otherParty, USER_ID)).thenReturn(false);
+
+        PartySupport mutatedSupport = PartySupport.builder()
+            .supportFlags(Flags.builder()
+                              .visibility(FlagVisibility.EXTERNAL)
+                              .details(List.of(ListValue.<FlagDetail>builder()
+                                  .id(otherSideFlag.getId().toString())
+                                  .value(FlagDetail.builder()
+                                      .status("Inactive")
+                                      .flagComment(otherSideFlag.getFlagComment())
+                                      .flagUpdateComment("Withdrawn by the other side")
+                                      .build())
+                                  .build()))
+                              .build())
+            .build();
+
+        List<ListValue<PartySupport>> incoming =
+            List.of(createPartySupportListValue(otherPartyId.toString(), mutatedSupport));
+        Set<PartyEntity> existingParties = Set.of(otherParty);
+
+        // When
+        Throwable throwable = catchThrowable(
+            () -> underTest.mergePartySupportFlags(incoming, existingParties, USER_ID, true));
+
+        // Then
+        assertThat(throwable)
+            .isInstanceOf(CaseAccessException.class)
+            .hasMessage("User cannot change support for this party on this case");
         assertThat(otherParty.getDefendantFlags()).containsExactly(otherSideFlag);
+        assertThat(otherSideFlag.getDefaultStatus()).isEqualTo("Active");
+    }
+
+    @Test
+    void shouldRetainSupportWhenIncomingPartySupportValueIsNull() {
+        // Given
+        UUID partyId = UUID.randomUUID();
+        CasePartyFlagEntity existingFlag = createCasePartyFlagEntity(
+            UUID.randomUUID(), "Active", "Existing support");
+        existingFlag.setVisibility("External");
+
+        PartyEntity existingParty = PartyEntity.builder()
+            .id(partyId)
+            .defendantFlags(new ArrayList<>(List.of(existingFlag)))
+            .build();
+
+        // When
+        underTest.mergePartySupportFlags(
+            List.of(createPartySupportListValue(partyId.toString(), null)),
+            Set.of(existingParty), USER_ID, false);
+
+        // Then
+        assertThat(existingParty.getDefendantFlags()).containsExactly(existingFlag);
+        verifyNoInteractions(flagRefDataRepository);
     }
 
     @Test
@@ -646,19 +719,143 @@ class CaseFlagServiceTest {
     }
 
     private PartySupport unchangedSupport(CasePartyFlagEntity existingFlag) {
+        return echoedSupport(existingFlag.getId().toString(),
+                             FlagDetail.builder()
+                                 .status(existingFlag.getDefaultStatus())
+                                 .flagComment(existingFlag.getFlagComment())
+                                 .flagUpdateComment(existingFlag.getFlagUpdateComment())
+                                 .build());
+    }
+
+    private PartySupport echoedSupport(String detailId, FlagDetail flagDetail) {
         return PartySupport.builder()
             .supportFlags(Flags.builder()
                               .visibility(FlagVisibility.EXTERNAL)
                               .details(List.of(ListValue.<FlagDetail>builder()
-                                  .id(existingFlag.getId().toString())
-                                  .value(FlagDetail.builder()
-                                      .status(existingFlag.getDefaultStatus())
-                                      .flagComment(existingFlag.getFlagComment())
-                                      .flagUpdateComment(existingFlag.getFlagUpdateComment())
-                                      .build())
+                                  .id(detailId)
+                                  .value(flagDetail)
                                   .build()))
                               .build())
             .build();
+    }
+
+    private Throwable crossSideSubmission(CasePartyFlagEntity existingFlag, PartySupport incomingSupport) {
+        PartyEntity otherParty = PartyEntity.builder()
+            .id(UUID.randomUUID())
+            .defendantFlags(new ArrayList<>(List.of(existingFlag)))
+            .build();
+
+        when(partySupportOwnershipResolver.isOwnedByUser(otherParty, USER_ID)).thenReturn(false);
+
+        List<ListValue<PartySupport>> incoming =
+            List.of(createPartySupportListValue(otherParty.getId().toString(), incomingSupport));
+        Set<PartyEntity> existingParties = Set.of(otherParty);
+
+        return catchThrowable(
+            () -> underTest.mergePartySupportFlags(incoming, existingParties, USER_ID, true));
+    }
+
+    private CasePartyFlagEntity existingExternalFlag() {
+        CasePartyFlagEntity existingFlag = createCasePartyFlagEntity(
+            UUID.randomUUID(), "Active", "Other side existing support");
+        existingFlag.setVisibility("External");
+        existingFlag.setFlagUpdateComment("Original update comment");
+        return existingFlag;
+    }
+
+    @Test
+    void shouldRejectCrossSideChangeToTheSupportComment() {
+        // Given
+        CasePartyFlagEntity existingFlag = existingExternalFlag();
+        PartySupport commentChanged = echoedSupport(existingFlag.getId().toString(),
+                                                    FlagDetail.builder()
+                                                        .status(existingFlag.getDefaultStatus())
+                                                        .flagComment("Reworded by the other side")
+                                                        .flagUpdateComment(existingFlag.getFlagUpdateComment())
+                                                        .build());
+
+        // When
+        Throwable throwable = crossSideSubmission(existingFlag, commentChanged);
+
+        // Then
+        assertThat(throwable)
+            .isInstanceOf(CaseAccessException.class)
+            .hasMessage("User cannot change support for this party on this case");
+    }
+
+    @Test
+    void shouldRejectCrossSideChangeToTheSupportUpdateCommentOnly() {
+        // Given
+        CasePartyFlagEntity existingFlag = existingExternalFlag();
+        PartySupport updateCommentChanged = echoedSupport(existingFlag.getId().toString(),
+                                                          FlagDetail.builder()
+                                                              .status(existingFlag.getDefaultStatus())
+                                                              .flagComment(existingFlag.getFlagComment())
+                                                              .flagUpdateComment("Amended by the other side")
+                                                              .build());
+
+        // When
+        Throwable throwable = crossSideSubmission(existingFlag, updateCommentChanged);
+
+        // Then
+        assertThat(throwable)
+            .isInstanceOf(CaseAccessException.class)
+            .hasMessage("User cannot change support for this party on this case");
+    }
+
+    @Test
+    void shouldRejectCrossSideSubmissionReferencingAnUnknownSupportFlagId() {
+        // Given
+        CasePartyFlagEntity existingFlag = existingExternalFlag();
+        PartySupport unknownFlagId = echoedSupport(UUID.randomUUID().toString(),
+                                                   FlagDetail.builder()
+                                                       .status(existingFlag.getDefaultStatus())
+                                                       .flagComment(existingFlag.getFlagComment())
+                                                       .flagUpdateComment(existingFlag.getFlagUpdateComment())
+                                                       .build());
+
+        // When
+        Throwable throwable = crossSideSubmission(existingFlag, unknownFlagId);
+
+        // Then
+        assertThat(throwable)
+            .isInstanceOf(CaseAccessException.class)
+            .hasMessage("User cannot change support for this party on this case");
+    }
+
+    @Test
+    void shouldRejectCrossSideSubmissionThatStripsTheOtherSidesSupport() {
+        // Given
+        CasePartyFlagEntity existingFlag = existingExternalFlag();
+        PartySupport strippedSupport = PartySupport.builder()
+            .supportFlags(Flags.builder()
+                              .visibility(FlagVisibility.EXTERNAL)
+                              .details(List.of())
+                              .build())
+            .build();
+
+        // When
+        Throwable throwable = crossSideSubmission(existingFlag, strippedSupport);
+
+        // Then
+        assertThat(throwable)
+            .isInstanceOf(CaseAccessException.class)
+            .hasMessage("User cannot change support for this party on this case");
+    }
+
+    @Test
+    void shouldRejectCrossSideSubmissionWithANullSupportFlagDetail() {
+        // Given
+        CasePartyFlagEntity existingFlag = existingExternalFlag();
+        PartySupport nullDetail = echoedSupport(existingFlag.getId().toString(), null);
+
+        // When
+        Throwable throwable = crossSideSubmission(existingFlag, nullDetail);
+
+        // Then
+        assertThat(throwable)
+            .isInstanceOf(CaseAccessException.class)
+            .hasMessage("User cannot change support for this party on this case");
     }
 
     private PartySupport supportRequest() {

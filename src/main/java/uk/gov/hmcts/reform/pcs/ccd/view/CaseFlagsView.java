@@ -24,8 +24,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import static java.util.Objects.requireNonNullElse;
 import static uk.gov.hmcts.reform.pcs.ccd.util.FlagVisibilityConverter.toFlagVisibility;
@@ -109,8 +107,9 @@ public class CaseFlagsView {
             return;
         }
 
-        Map<UUID, PartyEntity> partyEntitiesById = pcsCaseEntity.getParties().stream()
-            .collect(Collectors.toMap(PartyEntity::getId, Function.identity(), (first, second) -> first));
+        Map<UUID, PartyEntity> partyEntitiesById = new LinkedHashMap<>();
+        pcsCaseEntity.getParties()
+            .forEach(partyEntity -> partyEntitiesById.putIfAbsent(partyEntity.getId(), partyEntity));
 
         for (ListValue<Party> partyListValue : partyListValues) {
             Party party = partyListValue.getValue();

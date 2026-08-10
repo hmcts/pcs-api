@@ -564,6 +564,72 @@ class PcsCaseServiceTest {
         verify(caseFlagService, never()).mergePartySupportFlags(anyList(), any(), any(), anyBoolean());
     }
 
+    @Test
+    void shouldMergeSupportFlagsRestrictedToOwnPartyWhenRequested() {
+        // Given
+        PcsCaseEntity pcsCaseEntity = stubFindCase();
+        UUID authenticatedUserId = UUID.randomUUID();
+        when(securityContextService.getCurrentUserId()).thenReturn(authenticatedUserId);
+
+        List<ListValue<PartySupport>> partySupport = List.of(ListValue.<PartySupport>builder()
+            .id(UUID.randomUUID().toString())
+            .value(PartySupport.builder().build())
+            .build());
+        PCSCase pcsCase = PCSCase.builder().partySupport(partySupport).build();
+
+        // When
+        underTest.patchSupportFlags(CASE_REFERENCE, pcsCase, true);
+
+        // Then
+        verify(caseFlagService).mergePartySupportFlags(
+            partySupport, pcsCaseEntity.getParties(), authenticatedUserId, true);
+    }
+
+    @Test
+    void shouldMergeSupportFlagsWithoutOwnPartyRestrictionWhenNotRequested() {
+        // Given
+        PcsCaseEntity pcsCaseEntity = stubFindCase();
+        UUID authenticatedUserId = UUID.randomUUID();
+        when(securityContextService.getCurrentUserId()).thenReturn(authenticatedUserId);
+
+        List<ListValue<PartySupport>> partySupport = List.of(ListValue.<PartySupport>builder()
+            .id(UUID.randomUUID().toString())
+            .value(PartySupport.builder().build())
+            .build());
+        PCSCase pcsCase = PCSCase.builder().partySupport(partySupport).build();
+
+        // When
+        underTest.patchSupportFlags(CASE_REFERENCE, pcsCase, false);
+
+        // Then
+        verify(caseFlagService).mergePartySupportFlags(
+            partySupport, pcsCaseEntity.getParties(), authenticatedUserId, false);
+    }
+
+    @Test
+    void shouldNotMergeSupportFlagsWhenPartySupportIsAbsent() {
+        // Given
+        stubFindCase();
+        PCSCase pcsCase = PCSCase.builder().build();
+
+        // When
+        underTest.patchSupportFlags(CASE_REFERENCE, pcsCase, true);
+
+        // Then
+        verify(caseFlagService, never()).mergePartySupportFlags(anyList(), any(), any(), anyBoolean());
+    }
+
+    @Test
+    void shouldThrowExceptionPatchingSupportFlagsWithNullCaseData() {
+        // When
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+                                                         () -> underTest.patchSupportFlags(
+                                                             CASE_REFERENCE, null, true));
+
+        // Then
+        assertThat(exception.getMessage()).isEqualTo("PCSCase cannot be null");
+    }
+
     private PcsCaseEntity stubFindCase() {
         PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
         when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));

@@ -6,8 +6,9 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyLegalRepresentativeEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
-import uk.gov.hmcts.reform.pcs.reference.service.OrganisationDetailsService;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -17,7 +18,7 @@ import static org.apache.commons.lang3.StringUtils.isNotBlank;
 @AllArgsConstructor
 public class PartySupportOwnershipResolver {
 
-    private final OrganisationDetailsService organisationDetailsService;
+    private final OrganisationService organisationService;
 
     public boolean isOwnedByUser(PartyEntity partyEntity, UUID authenticatedUserId) {
         if (authenticatedUserId == null || partyEntity == null) {
@@ -32,27 +33,27 @@ public class PartySupportOwnershipResolver {
     }
 
     private boolean isRepresentedByUser(PartyEntity partyEntity, UUID authenticatedUserId) {
-        if (partyEntity.getClaimPartyLegalRepresentativeList() == null) {
+        List<LegalRepresentativeEntity> activeLegalRepresentatives =
+            partyEntity.getClaimPartyLegalRepresentativeList().stream()
+                .filter(claimPartyLegalRep -> YesOrNo.YES.equals(claimPartyLegalRep.getActive()))
+                .map(ClaimPartyLegalRepresentativeEntity::getLegalRepresentative)
+                .filter(Objects::nonNull)
+                .toList();
+
+        if (activeLegalRepresentatives.isEmpty()) {
             return false;
         }
 
-        String authenticatedOrganisationId =
-            organisationDetailsService.getOrganisationIdentifier(authenticatedUserId.toString());
+        if (activeLegalRepresentatives.stream()
+            .anyMatch(legalRepresentative -> authenticatedUserId.equals(legalRepresentative.getIdamId()))) {
+            return true;
+        }
 
-        return partyEntity.getClaimPartyLegalRepresentativeList().stream()
-            .filter(claimPartyLegalRep -> YesOrNo.YES.equals(claimPartyLegalRep.getActive()))
-            .map(ClaimPartyLegalRepresentativeEntity::getLegalRepresentative)
-            .filter(Objects::nonNull)
-            .anyMatch(legalRepresentative ->
-                          isUserOrOrganisationMatch(legalRepresentative, authenticatedUserId,
-                                                    authenticatedOrganisationId));
-    }
+        String authenticatedOrganisationId = organisationService.getOrganisationIdForCurrentUser();
 
-    private boolean isUserOrOrganisationMatch(LegalRepresentativeEntity legalRepresentative,
-                                              UUID authenticatedUserId,
-                                              String authenticatedOrganisationId) {
-        return authenticatedUserId.equals(legalRepresentative.getIdamId())
-            || (isNotBlank(authenticatedOrganisationId)
-            && authenticatedOrganisationId.equals(legalRepresentative.getOrganisationId()));
+        return isNotBlank(authenticatedOrganisationId)
+            && activeLegalRepresentatives.stream()
+                .anyMatch(legalRepresentative ->
+                              authenticatedOrganisationId.equals(legalRepresentative.getOrganisationId()));
     }
 }
