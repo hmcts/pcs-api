@@ -87,7 +87,7 @@ public class AddHearingPage implements CcdPageConfiguration, CcdPage {
                 )
         );
 
-        integerValidationService.validateFloatIsInteger(hearing.getDurationHours(), HOUR_LABEL , validationErrors);
+        integerValidationService.validateFloatIsInteger(hearing.getDurationHours(), HOUR_LABEL, validationErrors);
         integerValidationService.validateFloatIsInteger(hearing.getDurationMinutes(), MINUTE_LABEL, validationErrors);
 
         return textAreaValidationService.createValidationResponse(caseData, validationErrors);
