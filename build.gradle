@@ -4,7 +4,7 @@ import uk.gov.hmcts.rse.CftlibExec
 
 buildscript {
   ext {
-    flywayVersion = '12.9.0'
+    flywayVersion = '12.11.0'
     serenityBddVersion = '5.3.9'
   }
   dependencies {
@@ -17,12 +17,12 @@ plugins {
   id 'jacoco'
   id 'io.spring.dependency-management' version '1.1.7'
   id 'org.springframework.boot' version '3.5.16'
-  id 'com.github.ben-manes.versions' version '0.54.0'
+  id 'com.github.ben-manes.versions' version '0.56.0'
   id 'org.flywaydb.flyway' version "$flywayVersion"
   id 'org.sonarqube' version '7.3.1.8318'
   id 'net.serenity-bdd.serenity-gradle-plugin' version "$serenityBddVersion"
-  id 'hmcts.ccd.sdk' version '6.13.0'
-  id 'com.github.hmcts.rse-cft-lib' version '0.19.2220'
+  id 'hmcts.ccd.sdk' version '6.32.0'
+  id 'com.github.hmcts.rse-cft-lib' version '0.19.2306'
   id 'io.freefair.lombok' version '9.5.0'
   id 'au.com.dius.pact' version '4.7.3'
   id "com.avast.gradle.docker-compose" version "0.17.21"
@@ -367,13 +367,13 @@ repositories {
 
 ext {
   log4JVersion = "2.26.1"
-  logbackVersion = "1.5.37"
+  logbackVersion = "1.6.1"
   testcontainersVersion = "2.0.5"
   testcontainersAdditionsVersion = "1.21.4"
   springFrameworkBootVersion = "3.5.16"
   lombokVersion = "1.18.46"
   springSecurityVersion = "7.1.0"
-  pactVersion = "4.7.3"
+  pactVersion = "4.7.4"
   tomcatEmbedVersion = "11.0.24"
   nettyVersion = "4.1.136.Final"
 }
@@ -390,13 +390,13 @@ dependencies {
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-security', version: springFrameworkBootVersion
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-oauth2-client', version: springFrameworkBootVersion
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-data-jpa', version: springFrameworkBootVersion
-  implementation group: 'com.launchdarkly', name: 'launchdarkly-java-server-sdk', version: '7.14.0'
+  implementation group: 'com.launchdarkly', name: 'launchdarkly-java-server-sdk', version: '7.15.0'
 
   runtimeOnly group: 'org.flywaydb', name: 'flyway-database-postgresql', version: flywayVersion
 
   implementation group: 'org.flywaydb', name: 'flyway-core', version: flywayVersion
   implementation group: 'org.springdoc', name: 'springdoc-openapi-starter-webmvc-ui', version: '2.8.17'
-  implementation group: 'uk.gov.service.notify', name: 'notifications-java-client', version: '6.0.0-RELEASE'
+  implementation group: 'uk.gov.service.notify', name: 'notifications-java-client', version: '6.1.0-RELEASE'
   implementation group: 'org.modelmapper', name: 'modelmapper', version: '3.2.6'
 
   implementation group: 'com.github.hmcts.java-logging', name: 'logging', version: '8.0.0'
@@ -420,8 +420,8 @@ dependencies {
   implementation group: 'org.apache.logging.log4j', name: 'log4j-to-slf4j', version: log4JVersion
   implementation group: 'ch.qos.logback', name: 'logback-classic', version: logbackVersion
   implementation group: 'ch.qos.logback', name: 'logback-core', version: logbackVersion
-  implementation group: 'org.postgresql', name: 'postgresql', version: '42.7.12'
-  implementation group: 'com.github.hmcts', name: 'service-auth-provider-java-client', version: '5.3.4'
+  implementation group: 'org.postgresql', name: 'postgresql', version: '42.7.13'
+  implementation group: 'com.github.hmcts', name: 'service-auth-provider-java-client', version: '5.3.5'
   implementation group: 'io.pebbletemplates', name: 'pebble', version: '4.1.2'
   implementation group: 'org.springframework.cloud', name: 'spring-cloud-starter-openfeign', version: '4.3.3'
   implementation group: 'commons-fileupload', name: 'commons-fileupload', version: '1.6.0'
@@ -432,13 +432,13 @@ dependencies {
   implementation group: 'org.apache.tomcat.embed', name: 'tomcat-embed-websocket', version: tomcatEmbedVersion
   annotationProcessor group: 'org.projectlombok', name: 'lombok', version: lombokVersion
 
-  testImplementation group: 'io.rest-assured', name: 'rest-assured', version: '6.0.0'
+  testImplementation group: 'io.rest-assured', name: 'rest-assured', version: '6.0.1'
   testImplementation group: 'com.github.hmcts', name: 'fortify-client', version: '1.4.10', classifier: 'all'
   testImplementation group: 'org.instancio', name: 'instancio', version: '5.6.0'
-  testImplementation group: 'com.auth0', name: 'java-jwt', version: '4.5.2'
+  testImplementation group: 'com.auth0', name: 'java-jwt', version: '4.6.0'
   testImplementation group: 'com.github.tomakehurst', name: 'wiremock-jre8-standalone', version: '2.35.2'
 
-  implementation(group: 'com.github.hmcts', name: 'befta-fw', version: '9.2.7') {
+  implementation(group: 'com.github.hmcts', name: 'befta-fw', version: '9.2.9') {
     exclude group: 'org.apache.commons', module: 'commons-compress'
     exclude group: 'com.google.guava', module: 'guava'
     exclude group: 'org.apache.poi', module: 'poi-ooxml'
@@ -451,15 +451,15 @@ dependencies {
   functionalTestImplementation sourceSets.main.runtimeClasspath
   functionalTestImplementation sourceSets.test.runtimeClasspath
 
-  testImplementation group: 'org.junit.platform', name: 'junit-platform-suite-api', version: '6.1.1'
+  testImplementation group: 'org.junit.platform', name: 'junit-platform-suite-api', version: '6.1.2'
 
   contractTestImplementation group: 'au.com.dius.pact.consumer', name: 'junit5', version: pactVersion
   contractTestImplementation group: 'org.hamcrest', name: 'java-hamcrest', version: '2.0.0.0'
-  contractTestImplementation('org.junit.jupiter:junit-jupiter-api:6.1.1')
+  contractTestImplementation('org.junit.jupiter:junit-jupiter-api:6.1.2')
   contractTestImplementation sourceSets.main.runtimeClasspath
   contractTestImplementation sourceSets.test.runtimeClasspath
 
-  testImplementation(platform('org.junit:junit-bom:6.1.1'))
+  testImplementation(platform('org.junit:junit-bom:6.1.2'))
   testImplementation group: 'org.springframework.security', name: 'spring-security-test', version: springSecurityVersion
   testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
   testImplementation(group: 'org.springframework.boot', name: 'spring-boot-starter-test', version: springFrameworkBootVersion) {
@@ -550,7 +550,7 @@ tasks.withType(CftlibExec).configureEach {
   }
 
   environment 'ENABLE_TESTING_SUPPORT', 'true'
-  environment 'RSE_LIB_ADDITIONAL_DATABASES', 'pcs'
+  environment 'RSE_LIB_ADDITIONAL_DATABASES', 'pcs,wa_workflow_api,evidence'
   environment 'PCS_DB_USER_NAME', 'postgres'
   environment 'PCS_DB_PASSWORD', 'postgres'
   environment 'PCS_DB_PORT', '6432'
@@ -563,11 +563,32 @@ tasks.withType(CftlibExec).configureEach {
   environment 'LAUNCHDARKLY_FILES', './featureFlags/flags.json'
   environment 'ENABLE_TESTING_SUPPORT', 'true'
   environment 'IDAM_CLIENT_SECRET', 'dummy-secret-for-local'
+  environment 'CASE_DOCUMENT_S2S_AUTHORISED_SERVICES', 'ccd_case_document_am_api,ccd_gw,xui_webapp,ccd_data,pcs_frontend,pcs_api'
+  environment 'DATA_STORE_S2S_AUTHORISED_SERVICES', 'ccd_data,ccd_gw,pcs_frontend,pcs_api,wa_task_management_api'
+  environment 'CCD_S2S-AUTHORISED_SERVICES_CASE_USER_ROLES', 'aac_manage_case_assignment,pcs_api'
+
+  // ExUI config overrides
   environment 'XUI_JURISDICTIONS', 'PCS'
   environment 'XUI_DOCUMENTS_API_V2', 'http://ccd-case-document-am-api-aat.service.core-compute-aat.internal'
-  environment 'CASE_DOCUMENT_S2S_AUTHORISED_SERVICES', 'ccd_case_document_am_api,ccd_gw,xui_webapp,ccd_data,pcs_frontend,pcs_api'
-  environment 'DATA_STORE_S2S_AUTHORISED_SERVICES', 'ccd_data,ccd_gw,pcs_frontend,pcs_api'
-  environment 'CCD_S2S-AUTHORISED_SERVICES_CASE_USER_ROLES', 'aac_manage_case_assignment,pcs_api'
+  environment 'STAFF_SUPPORTED_JURISDICTIONS', 'PCS'
+  environment 'XUI_SYSTEM_USER_NAME', 'exui-system-user@localhost'
+  environment 'XUI_SYSTEM_USER_PASSWORD', 'password'
+  environment 'WA_SUPPORTED_JURISDICTIONS', 'PCS'
+  environment 'OPEN_ID_IDAM_URL', 'http://localhost:5062'
+  environment 'TASK_MANAGEMENT_API_URL', 'http://localhost:8087'
+  environment 'SERVICES_WORK_ALLOCATION_TASK_API', 'http://localhost:8087'
+  environment 'SERVICES_CASE_CASEWORKER_API', 'http://host.docker.internal:8083'
+  environment 'SERVICES_PRD_LOCATION_API', 'http://host.docker.internal:8083'
+  environment 'SERVICES_LOCATION_API', 'http://host.docker.internal:8083'
+  environment 'SERVICES_LOCATION_REF_API_URL', 'http://host.docker.internal:8083'
+
+  // wa-task-management-api overrides
+  environment 'IDAM_SECURITY_ALLOWED_ISSUER_0', 'http://localhost:5062/o'
+  environment 'CAMUNDA_URL', 'http://localhost:8097/engine-rest'
+  environment 'CCD_URL', 'http://localhost:4452'
+  environment 'IDAM_URL', 'http://localhost:5062'
+  environment 'WA_SYSTEM_USERNAME', 'wa-system-user@localhost'
+  environment 'WA_SYSTEM_PASSWORD', 'password'
 }
 
 cftlibTest {

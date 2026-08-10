@@ -71,7 +71,7 @@ class CaseLinkServiceTest {
     private CaseLinkEntity createCaseLinkEntity(List<CaseLinkReasonEntity> linkReasonEntities) {
 
         return CaseLinkEntity.builder()
-            .id(UUID.randomUUID())
+            .id(1)
             .linkedCaseReference(1234L)
             .ccdListId("PCS")
             .reasons(linkReasonEntities)
