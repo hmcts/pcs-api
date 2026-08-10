@@ -40,5 +40,6 @@
       ]]></notes>
     <packageUrl regex="true">^pkg:maven/org\.apache\.tomcat\.embed/tomcat\-embed\-.*$</packageUrl>
     <cve>CVE-2026-66299</cve>
-  </suppress><!--End of false positives section -->
+  </suppress>
+  <!--End of false positives section -->
 </suppressions>
