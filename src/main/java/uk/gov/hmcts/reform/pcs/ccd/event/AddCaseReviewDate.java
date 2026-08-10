@@ -39,7 +39,7 @@ public class AddCaseReviewDate implements CCDConfig<PCSCase, State, UserRole> {
                 .grant(Permission.CRUD, UserRole.CTSC_ADMIN, UserRole.HEARING_CENTRE_ADMIN, UserRole.WLU_ADMIN)
                 .grantHistoryOnly(JUDICIAL_HISTORY_ROLES)
                 .showSummary()
-                .showCondition(ShowConditions.featureFlagsEnabled(FeatureFlag.CASEWORKER_EVENTS))
+                .showCondition(ShowConditions.featureFlagsEnabled(FeatureFlag.CASEWORKER_EVENTS, FeatureFlag.RELEASE_1_DOT_2))
                 .endButtonLabel("Submit");
         addCaseReviewDateConfigurer.configurePages(new PageBuilder(eventBuilder));
     }
