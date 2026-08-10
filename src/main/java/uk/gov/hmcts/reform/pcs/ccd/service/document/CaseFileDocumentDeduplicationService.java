@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentWithId;
+import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServedDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsSection;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
@@ -59,7 +60,7 @@ public class CaseFileDocumentDeduplicationService {
     }
 
     private void addDocumentIdsFromNoticeServedDetails(
-        uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServedDetails noticeServedDetails,
+        NoticeServedDetails noticeServedDetails,
         Set<String> documentIds
     ) {
         if (noticeServedDetails != null) {
