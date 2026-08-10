@@ -3,7 +3,7 @@ import { performAction } from '@utils/controller-caseManagement';
 import { IAction, actionData, actionRecord } from '@utils/interfaces/action.interface';
 import {
   changeCaseState, enterGenappApplication, enterGenAppapplicationFee,
-  enterGenAppConsentAndNotice, enterGenAppHearingDate, selectDocument
+  enterGenAppConsentAndNotice, enterGenAppHearingDate, manageHearing, selectDocument
 } from '@data/page-data-figma/page-data-caseManagement-figma';
 import { allPartyDetails } from './caseManagement.action';
 
@@ -16,6 +16,7 @@ export class ErrorValidationAction implements IAction {
       ['errorValidationHearingDatePage', () => this.errorValidationHearingDatePage(errorFlag as string)],
       ['errorValidationApplicationFeePage', () => this.errorValidationApplicationFeePage(errorFlag as string)],
       ['errorValidationApplicationConsentAndNotice', () => this.errorValidationApplicationConsentAndNotice(errorFlag as string)],
+      ['errorValidationManageHearing', () => this.errorValidationManageHearing(errorFlag as string)],
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -158,6 +159,18 @@ export class ErrorValidationAction implements IAction {
         button: enterGenAppConsentAndNotice.continueButton
       });
 
+    }
+  }
+
+  private async errorValidationManageHearing(validationReq: string) {
+    if (validationReq === 'YES') {
+      await performAction('inputErrorValidation', {
+        validationType: manageHearing.errorValidationType.two,
+        inputArray: manageHearing.errorValidationField.errorRadioOption,
+        question: manageHearing.doYouWantToAddQuestion,
+        option: manageHearing.addAHearingRadioOption,
+        button: manageHearing.continueButton
+      });
     }
   }
 }

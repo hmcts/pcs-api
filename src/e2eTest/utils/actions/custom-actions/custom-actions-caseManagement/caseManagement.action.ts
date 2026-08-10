@@ -7,9 +7,9 @@ import { performAction, performActions, performValidation } from '@utils/control
 import { VERY_LONG_TIMEOUT } from 'playwright.config';
 import { caseSummary, home } from '@data/page-data';
 import {
-  changeCaseState, confirmCaseStateChange, enterGenappApplication, enterGenAppapplicationFee,
+  changeCaseState, confirmCaseStateChange, editHearing, enterGenappApplication, enterGenAppapplicationFee,
   enterGenAppConsentAndNotice, enterGenAppHearingDate,
-  enterGenAppPreferApplicationToJudge, selectDocument
+  enterGenAppPreferApplicationToJudge, manageHearing, selectDocument
 } from '@data/page-data-figma/page-data-caseManagement-figma';
 import { caseInfo } from '../createCaseAPI.action';
 import { CaseManagementCommonUtils } from './caseManagementUtils.action';
@@ -38,6 +38,8 @@ export class CaseManagementAction implements IAction {
       ['enterApplicationFeeDetails', () => this.enterApplicationFeeDetails(fieldName as actionRecord)],
       ['enterApplicationConsentAndNotice', () => this.enterApplicationConsentAndNotice(fieldName as actionRecord)],
       ['verifyReferToJudge', () => this.verifyReferToJudge(fieldName as actionRecord)],
+      ['editHearing', () => this.editHearing(fieldName as actionRecord)],
+      ['selectManageHearing', () => this.selectManageHearing(fieldName as actionRecord)],
       ['inputErrorValidation', () => this.inputErrorValidation(page, fieldName as actionRecord)],
 
     ]);
@@ -213,6 +215,51 @@ export class CaseManagementAction implements IAction {
     });
     await performValidation('mainHeader', enterGenAppPreferApplicationToJudge.mainHeader);
     await performAction('reTryOnCallBackError', enterGenAppPreferApplicationToJudge.continueButton, referToJudgeData.nextPage as string);
+  }
+
+  private async selectManageHearing(manageHearingOption: actionRecord) {
+    await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid});
+    await performValidation('text', {
+      elementType: 'paragraph',
+      text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
+    });
+    await performAction('clickRadioButton', {
+      question: manageHearingOption.question,
+      option: manageHearingOption.option,
+    });
+    await performAction('reTryOnCallBackError', manageHearing.continueButton, manageHearingOption.nextPage as string);
+  }
+
+  private async editHearing(editHearingData: actionRecord) {
+    let date = CaseManagementCommonUtils.getRandomDate(editHearingData.dateType as string);
+    await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid});
+    await performValidation('text', {
+      elementType: 'paragraph',
+      text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
+    });
+    await performAction('clickRadioButton', {
+      question: editHearingData.question,
+      option: editHearingData.option
+    });
+    await performAction('select', editHearingData.label1, editHearingData.dropDownInput);
+    await performAction('inputDate', editHearingData.label2 as string, editHearingData.date as string);
+    await performAction('inputText', editHearingData.days, CaseManagementCommonUtils.getRandomNumberAsString(1, 30));
+    await performAction('inputText', editHearingData.Hours, CaseManagementCommonUtils.getRandomNumberAsString(0, 12));
+    await performAction('inputText', editHearingData.minutes, CaseManagementCommonUtils.getRandomNumberAsString(0, 60));
+    await performAction('inputText', editHearingData.label3, CaseManagementCommonUtils.generateRandomString(editHearingData.input as number));
+    await performAction('clickRadioButton', {
+      question: editHearingData.question2,
+      option: editHearingData.option2
+    });
+    if (editHearingData.option2 === 'Yes') {
+      await performAction('clickRadioButton', {
+        question: editHearingData.question3,
+        option: editHearingData.option3
+      });
+    }
+    await performAction('inputText', editHearingData.label4, CaseManagementCommonUtils.generateRandomString(editHearingData.input as number));
+    await performAction('reTryOnCallBackError', editHearing.continueButton, editHearingData.nextPage as string);
+
   }
 
   private async inputErrorValidation(page: Page, validationArr: actionRecord) {
