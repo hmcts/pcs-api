@@ -13,6 +13,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativ
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
+import uk.gov.hmcts.reform.pcs.ccd.util.YesOrNoConverter;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.CounterclaimPaymentSuccessPersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.CounterclaimPaymentSuccessPersonalisationLegalRep;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.BasePersonalisation;
@@ -100,7 +101,7 @@ public class NotificationPersonalisationFactory {
             : formatNameUpperForNotification(primaryClaimant.getFirstName(), primaryClaimant.getLastName());
 
         String primaryDefendantName = getDefendantName(
-            primaryDefendant.getNameKnown() != null && primaryDefendant.getNameKnown().toBoolean(),
+            YesOrNoConverter.toBoolean(primaryDefendant.getNameKnown()),
             primaryDefendant.getFirstName(),
             primaryDefendant.getLastName());
 
