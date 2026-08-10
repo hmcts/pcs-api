@@ -12,8 +12,8 @@ import {
   enterGenappApplication,
   enterGenAppapplicationFee,
   enterGenAppConsentAndNotice,
-   enterGenAppHearingDate, enterGenAppPreferApplicationToJudge, enterGenAppUploadGeneralApplication,
-  enterGenAppUploadRelatedEvidence, genAppsCheckYourAnswers
+  enterGenAppHearingDate, enterGenAppPreferApplicationToJudge,
+  enterGenAppUploadGeneralApplication, enterGenAppUploadRelatedEvidence, genAppsCheckYourAnswers
 } from '@data/page-data-figma/page-data-caseManagement-figma';
 import { label } from 'allure-js-commons';
 import { CaseManagementCommonUtils } from '@utils/actions/custom-actions/custom-actions-caseManagement/caseManagementUtils.action';
@@ -104,6 +104,7 @@ test.describe('Case management - Case Worker Enter a General application @nightl
       nextPage: genAppsCheckYourAnswers.mainHeader
     });
     await performAction('clickButton', genAppsCheckYourAnswers.submitButton);
+    await performAction('verifyGenAppConfirm');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Enter a general application');
   });
 
@@ -179,6 +180,7 @@ test.describe('Case management - Case Worker Enter a General application @nightl
       nextPage: genAppsCheckYourAnswers.mainHeader
     });
     await performAction('clickButton', genAppsCheckYourAnswers.submitButton);
+    await performAction('verifyGenAppConfirm');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Enter a general application');
   });
 
@@ -223,6 +225,7 @@ test.describe('Case management - Case Worker Enter a General application @nightl
       nextPage: genAppsCheckYourAnswers.mainHeader
     });
     await performAction('clickButton', genAppsCheckYourAnswers.submitButton);
+    await performAction('verifyGenAppConfirm');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Enter a general application');
   });
 
@@ -267,6 +270,7 @@ test.describe('Case management - Case Worker Enter a General application @nightl
       nextPage: genAppsCheckYourAnswers.mainHeader
     });
     await performAction('clickButton', genAppsCheckYourAnswers.submitButton);
+    await performAction('verifyGenAppConfirm');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Enter a general application');
   });
 });

@@ -249,7 +249,6 @@ export class ErrorValidationAction implements IAction {
         option: enterGenAppConsentAndNotice.noHiddenRadioOption,
         button: enterGenAppConsentAndNotice.continueButton
       });
-
     }
   }
   private async errorValidationUploadGenAppsFile(validationReq: string) {
