@@ -182,6 +182,9 @@ export class PageContentValidation implements IValidation {
       else if(page.url().includes("makeAnApplication")){
         mappingPath = path.join(__dirname, '../../../data/page-data-figma/page-data-genApps-figma/urlToFileMappingGenApps.ts');
       }
+      else if(page.url().includes("legalRepDocumentUpload")){
+        mappingPath = path.join(__dirname, '../../../data/page-data-figma/page-data-legalRepresentative/urlToFileMappingLegalRep.ts');
+      }
       else if(
       ["amendDocuments", "changeCaseState", "addCaseReviewDate", "enterGenApp"].some(str =>
         page.url().includes(str)
