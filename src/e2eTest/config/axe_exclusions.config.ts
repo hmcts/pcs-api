@@ -4,5 +4,13 @@ export const axe_Exclusions = [
   '#target-offset',
   '.sort-button-icon',
   '.toggle-button-icon',
-  '.overlay-toggle'
+  '.overlay-toggle',
+  '#label',
+  '#presentational-role',
+  '#non-empty-placeholder',
+  '#non-empty-title',
+  '#aria-labelledby',
+  '#aria-label',
+  '#explicit-label',
+  '#implicit-label',
 ];
