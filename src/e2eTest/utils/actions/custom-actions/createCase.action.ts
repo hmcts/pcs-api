@@ -1825,6 +1825,9 @@ export class CreateCaseAction implements IAction {
   private async clientDetails(clientName: actionRecord) {
     await performAction('inputText', clientDetails.firstNameTextLabel, clientName.firstName);
     await performAction('inputText', clientDetails.lastNameTextLabel, clientName.lastName);
+    // console.log(await page.getByLabel(clientDetails.firstNameTextLabel).inputValue());
+    // console.log(await page.getByLabel(clientDetails.lastNameTextLabel).inputValue());
+    //await page.waitForTimeout(2000);
     await performAction('clickButton', clientDetails.continueButton);
   }
 

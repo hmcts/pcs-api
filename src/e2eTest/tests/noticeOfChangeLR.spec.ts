@@ -16,7 +16,6 @@ import {
   noticeOfChangeSuccessful
 } from "@data/page-data-figma/page-data-legalRepresentative/noticeOfChangeSuccessful.page.data";
 
-
 test.use({ storageState: undefined })
 
 test.beforeEach(async ({ page, context }) => {
@@ -41,7 +40,7 @@ test.afterEach(async () => {
 });
 
 test.describe('Make an Application - LR - e2e Journey @nightly', async () => {
-  test('Notice of change - Change link - Same Org LR submits another NOC - LR @noticeOfChange', async () => {
+  test('Notice of change - Change link - Same Org LR submits another NOC - LR @noticeOfChange', async ( { page }) => {
     await performAction('noticeOfChange', { caseRefNo: caseInfo.id } );
     await performAction('clientDetails', { firstName: 'Peter' , lastName: 'Parker' });
     await performAction('verifyChangeLink', { caseRefNo: caseInfo.id, firstName: 'Peter' , lastName: 'Parker' });
@@ -50,7 +49,9 @@ test.describe('Make an Application - LR - e2e Journey @nightly', async () => {
     await performAction('checkAndSubmit', { caseRefNo: caseInfo.id, firstName: 'Jen' , lastName: 'Parker' });
     await performAction('clickTab', home.noticeOfChangeTab);
     await performAction('noticeOfChange', { caseRefNo: caseInfo.id } );
+    await page.waitForTimeout(10000);
     await performAction('clientDetails', { firstName: 'Jen' , lastName: 'Parker' });
+    await page.waitForTimeout(10000);
     await performAction('validateErrorPage' );
   });
 
@@ -104,11 +105,12 @@ test.describe('Make an Application - LR - e2e Journey @nightly', async () => {
     await performValidation('text', { elementType: 'listItem', text: noc.aLegalRepresentativeListItem });
     await performValidation('text', { elementType: 'hintText', text: noc.thisIsHintText });
     await performAction('noticeOfChange', { caseRefNo: caseInfo.id } );
-
+    await page.waitForTimeout(5000);
 
     await performValidation('text', { elementType: 'heading', text: clientDetails.mainHeader });
     await performValidation('text', { elementType: 'paragraph', text: clientDetails.youMustEnterParagraph });
     await performAction('clientDetails', { firstName: 'Peter' , lastName: 'Parker' });
+    await page.waitForTimeout(5000);
 
     await performValidation('text', { elementType: 'heading', text: checkAndSubmit.mainHeader });
     await performValidation('text', { elementType: 'paragraph', text: checkAndSubmit.afterYouSubmitParagraph });
