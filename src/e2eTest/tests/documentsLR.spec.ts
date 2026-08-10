@@ -112,7 +112,7 @@ test.describe('Legal Representative - Upload Documents- e2e Journey @nightly', a
     await performValidation('mainHeader', confirmIfTheseDocumentsRelateToAnApplication.mainHeader);
     await performValidation('elementNotToBeVisible', {
       elementType: 'text',
-      text: confirmIfTheseDocumentsRelateToAnApplication.relatedToApplicationRadioOptionHidden,
+      text: confirmIfTheseDocumentsRelateToAnApplication.relatedToAdjournRadioOptionHidden,
     });
   });
 
