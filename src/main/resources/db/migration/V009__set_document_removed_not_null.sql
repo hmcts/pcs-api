@@ -1,0 +1,2 @@
+ALTER TABLE document
+ALTER COLUMN removed SET NOT NULL;
