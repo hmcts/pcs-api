@@ -10,17 +10,21 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.Hearing;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.CcdPage;
+import uk.gov.hmcts.reform.pcs.ccd.service.IntegerValidationService;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
 import java.util.List;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.hearing.Hearing.HOUR_LABEL;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.hearing.Hearing.MINUTE_LABEL;
 
 @AllArgsConstructor
 @Component
 public class AddHearingPage implements CcdPageConfiguration, CcdPage {
 
     private final TextAreaValidationService textAreaValidationService;
+    private final IntegerValidationService integerValidationService;
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -82,6 +86,10 @@ public class AddHearingPage implements CcdPageConfiguration, CcdPage {
                     TextAreaValidationService.MEDIUM_TEXT_LIMIT
                 )
         );
+
+        integerValidationService.validateFloatIsInteger(hearing.getDurationHours(), HOUR_LABEL , validationErrors);
+        integerValidationService.validateFloatIsInteger(hearing.getDurationMinutes(), MINUTE_LABEL, validationErrors);
+
         return textAreaValidationService.createValidationResponse(caseData, validationErrors);
     }
 }
