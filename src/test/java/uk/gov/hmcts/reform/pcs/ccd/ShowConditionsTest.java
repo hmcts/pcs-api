@@ -94,7 +94,11 @@ class ShowConditionsTest {
     }
 
     @ParameterizedTest
-    @EnumSource(value = FeatureFlag.class, names = {"RELEASE_1_DOT_2", "RELEASE_1_DOT_3", "CASEWORKER_EVENTS"}, mode = EXCLUDE)
+    @EnumSource(
+        value = FeatureFlag.class,
+        names = {"RELEASE_1_DOT_2", "RELEASE_1_DOT_3", "CASEWORKER_EVENTS"},
+        mode = EXCLUDE
+    )
     void shouldThrowExceptionForFeatureFlagWithNoCcdField(FeatureFlag featureFlag) {
         // When
         Throwable throwable = catchThrowable(() -> ShowConditions.featureFlagsEnabled(featureFlag));
