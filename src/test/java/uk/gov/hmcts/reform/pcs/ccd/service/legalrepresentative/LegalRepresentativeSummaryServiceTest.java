@@ -128,7 +128,7 @@ class LegalRepresentativeSummaryServiceTest {
     void handleLegalRepresentativeSummary_WithNonCaseLinkedState_ReturnsEmptyRespondMarkDown() {
         // given
         String organisationId = "org";
-        LegalRepresentativeOrganisationEntity legalRepresentativeOrganisation =
+        LegalRepresentativeOrganisationEntity legalRepresentativeOrg =
             LegalRepresentativeOrganisationEntity.builder()
                 .organisationId(organisationId)
                 .hasAmendedContactDetails(YesOrNo.YES)
@@ -137,7 +137,7 @@ class LegalRepresentativeSummaryServiceTest {
                                                 .partyLegalRepresentativeOrganisationList(List.of(
                                                     PartyLegalRepresentativeOrganisationEntity.builder()
                                                         .active(YesOrNo.YES)
-                                                        .legalRepresentativeOrganisation(legalRepresentativeOrganisation)
+                                                        .legalRepresentativeOrganisation(legalRepresentativeOrg)
                                                         .build()))
                                                 .build());
 
