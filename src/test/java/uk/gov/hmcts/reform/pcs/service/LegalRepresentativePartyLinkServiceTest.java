@@ -130,10 +130,12 @@ class LegalRepresentativePartyLinkServiceTest {
         assertEquals(organisationId, actual.getOrganisationId());
         assertEquals(organisationName, actual.getOrganisationName());
         assertEquals(userUid, actual.getIdamId());
+        assertEquals(LEGAL_REP_EMAIL, actual.getEmail());
         assertEquals(addressEntity, actual.getAddress());
         assertEquals(partyEntity, actual.getClaimPartyLegalRepresentativeList().getFirst().getParty());
         verify(caseRoleAssignmentService, never()).revokeRasRole(anyLong(), anyString(), any(UserRole.class));
         verify(notificationService).sendNoticeOfChangeCompletedEmailNotification(partyEntity);
+        verify(notificationService).sendNoticeOfChangeCompleteLegalRepEmailNotification(actual, partyEntity);
     }
 
     @Test
@@ -250,6 +252,7 @@ class LegalRepresentativePartyLinkServiceTest {
         assertEquals(userUid, actual.getIdamId());
         assertEquals(organisationId, actual.getOrganisationId());
         assertEquals(organisationName, actual.getOrganisationName());
+        assertEquals(LEGAL_REP_EMAIL, actual.getEmail());
         assertEquals(partyEntity, actual.getClaimPartyLegalRepresentativeList().getFirst().getParty());
     }
 

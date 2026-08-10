@@ -166,12 +166,11 @@ public class NotificationService {
     }
 
     public EmailNotificationResponse sendNoticeOfChangeCompleteLegalRepEmailNotification(
-        String legalRepEmail,
         LegalRepresentativeEntity legalRepresentative,
         PartyEntity representedDefendant
     ) {
         return sendEmail(
-            legalRepresentativeRecipient(legalRepEmail, representedDefendant),
+            legalRepresentativeRecipient(legalRepresentative, representedDefendant),
             EmailTemplate.NOTICE_OF_CHANGE_COMPLETE_LEGAL_REP,
             NotificationClaimType.NOTICE_OF_CHANGE,
             notificationPersonalisationFactory.noticeOfChangeCompleteLegalRep(
@@ -484,11 +483,12 @@ public class NotificationService {
         );
     }
 
-    private NotificationRecipient legalRepresentativeRecipient(String email, PartyEntity representedDefendant) {
+    private NotificationRecipient legalRepresentativeRecipient(LegalRepresentativeEntity legalRepresentative,
+                                                               PartyEntity representedDefendant) {
         PcsCaseEntity pcsCase = representedDefendant.getPcsCase();
 
         return new NotificationRecipient(
-            email,
+            legalRepresentative.getEmail(),
             representedDefendant,
             pcsCase,
             pcsCase.getClaims().getFirst(),
