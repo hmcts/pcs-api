@@ -21,6 +21,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.PostcodeNotAssigne
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.PropertyNotEligible;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.StartTheService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.ccd.task.CaseRoleAssignmentTaskComponent;
 import uk.gov.hmcts.reform.pcs.ccd.util.FeeApplier;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
@@ -39,6 +40,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUD
 public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole> {
 
     private final PcsCaseService pcsCaseService;
+    private final OrganisationService organisationService;
     private final FeeApplier feeApplier;
     private final EnterPropertyAddress enterPropertyAddress;
     private final CrossBorderPostcodeSelection crossBorderPostcodeSelection;
@@ -88,7 +90,9 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
         PCSCase caseData = eventPayload.caseData();
 
         pcsCaseService.createCase(caseReference, caseData.getPropertyAddress(),
-                                  caseData.getLegislativeCountry());
+                                  caseData.getLegislativeCountry(),
+                                  organisationService.getOrganisationIdForCurrentUser(),
+                                  organisationService.getOrgProfileIdsForCurrentUser());
 
         String userId = securityContextService.getCurrentUserDetails().getUid();
         scheduleRoleAssignment(caseReference, userId);

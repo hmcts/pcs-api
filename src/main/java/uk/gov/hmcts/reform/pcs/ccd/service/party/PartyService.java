@@ -23,9 +23,12 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 
+import org.springframework.util.CollectionUtils;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 
@@ -42,8 +45,13 @@ public class PartyService {
     public void createAllParties(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity, ClaimEntity claimEntity,
                                  String organisationIdForCurrentUser) {
         List<String> orgProfileIds = organisationService.getOrgProfileIdsForCurrentUser();
-        PartyEntity claimant = createClaimant(pcsCase, organisationIdForCurrentUser, orgProfileIds);
-        pcsCaseEntity.addParty(claimant);
+        PartyEntity claimant = findInitialisedClaimant(pcsCaseEntity)
+            .orElseGet(() -> {
+                PartyEntity created = new PartyEntity();
+                pcsCaseEntity.addParty(created);
+                return created;
+            });
+        populateClaimant(claimant, pcsCase, organisationIdForCurrentUser, orgProfileIds);
         claimEntity.addParty(claimant, PartyRole.CLAIMANT);
 
         List<PartyEntity> defendants = createDefendants(pcsCase);
@@ -144,13 +152,39 @@ public class PartyService {
             ));
     }
 
-    private PartyEntity createClaimant(PCSCase pcsCase, String organisationIdForCurrentUser,
-                                       List<String> orgProfileIds) {
+    /**
+     * The claimant party a draft was created with: organisation only, so CaseAccessGroups derive
+     * while the claim is still being filled in. Skipped for users with no organisation, since a
+     * party carrying an organisation ID but no profile IDs fails group derivation.
+     */
+    public void initialiseClaimant(PcsCaseEntity pcsCaseEntity, String organisationId,
+                                   List<String> organisationProfileIds) {
+        if (organisationId == null || CollectionUtils.isEmpty(organisationProfileIds)) {
+            return;
+        }
+        PartyEntity claimantParty = new PartyEntity();
+        claimantParty.setOrganisationId(organisationId);
+        claimantParty.setOrganisationProfileIds(organisationProfileIds);
+        pcsCaseEntity.addParty(claimantParty);
+    }
+
+    /**
+     * The initialised claimant carries an organisation but no claim link, which no submitted party
+     * ever does. Matching on that keeps submit completing the party the case was created with,
+     * rather than adding a second claimant.
+     */
+    private Optional<PartyEntity> findInitialisedClaimant(PcsCaseEntity pcsCaseEntity) {
+        return pcsCaseEntity.getParties().stream()
+            .filter(party -> party.getOrganisationId() != null)
+            .filter(party -> party.getClaimParties().isEmpty())
+            .findFirst();
+    }
+
+    private void populateClaimant(PartyEntity claimantParty, PCSCase pcsCase,
+                                  String organisationIdForCurrentUser, List<String> orgProfileIds) {
 
         ClaimantInformation claimantInformation = pcsCase.getClaimantInformation();
         Objects.requireNonNull(claimantInformation, "Claimant must be provided");
-
-        PartyEntity claimantParty = new PartyEntity();
 
         setClaimantOrgName(claimantInformation, claimantParty);
         claimantParty.setOrganisationId(organisationIdForCurrentUser);
@@ -175,8 +209,6 @@ public class PartyService {
         }
 
         partyRepository.save(claimantParty);
-
-        return claimantParty;
     }
 
     private static void setClaimantOrgName(ClaimantInformation claimantInformation, PartyEntity claimantParty) {
