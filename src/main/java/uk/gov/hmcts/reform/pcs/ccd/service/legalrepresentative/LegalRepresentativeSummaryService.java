@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.PartyLegalRepresentativeOrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
@@ -26,7 +27,7 @@ public class LegalRepresentativeSummaryService {
         <a href="%s/case/${[CASE_REFERENCE]}/respond-to-claim/start-now"
         role="button"
         class="govuk-link govuk-link--no-visited-state">
-        Respond to the claim.</a>
+        Respond to the claim</a>.
         </p>
         """;
     private static final String UPDATE_DETAILS_MARKDOWN = """
@@ -48,11 +49,11 @@ public class LegalRepresentativeSummaryService {
     private String frontendUrl;
 
     public void handleLegalRepresentativeSummary(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity,
-                                                 String organisationIdForCurrentUser) {
+                                                 String organisationIdForCurrentUser, State state) {
         Optional<PartyLegalRepresentativeOrganisationEntity> partyLink =
             isActivelyLinkedToAnyDefendant(pcsCaseEntity, organisationIdForCurrentUser);
 
-        if (partyLink.isPresent()) {
+        if (partyLink.isPresent() && state == State.CASE_ISSUED) {
             setLegalRepresentativeFields(pcsCase, partyLink.get());
         } else {
             pcsCase.setSummaryLegalRepresentativeMarkdown(StringUtils.EMPTY);

@@ -9,6 +9,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeOrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.PartyLegalRepresentativeOrganisationEntity;
@@ -35,7 +36,7 @@ class LegalRepresentativeSummaryServiceTest {
         <a href="testUrl/case/${[CASE_REFERENCE]}/respond-to-claim/start-now"
         role="button"
         class="govuk-link govuk-link--no-visited-state">
-        Respond to the claim.</a>
+        Respond to the claim</a>.
         </p>
         """;
 
@@ -84,7 +85,8 @@ class LegalRepresentativeSummaryServiceTest {
         PCSCase pcsCase = PCSCase.builder().build();
 
         // when
-        legalRepresentativeSummaryService.handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity, organisationId);
+        legalRepresentativeSummaryService.handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity, organisationId,
+                                                                           State.CASE_ISSUED);
 
         // then
         assertThat(pcsCase.getSummaryLegalRepresentativeMarkdown()).isEqualTo(UPDATE_DETAILS_MARKDOWN);
@@ -115,10 +117,43 @@ class LegalRepresentativeSummaryServiceTest {
         PCSCase pcsCase = PCSCase.builder().build();
 
         // when
-        legalRepresentativeSummaryService.handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity, organisationId);
+        legalRepresentativeSummaryService.handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity, organisationId,
+                                                                           State.CASE_ISSUED);
 
         // then
         assertThat(pcsCase.getSummaryLegalRepresentativeMarkdown()).isEqualTo(RESPOND_TO_CLAIM_MARKDOWN);
+    }
+
+    @Test
+    void handleLegalRepresentativeSummary_WithNonCaseLinkedState_ReturnsEmptyRespondMarkDown() {
+        // given
+        String organisationId = "org";
+        LegalRepresentativeOrganisationEntity legalRepresentativeOrg =
+            LegalRepresentativeOrganisationEntity.builder()
+                .organisationId(organisationId)
+                .hasAmendedContactDetails(YesOrNo.YES)
+                .build();
+        List<PartyEntity> parties = List.of(PartyEntity.builder()
+                                                .partyLegalRepresentativeOrganisationList(List.of(
+                                                    PartyLegalRepresentativeOrganisationEntity.builder()
+                                                        .active(YesOrNo.YES)
+                                                        .legalRepresentativeOrganisation(legalRepresentativeOrg)
+                                                        .build()))
+                                                .build());
+
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
+            .build();
+
+        when(defendantPartyExtractor.summaryScreenSafeExtractDefendants(pcsCaseEntity)).thenReturn(parties);
+
+        PCSCase pcsCase = PCSCase.builder().build();
+
+        // when
+        legalRepresentativeSummaryService.handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity, organisationId,
+                                                                           State.PENDING_CASE_ISSUED);
+
+        // then
+        assertThat(pcsCase.getSummaryLegalRepresentativeMarkdown()).isEmpty();
     }
 
     @Test
@@ -144,7 +179,8 @@ class LegalRepresentativeSummaryServiceTest {
         when(defendantPartyExtractor.summaryScreenSafeExtractDefendants(pcsCaseEntity)).thenReturn(parties);
 
         // when
-        legalRepresentativeSummaryService.handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity, organisationId);
+        legalRepresentativeSummaryService.handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity, organisationId,
+                                                                           State.CASE_ISSUED);
 
         // then
         assertThat(pcsCase.getSummaryLegalRepresentativeMarkdown()).isEmpty();
@@ -174,7 +210,8 @@ class LegalRepresentativeSummaryServiceTest {
         PCSCase pcsCase = PCSCase.builder().build();
 
         // when
-        legalRepresentativeSummaryService.handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity, organisationId);
+        legalRepresentativeSummaryService.handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity, organisationId,
+                                                                           State.CASE_ISSUED);
 
         // then
         assertThat(pcsCase.getSummaryLegalRepresentativeMarkdown()).isEmpty();
@@ -204,7 +241,8 @@ class LegalRepresentativeSummaryServiceTest {
         PCSCase pcsCase = PCSCase.builder().build();
 
         // when
-        legalRepresentativeSummaryService.handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity, organisationId);
+        legalRepresentativeSummaryService.handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity, organisationId,
+                                                                           State.CASE_ISSUED);
 
         // then
         assertThat(pcsCase.getSummaryLegalRepresentativeMarkdown()).isEmpty();
