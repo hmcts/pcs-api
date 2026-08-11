@@ -10,7 +10,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.LegalRepPartySelectionService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.LegalRepForDefendantAccessValidator;
-import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 
 import java.util.List;
 
@@ -21,8 +21,8 @@ public class LegalRepStartEventStrategy implements RespondPossessionClaimStartEv
 
     private final PcsCaseService pcsCaseService;
     private final LegalRepForDefendantAccessValidator legalRepForDefendantAccessValidator;
-    private final SecurityContextService securityContextService;
     private final LegalRepPartySelectionService legalRepPartySelectionService;
+    private final OrganisationService organisationService;
 
     @Override
     public boolean supports(List<String> roles) {
@@ -31,21 +31,27 @@ public class LegalRepStartEventStrategy implements RespondPossessionClaimStartEv
 
     @Override
     public PCSCase loadDraft(long caseReference, PCSCase pcsCase) {
+        String organisationId = organisationService.getOrganisationIdForCurrentUser();
         // return defendants who have submitted
         if (this.legalRepPartySelectionService.hasSubmittedResponseForCurrentlySelectedParty(caseReference)) {
-            List<PartyEntity> defendantPartiesLinkedAndActive = this.loadAndValidateDefendants(caseReference, false);
+            List<PartyEntity> defendantPartiesLinkedAndActive = this.loadAndValidateDefendants(caseReference,
+                                                                                               organisationId, false);
             return legalRepPartySelectionService.buildSubmittedResponseCase(pcsCase, defendantPartiesLinkedAndActive);
         }
 
+
         // return drafts that have not been submitted
-        List<PartyEntity> defendantPartiesLinkedAndActive = this.loadAndValidateDefendants(caseReference, true);
+        List<PartyEntity> defendantPartiesLinkedAndActive = this.loadAndValidateDefendants(caseReference,
+                                                                                           organisationId, true);
         if (defendantPartiesLinkedAndActive.size() == 1) {
             PartyEntity defendant = defendantPartiesLinkedAndActive.getFirst();
             return legalRepPartySelectionService.getDraftCaseData(caseReference, pcsCase, defendant,
-                                                                  defendantPartiesLinkedAndActive);
+                                                                  defendantPartiesLinkedAndActive,
+                                                                  organisationId);
         }
 
-        return legalRepPartySelectionService.getDraft(pcsCase, defendantPartiesLinkedAndActive, caseReference);
+        return legalRepPartySelectionService.getDraft(pcsCase, defendantPartiesLinkedAndActive,
+                                                      caseReference, organisationId);
     }
 
     /**
@@ -56,10 +62,11 @@ public class LegalRepStartEventStrategy implements RespondPossessionClaimStartEv
      *           if false no exception will be thrown
      * @return the list of defendant parties
      */
-    private List<PartyEntity> loadAndValidateDefendants(long caseReference, boolean validate) {
+    private List<PartyEntity> loadAndValidateDefendants(long caseReference, String organisationId, boolean validate) {
         PcsCaseEntity caseEntity = pcsCaseService.loadCase(caseReference);
 
-        return legalRepForDefendantAccessValidator.validateAndGetDefendants(
-            caseEntity, securityContextService.getCurrentUserId(), validate);
+        return legalRepForDefendantAccessValidator.validateAndGetDefendants(caseEntity,
+                                                                            organisationId, validate);
     }
+
 }

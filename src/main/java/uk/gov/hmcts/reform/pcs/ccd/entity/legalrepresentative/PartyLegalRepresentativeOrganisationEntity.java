@@ -20,28 +20,30 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 
 import java.time.Instant;
 
+import static jakarta.persistence.FetchType.LAZY;
+
 @Entity
-@Table(name = "claim_party_legal_representative")
+@Table(name = "party_legal_rep_org")
 @Setter
 @Getter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ClaimPartyLegalRepresentativeEntity {
+public class PartyLegalRepresentativeOrganisationEntity {
 
     @EmbeddedId
     @Builder.Default
-    private LegalRepresentativePartyId id = new LegalRepresentativePartyId();
+    private LegalRepresentativeOrganisationPartyId id = new LegalRepresentativeOrganisationPartyId();
 
-    @ManyToOne
+    @ManyToOne(fetch = LAZY)
     @MapsId("partyId")
     @JsonBackReference
     private PartyEntity party;
 
-    @ManyToOne
-    @MapsId("legalRepresentativeId")
+    @ManyToOne(fetch = LAZY)
+    @MapsId("legalRepresentativeOrganisationId")
     @JsonBackReference
-    private LegalRepresentativeEntity legalRepresentative;
+    private LegalRepresentativeOrganisationEntity legalRepresentativeOrganisation;
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)

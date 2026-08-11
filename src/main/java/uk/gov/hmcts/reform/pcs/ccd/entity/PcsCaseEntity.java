@@ -18,6 +18,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeOrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
@@ -119,6 +120,11 @@ public class PcsCaseEntity {
     @Builder.Default
     private List<CaseFlagEntity> caseFlags = new ArrayList<>();
 
+    @OneToMany(mappedBy = "pcsCase", fetch = LAZY, cascade = ALL)
+    @Builder.Default
+    @JsonManagedReference
+    private Set<LegalRepresentativeOrganisationEntity> legalRepresentativeOrganisations = new HashSet<>();
+
     public void setTenancyLicence(TenancyLicenceEntity tenancyLicence) {
         if (this.tenancyLicence != null) {
             this.tenancyLicence.setPcsCase(null);
@@ -175,4 +181,9 @@ public class PcsCaseEntity {
         reviewDate.setPcsCase(this);
     }
 
+    public void addLegalRepresentativeOrganisation(LegalRepresentativeOrganisationEntity
+                                                       legalRepresentativeOrganisation) {
+        legalRepresentativeOrganisations.add(legalRepresentativeOrganisation);
+        legalRepresentativeOrganisation.setPcsCase(this);
+    }
 }
