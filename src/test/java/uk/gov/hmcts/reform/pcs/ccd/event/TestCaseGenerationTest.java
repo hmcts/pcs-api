@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.pcs.ccd.event;
 
-import java.util.Optional;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
