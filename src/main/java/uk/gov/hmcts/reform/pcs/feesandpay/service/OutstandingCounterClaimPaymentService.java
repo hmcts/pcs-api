@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.pcs.feesandpay.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -34,7 +35,7 @@ public class OutstandingCounterClaimPaymentService {
     private final DefendantAccessValidator defendantAccessValidator;
 
     @Transactional(readOnly = true)
-    public Optional<OutstandingCounterClaimPayment> findOutstanding(long caseReference, UUID partyId) {
+    public Optional<OutstandingCounterClaimPayment> findOutstandingPaymentForParty(long caseReference, UUID partyId) {
         if (partyId == null) {
             return Optional.empty();
         }
@@ -54,7 +55,7 @@ public class OutstandingCounterClaimPaymentService {
         PcsCaseEntity caseEntity = pcsCaseService.loadCase(caseReference);
         PartyEntity defendant = defendantAccessValidator.validateAndGetDefendant(caseEntity, idamUserId);
 
-        return findOutstanding(caseReference, defendant.getId())
+        return findOutstandingPaymentForParty(caseReference, defendant.getId())
             .orElseThrow(() -> new FeePaymentNotFoundException(
                 "No outstanding counterclaim payment found for case " + caseReference
             ));
@@ -70,8 +71,7 @@ public class OutstandingCounterClaimPaymentService {
     }
 
     private boolean isPaymentRequired(CounterClaimEntity counterClaim) {
-        String hwfReference = counterClaim.getHwfReferenceNumber();
-        return hwfReference == null || hwfReference.trim().isEmpty();
+        return !StringUtils.hasText(counterClaim.getHwfReferenceNumber());
     }
 
     private boolean hasPayableServiceRequest(FeePaymentEntity feePayment) {

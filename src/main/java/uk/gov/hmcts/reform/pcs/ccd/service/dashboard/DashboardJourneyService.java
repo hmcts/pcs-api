@@ -162,7 +162,7 @@ public class DashboardJourneyService {
             return Optional.empty();
         }
 
-        return outstandingCounterClaimPaymentService.findOutstanding(
+        return outstandingCounterClaimPaymentService.findOutstandingPaymentForParty(
             ctx.caseReference(),
             ctx.defendant().getId()
         );

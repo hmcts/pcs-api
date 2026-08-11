@@ -1,8 +1,8 @@
 package uk.gov.hmcts.reform.pcs.feesandpay.service;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState;
@@ -47,17 +47,8 @@ class OutstandingCounterClaimPaymentServiceTest {
     @Mock
     private DefendantAccessValidator defendantAccessValidator;
 
+    @InjectMocks
     private OutstandingCounterClaimPaymentService underTest;
-
-    @BeforeEach
-    void setUp() {
-        underTest = new OutstandingCounterClaimPaymentService(
-            counterClaimRepository,
-            feePaymentRepository,
-            pcsCaseService,
-            defendantAccessValidator
-        );
-    }
 
     @Test
     void shouldReturnOutstandingPaymentWhenPendingCounterClaimHasFeePayment() {
@@ -72,7 +63,8 @@ class OutstandingCounterClaimPaymentServiceTest {
         )).thenReturn(Optional.of(counterClaim));
         when(feePaymentRepository.findByRelatedEntityId(COUNTER_CLAIM_ID)).thenReturn(Optional.of(feePayment));
 
-        Optional<OutstandingCounterClaimPayment> result = underTest.findOutstanding(CASE_REFERENCE, PARTY_ID);
+        Optional<OutstandingCounterClaimPayment> result =
+            underTest.findOutstandingPaymentForParty(CASE_REFERENCE, PARTY_ID);
 
         assertThat(result).isPresent();
         assertThat(result.get().getServiceRequestReference()).isEqualTo(SERVICE_REQUEST_REFERENCE);
@@ -87,7 +79,8 @@ class OutstandingCounterClaimPaymentServiceTest {
             CASE_REFERENCE, PARTY_ID, CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED
         )).thenReturn(Optional.of(counterClaim));
 
-        Optional<OutstandingCounterClaimPayment> result = underTest.findOutstanding(CASE_REFERENCE, PARTY_ID);
+        Optional<OutstandingCounterClaimPayment> result =
+            underTest.findOutstandingPaymentForParty(CASE_REFERENCE, PARTY_ID);
 
         assertThat(result).isEmpty();
         verifyNoInteractions(feePaymentRepository);
@@ -99,13 +92,13 @@ class OutstandingCounterClaimPaymentServiceTest {
             CASE_REFERENCE, PARTY_ID, CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED
         )).thenReturn(Optional.empty());
 
-        assertThat(underTest.findOutstanding(CASE_REFERENCE, PARTY_ID)).isEmpty();
+        assertThat(underTest.findOutstandingPaymentForParty(CASE_REFERENCE, PARTY_ID)).isEmpty();
         verifyNoInteractions(feePaymentRepository);
     }
 
     @Test
     void shouldReturnEmptyWhenPartyIdIsNull() {
-        assertThat(underTest.findOutstanding(CASE_REFERENCE, null)).isEmpty();
+        assertThat(underTest.findOutstandingPaymentForParty(CASE_REFERENCE, null)).isEmpty();
         verifyNoInteractions(counterClaimRepository, feePaymentRepository);
     }
 
@@ -122,7 +115,7 @@ class OutstandingCounterClaimPaymentServiceTest {
         )).thenReturn(Optional.of(counterClaim));
         when(feePaymentRepository.findByRelatedEntityId(COUNTER_CLAIM_ID)).thenReturn(Optional.of(feePayment));
 
-        assertThat(underTest.findOutstanding(CASE_REFERENCE, PARTY_ID)).isEmpty();
+        assertThat(underTest.findOutstandingPaymentForParty(CASE_REFERENCE, PARTY_ID)).isEmpty();
     }
 
     @Test

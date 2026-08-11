@@ -396,7 +396,7 @@ class DashboardJourneyServiceTest {
 
         UUID partyId = UUID.randomUUID();
         PartyEntity defendant = PartyEntity.builder().id(partyId).idamId(UUID.randomUUID()).build();
-        when(outstandingCounterClaimPaymentService.findOutstanding(CASE_REFERENCE, partyId))
+        when(outstandingCounterClaimPaymentService.findOutstandingPaymentForParty(CASE_REFERENCE, partyId))
             .thenReturn(Optional.of(OutstandingCounterClaimPayment.builder()
                 .serviceRequestReference("2026-1234567890123")
                 .feeAmount(new BigDecimal("404.00"))
@@ -457,7 +457,7 @@ class DashboardJourneyServiceTest {
 
         UUID partyId = UUID.randomUUID();
         PartyEntity defendant = PartyEntity.builder().id(partyId).idamId(UUID.randomUUID()).build();
-        when(outstandingCounterClaimPaymentService.findOutstanding(CASE_REFERENCE, partyId))
+        when(outstandingCounterClaimPaymentService.findOutstandingPaymentForParty(CASE_REFERENCE, partyId))
             .thenReturn(Optional.empty());
 
         DashboardData result = underTest.computeDashboardData(
