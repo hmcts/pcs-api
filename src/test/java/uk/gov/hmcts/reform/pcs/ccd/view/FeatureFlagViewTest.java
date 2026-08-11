@@ -76,4 +76,20 @@ class FeatureFlagViewTest {
             .isEqualTo(VerticalYesNo.from(flagEnabled));
     }
 
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void shouldSetWalesMakeAClaimFeatureFlagInCaseData(boolean flagEnabled) {
+        // Given
+        PCSCase pcsCase = PCSCase.builder().build();
+        when(featureToggleService.isEnabled(isA(FeatureFlag.class))).thenReturn(false);
+        when(featureToggleService.isEnabled(FeatureFlag.WALES_MAKE_A_CLAIM)).thenReturn(flagEnabled);
+
+        // When
+        underTest.setCaseFields(pcsCase);
+
+        // Then
+        assertThat(pcsCase.getFeatureFlags().getWalesMakeAClaimEnabled())
+            .isEqualTo(VerticalYesNo.from(flagEnabled));
+    }
+
 }
