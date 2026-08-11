@@ -37,7 +37,7 @@ class CaseDeletionScheduledTaskTest {
     @BeforeEach
     void setUp() {
         String validSchedule = "DAILY|00:00";
-        underTest = new CaseDeletionScheduledTask(validSchedule, discardAfterDays, 5, 10, 20, 45, 300,
+        underTest = new CaseDeletionScheduledTask(validSchedule, discardAfterDays, 5, 10, 20, 45, 2,
                 ccdCaseDataDeletionService, caseDeletionService);
     }
 

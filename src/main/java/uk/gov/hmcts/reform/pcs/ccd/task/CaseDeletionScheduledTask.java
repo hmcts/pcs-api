@@ -3,23 +3,22 @@ package uk.gov.hmcts.reform.pcs.ccd.task;
 import com.github.kagkarlsson.scheduler.task.helper.RecurringTask;
 import com.github.kagkarlsson.scheduler.task.helper.Tasks;
 import com.github.kagkarlsson.scheduler.task.schedule.Schedules;
+import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.reform.pcs.ccd.service.casedeletion.CaseDeletionService;
 import uk.gov.hmcts.reform.pcs.ccd.service.casedeletion.CcdCaseDataDeletionService;
 
-import java.time.Instant;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
-
-import static java.lang.Math.min;
+import java.util.function.LongConsumer;
 
 @Slf4j
 @Component
@@ -30,8 +29,8 @@ public class CaseDeletionScheduledTask {
 
     private final String schedule;
     private final int discardAfterDays;
+    private final int batchSize;
     private final int taskTimeoutSeconds;
-    private final int globalTimeoutSeconds;
     private final CcdCaseDataDeletionService ccdCaseDataDeletionService;
     private final CaseDeletionService caseDeletionService;
     private final Executor deletionExecutor;
@@ -40,9 +39,9 @@ public class CaseDeletionScheduledTask {
                                      @Value("${expired-case-deletion.discard-after-days}") int discardAfterDays,
                                      @Value("${expired-case-deletion.core-pool-size}") int corePoolSize,
                                      @Value("${expired-case-deletion.max-pool-size}") int maxPoolSize,
+                                     @Value("${expired-case-deletion.batch-size}") int batchSize,
                                      @Value("${expired-case-deletion.queue-capacity}") int queueCapacity,
                                      @Value("${expired-case-deletion.task-timeout-seconds}") int taskTimeoutSeconds,
-                                     @Value("${expired-case-deletion.global-timeout-seconds}") int globalTimeoutSeconds,
                                      CcdCaseDataDeletionService ccdCaseDataDeletionService,
                                      CaseDeletionService caseDeletionService) {
         this.schedule = schedule;
@@ -50,7 +49,7 @@ public class CaseDeletionScheduledTask {
         this.ccdCaseDataDeletionService = ccdCaseDataDeletionService;
         this.caseDeletionService = caseDeletionService;
         this.taskTimeoutSeconds = taskTimeoutSeconds;
-        this.globalTimeoutSeconds = globalTimeoutSeconds;
+        this.batchSize = batchSize;
 
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         executor.setCorePoolSize(corePoolSize);
@@ -68,60 +67,38 @@ public class CaseDeletionScheduledTask {
     }
 
     protected void runSweep() {
-        int microBatchSize = 2;
         MDC.put(MDC_TASK_NAME, CASE_DELETION_TASK_NAME);
         try {
-            List<Long> caseReferences =
-                    new ArrayList<>(new ArrayList<>(ccdCaseDataDeletionService.findExpiredDraftCases(
-                            discardAfterDays)));
-            while (!caseReferences.isEmpty()) {
-                log.debug("Found {} expired draft cases to delete", caseReferences.size());
-                List<Long> microBatch =
-                        caseReferences.subList(0, min(microBatchSize, caseReferences.size()));
-
-                List<CompletableFuture<Void>> futures = microBatch.stream()
-                        .map(caseRef -> CompletableFuture.runAsync(() ->
-                                        caseDeletionService.performCaseDeletionTasks(caseRef), deletionExecutor)
-                                .orTimeout(taskTimeoutSeconds, TimeUnit.SECONDS)
-                                .exceptionally(ex -> {
-                                    log.error("Case deletion timed out or failed for case: {}", caseRef, ex);
-                                    return null;
-                                }))
-                        .toList();
-
-                CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
-                        .join();
-                caseReferences.removeAll(microBatch);
-                log.debug("Completed processing cases for deletion at {}", Instant.now());
+            List<Long> expiredDraftCases = ccdCaseDataDeletionService.findExpiredDraftCases(discardAfterDays);
+            if (!CollectionUtils.isEmpty(expiredDraftCases)) {
+                log.debug("Processing {} expired draft cases", expiredDraftCases.size());
+                Lists.partition(expiredDraftCases, batchSize)
+                        .forEach(batch -> processBatch(batch, caseDeletionService::performCaseDeletionTasks));
             }
+            log.debug("Completed case deletion sweep successfully.");
 
-            List<Long> discardedCaseRefs =
-                    new ArrayList<>(ccdCaseDataDeletionService.findExpiredDraftCasesInDraftDiscardedState());
-
-            while (!discardedCaseRefs.isEmpty()) {
-                log.debug("Found {} discarded cases to delete", discardedCaseRefs.size());
-                List<Long> microBatch =
-                        discardedCaseRefs.subList(0, min(microBatchSize, discardedCaseRefs.size()));
-
-                List<CompletableFuture<Void>> futures = microBatch.stream()
-                        .map(caseRef -> CompletableFuture.runAsync(() ->
-                                        caseDeletionService.cleanupDiscardedDraftCases(caseRef), deletionExecutor)
-                                .orTimeout(taskTimeoutSeconds, TimeUnit.SECONDS)
-                                .exceptionally(ex -> {
-                                    log.error("Case cleanup timed out or failed for case: {}", caseRef, ex);
-                                    return null;
-                                }))
-                        .toList();
-
-                CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
-                        .orTimeout(globalTimeoutSeconds, TimeUnit.SECONDS)
-                        .join();
-                discardedCaseRefs.removeAll(microBatch);
+            List<Long> discardedDraftCases = ccdCaseDataDeletionService.findExpiredDraftCasesInDraftDiscardedState();
+            if (!CollectionUtils.isEmpty(discardedDraftCases)) {
+                log.debug("Processing {} discarded cases", discardedDraftCases.size());
+                Lists.partition(discardedDraftCases, batchSize)
+                        .forEach(batch -> processBatch(batch, caseDeletionService::cleanupDiscardedDraftCases));
             }
-
-            log.debug("Completed processing cases for cleanup at {}", Instant.now());
+            log.debug("Completed cleanup sweep successfully.");
         } finally {
             MDC.remove(MDC_TASK_NAME);
         }
+    }
+
+    private void processBatch(List<Long> batch, LongConsumer caseAction) {
+        List<CompletableFuture<Void>> futures = batch.stream()
+                .map(caseRef -> CompletableFuture.runAsync(() -> caseAction.accept(caseRef), deletionExecutor)
+                        .orTimeout(taskTimeoutSeconds, TimeUnit.SECONDS)
+                        .exceptionally(ex -> {
+                            log.error("Action failed or timed out for case: {}", caseRef, ex);
+                            return null;
+                        }))
+                .toList();
+
+        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
     }
 }
