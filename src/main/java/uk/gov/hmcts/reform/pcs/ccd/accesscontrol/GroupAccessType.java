@@ -102,4 +102,9 @@ public enum GroupAccessType implements CCDAccessGroup {
     public String getCaseAccessGroupIdTemplate() {
         return "PCS:PCS:" + accessTypeId + ":" + caseAssignedRoleField + ":$ORGID$";
     }
+
+    @Override
+    public String getLiveTo() {
+        return "01/01/2029";
+    }
 }

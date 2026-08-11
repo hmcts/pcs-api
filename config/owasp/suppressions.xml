@@ -7,6 +7,10 @@
     <cve>CVE-2026-54428</cve>
   </suppress>
   <suppress until="2026-08-18">
+    <notes><![CDATA[file name: httpclient5-5.5.2.jar]]></notes>
+    <cve>CVE-2026-64607</cve>
+  </suppress>
+  <suppress until="2026-08-18">
     <notes><![CDATA[jackson-databind-3.1.1.jar]]></notes>
     <cve>CVE-2026-54512</cve>
     <cve>CVE-2026-54513</cve>
