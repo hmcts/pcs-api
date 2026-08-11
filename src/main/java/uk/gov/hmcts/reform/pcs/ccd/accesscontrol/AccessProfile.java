@@ -26,7 +26,6 @@ public enum AccessProfile implements HasRole {
     // policy when deriving CaseAccessGroups, and the access profile permissions attach to.
     CLAIMANT_ORG("claimant", CRU),
     CLAIMANT_SOLICITOR_ORG("claimant_solicitor", CRU),
-    DEFENDANT_SOLICITOR_ORG("defendant_solicitor", CRU),
 
     JUDGE("judge", CRU),
     FEE_PAID_JUDGE("fee-paid-judge", CRU),

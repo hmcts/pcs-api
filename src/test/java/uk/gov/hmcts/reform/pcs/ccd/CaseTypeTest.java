@@ -174,8 +174,7 @@ class CaseTypeTest {
         caseType.configure(builder);
 
         // Then
-        verify(builder).grantCaseTypeAccessToCaseRoles(AccessProfile.CREATOR,
-            AccessProfile.DEFENDANT, AccessProfile.DEFENDANT_SOLICITOR);
+        verify(builder).grantCaseTypeAccessToCaseRoles(AccessProfile.CREATOR);
     }
 
     @Test

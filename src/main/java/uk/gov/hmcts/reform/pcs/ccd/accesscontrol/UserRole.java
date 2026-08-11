@@ -30,7 +30,6 @@ public enum UserRole implements HasRole {
     // permissions attach to.
     CLAIMANT_ORG("claimant", CRU, RAS),
     CLAIMANT_SOLICITOR_ORG("claimant_solicitor", CRU, RAS),
-    DEFENDANT_SOLICITOR_ORG("defendant_solicitor", CRU, RAS),
 
     // Legacy per-case roles. [DEFENDANT] is the citizen defendant's role and stays; the two
     // solicitor roles are superseded by the group-access capacities and go once the creator and

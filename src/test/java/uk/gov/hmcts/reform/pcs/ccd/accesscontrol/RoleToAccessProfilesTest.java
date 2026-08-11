@@ -75,14 +75,11 @@ class RoleToAccessProfilesTest {
             .containsExactly(AccessProfile.CLAIMANT_ORG.getRole());
         assertThat(UserRole.CLAIMANT_SOLICITOR_ORG.getAccessProfiles())
             .containsExactly(AccessProfile.CLAIMANT_SOLICITOR_ORG.getRole());
-        assertThat(UserRole.DEFENDANT_SOLICITOR_ORG.getAccessProfiles())
-            .containsExactly(AccessProfile.DEFENDANT_SOLICITOR_ORG.getRole());
     }
 
     @Test
     void shouldGiveTheGroupAccessProfilesRead() {
         assertThat(AccessProfile.CLAIMANT_ORG.getCaseTypePermissions()).contains("R");
         assertThat(AccessProfile.CLAIMANT_SOLICITOR_ORG.getCaseTypePermissions()).contains("R");
-        assertThat(AccessProfile.DEFENDANT_SOLICITOR_ORG.getCaseTypePermissions()).contains("R");
     }
 }

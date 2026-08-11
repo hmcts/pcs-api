@@ -38,7 +38,6 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
         AccessProfile.PCS_SOLICITOR,
         AccessProfile.CLAIMANT_ORG,
         AccessProfile.CLAIMANT_SOLICITOR_ORG,
-        AccessProfile.DEFENDANT_SOLICITOR_ORG,
         AccessProfile.JUDGE,
         AccessProfile.FEE_PAID_JUDGE,
         AccessProfile.CIRCUIT_JUDGE,
@@ -112,10 +111,9 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
         builder.caseType(getCaseType(), getCaseTypeName(), CASE_TYPE_DESCRIPTION);
         builder.jurisdiction(JURISDICTION_ID, JURISDICTION_NAME, JURISDICTION_DESCRIPTION);
         builder.hmctsServiceId(hmctsServiceId);
-        // Case roles whose holders have no other route past case-type authorisation:
-        // CREATOR on group-less drafts, DEFENDANT / DEFENDANTSOLICITOR on issued cases.
-        builder.grantCaseTypeAccessToCaseRoles(AccessProfile.CREATOR,
-            AccessProfile.DEFENDANT, AccessProfile.DEFENDANT_SOLICITOR);
+        // Capacity-only users lose their group role on group-less drafts, so the creator's
+        // case role must pass case-type authorisation by itself
+        builder.grantCaseTypeAccessToCaseRoles(AccessProfile.CREATOR);
 
         builder.searchInputFields()
             .caseReferenceField();
@@ -216,15 +214,6 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
             .hintText("Assign to Users to enable access to all cases associated with this organisation")
             .displayOrder(2)
             .liveTo("01/01/2027");
-        builder.accessType("solicitor-org-defendant-access")
-            .organisationProfileId("SOLICITOR_PROFILE")
-            .accessMandatory(true)
-            .accessDefault(false)
-            .display(true)
-            .description("Can manage all cases associated with this organisation as defendant")
-            .hintText("Assign to Users to enable access to all cases associated with this organisation")
-            .displayOrder(3)
-            .liveTo("01/01/2027");
         builder.accessType("prof-org-claimant-access")
             .organisationProfileId("LOCALAUTH_PROFILE")
             .accessMandatory(true)
@@ -277,13 +266,6 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
             .caseAssignedRoleField("claimant_solicitor")
             .groupAccessEnabled(true)
             .caseAccessGroupIdTemplate("PCS:PCS:solicitor-org-claimant-access:claimant_solicitor:$ORGID$")
-            .liveTo("01/01/2027");
-        builder.accessTypeRole("solicitor-org-defendant-access")
-            .organisationProfileId("SOLICITOR_PROFILE")
-            .groupRoleName("defendant_solicitor")
-            .caseAssignedRoleField("defendant_solicitor")
-            .groupAccessEnabled(true)
-            .caseAccessGroupIdTemplate("PCS:PCS:solicitor-org-defendant-access:defendant_solicitor:$ORGID$")
             .liveTo("01/01/2027");
         builder.accessTypeRole("prof-org-claimant-access")
             .organisationProfileId("LOCALAUTH_PROFILE")
