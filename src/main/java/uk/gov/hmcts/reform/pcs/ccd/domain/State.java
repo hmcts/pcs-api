@@ -107,4 +107,3 @@ public enum State {
     )
     BREATHING_SPACE
 }
-
