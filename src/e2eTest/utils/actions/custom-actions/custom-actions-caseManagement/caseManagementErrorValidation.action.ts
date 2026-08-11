@@ -2,6 +2,7 @@ import { Page } from '@playwright/test';
 import { performAction } from '@utils/controller-caseManagement';
 import { IAction, actionData, actionRecord } from '@utils/interfaces/action.interface';
 import {
+  addHearing,
   addReviewDates, changeCaseState, enterGenappApplication, enterGenAppapplicationFee,
   enterGenAppConsentAndNotice, enterGenAppHearingDate, selectDocument
 } from '@data/page-data-figma/page-data-caseManagement-figma';
@@ -17,6 +18,7 @@ export class ErrorValidationAction implements IAction {
       ['errorValidationHearingDatePage', () => this.errorValidationHearingDatePage(errorFlag as string)],
       ['errorValidationApplicationFeePage', () => this.errorValidationApplicationFeePage(errorFlag as string)],
       ['errorValidationApplicationConsentAndNotice', () => this.errorValidationApplicationConsentAndNotice(errorFlag as string)],
+      ['errorValidationEnterAddAHearingPage', () => this.errorValidationEnterAddAHearingPage(errorFlag as string)],
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -200,6 +202,49 @@ export class ErrorValidationAction implements IAction {
         question: enterGenAppConsentAndNotice.hasApplicantMadeWithoutNoticeHiddenQuestion,
         option: enterGenAppConsentAndNotice.noHiddenRadioOption,
         button: enterGenAppConsentAndNotice.continueButton
+      });
+
+    }
+  };
+
+  private async errorValidationEnterAddAHearingPage(validationReq: string) {
+    if (validationReq === 'YES') {
+      await performAction('inputErrorValidation', {
+        validationType: addHearing.errorValidationType.two,
+        inputArray: addHearing.errorValidationField.errorRadioOption1,
+        question: addHearing.typeOfHearingQuestion,
+        option:  addHearing.typeOfHearingOption[0],
+        button: addHearing.continueButton
+      });
+
+      await performAction('inputErrorValidation', {
+        validationType: addHearing.errorValidationType.two,
+        inputArray: addHearing.errorValidationField.errorRadioOption2,
+        question: addHearing.typeOfAppQuestion,
+        option: addHearing.adjournRadioOption,
+        button: addHearing.continueButton
+      });
+      await performAction('inputErrorValidation', {
+        validationType: addHearing.errorValidationType.five,
+        inputArray: addHearing.errorValidationField.errorDateField,
+        header: addHearing.eventCouldNotBeCreatedErrorMessageHeader,
+        header1: addHearing.thereIsProbErrorMessageHeader,
+        question: addHearing.whatDateAppReceivedQuestion,
+        label1: addHearing.dayTextLabel,
+        label2: addHearing.monthTextLabel,
+        label3: addHearing.yearTextLabel,
+        button: addHearing.continueButton
+      });
+      await performAction('clickRadioButton', {
+        question: addHearing.typeOfAppQuestion,
+        option: addHearing.somethingElseRadioOption,
+      });
+      await performAction('inputErrorValidation', {
+        validationType: addHearing.errorValidationType.one,
+        inputArray: addHearing.errorValidationField.errorTextField,
+        header: addHearing.eventCouldNotBeCreatedErrorMessageHeader,
+        label: addHearing.whichCategoriesHiddenTextLabel,
+        button: addHearing.continueButton
       });
 
     }

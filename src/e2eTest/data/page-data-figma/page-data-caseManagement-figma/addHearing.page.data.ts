@@ -1,4 +1,4 @@
-export const addHearing= {
+export const addHearing = {
   mainHeader: `Add a hearing`,
   typeOfHearingQuestion: `Which type of hearing is this?`,
   typeOfHearingOption: ['Possession first hearing', 'Application', 'Adjourned first hearing', 'Other'],
@@ -12,37 +12,40 @@ export const addHearing= {
   minutesTextLabel: `Minute`,
   secondsTextLabel: `Second`,
   dateTypeHiddenUserInput: `future`,
-  hearingNotesTextLabel : `Hearing notes (Optional)`,
+  hearingNotesTextLabel: `Hearing notes (Optional)`,
   hearingNotesTextInput: 10,
   hearingNoticeQuestion: `Does a hearing notice need to be issued?`,
   hearingNoticeYesRadioOption: `Yes`,
   hearingNoticeNoRadioOption: `No`,
   hearingWithOutNoticeHiddenQuestion: `Is the hearing without notice?`,
-  whoShouldReceiveHiddenQuestion : `Who should receive the hearing notice?`,
+  whoShouldReceiveHiddenQuestion: `Who should receive the hearing notice?`,
   enterAdditionalInfoTextLabel: `Enter any additional information (Optional)`,
   enterAdditionalInfoTextInput: 100,
   continueButton: `Continue`,
   previousButton: `Previous`,
   cancelLink: `Cancel`,
   errorValidation: `YES`,
+  eventCouldNotBeCreatedErrorMessageHeader: `The event could not be created`,
   thereIsProbErrorMessageHeader: `There is a problem`,
-  errorValidationType: {
-    one: `textField`,
-    two: `radioOptions`,
-    three: `checkBox`,
-    four: `dropDown`,
-    five: `dateField`,
-    six: `dateRadioOption`,
-    seven: `moneyField`
-  },
+  errorValidationType: { one: `textField`, two: `radioOptions`, three: `checkBox`, four: `dropDown`, five: `dateField`, six: `dateRadioOption`, seven :`moneyField` },
   errorValidationField: {
-    errorRadioOption: [
-      {
-        type: `none`,
-        input: ``,
-        errMessage: `Do you want to add, edit or cancel a hearing? is required`,
-        errInlineMessage: `Do you want to add, edit or cancel a hearing? is required`
-      },
+    errorRadioOption1: [
+      { type: `none`, input: ``, errMessage: `Which type of hearing is this? is required`, errInlineMessage: `Which type of hearing is this? is required` },
     ],
-  }
+    errorRadioOption2: [
+      { type: `none`, input: ``, errMessage: `Which type of application has the applicant made? is required`, errInlineMessage: `Which type of application has the applicant made? is required` },
+    ],
+    errorDateField: [
+      { type: `empty`, input: `empty`, errMessage: `What date was the application received? is required`,errInlineMessage: `What date was the application received? is required`},
+      { type: `invalid`, input: `invalid`, errMessage: `What date was the application received? is not valid `,errInlineMessage: `The data entered is not valid for What date was the application received?`},
+      { type: `future`, input: 'future', errMessage: `Date the application was received must be in the past`, errInlineMessage: `The data entered is not valid for What date was the application received?` },
+      { type: `present`, input: 'present', errMessage: `Date the application was received must be in the past`, errInlineMessage: `The data entered is not valid for What date was the application received?` },
+      { type: `past`, input: 'past', errMessage: ``, errInlineMessage: `` },
+      
+    ],
+    errorTextField: [
+      { type: `moreThanMax`, input: 505, errMessage: `In ‘Which categories apply’, you have entered more than the maximum number of characters (500)` },
+      { type: `empty`, input: `EMPTY`, errMessage: `Which categories apply? is required `},
+    ]
+  },
 }

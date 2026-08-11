@@ -54,6 +54,7 @@ test.describe('Case management - Case Worker Manage Hearing @nightly', async () 
     let typeOfHearing = addHearing.typeOfHearingOption[0]
     await performAction('selectAnEvent', {eventType: caseSummary.manageHearing});
     await performValidation('mainHeader', addHearing.mainHeader);
+    await performAction('errorValidationEnterAddAHearingPage', addHearing.errorValidation);
     await performAction('addAHearing', {
       hearingQuestion: addHearing.typeOfHearingQuestion, option: typeOfHearing,
       wordingQuestion: addHearing.wordingForHearingNoticeTextLabel, option1: addHearing.wordingForHearingHiddenOption,

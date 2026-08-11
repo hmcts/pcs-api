@@ -58,6 +58,7 @@ export class ActionCMRegistry {
     ['errorValidationHearingDatePage', new ErrorValidationAction()],
     ['errorValidationApplicationFeePage', new ErrorValidationAction()],
     ['errorValidationApplicationConsentAndNotice', new ErrorValidationAction()],
+    ['errorValidationEnterAddAHearingPage', new ErrorValidationAction()],
     ['inputErrorValidation', new CaseManagementAction()],
     ['reTryOnCallBackError', new RetryOnCallBackError()],
 
