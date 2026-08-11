@@ -20,6 +20,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 import java.util.List;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.hearing.Hearing.DAY_LABEL;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.hearing.Hearing.HOUR_LABEL;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.hearing.Hearing.MINUTE_LABEL;
 
@@ -103,6 +104,9 @@ public class HearingDetailsPage implements CcdPageConfiguration, CcdPage {
                 )
         );
 
+        integerValidationService.validateNumberIsNotNegative(hearing.getDurationDays(), DAY_LABEL, validationErrors);
+        integerValidationService.validateNumberIsNotNegative(hearing.getDurationHours(), HOUR_LABEL, validationErrors);
+        integerValidationService.validateNumberIsNotNegative(hearing.getDurationMinutes(), MINUTE_LABEL, validationErrors);
         integerValidationService.validateFloatIsInteger(hearing.getDurationHours(), HOUR_LABEL, validationErrors);
         integerValidationService.validateFloatIsInteger(hearing.getDurationMinutes(), MINUTE_LABEL, validationErrors);
 

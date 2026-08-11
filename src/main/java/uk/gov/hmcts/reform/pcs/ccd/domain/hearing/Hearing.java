@@ -28,6 +28,8 @@ public class Hearing {
     @CCD(ignore = true)
     public static final String ADDITIONAL_INFORMATION_LABEL = "Enter any additional information";
     @CCD(ignore = true)
+    public static final String DAY_LABEL = "Days";
+    @CCD(ignore = true)
     public static final String HOUR_LABEL = "Hour";
     @CCD(ignore = true)
     public static final String MINUTE_LABEL = "Minute";
@@ -55,19 +57,22 @@ public class Hearing {
     private LocalDateTime date;
 
     @CCD(
-        label = "Days",
+        label = DAY_LABEL,
+        min = 0,
         max = 100
     )
     private Integer durationDays;
 
     @CCD(
         label = HOUR_LABEL,
+        min = 0,
         max = 23
     )
     private Float durationHours;
 
     @CCD(
         label = MINUTE_LABEL,
+        min = 0,
         max = 59
     )
     private Float durationMinutes;

@@ -72,6 +72,7 @@ public class HearingDetailsPageTest extends BasePageTest {
         Hearing hearing = Hearing.builder()
             .notes(notes)
             .additionalInformation(additionalInformation)
+            .durationDays(1)
             .durationHours(1f)
             .durationMinutes(30f)
             .build();
@@ -94,6 +95,9 @@ public class HearingDetailsPageTest extends BasePageTest {
                 && f.fieldLabel.equals("Enter any additional information")
                 && f.maxCharacters == 500)
         );
+        verify(integerValidationService).validateNumberIsNotNegative(1, "Days", new ArrayList<>());
+        verify(integerValidationService).validateNumberIsNotNegative(1f, "Hour", new ArrayList<>());
+        verify(integerValidationService).validateNumberIsNotNegative(30f, "Minute", new ArrayList<>());
         verify(integerValidationService).validateFloatIsInteger(1f, "Hour", new ArrayList<>());
         verify(integerValidationService).validateFloatIsInteger(30f, "Minute", new ArrayList<>());
         verify(hearingService).storeDraftHearingForm(caseData);
