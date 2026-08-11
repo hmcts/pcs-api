@@ -513,7 +513,8 @@ public class TestingSupportController {
 
     @Operation(
         summary = "Reschedule Camunda request",
-        description = "Reschedules Camunda requests in the db scheduler to be triggered immediately"
+        description = "Reschedules all scheduled Camunda requests within the specified window from now to be "
+            + "triggered immediately"
     )
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Camunda request tasks rescheduled successfully"),
@@ -521,7 +522,7 @@ public class TestingSupportController {
         @ApiResponse(responseCode = "403", description = "Forbidden - Invalid or missing service authorization token"),
         @ApiResponse(responseCode = "500", description = "Internal server error")
     })
-    @PostMapping("/reschedule-camunda-request")
+    @PostMapping("/reschedule-camunda-requests")
     public ResponseEntity<String> rescheduleCamundaRequest(
         @Parameter(
             description = "Days to add to current time (default: 0)",
