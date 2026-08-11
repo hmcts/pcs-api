@@ -19,14 +19,14 @@ public enum DocumentUploadCategory {
         "Yes, the documents I’m uploading relate to an application submitted on %s",
         true),
     MAIN_CLAIM_OR_COUNTERCLAIM(
-        "No, the documents I’m uploading relate to the claim or counterclaim",
+        "No, the documents I’m uploading relate to the main claim or counterclaim",
         false);
 
     private final String label;
     private final boolean requiresDate;
 
     private static final DateTimeFormatter LABEL_DATE_FORMAT =
-        DateTimeFormatter.ofPattern("EEEE d MMM uuuu", Locale.UK);
+        DateTimeFormatter.ofPattern("EEEE d MMMM uuuu", Locale.UK);
 
     public String getLabel(LocalDateTime dateTime) {
         if (!requiresDate) {
