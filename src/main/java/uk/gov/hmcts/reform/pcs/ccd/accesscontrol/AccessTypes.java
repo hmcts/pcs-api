@@ -111,8 +111,4 @@ public enum AccessTypes {
         this.groupAccessEnabled = groupAccessEnabled;
         this.caseAccessGroupIdTemplate = caseAccessGroupIdTemplate;
     }
-
-    public String getAccessTypeId() {
-        return name();
-    }
 }
