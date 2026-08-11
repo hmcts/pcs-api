@@ -99,9 +99,10 @@ class CaseFlagServiceTest {
         // Given
         UUID id = UUID.randomUUID();
         PcsCaseEntity pcsCaseEntity = createPcsCaseEntity(id);
-        List<ListValue<FlagDetail>> flagDetails = new ArrayList<>();
-        flagDetails.addAll(createFlagDetail(id.toString(),"CF0008", "Power of arrest with Police ",
-                                            "Police arrest inactive", "Inactive"));
+        List<ListValue<FlagDetail>> flagDetails = new ArrayList<>(createFlagDetail(
+            id.toString(), "CF0008", "Power of arrest with Police ",
+            "Police arrest inactive", "Inactive"
+        ));
         Flags incomingFlags = Flags.builder()
             .visibility(FlagVisibility.INTERNAL)
             .details(flagDetails)
