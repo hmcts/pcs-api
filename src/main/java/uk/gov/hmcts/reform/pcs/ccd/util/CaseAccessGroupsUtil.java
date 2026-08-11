@@ -9,7 +9,7 @@ import uk.gov.hmcts.ccd.sdk.type.ListValue;
 
 import java.util.List;
 import java.util.UUID;
-import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.AccessTypes;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.GroupAccessType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 
 /**
@@ -51,9 +51,9 @@ public final class CaseAccessGroupsUtil {
                 .orElseThrow(() -> new IllegalArgumentException(
                     "No valid organisation profile id found for organisation " + organisationId));
 
-            Arrays.stream(AccessTypes.values())
+            Arrays.stream(GroupAccessType.values())
                 .filter(accessType -> accessType.getOrganisationProfileId().equals(orgProfileId))
-                .map(AccessTypes::getCaseAccessGroupIdTemplate).findFirst()
+                .map(GroupAccessType::getCaseAccessGroupIdTemplate).findFirst()
                 .ifPresent(template -> {
                     CaseAccessGroup group = new CaseAccessGroup(
                         CCD_ALL_CASES_ACCESS,

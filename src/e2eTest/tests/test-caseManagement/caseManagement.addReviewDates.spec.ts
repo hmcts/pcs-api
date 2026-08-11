@@ -18,7 +18,6 @@ test.beforeEach(async ({ page, context }) => {
   await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
   await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayloadCaseFileView });
   await performAction('getAddressInfo', { data: createCaseApiData.createCasePayload });
-  console.log(`Case created with case number: ${process.env.CASE_NUMBER}`);
   await performAction('updatePaymentAPI');
   await performAction('getCaseAPI', 'Link Solicitor');
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);

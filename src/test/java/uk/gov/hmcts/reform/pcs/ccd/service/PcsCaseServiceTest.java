@@ -113,7 +113,7 @@ class PcsCaseServiceTest {
         when(addressMapper.toAddressEntityAndNormalise(propertyAddress)).thenReturn(propertyAddressEntity);
 
         // When
-        underTest.createCase(CASE_REFERENCE, propertyAddress, legislativeCountry,  Optional.empty());
+        underTest.createCase(CASE_REFERENCE, propertyAddress, legislativeCountry);
 
         // Then
         verify(pcsCaseRepository).save(pcsCaseEntityCaptor.capture());

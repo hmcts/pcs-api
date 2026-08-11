@@ -105,6 +105,12 @@ public enum State {
             RasValidationAccess.class, GlobalSearchAccess.class},
         hint = "${caseTitleMarkdown}"
     )
-    BREATHING_SPACE
+    BREATHING_SPACE,
+
+    @CCD(
+        label = "Closed",
+        hint = "${caseTitleMarkdown}"
+    )
+    CLOSED
 }
 

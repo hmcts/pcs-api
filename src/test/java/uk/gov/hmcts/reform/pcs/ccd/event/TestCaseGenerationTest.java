@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.pcs.ccd.event;
 
-import java.util.Optional;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -200,7 +199,7 @@ class TestCaseGenerationTest {
 
         // Then
         InOrder inOrder = inOrder(pcsCaseService, resumePossessionClaim);
-        inOrder.verify(pcsCaseService).createCase(caseReference, address, country, Optional.empty());
+        inOrder.verify(pcsCaseService).createCase(caseReference, address, country);
         inOrder.verify(resumePossessionClaim).submitClaim(caseReference, loadedCase);
     }
 

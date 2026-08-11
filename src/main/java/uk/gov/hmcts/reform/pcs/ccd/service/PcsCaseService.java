@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.pcs.ccd.service;
 
-import java.util.Optional;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -41,9 +40,8 @@ public class PcsCaseService {
     private final PostCodeCourtService postCodeCourtService;
     private final LocationReferenceService locationReferenceService;
 
-    public PcsCaseEntity createCase(long caseReference,
-                                    AddressUK propertyAddress,
-                                    LegislativeCountry legislativeCountry, Optional<String> organisationId) {
+    public PcsCaseEntity createCase(long caseReference, AddressUK propertyAddress,
+                                    LegislativeCountry legislativeCountry) {
 
         Objects.requireNonNull(propertyAddress, "Property address must be provided to create a case");
         Objects.requireNonNull(legislativeCountry, "Legislative country must be provided to create a case");
@@ -52,7 +50,6 @@ public class PcsCaseService {
         pcsCaseEntity.setCaseReference(caseReference);
         pcsCaseEntity.setPropertyAddress(addressMapper.toAddressEntityAndNormalise(propertyAddress));
         pcsCaseEntity.setLegislativeCountry(legislativeCountry);
-        organisationId.ifPresent(pcsCaseEntity::setOrganisationId);
 
         return pcsCaseRepository.save(pcsCaseEntity);
     }

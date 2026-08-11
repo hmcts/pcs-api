@@ -120,8 +120,6 @@ public class PcsCaseEntity {
     @Builder.Default
     private List<CaseFlagEntity> caseFlags = new ArrayList<>();
 
-    private String organisationId;
-
     public ClaimEntity getMainClaim() {
         return !claims.isEmpty() ? claims.getFirst() : null;
     }
