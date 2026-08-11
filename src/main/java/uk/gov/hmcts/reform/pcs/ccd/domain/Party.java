@@ -42,6 +42,8 @@ public class Party {
 
     private VerticalYesNo phoneNumberProvided;
 
+    private String textMessageNumber;
+
     private LocalDate dateOfBirth;
 
     private LegalRepresentative legalRepresentative;

@@ -408,6 +408,69 @@ class ClaimResponseServiceTest {
         assertThat(testParty.getAddressSameAsProperty()).isEqualTo(VerticalYesNo.YES);
     }
 
+    @Test
+    void shouldSaveTextMessageNumberWhenOptedInToText() {
+        // Given
+        final PossessionClaimResponse response = buildResponse(
+            Party.builder()
+                .phoneNumber("07123456789")
+                .textMessageNumber("07700900982")
+                .build(),
+            DefendantResponses.builder()
+                .contactByPhone(VerticalYesNo.YES)
+                .contactByText(VerticalYesNo.YES)
+                .build()
+        );
+
+        // When
+        underTest.saveDraftDataForParty(response, testParty);
+
+        // Then
+        assertThat(testParty.getTextMessageNumber()).isEqualTo("07700900982");
+        assertThat(testParty.getContactPreferences().getContactByText()).isEqualTo(VerticalYesNo.YES);
+    }
+
+    @Test
+    void shouldClearTextMessageNumberWhenTextAnswerIsNo() {
+        // Given a party that already has a stored mobile number
+        testParty.setTextMessageNumber("07700900982");
+
+        final PossessionClaimResponse response = buildResponse(
+            Party.builder().phoneNumber("07123456789").build(),
+            DefendantResponses.builder()
+                .contactByPhone(VerticalYesNo.YES)
+                .contactByText(VerticalYesNo.NO)
+                .build()
+        );
+
+        // When
+        underTest.saveDraftDataForParty(response, testParty);
+
+        // Then
+        assertThat(testParty.getTextMessageNumber()).isNull();
+    }
+
+    @Test
+    void shouldClearTextMessageNumberWhenTelephoneChangedToNo() {
+        // Given a party that already has a stored mobile number
+        testParty.setTextMessageNumber("07700900982");
+
+        // Telephone is now No, which also disables text messaging
+        final PossessionClaimResponse response = buildResponse(
+            Party.builder().build(),
+            DefendantResponses.builder()
+                .contactByPhone(VerticalYesNo.NO)
+                .contactByText(VerticalYesNo.YES)
+                .build()
+        );
+
+        // When
+        underTest.saveDraftDataForParty(response, testParty);
+
+        // Then
+        assertThat(testParty.getTextMessageNumber()).isNull();
+    }
+
     private PossessionClaimResponse buildResponse(Party party, DefendantResponses defendantResponses) {
         return PossessionClaimResponse.builder()
             .defendantContactDetails(DefendantContactDetails.builder().party(party).build())
