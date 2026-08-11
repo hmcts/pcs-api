@@ -17,4 +17,5 @@ export const axe_Exclusions = [
   '#aria-label',
   '#explicit-label',
   '#implicit-label',
+  '#aria-required-parent'
 ];

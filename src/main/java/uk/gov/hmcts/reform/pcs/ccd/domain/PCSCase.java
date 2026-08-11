@@ -33,10 +33,9 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.PartyVisibleTabAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.RasValidationAccess;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.EnterGenAppRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.DashboardData;
-import uk.gov.hmcts.reform.pcs.ccd.domain.documentupload.CaseworkerDocument;
-import uk.gov.hmcts.reform.pcs.ccd.domain.documentupload.DocumentUploadDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.documentamend.DocumentAmendDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.documentremoval.DocumentRemovalDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.documentupload.CaseworkerDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.documentupload.DocumentUploadDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.CitizenGenAppRequest;
@@ -500,7 +499,7 @@ public class PCSCase {
     @JsonUnwrapped
     private DocumentUploadDetails documentUploadDetails;
 
-    @JsonUnwrapped(prefix = "documentAmend_")
+    @JsonUnwrapped
     private DocumentAmendDetails documentAmendDetails;
 
     @JsonUnwrapped(prefix = "documentRemoval_")

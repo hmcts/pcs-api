@@ -10,70 +10,82 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.documentamend.DocumentAmendDetails;
 enum DocumentAmendCategoryField {
     STATEMENTS_OF_CASE(
         CaseFileCategory.STATEMENTS_OF_CASE,
-        "statementsOfCase",
+        "StatementsOfCaseDocuments",
+        "StatementsOfCaseEmpty",
         PCSCase::getStatementsOfCaseDocuments,
         DocumentAmendDetails::getStatementsOfCaseEmpty
     ),
     PROPERTY_DOCUMENTS(
         CaseFileCategory.PROPERTY_DOCUMENTS,
-        "propertyDocuments",
+        "PropertyDocuments",
+        "PropertyDocumentsEmpty",
         PCSCase::getPropertyDocuments,
         DocumentAmendDetails::getPropertyDocumentsEmpty
     ),
     EVIDENCE(
         CaseFileCategory.EVIDENCE,
-        "evidence",
+        "EvidenceDocuments",
+        "EvidenceEmpty",
         PCSCase::getEvidenceDocuments,
         DocumentAmendDetails::getEvidenceEmpty
     ),
     HEARING_DOCUMENTS(
         CaseFileCategory.HEARING_DOCUMENTS,
-        "hearingDocuments",
+        "HearingDocuments",
+        "HearingDocumentsEmpty",
         PCSCase::getHearingDocuments,
         DocumentAmendDetails::getHearingDocumentsEmpty
     ),
     ORDERS_AND_NOTICE_OF_HEARINGS(
         CaseFileCategory.ORDERS_AND_NOTICE_OF_HEARINGS,
-        "ordersAndNoticeOfHearings",
+        "OrdersAndNoticeOfHearingsDocuments",
+        "OrdersAndNoticeOfHearingsEmpty",
         PCSCase::getOrdersAndNoticeOfHearingsDocuments,
         DocumentAmendDetails::getOrdersAndNoticeOfHearingsEmpty
     ),
     APPLICATIONS(
         CaseFileCategory.APPLICATIONS,
-        "applications",
+        "ApplicationsDocuments",
+        "ApplicationsEmpty",
         PCSCase::getApplicationsDocuments,
         DocumentAmendDetails::getApplicationsEmpty
     ),
     APPEALS(
         CaseFileCategory.APPEALS,
-        "appeals",
+        "AppealsDocuments",
+        "AppealsEmpty",
         PCSCase::getAppealsDocuments,
         DocumentAmendDetails::getAppealsEmpty
     ),
     CORRESPONDENCE(
         CaseFileCategory.CORRESPONDENCE,
-        "correspondence",
+        "CorrespondenceDocuments",
+        "CorrespondenceEmpty",
         PCSCase::getCorrespondenceDocuments,
         DocumentAmendDetails::getCorrespondenceEmpty
     ),
     UNCATEGORISED_DOCUMENTS(
         CaseFileCategory.UNCATEGORISED_DOCUMENTS,
-        "uncategorisedDocuments",
+        "UncategorisedDocuments",
+        "UncategorisedDocumentsEmpty",
         PCSCase::getUncategorisedDocuments,
         DocumentAmendDetails::getUncategorisedDocumentsEmpty
     );
 
     final CaseFileCategory category;
-    final String idPrefix;
+    final String documentsFieldId;
+    final String emptyFieldId;
     final TypedPropertyGetter<PCSCase, DynamicList> documentsGetter;
     final TypedPropertyGetter<DocumentAmendDetails, YesOrNo> emptyGetter;
 
     DocumentAmendCategoryField(CaseFileCategory category,
-                          String idPrefix,
+                          String documentsFieldId,
+                          String emptyFieldId,
                           TypedPropertyGetter<PCSCase, DynamicList> documentsGetter,
                           TypedPropertyGetter<DocumentAmendDetails, YesOrNo> emptyGetter) {
         this.category = category;
-        this.idPrefix = idPrefix;
+        this.documentsFieldId = documentsFieldId;
+        this.emptyFieldId = emptyFieldId;
         this.documentsGetter = documentsGetter;
         this.emptyGetter = emptyGetter;
     }
