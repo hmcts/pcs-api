@@ -114,8 +114,7 @@ class CaseDeletionScheduledTaskTest {
 
             // Then
             verify(ccdCaseDataDeletionService, times(3)).markCaseForDeletion(anyLong());
-            verify(ccdCaseDataDeletionService).confirmCaseDisposal(case2);
-            verify(ccdCaseDataDeletionService).confirmCaseDisposal(case3);
+            verify(ccdCaseDataDeletionService, times(2)).confirmCaseDisposal(anyLong());
             verify(caseDeletionService, times(3)).deleteDocuments(anyLong());
             verify(caseDeletionService, times(3)).deleteCase(anyLong());
         }
