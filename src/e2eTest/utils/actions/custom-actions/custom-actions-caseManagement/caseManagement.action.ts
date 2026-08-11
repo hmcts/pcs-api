@@ -1,29 +1,26 @@
 
 import { expect, Page } from '@playwright/test';
 import { IAction, actionData, actionRecord } from '@utils/interfaces';
-import { createCaseApiData } from '@data/api-data';
 import { getCaseTypeId } from '@utils/common/caseType.utils';
 import { performAction, performValidation } from '@utils/controller-caseManagement';
 import { VERY_LONG_TIMEOUT } from 'playwright.config';
 import { caseSummary, home } from '@data/page-data';
-import {generateRandomString} from "@utils/common/string.utils";
-import {performActions} from "@utils/controller";
 import {
-  addReviewDates, confirmReviewDatesAdded, changeCaseState, confirmCaseStateChange, enterGenappApplication, enterGenAppapplicationFee,
+  changeCaseState, confirmCaseStateChange, confirmUpload, enterGenappApplication, enterGenAppapplicationFee,
+  addReviewDates, confirmReviewDatesAdded, enterGenAppConfirmation,
   enterGenAppConsentAndNotice, enterGenAppHearingDate,
-  enterGenAppPreferApplicationToJudge, selectDocument
+  enterGenAppPreferApplicationToJudge, selectDocument,
+  uploadADocument
 } from '@data/page-data-figma/page-data-caseManagement-figma';
 import { caseInfo } from '../createCaseAPI.action';
 import { CaseManagementCommonUtils } from './caseManagementUtils.action';
+import path from "path";
+import {performActions} from "@utils/controller";
+import {generateRandomString} from "@utils/common/string.utils";
 
 
-export const addressInfo = {
-  buildingStreet: createCaseApiData.createCasePayload.propertyAddress.AddressLine1,
-  addressLine2: createCaseApiData.createCasePayload.propertyAddress.AddressLine2,
-  townCity: createCaseApiData.createCasePayload.propertyAddress.PostTown,
-  engOrWalPostcode: createCaseApiData.createCasePayload.propertyAddress.PostCode
-};
-const cyaMap = new Map<string, string>();
+export let addressInfo: { buildingStreet: string; addressLine2: string; townCity: string; engOrWalPostcode: string; };
+
 export let allPartyDetails: string[] = [];
 
 export class CaseManagementAction implements IAction {
@@ -40,9 +37,16 @@ export class CaseManagementAction implements IAction {
       ['enterApplicationDetails', () => this.enterApplicationDetails(fieldName as actionRecord)],
       ['confirmIfCourtHearingInNext14Days', () => this.confirmIfCourtHearingInNext14Days(fieldName as actionRecord)],
       ['enterApplicationFeeDetails', () => this.enterApplicationFeeDetails(fieldName as actionRecord)],
+      ['selectDynamicAppAndPartyDocRelatedTo', () => this.selectDynamicAppAndPartyDocRelatedTo(fieldName as actionRecord)],
+      ['uploadADocument', () => this.uploadADocument(page, fieldName as actionRecord)],
+      ['confirmUpload', () => this.confirmUpload(fieldName as actionRecord)],
       ['enterApplicationConsentAndNotice', () => this.enterApplicationConsentAndNotice(fieldName as actionRecord)],
+      ['uploadRelativeEvidence',() => this.uploadRelativeEvidence(fieldName as actionRecord)],
+      ['uploadADocument',() => this.uploadADocument(page, fieldName as actionRecord)],
       ['verifyReferToJudge', () => this.verifyReferToJudge(fieldName as actionRecord)],
+      ['verifyGenAppConfirm', () => this.verifyGenAppConfirm()],
       ['inputErrorValidation', () => this.inputErrorValidation(page, fieldName as actionRecord)],
+      ['getAddressInfo', () => this.getAddressInfo(fieldName as actionRecord)],
 
     ]);
     const actionToPerform = actionsMap.get(action);
@@ -165,20 +169,16 @@ export class CaseManagementAction implements IAction {
     }
 
     allPartyDetails = [...new Set(originalDefendantDetails.filter(n => n.trim().toLowerCase() !== "null null")),
-      ...originalDefendantDetails.filter(n => n.trim().toLowerCase() === "null null")
+    ...originalDefendantDetails.filter(n => n.trim().toLowerCase() === "null null")
     ];
     allPartyDetails.push(`${payLoad.claimantName} - Claimant 1`);
   }
 
   private async enterApplicationDetails(appDetails: actionRecord) {
     let date = CaseManagementCommonUtils.getRandomDate(appDetails.dateType as string);
-    await performAction('clickRadioButton', {question: appDetails.question1, option: appDetails.option1});
-
-    await performActions('Enter Date',
-      ['inputText', appDetails.label1, date.split('/')[0]],
-      ['inputText', appDetails.label2, date.split('/')[1]],
-      ['inputText', appDetails.label3, date.split('/')[2]]);
-    await performAction('clickRadioButton', {question: appDetails.question2, option: appDetails.option2});
+    await performAction('clickRadioButton', { question: appDetails.question1, option: appDetails.option1 });
+    await performAction('inputDate', appDetails.label1 as string, appDetails.date);
+    await performAction('clickRadioButton', { question: appDetails.question2, option: appDetails.option2 });
     if (appDetails.option2 === 'Something else') {
       performAction('inputText', appDetails.label, CaseManagementCommonUtils.generateRandomString(appDetails.input as number))
     }
@@ -231,7 +231,7 @@ export class CaseManagementAction implements IAction {
   }
 
   private async enterApplicationConsentAndNotice(confirmApplicationConsent: actionRecord) {
-    await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid});
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', {
       elementType: 'paragraph',
       text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
@@ -249,7 +249,40 @@ export class CaseManagementAction implements IAction {
     await performAction('reTryOnCallBackError', enterGenAppConsentAndNotice.continueButton, confirmApplicationConsent.nextPage as string);
   }
 
-  private async verifyReferToJudge(referToJudgeData: actionRecord) {
+  private async uploadADocument(page: Page, upload: actionRecord): Promise<void> {
+    const fileInput = page.locator('input[type="file"].form-control.bottom-30');
+    const filePath = path.resolve(__dirname, '../../../../data/inputFiles', upload.file as string);
+    await fileInput.last().setInputFiles(filePath);
+    let timeout = 6000;
+    await performValidation('waitUntilElementDisappears', 'Uploading...');
+    await expect(async () => {
+      const rateLimit = page.locator(`label:text-is("Your request was rate limited. Please wait a few seconds before retrying your document upload"),
+                                           span:text-is("Your request was rate limited. Please wait a few seconds before retrying your document upload")`);
+      let limit = await rateLimit.count();
+
+      while (limit > 0) {
+        timeout *= 2;
+        await page.waitForTimeout(timeout);
+        await fileInput.last().setInputFiles(filePath);
+        await performValidation('waitUntilElementDisappears', 'Uploading...');
+        limit = await rateLimit.count();
+      }
+    }).toPass({
+      timeout: VERY_LONG_TIMEOUT,
+    });
+    await page.waitForTimeout(timeout);
+  }
+
+  private async uploadRelativeEvidence(uploadEvidence: actionRecord): Promise<void> {
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
+    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
+    if (uploadEvidence.files) {
+      await performAction('uploadFile', { files: uploadEvidence.files, label: uploadEvidence.label });
+    }
+    await performAction('reTryOnCallBackError', enterGenAppPreferApplicationToJudge.continueButton, uploadEvidence.nextPage as string);
+  }
+
+    private async verifyReferToJudge(referToJudgeData: actionRecord) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid});
     await performValidation('text', {
       elementType: 'paragraph',
@@ -257,6 +290,109 @@ export class CaseManagementAction implements IAction {
     });
     await performValidation('mainHeader', enterGenAppPreferApplicationToJudge.mainHeader);
     await performAction('reTryOnCallBackError', enterGenAppPreferApplicationToJudge.continueButton, referToJudgeData.nextPage as string);
+  }
+
+  private async verifyGenAppConfirm(): Promise<void> {
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
+    await performValidation('text', {
+      elementType: 'paragraph',
+      text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
+    });
+    await performValidation('text', { elementType: 'inlineText', text: 'Case number: ' + caseInfo.fid });
+    await performValidation('text', {
+      elementType: 'inlineText',
+      text: `${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
+    });
+    await performValidation('mainHeader', enterGenAppConfirmation.mainHeader);
+    await performValidation('text', { elementType: 'inlineText', text: enterGenAppConfirmation.applicationEnteredText });
+    await performAction('clickButton', enterGenAppConfirmation.closeAndReturnToCaseOverviewButton);
+  }
+
+
+  private async selectDynamicAppAndPartyDocRelatedTo(selectApp: actionRecord) {
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
+    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
+    await performAction('clickRadioButton', {
+      question: selectApp.question,
+      option: selectApp.option,
+    });
+    if (selectApp.option === 'Not related to an application or counterclaim') {
+      await performAction('select', selectApp.dropQn, selectApp.selectOption);
+    }
+    if (selectApp.date) {
+      await performAction('inputDate', selectApp.label as string, selectApp.date);
+    }
+
+    await performAction('clickRadioButton', { question: selectApp.question1, option: selectApp.option1 });
+    await performAction('reTryOnCallBackError', uploadADocument.continueButton, selectApp.nextPage as string);
+  }
+
+  private async confirmUpload(confirm: actionRecord): Promise<void> {
+    let submitPayLoad = confirm.submitPayload as Record<string, any>;
+    let formattedDate;
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
+    await performValidation('text', {
+      elementType: 'paragraph',
+      text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
+    });
+    const baseName = String(confirm.fileName).replace(/\.pdf$/i, '');
+    const gaNumber = String(confirm.app).match(/\bGA\d+\b/i)?.[0] ?? '';
+    if (confirm.fileDate) {
+      const [day, month, year] = String(confirm.fileDate).split('/');
+      formattedDate = `${day.padStart(2, '0')}${month.padStart(2, '0')}${year}`;
+    } else {
+      formattedDate = '';
+    }
+    const role = String(confirm.party).split(' - ')[1] ?? '';
+
+    const uploadedFileName = `${baseName} ${formattedDate} ${gaNumber} - ${role}`;
+    await performValidation('text', { elementType: 'inlineText', text: 'Case number #' + caseInfo.fid });
+    await performValidation('text', {
+      elementType: 'inlineText',
+      text: `${addressInfo.buildingStreet}, ${addressInfo.addressLine2}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
+    });
+    await performValidation('text', { elementType: 'inlineText', text: `‘${uploadedFileName}’ uploaded` });
+    await performValidation('text', { elementType: 'inlineText', text: `${submitPayLoad.claimantName} vs ${await this.getDefendantClaimDetails(submitPayLoad)}` });
+    await performValidation('mainHeader', confirmUpload.mainHeader);
+    await performAction('clickButton', confirmUpload.closeAndReturnToCaseOverviewButton);
+  }
+
+  private async getDefendantClaimDetails(defendantsDetails: actionRecord): Promise<string> {
+
+    let originalDefendantDetails: string[] = [];
+    const payLoad = defendantsDetails as Record<string, any>;
+    if (payLoad.defendant1.nameKnown === 'YES') {
+      originalDefendantDetails.push(
+        `${payLoad.defendant1.firstName} ${payLoad.defendant1.lastName}`
+      );
+    } else {
+      originalDefendantDetails.push(
+        `persons unknown`
+      );
+    }
+
+    if (payLoad.addAnotherDefendant === 'YES') {
+
+      for (const defendant of payLoad.additionalDefendants) {
+        if (defendant.value.nameKnown === 'YES') {
+          originalDefendantDetails.push(`${defendant.value.firstName} ${defendant.value.lastName}`);
+        } else {
+          originalDefendantDetails.push(
+            `persons unknown`
+          );
+        }
+      }
+    }
+
+    let defendantText: string;
+
+    if (originalDefendantDetails.length > 2) {
+      defendantText = `${originalDefendantDetails[0]}, ${originalDefendantDetails[1]} and Others`;
+    } else {
+      defendantText = originalDefendantDetails.join(', ');
+    }
+    return defendantText;
+
   }
 
   private async inputErrorValidation(page: Page, validationArr: actionRecord) {
@@ -289,6 +425,7 @@ export class CaseManagementAction implements IAction {
             await performAction('clickButton', validationArr.button);
             await expect(async () => {
               await performAction('clickButton', validationArr.button);
+              await performValidation('inputError', !validationArr?.label ? validationArr.dropQn : validationArr.label, item.errInlineMessage);
               await performValidation('errorMessage', !validationArr?.header ? validationArr.header = 'There is a problem' : validationArr.header, item.errMessage);
             }).toPass({
               timeout: VERY_LONG_TIMEOUT,
@@ -372,6 +509,15 @@ export class CaseManagementAction implements IAction {
             });
             break;
 
+          case 'uploadADocument':
+            await expect(async () => {
+              await performAction('clickButton', validationArr.button);
+              await performValidation('errorMessage', !validationArr?.header ? validationArr.header = 'There is a problem' : validationArr.header, item.errMessage);
+            }).toPass({
+              timeout: VERY_LONG_TIMEOUT,
+            });
+            break;
+
           default:
             throw new Error(`Validation type :"${validationArr.validationType}" is not valid`);
         }
@@ -381,6 +527,17 @@ export class CaseManagementAction implements IAction {
       await performAction('removeFile');
       await page.waitForTimeout(6000);
     }
+  }
+
+  private async getAddressInfo(address: actionRecord) {
+    let createCasePayLoad = address.data as Record<string, any>;
+    addressInfo = {
+      buildingStreet: createCasePayLoad.propertyAddress.AddressLine1,
+      addressLine2: createCasePayLoad.propertyAddress.AddressLine2,
+      townCity: createCasePayLoad.propertyAddress.PostTown,
+      engOrWalPostcode: createCasePayLoad.propertyAddress.PostCode
+    };
+
   }
 }
 

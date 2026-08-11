@@ -3,7 +3,7 @@
     "bulk-print-enabled": false,
     "caseworker-events-enabled": true,
     "cui-respond-to-claim-lr-enabled": true,
-    "restrict-document-upload-types-enabled": true,
-    "release-1.2-enabled": true
+    "release-1.2-enabled": true,
+    "wales-make-a-claim-enabled": true
   }
 }

@@ -6,8 +6,8 @@ public enum FeatureFlag {
     BULK_PRINT("bulk-print-enabled", false),
     CASEWORKER_EVENTS("caseworker-events-enabled", false),
     CUI_RESPOND_TO_CLAIM_LR("cui-respond-to-claim-lr-enabled", false),
-    RESTRICT_DOCUMENT_UPLOAD_TYPES("restrict-document-upload-types-enabled", false),
-    RELEASE_1_DOT_2("release-1.2-enabled", false);
+    RELEASE_1_DOT_2("release-1.2-enabled", false),
+    WALES_MAKE_A_CLAIM("wales-make-a-claim-enabled", false);
 
     private final String key;
     private final boolean defaultValue;
