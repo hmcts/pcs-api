@@ -9,6 +9,7 @@ import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.type.DynamicListElement;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.AddPartyDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.UpdatePartyDetails;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
@@ -48,9 +49,9 @@ class StartEventHandlerTest {
     void shouldBuildPartyRadioList() {
         // Given
         PartyEntity claimantParty = PartyEntity.builder()
-            .id(UUID.randomUUID()).firstName("Jane").lastName("Doe").build();
+            .id(UUID.randomUUID()).firstName("Jane").lastName("Doe").nameKnown(VerticalYesNo.YES).build();
         PartyEntity defendantParty = PartyEntity.builder()
-            .id(UUID.randomUUID()).build();
+            .id(UUID.randomUUID()).nameKnown(VerticalYesNo.NO).build();
         PartyEntity litigationFriendParty = PartyEntity.builder().id(UUID.randomUUID()).build();
 
         ClaimEntity mainClaim = ClaimEntity.builder()
