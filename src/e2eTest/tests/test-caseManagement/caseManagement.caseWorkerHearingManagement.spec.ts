@@ -26,6 +26,7 @@ test.beforeEach(async ({ page, context }) => {
   allPartyDetails.length = 0;
   await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
   await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayloadCaseFileView });
+  await performAction('getAddressInfo', { data: createCaseApiData.createCasePayload });
   console.log(`Case created with case number: ${process.env.CASE_NUMBER}`);
   await performAction('updatePaymentAPI');
   await performAction('getCaseAPI', 'Link Solicitor');
@@ -53,7 +54,7 @@ test.afterEach(async () => {
 
 test.describe('Case management - Case Worker Manage Hearing @nightly', async () => {
   test('Case management - Case Worker Edit a hearing @CM @regression', async () => {
-    let date = CaseManagementCommonUtils.getRandomDate(editHearing.dateTypeHiddenUserInput as string);
+    let date = CaseManagementCommonUtils.getRandomDate(editHearing.dateTypeUserInput);
     await performAction('selectAnEvent', {eventType: caseSummary.manageHearing});
     await performValidation('mainHeader', manageHearing.mainHeader);
     await performAction('errorValidationManageHearing', manageHearing.errorValidation);
@@ -67,10 +68,10 @@ test.describe('Case management - Case Worker Manage Hearing @nightly', async () 
       option: editHearing.possessionFirstHearingRadioOption,
       label1: editHearing.wordingHearingNoticeLabel,
       dropDownInput: editHearing.ADJDropDownInput,
-      label2: editHearing.whenHearingQuestion,
+      whenHearingQuestion: editHearing.whenHearingQuestion,
       date: date,
       days: editHearing.daysLabel,
-      hoursLabel: editHearing.hoursLabel,
+      hourLabel: editHearing.hoursLabel,
       minutesLabel: editHearing.minutesLabel,
       label3: editHearing.hearingNotesLabel,
       question2: editHearing.hearingNotesNeededQuestion,
@@ -82,5 +83,7 @@ test.describe('Case management - Case Worker Manage Hearing @nightly', async () 
       nextPage: checkYourAnswersEditHearing.mainHeader
     });
     await performAction('clickButton', checkYourAnswersEditHearing.submitButton);
+    await performAction('confirmHearingEdited');
+    await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage hearing');
   });
 });

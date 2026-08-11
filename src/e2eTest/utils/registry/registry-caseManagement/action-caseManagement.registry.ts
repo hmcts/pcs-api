@@ -55,6 +55,7 @@ export class ActionCMRegistry {
     ['selectManageHearing', new CaseManagementAction()],
     ['editHearing', new CaseManagementAction()],
     ['verifyGenAppConfirm', new CaseManagementAction()],
+    ['confirmHearingEdited', new CaseManagementAction()],
     ['uploadRelativeEvidence', new CaseManagementAction()],
     ['errorValidationSelectDocumentPage', new ErrorValidationAction()],
     ['errorValidationChangeCaseStatePage', new ErrorValidationAction()],

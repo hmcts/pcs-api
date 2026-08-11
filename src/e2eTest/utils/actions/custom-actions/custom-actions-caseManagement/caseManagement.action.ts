@@ -5,15 +5,11 @@ import { getCaseTypeId } from '@utils/common/caseType.utils';
 import { performAction, performValidation } from '@utils/controller-caseManagement';
 import { VERY_LONG_TIMEOUT } from 'playwright.config';
 import { caseSummary, home } from '@data/page-data';
-import {generateRandomString} from "@utils/common/string.utils";
-import {performActions} from "@utils/controller";
 import {
   addReviewDates,
   confirmReviewDatesAdded,
   changeCaseState,
   confirmCaseStateChange,
-  confirmAmend,
-  confirmUpload,
   editHearing,
   enterGenappApplication,
   enterGenAppapplicationFee,
@@ -23,13 +19,15 @@ import {
   enterGenAppPreferApplicationToJudge,
   manageHearing,
   selectDocument,
-  uploadADocument
+  confirmEditHearing, confirmAmend, confirmUpload, uploadADocument
 } from '@data/page-data-figma/page-data-caseManagement-figma';
 import { caseInfo } from '../createCaseAPI.action';
 import { CaseManagementCommonUtils } from './caseManagementUtils.action';
-import path from 'path';
-export let addressInfo: { buildingStreet: string; addressLine2: string; townCity: string; engOrWalPostcode: string; };
+import path from "path";
+import {performActions} from "@utils/controller";
+import {generateRandomString} from "@utils/common/string.utils";
 
+export let addressInfo: { buildingStreet: string; addressLine2: string; townCity: string; engOrWalPostcode: string; };
 export let allPartyDetails: string[] = [];
 
 export class CaseManagementAction implements IAction {
@@ -56,6 +54,7 @@ export class CaseManagementAction implements IAction {
       ['editHearing', () => this.editHearing(fieldName as actionRecord)],
       ['selectManageHearing', () => this.selectManageHearing(fieldName as actionRecord)],
       ['verifyGenAppConfirm', () => this.verifyGenAppConfirm()],
+      ['confirmHearingEdited', () => this.confirmHearingEdited()],
       ['inputErrorValidation', () => this.inputErrorValidation(page, fieldName as actionRecord)],
       ['getAddressInfo', () => this.getAddressInfo(fieldName as actionRecord)],
       ['verifyGenAppConfirm', () => this.verifyGenAppConfirm()],
@@ -210,7 +209,6 @@ export class CaseManagementAction implements IAction {
   }
 
   private async enterApplicationFeeDetails(fee: actionRecord) {
-
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`});
     await performAction('clickRadioButton', {
@@ -303,6 +301,18 @@ export class CaseManagementAction implements IAction {
     await performAction('reTryOnCallBackError', enterGenAppPreferApplicationToJudge.continueButton, referToJudgeData.nextPage as string);
   }
 
+  private async verifyGenAppConfirm(): Promise<void> {
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
+    await performValidation('text', { elementType: 'inlineText', text: 'Case number: ' + caseInfo.fid });
+    await performValidation('text', {
+      elementType: 'inlineText',
+      text: `${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
+    });
+    await performValidation('mainHeader', enterGenAppConfirmation.mainHeader);
+    await performValidation('text', { elementType: 'inlineText', text: enterGenAppConfirmation.applicationEnteredText });
+    await performAction('clickButton', enterGenAppConfirmation.closeAndReturnToCaseOverviewButton);
+  }
+
   private async selectManageHearing(manageHearingOption: actionRecord) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid});
     await performValidation('text', {
@@ -328,10 +338,16 @@ export class CaseManagementAction implements IAction {
     });
 
     await performAction('select', editHearingData.label1, editHearingData.dropDownInput);
-   // await performAction('inputDate', editHearingData.label2 as string, editHearingData.date);
-    await performAction('inputText', editHearingData.days, CaseManagementCommonUtils.getRandomNumberAsString(1, 30));
-    await performAction('inputText', { textLabel: editHearingData.hoursLabel, index: 1 }, CaseManagementCommonUtils.getRandomNumberAsString(0, 10));
-    await performAction('inputText', { textLabel: editHearingData.minutesLabel, index: 1 }, CaseManagementCommonUtils.getRandomNumberAsString(0, 59));
+    await performAction('inputDate', editHearingData.whenHearingQuestion as string, editHearingData.date as string);
+    await performAction('inputText', editHearingData.days, CaseManagementCommonUtils.getRandomNumberAsString(1, 10));
+    await performAction('inputText', {
+      text: editHearingData.hourLabel,
+      index: 1
+    }, CaseManagementCommonUtils.getRandomNumberAsString(0, 10));
+    await performAction('inputText', {
+      text: editHearingData.minutesLabel,
+      index: 1
+    }, CaseManagementCommonUtils.getRandomNumberAsString(1, 59));
     await performAction('inputText', editHearingData.label3, CaseManagementCommonUtils.generateRandomString(editHearingData.input as number));
     await performAction('clickRadioButton', {
       question: editHearingData.question2,
@@ -348,16 +364,20 @@ export class CaseManagementAction implements IAction {
 
   }
 
-  private async verifyGenAppConfirm(): Promise<void> {
+  private async confirmHearingEdited(): Promise<void> {
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
-    await performValidation('text', { elementType: 'inlineText', text: 'Case number: ' + caseInfo.fid });
+    await performValidation('text', {
+      elementType: 'paragraph',
+      text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
+    });
+    await performValidation('text', { elementType: 'inlineText', text: 'Case number #' + caseInfo.fid });
     await performValidation('text', {
       elementType: 'inlineText',
-      text: `${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
+      text: `${addressInfo.buildingStreet}, ${addressInfo.addressLine2}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
     });
-    await performValidation('mainHeader', enterGenAppConfirmation.mainHeader);
-    await performValidation('text', { elementType: 'inlineText', text: enterGenAppConfirmation.applicationEnteredText });
-    await performAction('clickButton', enterGenAppConfirmation.closeAndReturnToCaseOverviewButton);
+    await performValidation('mainHeader',confirmEditHearing.mainHeader);
+    await performValidation('text',{  elementType: 'inlineText', text: confirmEditHearing.hearingEditedText });
+    await performAction('clickButton', confirmEditHearing.closeAndReturnToCaseOverviewButton);
   }
 
   private async selectDynamicAppAndPartyDocRelatedTo(selectApp: actionRecord) {
@@ -505,7 +525,6 @@ export class CaseManagementAction implements IAction {
             await performAction('clickButton', validationArr.button);
             await expect(async () => {
               await performAction('clickButton', validationArr.button);
-              await performValidation('inputError', !validationArr?.label ? validationArr.dropQn : validationArr.label, item.errInlineMessage);
               await performValidation('errorMessage', !validationArr?.header ? validationArr.header = 'There is a problem' : validationArr.header, item.errMessage);
             }).toPass({
               timeout: VERY_LONG_TIMEOUT,
@@ -611,7 +630,7 @@ export class CaseManagementAction implements IAction {
 
   private async getAddressInfo(address: actionRecord) {
     let createCasePayLoad = address.data as Record<string, any>;
-    addressInfo = {
+      addressInfo = {
       buildingStreet: createCasePayLoad.propertyAddress.AddressLine1,
       addressLine2: createCasePayLoad.propertyAddress.AddressLine2,
       townCity: createCasePayLoad.propertyAddress.PostTown,

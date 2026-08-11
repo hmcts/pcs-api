@@ -11,7 +11,7 @@ export const editHearing= {
   ADJDropDownInput:`ADJ - has been adjourned until`,
   RESDropDownInput: `RES - has been restored to`,
   whenHearingQuestion: `When is the hearing?`,
-  dateTypeHiddenUserInput: 'past',
+  dateTypeUserInput: 'future',
   daysLabel: `Days`,
   hoursLabel: `Hour`,
   minutesLabel: `Minute`,
