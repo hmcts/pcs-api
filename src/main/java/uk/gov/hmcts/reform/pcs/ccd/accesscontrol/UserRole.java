@@ -5,6 +5,7 @@ import lombok.Getter;
 import uk.gov.hmcts.ccd.sdk.api.HasRole;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 
+import java.util.List;
 import java.util.Set;
 
 import static uk.gov.hmcts.ccd.sdk.api.Permission.CRU;
@@ -58,7 +59,11 @@ public enum UserRole implements HasRole {
     private final String role;
     private final Set<Permission> caseTypePermissions;
     private final RoleType roleType;
-    private final String[] accessProfiles;
+    /**
+     * The access profiles this role resolves to in RoleToAccessProfiles, overriding
+     * {@link HasRole#getAccessProfiles()}, whose default is the role's own name.
+     */
+    private final List<String> accessProfiles;
 
     UserRole(String role, Set<Permission> permissions, RoleType roleType) {
         this(role, permissions, roleType, role);
@@ -72,7 +77,7 @@ public enum UserRole implements HasRole {
         this.role = role;
         this.caseTypePermissions = permissions;
         this.roleType = roleType;
-        this.accessProfiles = accessProfiles;
+        this.accessProfiles = List.of(accessProfiles);
     }
 
     public String getCaseTypePermissions() {
