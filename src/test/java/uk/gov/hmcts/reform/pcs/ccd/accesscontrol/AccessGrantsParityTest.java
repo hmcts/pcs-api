@@ -35,7 +35,7 @@ class AccessGrantsParityTest {
 
     private Set<String> accessGrantProfiles(UserRole[] roles) {
         return Arrays.stream(roles)
-            .flatMap(role -> role.getAccessProfiles().stream())
+            .flatMap(role -> Arrays.stream(role.getAccessProfiles()))
             .collect(Collectors.toSet());
     }
 }

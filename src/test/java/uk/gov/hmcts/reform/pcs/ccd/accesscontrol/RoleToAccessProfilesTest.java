@@ -52,8 +52,7 @@ class RoleToAccessProfilesTest {
             verify(configBuilder).caseRoleToAccessProfile(argThat(
                 externalRole -> externalRole.getRole().equals(expectedExternalRole)
             ));
-            verify(accessProfileBuilder, atLeastOnce())
-                .accessProfiles(userRole.getAccessProfiles().toArray(String[]::new));
+            verify(accessProfileBuilder, atLeastOnce()).accessProfiles(userRole.getAccessProfiles());
         });
         verify(accessProfileBuilder, times(UserRole.values().length)).build();
     }
