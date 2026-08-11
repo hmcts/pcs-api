@@ -31,10 +31,12 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.InternalCaseFlagAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.InternalTabAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.PartyVisibleTabAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.RasValidationAccess;
-import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.EnterGenAppRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.AddPartyDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.EnterGenAppRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.DashboardData;
 import uk.gov.hmcts.reform.pcs.ccd.domain.documentamend.DocumentAmendDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.documentremoval.DocumentRemovalDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.documentupload.CaseworkerDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.documentupload.DocumentUploadDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.CitizenGenAppRequest;
@@ -61,6 +63,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.wales.GroundsReasonsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.PeriodicContractTermsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractGroundsForPossessionWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.UploadedDocumentChecklistType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.WalesDocuments;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
@@ -473,10 +476,22 @@ public class PCSCase {
     private VerticalYesNo wantToUploadDocuments;
 
     @CCD(
+        label = "Which documents have you uploaded as part of your claim?",
+        hint = "Select all that apply",
+        typeOverride = MultiSelectList,
+        typeParameterOverride = "UploadedDocumentChecklistType"
+    )
+    private Set<UploadedDocumentChecklistType> documentsYouveUploaded;
+
+    @CCD(
         label = "Add document",
         hint = "Upload a document to the system"
     )
     private List<ListValue<AdditionalDocument>> additionalDocuments;
+
+    @CCD(searchable = false)
+    @JsonUnwrapped()
+    private CaseworkerDocument caseworkerDocument;
 
     @CCD
     @JsonUnwrapped(prefix = "walesDocs_")
@@ -491,8 +506,38 @@ public class PCSCase {
     @JsonUnwrapped
     private DocumentUploadDetails documentUploadDetails;
 
-    @JsonUnwrapped(prefix = "documentAmend_")
+    @JsonUnwrapped
     private DocumentAmendDetails documentAmendDetails;
+
+    @JsonUnwrapped(prefix = "documentRemoval_")
+    private DocumentRemovalDetails documentRemovalDetails;
+
+    @CCD(searchable = false, typeOverride = DynamicRadioList)
+    private DynamicList statementsOfCaseDocuments;
+
+    @CCD(searchable = false, typeOverride = DynamicRadioList)
+    private DynamicList propertyDocuments;
+
+    @CCD(searchable = false, typeOverride = DynamicRadioList)
+    private DynamicList evidenceDocuments;
+
+    @CCD(searchable = false, typeOverride = DynamicRadioList)
+    private DynamicList hearingDocuments;
+
+    @CCD(searchable = false, typeOverride = DynamicRadioList)
+    private DynamicList ordersAndNoticeOfHearingsDocuments;
+
+    @CCD(searchable = false, typeOverride = DynamicRadioList)
+    private DynamicList applicationsDocuments;
+
+    @CCD(searchable = false, typeOverride = DynamicRadioList)
+    private DynamicList appealsDocuments;
+
+    @CCD(searchable = false, typeOverride = DynamicRadioList)
+    private DynamicList correspondenceDocuments;
+
+    @CCD(searchable = false, typeOverride = DynamicRadioList)
+    private DynamicList uncategorisedDocuments;
 
     @CCD(
         label = "Are you planning to make an application at the same time as your claim?",
