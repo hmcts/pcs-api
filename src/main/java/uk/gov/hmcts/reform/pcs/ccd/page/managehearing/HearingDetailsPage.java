@@ -14,11 +14,15 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.Hearing;
 import uk.gov.hmcts.reform.pcs.ccd.page.CcdPage;
 import uk.gov.hmcts.reform.pcs.ccd.service.HearingService;
+import uk.gov.hmcts.reform.pcs.ccd.service.IntegerValidationService;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
 import java.util.List;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.hearing.Hearing.DAY_LABEL;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.hearing.Hearing.HOUR_LABEL;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.hearing.Hearing.MINUTE_LABEL;
 
 @AllArgsConstructor
 @Component
@@ -26,6 +30,7 @@ public class HearingDetailsPage implements CcdPageConfiguration, CcdPage {
 
     private final TextAreaValidationService textAreaValidationService;
     private final HearingService hearingService;
+    private final IntegerValidationService integerValidationService;
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -98,6 +103,23 @@ public class HearingDetailsPage implements CcdPageConfiguration, CcdPage {
                     TextAreaValidationService.MEDIUM_TEXT_LIMIT
                 )
         );
+
+        integerValidationService.validateNumberIsNotNegative(
+            hearing.getDurationDays(), DAY_LABEL, validationErrors
+        );
+        integerValidationService.validateNumberIsNotNegative(
+            hearing.getDurationHours(), HOUR_LABEL, validationErrors
+        );
+        integerValidationService.validateNumberIsNotNegative(
+            hearing.getDurationMinutes(), MINUTE_LABEL, validationErrors
+        );
+        integerValidationService.validateFloatIsInteger(
+            hearing.getDurationHours(), HOUR_LABEL, validationErrors
+        );
+        integerValidationService.validateFloatIsInteger(
+            hearing.getDurationMinutes(), MINUTE_LABEL, validationErrors
+        );
+
         hearingService.storeDraftHearingForm(caseData);
         return textAreaValidationService.createValidationResponse(caseData, validationErrors);
     }

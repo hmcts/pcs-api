@@ -1,4 +1,4 @@
-import { LoginAction, NavigateToUrlAction, CreateCaseAPIAction } from "@utils/actions/custom-actions";
+import { LoginAction, NavigateToUrlAction, CreateCaseAPIAction, CreateCaseAction } from "@utils/actions/custom-actions";
 import { CaseManagementAction } from "@utils/actions/custom-actions/custom-actions-caseManagement";
 import { ErrorValidationAction } from "@utils/actions/custom-actions/custom-actions-caseManagement/caseManagementErrorValidation.action";
 import { LinkSolicitorAPIAction } from "@utils/actions/custom-actions/linkSolicitorAPI.action";
@@ -35,6 +35,8 @@ export class ActionCMRegistry {
     ['linkSolicitorAPI', new LinkSolicitorAPIAction()],
     ['makeAnApplicationAPI', new CreateCaseAPIAction()],
     ['manageHearingAPI', new CreateCaseAPIAction()],
+    ['validateCaseFileViewFolders', new CreateCaseAction()],
+    ['validateCaseFileViewIndividualFolder', new CreateCaseAction()],
     ['navigateToSummaryPage', new CaseManagementAction()],
     ['selectAnEvent', new CaseManagementAction()],
     ['selectDocumentToAmend', new CaseManagementAction()],
@@ -44,7 +46,10 @@ export class ActionCMRegistry {
     ['enterApplicationDetails', new CaseManagementAction()],
     ['confirmIfCourtHearingInNext14Days', new CaseManagementAction()],
     ['enterApplicationFeeDetails', new CaseManagementAction()],
+    ['selectDynamicAppAndPartyDocRelatedTo', new CaseManagementAction()],
     ['uploadADocument', new CaseManagementAction()],
+    ['confirmUpload', new CaseManagementAction()],
+    ['confirmAmend', new CaseManagementAction()],
     ['enterApplicationConsentAndNotice', new CaseManagementAction()],
     ['verifyReferToJudge', new CaseManagementAction()],
     ['selectManageHearing', new CaseManagementAction()],
@@ -60,11 +65,13 @@ export class ActionCMRegistry {
     ['errorValidationEnterGeneralAppPage', new ErrorValidationAction()],
     ['errorValidationHearingDatePage', new ErrorValidationAction()],
     ['errorValidationApplicationFeePage', new ErrorValidationAction()],
+    ['errorValidationUploadADocumentPage', new ErrorValidationAction()],
     ['errorValidationApplicationConsentAndNotice', new ErrorValidationAction()],
     ['errorValidationManageHearing', new ErrorValidationAction()],
     ['errorValidationUploadGenAppsFile', new ErrorValidationAction()],
     ['inputErrorValidation', new CaseManagementAction()],
     ['reTryOnCallBackError', new RetryOnCallBackError()],
+    ['getAddressInfo', new CaseManagementAction()],
 
   ]);
 
