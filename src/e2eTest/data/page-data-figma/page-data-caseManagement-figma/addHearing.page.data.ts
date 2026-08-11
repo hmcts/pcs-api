@@ -32,15 +32,17 @@ export const addHearing = {
     errorRadioOption1: [
       { type: `none`, input: ``, errMessage: `Which type of hearing is this? is required`, errInlineMessage: `Which type of hearing is this? is required` },
     ],
+    errorDropDown: [
+      { type: 'none', input: '', errMessage: `Wording for hearing notice is required` },
+    ],
     errorRadioOption2: [
       { type: `none`, input: ``, errMessage: `Which type of application has the applicant made? is required`, errInlineMessage: `Which type of application has the applicant made? is required` },
     ],
     errorDateField: [
-      { type: `empty`, input: `empty`, errMessage: `What date was the application received? is required`,errInlineMessage: `What date was the application received? is required`},
-      { type: `invalid`, input: `invalid`, errMessage: `What date was the application received? is not valid `,errInlineMessage: `The data entered is not valid for What date was the application received?`},
-      { type: `future`, input: 'future', errMessage: `Date the application was received must be in the past`, errInlineMessage: `The data entered is not valid for What date was the application received?` },
-      { type: `present`, input: 'present', errMessage: `Date the application was received must be in the past`, errInlineMessage: `The data entered is not valid for What date was the application received?` },
-      { type: `past`, input: 'past', errMessage: ``, errInlineMessage: `` },
+      { type: `empty`, input: `empty`, errMessage: `When is the hearing? is required`,errInlineMessage: `When is the hearing? is required`},
+      { type: `invalid`, input: `invalid`, errMessage: `The data entered is not valid for When is the hearing?` },
+     
+      { type: `future`, input: 'future', errMessage: ``, errInlineMessage: `` },
       
     ],
     errorTextField: [

@@ -216,12 +216,11 @@ export class ErrorValidationAction implements IAction {
         option:  addHearing.typeOfHearingOption[0],
         button: addHearing.continueButton
       });
-
       await performAction('inputErrorValidation', {
-        validationType: addHearing.errorValidationType.two,
-        inputArray: addHearing.errorValidationField.errorRadioOption2,
-        question: addHearing.typeOfAppQuestion,
-        option: addHearing.adjournRadioOption,
+        validationType: addHearing.errorValidationType.four,
+        inputArray: addHearing.errorValidationField.errorDropDown,
+        dropQn: addHearing.wordingForHearingNoticeTextLabel,
+        option: addHearing.wordingForHearingHiddenOption,
         button: addHearing.continueButton
       });
       await performAction('inputErrorValidation', {
@@ -229,23 +228,31 @@ export class ErrorValidationAction implements IAction {
         inputArray: addHearing.errorValidationField.errorDateField,
         header: addHearing.eventCouldNotBeCreatedErrorMessageHeader,
         header1: addHearing.thereIsProbErrorMessageHeader,
-        question: addHearing.whatDateAppReceivedQuestion,
+        question: addHearing.whenIsTheHearingQuestion,
         label1: addHearing.dayTextLabel,
         label2: addHearing.monthTextLabel,
         label3: addHearing.yearTextLabel,
         button: addHearing.continueButton
       });
-      await performAction('clickRadioButton', {
-        question: addHearing.typeOfAppQuestion,
-        option: addHearing.somethingElseRadioOption,
-      });
+      // await performAction('clickRadioButton', {
+      //   question: addHearing.typeOfAppQuestion,
+      //   option: addHearing.somethingElseRadioOption,
+      // });
+
       await performAction('inputErrorValidation', {
-        validationType: addHearing.errorValidationType.one,
-        inputArray: addHearing.errorValidationField.errorTextField,
-        header: addHearing.eventCouldNotBeCreatedErrorMessageHeader,
-        label: addHearing.whichCategoriesHiddenTextLabel,
+        validationType: addHearing.errorValidationType.two,
+        inputArray: addHearing.errorValidationField.errorRadioOption2,
+        question: addHearing.hearingNoticeQuestion,
+        option:  addHearing.hearingNoticeNoRadioOption,
         button: addHearing.continueButton
       });
+      // await performAction('inputErrorValidation', {
+      //   validationType: addHearing.errorValidationType.one,
+      //   inputArray: addHearing.errorValidationField.errorTextField,
+      //   header: addHearing.eventCouldNotBeCreatedErrorMessageHeader,
+      //   label: addHearing.whichCategoriesHiddenTextLabel,
+      //   button: addHearing.continueButton
+      // });
 
     }
   }
