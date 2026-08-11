@@ -46,6 +46,7 @@ import uk.gov.hmcts.reform.pcs.exception.ErrorCode;
 import uk.gov.hmcts.reform.pcs.exception.RedactionGate;
 import uk.gov.hmcts.reform.pcs.exception.GenAppException;
 import uk.gov.hmcts.reform.pcs.exception.ResetExceptionRedactionExtension;
+import uk.gov.hmcts.reform.pcs.exception.GenAppNotFoundException;
 
 import java.math.BigDecimal;
 import java.time.Clock;
@@ -53,6 +54,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -112,7 +114,8 @@ class GenAppServiceTest {
         when(pcsCaseEntity.getClaims()).thenReturn(List.of(mainClaim));
 
         underTest = new GenAppService(genAppRepository, documentService, documentNameService,
-                                      documentRepository, utcClock);
+                                      documentRepository, utcClock
+        );
     }
 
     @Nested
@@ -130,10 +133,11 @@ class GenAppServiceTest {
             when(genAppRepository.save(isA(GenAppEntity.class))).thenReturn(savedGenAppEntity);
 
             // When
-            GenAppEntity returnedGenAppEntity = underTest.createGenAppEntity(genAppRequest,
-                                                                             pcsCaseEntity,
-                                                                             applicantParty,
-                                                                             PENDING_GEN_APP_ISSUED
+            GenAppEntity returnedGenAppEntity = underTest.createGenAppEntity(
+                genAppRequest,
+                pcsCaseEntity,
+                applicantParty,
+                PENDING_GEN_APP_ISSUED
             );
 
             // Then
@@ -634,6 +638,36 @@ class GenAppServiceTest {
             assertThat(statementOfTruth.getFirmName()).isEqualTo(expectedFirmName);
             assertThat(statementOfTruth.getPositionHeld()).isEqualTo(expectedPositionHeld);
             assertThat(statementOfTruth.getCompletedDate()).isEqualTo(TEST_UTC_DATE_TIME);
+        }
+
+
+        @Test
+        void shouldLoadGenAppFromRepository() {
+            // Given
+            UUID genAppId = UUID.randomUUID();
+            GenAppEntity expectedGenAppEntity = mock(GenAppEntity.class);
+            when(genAppRepository.findById(genAppId)).thenReturn(Optional.of(expectedGenAppEntity));
+
+            // When
+            GenAppEntity genAppEntity = underTest.loadGenApp(genAppId);
+
+            // Then
+            assertThat(genAppEntity).isEqualTo(expectedGenAppEntity);
+        }
+
+        @Test
+        void shouldThrowExceptionLoadingUnknownGenApp() {
+            // Given
+            UUID unknownGenAppId = UUID.randomUUID();
+            when(genAppRepository.findById(unknownGenAppId)).thenReturn(Optional.empty());
+
+            // When
+            Throwable throwable = catchThrowable(() -> underTest.loadGenApp(unknownGenAppId));
+
+            // Then
+            assertThat(throwable)
+                .isInstanceOf(GenAppNotFoundException.class)
+                .hasMessage("No gen app found with ID %s", unknownGenAppId);
         }
 
         private static Stream<Arguments> otherPartiesAgreedScenarios() {
