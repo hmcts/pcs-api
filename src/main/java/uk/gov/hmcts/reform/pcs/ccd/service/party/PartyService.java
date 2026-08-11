@@ -153,14 +153,20 @@ public class PartyService {
     }
 
     /**
-     * The claimant party a draft was created with: organisation only, so CaseAccessGroups derive
-     * while the claim is still being filled in. Skipped for users with no organisation, since a
-     * party carrying an organisation ID but no profile IDs fails group derivation.
+     * The claimant party a case is created with: organisation only, so CaseAccessGroups derive
+     * while the claim is still being filled in.
+     *
+     * <p>Both organisation values are required. A case created without them derives no group, so
+     * the organisation never sees it and, once the creator's CREATOR role is revoked at submit,
+     * nobody can - an orphan discovered long after the fact. Failing here reports it at the
+     * point of creation instead.</p>
      */
     public void initialiseClaimant(PcsCaseEntity pcsCaseEntity, String organisationId,
                                    List<String> organisationProfileIds) {
-        if (organisationId == null || CollectionUtils.isEmpty(organisationProfileIds)) {
-            return;
+        Objects.requireNonNull(organisationId, "Organisation must be provided to create a case");
+        if (CollectionUtils.isEmpty(organisationProfileIds)) {
+            throw new IllegalArgumentException(
+                "Organisation profile IDs must be provided to create a case for organisation " + organisationId);
         }
         PartyEntity claimantParty = new PartyEntity();
         claimantParty.setOrganisationId(organisationId);

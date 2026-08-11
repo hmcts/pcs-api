@@ -86,8 +86,8 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
                 .showCondition(ShowConditions.NEVER_SHOW)
                 .grant(Permission.CRUD, UserRole.GA_CLAIMANT_SOLICITOR)
                 .grant(Permission.CRUD, UserRole.CLAIMANT)
-                // The creator resumes their own draft via the auto-assigned CREATOR role - the
-                // capacities cannot reach the case until submission derives the CaseAccessGroups.
+                // The organisation's capacity covers the draft; CREATOR is the fallback for a
+                // case that derives no CaseAccessGroups.
                 .grant(Permission.CRUD, UserRole.CREATOR)
                 .grantHistoryOnly(JUDICIAL_HISTORY_ROLES)
                 .showSummary()

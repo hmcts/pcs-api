@@ -31,8 +31,8 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
     private static final String JURISDICTION_DESCRIPTION = "Civil Possession Jurisdiction";
     static final AccessProfile[] PARTY_VISIBLE_TAB_ROLES = {
         AccessProfile.CITIZEN,
-        // The creator's only access during the draft phase - parties do not exist yet, so no
-        // CaseAccessGroups derive and the org-wide capacities cannot see the case.
+        // Fallback for a creator whose case derives no CaseAccessGroups; the organisation's
+        // capacities cover every other case, including drafts.
         AccessProfile.CREATOR,
         AccessProfile.DEFENDANT,
         AccessProfile.PCS_SOLICITOR,
@@ -111,8 +111,8 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
         builder.caseType(getCaseType(), getCaseTypeName(), CASE_TYPE_DESCRIPTION);
         builder.jurisdiction(JURISDICTION_ID, JURISDICTION_NAME, JURISDICTION_DESCRIPTION);
         builder.hmctsServiceId(hmctsServiceId);
-        // Capacity-only users lose their group role on group-less drafts, so the creator's
-        // case role must pass case-type authorisation by itself
+        // A group-less case is reachable only through the creator's case role, so it must pass
+        // case-type authorisation by itself - bracketed roles are otherwise skipped
         builder.grantCaseTypeAccessToCaseRoles(AccessProfile.CREATOR);
 
         builder.searchInputFields()

@@ -39,6 +39,7 @@ import java.util.UUID;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.AssertionsForClassTypes.catchThrowable;
 import static org.junit.jupiter.params.ParameterizedTest.ARGUMENT_SET_NAME_PLACEHOLDER;
 import static org.junit.jupiter.params.provider.Arguments.argumentSet;
@@ -1420,6 +1421,47 @@ class PartyServiceTest {
             boolean result = underTest.canSendEmailNotification(party, PartyRole.CLAIMANT);
 
             assertThat(result).isFalse();
+        }
+    }
+
+    @Nested
+    class InitialiseClaimant {
+
+        @Test
+        void shouldAddClaimantCarryingOnlyTheOrganisation() {
+            PcsCaseEntity caseEntity = new PcsCaseEntity();
+
+            underTest.initialiseClaimant(caseEntity, ORG_ID, List.of("SOLICITOR_PROFILE"));
+
+            assertThat(caseEntity.getParties()).singleElement().satisfies(party -> {
+                assertThat(party.getOrganisationId()).isEqualTo(ORG_ID);
+                assertThat(party.getOrganisationProfileIds()).containsExactly("SOLICITOR_PROFILE");
+                assertThat(party.getFirstName()).isNull();
+                assertThat(party.getClaimParties()).isEmpty();
+            });
+        }
+
+        @Test
+        void shouldRejectCaseCreationWithoutAnOrganisation() {
+            PcsCaseEntity caseEntity = new PcsCaseEntity();
+
+            assertThatThrownBy(() ->
+                underTest.initialiseClaimant(caseEntity, null, List.of("SOLICITOR_PROFILE")))
+                .isInstanceOf(NullPointerException.class)
+                .hasMessageContaining("Organisation must be provided");
+
+            assertThat(caseEntity.getParties()).isEmpty();
+        }
+
+        @Test
+        void shouldRejectCaseCreationWithoutOrganisationProfileIds() {
+            PcsCaseEntity caseEntity = new PcsCaseEntity();
+
+            assertThatThrownBy(() -> underTest.initialiseClaimant(caseEntity, ORG_ID, List.of()))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Organisation profile IDs must be provided");
+
+            assertThat(caseEntity.getParties()).isEmpty();
         }
     }
 }
