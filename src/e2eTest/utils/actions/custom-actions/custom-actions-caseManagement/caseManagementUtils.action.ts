@@ -127,7 +127,7 @@ export class CaseManagementCommonUtils {
     let minDate: Date;
     let maxDate: Date;
 
-    if (type === 'future') {
+    if (type === 'future'|| type === 'validFuture') {
       minDate = today;
       maxDate = new Date(
         today.getFullYear() + 10,

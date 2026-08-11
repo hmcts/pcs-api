@@ -27,7 +27,7 @@ export const addHearing = {
   errorValidation: `YES`,
   eventCouldNotBeCreatedErrorMessageHeader: `The event could not be created`,
   thereIsProbErrorMessageHeader: `There is a problem`,
-  errorValidationType: { one: `textField`, two: `radioOptions`, three: `checkBox`, four: `dropDown`, five: `dateField`, six: `dateRadioOption`, seven :`moneyField` },
+  errorValidationType: { one: `textField`, two: `radioOptions`, three: `checkBox`, four: `dropDown`, five: `dateField`, six: `dateRadioOption`, seven: `moneyField` },
   errorValidationField: {
     errorRadioOption1: [
       { type: `none`, input: ``, errMessage: `Which type of hearing is this? is required`, errInlineMessage: `Which type of hearing is this? is required` },
@@ -36,18 +36,28 @@ export const addHearing = {
       { type: 'none', input: '', errMessage: `Wording for hearing notice is required` },
     ],
     errorRadioOption2: [
-      { type: `none`, input: ``, errMessage: `Which type of application has the applicant made? is required`, errInlineMessage: `Which type of application has the applicant made? is required` },
+      { type: `none`, input: ``, errMessage: `Does a hearing notice need to be issued? is required`, errInlineMessage: `Does a hearing notice need to be issued? is required` },
     ],
     errorDateField: [
-      { type: `empty`, input: `empty`, errMessage: `When is the hearing? is required`,errInlineMessage: `When is the hearing? is required`},
-      { type: `invalid`, input: `invalid`, errMessage: `The data entered is not valid for When is the hearing?` },
-     
-      { type: `future`, input: 'future', errMessage: ``, errInlineMessage: `` },
-      
+      { type: `empty`, input: `empty`, errMessage: `When is the hearing? is required`, errInlineMessage: `When is the hearing? is required` },
+      { type: `invalid`, input: `invalid`, errMessage: `When is the hearing? is not valid`, errInlineMessage: `The data entered is not valid for When is the hearing?` },
+
+      { type: `validFuture`, input: 'validFuture', errMessage: ``, errInlineMessage: `` },
+
     ],
     errorTextField: [
       { type: `moreThanMax`, input: 505, errMessage: `In ‘Which categories apply’, you have entered more than the maximum number of characters (500)` },
-      { type: `empty`, input: `EMPTY`, errMessage: `Which categories apply? is required `},
-    ]
+      { type: `empty`, input: `EMPTY`, errMessage: `Hours is required` },
+    ],
+    errorMoneyField: [
+      // { type: `negative`, input: `-5`, errMessage: `Should be more than or equal to £0.01` },
+      { type: `max`, input: `60`, input1: `10`, index: 1, errMessage: `Should be less than or equal to 23`, errMessage1: `` },
+      { type: `max`, input: `23`, input1: `100`, index: 1, errMessage1: `Should be less than or equal to 59` },
+      { type: `alpha`, input: `test`, input1: `10`, index: 1, errMessage: `The data entered is not valid for Hour` },
+      { type: `alpha`, input: `10`, input1: `test`, index: 1, errMessage1: `The data entered is not valid for Minute` },
+      //{ type: `decimal`, input: `10.234`, errMessage: `The data entered is not valid for Enter the amount that you want the defendants to repay` },
+      { type: `empty`, input: ``, input1: `10`, index: 1, errMessage: `Hour is required` },
+      { type: `empty`, input: `10`, input1: ``, index: 1, errMessage1: `Minute is required` },
+    ],
   },
 }

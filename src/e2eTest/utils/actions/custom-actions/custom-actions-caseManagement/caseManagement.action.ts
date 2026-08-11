@@ -438,7 +438,7 @@ export class CaseManagementAction implements IAction {
               await performAction('clickButton', validationArr.button);
               await performValidation('inputError', !validationArr?.label ? validationArr.question : validationArr.label, item.errInlineMessage);
               await performValidation('errorMessage', validationArr.header1, item.errMessage);
-            } else if (item.type === 'past') {
+            } else if (item.type === 'past' || item.type === 'validFuture') {
               await enterDate();
             } else if (item.type === 'invalid') {
               await enterDate();
@@ -471,11 +471,23 @@ export class CaseManagementAction implements IAction {
             break;
 
           case 'moneyField':
-            await performAction('inputText', validationArr.label, item.input);
+            if (item.index && validationArr.labelMulti) {
+              await performAction('inputText', { textLabel: validationArr.label, index: item.index }, item.input);
+              await performAction('inputText', { textLabel: validationArr.labelMulti, index: item.index }, item.input1);
+            } else if (item.index) {
+              await performAction('inputText', { textLabel: validationArr.label, index: item.index }, item.input);
+            } else {
+              await performAction('inputText', validationArr.label, item.input);
+            }
+
             await expect(async () => {
               await performAction('clickButton', validationArr.button);
               //await performValidation('errorMessage', { header: !validationArr?.header ? validationArr.header = 'The event could not be created' : validationArr.header, message: item.errMessage });
-              await performValidation('inputError', validationArr.label, item.errMessage);
+              if (item.errMessage1) {
+                await performValidation('inputError', validationArr.labelMulti, item.errMessage1);
+              } else {
+                await performValidation('inputError', validationArr.label, item.errMessage);
+              }
             }).toPass({
               timeout: VERY_LONG_TIMEOUT,
             });

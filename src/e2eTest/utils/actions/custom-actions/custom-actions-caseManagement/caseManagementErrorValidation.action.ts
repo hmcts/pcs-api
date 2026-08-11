@@ -234,16 +234,22 @@ export class ErrorValidationAction implements IAction {
         label3: addHearing.yearTextLabel,
         button: addHearing.continueButton
       });
-      // await performAction('clickRadioButton', {
-      //   question: addHearing.typeOfAppQuestion,
-      //   option: addHearing.somethingElseRadioOption,
-      // });
+      
 
       await performAction('inputErrorValidation', {
         validationType: addHearing.errorValidationType.two,
         inputArray: addHearing.errorValidationField.errorRadioOption2,
         question: addHearing.hearingNoticeQuestion,
         option:  addHearing.hearingNoticeNoRadioOption,
+        button: addHearing.continueButton
+      });
+
+      await performAction('inputErrorValidation', {
+        validationType: addHearing.errorValidationType.seven,
+        inputArray: addHearing.errorValidationField.errorMoneyField,
+        // header: addHearing.eventCouldNotBeCreatedErrorMessageHeader,
+        label: addHearing.hourTextLabel,
+        labelMulti :addHearing.minutesTextLabel,
         button: addHearing.continueButton
       });
       // await performAction('inputErrorValidation', {

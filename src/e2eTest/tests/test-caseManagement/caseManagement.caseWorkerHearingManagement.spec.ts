@@ -65,7 +65,7 @@ test.describe('Case management - Case Worker Manage Hearing @nightly', async () 
       hearingNotesLabel: addHearing.hearingNotesTextLabel,
       hearingNotesInput: addHearing.hearingNotesTextInput,
       noticeQuestion: addHearing.hearingNoticeQuestion, option2: addHearing.hearingNoticeYesRadioOption,
-      withoutNoticeQuestion: addHearing.hearingWithOutNoticeHiddenQuestion, options3: addHearing.hearingNoticeNoRadioOption,
+      withoutNoticeQuestion: addHearing.hearingWithOutNoticeHiddenQuestion, option3: addHearing.hearingNoticeNoRadioOption,
       additionalInfoLabel: addHearing.enterAdditionalInfoTextLabel,
       additionalInfoInput: addHearing.enterAdditionalInfoTextInput,
       nextPage: checkYourAnswersManageHearing.mainHeader
