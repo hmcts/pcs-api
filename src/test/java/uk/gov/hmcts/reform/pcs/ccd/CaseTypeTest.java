@@ -22,6 +22,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -122,8 +123,8 @@ class CaseTypeTest {
         when(builder.tab("caseDetails", "Case Details")).thenReturn(caseDetailsTabBuilder);
         when(builder.categories(AccessProfile.PCS_SOLICITOR))
             .thenReturn(CaseCategory.CaseCategoryBuilder.builder(AccessProfile.PCS_SOLICITOR));
-        when(builder.accessType(anyString())).thenReturn(accessTypeBuilder);
-        when(builder.accessTypeRole(anyString())).thenReturn(accessTypeRoleBuilder);
+        lenient().when(builder.accessType(anyString())).thenReturn(accessTypeBuilder);
+        lenient().when(builder.accessTypeRole(anyString())).thenReturn(accessTypeRoleBuilder);
 
         // When
         caseType.configure(builder);
@@ -201,9 +202,9 @@ class CaseTypeTest {
         when(builder.searchCasesFields()).thenReturn(searchCasesBuilder);
         when(builder.searchResultFields()).thenReturn(searchBuilder);
         when(builder.workBasketResultFields()).thenReturn(searchBuilder);
-        when(builder.accessType(anyString()))
+        lenient().when(builder.accessType(anyString()))
             .thenReturn(AccessType.AccessTypeBuilder.builder("accessTypeId"));
-        when(builder.accessTypeRole(anyString()))
+        lenient().when(builder.accessTypeRole(anyString()))
             .thenReturn(AccessTypeRole.AccessTypeRoleBuilder.builder("accessTypeId"));
         when(builder.tab("nextSteps", "Next steps")).thenReturn(TabBuilder.builder(PCSCase.class, utils));
         when(builder.tab("summary", "Summary")).thenReturn(TabBuilder.builder(PCSCase.class, utils));
