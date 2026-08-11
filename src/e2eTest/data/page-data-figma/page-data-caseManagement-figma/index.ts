@@ -24,3 +24,4 @@ export * from './addHearing.page.data';
 export * from './checkYourAnswersManageHearing.page.data';
 export * from './genAppsCheckYourAnswers.page.data';
 export * from './enterGenAppConfirmation.page.data';
+export * from './confirmAddHearing.page.data';

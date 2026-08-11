@@ -23,12 +23,12 @@ import {
   uploadADocument,
   enterGenAppConfirmation,
   addHearing,
-  manageHearing
+  manageHearing,
+  confirmHearing
 } from '@data/page-data-figma/page-data-caseManagement-figma';
 import { caseInfo } from '../createCaseAPI.action';
 import { CaseManagementCommonUtils } from './caseManagementUtils.action';
 import path from 'path';
-import { confirmHearing } from '@data/page-data-figma/page-data-caseManagement-figma/confirmAddHearing.page.data';
 export let addressInfo: { buildingStreet: string; addressLine2: string; townCity: string; engOrWalPostcode: string; };
 
 export let allPartyDetails: string[] = [];
