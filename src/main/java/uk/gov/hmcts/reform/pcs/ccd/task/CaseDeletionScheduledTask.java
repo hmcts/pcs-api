@@ -4,6 +4,7 @@ import com.github.kagkarlsson.scheduler.task.helper.RecurringTask;
 import com.github.kagkarlsson.scheduler.task.helper.Tasks;
 import com.github.kagkarlsson.scheduler.task.schedule.Schedules;
 import com.google.common.collect.Lists;
+import feign.FeignException;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Value;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.reform.pcs.ccd.service.casedeletion.CaseDeletionService;
 import uk.gov.hmcts.reform.pcs.ccd.service.casedeletion.CcdCaseDataDeletionService;
+import uk.gov.hmcts.reform.pcs.exception.CcdCaseNotFoundException;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -56,6 +58,7 @@ public class CaseDeletionScheduledTask {
         executor.setMaxPoolSize(maxPoolSize);
         executor.setQueueCapacity(queueCapacity);
         executor.setThreadNamePrefix("CaseDeleteWorker-");
+        executor.setTaskDecorator(this::wrapWithMdc);
         executor.initialize();
         this.deletionExecutor = executor;
     }
@@ -71,17 +74,17 @@ public class CaseDeletionScheduledTask {
         try {
             List<Long> expiredDraftCases = ccdCaseDataDeletionService.findExpiredDraftCases(discardAfterDays);
             if (!CollectionUtils.isEmpty(expiredDraftCases)) {
-                log.debug("Processing {} expired draft cases", expiredDraftCases.size());
+                log.info("Processing {} expired draft cases", expiredDraftCases.size());
                 Lists.partition(expiredDraftCases, batchSize)
-                        .forEach(batch -> processBatch(batch, caseDeletionService::performCaseDeletionTasks));
+                        .forEach(batch -> processBatch(batch, this::performCaseDeletionTasks));
             }
             log.debug("Completed case deletion sweep successfully.");
 
             List<Long> discardedDraftCases = ccdCaseDataDeletionService.findExpiredDraftCasesInDraftDiscardedState();
             if (!CollectionUtils.isEmpty(discardedDraftCases)) {
-                log.debug("Processing {} discarded cases", discardedDraftCases.size());
+                log.info("Processing {} discarded cases", discardedDraftCases.size());
                 Lists.partition(discardedDraftCases, batchSize)
-                        .forEach(batch -> processBatch(batch, caseDeletionService::cleanupDiscardedDraftCases));
+                        .forEach(batch -> processBatch(batch, this::cleanupDiscardedDraftCases));
             }
             log.debug("Completed cleanup sweep successfully.");
         } finally {
@@ -100,5 +103,39 @@ public class CaseDeletionScheduledTask {
                 .toList();
 
         CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+    }
+
+    public void performCaseDeletionTasks(long caseRef) {
+        log.debug("Performing case deletion tasks for case: {}", caseRef);
+        try {
+            ccdCaseDataDeletionService.markCaseForDeletion(caseRef);
+            ccdCaseDataDeletionService.confirmCaseDisposal(caseRef);
+        } catch (CcdCaseNotFoundException e) {
+            log.error("Case not found in main ccd datastore. Will proceed to delete in decentralised ccd schema");
+        } catch (FeignException e) {
+            log.error("Error occurred while performing case deletion tasks for case: {}. Error: {}",
+                    caseRef, e.getMessage());
+            throw e;
+        }
+        cleanupDiscardedDraftCases(caseRef);
+    }
+
+    private void cleanupDiscardedDraftCases(long caseRef) {
+        caseDeletionService.deleteDocuments(caseRef);
+        caseDeletionService.deleteCase(caseRef);
+    }
+
+    private Runnable wrapWithMdc(Runnable task) {
+        var contextMap = MDC.getCopyOfContextMap();
+        return () -> {
+            if (contextMap != null) {
+                MDC.setContextMap(contextMap);
+            }
+            try {
+                task.run();
+            } finally {
+                MDC.clear();
+            }
+        };
     }
 }

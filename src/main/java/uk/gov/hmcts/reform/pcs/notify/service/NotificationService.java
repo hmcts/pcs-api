@@ -292,7 +292,7 @@ public class NotificationService {
     ) {
         CaseNotification toSaveNotification = new CaseNotification();
         toSaveNotification.setPcsCase(pcsCase);
-        toSaveNotification.setClaimId(claim);
+        toSaveNotification.setClaim(claim);
         toSaveNotification.setPartyId(party);
         toSaveNotification.setClaimType(request.getClaimType());
         toSaveNotification.setStatus(NotificationStatus.PENDING_SCHEDULE);

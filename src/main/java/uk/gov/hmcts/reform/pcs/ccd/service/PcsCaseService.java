@@ -106,6 +106,7 @@ public class PcsCaseService {
         log.debug("Deleted case with reference: {}", caseReference);
     }
 
+    @Transactional
     public void deleteDocuments(long caseReference) {
         PcsCaseEntity pcsCaseEntity = loadCase(caseReference);
         pcsCaseEntity.getDocuments()
