@@ -104,11 +104,21 @@ public class HearingDetailsPage implements CcdPageConfiguration, CcdPage {
                 )
         );
 
-        integerValidationService.validateNumberIsNotNegative(hearing.getDurationDays(), DAY_LABEL, validationErrors);
-        integerValidationService.validateNumberIsNotNegative(hearing.getDurationHours(), HOUR_LABEL, validationErrors);
-        integerValidationService.validateNumberIsNotNegative(hearing.getDurationMinutes(), MINUTE_LABEL, validationErrors);
-        integerValidationService.validateFloatIsInteger(hearing.getDurationHours(), HOUR_LABEL, validationErrors);
-        integerValidationService.validateFloatIsInteger(hearing.getDurationMinutes(), MINUTE_LABEL, validationErrors);
+        integerValidationService.validateNumberIsNotNegative(
+            hearing.getDurationDays(), DAY_LABEL, validationErrors
+        );
+        integerValidationService.validateNumberIsNotNegative(
+            hearing.getDurationHours(), HOUR_LABEL, validationErrors
+        );
+        integerValidationService.validateNumberIsNotNegative(
+            hearing.getDurationMinutes(), MINUTE_LABEL, validationErrors
+        );
+        integerValidationService.validateFloatIsInteger(
+            hearing.getDurationHours(), HOUR_LABEL, validationErrors
+        );
+        integerValidationService.validateFloatIsInteger(
+            hearing.getDurationMinutes(), MINUTE_LABEL, validationErrors
+        );
 
         hearingService.storeDraftHearingForm(caseData);
         return textAreaValidationService.createValidationResponse(caseData, validationErrors);
