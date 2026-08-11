@@ -166,7 +166,7 @@ class LegalRepresentativePageServiceTest {
 
         // then
         assertEquals(YesOrNo.YES, legalRepresentativeOrganisationEntity.getHasAmendedContactDetails());
-        assertEquals(contactNumber, legalRepresentativeOrganisationEntity.getPhone());
+        assertEquals(contactNumber, legalRepresentativeOrganisationEntity.getPhoneNumber());
     }
 
     @Test
@@ -194,7 +194,7 @@ class LegalRepresentativePageServiceTest {
 
         // then
         assertEquals(YesOrNo.YES, legalRepresentativeOrganisationEntity.getHasAmendedContactDetails());
-        assertNull(legalRepresentativeOrganisationEntity.getPhone());
+        assertNull(legalRepresentativeOrganisationEntity.getPhoneNumber());
     }
 
     @Test
@@ -221,7 +221,7 @@ class LegalRepresentativePageServiceTest {
 
         // then
         assertEquals(YesOrNo.YES, legalRepresentativeOrganisationEntity.getHasAmendedContactDetails());
-        assertNull(legalRepresentativeOrganisationEntity.getPhone());
+        assertNull(legalRepresentativeOrganisationEntity.getPhoneNumber());
     }
 
     @Test
@@ -304,7 +304,7 @@ class LegalRepresentativePageServiceTest {
 
         // then
         assertEquals(YesOrNo.YES, legalRepresentativeOrganisationEntity.getHasAmendedContactDetails());
-        assertEquals(email, legalRepresentativeOrganisationEntity.getEmail());
+        assertEquals(email, legalRepresentativeOrganisationEntity.getEmailAddress());
     }
 
     @Test
@@ -330,7 +330,7 @@ class LegalRepresentativePageServiceTest {
 
         // then
         assertEquals(YesOrNo.YES, legalRepresentativeOrganisationEntity.getHasAmendedContactDetails());
-        assertThat(legalRepresentativeOrganisationEntity.getEmail()).isNull();
+        assertThat(legalRepresentativeOrganisationEntity.getEmailAddress()).isNull();
     }
 
     @Test
@@ -390,7 +390,7 @@ class LegalRepresentativePageServiceTest {
 
         LegalRepresentativeOrganisationEntity legalRepresentativeOrganisation = LegalRepresentativeOrganisationEntity
             .builder()
-            .email(email)
+            .emailAddress(email)
             .address(addressEntity)
             .build();
         AddressUK addressUK = AddressUK.builder().build();
@@ -465,7 +465,7 @@ class LegalRepresentativePageServiceTest {
 
         LegalRepresentativeOrganisationEntity legalRepresentativeOrganisation = LegalRepresentativeOrganisationEntity
             .builder()
-            .email("email")
+            .emailAddress("email")
             .address(addressEntity)
             .build();
         AddressUK addressUK = AddressUK.builder().build();
@@ -500,7 +500,7 @@ class LegalRepresentativePageServiceTest {
 
         LegalRepresentativeOrganisationEntity legalRepresentativeOrganisation = LegalRepresentativeOrganisationEntity
             .builder()
-            .email("email")
+            .emailAddress("email")
             .build();
         AddressUK addressUK = AddressUK.builder().build();
         LegalRepresentativeDetails legalRepresentativeDetails = LegalRepresentativeDetails.builder()
@@ -535,7 +535,7 @@ class LegalRepresentativePageServiceTest {
 
         LegalRepresentativeOrganisationEntity legalRepresentativeOrganisation = LegalRepresentativeOrganisationEntity
             .builder()
-            .email("email")
+            .emailAddress("email")
             .address(addressEntity)
             .build();
 

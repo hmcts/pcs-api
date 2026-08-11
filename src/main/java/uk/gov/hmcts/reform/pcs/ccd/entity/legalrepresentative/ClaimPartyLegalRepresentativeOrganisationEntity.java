@@ -23,13 +23,13 @@ import java.time.Instant;
 import static jakarta.persistence.FetchType.LAZY;
 
 @Entity
-@Table(name = "party_legal_rep_org")
+@Table(name = "claim_party_legal_representative_org")
 @Setter
 @Getter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class PartyLegalRepresentativeOrganisationEntity {
+public class ClaimPartyLegalRepresentativeOrganisationEntity {
 
     @EmbeddedId
     @Builder.Default
