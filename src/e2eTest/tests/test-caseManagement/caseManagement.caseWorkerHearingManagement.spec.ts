@@ -53,7 +53,7 @@ test.afterEach(async () => {
 
 test.describe('Case management - Case Worker Manage Hearing @nightly', async () => {
   test('Case management - Case Worker Edit a hearing @CM @regression', async () => {
-    let date = CaseManagementCommonUtils.getRandomDate(editHearing.dateTypeHiddenUserInput);
+    let date = CaseManagementCommonUtils.getRandomDate(editHearing.dateTypeHiddenUserInput as string);
     await performAction('selectAnEvent', {eventType: caseSummary.manageHearing});
     await performValidation('mainHeader', manageHearing.mainHeader);
     await performAction('errorValidationManageHearing', manageHearing.errorValidation);
@@ -70,13 +70,13 @@ test.describe('Case management - Case Worker Manage Hearing @nightly', async () 
       label2: editHearing.whenHearingQuestion,
       date: date,
       days: editHearing.daysLabel,
-      hours: editHearing.hoursLabel,
-      minutes: editHearing.minutesLabel,
+      hoursLabel: editHearing.hoursLabel,
+      minutesLabel: editHearing.minutesLabel,
       label3: editHearing.hearingNotesLabel,
       question2: editHearing.hearingNotesNeededQuestion,
       option2: editHearing.yesRadioOption,
       question3: editHearing.hearingWithoutNoticeHiddenQuestion,
-      option3: editHearing.yesHiddenRadioOption,
+      option3: editHearing.noHiddenRadioOption,
       label4: editHearing.enterAnyAdditionalInformationTextLabel,
       input: editHearing.additionalInformationTextInput,
       nextPage: checkYourAnswersEditHearing.mainHeader

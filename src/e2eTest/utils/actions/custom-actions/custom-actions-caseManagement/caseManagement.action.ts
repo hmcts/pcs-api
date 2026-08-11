@@ -308,7 +308,6 @@ export class CaseManagementAction implements IAction {
   }
 
   private async editHearing(editHearingData: actionRecord) {
-    let date = CaseManagementCommonUtils.getRandomDate(editHearingData.dateType as string);
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid});
     await performValidation('text', {
       elementType: 'paragraph',
@@ -318,11 +317,12 @@ export class CaseManagementAction implements IAction {
       question: editHearingData.question,
       option: editHearingData.option
     });
+
     await performAction('select', editHearingData.label1, editHearingData.dropDownInput);
-    await performAction('inputDate', editHearingData.label2 as string, editHearingData.date as string);
+   // await performAction('inputDate', editHearingData.label2 as string, editHearingData.date);
     await performAction('inputText', editHearingData.days, CaseManagementCommonUtils.getRandomNumberAsString(1, 30));
-    await performAction('inputText', editHearingData.Hours, CaseManagementCommonUtils.getRandomNumberAsString(0, 12));
-    await performAction('inputText', editHearingData.minutes, CaseManagementCommonUtils.getRandomNumberAsString(0, 60));
+    await performAction('inputText', { textLabel: editHearingData.hoursLabel, index: 1 }, CaseManagementCommonUtils.getRandomNumberAsString(0, 10));
+    await performAction('inputText', { textLabel: editHearingData.minutesLabel, index: 1 }, CaseManagementCommonUtils.getRandomNumberAsString(0, 59));
     await performAction('inputText', editHearingData.label3, CaseManagementCommonUtils.generateRandomString(editHearingData.input as number));
     await performAction('clickRadioButton', {
       question: editHearingData.question2,

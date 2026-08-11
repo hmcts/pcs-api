@@ -1,5 +1,5 @@
 export const checkYourAnswersEditHearing = {
-  mainHeader: `Manage hearing `,
+  mainHeader: `Manage hearing`,
   cyaHeader: `Check your answers`,
   checkInformationParagraph: `check the information below carefully`,
   ChangeLink: `Change`,
