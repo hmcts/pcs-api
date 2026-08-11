@@ -1,0 +1,21 @@
+{
+  "request": {
+    "method": "GET",
+    "urlPath": "/refdata/commondata/lov/categories/CaseLinkingReasonCode"
+  },
+  "response": {
+    "status": 200,
+    "headers": { "Content-Type": "application/json" },
+    "jsonBody": {
+      "list_of_values": [
+        {"key":"CLRC001","value_en":"Case consolidated","category_key":"caseLinkReason","active_flag":"Y","lov_order":1,"parent_key":null,"parent_category":"","hint_text_en":"","value_cy":"","hint_text_cy":"","child_nodes":null},
+        {"key":"CLRC002","value_en":"Linked for a hearing","category_key":"caseLinkReason","active_flag":"Y","lov_order":2,"parent_key":null,"parent_category":"","hint_text_en":"","value_cy":"","hint_text_cy":"","child_nodes":null},
+        {"key":"CLRC003","value_en":"Progressed as part of this lead case","category_key":"caseLinkReason","active_flag":"Y","lov_order":3,"parent_key":null,"parent_category":"","hint_text_en":"","value_cy":"","hint_text_cy":"","child_nodes":null},
+        {"key":"CLRC004","value_en":"Related appeal","category_key":"caseLinkReason","active_flag":"Y","lov_order":4,"parent_key":null,"parent_category":"","hint_text_en":"","value_cy":"","hint_text_cy":"","child_nodes":null},
+        {"key":"CLRC005","value_en":"Related proceedings","category_key":"caseLinkReason","active_flag":"Y","lov_order":5,"parent_key":null,"parent_category":"","hint_text_en":"","value_cy":"","hint_text_cy":"","child_nodes":null},
+        {"key":"CLRC006","value_en":"Same Party","category_key":"caseLinkReason","active_flag":"Y","lov_order":6,"parent_key":null,"parent_category":"","hint_text_en":"","value_cy":"","hint_text_cy":"","child_nodes":null},
+        {"key":"CLRC007","value_en":"Other","category_key":"caseLinkReason","active_flag":"Y","lov_order":7,"parent_key":null,"parent_category":"","hint_text_en":"","value_cy":"","hint_text_cy":"","child_nodes":null}
+      ]
+    }
+  }
+}

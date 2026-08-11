@@ -48,6 +48,7 @@ public class RentArrearsView {
         return pcsCaseEntity.getDocuments().stream()
             .filter(RentArrearsView::isRentStatement)
             .filter(DocumentsView::isDescriptionEmpty)
+            .filter(DocumentsView::isNotRemoved)
             .map(RentArrearsView::toDocument)
             .toList();
     }
