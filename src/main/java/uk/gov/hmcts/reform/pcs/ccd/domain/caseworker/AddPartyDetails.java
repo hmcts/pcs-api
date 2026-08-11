@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.DynamicList;
+import uk.gov.hmcts.ccd.sdk.type.FieldType;
 
 import java.time.LocalDate;
 
@@ -53,11 +54,11 @@ public class AddPartyDetails {
     private AddressUK claimantAddress;
 
     @JsonProperty("addParty_ClaimantEmail")
-    @CCD(label = "Email address", searchable = false)
+    @CCD(label = "Email address", typeOverride = FieldType.Email, searchable = false)
     private String claimantEmail;
 
     @JsonProperty("addParty_ClaimantPhoneNumber")
-    @CCD(label = "Phone number", searchable = false)
+    @CCD(label = "Phone number", regex = "^\\s*0\\d{10}\\s*$", searchable = false)
     private String claimantPhoneNumber;
 
     @JsonProperty("addParty_FirstName")
@@ -77,11 +78,11 @@ public class AddPartyDetails {
     private AddressUK defendantAddress;
 
     @JsonProperty("addParty_DefendantEmail")
-    @CCD(label = "Email address", searchable = false)
+    @CCD(label = "Email address", typeOverride = FieldType.Email, searchable = false)
     private String defendantEmail;
 
     @JsonProperty("addParty_DefendantPhoneNumber")
-    @CCD(label = "Phone number", searchable = false)
+    @CCD(label = "Phone number", regex = "^\\s*0\\d{10}\\s*$", searchable = false)
     private String defendantPhoneNumber;
 
     @JsonProperty("addParty_LFFirstName")
@@ -101,11 +102,11 @@ public class AddPartyDetails {
     private AddressUK litigationFriendAddress;
 
     @JsonProperty("addParty_LFEmail")
-    @CCD(label = "Email address", searchable = false)
+    @CCD(label = "Email address", typeOverride = FieldType.Email, searchable = false)
     private String litigationFriendEmail;
 
     @JsonProperty("addParty_LFPhoneNumber")
-    @CCD(label = "Phone number", searchable = false)
+    @CCD(label = "Phone number", regex = "^\\s*0\\d{10}\\s*$", searchable = false)
     private String litigationFriendPhoneNumber;
 
     @JsonProperty("addParty_PartyRadioList")

@@ -18,7 +18,7 @@ java:
     # HDPI-8115: preview shares one small flexible server across ~70 releases;
     # shrink per-pod pools so idle stacks hold no connections.
     PCS_DB_POOL_MIN_IDLE: "0"
-    PCS_DB_POOL_MAX_SIZE: "2"
+    PCS_DB_POOL_MAX_SIZE: "4"
     PCS_DB_HOST: '{{ tpl .Values.global.postgresHostname $}}'
     PCS_DB_USER_NAME: "{{ .Values.global.postgresUsername}}"
     ELASTIC_SEARCH_HOSTS: "http://{{ .Release.Name }}-es-master:9200"
@@ -200,8 +200,6 @@ xui-webapp:
       SERVICES_HEARINGS_COMPONENT_API: http://jurisdiction-hearings-api-aat.service.core-compute-aat.internal
       JURISDICTIONS: PCS
       GLOBAL_SEARCH_SERVICES: PCS,CIVIL,SSCS
-      WA_SUPPORTED_JURISDICTIONS: PCS,CIVIL,SSCS
-      STAFF_SUPPORTED_JURISDICTIONS: PCS,CIVIL,SSCS
       FEATURE_REDIS_ENABLED: false
       REDISCLOUD_URL: http://dummyrediscloudurl
       FEATURE_APP_INSIGHTS_ENABLED: false

@@ -1,7 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.event.caseworker.manageparty;
 
 import lombok.RequiredArgsConstructor;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.callback.Start;
@@ -9,6 +8,7 @@ import uk.gov.hmcts.ccd.sdk.type.DynamicList;
 import uk.gov.hmcts.ccd.sdk.type.DynamicListElement;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
@@ -58,11 +58,9 @@ public class StartEventHandler implements Start<PCSCase, State> {
     }
 
     private String buildPartyDisplayName(PartyEntity partyEntity) {
-        boolean hasName = StringUtils.isNotBlank(partyEntity.getOrgName())
-            || StringUtils.isNotBlank(partyEntity.getFirstName())
-            || StringUtils.isNotBlank(partyEntity.getLastName());
-
-        return hasName ? partyService.getPartyName(partyEntity) : "Person unknown";
+        if (partyEntity.getNameKnown() == VerticalYesNo.NO) {
+            return "Person unknown";
+        }
+        return partyService.getPartyName(partyEntity);
     }
-
 }

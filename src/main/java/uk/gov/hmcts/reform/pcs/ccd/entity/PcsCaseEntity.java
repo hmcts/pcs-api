@@ -84,6 +84,11 @@ public class PcsCaseEntity {
     @OneToMany(mappedBy = "pcsCase", fetch = LAZY, cascade = ALL)
     @Builder.Default
     @JsonManagedReference
+    private List<CaseReviewDateEntity> reviewDates = new ArrayList<>();
+
+    @OneToMany(mappedBy = "pcsCase", fetch = LAZY, cascade = ALL)
+    @Builder.Default
+    @JsonManagedReference
     @OrderBy("rank ASC")
     private Set<GenAppEntity> genApps = new HashSet<>();
 
@@ -113,6 +118,10 @@ public class PcsCaseEntity {
     @OneToMany(mappedBy = "pcsCase", cascade = ALL, orphanRemoval = true)
     @Builder.Default
     private List<CaseFlagEntity> caseFlags = new ArrayList<>();
+
+    public ClaimEntity getMainClaim() {
+        return !claims.isEmpty() ? claims.getFirst() : null;
+    }
 
     public void setTenancyLicence(TenancyLicenceEntity tenancyLicence) {
         if (this.tenancyLicence != null) {
@@ -145,9 +154,13 @@ public class PcsCaseEntity {
 
     public void addDocuments(List<DocumentEntity> documents) {
         for (DocumentEntity document : documents) {
-            document.setPcsCase(this);
-            this.documents.add(document);
+            addDocument(document);
         }
+    }
+
+    public void addDocument(DocumentEntity document) {
+        documents.add(document);
+        document.setPcsCase(this);
     }
 
     public void addDefendantResponse(DefendantResponseEntity defendantResponse) {
@@ -163,6 +176,11 @@ public class PcsCaseEntity {
     public void addCaseNote(CaseNoteEntity caseNote) {
         caseNotes.add(caseNote);
         caseNote.setPcsCase(this);
+    }
+
+    public void addCaseReviewDate(CaseReviewDateEntity reviewDate) {
+        reviewDates.add(reviewDate);
+        reviewDate.setPcsCase(this);
     }
 
 }
