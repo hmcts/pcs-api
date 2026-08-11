@@ -16,5 +16,4 @@ export const claimantCircumstances = {
   previousButton: `Previous`,
   continueButton: `Continue`,
   cancelLink: `Cancel`,
-  // notes
 };
