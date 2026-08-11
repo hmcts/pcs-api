@@ -1,5 +1,5 @@
 import { Page } from '@playwright/test';
-import { actionMapQuestions } from '@utils/common/cyaMapping.util';
+import { actionMapQuestions, skipNormalization } from '@utils/common/cyaMapping.utils';
 
 interface QAObject {
   question: string;
@@ -199,6 +199,9 @@ export class CYAStore {
   }
 
   private normalizeText(text: string): string {
+    if (skipNormalization.has(text)) {
+      return text;
+    }
     return text
         .replace(/\s+/g, ' ')
         .trim()
@@ -549,6 +552,9 @@ export class CYAPageValidation {
   }
 
   private normalizeText(text: string): string {
+    if (skipNormalization.has(text)) {
+      return text;
+    }
     return text.replace(/\s+/g, ' ').trim().toLowerCase();
   }
 
