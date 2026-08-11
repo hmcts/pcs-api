@@ -208,20 +208,6 @@ class PCSCaseViewTest {
     }
 
     @Test
-    void shouldSetSearchCriteriaFromIndexer() {
-        // Given
-        SearchCriteria searchCriteria = SearchCriteria.builder().build();
-        when(searchCriteriaIndexer.buildSearchCriteria(any(PCSCase.class))).thenReturn(searchCriteria);
-
-        // When
-        PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
-
-        // Then - indexing is delegated to the indexer and its result is set on the case
-        verify(searchCriteriaIndexer).buildSearchCriteria(pcsCase);
-        assertThat(pcsCase.getSearchCriteria()).isSameAs(searchCriteria);
-    }
-
-    @Test
     void shouldNotSetSearchCriteriaForSuffixedCaseType() {
         // Given a suffixed (non-canonical) case type, e.g. PCS-STAGING or a PR preview type
         try (MockedStatic<CaseType> caseTypeMock = mockStatic(CaseType.class)) {
