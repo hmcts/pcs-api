@@ -25,5 +25,6 @@ public enum EventId {
     claimIssuePayment,
     changeCaseState,
     enterGenApp,
-    caseworkerUploadDocuments
+    caseworkerUploadDocuments,
+    removeDocument
 }
