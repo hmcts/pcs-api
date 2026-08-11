@@ -43,9 +43,17 @@ public enum GroupAccessType implements CCDAccessGroup {
     ),
     DUTY_ADVISOR_ACCESS(
         SOLICITOR_PROFILE, "duty-advisor-access", "duty-advisor-request",
-        "Grants solicitors access to request time-bound duty-advisor role", "", 8,
+        "Grants solicitors access to request time-bound duty-advisor role",
+        "Assign to Users who may need to request time-bound duty-advisor access", 8,
         false, false, true, true
     );
+
+    /**
+     * The definition store rejects the import with "'HintText' must be set for 'Display' to be
+     * used" when a displayed access type has no hint, so every constant needs one.
+     */
+    private static final String ASSIGN_HINT =
+        "Assign to Users to enable access to all cases associated with this organisation";
 
     private final String organisationProfileId;
     private final String accessTypeId;
@@ -73,7 +81,7 @@ public enum GroupAccessType implements CCDAccessGroup {
         this.accessDefault = true;
         this.display = true;
         this.description = description;
-        this.hintText = "";
+        this.hintText = ASSIGN_HINT;
         this.groupAccessEnabled = true;
         this.displayOrder = displayOrder;
         this.caseAssignedRoleField = caseAssignedRoleField;
