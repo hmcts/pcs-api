@@ -18,7 +18,6 @@ import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.PropertyNotEligibl
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.task.CaseRoleAssignmentTaskComponent;
 import uk.gov.hmcts.reform.pcs.ccd.util.FeeApplier;
-import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.UUID;
@@ -35,8 +34,6 @@ class CreatePossessionClaimTest extends BaseEventTest {
 
     @Mock
     private PcsCaseService pcsCaseService;
-    @Mock
-    private OrganisationService organisationService;
     @Mock
     private FeeApplier feeApplier;
     @Mock
@@ -57,7 +54,7 @@ class CreatePossessionClaimTest extends BaseEventTest {
         when(userDetails.getUid()).thenReturn(USER_ID);
 
         CreatePossessionClaim underTest = new CreatePossessionClaim(
-            pcsCaseService, organisationService, feeApplier, enterPropertyAddress,
+            pcsCaseService, feeApplier, enterPropertyAddress,
             crossBorderPostcodeSelection, propertyNotEligible,
             schedulerClient, securityContextService
         );

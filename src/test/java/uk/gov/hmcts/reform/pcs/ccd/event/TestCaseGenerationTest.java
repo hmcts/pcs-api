@@ -197,7 +197,7 @@ class TestCaseGenerationTest {
 
         // Then
         InOrder inOrder = inOrder(pcsCaseService, resumePossessionClaim);
-        inOrder.verify(pcsCaseService).createCase(caseReference, address, country, Optional.empty());
+        inOrder.verify(pcsCaseService).createCase(caseReference, address, country);
         inOrder.verify(resumePossessionClaim).submitClaim(caseReference, loadedCase);
     }
 

@@ -743,6 +743,7 @@ public class PCSCase {
         access = {InternalCaseFlagAccess.class},
         label = "Launch the flags screen"
     )
+
     private FlagLauncher flagLauncherInternal;
 
     @CCD(access = {DefendantSolicitorAccess.class})
