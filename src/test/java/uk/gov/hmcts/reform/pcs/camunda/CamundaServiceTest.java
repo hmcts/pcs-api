@@ -18,6 +18,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.slf4j.LoggerFactory;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.pcs.camunda.CamundaRequestTaskData.Action;
+import uk.gov.hmcts.reform.pcs.ccd.CaseType;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
@@ -171,7 +172,7 @@ public class CamundaServiceTest {
         assertThat(processVariables).isNotEmpty();
         assertThat(processVariables.get("taskState").getValue()).isEqualTo("unconfigured");
         assertThat(processVariables.get("taskState").getType()).isEqualTo("String");
-        assertThat(processVariables.get("caseTypeId").getValue()).isEqualTo("PCS");
+        assertThat(processVariables.get("caseTypeId").getValue()).isEqualTo(CaseType.getCaseType());
         assertThat(processVariables.get("caseTypeId").getType()).isEqualTo("String");
         assertThat(processVariables.get("dueDate").getValue()).isEqualTo("2050-01-01T17:00:00");
         assertThat(processVariables.get("dueDate").getType()).isEqualTo("String");
