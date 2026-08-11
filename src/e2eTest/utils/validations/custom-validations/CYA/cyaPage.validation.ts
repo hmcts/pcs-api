@@ -1,7 +1,6 @@
 import { Page } from '@playwright/test';
 import { actionMapQuestions, skipNormalization } from '@utils/common/cyaMapping.utils';
 
-
 interface QAObject {
   question: string;
   answer: string | string[];

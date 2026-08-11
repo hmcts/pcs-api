@@ -183,4 +183,37 @@ export class CaseManagementCommonUtils {
     return (Math.floor(Math.random() * (max - min + 1)) + min).toString();
   }
 
+  public static getGenApplicationType(length: number): string[] {
+    const today = new Date().toLocaleDateString('en-GB', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    });
+
+    return Array.from(
+      { length: length },
+      (_, index) =>
+        `General Application GA${index + 1} - submitted ${today}`
+    );
+  }
+
+  public static renameDocument(fileName: string, fileDate?: string, app?: string): string {
+    const baseName = fileName.replace(/\.pdf$/i, '');
+    const gaNumber = app?.match(/\bGA\d+\b/i)?.[0] ?? '';
+    const formattedDate = fileDate ? (() => {
+        const [day, month, year] = fileDate.split('/');
+        return `${day.padStart(2, '0')}${month.padStart(2, '0')}${year}`;
+      })(): '';
+    const parts = [baseName];
+
+    if (formattedDate) {
+      parts.push(formattedDate);
+    }
+
+    if (gaNumber) {
+      parts.push(gaNumber);
+    }
+
+    return `${parts.join(' ')}.pdf`;
+  }
 }

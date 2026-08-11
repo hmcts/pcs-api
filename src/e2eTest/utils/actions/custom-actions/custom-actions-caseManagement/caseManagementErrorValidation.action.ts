@@ -4,9 +4,12 @@ import { IAction, actionData, actionRecord } from '@utils/interfaces/action.inte
 import {
   addHearing,
   addReviewDates, changeCaseState, enterGenappApplication, enterGenAppapplicationFee,
-  enterGenAppConsentAndNotice, enterGenAppHearingDate, selectDocument
+  enterGenAppConsentAndNotice, enterGenAppHearingDate, selectDocument, uploadADocument,
+  enterGenAppUploadGeneralApplication
 } from '@data/page-data-figma/page-data-caseManagement-figma';
 import { allPartyDetails } from './caseManagement.action';
+import { CaseManagementCommonUtils } from './caseManagementUtils.action';
+import { defendantUserDetails } from '../createCaseAPI.action';
 
 export class ErrorValidationAction implements IAction {
   async execute(page: Page, action: string, errorFlag: string | actionRecord, roles?: actionData): Promise<void> {
@@ -17,8 +20,10 @@ export class ErrorValidationAction implements IAction {
       ['errorValidationEnterGeneralAppPage', () => this.errorValidationEnterGeneralAppPage(errorFlag as string)],
       ['errorValidationHearingDatePage', () => this.errorValidationHearingDatePage(errorFlag as string)],
       ['errorValidationApplicationFeePage', () => this.errorValidationApplicationFeePage(errorFlag as string)],
+      ['errorValidationUploadADocumentPage', () => this.errorValidationUploadADocumentPage(errorFlag as string)],
       ['errorValidationApplicationConsentAndNotice', () => this.errorValidationApplicationConsentAndNotice(errorFlag as string)],
       ['errorValidationEnterAddAHearingPage', () => this.errorValidationEnterAddAHearingPage(errorFlag as string)],
+      ['errorValidationUploadGenAppsFile', () => this.errorValidationUploadGenAppsFile(errorFlag as string)],
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -31,14 +36,14 @@ export class ErrorValidationAction implements IAction {
         validationType: selectDocument.errorValidationType.four,
         inputArray: selectDocument.errorValidationField.errorDropDown,
         dropQn: selectDocument.whichFolderQuestion,
-        option: selectDocument.docFolderHiddenOption,
+        option: (selectDocument.docFolderHiddenOption)[0],
         button: selectDocument.continueButton
       });
       await performAction('inputErrorValidation', {
         validationType: selectDocument.errorValidationType.two,
         inputArray: selectDocument.errorValidationField.errorRadioOption,
         question: selectDocument.documentToAmendHiddenQuestion,
-        option: selectDocument.typeOfDocumentHiddenRadioOption,
+        option: (selectDocument.typeOfDocumentHiddenRadioOption)[0],
         button: selectDocument.continueButton
       });
     }
@@ -187,6 +192,49 @@ export class ErrorValidationAction implements IAction {
     }
   }
 
+  private async errorValidationUploadADocumentPage(validationReq: string) {
+    let appType = CaseManagementCommonUtils.getGenApplicationType(defendantUserDetails.length)[0];
+    if (validationReq === 'YES') {
+      await performAction('inputErrorValidation', {
+        validationType: uploadADocument.errorValidationType.eight,
+        inputArray: uploadADocument.errorValidationField.errorUploadADocument,
+        button: uploadADocument.continueButton
+      });
+      await performAction('inputErrorValidation', {
+        validationType: uploadADocument.errorValidationType.two,
+        inputArray: uploadADocument.errorValidationField.errorRadioOption1,
+        question: uploadADocument.whichAppOrCounterClaimThisRelateToQuestion,
+        option: uploadADocument.notRelatedToAppRadioOption,
+        button: uploadADocument.continueButton
+      });
+      await performAction('inputErrorValidation', {
+        validationType: uploadADocument.errorValidationType.four,
+        inputArray: uploadADocument.errorValidationField.errorDropDown,
+        dropQn: uploadADocument.whichTypeOfDocHiddenQuestion,
+        option: uploadADocument.whichTypeHiddenOption,
+        button: uploadADocument.continueButton
+      });
+      await performAction('inputErrorValidation', {
+        validationType: uploadADocument.errorValidationType.five,
+        inputArray: uploadADocument.errorValidationField.errorDateField,
+        header: enterGenappApplication.eventCouldNotBeCreatedErrorMessageHeader,
+        header1: uploadADocument.thereIsProbErrorMessageHeader,
+        question: uploadADocument.addIssueDateTextLabel,
+        label1: enterGenappApplication.dayTextLabel,
+        label2: enterGenappApplication.monthTextLabel,
+        label3: enterGenappApplication.yearTextLabel,
+        button: enterGenappApplication.continueButton
+      });
+      await performAction('inputErrorValidation', {
+        validationType: uploadADocument.errorValidationType.two,
+        inputArray: uploadADocument.errorValidationField.errorRadioOption2,
+        question: uploadADocument.partyDocRelatedToQuestion,
+        option: appType,
+        button: uploadADocument.continueButton
+      });
+    }
+  }
+
   private async errorValidationApplicationConsentAndNotice(validationReq: string) {
     if (validationReq === 'YES') {
       await performAction('inputErrorValidation', {
@@ -203,7 +251,6 @@ export class ErrorValidationAction implements IAction {
         option: enterGenAppConsentAndNotice.noHiddenRadioOption,
         button: enterGenAppConsentAndNotice.continueButton
       });
-
     }
   };
 
@@ -262,4 +309,14 @@ export class ErrorValidationAction implements IAction {
 
     }
   }
+  private async errorValidationUploadGenAppsFile(validationReq: string) {
+    if (validationReq === 'YES') {
+      await performAction('inputErrorValidation', {
+        validationType: enterGenAppUploadGeneralApplication.errorValidationType.eight,
+        inputArray: enterGenAppUploadGeneralApplication.errorValidationField.errorUploadADocument,
+        button: enterGenAppUploadGeneralApplication.continueButton
+      });
+    }
+  }
+
 }

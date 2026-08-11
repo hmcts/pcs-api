@@ -22,7 +22,8 @@ import {
   selectDocument,
   uploadADocument,
   enterGenAppConfirmation,
-  addHearing
+  addHearing,
+  manageHearing
 } from '@data/page-data-figma/page-data-caseManagement-figma';
 import { caseInfo } from '../createCaseAPI.action';
 import { CaseManagementCommonUtils } from './caseManagementUtils.action';
@@ -530,6 +531,7 @@ export class CaseManagementAction implements IAction {
             await performAction('clickButton', validationArr.button);
             await expect(async () => {
               await performAction('clickButton', validationArr.button);
+              await performValidation('inputError', !validationArr?.label ? validationArr.dropQn : validationArr.label, item.errInlineMessage);
               await performValidation('errorMessage', !validationArr?.header ? validationArr.header = 'There is a problem' : validationArr.header, item.errMessage);
             }).toPass({
               timeout: VERY_LONG_TIMEOUT,
@@ -620,6 +622,15 @@ export class CaseManagementAction implements IAction {
               } else {
                 await performValidation('inputError', validationArr.label, item.errMessage);
               }
+            }).toPass({
+              timeout: VERY_LONG_TIMEOUT,
+            });
+            break;
+
+          case 'uploadADocument':
+            await expect(async () => {
+              await performAction('clickButton', validationArr.button);
+              await performValidation('errorMessage', !validationArr?.header ? validationArr.header = 'There is a problem' : validationArr.header, item.errMessage);
             }).toPass({
               timeout: VERY_LONG_TIMEOUT,
             });
