@@ -7,53 +7,44 @@ import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.OrganisationProfile.OTHE
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.OrganisationProfile.OTHER_REALT_PROFILE;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.OrganisationProfile.SOLICITOR_PROFILE;
 
-import java.util.List;
 import lombok.Getter;
 import uk.gov.hmcts.ccd.sdk.api.CCDAccessGroup;
-import uk.gov.hmcts.ccd.sdk.api.HasRole;
 
 @Getter
 public enum GroupAccessType implements CCDAccessGroup {
 
     LOCAL_AUTHORITY_CLAIMANT_ACCESS(
-        LOCALAUTH_PROFILE.getId(), "prof-org-claimant-access",
-        "Grants claimant access on all cases associated with this organisation", "",
-        1, true, true, true, true
+        LOCALAUTH_PROFILE, "prof-org-claimant-access", "claimant",
+        "Grants claimant access on all cases associated with this organisation", 1
     ),
     REAL_ESTATE_ORG_CLAIMANT_ACCESS(
-        OTHER_REALT_PROFILE.getId(), "prof-org-claimant-access",
-        "Grants claimant access on all cases associated with this organisation", "",
-        2, true, true, true, true
+        OTHER_REALT_PROFILE, "prof-org-claimant-access", "claimant",
+        "Grants claimant access on all cases associated with this organisation", 2
     ),
     PROPERTY_CONSTRUCTION_ORG_CLAIMANT_ACCESS(
-        OTHER_PROP_PROFILE.getId(), "prof-org-claimant-access",
-        "Grants claimant access on all cases associated with this organisation", "",
-        3, true, true, true, true
+        OTHER_PROP_PROFILE, "prof-org-claimant-access", "claimant",
+        "Grants claimant access on all cases associated with this organisation", 3
     ),
     NOT_FOR_PROFIT_ORG_CLAIMANT_ACCESS(
-        OTHER_NFP_PROFILE.getId(), "prof-org-claimant-access",
-        "Grants claimant access on all cases associated with this organisation", "",
-        4, true, true, true, true
+        OTHER_NFP_PROFILE, "prof-org-claimant-access", "claimant",
+        "Grants claimant access on all cases associated with this organisation", 4
     ),
     CHARITY_ORG_CLAIMANT_ACCESS(
-        OTHER_CHARITY_PROFILE.getId(), "prof-org-claimant-access",
-        "Grants claimant access on all cases associated with this organisation", "",
-        5, true, true, true, true
+        OTHER_CHARITY_PROFILE, "prof-org-claimant-access", "claimant",
+        "Grants claimant access on all cases associated with this organisation", 5
     ),
     SOLICITOR_ORG_CLAIMANT_ACCESS(
-        SOLICITOR_PROFILE.getId(), "solicitor-org-claimant-access",
-        "Grants solicitors claimant access on all cases associated with this organisation", "",
-        6, true, true, true, true
+        SOLICITOR_PROFILE, "solicitor-org-claimant-access", "claimant_solicitor",
+        "Grants solicitors claimant access on all cases associated with this organisation", 6
     ),
     SOLICITOR_ORG_DEFENDANT_ACCESS(
-        SOLICITOR_PROFILE.getId(), "solicitor-org-defendant-access",
-        "Grants solicitors defendant access on all cases associated with this organisation", "",
-        7, true, true, true, true
+        SOLICITOR_PROFILE, "solicitor-org-defendant-access", "defendant_solicitor",
+        "Grants solicitors defendant access on all cases associated with this organisation", 7
     ),
     DUTY_ADVISOR_ACCESS(
-        SOLICITOR_PROFILE.getId(), "duty-advisor-access",
-        "Grants solicitors access to request time-bound duty-advisor role", "",
-        8, true, true, true, true
+        SOLICITOR_PROFILE, "duty-advisor-access", "duty-advisor-request",
+        "Grants solicitors access to request time-bound duty-advisor role", "", 8,
+        false, false, true, true
     );
 
     private final String organisationProfileId;
@@ -65,11 +56,33 @@ public enum GroupAccessType implements CCDAccessGroup {
     private final boolean accessDefault;
     private final boolean display;
     private final boolean groupAccessEnabled;
+    /**
+     * The case role naming the OrganisationPolicy that supplies the organisation ID. A role name
+     * rather than a field name, despite the column's title, and given as a literal rather than
+     * {@code AccessProfile.CLAIMANT.getRole()} so that this enum holds no reference back into
+     * {@link AccessProfile}. The definition store validates it against
+     * {@code RoleToAccessProfiles.RoleName}, so it must be a declared role.
+     */
+    private final String caseAssignedRoleField;
 
-    GroupAccessType(String organisationProfileId, String accessTypeId, String description, String hintText,
-                    int displayOrder, boolean accessMandatory, boolean accessDefault, boolean display,
-                    boolean groupAccessEnabled) {
-        this.organisationProfileId = organisationProfileId;
+    GroupAccessType(OrganisationProfile orgProfileId, String accessTypeId, String caseAssignedRoleField,
+                    String description, int displayOrder) {
+        this.organisationProfileId = orgProfileId.getId();
+        this.accessTypeId = accessTypeId;
+        this.accessMandatory = true;
+        this.accessDefault = true;
+        this.display = true;
+        this.description = description;
+        this.hintText = "";
+        this.groupAccessEnabled = true;
+        this.displayOrder = displayOrder;
+        this.caseAssignedRoleField = caseAssignedRoleField;
+    }
+
+    GroupAccessType(OrganisationProfile orgProfileId, String accessTypeId, String caseAssignedRoleField,
+                    String description, String hintText, int displayOrder,
+                    boolean accessMandatory, boolean accessDefault, boolean display, boolean groupAccessEnabled) {
+        this.organisationProfileId = orgProfileId.getId();
         this.accessTypeId = accessTypeId;
         this.accessMandatory = accessMandatory;
         this.accessDefault = accessDefault;
@@ -78,37 +91,7 @@ public enum GroupAccessType implements CCDAccessGroup {
         this.hintText = hintText;
         this.displayOrder = displayOrder;
         this.groupAccessEnabled = groupAccessEnabled;
-    }
-
-    /**
-     * The role PRM mints per organisation for this access type. Also the case role naming the
-     * OrganisationPolicy that supplies the organisation ID, since for every access type here the
-     * two are the same role.
-     */
-    private AccessProfile groupRole() {
-        return switch (this) {
-            case LOCAL_AUTHORITY_CLAIMANT_ACCESS, REAL_ESTATE_ORG_CLAIMANT_ACCESS,
-                 PROPERTY_CONSTRUCTION_ORG_CLAIMANT_ACCESS, NOT_FOR_PROFIT_ORG_CLAIMANT_ACCESS,
-                 CHARITY_ORG_CLAIMANT_ACCESS -> AccessProfile.GA_CLAIMANT;
-            case SOLICITOR_ORG_CLAIMANT_ACCESS -> AccessProfile.GA_CLAIMANT_SOLICITOR;
-            case SOLICITOR_ORG_DEFENDANT_ACCESS -> AccessProfile.GA_DEFENDANT_SOLICITOR;
-            case DUTY_ADVISOR_ACCESS -> AccessProfile.DUTY_ADVISOR_REQUEST;
-        };
-    }
-
-    @Override
-    public HasRole getGroupRoleName() {
-        return groupRole();
-    }
-
-    @Override
-    public HasRole getCaseAssignedRoleField() {
-        return groupRole();
-    }
-
-    @Override
-    public List<String> getGroupRoleAccessProfiles() {
-        return List.of(groupRole().getRole());
+        this.caseAssignedRoleField = caseAssignedRoleField;
     }
 
     /**
@@ -117,6 +100,6 @@ public enum GroupAccessType implements CCDAccessGroup {
      */
     @Override
     public String getCaseAccessGroupIdTemplate() {
-        return "PCS:PCS:" + accessTypeId + ":" + groupRole().getRole() + ":$ORGID$";
+        return "PCS:PCS:" + accessTypeId + ":" + caseAssignedRoleField + ":$ORGID$";
     }
 }
