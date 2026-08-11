@@ -59,7 +59,7 @@ public class FileUploadValidationService {
     private final FeatureToggleService featureToggleService;
 
     public List<String> validateDocuments(List<ListValue<Document>> documents) {
-        if (CollectionUtils.isEmpty(documents)) {
+        if (!newDocumentValidationEnabled() || CollectionUtils.isEmpty(documents)) {
             return List.of();
         }
 
@@ -76,6 +76,10 @@ public class FileUploadValidationService {
      * {@link ConditionalDocumentUpload} rather than by adding more branching logic in the page callback.
      */
     public List<String> validateConditionalDocuments(List<ConditionalDocumentUpload> uploads) {
+        if (!newDocumentValidationEnabled()) {
+            return List.of();
+        }
+
         List<String> errors = new ArrayList<>();
         boolean hasDisallowedFile = false;
 
@@ -116,15 +120,11 @@ public class FileUploadValidationService {
     }
 
     private List<String> disallowedFileErrors(Stream<String> filenames) {
-        if (!restrictionEnabled()) {
-            return List.of();
-        }
         return filenames.anyMatch(this::isDisallowed) ? DISALLOWED_FILE_TYPE_ERRORS : List.of();
     }
 
-    private boolean restrictionEnabled() {
-        return featureToggleService.isEnabled(FeatureFlag.RESTRICT_DOCUMENT_UPLOAD_TYPES)
-            && featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_2);
+    private boolean newDocumentValidationEnabled() {
+        return featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_2);
     }
 
     /**
@@ -133,6 +133,9 @@ public class FileUploadValidationService {
      */
     public List<String> validateRequiredAdditionalDocuments(
         List<ListValue<AdditionalDocument>> additionalDocuments, String requiredMessage) {
+        if (!newDocumentValidationEnabled()) {
+            return List.of();
+        }
         if (CollectionUtils.isEmpty(additionalDocuments)) {
             return List.of(requiredMessage);
         }

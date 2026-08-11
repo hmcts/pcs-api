@@ -37,7 +37,6 @@ class FileUploadValidationServiceTest {
     @BeforeEach
     void setUp() {
         featureToggleService = mock(FeatureToggleService.class);
-        when(featureToggleService.isEnabled(FeatureFlag.RESTRICT_DOCUMENT_UPLOAD_TYPES)).thenReturn(true);
         when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_2)).thenReturn(true);
         fileUploadValidationService = new FileUploadValidationService(featureToggleService);
     }
@@ -275,48 +274,51 @@ class FileUploadValidationServiceTest {
     }
 
     @Nested
-    @DisplayName("Feature flag gating of the file-type restriction")
+    @DisplayName("Feature flag gating of the new document validation behaviour")
     class FeatureFlagGatingTests {
 
-        // Builds a service whose two gating flags are set independently, so each combination can be exercised.
-        private FileUploadValidationService serviceWithFlags(boolean restrictFlag, boolean releaseFlag) {
+        // Builds a service whose single release gating flag is set, so each combination can be exercised.
+        private FileUploadValidationService serviceWithReleaseFlag(boolean releaseFlag) {
             FeatureToggleService toggleService = mock(FeatureToggleService.class);
-            when(toggleService.isEnabled(FeatureFlag.RESTRICT_DOCUMENT_UPLOAD_TYPES)).thenReturn(restrictFlag);
             when(toggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_2)).thenReturn(releaseFlag);
             return new FileUploadValidationService(toggleService);
         }
 
         @Test
-        @DisplayName("Should not reject a disallowed file when the journey flag is off")
-        void shouldNotRestrictWhenJourneyFlagOff() {
-            List<String> errors = serviceWithFlags(false, true)
-                .validateDocuments(documentsWithFilenames("clip.mp4"));
-
-            assertThat(errors).isEmpty();
-        }
-
-        @Test
         @DisplayName("Should not reject a disallowed file when the release flag is off")
         void shouldNotRestrictWhenReleaseFlagOff() {
-            List<String> errors = serviceWithFlags(true, false)
+            List<String> errors = serviceWithReleaseFlag(false)
                 .validateDocuments(documentsWithFilenames("clip.mp4"));
 
             assertThat(errors).isEmpty();
         }
 
         @Test
-        @DisplayName("Should reject a disallowed file only when both flags are on")
-        void shouldRestrictWhenBothFlagsOn() {
-            List<String> errors = serviceWithFlags(true, true)
+        @DisplayName("Should reject a disallowed file when the release flag is on")
+        void shouldRestrictWhenReleaseFlagOn() {
+            List<String> errors = serviceWithReleaseFlag(true)
                 .validateDocuments(documentsWithFilenames("clip.mp4"));
 
             assertThat(errors).containsExactly(DISALLOWED_FILE_TYPE_ERROR, ALLOWED_FILE_TYPE_GUIDANCE);
         }
 
         @Test
-        @DisplayName("Should still enforce required-document validation when the restriction is off")
-        void shouldStillValidateRequiredDocumentsWhenRestrictionOff() {
-            FileUploadValidationService service = serviceWithFlags(false, false);
+        @DisplayName("Should skip required-document validation when the release flag is off")
+        void shouldSkipRequiredDocumentsWhenReleaseFlagOff() {
+            FileUploadValidationService service = serviceWithReleaseFlag(false);
+
+            List<String> conditionalErrors = service.validateConditionalDocuments(List.of(
+                new ConditionalDocumentUpload(true, null, "missing epc")));
+            List<String> additionalErrors = service.validateRequiredAdditionalDocuments(null, "missing document");
+
+            assertThat(conditionalErrors).isEmpty();
+            assertThat(additionalErrors).isEmpty();
+        }
+
+        @Test
+        @DisplayName("Should enforce required-document validation when the release flag is on")
+        void shouldEnforceRequiredDocumentsWhenReleaseFlagOn() {
+            FileUploadValidationService service = serviceWithReleaseFlag(true);
 
             List<String> conditionalErrors = service.validateConditionalDocuments(List.of(
                 new ConditionalDocumentUpload(true, null, "missing epc")));

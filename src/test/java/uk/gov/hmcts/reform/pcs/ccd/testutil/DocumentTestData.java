@@ -30,14 +30,8 @@ public final class DocumentTestData {
         return wrapListItems(documents);
     }
 
-    /**
-     * A {@link FileUploadValidationService} wired with both flags enabled, so the file-type restriction is
-     * active. Page tests that assert on disallowed-file behaviour use this to exercise the fully-enabled path.
-     */
     public static FileUploadValidationService restrictionEnabledFileUploadValidationService() {
         FeatureToggleService featureToggleService = mock(FeatureToggleService.class);
-        lenient().when(featureToggleService.isEnabled(FeatureFlag.RESTRICT_DOCUMENT_UPLOAD_TYPES))
-            .thenReturn(true);
         lenient().when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_2)).thenReturn(true);
         return new FileUploadValidationService(featureToggleService);
     }
