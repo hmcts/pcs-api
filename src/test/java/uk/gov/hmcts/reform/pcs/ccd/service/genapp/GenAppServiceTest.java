@@ -667,7 +667,7 @@ class GenAppServiceTest {
             // Then
             assertThat(throwable)
                 .isInstanceOf(GenAppNotFoundException.class)
-                .hasMessage("No gen app found with ID %s", unknownGenAppId);
+                .hasMessageContaining("No gen app found with ID=", unknownGenAppId);
         }
 
         private static Stream<Arguments> otherPartiesAgreedScenarios() {

@@ -13,6 +13,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.exception.RedactionGate;
 import uk.gov.hmcts.reform.pcs.exception.IdamException;
 import uk.gov.hmcts.reform.pcs.exception.InvalidAuthTokenException;
+import uk.gov.hmcts.reform.pcs.exception.RemoteCallException;
 import uk.gov.hmcts.reform.pcs.exception.ResetExceptionRedactionExtension;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -101,17 +102,17 @@ class IdamAuthenticatorTest {
     }
 
     @Test
-    @DisplayName("Should wrap non-401 FeignException in IdamException (transient upstream failure)")
+    @DisplayName("Should wrap non-401 RemoteCallException in IdamException (transient upstream failure)")
     void shouldWrapNon401FeignExceptionInIdamException() {
         RedactionGate.setShowFullExceptionsForTesting(true);
         String token = BEARER_PREFIX + "valid-token";
-        FeignException feignEx = mock(FeignException.class);
-        when(idamUserInfoApi.getUserInfo(token)).thenThrow(feignEx);
+        RemoteCallException remoteCallException = mock(RemoteCallException.class);
+        when(idamUserInfoApi.getUserInfo(token)).thenThrow(remoteCallException);
 
         assertThatThrownBy(() -> underTest.validateAuthToken(token))
             .isInstanceOf(IdamException.class)
             .hasMessageContaining("Unable to validate authorization token")
-            .hasCause(feignEx);
+            .hasCause(remoteCallException);
     }
 
     @Test

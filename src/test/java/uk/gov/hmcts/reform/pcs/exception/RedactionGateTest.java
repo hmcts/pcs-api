@@ -59,15 +59,15 @@ public class RedactionGateTest {
 
     @Test
     void parseShowFullExceptions_true() {
-        assertThat(RedactionGate.parseShowFullExceptions("true")).isTrue();
-        assertThat(RedactionGate.parseShowFullExceptions("TRUE")).isTrue();
+        assertThat(RedactionGate.showFullMessages("true")).isTrue();
+        assertThat(RedactionGate.showFullMessages("TRUE")).isTrue();
     }
 
     @Test
     void parseShowFullExceptions_false() {
-        assertThat(RedactionGate.parseShowFullExceptions("false")).isFalse();
-        assertThat(RedactionGate.parseShowFullExceptions(null)).isFalse();
-        assertThat(RedactionGate.parseShowFullExceptions("yes")).isFalse();
+        assertThat(RedactionGate.showFullMessages("false")).isFalse();
+        assertThat(RedactionGate.showFullMessages(null)).isFalse();
+        assertThat(RedactionGate.showFullMessages("yes")).isFalse();
     }
 
     @Test

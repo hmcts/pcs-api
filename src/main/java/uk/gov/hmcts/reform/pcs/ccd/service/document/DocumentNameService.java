@@ -11,8 +11,6 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 
-import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.PARTY_NOT_FOUND;
-
 @Service
 @RequiredArgsConstructor
 public class DocumentNameService {

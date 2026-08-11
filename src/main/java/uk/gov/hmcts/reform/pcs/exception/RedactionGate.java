@@ -37,8 +37,7 @@ import java.util.function.Consumer;
 public class RedactionGate {
 
     static final String REDACTED = "REDACTED";
-    private static final boolean SHOW_FULL_EXCEPTIONS =
-        parseShowFullExceptions(System.getenv("LOG_SHOW_FULL_EXCEPTIONS"));
+    private static final boolean SHOW_FULL_EXCEPTIONS = showFullMessages(System.getenv("SHOW_FULL_MESSAGES"));
     private static volatile Boolean overrideForTesting; // Not for prod code
 
     private RedactionGate() {
@@ -109,7 +108,7 @@ public class RedactionGate {
         }
     }
 
-    static boolean parseShowFullExceptions(String raw) {
+    static boolean showFullMessages(String raw) {
         return "true".equalsIgnoreCase(raw);
     }
 

@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.pcs.exception.IdamException;
 import uk.gov.hmcts.reform.pcs.exception.InvalidAuthTokenException;
 import uk.gov.hmcts.reform.pcs.exception.RedactionContext;
+import uk.gov.hmcts.reform.pcs.exception.RemoteCallException;
 import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
 
 import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.AUTH_BLANK;
@@ -38,8 +39,8 @@ public class IdamAuthenticator {
         } catch (FeignException.Unauthorized ex) {
             log.error("The Authorization token provided is expired or invalid", ex);
             throw new InvalidAuthTokenException(AUTH_UNAUTHORIZED, ex);
-        } catch (FeignException ex) {
-            int status = ex.status();
+        } catch (RemoteCallException ex) {
+            int status = ex.getStatus();
             if (status >= 400 && status < 500 && status != 429) {
                 // IDAM actively rejected the request — the caller's token cannot be
                 // validated, so this is a client auth failure (401), not a server fault.
