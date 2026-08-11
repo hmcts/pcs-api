@@ -12,8 +12,8 @@ import {
   enterGenappApplication,
   enterGenAppapplicationFee,
   enterGenAppConsentAndNotice,
-   enterGenAppHearingDate, enterGenAppPreferApplicationToJudge, enterGenAppUploadGeneralApplication,
-  enterGenAppUploadRelatedEvidence, genAppsCheckYourAnswers
+  enterGenAppHearingDate, enterGenAppPreferApplicationToJudge,
+  enterGenAppUploadGeneralApplication, enterGenAppUploadRelatedEvidence, genAppsCheckYourAnswers
 } from '@data/page-data-figma/page-data-caseManagement-figma';
 import { label } from 'allure-js-commons';
 import { CaseManagementCommonUtils } from '@utils/actions/custom-actions/custom-actions-caseManagement/caseManagementUtils.action';
@@ -27,6 +27,7 @@ test.beforeEach(async ({ page, context }) => {
   allPartyDetails.length = 0;
   await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
   await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayloadCaseFileView });
+  await performAction('getAddressInfo', { data: createCaseApiData.createCasePayload });
   console.log(`Case created with case number: ${process.env.CASE_NUMBER}`);
   await performAction('updatePaymentAPI');
   await performAction('getCaseAPI', 'Link Solicitor');
@@ -103,6 +104,7 @@ test.describe('Case management - Case Worker Enter a General application @nightl
       nextPage: genAppsCheckYourAnswers.mainHeader
     });
     await performAction('clickButton', genAppsCheckYourAnswers.submitButton);
+    await performAction('verifyGenAppConfirm');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Enter a general application');
   });
 
@@ -178,6 +180,7 @@ test.describe('Case management - Case Worker Enter a General application @nightl
       nextPage: genAppsCheckYourAnswers.mainHeader
     });
     await performAction('clickButton', genAppsCheckYourAnswers.submitButton);
+    await performAction('verifyGenAppConfirm');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Enter a general application');
   });
 
@@ -222,6 +225,7 @@ test.describe('Case management - Case Worker Enter a General application @nightl
       nextPage: genAppsCheckYourAnswers.mainHeader
     });
     await performAction('clickButton', genAppsCheckYourAnswers.submitButton);
+    await performAction('verifyGenAppConfirm');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Enter a general application');
   });
 
@@ -266,6 +270,7 @@ test.describe('Case management - Case Worker Enter a General application @nightl
       nextPage: genAppsCheckYourAnswers.mainHeader
     });
     await performAction('clickButton', genAppsCheckYourAnswers.submitButton);
+    await performAction('verifyGenAppConfirm');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Enter a general application');
   });
 });
