@@ -3,12 +3,10 @@ package uk.gov.hmcts.reform.pcs.ccd.service.document;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
-import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentWithId;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServedDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsSection;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
-import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GeneralApplication;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.CaseDetailsTab;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.NoticeTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.RequiredDocumentsTabDetails;
@@ -47,7 +45,6 @@ public class CaseFileDocumentDeduplicationService {
         addDocumentIdsFromTenancyLicenceDetails(pcsCase.getTenancyLicenceDetails(), documentIds);
         addDocumentIdsFromRequiredDocumentsWales(pcsCase.getRequiredDocumentsWales(), documentIds);
         addDocumentIdsFromOccupationLicenceDetailsWales(pcsCase.getOccupationLicenceDetailsWales(), documentIds);
-        addDocumentIdsFromGenApps(pcsCase.getGenApps(), documentIds);
         addDocumentIdsFromCaseDetailsTab(pcsCase.getCaseDetailsTab(), documentIds);
 
         return documentIds;
@@ -93,21 +90,6 @@ public class CaseFileDocumentDeduplicationService {
         if (occupationLicenceDetailsWales != null) {
             addDocumentIds(occupationLicenceDetailsWales.getLicenceDocuments(), documentIds);
         }
-    }
-
-    private void addDocumentIdsFromGenApps(List<ListValue<GeneralApplication>> genApps, Set<String> documentIds) {
-        if (genApps == null) {
-            return;
-        }
-
-        genApps.stream()
-            .map(ListValue::getValue)
-            .forEach(genApp -> {
-                if (genApp != null) {
-                    addDocumentId(genApp.getSubmissionDocument(), documentIds);
-                    addDocumentIds(genApp.getSupportingDocuments(), documentIds);
-                }
-            });
     }
 
     private void addDocumentIdsFromCaseDetailsTab(CaseDetailsTab caseDetailsTab, Set<String> documentIds) {
@@ -171,12 +153,6 @@ public class CaseFileDocumentDeduplicationService {
         documents.stream()
             .map(ListValue::getId)
             .forEach(documentId -> addDocumentId(documentId, documentIds));
-    }
-
-    private void addDocumentId(DocumentWithId documentWithId, Set<String> documentIds) {
-        if (documentWithId != null) {
-            addDocumentId(documentWithId.getId(), documentIds);
-        }
     }
 
     private void addDocumentId(String documentId, Set<String> documentIds) {
