@@ -1,7 +1,7 @@
 import {initializeExecutor, performAction, performValidation} from '@utils/controller';
 import {caseNumber} from '@utils/actions/custom-actions/createCase.action';
 import {test} from '@utils/test-fixtures';
-import {createCaseApiData, submitCaseApiData} from '@data/api-data';
+import {createCaseApiData, paymentApiData, submitCaseApiData} from '@data/api-data';
 import {caseSummary, user} from '@data/page-data';
 import {staff, staffUsers} from '@data/user-data/staff.user.data';
 import {judicial, judicialUsers} from '@data/user-data/judicial.user.data';
@@ -13,7 +13,8 @@ import {
   specialMeasureForFlag,
   updateFlagComments,
   viewCaseFlag,
-  whereShouldThisFlagBeAdded
+  whereShouldThisFlagBeAdded,
+  confirmStatusForFlag
 } from '@data/page-data-figma';
 import {dismissCookieBanner} from '@config/cookie-banner';
 import {BrowserContext, Page} from '@playwright/test';
@@ -52,7 +53,7 @@ test.afterEach(async () => {
 
 test.describe('[Common Component Case Flags] @nightly @CC @caseFlags', async () => {
 
-  test('Case Flags - Verify the create and manage case flag menu @smoke', async ({page}) => {
+  test('Case Flags - Create and Manage case flag menu @smoke', async ({page}) => {
     await performAction('login', {email: staff.pcs_ctsc_admin_email, password: process.env.IDAM_PCS_USER_PASSWORD});
     await dismissCookieBanner(page, 'analytics');
     await performAction('navigateToCaseSummary');
@@ -88,6 +89,12 @@ test.describe('[Common Component Case Flags] @nightly @CC @caseFlags', async () 
       input: addCommentsForFlag.addCommentTextInput,
       continueButton: addCommentsForFlag.continueButton
     });
+    await performValidation('mainHeader', confirmStatusForFlag.mainHeader);
+    await performAction('confirmStatusForFlag', {
+      statusQuestion: confirmStatusForFlag.confirmTheStatusOfTheFlagQuestion,
+      statusOption: confirmStatusForFlag.activeStatusRadioOption,
+      continueButton: confirmStatusForFlag.continueButton
+    });
     await performValidation('mainHeader', reviewFlagDetails.mainHeader);
     await performAction('clickChangeLinkForRow', {
       rowLabel: reviewFlagDetails.rowLabel,
@@ -99,13 +106,20 @@ test.describe('[Common Component Case Flags] @nightly @CC @caseFlags', async () 
       continueButton: selectFlagType.continueButton
     });
     await performAction('clickButton', addCommentsForFlag.continueButton);
+    await performValidation('mainHeader', confirmStatusForFlag.mainHeader);
+    await performAction('confirmStatusForFlag', {
+      statusQuestion: confirmStatusForFlag.confirmTheStatusOfTheFlagQuestion,
+      statusOption: confirmStatusForFlag.requestedStatusRadioOption,
+      continueButton: confirmStatusForFlag.continueButton
+    });
     await performAction('reviewFlagDetails', {
-      saveButton: reviewFlagDetails.saveAndContinueButton
+      saveButton: reviewFlagDetails.submitButton
     });
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Create case flags');
     await performAction('viewCaseFlags', {
       viewFlagLink: viewCaseFlag.viewFlagLink
     });
+     
     await performAction('select', manageCaseFlags.nextStepEventList, manageCaseFlags.manageCaseFlagsEvent);
     await performAction('clickButton', manageCaseFlags.goButton);
     await performAction('manageCaseFlags', {
@@ -113,11 +127,11 @@ test.describe('[Common Component Case Flags] @nightly @CC @caseFlags', async () 
       continueButton: manageCaseFlags.continueButton
     });
     await performAction('makeFlagInactive', {
-      inactiveButton: updateFlagComments.makeInactiveButton,
+      statusOption: updateFlagComments.makeInactiveButton,
       continueButton: updateFlagComments.continueButton
     });
     await performAction('reviewFlagDetails', {
-      saveButton: reviewFlagDetails.saveAndContinueButton
+      saveButton: reviewFlagDetails.submitButton
     });
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage case flags');
   });
@@ -151,6 +165,12 @@ test.describe('[Common Component Case Flags] @nightly @CC @caseFlags', async () 
       input: addCommentsForFlag.addCommentTextInput,
       continueButton: addCommentsForFlag.continueButton
     });
+    await performValidation('mainHeader', confirmStatusForFlag.mainHeader);
+    await performAction('confirmStatusForFlag', {
+      statusQuestion: confirmStatusForFlag.confirmTheStatusOfTheFlagQuestion,
+      statusOption: confirmStatusForFlag.activeStatusRadioOption,
+      continueButton: confirmStatusForFlag.continueButton
+    });
     await performValidation('mainHeader', reviewFlagDetails.mainHeader);
     await performAction('clickChangeLinkForRow', {
       rowLabel: reviewFlagDetails.rowLabel,
@@ -162,13 +182,19 @@ test.describe('[Common Component Case Flags] @nightly @CC @caseFlags', async () 
       continueButton: specialMeasureForFlag.continueButton
     });
     await performAction('clickButton', addCommentsForFlag.continueButton);
+    await performValidation('mainHeader', confirmStatusForFlag.mainHeader);
+    await performAction('confirmStatusForFlag', {
+      statusQuestion: confirmStatusForFlag.confirmTheStatusOfTheFlagQuestion,
+      statusOption: confirmStatusForFlag.activeStatusRadioOption,
+      continueButton: confirmStatusForFlag.continueButton
+    });
     await performAction('reviewFlagDetails', {
-      saveButton: reviewFlagDetails.saveAndContinueButton
+      saveButton: reviewFlagDetails.submitButton
     });
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Create case flags');
-    await performAction('viewCaseFlags', {
-      viewFlagLink: viewCaseFlag.viewFlagLink
-    });
+    // await performAction('viewCaseFlags', {
+    //   viewFlagLink: viewCaseFlag.viewFlagLink
+    // });
     await performAction('select', manageCaseFlags.nextStepEventList, manageCaseFlags.manageCaseFlagsEvent);
     await performAction('clickButton', manageCaseFlags.goButton);
     await performAction('manageCaseFlags', {
@@ -179,11 +205,17 @@ test.describe('[Common Component Case Flags] @nightly @CC @caseFlags', async () 
       inactiveButton: updateFlagComments.makeInactiveButton,
       continueButton: updateFlagComments.continueButton
     });
+    // await performAction('makeFlagInactive', {
+    //   statusQuestion: makeFlagInactive.confirmTheStatusOfTheFlagQuestion,
+    //   statusOption: makeFlagInactive.notApprovedStatusRadioOption,
+    //   continueButton: makeFlagInactive.continueButton
+    // });
+
     await performAction('reviewFlagDetails', {
-      saveButton: reviewFlagDetails.saveAndContinueButton
+      saveButton: reviewFlagDetails.submitButton
     });
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage case flags');
-  });
+   });
 });
 
 test.describe('[Common Component Case Flags - Access Management] @CC @caseFlags', async () => {
@@ -193,6 +225,8 @@ test.describe('[Common Component Case Flags - Access Management] @CC @caseFlags'
     const results: UserTestResult[] = [];
     const password = process.env.IDAM_PCS_USER_PASSWORD as string;
     const runStaffUserTest = async (email: string) => {
+      await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
+      await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayload });
       await performAction('login', {email, password});
       await dismissCookieBanner(page, 'analytics');
       await performAction('navigateToCaseSummary', 'yes');

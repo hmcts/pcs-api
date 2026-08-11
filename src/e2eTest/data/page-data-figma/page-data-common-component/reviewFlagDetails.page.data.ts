@@ -4,6 +4,7 @@ export const reviewFlagDetails={
     rowLabel: `Flag type`,
     changeLink: `Change`,
     saveAndContinueButton: `Save and continue`,
+    submitButton: `Submit`,
     previousButton: `Previous`,
     cancelButton: `Cancel`,
 };

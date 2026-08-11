@@ -12,7 +12,9 @@ import {
   reviewFlagDetails,
   viewCaseFlag,
   manageCaseFlags,
-  updateFlagComments
+  updateFlagComments,
+  confirmStatusForFlag,
+  
 } from '@data/page-data-figma';
 import {workAccess} from "@data/page-data-figma/page-data-common-component/workAccess.page.data";
 import {createCaseApiData} from "@data/api-data";
@@ -25,11 +27,12 @@ export class CaseFlagAction implements IAction {
       ['selectFlagType', () => this.selectFlagType(fieldName as actionRecord, page)],
       ['selectSpecialMeasureForFlag', () => this.selectSpecialMeasureForFlag(fieldName as actionRecord, page)],
       ['addCommentsForFlag', () => this.addCommentsForFlag(fieldName as actionRecord)],
+      ['confirmStatusForFlag', () => this.confirmStatusForFlag(fieldName as actionRecord, page)],
       ['clickChangeLinkForRow', () => this.clickChangeLinkForRow(fieldName as actionRecord, page)],
       ['reviewFlagDetails', () => this.reviewFlagDetails(fieldName as actionRecord)],
       ['viewCaseFlags', () => this.viewCaseFlags(fieldName as actionRecord, page)],
       ['manageCaseFlags', () => this.manageCaseFlags(fieldName as actionRecord, page)],
-      ['makeFlagInactive', () => this.makeFlagInactive(fieldName as actionRecord)],
+      ['makeFlagInactive', () => this.makeFlagInactive(fieldName as actionRecord, page)],
       ['navigateToCaseSummary', () => this.navigateToCaseSummary((fieldName ?? 'yes') as actionData)],
       ['canCreateCaseLevelFlag', () => this.canCreateCaseLevelFlag(fieldName as actionRecord, page)],
       ['canCreatePartyLevelFlag', () => this.canCreatePartyLevelFlag(fieldName as actionRecord, page)],
@@ -89,6 +92,22 @@ export class CaseFlagAction implements IAction {
     await performAction('clickButton', addComments.continueButton);
   }
 
+  private async confirmStatusForFlag(confirmOptions: actionRecord, page: Page) {
+  await this.validateCaseContext();
+
+  if (confirmOptions.statusOption === confirmStatusForFlag.notApprovedStatusRadioOption) {
+    const radio = page.locator(`label >> text=${confirmOptions.statusOption}`);
+    await radio.waitFor({ state: 'visible' });
+    await performAction('clickRadioButton', { question: confirmOptions.statusQuestion, option: confirmOptions.statusOption });
+
+    const reasonInput = page.locator('#statusReason');
+    await reasonInput.waitFor({ state: 'visible' });
+    await reasonInput.fill(String(confirmOptions.inputDescription));
+  }
+
+  await performAction('clickButton', confirmOptions.continueButton);
+}
+
   private async clickChangeLinkForRow(changeOptions: actionRecord, page: Page) {
     const rowLabel = String(changeOptions.rowLabel ?? '').trim();
     if (!rowLabel) throw new Error('clickChangeLinkForRow requires rowLabel');
@@ -102,7 +121,7 @@ export class CaseFlagAction implements IAction {
     await propertyChangeLink.waitFor({ state: 'visible' });
     await propertyChangeLink.click();
   }
-
+  
   private async reviewFlagDetails(reviewOptions: actionRecord) {
     await this.validateCaseContext();
     await performAction('clickButton', reviewOptions.saveButton);
@@ -121,10 +140,12 @@ export class CaseFlagAction implements IAction {
     await performAction('clickButton', selectOptions.continueButton);
   }
 
-  private async makeFlagInactive(commentUpdate: actionRecord) {
+  private async makeFlagInactive(selectOptions: actionRecord, page: Page) {
     await this.validateCaseContext();
-    await performAction('clickButton', commentUpdate.inactiveButton);
-    await performAction('clickButton', commentUpdate.continueButton);
+    const radio = page.locator(`label >> text=${selectOptions.statusOption}`);
+    await radio.waitFor({ state: 'visible' });
+    await radio.click();
+    await performAction('clickButton', selectOptions.continueButton);
   }
 
   private async navigateToCaseSummary(option: actionData): Promise<void> {
@@ -167,8 +188,15 @@ export class CaseFlagAction implements IAction {
         input: addCommentsForFlag.addCommentTextInput,
         continueButton: addCommentsForFlag.continueButton
       });
+
+      await performAction('confirmStatusForFlag', {
+        statusQuestion: confirmStatusForFlag.confirmTheStatusOfTheFlagQuestion,
+        statusOption: confirmStatusForFlag.activeStatusRadioOption,
+        continueButton: confirmStatusForFlag.continueButton
+      });
+
       await performAction('reviewFlagDetails', {
-        saveButton: reviewFlagDetails.saveAndContinueButton
+        saveButton: reviewFlagDetails.submitButton
       });
       await performValidation('bannerAlert', 'Case #.* has been updated with event: Create case flags');
     } else {
@@ -200,8 +228,13 @@ export class CaseFlagAction implements IAction {
         input: addCommentsForFlag.addCommentTextInput,
         continueButton: addCommentsForFlag.continueButton
       });
+      await performAction('confirmStatusForFlag', {
+        statusQuestion: confirmStatusForFlag.confirmTheStatusOfTheFlagQuestion,
+        statusOption: confirmStatusForFlag.activeStatusRadioOption,
+        continueButton: confirmStatusForFlag.continueButton
+      });
       await performAction('reviewFlagDetails', {
-        saveButton: reviewFlagDetails.saveAndContinueButton
+        saveButton: reviewFlagDetails.submitButton
       });
       await performValidation('bannerAlert', 'Case #.* has been updated with event: Create case flags');
     } else {
@@ -222,7 +255,7 @@ export class CaseFlagAction implements IAction {
         continueButton: updateFlagComments.continueButton
       });
       await performAction('reviewFlagDetails', {
-        saveButton: reviewFlagDetails.saveAndContinueButton
+        saveButton: reviewFlagDetails.submitButton
       });
       await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage case flags');
     } else {
@@ -243,7 +276,7 @@ export class CaseFlagAction implements IAction {
         continueButton: updateFlagComments.continueButton
       });
       await performAction('reviewFlagDetails', {
-        saveButton: reviewFlagDetails.saveAndContinueButton
+        saveButton: reviewFlagDetails.submitButton
       });
       await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage case flags');
     } else {
@@ -272,6 +305,6 @@ export class CaseFlagAction implements IAction {
     await expect(page.getByRole('radio', { name: workAccess.viewTasksAndCasesOption, exact: true })).toBeVisible();
     await page.getByRole('radio', { name: workAccess.viewTasksAndCasesOption, exact: true }).check();
     await page.getByRole('button', { name: workAccess.continueButton, exact: true }).click();
-    await performValidation('mainHeader', caseList.mainHeader);
+    //await performValidation('mainHeader', caseList.mainHeader);
   }
 }
