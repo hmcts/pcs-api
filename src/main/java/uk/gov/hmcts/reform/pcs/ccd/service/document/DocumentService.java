@@ -55,8 +55,7 @@ public class DocumentService {
     private static final String CLAIMANT_1 = "Claimant 1";
     private static final String DEFAULT_CATEGORY_ID = CaseFileCategory.UNCATEGORISED_DOCUMENTS.getId();
 
-    public List<DocumentEntity> createAllDocuments(PCSCase pcsCase) {
-
+    public List<DocumentEntity> buildDocumentEntitiesForCase(PCSCase pcsCase) {
         List<DocumentHolder> allDocuments = getPcsCaseDocuments(pcsCase);
 
         if (allDocuments.isEmpty()) {
@@ -65,18 +64,22 @@ public class DocumentService {
 
         applyClaimFilename(allDocuments);
 
-        return documentRepository.saveAll(createDocumentEntities(allDocuments));
+        return createDocumentEntities(allDocuments);
+    }
+
+    /**
+     * Convenience wrapper that builds and persists document entities for a {@link PCSCase}.
+     * Production code uses {@link #buildDocumentEntitiesForCase(PCSCase)} directly; this overload
+     * remains for tests and callers that need persisted entities in one step.
+     */
+    public List<DocumentEntity> createAllDocuments(PCSCase pcsCase) {
+        return documentRepository.saveAll(buildDocumentEntitiesForCase(pcsCase));
     }
 
     public List<DocumentEntity> createAllDocuments(EnforcementOrder enforcementOrder) {
-
-        List<DocumentHolder> allDocuments = getWarrantOfRestitutionDocuments(enforcementOrder);
-
-        if (allDocuments.isEmpty()) {
-            return List.of();
-        }
-
-        return documentRepository.saveAll(createDocumentEntities(allDocuments));
+        return documentRepository.saveAll(
+            createDocumentEntities(getWarrantOfRestitutionDocuments(enforcementOrder))
+        );
     }
 
     private List<DocumentHolder> getPcsCaseDocuments(PCSCase pcsCase) {
@@ -359,7 +362,7 @@ public class DocumentService {
                 .party(party)
                 .counterClaim(counterClaim)
                 .url(ccDoc.getDocument().getUrl())
-                .fileName(documentNameService.appendCounterClaimDocumentName(
+                .fileName(documentNameService.appendCounterClaimPostfix(
                     ccDoc.getDocument().getFilename(), claim, party.getId()))
                 .binaryUrl(ccDoc.getDocument().getBinaryUrl())
                 .contentType(ccDoc.getContentType())
@@ -377,11 +380,13 @@ public class DocumentService {
         return saved;
     }
 
-    private Optional<CaseFileCategory> mapDocumentTypeToCategory(DocumentType documentType) {
+    public Optional<CaseFileCategory> mapDocumentTypeToCategory(DocumentType documentType) {
         return switch (documentType) {
             case NOTICE_FOR_SERVICE_OUT_OF_JURISDICTION,
                  CLAIM,
                  DEFENDANT_RESPONSE,
+                 AMENDED_CLAIM_FORM,
+                 PART_20_COUNTERCLAIM,
                  COUNTERCLAIM ->
                 Optional.of(CaseFileCategory.STATEMENTS_OF_CASE);
             case RENT_STATEMENT,
@@ -390,26 +395,34 @@ public class DocumentService {
                  OCCUPATION_LICENCE,
                  ENERGY_PERFORMANCE_CERTIFICATE,
                  GAS_SAFETY_CERTIFICATE,
+                 GAS_SAFETY_REPORT,
+                 ELECTRICAL_INSTALLATION_CONDITION,
                  EICR_REPORT,
                  POSSESSION_NOTICE ->
                 Optional.of(CaseFileCategory.PROPERTY_DOCUMENTS);
             case WITNESS_STATEMENT,
                  CERTIFICATE_OF_SERVICE,
-                 CORRESPONDENCE_FROM_DEFENDANT,
-                 CORRESPONDENCE_FROM_CLAIMANT,
+                 CORRESPONDENCE_BETWEEN_PARTIES,
                  PHOTOGRAPHIC_EVIDENCE,
                  INSPECTION_OR_REPORT ->
                 Optional.of(CaseFileCategory.EVIDENCE);
             case CERTIFICATE_OF_SUITABILITY_AS_LF,
+                 CORRESPONDENCE_FROM_DEFENDANT,
+                 CORRESPONDENCE_FROM_CLAIMANT,
                  LEGAL_AID_CERTIFICATE ->
                 Optional.of(CaseFileCategory.CORRESPONDENCE);
+            case NOTICE_OF_HEARING,
+                WITH_NOTICE_ORDER,
+                WITHOUT_NOTICE_ORDER,
+                NOTICE_OF_ALLOCATION_TO_TRACK ->
+                Optional.of(CaseFileCategory.ORDERS_AND_NOTICE_OF_HEARINGS);
+            case GENERAL_APPLICATION ->
+                Optional.of(CaseFileCategory.APPLICATIONS);
             case NOTICE_SERVED,
                  POLICE_REPORT,
                  // Defendant access-code letters aren't shown on the case file
                  DEFENDANT_ACCESS_CODE,
                  DOCUMENTS_SUPPORTING_A_COUNTERCLAIM,
-                 GAS_SAFETY_REPORT,
-                 ELECTRICAL_INSTALLATION_CONDITION,
                  OTHER ->
                 Optional.empty();
         };

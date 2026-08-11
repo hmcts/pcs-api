@@ -9,6 +9,8 @@ export class CheckAction implements IAction {
       for (const option of params) {
         await this.clickCheckBox(page, option);
       }
+    } else if (typeof params.label === 'string') {
+      await this.clickCheckBox(page, params.label);
     } else {
       const fieldset = page.locator('fieldset', {has: page.getByText(params.question as string, { exact: true })});
       if (Array.isArray(params.option)) {
