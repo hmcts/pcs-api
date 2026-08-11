@@ -2,27 +2,29 @@ package uk.gov.hmcts.reform.pcs.ccd.service;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
-import uk.gov.hmcts.ccd.sdk.type.ListValue;
-import uk.gov.hmcts.ccd.sdk.type.Flags;
 import uk.gov.hmcts.ccd.sdk.type.FlagDetail;
-import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.ccd.sdk.type.FlagVisibility;
+import uk.gov.hmcts.ccd.sdk.type.Flags;
+import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.reform.pcs.camunda.CamundaService;
+import uk.gov.hmcts.reform.pcs.camunda.TaskType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
+import uk.gov.hmcts.reform.pcs.ccd.entity.BaseCaseFlag;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseFlagEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CasePartyFlagEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.FlagRefDataEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.BaseCaseFlag;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.FlagRefDataRepository;
 import uk.gov.hmcts.reform.pcs.ccd.util.YesOrNoConverter;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseFlagsView;
 
-import java.util.List;
-import java.util.Set;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.UUID;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -32,7 +34,11 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class CaseFlagService {
 
+    private static final String WELSH_COMMUNICATIONS_FLAG_CODE = "PF0026";
+    private static final String ACTIVE_STATUS = "Active";
+
     private FlagRefDataRepository flagRefDataRepository;
+    private CamundaService camundaService;
 
     public List<CaseFlagEntity> mergeCaseFlags(Flags incomingCaseFlags, PcsCaseEntity pcsCaseEntity) {
 
@@ -54,11 +60,20 @@ public class CaseFlagService {
 
             if (incomingParty.getDefendantFlags() != null
                 && !incomingParty.getDefendantFlags().getDetails().isEmpty()) {
+                boolean welshCommsAlreadyActive = hasActiveWelshCommunicationsFlag(partyEntity.getDefendantFlags());
+
                 List<CasePartyFlagEntity> mergedCasePartyFlags = mergeFlagDetails(
                     incomingParty.getDefendantFlags(), null, partyEntity, CasePartyFlagEntity::new);
 
                 partyEntity.getDefendantFlags().clear();
                 partyEntity.getDefendantFlags().addAll(mergedCasePartyFlags);
+
+                // Only fire when the flag just became active, to avoid triggering duplicate tasks
+                if (!welshCommsAlreadyActive && hasActiveWelshCommunicationsFlag(mergedCasePartyFlags)) {
+                    camundaService.createTask(
+                        partyEntity.getPcsCase().getCaseReference(),
+                        TaskType.TRANSLATE_CLAIMANT_SUBMITTED_DOCUMENT);
+                }
             }
         }
     }
@@ -135,6 +150,17 @@ public class CaseFlagService {
 
             flagEntity.setPaths(paths);
         }
+    }
+
+
+    private boolean hasActiveWelshCommunicationsFlag(List<CasePartyFlagEntity> flags) {
+        return flags.stream().anyMatch(flag -> isWelshCommunicationsPreference(flag));
+    }
+
+    private boolean isWelshCommunicationsPreference(BaseCaseFlag flagEntity) {
+        return flagEntity.getFlagRefData() != null
+            && WELSH_COMMUNICATIONS_FLAG_CODE.equals(flagEntity.getFlagRefData().getFlagCode())
+            && ACTIVE_STATUS.equals(flagEntity.getDefaultStatus());
     }
 }
 

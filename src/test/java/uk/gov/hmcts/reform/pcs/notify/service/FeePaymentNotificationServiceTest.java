@@ -10,7 +10,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.camunda.CamundaService;
 import uk.gov.hmcts.reform.pcs.camunda.TaskType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
-import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimDocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -21,6 +20,7 @@ import uk.gov.hmcts.reform.pcs.exception.FeePaymentNotFoundException;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -104,14 +104,19 @@ class FeePaymentNotificationServiceTest {
     @EnumSource(value = LanguageUsed.class, names = {"WELSH", "ENGLISH_AND_WELSH"})
     void shouldCreateTranslateTaskWhenLanguageIsNotEnglishAndDocumentsExist(LanguageUsed languageUsed) {
         Integer feePaymentId = 1;
-        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().caseReference(1234L).build();
-        DocumentEntity documentEntity = DocumentEntity.builder().fileName("claim-form.pdf").build();
-        ClaimDocumentEntity claimDocumentEntity = ClaimDocumentEntity.builder().document(documentEntity).build();
         ClaimEntity claim = ClaimEntity.builder()
-            .pcsCase(pcsCaseEntity)
+            .id(UUID.randomUUID())
             .languageUsed(languageUsed)
-            .claimDocuments(List.of(claimDocumentEntity))
             .build();
+        DocumentEntity documentEntity = DocumentEntity.builder()
+            .fileName("claim-form.pdf")
+            .claim(claim)
+            .build();
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
+            .caseReference(1234L)
+            .documents(List.of(documentEntity))
+            .build();
+        claim.setPcsCase(pcsCaseEntity);
         FeePaymentEntity feePayment = FeePaymentEntity.builder()
             .id(feePaymentId)
             .claim(claim)

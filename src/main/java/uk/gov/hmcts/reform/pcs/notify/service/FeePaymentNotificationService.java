@@ -6,7 +6,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.reform.pcs.camunda.CamundaService;
 import uk.gov.hmcts.reform.pcs.camunda.TaskType;
-import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimDocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -48,8 +47,9 @@ public class FeePaymentNotificationService {
     }
 
     private void createTranslateClaimantDocumentTask(long caseReference, ClaimEntity claimEntity) {
-        List<DocumentEntity> documents = claimEntity.getClaimDocuments().stream()
-            .map(ClaimDocumentEntity::getDocument)
+        List<DocumentEntity> documents = claimEntity.getPcsCase().getDocuments().stream()
+            .filter(document -> document.getClaim() != null
+                && document.getClaim().getId().equals(claimEntity.getId()))
             .toList();
 
         if (!documents.isEmpty()) {
