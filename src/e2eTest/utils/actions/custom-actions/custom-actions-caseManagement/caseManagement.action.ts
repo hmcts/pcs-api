@@ -8,14 +8,24 @@ import { caseSummary, home } from '@data/page-data';
 import {generateRandomString} from "@utils/common/string.utils";
 import {performActions} from "@utils/controller";
 import {
-  addReviewDates, confirmReviewDatesAdded, changeCaseState, confirmCaseStateChange, confirmAmend, confirmUpload, enterGenappApplication, enterGenAppapplicationFee,
-  enterGenAppConsentAndNotice, enterGenAppHearingDate,
-  enterGenAppPreferApplicationToJudge, selectDocument, uploadADocument
+  addReviewDates,
+  confirmReviewDatesAdded,
+  changeCaseState,
+  confirmCaseStateChange,
+  confirmAmend,
+  confirmUpload,
+  enterGenappApplication,
+  enterGenAppapplicationFee,
+  enterGenAppConsentAndNotice,
+  enterGenAppHearingDate,
+  enterGenAppPreferApplicationToJudge,
+  selectDocument,
+  uploadADocument,
+  enterGenAppConfirmation
 } from '@data/page-data-figma/page-data-caseManagement-figma';
 import { caseInfo } from '../createCaseAPI.action';
 import { CaseManagementCommonUtils } from './caseManagementUtils.action';
 import path from 'path';
-
 export let addressInfo: { buildingStreet: string; addressLine2: string; townCity: string; engOrWalPostcode: string; };
 
 export let allPartyDetails: string[] = [];
@@ -44,6 +54,7 @@ export class CaseManagementAction implements IAction {
       ['uploadRelativeEvidence', () => this.uploadRelativeEvidence(fieldName as actionRecord)],
       ['inputErrorValidation', () => this.inputErrorValidation(page, fieldName as actionRecord)],
       ['getAddressInfo', () => this.getAddressInfo(fieldName as actionRecord)],
+      ['verifyGenAppConfirm', () => this.verifyGenAppConfirm()],
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) {
@@ -286,6 +297,22 @@ export class CaseManagementAction implements IAction {
     });
     await performValidation('mainHeader', enterGenAppPreferApplicationToJudge.mainHeader);
     await performAction('reTryOnCallBackError', enterGenAppPreferApplicationToJudge.continueButton, referToJudgeData.nextPage as string);
+  }
+
+  private async verifyGenAppConfirm(): Promise<void> {
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
+    await performValidation('text', {
+      elementType: 'paragraph',
+      text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
+    });
+    await performValidation('text', { elementType: 'inlineText', text: 'Case number: ' + caseInfo.fid });
+    await performValidation('text', {
+      elementType: 'inlineText',
+      text: `${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
+    });
+    await performValidation('mainHeader', enterGenAppConfirmation.mainHeader);
+    await performValidation('text', { elementType: 'inlineText', text: enterGenAppConfirmation.applicationEnteredText });
+    await performAction('clickButton', enterGenAppConfirmation.closeAndReturnToCaseOverviewButton);
   }
 
   private async selectDynamicAppAndPartyDocRelatedTo(selectApp: actionRecord) {

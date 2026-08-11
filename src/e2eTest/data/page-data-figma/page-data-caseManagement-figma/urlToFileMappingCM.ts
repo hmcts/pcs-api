@@ -17,4 +17,5 @@ export default {
   'enterGenAppuploadRelatedEvidence': 'enterGenAppUploadRelatedEvidence',
   'enterGenAppreferApplicationToJudge': 'enterGenAppPreferApplicationToJudge',
   'enterGenApp/submit': 'genAppsCheckYourAnswers',
+  'enterGenApp/confirm': 'enterGenAppConfirmation',
 };

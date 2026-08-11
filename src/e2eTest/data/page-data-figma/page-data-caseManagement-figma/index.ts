@@ -17,5 +17,6 @@ export * from './checkYourAnswersAmendDocuments.page.data';
 export * from './confirmAmend.page.data';
 export * from './enterGenAppuploadGeneralApplication.page.data';
 export * from './enterGenAppUploadRelatedEvidence.page.data';
-export * from './enterGenAppPreferApplicationToJudge.page.data'
-export * from './genAppsCheckYourAnswers.page.data'
+export * from './enterGenAppPreferApplicationToJudge.page.data';
+export * from './genAppsCheckYourAnswers.page.data';
+export * from './enterGenAppConfirmation.page.data';
