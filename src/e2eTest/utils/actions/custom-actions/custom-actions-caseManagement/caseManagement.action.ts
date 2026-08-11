@@ -313,8 +313,8 @@ export class CaseManagementAction implements IAction {
     await performAction('reTryOnCallBackError', addHearing.continueButton, addAHearing.nextPage as string);
   }
 
-  private async confirmAddHearing(confirm: actionRecord): Promise<void> {
-    let submitPayLoad = confirm.submitPayload as Record<string, any>;
+  private async confirmAddHearing(confirmAdd: actionRecord): Promise<void> {
+    let submitPayLoad = confirmAdd.submitPayload as Record<string, any>;
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', {
       elementType: 'paragraph',
