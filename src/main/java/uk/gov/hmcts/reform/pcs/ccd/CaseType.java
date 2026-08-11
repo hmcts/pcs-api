@@ -215,6 +215,15 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
             .hintText("Assign to Users to enable access to all cases associated with this organisation")
             .displayOrder(2)
             .liveTo("01/01/2027");
+        builder.accessType("solicitor-org-defendant-access")
+            .organisationProfileId("SOLICITOR_PROFILE")
+            .accessMandatory(true)
+            .accessDefault(true)
+            .display(true)
+            .description("Can manage all cases associated with this organisation as defendant")
+            .hintText("Assign to Users to enable access to all cases associated with this organisation")
+            .displayOrder(3)
+            .liveTo("01/01/2027");
         builder.accessType("prof-org-claimant-access")
             .organisationProfileId("LOCALAUTH_PROFILE")
             .accessMandatory(true)
@@ -267,6 +276,13 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
             .caseAssignedRoleField("claimant_solicitor")
             .groupAccessEnabled(true)
             .caseAccessGroupIdTemplate("PCS:PCS:solicitor-org-claimant-access:claimant_solicitor:$ORGID$")
+            .liveTo("01/01/2027");
+        builder.accessTypeRole("solicitor-org-defendant-access")
+            .organisationProfileId("SOLICITOR_PROFILE")
+            .groupRoleName("defendant_solicitor")
+            .caseAssignedRoleField("defendant_solicitor")
+            .groupAccessEnabled(true)
+            .caseAccessGroupIdTemplate("PCS:PCS:solicitor-org-defendant-access:defendant_solicitor:$ORGID$")
             .liveTo("01/01/2027");
         builder.accessTypeRole("prof-org-claimant-access")
             .organisationProfileId("LOCALAUTH_PROFILE")
