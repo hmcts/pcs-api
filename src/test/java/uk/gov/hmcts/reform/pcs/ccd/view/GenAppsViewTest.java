@@ -34,6 +34,7 @@ import static org.mockito.Mockito.when;
 class GenAppsViewTest {
 
     private static final UUID CURRENT_USER_IDAM_ID = UUID.randomUUID();
+
     @Mock
     private ModelMapper modelMapper;
     @Mock
@@ -64,14 +65,17 @@ class GenAppsViewTest {
         UUID genApp1Id = UUID.randomUUID();
         LocalDateTime genApp1SubmittedDate = LocalDateTime.parse("2026-05-02T15:00:00");
         GenAppEntity genAppEntity1 = createGenAppEntity(genApp1Id, genApp1SubmittedDate);
+        genAppEntity1.setRank(11);
 
         UUID genApp2Id = UUID.randomUUID();
         LocalDateTime genApp2SubmittedDate = LocalDateTime.parse("2026-05-04T10:00:00");
         GenAppEntity genAppEntity2 = createGenAppEntity(genApp2Id, genApp2SubmittedDate);
+        genAppEntity2.setRank(12);
 
         UUID genApp3Id = UUID.randomUUID();
         LocalDateTime genApp3SubmittedDate = LocalDateTime.parse("2026-05-04T09:00:00");
         GenAppEntity genAppEntity3 = createGenAppEntity(genApp3Id, genApp3SubmittedDate);
+        genAppEntity3.setRank(13);
 
         when(pcsCaseEntity.getGenApps()).thenReturn(Set.of(genAppEntity1, genAppEntity2, genAppEntity3));
 
@@ -89,6 +93,11 @@ class GenAppsViewTest {
             .extracting(ListValue::getValue)
             .extracting(GeneralApplication::getSubmittedOn)
             .containsExactly(genApp2SubmittedDate, genApp3SubmittedDate, genApp1SubmittedDate);
+
+        assertThat(genApps)
+            .extracting(ListValue::getValue)
+            .extracting(GeneralApplication::getRank)
+            .containsExactly(12, 13, 11);
     }
 
     @Test

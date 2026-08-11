@@ -105,6 +105,11 @@ public enum State {
             GlobalSearchAccess.class, WAAccess.class},
         hint = "${caseTitleMarkdown}"
     )
-    BREATHING_SPACE
-}
+    BREATHING_SPACE,
 
+    @CCD(
+        label = "Closed",
+        hint = "${caseTitleMarkdown}"
+    )
+    CLOSED
+}

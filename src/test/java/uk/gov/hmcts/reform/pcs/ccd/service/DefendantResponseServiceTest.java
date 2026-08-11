@@ -150,7 +150,7 @@ class DefendantResponseServiceTest {
             .possessionNoticeReceived(YesNoNotSure.YES)
             .noticeReceivedDate(LocalDate.of(2024, 1, 15))
             .rentArrearsAmountConfirmation(YesNoNotSure.NO)
-            .landlordRegistered(YesNoNotSure.YES)
+            .exemptLandlord(YesNoNotSure.YES)
             .build();
 
         PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
@@ -168,7 +168,7 @@ class DefendantResponseServiceTest {
         assertThat(savedResponse.getClaim()).isEqualTo(claimEntity);
         assertThat(savedResponse.getFreeLegalAdvice()).isEqualTo(YesNoPreferNotToSay.YES);
         assertThat(savedResponse.getRentArrearsAmountConfirmation()).isEqualTo(YesNoNotSure.NO);
-        assertThat(savedResponse.getLandlordRegistered()).isEqualTo(YesNoNotSure.YES);
+        assertThat(savedResponse.getExemptLandlord()).isEqualTo(YesNoNotSure.YES);
         assertThat(savedResponse.getStatus()).isEqualTo(DefendantResponseStatus.SUBMITTED);
         assertThat(savedResponse.getResponseSubmittedDate()).isEqualTo(LocalDateTime.now(FIXED_UTC_CLOCK));
         verify(pcsCaseEntity).addDefendantResponse(savedResponse);
@@ -273,15 +273,15 @@ class DefendantResponseServiceTest {
     }
 
 
-    @ParameterizedTest(name = "landlordRegistered={0}")
-    @MethodSource("landlordRegisteredPersistenceScenarios")
-    void shouldPersistLandlordRegistered(YesNoNotSure landlordRegistered) {
+    @ParameterizedTest(name = "exemptLandlord={0}")
+    @MethodSource("exemptLandlordPersistenceScenarios")
+    void shouldPersistExemptLandlord(YesNoNotSure exemptLandlord) {
         // Given
         when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
         stubClaimLookup();
 
         DefendantResponses responses = DefendantResponses.builder()
-            .landlordRegistered(landlordRegistered)
+            .exemptLandlord(exemptLandlord)
             .build();
 
         PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
@@ -295,32 +295,10 @@ class DefendantResponseServiceTest {
         verify(defendantResponseRepository).save(responseCaptor.capture());
         DefendantResponseEntity savedResponse = responseCaptor.getValue();
 
-        assertThat(savedResponse.getLandlordRegistered()).isEqualTo(landlordRegistered);
+        assertThat(savedResponse.getExemptLandlord()).isEqualTo(exemptLandlord);
     }
 
-    @ParameterizedTest(name = "exemptLandlord={0}")
-    @MethodSource("landlordRegisteredPersistenceScenarios")
-    void shouldPersistExemptLandlordToLandlordRegisteredColumn(YesNoNotSure exemptLandlord) {
-        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
-        stubClaimLookup();
-
-        DefendantResponses responses = DefendantResponses.builder()
-            .exemptLandlord(exemptLandlord)
-            .build();
-
-        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
-            .defendantResponses(responses)
-            .build();
-
-        underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse, partyEntity, JOURNEY_TYPE);
-
-        verify(defendantResponseRepository).save(responseCaptor.capture());
-        DefendantResponseEntity savedResponse = responseCaptor.getValue();
-
-        assertThat(savedResponse.getLandlordRegistered()).isEqualTo(exemptLandlord);
-    }
-
-    private static Stream<Arguments> landlordRegisteredPersistenceScenarios() {
+    private static Stream<Arguments> exemptLandlordPersistenceScenarios() {
         return Stream.of(
             Arguments.of(YesNoNotSure.YES),
             Arguments.of(YesNoNotSure.NO),

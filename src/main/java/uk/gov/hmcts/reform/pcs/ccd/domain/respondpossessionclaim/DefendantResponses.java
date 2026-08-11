@@ -80,9 +80,6 @@ public class DefendantResponses {
     private VerticalYesNo propertyAddressConfirmation;
 
     @CCD
-    private YesNoNotSure landlordRegistered;
-
-    @CCD
     private YesNoNotSure exemptLandlord;
 
     @CCD
