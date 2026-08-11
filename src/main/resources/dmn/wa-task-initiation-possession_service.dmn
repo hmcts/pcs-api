@@ -369,8 +369,9 @@ else
         </outputEntry>
       </rule>
       <rule id="DecisionRule_0it2mq5">
+        <description>Citizen journey</description>
         <inputEntry id="UnaryTests_0vtsl9b">
-          <text>"Upload Document - Citizen dashboard" (NEED NAME OF EVENT)</text>
+          <text>uploadDocuments</text>
         </inputEntry>
         <inputEntry id="UnaryTests_03orr3t">
           <text></text>
@@ -413,8 +414,9 @@ else
         </outputEntry>
       </rule>
       <rule id="DecisionRule_1mcvohl">
+        <description>LR journety</description>
         <inputEntry id="UnaryTests_0s9fflp">
-          <text>"Upload Document (Defendant LR)", "Upload Document Claimant LR"</text>
+          <text>uploadDocuments</text>
         </inputEntry>
         <inputEntry id="UnaryTests_0ymqq27">
           <text></text>
