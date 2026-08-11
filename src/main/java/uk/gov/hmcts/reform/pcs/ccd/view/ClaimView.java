@@ -112,6 +112,7 @@ public class ClaimView {
         return pcsCaseEntity.getDocuments().stream()
             .filter(ClaimView::isEnergyPerformanceCertificate)
             .filter(DocumentsView::isDescriptionEmpty)
+            .filter(DocumentsView::isNotRemoved)
             .map(ClaimView::toDocument)
             .toList();
     }
@@ -124,6 +125,7 @@ public class ClaimView {
         return pcsCaseEntity.getDocuments().stream()
             .filter(ClaimView::isGasSafetyReport)
             .filter(DocumentsView::isDescriptionEmpty)
+            .filter(DocumentsView::isNotRemoved)
             .map(ClaimView::toDocument)
             .toList();
     }
@@ -136,6 +138,7 @@ public class ClaimView {
         return pcsCaseEntity.getDocuments().stream()
             .filter(ClaimView::isElectricalInstallationCondition)
             .filter(DocumentsView::isDescriptionEmpty)
+            .filter(DocumentsView::isNotRemoved)
             .map(ClaimView::toDocument)
             .toList();
     }
