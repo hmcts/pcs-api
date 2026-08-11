@@ -2,37 +2,47 @@ package uk.gov.hmcts.reform.pcs.ccd.service.document;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
+import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 
-import java.util.List;
+import java.time.LocalDate;
+import java.time.Month;
 import java.util.UUID;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.params.provider.Arguments.argumentSet;
+import static org.mockito.Mock.Strictness.LENIENT;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 class DocumentNameServiceTest {
+
+    private static final String PARTY_LABEL = "Test Party Label";
+
+    @Mock(strictness = LENIENT)
+    private PartyService partyService;
 
     private DocumentNameService underTest;
 
     @BeforeEach
     void setUp() {
-        underTest = new DocumentNameService();
+        underTest = new DocumentNameService(partyService);
     }
 
     @ParameterizedTest
     @MethodSource("genAppNamingScenarios")
-    void shouldAddGenAppNumberAndPartyLabelToGenAppDocument(PartyRole partyRole,
-                                                            String originalFilename,
+    void shouldAddGenAppNumberAndPartyLabelToGenAppDocument(String originalFilename,
                                                             String expectedFilename) {
         // Given
         UUID applicantPartyId = UUID.randomUUID();
@@ -40,19 +50,8 @@ class DocumentNameServiceTest {
             .rank(5)
             .build();
 
-        PartyEntity party1 = PartyEntity.builder()
-            .id(applicantPartyId)
-            .build();
-
-        ClaimPartyEntity claimParty1 = ClaimPartyEntity.builder()
-            .party(party1)
-            .rank(2)
-            .role(partyRole)
-            .build();
-
-        ClaimEntity mainClaim = ClaimEntity.builder()
-            .claimParties(List.of(claimParty1))
-            .build();
+        ClaimEntity mainClaim = mock(ClaimEntity.class);
+        when(partyService.getPartyLabel(mainClaim, applicantPartyId)).thenReturn(PARTY_LABEL);
 
         // When
         String updatedFilename
@@ -64,75 +63,21 @@ class DocumentNameServiceTest {
 
     private static Stream<Arguments> genAppNamingScenarios() {
         return Stream.of(
-            // Party role, original filename, expected updated filename
-            argumentSet("null filename",
-                        PartyRole.DEFENDANT, null, null),
-            argumentSet("no extension, defendant",
-                        PartyRole.DEFENDANT, "sample", "sample GA5 - Defendant 2"),
-            argumentSet("with extension, defendant",
-                        PartyRole.DEFENDANT, "sample.pdf", "sample GA5 - Defendant 2.pdf"),
-            argumentSet("no extension, claimant",
-                        PartyRole.CLAIMANT, "sample", "sample GA5 - Claimant 2"),
-            argumentSet("with extension, claimant",
-                        PartyRole.CLAIMANT, "sample.pdf", "sample GA5 - Claimant 2.pdf"),
-            argumentSet("no extension, other party type",
-                        PartyRole.UNDERLESSEE_OR_MORTGAGEE, "sample", "sample GA5"),
-            argumentSet("with extension, other party type",
-                        PartyRole.UNDERLESSEE_OR_MORTGAGEE, "sample.pdf", "sample GA5.pdf")
+            // Original filename, expected updated filename
+            argumentSet("null filename", null, null),
+            argumentSet("no extension", "sample", "sample GA5 - %s".formatted(PARTY_LABEL)),
+            argumentSet("with extension", "sample.pdf", "sample GA5 - %s.pdf".formatted(PARTY_LABEL))
         );
-    }
-
-    @Test
-    void shouldAddCaseLevelGenAppNumberAndClaimantLabelToGenAppDocument() {
-        // Given
-        UUID applicantPartyId = UUID.randomUUID();
-        GenAppEntity genAppEntity = GenAppEntity.builder()
-            .rank(4)
-            .build();
-
-        PartyEntity claimantParty = PartyEntity.builder()
-            .id(applicantPartyId)
-            .build();
-
-        ClaimPartyEntity claimant = ClaimPartyEntity.builder()
-            .party(claimantParty)
-            .rank(1)
-            .role(PartyRole.CLAIMANT)
-            .build();
-
-        ClaimEntity mainClaim = ClaimEntity.builder()
-            .claimParties(List.of(claimant))
-            .build();
-
-        // When
-        String updatedFilename
-            = underTest.appendGenAppPostfix("General Application.pdf", genAppEntity, mainClaim, applicantPartyId);
-
-        // Then
-        assertThat(updatedFilename).isEqualTo("General Application GA4 - Claimant 1.pdf");
     }
 
     @ParameterizedTest
     @MethodSource("partyNamingScenarios")
-    void shouldAddPartyLabelWithoutGenAppNumber(PartyRole partyRole,
-                                                String originalFilename,
+    void shouldAddPartyLabelWithoutGenAppNumber(String originalFilename,
                                                 String expectedFilename) {
         // Given
         UUID applicantPartyId = UUID.randomUUID();
-
-        PartyEntity party1 = PartyEntity.builder()
-            .id(applicantPartyId)
-            .build();
-
-        ClaimPartyEntity claimParty1 = ClaimPartyEntity.builder()
-            .party(party1)
-            .rank(2)
-            .role(partyRole)
-            .build();
-
-        ClaimEntity mainClaim = ClaimEntity.builder()
-            .claimParties(List.of(claimParty1))
-            .build();
+        ClaimEntity mainClaim = mock(ClaimEntity.class);
+        when(partyService.getPartyLabel(mainClaim, applicantPartyId)).thenReturn(PARTY_LABEL);
 
         // When
         String updatedFilename
@@ -144,25 +89,12 @@ class DocumentNameServiceTest {
 
     @ParameterizedTest
     @MethodSource("defendantResponseNamingScenarios")
-    void shouldAddPartyLabelToDefendantResponseDocument(PartyRole partyRole,
-                                                        String originalFilename,
+    void shouldAddPartyLabelToDefendantResponseDocument(String originalFilename,
                                                         String expectedFilename) {
         // Given
         UUID applicantPartyId = UUID.randomUUID();
-
-        PartyEntity party1 = PartyEntity.builder()
-            .id(applicantPartyId)
-            .build();
-
-        ClaimPartyEntity claimParty1 = ClaimPartyEntity.builder()
-            .party(party1)
-            .rank(3)
-            .role(partyRole)
-            .build();
-
-        ClaimEntity mainClaim = ClaimEntity.builder()
-            .claimParties(List.of(claimParty1))
-            .build();
+        ClaimEntity mainClaim = mock(ClaimEntity.class);
+        when(partyService.getPartyLabel(mainClaim, applicantPartyId)).thenReturn(PARTY_LABEL);
 
         // When
         String updatedFilename
@@ -174,45 +106,26 @@ class DocumentNameServiceTest {
 
     private static Stream<Arguments> defendantResponseNamingScenarios() {
         return Stream.of(
-            // Party role, original filename, expected updated filename
-            argumentSet("null filename",
-                        PartyRole.DEFENDANT, null, null),
-            argumentSet("no extension, defendant",
-                        PartyRole.DEFENDANT, "sample", "sample - Defendant 3"),
-            argumentSet("with extension, defendant",
-                        PartyRole.DEFENDANT, "sample.pdf", "sample - Defendant 3.pdf"),
-            argumentSet("with extension, claimant",
-                        PartyRole.CLAIMANT, "sample.pdf", "sample - Claimant 3.pdf"),
-            argumentSet("with extension, other party type",
-                        PartyRole.UNDERLESSEE_OR_MORTGAGEE, "sample.pdf", "sample.pdf")
+            // original filename, expected updated filename
+            argumentSet("null filename", null, null),
+            argumentSet("no extension", "sample", "sample - %s".formatted(PARTY_LABEL)),
+            argumentSet("with extension", "sample.pdf", "sample - %s.pdf".formatted(PARTY_LABEL))
         );
     }
 
     @ParameterizedTest
     @MethodSource("counterClaimNamingScenarios")
-    void shouldAddPartyLabelToCounterClaimDocument(PartyRole partyRole,
-                                                   String originalFilename,
+    void shouldAddPartyLabelToCounterClaimDocument(String originalFilename,
+                                                   String partyLabel,
                                                    String expectedFilename) {
         // Given
         UUID partyId = UUID.randomUUID();
-
-        PartyEntity party1 = PartyEntity.builder()
-            .id(partyId)
-            .build();
-
-        ClaimPartyEntity claimParty1 = ClaimPartyEntity.builder()
-            .party(party1)
-            .rank(2)
-            .role(partyRole)
-            .build();
-
-        ClaimEntity mainClaim = ClaimEntity.builder()
-            .claimParties(List.of(claimParty1))
-            .build();
+        ClaimEntity mainClaim = mock(ClaimEntity.class);
+        when(partyService.getPartyLabel(mainClaim, partyId)).thenReturn(partyLabel);
 
         // When
         String updatedFilename
-            = underTest.appendCounterClaimDocumentName(originalFilename, mainClaim, partyId);
+            = underTest.appendCounterClaimPostfix(originalFilename, mainClaim, partyId);
 
         // Then
         assertThat(updatedFilename).isEqualTo(expectedFilename);
@@ -220,91 +133,97 @@ class DocumentNameServiceTest {
 
     private static Stream<Arguments> counterClaimNamingScenarios() {
         return Stream.of(
-            // Party role, original filename, expected updated filename
-            argumentSet("null filename",
-                        PartyRole.DEFENDANT, null, null),
-            argumentSet("no extension, defendant",
-                        PartyRole.DEFENDANT, "sample", "sample - Defendant 2"),
-            argumentSet("with extension, defendant",
-                        PartyRole.DEFENDANT, "sample.pdf", "sample - Defendant 2.pdf"),
-            argumentSet("no extension, claimant",
-                        PartyRole.CLAIMANT, "sample", "sample - Claimant 2"),
-            argumentSet("with extension, claimant",
-                        PartyRole.CLAIMANT, "sample.pdf", "sample - Claimant 2.pdf"),
-            argumentSet("no extension, other party type",
-                        PartyRole.UNDERLESSEE_OR_MORTGAGEE, "sample", "sample"),
-            argumentSet("with extension, other party type",
-                        PartyRole.UNDERLESSEE_OR_MORTGAGEE, "sample.pdf", "sample.pdf")
+            // Original filename, party label, expected updated filename
+            argumentSet("null filename", null, PARTY_LABEL, null),
+            argumentSet("no extension", "sample", PARTY_LABEL, "sample - %s".formatted(PARTY_LABEL)),
+            argumentSet("with extension", "sample.pdf", PARTY_LABEL, "sample - %s.pdf".formatted(PARTY_LABEL)),
+            argumentSet("no extension or party label", "sample", null, "sample"),
+            argumentSet("with extension but no party label", "sample.pdf", null, "sample.pdf")
         );
     }
 
     private static Stream<Arguments> partyNamingScenarios() {
         return Stream.of(
-            // Party role, original filename, expected updated filename
-            argumentSet("null filename",
-                PartyRole.DEFENDANT, null, null),
-            argumentSet("no extension, defendant",
-                PartyRole.DEFENDANT, "sample", "sample - Defendant 2"),
-            argumentSet("with extension, defendant",
-                PartyRole.DEFENDANT, "sample.pdf", "sample - Defendant 2.pdf"),
-            argumentSet("no extension, claimant",
-                PartyRole.CLAIMANT, "sample", "sample - Claimant 2"),
-            argumentSet("with extension, claimant",
-                PartyRole.CLAIMANT, "sample.pdf", "sample - Claimant 2.pdf"),
-            argumentSet("no extension, other party type",
-                PartyRole.UNDERLESSEE_OR_MORTGAGEE, "sample", "sample"),
-            argumentSet("with extension, other party type",
-                PartyRole.UNDERLESSEE_OR_MORTGAGEE, "sample.pdf", "sample.pdf")
+            // Original filename, expected updated filename
+            argumentSet("null filename", null, null),
+            argumentSet("no extension", "sample", "sample - %s".formatted(PARTY_LABEL)),
+            argumentSet("with extension", "sample.pdf", "sample - %s.pdf".formatted(PARTY_LABEL))
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("dateNamingScenarios")
+    void shouldAppendDateLabel(String originalFilename,
+                               LocalDate localDate,
+                               String expectedFilename) {
+        // When
+        String updatedFilename = underTest.appendDate(originalFilename, localDate);
+
+        // Then
+        assertThat(updatedFilename).isEqualTo(expectedFilename);
+    }
+
+    private static Stream<Arguments> dateNamingScenarios() {
+        LocalDate testDate = LocalDate.of(2026, Month.MAY, 18);
+
+        return Stream.of(
+            // Original filename, date, expected updated filename
+            argumentSet("null filename and date", null, null, null),
+            argumentSet("null date", "sample.pdf", null, "sample.pdf"),
+            argumentSet("with date, no extenstion", "sample", testDate, "sample 18052026"),
+            argumentSet("with date and extenstion", "sample.pdf", testDate, "sample 18052026.pdf")
         );
     }
 
     @Test
-    void shouldThrowPartyNotFoundExceptionWhenPartyNotPartOfTheClaim() {
+    void shouldPropagatePartyNotFoundExceptionForPartyPostfix() {
         // Given
-        UUID partyOnClaimId = UUID.randomUUID();
         UUID strayPartyId = UUID.randomUUID();
 
-        PartyEntity partyOnClaim = PartyEntity.builder()
-            .id(partyOnClaimId)
-            .build();
+        PartyNotFoundException expectedException = mock(PartyNotFoundException.class);
+        ClaimEntity mainClaim = ClaimEntity.builder().build();
+        when(partyService.getPartyLabel(mainClaim, strayPartyId)).thenThrow(expectedException);
 
-        ClaimPartyEntity claimParty = ClaimPartyEntity.builder()
-            .party(partyOnClaim)
-            .rank(1)
-            .role(PartyRole.DEFENDANT)
-            .build();
-
-        ClaimEntity mainClaim = ClaimEntity.builder()
-            .claimParties(List.of(claimParty))
-            .build();
 
         // When / Then
         assertThatThrownBy(() -> underTest.appendPartyPostfix("statement.pdf", mainClaim, strayPartyId))
-            .isInstanceOf(PartyNotFoundException.class);
+            .isEqualTo(expectedException);
     }
 
     @Test
-    void shouldThrowPartyNotFoundExceptionWhenPartyNotInClaimForGenApp() {
-        ClaimEntity mainClaim = ClaimEntity.builder().claimParties(List.of()).build();
+    void shouldPropagatePartyNotFoundExceptionForGenApp() {
+        PartyNotFoundException expectedException = mock(PartyNotFoundException.class);
+        UUID applicantPartyId = UUID.randomUUID();
+
+        ClaimEntity mainClaim = ClaimEntity.builder().build();
         GenAppEntity genAppEntity = GenAppEntity.builder().rank(1).build();
+        when(partyService.getPartyLabel(mainClaim, applicantPartyId)).thenThrow(expectedException);
 
-        assertThatThrownBy(() -> underTest.appendGenAppPostfix("file.pdf", genAppEntity, mainClaim, UUID.randomUUID()))
-            .isInstanceOf(PartyNotFoundException.class);
+        assertThatThrownBy(() -> underTest.appendGenAppPostfix("file.pdf", genAppEntity, mainClaim, applicantPartyId))
+            .isEqualTo(expectedException);
     }
 
     @Test
-    void shouldThrowPartyNotFoundExceptionWhenPartyNotInClaimForDefendantPostfix() {
-        ClaimEntity mainClaim = ClaimEntity.builder().claimParties(List.of()).build();
+    void shouldPropagatePartyNotFoundExceptionForDefendantPostfix() {
+        PartyNotFoundException expectedException = mock(PartyNotFoundException.class);
+        UUID defendantPartyId = UUID.randomUUID();
 
-        assertThatThrownBy(() -> underTest.appendDefendantPostfix("file.pdf", mainClaim, UUID.randomUUID()))
-            .isInstanceOf(PartyNotFoundException.class);
+        ClaimEntity mainClaim = ClaimEntity.builder().build();
+        when(partyService.getPartyLabel(mainClaim, defendantPartyId)).thenThrow(expectedException);
+
+        assertThatThrownBy(() -> underTest.appendDefendantPostfix("file.pdf", mainClaim, defendantPartyId))
+            .isEqualTo(expectedException);
     }
 
     @Test
     void shouldThrowPartyNotFoundExceptionWhenPartyNotInClaimForCounterClaim() {
-        ClaimEntity mainClaim = ClaimEntity.builder().claimParties(List.of()).build();
+        PartyNotFoundException expectedException = mock(PartyNotFoundException.class);
+        UUID partyId = UUID.randomUUID();
 
-        assertThatThrownBy(() -> underTest.appendCounterClaimDocumentName("file.pdf", mainClaim, UUID.randomUUID()))
-            .isInstanceOf(PartyNotFoundException.class);
+        ClaimEntity mainClaim = ClaimEntity.builder().build();
+        when(partyService.getPartyLabel(mainClaim, partyId)).thenThrow(expectedException);
+
+        assertThatThrownBy(() -> underTest.appendCounterClaimPostfix("file.pdf", mainClaim, partyId))
+            .isEqualTo(expectedException);
     }
 }

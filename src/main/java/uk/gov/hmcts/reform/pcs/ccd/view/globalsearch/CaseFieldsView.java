@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.pcs.ccd.view.globalsearch;
 
-import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.AccessProfile.GA_CLAIMANT_SOLICITOR;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -8,7 +7,6 @@ import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.type.CaseLocation;
 import uk.gov.hmcts.ccd.sdk.type.DynamicList;
 import uk.gov.hmcts.ccd.sdk.type.DynamicListElement;
-import uk.gov.hmcts.ccd.sdk.type.OrganisationPolicy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseNameFormatter;
 
