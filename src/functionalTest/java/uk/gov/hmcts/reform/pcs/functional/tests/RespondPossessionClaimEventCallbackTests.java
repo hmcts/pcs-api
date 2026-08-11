@@ -133,7 +133,10 @@ public class RespondPossessionClaimEventCallbackTests extends BaseApi {
             "/payloads/resumePossessionClaim-validateEventCallbackRequest.json",
             Map.of("caseReference",caseReference)
         );
-        apiSteps.validateResumePossessionClaimAsCitizen(caseReference, validateClaimRequestBody);
+        apiSteps.validateEventData(
+            PcsIdamTokenClient.UserType.citizenUser,
+            "respondPossessionClaimrespondToPossessionDraftSavePage",
+            validateClaimRequestBody);
         apiSteps.requestIsPreparedWithAppropriateValues();
         apiSteps.theRequestContainsValidIdamToken(PcsIdamTokenClient.UserType.citizenUser);
         apiSteps.theRequestContainsValidServiceToken(TestConstants.PCS_API);

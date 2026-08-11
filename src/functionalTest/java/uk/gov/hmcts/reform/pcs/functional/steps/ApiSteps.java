@@ -338,26 +338,42 @@ public class ApiSteps {
         );
     }
 
-    @Step("As citizen validate resumePossessionClaim submit request")
-    public String validateResumePossessionClaimAsCitizen(Long caseReference, Object body) {
+    @Step("Validate event data")
+    public String validateEventData(PcsIdamTokenClient.UserType userType, String eventPageId, Object body) {
+        String userToken = switch (userType) {
+            case systemUser -> systemUserIdamToken;
+            case citizenUser -> citizenUserIdamToken;
+            case solicitorUser -> solicitorUserIdamToken;
+        };
         String dataStoreUrl = System.getenv("DATA_STORE_URL_BASE");
         String acceptVal = "application/vnd.uk.gov.hmcts.ccd-data-store-api.case-data-validate.v2+json;charset=UTF-8";
-        String result = SerenityRest.given()
-            .baseUri(dataStoreUrl)
-            .header(TestConstants.AUTHORIZATION, "Bearer " + citizenUserIdamToken)
-            .header(TestConstants.SERVICE_AUTHORIZATION, pcsApiS2sToken)
-            .header("Experimental", "True")
-            .header("Accept",acceptVal)
-            .header("Content-Type","application/json")
-            .body(body)
-            .when()
-            .post("/case-types/PCS/validate?pageId=respondPossessionClaimrespondToPossessionDraftSavePage")
-            .then()
-            .statusCode(200)
-            .extract()
-            .path("token");
 
-        return result;
+        Callable<String> validateCode = () -> {
+            SerenityRest.given()
+                .baseUri(dataStoreUrl)
+                .header(TestConstants.AUTHORIZATION, "Bearer " + userToken)
+                .header(TestConstants.SERVICE_AUTHORIZATION, pcsApiS2sToken)
+                .header("Experimental", "True")
+                .header("Accept",acceptVal)
+                .header("Content-Type","application/json")
+                .body(body)
+                .when()
+                .post("/case-types/PCS/validate?pageId=" + eventPageId)
+                .then()
+                .statusCode(200);
+            return "Success";
+        };
+
+        try {
+            return await()
+                .atMost(Duration.ofSeconds(15))
+                .pollInterval(Duration.ofMillis(700))
+                .ignoreExceptions()
+                .until(validateCode, notNullValue());
+        } catch (ConditionTimeoutException e) {
+            throw new RuntimeException(
+                "Validate event data failed: ", e
+            );
+        }
     }
-
 }
