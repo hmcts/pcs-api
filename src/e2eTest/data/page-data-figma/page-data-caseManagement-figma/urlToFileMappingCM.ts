@@ -11,9 +11,10 @@ export default {
   'enterGenAppconsentAndNotice': 'enterGenAppconsentAndNotice',
   'caseworkerUploadDocumentsuploadADocument': 'uploadADocument',
   'caseworkerUploadDocuments/confirm' : 'confirmUpload',
+  'amendDocuments/confirm': 'confirmAmend',
+  'amendDocumentsamendDocumentDetails': 'amendDocumentDetails',
   'enterGenAppuploadGeneralApplication': 'enterGenAppuploadGeneralApplication',
   'enterGenAppuploadRelatedEvidence': 'enterGenAppUploadRelatedEvidence',
   'enterGenAppreferApplicationToJudge': 'enterGenAppPreferApplicationToJudge',
   'enterGenApp/submit': 'genAppsCheckYourAnswers',
-  'enterGenApp/confirm': 'enterGenAppConfirmation'
 };
