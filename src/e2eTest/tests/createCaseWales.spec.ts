@@ -180,6 +180,11 @@ test.describe('[Create Case - Wales]', async () => {
       question: wantToUploadDocuments.uploadAnyAdditionalDocumentsQuestion,
       option: wantToUploadDocuments.noRadioOption
     });
+    await performAction('selectDocumentsYouVeUploadedCheckList', {
+      uploadedDocuments: ['Energy performance certificate',
+        'Current gas safety report',
+        'Current Electrical Installation Condition Report (EICR)']
+    });
     await performAction('selectApplications', generalApplication.yesRadioOption);
     await performValidation('mainHeader', claimLanguageUsed.mainHeader);
     await performAction('selectLanguageUsed', {question: claimLanguageUsed.whichLanguageDidYouUseQuestion, option: claimLanguageUsed.englishLRadioOption});
@@ -316,6 +321,11 @@ test.describe('[Create Case - Wales]', async () => {
       question: wantToUploadDocuments.uploadAnyAdditionalDocumentsQuestion,
       option: wantToUploadDocuments.noRadioOption
     });
+    await performAction('selectDocumentsYouVeUploadedCheckList', {
+      uploadedDocuments: ['Energy performance certificate',
+        'Current gas safety report',
+        'Current Electrical Installation Condition Report (EICR)']
+    });
     await performAction('selectApplications', generalApplication.yesRadioOption);
     await performValidation('mainHeader', claimLanguageUsed.mainHeader);
     await performAction('selectLanguageUsed', {
@@ -449,6 +459,11 @@ test.describe('[Create Case - Wales]', async () => {
       question: wantToUploadDocuments.uploadAnyAdditionalDocumentsQuestion,
       option: wantToUploadDocuments.noRadioOption
     });
+    await performAction('selectDocumentsYouVeUploadedCheckList', {
+      uploadedDocuments: ['Energy performance certificate',
+        'Current gas safety report',
+        'Current Electrical Installation Condition Report (EICR)']
+    });
     await performAction('selectApplications', generalApplication.yesRadioOption);
     await performValidation('mainHeader', claimLanguageUsed.mainHeader);
     await performAction('selectLanguageUsed', {question: claimLanguageUsed.whichLanguageDidYouUseQuestion, option: claimLanguageUsed.englishLRadioOption});
@@ -571,6 +586,11 @@ test.describe('[Create Case - Wales]', async () => {
     await performAction('wantToUploadDocuments', {
       question: wantToUploadDocuments.uploadAnyAdditionalDocumentsQuestion,
       option: wantToUploadDocuments.noRadioOption
+    });
+    await performAction('selectDocumentsYouVeUploadedCheckList', {
+      uploadedDocuments: ['Energy performance certificate',
+        'Current gas safety report',
+        'Current Electrical Installation Condition Report (EICR)']
     });
     await performAction('selectApplications', generalApplication.yesRadioOption);
     await performValidation('mainHeader', claimLanguageUsed.mainHeader);
@@ -711,6 +731,11 @@ test.describe('[Create Case - Wales]', async () => {
       question: wantToUploadDocuments.uploadAnyAdditionalDocumentsQuestion,
       option: wantToUploadDocuments.noRadioOption
     });
+    await performAction('selectDocumentsYouVeUploadedCheckList', {
+      uploadedDocuments: ['Energy performance certificate',
+        'Current gas safety report',
+        'Current Electrical Installation Condition Report (EICR)']
+    });
     await performAction('selectApplications', generalApplication.yesRadioOption);
     await performValidation('mainHeader', claimLanguageUsed.mainHeader);
     await performAction('selectLanguageUsed', {question: claimLanguageUsed.whichLanguageDidYouUseQuestion, option: claimLanguageUsed.englishLRadioOption});
@@ -836,6 +861,11 @@ test.describe('[Create Case - Wales]', async () => {
     await performAction('wantToUploadDocuments', {
       question: wantToUploadDocuments.uploadAnyAdditionalDocumentsQuestion,
       option: wantToUploadDocuments.noRadioOption
+    });
+    await performAction('selectDocumentsYouVeUploadedCheckList', {
+      uploadedDocuments: ['Energy performance certificate',
+        'Current gas safety report',
+        'Current Electrical Installation Condition Report (EICR)']
     });
     await performAction('selectApplications', generalApplication.yesRadioOption);
     await performValidation('mainHeader', claimLanguageUsed.mainHeader);
@@ -966,6 +996,11 @@ test.describe('[Create Case - Wales]', async () => {
     await performAction('wantToUploadDocuments', {
       question: wantToUploadDocuments.uploadAnyAdditionalDocumentsQuestion,
       option: wantToUploadDocuments.noRadioOption
+    });
+    await performAction('selectDocumentsYouVeUploadedCheckList', {
+      uploadedDocuments: ['Energy performance certificate',
+        'Current gas safety report',
+        'Current Electrical Installation Condition Report (EICR)']
     });
     await performAction('selectApplications', generalApplication.yesRadioOption);
     await performValidation('mainHeader', claimLanguageUsed.mainHeader);
