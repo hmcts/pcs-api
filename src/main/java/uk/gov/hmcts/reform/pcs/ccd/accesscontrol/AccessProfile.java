@@ -60,9 +60,9 @@ public enum AccessProfile implements HasRole {
      * profile, since the definition store identifies an access type by
      * {@code (accessTypeId, organisationProfileId)}.
      *
-     * <p>Safe to hold as a field because {@link GroupAccessType} resolves its own roles in method
-     * bodies: its static initialisation never reads this enum, so only one side of the cycle has to
-     * be lazy.</p>
+     * <p>Safe to hold as a field because {@link GroupAccessType} holds no reference back into this
+     * enum — it names roles as literals — so there is no cycle between the two static initialisers
+     * and neither side needs to resolve anything lazily.</p>
      */
     private final List<CCDAccessGroup> accessGroups;
 
