@@ -67,7 +67,6 @@ class LegalRepresentativePageServiceTest {
             .updatedCorrespondenceAddress(address)
             .organisationId(orgId)
             .build();
-        when(securityContextService.getCurrentUserId()).thenReturn(UUID.randomUUID());
         when(legalRepresentativeOrganisationRepository.findByOrganisationIdAndCaseReference(orgId, caseReference))
             .thenReturn(Optional.of(legalRepresentativeOrganisationEntity));
         when(addressMapper.toAddressEntityAndNormalise(address))
@@ -98,7 +97,6 @@ class LegalRepresentativePageServiceTest {
         LegalRepresentativeOrganisationEntity legalRepresentativeOrganisationEntity =
             new LegalRepresentativeOrganisationEntity();
 
-        when(securityContextService.getCurrentUserId()).thenReturn(UUID.randomUUID());
         when(legalRepresentativeOrganisationRepository.findByOrganisationIdAndCaseReference(orgId, caseReference))
             .thenReturn(Optional.of(legalRepresentativeOrganisationEntity));
 
@@ -127,7 +125,6 @@ class LegalRepresentativePageServiceTest {
         LegalRepresentativeOrganisationEntity legalRepresentativeOrganisationEntity =
             new LegalRepresentativeOrganisationEntity();
 
-        when(securityContextService.getCurrentUserId()).thenReturn(UUID.randomUUID());
         when(legalRepresentativeOrganisationRepository.findByOrganisationIdAndCaseReference(orgId, caseReference))
             .thenReturn(Optional.of(legalRepresentativeOrganisationEntity));
 
@@ -157,7 +154,6 @@ class LegalRepresentativePageServiceTest {
         LegalRepresentativeOrganisationEntity legalRepresentativeOrganisationEntity =
             new LegalRepresentativeOrganisationEntity();
 
-        when(securityContextService.getCurrentUserId()).thenReturn(UUID.randomUUID());
         when(legalRepresentativeOrganisationRepository.findByOrganisationIdAndCaseReference(orgId, caseReference))
             .thenReturn(Optional.of(legalRepresentativeOrganisationEntity));
 
@@ -185,7 +181,6 @@ class LegalRepresentativePageServiceTest {
         LegalRepresentativeOrganisationEntity legalRepresentativeOrganisationEntity =
             new LegalRepresentativeOrganisationEntity();
 
-        when(securityContextService.getCurrentUserId()).thenReturn(UUID.randomUUID());
         when(legalRepresentativeOrganisationRepository.findByOrganisationIdAndCaseReference(orgId, caseReference))
             .thenReturn(Optional.of(legalRepresentativeOrganisationEntity));
 
@@ -212,7 +207,6 @@ class LegalRepresentativePageServiceTest {
         LegalRepresentativeOrganisationEntity legalRepresentativeOrganisationEntity =
             new LegalRepresentativeOrganisationEntity();
 
-        when(securityContextService.getCurrentUserId()).thenReturn(UUID.randomUUID());
         when(legalRepresentativeOrganisationRepository.findByOrganisationIdAndCaseReference(orgId, caseReference))
             .thenReturn(Optional.of(legalRepresentativeOrganisationEntity));
 
@@ -240,7 +234,6 @@ class LegalRepresentativePageServiceTest {
         LegalRepresentativeOrganisationEntity legalRepresentativeOrganisationEntity =
             new LegalRepresentativeOrganisationEntity();
 
-        when(securityContextService.getCurrentUserId()).thenReturn(UUID.randomUUID());
         when(legalRepresentativeOrganisationRepository.findByOrganisationIdAndCaseReference(orgId, caseReference))
             .thenReturn(Optional.of(legalRepresentativeOrganisationEntity));
 
@@ -267,7 +260,6 @@ class LegalRepresentativePageServiceTest {
         LegalRepresentativeOrganisationEntity legalRepresentativeOrganisationEntity =
             new LegalRepresentativeOrganisationEntity();
 
-        when(securityContextService.getCurrentUserId()).thenReturn(UUID.randomUUID());
         when(legalRepresentativeOrganisationRepository.findByOrganisationIdAndCaseReference(orgId, caseReference))
             .thenReturn(Optional.of(legalRepresentativeOrganisationEntity));
 
@@ -295,7 +287,6 @@ class LegalRepresentativePageServiceTest {
         LegalRepresentativeOrganisationEntity legalRepresentativeOrganisationEntity =
             new LegalRepresentativeOrganisationEntity();
 
-        when(securityContextService.getCurrentUserId()).thenReturn(UUID.randomUUID());
         when(legalRepresentativeOrganisationRepository.findByOrganisationIdAndCaseReference(orgId, caseReference))
             .thenReturn(Optional.of(legalRepresentativeOrganisationEntity));
 
@@ -321,7 +312,6 @@ class LegalRepresentativePageServiceTest {
         LegalRepresentativeOrganisationEntity legalRepresentativeOrganisationEntity =
             new LegalRepresentativeOrganisationEntity();
 
-        when(securityContextService.getCurrentUserId()).thenReturn(UUID.randomUUID());
         when(legalRepresentativeOrganisationRepository.findByOrganisationIdAndCaseReference(orgId, caseReference))
             .thenReturn(Optional.of(legalRepresentativeOrganisationEntity));
 
@@ -344,11 +334,8 @@ class LegalRepresentativePageServiceTest {
             .organisationId(orgId)
             .build();
 
-        LegalRepresentativeEntity legalRepresentative = LegalRepresentativeEntity.builder().build();
-
         LegalRepresentativeOrganisationEntity legalRepresentativeOrganisationEntity =
-            LegalRepresentativeOrganisationEntity.builder().legalRepresentativeList(List.of(legalRepresentative))
-                .build();
+            LegalRepresentativeOrganisationEntity.builder().build();
 
         when(legalRepresentativeOrganisationRepository.findByOrganisationIdAndCaseReference(orgId, caseReference))
             .thenReturn(Optional.of(legalRepresentativeOrganisationEntity));
