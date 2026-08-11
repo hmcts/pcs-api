@@ -69,8 +69,6 @@ public class PcsCaseService {
         pcsCaseEntity.setRegionId(pcsCase.getRegionId());
         pcsCaseEntity.setBaseLocation(pcsCase.getCaseManagementLocationNumber());
         pcsCaseEntity.setCaseManagementLocation(pcsCase.getCaseManagementLocationNumber());
-
-        pcsCaseRepository.save(pcsCaseEntity);
     }
 
     public void patchCaseFlags(long caseReference, PCSCase pcsCase) {

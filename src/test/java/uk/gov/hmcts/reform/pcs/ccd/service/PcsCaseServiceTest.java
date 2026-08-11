@@ -236,7 +236,7 @@ class PcsCaseServiceTest {
         // Then
         verify(pcsCaseEntity).addDocuments(documentEntities);
         verify(mainClaimEntity).addClaimDocuments(documentEntities);
-        verify(pcsCaseRepository).save(pcsCaseEntity);
+        verify(pcsCaseRepository, never()).save(any(PcsCaseEntity.class));
     }
 
     @Test
