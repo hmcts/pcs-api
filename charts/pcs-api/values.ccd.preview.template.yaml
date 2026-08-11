@@ -88,8 +88,6 @@ ccd:
         ELASTIC_SEARCH_INDEX_SHARDS_REPLICAS: 0
         ENABLE_CASE_GROUP_ACCESS: true
         DEFINITION_STORE_S2S_AUTHORISED_SERVICES: "ccd_data,ccd_gw,ccd_admin,jui_webapp,pui_webapp,aac_manage_case_assignment,xui_webapp,am_org_role_mapping_service,pcs_api"
-        # Without this def store parses but silently discards the AccessType sheets.
-        ENABLE_CASE_GROUP_ACCESS: true
       ingressHost: ccd-definition-store-${SERVICE_FQDN}
       keyVaults:
         ccd:
@@ -203,8 +201,7 @@ ccd:
         RAS_ENV: pr
       devmemoryRequests: 1024Mi
       devcpuRequests: 250m
-      # 2048Mi OOM-killed the pod (exit 137) during the drools/catalogue startup spike
-      devmemoryLimits: 3072Mi
+      devmemoryLimits: 2048Mi
       devcpuLimits: 1500m
       keyVaults:
         am:
