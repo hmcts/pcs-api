@@ -13,7 +13,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.PartyLegalRepresentativeOrganisationEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyLegalRepresentativeOrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
@@ -103,15 +103,15 @@ public class PartiesView {
     }
 
     private LegalRepresentative buildLegalRepresentative(PartyEntity partyEntity) {
-        List<PartyLegalRepresentativeOrganisationEntity> claimPartyLegalRepresentativeEntities =
+        List<ClaimPartyLegalRepresentativeOrganisationEntity> claimPartyLegalRepresentativeEntities =
             partyEntity.getPartyLegalRepresentativeOrganisationList();
 
         return claimPartyLegalRepresentativeEntities.stream()
                 .filter(legalRepEntity -> legalRepEntity.getActive() == YesOrNo.YES)
-                .map(PartyLegalRepresentativeOrganisationEntity::getLegalRepresentativeOrganisation)
+                .map(ClaimPartyLegalRepresentativeOrganisationEntity::getLegalRepresentativeOrganisation)
                 .map(legalRepEntity -> LegalRepresentative.builder()
-                    .telephoneNumber(legalRepEntity.getPhone())
-                    .emailAddress(legalRepEntity.getEmail())
+                    .telephoneNumber(legalRepEntity.getPhoneNumber())
+                    .emailAddress(legalRepEntity.getEmailAddress())
                     .organisationName(legalRepEntity.getOrganisationName())
                     .address(convertAddress(legalRepEntity.getAddress()))
                     .build()

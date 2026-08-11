@@ -10,7 +10,7 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeOrganisationEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.PartyLegalRepresentativeOrganisationEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyLegalRepresentativeOrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
@@ -172,7 +172,7 @@ public class LegalRepresentativePartyLinkService {
             LegalRepresentativeOrganisationEntity existingLegalRepresentativeOrganisation =
                 partyLinkedToLegalRepresentativeOrganisationAndActive.get();
 
-            existingLegalRepresentativeOrganisation.getPartyLegalRepresentativeOrganisationList().stream()
+            existingLegalRepresentativeOrganisation.getClaimPartyLegalRepresentativeOrganisationList().stream()
                 .filter(partyLegalRepresentativeOrganisation ->
                             partyLegalRepresentativeOrganisation.getParty().getId().equals(partyId))
                 .forEach(this::invalidatePartyLegalRepresentativeOrganisation);
@@ -181,7 +181,7 @@ public class LegalRepresentativePartyLinkService {
         }
     }
 
-    private void invalidatePartyLegalRepresentativeOrganisation(PartyLegalRepresentativeOrganisationEntity
+    private void invalidatePartyLegalRepresentativeOrganisation(ClaimPartyLegalRepresentativeOrganisationEntity
                                                                     partyLegalRepOrg) {
         partyLegalRepOrg.setActive(YesOrNo.NO);
         partyLegalRepOrg.setEndDate(Instant.now());

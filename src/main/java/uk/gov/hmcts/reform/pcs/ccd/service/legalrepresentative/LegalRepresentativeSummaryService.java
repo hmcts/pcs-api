@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.PartyLegalRepresentativeOrganisationEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyLegalRepresentativeOrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.DefendantPartyExtractor;
 
@@ -49,7 +49,7 @@ public class LegalRepresentativeSummaryService {
 
     public void handleLegalRepresentativeSummary(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity,
                                                  String organisationIdForCurrentUser) {
-        Optional<PartyLegalRepresentativeOrganisationEntity> partyLink =
+        Optional<ClaimPartyLegalRepresentativeOrganisationEntity> partyLink =
             isActivelyLinkedToAnyDefendant(pcsCaseEntity, organisationIdForCurrentUser);
 
         if (partyLink.isPresent()) {
@@ -60,7 +60,7 @@ public class LegalRepresentativeSummaryService {
     }
 
     private void setLegalRepresentativeFields(PCSCase pcsCase,
-                                                             PartyLegalRepresentativeOrganisationEntity
+                                                             ClaimPartyLegalRepresentativeOrganisationEntity
                                                                  partyLink) {
         YesOrNo hasAmendedContactDetails = partyLink.getLegalRepresentativeOrganisation().getHasAmendedContactDetails();
         if (YesOrNo.YES.equals(hasAmendedContactDetails)) {
@@ -72,9 +72,9 @@ public class LegalRepresentativeSummaryService {
         }
     }
 
-    private Optional<PartyLegalRepresentativeOrganisationEntity> isActivelyLinkedToAnyDefendant(PcsCaseEntity
+    private Optional<ClaimPartyLegalRepresentativeOrganisationEntity> isActivelyLinkedToAnyDefendant(PcsCaseEntity
                                                                                                     pcsCaseEntity,
-                                                                                                String orgId) {
+                                                                                                     String orgId) {
         List<PartyEntity> defendants = defendantPartyExtractor.summaryScreenSafeExtractDefendants(pcsCaseEntity);
         return defendants.stream()
             .flatMap(partyEntity -> partyEntity.getPartyLegalRepresentativeOrganisationList().stream())

@@ -1,4 +1,5 @@
 import { Page } from '@playwright/test';
+import { actionMapQuestions, skipNormalization } from '@utils/common/cyaMapping.utils';
 
 interface QAObject {
   question: string;
@@ -64,26 +65,26 @@ export class CYAStore {
     switch (action) {
       case 'clickRadioButton':
         if (typeof fieldName === 'object' && fieldName.question && fieldName.option) {
-          qaObject = { question: fieldName.question, answer: fieldName.option };
+          qaObject = { question: this.getMappedQuestion(fieldName.question), answer: fieldName.option };
         }
         break;
       case 'inputText':
         if (typeof fieldName === 'object' && fieldName.textLabel && typeof value === 'string') {
-          qaObject = { question: fieldName.textLabel, answer: value };
+          qaObject = { question: this.getMappedQuestion(fieldName.textLabel), answer: value };
         } else if (typeof fieldName === 'string' && typeof value === 'string') {
-          qaObject = { question: fieldName, answer: value };
+          qaObject = { question: this.getMappedQuestion(fieldName), answer: value };
         }
         break;
       case 'check':
         if (Array.isArray(fieldName)) {
           qaObject = { question: 'Selected options', answer: fieldName };
         } else if (typeof fieldName === 'string') {
-          qaObject = { question: fieldName, answer: 'Checked' };
+          qaObject = { question: this.getMappedQuestion(fieldName), answer: 'Checked' };
         }
         break;
       case 'select':
         if (typeof fieldName === 'string' && typeof value === 'string') {
-          qaObject = { question: fieldName, answer: value };
+          qaObject = { question: this.getMappedQuestion(fieldName), answer: value };
         }
         break;
       case 'uploadFile':
@@ -91,8 +92,29 @@ export class CYAStore {
           qaObject = { question: 'Uploaded file', answer: fieldName };
         } else if (Array.isArray(fieldName)) {
           qaObject = { question: 'Uploaded files', answer: fieldName };
+        } else if (typeof fieldName === 'object') {
+          qaObject = { question: fieldName.label, answer: fieldName.files };
         }
         break;
+      case 'uploadADocument':
+        if (typeof fieldName === 'object' && fieldName.label && fieldName.file) {
+          qaObject = { question: this.getMappedQuestion(fieldName.label), answer: fieldName.file };
+        } 
+        break;
+      case 'inputDate':
+        if (typeof fieldName === 'object' && fieldName.label && fieldName.date) {
+          const qn = String(fieldName.label).includes("(Optional)")
+            ? String(fieldName.label).replace(/\s*\(optional\)/i, "")
+            : String(fieldName.label);
+          qaObject = { question: qn, answer: this.formatDate(fieldName.date) };
+        } else if (typeof fieldName === 'string' && typeof value === 'string') {
+          const qn = String(fieldName).includes("(Optional)")
+            ? String(fieldName).replace(/\s*\(optional\)/i, "")
+            : String(fieldName);
+          qaObject = { question: qn, answer: this.formatDate(value) };
+        }
+        break;
+        
     }
 
     if (qaObject) {
@@ -177,11 +199,25 @@ export class CYAStore {
   }
 
   private normalizeText(text: string): string {
+    if (skipNormalization.has(text)) {
+      return text;
+    }
     return text
         .replace(/\s+/g, ' ')
         .trim()
         .toLowerCase()
         .replace(/[^\w\s]/g, '');
+  }
+
+  // convert date from eg: 23/07,2026 to 23 july 2026
+  private formatDate(date: string): string {
+    const [day, month, year] = date.split('/');
+    const monthName = new Date(Number(year),Number(month) - 1,Number(day)).toLocaleString('en-GB', { month: 'long' }).substring(0,3);
+    return `${day} ${monthName} ${year}`;
+  }
+
+  private getMappedQuestion(input: string): string {
+    return input ? (actionMapQuestions[input.trim().toLowerCase()] ?? input) : input;
   }
 
   clearAll(): void {
@@ -516,6 +552,9 @@ export class CYAPageValidation {
   }
 
   private normalizeText(text: string): string {
+    if (skipNormalization.has(text)) {
+      return text;
+    }
     return text.replace(/\s+/g, ' ').trim().toLowerCase();
   }
 

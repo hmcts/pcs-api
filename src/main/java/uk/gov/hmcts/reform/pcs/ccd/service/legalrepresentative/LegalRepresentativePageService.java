@@ -39,15 +39,6 @@ public class LegalRepresentativePageService {
         LegalRepresentativeOrganisationEntity legalRepresentativeOrganisationEntity = legalRepresentativeOrganisation
                 .orElseThrow(() -> new IllegalStateException("Cannot find LegalRepresentativeOrganisation"));
 
-        if (legalRepresentativeOrganisationEntity.getLegalRepresentativeList().isEmpty()) {
-
-            LegalRepresentativeEntity legalRepresentative = LegalRepresentativeEntity.builder()
-                .idamId(securityContextService.getCurrentUserId())
-                .build();
-
-            legalRepresentativeOrganisationEntity.addLegalRepresentative(legalRepresentative);
-        }
-
         if (legalRepresentativeDetails.getDifferentPostalAddress() != null
             && legalRepresentativeDetails.getDifferentPostalAddress().equals(VerticalYesNo.YES)) {
             legalRepresentativeOrganisationEntity.setAddress(mapAddressUkToAddressEntity(legalRepresentativeDetails
@@ -56,7 +47,7 @@ public class LegalRepresentativePageService {
 
         if (legalRepresentativeDetails.getProvideContactPhoneNumber() != null
             && legalRepresentativeDetails.getProvideContactPhoneNumber().equals(VerticalYesNo.YES)) {
-            legalRepresentativeOrganisationEntity.setPhone(legalRepresentativeDetails.getContactPhoneNumber());
+            legalRepresentativeOrganisationEntity.setPhoneNumber(legalRepresentativeDetails.getContactPhoneNumber());
         }
 
         if (legalRepresentativeDetails.getReference() != null && !legalRepresentativeDetails.getReference().isEmpty()) {
@@ -65,7 +56,7 @@ public class LegalRepresentativePageService {
 
         if (legalRepresentativeDetails.getUseEmailAddress() != null
             && legalRepresentativeDetails.getUseEmailAddress().equals(VerticalYesNo.NO)) {
-            legalRepresentativeOrganisationEntity.setEmail(legalRepresentativeDetails.getEmailAddress());
+            legalRepresentativeOrganisationEntity.setEmailAddress(legalRepresentativeDetails.getEmailAddress());
         }
 
         legalRepresentativeOrganisationEntity.setHasAmendedContactDetails(YesOrNo.YES);
@@ -86,8 +77,8 @@ public class LegalRepresentativePageService {
             details = LegalRepresentativeDetails.builder().build();
         }
 
-        if (legalRepresentativeOrganisation.getEmail() != null) {
-            details.setOriginalEmailAddress(legalRepresentativeOrganisation.getEmail());
+        if (legalRepresentativeOrganisation.getEmailAddress() != null) {
+            details.setOriginalEmailAddress(legalRepresentativeOrganisation.getEmailAddress());
         } else {
             String userEmail = securityContextService.getCurrentUserDetails().getSub();
             details.setOriginalEmailAddress(userEmail);
