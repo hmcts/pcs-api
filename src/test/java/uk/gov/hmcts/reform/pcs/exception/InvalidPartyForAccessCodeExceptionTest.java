@@ -23,7 +23,7 @@ class InvalidPartyForAccessCodeExceptionTest {
     @Test
     void shouldCreateExceptionWithMessageAndCause() {
         // Given
-        RedactionGate.setShowFullExceptionsForTesting(true);
+        RedactionGate.setShowFullMessagesForTesting(true);
         Throwable cause = new RuntimeException("Root cause");
 
         // When
@@ -49,7 +49,7 @@ class InvalidPartyForAccessCodeExceptionTest {
     @Test
     void shouldCreateExceptionWithMessageAndCauseChain() {
         // Given
-        RedactionGate.setShowFullExceptionsForTesting(true);
+        RedactionGate.setShowFullMessagesForTesting(true);
         Throwable rootCause = new IllegalStateException("Root cause");
         Throwable cause = new RuntimeException("Intermediate cause", rootCause);
 

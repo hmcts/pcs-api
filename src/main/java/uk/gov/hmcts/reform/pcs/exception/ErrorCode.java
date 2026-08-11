@@ -87,6 +87,7 @@ public enum ErrorCode {
     PARTY_ACCESS_CODE("PARTY_ACCESS_CODE",
                       "The party this access code was generated for is not a defendant in this case"),
     DOCUMENT_DOWNLOAD("DOCUMENT_DOWNLOAD", "Document download issue"),
+    DOCUMENT_NOT_FOUND("DOCUMENT_NOT_FOUND", "Document not found"),
     DRAFT_NOT_FOUND("DRAFT_NOT_FOUND", "No draft found"),
 
     REMOTE_CALL("REMOTE_CALL", "Remote call"),

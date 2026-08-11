@@ -15,7 +15,7 @@ import java.util.function.Consumer;
  * you have two options, and they work independently of each other:</p>
  *
  * <ul>
- *   <li><b>Set the {@code LOG_SHOW_FULL_EXCEPTIONS=true} env var</b> — the global,
+ *   <li><b>Set the {@code SHOW_FULL_MESSAGES=true} env var</b> — the global,
  *       all-or-nothing switch. Everything gets un-redacted, everywhere: what the exception
  *       object itself returns from {@code getMessage()}, {@code getCause()} and
  *       {@code getStackTrace()}, plus every stack trace that ends up in the logs.
@@ -28,7 +28,7 @@ import java.util.function.Consumer;
  *       logger its caller is using, so it can't.</li>
  * </ul>
  *
- * <p>In effect: {@code LOG_SHOW_FULL_EXCEPTIONS} flips everything (object and logs);
+ * <p>In effect: {@code SHOW_FULL_MESSAGES} flips everything (object and logs);
  * per-logger DEBUG only affects what that logger writes out.</p>
  *
  * <p>NOTE: Consider {@link uk.gov.hmcts.reform.pcs.exception.RedactingThrowableConverter} also when looking to see
@@ -37,7 +37,7 @@ import java.util.function.Consumer;
 public class RedactionGate {
 
     static final String REDACTED = "REDACTED";
-    private static final boolean SHOW_FULL_EXCEPTIONS = showFullMessages(System.getenv("SHOW_FULL_MESSAGES"));
+    private static final boolean SHOW_FULL_MESSAGES = showFullMessages(System.getenv("SHOW_FULL_MESSAGES"));
     private static volatile Boolean overrideForTesting; // Not for prod code
 
     private RedactionGate() {
@@ -70,12 +70,12 @@ public class RedactionGate {
 
     public static boolean showFullExceptions() {
         Boolean override = overrideForTesting;
-        return override != null ? override : SHOW_FULL_EXCEPTIONS;
+        return override != null ? override : SHOW_FULL_MESSAGES;
     }
 
     /**
      * Logger-aware variant used by the Logback converters. Un-redacts when either the global
-     * {@code LOG_SHOW_FULL_EXCEPTIONS} switch is on, or the specific logger for this event has
+     * {@code SHOW_FULL_MESSAGES} switch is on, or the specific logger for this event has
      * DEBUG enabled (see {@link LoggerGate}).
      */
     public static boolean showFullExceptions(Context context, ILoggingEvent event) {
@@ -112,7 +112,7 @@ public class RedactionGate {
         return "true".equalsIgnoreCase(raw);
     }
 
-    public static void setShowFullExceptionsForTesting(Boolean value) {
+    public static void setShowFullMessagesForTesting(Boolean value) {
         overrideForTesting = value; // pass null to reset
     }
 

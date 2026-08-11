@@ -4,18 +4,18 @@ import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 
-import static uk.gov.hmcts.reform.pcs.exception.RedactionGate.setShowFullExceptionsForTesting;
+import static uk.gov.hmcts.reform.pcs.exception.RedactionGate.setShowFullMessagesForTesting;
 
 public class ResetExceptionRedactionExtension implements BeforeEachCallback, AfterEachCallback {
 
     @Override
     public void beforeEach(ExtensionContext context) {
-        setShowFullExceptionsForTesting(null);
+        setShowFullMessagesForTesting(null);
     }
 
     @Override
     public void afterEach(ExtensionContext context) {
-        setShowFullExceptionsForTesting(null);
+        setShowFullMessagesForTesting(null);
     }
 
 }

@@ -70,7 +70,7 @@ class RealFeeServiceTest {
 
     @Test
     void shouldThrowFeeNotFoundExceptionWhenFeignCallFails() {
-        RedactionGate.setShowFullExceptionsForTesting(true);
+        RedactionGate.setShowFullMessagesForTesting(true);
         Request request = Request.create(
             Request.HttpMethod.GET,
             "/fees/lookup",
@@ -101,7 +101,7 @@ class RealFeeServiceTest {
 
     @Test
     void shouldThrowFeeNotFoundExceptionWhenFeignReturnsServerError() {
-        RedactionGate.setShowFullExceptionsForTesting(true);
+        RedactionGate.setShowFullMessagesForTesting(true);
         Request request = Request.create(
             Request.HttpMethod.GET,
             "/fees/lookup",

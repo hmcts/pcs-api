@@ -24,7 +24,7 @@ class CcdCallbackExceptionHandlerTest {
     @NullSource
     void shouldReturnForbiddenWhenCaseAccessExceptionThrownOnCallback(Boolean show) {
         // Setup
-        RedactionGate.setShowFullExceptionsForTesting(show);
+        RedactionGate.setShowFullMessagesForTesting(show);
 
         // Given
         String message = "User is not linked as a defendant on this case";
@@ -45,7 +45,7 @@ class CcdCallbackExceptionHandlerTest {
     @NullSource
     void shouldReturnForbiddenWhenCaseAccessExceptionHasCause(Boolean show) {
         // Setup
-        RedactionGate.setShowFullExceptionsForTesting(show);
+        RedactionGate.setShowFullMessagesForTesting(show);
 
         // Given
         CaseAccessException exception = new CaseAccessException(DEFENDANT_PARTY_EXTRACTOR_NO_DEFENDANTS,

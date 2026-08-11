@@ -229,7 +229,7 @@ class SendEmailTaskComponentTest {
         @Test
         @DisplayName("Should throw PermanentNotificationException when notification ID is null")
         void shouldThrowPermanentNotificationExceptionWhenNotificationIdIsNull() throws Exception {
-            RedactionGate.setShowFullExceptionsForTesting(true);
+            RedactionGate.setShowFullMessagesForTesting(true);
             when(notificationRepository.findById(dbNotificationId)).thenReturn(Optional.of(caseNotification));
             when(sendEmailResponse.getNotificationId()).thenReturn(null);
             when(notificationClient.sendEmail(eq(templateId), eq(emailAddress), eq(personalisation), anyString()))
@@ -292,7 +292,7 @@ class SendEmailTaskComponentTest {
         @Test
         @DisplayName("Should throw TemporaryNotificationException for temporary failure status codes")
         void shouldThrowTemporaryNotificationExceptionForTemporaryFailureStatusCodes() throws Exception {
-            RedactionGate.setShowFullExceptionsForTesting(true);
+            RedactionGate.setShowFullMessagesForTesting(true);
             int[] temporaryFailureStatusCodes = {429, 500, 502, 503, 999};
 
             for (int statusCode : temporaryFailureStatusCodes) {
@@ -473,7 +473,7 @@ class SendEmailTaskComponentTest {
         @Test
         @DisplayName("Should handle temporary failure flow with retry")
         void shouldHandleTemporaryFailureFlowWithRetry() throws Exception {
-            RedactionGate.setShowFullExceptionsForTesting(true);
+            RedactionGate.setShowFullMessagesForTesting(true);
             NotificationClientException exception = mock(NotificationClientException.class);
             when(exception.getHttpResult()).thenReturn(500);
             when(exception.getMessage()).thenReturn("Internal Server Error");

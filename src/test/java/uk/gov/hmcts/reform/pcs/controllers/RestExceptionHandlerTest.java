@@ -70,7 +70,7 @@ class RestExceptionHandlerTest {
     @NullSource
     void shouldHandleCaseNotFoundException(Boolean show) {
         // Setup
-        RedactionGate.setShowFullExceptionsForTesting(show);
+        RedactionGate.setShowFullMessagesForTesting(show);
 
         // Given
         long caseReference = 12345L;
@@ -95,7 +95,7 @@ class RestExceptionHandlerTest {
     @NullSource
     void shouldHandleInvalidAccessCodeException(Boolean show) {
         // Setup
-        RedactionGate.setShowFullExceptionsForTesting(show);
+        RedactionGate.setShowFullMessagesForTesting(show);
 
         // Given
         InvalidAccessCodeException exception = new InvalidAccessCodeException(ACCESS_CODE_ISSUE);
@@ -117,7 +117,7 @@ class RestExceptionHandlerTest {
     @NullSource
     void shouldHandleInvalidAccessCodeExceptionWithCause(Boolean show) {
         // Given
-        RedactionGate.setShowFullExceptionsForTesting(show);
+        RedactionGate.setShowFullMessagesForTesting(show);
 
         // Given
         Throwable cause = new RuntimeException("Root cause");
@@ -140,7 +140,7 @@ class RestExceptionHandlerTest {
     @NullSource
     void shouldHandleInvalidPartyForCaseException(Boolean show) {
         // Given
-        RedactionGate.setShowFullExceptionsForTesting(show);
+        RedactionGate.setShowFullMessagesForTesting(show);
         InvalidPartyForAccessCodeException exception = new InvalidPartyForAccessCodeException(PARTY_ACCESS_CODE);
 
         // When
@@ -162,7 +162,7 @@ class RestExceptionHandlerTest {
     @NullSource
     void shouldHandleInvalidPartyForCaseExceptionWithCause(Boolean show) {
         // Given
-        RedactionGate.setShowFullExceptionsForTesting(show);
+        RedactionGate.setShowFullMessagesForTesting(show);
         Throwable cause = new RuntimeException("Root cause");
         InvalidPartyForAccessCodeException exception = new InvalidPartyForAccessCodeException(PARTY_ACCESS_CODE, cause);
 
@@ -183,7 +183,7 @@ class RestExceptionHandlerTest {
     @NullSource
     void shouldHandleInvalidAuthTokenException(Boolean show) {
         // Given
-        RedactionGate.setShowFullExceptionsForTesting(show);
+        RedactionGate.setShowFullMessagesForTesting(show);
         InvalidAuthTokenException exception = new InvalidAuthTokenException(AUTH_MALFORMED);
 
         // When
@@ -204,7 +204,7 @@ class RestExceptionHandlerTest {
     @NullSource
     void shouldHandleInvalidAuthTokenExceptionWithCause(Boolean show) {
         // Given
-        RedactionGate.setShowFullExceptionsForTesting(show);
+        RedactionGate.setShowFullMessagesForTesting(show);
         Exception cause = new RuntimeException("Root cause");
         InvalidAuthTokenException exception = new InvalidAuthTokenException(AUTH_UNAUTHORIZED, cause);
 
@@ -226,7 +226,7 @@ class RestExceptionHandlerTest {
     @NullSource
     void shouldHandleIllegalStateException(Boolean show) {
         // Setup
-        RedactionGate.setShowFullExceptionsForTesting(show);
+        RedactionGate.setShowFullMessagesForTesting(show);
 
         // Given
         String expectedErrorMessage = "Conflict state";
@@ -248,7 +248,7 @@ class RestExceptionHandlerTest {
     @NullSource
     void shouldHandleIllegalStateExceptionWithCause(Boolean show) {
         // Setup
-        RedactionGate.setShowFullExceptionsForTesting(show);
+        RedactionGate.setShowFullMessagesForTesting(show);
 
         // Given
         String expectedErrorMessage = "Conflict state";
@@ -271,7 +271,7 @@ class RestExceptionHandlerTest {
     @NullSource
     void shouldHandleAccessCodeAlreadyUsedException(Boolean show) {
         // Given
-        RedactionGate.setShowFullExceptionsForTesting(show);
+        RedactionGate.setShowFullMessagesForTesting(show);
         AccessCodeAlreadyUsedException exception = new AccessCodeAlreadyUsedException(ACCESS_CODE_ALREADY_IN_USE);
 
         // When
@@ -293,7 +293,7 @@ class RestExceptionHandlerTest {
     @NullSource
     void shouldHandleAccessCodeAlreadyUsedExceptionWithCause(Boolean show) {
         // Setup
-        RedactionGate.setShowFullExceptionsForTesting(show);
+        RedactionGate.setShowFullMessagesForTesting(show);
 
         // Given
         Throwable cause = new RuntimeException("Root cause");
@@ -318,7 +318,7 @@ class RestExceptionHandlerTest {
     @NullSource
     void shouldHandleMethodArgumentNotValidException(Boolean show) {
         // Setup
-        RedactionGate.setShowFullExceptionsForTesting(show);
+        RedactionGate.setShowFullMessagesForTesting(show);
 
         // Given
         MethodArgumentNotValidException exception = mock(MethodArgumentNotValidException.class);
@@ -349,7 +349,7 @@ class RestExceptionHandlerTest {
     @NullSource
     void shouldHandleMethodArgumentNotValidExceptionWithDifferentStatus(Boolean show) {
         // Setup
-        RedactionGate.setShowFullExceptionsForTesting(show);
+        RedactionGate.setShowFullMessagesForTesting(show);
 
         // Given
         MethodArgumentNotValidException exception = mock(MethodArgumentNotValidException.class);
@@ -379,7 +379,7 @@ class RestExceptionHandlerTest {
     @NullSource
     void shouldHandleExceptionWithNullMessage(Boolean show) {
         // Setup
-        RedactionGate.setShowFullExceptionsForTesting(show);
+        RedactionGate.setShowFullMessagesForTesting(show);
 
         // Given
         IllegalStateException exception = new IllegalStateException((String) null);
@@ -400,7 +400,7 @@ class RestExceptionHandlerTest {
     @NullSource
     void shouldHandleCaseAccessException(Boolean show) {
         // Setup
-        RedactionGate.setShowFullExceptionsForTesting(show);
+        RedactionGate.setShowFullMessagesForTesting(show);
 
         // Given
         CaseAccessException exception = new CaseAccessException(DEFENDANT_ACCESS_VALIDATOR);
@@ -424,7 +424,7 @@ class RestExceptionHandlerTest {
     @NullSource
     void shouldHandleCaseAccessExceptionWithCause(Boolean show) {
         // Setup
-        RedactionGate.setShowFullExceptionsForTesting(show);
+        RedactionGate.setShowFullMessagesForTesting(show);
 
         // Given
         String expectedErrorMessage = "No defendants associated with this case";
@@ -448,7 +448,7 @@ class RestExceptionHandlerTest {
     @NullSource
     void shouldMapIdamExceptionWrappingOAuth2WithRestClient429ToServiceUnavailable(Boolean show) {
         // Setup
-        RedactionGate.setShowFullExceptionsForTesting(show);
+        RedactionGate.setShowFullMessagesForTesting(show);
 
         // Real production shape (IdamTokenProvider): Spring's OAuth2 password client wraps a
         // RestClient 429 in OAuth2AuthorizationException, which is wrapped in
@@ -494,7 +494,7 @@ class RestExceptionHandlerTest {
     @NullSource
     void shouldMapIdamExceptionWithDirectRestClient429CauseToServiceUnavailable(Boolean show) {
         // Setup
-        RedactionGate.setShowFullExceptionsForTesting(show);
+        RedactionGate.setShowFullMessagesForTesting(show);
 
         // Defense-in-depth: handler should also recognise a RestClient 429 set directly as the cause,
         // not only when buried under OAuth2AuthorizationException.
@@ -614,7 +614,7 @@ class RestExceptionHandlerTest {
     @NullSource
     void shouldUseConfiguredRetryAfterValueInThrottleResponse(Boolean show) {
         // Setup
-        RedactionGate.setShowFullExceptionsForTesting(show);
+        RedactionGate.setShowFullMessagesForTesting(show);
 
         // The Retry-After value is read from idam.throttle.retry-after-seconds, not hardcoded.
         RestExceptionHandler handler = new RestExceptionHandler(

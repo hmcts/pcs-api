@@ -38,7 +38,7 @@ class IdamAuthenticatorTest {
     @NullAndEmptySource
     @DisplayName("Should throw InvalidAuthTokenException when token is null or blank")
     void shouldThrowInvalidAuthTokenExceptionWhenAuthTokenIsNullOrBlank(String authToken) {
-        RedactionGate.setShowFullExceptionsForTesting(true);
+        RedactionGate.setShowFullMessagesForTesting(true);
         assertThatThrownBy(() -> underTest.validateAuthToken(authToken))
             .isInstanceOf(InvalidAuthTokenException.class)
             .hasMessage("Authorization token is null or blank");
@@ -49,7 +49,7 @@ class IdamAuthenticatorTest {
     @DisplayName("Should throw InvalidAuthTokenException when token is malformed")
     @Test
     void shouldThrowInvalidAuthTokenExceptionWhenAuthTokenMalformed() {
-        RedactionGate.setShowFullExceptionsForTesting(true);
+        RedactionGate.setShowFullMessagesForTesting(true);
         assertThatThrownBy(() -> underTest.validateAuthToken("InvalidToken"))
             .isInstanceOf(InvalidAuthTokenException.class)
             .hasMessageContaining("Malformed Authorization token");
@@ -65,7 +65,7 @@ class IdamAuthenticatorTest {
         "Bearer"    // length 6 — fails prefix check (no trailing space); covers the boundary on the other branch
     })
     void shouldThrowInvalidAuthTokenExceptionWhenTokenLengthBelowMinimum(String token) {
-        RedactionGate.setShowFullExceptionsForTesting(true);
+        RedactionGate.setShowFullMessagesForTesting(true);
         assertThatThrownBy(() -> underTest.validateAuthToken(token))
             .isInstanceOf(InvalidAuthTokenException.class)
             .hasMessageContaining("Malformed Authorization token");
@@ -90,7 +90,7 @@ class IdamAuthenticatorTest {
     @Test
     @DisplayName("Should throw InvalidAuthTokenException when IDAM returns Unauthorized")
     void shouldThrowInvalidAuthTokenExceptionWhenIdamReturnsUnauthorized() {
-        RedactionGate.setShowFullExceptionsForTesting(true);
+        RedactionGate.setShowFullMessagesForTesting(true);
         String token = BEARER_PREFIX + "invalid-token";
         FeignException.Unauthorized unauthorizedException = mock(FeignException.Unauthorized.class);
         when(idamUserInfoApi.getUserInfo(token)).thenThrow(unauthorizedException);
@@ -104,7 +104,7 @@ class IdamAuthenticatorTest {
     @Test
     @DisplayName("Should wrap non-401 RemoteCallException in IdamException (transient upstream failure)")
     void shouldWrapNon401FeignExceptionInIdamException() {
-        RedactionGate.setShowFullExceptionsForTesting(true);
+        RedactionGate.setShowFullMessagesForTesting(true);
         String token = BEARER_PREFIX + "valid-token";
         RemoteCallException remoteCallException = mock(RemoteCallException.class);
         when(idamUserInfoApi.getUserInfo(token)).thenThrow(remoteCallException);

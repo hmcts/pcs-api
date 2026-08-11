@@ -13,7 +13,7 @@ class AccessCodeAlreadyUsedExceptionTest {
     @Test
     void shouldReturnUnredactedMessageWhenShowFullExceptionsIsTrue() {
         // Given
-        RedactionGate.setShowFullExceptionsForTesting(true);
+        RedactionGate.setShowFullMessagesForTesting(true);
 
         // When
         AccessCodeAlreadyUsedException exception = new AccessCodeAlreadyUsedException(ACCESS_CODE_ALREADY_IN_USE);
@@ -28,7 +28,7 @@ class AccessCodeAlreadyUsedExceptionTest {
     @Test
     void shouldReturnExpectedMessageWhenShowFullExceptionsOverrideIsNull() {
         // Given
-        RedactionGate.setShowFullExceptionsForTesting(null);
+        RedactionGate.setShowFullMessagesForTesting(null);
         boolean showFull = RedactionGate.showFullExceptions();
 
         // When
@@ -45,7 +45,7 @@ class AccessCodeAlreadyUsedExceptionTest {
     @Test
     void shouldKeepCauseWhenShowFullExceptionsIsTrue() {
         // Given
-        RedactionGate.setShowFullExceptionsForTesting(true);
+        RedactionGate.setShowFullMessagesForTesting(true);
         Throwable cause = new RuntimeException("Root cause");
 
         // When
@@ -61,7 +61,7 @@ class AccessCodeAlreadyUsedExceptionTest {
     @Test
     void shouldApplyExpectedCauseBehaviorWhenShowFullExceptionsOverrideIsNull() {
         // Given
-        RedactionGate.setShowFullExceptionsForTesting(null);
+        RedactionGate.setShowFullMessagesForTesting(null);
         boolean showFull = RedactionGate.showFullExceptions();
         Throwable rootCause = new IllegalStateException("Root cause");
         Throwable cause = new RuntimeException("Intermediate cause", rootCause);

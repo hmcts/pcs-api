@@ -170,7 +170,7 @@ class PartyServiceTest {
         @Test
         void shouldThrowExceptionWhenNoPartyEntityById() {
             // Given
-            RedactionGate.setShowFullExceptionsForTesting(true);
+            RedactionGate.setShowFullMessagesForTesting(true);
             UUID id = UUID.randomUUID();
             long caseReference = 1234L;
 

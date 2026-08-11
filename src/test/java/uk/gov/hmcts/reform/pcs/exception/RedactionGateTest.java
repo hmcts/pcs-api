@@ -18,7 +18,7 @@ public class RedactionGateTest {
 
     @BeforeEach
     void forceRedactedModeByDefaultForEachTest() {
-        RedactionGate.setShowFullExceptionsForTesting(false);
+        RedactionGate.setShowFullMessagesForTesting(false);
     }
 
     @Test
@@ -73,7 +73,7 @@ public class RedactionGateTest {
     @Test
     void printStackTrace_printStream_whenShowFullExceptionsFalse_printsThrowableOnly() {
         // Given
-        RedactionGate.setShowFullExceptionsForTesting(false);
+        RedactionGate.setShowFullMessagesForTesting(false);
         RuntimeException throwable = new RuntimeException("xyz");
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         PrintStream stream = new PrintStream(output, true, StandardCharsets.UTF_8);
@@ -95,7 +95,7 @@ public class RedactionGateTest {
     @Test
     void printStackTrace_printStream_whenShowFullExceptionsTrue_callsFullPrinter() {
         // Given
-        RedactionGate.setShowFullExceptionsForTesting(true);
+        RedactionGate.setShowFullMessagesForTesting(true);
         RuntimeException throwable = new RuntimeException("xyz");
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         PrintStream stream = new PrintStream(output, true, StandardCharsets.UTF_8);
@@ -116,7 +116,7 @@ public class RedactionGateTest {
     @Test
     void printStackTrace_printWriter_whenShowFullExceptionsFalse_printsThrowableOnly() {
         // Given
-        RedactionGate.setShowFullExceptionsForTesting(false);
+        RedactionGate.setShowFullMessagesForTesting(false);
         RuntimeException throwable = new RuntimeException("xyz");
         StringWriter output = new StringWriter();
         PrintWriter writer = new PrintWriter(output);
@@ -139,7 +139,7 @@ public class RedactionGateTest {
     @Test
     void printStackTrace_printWriter_whenShowFullExceptionsTrue_callsFullPrinter() {
         // Given
-        RedactionGate.setShowFullExceptionsForTesting(true);
+        RedactionGate.setShowFullMessagesForTesting(true);
         RuntimeException throwable = new RuntimeException("xyz");
         StringWriter output = new StringWriter();
         PrintWriter writer = new PrintWriter(output);

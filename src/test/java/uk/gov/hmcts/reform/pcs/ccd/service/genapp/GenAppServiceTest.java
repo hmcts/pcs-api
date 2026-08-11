@@ -109,7 +109,7 @@ class GenAppServiceTest {
 
     @BeforeEach
     void setUp() {
-        RedactionGate.setShowFullExceptionsForTesting(true);
+        RedactionGate.setShowFullMessagesForTesting(true);
         stubUtcClock(TEST_UTC_DATE_TIME);
         when(pcsCaseEntity.getClaims()).thenReturn(List.of(mainClaim));
 

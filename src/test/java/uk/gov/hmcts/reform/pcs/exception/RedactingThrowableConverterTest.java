@@ -48,7 +48,7 @@ class RedactingThrowableConverterTest {
     @MethodSource("exceptionsWithPii")
     void showsFullExceptionWhenLoggerShowFullExceptionsIsFalse(Throwable throwable, String expectType) {
         // Given
-        RedactionGate.setShowFullExceptionsForTesting(false);
+        RedactionGate.setShowFullMessagesForTesting(false);
 
         // When
         String output = underTest.convert(errorEventWithException(throwable));
@@ -61,8 +61,8 @@ class RedactingThrowableConverterTest {
     @MethodSource("exceptionsWithPii")
     void showsFullExceptionWhenLoggerIsAtShowFullExceptions(Throwable throwable, String expectType) {
         // Given
-        RedactionGate.setShowFullExceptionsForTesting(true);
-        RedactionGate.setShowFullExceptionsForTesting(true);
+        RedactionGate.setShowFullMessagesForTesting(true);
+        RedactionGate.setShowFullMessagesForTesting(true);
 
         // When
         String output = underTest.convert(errorEventWithException(throwable));

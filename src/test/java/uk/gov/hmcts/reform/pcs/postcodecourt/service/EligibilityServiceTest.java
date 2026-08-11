@@ -57,7 +57,7 @@ class EligibilityServiceTest {
     @NullSource
     @ValueSource(strings = {"", " "})
     void shouldThrowExceptionForNullOrBlankPostcode(String postcode) {
-        RedactionGate.setShowFullExceptionsForTesting(true);
+        RedactionGate.setShowFullMessagesForTesting(true);
         Throwable throwable = catchThrowable(() -> underTest.checkEligibility(postcode, ENGLAND));
 
         assertThat(throwable)

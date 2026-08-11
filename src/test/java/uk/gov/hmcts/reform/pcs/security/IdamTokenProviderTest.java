@@ -41,7 +41,7 @@ class IdamTokenProviderTest {
 
     @AfterEach
     void afterEach() {
-        RedactionGate.setShowFullExceptionsForTesting(null);
+        RedactionGate.setShowFullMessagesForTesting(null);
     }
 
     @Test
@@ -87,7 +87,7 @@ class IdamTokenProviderTest {
     @Test
     @DisplayName("Should wrap OAuth2AuthorizationException thrown when fetching system update user token")
     void shouldWrapOAuth2AuthorizationExceptionGettingAuthToken() {
-        RedactionGate.setShowFullExceptionsForTesting(true);
+        RedactionGate.setShowFullMessagesForTesting(true);
         OAuth2Error error = new OAuth2Error("invalid_token_response", "throttled", null);
         OAuth2AuthorizationException oauthException = new OAuth2AuthorizationException(error);
         given(authorizedClientManager.authorize(any(OAuth2AuthorizeRequest.class))).willThrow(oauthException);
