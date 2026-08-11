@@ -181,6 +181,8 @@ export class PageContentValidation implements IValidation {
       }
       else if(page.url().includes("makeAnApplication")){
         mappingPath = path.join(__dirname, '../../../data/page-data-figma/page-data-genApps-figma/urlToFileMappingGenApps.ts');
+      } else if(page.url().includes("legalRepDocumentUpload")){
+        mappingPath = path.join(__dirname, '../../../data/page-data-figma/page-data-legalRepresentative/urlToFileMappingLegalRep.ts');
       }
       else if(
       ["amendDocuments", "changeCaseState", "enterGenApp", "caseworkerUploadDocuments", "addCaseReviewDate"].some(str =>
@@ -243,6 +245,8 @@ export class PageContentValidation implements IValidation {
       filePath = path.join(__dirname, '../../../data/page-data-figma/page-data-enforcement-figma', `${fileName}.page.data.ts`);
     } else if (page.url().includes("makeAnApplication")) {
       filePath = path.join(__dirname, '../../../data/page-data-figma/page-data-genApps-figma', `${fileName}.page.data.ts`);
+    } else if(page.url().includes("legalRepDocumentUpload")){
+      filePath = path.join(__dirname, '../../../data/page-data-figma/page-data-legalRepresentative', `${fileName}.page.data.ts`);
     }
     else if (page.url().includes("globalSearch")) {
       filePath = path.join(__dirname, '../../../data/page-data-figma/page-data-common-component', `${fileName}.page.data.ts`);
@@ -389,7 +393,11 @@ export class PageContentValidation implements IValidation {
          mappingPath = path.join(__dirname, '../../../data/page-data-figma/page-data-enforcement-figma/urlToFileMappingEnforcement.ts');
       } else if(url.includes("makeAnApplication")){
         mappingPath = path.join(__dirname, '../../../data/page-data-figma/page-data-genApps-figma/urlToFileMappingGenApps.ts');
-      } else if (
+      }
+      else if(url.includes("legalRepDocumentUpload")){
+        mappingPath = path.join(__dirname, '../../../data/page-data-figma/page-data-legalRepresentative/urlToFileMappingLegalRep.ts');
+      }
+      else if (
         ["amendDocuments", "changeCaseState", "enterGenApp", "caseworkerUploadDocuments", "addCaseReviewDate"].some(str =>
           url.includes(str)
         )) {

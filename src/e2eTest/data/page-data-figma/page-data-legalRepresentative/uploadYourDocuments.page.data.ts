@@ -23,7 +23,6 @@ export const uploadYourDocuments = {
   chooseFileHiddenButton: `Choose file`,
   cancelUploadHiddenButton: `Cancel upload`,
   shortDescriptionHiddenTextLabel: `Short description`,
-  UploadAFileHeader: `Upload a file`,
   witnessStatementDropDownInput: `Witness statement`,
   rentStatementDropDownInput: `Rent or payments`,
   correspondenceFromDefendantDropDownInput: `Correspondence from Defendant`,
@@ -37,5 +36,5 @@ export const uploadYourDocuments = {
   previousButton: `Previous`,
   continueButton: `Continue`,
   cancelLink: `Cancel`,
-  signOutLink: `Sign out`,
+
 };

@@ -14,6 +14,7 @@ import {makeAnApplicationApiData} from "@data/api-data";
 import {initializeCMExecutor} from "@utils/controller-caseManagement";
 import {getCaseTypeId} from "@utils/common/caseType.utils";
 import {VERY_LONG_TIMEOUT} from "../playwright.config";
+import {CYA} from "@data/page-data-figma/page-data-legalRepresentative/CYA.page.data";
 
 
 
@@ -103,7 +104,7 @@ test.describe('Legal Representative - Upload Documents- e2e Journey @nightly', a
         {type: uploadYourDocuments.witnessStatementDropDownInput, fileName: 'witnessStatement.pdf', description: uploadYourDocuments.witnessStatementDropDownInput},
       ]
     });
-    await performAction('clickLink', uploadYourDocuments.signOutLink);
+    await performAction('clickLink', CYA.signOutLink);
     await page.context().clearCookies();
     await page.evaluate(() => {
       localStorage.clear();
