@@ -19,6 +19,9 @@ public class OrganisationDetailsResponse {
     @JsonProperty("organisationIdentifier")
     private String organisationIdentifier;
 
+    @JsonProperty("organisationProfileIds")
+    private List<String> organisationProfileIds;
+
     @JsonProperty("contactInformation")
     private List<ContactInformation> contactInformation;
 
@@ -32,9 +35,6 @@ public class OrganisationDetailsResponse {
 
     @JsonProperty("paymentAccount")
     private List<String> paymentAccount;
-
-    @JsonProperty("organisationProfileIds")
-    private List<String> organisationProfileIds;
 
     @JsonProperty("pendingPaymentAccount")
     private List<String> pendingPaymentAccount;

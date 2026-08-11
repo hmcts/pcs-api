@@ -15,7 +15,7 @@ public enum AccessTypes {
         "Can manage all cases associated with this organisation as claimant",
         "Assign to Users to enable claimant access to all cases associated with this organisation",
         1,
-        UserRole.CLAIMANT_SOLICITOR_ORG,
+        UserRole.GA_CLAIMANT_SOLICITOR,
         true,
         "PCS:PCS:solicitor-org-claimant-access:claimant_solicitor:$ORGID$"),
 
@@ -28,7 +28,7 @@ public enum AccessTypes {
         "Can manage all cases associated with this organisation as claimant",
         "Assign to Users to enable claimant access to all cases associated with this organisation",
         2,
-        UserRole.CLAIMANT_ORG,
+        UserRole.CLAIMANT,
         true,
         "PCS:PCS:prof-org-claimant-access:claimant:$ORGID$"),
 
@@ -41,7 +41,7 @@ public enum AccessTypes {
         "Can manage all cases associated with this organisation as claimant",
         "Assign to Users to enable claimant access to all cases associated with this organisation",
         3,
-        UserRole.CLAIMANT_ORG,
+        UserRole.CLAIMANT,
         true,
         "PCS:PCS:prof-org-claimant-access:claimant:$ORGID$"),
 
@@ -54,7 +54,7 @@ public enum AccessTypes {
         "Can manage all cases associated with this organisation as claimant",
         "Assign to Users to enable claimant access to all cases associated with this organisation",
         4,
-        UserRole.CLAIMANT_ORG,
+        UserRole.CLAIMANT,
         true,
         "PCS:PCS:prof-org-claimant-access:claimant:$ORGID$"),
 
@@ -67,7 +67,7 @@ public enum AccessTypes {
         "Can manage all cases associated with this organisation as claimant",
         "Assign to Users to enable claimant access to all cases associated with this organisation",
         5,
-        UserRole.CLAIMANT_ORG,
+        UserRole.CLAIMANT,
         true,
         "PCS:PCS:prof-org-claimant-access:claimant:$ORGID$"),
 
@@ -80,7 +80,7 @@ public enum AccessTypes {
         "Can manage all cases associated with this organisation as claimant",
         "Assign to Users to enable claimant access to all cases associated with this organisation",
         6,
-        UserRole.CLAIMANT_ORG,
+        UserRole.CLAIMANT,
         true,
         "PCS:PCS:prof-org-claimant-access:claimant:$ORGID$");
 

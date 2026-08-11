@@ -69,7 +69,7 @@ public class TestCaseGeneration implements CCDConfig<PCSCase, State, UserRole> {
                 .initialState(AWAITING_SUBMISSION_TO_HMCTS)
                 .showSummary()
                 .name(EVENT_NAME)
-                .grant(Permission.CRUD, UserRole.CLAIMANT_SOLICITOR_ORG)
+                .grant(Permission.CRUD, UserRole.GA_CLAIMANT_SOLICITOR)
                 .grantHistoryOnly(JUDICIAL_HISTORY_ROLES);
         new PageBuilder(eventBuilder).add(new TestCaseSelectionPage());
     }
@@ -101,7 +101,7 @@ public class TestCaseGeneration implements CCDConfig<PCSCase, State, UserRole> {
         loadedCase.setFeeAmount(TEST_FEE_AMOUNT);
         pcsCaseService.createCase(
             caseReference, loadedCase.getPropertyAddress(),
-            loadedCase.getLegislativeCountry());
+            loadedCase.getLegislativeCountry(), Optional.empty());
 
         resumePossessionClaim.submitClaim(caseReference, loadedCase);
     }

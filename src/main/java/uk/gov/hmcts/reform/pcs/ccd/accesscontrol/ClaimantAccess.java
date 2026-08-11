@@ -6,8 +6,8 @@ import uk.gov.hmcts.ccd.sdk.api.HasAccessControl;
 import uk.gov.hmcts.ccd.sdk.api.HasRole;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 
-import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CLAIMANT_ORG;
-import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CLAIMANT_SOLICITOR_ORG;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CLAIMANT;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.GA_CLAIMANT_SOLICITOR;
 
 
 public class ClaimantAccess implements HasAccessControl {
@@ -15,8 +15,8 @@ public class ClaimantAccess implements HasAccessControl {
     @Override
     public SetMultimap<HasRole, Permission> getGrants() {
         SetMultimap<HasRole, Permission> grants = HashMultimap.create();
-        grants.putAll(CLAIMANT_SOLICITOR_ORG, Permission.CRU);
-        grants.putAll(CLAIMANT_ORG, Permission.CRU);
+        grants.putAll(GA_CLAIMANT_SOLICITOR, Permission.CRU);
+        grants.putAll(CLAIMANT, Permission.CRU);
         return grants;
     }
 

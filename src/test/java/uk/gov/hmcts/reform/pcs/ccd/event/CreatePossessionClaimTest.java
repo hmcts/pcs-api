@@ -13,7 +13,10 @@ import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.PropertyNotEligibl
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.util.FeeApplier;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
@@ -21,6 +24,8 @@ class CreatePossessionClaimTest extends BaseEventTest {
 
     @Mock
     private PcsCaseService pcsCaseService;
+    @Mock
+    private OrganisationService organisationService;
     @Mock
     private FeeApplier feeApplier;
     @Mock
@@ -33,7 +38,7 @@ class CreatePossessionClaimTest extends BaseEventTest {
     @BeforeEach
     void setUp() {
         CreatePossessionClaim underTest = new CreatePossessionClaim(
-            pcsCaseService, feeApplier, enterPropertyAddress,
+            pcsCaseService, organisationService, feeApplier, enterPropertyAddress,
             crossBorderPostcodeSelection, propertyNotEligible
         );
 
@@ -53,6 +58,7 @@ class CreatePossessionClaimTest extends BaseEventTest {
         callSubmitHandler(caseData);
 
         // Then
-        verify(pcsCaseService).createCase(TEST_CASE_REFERENCE, propertyAddress, LegislativeCountry.ENGLAND);
+        verify(pcsCaseService).createCase(eq(TEST_CASE_REFERENCE), eq(propertyAddress),
+            eq(LegislativeCountry.ENGLAND), any());
     }
 }

@@ -24,8 +24,8 @@ public enum AccessProfile implements HasRole {
     // The group-access capacities: one name per capacity, used as the group role PRM assigns
     // (POFCC-368 catalogue), the CaseAssignedRoleField that CCD matches against an organisation
     // policy when deriving CaseAccessGroups, and the access profile permissions attach to.
-    CLAIMANT_ORG("claimant", CRU),
-    CLAIMANT_SOLICITOR_ORG("claimant_solicitor", CRU),
+    CLAIMANT("claimant", CRU),
+    GA_CLAIMANT_SOLICITOR("claimant_solicitor", CRU),
 
     JUDGE("judge", CRU),
     FEE_PAID_JUDGE("fee-paid-judge", CRU),

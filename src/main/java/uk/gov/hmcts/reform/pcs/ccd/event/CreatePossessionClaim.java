@@ -21,7 +21,9 @@ import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.StartTheService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.util.FeeApplier;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 
+import static java.util.Optional.ofNullable;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.createPossessionClaim;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
 
@@ -32,6 +34,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUD
 public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole> {
 
     private final PcsCaseService pcsCaseService;
+    private final OrganisationService organisationService;
     private final FeeApplier feeApplier;
     private final EnterPropertyAddress enterPropertyAddress;
     private final CrossBorderPostcodeSelection crossBorderPostcodeSelection;
@@ -46,8 +49,8 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
                 .initialState(State.AWAITING_SUBMISSION_TO_HMCTS)
                 .showSummary()
                 .name("Make a claim")
-                .grant(Permission.CRU, UserRole.CLAIMANT_ORG)
-                .grant(Permission.CRU, UserRole.CLAIMANT_SOLICITOR_ORG)
+                .grant(Permission.CRU, UserRole.CLAIMANT)
+                .grant(Permission.CRU, UserRole.GA_CLAIMANT_SOLICITOR)
                 // CREATOR (granted by CCD in the create transaction) is the creator's only draft access
                 .grant(Permission.CRU, UserRole.CREATOR)
                 .grantHistoryOnly(JUDICIAL_HISTORY_ROLES);
@@ -81,7 +84,8 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
         PCSCase caseData = eventPayload.caseData();
 
         pcsCaseService.createCase(caseReference, caseData.getPropertyAddress(),
-                                  caseData.getLegislativeCountry());
+                                  caseData.getLegislativeCountry(),
+                                  ofNullable(organisationService.getOrganisationIdForCurrentUser()));
 
         return SubmitResponse.defaultResponse();
     }

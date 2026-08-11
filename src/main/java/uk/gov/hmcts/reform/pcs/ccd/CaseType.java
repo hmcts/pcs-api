@@ -36,8 +36,8 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
         AccessProfile.CREATOR,
         AccessProfile.DEFENDANT,
         AccessProfile.PCS_SOLICITOR,
-        AccessProfile.CLAIMANT_ORG,
-        AccessProfile.CLAIMANT_SOLICITOR_ORG,
+        AccessProfile.CLAIMANT,
+        AccessProfile.GA_CLAIMANT_SOLICITOR,
         AccessProfile.JUDGE,
         AccessProfile.FEE_PAID_JUDGE,
         AccessProfile.CIRCUIT_JUDGE,
@@ -155,6 +155,7 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
             .showCondition(NEVER_SHOW)
             .field(PCSCase::getCaseTitleMarkdown)
             .field(PCSCase::getDashboardData)
+            .field(PCSCase::getCaseNameHmctsInternal)
             .field(PCSCase::getFeatureFlags);
 
         builder.tab("serviceRequest", "Service Request")
