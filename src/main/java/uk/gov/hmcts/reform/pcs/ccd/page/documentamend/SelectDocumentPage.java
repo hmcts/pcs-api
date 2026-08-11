@@ -13,7 +13,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.documentamend.DocumentAmendDetails;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentAmendService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentSelectionService;
-import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentSelectionService;
 import uk.gov.hmcts.reform.pcs.ccd.util.StringUtils;
 
 import java.util.ArrayList;
@@ -49,7 +48,7 @@ public class SelectDocumentPage implements CcdPageConfiguration {
                 .label("emptyFolderDocumentQuestion", "", NEVER_SHOW)
             .done();
 
-        for (DocumentCategoryField categoryField : DocumentAmendCategoryField.values()) {
+        for (DocumentAmendCategoryField categoryField : DocumentAmendCategoryField.values()) {
             addCategoryFields(page, categoryField);
         }
 
@@ -75,7 +74,7 @@ public class SelectDocumentPage implements CcdPageConfiguration {
     }
 
     private void addCategoryFields(FieldCollectionBuilder<PCSCase, State, ?> page,
-                                   DocumentCategoryField categoryField) {
+                                   DocumentAmendCategoryField categoryField) {
         CaseFileCategory category = categoryField.category;
         page
             .label(categoryField.documentsFieldId + "EmptyFolderMessage", emptyFolderMessage(category),

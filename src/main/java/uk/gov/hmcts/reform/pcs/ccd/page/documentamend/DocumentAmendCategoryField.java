@@ -7,7 +7,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.documentamend.DocumentAmendDetails;
 
-enum DocumentCategoryField {
+enum DocumentAmendCategoryField {
     STATEMENTS_OF_CASE(
         CaseFileCategory.STATEMENTS_OF_CASE,
         "StatementsOfCaseDocuments",
@@ -78,7 +78,7 @@ enum DocumentCategoryField {
     final TypedPropertyGetter<PCSCase, DynamicList> documentsGetter;
     final TypedPropertyGetter<DocumentAmendDetails, YesOrNo> emptyGetter;
 
-    DocumentCategoryField(CaseFileCategory category,
+    DocumentAmendCategoryField(CaseFileCategory category,
                           String documentsFieldId,
                           String emptyFieldId,
                           TypedPropertyGetter<PCSCase, DynamicList> documentsGetter,
