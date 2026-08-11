@@ -166,7 +166,7 @@ class TaskDescriptionServiceTest {
 
             // When
             String description = underTest.createTranslateClaimantDocumentDescription(
-                CASE_REFERENCE, documentEntityList);
+                CASE_REFERENCE, documentEntityList, "Claimant 1", false);
 
             // Then
             assertThat(description).isEqualTo(expectedRenderedContent);
@@ -192,7 +192,7 @@ class TaskDescriptionServiceTest {
             // When
             Throwable throwable = catchThrowable(
                 () -> underTest.createTranslateClaimantDocumentDescription(
-                    CASE_REFERENCE, List.of()));
+                    CASE_REFERENCE, List.of(), "Claimant 1", false));
 
             // Then
             assertThat(throwable)
