@@ -15,7 +15,8 @@ export const caseSummary = {
   HistoryTab: 'History',
   serviceRequestTab: 'Service Request',
   manageDocuments:{
-    amend : 'Manage documents: Amend'
+    amend : 'Manage documents: Amend',
+    upload : 'Manage documents: Upload'
   },
   addReviewDates: 'Add review date',
   changeCaseState: 'Change case state',

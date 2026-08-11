@@ -66,6 +66,7 @@ export class ActionRegistry {
     ['selectClaimType', new CreateCaseAction()],
     ['selectClaimantName', new CreateCaseAction()],
     ['selectClaimantDetails', new CreateCaseWalesAction()],
+    ['selectDocumentsYouVeUploadedCheckList',new CreateCaseWalesAction()],
     ['selectContactPreferences', new CreateCaseAction()],
     ['housingPossessionClaim', new CreateCaseAction()],
     ['selectGroundsForPossession', new CreateCaseAction()],
