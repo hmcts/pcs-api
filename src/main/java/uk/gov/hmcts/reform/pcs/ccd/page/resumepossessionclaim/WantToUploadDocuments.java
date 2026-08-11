@@ -44,6 +44,14 @@ public class WantToUploadDocuments implements CcdPageConfiguration {
                                                                   CaseDetails<PCSCase, State> detailsBefore) {
         PCSCase caseData = details.getData();
 
+        if (VerticalYesNo.NO.equals(caseData.getWantToUploadDocuments())) {
+            caseData.setAdditionalDocuments(null);
+            caseData.setDocumentsYouveUploaded(null);
+            return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
+                .data(caseData)
+                .build();
+        }
+
         setAdditionalDocumentsFromDraft(details.getId(), caseData);
 
         if (caseData.getWantToUploadDocuments().equals(VerticalYesNo.YES)

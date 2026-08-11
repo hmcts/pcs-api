@@ -7,6 +7,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyLegalRepresentativeEntity;
@@ -20,9 +21,8 @@ import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 import uk.gov.hmcts.reform.pcs.exception.LegalRepresentativeAlreadyLinkedToPartyException;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
-import uk.gov.hmcts.reform.pcs.idam.UserInfo;
-import uk.gov.hmcts.reform.pcs.reference.dto.NameAndAddress;
-import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
+import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationDetailsService;
 
 import java.time.Instant;
 import java.util.Optional;
@@ -37,13 +37,14 @@ public class LegalRepresentativePartyLinkService {
 
     private final PcsCaseService pcsCaseService;
     private final LegalRepresentativeRepository legalRepresentativeRepository;
-    private final OrganisationService organisationService;
+    private final OrganisationDetailsService organisationDetailsService;
     private final AddressMapper addressMapper;
     private final CaseRoleAssignmentService caseRoleAssignmentService;
 
     @Transactional
-    public void linkLegalRepresentativeToParty(long caseReference, String partyId, UserInfo user) {
-        String organisationId = organisationService.getOrganisationId(user.getUid());
+    public void linkLegalRepresentativeToParty(long caseReference, String partyId, UserInfo user,
+                                               OrganisationDetailsResponse organisationDetails) {
+        String organisationId = organisationDetails.getOrganisationIdentifier();
         if (isAlreadyLinkedToParty(user, partyId, organisationId)) {
             throw new LegalRepresentativeAlreadyLinkedToPartyException(
                 "Legal Representative or organisation already linked to Party [" + partyId + "]");
@@ -70,18 +71,15 @@ public class LegalRepresentativePartyLinkService {
                                                                                          legalRepresentative);
 
             if (legalRepresentativeLinkedToCase) {
-                backfillOrganisationMetadata(legalRepresentative, user.getUid());
+                backfillOrganisationMetadata(legalRepresentative, organisationDetails);
                 legalRepresentative.addParty(defendantPartyEntity);
             } else {
-                legalRepresentative = createNewLegalRepresentative(organisationId,
-                                                                   idamId,
-                                                                   organisationService
-                                                                       .getNameAndAddress(user.getUid()));
+                legalRepresentative = createNewLegalRepresentative(organisationId, organisationDetails.getName(),
+                                                                   idamId, organisationDetails);
             }
         } else {
-            legalRepresentative = createNewLegalRepresentative(organisationId,
-                                                               idamId,
-                                                               organisationService.getNameAndAddress(user.getUid()));
+            legalRepresentative = createNewLegalRepresentative(organisationId, organisationDetails.getName(),
+                                                               idamId, organisationDetails);
         }
 
         legalRepresentative.addParty(defendantPartyEntity);
@@ -111,14 +109,14 @@ public class LegalRepresentativePartyLinkService {
                               .getPcsCase().getCaseReference().equals(caseReference));
     }
 
-    private LegalRepresentativeEntity createNewLegalRepresentative(String id,  UUID idamId,
-                                                                   NameAndAddress nameAndAddress) {
+    private LegalRepresentativeEntity createNewLegalRepresentative(String id, String name, UUID idamId,
+                                                                   OrganisationDetailsResponse organisationDetails) {
         return LegalRepresentativeEntity.builder()
             .organisationId(id)
-            .organisationName(nameAndAddress.name())
+            .organisationName(name)
             .idamId(idamId)
             .address(addressMapper.toAddressEntityAndNormalise(
-                nameAndAddress.address()))
+                organisationDetailsService.getOrganisationAddress(organisationDetails)))
             .build();
     }
 
@@ -144,12 +142,13 @@ public class LegalRepresentativePartyLinkService {
             .or(() -> legalRepresentativeRepository.findByIdamId(userId, caseReference));
     }
 
-    private void backfillOrganisationMetadata(LegalRepresentativeEntity legalRepresentative, String userId) {
+    private void backfillOrganisationMetadata(LegalRepresentativeEntity legalRepresentative,
+                                              OrganisationDetailsResponse organisationDetails) {
         if (legalRepresentative.getOrganisationId() == null) {
-            legalRepresentative.setOrganisationId(organisationService.getOrganisationId(userId));
+            legalRepresentative.setOrganisationId(organisationDetails.getOrganisationIdentifier());
         }
         if (legalRepresentative.getOrganisationName() == null) {
-            legalRepresentative.setOrganisationName(organisationService.getNameAndAddress(userId).name());
+            legalRepresentative.setOrganisationName(organisationDetails.getName());
         }
     }
 
