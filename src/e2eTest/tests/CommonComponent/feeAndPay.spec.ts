@@ -120,7 +120,7 @@ test.describe('[Common Component Fee And Pay] @nightly @CC @feeAndPay' , async (
       status: serviceRequest.paidStatus,
       endState: history.endStateTableHeader,
       historyStatus: history.caseIssuedTableHeader
-    });    
+    });
   });
 
   test('Fee And Pay - Cancel Payment from You Card Details Page', async ({ page, context }) => {
