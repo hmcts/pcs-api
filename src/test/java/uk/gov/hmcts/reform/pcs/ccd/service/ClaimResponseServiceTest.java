@@ -471,6 +471,30 @@ class ClaimResponseServiceTest {
         assertThat(testParty.getTextMessageNumber()).isNull();
     }
 
+    @Test
+    void shouldNotWriteBackTextMessageNumberWhenTelephoneIsNo() {
+        // Given a party that already has a stored mobile number
+        testParty.setTextMessageNumber("07700900982");
+
+        // Telephone is No (which disables text), but the payload still carries a mobile number
+        // alongside contactByText Yes. The number must stay cleared and not be written back.
+        final PossessionClaimResponse response = buildResponse(
+            Party.builder()
+                .textMessageNumber("07700900982")
+                .build(),
+            DefendantResponses.builder()
+                .contactByPhone(VerticalYesNo.NO)
+                .contactByText(VerticalYesNo.YES)
+                .build()
+        );
+
+        // When
+        underTest.saveDraftDataForParty(response, testParty);
+
+        // Then
+        assertThat(testParty.getTextMessageNumber()).isNull();
+    }
+
     private PossessionClaimResponse buildResponse(Party party, DefendantResponses defendantResponses) {
         return PossessionClaimResponse.builder()
             .defendantContactDetails(DefendantContactDetails.builder().party(party).build())

@@ -86,7 +86,8 @@ public class ClaimResponseService {
             log.debug("Updated phone number for party ID: {}", party.getId());
         }
 
-        if (isContactByTextSelected(defendantResponses.getContactByText())
+        if (isContactByPhoneSelected(defendantResponses.getContactByPhone())
+            && isContactByTextSelected(defendantResponses.getContactByText())
             && StringUtils.isNotBlank(defendantContactDetails.getParty().getTextMessageNumber())) {
             party.setTextMessageNumber(defendantContactDetails.getParty().getTextMessageNumber());
             log.debug("Updated text message number for party ID: {}", party.getId());
