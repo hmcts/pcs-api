@@ -49,19 +49,15 @@ public class TaskDescriptionService {
     }
 
     public String createTranslateClaimantDocumentDescription(long caseReference,
-                                                              List<DocumentEntity> documentEntities,
-                                                              String partyLabel,
-                                                              boolean isWelshCommsRequest) {
+                                                              List<DocumentEntity> documentEntities) {
 
-        List<String> filenames = documentEntities == null
-            ? List.of()
-            : documentEntities.stream().map(DocumentEntity::getFileName).toList();
+        List<String> filenames = documentEntities.stream()
+            .map(DocumentEntity::getFileName)
+            .toList();
 
         Map<String, Object> context = Map.of(
             "caseReference", caseReference,
-            "filenames", filenames,
-            "partyLabel", partyLabel,
-            "isWelshCommsRequest", isWelshCommsRequest
+            "filenames", filenames
         );
 
         String templateName = "translate-claimant-submitted-document";

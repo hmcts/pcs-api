@@ -14,9 +14,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.feeandpay.FeePaymentRepository;
-import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TaskDescriptionService;
 import uk.gov.hmcts.reform.pcs.exception.FeePaymentNotFoundException;
 
@@ -44,8 +42,6 @@ class FeePaymentNotificationServiceTest {
     private CamundaService camundaService;
     @Mock
     private TaskDescriptionService taskDescriptionService;
-    @Mock
-    private PartyService partyService;
 
     @InjectMocks
     private FeePaymentNotificationService underTest;
@@ -127,13 +123,8 @@ class FeePaymentNotificationServiceTest {
             .build();
         when(feePaymentRepository.findById(feePaymentId)).thenReturn(Optional.of(feePayment));
 
-        PartyEntity primaryClaimant = PartyEntity.builder().id(UUID.randomUUID()).build();
-        when(partyService.getPrimaryClaimantPartyEntity(pcsCaseEntity)).thenReturn(primaryClaimant);
-        when(partyService.getPartyLabel(claim, primaryClaimant.getId())).thenReturn("Claimant 1");
-
         String expectedDescription = "Translate the following documents: claim-form.pdf";
-        when(taskDescriptionService.createTranslateClaimantDocumentDescription(
-                1234L, List.of(documentEntity), "Claimant 1", false))
+        when(taskDescriptionService.createTranslateClaimantDocumentDescription(1234L, List.of(documentEntity)))
             .thenReturn(expectedDescription);
 
         underTest.sendClaimantPaidCaseIssuedNotification(feePaymentId);

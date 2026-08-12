@@ -10,9 +10,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.feeandpay.FeePaymentRepository;
-import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TaskDescriptionService;
 import uk.gov.hmcts.reform.pcs.exception.FeePaymentNotFoundException;
 
@@ -27,7 +25,6 @@ public class FeePaymentNotificationService {
     private final FeePaymentRepository feePaymentRepository;
     private final CamundaService camundaService;
     private final TaskDescriptionService taskDescriptionService;
-    private final PartyService partyService;
 
     @Transactional
     public void sendClaimantPaidCaseIssuedNotification(Integer feePaymentId) {
@@ -56,11 +53,8 @@ public class FeePaymentNotificationService {
             .toList();
 
         if (!documents.isEmpty()) {
-            PartyEntity primaryClaimant = partyService.getPrimaryClaimantPartyEntity(claimEntity.getPcsCase());
-            String partyLabel = partyService.getPartyLabel(claimEntity, primaryClaimant.getId());
-
             String description = taskDescriptionService.createTranslateClaimantDocumentDescription(
-                caseReference, documents, partyLabel, false);
+                caseReference, documents);
             camundaService.createTask(caseReference, TaskType.TRANSLATE_CLAIMANT_SUBMITTED_DOCUMENT, description);
         }
     }

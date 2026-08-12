@@ -13,11 +13,11 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.BaseCaseFlag;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseFlagEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CasePartyFlagEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.FlagRefDataEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.FlagRefDataRepository;
-import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TaskDescriptionService;
 import uk.gov.hmcts.reform.pcs.ccd.util.YesOrNoConverter;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseFlagsView;
@@ -42,7 +42,6 @@ public class CaseFlagService {
 
     private FlagRefDataRepository flagRefDataRepository;
     private CamundaService camundaService;
-    private PartyService partyService;
     private TaskDescriptionService taskDescriptionService;
 
     public List<CaseFlagEntity> mergeCaseFlags(Flags incomingCaseFlags, PcsCaseEntity pcsCaseEntity) {
@@ -73,17 +72,21 @@ public class CaseFlagService {
                 partyEntity.getDefendantFlags().clear();
                 partyEntity.getDefendantFlags().addAll(mergedCasePartyFlags);
 
-                // Only fire when the flag just became active, to avoid triggering duplicate tasks
+                // Only fire when the flag just became active, to avoid triggering duplicate tasks for the given party
                 if (!welshCommsAlreadyActive && hasActiveWelshCommunicationsFlag(mergedCasePartyFlags)) {
                     long caseReference = partyEntity.getPcsCase().getCaseReference();
                     ClaimEntity mainClaim = partyEntity.getPcsCase().getClaims().getFirst();
-                    String partyLabel = partyService.getPartyLabel(mainClaim, partyEntity.getId());
+                    List<DocumentEntity> documents = partyEntity.getPcsCase().getDocuments().stream()
+                        .filter(document -> document.getClaim() != null
+                            && document.getClaim().getId().equals(mainClaim.getId()))
+                        .toList();
 
-                    String description = taskDescriptionService.createTranslateClaimantDocumentDescription(
-                        caseReference, null, partyLabel, true);
-
-                    camundaService.createTask(
-                        caseReference, TaskType.TRANSLATE_CLAIMANT_SUBMITTED_DOCUMENT, description);
+                    if (!documents.isEmpty()) {
+                        String description = taskDescriptionService.createTranslateClaimantDocumentDescription(
+                            caseReference, documents);
+                        camundaService.createTask(
+                            caseReference, TaskType.TRANSLATE_CLAIMANT_SUBMITTED_DOCUMENT, description);
+                    }
                 }
             }
         }
