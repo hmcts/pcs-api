@@ -19,7 +19,7 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.CASEWORKER_EVENTS;
-import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.RELEASE_1_DOT_2;
+import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.RELEASE_1_DOT_3;
 
 public abstract class BaseEventTest {
 
@@ -50,7 +50,7 @@ public abstract class BaseEventTest {
 
     protected void assertConfiguredWithMergedEventFeatureFlags() {
         assertThat(getConfiguredEvent().getShowCondition())
-            .isEqualTo(ShowConditions.featureFlagsEnabled(RELEASE_1_DOT_2, CASEWORKER_EVENTS));
+            .isEqualTo(ShowConditions.featureFlagsEnabled(RELEASE_1_DOT_3, CASEWORKER_EVENTS));
     }
 
     protected void assertConfiguredAsNeverShow() {
