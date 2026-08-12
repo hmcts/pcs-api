@@ -48,7 +48,7 @@ public class TaskDescriptionService {
         return renderTemplate(templateName, context);
     }
 
-    public String createReviewDueDateDescription(long caseReference) {
+    public String createReviewDueDateDescriptions(long caseReference) {
         Map<String, Object> context = Map.of(
             "caseReference", caseReference
         );

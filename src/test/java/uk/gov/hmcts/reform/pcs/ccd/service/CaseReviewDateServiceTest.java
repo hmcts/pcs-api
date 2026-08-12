@@ -64,7 +64,7 @@ public class CaseReviewDateServiceTest {
         PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().build();
         long caseReference = 12345L;
         when(pcsCaseService.loadCase(caseReference)).thenReturn(pcsCaseEntity);
-        when(taskDescriptionService.createReviewDueDateDescription(caseReference)).thenReturn("task description");
+        when(taskDescriptionService.createReviewDueDateDescriptions(caseReference)).thenReturn("task description");
 
         // When
         caseReviewDateService.addCaseReviewDate(caseReference, pcsCase);
@@ -118,7 +118,7 @@ public class CaseReviewDateServiceTest {
         PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().build();
         long caseReference = 12345L;
         when(pcsCaseService.loadCase(caseReference)).thenReturn(pcsCaseEntity);
-        when(taskDescriptionService.createReviewDueDateDescription(caseReference)).thenReturn("task description");
+        when(taskDescriptionService.createReviewDueDateDescriptions(caseReference)).thenReturn("task description");
 
         // When
         caseReviewDateService.addCaseReviewDate(caseReference, pcsCase);
