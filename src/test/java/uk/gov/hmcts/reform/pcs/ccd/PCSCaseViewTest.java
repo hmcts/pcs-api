@@ -329,7 +329,8 @@ class PCSCaseViewTest {
         verify(caseListView).setCaseFields(pcsCase);
         verify(genAppsView).setCaseFields(pcsCase, pcsCaseEntity, orgId);
         verify(featureFlagView).setCaseFields(pcsCase);
-        verify(legalRepresentativeSummaryService).handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity, orgId);
+        verify(legalRepresentativeSummaryService).handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity, orgId,
+                                                                                   DEFAULT_STATE);
     }
 
     @Test

@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeOrganisationContactDetailsEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeOrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyLegalRepresentativeOrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
@@ -62,10 +63,11 @@ public class LegalRepresentativePartyLinkService {
             legalRepresentativeOrganisation = legalRepresentativeOrganisationEntity.get();
 
             backfillOrganisationMetadata(legalRepresentativeOrganisation, organisationDetails);
-           } else {
+        } else {
             legalRepresentativeOrganisation = createNewLegalRepresentative(
                 organisationId,
-                organisationDetails);
+                organisationDetails,
+                caseEntity);
         }
 
         legalRepresentativeOrganisation.addParty(defendantPartyEntity);
@@ -87,14 +89,26 @@ public class LegalRepresentativePartyLinkService {
     }
 
     private LegalRepresentativeOrganisationEntity createNewLegalRepresentative(String id,
-                                                                               OrganisationDetailsResponse organisationDetails) {
-        LegalRepresentativeOrganisationEntity legalRepresentativeOrganisation =
-            LegalRepresentativeOrganisationEntity.builder()
-                .organisationId(id)
-                .organisationName(organisationDetails.getName())
+                                                                               OrganisationDetailsResponse orgDetails,
+                                                                               PcsCaseEntity pcsCase) {
+
+        LegalRepresentativeOrganisationEntity legalRepresentativeOrganisation = LegalRepresentativeOrganisationEntity
+            .builder()
+            .organisationId(id)
+            .organisationName(orgDetails.getName())
+            .organisationProfileId("SOLICITOR_PROFILE")
+            .build();
+
+        LegalRepresentativeOrganisationContactDetailsEntity legalRepresentativeOrganisationContactDetails =
+            LegalRepresentativeOrganisationContactDetailsEntity.builder()
+                .pcsCase(pcsCase)
+                .legalRepresentativeOrganisation(legalRepresentativeOrganisation)
                 .address(addressMapper.toAddressEntityAndNormalise(
-                    organisationDetailsService.getOrganisationAddress(organisationDetails)))
+                    organisationDetailsService.getOrganisationAddress(orgDetails)))
                 .build();
+
+        legalRepresentativeOrganisation
+            .setLegalRepresentativeOrganisationContactDetails(legalRepresentativeOrganisationContactDetails);
 
         return legalRepresentativeOrganisation;
     }

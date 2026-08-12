@@ -17,6 +17,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeOrganisationContactDetailsEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeOrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyLegalRepresentativeOrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
@@ -172,10 +173,13 @@ class PartiesViewTest {
         AddressEntity addressEntity = AddressEntity.builder().build();
         LegalRepresentativeOrganisationEntity legalRepresentativeOrganisationEntity =
             LegalRepresentativeOrganisationEntity.builder()
-            .phoneNumber("phone")
-            .emailAddress("email@test.com")
+                .legalRepresentativeOrganisationContactDetails(LegalRepresentativeOrganisationContactDetailsEntity
+                                                                   .builder()
+                                                                   .phoneNumber("phone")
+                                                                   .emailAddress("email@test.com")
+                                                                   .address(addressEntity)
+                                                                   .build())
             .organisationName("org name")
-            .address(addressEntity)
             .build();
         ClaimPartyLegalRepresentativeOrganisationEntity claimPartyLegalRepresentativeOrganisationEntity =
             ClaimPartyLegalRepresentativeOrganisationEntity.builder()
@@ -210,10 +214,13 @@ class PartiesViewTest {
         AddressEntity addressEntity = AddressEntity.builder().build();
         LegalRepresentativeOrganisationEntity legalRepresentativeOrganisationEntity =
             LegalRepresentativeOrganisationEntity.builder()
-            .phoneNumber("phone")
-            .emailAddress("email@test.com")
-            .organisationName("org name")
-            .address(addressEntity)
+                .legalRepresentativeOrganisationContactDetails(LegalRepresentativeOrganisationContactDetailsEntity
+                                                                   .builder()
+                                                                   .phoneNumber("phone")
+                                                                   .emailAddress("email@test.com")
+                                                                   .address(addressEntity)
+                                                                   .build())
+                .organisationName("org name")
             .build();
         ClaimPartyLegalRepresentativeOrganisationEntity claimPartyLegalRepresentativeOrganisationEntity =
             ClaimPartyLegalRepresentativeOrganisationEntity.builder()
@@ -242,10 +249,13 @@ class PartiesViewTest {
         AddressEntity addressEntity1 = AddressEntity.builder().build();
         LegalRepresentativeOrganisationEntity legalRepresentativeOrganisationEntity =
             LegalRepresentativeOrganisationEntity.builder()
-            .phoneNumber("phone")
-            .emailAddress("email@test.com")
+                .legalRepresentativeOrganisationContactDetails(LegalRepresentativeOrganisationContactDetailsEntity
+                                                                   .builder()
+                                                                   .phoneNumber("phone")
+                                                                   .emailAddress("email@test.com")
+                                                                   .address(addressEntity1)
+                                                                   .build())
             .organisationName("org name")
-            .address(addressEntity1)
             .build();
         ClaimPartyLegalRepresentativeOrganisationEntity claimPartyLegalRepresentativeOrganisationEntity =
             ClaimPartyLegalRepresentativeOrganisationEntity.builder()
@@ -256,10 +266,13 @@ class PartiesViewTest {
         AddressEntity addressEntity2 = AddressEntity.builder().build();
         LegalRepresentativeOrganisationEntity legalRepresentativeOrganisationEntity2 =
             LegalRepresentativeOrganisationEntity.builder()
-            .phoneNumber("phone2")
-            .emailAddress("email2@test.com")
+                .legalRepresentativeOrganisationContactDetails(LegalRepresentativeOrganisationContactDetailsEntity
+                                                                   .builder()
+                                                                   .phoneNumber("phone2")
+                                                                   .emailAddress("email2@test.com")
+                                                                   .address(addressEntity2)
+                                                                   .build())
             .organisationName("org name2")
-            .address(addressEntity2)
             .build();
         ClaimPartyLegalRepresentativeOrganisationEntity claimPartyLegalRepresentativeOrganisationEntity2 =
             ClaimPartyLegalRepresentativeOrganisationEntity.builder()
