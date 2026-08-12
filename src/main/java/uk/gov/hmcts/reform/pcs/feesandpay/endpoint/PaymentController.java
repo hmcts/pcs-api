@@ -106,9 +106,9 @@ public class PaymentController {
         @RequestHeader(value = AUTHORIZATION) String authorization,
         @RequestHeader(value = SERVICE_AUTHORIZATION) String s2sToken) {
 
-        PbaAccountsResponse pbaPaymentRequest = paymentService.getPbaAccounts(authorization);
+        PbaAccountsResponse pbaAccountsResponse = paymentService.getPbaAccounts(authorization);
 
-        return ResponseEntity.status(HttpStatus.OK).body(pbaPaymentRequest);
+        return ResponseEntity.status(HttpStatus.OK).body(pbaAccountsResponse);
     }
 
     @PostMapping(path = "service-request/{serviceRequestReference}/pba", consumes = APPLICATION_JSON_VALUE)

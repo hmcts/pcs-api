@@ -124,6 +124,45 @@ class OrganisationDetailsServiceTest {
     }
 
     @Test
+    @DisplayName("Should successfully get organisation payment accounts")
+    void shouldSuccessfullyGetOrganisationPaymentAccounts() {
+        // Given
+        List<String> paymentAccounts = List.of("PBA1234567", "PBA7654321");
+        OrganisationDetailsResponse response = OrganisationDetailsResponse.builder()
+            .paymentAccount(paymentAccounts)
+            .build();
+
+        when(authTokenGenerator.generate()).thenReturn(S2S_TOKEN);
+        when(prdAdminTokenProvider.getAuthToken()).thenReturn(PRD_ADMIN_TOKEN);
+        when(rdProfessionalApi.getOrganisationDetails(anyString(), anyString(), anyString()))
+            .thenReturn(response);
+
+        // When
+        List<String> result = organisationDetailsService.getOrganisationPaymentAccount(USER_ID);
+
+        // Then
+        assertThat(result).isEqualTo(paymentAccounts);
+    }
+
+    @Test
+    @DisplayName("Should return null when organisation payment accounts are null")
+    void shouldReturnNullWhenOrganisationPaymentAccountsAreNull() {
+        // Given
+        OrganisationDetailsResponse response = OrganisationDetailsResponse.builder().build();
+
+        when(authTokenGenerator.generate()).thenReturn(S2S_TOKEN);
+        when(prdAdminTokenProvider.getAuthToken()).thenReturn(PRD_ADMIN_TOKEN);
+        when(rdProfessionalApi.getOrganisationDetails(anyString(), anyString(), anyString()))
+            .thenReturn(response);
+
+        // When
+        List<String> result = organisationDetailsService.getOrganisationPaymentAccount(USER_ID);
+
+        // Then
+        assertThat(result).isNull();
+    }
+
+    @Test
     @DisplayName("Should throw OrganisationDetailsException when Feign client throws exception")
     void shouldThrowOrganisationDetailsExceptionWhenFeignClientThrowsException() {
         // Given
