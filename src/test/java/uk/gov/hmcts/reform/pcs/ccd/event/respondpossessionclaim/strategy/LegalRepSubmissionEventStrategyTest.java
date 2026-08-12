@@ -18,7 +18,9 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
+import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.ClaimResponseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.CounterClaimSubmitConfirmationService;
+import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.DefendantResponseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.RespondPossessionClaimSubmitPersistenceResult;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.RespondPossessionClaimSubmitService;
 import uk.gov.hmcts.reform.pcs.ccd.util.SelectedPartyRetriever;
@@ -50,6 +52,10 @@ class LegalRepSubmissionEventStrategyTest {
     private DraftCaseDataService draftCaseDataService;
     @Mock
     private SelectedPartyRetriever selectedPartyRetriever;
+    @Mock
+    private ClaimResponseService claimResponseService;
+    @Mock
+    private DefendantResponseService defendantResponseService;
     @Mock
     private SubmitResponseFactory submitResponseFactory;
     @Mock
@@ -195,24 +201,35 @@ class LegalRepSubmissionEventStrategyTest {
         SubmitResponse<State> submitResponse = SubmitResponse.<State>builder()
             .build();
 
+        PartyEntity defendantResponse = PartyEntity.builder().build();
+
+        RespondPossessionClaimSubmitPersistenceResult respondPossessionClaimSubmitPersistenceResult =
+            new RespondPossessionClaimSubmitPersistenceResult(possessionClaimResponse, CounterClaimEntity.builder()
+                .build(), true);
+
         when(selectedPartyRetriever.getCurrentRepresentedPartyId(caseData)).thenReturn(Optional.empty());
         when(selectedPartyRetriever.getSelectedPartyId(CASE_REFERENCE)).thenReturn(Optional.of(representedPartyId));
         when(draftCaseDataService.getUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim, representedPartyId))
             .thenReturn(Optional.of(caseData));
-        when(submitResponseFactory.success()).thenReturn(submitResponse);
         when(eventPayload.caseReference()).thenReturn(CASE_REFERENCE);
         when(eventPayload.caseData()).thenReturn(caseData);
+        when(securityContextService.getCurrentUserId()).thenReturn(representedPartyId);
+        when(partyService.getPartyEntityById(representedPartyId, CASE_REFERENCE)).thenReturn(defendantResponse);
+        when(respondPossessionClaimSubmitService.persistFinalSubmit(CASE_REFERENCE, possessionClaimResponse,
+                                                                    defendantResponse,
+                                                                    JourneyType.LEGAL_REPRESENTATIVE))
+            .thenReturn(respondPossessionClaimSubmitPersistenceResult);
+        when(counterClaimSubmitConfirmationService.buildSubmitResponse(
+            CASE_REFERENCE,
+            respondPossessionClaimSubmitPersistenceResult,
+            defendantResponse
+        )).thenReturn(submitResponse);
 
         // when
         SubmitResponse<State> result = underTest.process(eventPayload);
 
         // then
         assertThat(result.getErrors()).isNullOrEmpty();
-        verify(claimResponseService).saveDraftDataForParty(possessionClaimResponse, CASE_REFERENCE, representedPartyId);
-        verify(defendantResponseService).saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse,
-                                                               representedPartyId);
-        verify(draftCaseDataService).deleteUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim,
-                                                               representedPartyId);
         verify(draftCaseDataService, never()).getUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim);
     }
 
