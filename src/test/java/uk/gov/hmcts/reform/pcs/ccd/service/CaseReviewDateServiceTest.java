@@ -64,10 +64,10 @@ public class CaseReviewDateServiceTest {
         PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().build();
         long caseReference = 12345L;
         when(pcsCaseService.loadCase(caseReference)).thenReturn(pcsCaseEntity);
-        when(taskDescriptionService.createReviewDueDateDescriptions(caseReference)).thenReturn("task description");
+        when(taskDescriptionService.createReviewDueDateDescription(caseReference)).thenReturn("task description");
 
         // When
-        caseReviewDateService.addCaseReviewDate(caseReference, pcsCase);
+        caseReviewDateService.addCaseReviewDates(caseReference, pcsCase);
 
         // Then
         ArgumentCaptor<PcsCaseEntity> pcsCaseEntityCaptor = ArgumentCaptor.forClass(PcsCaseEntity.class);
@@ -118,10 +118,10 @@ public class CaseReviewDateServiceTest {
         PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().build();
         long caseReference = 12345L;
         when(pcsCaseService.loadCase(caseReference)).thenReturn(pcsCaseEntity);
-        when(taskDescriptionService.createReviewDueDateDescriptions(caseReference)).thenReturn("task description");
+        when(taskDescriptionService.createReviewDueDateDescription(caseReference)).thenReturn("task description");
 
         // When
-        caseReviewDateService.addCaseReviewDate(caseReference, pcsCase);
+        caseReviewDateService.addCaseReviewDates(caseReference, pcsCase);
 
         // Then
         ArgumentCaptor<PcsCaseEntity> pcsCaseEntityCaptor = ArgumentCaptor.forClass(PcsCaseEntity.class);

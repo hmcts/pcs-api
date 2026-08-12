@@ -160,7 +160,7 @@ class TaskDescriptionServiceTest {
             );
 
             // When
-            String description = underTest.createReviewDueDateDescriptions(CASE_REFERENCE);
+            String description = underTest.createReviewDueDateDescription(CASE_REFERENCE);
 
             // Then
             assertThat(description).isEqualTo(expectedRenderedContent);
@@ -184,7 +184,7 @@ class TaskDescriptionServiceTest {
             doThrow(pebbleException).when(pebbleTemplate).evaluate(any(StringWriter.class), anyMap());
 
             // When
-            Throwable throwable = catchThrowable(() -> underTest.createReviewDueDateDescriptions(CASE_REFERENCE));
+            Throwable throwable = catchThrowable(() -> underTest.createReviewDueDateDescription(CASE_REFERENCE));
 
             // Then
             assertThat(throwable)

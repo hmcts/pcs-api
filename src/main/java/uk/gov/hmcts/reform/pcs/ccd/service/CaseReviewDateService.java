@@ -26,10 +26,10 @@ public class CaseReviewDateService {
     private final CamundaService camundaService;
     private final TaskDescriptionService taskDescriptionService;
 
-    public void addCaseReviewDate(long caseReference, PCSCase pcsCase) {
+    public void addCaseReviewDates(long caseReference, PCSCase pcsCase) {
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
         List<ListValue<ReviewDate>> reviewDates = pcsCase.getReviewDates();
-        String waReviewDueDateTaskDescription = taskDescriptionService.createReviewDueDateDescriptions(caseReference);
+        String waReviewDueDateTaskDescription = taskDescriptionService.createReviewDueDateDescription(caseReference);
         for (ListValue<ReviewDate> listValue : reviewDates) {
             ReviewDate reviewDate = listValue.getValue();
             CaseReviewDateEntity caseReviewDateEntity = createCaseReviewDateEntity(reviewDate);
