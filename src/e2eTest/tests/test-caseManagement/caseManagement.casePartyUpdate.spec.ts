@@ -1,0 +1,82 @@
+import { createCaseApiData, makeAnApplicationApiData, submitCaseApiData } from '@data/api-data';
+import { initializeExecutor, performValidation } from '@utils/controller';
+import test from '@playwright/test';
+import { caseInfo, defendantUserDetails } from '@utils/actions/custom-actions';
+import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
+import { caseSummary, user } from '@data/page-data';
+import { dismissCookieBanner } from '@config/cookie-banner';
+import { initializeCMExecutor, performAction } from '@utils/controller-caseManagement';
+import { checkYourAnswersManageParties, manageParty, partyDetails, selectDocument, uploadADocument } from '@data/page-data-figma/page-data-caseManagement-figma';
+import { CaseManagementCommonUtils } from '@utils/actions/custom-actions/custom-actions-caseManagement/caseManagementUtils.action';
+import { addressInfo, allPartyDetails } from '@utils/actions/custom-actions/custom-actions-caseManagement/caseManagement.action';
+
+test.use({ storageState: undefined })
+
+test.beforeEach(async ({ page, context }) => {
+  await context.clearCookies();
+  initializeExecutor(page);
+  initializeCMExecutor(page);
+  await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
+  await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayloadCaseFileView });
+  await performAction('getAddressInfo', { data: createCaseApiData.createCasePayload });
+  await performAction('updatePaymentAPI');
+  await performAction('getCaseAPI', 'Link Solicitor');
+  await performAction('getAllPartyDetails', {
+    defendant1NameKnown: submitCaseApiData.submitCasePayloadCaseFileView.defendant1.nameKnown,
+    additionalDefendants: submitCaseApiData.submitCasePayloadCaseFileView.addAnotherDefendant,
+    payLoad: submitCaseApiData.submitCasePayloadCaseFileView
+  });
+
+  for (const defendant of defendantUserDetails) {
+    await performAction('makeAnApplicationAPI', {
+      data: makeAnApplicationApiData.makeAnApplicationAdjournPayload(
+        defendant.id,
+        defendant.name
+      ),
+    });
+  };
+  await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
+  await dismissCookieBanner(page, 'additional');
+  await performAction('login', user.hearingCenterAdmin);
+  await dismissCookieBanner(page, 'analytics');
+  await performAction('navigateToSummaryPage');
+
+});
+
+test.afterEach(async () => {
+  if (caseInfo.id) {
+    await performAction('deleteCaseRole', '[CLAIMANTSOLICITOR]');
+  }
+  PageContentValidation.finaliseTest();
+
+});
+
+test.describe('Case management - Case Party Management e2e Journey @nightly', async () => {
+  test('Case management - Add a Party to the Case - Defendant @CM @regression', async () => {
+    let date = CaseManagementCommonUtils.getRandomDate(partyDetails.dateTypeHiddenUserInput);
+    let appType = CaseManagementCommonUtils.getGenApplicationType(defendantUserDetails.length)[0];
+    let party = allPartyDetails[0];
+    let fileName = (selectDocument.typeOfDocumentHiddenRadioOption)[0].split('-')[0].trim();
+    await performAction('selectAnEvent', { eventType: caseSummary.manageParties });
+    await performValidation('mainHeader', manageParty.mainHeader);
+    await performAction('selectManageParty', {
+      partyToChangeQn: manageParty.whatChangeQuestion,
+      option: manageParty.addPartyRadioOption,
+      whichPartyQn: manageParty.typeOfPartyHiddenQuestion,
+      option1: manageParty.defendantHiddenRadioOption,
+      nextPage: partyDetails.mainHeader,
+    });
+    await performAction('addNewParty', {
+      label1: partyDetails.firstNameTextLabel,
+      label2: partyDetails.lastNameTextLabel,
+      dateLabel: partyDetails.addDOBTextLabel,
+      date: date,
+    })
+    //postcode: partyDetails.englandCourtAssignedPostcodeTextInput,
+    await performAction('addNewPartyAddress', {
+      postcode: addressInfo.engOrWalPostcode,
+      addressIndex: partyDetails.addressIndex,
+      nextPage: checkYourAnswersManageParties.mainHeader
+    });
+  });
+});
