@@ -251,7 +251,7 @@ export class CaseFlagAction implements IAction {
         continueButton: manageCaseFlags.continueButton
       });
       await performAction('makeFlagInactive', {
-        inactiveButton: updateFlagComments.makeInactiveButton,
+        statusOption: updateFlagComments.makeInactiveButton,
         continueButton: updateFlagComments.continueButton
       });
       await performAction('reviewFlagDetails', {
@@ -272,7 +272,7 @@ export class CaseFlagAction implements IAction {
         continueButton: manageCaseFlags.continueButton
       });
       await performAction('makeFlagInactive', {
-        inactiveButton: updateFlagComments.makeInactiveButton,
+        statusOption: updateFlagComments.makeInactiveButton,
         continueButton: updateFlagComments.continueButton
       });
       await performAction('reviewFlagDetails', {
