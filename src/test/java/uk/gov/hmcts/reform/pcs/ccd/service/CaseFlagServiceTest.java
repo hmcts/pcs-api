@@ -253,10 +253,11 @@ class CaseFlagServiceTest {
             .fileName("claim-form.pdf")
             .claim(mainClaim)
             .build();
+        DocumentEntity removedDocument = DocumentEntity.builder().claim(mainClaim).removed(true).build();
         PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
             .caseReference(1234L)
             .claims(List.of(mainClaim))
-            .documents(List.of(claimDocument))
+            .documents(List.of(claimDocument, removedDocument))
             .build();
         PartyEntity partyEntity = PartyEntity.builder()
             .id(partyId)
@@ -281,6 +282,7 @@ class CaseFlagServiceTest {
         underTest.mergePartyFlags(parties, pcsCaseEntity.getParties());
 
         // Then
+        verify(taskDescriptionService).createTranslateClaimantDocumentDescription(1234L, List.of(claimDocument));
         verify(camundaService).createTask(
             1234L, TaskType.TRANSLATE_CLAIMANT_SUBMITTED_DOCUMENT, expectedDescription);
     }

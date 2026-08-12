@@ -112,9 +112,10 @@ class FeePaymentNotificationServiceTest {
             .fileName("claim-form.pdf")
             .claim(claim)
             .build();
+        DocumentEntity removedDocument = DocumentEntity.builder().claim(claim).removed(true).build();
         PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
             .caseReference(1234L)
-            .documents(List.of(documentEntity))
+            .documents(List.of(documentEntity, removedDocument))
             .build();
         claim.setPcsCase(pcsCaseEntity);
         FeePaymentEntity feePayment = FeePaymentEntity.builder()
@@ -129,6 +130,7 @@ class FeePaymentNotificationServiceTest {
 
         underTest.sendClaimantPaidCaseIssuedNotification(feePaymentId);
 
+        verify(taskDescriptionService).createTranslateClaimantDocumentDescription(1234L, List.of(documentEntity));
         verify(camundaService).createTask(
             1234L, TaskType.TRANSLATE_CLAIMANT_SUBMITTED_DOCUMENT, expectedDescription);
         verify(camundaService, never()).createTask(1234L, TaskType.NEW_CLAIM_CREATE_NEW_HEARING);

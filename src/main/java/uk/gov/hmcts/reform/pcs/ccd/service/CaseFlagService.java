@@ -77,7 +77,8 @@ public class CaseFlagService {
                     long caseReference = partyEntity.getPcsCase().getCaseReference();
                     ClaimEntity mainClaim = partyEntity.getPcsCase().getClaims().getFirst();
                     List<DocumentEntity> documents = partyEntity.getPcsCase().getDocuments().stream()
-                        .filter(document -> document.getClaim() != null
+                        .filter(document -> !document.isRemoved()
+                            && document.getClaim() != null
                             && document.getClaim().getId().equals(mainClaim.getId()))
                         .toList();
 
