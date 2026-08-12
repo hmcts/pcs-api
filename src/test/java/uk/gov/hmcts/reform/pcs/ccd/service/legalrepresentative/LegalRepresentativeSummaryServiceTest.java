@@ -9,9 +9,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyLegalRepresentativeOrganisationEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeOrganisationContactDetailsEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeOrganisationEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.PartyLegalRepresentativeOrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.DefendantPartyExtractor;
 
@@ -35,7 +37,7 @@ class LegalRepresentativeSummaryServiceTest {
         <a href="testUrl/case/${[CASE_REFERENCE]}/respond-to-claim/start-now"
         role="button"
         class="govuk-link govuk-link--no-visited-state">
-        Respond to the claim</a>
+        Respond to the claim</a>.
         </p>
         """;
 
@@ -57,6 +59,7 @@ class LegalRepresentativeSummaryServiceTest {
         legalRepresentativeSummaryService = new LegalRepresentativeSummaryService(defendantPartyExtractor);
         ReflectionTestUtils.setField(legalRepresentativeSummaryService, "frontendUrl",
                                      "testUrl");
+
     }
 
     @Test
@@ -66,10 +69,14 @@ class LegalRepresentativeSummaryServiceTest {
         LegalRepresentativeOrganisationEntity legalRepresentativeOrganisation =
             LegalRepresentativeOrganisationEntity.builder()
             .organisationId(organisationId)
+                .legalRepresentativeOrganisationContactDetails(LegalRepresentativeOrganisationContactDetailsEntity
+                                                                   .builder()
+                                                                   .confirmedContactDetails(YesOrNo.NO)
+                                                                   .build())
             .build();
         List<PartyEntity> parties = List.of(PartyEntity.builder()
                                             .partyLegalRepresentativeOrganisationList(List.of(
-                                                PartyLegalRepresentativeOrganisationEntity.builder()
+                                                ClaimPartyLegalRepresentativeOrganisationEntity.builder()
                                                     .active(YesOrNo.YES)
                                                     .legalRepresentativeOrganisation(legalRepresentativeOrganisation)
                                                     .build()))
@@ -84,7 +91,8 @@ class LegalRepresentativeSummaryServiceTest {
         PCSCase pcsCase = PCSCase.builder().build();
 
         // when
-        legalRepresentativeSummaryService.handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity, organisationId);
+        legalRepresentativeSummaryService.handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity, organisationId,
+                                                                           State.CASE_ISSUED);
 
         // then
         assertThat(pcsCase.getSummaryLegalRepresentativeMarkdown()).isEqualTo(UPDATE_DETAILS_MARKDOWN);
@@ -97,11 +105,14 @@ class LegalRepresentativeSummaryServiceTest {
         LegalRepresentativeOrganisationEntity legalRepresentativeOrganisation =
             LegalRepresentativeOrganisationEntity.builder()
                 .organisationId(organisationId)
-                .hasAmendedContactDetails(YesOrNo.YES)
+                .legalRepresentativeOrganisationContactDetails(LegalRepresentativeOrganisationContactDetailsEntity
+                                                                   .builder()
+                                                                   .confirmedContactDetails(YesOrNo.YES)
+                                                                   .build())
                 .build();
         List<PartyEntity> parties = List.of(PartyEntity.builder()
                                               .partyLegalRepresentativeOrganisationList(List.of(
-                                                  PartyLegalRepresentativeOrganisationEntity.builder()
+                                                  ClaimPartyLegalRepresentativeOrganisationEntity.builder()
                                                       .active(YesOrNo.YES)
                                                       .legalRepresentativeOrganisation(legalRepresentativeOrganisation)
                                                       .build()))
@@ -115,7 +126,8 @@ class LegalRepresentativeSummaryServiceTest {
         PCSCase pcsCase = PCSCase.builder().build();
 
         // when
-        legalRepresentativeSummaryService.handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity, organisationId);
+        legalRepresentativeSummaryService.handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity, organisationId,
+                                                                           State.CASE_ISSUED);
 
         // then
         assertThat(pcsCase.getSummaryLegalRepresentativeMarkdown()).isEqualTo(RESPOND_TO_CLAIM_MARKDOWN);
@@ -131,7 +143,7 @@ class LegalRepresentativeSummaryServiceTest {
             .build();
         List<PartyEntity> parties = List.of(PartyEntity.builder()
                                               .partyLegalRepresentativeOrganisationList(List.of(
-                                                  PartyLegalRepresentativeOrganisationEntity.builder()
+                                                  ClaimPartyLegalRepresentativeOrganisationEntity.builder()
                                                       .active(YesOrNo.NO)
                                                       .legalRepresentativeOrganisation(legalRepresentativeOrganisation)
                                                       .build()))
@@ -144,7 +156,8 @@ class LegalRepresentativeSummaryServiceTest {
         when(defendantPartyExtractor.summaryScreenSafeExtractDefendants(pcsCaseEntity)).thenReturn(parties);
 
         // when
-        legalRepresentativeSummaryService.handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity, organisationId);
+        legalRepresentativeSummaryService.handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity, organisationId,
+                                                                           State.CASE_ISSUED);
 
         // then
         assertThat(pcsCase.getSummaryLegalRepresentativeMarkdown()).isEmpty();
@@ -160,7 +173,7 @@ class LegalRepresentativeSummaryServiceTest {
             .build();
         List<PartyEntity> parties = List.of(PartyEntity.builder()
                                               .partyLegalRepresentativeOrganisationList(List.of(
-                                                  PartyLegalRepresentativeOrganisationEntity.builder()
+                                                  ClaimPartyLegalRepresentativeOrganisationEntity.builder()
                                                       .active(YesOrNo.YES)
                                                       .legalRepresentativeOrganisation(legalRepresentativeOrganisation)
                                                       .build()))
@@ -174,7 +187,8 @@ class LegalRepresentativeSummaryServiceTest {
         PCSCase pcsCase = PCSCase.builder().build();
 
         // when
-        legalRepresentativeSummaryService.handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity, organisationId);
+        legalRepresentativeSummaryService.handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity, organisationId,
+                                                                           State.CASE_ISSUED);
 
         // then
         assertThat(pcsCase.getSummaryLegalRepresentativeMarkdown()).isEmpty();
@@ -190,7 +204,7 @@ class LegalRepresentativeSummaryServiceTest {
             .build();
         List<PartyEntity> parties = List.of(PartyEntity.builder()
                                               .partyLegalRepresentativeOrganisationList(List.of(
-                                                  PartyLegalRepresentativeOrganisationEntity.builder()
+                                                  ClaimPartyLegalRepresentativeOrganisationEntity.builder()
                                                       .active(YesOrNo.NO)
                                                       .legalRepresentativeOrganisation(legalRepresentativeOrganisation)
                                                       .build()))
@@ -204,7 +218,8 @@ class LegalRepresentativeSummaryServiceTest {
         PCSCase pcsCase = PCSCase.builder().build();
 
         // when
-        legalRepresentativeSummaryService.handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity, organisationId);
+        legalRepresentativeSummaryService.handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity, organisationId,
+                                                                           State.CASE_ISSUED);
 
         // then
         assertThat(pcsCase.getSummaryLegalRepresentativeMarkdown()).isEmpty();
