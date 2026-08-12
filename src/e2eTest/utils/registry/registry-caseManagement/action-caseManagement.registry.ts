@@ -60,6 +60,8 @@ export class ActionCMRegistry {
     ['addReviewDates', new CaseManagementAction()],
     ['confirmReviewDatesAdded', new CaseManagementAction()],
     ['selectManageParty', new CaseManagementAction()],
+    ['addNewPartyAddress', new CaseManagementAction()],
+    ['addNewParty', new CaseManagementAction()],
     ['errorValidationAddReviewDatesPage', new ErrorValidationAction()],
     ['errorValidationEnterGeneralAppPage', new ErrorValidationAction()],
     ['errorValidationHearingDatePage', new ErrorValidationAction()],

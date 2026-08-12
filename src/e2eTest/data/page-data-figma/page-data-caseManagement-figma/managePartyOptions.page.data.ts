@@ -1,6 +1,6 @@
 export const manageParty = {
   mainHeader: `Update, add or remove`,
-  whatChangeQuestion: `What change do u want to make?`,
+  whatChangeQuestion: `What change do you want to make?`,
   updatePartyRadioOption: `Update party details`,
   addPartyRadioOption: `Add a party`,
   removePartyRadioOption: `Remove a party`,

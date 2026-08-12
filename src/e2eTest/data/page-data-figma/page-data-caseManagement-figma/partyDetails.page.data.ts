@@ -10,10 +10,10 @@ export const partyDetails = {
   addressIndex: 1,
   englandCourtAssignedPostcodeTextInput: 'W3 7RX',
   sectionTitle: 'Property address',
-  enterUKPostcodeTextLabel : 'Enter a UK postcode',
+  enterUKPostcodeTextLabel: 'Enter a UK postcode',
   findAddressButton: 'Find address',
   addressSelectLabel: 'Select an address',
-  cantEnterUKPostcodeLink: `I can't enter a UK postcode`,//As this is controlled by exui, it still be using ' instead of ’ Ref HDPI-3258
+  cantEnterUKPostcodeLink: `I can't enter a UK postcode`,
   buildingAndStreetTextLabel: 'Building and Street',
   addressLine2TextLabel: 'Address Line 2 (Optional)',
   addressLine3TextLabel: 'Address Line 3 (Optional)',

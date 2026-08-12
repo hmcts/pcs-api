@@ -74,7 +74,10 @@ test.describe('Case management - Case Party Management e2e Journey @nightly', as
     })
     //postcode: partyDetails.englandCourtAssignedPostcodeTextInput,
     await performAction('addNewPartyAddress', {
+      enterUKPostcodeTextLabel: partyDetails.enterUKPostcodeTextLabel,
       postcode: addressInfo.engOrWalPostcode,
+      findAddressButton: partyDetails.findAddressButton,
+      addressSelectLabel: partyDetails.addressSelectLabel,
       addressIndex: partyDetails.addressIndex,
       nextPage: checkYourAnswersManageParties.mainHeader
     });

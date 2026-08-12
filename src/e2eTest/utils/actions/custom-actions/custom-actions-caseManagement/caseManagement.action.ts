@@ -3,7 +3,7 @@ import { expect, Page } from '@playwright/test';
 import { IAction, actionData, actionRecord } from '@utils/interfaces';
 import { getCaseTypeId } from '@utils/common/caseType.utils';
 import { performAction, performValidation } from '@utils/controller-caseManagement';
-import { VERY_LONG_TIMEOUT } from 'playwright.config';
+import { SHORT_TIMEOUT, VERY_LONG_TIMEOUT } from 'playwright.config';
 import { caseSummary, home } from '@data/page-data';
 import { generateRandomString } from "@utils/common/string.utils";
 import { performActions } from "@utils/controller";
@@ -23,7 +23,8 @@ import {
   uploadADocument,
   enterGenAppConfirmation,
   partyDetails,
-  checkYourAnswersManageParties
+  checkYourAnswersManageParties,
+  manageParty
 } from '@data/page-data-figma/page-data-caseManagement-figma';
 import { caseInfo } from '../createCaseAPI.action';
 import { CaseManagementCommonUtils } from './caseManagementUtils.action';
@@ -58,7 +59,8 @@ export class CaseManagementAction implements IAction {
       ['getAddressInfo', () => this.getAddressInfo(fieldName as actionRecord)],
       ['verifyGenAppConfirm', () => this.verifyGenAppConfirm()],
       ['selectManageParty', () => this.selectManageParty(fieldName as actionRecord)],
-      ['addNewPartyAddress', () => this.addNewPartyAddress(fieldName as actionRecord)],
+      ['addNewPartyAddress', () => this.addNewPartyAddress(page, fieldName as actionRecord)],
+      ['addNewParty', () => this.addNewParty(fieldName as actionRecord)],
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) {
@@ -434,43 +436,43 @@ export class CaseManagementAction implements IAction {
     await performAction('clickButton', confirmAmend.closeAndReturnToCaseOverviewButton);
   }
 
-  private async selectManageParty(manageParty: actionRecord) {
+  private async selectManageParty(manageParties: actionRecord) {
 
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
     await performAction('clickRadioButton', {
-      question: manageParty.partyToChangeQn,
-      option: manageParty.option,
+      question: manageParties.partyToChangeQn,
+      option: manageParties.option,
     });
     await performAction('clickRadioButton', {
-      question: manageParty.whichPartyQn,
-      option: manageParty.option1,
+      question: manageParties.whichPartyQn,
+      option: manageParties.option1,
     });
+    await performAction('reTryOnCallBackError', manageParty.continueButton, manageParties.nextPage as string);
 
-  }
-
-  private async addNewPartyAddress(partyAddress: actionRecord) {
-    const address = partyAddress as { postcode: string; addressIndex: number };
-    await performActions(
-      'Find Address based on postcode',
-      ['inputText', partyAddress.enterUKPostcodeTextLabel, address.postcode],
-      ['clickButton', partyAddress.findAddressButton],
-      ['select', partyAddress.addressSelectLabel, address.addressIndex]
-    );
-
-    await performAction('reTryOnCallBackError', partyDetails.continueButton, partyAddress.nextPage as string);
   }
 
   private async addNewParty(partyDetail: actionRecord) {
 
-    await performAction('inputText', partyDetail.label1, CaseManagementCommonUtils.getRandomNumberAsString(1, 500));
-    await performAction('inputText', partyDetail.label2, CaseManagementCommonUtils.getRandomNumberAsString(1, 500));
+    await performAction('inputText', partyDetail.label1, CaseManagementCommonUtils.getRandomNumberAsString(1, 10));
+    await performAction('inputText', partyDetail.label2, CaseManagementCommonUtils.getRandomNumberAsString(1, 10));
 
     await performAction('inputDate', partyDetail.dateLabel as string, partyDetail.date);
     
-
-    await performAction('reTryOnCallBackError', partyDetails.continueButton, partyDetail.nextPage as string);
   }
+
+  private async addNewPartyAddress(page: Page, partyAddress: actionRecord) {
+    const addLoc = page.locator('button').filter({ hasText: 'Find address' }).first()
+    //await expect(addLoc).toBeVisible({ timeout: SHORT_TIMEOUT });
+    await expect(addLoc).toBeEnabled();
+    await performAction('inputText', partyAddress.enterUKPostcodeTextLabel, partyAddress.postcode);
+    await addLoc.click({force: true});
+    //await performAction('clickButton', partyAddress.findAddressButton);
+    await performAction('select', partyAddress.addressSelectLabel, partyAddress.addressIndex as number);
+    await performAction('reTryOnCallBackError', partyDetails.continueButton, partyAddress.nextPage as string);
+  }
+
+  
 
   private async inputErrorValidation(page: Page, validationArr: actionRecord) {
     if (Array.isArray(validationArr.inputArray)) {
