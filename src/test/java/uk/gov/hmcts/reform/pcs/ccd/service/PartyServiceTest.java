@@ -477,6 +477,34 @@ class PartyServiceTest {
         }
 
         @Test
+        void shouldKeepTheOrganisationCapturedAtCreationWhenSubmitCannotReadIt() {
+            // Given a case created with a validated organisation, and rd-professional failing at submit
+            // (OrganisationService returns null rather than throwing)
+            PartyEntity initialisedClaimant = new PartyEntity();
+            initialisedClaimant.setOrganisationId(ORG_ID);
+            initialisedClaimant.setOrganisationProfileIds(List.of("SOLICITOR_PROFILE"));
+            pcsCaseEntity.addParty(initialisedClaimant);
+
+            when(organisationService.getOrgProfileIdsForCurrentUser()).thenReturn(null);
+            when(pcsCase.getClaimantInformation()).thenReturn(ClaimantInformation.builder()
+                .claimantName("Claimant name")
+                .isClaimantNameCorrect(VerticalYesNo.YES)
+                .build());
+            when(pcsCase.getClaimantContactPreferences()).thenReturn(ClaimantContactPreferences.builder()
+                .claimantContactEmail("test@test.com")
+                .claimantProvidePhoneNumber(VerticalYesNo.NO)
+                .build());
+
+            // When
+            underTest.createAllParties(pcsCase, pcsCaseEntity, claimEntity, null);
+
+            // Then the case keeps the organisation it was created with; overwriting it with null would
+            // derive no case access groups, and submit revokes CREATOR, leaving a case nobody can open
+            assertThat(initialisedClaimant.getOrganisationId()).isEqualTo(ORG_ID);
+            assertThat(initialisedClaimant.getOrganisationProfileIds()).containsExactly("SOLICITOR_PROFILE");
+        }
+
+        @Test
         void shouldSaveCreatedClaimant() {
             // Given
             String expectedClaimantName = "Claimant name";

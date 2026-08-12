@@ -1,7 +1,9 @@
 package uk.gov.hmcts.reform.pcs.ccd.util;
 
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Arrays;
 import java.util.Set;
 import uk.gov.hmcts.ccd.sdk.type.CaseAccessGroup;
@@ -61,9 +63,15 @@ public final class CaseAccessGroupsUtil {
                     caseAccessGroups.add(group);
                 });
         });
+        // Stable output: parties come from a HashSet and this is recomputed on every read, so a random
+        // id would make an unchanged case differ read to read. The group id is the identity, so derive
+        // the list id from it and sort on it.
         return caseAccessGroups.stream()
-            .map(group ->
-                     ListValue.<CaseAccessGroup>builder().id(UUID.randomUUID().toString()).value(group).build()
-            ).toList();
+            .sorted(Comparator.comparing(CaseAccessGroup::getCaseAccessGroupId))
+            .map(group -> ListValue.<CaseAccessGroup>builder()
+                .id(UUID.nameUUIDFromBytes(group.getCaseAccessGroupId().getBytes(StandardCharsets.UTF_8)).toString())
+                .value(group)
+                .build())
+            .toList();
     }
 }

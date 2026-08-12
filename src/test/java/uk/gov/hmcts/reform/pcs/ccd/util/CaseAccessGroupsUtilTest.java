@@ -6,6 +6,7 @@ import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 
 import java.util.List;
+import java.util.HashSet;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -79,4 +80,26 @@ class CaseAccessGroupsUtilTest {
             .organisationProfileIds(organisationProfileIds)
             .build();
     }
+
+    @Test
+    void shouldDeriveTheSameListIdsAndOrderOnEveryRead() {
+        // Given two organisation-owned claimant parties, held in a HashSet and recomputed per read
+        PartyEntity first = new PartyEntity();
+        first.setOrganisationId("ORG-A");
+        first.setOrganisationProfileIds(List.of("SOLICITOR_PROFILE"));
+        PartyEntity second = new PartyEntity();
+        second.setOrganisationId("ORG-B");
+        second.setOrganisationProfileIds(List.of("LOCALAUTH_PROFILE"));
+
+        // When derived twice
+        List<ListValue<CaseAccessGroup>> firstRead =
+            CaseAccessGroupsUtil.deriveCaseAccessGroups(new HashSet<>(Set.of(first, second)));
+        List<ListValue<CaseAccessGroup>> secondRead =
+            CaseAccessGroupsUtil.deriveCaseAccessGroups(new HashSet<>(Set.of(first, second)));
+
+        // Then an unchanged case produces an identical payload, ids and order included
+        assertThat(firstRead).usingRecursiveComparison().isEqualTo(secondRead);
+        assertThat(firstRead).extracting(lv -> lv.getValue().getCaseAccessGroupId()).isSorted();
+    }
+
 }

@@ -7,7 +7,6 @@ import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.ccd.sdk.CaseView;
 import uk.gov.hmcts.ccd.sdk.CaseViewRequest;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
-import uk.gov.hmcts.ccd.sdk.type.CaseAccessGroup;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.AccessProfile;
@@ -138,13 +137,11 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
     }
 
     private void applyCaseAccessGroups(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
-        List<ListValue<CaseAccessGroup>> caseAccessGroups =
-            CaseAccessGroupsUtil.deriveCaseAccessGroups(pcsCaseEntity.getParties());
-        if (!caseAccessGroups.isEmpty()) {
-            pcsCase.setGroupAccessFields(GroupAccessFields.<AccessProfile>builder()
-                .caseAccessGroups(caseAccessGroups)
-                .build());
-        }
+        // Set unconditionally: an omitted field reads as "no opinion" to anything holding a copy,
+        // so a case that stops deriving groups could keep the ones it had.
+        pcsCase.setGroupAccessFields(GroupAccessFields.<AccessProfile>builder()
+            .caseAccessGroups(CaseAccessGroupsUtil.deriveCaseAccessGroups(pcsCaseEntity.getParties()))
+            .build());
     }
 
     private boolean caseHasUnsubmittedData(long caseReference, State state) {

@@ -186,6 +186,22 @@ public class PartyService {
             .findFirst();
     }
 
+    /**
+     * Keeps the organisation captured and validated at case creation. Submit re-reads it from
+     * rd-professional, which returns null rather than failing when that call errors, so assigning
+     * unconditionally would replace a good value with null on a transient blip - and the same submit
+     * revokes CREATOR, leaving a case that derives no access groups and nobody can open.
+     */
+    private void setClaimantOrganisation(PartyEntity claimantParty, String organisationId,
+                                         List<String> orgProfileIds) {
+        if (organisationId != null) {
+            claimantParty.setOrganisationId(organisationId);
+        }
+        if (!CollectionUtils.isEmpty(orgProfileIds)) {
+            claimantParty.setOrganisationProfileIds(orgProfileIds);
+        }
+    }
+
     private void populateClaimant(PartyEntity claimantParty, PCSCase pcsCase,
                                   String organisationIdForCurrentUser, List<String> orgProfileIds) {
 
@@ -193,8 +209,7 @@ public class PartyService {
         Objects.requireNonNull(claimantInformation, "Claimant must be provided");
 
         setClaimantOrgName(claimantInformation, claimantParty);
-        claimantParty.setOrganisationId(organisationIdForCurrentUser);
-        claimantParty.setOrganisationProfileIds(orgProfileIds);
+        setClaimantOrganisation(claimantParty, organisationIdForCurrentUser, orgProfileIds);
 
         ClaimantContactPreferences claimantContactPreferences = pcsCase.getClaimantContactPreferences();
         AddressUK contactAddress = resolveContactAddress(claimantContactPreferences);
