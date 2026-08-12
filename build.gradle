@@ -126,8 +126,6 @@ tasks.withType(Test).configureEach {
 
 test {
   failFast = true
-  maxParallelForks = Runtime.runtime.availableProcessors().intdiv(2) ?: 1
-  maxHeapSize = '1g'
   useJUnitPlatform {
     excludeTags 'enforcement-domain-entity-alignment'
   }
