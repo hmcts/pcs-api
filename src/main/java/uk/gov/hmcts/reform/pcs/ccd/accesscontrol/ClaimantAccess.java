@@ -9,6 +9,7 @@ import uk.gov.hmcts.ccd.sdk.api.Permission;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CLAIMANT;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.GA_CLAIMANT_SOLICITOR;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.ORGANISATION_CASE_ACCESS_ADMINISTRATOR;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.PCS_SOLICITOR;
 
 
 public class ClaimantAccess implements HasAccessControl {
@@ -19,6 +20,10 @@ public class ClaimantAccess implements HasAccessControl {
         grants.putAll(GA_CLAIMANT_SOLICITOR, Permission.CRU);
         grants.putAll(CLAIMANT, Permission.CRU);
         grants.putAll(ORGANISATION_CASE_ACCESS_ADMINISTRATOR, Permission.CRU);
+        // Retained until group access is enabled in every environment: a solicitor reaching a case
+        // through [CREATOR] while the platform flags are off holds no capacity, so without this the
+        // claimant fields are ungranted and the case opens blank. Removed once those flags are on.
+        grants.putAll(PCS_SOLICITOR, Permission.CRU);
         return grants;
     }
 

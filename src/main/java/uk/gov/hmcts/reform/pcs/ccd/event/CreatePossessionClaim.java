@@ -49,6 +49,10 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
                 .initialState(State.AWAITING_SUBMISSION_TO_HMCTS)
                 .showSummary()
                 .name("Make a claim")
+                // Retained until group access is enabled in every environment: with the platform
+                // flags off no user holds a capacity and [SOLICITOR] is never assigned, so without
+                // this nobody can start a claim. Removed once those flags are on.
+                .grant(Permission.CRUD, UserRole.PCS_SOLICITOR)
                 .grant(Permission.CRUD, UserRole.SOLICITOR)
                 .grant(Permission.CRUD, UserRole.GA_CLAIMANT_SOLICITOR)
                 // The organisations that are the claimant themselves - local authority and the
