@@ -21,17 +21,15 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantRespon
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.PartyAttributeAssertationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DefendantResponseRepository;
-import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.defenceform.DefenceFormScheduler;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
-import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
+import uk.gov.hmcts.reform.pcs.model.JourneyType;
 
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -54,8 +52,6 @@ import static uk.gov.hmcts.reform.pcs.ccd.util.YesOrNoConverter.toYesOrNo;
 @Transactional
 public class DefendantResponseService {
 
-    private final PartyService partyService;
-    private final PartyRepository partyRepository;
     private final ClaimRepository claimRepository;
     private final DefendantResponseRepository defendantResponseRepository;
     private final DefendantResponseReadMapper defendantResponseReadMapper;
@@ -68,9 +64,7 @@ public class DefendantResponseService {
     private final DefenceFormScheduler defenceFormScheduler;
     private final Clock utcClock;
 
-    public DefendantResponseService(PartyService partyService,
-                                    PartyRepository partyRepository,
-                                    ClaimRepository claimRepository,
+    public DefendantResponseService(ClaimRepository claimRepository,
                                     DefendantResponseRepository defendantResponseRepository,
                                     DefendantResponseReadMapper defendantResponseReadMapper,
                                     SecurityContextService securityContextService,
@@ -81,8 +75,6 @@ public class DefendantResponseService {
                                     PartyAttributeAssertationService partyAttributeAssertationService,
                                     DefenceFormScheduler defenceFormScheduler,
                                     @Qualifier("utcClock") Clock utcClock) {
-        this.partyService = partyService;
-        this.partyRepository = partyRepository;
         this.claimRepository = claimRepository;
         this.defendantResponseRepository = defendantResponseRepository;
         this.defendantResponseReadMapper = defendantResponseReadMapper;
@@ -119,45 +111,31 @@ public class DefendantResponseService {
      *         party not found, or claim not found
      */
     public void saveDefendantResponse(long caseReference,
-                                      PossessionClaimResponse possessionClaimResponse) {
+                                      PossessionClaimResponse possessionClaimResponse,
+                                      PartyEntity defendantParty,
+                                      JourneyType journeyType) {
 
         UUID userId = requireCurrentUserId();
+
+        if (defendantParty == null) {
+            throw new IllegalStateException("Defendant party is null for case: " + caseReference);
+        }
 
         DefendantResponseEntity savedResponse = saveDefendantResponseInternal(
             caseReference,
             possessionClaimResponse,
-            () -> partyService.getPartyEntityByIdamId(userId, caseReference),
+            defendantParty,
             String.format("Successfully saved defendant response for case %s user %s",
                           caseReference, userId)
         );
 
         // Citizen path only. Schedule after commit so generation can't run against a rolled-back response.
-        Integer defendantResponseId = savedResponse.getId();
-        UUID defendantPartyId = savedResponse.getParty().getId();
-        scheduleAfterCommit(() -> defenceFormScheduler.scheduleDefenceFormGeneration(
-            caseReference, defendantResponseId, defendantPartyId));
-    }
-
-    public void saveDefendantResponse(long caseReference,
-                                      PossessionClaimResponse possessionClaimResponse,
-                                      UUID partyId) {
-
-        requireCurrentUserId();
-
-        saveDefendantResponseInternal(
-            caseReference,
-            possessionClaimResponse,
-            () -> partyRepository
-                .findByIdAndPcsCaseCaseReference(partyId, caseReference)
-                .orElseThrow(() -> new IllegalStateException(
-                    "No party found for party ID: "
-                        + partyId
-                        + " and case reference: "
-                        + caseReference
-                )),
-            String.format("Successfully saved defendant response for case %s represented party %s",
-                          caseReference, partyId)
-        );
+        if (JourneyType.CITIZEN.equals(journeyType)) {
+            Integer defendantResponseId = savedResponse.getId();
+            UUID defendantPartyId = savedResponse.getParty().getId();
+            scheduleAfterCommit(() -> defenceFormScheduler.scheduleDefenceFormGeneration(
+                caseReference, defendantResponseId, defendantPartyId));
+        }
     }
 
     private void scheduleAfterCommit(Runnable schedule) {
@@ -176,10 +154,9 @@ public class DefendantResponseService {
     private DefendantResponseEntity saveDefendantResponseInternal(
         long caseReference,
         PossessionClaimResponse possessionClaimResponse,
-        Supplier<PartyEntity> partySupplier,
+        PartyEntity defendantParty,
         String successLogMessage
     ) {
-        PartyEntity partyRef = partySupplier.get();
         UUID claimId = claimRepository.findIdByCaseReference(caseReference)
             .orElseThrow(() -> {
                 log.error("No claim found for case: {}", caseReference);
@@ -194,10 +171,10 @@ public class DefendantResponseService {
         LocalDateTime submittedAt = LocalDateTime.now(utcClock);
 
         DefendantResponseEntity responseEntity =
-            buildDefendantResponseEntity(claimRef, partyRef, responses, submittedAt);
+            buildDefendantResponseEntity(claimRef, defendantParty, responses, submittedAt);
 
         buildAndLinkChildEntities(responseEntity, responses);
-        linkStatementOfTruth(responseEntity, responses, partyRef);
+        linkStatementOfTruth(responseEntity, responses, defendantParty);
 
         buildStatementOfTruth(responses, responseEntity);
 
@@ -208,11 +185,11 @@ public class DefendantResponseService {
                 responses.getDefendantDocuments(),
                 savedResponse,
                 claimRef.getPcsCase(),
-                partyRef
+                defendantParty
             );
         }
 
-        partyAttributeAssertationService.buildPartyAttributeEntities(possessionClaimResponse, partyRef);
+        partyAttributeAssertationService.buildPartyAttributeEntities(possessionClaimResponse, defendantParty);
 
         log.info(successLogMessage);
 
@@ -245,7 +222,7 @@ public class DefendantResponseService {
             .noticeReceivedDate(responses.getNoticeReceivedDate())
             .defendantNameConfirmation(responses.getDefendantNameConfirmation())
             .correspondenceAddressConfirmation(responses.getCorrespondenceAddressConfirmation())
-            .landlordRegistered(responses.getLandlordRegistered())
+            .exemptLandlord(ExemptLandlordResolver.fromResponses(responses))
             .writtenTerms(responses.getWrittenTerms())
             .disputeClaim(responses.getDisputeClaim())
             .disputeClaimDetails(responses.getDisputeClaimDetails())
