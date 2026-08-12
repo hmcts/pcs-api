@@ -15,7 +15,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeOrganisationEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.PartyLegalRepresentativeOrganisationEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyLegalRepresentativeOrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
@@ -37,6 +37,8 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.anyString;
@@ -139,7 +141,7 @@ class LegalRepresentativePartyLinkServiceTest {
         assertEquals(ORGANISATION_ID, actual.getOrganisationId());
         assertEquals(organisationName, actual.getOrganisationName());
         assertEquals(addressEntity, actual.getAddress());
-        assertEquals(partyEntity, actual.getPartyLegalRepresentativeOrganisationList().getFirst().getParty());
+        assertEquals(partyEntity, actual.getClaimPartyLegalRepresentativeOrganisationList().getFirst().getParty());
         verify(caseRoleAssignmentService, never()).revokeRasRole(anyLong(), anyString(), any(UserRole.class));
     }
 
@@ -237,15 +239,15 @@ class LegalRepresentativePartyLinkServiceTest {
             )).build();
 
 
-        PartyLegalRepresentativeOrganisationEntity partyLegalRepresentativeOrganisation =
-            PartyLegalRepresentativeOrganisationEntity
+        ClaimPartyLegalRepresentativeOrganisationEntity partyLegalRepresentativeOrganisation =
+            ClaimPartyLegalRepresentativeOrganisationEntity
                 .builder()
                 .active(YesOrNo.YES)
                 .party(partyEntity)
                 .build();
 
         LegalRepresentativeOrganisationEntity legalRepresentative = LegalRepresentativeOrganisationEntity.builder()
-            .partyLegalRepresentativeOrganisationList(List.of(partyLegalRepresentativeOrganisation))
+            .claimPartyLegalRepresentativeOrganisationList(List.of(partyLegalRepresentativeOrganisation))
             .build();
         OrganisationDetails organisationDetails = new OrganisationDetails(organisationName, null,
                                                                           ORGANISATION_ID);
@@ -270,7 +272,7 @@ class LegalRepresentativePartyLinkServiceTest {
         LegalRepresentativeOrganisationEntity actual = legalRepresentativeOrganisationEntityCaptor.getValue();
         assertEquals(ORGANISATION_ID, actual.getOrganisationId());
         assertEquals(organisationName, actual.getOrganisationName());
-        assertEquals(partyEntity, actual.getPartyLegalRepresentativeOrganisationList().getFirst().getParty());
+        assertEquals(partyEntity, actual.getClaimPartyLegalRepresentativeOrganisationList().getFirst().getParty());
     }
 
     @Test
@@ -308,8 +310,8 @@ class LegalRepresentativePartyLinkServiceTest {
                                 .build()
             )).build();
 
-        PartyLegalRepresentativeOrganisationEntity partyLegalRepresentativeOrganisation =
-            PartyLegalRepresentativeOrganisationEntity
+        ClaimPartyLegalRepresentativeOrganisationEntity partyLegalRepresentativeOrganisation =
+            ClaimPartyLegalRepresentativeOrganisationEntity
                 .builder()
                 .active(YesOrNo.YES)
                 .party(partyEntity)
@@ -318,7 +320,7 @@ class LegalRepresentativePartyLinkServiceTest {
         LegalRepresentativeOrganisationEntity legalRepresentative = LegalRepresentativeOrganisationEntity.builder()
             .organisationName(organisationName)
             .organisationId(ORGANISATION_ID)
-            .partyLegalRepresentativeOrganisationList(List.of(partyLegalRepresentativeOrganisation))
+            .claimPartyLegalRepresentativeOrganisationList(List.of(partyLegalRepresentativeOrganisation))
             .build();
 
         OrganisationDetails organisationDetails = new OrganisationDetails(organisationName, null,
@@ -344,7 +346,7 @@ class LegalRepresentativePartyLinkServiceTest {
 
         assertEquals(ORGANISATION_ID, actual.getOrganisationId());
         assertEquals(organisationName, actual.getOrganisationName());
-        assertEquals(partyEntity, actual.getPartyLegalRepresentativeOrganisationList().getFirst().getParty());
+        assertEquals(partyEntity, actual.getClaimPartyLegalRepresentativeOrganisationList().getFirst().getParty());
     }
 
     @Test
@@ -381,8 +383,8 @@ class LegalRepresentativePartyLinkServiceTest {
                                 .build()
             )).build();
 
-        PartyLegalRepresentativeOrganisationEntity partyLegalRepresentativeOrganisation =
-            PartyLegalRepresentativeOrganisationEntity
+        ClaimPartyLegalRepresentativeOrganisationEntity partyLegalRepresentativeOrganisation =
+            ClaimPartyLegalRepresentativeOrganisationEntity
                 .builder()
                 .active(YesOrNo.YES)
                 .party(partyEntity)
@@ -396,7 +398,7 @@ class LegalRepresentativePartyLinkServiceTest {
             LegalRepresentativeOrganisationEntity.builder()
             .organisationName(organisationName)
             .organisationId(organisationId)
-            .partyLegalRepresentativeOrganisationList(List.of(partyLegalRepresentativeOrganisation))
+            .claimPartyLegalRepresentativeOrganisationList(List.of(partyLegalRepresentativeOrganisation))
                 .legalRepresentativeList(List.of(legalRepresentative))
             .build();
 
@@ -423,7 +425,7 @@ class LegalRepresentativePartyLinkServiceTest {
 
         assertEquals(organisationId, actual.getOrganisationId());
         assertEquals(organisationName, actual.getOrganisationName());
-        assertEquals(partyEntity, actual.getPartyLegalRepresentativeOrganisationList().getFirst().getParty());
+        assertEquals(partyEntity, actual.getClaimPartyLegalRepresentativeOrganisationList().getFirst().getParty());
     }
 
     @Test
@@ -610,7 +612,7 @@ class LegalRepresentativePartyLinkServiceTest {
 
         assertEquals(organisationName, actual.getOrganisationName());
         assertEquals(addressEntity, actual.getAddress());
-        assertEquals(partyEntity, actual.getPartyLegalRepresentativeOrganisationList().getFirst().getParty());
+        assertEquals(partyEntity, actual.getClaimPartyLegalRepresentativeOrganisationList().getFirst().getParty());
     }
 
     @Test

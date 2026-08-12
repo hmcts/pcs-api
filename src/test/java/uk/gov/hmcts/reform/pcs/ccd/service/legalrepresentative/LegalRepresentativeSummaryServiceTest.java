@@ -11,7 +11,7 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeOrganisationEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.PartyLegalRepresentativeOrganisationEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyLegalRepresentativeOrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.DefendantPartyExtractor;
 
@@ -69,7 +69,7 @@ class LegalRepresentativeSummaryServiceTest {
             .build();
         List<PartyEntity> parties = List.of(PartyEntity.builder()
                                             .partyLegalRepresentativeOrganisationList(List.of(
-                                                PartyLegalRepresentativeOrganisationEntity.builder()
+                                                ClaimPartyLegalRepresentativeOrganisationEntity.builder()
                                                     .active(YesOrNo.YES)
                                                     .legalRepresentativeOrganisation(legalRepresentativeOrganisation)
                                                     .build()))
@@ -101,7 +101,7 @@ class LegalRepresentativeSummaryServiceTest {
                 .build();
         List<PartyEntity> parties = List.of(PartyEntity.builder()
                                               .partyLegalRepresentativeOrganisationList(List.of(
-                                                  PartyLegalRepresentativeOrganisationEntity.builder()
+                                                  ClaimPartyLegalRepresentativeOrganisationEntity.builder()
                                                       .active(YesOrNo.YES)
                                                       .legalRepresentativeOrganisation(legalRepresentativeOrganisation)
                                                       .build()))
@@ -131,7 +131,7 @@ class LegalRepresentativeSummaryServiceTest {
             .build();
         List<PartyEntity> parties = List.of(PartyEntity.builder()
                                               .partyLegalRepresentativeOrganisationList(List.of(
-                                                  PartyLegalRepresentativeOrganisationEntity.builder()
+                                                  ClaimPartyLegalRepresentativeOrganisationEntity.builder()
                                                       .active(YesOrNo.NO)
                                                       .legalRepresentativeOrganisation(legalRepresentativeOrganisation)
                                                       .build()))
@@ -160,7 +160,7 @@ class LegalRepresentativeSummaryServiceTest {
             .build();
         List<PartyEntity> parties = List.of(PartyEntity.builder()
                                               .partyLegalRepresentativeOrganisationList(List.of(
-                                                  PartyLegalRepresentativeOrganisationEntity.builder()
+                                                  ClaimPartyLegalRepresentativeOrganisationEntity.builder()
                                                       .active(YesOrNo.YES)
                                                       .legalRepresentativeOrganisation(legalRepresentativeOrganisation)
                                                       .build()))
@@ -190,7 +190,7 @@ class LegalRepresentativeSummaryServiceTest {
             .build();
         List<PartyEntity> parties = List.of(PartyEntity.builder()
                                               .partyLegalRepresentativeOrganisationList(List.of(
-                                                  PartyLegalRepresentativeOrganisationEntity.builder()
+                                                  ClaimPartyLegalRepresentativeOrganisationEntity.builder()
                                                       .active(YesOrNo.NO)
                                                       .legalRepresentativeOrganisation(legalRepresentativeOrganisation)
                                                       .build()))
