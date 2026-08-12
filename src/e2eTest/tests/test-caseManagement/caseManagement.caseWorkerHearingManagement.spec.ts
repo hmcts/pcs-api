@@ -31,13 +31,12 @@ test.beforeEach(async ({ page, context }, testInfo) => {
   await performAction('updatePaymentAPI');
   await performAction('getCaseAPI', 'Link Solicitor');
 
-  if (testInfo.title.includes('Edit a hearing') || testInfo.title.includes(' Cancel a hearing')){
+  if (testInfo.title.includes('Edit a hearing') || testInfo.title.includes('Cancel a hearing')){
     await performAction('manageHearingAPI', {
       data: manageHearingApiData.AddHearingPayload,
       email: user.hearingCenterAdmin.email,
       password: user.hearingCenterAdmin.password
     });
-    console.log(`Case has been associated with hearing`);
   }
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
   await dismissCookieBanner(page, 'additional');
@@ -58,7 +57,6 @@ test.afterEach(async () => {
 test.describe('Case management - Case Worker Manage Hearing @nightly', async () => {
   test('Case management - Case Worker Edit a hearing @CM @regression', async () => {
     let date = CaseManagementCommonUtils.getRandomDate(editHearing.dateTypeUserInput,'dateTime');
-    let party = allPartyDetails[0]
     await performAction('selectAnEvent', {eventType: caseSummary.manageHearing});
     await performValidation('mainHeader', manageHearing.mainHeader);
     await performAction('errorValidationManageHearing', manageHearing.errorValidation);
@@ -83,8 +81,6 @@ test.describe('Case management - Case Worker Manage Hearing @nightly', async () 
       option2: editHearing.yesRadioOption,
       hearingWithoutNoticeQuestion: editHearing.hearingWithoutNoticeHiddenQuestion,
       option3: editHearing.noHiddenRadioOption,
-      whoShouldReceiveNoticeQuestion: editHearing.whoShouldReceiveHearingHiddenQuestion,
-      option4: party,
       additionalInformationLabel: editHearing.enterAnyAdditionalInformationTextLabel,
       input: editHearing.additionalInformationTextInput,
       nextPage: checkYourAnswersEditHearing.mainHeader
