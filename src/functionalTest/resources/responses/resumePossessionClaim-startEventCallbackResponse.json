@@ -2,7 +2,7 @@
   "data": {
     "hasUnsubmittedCaseData": "No",
     "orgNameFound": "Yes",
-    "claimantName": "Eviction Solicitor",
+    "claimantName": "Possession Claims Solicitor Org",
     "propertyAddress": {
       "AddressLine1": "1",
       "AddressLine2": "Exton Gardens",
@@ -12,15 +12,15 @@
       "Country": "United Kingdom"
     },
     "organisationAddress": {
-      "AddressLine1": "50 Wiltshire Close",
-      "AddressLine3": "Woolston",
-      "PostTown": "Warrington",
-      "PostCode": "WA1 4DA",
+      "AddressLine1": "Ministry Of Justice",
+      "AddressLine2": "Seventh Floor 102 Petty France",
+      "PostTown": "London",
+      "PostCode": "SW1H 9AJ",
       "Country": "United Kingdom"
     },
     "orgAddressFound": "Yes",
-    "claimantContactEmail": "pcs-solicitor-user001@test.com",
-    "formattedClaimantContactAddress": "50 Wiltshire Close<br>Warrington<br>WA1 4DA",
+    "claimantContactEmail": "pcs-solicitor-automation@test.com",
+    "formattedClaimantContactAddress": "Ministry Of Justice<br>Seventh Floor 102 Petty France<br>London<br>SW1H 9AJ",
     "legislativeCountry": "England",
     "claimantType": {
       "list_items": [
