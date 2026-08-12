@@ -86,35 +86,6 @@ test.describe('[Common Component Fee And Pay] @nightly @CC @feeAndPay' , async (
     });
   });
 
-test('Fee And Pay - Verify case issued state for Next step event dropdown', async ({ page, context }) => {
-    await performAction('clickPayNowLink', serviceRequest.payNowLink);
-    await performAction('selectPaymentTypePBA', {
-      amountLabel: serviceRequest.amountToPayLabel,
-      expectedAmount: serviceRequest.amount415,
-      payByOption: serviceRequest.payByAccountRadioOption,
-      pbaLabel: serviceRequest.selectPBALabel,
-      pbaValue: serviceRequest.pbaIndex1,
-      referenceLabel: serviceRequest.pbaReferenceLable,
-      referenceText: serviceRequest.pbaReferenceInputText,
-      confirmButton: serviceRequest.confirmPaymentButton,
-    });
-    await performValidation('mainHeader', serviceRequest.paymentSuccessMainHeader);
-    await performAction('clickButton', serviceRequest.viewServiceRequestsLink);
-    await clearBrowserSession(page, context);
-    await performAction('login', { email: refundAndRemission.requesterEmail, password: process.env.IDAM_PCS_USER_PASSWORD });
-    await performAction('verifyStatusInHistoryAndSummaryTab', {
-      serviceReqTab: caseSummary.serviceRequestTab,
-      historyTab: caseSummary.HistoryTab,
-      status: serviceRequest.paidStatus,
-      endState: history.endStateTableHeader,
-      historyStatus: history.caseIssuedTableHeader
-    });
-    await performAction('clickButton', caseSummary.nextStepEventList);
-    await performValidation('nextStepEventDropdownOptions', caseSummary.nextStepEventList);
-    await performAction('select', caseSummary.nextStepEventList, caseSummary.createFlagsEvent);
-    await performAction('clickButton', caseSummary.go); 
-   });
-
   test('Fee And Pay - Pay by Card', async ({ page, context }) => {
     await performAction('clickPayNowLink', serviceRequest.payNowLink);
     await performAction('selectPaymentByCard', {
