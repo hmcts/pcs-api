@@ -21,7 +21,9 @@ import uk.gov.hmcts.reform.payments.client.models.FeeDto;
 import uk.gov.hmcts.reform.payments.client.models.PaymentDto;
 import uk.gov.hmcts.reform.payments.request.CardPaymentServiceRequestDTO;
 import uk.gov.hmcts.reform.payments.request.CreateServiceRequestDTO;
+import uk.gov.hmcts.reform.payments.request.PBAServiceRequestDTO;
 import uk.gov.hmcts.reform.payments.response.CardPaymentServiceRequestResponse;
+import uk.gov.hmcts.reform.payments.response.PBAServiceRequestResponse;
 import uk.gov.hmcts.reform.payments.response.PaymentServiceResponse;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -42,6 +44,12 @@ import uk.gov.hmcts.reform.pcs.feesandpay.model.Payment;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentCallbackHandlerType;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatusCallback;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.PbaAccountsResponse;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.PbaPaymentRequest;
+import uk.gov.hmcts.reform.pcs.idam.IdamAuthenticator;
+import uk.gov.hmcts.reform.pcs.idam.User;
+import uk.gov.hmcts.reform.pcs.idam.UserInfo;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationDetailsService;
 import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
 
 import java.io.IOException;
@@ -91,6 +99,14 @@ class PaymentServiceTest {
     private PcsCaseService pcsCaseService;
     @Mock
     private PaymentCallbackStrategyFactory paymentCallbackStrategyFactory;
+    @Mock
+    private IdamAuthenticator idamAuthenticator;
+    @Mock
+    private OrganisationDetailsService organisationDetailsService;
+    @Mock
+    private User user;
+    @Mock
+    private UserInfo userDetails;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -508,6 +524,159 @@ class PaymentServiceTest {
 
             // Then
             assertThat(paymentStatusResponse.getStatus()).isEqualTo(expectedStatus);
+        }
+
+    }
+
+    @Nested
+    @DisplayName("Get PBA accounts")
+    class GetPbaAccounts {
+
+        @Test
+        void shouldGetPbaAccounts() {
+            // Given
+            String authToken = UUID.randomUUID().toString();
+            String uid = UUID.randomUUID().toString();
+            List<String> pbaAccounts = List.of("pba123");
+
+            when(idamAuthenticator.validateAuthToken(authToken)).thenReturn(user);
+            when(user.getUserDetails()).thenReturn(userDetails);
+            when(userDetails.getUid()).thenReturn(uid);
+            when(organisationDetailsService.getOrganisationPaymentAccount(uid)).thenReturn(pbaAccounts);
+
+            // When
+            PbaAccountsResponse response = underTest.getPbaAccounts(authToken);
+
+            // Then
+            assertThat(response.getPbaAccounts()).isEqualTo(pbaAccounts);
+        }
+
+        @Test
+        void shouldGetPbaAccounts_WithNullPbaAccounts() {
+            // Given
+            String authToken = UUID.randomUUID().toString();
+            String uid = UUID.randomUUID().toString();
+
+            when(idamAuthenticator.validateAuthToken(authToken)).thenReturn(user);
+            when(user.getUserDetails()).thenReturn(userDetails);
+            when(userDetails.getUid()).thenReturn(uid);
+
+            // When
+            PbaAccountsResponse response = underTest.getPbaAccounts(authToken);
+
+            // Then
+            assertThat(response.getPbaAccounts()).isEqualTo(List.of());
+        }
+
+    }
+
+    @Nested
+    @DisplayName("create PBA payment")
+    class CreatePbaPaymentRequest {
+
+        @Test
+        void createPbaPaymentRequest_WithUnpaidFee_ReturnsPBAServiceRequestResponse() {
+            // Given
+            String authToken = UUID.randomUUID().toString();
+            String uid = UUID.randomUUID().toString();
+            String serviceRequestReference = "abc";
+
+            when(idamAuthenticator.validateAuthToken(authToken)).thenReturn(user);
+            when(user.getUserDetails()).thenReturn(userDetails);
+            when(userDetails.getUid()).thenReturn(uid);
+            FeePaymentEntity feePaymentEntity = mock(FeePaymentEntity.class);
+            when(feePaymentRepository.findByServiceRequestReference(serviceRequestReference))
+                .thenReturn(Optional.of(feePaymentEntity));
+            when(feePaymentEntity.getPaymentStatus()).thenReturn(PaymentStatus.NOT_PAID);
+            PbaPaymentRequest pbaPaymentRequest = PbaPaymentRequest.builder()
+                .amount(new BigDecimal("1"))
+                .pbaAccount("pba123")
+                .customerReference("customerRef")
+                .build();
+
+            String paymentReference = "pay";
+            String status = "Success";
+            String dateCreated = "Date";
+
+            PBAServiceRequestResponse pbaServiceRequestResponse = PBAServiceRequestResponse.builder()
+                .paymentReference(paymentReference)
+                .status(status)
+                .dateCreated(dateCreated)
+                .build();
+
+            when(paymentsClient.createPbaPayment(any(), anyString(), any())).thenReturn(pbaServiceRequestResponse);
+
+            // When
+            PBAServiceRequestResponse response = underTest.createPbaPaymentRequest(
+                authToken,
+                serviceRequestReference,
+                pbaPaymentRequest
+            );
+
+            // Then
+            verify(organisationDetailsService).getOrganisationName(uid);
+            verify(paymentsClient).createPbaPayment(eq(serviceRequestReference),
+                                                                  eq(SYSTEM_TOKEN),
+                                                                  any(PBAServiceRequestDTO.class));
+            assertThat(response.getPaymentReference()).isEqualTo(paymentReference);
+            assertThat(response.getStatus()).isEqualTo(status);
+            assertThat(response.getDateCreated()).isEqualTo(dateCreated);
+        }
+
+        @ParameterizedTest
+        @EnumSource(value = PaymentStatus.class, names = {"PAID", "PARTIALLY_PAID"})
+        void shouldThrowExceptionIfServiceRequestAlreadyHasAPaymentStatus(PaymentStatus paymentStatus) {
+            // Given
+            String authToken = UUID.randomUUID().toString();
+            String serviceRequestReference = "abc";
+
+            when(idamAuthenticator.validateAuthToken(authToken)).thenReturn(user);
+            FeePaymentEntity feePaymentEntity = mock(FeePaymentEntity.class);
+            when(feePaymentRepository.findByServiceRequestReference(serviceRequestReference))
+                .thenReturn(Optional.of(feePaymentEntity));
+            when(feePaymentEntity.getPaymentStatus()).thenReturn(paymentStatus);
+            PbaPaymentRequest pbaPaymentRequest = PbaPaymentRequest.builder()
+                .amount(new BigDecimal("1"))
+                .pbaAccount("pba123")
+                .customerReference("customerRef")
+                .build();
+
+            // When
+            Throwable throwable = catchThrowable(() -> underTest.createPbaPaymentRequest(
+                authToken,
+                serviceRequestReference,
+                pbaPaymentRequest
+            ));
+
+            // Then
+            verify(organisationDetailsService, never()).getOrganisationName(anyString());
+            assertThat(throwable).isInstanceOf(IllegalStateException.class);
+        }
+
+        @Test
+        void shouldThrowExceptionIfServiceRequestFeeNotFound() {
+            // Given
+            String authToken = UUID.randomUUID().toString();
+            String serviceRequestReference = "abc";
+
+            when(idamAuthenticator.validateAuthToken(authToken)).thenReturn(user);
+            PbaPaymentRequest pbaPaymentRequest = PbaPaymentRequest.builder()
+                .amount(new BigDecimal("1"))
+                .pbaAccount("pba123")
+                .customerReference("customerRef")
+                .build();
+
+            // When
+            Throwable throwable = catchThrowable(() -> underTest.createPbaPaymentRequest(
+                authToken,
+                serviceRequestReference,
+                pbaPaymentRequest
+            ));
+
+            // Then
+            verify(paymentsClient, never()).createPbaPayment(any(), anyString(), any());
+            verify(organisationDetailsService, never()).getOrganisationName(anyString());
+            assertThat(throwable).isInstanceOf(FeePaymentNotFoundException.class);
         }
 
     }

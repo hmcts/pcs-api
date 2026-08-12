@@ -60,7 +60,7 @@ class SelectedPartyRetrieverTest {
         UUID partyId = UUID.randomUUID();
         long caseRef = 1L;
         when(pcsCaseService.loadCase(caseRef)).thenReturn(pcsCaseEntity);
-        when(legalRepForDefendantAccessValidator.validateAndGetDefendants(pcsCaseEntity, orgId))
+        when(legalRepForDefendantAccessValidator.validateAndGetDefendants(pcsCaseEntity, orgId, true))
             .thenReturn(List.of(partyEntity));
         when(partyEntity.getId()).thenReturn(partyId);
 
@@ -80,7 +80,7 @@ class SelectedPartyRetrieverTest {
         UUID partyId = UUID.randomUUID();
         long caseRef = 1L;
         when(pcsCaseService.loadCase(caseRef)).thenReturn(pcsCaseEntity);
-        when(legalRepForDefendantAccessValidator.validateAndGetDefendants(pcsCaseEntity, orgId))
+        when(legalRepForDefendantAccessValidator.validateAndGetDefendants(pcsCaseEntity, orgId, true))
             .thenReturn(List.of(partyEntity, partyEntity2));
         when(clientContextRetriever.getClientContext()).thenReturn(clientContext);
         when(clientContext.getSelectedPartyId()).thenReturn(partyId.toString());

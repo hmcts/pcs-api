@@ -25,7 +25,8 @@ public class SelectedPartyRetriever {
         PcsCaseEntity caseEntity = pcsCaseService.loadCase(caseReference);
         List<PartyEntity> partyEntities = legalRepForDefendantAccessValidator.validateAndGetDefendants(
             caseEntity,
-            organisationId
+            organisationId,
+            true
         );
         return partyEntities.size() == 1
             ? Optional.of(UUID.fromString(partyEntities.getFirst().getId().toString())) : getRequiredPartyId();
@@ -42,7 +43,7 @@ public class SelectedPartyRetriever {
             extractCurrentRepresentedPartyId(caseData.getCurrentRepresentedPartyId());
     }
 
-    private Optional<UUID> getRequiredPartyId() {
+    public Optional<UUID> getRequiredPartyId() {
         ClientContext clientContext = clientContextRetriever.getClientContext();
         if (clientContext == null) {
             return Optional.empty();
