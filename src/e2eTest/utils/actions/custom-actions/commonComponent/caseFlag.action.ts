@@ -1,8 +1,8 @@
 import { actionData, actionRecord, IAction } from '@utils/interfaces';
 import { Page } from '@playwright/test';
 import { performAction, performValidation } from '@utils/controller';
-import {expect} from "@utils/test-fixtures";
-import {caseSummary, caseList} from "@data/page-data";
+import { expect } from "@utils/test-fixtures";
+import { caseSummary, caseList } from "@data/page-data";
 import { getCaseTypeId } from '@utils/common/caseType.utils';
 import {
   specialMeasureForFlag,
@@ -14,11 +14,11 @@ import {
   manageCaseFlags,
   updateFlagComments,
   confirmStatusForFlag,
-  
+
 } from '@data/page-data-figma';
-import {workAccess} from "@data/page-data-figma/page-data-common-component/workAccess.page.data";
-import {createCaseApiData} from "@data/api-data";
-import {formatTheCaseNumber} from "@utils/common/string.utils";
+import { workAccess } from "@data/page-data-figma/page-data-common-component/workAccess.page.data";
+import { createCaseApiData } from "@data/api-data";
+import { formatTheCaseNumber } from "@utils/common/string.utils";
 
 export class CaseFlagAction implements IAction {
   async execute(page: Page, action: string, fieldName: actionData | actionRecord, data?: actionData): Promise<void> {
@@ -49,7 +49,7 @@ export class CaseFlagAction implements IAction {
 
   private async validateCaseContext(): Promise<void> {
 
-    if(process.env.CASE_NUMBER) {
+    if (process.env.CASE_NUMBER) {
       await performValidation('text', {
         elementType: 'paragraph',
         text: `Case number: ${formatTheCaseNumber(process.env.CASE_NUMBER)}`
@@ -93,20 +93,20 @@ export class CaseFlagAction implements IAction {
   }
 
   private async confirmStatusForFlag(confirmOptions: actionRecord, page: Page) {
-  await this.validateCaseContext();
+    await this.validateCaseContext();
 
-  if (confirmOptions.statusOption === confirmStatusForFlag.notApprovedStatusRadioOption) {
-    const radio = page.locator(`label >> text=${confirmOptions.statusOption}`);
-    await radio.waitFor({ state: 'visible' });
-    await performAction('clickRadioButton', { question: confirmOptions.statusQuestion, option: confirmOptions.statusOption });
+    if (confirmOptions.statusOption === confirmStatusForFlag.notApprovedStatusRadioOption) {
+      const radio = page.locator(`label >> text=${confirmOptions.statusOption}`);
+      await radio.waitFor({ state: 'visible' });
+      await performAction('clickRadioButton', { question: confirmOptions.statusQuestion, option: confirmOptions.statusOption });
 
-    const reasonInput = page.locator('#statusReason');
-    await reasonInput.waitFor({ state: 'visible' });
-    await reasonInput.fill(String(confirmOptions.inputDescription));
+      const reasonInput = page.locator('#statusReason');
+      await reasonInput.waitFor({ state: 'visible' });
+      await reasonInput.fill(String(confirmOptions.inputDescription));
+    }
+
+    await performAction('clickButton', confirmOptions.continueButton);
   }
-
-  await performAction('clickButton', confirmOptions.continueButton);
-}
 
   private async clickChangeLinkForRow(changeOptions: actionRecord, page: Page) {
     const rowLabel = String(changeOptions.rowLabel ?? '').trim();
@@ -121,7 +121,7 @@ export class CaseFlagAction implements IAction {
     await propertyChangeLink.waitFor({ state: 'visible' });
     await propertyChangeLink.click();
   }
-  
+
   private async reviewFlagDetails(reviewOptions: actionRecord) {
     await this.validateCaseContext();
     await performAction('clickButton', reviewOptions.saveButton);
