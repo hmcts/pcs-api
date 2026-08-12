@@ -29,7 +29,18 @@ public class PartySupportOwnershipResolver {
             return true;
         }
 
+        if (isOwnedByUserOrganisation(partyEntity)) {
+            return true;
+        }
+
         return isRepresentedByUser(partyEntity, authenticatedUserId);
+    }
+
+    private boolean isOwnedByUserOrganisation(PartyEntity partyEntity) {
+        String partyOrganisationId = partyEntity.getOrganisationId();
+
+        return isNotBlank(partyOrganisationId)
+            && partyOrganisationId.equals(organisationService.getOrganisationIdForCurrentUser());
     }
 
     private boolean isRepresentedByUser(PartyEntity partyEntity, UUID authenticatedUserId) {

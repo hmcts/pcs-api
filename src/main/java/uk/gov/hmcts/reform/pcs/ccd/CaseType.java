@@ -53,9 +53,7 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
     static final AccessProfile[] EXTERNAL_FLAG_TAB_ROLES = {
         AccessProfile.PCS_SOLICITOR,
         AccessProfile.CITIZEN,
-        AccessProfile.CLAIMANT_SOLICITOR,
-        AccessProfile.DEFENDANT,
-        AccessProfile.DEFENDANT_SOLICITOR
+        AccessProfile.DEFENDANT
     };
     static final AccessProfile[] NON_INTERNAL_HISTORY_ROLES = nonInternalHistoryRoles();
 

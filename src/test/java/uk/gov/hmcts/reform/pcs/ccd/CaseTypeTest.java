@@ -157,6 +157,8 @@ class CaseTypeTest {
         assertThat(caseNotesTab.getForRoles()).containsExactlyInAnyOrder(CaseType.INTERNAL_TAB_ROLES);
         assertThat(caseFlagsTab.getForRoles()).containsExactlyInAnyOrder(CaseType.INTERNAL_TAB_ROLES);
         assertThat(supportTab.getForRoles()).containsExactlyInAnyOrder(CaseType.EXTERNAL_FLAG_TAB_ROLES);
+        assertThat(supportTab.getForRoles())
+            .doesNotContain(AccessProfile.CLAIMANT_SOLICITOR, AccessProfile.DEFENDANT_SOLICITOR);
         verify(builder).omitHistoryForRoles(CaseType.NON_INTERNAL_HISTORY_ROLES);
 
         assertThat(supportTab.getFields()).hasSize(2);
