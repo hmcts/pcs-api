@@ -400,8 +400,8 @@ class NotificationPersonalisationFactoryTest {
 
     private LegalRepresentativeOrganisationEntity stubLegalRepParty() {
         LegalRepresentativeOrganisationEntity legalRepOrganisationEntity = createLegalRep("HMCTS");
-        UUID id = UUID.randomUUID();
-        legalRepOrganisationEntity.setId(id);
+        String id = UUID.randomUUID().toString();
+        legalRepOrganisationEntity.setOrganisationId(id);
 
         return legalRepOrganisationEntity;
     }
@@ -418,7 +418,7 @@ class NotificationPersonalisationFactoryTest {
     private LegalRepresentativeOrganisationEntity createLegalRep(String organisationName) {
         LegalRepresentativeOrganisationEntity legalRepresentativeOrganisationEntity = new
             LegalRepresentativeOrganisationEntity();
-        legalRepresentativeOrganisationEntity.setId(UUID.randomUUID());
+        //   legalRepresentativeOrganisationEntity.setId();
         legalRepresentativeOrganisationEntity.setOrganisationName(organisationName);
         return legalRepresentativeOrganisationEntity;
     }

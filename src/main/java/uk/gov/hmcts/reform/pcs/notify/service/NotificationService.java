@@ -536,7 +536,7 @@ public class NotificationService {
         }
 
         return new LegalRepresentativeNotificationRecipient(
-            legalRepresentativeOrganisationEntity.getEmail(),
+            legalRepresentativeOrganisationEntity.getLegalRepresentativeOrganisationContactDetails().getEmailAddress(),
             defendantParty,
             pcsCaseEntity,
             defendantResponse.getClaim()
