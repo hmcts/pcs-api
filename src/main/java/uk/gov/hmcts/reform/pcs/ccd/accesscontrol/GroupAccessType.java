@@ -62,10 +62,7 @@ public enum GroupAccessType implements CCDAccessGroup {
     private static final String ASSIGN_HINT =
         "Assign to Users to enable access to all cases associated with this organisation";
 
-    /**
-     * The party role whose organisation this access type stamps onto a case. Null means it is
-     * never derived: duty-advisor access is requested per case, so no case carries its group.
-     */
+    /** Null for duty-advisor access, which is requested per case rather than stamped on one. */
     private final PartyRole partyRole;
     private final String organisationProfileId;
     private final String accessTypeId;
@@ -137,10 +134,7 @@ public enum GroupAccessType implements CCDAccessGroup {
         return Map.copyOf(index);
     }
 
-    /**
-     * The access type that applies to a party in this role, so selection states what it means rather
-     * than depending on the order these constants are declared in.
-     */
+    /** Keyed lookup so selection does not depend on the order these constants are declared in. */
     public static Optional<GroupAccessType> forProfileAndRole(String organisationProfileId, PartyRole partyRole) {
         return partyRole == null
             ? Optional.empty()

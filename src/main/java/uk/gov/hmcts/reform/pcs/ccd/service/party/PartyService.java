@@ -153,13 +153,9 @@ public class PartyService {
     }
 
     /**
-     * The claimant party a case is created with: organisation only, so CaseAccessGroups derive
-     * while the claim is still being filled in.
-     *
-     * <p>Both organisation values are required. A case created without them derives no group, so
-     * the organisation never sees it and, once the creator's CREATOR role is revoked at submit,
-     * nobody can - an orphan discovered long after the fact. Failing here reports it at the
-     * point of creation instead.</p>
+     * The claimant party a case is created with, so CaseAccessGroups derive during the draft phase.
+     * Both organisation values are required: without them the case derives no group, and once CREATOR
+     * is revoked at submit nobody can open it.
      */
     public void initialiseClaimant(PcsCaseEntity pcsCaseEntity, String organisationId,
                                    List<String> organisationProfileIds) {
@@ -174,11 +170,7 @@ public class PartyService {
         pcsCaseEntity.addParty(claimantParty);
     }
 
-    /**
-     * The initialised claimant carries an organisation but no claim link, which no submitted party
-     * ever does. Matching on that keeps submit completing the party the case was created with,
-     * rather than adding a second claimant.
-     */
+    /** An organisation with no claim link is the party the case was created with, not a new one. */
     private Optional<PartyEntity> findInitialisedClaimant(PcsCaseEntity pcsCaseEntity) {
         return pcsCaseEntity.getParties().stream()
             .filter(party -> party.getOrganisationId() != null)
@@ -187,10 +179,9 @@ public class PartyService {
     }
 
     /**
-     * Keeps the organisation captured and validated at case creation. Submit re-reads it from
-     * rd-professional, which returns null rather than failing when that call errors, so assigning
-     * unconditionally would replace a good value with null on a transient blip - and the same submit
-     * revokes CREATOR, leaving a case that derives no access groups and nobody can open.
+     * Keeps what was validated at creation. rd-professional returns null rather than failing, so
+     * assigning unconditionally would wipe the organisation on a transient blip - and the same submit
+     * revokes CREATOR, leaving a case nobody can open.
      */
     private void setClaimantOrganisation(PartyEntity claimantParty, String organisationId,
                                          List<String> orgProfileIds) {
@@ -264,7 +255,6 @@ public class PartyService {
     }
 
     private PartyEntity createDefendant(DefendantDetails defendantDetails) {
-        //
         PartyEntity defendantEntity = new PartyEntity();
 
         VerticalYesNo nameKnown = defendantDetails.getNameKnown();

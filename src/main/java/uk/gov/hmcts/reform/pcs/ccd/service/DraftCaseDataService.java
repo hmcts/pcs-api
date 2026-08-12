@@ -34,12 +34,7 @@ import static java.util.Map.entry;
 @Slf4j
 public class DraftCaseDataService {
 
-    /**
-     * Who a draft belongs to. Making a claim belongs to the organisation that owns the case, not to
-     * the person typing it, because group access makes the case visible to the whole firm. Every
-     * other journey stays keyed on the user - HDPI-6221 put the user in the key so that a citizen
-     * defendant and their legal representative do not share one draft.
-     */
+    /** HDPI-6221 keys drafts on the user so a citizen and their legal rep do not share one. */
     enum DraftOwnership {
         PARTY,
         USER,
@@ -47,12 +42,8 @@ public class DraftCaseDataService {
     }
 
     /**
-     * Total by design. Ownership cannot be inferred from the case alone: every case has a claimant
-     * party carrying an organisation, including while a citizen defendant is responding, so inferring
-     * would stamp that defendant's draft with the claimant's party and share it with the firm suing
-     * them. A partial list is no better - a claimant journey left out of it silently reverts to
-     * per-user drafts, which is the defect this classification exists to prevent - so every EventId
-     * must appear and the check below refuses to start the service otherwise.
+     * Every EventId must appear: the check below stops the service starting otherwise. A missing
+     * entry would quietly fall back to a per-user draft, which is the defect this prevents.
      */
     private static final Map<EventId, DraftOwnership> OWNERSHIP = new EnumMap<>(Map.ofEntries(
         entry(EventId.resumePossessionClaim, DraftOwnership.PARTY),
@@ -112,12 +103,9 @@ public class DraftCaseDataService {
     }
 
     /**
-     * The party that owns this draft, empty when the draft belongs to the user.
-     *
-     * <p>Fails rather than falling back. A claim case that cannot resolve an owner is a bug -
-     * {@code initialiseClaimant} refuses to create a case without an organisation - and quietly
-     * reverting to the user key would recreate the per-user split invisibly, observable only as
-     * "my colleague cannot see my answers".</p>
+     * Throws rather than falling back to the user key: initialiseClaimant refuses to create a case
+     * without an organisation, so a claim case with no owner is a bug, and quietly keying on the user
+     * would bring back the per-user split with no symptom but "my colleague cannot see my answers".
      */
     private Optional<UUID> ownerPartyId(long caseReference, EventId eventId) {
         DraftOwnership ownership = OWNERSHIP.get(eventId);

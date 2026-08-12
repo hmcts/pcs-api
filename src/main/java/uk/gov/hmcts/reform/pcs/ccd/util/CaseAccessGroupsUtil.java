@@ -15,10 +15,8 @@ import java.util.Set;
 import java.util.UUID;
 
 /**
- * Derives the CaseAccessGroups the data store's group matcher compares against the
- * caseAccessGroupId on users' role assignments. Must produce exactly the id PRM builds
- * from the caseAccessGroupIdTemplate declared in CaseType's AccessTypeRole config -
- * both sides are manufactured from that one declaration; a mismatch fails closed.
+ * Builds the CaseAccessGroups the data store matches against users' role assignments. The id must be
+ * byte-identical to the one PRM builds from the same AccessTypeRole template; a mismatch fails closed.
  */
 public final class CaseAccessGroupsUtil {
 
@@ -26,21 +24,12 @@ public final class CaseAccessGroupsUtil {
     public static final String ORGANISATION_PROFILE = "ORGANISATION_PROFILE";
     static final String ORG_IDENTIFIER_TEMPLATE = "$ORGID$";
 
-    /**
-     * Only the claimant's organisation is stamped onto a case. The defendant access type is declared
-     * but not implemented; widening this set is the defendant/notice-of-change ticket's job, and the
-     * lookup in GroupAccessType already returns the right template once it is.
-     */
+    /** Claimant only for now; the defendant side belongs to the notice-of-change work. */
     private static final Set<PartyRole> DERIVED_ROLES = Set.of(PartyRole.CLAIMANT);
 
     private CaseAccessGroupsUtil() {
     }
 
-    /**
-     * Derives one group per organisation-owned party, the access type chosen by the party's
-     * organisation profile and its role. Parties without an organisation (citizens) contribute
-     * nothing.
-     */
     public static List<ListValue<CaseAccessGroup>> deriveCaseAccessGroups(Set<PartyEntity> parties) {
         List<CaseAccessGroup> caseAccessGroups = new ArrayList<>();
 
@@ -51,8 +40,8 @@ public final class CaseAccessGroupsUtil {
                 accessType.getCaseAccessGroupIdTemplate()
                     .replace(ORG_IDENTIFIER_TEMPLATE, party.getOrganisationId())))));
 
-        // Stable output: parties come from a HashSet and this is recomputed on every read, so a random
-        // id would make an unchanged case differ read to read. The group id is the identity.
+        // Parties are a HashSet and this runs on every read, so derive the list id from the group id
+        // rather than randomly - otherwise an unchanged case differs read to read.
         return caseAccessGroups.stream()
             .map(CaseAccessGroup::getCaseAccessGroupId)
             .distinct()
@@ -65,11 +54,9 @@ public final class CaseAccessGroupsUtil {
     }
 
     /**
-     * The role this party's organisation holds the case in, empty when it contributes no group.
-     *
-     * <p>A party created with the case has no claim link yet - that is the whole draft phase, which is
-     * the point of firm-visible drafts - so an organisation-bearing party without one is the claimant
-     * the case was created for.</p>
+     * A party created with the case has no claim link until submit, so an organisation-bearing party
+     * without one is the claimant it was created for. Matching only on the claim link would derive
+     * nothing for the whole draft phase.
      */
     private static Optional<PartyRole> derivedRole(PartyEntity party) {
         if (party.getOrganisationId() == null) {
@@ -85,9 +72,8 @@ public final class CaseAccessGroupsUtil {
     }
 
     /**
-     * The profile the access type is keyed on. Every organisation also carries the generic
-     * ORGANISATION_PROFILE, which is skipped; more than one profile beyond it is ambiguous, and
-     * picking either would silently decide the capacity a case is stamped with.
+     * Every organisation also carries the generic ORGANISATION_PROFILE, so that one is skipped. More
+     * than one profile beyond it is ambiguous - picking either would silently decide the capacity.
      */
     private static String organisationProfileId(PartyEntity party) {
         List<String> organisationProfileIds = party.getOrganisationProfileIds();

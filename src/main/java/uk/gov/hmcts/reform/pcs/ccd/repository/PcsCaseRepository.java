@@ -17,18 +17,10 @@ public interface PcsCaseRepository extends JpaRepository<PcsCaseEntity, UUID> {
     Optional<PcsCaseEntity> findByCaseReference(long caseReference);
 
     /**
-     * The parties on a case that an organisation owns, which is what a draft on that case belongs to.
-     *
-     * <p>The "no claim link" arm is not redundant: {@code PartyService.initialiseClaimant} creates the
-     * claimant with an organisation and no claim link, and that is the whole draft phase - matching on
-     * {@code ClaimPartyEntity.role} alone would find nothing until submit, which is exactly when a
-     * shared draft is needed.</p>
-     *
-     * <p>Returns a list rather than an Optional because that arm is role-blind: a party in the draft
-     * phase has no role to check, so it matches any organisation-bearing party without a claim link.
-     * That yields one row only while the claimant is the sole party ever given an organisation.
-     * Notice of change removes that assumption, so callers assert the single result rather than
-     * letting a second party silently pick a winner.</p>
+     * The organisation-owned parties on a case. The "no claim link" arm covers the draft phase, where
+     * the claimant has an organisation but no claim yet. It is role-blind, so a second
+     * organisation-bearing party would match too - callers assert the single result rather than
+     * silently picking one.
      */
     @Query("""
         select party.id from PcsCaseEntity pcsCase

@@ -514,11 +514,9 @@ class DraftCaseDataServiceTest {
         verify(draftCaseDataEntity).setCaseData(newCaseDataJson);
     }
 
-    // --- Party-owned drafts: making a claim belongs to the firm, not the person typing it ---
-
     @Test
     void shouldFindDraftByOwningPartyForClaimJourney() throws JsonProcessingException {
-        // Given a colleague's draft on the same case, owned by the claimant party
+        // Given
         String draftJson = "colleague draft json";
         DraftCaseDataEntity colleagueDraft = mock(DraftCaseDataEntity.class);
         PCSCase expected = mock(PCSCase.class);
@@ -530,10 +528,10 @@ class DraftCaseDataServiceTest {
         when(colleagueDraft.getCaseData()).thenReturn(draftJson);
         when(objectMapper.readValue(draftJson, PCSCase.class)).thenReturn(expected);
 
-        // When a different user in the firm resumes
+        // When
         Optional<PCSCase> unsubmittedCaseData = underTest.getUnsubmittedCaseData(CASE_REFERENCE, PARTY_OWNED_EVENT);
 
-        // Then they see their colleague's answers, not an empty journey
+        // Then
         assertThat(unsubmittedCaseData).contains(expected);
     }
 
@@ -545,7 +543,7 @@ class DraftCaseDataServiceTest {
         when(draftCaseDataRepository.existsByCaseReferenceAndEventIdAndOwnerPartyId(
             CASE_REFERENCE, PARTY_OWNED_EVENT, OWNER_PARTY_ID)).thenReturn(true);
 
-        // When / Then - the resume page appears for the colleague too
+        // When / Then
         assertThat(underTest.hasUnsubmittedCaseData(CASE_REFERENCE, PARTY_OWNED_EVENT)).isTrue();
     }
 
@@ -567,7 +565,6 @@ class DraftCaseDataServiceTest {
         DraftCaseDataEntity savedEntity = unsubmittedCaseDataEntityCaptor.getValue();
 
         assertThat(savedEntity.getOwnerPartyId()).isEqualTo(OWNER_PARTY_ID);
-        // still recorded, as who last wrote the shared draft
         assertThat(savedEntity.getIdamUserId()).isEqualTo(USER_ID);
     }
 
@@ -587,8 +584,7 @@ class DraftCaseDataServiceTest {
 
     @Test
     void shouldFailLoudlyWhenClaimCaseHasNoOrganisationOwnedParty() {
-        // Given - a state initialiseClaimant makes impossible; falling back to the user key here would
-        // silently recreate the per-user split this design removes
+        // Given
         when(pcsCaseRepository.findOrganisationOwnedPartyIds(CASE_REFERENCE, PartyRole.CLAIMANT))
             .thenReturn(List.of());
 
@@ -600,7 +596,7 @@ class DraftCaseDataServiceTest {
 
     @Test
     void shouldFailLoudlyWhenCaseHasMoreThanOneOrganisationOwnedParty() {
-        // Given - what notice of change introduces; picking one arbitrarily would be a silent leak
+        // Given
         when(pcsCaseRepository.findOrganisationOwnedPartyIds(CASE_REFERENCE, PartyRole.CLAIMANT))
             .thenReturn(List.of(OWNER_PARTY_ID, UUID.randomUUID()));
 
@@ -612,7 +608,7 @@ class DraftCaseDataServiceTest {
 
     @Test
     void shouldFailLoudlyWhenAnEventClassifiedAsNoDraftsReachesTheService() {
-        // When / Then - a new journey adopting SavingPageBuilder trips this on its first save
+        // When / Then
         assertThatThrownBy(() -> underTest.hasUnsubmittedCaseData(CASE_REFERENCE, EventId.makeAnApplication))
             .isInstanceOf(IllegalStateException.class)
             .hasMessageContaining("classified as NO_DRAFTS");

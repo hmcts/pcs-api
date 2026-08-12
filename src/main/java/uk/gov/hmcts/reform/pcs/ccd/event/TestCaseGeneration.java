@@ -71,15 +71,10 @@ public class TestCaseGeneration implements CCDConfig<PCSCase, State, UserRole> {
                 .initialState(AWAITING_SUBMISSION_TO_HMCTS)
                 .showSummary()
                 .name(EVENT_NAME)
-                // Creates a case in the same state as createPossessionClaim, so it grants the same
-                // claimant capacities: CLAIMANT covers the organisations that are the claimant
-                // themselves, who would otherwise be unable to generate a test case.
+                // Same claimant capacities as createPossessionClaim, which this mirrors.
                 .grant(Permission.CRUD, UserRole.GA_CLAIMANT_SOLICITOR)
                 .grant(Permission.CRUD, UserRole.CLAIMANT)
-                // Retained until group access is enabled in every environment. This event is
-                // configured only where testing support is on - preview and AAT - and on AAT no user
-                // holds a capacity yet, so without this the tool disappears there. Removed with the
-                // other temporary grants once those flags are on.
+                // Temporary: keeps the tool usable on AAT until the group access flags are on.
                 .grant(Permission.CRUD, UserRole.PCS_SOLICITOR)
                 .grantHistoryOnly(JUDICIAL_HISTORY_ROLES);
         new PageBuilder(eventBuilder).add(new TestCaseSelectionPage());

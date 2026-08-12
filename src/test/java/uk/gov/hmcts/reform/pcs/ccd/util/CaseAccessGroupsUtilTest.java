@@ -85,7 +85,7 @@ class CaseAccessGroupsUtilTest {
 
     @Test
     void shouldDeriveTheSameListIdsAndOrderOnEveryRead() {
-        // Given two organisation-owned claimant parties, held in a HashSet and recomputed per read
+        // Given
         PartyEntity first = new PartyEntity();
         first.setOrganisationId("ORG-A");
         first.setOrganisationProfileIds(List.of("SOLICITOR_PROFILE"));
@@ -93,13 +93,13 @@ class CaseAccessGroupsUtilTest {
         second.setOrganisationId("ORG-B");
         second.setOrganisationProfileIds(List.of("LOCALAUTH_PROFILE"));
 
-        // When derived twice
+        // When
         List<ListValue<CaseAccessGroup>> firstRead =
             CaseAccessGroupsUtil.deriveCaseAccessGroups(new HashSet<>(Set.of(first, second)));
         List<ListValue<CaseAccessGroup>> secondRead =
             CaseAccessGroupsUtil.deriveCaseAccessGroups(new HashSet<>(Set.of(first, second)));
 
-        // Then an unchanged case produces an identical payload, ids and order included
+        // Then
         assertThat(firstRead).usingRecursiveComparison().isEqualTo(secondRead);
         assertThat(firstRead).extracting(lv -> lv.getValue().getCaseAccessGroupId()).isSorted();
     }
