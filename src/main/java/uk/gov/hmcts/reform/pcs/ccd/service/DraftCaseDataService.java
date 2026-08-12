@@ -41,10 +41,6 @@ public class DraftCaseDataService {
         NO_DRAFTS
     }
 
-    /**
-     * Every EventId must appear: the check below stops the service starting otherwise. A missing
-     * entry would quietly fall back to a per-user draft, which is the defect this prevents.
-     */
     private static final Map<EventId, DraftOwnership> OWNERSHIP = new EnumMap<>(Map.ofEntries(
         entry(EventId.resumePossessionClaim, DraftOwnership.PARTY),
         entry(EventId.respondPossessionClaim, DraftOwnership.USER),
@@ -73,6 +69,14 @@ public class DraftCaseDataService {
     ));
 
     static {
+        failIfAnyEventIsUnclassified();
+    }
+
+    /**
+     * An unclassified event would quietly fall back to a per-user draft, which is the defect this
+     * classification exists to prevent, so it stops the service starting instead.
+     */
+    private static void failIfAnyEventIsUnclassified() {
         if (!OWNERSHIP.keySet().equals(EnumSet.allOf(EventId.class))) {
             throw new IllegalStateException(
                 "Draft ownership not classified for " + EnumSet.complementOf(EnumSet.copyOf(OWNERSHIP.keySet()))
@@ -103,9 +107,8 @@ public class DraftCaseDataService {
     }
 
     /**
-     * Throws rather than falling back to the user key: initialiseClaimant refuses to create a case
-     * without an organisation, so a claim case with no owner is a bug, and quietly keying on the user
-     * would bring back the per-user split with no symptom but "my colleague cannot see my answers".
+     * Throws rather than falling back to the user key: keying on the user would bring back the
+     * per-user split with no symptom but "my colleague cannot see my answers".
      */
     private Optional<UUID> ownerPartyId(long caseReference, EventId eventId) {
         DraftOwnership ownership = OWNERSHIP.get(eventId);

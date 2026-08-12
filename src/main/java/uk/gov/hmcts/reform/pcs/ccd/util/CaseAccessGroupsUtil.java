@@ -40,29 +40,30 @@ public final class CaseAccessGroupsUtil {
                 accessType.getCaseAccessGroupIdTemplate()
                     .replace(ORG_IDENTIFIER_TEMPLATE, party.getOrganisationId())))));
 
-        // Parties are a HashSet and this runs on every read, so derive the list id from the group id
-        // rather than randomly - otherwise an unchanged case differs read to read.
         return caseAccessGroups.stream()
             .map(CaseAccessGroup::getCaseAccessGroupId)
             .distinct()
             .sorted()
-            .map(groupId -> ListValue.<CaseAccessGroup>builder()
-                .id(UUID.nameUUIDFromBytes(groupId.getBytes(StandardCharsets.UTF_8)).toString())
-                .value(new CaseAccessGroup(CCD_ALL_CASES_ACCESS, groupId))
-                .build())
+            .map(CaseAccessGroupsUtil::asStableListValue)
             .toList();
     }
 
     /**
-     * A party created with the case has no claim link until submit, so an organisation-bearing party
-     * without one is the claimant it was created for. Matching only on the claim link would derive
-     * nothing for the whole draft phase.
+     * Recomputed on every read over a HashSet of parties, so the id comes from the group rather than
+     * being random - otherwise an unchanged case differs read to read.
      */
+    private static ListValue<CaseAccessGroup> asStableListValue(String groupId) {
+        return ListValue.<CaseAccessGroup>builder()
+            .id(UUID.nameUUIDFromBytes(groupId.getBytes(StandardCharsets.UTF_8)).toString())
+            .value(new CaseAccessGroup(CCD_ALL_CASES_ACCESS, groupId))
+            .build();
+    }
+
     private static Optional<PartyRole> derivedRole(PartyEntity party) {
         if (party.getOrganisationId() == null) {
             return Optional.empty();
         }
-        if (party.getClaimParties().isEmpty()) {
+        if (isClaimantCreatedWithTheCase(party)) {
             return Optional.of(PartyRole.CLAIMANT).filter(DERIVED_ROLES::contains);
         }
         return party.getClaimParties().stream()
@@ -71,10 +72,11 @@ public final class CaseAccessGroupsUtil {
             .findFirst();
     }
 
-    /**
-     * Every organisation also carries the generic ORGANISATION_PROFILE, so that one is skipped. More
-     * than one profile beyond it is ambiguous - picking either would silently decide the capacity.
-     */
+    /** No claim link until submit, so an organisation-bearing party without one is that claimant. */
+    private static boolean isClaimantCreatedWithTheCase(PartyEntity party) {
+        return party.getClaimParties().isEmpty();
+    }
+
     private static String organisationProfileId(PartyEntity party) {
         List<String> organisationProfileIds = party.getOrganisationProfileIds();
         if (organisationProfileIds == null || organisationProfileIds.isEmpty()) {
@@ -83,7 +85,7 @@ public final class CaseAccessGroupsUtil {
         }
 
         List<String> candidates = organisationProfileIds.stream()
-            .filter(profileId -> !ORGANISATION_PROFILE.equals(profileId))
+            .filter(CaseAccessGroupsUtil::identifiesAnAccessType)
             .distinct()
             .toList();
 
@@ -98,5 +100,10 @@ public final class CaseAccessGroupsUtil {
         }
 
         return candidates.getFirst();
+    }
+
+    /** Every organisation also carries the generic profile, which maps to no access type. */
+    private static boolean identifiesAnAccessType(String organisationProfileId) {
+        return !ORGANISATION_PROFILE.equals(organisationProfileId);
     }
 }
