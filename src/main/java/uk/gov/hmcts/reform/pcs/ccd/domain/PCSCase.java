@@ -801,7 +801,6 @@ public class PCSCase {
     )
     private CaseStateOption targetState;
 
-
     @CCD(
         label = "Add document",
         hint = "Upload a document to the system",

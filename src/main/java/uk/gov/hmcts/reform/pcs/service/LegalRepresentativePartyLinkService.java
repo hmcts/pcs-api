@@ -39,6 +39,9 @@ public class LegalRepresentativePartyLinkService {
     private final AddressMapper addressMapper;
     private final CaseRoleAssignmentService caseRoleAssignmentService;
 
+    // TODO: Retrieve actual organisation profile id from group access
+    private static final String ORG_PROFILE_ID = "SOLICITOR_PROFILE";
+
     @Transactional
     public void linkLegalRepresentativeToParty(long caseReference, String partyId, UserInfo user,
                                                OrganisationDetailsResponse organisationDetails) {
@@ -96,7 +99,7 @@ public class LegalRepresentativePartyLinkService {
             .builder()
             .organisationId(id)
             .organisationName(orgDetails.getName())
-            .organisationProfileId("SOLICITOR_PROFILE")
+            .organisationProfileId(ORG_PROFILE_ID)
             .build();
 
         LegalRepresentativeOrganisationContactDetailsEntity legalRepresentativeOrganisationContactDetails =

@@ -125,4 +125,3 @@ public class PartyEntity {
     private List<CasePartyFlagEntity> defendantFlags = new ArrayList<>();
 
 }
-
