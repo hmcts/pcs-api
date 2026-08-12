@@ -10,7 +10,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeOrganisationContactDetailsEntity;
-import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
@@ -67,9 +66,6 @@ class LegalRepresentativePartyLinkServiceTest {
     private CaseRoleAssignmentService caseRoleAssignmentService;
 
     @Mock
-    private UserInfo userInfo;
-
-    @Mock
     private AddressUK addressUK;
 
     @Mock
@@ -119,7 +115,6 @@ class LegalRepresentativePartyLinkServiceTest {
         legalRepresentativePartyLinkService.linkLegalRepresentativeToParty(
             caseReference,
             partyId.toString(),
-            userInfo,
             organisationDetails
         );
 
@@ -176,7 +171,6 @@ class LegalRepresentativePartyLinkServiceTest {
         legalRepresentativePartyLinkService.linkLegalRepresentativeToParty(
             caseReference,
             partyId.toString(),
-            userInfo,
             organisationDetails
         );
 
@@ -236,7 +230,6 @@ class LegalRepresentativePartyLinkServiceTest {
         legalRepresentativePartyLinkService.linkLegalRepresentativeToParty(
             caseReference,
             partyId.toString(),
-            userInfo,
             organisationDetails
         );
 
@@ -299,7 +292,6 @@ class LegalRepresentativePartyLinkServiceTest {
         legalRepresentativePartyLinkService.linkLegalRepresentativeToParty(
             caseReference,
             partyId.toString(),
-            userInfo,
             organisationDetails
         );
 
@@ -361,7 +353,6 @@ class LegalRepresentativePartyLinkServiceTest {
         legalRepresentativePartyLinkService.linkLegalRepresentativeToParty(
             caseReference,
             partyId.toString(),
-            userInfo,
             organisationDetails
         );
 
@@ -393,14 +384,10 @@ class LegalRepresentativePartyLinkServiceTest {
         assertThatThrownBy(() -> legalRepresentativePartyLinkService.linkLegalRepresentativeToParty(
             caseReference,
             partyId.toString(),
-            userInfo,
             organisationDetails
         )).isInstanceOf(LegalRepresentativeAlreadyLinkedToPartyException.class)
             .hasMessage("Legal Representative or organisation already linked to Party [" + partyId + "]");
 
-        verify(userInfo, never()).getName();
-        verify(userInfo, never()).getFamilyName();
-        verify(userInfo, never()).getSub();
         verify(addressMapper, never()).toAddressEntityAndNormalise(any(AddressUK.class));
         verify(legalRepresentativeOrganisationRepository, never()).save(any());
     }
@@ -430,14 +417,10 @@ class LegalRepresentativePartyLinkServiceTest {
         assertThatThrownBy(() -> legalRepresentativePartyLinkService.linkLegalRepresentativeToParty(
             caseReference,
             partyId.toString(),
-            userInfo,
             organisationDetails
         )).isInstanceOf(PartyNotFoundException.class)
             .hasMessage("Unable to find Party with Id [" + partyId + "]");
 
-        verify(userInfo, never()).getName();
-        verify(userInfo, never()).getFamilyName();
-        verify(userInfo, never()).getSub();
         verify(addressMapper, never()).toAddressEntityAndNormalise(any(AddressUK.class));
         verify(legalRepresentativeOrganisationRepository, never()).save(any());
 
@@ -468,14 +451,10 @@ class LegalRepresentativePartyLinkServiceTest {
         assertThatThrownBy(() -> legalRepresentativePartyLinkService.linkLegalRepresentativeToParty(
             caseReference,
             partyId.toString(),
-            userInfo,
             organisationDetails
         )).isInstanceOf(PartyNotFoundException.class)
             .hasMessage("Unable to find Party with Id [" + partyId + "]");
 
-        verify(userInfo, never()).getName();
-        verify(userInfo, never()).getFamilyName();
-        verify(userInfo, never()).getSub();
         verify(addressMapper, never()).toAddressEntityAndNormalise(any(AddressUK.class));
         verify(legalRepresentativeOrganisationRepository, never()).save(any());
     }
@@ -537,7 +516,7 @@ class LegalRepresentativePartyLinkServiceTest {
         when(addressMapper.toAddressEntityAndNormalise(addressUK)).thenReturn(addressEntity);
 
         // when
-        legalRepresentativePartyLinkService.linkLegalRepresentativeToParty(caseReference, partyId.toString(), userInfo,
+        legalRepresentativePartyLinkService.linkLegalRepresentativeToParty(caseReference, partyId.toString(),
                                                                            organisationDetails);
 
         // then
@@ -603,7 +582,7 @@ class LegalRepresentativePartyLinkServiceTest {
         when(addressMapper.toAddressEntityAndNormalise(addressUK)).thenReturn(addressEntity);
 
         // when
-        legalRepresentativePartyLinkService.linkLegalRepresentativeToParty(caseReference, partyId.toString(), userInfo,
+        legalRepresentativePartyLinkService.linkLegalRepresentativeToParty(caseReference, partyId.toString(),
                                                                            organisationDetails);
 
         // then
