@@ -69,7 +69,7 @@ class CaseworkerUploadDocumentTest extends BaseEventTest {
     @Test
     void shouldOnlyShowEventWhenReleaseAndCaseworkerEventsFeatureFlagsAreEnabled() {
         assertThat(configuredEvent.getShowCondition())
-            .isEqualTo("featureFlags.release1dot2Enabled=\"YES\" "
+            .isEqualTo("featureFlags.release1dot3Enabled=\"YES\" "
                 + "AND featureFlags.caseWorkerEventsEnabled=\"YES\"");
     }
 }

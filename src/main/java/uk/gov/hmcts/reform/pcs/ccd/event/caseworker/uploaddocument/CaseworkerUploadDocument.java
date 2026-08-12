@@ -19,7 +19,7 @@ import java.time.Clock;
 
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerRoles.CASEWORKER_ROLES;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.CASEWORKER_EVENTS;
-import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.RELEASE_1_DOT_2;
+import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.RELEASE_1_DOT_3;
 
 
 @Component
@@ -46,7 +46,7 @@ public class CaseworkerUploadDocument implements CCDConfig<PCSCase, State, UserR
             .forAllStates()
             .name("Manage documents: Upload")
             .description("Upload a document to the case")
-            .showCondition(ShowConditions.featureFlagsEnabled(RELEASE_1_DOT_2, CASEWORKER_EVENTS))
+            .showCondition(ShowConditions.featureFlagsEnabled(RELEASE_1_DOT_3, CASEWORKER_EVENTS))
             .showSummary()
             .endButtonLabel("Submit")
             .grant(Permission.CRU, CASEWORKER_ROLES);
