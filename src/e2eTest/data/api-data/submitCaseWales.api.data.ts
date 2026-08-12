@@ -160,6 +160,8 @@ export const submitCaseApiDataWales = {
     }
   },
   submitCasePayloadCaseFileView: {
+    regionId: '7',
+    caseManagementLocationNumber: '366572',
     orgNameFound: 'Yes',
     claimantName: 'Possession Claims Solicitor Org',
     isClaimantNameCorrect: 'YES',
@@ -187,8 +189,8 @@ export const submitCaseApiDataWales = {
     claimantProvidePhoneNumber: 'NO',
     defendant1: {
       nameKnown: 'YES',
-      firstName: 'peter',
-      lastName: 'parker',
+      firstName: 'John',
+      lastName: 'Doe',
       addressKnown: 'NO',
       addressSameAsPossession: null,
       correspondenceAddress: {
@@ -201,7 +203,29 @@ export const submitCaseApiDataWales = {
         PostCode: null
       }
     },
-    addAnotherDefendant: 'NO',
+    addAnotherDefendant: 'YES',
+    additionalDefendants: [
+      {
+        value: {
+          nameKnown: 'YES',
+          firstName: 'Peter',
+          lastName: 'Parker',
+          addressKnown: 'YES',
+          addressSameAsPossession: 'YES'
+        },
+        id: null
+      },
+      {
+        value: {
+          nameKnown: 'YES',
+          firstName: 'Jen',
+          lastName: 'Parker',
+          addressKnown: 'YES',
+          addressSameAsPossession: 'YES'
+        },
+        id: null
+      },
+    ],
     occupationLicenceTypeWales: 'SECURE_CONTRACT',
     licenceStartDate: '2015-11-01',
     licenceDocuments: [
