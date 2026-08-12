@@ -9,14 +9,30 @@ import java.util.UUID;
 
 public interface DraftCaseDataRepository extends JpaRepository<DraftCaseDataEntity, Integer> {
 
-    Optional<DraftCaseDataEntity> findByCaseReferenceAndEventIdAndIdamUserId(
+    /*
+     * The user-keyed lookups must exclude both other shapes. Without AndPartyIdIsNull a user holding
+     * a plain and a party draft on one case and event matches two rows and Spring Data throws on the
+     * Optional; without AndOwnerPartyIdIsNull the same happens once a journey moves to party
+     * ownership, because owner rows still carry idamUserId as the record of who last wrote them.
+     */
+
+    Optional<DraftCaseDataEntity> findByCaseReferenceAndEventIdAndIdamUserIdAndPartyIdIsNullAndOwnerPartyIdIsNull(
         long caseReference, EventId eventId, UUID idamUserId);
 
-    boolean existsByCaseReferenceAndEventIdAndIdamUserId(
+    boolean existsByCaseReferenceAndEventIdAndIdamUserIdAndPartyIdIsNullAndOwnerPartyIdIsNull(
         long caseReference, EventId eventId, UUID idamUserId);
 
-    void deleteByCaseReferenceAndEventIdAndIdamUserId(
+    void deleteByCaseReferenceAndEventIdAndIdamUserIdAndPartyIdIsNullAndOwnerPartyIdIsNull(
         long caseReference, EventId eventId, UUID idamUserId);
+
+    Optional<DraftCaseDataEntity> findByCaseReferenceAndEventIdAndOwnerPartyId(
+        long caseReference, EventId eventId, UUID ownerPartyId);
+
+    boolean existsByCaseReferenceAndEventIdAndOwnerPartyId(
+        long caseReference, EventId eventId, UUID ownerPartyId);
+
+    void deleteByCaseReferenceAndEventIdAndOwnerPartyId(
+        long caseReference, EventId eventId, UUID ownerPartyId);
 
     void deleteByCaseReferenceAndEventIdAndIdamUserIdAndPartyId(
         long caseReference, EventId eventId, UUID idamUserId, UUID partyId);

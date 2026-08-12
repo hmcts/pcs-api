@@ -41,4 +41,11 @@ public class DraftCaseDataEntity {
 
     private UUID partyId;
 
+    /**
+     * The party that owns this draft, when it is owned by an organisation rather than an individual.
+     * When set it, not {@link #idamUserId}, identifies the draft; {@code idamUserId} then records only
+     * who last wrote it.
+     */
+    private UUID ownerPartyId;
+
 }

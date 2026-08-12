@@ -10,32 +10,97 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DraftCaseDataEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DraftCaseDataRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.exception.UnsubmittedDataException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.io.IOException;
+import java.util.EnumMap;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 
+import static java.util.Map.entry;
+
 @Service
 @Slf4j
 public class DraftCaseDataService {
 
+    /**
+     * Who a draft belongs to. Making a claim belongs to the organisation that owns the case, not to
+     * the person typing it, because group access makes the case visible to the whole firm. Every
+     * other journey stays keyed on the user - HDPI-6221 put the user in the key so that a citizen
+     * defendant and their legal representative do not share one draft.
+     */
+    enum DraftOwnership {
+        PARTY,
+        USER,
+        NO_DRAFTS
+    }
+
+    /**
+     * Total by design. Ownership cannot be inferred from the case alone: every case has a claimant
+     * party carrying an organisation, including while a citizen defendant is responding, so inferring
+     * would stamp that defendant's draft with the claimant's party and share it with the firm suing
+     * them. A partial list is no better - a claimant journey left out of it silently reverts to
+     * per-user drafts, which is the defect this classification exists to prevent - so every EventId
+     * must appear and the check below refuses to start the service otherwise.
+     */
+    private static final Map<EventId, DraftOwnership> OWNERSHIP = new EnumMap<>(Map.ofEntries(
+        entry(EventId.resumePossessionClaim, DraftOwnership.PARTY),
+        entry(EventId.respondPossessionClaim, DraftOwnership.USER),
+        // Claimant-owned by the same reasoning as making a claim, and should become PARTY. Left as
+        // USER until that change is agreed, since it widens behaviour beyond the claim journey.
+        entry(EventId.enforceTheOrder, DraftOwnership.USER),
+        entry(EventId.createPossessionClaim, DraftOwnership.NO_DRAFTS),
+        entry(EventId.submitDefendantResponse, DraftOwnership.NO_DRAFTS),
+        entry(EventId.makeAnApplication, DraftOwnership.NO_DRAFTS),
+        entry(EventId.createTestCase, DraftOwnership.NO_DRAFTS),
+        entry(EventId.createCaseLink, DraftOwnership.NO_DRAFTS),
+        entry(EventId.maintainCaseLink, DraftOwnership.NO_DRAFTS),
+        entry(EventId.dashboardView, DraftOwnership.NO_DRAFTS),
+        entry(EventId.confirmEviction, DraftOwnership.NO_DRAFTS),
+        entry(EventId.uploadDocuments, DraftOwnership.NO_DRAFTS),
+        entry(EventId.amendDocuments, DraftOwnership.NO_DRAFTS),
+        entry(EventId.addCaseNote, DraftOwnership.NO_DRAFTS),
+        entry(EventId.addCaseReviewDate, DraftOwnership.NO_DRAFTS),
+        entry(EventId.createFlags, DraftOwnership.NO_DRAFTS),
+        entry(EventId.amendFlags, DraftOwnership.NO_DRAFTS),
+        entry(EventId.claimIssuePayment, DraftOwnership.NO_DRAFTS),
+        entry(EventId.changeCaseState, DraftOwnership.NO_DRAFTS),
+        entry(EventId.enterGenApp, DraftOwnership.NO_DRAFTS),
+        entry(EventId.caseworkerUploadDocuments, DraftOwnership.NO_DRAFTS)
+    ));
+
+    static {
+        if (!OWNERSHIP.keySet().equals(EnumSet.allOf(EventId.class))) {
+            throw new IllegalStateException(
+                "Draft ownership not classified for " + EnumSet.complementOf(EnumSet.copyOf(OWNERSHIP.keySet()))
+                    + ". Every EventId must be classified; use NO_DRAFTS for journeys that never save a draft.");
+        }
+    }
+
     private final DraftCaseDataRepository draftCaseDataRepository;
+    private final PcsCaseRepository pcsCaseRepository;
     private final ObjectMapper objectMapper;
     private final DraftCaseJsonMerger draftCaseJsonMerger;
     private final SecurityContextService securityContextService;
 
     public DraftCaseDataService(DraftCaseDataRepository draftCaseDataRepository,
+                                PcsCaseRepository pcsCaseRepository,
                                 @Qualifier("draftCaseDataObjectMapper") ObjectMapper objectMapper,
                                 DraftCaseJsonMerger draftCaseJsonMerger,
                                 SecurityContextService securityContextService) {
         this.draftCaseDataRepository = draftCaseDataRepository;
+        this.pcsCaseRepository = pcsCaseRepository;
         this.objectMapper = objectMapper;
         this.draftCaseJsonMerger = draftCaseJsonMerger;
         this.securityContextService = securityContextService;
@@ -45,20 +110,61 @@ public class DraftCaseDataService {
         return UUID.fromString(securityContextService.getCurrentUserDetails().getUid());
     }
 
+    /**
+     * The party that owns this draft, empty when the draft belongs to the user.
+     *
+     * <p>Fails rather than falling back. A claim case that cannot resolve an owner is a bug -
+     * {@code initialiseClaimant} refuses to create a case without an organisation - and quietly
+     * reverting to the user key would recreate the per-user split invisibly, observable only as
+     * "my colleague cannot see my answers".</p>
+     */
+    private Optional<UUID> ownerPartyId(long caseReference, EventId eventId) {
+        DraftOwnership ownership = OWNERSHIP.get(eventId);
+
+        if (ownership == DraftOwnership.NO_DRAFTS) {
+            throw new IllegalStateException(
+                eventId + " is classified as NO_DRAFTS but reached the draft service. Classify it as "
+                    + "PARTY or USER.");
+        }
+        if (ownership != DraftOwnership.PARTY) {
+            return Optional.empty();
+        }
+
+        List<UUID> ownerPartyIds = pcsCaseRepository.findOrganisationOwnedPartyIds(caseReference, PartyRole.CLAIMANT);
+
+        if (ownerPartyIds.isEmpty()) {
+            throw new IllegalStateException(
+                "Case " + caseReference + " has no organisation-owned claimant party to own its draft");
+        }
+        if (ownerPartyIds.size() > 1) {
+            throw new IllegalStateException(
+                "Case " + caseReference + " has " + ownerPartyIds.size() + " organisation-owned parties; "
+                    + "cannot determine which owns the draft");
+        }
+
+        return Optional.of(ownerPartyIds.getFirst());
+    }
+
+    private Optional<DraftCaseDataEntity> findDraft(long caseReference, EventId eventId, UUID userId,
+                                                    Optional<UUID> ownerPartyId) {
+        return ownerPartyId
+            .map(partyId -> draftCaseDataRepository
+                .findByCaseReferenceAndEventIdAndOwnerPartyId(caseReference, eventId, partyId))
+            .orElseGet(() -> draftCaseDataRepository
+                .findByCaseReferenceAndEventIdAndIdamUserIdAndPartyIdIsNullAndOwnerPartyIdIsNull(
+                    caseReference, eventId, userId));
+    }
+
     public Optional<PCSCase> getUnsubmittedCaseData(long caseReference, EventId eventId) {
         UUID userId = getCurrentUserId();
+        Optional<UUID> ownerPartyId = ownerPartyId(caseReference, eventId);
 
         return getUnsubmittedCaseDataInternal(
             caseReference,
             eventId,
             userId,
             null,
-            () -> draftCaseDataRepository
-                .findByCaseReferenceAndEventIdAndIdamUserId(
-                    caseReference,
-                    eventId,
-                    userId
-                )
+            () -> findDraft(caseReference, eventId, userId, ownerPartyId)
         );
     }
 
@@ -84,18 +190,19 @@ public class DraftCaseDataService {
 
     public boolean hasUnsubmittedCaseData(long caseReference, EventId eventId) {
         UUID userId = getCurrentUserId();
+        Optional<UUID> ownerPartyId = ownerPartyId(caseReference, eventId);
 
         return hasUnsubmittedCaseDataInternal(
             caseReference,
             eventId,
             userId,
             null,
-            () -> draftCaseDataRepository
-                .existsByCaseReferenceAndEventIdAndIdamUserId(
-                    caseReference,
-                    eventId,
-                    userId
-                )
+            () -> ownerPartyId
+                .map(partyId -> draftCaseDataRepository
+                    .existsByCaseReferenceAndEventIdAndOwnerPartyId(caseReference, eventId, partyId))
+                .orElseGet(() -> draftCaseDataRepository
+                    .existsByCaseReferenceAndEventIdAndIdamUserIdAndPartyIdIsNullAndOwnerPartyIdIsNull(
+                        caseReference, eventId, userId))
         );
     }
 
@@ -140,6 +247,7 @@ public class DraftCaseDataService {
                                              EventId eventId) {
 
         UUID userId = getCurrentUserId();
+        Optional<UUID> ownerPartyId = ownerPartyId(caseReference, eventId);
 
         saveUnsubmittedEventDataInternal(
             caseReference,
@@ -147,12 +255,7 @@ public class DraftCaseDataService {
             eventId,
             userId,
             null,
-            () -> draftCaseDataRepository
-                .findByCaseReferenceAndEventIdAndIdamUserId(
-                    caseReference,
-                    eventId,
-                    userId
-                )
+            () -> findDraft(caseReference, eventId, userId, ownerPartyId)
         );
     }
 
@@ -269,17 +372,15 @@ public class DraftCaseDataService {
 
     public void patchUnsubmittedCaseData(long caseReference, EventId eventId, String patchEventDataJson) {
         UUID userId = getCurrentUserId();
+        Optional<UUID> ownerPartyId = ownerPartyId(caseReference, eventId);
         patchInternal(
             caseReference,
             eventId,
             patchEventDataJson,
             userId,
-            () -> draftCaseDataRepository
-                .findByCaseReferenceAndEventIdAndIdamUserId(
-                    caseReference, eventId, userId
-                ),
+            () -> findDraft(caseReference, eventId, userId, ownerPartyId),
             () -> createNewDraft(
-                caseReference, eventId, userId, patchEventDataJson
+                caseReference, eventId, userId, patchEventDataJson, ownerPartyId
             )
         );
     }
@@ -296,18 +397,19 @@ public class DraftCaseDataService {
     @Transactional
     public void deleteUnsubmittedCaseData(long caseReference, EventId eventId) {
         UUID userId = getCurrentUserId();
+        Optional<UUID> ownerPartyId = ownerPartyId(caseReference, eventId);
 
         deleteUnsubmittedCaseDataInternal(
             caseReference,
             eventId,
             userId,
             null,
-            () -> draftCaseDataRepository
-                .deleteByCaseReferenceAndEventIdAndIdamUserId(
-                    caseReference,
-                    eventId,
-                    userId
-                )
+            () -> ownerPartyId.ifPresentOrElse(
+                partyId -> draftCaseDataRepository
+                    .deleteByCaseReferenceAndEventIdAndOwnerPartyId(caseReference, eventId, partyId),
+                () -> draftCaseDataRepository
+                    .deleteByCaseReferenceAndEventIdAndIdamUserIdAndPartyIdIsNullAndOwnerPartyIdIsNull(
+                        caseReference, eventId, userId))
         );
     }
 
@@ -362,6 +464,17 @@ public class DraftCaseDataService {
         newDraft.setCaseData(caseData);
         newDraft.setEventId(eventId);
         newDraft.setIdamUserId(userId);
+        return newDraft;
+    }
+
+    /**
+     * The owning party identifies the draft when present; idamUserId is still written either way, so
+     * a shared draft records who last touched it.
+     */
+    private DraftCaseDataEntity createNewDraft(long caseReference, EventId eventId, UUID userId, String caseData,
+                                               Optional<UUID> ownerPartyId) {
+        DraftCaseDataEntity newDraft = createNewDraft(caseReference, eventId, userId, caseData);
+        ownerPartyId.ifPresent(newDraft::setOwnerPartyId);
         return newDraft;
     }
 
