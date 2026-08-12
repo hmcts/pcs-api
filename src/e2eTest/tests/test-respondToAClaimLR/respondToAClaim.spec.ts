@@ -1,26 +1,26 @@
-import {initializeExecutor, performAction, performValidation} from "@utils/controller";
-import {test,expect} from "@playwright/test";
-import {createCaseApiData, submitCaseApiData} from "@data/api-data";
-import {dismissCookieBanner} from "@config/cookie-banner";
-import {user} from "@data/user-data";
-import {getCaseTypeId} from "@utils/common/caseType.utils";
-import {VERY_LONG_TIMEOUT} from "../../playwright.config";
-import {caseSummary, home} from "@data/page-data";
-import {caseInfo} from "@utils/actions/custom-actions";
-import {PageContentValidation} from "@utils/validations/element-validations/pageContent.validation";
-import {startTheService} from "@data/page-data-figma";
-
-test.use({ storageState: undefined });
-
+import { initializeExecutor, performAction, performValidation } from '@utils/controller';
+import { expect, test } from '@utils/test-fixtures';
+import { createCaseApiData, submitCaseApiData } from '@data/api-data';
+import { dismissCookieBanner } from '@config/cookie-banner';
+import { user } from '@data/user-data';
+import { getCaseTypeId } from '@utils/common/caseType.utils';
+import { VERY_LONG_TIMEOUT } from '../../playwright.config';
+import { caseSummary, home } from '@data/page-data';
+import { caseInfo } from '@utils/actions/custom-actions';
+import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
+import { startTheService } from '@data/page-data-figma';
 test.beforeEach(async ({ page, context }) => {
   await context.clearCookies();
   initializeExecutor(page);
-
+  const manageCaseBaseUrl = process.env.MANAGE_CASE_BASE_URL;
+  if (!manageCaseBaseUrl) {
+    throw new Error('MANAGE_CASE_BASE_URL is not set.');
+  }
   await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
   await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayload });
   await performAction('getCaseAPI', 'Link Solicitor');
-  await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
 
+  await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
   await dismissCookieBanner(page, 'additional');
   await performAction('login', user.defendantSolicitor);
   await dismissCookieBanner(page, 'analytics');
@@ -42,7 +42,7 @@ test.afterEach(async () => {
   PageContentValidation.finaliseTest();
 });
 
-test.describe('Respond to a claim - e2e Journey', async () => {
+test.describe('XUI - Respond to a claim - e2e Journey @nightly', () => {
   test('Trigger respond event', async () => {
     await performAction('select', caseSummary.nextStepEventList, 'Respond to claim');
     await performAction('clickButton', caseSummary.go);
