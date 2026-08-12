@@ -62,7 +62,7 @@ public enum State {
     @CCD(
         label = "Prepare For Hearing Conduct Hearing",
         access = {CaseworkerReadAccess.class, ClaimantAccess.class, RasValidationAccess.class,
-           InternalCaseFlagAccess.class, GlobalSearchAccess.class, WAAccess.class},
+            InternalCaseFlagAccess.class, GlobalSearchAccess.class, WAAccess.class},
         hint = "${caseTitleMarkdown}"
     )
     PREPARE_FOR_HEARING_CONDUCT_HEARING,
