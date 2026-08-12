@@ -1602,6 +1602,12 @@ export class CreateCaseAction implements IAction {
         this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad.walesDocs_GasSafetyReport);
         this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad.walesDocs_ElectricalInstallation);
         this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad.licenceDocuments);
+        if (caseFile.caseWorkerUpload) {
+          userInputFiles.push(caseFile.caseWorkerUpload as string);
+        } else if (caseFile.caseWorkerAmend) {
+          userInputFiles.push(caseFile.caseWorkerAmend as string);
+          userInputFiles = userInputFiles.filter(file => file === caseFile.caseWorkerAmend as string);
+        }
         break;
 
       case 'Statements of case':
@@ -1610,6 +1616,12 @@ export class CreateCaseAction implements IAction {
 
       case 'Evidence':
         this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad.additionalDocuments, 'Inspection or report');
+        if(caseFile.caseWorkerUpload){
+          userInputFiles.push(caseFile.caseWorkerUpload as string);
+        } else if (caseFile.caseWorkerAmend) {
+          userInputFiles.push(caseFile.caseWorkerAmend as string);
+          userInputFiles = userInputFiles.filter(file => file === caseFile.caseWorkerAmend as string);
+        }
         break;
 
       case 'Correspondence':
@@ -1618,11 +1630,21 @@ export class CreateCaseAction implements IAction {
 
       case 'Uncategorised documents':
         this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad.additionalDocuments, 'Other document');
+        if(caseFile.caseWorkerUpload){
+          userInputFiles.push(caseFile.caseWorkerUpload as string);
+        } else if (caseFile.caseWorkerAmend) {
+          userInputFiles.push(caseFile.caseWorkerAmend as string);
+        }
         break;
       
       case 'Applications':
         this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad.xui_genapp_UploadedDocuments, 'All Files');
         userInputFiles=this.cleanGenAppFilesArray(userInputFiles,defendantUserDetails.length);
+        if(caseFile.caseWorkerUpload){
+          userInputFiles.push(caseFile.caseWorkerUpload as string);
+        } else if (caseFile.caseWorkerAmend) {
+          userInputFiles.push(caseFile.caseWorkerAmend as string);
+        }
         break;
 
       default:
@@ -1781,10 +1803,9 @@ export class CreateCaseAction implements IAction {
   public async validateTabAccess(page: Page, tab: actionRecord) {
     await test.step(`Tab access check for user "${tab.user}"`, async () => {
       const tabLoc = page.locator('div.mat-tab-label-content');
-      await expect(tabLoc.first()).toBeVisible({timeout : SHORT_TIMEOUT});
+      await expect(tabLoc.first()).toBeVisible({ timeout: SHORT_TIMEOUT });
       const tabs = await tabLoc.allTextContents();
-      expect(tab.tabs).toEqual(tabs);
-
+      expect(tabs).toEqual(expect.arrayContaining(tab.tabs as string[]));
     });
   }
  

@@ -37,6 +37,8 @@ import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityResult;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.postcodecourt.service.EligibilityService;
+import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationDetailsService;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 import uk.gov.hmcts.reform.pcs.service.LegalRepresentativePartyLinkService;
@@ -95,6 +97,10 @@ class TestingSupportControllerTest {
     @Mock
     private UserInfo userInfo;
     @Mock
+    private OrganisationDetailsService organisationDetailsService;
+    @Mock
+    private OrganisationDetailsResponse organisationDetails;
+    @Mock
     private PcsCaseService pcsCaseService;
     @Mock
     private AccessCodeGenerationService accessCodeGenerationService;
@@ -113,6 +119,7 @@ class TestingSupportControllerTest {
                                                  caseRoleAssignmentService,
                                                  legalRepresentativePartyLinkService,
                                                  idamAuthenticator,
+                                                 organisationDetailsService,
                                                  pcsCaseService,
                                                  accessCodeGenerationService,
                                                  featureToggleService
@@ -371,10 +378,11 @@ class TestingSupportControllerTest {
         long caseReference = 111111111111L;
         String partyId = "abc";
         String authToken = "testAuth";
-        String userUid = "userUid";
+        UUID userUid = UUID.randomUUID();
         when(idamAuthenticator.validateAuthToken(authToken)).thenReturn(user);
         when(user.getUserDetails()).thenReturn(userInfo);
-        when(userInfo.getUid()).thenReturn(userUid);
+        when(userInfo.getUid()).thenReturn(userUid.toString());
+        when(organisationDetailsService.getOrganisationDetails(userUid.toString())).thenReturn(organisationDetails);
         when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_2)).thenReturn(true);
         when(featureToggleService.isEnabled(FeatureFlag.CUI_RESPOND_TO_CLAIM_LR)).thenReturn(true);
 
@@ -387,10 +395,11 @@ class TestingSupportControllerTest {
         );
 
         // then
-        verify(caseRoleAssignmentService).assignRasRole(caseReference, userUid, UserRole.DEFENDANT_SOLICITOR);
+        verify(caseRoleAssignmentService).assignRasRole(caseReference, userUid.toString(),
+                                                        UserRole.DEFENDANT_SOLICITOR);
 
         verify(legalRepresentativePartyLinkService)
-            .linkLegalRepresentativeToParty(caseReference, partyId, userInfo);
+            .linkLegalRepresentativeToParty(caseReference, partyId, userUid, organisationDetails);
 
         assertThat(HttpStatus.OK.equals(response.getStatusCode()));
     }
