@@ -19,7 +19,7 @@ import {
 
 test.use({ storageState: undefined })
 
-test.beforeEach(async ({ page, context }) => {
+test.beforeEach(async ({ page, context }, testInfo) => {
   await context.clearCookies();
   initializeExecutor(page);
   initializeCMExecutor(page);
@@ -30,12 +30,15 @@ test.beforeEach(async ({ page, context }) => {
   console.log(`Case created with case number: ${process.env.CASE_NUMBER}`);
   await performAction('updatePaymentAPI');
   await performAction('getCaseAPI', 'Link Solicitor');
-  await performAction('manageHearingAPI', {
-    data: manageHearingApiData.AddHearingPayload,
-    email: user.hearingCenterAdmin.email,
-    password: user.hearingCenterAdmin.password
-  });
-  console.log(`Case has been associated with hearing`);
+
+  if (testInfo.title.includes('Edit a hearing') || testInfo.title.includes(' Cancel a hearing')){
+    await performAction('manageHearingAPI', {
+      data: manageHearingApiData.AddHearingPayload,
+      email: user.hearingCenterAdmin.email,
+      password: user.hearingCenterAdmin.password
+    });
+    console.log(`Case has been associated with hearing`);
+  }
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
   await dismissCookieBanner(page, 'additional');
   await performAction('login', user.hearingCenterAdmin);
@@ -54,7 +57,8 @@ test.afterEach(async () => {
 
 test.describe('Case management - Case Worker Manage Hearing @nightly', async () => {
   test('Case management - Case Worker Edit a hearing @CM @regression', async () => {
-    let date = CaseManagementCommonUtils.getRandomDate(editHearing.dateTypeUserInput);
+    let date = CaseManagementCommonUtils.getRandomDate(editHearing.dateTypeUserInput,'dateTime');
+    let party = allPartyDetails[0]
     await performAction('selectAnEvent', {eventType: caseSummary.manageHearing});
     await performValidation('mainHeader', manageHearing.mainHeader);
     await performAction('errorValidationManageHearing', manageHearing.errorValidation);
@@ -64,26 +68,29 @@ test.describe('Case management - Case Worker Manage Hearing @nightly', async () 
       nextPage: editHearing.mainHeader
     });
     await performAction('editHearing', {
-      question: editHearing.whichTypeOfQuestion,
+      typeOfHearingQuestion: editHearing.whichTypeOfHearingQuestion,
       option: editHearing.possessionFirstHearingRadioOption,
-      label1: editHearing.wordingHearingNoticeLabel,
+      hearingNoticeLabel: editHearing.wordingForHearingNoticeLabel,
       dropDownInput: editHearing.ADJDropDownInput,
       whenHearingQuestion: editHearing.whenHearingQuestion,
       date: date,
-      days: editHearing.daysLabel,
-      hourLabel: editHearing.hoursLabel,
-      minutesLabel: editHearing.minutesLabel,
-      label3: editHearing.hearingNotesLabel,
-      question2: editHearing.hearingNotesNeededQuestion,
+      daysLabel: editHearing.daysTextLabel,
+      hourLabel: editHearing.hoursTextLabel,
+      minutesLabel: editHearing.minutesTextLabel,
+      hearingNotesLabel: editHearing.hearingNotesLabel,
+      hearingNotesInput: editHearing.hearingNotesTextInput,
+      hearingNotesQuestion: editHearing.hearingNotesNeededQuestion,
       option2: editHearing.yesRadioOption,
-      question3: editHearing.hearingWithoutNoticeHiddenQuestion,
+      hearingWithoutNoticeQuestion: editHearing.hearingWithoutNoticeHiddenQuestion,
       option3: editHearing.noHiddenRadioOption,
-      label4: editHearing.enterAnyAdditionalInformationTextLabel,
+      whoShouldReceiveNoticeQuestion: editHearing.whoShouldReceiveHearingHiddenQuestion,
+      option4: party,
+      additionalInformationLabel: editHearing.enterAnyAdditionalInformationTextLabel,
       input: editHearing.additionalInformationTextInput,
       nextPage: checkYourAnswersEditHearing.mainHeader
     });
     await performAction('clickButton', checkYourAnswersEditHearing.submitButton);
-    await performAction('confirmHearingEdited');
+    await performAction('confirmHearingEdited', { submitPayload: submitCaseApiData.submitCasePayloadCaseFileView });
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage hearing');
   });
 });

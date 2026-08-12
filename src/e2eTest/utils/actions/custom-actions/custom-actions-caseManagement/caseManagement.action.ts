@@ -54,7 +54,7 @@ export class CaseManagementAction implements IAction {
       ['editHearing', () => this.editHearing(fieldName as actionRecord)],
       ['selectManageHearing', () => this.selectManageHearing(fieldName as actionRecord)],
       ['verifyGenAppConfirm', () => this.verifyGenAppConfirm()],
-      ['confirmHearingEdited', () => this.confirmHearingEdited()],
+      ['confirmHearingEdited', () => this.confirmHearingEdited(fieldName as actionRecord)],
       ['inputErrorValidation', () => this.inputErrorValidation(page, fieldName as actionRecord)],
       ['getAddressInfo', () => this.getAddressInfo(fieldName as actionRecord)],
       ['verifyGenAppConfirm', () => this.verifyGenAppConfirm()],
@@ -333,38 +333,45 @@ export class CaseManagementAction implements IAction {
       text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
     });
     await performAction('clickRadioButton', {
-      question: editHearingData.question,
+      question: editHearingData.typeOfHearingQuestion,
       option: editHearingData.option
     });
 
-    await performAction('select', editHearingData.label1, editHearingData.dropDownInput);
-    await performAction('inputDate', editHearingData.whenHearingQuestion as string, editHearingData.date as string);
-    await performAction('inputText', editHearingData.days, CaseManagementCommonUtils.getRandomNumberAsString(1, 10));
+    await performAction('select', editHearingData.hearingNoticeLabel, editHearingData.dropDownInput);
+    await performAction('inputDate', editHearingData.whenHearingQuestion as string, editHearingData.date);
+    await performAction('inputText', editHearingData.daysLabel, CaseManagementCommonUtils.getRandomNumberAsString(1, 10));
     await performAction('inputText', {
-      text: editHearingData.hourLabel,
+      textLabel: editHearingData.hourLabel,
       index: 1
     }, CaseManagementCommonUtils.getRandomNumberAsString(0, 10));
     await performAction('inputText', {
-      text: editHearingData.minutesLabel,
+      textLabel: editHearingData.minutesLabel,
       index: 1
     }, CaseManagementCommonUtils.getRandomNumberAsString(1, 59));
-    await performAction('inputText', editHearingData.label3, CaseManagementCommonUtils.generateRandomString(editHearingData.input as number));
+    await performAction('inputText', editHearingData.hearingNotesLabel, CaseManagementCommonUtils.generateRandomString(editHearingData.hearingNotesInput as number));
     await performAction('clickRadioButton', {
-      question: editHearingData.question2,
+      question: editHearingData.hearingNotesQuestion,
       option: editHearingData.option2
     });
     if (editHearingData.option2 === 'Yes') {
       await performAction('clickRadioButton', {
-        question: editHearingData.question3,
+        question: editHearingData.hearingWithoutNoticeQuestion,
         option: editHearingData.option3
       });
     }
-    await performAction('inputText', editHearingData.label4, CaseManagementCommonUtils.generateRandomString(editHearingData.input as number));
+    if (editHearingData.option2 === 'Yes' && editHearingData.option3 === 'Yes') {
+      await performAction('clickRadioButton', {
+        question: editHearingData.whoShouldReceiveNoticeQuestion,
+        option: editHearingData.option4,
+      });
+    }
+    await performAction('inputText', editHearingData.additionalInformationLabel, CaseManagementCommonUtils.generateRandomString(editHearingData.input as number));
     await performAction('reTryOnCallBackError', editHearing.continueButton, editHearingData.nextPage as string);
 
   }
 
-  private async confirmHearingEdited(): Promise<void> {
+  private async confirmHearingEdited(confirmEdit: actionRecord): Promise<void> {
+    let submitPayLoad = confirmEdit.submitPayload as Record<string, any>;
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', {
       elementType: 'paragraph',
@@ -377,6 +384,7 @@ export class CaseManagementAction implements IAction {
     });
     await performValidation('mainHeader',confirmEditHearing.mainHeader);
     await performValidation('text',{  elementType: 'inlineText', text: confirmEditHearing.hearingEditedText });
+    await performValidation('text', { elementType: 'inlineText', text: `${submitPayLoad.claimantName} vs ${await this.getDefendantClaimDetails(submitPayLoad)}` });
     await performAction('clickButton', confirmEditHearing.closeAndReturnToCaseOverviewButton);
   }
 
@@ -565,7 +573,7 @@ export class CaseManagementAction implements IAction {
               await performAction('clickButton', validationArr.button);
               await performValidation('inputError', !validationArr?.label ? validationArr.question : validationArr.label, item.errInlineMessage);
               await performValidation('errorMessage', validationArr.header1, item.errMessage);
-            } else if (item.type === 'past') {
+            } else if (item.type === 'past' || item.type === 'validFuture') {
               await enterDate();
             } else if (item.type === 'invalid') {
               await enterDate();
@@ -597,12 +605,34 @@ export class CaseManagementAction implements IAction {
             await performValidation('errorMessage', {header: validationArr.header, message: item.errMessage});
             break;
 
-          case 'moneyField':
+         /* case 'moneyField':
             await performAction('inputText', validationArr.label, item.input);
             await expect(async () => {
               await performAction('clickButton', validationArr.button);
               //await performValidation('errorMessage', { header: !validationArr?.header ? validationArr.header = 'The event could not be created' : validationArr.header, message: item.errMessage });
               await performValidation('inputError', validationArr.label, item.errMessage);
+            }).toPass({
+              timeout: VERY_LONG_TIMEOUT,
+            });
+            break;*/
+
+          case 'moneyField':
+            if (item.index && validationArr.labelMulti) {
+              await performAction('inputText', { textLabel: validationArr.label, index: item.index }, item.input);
+              await performAction('inputText', { textLabel: validationArr.labelMulti, index: item.index }, item.input1);
+            } else if (item.index) {
+              await performAction('inputText', { textLabel: validationArr.label, index: item.index }, item.input);
+            } else {
+              await performAction('inputText', validationArr.label, item.input);
+            }
+            await expect(async () => {
+              await performAction('clickButton', validationArr.button);
+              //await performValidation('errorMessage', { header: !validationArr?.header ? validationArr.header = 'The event could not be created' : validationArr.header, message: item.errMessage });
+              if (item.errMessage1) {
+                await performValidation('inputError', validationArr.labelMulti, item.errMessage1);
+              } else {
+                await performValidation('inputError', validationArr.label, item.errMessage);
+              }
             }).toPass({
               timeout: VERY_LONG_TIMEOUT,
             });
