@@ -201,16 +201,7 @@ test.describe('[Common Component Case Flags] @nightly @CC @caseFlags', async () 
       flagOption: manageCaseFlags.respondentRadioOption,
       continueButton: manageCaseFlags.continueButton
     });
-    await performAction('makeFlagInactive', {
-      inactiveButton: updateFlagComments.makeInactiveButton,
-      continueButton: updateFlagComments.continueButton
-    });
-    // await performAction('makeFlagInactive', {
-    //   statusQuestion: makeFlagInactive.confirmTheStatusOfTheFlagQuestion,
-    //   statusOption: makeFlagInactive.notApprovedStatusRadioOption,
-    //   continueButton: makeFlagInactive.continueButton
-    // });
-
+    await performAction('clickButton', manageCaseFlags.continueButton);
     await performAction('reviewFlagDetails', {
       saveButton: reviewFlagDetails.submitButton
     });
