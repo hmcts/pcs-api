@@ -3,7 +3,9 @@ package uk.gov.hmcts.reform.pcs.ccd.util;
 import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.ccd.sdk.type.CaseAccessGroup;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.GroupAccessType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 
 import java.util.List;
 import java.util.HashSet;
@@ -100,6 +102,37 @@ class CaseAccessGroupsUtilTest {
         // Then an unchanged case produces an identical payload, ids and order included
         assertThat(firstRead).usingRecursiveComparison().isEqualTo(secondRead);
         assertThat(firstRead).extracting(lv -> lv.getValue().getCaseAccessGroupId()).isSorted();
+    }
+
+
+    @Test
+    void shouldResolveTheClaimantAccessTypeByNameNotByDeclarationOrder() {
+        assertThat(GroupAccessType.forProfileAndRole("SOLICITOR_PROFILE", PartyRole.CLAIMANT))
+            .contains(GroupAccessType.SOLICITOR_ORG_CLAIMANT_ACCESS);
+        assertThat(GroupAccessType.forProfileAndRole("SOLICITOR_PROFILE", PartyRole.DEFENDANT))
+            .contains(GroupAccessType.SOLICITOR_ORG_DEFENDANT_ACCESS);
+        assertThat(GroupAccessType.forProfileAndRole("LOCALAUTH_PROFILE", PartyRole.CLAIMANT))
+            .contains(GroupAccessType.LOCAL_AUTHORITY_CLAIMANT_ACCESS);
+    }
+
+    @Test
+    void shouldNeverResolveTheRequestBasedDutyAdvisorAccessType() {
+        assertThat(GroupAccessType.forProfileAndRole("SOLICITOR_PROFILE", PartyRole.UNDERLESSEE_OR_MORTGAGEE))
+            .isEmpty();
+        assertThat(GroupAccessType.values())
+            .filteredOn(type -> type == GroupAccessType.DUTY_ADVISOR_ACCESS)
+            .allSatisfy(type -> assertThat(type.getPartyRole()).isNull());
+    }
+
+    @Test
+    void shouldRejectAnOrganisationCarryingMoreThanOneProfile() {
+        PartyEntity party = new PartyEntity();
+        party.setOrganisationId("ORG-A");
+        party.setOrganisationProfileIds(List.of("SOLICITOR_PROFILE", "LOCALAUTH_PROFILE", "ORGANISATION_PROFILE"));
+
+        assertThatThrownBy(() -> CaseAccessGroupsUtil.deriveCaseAccessGroups(Set.of(party)))
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessageContaining("carries more than one profile");
     }
 
 }
