@@ -18,6 +18,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
+import static uk.gov.hmcts.reform.pcs.ccd.event.CaseFlagStates.CASE_FLAG_STATES;
 
 @Component
 @Slf4j
@@ -30,24 +31,28 @@ public class CreateFlags implements CCDConfig<PCSCase, State, UserRole> {
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         new PageBuilder(configBuilder
                 .decentralisedEvent(EventId.createFlags.name(), this::submit)
-                .forState(State.PENDING_CASE_ISSUED)
+                .forStates(CASE_FLAG_STATES)
                 .name("Create case flags")
                 .description("To create flags")
                 .showSummary()
+                .endButtonLabel("Submit")
                 .grant(Permission.CRU,
                        UserRole.CTSC_ADMIN,
                        UserRole.HEARING_CENTRE_ADMIN,
                        UserRole.WLU_ADMIN)
                 .grantHistoryOnly(JUDICIAL_HISTORY_ROLES))
                 .page("caseworkerCaseFlag")
+                .pageLabel("Create case flags")
+                .label("caseworkerCaseFlag-lineSeparator", "---")
                 .optional(PCSCase::getCaseFlags, ShowConditions.NEVER_SHOW, true, true)
                 .optional(PCSCase::getParties, ShowConditions.NEVER_SHOW, true, true)
                 .list(PCSCase::getAllDefendants, ShowConditions.NEVER_SHOW)
                     .optional(Party::getDefendantFlags, ShowConditions.NEVER_SHOW, true)
+                    .optional(Party::getDefendantFlagsExternal, ShowConditions.NEVER_SHOW, true)
                 .done()
                 .optional(PCSCase::getFlagLauncherInternal,
                       null, null, null, null,
-                      "#ARGUMENT(CREATE)");
+                      "#ARGUMENT(CREATE,VERSION2.1)");
 
     }
 

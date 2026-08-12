@@ -27,6 +27,8 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import static uk.gov.hmcts.reform.pcs.ccd.util.FlagVisibilityConverter.toFlagVisibility;
+
 
 @Service
 @AllArgsConstructor
@@ -36,7 +38,7 @@ public class CaseFlagService {
 
     public List<CaseFlagEntity> mergeCaseFlags(Flags incomingCaseFlags, PcsCaseEntity pcsCaseEntity) {
 
-        return mergeFlagDetails(incomingCaseFlags, pcsCaseEntity,null,
+        return mergeFlagDetails(incomingCaseFlags, FlagVisibility.INTERNAL, pcsCaseEntity, null,
                         CaseFlagEntity::new);
     }
 
@@ -52,31 +54,56 @@ public class CaseFlagService {
 
             PartyEntity partyEntity = existingPartiesMap.get(UUID.fromString(incomingPartyValue.getId()));
 
-            if (incomingParty.getDefendantFlags() != null
-                && !incomingParty.getDefendantFlags().getDetails().isEmpty()) {
-                List<CasePartyFlagEntity> mergedCasePartyFlags = mergeFlagDetails(
-                    incomingParty.getDefendantFlags(), null, partyEntity, CasePartyFlagEntity::new);
-
-                partyEntity.getDefendantFlags().clear();
-                partyEntity.getDefendantFlags().addAll(mergedCasePartyFlags);
-            }
+            mergePartyFlagCollections(incomingParty, partyEntity);
         }
     }
 
-    private <T extends BaseCaseFlag> List<T>  mergeFlagDetails(Flags incomingCaseFlags, PcsCaseEntity pcsCaseEntity,
-                        PartyEntity partyEntity, Supplier<T> flagEntitySupplier) {
+    private void mergePartyFlagCollections(Party incomingParty, PartyEntity partyEntity) {
+        Flags incomingInternalFlags = incomingParty.getDefendantFlags();
+        Flags incomingExternalFlags = incomingParty.getDefendantFlagsExternal();
+
+        if (hasNoFlagDetails(incomingInternalFlags) && hasNoFlagDetails(incomingExternalFlags)) {
+            return;
+        }
+
+        List<CasePartyFlagEntity> existingFlags = List.copyOf(partyEntity.getDefendantFlags());
+
+        List<CasePartyFlagEntity> mergedFlags = new ArrayList<>();
+        mergedFlags.addAll(
+            mergeOrRetainPartyFlags(incomingInternalFlags, FlagVisibility.INTERNAL, existingFlags, partyEntity));
+        mergedFlags.addAll(
+            mergeOrRetainPartyFlags(incomingExternalFlags, FlagVisibility.EXTERNAL, existingFlags, partyEntity));
+
+        partyEntity.getDefendantFlags().clear();
+        partyEntity.getDefendantFlags().addAll(mergedFlags);
+    }
+
+    private List<CasePartyFlagEntity> mergeOrRetainPartyFlags(Flags incomingFlags, FlagVisibility visibility,
+                                                             List<CasePartyFlagEntity> existingFlags,
+                                                             PartyEntity partyEntity) {
+        if (hasNoFlagDetails(incomingFlags)) {
+            return existingFlags.stream()
+                .filter(existingFlag -> visibility == toFlagVisibility(existingFlag.getVisibility()))
+                .toList();
+        }
+
+        return mergeFlagDetails(incomingFlags, visibility, null, partyEntity, CasePartyFlagEntity::new);
+    }
+
+    private boolean hasNoFlagDetails(Flags flags) {
+        return flags == null || flags.getDetails() == null || flags.getDetails().isEmpty();
+    }
+
+    private <T extends BaseCaseFlag> List<T>  mergeFlagDetails(Flags incomingCaseFlags, FlagVisibility visibility,
+                        PcsCaseEntity pcsCaseEntity, PartyEntity partyEntity, Supplier<T> flagEntitySupplier) {
 
         List<T> mergedFlagDetails = new ArrayList<>();
         Set<FlagRefDataEntity> flagRefDataEntities = new HashSet<>();
 
-        String flagVisibility = incomingCaseFlags.getVisibility() != null
-            ? incomingCaseFlags.getVisibility().getValue()
-            : FlagVisibility.INTERNAL.getValue();
-
         for (ListValue<FlagDetail> incomingFlagDetailListValue : incomingCaseFlags.getDetails()) {
             FlagDetail incomingFlagDetail = incomingFlagDetailListValue.getValue();
 
-            FlagRefDataEntity flagRefDataEntity = mergeFlagRefData(incomingFlagDetail, flagVisibility);
+            FlagRefDataEntity flagRefDataEntity = mergeFlagRefData(incomingFlagDetail);
             flagRefDataEntities.add(flagRefDataEntity);
 
             T flagEntity = flagEntitySupplier.get();
@@ -96,6 +123,7 @@ public class CaseFlagService {
             flagEntity.setSubTypeValue(incomingFlagDetail.getSubTypeValue());
             flagEntity.setSubTypeValueWelsh(incomingFlagDetail.getSubTypeValueCy());
             flagEntity.setFlagRefData(flagRefDataEntity);
+            flagEntity.setVisibility(visibility.getValue());
 
             flagEntity.setOtherDescription(incomingFlagDetail.getOtherDescription());
             flagEntity.setOtherDescriptionWelsh(incomingFlagDetail.getOtherDescriptionCy());
@@ -109,8 +137,7 @@ public class CaseFlagService {
         return mergedFlagDetails;
     }
 
-    private FlagRefDataEntity mergeFlagRefData(FlagDetail incomingFlagDetail,
-                                               String visibility) {
+    private FlagRefDataEntity mergeFlagRefData(FlagDetail incomingFlagDetail) {
 
         FlagRefDataEntity flagRefDataEntity = flagRefDataRepository.findByFlagCode(
             incomingFlagDetail.getFlagCode()).orElse(new FlagRefDataEntity());
@@ -118,7 +145,6 @@ public class CaseFlagService {
         flagRefDataEntity.setFlagCode(incomingFlagDetail.getFlagCode());
         flagRefDataEntity.setFlagName(incomingFlagDetail.getName());
         flagRefDataEntity.setFlagNameWelsh(incomingFlagDetail.getNameCy());
-        flagRefDataEntity.setVisibility(visibility);
         flagRefDataEntity.setHearingRelevant(YesOrNoConverter.toBoolean(incomingFlagDetail.getHearingRelevant()));
         flagRefDataEntity.setAvailableExternally(YesOrNoConverter.toBoolean(
             incomingFlagDetail.getAvailableExternally()));
@@ -137,4 +163,3 @@ public class CaseFlagService {
         }
     }
 }
-
