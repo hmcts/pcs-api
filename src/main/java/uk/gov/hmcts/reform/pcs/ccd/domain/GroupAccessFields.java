@@ -7,9 +7,13 @@ import lombok.Data;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.api.HasRole;
 import uk.gov.hmcts.ccd.sdk.type.CaseAccessGroup;
-import uk.gov.hmcts.ccd.sdk.type.ChangeOrganisationRequest;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 
+/**
+ * Notice of change owns the ChangeOrganisationRequest field, declared on {@link PCSCase}. The
+ * definition store allows only one per case type - a second declaration here failed the import with
+ * "Change Organisation Request is defined more than once for case type 'PCS'".
+ */
 @Data
 @Builder
 public class GroupAccessFields<R extends HasRole> {
@@ -17,8 +21,4 @@ public class GroupAccessFields<R extends HasRole> {
     @JsonProperty("CaseAccessGroups")
     @CCD
     private List<ListValue<CaseAccessGroup>> caseAccessGroups;
-
-    @JsonProperty("ChangeOrganisationRequestField")
-    @CCD
-    private ChangeOrganisationRequest<R> changeOrganisationRequestField;
 }
