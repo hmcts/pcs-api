@@ -1,4 +1,5 @@
 import {expect, Page} from '@playwright/test';
+import { getFormattedDate } from "@utils/common/string.utils";
 
 import {
   confirmIfTheseDocumentsRelateToAnApplication,
@@ -60,14 +61,7 @@ export class DocumentsAction implements IAction {
       text: confirmIfTheseDocumentsRelateToAnApplication.ifYourApplicationParagraph,
     });
 
-    const formattedDate = new Intl.DateTimeFormat('en-GB', {
-      weekday: 'long',
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric',
-    })
-      .format(new Date())
-      .replace(',', '');
+   const formattedDate = getFormattedDate();
 
     const expectedOptions: string[] = [
       `${confirmDocumentData.option} ${formattedDate}`,
