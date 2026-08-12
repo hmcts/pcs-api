@@ -26,6 +26,7 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.GenAppRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentNameService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
 import uk.gov.hmcts.reform.pcs.exception.GenAppException;
+import uk.gov.hmcts.reform.pcs.exception.GenAppNotFoundException;
 
 import java.time.Clock;
 import java.time.LocalDateTime;
@@ -177,6 +178,11 @@ public class GenAppService {
         genAppEntity.setDocuments(additionalEvidenceDocuments);
 
         genAppRepository.save(genAppEntity);
+    }
+
+    public GenAppEntity loadGenApp(UUID genAppId) {
+        return genAppRepository.findById(genAppId)
+            .orElseThrow(() -> new GenAppNotFoundException("No gen app found with ID " + genAppId));
     }
 
     private DocumentEntity createSubmissionDocumentEntity(Document document,
