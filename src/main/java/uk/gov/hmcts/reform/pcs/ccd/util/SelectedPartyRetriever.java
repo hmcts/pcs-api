@@ -37,9 +37,9 @@ public class SelectedPartyRetriever {
     }
 
     public Optional<UUID> getCurrentRepresentedPartyId(PCSCase caseData) {
-        return caseData.getAllDefendants().size() == 1
-            ? Optional.of(UUID.fromString(caseData.getAllDefendants().getFirst().getId())) :
-            extractCurrentRepresentedPartyId(caseData.getCurrentRepresentedPartyId());
+//        return caseData.getAllDefendants().size() == 1
+            return Optional.of(UUID.fromString(caseData.getAllDefendants().getFirst().getId()));// :
+//            extractCurrentRepresentedPartyId(caseData.getCurrentRepresentedPartyId());
     }
 
     private Optional<UUID> getRequiredPartyId() {
