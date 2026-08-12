@@ -95,11 +95,55 @@ public class HearingDetailsPageTest extends BasePageTest {
                 && f.fieldLabel.equals("Enter any additional information")
                 && f.maxCharacters == 500)
         );
-        verify(integerValidationService).validateNumberIsNotNegative(1, "Days", new ArrayList<>());
-        verify(integerValidationService).validateNumberIsNotNegative(1f, "Hour", new ArrayList<>());
-        verify(integerValidationService).validateNumberIsNotNegative(30f, "Minute", new ArrayList<>());
-        verify(integerValidationService).validateFloatIsInteger(1f, "Hour", new ArrayList<>());
-        verify(integerValidationService).validateFloatIsInteger(30f, "Minute", new ArrayList<>());
+        verify(integerValidationService).validateFloatIsInteger(1f, "Hours", new ArrayList<>());
+        verify(integerValidationService).validateFloatIsInteger(30f, "Minutes", new ArrayList<>());
+        verify(hearingService).storeDraftHearingForm(caseData);
+    }
+
+    @Test
+    void shouldReturnErrorIfDurationIsZero() {
+        // Given
+        Hearing hearing = Hearing.builder()
+            .durationDays(0)
+            .durationHours(0f)
+            .durationMinutes(0f)
+            .build();
+
+        PCSCase caseData = PCSCase.builder()
+            .hearing(hearing)
+            .build();
+
+        // When
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+        // Then
+        List<String> errors = response.getErrors();
+        assertThat(errors).hasSize(1);
+        assertThat(errors.getFirst())
+            .isEqualTo("At least one of Days, Hours or Minutes must be larger than zero");
+        verify(hearingService).storeDraftHearingForm(caseData);
+    }
+
+    @Test
+    void shouldAllowDurationWhenDaysIsGreaterThanZeroAndHoursAndMinutesAreZero() {
+        // Given
+        Hearing hearing = Hearing.builder()
+            .durationDays(1)
+            .durationHours(0f)
+            .durationMinutes(0f)
+            .build();
+
+        PCSCase caseData = PCSCase.builder()
+            .hearing(hearing)
+            .build();
+
+        // When
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+        // Then
+        assertThat(response.getErrors()).isNull();
+        verify(integerValidationService).validateFloatIsInteger(0f, "Hours", new ArrayList<>());
+        verify(integerValidationService).validateFloatIsInteger(0f, "Minutes", new ArrayList<>());
         verify(hearingService).storeDraftHearingForm(caseData);
     }
 }

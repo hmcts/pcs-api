@@ -55,41 +55,4 @@ public class IntegerValidationServiceTest {
             .isEqualTo("In ‘Test Label’, you have entered a value that is not a whole number.");
     }
 
-    @Test
-    void shouldNotAddErrorWhenFieldValueIsZero() {
-        // Given
-        List<String> errors = new ArrayList<>();
-
-        // When
-        integerValidationService.validateNumberIsNotNegative(0, "Test Label", errors);
-
-        // Then
-        assertThat(errors).isEmpty();
-    }
-
-    @Test
-    void shouldNotAddErrorWhenFieldValueIsPositive() {
-        // Given
-        List<String> errors = new ArrayList<>();
-
-        // When
-        integerValidationService.validateNumberIsNotNegative(1.5f, "Test Label", errors);
-
-        // Then
-        assertThat(errors).isEmpty();
-    }
-
-    @Test
-    void shouldAddErrorWhenFieldValueIsNegative() {
-        // Given
-        List<String> errors = new ArrayList<>();
-
-        // When
-        integerValidationService.validateNumberIsNotNegative(-11, "Test Label", errors);
-
-        // Then
-        assertThat(errors).hasSize(1);
-        assertThat(errors.getFirst())
-            .isEqualTo("In ‘Test Label’, you have entered a value that is less than 0.");
-    }
 }

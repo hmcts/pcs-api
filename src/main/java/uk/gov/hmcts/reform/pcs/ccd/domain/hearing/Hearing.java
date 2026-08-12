@@ -30,9 +30,9 @@ public class Hearing {
     @CCD(ignore = true)
     public static final String DAY_LABEL = "Days";
     @CCD(ignore = true)
-    public static final String HOUR_LABEL = "Hour";
+    public static final String HOUR_LABEL = "Hours";
     @CCD(ignore = true)
-    public static final String MINUTE_LABEL = "Minute";
+    public static final String MINUTE_LABEL = "Minutes";
 
     @CCD(label = "Which type of hearing is this?")
     private HearingType type;
