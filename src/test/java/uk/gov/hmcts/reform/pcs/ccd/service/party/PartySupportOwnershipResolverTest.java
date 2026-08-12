@@ -127,6 +127,60 @@ class PartySupportOwnershipResolverTest {
     }
 
     @Test
+    void shouldOwnPartyCreatedByTheUsersOwnOrganisation() {
+        // Given
+        PartyEntity party = PartyEntity.builder()
+            .id(UUID.randomUUID())
+            .idamId(UUID.randomUUID())
+            .organisationId(ORG_ID)
+            .claimPartyLegalRepresentativeList(new ArrayList<>())
+            .build();
+        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(ORG_ID);
+
+        // When
+        boolean owned = underTest.isOwnedByUser(party, USER_ID);
+
+        // Then
+        assertThat(owned).isTrue();
+    }
+
+    @Test
+    void shouldNotOwnPartyCreatedByADifferentOrganisation() {
+        // Given
+        PartyEntity party = PartyEntity.builder()
+            .id(UUID.randomUUID())
+            .idamId(UUID.randomUUID())
+            .organisationId("OTHER-ORG")
+            .claimPartyLegalRepresentativeList(new ArrayList<>())
+            .build();
+        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(ORG_ID);
+
+        // When
+        boolean owned = underTest.isOwnedByUser(party, USER_ID);
+
+        // Then
+        assertThat(owned).isFalse();
+    }
+
+    @Test
+    void shouldNotOwnPartyByOrganisationWhenUserHasNoOrganisation() {
+        // Given
+        PartyEntity party = PartyEntity.builder()
+            .id(UUID.randomUUID())
+            .idamId(UUID.randomUUID())
+            .organisationId(ORG_ID)
+            .claimPartyLegalRepresentativeList(new ArrayList<>())
+            .build();
+        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(null);
+
+        // When
+        boolean owned = underTest.isOwnedByUser(party, USER_ID);
+
+        // Then
+        assertThat(owned).isFalse();
+    }
+
+    @Test
     void shouldNotOwnPartyWhenUserOrPartyIsNull() {
         // Given
         PartyEntity party = PartyEntity.builder().id(UUID.randomUUID()).build();

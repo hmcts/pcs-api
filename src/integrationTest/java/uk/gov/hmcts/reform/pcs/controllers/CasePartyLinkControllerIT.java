@@ -150,9 +150,9 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
         pcsCaseRepository.saveAndFlush(caseEntity);
 
         List<CasePartyFlagEntity> saved = persistedFlags(caseReference);
-        UUID requestedId = flagByStatusAndVisibility(saved, "Requested", FlagVisibility.EXTERNAL);
-        UUID activeId = flagByStatusAndVisibility(saved, "Active", FlagVisibility.EXTERNAL);
-        UUID internalId = flagByStatusAndVisibility(saved, "Requested", FlagVisibility.INTERNAL);
+        final UUID requestedId = flagByStatusAndVisibility(saved, "Requested", FlagVisibility.EXTERNAL);
+        final UUID activeId = flagByStatusAndVisibility(saved, "Active", FlagVisibility.EXTERNAL);
+        final UUID internalId = flagByStatusAndVisibility(saved, "Requested", FlagVisibility.INTERNAL);
 
         PCSCase pcsCase = PCSCase.builder()
             .supportReviewFlags(reviewedSupport(party.getId(), requestedId,
