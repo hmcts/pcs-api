@@ -20,6 +20,7 @@ import static org.junit.jupiter.params.provider.EnumSource.Mode.EXCLUDE;
 import static org.junit.jupiter.params.provider.EnumSource.Mode.INCLUDE;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.CASEWORKER_EVENTS;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.RELEASE_1_DOT_2;
+import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.RELEASE_1_DOT_3;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.WALES_MAKE_A_CLAIM;
 
 class ShowConditionsTest {
@@ -96,9 +97,11 @@ class ShowConditionsTest {
     }
 
     @ParameterizedTest
-    @EnumSource(value = FeatureFlag.class,
-        names = {"RELEASE_1_DOT_2", "CASEWORKER_EVENTS", "WALES_MAKE_A_CLAIM"},
-        mode = EXCLUDE)
+    @EnumSource(
+        value = FeatureFlag.class,
+        names = {"RELEASE_1_DOT_2", "RELEASE_1_DOT_3", "CASEWORKER_EVENTS", "WALES_MAKE_A_CLAIM"},
+        mode = EXCLUDE
+    )
     void shouldThrowExceptionForFeatureFlagWithNoCcdField(FeatureFlag featureFlag) {
         // When
         Throwable throwable = catchThrowable(() -> ShowConditions.featureFlagsEnabled(featureFlag));
@@ -116,10 +119,21 @@ class ShowConditionsTest {
                       ""),
             arguments(List.of(RELEASE_1_DOT_2),
                       "featureFlags.release1dot2Enabled=\"YES\""),
+            arguments(List.of(RELEASE_1_DOT_3),
+                      "featureFlags.release1dot3Enabled=\"YES\""),
             arguments(List.of(CASEWORKER_EVENTS),
                       "featureFlags.caseWorkerEventsEnabled=\"YES\""),
             arguments(List.of(WALES_MAKE_A_CLAIM),
                       "featureFlags.walesMakeAClaimEnabled=\"YES\""),
+            arguments(List.of(RELEASE_1_DOT_2, CASEWORKER_EVENTS),
+                      "featureFlags.release1dot2Enabled=\"YES\" AND featureFlags.caseWorkerEventsEnabled=\"YES\""),
+            arguments(List.of(RELEASE_1_DOT_2, RELEASE_1_DOT_3),
+                      "featureFlags.release1dot2Enabled=\"YES\" AND featureFlags.release1dot3Enabled=\"YES\""),
+            arguments(List.of(RELEASE_1_DOT_3, CASEWORKER_EVENTS),
+                      "featureFlags.release1dot3Enabled=\"YES\" AND featureFlags.caseWorkerEventsEnabled=\"YES\""),
+            arguments(List.of(RELEASE_1_DOT_2, RELEASE_1_DOT_3, CASEWORKER_EVENTS),
+                      "featureFlags.release1dot2Enabled=\"YES\" AND featureFlags.release1dot3Enabled=\"YES\" "
+                          + "AND featureFlags.caseWorkerEventsEnabled=\"YES\""),
             arguments(List.of(RELEASE_1_DOT_2, CASEWORKER_EVENTS),
                       "featureFlags.release1dot2Enabled=\"YES\" AND featureFlags.caseWorkerEventsEnabled=\"YES\""),
             arguments(List.of(RELEASE_1_DOT_2, WALES_MAKE_A_CLAIM),

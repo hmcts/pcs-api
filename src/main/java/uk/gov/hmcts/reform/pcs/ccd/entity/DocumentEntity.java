@@ -28,6 +28,8 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEnt
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -86,7 +88,9 @@ public class DocumentEntity {
 
     @CreationTimestamp
     private Instant submittedDate;
-  
+
+    private LocalDate issueDate;
+
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "claim_id")
     private ClaimEntity claim;
@@ -104,6 +108,12 @@ public class DocumentEntity {
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "counter_claim_id")
     private CounterClaimEntity counterClaim;
+
+    private boolean removed;
+
+    private String removalReason;
+
+    private LocalDateTime removedAt;
 
     @PrePersist
     void prePersist() {
