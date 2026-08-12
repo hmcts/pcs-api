@@ -56,6 +56,8 @@ java:
     NOTIFY_URL: "https://api.notifications.service.gov.uk"
     RD_PROFESSIONAL_API_URL: "http://rd-professional-api-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal"
     CAMUNDA_BASE_URL: "http://camunda-api-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal"
+    DECENTRALISED_CASE_TYPE_CONFIG: >-
+      {"PCS": {"nocBaseUrl": "http://pcs-api-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal"}}
 servicebus:
   enabled: false
 ccd:
