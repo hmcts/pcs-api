@@ -28,7 +28,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CasePartyFlagEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.PartyLegalRepresentativeOrganisationEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyLegalRepresentativeOrganisationEntity;
 
 import java.time.LocalDate;
 import java.util.HashSet;
@@ -114,7 +114,7 @@ public class PartyEntity {
     @OneToMany(fetch = LAZY, mappedBy = "party")
     @Builder.Default
     @JsonManagedReference
-    private List<PartyLegalRepresentativeOrganisationEntity> partyLegalRepresentativeOrganisationList
+    private List<ClaimPartyLegalRepresentativeOrganisationEntity> partyLegalRepresentativeOrganisationList
         = new ArrayList<>();
 
     @OneToMany(mappedBy = "party",
