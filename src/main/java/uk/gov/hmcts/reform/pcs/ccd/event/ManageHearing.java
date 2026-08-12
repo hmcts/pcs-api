@@ -30,7 +30,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerRoles.CASEWORK
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.manageHearing;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.CASEWORKER_EVENTS;
-import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.RELEASE_1_DOT_2;
+import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.RELEASE_1_DOT_3;
 
 @Component
 @Slf4j
@@ -60,7 +60,7 @@ public class ManageHearing implements CCDConfig<PCSCase, State, UserRole> {
             configBuilder.decentralisedEvent(manageHearing.name(), this::submit, this::start)
                 .forStates(State.AWAITING_SUBMISSION_TO_HMCTS, State.PENDING_CASE_ISSUED, State.CASE_ISSUED)
                 .name("Manage hearing")
-                .showCondition(ShowConditions.featureFlagsEnabled(RELEASE_1_DOT_2, CASEWORKER_EVENTS))
+                .showCondition(ShowConditions.featureFlagsEnabled(RELEASE_1_DOT_3, CASEWORKER_EVENTS))
                 .grant(Permission.CRUD, CASEWORKER_ROLES)
                 .grantHistoryOnly(JUDICIAL_HISTORY_ROLES)
                 .showSummary()

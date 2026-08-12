@@ -51,7 +51,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.State.AWAITING_SUBMISSION_TO_HM
 import static uk.gov.hmcts.reform.pcs.ccd.domain.State.CASE_ISSUED;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.State.PENDING_CASE_ISSUED;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.CASEWORKER_EVENTS;
-import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.RELEASE_1_DOT_2;
+import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.RELEASE_1_DOT_3;
 
 @ExtendWith(MockitoExtension.class)
 public class ManageHearingTest extends BaseEventTest {
@@ -107,7 +107,7 @@ public class ManageHearingTest extends BaseEventTest {
     @Test
     void shouldOnlyShowEventWhenReleaseAndCaseworkerEventsFeatureFlagsAreEnabled() {
         assertThat(configuredEvent.getShowCondition())
-            .isEqualTo(featureFlagsEnabled(RELEASE_1_DOT_2, CASEWORKER_EVENTS));
+            .isEqualTo(featureFlagsEnabled(RELEASE_1_DOT_3, CASEWORKER_EVENTS));
     }
 
     @Test
