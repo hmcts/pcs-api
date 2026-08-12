@@ -76,4 +76,27 @@ class LegalRepresentativeOrganisationEntityTest {
         assertThat(partyLegalRepresentativeOrganisation2.getActive()).isEqualTo(YesOrNo.YES);
     }
 
+    @Test
+    void setLegalRepresentativeOrganisationContactDetails_WithContactDetails_SetsReference() {
+        // given
+        LegalRepresentativeOrganisationContactDetailsEntity contactDetails =
+            new LegalRepresentativeOrganisationContactDetailsEntity();
+
+        // when
+        underTest.setLegalRepresentativeOrganisationContactDetails(contactDetails);
+
+        // then
+        assertThat(contactDetails.getLegalRepresentativeOrganisation()).isEqualTo(underTest);
+        assertThat(underTest.getLegalRepresentativeOrganisationContactDetails()).isEqualTo(contactDetails);
+    }
+
+    @Test
+    void setLegalRepresentativeOrganisationContactDetails_WithNullContactDetails_DoesNotSetReference() {
+        // when
+        underTest.setLegalRepresentativeOrganisationContactDetails(null);
+
+        // then
+        assertThat(underTest.getLegalRepresentativeOrganisationContactDetails()).isNull();
+    }
+
 }

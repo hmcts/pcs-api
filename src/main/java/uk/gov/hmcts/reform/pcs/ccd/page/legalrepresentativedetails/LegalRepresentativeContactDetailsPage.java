@@ -37,7 +37,7 @@ public class LegalRepresentativeContactDetailsPage implements CcdPageConfigurati
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
             .page("legalRepresentativeContactDetails", this::midEvent)
-            .pageLabel("Amend representative's details")
+            .pageLabel("Amend representative’s details")
             .complex(PCSCase::getLegalRepresentativeDetails)
             .label("legalRepresentativeDetails-reference",  """
                     ---

@@ -2,8 +2,6 @@ package uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -15,10 +13,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 
 import java.time.Instant;
@@ -41,8 +36,8 @@ import static jakarta.persistence.FetchType.LAZY;
 public class LegalRepresentativeOrganisationEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
 
     private String organisationName;
 
@@ -50,18 +45,8 @@ public class LegalRepresentativeOrganisationEntity {
 
     private String organisationProfileId;
 
-    private String emailAddress;
-
-    private String phoneNumber;
-
-    private String contactReference;
-
-    @OneToOne(cascade = ALL,orphanRemoval = true)
-    private AddressEntity address;
-
-    @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private YesOrNo hasAmendedContactDetails;
+    @OneToOne(mappedBy = "legalRepresentativeOrganisation", cascade = ALL)
+    private LegalRepresentativeOrganisationContactDetailsEntity legalRepresentativeOrganisationContactDetails;
 
     @OneToMany(fetch = LAZY, cascade = ALL, mappedBy = "legalRepresentativeOrganisation")
     @Builder.Default
@@ -114,6 +99,14 @@ public class LegalRepresentativeOrganisationEntity {
             .build();
         claimPartyLegalRepresentativeOrganisationList.add(claimPartyLegalRepresentativeOrganisationEntity);
         party.getPartyLegalRepresentativeOrganisationList().add(claimPartyLegalRepresentativeOrganisationEntity);
+    }
+
+    public void setLegalRepresentativeOrganisationContactDetails(
+        LegalRepresentativeOrganisationContactDetailsEntity contactDetails) {
+        this.legalRepresentativeOrganisationContactDetails = contactDetails;
+        if (contactDetails != null) {
+            contactDetails.setLegalRepresentativeOrganisation(this);
+        }
     }
 
 }
