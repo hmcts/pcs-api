@@ -37,8 +37,8 @@ public enum AccessProfile implements HasRole {
              PROPERTY_CONSTRUCTION_ORG_CLAIMANT_ACCESS,
              NOT_FOR_PROFIT_ORG_CLAIMANT_ACCESS,
              CHARITY_ORG_CLAIMANT_ACCESS),
-    GA_CLAIMANT_SOLICITOR("claimant_solicitor", CRU, SOLICITOR_ORG_CLAIMANT_ACCESS),
-    GA_DEFENDANT_SOLICITOR("defendant_solicitor", CRU, SOLICITOR_ORG_DEFENDANT_ACCESS),
+    GA_CLAIMANT_SOLICITOR("claimant-solicitor", CRU, SOLICITOR_ORG_CLAIMANT_ACCESS),
+    GA_DEFENDANT_SOLICITOR("defendant-solicitor", CRU, SOLICITOR_ORG_DEFENDANT_ACCESS),
     DUTY_ADVISOR_REQUEST("duty-advisor-request", Set.of(R), GroupAccessType.DUTY_ADVISOR_ACCESS),
 
     JUDGE("judge", CRU),

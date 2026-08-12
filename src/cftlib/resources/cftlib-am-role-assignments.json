@@ -22,7 +22,7 @@
     "roleAssignments": [
       {
         "roleType": "ORGANISATION",
-        "roleName": "claimant_solicitor",
+        "roleName": "claimant-solicitor",
         "grantType": "STANDARD",
         "roleCategory": "PROFESSIONAL",
         "classification": "RESTRICTED",
@@ -30,7 +30,7 @@
         "attributes": {
           "jurisdiction": "PCS",
           "caseType": "PCS",
-          "caseAccessGroupId": "PCS:PCS:solicitor-org-claimant-access:claimant_solicitor:TEST-123"
+          "caseAccessGroupId": "PCS:PCS:solicitor-org-claimant-access:claimant-solicitor:TEST-123"
         },
         "authorisations": []
       }

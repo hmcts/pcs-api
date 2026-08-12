@@ -22,7 +22,7 @@ class CaseAccessGroupsUtilTest {
         assertThat(groups).hasSize(1);
         CaseAccessGroup group = groups.getFirst().getValue();
         assertThat(group.getCaseAccessGroupId())
-            .isEqualTo("PCS:PCS:solicitor-org-claimant-access:claimant_solicitor:J1XJ9VJ");
+            .isEqualTo("PCS:PCS:solicitor-org-claimant-access:claimant-solicitor:J1XJ9VJ");
         assertThat(group.getCaseAccessGroupType()).isEqualTo("CCD:all-cases-access");
     }
 
