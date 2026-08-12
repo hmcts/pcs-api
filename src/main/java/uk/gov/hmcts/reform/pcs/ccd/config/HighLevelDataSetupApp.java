@@ -41,7 +41,10 @@ public class HighLevelDataSetupApp extends DataLoaderToDefinitionStore {
         new CcdRoleConfig("leadership-judge", "PUBLIC"),
         new CcdRoleConfig("pcs-system-update", "PUBLIC"),
         new CcdRoleConfig("duty-advisor-request", "PUBLIC"),
-        new CcdRoleConfig("[SOLICITOR]", "PUBLIC")
+        new CcdRoleConfig("[SOLICITOR]", "PUBLIC"),
+        new CcdRoleConfig("caseworker-wa-task-configuration", "PUBLIC"),
+        new CcdRoleConfig("caseworker-caa", "PUBLIC"),
+        new CcdRoleConfig("pui-case-manager", "PUBLIC")
     };
 
 

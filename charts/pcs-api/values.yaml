@@ -55,6 +55,9 @@ java:
     CASE_DOCUMENT_AM_URL: "http://ccd-case-document-am-api-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal"
     NOTIFY_URL: "https://api.notifications.service.gov.uk"
     RD_PROFESSIONAL_API_URL: "http://rd-professional-api-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal"
+    CAMUNDA_BASE_URL: "http://camunda-api-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal"
+    DECENTRALISED_CASE_TYPE_CONFIG: >-
+      {"PCS": {"nocBaseUrl": "http://pcs-api-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal"}}
 servicebus:
   enabled: false
 ccd:
@@ -72,4 +75,8 @@ aac-manage-case-assignment:
 am-org-role-mapping-service:
   enabled: false
 wa:
+  enabled: false
+aac-manage-case-assignment:
+  enabled: false
+am-org-role-mapping-service:
   enabled: false

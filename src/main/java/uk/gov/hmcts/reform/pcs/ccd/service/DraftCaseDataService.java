@@ -77,7 +77,8 @@ public class DraftCaseDataService {
         entry(EventId.claimIssuePayment, DraftOwnership.NO_DRAFTS),
         entry(EventId.changeCaseState, DraftOwnership.NO_DRAFTS),
         entry(EventId.enterGenApp, DraftOwnership.NO_DRAFTS),
-        entry(EventId.caseworkerUploadDocuments, DraftOwnership.NO_DRAFTS)
+        entry(EventId.caseworkerUploadDocuments, DraftOwnership.NO_DRAFTS),
+        entry(EventId.removeDocument, DraftOwnership.NO_DRAFTS)
     ));
 
     static {
