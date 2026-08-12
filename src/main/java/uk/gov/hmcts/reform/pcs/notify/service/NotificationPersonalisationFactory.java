@@ -88,11 +88,20 @@ public class NotificationPersonalisationFactory {
         String claimantName = getClaimantName(primaryClaimant);
         String primaryDefendantName = getPrimaryDefendantName(primaryDefendant);
 
+        // hacky but works — live Notify templates expect firstName/lastName (same as defendant emails).
+        // LR org doesn't have a person name so stuffing org name into firstName for now.
+        // TODO: check if we should be pulling a solicitor name from somewhere instead
+        String firstName = legalRepresentativeOrganisationEntity.getOrganisationName();
+        if (firstName == null) {
+            firstName = "";
+        }
+
         return LegalRepresentativeBasePersonalisation.builder()
+            .firstName(firstName)
+            .lastName("") // Notify still wants the key present
             .caseNumber(formatCaseReference(pcsCaseEntity.getCaseReference().toString()))
             .claimantName(claimantName)
             .primaryDefendantName(primaryDefendantName)
-            .organisationName(legalRepresentativeOrganisationEntity.getOrganisationName())
             .build();
     }
 
