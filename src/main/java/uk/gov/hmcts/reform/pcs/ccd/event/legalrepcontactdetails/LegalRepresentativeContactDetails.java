@@ -35,7 +35,7 @@ public class LegalRepresentativeContactDetails implements CCDConfig<PCSCase, Sta
             configBuilder
                 .decentralisedEvent(legalRepresentativeContactDetails.name(), this::submit, this::start)
                 .forState(State.CASE_ISSUED)
-                .name("Amend representative‘s details")
+                .name("Amend representative’s details")
                 .grant(Permission.CRUD, UserRole.DEFENDANT_SOLICITOR);
 
         new PageBuilder(eventBuilder)
