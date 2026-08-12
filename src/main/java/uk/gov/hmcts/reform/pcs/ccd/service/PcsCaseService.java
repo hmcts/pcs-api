@@ -106,6 +106,17 @@ public class PcsCaseService {
         }
     }
 
+    public void patchReviewedSupportFlags(long caseReference, PCSCase pcsCase) {
+        if (pcsCase == null) {
+            throw new IllegalArgumentException("PCSCase cannot be null");
+        }
+        PcsCaseEntity pcsCaseEntity = loadCase(caseReference);
+
+        if (pcsCase.getSupportReviewFlags() != null) {
+            caseFlagService.applyReviewedSupportFlags(pcsCase.getSupportReviewFlags(), pcsCaseEntity.getParties());
+        }
+    }
+
     public PcsCaseEntity loadCase(long caseReference) {
         return pcsCaseRepository.findByCaseReference(caseReference)
             .orElseThrow(() -> new CaseNotFoundException(caseReference));

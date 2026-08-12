@@ -235,6 +235,39 @@ class CaseFlagsViewTest {
     }
 
     @Test
+    void shouldKeepReviewedSupportFlagsVisibleWhateverTheirStatus() {
+        CasePartyFlagEntity notApproved = createMockCasePartyFlagsEntity();
+        notApproved.setVisibility("External");
+        notApproved.setDefaultStatus("Not approved");
+        notApproved.setFlagRefData(createMockRefDataFlagsEntity("RA0042", "Reasonable adjustment"));
+
+        CasePartyFlagEntity inactive = createMockCasePartyFlagsEntity();
+        inactive.setVisibility("External");
+        inactive.setDefaultStatus("Inactive");
+        inactive.setFlagRefData(createMockRefDataFlagsEntity("RA0013", "Assistance dog"));
+
+        PartyEntity defendantEntity = createPartyEntity(null);
+        defendantEntity.setDefendantFlags(List.of(notApproved, inactive));
+
+        PCSCase pcsCase = PCSCase.builder()
+            .parties(List.of(mappedParty(defendantEntity)))
+            .build();
+        PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
+        pcsCaseEntity.setParties(Set.of(defendantEntity));
+        setClaimParties(pcsCaseEntity, createClaimParty(defendantEntity, PartyRole.DEFENDANT));
+
+        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+
+        Party mappedDefendant = pcsCase.getParties().getFirst().getValue();
+
+        assertEquals(2, mappedDefendant.getPartyFlagsExternal().getDetails().size());
+        assertEquals(List.of("Not approved", "Inactive"),
+            mappedDefendant.getPartyFlagsExternal().getDetails().stream()
+                .map(detail -> detail.getValue().getStatus())
+                .toList());
+    }
+
+    @Test
     void shouldGroupInternalAndExternalPartyFlagsByPartyId() {
         PartyEntity defendantEntity = createPartyEntity(null);
 

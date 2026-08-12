@@ -84,6 +84,47 @@ public class CaseFlagService {
         }
     }
 
+    public void applyReviewedSupportFlags(List<ListValue<PartySupport>> reviewedSupport,
+                                          Set<PartyEntity> existingParties) {
+        Map<UUID, PartyEntity> existingPartiesMap = mapPartiesById(existingParties);
+
+        for (ListValue<PartySupport> reviewedValue : reviewedSupport) {
+            Flags reviewedFlags = reviewedValue.getValue() == null
+                ? null
+                : reviewedValue.getValue().getSupportFlags();
+
+            if (hasNoFlagDetails(reviewedFlags)) {
+                continue;
+            }
+
+            PartyEntity partyEntity = resolveSupportParty(reviewedValue.getId(), existingPartiesMap);
+
+            for (ListValue<FlagDetail> reviewedDetail : reviewedFlags.getDetails()) {
+                applyReviewedStatus(reviewedDetail, partyEntity);
+            }
+        }
+    }
+
+    private void applyReviewedStatus(ListValue<FlagDetail> reviewedDetail, PartyEntity partyEntity) {
+        FlagDetail reviewedFlagDetail = reviewedDetail.getValue();
+        if (reviewedFlagDetail == null) {
+            return;
+        }
+
+        partyEntity.getDefendantFlags().stream()
+            .filter(existingFlag -> FlagVisibility.EXTERNAL == toFlagVisibility(existingFlag.getVisibility()))
+            .filter(existingFlag -> SupportReviewService.REQUESTED_STATUS
+                .equalsIgnoreCase(existingFlag.getDefaultStatus()))
+            .filter(existingFlag -> existingFlag.getId() != null
+                && existingFlag.getId().toString().equals(reviewedDetail.getId()))
+            .findFirst()
+            .ifPresent(existingFlag -> {
+                existingFlag.setDefaultStatus(reviewedFlagDetail.getStatus());
+                existingFlag.setFlagUpdateComment(reviewedFlagDetail.getFlagUpdateComment());
+                existingFlag.setDateTimeModified(reviewedFlagDetail.getDateTimeModified());
+            });
+    }
+
     private boolean changesExistingSupport(Flags incomingSupportFlags, PartyEntity partyEntity) {
         Map<String, CasePartyFlagEntity> existingExternalFlags = partyEntity.getDefendantFlags().stream()
             .filter(existingFlag -> FlagVisibility.EXTERNAL == toFlagVisibility(existingFlag.getVisibility()))
