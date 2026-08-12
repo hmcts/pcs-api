@@ -13,10 +13,12 @@ import java.util.UUID;
 public interface LegalRepresentativeOrganisationRepository extends JpaRepository<LegalRepresentativeOrganisationEntity,
     UUID> {
 
+    // note: partyLegalRepresentativeOrganisationList was renamed in 5794 —
+    // these queries were still on the old field name and blowing up
     @Query("""
         SELECT lro
         FROM LegalRepresentativeOrganisationEntity lro
-        JOIN lro.partyLegalRepresentativeOrganisationList plro
+        JOIN lro.claimPartyLegalRepresentativeOrganisationList plro
         JOIN plro.party p
         WHERE p.id = :partyId
         AND plro.active = 'YES'
@@ -27,7 +29,7 @@ public interface LegalRepresentativeOrganisationRepository extends JpaRepository
     @Query("""
         SELECT COUNT(lro) > 0
         FROM LegalRepresentativeOrganisationEntity lro
-        JOIN lro.partyLegalRepresentativeOrganisationList plro
+        JOIN lro.claimPartyLegalRepresentativeOrganisationList plro
         JOIN plro.party p
         WHERE lro.organisationId = :organisationId
         AND p.id = :partyId
@@ -36,10 +38,14 @@ public interface LegalRepresentativeOrganisationRepository extends JpaRepository
     boolean isRepresentativeOrganisationLinkedToPartyAndActive(@Param("organisationId") String organisationId,
                                                                @Param("partyId") UUID partyId);
 
+    // org no longer hangs directly off pcsCase — go via the party link instead
+    // (bit unsure if this is the "proper" way, but it finds the org for the case)
     @Query("""
         SELECT lro
         FROM LegalRepresentativeOrganisationEntity lro
-        JOIN lro.pcsCase pcsCase
+        JOIN lro.claimPartyLegalRepresentativeOrganisationList plro
+        JOIN plro.party p
+        JOIN p.pcsCase pcsCase
         WHERE pcsCase.caseReference = :caseReference
         AND lro.organisationId = :organisationId
         """)
