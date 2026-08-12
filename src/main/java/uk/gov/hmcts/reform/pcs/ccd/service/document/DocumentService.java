@@ -19,6 +19,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsSection;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.UploadedDocument;
+import uk.gov.hmcts.reform.pcs.ccd.domain.documentupload.CaseworkerDocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.EvidenceDocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.EvidenceOfDefendants;
@@ -55,8 +56,7 @@ public class DocumentService {
     private static final String CLAIMANT_1 = "Claimant 1";
     private static final String DEFAULT_CATEGORY_ID = CaseFileCategory.UNCATEGORISED_DOCUMENTS.getId();
 
-    public List<DocumentEntity> createAllDocuments(PCSCase pcsCase) {
-
+    public List<DocumentEntity> buildDocumentEntitiesForCase(PCSCase pcsCase) {
         List<DocumentHolder> allDocuments = getPcsCaseDocuments(pcsCase);
 
         if (allDocuments.isEmpty()) {
@@ -65,18 +65,22 @@ public class DocumentService {
 
         applyClaimFilename(allDocuments);
 
-        return documentRepository.saveAll(createDocumentEntities(allDocuments));
+        return createDocumentEntities(allDocuments);
+    }
+
+    /**
+     * Convenience wrapper that builds and persists document entities for a {@link PCSCase}.
+     * Production code uses {@link #buildDocumentEntitiesForCase(PCSCase)} directly; this overload
+     * remains for tests and callers that need persisted entities in one step.
+     */
+    public List<DocumentEntity> createAllDocuments(PCSCase pcsCase) {
+        return documentRepository.saveAll(buildDocumentEntitiesForCase(pcsCase));
     }
 
     public List<DocumentEntity> createAllDocuments(EnforcementOrder enforcementOrder) {
-
-        List<DocumentHolder> allDocuments = getWarrantOfRestitutionDocuments(enforcementOrder);
-
-        if (allDocuments.isEmpty()) {
-            return List.of();
-        }
-
-        return documentRepository.saveAll(createDocumentEntities(allDocuments));
+        return documentRepository.saveAll(
+            createDocumentEntities(getWarrantOfRestitutionDocuments(enforcementOrder))
+        );
     }
 
     private List<DocumentHolder> getPcsCaseDocuments(PCSCase pcsCase) {
@@ -359,7 +363,7 @@ public class DocumentService {
                 .party(party)
                 .counterClaim(counterClaim)
                 .url(ccDoc.getDocument().getUrl())
-                .fileName(documentNameService.appendCounterClaimDocumentName(
+                .fileName(documentNameService.appendCounterClaimPostfix(
                     ccDoc.getDocument().getFilename(), claim, party.getId()))
                 .binaryUrl(ccDoc.getDocument().getBinaryUrl())
                 .contentType(ccDoc.getContentType())
@@ -377,11 +381,17 @@ public class DocumentService {
         return saved;
     }
 
-    private Optional<CaseFileCategory> mapDocumentTypeToCategory(DocumentType documentType) {
+    public Optional<CaseFileCategory> mapDocumentTypeToCategory(DocumentType documentType) {
+        if (documentType == null) {
+            return Optional.empty();
+        }
+
         return switch (documentType) {
             case NOTICE_FOR_SERVICE_OUT_OF_JURISDICTION,
                  CLAIM,
                  DEFENDANT_RESPONSE,
+                 AMENDED_CLAIM_FORM,
+                 PART_20_COUNTERCLAIM,
                  COUNTERCLAIM ->
                 Optional.of(CaseFileCategory.STATEMENTS_OF_CASE);
             case RENT_STATEMENT,
@@ -390,36 +400,77 @@ public class DocumentService {
                  OCCUPATION_LICENCE,
                  ENERGY_PERFORMANCE_CERTIFICATE,
                  GAS_SAFETY_CERTIFICATE,
+                 GAS_SAFETY_REPORT,
+                 ELECTRICAL_INSTALLATION_CONDITION,
                  EICR_REPORT,
                  POSSESSION_NOTICE ->
                 Optional.of(CaseFileCategory.PROPERTY_DOCUMENTS);
             case WITNESS_STATEMENT,
                  CERTIFICATE_OF_SERVICE,
-                 CORRESPONDENCE_FROM_DEFENDANT,
-                 CORRESPONDENCE_FROM_CLAIMANT,
+                 CORRESPONDENCE_BETWEEN_PARTIES,
                  PHOTOGRAPHIC_EVIDENCE,
                  INSPECTION_OR_REPORT ->
                 Optional.of(CaseFileCategory.EVIDENCE);
             case CERTIFICATE_OF_SUITABILITY_AS_LF,
+                 CORRESPONDENCE_FROM_DEFENDANT,
+                 CORRESPONDENCE_FROM_CLAIMANT,
                  LEGAL_AID_CERTIFICATE ->
                 Optional.of(CaseFileCategory.CORRESPONDENCE);
+            case NOTICE_OF_HEARING,
+                WITH_NOTICE_ORDER,
+                WITHOUT_NOTICE_ORDER,
+                NOTICE_OF_ALLOCATION_TO_TRACK ->
+                Optional.of(CaseFileCategory.ORDERS_AND_NOTICE_OF_HEARINGS);
+            case GENERAL_APPLICATION ->
+                Optional.of(CaseFileCategory.APPLICATIONS);
             case NOTICE_SERVED,
                  POLICE_REPORT,
                  // Defendant access-code letters aren't shown on the case file
                  DEFENDANT_ACCESS_CODE,
                  DOCUMENTS_SUPPORTING_A_COUNTERCLAIM,
-                 GAS_SAFETY_REPORT,
-                 ELECTRICAL_INSTALLATION_CONDITION,
                  OTHER ->
                 Optional.empty();
         };
     }
 
-    private String categoryIdFor(DocumentType documentType) {
-        if (documentType == null) {
-            return DEFAULT_CATEGORY_ID;
+    public String categoryIdForDocumentType(DocumentType documentType) {
+        return categoryIdFor(documentType);
+    }
+
+    public DocumentType mapCaseworkerDocumentTypeToDocumentType(CaseworkerDocumentType caseworkerDocumentType) {
+        if (caseworkerDocumentType == null) {
+            return null;
         }
 
+        return switch (caseworkerDocumentType) {
+            case WITNESS_STATEMENT -> DocumentType.WITNESS_STATEMENT;
+            case RENT_STATEMENT -> DocumentType.RENT_STATEMENT;
+            case TENANCY_AGREEMENT -> DocumentType.TENANCY_AGREEMENT;
+            case OCCUPATION_LICENCE -> DocumentType.OCCUPATION_LICENCE;
+            case CERTIFICATE_OF_SERVICE -> DocumentType.CERTIFICATE_OF_SERVICE;
+            case ENERGY_PERFORMANCE_CERTIFICATE -> DocumentType.ENERGY_PERFORMANCE_CERTIFICATE;
+            case GAS_SAFETY_CERTIFICATE -> DocumentType.GAS_SAFETY_CERTIFICATE;
+            case EICR_REPORT -> DocumentType.EICR_REPORT;
+            case CORRESPONDENCE_BETWEEN_PARTIES -> DocumentType.CORRESPONDENCE_BETWEEN_PARTIES;
+            case CORRESPONDENCE_FROM_CLAIMANT -> DocumentType.CORRESPONDENCE_FROM_CLAIMANT;
+            case CORRESPONDENCE_FROM_DEFENDANT -> DocumentType.CORRESPONDENCE_FROM_DEFENDANT;
+            case POSSESSION_NOTICE -> DocumentType.POSSESSION_NOTICE;
+            case NOTICE_FOR_SERVICE_OUT_OF_JURISDICTION -> DocumentType.NOTICE_FOR_SERVICE_OUT_OF_JURISDICTION;
+            case PHOTOGRAPHIC_EVIDENCE -> DocumentType.PHOTOGRAPHIC_EVIDENCE;
+            case INSPECTION_OR_REPORT -> DocumentType.INSPECTION_OR_REPORT;
+            case AMENDED_CLAIM_FORM -> DocumentType.AMENDED_CLAIM_FORM;
+            case PART_20_COUNTERCLAIM -> DocumentType.PART_20_COUNTERCLAIM;
+            case CERTIFICATE_OF_SUITABILITY_AS_LF -> DocumentType.CERTIFICATE_OF_SUITABILITY_AS_LF;
+            case LEGAL_AID_CERTIFICATE -> DocumentType.LEGAL_AID_CERTIFICATE;
+            case NOTICE_OF_HEARING -> DocumentType.NOTICE_OF_HEARING;
+            case WITH_NOTICE_ORDER -> DocumentType.WITH_NOTICE_ORDER;
+            case WITHOUT_NOTICE_ORDER -> DocumentType.WITHOUT_NOTICE_ORDER;
+            case NOTICE_OF_ALLOCATION_TO_TRACK -> DocumentType.NOTICE_OF_ALLOCATION_TO_TRACK;
+            case OTHER -> DocumentType.OTHER;
+        };
+    }
+
+    private String categoryIdFor(DocumentType documentType) {
         return mapDocumentTypeToCategory(documentType)
             .map(CaseFileCategory::getId)
             .orElse(DEFAULT_CATEGORY_ID);
