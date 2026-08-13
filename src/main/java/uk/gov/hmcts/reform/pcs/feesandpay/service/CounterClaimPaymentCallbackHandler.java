@@ -5,12 +5,21 @@ import com.github.kagkarlsson.scheduler.SchedulerClient;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
+import uk.gov.hmcts.reform.pcs.camunda.CamundaService;
+import uk.gov.hmcts.reform.pcs.camunda.TaskType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState;
+import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.model.CounterClaimStatusChangeTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.repository.CounterClaimRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.counterclaimform.CounterClaimFormScheduler;
+import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TaskDescriptionService;
 import uk.gov.hmcts.reform.pcs.ccd.task.CounterClaimIssuedNotificationTaskComponent;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
@@ -20,6 +29,7 @@ import java.io.IOException;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Component
@@ -29,17 +39,23 @@ public class CounterClaimPaymentCallbackHandler implements PaymentCallbackStrate
     private final CounterClaimRepository counterClaimRepository;
     private final SchedulerClient schedulerClient;
     private final CounterClaimFormScheduler counterClaimFormScheduler;
+    private final CamundaService camundaService;
+    private final TaskDescriptionService taskDescriptionService;
     private final ObjectMapper objectMapper;
     private final Clock utcClock;
 
     public CounterClaimPaymentCallbackHandler(CounterClaimRepository counterClaimRepository,
                                               SchedulerClient schedulerClient,
                                               CounterClaimFormScheduler counterClaimFormScheduler,
+                                              CamundaService camundaService,
+                                              TaskDescriptionService taskDescriptionService,
                                               ObjectMapper objectMapper,
                                               @Qualifier("utcClock") Clock utcClock) {
         this.counterClaimRepository = counterClaimRepository;
         this.schedulerClient = schedulerClient;
         this.counterClaimFormScheduler = counterClaimFormScheduler;
+        this.camundaService = camundaService;
+        this.taskDescriptionService = taskDescriptionService;
         this.objectMapper = objectMapper;
         this.utcClock = utcClock;
     }
@@ -72,6 +88,7 @@ public class CounterClaimPaymentCallbackHandler implements PaymentCallbackStrate
             counterClaimEntity.setClaimIssuedDate(LocalDateTime.now(utcClock));
             scheduleCounterClaimIssuedNotification(counterClaimEntity, feePaymentEntity);
             counterClaimFormScheduler.scheduleCounterClaimFormGeneration(counterClaimId);
+            createTranslateDefendantDocumentTask(counterClaimEntity);
             return;
         }
 
@@ -106,5 +123,39 @@ public class CounterClaimPaymentCallbackHandler implements PaymentCallbackStrate
                           .build())
                 .scheduledTo(Instant.now())
         );
+    }
+
+    private void createTranslateDefendantDocumentTask(CounterClaimEntity counterClaimEntity) {
+        DefendantResponseEntity defendantResponse = counterClaimEntity.findAssociatedDefendantResponse()
+            .orElse(null);
+
+        if (defendantResponse == null) {
+            return;
+        }
+
+        PartyEntity party = counterClaimEntity.getParty();
+        PcsCaseEntity pcsCaseEntity = counterClaimEntity.getPcsCase();
+
+        LanguageUsed languageUsed = defendantResponse.getLanguageUsed();
+        if (languageUsed != LanguageUsed.WELSH && languageUsed != LanguageUsed.ENGLISH_AND_WELSH) {
+            return;
+        }
+
+        List<DocumentEntity> documents = pcsCaseEntity.getDocuments().stream()
+            .filter(document -> !document.isRemoved()
+                && document.getCounterClaim() != null
+                && document.getCounterClaim().getId().equals(counterClaimEntity.getId()))
+            .toList();
+
+        if (documents.isEmpty()) {
+            return;
+        }
+
+        ClaimEntity mainClaim = pcsCaseEntity.getClaims().getFirst();
+        long caseReference = pcsCaseEntity.getCaseReference();
+        String description = taskDescriptionService.createTranslateDefendantDocumentDescription(
+            caseReference, mainClaim, party, documents);
+
+        camundaService.createTask(caseReference, TaskType.TRANSLATE_DEFENDANT_SUBMITTED_DOCUMENT, description);
     }
 }

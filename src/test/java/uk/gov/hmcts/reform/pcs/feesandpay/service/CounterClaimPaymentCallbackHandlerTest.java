@@ -12,6 +12,7 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.reform.pcs.camunda.CamundaService;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState;
 import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
@@ -19,6 +20,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEnt
 import uk.gov.hmcts.reform.pcs.ccd.model.CounterClaimStatusChangeTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.repository.CounterClaimRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.counterclaimform.CounterClaimFormScheduler;
+import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TaskDescriptionService;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.Payment;
@@ -54,6 +56,10 @@ class CounterClaimPaymentCallbackHandlerTest {
     @Mock
     private CounterClaimFormScheduler counterClaimFormScheduler;
     @Mock
+    private CamundaService camundaService;
+    @Mock
+    private TaskDescriptionService taskDescriptionService;
+    @Mock
     private ObjectMapper objectMapper;
     @Captor
     private ArgumentCaptor<SchedulableInstance<CounterClaimStatusChangeTaskData>> taskInstanceCaptor;
@@ -66,8 +72,9 @@ class CounterClaimPaymentCallbackHandlerTest {
 
     @BeforeEach
     void setUp() {
-        underTest = new CounterClaimPaymentCallbackHandler(counterClaimRepository, schedulerClient,
-                                                           counterClaimFormScheduler,
+        underTest = new CounterClaimPaymentCallbackHandler(counterClaimRepository,
+                                                           schedulerClient, counterClaimFormScheduler,
+                                                           camundaService, taskDescriptionService,
                                                            objectMapper, FIXED_UTC_CLOCK);
     }
 

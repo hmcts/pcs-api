@@ -304,11 +304,18 @@ class RespondPossessionClaimSubmitServiceTest {
             .languageUsed(LanguageUsed.WELSH)
             .build();
 
+        UploadedDocument uploadedDocument = UploadedDocument.builder()
+            .document(Document.builder().filename("counterclaim-evidence.pdf").build())
+            .build();
+        List<ListValue<UploadedDocument>> counterClaimDocumentUploads = List.of(
+            ListValue.<UploadedDocument>builder().id("doc-1").value(uploadedDocument).build()
+        );
         CounterClaim counterClaim = CounterClaim.builder()
             .claimType(CounterClaimType.SOMETHING_ELSE)
             .build();
         DefendantResponses defendantResponses = DefendantResponses.builder()
             .counterClaim(counterClaim)
+            .counterClaimDocuments(counterClaimDocumentUploads)
             .build();
         PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
             .defendantResponses(defendantResponses)
@@ -325,11 +332,7 @@ class RespondPossessionClaimSubmitServiceTest {
             .fileName("response-evidence.pdf")
             .defendantResponse(savedResponse)
             .build();
-        DocumentEntity counterClaimDocument = DocumentEntity.builder()
-            .fileName("counterclaim-evidence.pdf")
-            .counterClaim(savedCounterClaim)
-            .build();
-        pcsCaseEntity.setDocuments(List.of(responseDocument, counterClaimDocument));
+        pcsCaseEntity.setDocuments(List.of(responseDocument));
 
         when(defendantResponseService.saveDefendantResponse(
             CASE_REFERENCE, possessionClaimResponse, partyEntity, journeyType))
@@ -337,6 +340,14 @@ class RespondPossessionClaimSubmitServiceTest {
         when(counterClaimService.saveCounterClaim(CASE_REFERENCE, counterClaim, partyEntity))
             .thenReturn(Optional.of(savedCounterClaim));
         when(counterClaimFeeCalculator.isPaymentRequired(counterClaim)).thenReturn(false);
+
+        DocumentEntity counterClaimDocument = DocumentEntity.builder()
+            .fileName("counterclaim-evidence.pdf")
+            .counterClaim(savedCounterClaim)
+            .build();
+        when(documentService.createCounterClaimUploadedDocuments(
+            counterClaimDocumentUploads, savedCounterClaim, pcsCaseEntity, partyEntity))
+            .thenReturn(List.of(counterClaimDocument));
 
         String expectedDescription =
             "Defendant 1 has uploaded the following documents: response-evidence.pdf, counterclaim-evidence.pdf";

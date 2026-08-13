@@ -21,6 +21,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TaskDescriptionService;
 import uk.gov.hmcts.reform.pcs.model.JourneyType;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -56,20 +57,21 @@ public class RespondPossessionClaimSubmitService {
         Optional<CounterClaimEntity> savedCounterClaim =
             counterClaimService.saveCounterClaim(caseReference, counterClaim, defendantParty);
 
-        savedCounterClaim.ifPresent(counterClaimEntity -> documentService.createCounterClaimUploadedDocuments(
-            defendantResponses.getCounterClaimDocuments(),
-            counterClaimEntity,
-            counterClaimEntity.getPcsCase(),
-            counterClaimEntity.getParty()
-        ));
+        List<DocumentEntity> counterClaimDocuments = savedCounterClaim
+            .map(counterClaimEntity -> documentService.createCounterClaimUploadedDocuments(
+                defendantResponses.getCounterClaimDocuments(),
+                counterClaimEntity,
+                counterClaimEntity.getPcsCase(),
+                counterClaimEntity.getParty()
+            ))
+            .orElse(List.of());
 
         CounterClaimEntity counterClaimEntity = savedCounterClaim.orElse(null);
-
-        createTranslateDefendantDocumentTask(caseReference, savedResponse, counterClaimEntity,
-                                             defendantParty);
-
         boolean paymentRequired = counterClaimEntity != null
             && counterClaimFeeCalculator.isPaymentRequired(counterClaim);
+
+        createTranslateDefendantDocumentTask(caseReference, savedResponse, counterClaimDocuments,
+                                             paymentRequired, defendantParty);
 
         if (JourneyType.LEGAL_REPRESENTATIVE.equals(journeyType)) {
             draftCaseDataService.deleteUnsubmittedCaseData(
@@ -92,7 +94,8 @@ public class RespondPossessionClaimSubmitService {
 
     private void createTranslateDefendantDocumentTask(long caseReference,
                                                       DefendantResponseEntity savedResponse,
-                                                      CounterClaimEntity counterClaimEntity,
+                                                      List<DocumentEntity> counterClaimDocuments,
+                                                      boolean counterClaimPaymentRequired,
                                                       PartyEntity defendantParty) {
 
         LanguageUsed languageUsed = savedResponse.getLanguageUsed();
@@ -101,11 +104,18 @@ public class RespondPossessionClaimSubmitService {
         }
 
         PcsCaseEntity pcsCaseEntity = defendantParty.getPcsCase();
-        List<DocumentEntity> documents = pcsCaseEntity.getDocuments().stream()
+        List<DocumentEntity> documents = new ArrayList<>(pcsCaseEntity.getDocuments().stream()
             .filter(document -> !document.isRemoved())
-            .filter(document -> isDefendantResponseDocument(document, savedResponse)
-                || isCounterClaimDocument(document, counterClaimEntity))
-            .toList();
+            .filter(document -> isDefendantResponseDocument(document, savedResponse))
+            .toList());
+
+        // Counterclaim documents are only translatable once the counterclaim fee (if any) has been paid;
+        // when payment is still pending they're picked up later via CounterClaimPaymentCallbackHandler
+        if (!counterClaimPaymentRequired) {
+            counterClaimDocuments.stream()
+                .filter(document -> !document.isRemoved())
+                .forEach(documents::add);
+        }
 
         if (documents.isEmpty()) {
             return;
@@ -122,12 +132,6 @@ public class RespondPossessionClaimSubmitService {
                                                         DefendantResponseEntity savedResponse) {
         return document.getDefendantResponse() != null
             && document.getDefendantResponse().getId().equals(savedResponse.getId());
-    }
-
-    private static boolean isCounterClaimDocument(DocumentEntity document, CounterClaimEntity counterClaimEntity) {
-        return counterClaimEntity != null
-            && document.getCounterClaim() != null
-            && document.getCounterClaim().getId().equals(counterClaimEntity.getId());
     }
 
 }
