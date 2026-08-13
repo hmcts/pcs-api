@@ -1,6 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.caseworker.manageparty;
 
-import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
@@ -16,22 +16,34 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.UpdatePartyDetails;
 import uk.gov.hmcts.reform.pcs.ccd.service.AddressValidator;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
+import java.time.Clock;
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 import static uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService.EXTRA_SHORT_TEXT_LIMIT;
 import static uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService.FieldValidation;
 
-@AllArgsConstructor
 @Component
 public class UpdatePartyDetailsPage implements CcdPageConfiguration {
 
     private final AddressValidator addressValidator;
     private final TextAreaValidationService textAreaValidationService;
+    private final Clock ukClock;
 
     private static final String EMAIL_ADDRESS_LABEL = "Email address";
+    private static final String DATE_OF_BIRTH_PAST_ERROR_MESSAGE = "Date of birth must be in the past";
 
     private static final String DEFENDANT_TYPE =
         ShowConditions.fieldEquals("updateParty_UpdatePartyType", PartyType.DEFENDANT);
+
+    public UpdatePartyDetailsPage(AddressValidator addressValidator,
+                                  TextAreaValidationService textAreaValidationService,
+                                  @Qualifier("ukClock") Clock ukClock) {
+        this.addressValidator = addressValidator;
+        this.textAreaValidationService = textAreaValidationService;
+        this.ukClock = ukClock;
+    }
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -65,6 +77,13 @@ public class UpdatePartyDetailsPage implements CcdPageConfiguration {
         List<String> validationErrors = textAreaValidationService.validateMultipleTextAreas(
             FieldValidation.of(updatePartyDetails.getEmail(), EMAIL_ADDRESS_LABEL, EXTRA_SHORT_TEXT_LIMIT)
         );
+
+        Optional<LocalDate> dateOfBirth = updatePartyDetails.getDateOfBirth();
+        LocalDate dob = dateOfBirth == null ? null : dateOfBirth.orElse(null);
+        if (dob != null && !dob.isBefore(LocalDate.now(ukClock))) {
+            validationErrors.add(DATE_OF_BIRTH_PAST_ERROR_MESSAGE);
+        }
+
         validationErrors.addAll(addressValidator.validateAddressFields(updatePartyDetails.getAddress()));
 
         return textAreaValidationService.createValidationResponse(caseData, validationErrors);
