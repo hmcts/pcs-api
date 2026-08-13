@@ -7,6 +7,9 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.reform.pcs.camunda.CamundaService;
+import uk.gov.hmcts.reform.pcs.camunda.TaskType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.UploadedDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaim;
@@ -14,11 +17,15 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimSta
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
+import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
+import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TaskDescriptionService;
 import uk.gov.hmcts.reform.pcs.model.JourneyType;
 
 import java.math.BigDecimal;
@@ -28,8 +35,10 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.respondPossessionClaim;
 
@@ -51,6 +60,10 @@ class RespondPossessionClaimSubmitServiceTest {
     @Mock
     private DraftCaseDataService draftCaseDataService;
     @Mock
+    private CamundaService camundaService;
+    @Mock
+    private TaskDescriptionService taskDescriptionService;
+    @Mock
     private PartyEntity partyEntity;
 
     private RespondPossessionClaimSubmitService underTest;
@@ -63,8 +76,13 @@ class RespondPossessionClaimSubmitServiceTest {
             counterClaimService,
             counterClaimFeeCalculator,
             documentService,
-            draftCaseDataService
+            draftCaseDataService,
+            camundaService,
+            taskDescriptionService
         );
+
+        when(defendantResponseService.saveDefendantResponse(anyLong(), any(), any(), any()))
+            .thenReturn(DefendantResponseEntity.builder().languageUsed(LanguageUsed.ENGLISH).build());
     }
 
     @Test
@@ -244,6 +262,122 @@ class RespondPossessionClaimSubmitServiceTest {
             savedCounterClaim.getPcsCase(),
             savedCounterClaim.getParty()
         );
+    }
+
+    @Test
+    void shouldNotCreateTranslateTaskWhenResponseLanguageIsEnglish() {
+        JourneyType journeyType = JourneyType.CITIZEN;
+
+        PartyEntity partyEntity = PartyEntity.builder().id(UUID.randomUUID()).build();
+        DefendantResponseEntity savedResponse = DefendantResponseEntity.builder()
+            .id(1)
+            .languageUsed(LanguageUsed.ENGLISH)
+            .build();
+
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .defendantResponses(DefendantResponses.builder().build())
+            .build();
+
+        when(defendantResponseService.saveDefendantResponse(
+            CASE_REFERENCE, possessionClaimResponse, partyEntity, journeyType))
+            .thenReturn(savedResponse);
+        when(counterClaimService.saveCounterClaim(CASE_REFERENCE, null, partyEntity)).thenReturn(Optional.empty());
+
+        underTest.persistFinalSubmit(CASE_REFERENCE, possessionClaimResponse, partyEntity, journeyType);
+
+        verifyNoInteractions(camundaService, taskDescriptionService);
+    }
+
+    @Test
+    void shouldCreateTranslateTaskWithCounterClaimAndResponseDocuments() {
+        JourneyType journeyType = JourneyType.CITIZEN;
+
+        ClaimEntity mainClaim = ClaimEntity.builder().id(UUID.randomUUID()).build();
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
+            .caseReference(CASE_REFERENCE)
+            .claims(List.of(mainClaim))
+            .build();
+        PartyEntity partyEntity = PartyEntity.builder().id(UUID.randomUUID()).pcsCase(pcsCaseEntity).build();
+
+        DefendantResponseEntity savedResponse = DefendantResponseEntity.builder()
+            .id(1)
+            .languageUsed(LanguageUsed.WELSH)
+            .build();
+
+        CounterClaim counterClaim = CounterClaim.builder()
+            .claimType(CounterClaimType.SOMETHING_ELSE)
+            .build();
+        DefendantResponses defendantResponses = DefendantResponses.builder()
+            .counterClaim(counterClaim)
+            .build();
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .defendantResponses(defendantResponses)
+            .build();
+
+        CounterClaimEntity savedCounterClaim = CounterClaimEntity.builder()
+            .id(UUID.randomUUID())
+            .party(partyEntity)
+            .pcsCase(pcsCaseEntity)
+            .status(CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED)
+            .build();
+
+        DocumentEntity responseDocument = DocumentEntity.builder()
+            .fileName("response-evidence.pdf")
+            .defendantResponse(savedResponse)
+            .build();
+        DocumentEntity counterClaimDocument = DocumentEntity.builder()
+            .fileName("counterclaim-evidence.pdf")
+            .counterClaim(savedCounterClaim)
+            .build();
+        pcsCaseEntity.setDocuments(List.of(responseDocument, counterClaimDocument));
+
+        when(defendantResponseService.saveDefendantResponse(
+            CASE_REFERENCE, possessionClaimResponse, partyEntity, journeyType))
+            .thenReturn(savedResponse);
+        when(counterClaimService.saveCounterClaim(CASE_REFERENCE, counterClaim, partyEntity))
+            .thenReturn(Optional.of(savedCounterClaim));
+        when(counterClaimFeeCalculator.isPaymentRequired(counterClaim)).thenReturn(false);
+
+        String expectedDescription =
+            "Defendant 1 has uploaded the following documents: response-evidence.pdf, counterclaim-evidence.pdf";
+        when(taskDescriptionService.createTranslateDefendantDocumentDescription(
+            CASE_REFERENCE, mainClaim, partyEntity, List.of(responseDocument, counterClaimDocument)))
+            .thenReturn(expectedDescription);
+
+        underTest.persistFinalSubmit(CASE_REFERENCE, possessionClaimResponse, partyEntity, journeyType);
+
+        verify(camundaService).createTask(
+            CASE_REFERENCE, TaskType.TRANSLATE_DEFENDANT_SUBMITTED_DOCUMENT, expectedDescription);
+    }
+
+    @Test
+    void shouldNotCreateTranslateTaskWhenWelshButNoDocumentsExist() {
+        JourneyType journeyType = JourneyType.CITIZEN;
+
+        ClaimEntity mainClaim = ClaimEntity.builder().id(UUID.randomUUID()).build();
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
+            .caseReference(CASE_REFERENCE)
+            .claims(List.of(mainClaim))
+            .build();
+        PartyEntity partyEntity = PartyEntity.builder().id(UUID.randomUUID()).pcsCase(pcsCaseEntity).build();
+
+        DefendantResponseEntity savedResponse = DefendantResponseEntity.builder()
+            .id(1)
+            .languageUsed(LanguageUsed.WELSH)
+            .build();
+
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .defendantResponses(DefendantResponses.builder().build())
+            .build();
+
+        when(defendantResponseService.saveDefendantResponse(
+            CASE_REFERENCE, possessionClaimResponse, partyEntity, journeyType))
+            .thenReturn(savedResponse);
+        when(counterClaimService.saveCounterClaim(CASE_REFERENCE, null, partyEntity)).thenReturn(Optional.empty());
+
+        underTest.persistFinalSubmit(CASE_REFERENCE, possessionClaimResponse, partyEntity, journeyType);
+
+        verifyNoInteractions(camundaService, taskDescriptionService);
     }
 
 }

@@ -22,7 +22,11 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantContac
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.CaseDetailsTab;
+import uk.gov.hmcts.reform.pcs.camunda.CamundaService;
+import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TaskDescriptionService;
 import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
@@ -75,6 +79,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.lenient;
@@ -107,6 +112,12 @@ class RespondPossessionClaimTest extends BaseEventTest {
 
     @Mock
     private DefendantResponseService defendantResponseService;
+
+    @Mock
+    private CamundaService camundaService;
+
+    @Mock
+    private TaskDescriptionService taskDescriptionService;
 
     @Mock
     private DefendantResponseRepository defendantResponseRepository;
@@ -190,8 +201,13 @@ class RespondPossessionClaimTest extends BaseEventTest {
             counterClaimService,
             feeCalculator,
             documentService,
-            draftCaseDataService
+            draftCaseDataService,
+            camundaService,
+            taskDescriptionService
         );
+
+        lenient().when(defendantResponseService.saveDefendantResponse(anyLong(), any(), any(), any()))
+            .thenReturn(DefendantResponseEntity.builder().languageUsed(LanguageUsed.ENGLISH).build());
 
         CounterClaimSubmitConfirmationService confirmationService = new CounterClaimSubmitConfirmationService(
             partyService,

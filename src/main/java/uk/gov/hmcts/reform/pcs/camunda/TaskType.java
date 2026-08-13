@@ -23,6 +23,16 @@ public enum TaskType {
             action is required, and take the appropriate action. Only mark the task as complete once the documents
             have been reviewed and any required action has been completed.
             """
+    ),
+    TRANSLATE_DEFENDANT_SUBMITTED_DOCUMENT(
+        "TranslateDefendantSubmittedDocument",
+        "Translate defendant submitted document",
+        """
+            Review the defendant submitted document in Case File View and arrange translation where required.
+            Upload or record the translated document on the case file and take any further action needed.
+            Only mark the task as complete once the translation has been completed and any required action has been
+            taken.
+            """
     );
 
     private final String id;

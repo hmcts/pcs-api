@@ -48,6 +48,27 @@ public class TaskDescriptionService {
         return renderTemplate(templateName, context);
     }
 
+    public String createTranslateDefendantDocumentDescription(long caseReference,
+                                                               ClaimEntity mainClaim,
+                                                               PartyEntity partyEntity,
+                                                               List<DocumentEntity> documentEntities) {
+
+        String partyLabel = partyService.getPartyLabel(mainClaim, partyEntity.getId());
+
+        List<String> filenames = documentEntities.stream()
+            .map(DocumentEntity::getFileName)
+            .toList();
+
+        Map<String, Object> context = Map.of(
+            "caseReference", caseReference,
+            "partyLabel", partyLabel,
+            "filenames", filenames
+        );
+
+        String templateName = "translate-defendant-submitted-document";
+        return renderTemplate(templateName, context);
+    }
+
     private String renderTemplate(String templateName, Map<String, Object> context) {
         PebbleTemplate compiledTemplate = pebbleEngine.getTemplate("workallocation/" + templateName);
         Writer writer = new StringWriter();
