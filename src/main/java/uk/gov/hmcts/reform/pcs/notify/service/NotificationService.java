@@ -570,9 +570,11 @@ public class NotificationService {
             throw new IllegalStateException("No legal representative found for response: " + defendantResponse.getId());
         }
 
-        // getEmail() no longer exists on the org entity after 5794
+        var contactDetails = legalRepresentativeOrganisationEntity.getLegalRepresentativeOrganisationContactDetails();
+        String emailAddress = contactDetails != null ? contactDetails.getEmailAddress() : null;
+
         return new LegalRepresentativeNotificationRecipient(
-            legalRepresentativeOrganisationEntity.getEmailAddress(),
+            emailAddress,
             defendantParty,
             pcsCaseEntity,
             defendantResponse.getClaim()

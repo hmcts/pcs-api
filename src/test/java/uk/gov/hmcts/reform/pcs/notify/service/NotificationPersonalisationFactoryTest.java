@@ -309,7 +309,9 @@ class NotificationPersonalisationFactoryTest {
                 .containsEntry("caseNumber", "1234-5678-90")
                 .containsEntry("claimantName", "JANE SMITH")
                 .containsEntry("primaryDefendantName", "JOHN DOE")
-                .containsEntry("organisationName", "HMCTS");
+                .containsEntry("firstName", "HMCTS")
+                .containsEntry("lastName", "")
+                .doesNotContainKey("organisationName");
         }
     }
 
@@ -374,8 +376,7 @@ class NotificationPersonalisationFactoryTest {
 
     private LegalRepresentativeOrganisationEntity stubLegalRepParty() {
         LegalRepresentativeOrganisationEntity legalRepParty = createLegalRep("HMCTS");
-        UUID id = UUID.randomUUID();
-        legalRepParty.setId(id);
+        legalRepParty.setId(1);
 
         return legalRepParty;
     }
@@ -391,7 +392,7 @@ class NotificationPersonalisationFactoryTest {
 
     private LegalRepresentativeOrganisationEntity createLegalRep(String organisationName) {
         LegalRepresentativeOrganisationEntity legalRep = new LegalRepresentativeOrganisationEntity();
-        legalRep.setId(UUID.randomUUID());
+        legalRep.setId(1);
         legalRep.setOrganisationName(organisationName);
         return legalRep;
     }
