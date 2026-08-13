@@ -34,11 +34,10 @@ public final class CaseAccessGroupsUtil {
         List<CaseAccessGroup> caseAccessGroups = new ArrayList<>();
 
         parties.forEach(party -> derivedRole(party)
-            .flatMap(role -> GroupAccessType.forProfileAndRole(organisationProfileId(party), role))
-            .ifPresent(accessType -> caseAccessGroups.add(new CaseAccessGroup(
+            .flatMap(role -> GroupAccessType.caseAccessGroupIdTemplateFor(organisationProfileId(party), role))
+            .ifPresent(template -> caseAccessGroups.add(new CaseAccessGroup(
                 CCD_ALL_CASES_ACCESS,
-                accessType.getCaseAccessGroupIdTemplate()
-                    .replace(ORG_IDENTIFIER_TEMPLATE, party.getOrganisationId())))));
+                template.replace(ORG_IDENTIFIER_TEMPLATE, party.getOrganisationId())))));
 
         return caseAccessGroups.stream()
             .map(CaseAccessGroup::getCaseAccessGroupId)

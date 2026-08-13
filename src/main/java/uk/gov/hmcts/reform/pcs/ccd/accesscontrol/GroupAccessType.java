@@ -134,11 +134,16 @@ public enum GroupAccessType implements CCDAccessGroup {
         return Map.copyOf(index);
     }
 
-    /** Keyed lookup so selection does not depend on the order these constants are declared in. */
-    public static Optional<GroupAccessType> forProfileAndRole(String organisationProfileId, PartyRole partyRole) {
+    /**
+     * The group ID template for an organisation profile acting in a party role, empty where the
+     * combination has no access type. Keyed lookup, so selection does not depend on the order these
+     * constants are declared in.
+     */
+    public static Optional<String> caseAccessGroupIdTemplateFor(String organisationProfileId, PartyRole partyRole) {
         return partyRole == null
             ? Optional.empty()
-            : Optional.ofNullable(BY_PROFILE_AND_ROLE.get(new Key(organisationProfileId, partyRole)));
+            : Optional.ofNullable(BY_PROFILE_AND_ROLE.get(new Key(organisationProfileId, partyRole)))
+                .map(GroupAccessType::getCaseAccessGroupIdTemplate);
     }
 
     /**

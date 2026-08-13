@@ -107,17 +107,18 @@ class CaseAccessGroupsUtilTest {
 
     @Test
     void shouldResolveTheClaimantAccessTypeByNameNotByDeclarationOrder() {
-        assertThat(GroupAccessType.forProfileAndRole("SOLICITOR_PROFILE", PartyRole.CLAIMANT))
-            .contains(GroupAccessType.SOLICITOR_ORG_CLAIMANT_ACCESS);
-        assertThat(GroupAccessType.forProfileAndRole("SOLICITOR_PROFILE", PartyRole.DEFENDANT))
-            .contains(GroupAccessType.SOLICITOR_ORG_DEFENDANT_ACCESS);
-        assertThat(GroupAccessType.forProfileAndRole("LOCALAUTH_PROFILE", PartyRole.CLAIMANT))
-            .contains(GroupAccessType.LOCAL_AUTHORITY_CLAIMANT_ACCESS);
+        assertThat(GroupAccessType.caseAccessGroupIdTemplateFor("SOLICITOR_PROFILE", PartyRole.CLAIMANT))
+            .contains("PCS:PCS:solicitor-org-claimant-access:claimant-solicitor:$ORGID$");
+        assertThat(GroupAccessType.caseAccessGroupIdTemplateFor("SOLICITOR_PROFILE", PartyRole.DEFENDANT))
+            .contains("PCS:PCS:solicitor-org-defendant-access:defendant-solicitor:$ORGID$");
+        assertThat(GroupAccessType.caseAccessGroupIdTemplateFor("LOCALAUTH_PROFILE", PartyRole.CLAIMANT))
+            .contains("PCS:PCS:prof-org-claimant-access:claimant:$ORGID$");
     }
 
     @Test
     void shouldNeverResolveTheRequestBasedDutyAdvisorAccessType() {
-        assertThat(GroupAccessType.forProfileAndRole("SOLICITOR_PROFILE", PartyRole.UNDERLESSEE_OR_MORTGAGEE))
+        assertThat(GroupAccessType
+                       .caseAccessGroupIdTemplateFor("SOLICITOR_PROFILE", PartyRole.UNDERLESSEE_OR_MORTGAGEE))
             .isEmpty();
         assertThat(GroupAccessType.values())
             .filteredOn(type -> type == GroupAccessType.DUTY_ADVISOR_ACCESS)
