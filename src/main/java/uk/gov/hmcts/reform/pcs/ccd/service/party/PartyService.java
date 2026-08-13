@@ -153,8 +153,8 @@ public class PartyService {
 
     /**
      * The claimant party a case is created with, so CaseAccessGroups derive during the draft phase.
-     * Both organisation values are required: without them the case derives no group, and once CREATOR
-     * is revoked at submit nobody can open it.
+     * Both organisation values are required: without them the case derives no group, and group
+     * access is the only way in, so nobody could open it.
      */
     public void initialiseClaimant(PcsCaseEntity pcsCaseEntity) {
         String organisationId = organisationService.getOrganisationIdForCurrentUser();

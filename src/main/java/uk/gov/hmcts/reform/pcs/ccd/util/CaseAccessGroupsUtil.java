@@ -21,7 +21,6 @@ import java.util.UUID;
 public final class CaseAccessGroupsUtil {
 
     public static final String CCD_ALL_CASES_ACCESS = "CCD:all-cases-access";
-    public static final String ORGANISATION_PROFILE = "ORGANISATION_PROFILE";
     static final String ORG_IDENTIFIER_TEMPLATE = "$ORGID$";
 
     /** Claimant only for now; the defendant side belongs to the notice-of-change work. */
