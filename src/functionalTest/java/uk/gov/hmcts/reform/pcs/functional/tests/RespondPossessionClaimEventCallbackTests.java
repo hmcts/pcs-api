@@ -45,7 +45,6 @@ public class RespondPossessionClaimEventCallbackTests extends BaseApi {
     private String accessCode;
 
     private static final String caseType = CaseType.getCaseType();
-    private String paymentRequestReference;
 
     @BeforeAll
     void setUp() {
@@ -63,13 +62,6 @@ public class RespondPossessionClaimEventCallbackTests extends BaseApi {
                 "[CLAIMANTSOLICITOR]"
             );
         }
-    }
-
-    Map<String,Object> getClaimantPaymentReference(Long caseReference) {
-        List<Map<String,Object>> paymentRefs =  apiSteps.getFeePaymentDetailsForCaseReference(caseReference);
-        assertNotNull(paymentRefs, "Payment references should not be null");
-        assertFalse(paymentRefs.isEmpty(), "Payment references should not be empty");
-        return paymentRefs.getFirst();
     }
 
     @Title("respondToPossessionClaim start event callback test without access code - returns 403")
@@ -145,5 +137,7 @@ public class RespondPossessionClaimEventCallbackTests extends BaseApi {
         apiSteps.theRequestContainsBody(respondClaimRequestBody);
         apiSteps.callIsSubmittedToTheEndpoint("SubmitEventCallback", "POST");
         apiSteps.checkStatusCode(200);
+        apiSteps.theResponseBodyMatchesTheExpectedResponse(
+            "/responses/respondPossessionClaim-submitEventCallbackResponse.json");
     }
 }
