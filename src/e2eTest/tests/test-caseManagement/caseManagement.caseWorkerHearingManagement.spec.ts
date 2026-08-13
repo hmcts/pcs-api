@@ -79,7 +79,7 @@ test.describe('Case management - Case Worker Manage Hearing @nightly', async () 
   test('Case management - Case Worker Add a hearing without Notice @CM @regression', async () => {
     let date = CaseManagementCommonUtils.getRandomDate(addHearing.dateTypeHiddenUserInput,'dateTime');
     let party = allPartyDetails[0]
-    let typeOfHearing = addHearing.typeOfHearingOption[0]
+    let typeOfHearing = addHearing.typeOfHearingOption[1]
     await performAction('selectAnEvent', {eventType: caseSummary.manageHearing});
     await performValidation('mainHeader', addHearing.mainHeader);
     await performAction('addAHearing', {
