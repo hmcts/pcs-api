@@ -25,5 +25,6 @@ public enum EventId {
     manageHearing,
     enterGenApp,
     caseworkerUploadDocuments,
-    removeDocument
+    removeDocument,
+    legalRepDocumentUpload
 }
