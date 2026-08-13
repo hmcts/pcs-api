@@ -4,8 +4,12 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
+import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+
+import java.util.List;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.resumePossessionClaim;
 
@@ -22,7 +26,10 @@ public class CaseDeletionService {
     private final PcsCaseService pcsCaseService;
 
     public void deleteDocuments(long caseReference) {
-        pcsCaseService.deleteDocuments(caseReference);
+        List<DocumentEntity> documents = pcsCaseService.getDocuments(caseReference);
+        if (!CollectionUtils.isEmpty(documents)) {
+            pcsCaseService.deleteDocuments(documents, caseReference);
+        }
     }
 
     @Transactional(timeout = 15)

@@ -47,7 +47,6 @@ import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -538,36 +537,45 @@ class PcsCaseServiceTest {
     }
 
     @Test
-    void shouldHandleDeleteCaseIfNoDocumentsFound() {
+    void shouldReturnDocumentsIfFound() {
         // Given
-        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
-                .caseReference(CASE_REFERENCE)
-                .documents(List.of())
-                .build();
+        List<DocumentEntity> documents = List.of(DocumentEntity.builder().url("url1").build(),
+                DocumentEntity.builder().url("url2").build());
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().documents(documents).build();
 
-        when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
+
+        when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE))
+                .thenReturn(Optional.ofNullable(pcsCaseEntity));
 
         // When
-        underTest.deleteCase(CASE_REFERENCE);
+        List<DocumentEntity> docs = underTest.getDocuments(CASE_REFERENCE);
 
         // Then
-        verify(documentImportService, never()).deleteDocument(anyString());
-        verify(pcsCaseRepository).delete(pcsCaseEntity);
+        assertThat(documents).isEqualTo(docs);
     }
 
     @Test
-    void shouldDeleteDocumentsIfFound() {
+    void shouldHandleExceptionIfCaseNotFoundWhileFindingDocuments() {
         // Given
-        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
-                .caseReference(CASE_REFERENCE)
-                .documents(List.of(DocumentEntity.builder().url("url1").build(),
-                        DocumentEntity.builder().url("url2").build()))
-                .build();
-
-        when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
+        when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.empty());
 
         // When
-        underTest.deleteDocuments(CASE_REFERENCE);
+        Throwable throwable = catchThrowable(() -> underTest.getDocuments(CASE_REFERENCE));
+
+        // Then
+        assertThat(throwable)
+                .isInstanceOf(CaseNotFoundException.class)
+                .hasMessage("No case found with reference %s", CASE_REFERENCE);
+    }
+
+    @Test
+    void shouldDeleteDocuments() {
+        // Given
+        List<DocumentEntity> documents = List.of(DocumentEntity.builder().url("url1").build(),
+                DocumentEntity.builder().url("url2").build());
+
+        // When
+        underTest.deleteDocuments(documents, CASE_REFERENCE);
 
         // Then
         verify(documentImportService).deleteDocument("url1");

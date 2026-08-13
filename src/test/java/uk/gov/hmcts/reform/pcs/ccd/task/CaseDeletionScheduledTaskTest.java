@@ -11,6 +11,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.service.casedeletion.CaseDeletionService;
 import uk.gov.hmcts.reform.pcs.ccd.service.casedeletion.CcdCaseDataDeletionService;
+import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.exception.CcdCaseNotFoundException;
 
 import java.util.ArrayList;
@@ -97,7 +98,7 @@ class CaseDeletionScheduledTaskTest {
         }
 
         @Test
-        void shouldContinueProcessingWhenIndividualDeletionThrowsException() {
+        void shouldContinueProcessingWhenCcdEventThrowsException() {
             // Given
             List<Long> caseRefs = new ArrayList<>();
             caseRefs.add(case1);
@@ -115,6 +116,29 @@ class CaseDeletionScheduledTaskTest {
             // Then
             verify(ccdCaseDataDeletionService, times(3)).markCaseForDeletion(anyLong());
             verify(ccdCaseDataDeletionService, times(2)).confirmCaseDisposal(anyLong());
+            verify(caseDeletionService, times(3)).deleteDocuments(anyLong());
+            verify(caseDeletionService, times(3)).deleteCase(anyLong());
+        }
+
+        @Test
+        void shouldContinueProcessingWhenCaseNotFoundInPCS() {
+            // Given
+            List<Long> caseRefs = new ArrayList<>();
+            caseRefs.add(case1);
+            caseRefs.add(case2);
+            caseRefs.add(case3);
+            when(ccdCaseDataDeletionService.findExpiredDraftCases(discardAfterDays))
+                    .thenReturn(caseRefs);
+
+            doThrow(new CaseNotFoundException(case1))
+                    .when(caseDeletionService).deleteCase(case1);
+
+            // When
+            assertDoesNotThrow(() -> underTest.runSweep());
+
+            // Then
+            verify(ccdCaseDataDeletionService, times(3)).markCaseForDeletion(anyLong());
+            verify(ccdCaseDataDeletionService, times(3)).confirmCaseDisposal(anyLong());
             verify(caseDeletionService, times(3)).deleteDocuments(anyLong());
             verify(caseDeletionService, times(3)).deleteCase(anyLong());
         }

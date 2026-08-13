@@ -14,6 +14,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.reform.pcs.ccd.service.casedeletion.CaseDeletionService;
 import uk.gov.hmcts.reform.pcs.ccd.service.casedeletion.CcdCaseDataDeletionService;
+import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.exception.CcdCaseNotFoundException;
 
 import java.util.List;
@@ -117,7 +118,11 @@ public class CaseDeletionScheduledTask {
                     caseRef, e.getMessage());
             throw e;
         }
-        cleanupDiscardedDraftCases(caseRef);
+        try {
+            cleanupDiscardedDraftCases(caseRef);
+        } catch (CaseNotFoundException e) {
+            log.error("Case not found with reference: {} when deleting case/documents", caseRef, e);
+        }
     }
 
     private void cleanupDiscardedDraftCases(long caseRef) {
