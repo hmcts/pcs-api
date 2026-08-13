@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.AddPartyDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.ManagePartyOptions;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.PartyType;
 import uk.gov.hmcts.reform.pcs.ccd.service.AddressValidator;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
@@ -41,6 +42,8 @@ public class AddPartyDetailsPage implements CcdPageConfiguration {
         this.addressValidator = addressValidator;
     }
 
+    private static final String ADD_PARTY_SELECTED =
+        ShowConditions.fieldEquals("addParty_ManagePartyOptions", ManagePartyOptions.ADD_PARTY);
     private static final String CLAIMANT_SELECTED =
         ShowConditions.fieldEquals("addParty_AddPartyType", PartyType.CLAIMANT);
     private static final String DEFENDANT_SELECTED =
@@ -52,7 +55,10 @@ public class AddPartyDetailsPage implements CcdPageConfiguration {
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
             .page("addClaimantOrDefendantDetails", this::midEvent)
-            .showCondition(ShowConditions.or(CLAIMANT_SELECTED, DEFENDANT_SELECTED, LITIGATION_FRIEND_SELECTED))
+            .showCondition(ShowConditions.and(
+                ADD_PARTY_SELECTED,
+                "(%s)".formatted(
+                    ShowConditions.or(CLAIMANT_SELECTED, DEFENDANT_SELECTED, LITIGATION_FRIEND_SELECTED))))
             .pageLabel("Party details")
             .label("addClaimantOrDefendantDetails-separator", "---")
             .complex(PCSCase::getAddPartyDetails)
