@@ -16,19 +16,18 @@ import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DraftCaseDataEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DraftCaseDataRepository;
-import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.exception.UnsubmittedDataException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -46,7 +45,7 @@ class DraftCaseDataServiceTest {
     @Mock
     private DraftCaseDataRepository draftCaseDataRepository;
     @Mock
-    private PcsCaseRepository pcsCaseRepository;
+    private OrganisationService organisationService;
     @Mock
     private ObjectMapper objectMapper;
     @Mock
@@ -65,7 +64,7 @@ class DraftCaseDataServiceTest {
     void setUp() {
         underTest = new DraftCaseDataService(
             draftCaseDataRepository,
-            pcsCaseRepository,
+            organisationService,
             objectMapper,
             draftCaseJsonMerger,
             securityContextService
@@ -84,7 +83,7 @@ class DraftCaseDataServiceTest {
         DraftCaseDataEntity draftCaseDataEntity = mock(DraftCaseDataEntity.class);
         PCSCase expectedUnsubmittedCaseData = mock(PCSCase.class);
 
-        when(draftCaseDataRepository.findByCaseReferenceAndEventIdAndIdamUserIdAndPartyIdIsNullAndOrganisationIdIsNull(
+        when(draftCaseDataRepository.findByCaseReferenceAndEventIdAndIdamUserId(
             CASE_REFERENCE, eventId, USER_ID))
             .thenReturn(Optional.of(draftCaseDataEntity));
         when(draftCaseDataEntity.getCaseData()).thenReturn(unsubmittedCaseDataJson);
@@ -101,7 +100,7 @@ class DraftCaseDataServiceTest {
     @Test
     void shouldReturnEmptyWhenNoUnsubmittedCaseData() {
         // Given
-        when(draftCaseDataRepository.findByCaseReferenceAndEventIdAndIdamUserIdAndPartyIdIsNullAndOrganisationIdIsNull(
+        when(draftCaseDataRepository.findByCaseReferenceAndEventIdAndIdamUserId(
             CASE_REFERENCE, eventId, USER_ID))
             .thenReturn(Optional.empty());
 
@@ -117,7 +116,7 @@ class DraftCaseDataServiceTest {
     void shouldReturnWhetherUnsubmittedCaseDataExists(boolean repositoryDataExists) {
         // Given
         when(draftCaseDataRepository
-                 .existsByCaseReferenceAndEventIdAndIdamUserIdAndPartyIdIsNullAndOrganisationIdIsNull(
+                 .existsByCaseReferenceAndEventIdAndIdamUserId(
                      CASE_REFERENCE, eventId, USER_ID))
             .thenReturn(repositoryDataExists);
 
@@ -134,7 +133,7 @@ class DraftCaseDataServiceTest {
         String caseDataJson = "case data json";
         PCSCase caseData = mock(PCSCase.class);
         when(objectMapper.writeValueAsString(caseData)).thenReturn(caseDataJson);
-        when(draftCaseDataRepository.findByCaseReferenceAndEventIdAndIdamUserIdAndPartyIdIsNullAndOrganisationIdIsNull(
+        when(draftCaseDataRepository.findByCaseReferenceAndEventIdAndIdamUserId(
             CASE_REFERENCE, eventId, USER_ID))
             .thenReturn(Optional.empty());
         when(draftCaseDataRepository.save(any(DraftCaseDataEntity.class)))
@@ -156,7 +155,7 @@ class DraftCaseDataServiceTest {
     void shouldPatchUnsubmittedCaseDataWithJson() {
         // Given
         String caseDataJson = "case data json";
-        when(draftCaseDataRepository.findByCaseReferenceAndEventIdAndIdamUserIdAndPartyIdIsNullAndOrganisationIdIsNull(
+        when(draftCaseDataRepository.findByCaseReferenceAndEventIdAndIdamUserId(
             CASE_REFERENCE, eventId, USER_ID))
             .thenReturn(Optional.empty());
         when(draftCaseDataRepository.save(any(DraftCaseDataEntity.class)))
@@ -188,7 +187,7 @@ class DraftCaseDataServiceTest {
 
         when(draftCaseJsonMerger.mergeJson(existingCaseDataJson, newCaseDataJson)).thenReturn(mergedCaseDataJson);
 
-        when(draftCaseDataRepository.findByCaseReferenceAndEventIdAndIdamUserIdAndPartyIdIsNullAndOrganisationIdIsNull(
+        when(draftCaseDataRepository.findByCaseReferenceAndEventIdAndIdamUserId(
             CASE_REFERENCE, eventId, USER_ID))
             .thenReturn(Optional.of(draftCaseDataEntity));
         when(draftCaseDataRepository.save(any(DraftCaseDataEntity.class)))
@@ -210,7 +209,7 @@ class DraftCaseDataServiceTest {
         // Given
         PCSCase caseData = mock(PCSCase.class);
         when(objectMapper.writeValueAsString(caseData)).thenReturn("case data json");
-        when(draftCaseDataRepository.findByCaseReferenceAndEventIdAndIdamUserIdAndPartyIdIsNullAndOrganisationIdIsNull(
+        when(draftCaseDataRepository.findByCaseReferenceAndEventIdAndIdamUserId(
             CASE_REFERENCE, eventId, USER_ID))
             .thenReturn(Optional.empty());
 
@@ -231,7 +230,7 @@ class DraftCaseDataServiceTest {
 
         DraftCaseDataEntity draftCaseDataEntity = mock(DraftCaseDataEntity.class);
 
-        when(draftCaseDataRepository.findByCaseReferenceAndEventIdAndIdamUserIdAndPartyIdIsNullAndOrganisationIdIsNull(
+        when(draftCaseDataRepository.findByCaseReferenceAndEventIdAndIdamUserId(
             CASE_REFERENCE, eventId, USER_ID))
             .thenReturn(Optional.of(draftCaseDataEntity));
         when(draftCaseDataRepository.save(any(DraftCaseDataEntity.class)))
@@ -255,7 +254,7 @@ class DraftCaseDataServiceTest {
 
         // Then
         verify(draftCaseDataRepository)
-            .deleteByCaseReferenceAndEventIdAndIdamUserIdAndPartyIdIsNullAndOrganisationIdIsNull(
+            .deleteByCaseReferenceAndEventIdAndIdamUserId(
                 CASE_REFERENCE, eventId, USER_ID);
     }
 
@@ -278,7 +277,7 @@ class DraftCaseDataServiceTest {
         String unsubmittedCaseDataJson = "case data json";
         DraftCaseDataEntity draftCaseDataEntity = mock(DraftCaseDataEntity.class);
 
-        when(draftCaseDataRepository.findByCaseReferenceAndEventIdAndIdamUserIdAndPartyIdIsNullAndOrganisationIdIsNull(
+        when(draftCaseDataRepository.findByCaseReferenceAndEventIdAndIdamUserId(
             CASE_REFERENCE, eventId, USER_ID))
             .thenReturn(Optional.of(draftCaseDataEntity));
         when(draftCaseDataEntity.getCaseData()).thenReturn(unsubmittedCaseDataJson);
@@ -517,14 +516,13 @@ class DraftCaseDataServiceTest {
     }
 
     @Test
-    void shouldFindDraftByOwningPartyForClaimJourney() throws JsonProcessingException {
+    void shouldFindDraftByOwningOrganisationForClaimJourney() throws JsonProcessingException {
         // Given
         String draftJson = "colleague draft json";
         DraftCaseDataEntity colleagueDraft = mock(DraftCaseDataEntity.class);
         PCSCase expected = mock(PCSCase.class);
 
-        when(pcsCaseRepository.findOwningOrganisationIds(CASE_REFERENCE, PartyRole.CLAIMANT))
-            .thenReturn(List.of(OWNER_ORGANISATION_ID));
+        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(OWNER_ORGANISATION_ID);
         when(draftCaseDataRepository.findByCaseReferenceAndEventIdAndOrganisationId(
             CASE_REFERENCE, PARTY_OWNED_EVENT, OWNER_ORGANISATION_ID)).thenReturn(Optional.of(colleagueDraft));
         when(colleagueDraft.getCaseData()).thenReturn(draftJson);
@@ -540,8 +538,7 @@ class DraftCaseDataServiceTest {
     @Test
     void shouldReportUnsubmittedDataExistsForAnyMemberOfTheOwningFirm() {
         // Given
-        when(pcsCaseRepository.findOwningOrganisationIds(CASE_REFERENCE, PartyRole.CLAIMANT))
-            .thenReturn(List.of(OWNER_ORGANISATION_ID));
+        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(OWNER_ORGANISATION_ID);
         when(draftCaseDataRepository.existsByCaseReferenceAndEventIdAndOrganisationId(
             CASE_REFERENCE, PARTY_OWNED_EVENT, OWNER_ORGANISATION_ID)).thenReturn(true);
 
@@ -550,10 +547,9 @@ class DraftCaseDataServiceTest {
     }
 
     @Test
-    void shouldStampOwningPartyOnNewClaimDraft() {
+    void shouldStampOwningOrganisationOnNewClaimDraft() {
         // Given
-        when(pcsCaseRepository.findOwningOrganisationIds(CASE_REFERENCE, PartyRole.CLAIMANT))
-            .thenReturn(List.of(OWNER_ORGANISATION_ID));
+        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(OWNER_ORGANISATION_ID);
         when(draftCaseDataRepository.findByCaseReferenceAndEventIdAndOrganisationId(
             CASE_REFERENCE, PARTY_OWNED_EVENT, OWNER_ORGANISATION_ID)).thenReturn(Optional.empty());
         when(draftCaseDataRepository.save(any(DraftCaseDataEntity.class)))
@@ -571,10 +567,9 @@ class DraftCaseDataServiceTest {
     }
 
     @Test
-    void shouldDeleteClaimDraftByOwningParty() {
+    void shouldDeleteClaimDraftByOwningOrganisation() {
         // Given
-        when(pcsCaseRepository.findOwningOrganisationIds(CASE_REFERENCE, PartyRole.CLAIMANT))
-            .thenReturn(List.of(OWNER_ORGANISATION_ID));
+        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(OWNER_ORGANISATION_ID);
 
         // When
         underTest.deleteUnsubmittedCaseData(CASE_REFERENCE, PARTY_OWNED_EVENT);
@@ -585,35 +580,40 @@ class DraftCaseDataServiceTest {
     }
 
     @Test
-    void shouldFailLoudlyWhenClaimCaseHasNoOrganisationOwnedParty() {
-        // Given
-        when(pcsCaseRepository.findOwningOrganisationIds(CASE_REFERENCE, PartyRole.CLAIMANT))
-            .thenReturn(List.of());
+    void shouldKeepDraftPrivateToTheUserWhenTheyHaveNoOrganisation() {
+        // Given a citizen, who belongs to no organisation
+        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(null);
+        when(draftCaseDataRepository.existsByCaseReferenceAndEventIdAndIdamUserId(
+            CASE_REFERENCE, PARTY_OWNED_EVENT, USER_ID)).thenReturn(true);
 
         // When / Then
-        assertThatThrownBy(() -> underTest.hasUnsubmittedCaseData(CASE_REFERENCE, PARTY_OWNED_EVENT))
-            .isInstanceOf(IllegalStateException.class)
-            .hasMessageContaining("no organisation-owned claimant party");
+        assertThat(underTest.hasUnsubmittedCaseData(CASE_REFERENCE, PARTY_OWNED_EVENT)).isTrue();
+        verify(draftCaseDataRepository, never())
+            .existsByCaseReferenceAndEventIdAndOrganisationId(anyLong(), any(), any());
     }
 
     @Test
-    void shouldFailLoudlyWhenCaseIsOwnedByMoreThanOneOrganisation() {
-        // Given
-        when(pcsCaseRepository.findOwningOrganisationIds(CASE_REFERENCE, PartyRole.CLAIMANT))
-            .thenReturn(List.of(OWNER_ORGANISATION_ID, OTHER_ORGANISATION_ID));
+    void shouldAdoptADraftSavedBeforeOrganisationKeying() throws JsonProcessingException {
+        // Given a draft written when drafts were keyed on the user alone
+        String draftJson = "pre-existing draft json";
+        DraftCaseDataEntity legacyDraft = new DraftCaseDataEntity();
+        legacyDraft.setCaseData(draftJson);
+        PCSCase expected = mock(PCSCase.class);
 
-        // When / Then
-        assertThatThrownBy(() -> underTest.hasUnsubmittedCaseData(CASE_REFERENCE, PARTY_OWNED_EVENT))
-            .isInstanceOf(IllegalStateException.class)
-            .hasMessageContaining("cannot determine which owns the draft");
-    }
+        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(OWNER_ORGANISATION_ID);
+        when(draftCaseDataRepository.findByCaseReferenceAndEventIdAndOrganisationId(
+            CASE_REFERENCE, PARTY_OWNED_EVENT, OWNER_ORGANISATION_ID)).thenReturn(Optional.empty());
+        when(draftCaseDataRepository.findByCaseReferenceAndEventIdAndIdamUserId(
+            CASE_REFERENCE, PARTY_OWNED_EVENT, USER_ID)).thenReturn(Optional.of(legacyDraft));
+        when(draftCaseDataRepository.save(legacyDraft)).thenReturn(legacyDraft);
+        when(objectMapper.readValue(draftJson, PCSCase.class)).thenReturn(expected);
 
-    @Test
-    void shouldFailLoudlyWhenAnEventClassifiedAsNoDraftsReachesTheService() {
-        // When / Then
-        assertThatThrownBy(() -> underTest.hasUnsubmittedCaseData(CASE_REFERENCE, EventId.makeAnApplication))
-            .isInstanceOf(IllegalStateException.class)
-            .hasMessageContaining("classified as NO_DRAFTS");
+        // When
+        Optional<PCSCase> unsubmittedCaseData = underTest.getUnsubmittedCaseData(CASE_REFERENCE, PARTY_OWNED_EVENT);
+
+        // Then the answers survive, now owned by the organisation
+        assertThat(unsubmittedCaseData).contains(expected);
+        assertThat(legacyDraft.getOrganisationId()).isEqualTo(OWNER_ORGANISATION_ID);
     }
 
 }

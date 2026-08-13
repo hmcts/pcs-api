@@ -9,20 +9,13 @@ import java.util.UUID;
 
 public interface DraftCaseDataRepository extends JpaRepository<DraftCaseDataEntity, Integer> {
 
-    /*
-     * The user-keyed lookups must exclude both other shapes. Without AndPartyIdIsNull a user holding
-     * a plain and a party draft on one case and event matches two rows and Spring Data throws on the
-     * Optional; without AndOrganisationIdIsNull the same happens once a journey moves to organisation
-     * ownership, because owned rows still carry idamUserId as the record of who last wrote them.
-     */
-
-    Optional<DraftCaseDataEntity> findByCaseReferenceAndEventIdAndIdamUserIdAndPartyIdIsNullAndOrganisationIdIsNull(
+    Optional<DraftCaseDataEntity> findByCaseReferenceAndEventIdAndIdamUserId(
         long caseReference, EventId eventId, UUID idamUserId);
 
-    boolean existsByCaseReferenceAndEventIdAndIdamUserIdAndPartyIdIsNullAndOrganisationIdIsNull(
+    boolean existsByCaseReferenceAndEventIdAndIdamUserId(
         long caseReference, EventId eventId, UUID idamUserId);
 
-    void deleteByCaseReferenceAndEventIdAndIdamUserIdAndPartyIdIsNullAndOrganisationIdIsNull(
+    void deleteByCaseReferenceAndEventIdAndIdamUserId(
         long caseReference, EventId eventId, UUID idamUserId);
 
     Optional<DraftCaseDataEntity> findByCaseReferenceAndEventIdAndOrganisationId(
