@@ -1361,26 +1361,28 @@ class DocumentServiceTest {
             .isEqualTo(CaseFileCategory.UNCATEGORISED_DOCUMENTS.getId());
     }
 
-    @Test
-    void shouldResolveWalesDocumentTypeWhenWalesTypePresent() {
+    @ParameterizedTest
+    @EnumSource(LegalRepDocumentTypeWales.class)
+    void shouldResolveWalesDocumentTypeWhenWalesTypePresent(LegalRepDocumentTypeWales walesType) {
         LegalRepDocument doc = LegalRepDocument.builder()
-            .legalRepDocumentTypeWales(LegalRepDocumentTypeWales.OCCUPATION_LICENCE)
+            .legalRepDocumentTypeWales(walesType)
             .build();
 
         DocumentType result = underTest.resolveDocumentType(doc);
 
-        assertThat(result).isEqualTo(DocumentType.OCCUPATION_LICENCE);
+        assertThat(result).isEqualTo(DocumentType.valueOf(walesType.name()));
     }
 
-    @Test
-    void shouldResolveDocumentTypeWhenWalesTypeNull() {
+    @ParameterizedTest
+    @EnumSource(LegalRepDocumentType.class)
+    void shouldResolveDocumentTypeWhenWalesTypeNull(LegalRepDocumentType legalRepType) {
         LegalRepDocument doc = LegalRepDocument.builder()
-            .legalRepDocumentType(LegalRepDocumentType.TENANCY_AGREEMENT)
+            .legalRepDocumentType(legalRepType)
             .build();
 
         DocumentType result = underTest.resolveDocumentType(doc);
 
-        assertThat(result).isEqualTo(DocumentType.TENANCY_AGREEMENT);
+        assertThat(result).isEqualTo(DocumentType.valueOf(legalRepType.name()));
     }
 
     private static Stream<Arguments> documentTypeToCategoryScenarios() {
