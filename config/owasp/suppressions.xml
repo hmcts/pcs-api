@@ -26,11 +26,6 @@
     <notes><![CDATA[angus-activation-2.0.3.jar]]></notes>
     <cve>CVE-2025-7962</cve>
   </suppress>
-  <suppress until="2026-08-15">
-    <notes><![CDATA[httpclient5-5.5.2.jar]]></notes>
-    <packageUrl>pkg:maven/org.apache.httpcomponents.client5/httpclient5@5.5.2</packageUrl>
-    <cve>CVE-2026-64607</cve>
-  </suppress>
   <!--End of false positives section -->
    <suppress>
       <notes><![CDATA[
