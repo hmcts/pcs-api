@@ -34,11 +34,11 @@ public enum GroupAccessType implements CCDAccessGroup {
         "Grants claimant access on all cases associated with this organisation", 5
     ),
     SOLICITOR_ORG_CLAIMANT_ACCESS(
-        SOLICITOR_PROFILE, "solicitor-org-claimant-access", "claimant_solicitor",
+        SOLICITOR_PROFILE, "solicitor-org-claimant-access", "claimant-solicitor",
         "Grants solicitors claimant access on all cases associated with this organisation", 6
     ),
     SOLICITOR_ORG_DEFENDANT_ACCESS(
-        SOLICITOR_PROFILE, "solicitor-org-defendant-access", "defendant_solicitor",
+        SOLICITOR_PROFILE, "solicitor-org-defendant-access", "defendant-solicitor",
         "Grants solicitors defendant access on all cases associated with this organisation", 7
     ),
     DUTY_ADVISOR_ACCESS(
@@ -104,7 +104,7 @@ public enum GroupAccessType implements CCDAccessGroup {
 
     /**
      * Builds the case access group ID template from this constant's own {@code accessTypeId} and
-     * group role, e.g. {@code "PCS:PCS:solicitor-org-claimant-access:claimant_solicitor:$ORGID$"}.
+     * group role, e.g. {@code "PCS:PCS:solicitor-org-claimant-access:claimant-solicitor:$ORGID$"}.
      */
     @Override
     public String getCaseAccessGroupIdTemplate() {

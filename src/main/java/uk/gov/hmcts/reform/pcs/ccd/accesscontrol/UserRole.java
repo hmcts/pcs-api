@@ -23,7 +23,6 @@ public enum UserRole implements HasRole {
     RAS_VALIDATOR("caseworker-ras-validation", Set.of(R), IDAM),
 
     CITIZEN("citizen", CRU, IDAM),
-    SOLICITOR("[SOLICITOR]", CRU, RAS),
     DEFENDANT("[DEFENDANT]", CRU, RAS),
     CLAIMANT_SOLICITOR("[CLAIMANTSOLICITOR]", CRU, RAS),
     DEFENDANT_SOLICITOR("[DEFENDANTSOLICITOR]", CRU, RAS),
@@ -32,8 +31,8 @@ public enum UserRole implements HasRole {
     PCS_SOLICITOR("caseworker-pcs-solicitor", CRU, IDAM),
 
     CLAIMANT("claimant", CRU, RAS),
-    GA_CLAIMANT_SOLICITOR("claimant_solicitor", CRU, RAS),
-    GA_DEFENDANT_SOLICITOR("defendant_solicitor", CRU, RAS),
+    GA_CLAIMANT_SOLICITOR("claimant-solicitor", CRU, RAS),
+    GA_DEFENDANT_SOLICITOR("defendant-solicitor", CRU, RAS),
     DUTY_ADVISOR_REQUEST("duty-advisor-request", Set.of(R), RAS),
 
     HMCTS_ADMIN("hmcts-admin", Set.of(R), RAS, GS_PROFILE),

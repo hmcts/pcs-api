@@ -32,7 +32,7 @@
     "roleAssignments": [
       {
         "roleType": "ORGANISATION",
-        "roleName": "claimant_solicitor",
+        "roleName": "claimant-solicitor",
         "grantType": "STANDARD",
         "roleCategory": "PROFESSIONAL",
         "classification": "RESTRICTED",
