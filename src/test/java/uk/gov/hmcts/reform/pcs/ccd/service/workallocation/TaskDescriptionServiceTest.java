@@ -11,6 +11,8 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.ccd.sdk.type.FlagDetail;
+import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
@@ -134,6 +136,76 @@ class TaskDescriptionServiceTest {
                     mainClaim,
                     partyEntity,
                     genAppEntity,
+                    List.of()
+                ));
+
+            // Then
+            assertThat(throwable)
+                .isInstanceOf(TemplateRenderingException.class)
+                .hasMessage("Failed to render template")
+                .hasCause(pebbleException);
+        }
+
+    }
+
+    @Nested
+    @DisplayName("Get description for Review Case Flags task")
+    class ReviewCaseFlagTests {
+
+        @Test
+        void shouldRenderTaskDescription() throws IOException {
+            // Given
+            List<ListValue<FlagDetail>> flagDetails = List.of(
+                ListValue.<FlagDetail>builder()
+                    .value(FlagDetail.builder().name("Flag 1").status("Active").build())
+                    .build(),
+                ListValue.<FlagDetail>builder()
+                    .value(FlagDetail.builder().name("Flag 2").status("Active").build())
+                    .build(),
+                ListValue.<FlagDetail>builder()
+                    .value(FlagDetail.builder().name("Flag 3").status("Requested").build())
+                    .build()
+            );
+
+            String expectedRenderedContent = "some rendered content";
+            PebbleTemplate pebbleTemplate = stubPebbleTemplate(
+                "review-case-flag",
+                expectedRenderedContent
+            );
+
+            // When
+            String description = underTest
+                .createReviewCaseFlagDescription(
+                    CASE_REFERENCE,
+                    flagDetails
+                );
+
+            // Then
+            assertThat(description).isEqualTo(expectedRenderedContent);
+
+            verify(pebbleTemplate).evaluate(isA(StringWriter.class), contextMapCaptor.capture());
+            Map<String, Object> contextMap = contextMapCaptor.getValue();
+            assertThat(contextMap)
+                .containsEntry("caseReference", CASE_REFERENCE)
+                .containsEntry("flags", List.of("Flag 1", "Flag 2"));
+        }
+
+        @Test
+        void shouldThrowExceptionWhenUnableToRenderTemplate() throws IOException {
+            // Given
+            String expectedRenderedContent = "some rendered content";
+            PebbleTemplate pebbleTemplate = stubPebbleTemplate(
+                "review-case-flag",
+                expectedRenderedContent
+            );
+
+            IOException pebbleException = mock(IOException.class);
+            doThrow(pebbleException).when(pebbleTemplate).evaluate(any(StringWriter.class), anyMap());
+
+            // When
+            Throwable throwable = catchThrowable(
+                () -> underTest.createReviewCaseFlagDescription(
+                    CASE_REFERENCE,
                     List.of()
                 ));
 
