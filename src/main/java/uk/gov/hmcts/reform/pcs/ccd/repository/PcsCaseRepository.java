@@ -19,9 +19,7 @@ public interface PcsCaseRepository extends JpaRepository<PcsCaseEntity, UUID> {
     /**
      * The organisations owning a case through its claimant. The "no claim link" arm covers the draft
      * phase, where the claimant has an organisation but no claim yet. Distinct, so two claimant
-     * parties from one organisation give one owner rather than an ambiguity; callers assert the
-     * single result rather than silently picking one, which leaves only genuinely different
-     * organisations as an error.
+     * parties in one organisation come back as the one owner they are.
      */
     @Query("""
         select distinct party.organisationId from PcsCaseEntity pcsCase

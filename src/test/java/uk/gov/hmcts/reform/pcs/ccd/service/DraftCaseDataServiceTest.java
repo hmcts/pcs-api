@@ -40,6 +40,7 @@ class DraftCaseDataServiceTest {
     private static final long CASE_REFERENCE = 1234L;
     private static final UUID USER_ID = UUID.randomUUID();
     private static final String OWNER_ORGANISATION_ID = "QKLHPMU";
+    private static final String OTHER_ORGANISATION_ID = "IHOVCKH";
     private static final EventId PARTY_OWNED_EVENT = EventId.resumePossessionClaim;
 
     @Mock
@@ -597,10 +598,9 @@ class DraftCaseDataServiceTest {
 
     @Test
     void shouldFailLoudlyWhenCaseIsOwnedByMoreThanOneOrganisation() {
-        // Given - two claimant parties from one organisation are distinct-ed to a single owner by
-        // the query, so only genuinely different organisations reach this.
+        // Given
         when(pcsCaseRepository.findOwningOrganisationIds(CASE_REFERENCE, PartyRole.CLAIMANT))
-            .thenReturn(List.of(OWNER_ORGANISATION_ID, "IHOVCKH"));
+            .thenReturn(List.of(OWNER_ORGANISATION_ID, OTHER_ORGANISATION_ID));
 
         // When / Then
         assertThatThrownBy(() -> underTest.hasUnsubmittedCaseData(CASE_REFERENCE, PARTY_OWNED_EVENT))

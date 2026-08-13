@@ -113,16 +113,24 @@ public class DraftCaseDataService {
      */
     private Optional<String> ownerOrganisationId(long caseReference, EventId eventId) {
         DraftOwnership ownership = OWNERSHIP.get(eventId);
+        failIfEventSavesNoDrafts(eventId, ownership);
 
+        if (ownership != DraftOwnership.PARTY) {
+            return Optional.empty();
+        }
+        return Optional.of(theOnlyOwningOrganisation(caseReference));
+    }
+
+    private static void failIfEventSavesNoDrafts(EventId eventId, DraftOwnership ownership) {
         if (ownership == DraftOwnership.NO_DRAFTS) {
             throw new IllegalStateException(
                 eventId + " is classified as NO_DRAFTS but reached the draft service. Classify it as "
                     + "PARTY or USER.");
         }
-        if (ownership != DraftOwnership.PARTY) {
-            return Optional.empty();
-        }
+    }
 
+    /** Two claimant parties in one organisation are already one owner; two organisations are not. */
+    private String theOnlyOwningOrganisation(long caseReference) {
         List<String> organisationIds = pcsCaseRepository.findOwningOrganisationIds(caseReference, PartyRole.CLAIMANT);
 
         if (organisationIds.isEmpty()) {
@@ -135,7 +143,7 @@ public class DraftCaseDataService {
                     + "cannot determine which owns the draft");
         }
 
-        return Optional.of(organisationIds.getFirst());
+        return organisationIds.getFirst();
     }
 
     private Optional<DraftCaseDataEntity> findDraft(long caseReference, EventId eventId, UUID userId,
