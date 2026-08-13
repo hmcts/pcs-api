@@ -21,6 +21,9 @@ import {FeeAndPayAction } from '@utils/actions/custom-actions/commonComponent/fe
 import {CaseFlagAction } from '@utils/actions/custom-actions/commonComponent/caseFlag.action';
 import {CaseLinking } from '@utils/actions/custom-actions/commonComponent/caseLinking.action';
 import { LinkSolicitorAPIAction } from '@utils/actions/custom-actions/linkSolicitorAPI.action';
+import {DocumentsAction} from "@utils/actions/custom-actions/documentsLR.action";
+import {RecordAnswers} from "@utils/actions/custom-actions";
+
 
 
 export class ActionRegistry {
@@ -53,12 +56,14 @@ export class ActionRegistry {
     ['submitCaseAPI', new CreateCaseAPIAction()],
     ['deleteCaseRole', new CreateCaseAPIAction()],
     ['getCaseAPI', new CreateCaseAPIAction()],
+    ['getCaseAPIForLR', new CreateCaseAPIAction()],
     ['getCaseAPIDynamic', new CreateCaseAPIAction()],
     ['linkSolicitorAPI', new LinkSolicitorAPIAction()],
     ['fetchCurrentUserAPI', new CreateCaseAPIAction()],
     ['createCaseAPIDynamicUsers', new CreateCaseAPIAction()],
     ['submitCaseAPIDynamicUsers', new CreateCaseAPIAction()],
     ['makeAnApplicationAPI', new CreateCaseAPIAction()],
+    ['makeAnApplicationAPIForLR', new CreateCaseAPIAction()],
     ['updatePaymentAPI', new CreateCaseAPIAction()],
     ['selectClaimType', new CreateCaseAction()],
     ['selectClaimantName', new CreateCaseAction()],
@@ -161,7 +166,15 @@ export class ActionRegistry {
     ['requestRemission', new FeeAndPayAction()],
     ['requestRefund', new FeeAndPayAction()],
     ['approveRefund', new FeeAndPayAction()],
-    ['rejectRefund', new FeeAndPayAction()]
+    ['rejectRefund', new FeeAndPayAction()],
+    ['navigateToSummaryPage', new DocumentsAction()],
+    ['uploadAdditionalDocumentsInfo', new DocumentsAction()],
+    ['verifyDocumentRelatesToApplication', new DocumentsAction()],
+    ['uploadFiles', new DocumentsAction()],
+    ['recordUserEntry', new RecordAnswers()],
+    ['retrieveCYATableDataLR', new DocumentsAction()],
+    ['validateCYAForLR', new DocumentsAction()],
+    ['readDocumentsSubmit', new DocumentsAction()],
   ]);
 
   static getAction(actionName: string): IAction {
