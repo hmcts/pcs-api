@@ -56,6 +56,7 @@ public class DraftCaseDataService {
         entry(EventId.dashboardView, DraftOwnership.NO_DRAFTS),
         entry(EventId.confirmEviction, DraftOwnership.NO_DRAFTS),
         entry(EventId.uploadDocuments, DraftOwnership.NO_DRAFTS),
+        entry(EventId.legalRepDocumentUpload, DraftOwnership.NO_DRAFTS),
         entry(EventId.amendDocuments, DraftOwnership.NO_DRAFTS),
         entry(EventId.addCaseNote, DraftOwnership.NO_DRAFTS),
         entry(EventId.addCaseReviewDate, DraftOwnership.NO_DRAFTS),

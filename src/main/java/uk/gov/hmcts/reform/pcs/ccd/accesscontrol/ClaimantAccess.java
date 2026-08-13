@@ -9,9 +9,13 @@ import uk.gov.hmcts.ccd.sdk.api.Permission;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CLAIMANT;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.GA_CLAIMANT_SOLICITOR;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.ORGANISATION_CASE_ACCESS_ADMINISTRATOR;
-import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.PCS_SOLICITOR;
 
 
+/**
+ * Claimant data is reachable only through the group access roles, so that a solicitor holding the
+ * blanket caseworker-pcs-solicitor role cannot stand in for an organisation that derives no
+ * CaseAccessGroups - otherwise a broken group access configuration still reads as working.
+ */
 public class ClaimantAccess implements HasAccessControl {
 
     @Override
@@ -20,8 +24,6 @@ public class ClaimantAccess implements HasAccessControl {
         grants.putAll(GA_CLAIMANT_SOLICITOR, Permission.CRU);
         grants.putAll(CLAIMANT, Permission.CRU);
         grants.putAll(ORGANISATION_CASE_ACCESS_ADMINISTRATOR, Permission.CRU);
-        // Temporary: without it the claimant fields open blank where the group access flags are off.
-        grants.putAll(PCS_SOLICITOR, Permission.CRU);
         return grants;
     }
 

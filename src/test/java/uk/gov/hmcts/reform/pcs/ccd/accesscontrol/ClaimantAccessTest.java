@@ -18,12 +18,12 @@ class ClaimantAccessTest {
         SetMultimap<HasRole, Permission> grants = claimantAccess.getGrants();
 
         // then
-        // Claimant fields follow the firm through its capacities, with the caseworker-pcs-solicitor
-        // IDAM role retained beside them until group access is enabled in every environment.
+        // Claimant fields follow the firm through its capacities.
         assertThat(grants.get(UserRole.GA_CLAIMANT_SOLICITOR)).isEqualTo(Permission.CRU);
         assertThat(grants.get(UserRole.CLAIMANT)).isEqualTo(Permission.CRU);
         assertThat(grants.get(UserRole.ORGANISATION_CASE_ACCESS_ADMINISTRATOR)).isEqualTo(Permission.CRU);
-        // Retained until group access is enabled in every environment
-        assertThat(grants.get(UserRole.PCS_SOLICITOR)).isEqualTo(Permission.CRU);
+        // The blanket IDAM role must not stand in for a capacity, or a broken group access
+        // configuration still reads as working.
+        assertThat(grants.get(UserRole.PCS_SOLICITOR)).isEmpty();
     }
 }
