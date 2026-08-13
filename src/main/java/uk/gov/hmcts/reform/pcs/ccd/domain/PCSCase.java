@@ -182,13 +182,6 @@ public class PCSCase {
         searchable = false,
         access = {DefendantAccess.class}
     )
-    @External
-    private String userPcqId;
-
-    @CCD(
-        searchable = false,
-        access = {DefendantAccess.class}
-    )
     private YesOrNo userPcqIdSet;
 
     @CCD(
