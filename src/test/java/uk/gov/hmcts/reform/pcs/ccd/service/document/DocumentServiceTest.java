@@ -1385,6 +1385,76 @@ class DocumentServiceTest {
         assertThat(result).isEqualTo(DocumentType.valueOf(legalRepType.name()));
     }
 
+    @Test
+    void shouldCreateDocumentEntitiesFromLegalRepDocuments() {
+        // Given
+        String url1 = "http://example.com/doc1.pdf";
+        String filename1 = "document1.pdf";
+        String binaryUrl1 = "http://example.com/binary/doc1";
+        String description1 = "Test document 1";
+        Document document1 = new Document(url1, filename1, binaryUrl1);
+
+        String url2 = "http://example.com/doc2.docx";
+        String filename2 = "document2.docx";
+        String binaryUrl2 = "http://example.com/binary/doc2";
+        String description2 = "Test document 2";
+        Document document2 = new Document(url2, filename2, binaryUrl2);
+
+        LegalRepDocument legalRepDoc1 = LegalRepDocument.builder()
+            .legalRepDocumentType(LegalRepDocumentType.WITNESS_STATEMENT)
+            .document(document1)
+            .description(description1)
+            .build();
+
+        LegalRepDocument legalRepDoc2 = LegalRepDocument.builder()
+            .legalRepDocumentType(LegalRepDocumentType.TENANCY_AGREEMENT)
+            .document(document2)
+            .description(description2)
+            .build();
+
+        List<LegalRepDocument> legalRepDocuments = List.of(legalRepDoc1, legalRepDoc2);
+        PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
+
+        // When
+        underTest.createDocumentEntitiesFromLegalRepDocuments(legalRepDocuments, pcsCaseEntity);
+
+        // Then
+        List<DocumentEntity> addedDocuments = pcsCaseEntity.getDocuments();
+        assertThat(addedDocuments).hasSize(2);
+
+        // Verify first document
+        DocumentEntity doc1 = addedDocuments.get(0);
+        assertThat(doc1.getUrl()).isEqualTo(url1);
+        assertThat(doc1.getFileName()).isEqualTo(filename1);
+        assertThat(doc1.getBinaryUrl()).isEqualTo(binaryUrl1);
+        assertThat(doc1.getDescription()).isEqualTo(description1);
+        assertThat(doc1.getType()).isEqualTo(DocumentType.WITNESS_STATEMENT);
+        assertThat(doc1.getCategoryId()).isEqualTo(CaseFileCategory.EVIDENCE.getId());
+        assertThat(doc1.getPcsCase()).isEqualTo(pcsCaseEntity);
+
+        // Verify second document
+        DocumentEntity doc2 = addedDocuments.get(1);
+        assertThat(doc2.getUrl()).isEqualTo(url2);
+        assertThat(doc2.getFileName()).isEqualTo(filename2);
+        assertThat(doc2.getBinaryUrl()).isEqualTo(binaryUrl2);
+        assertThat(doc2.getDescription()).isEqualTo(description2);
+        assertThat(doc2.getType()).isEqualTo(DocumentType.TENANCY_AGREEMENT);
+        assertThat(doc2.getCategoryId()).isEqualTo(CaseFileCategory.PROPERTY_DOCUMENTS.getId());
+        assertThat(doc2.getPcsCase()).isEqualTo(pcsCaseEntity);
+    }
+
+    @Test
+    void shouldCreateEmptyDocumentListWhenNoLegalRepDocuments() {
+        // Given
+        PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
+
+        // When
+        underTest.createDocumentEntitiesFromLegalRepDocuments(List.of(), pcsCaseEntity);
+
+        // Then
+        assertThat(pcsCaseEntity.getDocuments()).isEmpty();
+    }
+
     private static Stream<Arguments> documentTypeToCategoryScenarios() {
         return Stream.of(
             Arguments.of(DocumentType.ENERGY_PERFORMANCE_CERTIFICATE, CaseFileCategory.PROPERTY_DOCUMENTS),
@@ -1555,4 +1625,5 @@ class DocumentServiceTest {
             )
         );
     }
+
 }
