@@ -70,7 +70,7 @@ public final class CaseAccessGroupsUtil {
             .findFirst();
     }
 
-    /** initialiseClaimant is the only thing that makes a party before a claim exists to hold its role. */
+    /** createClaimantStub is the only thing that makes a party before a claim exists to hold its role. */
     private static boolean isClaimantCreatedWithTheCase(PartyEntity party) {
         return party.getClaimParties().isEmpty();
     }

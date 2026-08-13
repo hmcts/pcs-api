@@ -51,7 +51,7 @@ public class PcsCaseService {
         pcsCaseEntity.setPropertyAddress(addressMapper.toAddressEntityAndNormalise(propertyAddress));
         pcsCaseEntity.setLegislativeCountry(legislativeCountry);
 
-        partyService.initialiseClaimant(pcsCaseEntity);
+        partyService.createClaimantStub(pcsCaseEntity);
 
         return pcsCaseRepository.save(pcsCaseEntity);
     }

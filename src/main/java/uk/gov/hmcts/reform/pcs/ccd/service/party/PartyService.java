@@ -44,7 +44,7 @@ public class PartyService {
     public void createAllParties(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity, ClaimEntity claimEntity,
                                  String organisationIdForCurrentUser) {
         String orgProfileId = organisationService.getOrgProfileIdForCurrentUser();
-        PartyEntity claimant = findInitialisedClaimant(pcsCaseEntity).orElseGet(PartyEntity::new);
+        PartyEntity claimant = findClaimantStub(pcsCaseEntity).orElseGet(PartyEntity::new);
         populateClaimant(claimant, pcsCase, organisationIdForCurrentUser, orgProfileId);
         pcsCaseEntity.addParty(claimant);
         claimEntity.addParty(claimant, PartyRole.CLAIMANT);
@@ -152,7 +152,7 @@ public class PartyService {
      * Both organisation values are required: without them the case derives no group, and group
      * access is the only way in, so nobody could open it.
      */
-    public void initialiseClaimant(PcsCaseEntity pcsCaseEntity) {
+    public void createClaimantStub(PcsCaseEntity pcsCaseEntity) {
         String organisationId = organisationService.getOrganisationIdForCurrentUser();
         String organisationProfileId = organisationService.getOrgProfileIdForCurrentUser();
 
@@ -168,7 +168,7 @@ public class PartyService {
     }
 
     /** The claimant gets no claim link until submit, so one without it is the stub to complete. */
-    private Optional<PartyEntity> findInitialisedClaimant(PcsCaseEntity pcsCaseEntity) {
+    private Optional<PartyEntity> findClaimantStub(PcsCaseEntity pcsCaseEntity) {
         return pcsCaseEntity.getParties().stream()
             .filter(PartyEntity::hasOrganisation)
             .filter(party -> party.getClaimParties().isEmpty())
