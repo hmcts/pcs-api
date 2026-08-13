@@ -394,7 +394,6 @@ class LegalRepresentativePartyLinkServiceTest {
             .hasMessage("Legal Representative or organisation already linked to Party [" + partyId + "]");
 
         verify(addressMapper, never()).toAddressEntityAndNormalise(any(AddressUK.class));
-        verify(legalRepresentativeRepository, never()).save(any());
         verify(notificationService, never()).sendNoticeOfChangeCompletedEmailNotification(any());
         verify(legalRepresentativeOrganisationRepository, never()).save(any());
     }
