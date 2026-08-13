@@ -175,21 +175,6 @@ public class PartyService {
             .findFirst();
     }
 
-    /**
-     * Keeps what was validated at creation. rd-professional returns null rather than failing, so
-     * assigning unconditionally would wipe the organisation on a transient blip - and the same submit
-     * revokes CREATOR, leaving a case nobody can open.
-     */
-    private void setClaimantOrganisation(PartyEntity claimantParty, String organisationId,
-                                         String orgProfileId) {
-        if (organisationId != null) {
-            claimantParty.setOrganisationId(organisationId);
-        }
-        if (StringUtils.isNotBlank(orgProfileId)) {
-            claimantParty.setOrganisationProfileId(orgProfileId);
-        }
-    }
-
     private void populateClaimant(PartyEntity claimantParty, PCSCase pcsCase,
                                   String organisationIdForCurrentUser, String orgProfileId) {
 
@@ -218,6 +203,21 @@ public class PartyService {
         }
 
         partyRepository.save(claimantParty);
+    }
+
+    /**
+     * Keeps what was validated at creation. rd-professional returns null rather than failing, so
+     * assigning unconditionally would wipe the organisation on a transient blip, and group access is
+     * the only way in, so the case would be left with nobody able to open it.
+     */
+    private void setClaimantOrganisation(PartyEntity claimantParty, String organisationId,
+                                         String orgProfileId) {
+        if (organisationId != null) {
+            claimantParty.setOrganisationId(organisationId);
+        }
+        if (StringUtils.isNotBlank(orgProfileId)) {
+            claimantParty.setOrganisationProfileId(orgProfileId);
+        }
     }
 
     private static void setClaimantOrgName(ClaimantInformation claimantInformation, PartyEntity claimantParty) {
