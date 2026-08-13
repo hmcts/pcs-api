@@ -9,7 +9,6 @@ import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CIRCUIT_JUDGE;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CITIZEN;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CLAIMANT;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CLAIMANT_SOLICITOR;
-import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CREATOR;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CTSC_ADMIN;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.DEFENDANT;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.DEFENDANT_SOLICITOR;
@@ -25,7 +24,6 @@ final class AccessGrants {
 
     static final UserRole[] PARTY_VISIBLE_ROLES = {
         CITIZEN,
-        CREATOR,
         DEFENDANT,
         PCS_SOLICITOR,
         CLAIMANT,
