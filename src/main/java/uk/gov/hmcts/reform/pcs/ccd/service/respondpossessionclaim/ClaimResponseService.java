@@ -46,7 +46,8 @@ public class ClaimResponseService {
         updatePartyContactDetails(defendantParty, dataFromDraftTable.getDefendantContactDetails(), dataFromDraftTable
             .getDefendantResponses());
 
-        caseFlagService.saveReasonableAdjustmentFlags(defendantParty, dataFromDraftTable.getDefendantFlags(), caseReference);
+        caseFlagService
+            .saveReasonableAdjustmentFlags(defendantParty, dataFromDraftTable.getDefendantFlags(), caseReference);
 
         if (dataFromDraftTable.getDefendantResponses() != null
             && dataFromDraftTable.getDefendantResponses().getDateOfBirth() != null) {
