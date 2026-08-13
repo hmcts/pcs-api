@@ -194,6 +194,9 @@ class CaseFlagServiceTest {
         List<CasePartyFlagEntity> existingFlags = new ArrayList<>();
         existingFlags.add(createPartyFlagEntity("PF0015", "Language Interpreter"));
 
+        when(taskDescriptionService.createReviewCaseFlagDescription(eq(CASE_REFERENCE), any()))
+            .thenReturn("description");
+        
         PartyEntity partyEntity = PartyEntity.builder()
             .id(UUID.randomUUID())
             .defendantFlags(existingFlags)
@@ -202,9 +205,6 @@ class CaseFlagServiceTest {
         List<ListValue<FlagDetail>> details = new ArrayList<>();
         details.addAll(createFlagDetailsWithoutIds("RA0033", "Sign language interpreter"));
         details.addAll(createFlagDetailsWithoutIds("CF0002", "Complex case"));
-
-        when(taskDescriptionService.createReviewCaseFlagDescription(eq(CASE_REFERENCE), any()))
-            .thenReturn("description");
 
         // When
         underTest.saveReasonableAdjustmentFlags(partyEntity, Flags.builder().details(details).build(), CASE_REFERENCE);
