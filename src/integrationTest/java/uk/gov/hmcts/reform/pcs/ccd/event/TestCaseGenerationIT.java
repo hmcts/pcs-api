@@ -60,7 +60,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.event.TestCaseGeneration.NO_NON_PROD_C
 @DisplayName("TestCaseGenerationIT Integration Tests")
 public class TestCaseGenerationIT extends AbstractPostgresContainerIT {
 
-    private static final String SYSTEM_USER_ID_TOKEN = "system-user-id-token";
+    private static final String SYSTEM_USER_ID_STUB = "system-user-id-token";
     private static final UUID USER_ID = UUID.fromString("123e4567-e89b-12d3-a456-426614174001");
     private static final long CASE_REFERENCE = 1234567890123456L;
     private static final String ORGANISATION_ID = "TEST-123";
@@ -90,6 +90,8 @@ public class TestCaseGenerationIT extends AbstractPostgresContainerIT {
 
         when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(ORGANISATION_ID);
         when(organisationService.getOrgProfileIdForCurrentUser()).thenReturn("SOLICITOR_PROFILE");
+        when(organisationService.getOrganisationId(any())).thenReturn(ORGANISATION_ID);
+        when(organisationService.getOrgProfileId(any())).thenReturn("SOLICITOR_PROFILE");
     }
 
     @AfterEach
@@ -170,7 +172,7 @@ public class TestCaseGenerationIT extends AbstractPostgresContainerIT {
     }
 
     private void setUpAuthenticatedUser() {
-        idamHelper.stubIdamSystemUser(authorizedClientManager, SYSTEM_USER_ID_TOKEN);
+        idamHelper.stubIdamSystemUser(authorizedClientManager, SYSTEM_USER_ID_STUB);
         uk.gov.hmcts.reform.idam.client.models.UserInfo idamUserInfo =
             mock(uk.gov.hmcts.reform.idam.client.models.UserInfo.class);
         when(idamUserInfo.getUid()).thenReturn(USER_ID.toString());
