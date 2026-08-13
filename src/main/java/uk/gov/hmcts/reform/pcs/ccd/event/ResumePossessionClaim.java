@@ -88,9 +88,6 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
                 // The organisations that are the claimant themselves - local authority and the
                 // "other" profiles - hold this capacity rather than claimant-solicitor
                 .grant(Permission.CRUD, UserRole.CLAIMANT)
-                // The organisation's capacity covers the draft; CREATOR is the fallback for a
-                // case that derives no CaseAccessGroups.
-                .grant(Permission.CRUD, UserRole.CREATOR)
                 .grantHistoryOnly(JUDICIAL_HISTORY_ROLES)
                 .showSummary()
                 .endButtonLabel("${endButtonLabel}");

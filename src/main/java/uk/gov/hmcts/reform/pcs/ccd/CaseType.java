@@ -108,9 +108,6 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
         builder.caseType(getCaseType(), getCaseTypeName(), CASE_TYPE_DESCRIPTION);
         builder.jurisdiction(JURISDICTION_ID, JURISDICTION_NAME, JURISDICTION_DESCRIPTION);
         builder.hmctsServiceId(hmctsServiceId);
-        // A group-less case is reachable only through the creator's case role, so it must pass
-        // case-type authorisation by itself - bracketed roles are otherwise skipped
-        builder.grantCaseTypeAccessToCaseRoles(AccessProfile.CREATOR);
 
         builder.searchInputFields()
             .caseReferenceField();
