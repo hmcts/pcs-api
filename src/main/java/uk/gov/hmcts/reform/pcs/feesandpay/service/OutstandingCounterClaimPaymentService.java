@@ -5,7 +5,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.transaction.annotation.Transactional;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
@@ -17,6 +19,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.party.DefendantAccessValidator;
 import uk.gov.hmcts.reform.pcs.exception.FeePaymentNotFoundException;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.OutstandingCounterClaimPayment;
 
+import java.math.BigDecimal;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -67,7 +70,33 @@ public class OutstandingCounterClaimPaymentService {
             .map(feePayment -> OutstandingCounterClaimPayment.builder()
                 .serviceRequestReference(feePayment.getServiceRequestReference())
                 .feeAmount(feePayment.getAmount())
+                .counterClaimAmountInPence(toCounterClaimAmountInPence(counterClaim))
+                .counterClaimType(toCounterClaimType(counterClaim))
                 .build());
+    }
+
+    private static String toCounterClaimType(CounterClaimEntity counterClaim) {
+        CounterClaimType claimType = counterClaim.getClaimType();
+        return claimType != null ? claimType.name() : null;
+    }
+
+    private static String toCounterClaimAmountInPence(CounterClaimEntity counterClaim) {
+        if (counterClaim.getClaimType() == CounterClaimType.SOMETHING_ELSE) {
+            return null;
+        }
+
+        BigDecimal amountInPounds = null;
+        if (counterClaim.getIsClaimAmountKnown() == VerticalYesNo.YES) {
+            amountInPounds = counterClaim.getClaimAmount();
+        } else if (counterClaim.getIsClaimAmountKnown() == VerticalYesNo.NO) {
+            amountInPounds = counterClaim.getEstimatedMaxClaimAmount();
+        }
+
+        if (amountInPounds == null) {
+            return null;
+        }
+
+        return amountInPounds.movePointRight(2).toPlainString();
     }
 
     private boolean isPaymentRequired(CounterClaimEntity counterClaim) {

@@ -11,4 +11,6 @@ public class OutstandingCounterClaimPayment {
 
     private final String serviceRequestReference;
     private final BigDecimal feeAmount;
+    private final String counterClaimAmountInPence;
+    private final String counterClaimType;
 }

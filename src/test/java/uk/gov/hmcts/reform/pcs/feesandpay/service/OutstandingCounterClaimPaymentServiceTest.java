@@ -5,7 +5,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
@@ -53,6 +55,9 @@ class OutstandingCounterClaimPaymentServiceTest {
     @Test
     void shouldReturnOutstandingPaymentWhenPendingCounterClaimHasFeePayment() {
         CounterClaimEntity counterClaim = pendingCounterClaim(null);
+        counterClaim.setClaimType(CounterClaimType.PAYMENT_OR_COMPENSATION);
+        counterClaim.setIsClaimAmountKnown(VerticalYesNo.YES);
+        counterClaim.setClaimAmount(new BigDecimal("649.00"));
         FeePaymentEntity feePayment = FeePaymentEntity.builder()
             .serviceRequestReference(SERVICE_REQUEST_REFERENCE)
             .amount(new BigDecimal("404.00"))
@@ -69,6 +74,8 @@ class OutstandingCounterClaimPaymentServiceTest {
         assertThat(result).isPresent();
         assertThat(result.get().getServiceRequestReference()).isEqualTo(SERVICE_REQUEST_REFERENCE);
         assertThat(result.get().getFeeAmount()).isEqualByComparingTo("404.00");
+        assertThat(result.get().getCounterClaimAmountInPence()).isEqualTo("64900");
+        assertThat(result.get().getCounterClaimType()).isEqualTo("PAYMENT_OR_COMPENSATION");
     }
 
     @Test
