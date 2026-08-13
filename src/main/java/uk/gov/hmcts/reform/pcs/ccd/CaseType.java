@@ -120,7 +120,6 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
         builder.searchResultFields()
             .caseReferenceField();
 
-
         buildCaseListView(builder);
 
         builder.tab("nextSteps", "Next steps")
@@ -175,7 +174,6 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
 
         configureCaseFileCategories(builder);
     }
-
 
     private void configureCaseFileCategories(ConfigBuilder<PCSCase, State, AccessProfile> builder) {
         for (CaseFileCategory category : CaseFileCategory.values()) {
@@ -303,7 +301,13 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
                 "detailsTab_RequiredDocumentsDetails!=\"\"",
                 "## Required Documents"
             )
-            .field("detailsTab_RequiredDocumentsDetails");
+            .field("detailsTab_RequiredDocumentsDetails")
+            .label(
+                "Documents you've uploaded",
+                "detailsTab_UploadedDocumentsChecklistDetails!=\"\"",
+                "## Documents you've uploaded"
+            )
+            .field("detailsTab_UploadedDocumentsChecklistDetails");
     }
 
     private void buildCaseListView(ConfigBuilder<PCSCase, State, AccessProfile> builder) {
