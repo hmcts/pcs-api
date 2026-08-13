@@ -20,7 +20,9 @@ import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentAmendService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentSelectionService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerRoles.CASEWORKER_ROLES;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.ManageDocumentStates.MANAGE_DOCUMENT_STATES;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.amendDocuments;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.CASEWORKER_EVENTS;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.RELEASE_1_DOT_2;
@@ -40,22 +42,10 @@ public class AmendDocuments implements CCDConfig<PCSCase, State, UserRole> {
         Event.EventBuilder<PCSCase, UserRole, State> eventBuilder =
             configBuilder
                 .decentralisedEvent(amendDocuments.name(), this::submit, this::start)
-                .forStates(
-                    State.CASE_ISSUED,
-                    State.JUDICIAL_REFERRAL,
-                    State.HEARING_READINESS,
-                    State.PREPARE_FOR_HEARING_CONDUCT_HEARING,
-                    State.DECISION_OUTCOME,
-                    State.CASE_PROGRESSION,
-                    State.ALL_FINAL_ORDERS_ISSUED,
-                    State.CASE_STAYED,
-                    State.BREATHING_SPACE,
-                    State.CLOSED
-                )
+                .forStates(MANAGE_DOCUMENT_STATES)
                 .name("Manage documents: Amend")
                 .showCondition(ShowConditions.featureFlagsEnabled(RELEASE_1_DOT_2, CASEWORKER_EVENTS))
-                .grant(Permission.CRU, UserRole.HEARING_CENTRE_TEAM_LEADER)
-                .grant(Permission.CRU, UserRole.HEARING_CENTRE_ADMIN)
+                .grant(Permission.CRU, CASEWORKER_ROLES)
                 .grantHistoryOnly(JUDICIAL_HISTORY_ROLES)
                 .showSummary()
                 .endButtonLabel("Submit");
