@@ -9,8 +9,6 @@ import uk.gov.hmcts.ccd.sdk.CaseViewRequest;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.AccessProfile;
-import uk.gov.hmcts.reform.pcs.ccd.domain.GroupAccessFields;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
@@ -139,9 +137,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
     private void applyCaseAccessGroups(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
         // Set unconditionally: an omitted field reads as "no opinion" to anything holding a copy,
         // so a case that stops deriving groups could keep the ones it had.
-        pcsCase.setGroupAccessFields(GroupAccessFields.<AccessProfile>builder()
-            .caseAccessGroups(CaseAccessGroupsUtil.deriveCaseAccessGroups(pcsCaseEntity.getParties()))
-            .build());
+        pcsCase.setCaseAccessGroups(CaseAccessGroupsUtil.deriveCaseAccessGroups(pcsCaseEntity.getParties()));
     }
 
     private boolean caseHasUnsubmittedData(long caseReference, State state) {

@@ -120,15 +120,8 @@ public enum GroupAccessType implements CCDAccessGroup {
     private static Map<Key, GroupAccessType> buildIndex() {
         Map<Key, GroupAccessType> index = new HashMap<>();
         for (GroupAccessType accessType : values()) {
-            if (accessType.partyRole == null) {
-                continue;
-            }
-            GroupAccessType clash = index.put(
-                new Key(accessType.organisationProfileId, accessType.partyRole), accessType);
-            if (clash != null) {
-                throw new IllegalStateException(
-                    "Two access types declared for the same organisation profile and party role: "
-                        + clash + " and " + accessType);
+            if (accessType.partyRole != null) {
+                index.put(new Key(accessType.organisationProfileId, accessType.partyRole), accessType);
             }
         }
         return Map.copyOf(index);

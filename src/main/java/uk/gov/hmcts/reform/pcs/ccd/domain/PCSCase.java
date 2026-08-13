@@ -8,6 +8,7 @@ import lombok.Data;
 import uk.gov.hmcts.ccd.sdk.External;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.ccd.sdk.type.CaseAccessGroup;
 import uk.gov.hmcts.ccd.sdk.type.CaseLink;
 import uk.gov.hmcts.ccd.sdk.type.CaseLocation;
 import uk.gov.hmcts.ccd.sdk.type.ChangeOrganisationRequest;
@@ -27,7 +28,6 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseRoleID;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.ClaimantAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DefendantAccess;
-import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.AccessProfile;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DefendantSolicitorAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DocumentAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.GlobalSearchAccess;
@@ -789,8 +789,13 @@ public class PCSCase {
     @CCD(access = {DefendantSolicitorAccess.class})
     private List<ListValue<Party>> allLinkedDefendants;
 
-    @JsonUnwrapped
-    private GroupAccessFields<AccessProfile> groupAccessFields;
+    /**
+     * The groups a role assignment's caseAccessGroupId is matched against. Derived on read rather
+     * than stored - the name must be CaseAccessGroups to match what data store expects.
+     */
+    @JsonProperty("CaseAccessGroups")
+    @CCD
+    private List<ListValue<CaseAccessGroup>> caseAccessGroups;
 
     @CCD
     private String postCode;
