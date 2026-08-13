@@ -21,6 +21,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
+import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 
 
@@ -153,8 +154,9 @@ public class PartyService {
      * access is the only way in, so nobody could open it.
      */
     public void createClaimantStub(PcsCaseEntity pcsCaseEntity) {
-        String organisationId = organisationService.getOrganisationIdForCurrentUser();
-        String organisationProfileId = organisationService.getOrgProfileIdForCurrentUser();
+        OrganisationDetailsResponse organisationDetails = organisationService.getOrganisationDetailsForCurrentUser();
+        String organisationId = organisationService.getOrganisationId(organisationDetails);
+        String organisationProfileId = organisationService.getOrgProfileId(organisationDetails);
 
         Objects.requireNonNull(organisationId, "Organisation must be provided to create a case");
         if (StringUtils.isBlank(organisationProfileId)) {

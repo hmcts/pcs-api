@@ -80,13 +80,12 @@ public class OrganisationService {
     }
 
     /**
-     * The organisation profile PRM keys the group access catalogue on. Every organisation also
-     * carries the generic ORGANISATION_PROFILE alongside its real one, so skipping that leaves the
-     * single profile that identifies an access type.
+     * The whole organisation record for the current user, so a caller needing more than one field
+     * can read them from a single call rather than one round trip each.
      *
-     * @return The organisation profile, or null if it cannot be resolved
+     * @return The organisation details, or null if they cannot be retrieved
      */
-    public String getOrgProfileIdForCurrentUser() {
+    public OrganisationDetailsResponse getOrganisationDetailsForCurrentUser() {
         try {
             UUID userId = resolveUserId();
 
@@ -94,17 +93,47 @@ public class OrganisationService {
                 return null;
             }
 
-            OrganisationDetailsResponse details = organisationDetailsService.getOrganisationDetails(userId.toString());
-            return details.getOrganisationProfileIds() == null ? null
-                : details.getOrganisationProfileIds().stream()
-                    .filter(profile -> !GENERIC_ORGANISATION_PROFILE.equals(profile))
-                    .findFirst().orElse(null);
+            return organisationDetailsService.getOrganisationDetails(userId.toString());
 
         } catch (OrganisationDetailsException | SecurityContextException ex) {
-            log.error("Error retrieving organisation summary from rd-professional API. Error: {}",
+            log.error("Error retrieving organisation details from rd-professional API. Error: {}",
                 ex.getMessage(), ex);
             return null;
         }
+    }
+
+    /**
+     * Reads the organisation identifier off an already-fetched record.
+     *
+     * @return The organisation identifier, or null if there is none
+     */
+    public String getOrganisationId(OrganisationDetailsResponse organisationDetails) {
+        return organisationDetails == null ? null : organisationDetails.getOrganisationIdentifier();
+    }
+
+    /**
+     * The organisation profile PRM keys the group access catalogue on. Every organisation also
+     * carries the generic ORGANISATION_PROFILE alongside its real one, so skipping that leaves the
+     * single profile that identifies an access type.
+     *
+     * @return The organisation profile, or null if there is none
+     */
+    public String getOrgProfileId(OrganisationDetailsResponse organisationDetails) {
+        if (organisationDetails == null || organisationDetails.getOrganisationProfileIds() == null) {
+            return null;
+        }
+        return organisationDetails.getOrganisationProfileIds().stream()
+            .filter(profile -> !GENERIC_ORGANISATION_PROFILE.equals(profile))
+            .findFirst().orElse(null);
+    }
+
+    /**
+     * Fetches the record and resolves the profile from it in one call.
+     *
+     * @return The organisation profile for the current user, or null if it cannot be resolved
+     */
+    public String getOrgProfileIdForCurrentUser() {
+        return getOrgProfileId(getOrganisationDetailsForCurrentUser());
     }
 
     /**

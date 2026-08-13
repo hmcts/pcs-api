@@ -1456,8 +1456,8 @@ class PartyServiceTest {
         @Test
         void shouldAddClaimantCarryingOnlyTheOrganisation() {
             PcsCaseEntity caseEntity = new PcsCaseEntity();
-            when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(ORG_ID);
-            when(organisationService.getOrgProfileIdForCurrentUser()).thenReturn("SOLICITOR_PROFILE");
+            when(organisationService.getOrganisationId(any())).thenReturn(ORG_ID);
+            when(organisationService.getOrgProfileId(any())).thenReturn("SOLICITOR_PROFILE");
 
             underTest.createClaimantStub(caseEntity);
 
@@ -1484,8 +1484,8 @@ class PartyServiceTest {
         @Test
         void shouldRejectCaseCreationWithoutOrganisationProfileId() {
             PcsCaseEntity caseEntity = new PcsCaseEntity();
-            when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(ORG_ID);
-            when(organisationService.getOrgProfileIdForCurrentUser()).thenReturn(null);
+            when(organisationService.getOrganisationId(any())).thenReturn(ORG_ID);
+            when(organisationService.getOrgProfileId(any())).thenReturn(null);
 
             assertThatThrownBy(() -> underTest.createClaimantStub(caseEntity))
                 .isInstanceOf(IllegalArgumentException.class)
