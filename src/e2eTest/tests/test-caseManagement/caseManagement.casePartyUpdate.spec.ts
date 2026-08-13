@@ -54,7 +54,8 @@ test.afterEach(async () => {
 test.describe('Case management - Case Party Management e2e Journey @nightly', async () => {
   test('Case management - Add a Party to the Case - Defendant @CM @regression', async () => {
     let date = CaseManagementCommonUtils.getRandomDate(partyDetails.dateTypeHiddenUserInput);
-    let appType = CaseManagementCommonUtils.getGenApplicationType(defendantUserDetails.length)[0];
+    let firstName = partyDetails.firstNames[Math.floor(Math.random() * partyDetails.firstNames.length)];
+    let lastName = partyDetails.lastNames[Math.floor(Math.random() * partyDetails.lastNames.length)];
     let party = allPartyDetails[0];
     let fileName = (selectDocument.typeOfDocumentHiddenRadioOption)[0].split('-')[0].trim();
     await performAction('selectAnEvent', { eventType: caseSummary.manageParties });
@@ -68,18 +69,54 @@ test.describe('Case management - Case Party Management e2e Journey @nightly', as
     });
     await performAction('addNewParty', {
       label1: partyDetails.firstNameTextLabel,
+      input1: firstName,
       label2: partyDetails.lastNameTextLabel,
+      input2: lastName,
       dateLabel: partyDetails.addDOBTextLabel,
       date: date,
-    })
-    //postcode: partyDetails.englandCourtAssignedPostcodeTextInput,
+    });
     await performAction('addNewPartyAddress', {
       enterUKPostcodeTextLabel: partyDetails.enterUKPostcodeTextLabel,
       postcode: addressInfo.engOrWalPostcode,
       findAddressButton: partyDetails.findAddressButton,
-      addressSelectLabel: partyDetails.addressSelectLabel,
+      addressSelectLabel: partyDetails.addressSelectHiddenLabel,
       addressIndex: partyDetails.addressIndex,
       nextPage: checkYourAnswersManageParties.mainHeader
     });
+    await performAction('clickButton', checkYourAnswersManageParties.submitButton);
+  });
+
+  test('Case management - Add a Party to the Case - Claimant @CM @regression', async () => {
+    let date = CaseManagementCommonUtils.getRandomDate(partyDetails.dateTypeHiddenUserInput);
+    let firstName = partyDetails.firstNames[Math.floor(Math.random() * partyDetails.firstNames.length)];
+    let lastName = partyDetails.lastNames[Math.floor(Math.random() * partyDetails.lastNames.length)];
+    let party = allPartyDetails[0];
+    let fileName = (selectDocument.typeOfDocumentHiddenRadioOption)[0].split('-')[0].trim();
+    await performAction('selectAnEvent', { eventType: caseSummary.manageParties });
+    await performValidation('mainHeader', manageParty.mainHeader);
+    await performAction('selectManageParty', {
+      partyToChangeQn: manageParty.whatChangeQuestion,
+      option: manageParty.addPartyRadioOption,
+      whichPartyQn: manageParty.typeOfPartyHiddenQuestion,
+      option1: manageParty.claimantHiddenRadioOption,
+      nextPage: partyDetails.mainHeader,
+    });
+    await performAction('addNewParty', {
+      label1: partyDetails.firstNameTextLabel,
+      input1: firstName,
+      label2: partyDetails.lastNameTextLabel,
+      input2: lastName,
+      dateLabel: partyDetails.addDOBTextLabel,
+      date: date,
+    });
+    await performAction('addNewPartyAddress', {
+      enterUKPostcodeTextLabel: partyDetails.enterUKPostcodeTextLabel,
+      postcode: addressInfo.engOrWalPostcode,
+      findAddressButton: partyDetails.findAddressButton,
+      addressSelectLabel: partyDetails.addressSelectHiddenLabel,
+      addressIndex: partyDetails.addressIndex,
+      nextPage: checkYourAnswersManageParties.mainHeader
+    });
+    await performAction('clickButton', checkYourAnswersManageParties.submitButton);
   });
 });

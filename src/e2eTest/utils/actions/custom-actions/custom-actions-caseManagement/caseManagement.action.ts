@@ -29,7 +29,7 @@ import {
 import { caseInfo } from '../createCaseAPI.action';
 import { CaseManagementCommonUtils } from './caseManagementUtils.action';
 import path from 'path';
-export let addressInfo: { buildingStreet: string; addressLine2: string; townCity: string; engOrWalPostcode: string; };
+export let addressInfo: { buildingStreet: string; addressLine2: string; townCity: string; country: string; engOrWalPostcode: string; };
 
 export let allPartyDetails: string[] = [];
 
@@ -61,6 +61,7 @@ export class CaseManagementAction implements IAction {
       ['selectManageParty', () => this.selectManageParty(fieldName as actionRecord)],
       ['addNewPartyAddress', () => this.addNewPartyAddress(page, fieldName as actionRecord)],
       ['addNewParty', () => this.addNewParty(fieldName as actionRecord)],
+      ['confirmAddParty', () => this.confirmAddParty(fieldName as actionRecord)],
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) {
@@ -408,7 +409,6 @@ export class CaseManagementAction implements IAction {
   }
 
   private async confirmAmend(confirm: actionRecord): Promise<void> {
-    let submitPayLoad = confirm.submitPayload as Record<string, any>;
     let formattedDate;
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', {
@@ -453,23 +453,58 @@ export class CaseManagementAction implements IAction {
   }
 
   private async addNewParty(partyDetail: actionRecord) {
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
+    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
 
-    await performAction('inputText', partyDetail.label1, CaseManagementCommonUtils.getRandomNumberAsString(1, 10));
-    await performAction('inputText', partyDetail.label2, CaseManagementCommonUtils.getRandomNumberAsString(1, 10));
-
+    await performAction('inputText', partyDetail.label1, partyDetail.input1);
+    await performAction('inputText', partyDetail.label2, partyDetail.input2);
     await performAction('inputDate', partyDetail.dateLabel as string, partyDetail.date);
     
   }
 
   private async addNewPartyAddress(page: Page, partyAddress: actionRecord) {
-    const addLoc = page.locator('button').filter({ hasText: 'Find address' }).first()
+    const addLoc = page.locator('button').filter({ hasText: 'Find address' })
+    const count = await addLoc.count();
     //await expect(addLoc).toBeVisible({ timeout: SHORT_TIMEOUT });
-    await expect(addLoc).toBeEnabled();
+    //await expect(addLoc).toBeEnabled();
     await performAction('inputText', partyAddress.enterUKPostcodeTextLabel, partyAddress.postcode);
-    await addLoc.click({force: true});
+    for (let i = 0; i < count; i++) {
+      const button = addLoc.nth(i);
+
+      if (await button.isVisible()) {
+        await button.click();
+        break;
+      }
+    }
+    //await addLoc.click({force: true});
     //await performAction('clickButton', partyAddress.findAddressButton);
     await performAction('select', partyAddress.addressSelectLabel, partyAddress.addressIndex as number);
+    await performAction('inputText', partyDetails.buildingAndStreetHiddenTextLabel, addressInfo.buildingStreet);
+    await performAction('inputText', partyDetails.addressLine2HiddenTextLabel, addressInfo.addressLine2);
+    await performAction('inputText', partyDetails.townOrCityHiddenTextLabel, addressInfo.townCity);
+    await performAction('inputText', partyDetails.countryHiddenTextLabel, addressInfo.country);
+    await performAction('inputText', partyDetails.postcodeHiddenTextLabel, addressInfo.engOrWalPostcode);
+    await performAction('inputText', partyDetails.emailHiddenTextLabel, partyDetails.emailHiddenTextInput);
+    await performAction('inputText', partyDetails.phoneHiddenTextLabel, partyDetails.phoneHiddenTextInput);
     await performAction('reTryOnCallBackError', partyDetails.continueButton, partyAddress.nextPage as string);
+  }
+
+  private async confirmAddParty(confirmAdd: actionRecord): Promise<void> {
+    let submitPayLoad = confirmAdd.submitPayload as Record<string, any>;
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
+    await performValidation('text', {
+      elementType: 'paragraph',
+      text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
+    });
+    await performValidation('text', { elementType: 'inlineText', text: 'Case number #' + caseInfo.fid });
+    await performValidation('text', {
+      elementType: 'inlineText',
+      text: `${addressInfo.buildingStreet}, ${addressInfo.addressLine2}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
+    });
+    await performValidation('text', { elementType: 'inlineText', text: `‘${confirmAdd.name}’ added` });
+    await performValidation('text', { elementType: 'inlineText', text: `${submitPayLoad.claimantName} vs ${await this.getDefendantClaimDetails(submitPayLoad)}` });
+    await performValidation('mainHeader', confirmUpload.mainHeader);
+    await performAction('clickButton', confirmUpload.closeAndReturnToCaseOverviewButton);
   }
 
   
@@ -614,6 +649,7 @@ export class CaseManagementAction implements IAction {
       buildingStreet: createCasePayLoad.propertyAddress.AddressLine1,
       addressLine2: createCasePayLoad.propertyAddress.AddressLine2,
       townCity: createCasePayLoad.propertyAddress.PostTown,
+      country: createCasePayLoad.propertyAddress.Country,
       engOrWalPostcode: createCasePayLoad.propertyAddress.PostCode
     };
 

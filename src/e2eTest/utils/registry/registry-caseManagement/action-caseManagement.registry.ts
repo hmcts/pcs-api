@@ -62,6 +62,7 @@ export class ActionCMRegistry {
     ['selectManageParty', new CaseManagementAction()],
     ['addNewPartyAddress', new CaseManagementAction()],
     ['addNewParty', new CaseManagementAction()],
+    ['confirmAddParty', new CaseManagementAction()],
     ['errorValidationAddReviewDatesPage', new ErrorValidationAction()],
     ['errorValidationEnterGeneralAppPage', new ErrorValidationAction()],
     ['errorValidationHearingDatePage', new ErrorValidationAction()],
