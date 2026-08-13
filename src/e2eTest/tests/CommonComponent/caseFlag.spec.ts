@@ -192,9 +192,6 @@ test.describe('[Common Component Case Flags] @nightly @CC @caseFlags', async () 
       saveButton: reviewFlagDetails.submitButton
     });
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Create case flags');
-    // await performAction('viewCaseFlags', {
-    //   viewFlagLink: viewCaseFlag.viewFlagLink
-    // });
     await performAction('select', manageCaseFlags.nextStepEventList, manageCaseFlags.manageCaseFlagsEvent);
     await performAction('clickButton', manageCaseFlags.goButton);
     await performAction('manageCaseFlags', {
