@@ -23,10 +23,12 @@ export class CreateCaseAPIAction implements IAction {
       ['enforceCaseAPI', () => this.enforceCaseAPI(fieldName)],
       ['fetchCurrentUserAPI', () => this.fetchCurrentUserAPI(fieldName)],
       ['getCaseAPI', () => this.getCaseAPI(fieldName)],
+      ['getCaseAPIForLR', () => this.getCaseAPIForLR(fieldName)],
       ['getCaseAPIDynamic', () => this.getCaseAPIDynamic(fieldName as actionRecord)],
       ['createCaseAPIDynamicUsers', () => this.createCaseAPIDynamicUsers(fieldName as actionRecord)],
       ['submitCaseAPIDynamicUsers', () => this.submitCaseAPIDynamicUsers(fieldName as actionRecord)],
       ['makeAnApplicationAPI', () => this.makeAnApplicationAPI(fieldName)],
+      ['makeAnApplicationAPIForLR', () => this.makeAnApplicationAPIForLR(fieldName)],
       ['updatePaymentAPI', () => this.updatePaymentAPI()],
     ]);
     const actionToPerform = actionsMap.get(action);
@@ -189,7 +191,7 @@ export class CreateCaseAPIAction implements IAction {
         console.log(`\n✅ The claim was submitted on "${process.env.Submission_TIME}"`)
       } else {
         await this.generateSolicitorAccessToken(user.defendantSolicitor.email as string,user.defendantSolicitor.password as string);
-        const allDefendants = createResponse.data.data.allDefendants;        
+        const allDefendants = createResponse.data.data.allDefendants;
         const defendantIds = allDefendants.map((d: any) => d.id);
         if (defendantIds.length === 0) throw new Error(`No Defendants ID retrieved and the status is ${createResponse.status}`);
 
@@ -483,5 +485,151 @@ export class CreateCaseAPIAction implements IAction {
       }
     }
     throw new Error('Payment API failed after multiple retries');
+  }
+  private defendantIds: string[] = [];
+  private def1Details: { id: string; name: string } | null = null;
+  private solicitor1Details: { email: string; password: string } | null = null;
+  private async getCaseAPIForLR(getDetails: actionData): Promise<void> {
+    const getCaseApi = Axios.create(createCaseEventTokenApiData.createCaseEventTokenApiInstance());
+    try {
+      const createResponse = await getCaseApi.get(getCaseApiData.getCaseApiEndPoint());
+      if (typeof getDetails === 'string' && getDetails === 'Claim Submission Time') {
+        process.env.Submission_TIME = formatDateTimeBST(createResponse.data.last_state_modified_on);
+        console.log(`\n✅ The claim was submitted on "${process.env.Submission_TIME}"`)
+      } else {
+        const allDefendants = createResponse.data.data.allDefendants;
+        const defendantIds = allDefendants.map((d: any) => d.id);
+        if (defendantIds.length === 0) throw new Error(`No Defendants ID retrieved and the status is ${createResponse.status}`);
+
+        const solicitor1 = user.defendantSolicitor;
+        const solicitor2 = user.defendantSolicitor2;
+
+        if (!solicitor1?.email || !solicitor1?.password) {
+          throw new Error('Solicitor 1 credentials are missing.');
+        }
+        if (!solicitor2?.email || !solicitor2?.password) {
+          throw new Error('Solicitor 2 credentials are missing.');
+        }
+
+        for (let index = 0; index < allDefendants.length; index++) {
+          const defendant = allDefendants[index];
+          process.env.Defendant_ID = defendant.id;
+
+          const defendantName =
+            defendant.value?.nameKnown === 'YES'
+              ? `${defendant.value.firstName} ${defendant.value.lastName}`
+              : '';
+
+          defendantUserDetails.push({
+            id: defendant.id,
+            name: defendantName,
+          });
+
+          // Defendants 1 & 2 -> Solicitor 1, Defendant 3 -> Solicitor 2
+          const solicitor = index < 2 ? solicitor1 : solicitor2;
+
+          // Store def1 + solicitor1 details for reuse in makeAnApplicationAPI
+          if (index === 0) {
+            this.def1Details = { id: defendant.id, name: defendantName };
+            this.solicitor1Details = {
+              email: solicitor.email as string,
+              password: solicitor.password as string,
+            };
+          }
+
+          await this.generateSolicitorAccessToken(
+            solicitor.email as string,
+            solicitor.password as string
+          );
+
+          await performAction('linkSolicitorAPI', solicitor.email as string);
+
+          console.log(`✅ Defendant ${index + 1} (${defendant.id}) linked to ${solicitor.email}`);
+        }
+        console.log(`\n✅ GET DEFENDANT ID SUCCESSFUL : STATUS ${createResponse.status}`);
+      }
+
+    } catch (error: any) {
+      const status = error?.response?.status;
+      const responseBody = error?.response?.data;
+
+      console.error("=== ERROR RESPONSE ===");
+      console.error("HTTP Status:", status);
+      console.error("Exception:", responseBody?.exception);
+      console.error("Error:", responseBody?.error);
+      console.error("Message:", responseBody?.message);
+      console.error("Path:", responseBody?.path);
+      console.error("Timestamp:", responseBody?.timestamp);
+      console.error("Full response body:", JSON.stringify(responseBody, null, 2));
+
+      if (!status) {
+        throw new Error('Defendant id not retrieved: no response from server.');
+      }
+      throw new Error(`Retrieving defendant id failed with status ${status}. Response received is ${responseBody?.message}`);
+    }
+  }
+  private async makeAnApplicationAPIForLR(caseData: actionData): Promise<void> {
+    const solicitor1 = user.defendantSolicitor;
+    const solicitor2 = user.defendantSolicitor2;
+
+    if (!solicitor1?.email || !solicitor1?.password) {
+      throw new Error('Solicitor 1 credentials are missing.');
+    }
+    if (!solicitor2?.email || !solicitor2?.password) {
+      throw new Error('Solicitor 2 credentials are missing.');
+    }
+
+    let makeAnApplicationPayloadData = typeof caseData === "object" && "data" in caseData ? caseData.data : caseData;
+
+    // Determine which defendant this payload belongs to by matching any value
+    // in the payload against known defendant IDs
+    const payloadValues = Object.values(makeAnApplicationPayloadData ?? {});
+    const defendantIndex = defendantUserDetails.findIndex(d => payloadValues.includes(d.id));
+
+    if (defendantIndex === -1) {
+      throw new Error('Could not determine defendant for this application payload. Ensure getCaseAPIForLR has run first.');
+    }
+
+    // Def1 & Def2 -> Solicitor 1, Def3 -> Solicitor 2
+    const solicitor = defendantIndex < 2 ? solicitor1 : solicitor2;
+
+    await this.generateSolicitorAccessToken(
+      solicitor.email as string,
+      solicitor.password as string
+    );
+
+    const makeAnApplicationApi = Axios.create(makeAnApplicationEventTokenApiData.makeAnApplicationEventTokenApiInstance());
+    try {
+      process.env.MAA_EVENT_TOKEN = (await makeAnApplicationApi.get(makeAnApplicationEventTokenApiData.makeAnApplicationEventTokenApiEndPoint())).data.token;
+      makeAnApplicationPayloadData = typeof caseData === "object" && "data" in caseData ? caseData.data : caseData;
+      const genAppResponse = await makeAnApplicationApi.post(makeAnApplicationApiData.makeAnApplicationApiEndPoint(), {
+        data: makeAnApplicationPayloadData,
+        event: { id: makeAnApplicationApiData.makeAnApplicationEventName },
+        event_token: process.env.MAA_EVENT_TOKEN,
+      });
+      caseInfo.id = genAppResponse.data.id;
+      caseInfo.fid = genAppResponse.data.id.replace(/(.{4})(?=.)/g, "$1-");
+      caseInfo.state = genAppResponse.data.state;
+    } catch (error: any) {
+      const status = error?.response?.status;
+      const responseBody = error?.response?.data;
+      if (status === 404) {
+        console.error(makeAnApplicationPayloadData);
+        throw new Error(`Make an application failed: endpoint not found (404).please check the payload above \n ${error}`);
+      }
+      console.error("=== ERROR RESPONSE ===");
+      console.error("HTTP Status:", status);
+      console.error("Exception:", responseBody?.exception);
+      console.error("Error:", responseBody?.error);
+      console.error("Message:", responseBody?.message);
+      console.error("Path:", responseBody?.path);
+      console.error("Timestamp:", responseBody?.timestamp);
+      console.error("Full response body:", JSON.stringify(responseBody, null, 2));
+
+      if (!status) {
+        throw new Error('Make an application: no response from server.');
+      }
+      throw new Error(`Make an application failed with status ${status}.Response received is ${responseBody?.message}}`);
+    }
   }
 }
