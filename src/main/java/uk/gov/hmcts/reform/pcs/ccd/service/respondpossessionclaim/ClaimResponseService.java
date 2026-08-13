@@ -59,7 +59,6 @@ public class ClaimResponseService {
 
         if (StringUtils.isNotBlank(pcqId)) {
             party.setPcqId(pcqId);
-            log.debug("Updated PCQ ID for party ID: {}", party.getId());
         }
     }
 
