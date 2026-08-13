@@ -17,9 +17,13 @@ public enum EventId {
     uploadDocuments,
     amendDocuments,
     addCaseNote,
+    addCaseReviewDate,
     createFlags,
     amendFlags,
     claimIssuePayment,
     changeCaseState,
-    enterGenApp
+    enterGenApp,
+    caseworkerUploadDocuments,
+    removeDocument,
+    legalRepDocumentUpload
 }
