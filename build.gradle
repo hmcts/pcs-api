@@ -21,9 +21,9 @@ plugins {
   id 'org.flywaydb.flyway' version "$flywayVersion"
   id 'org.sonarqube' version '7.3.1.8318'
   id 'net.serenity-bdd.serenity-gradle-plugin' version "$serenityBddVersion"
-  // Group access needs the generator's access-group-roles support, which is merged to its master but
-  // not yet in a release. Move to a version once one is cut.
-  id 'hmcts.ccd.sdk' version 'access-group-roles-optin-126-126.1-51aae294'
+  // Build of the generator's master, carrying the access group roles support (their PR 1063).
+  // Merged but not yet released, so pin the build until a version is cut.
+  id 'hmcts.ccd.sdk' version 'master-128.1-d9b4098e'
   id 'com.github.hmcts.rse-cft-lib' version '0.19.2315'
   id 'io.freefair.lombok' version '9.5.0'
   id 'au.com.dius.pact' version '4.7.4'
