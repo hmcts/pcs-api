@@ -196,7 +196,7 @@ class CaseFlagServiceTest {
 
         when(taskDescriptionService.createReviewCaseFlagDescription(eq(CASE_REFERENCE), any()))
             .thenReturn("description");
-        
+
         PartyEntity partyEntity = PartyEntity.builder()
             .id(UUID.randomUUID())
             .defendantFlags(existingFlags)
