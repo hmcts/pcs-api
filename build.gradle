@@ -23,7 +23,7 @@ plugins {
   id 'net.serenity-bdd.serenity-gradle-plugin' version "$serenityBddVersion"
   // Pinned: Taleb's access-group-roles SDK head + the case-type ACL opt-in
   // (grantCaseTypeAccessToCaseRoles), which his branch does not carry.
-  id 'hmcts.ccd.sdk' version 'access-group-roles-optin-126-126.1-51aae294'
+  id 'hmcts.ccd.sdk' version 'HDPI-7052-opt-in-case-type-acls-127.1-a97ec38b'
   id 'com.github.hmcts.rse-cft-lib' version '0.19.2315'
   id 'io.freefair.lombok' version '9.5.0'
   id 'au.com.dius.pact' version '4.7.4'
