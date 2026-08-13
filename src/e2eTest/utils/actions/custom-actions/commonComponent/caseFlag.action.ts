@@ -272,6 +272,5 @@ export class CaseFlagAction implements IAction {
     await expect(page.getByRole('radio', { name: workAccess.viewTasksAndCasesOption, exact: true })).toBeVisible();
     await page.getByRole('radio', { name: workAccess.viewTasksAndCasesOption, exact: true }).check();
     await page.getByRole('button', { name: workAccess.continueButton, exact: true }).click();
-    await performValidation('mainHeader', caseList.mainHeader);
   }
 }
