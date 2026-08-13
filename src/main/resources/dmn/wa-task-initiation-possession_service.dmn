@@ -496,8 +496,9 @@ else
         </outputEntry>
       </rule>
       <rule id="DecisionRule_15nwjxc">
+        <description>When no payment required</description>
         <inputEntry id="UnaryTests_0my033r">
-          <text>"Submit General Application"</text>
+          <text>makeAnApplication</text>
         </inputEntry>
         <inputEntry id="UnaryTests_0f94fhz">
           <text></text>
@@ -536,6 +537,51 @@ else
           <text>"applications"</text>
         </outputEntry>
         <outputEntry id="LiteralExpression_0nkc79b">
+          <text>"ADMIN"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_1ts2qj9">
+        <description>When payment was required</description>
+        <inputEntry id="UnaryTests_1nyh6u6">
+          <text>Payment callback for general application</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1aw8m4y">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_08t0s2l">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_021b9zp">
+          <text>"GEN_APP_ISSUED"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1g53sf8">
+          <text>User selects("Ask to adjourn the hearing" for Choose an application)</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_05uds6w">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0tfmknj">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_1jovd48">
+          <text>"ReviewAdjournGenApp"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0umibwt">
+          <text>"Review adjourn gen app"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0bt1b6d">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_12g21zw">
+          <text>1</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_15oef5p">
+          <text>"ReviewAdjournGenApp"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_083p8ca">
+          <text>"applications"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0l3zxms">
           <text>"ADMIN"</text>
         </outputEntry>
       </rule>
