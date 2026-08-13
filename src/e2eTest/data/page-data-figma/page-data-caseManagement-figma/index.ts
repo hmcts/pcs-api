@@ -22,4 +22,6 @@ export * from './genAppsCheckYourAnswers.page.data';
 export * from './enterGenAppConfirmation.page.data';
 export * from './managePartyOptions.page.data';
 export * from './partyDetails.page.data';
-export * from './managePartiesCheckYourAnswers.page.data'
+export * from './managePartiesCheckYourAnswers.page.data';
+export * from './confirmManageParties.page.data';
+export * from './addAParty.page.data';

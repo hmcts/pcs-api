@@ -378,11 +378,7 @@ export class CYAPageValidation {
         }
         return;
       }
-extractedQA.forEach((qa, index) => {
 
-console.log(`QA ${index + 1}:`, qa);
-
-});
       const { pageAnswer, extractedQuestion } = this.findAnswerInExtractedQA(saved.question, extractedQA);
 
       if (extractedQuestion) {
@@ -462,12 +458,11 @@ console.log(`QA ${index + 1}:`, qa);
     pageAnswer: string;
     extractedQuestion: string;
   } {
-    console.log('question : '+question)
+   
+   
     const cleanQuestion = this.normalizeText(question);
-console.log('cleanQuestion :'+cleanQuestion)
     for (const qa of extractedQA) {
       const pageQuestion = this.normalizeText(qa.question);
-      //console.log('pageQn :'+pageQuestion)
       if (pageQuestion === cleanQuestion || pageQuestion.includes(cleanQuestion) || cleanQuestion.includes(pageQuestion)) {
         return { pageAnswer: qa.answer as string, extractedQuestion: qa.question };
       }
@@ -558,7 +553,7 @@ console.log('cleanQuestion :'+cleanQuestion)
   }
 
   private normalizeText(text: string): string {
-    if (skipNormalization.has(text) || text.includes('@')) {
+    if (skipNormalization.has(text)) {
       return text;
     }
     return text.replace(/\s+/g, ' ').trim().toLowerCase();
