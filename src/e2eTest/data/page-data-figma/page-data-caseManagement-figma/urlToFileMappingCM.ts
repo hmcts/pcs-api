@@ -1,3 +1,4 @@
+
 export default {
   'amendDocumentsselectDocument': 'selectDocument',
   'addCaseReviewDateaddCaseReviewDate': 'addReviewDates',
@@ -16,6 +17,11 @@ export default {
   'enterGenAppuploadGeneralApplication': 'enterGenAppuploadGeneralApplication',
   'enterGenAppuploadRelatedEvidence': 'enterGenAppUploadRelatedEvidence',
   'enterGenAppreferApplicationToJudge': 'enterGenAppPreferApplicationToJudge',
+  'enterGenApp/submit': 'genAppsCheckYouAnswers',
+  'manageHearingmanageHearing': 'manageHearing',
+  'manageHearingcancelHearing': 'cancelHearing',
+  'manageHearing/submit': 'checkYourAnswersCancelHearing',
+  'manageHearing/confirm': 'confirmCancelHearing'
   'enterGenApp/submit': 'genAppsCheckYourAnswers',
   'enterGenApp/confirm': 'enterGenAppConfirmation',
 };
