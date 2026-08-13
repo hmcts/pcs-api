@@ -14,7 +14,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 import uk.gov.hmcts.ccd.sdk.api.CCDAccessGroup;
 
 @Getter
@@ -134,11 +133,10 @@ public enum GroupAccessType implements CCDAccessGroup {
         return Map.copyOf(index);
     }
 
-    /** Keyed lookup so selection does not depend on the order these constants are declared in. */
-    public static Optional<GroupAccessType> forProfileAndRole(String organisationProfileId, PartyRole partyRole) {
-        return partyRole == null
-            ? Optional.empty()
-            : Optional.ofNullable(BY_PROFILE_AND_ROLE.get(new Key(organisationProfileId, partyRole)));
+    public static String forProfileAndRole(String organisationProfileId, PartyRole partyRole, String orgId) {
+        return BY_PROFILE_AND_ROLE.get(new Key(organisationProfileId, partyRole))
+            .getCaseAccessGroupIdTemplate()
+            .replace("$ORGID$", orgId);
     }
 
     /**

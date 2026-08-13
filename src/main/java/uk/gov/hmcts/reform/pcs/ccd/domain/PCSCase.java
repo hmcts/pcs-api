@@ -8,6 +8,7 @@ import lombok.Data;
 import uk.gov.hmcts.ccd.sdk.External;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.ccd.sdk.type.CaseAccessGroup;
 import uk.gov.hmcts.ccd.sdk.type.CaseLink;
 import uk.gov.hmcts.ccd.sdk.type.CaseLocation;
 import uk.gov.hmcts.ccd.sdk.type.ChangeOrganisationRequest;
@@ -805,15 +806,12 @@ public class PCSCase {
     )
     private CaseStateOption targetState;
 
-
     @CCD(
         label = "Add document",
         hint = "Upload a document to the system",
         searchable = false
     )
     private Document uploadSingleDocument;
-
-
 
     @CCD(access = {AcaSystemUserAccess.class})
     private ChangeOrganisationRequest<CaseRoleID> changeOrganisationRequestField;
@@ -826,4 +824,8 @@ public class PCSCase {
 
     @CCD(searchable = false, access = {DefendantSolicitorAccess.class})
     private YesOrNo legalRepUpdatedDetails;
+
+    @JsonProperty("CaseAccessGroups")
+    @CCD
+    private List<ListValue<CaseAccessGroup>> caseAccessGroups;
 }

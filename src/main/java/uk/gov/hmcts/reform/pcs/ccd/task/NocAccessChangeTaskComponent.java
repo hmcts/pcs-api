@@ -11,7 +11,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
-import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.model.NocAccessChangeTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseRoleAssignmentService;
 import uk.gov.hmcts.reform.pcs.service.LegalRepresentativePartyLinkService;
@@ -54,9 +53,6 @@ public class NocAccessChangeTaskComponent {
                 log.info("Applying NoC access change for case {}", caseReference);
 
                 try {
-                    caseRoleAssignmentService.assignRasRole(caseReference, taskData.getUserId(),
-                                                            UserRole.DEFENDANT_SOLICITOR);
-
                     legalRepresentativePartyLinkService.linkLegalRepresentativeToParty(
                             caseReference,
                             taskData.getPartyId(),

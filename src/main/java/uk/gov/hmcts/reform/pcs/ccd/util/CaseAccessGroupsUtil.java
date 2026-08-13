@@ -1,9 +1,15 @@
 package uk.gov.hmcts.reform.pcs.ccd.util;
 
+import static java.util.function.Function.identity;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.GroupAccessType.forProfileAndRole;
+
+import java.util.Map;
+import java.util.stream.Collectors;
 import uk.gov.hmcts.ccd.sdk.type.CaseAccessGroup;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
-import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.GroupAccessType;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyLegalRepresentativeOrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 
@@ -22,23 +28,46 @@ public final class CaseAccessGroupsUtil {
 
     public static final String CCD_ALL_CASES_ACCESS = "CCD:all-cases-access";
     public static final String ORGANISATION_PROFILE = "ORGANISATION_PROFILE";
-    static final String ORG_IDENTIFIER_TEMPLATE = "$ORGID$";
 
-    /** Claimant only for now; the defendant side belongs to the notice-of-change work. */
-    private static final Set<PartyRole> DERIVED_ROLES = Set.of(PartyRole.CLAIMANT);
 
     private CaseAccessGroupsUtil() {
     }
 
-    public static List<ListValue<CaseAccessGroup>> deriveCaseAccessGroups(Set<PartyEntity> parties) {
+    public static List<ListValue<CaseAccessGroup>> deriveCaseAccessGroups(List<ListValue<Party>> claimants,
+                                                                          List<ListValue<Party>> defendants,
+                                                                          Set<PartyEntity> partyEntities) {
         List<CaseAccessGroup> caseAccessGroups = new ArrayList<>();
+        Map<UUID, PartyEntity> partyEntitiesMap = partyEntities.stream()
+            .collect(Collectors.toMap(PartyEntity::getId, identity()));
 
-        parties.forEach(party -> derivedRole(party)
-            .flatMap(role -> GroupAccessType.forProfileAndRole(organisationProfileId(party), role))
-            .ifPresent(accessType -> caseAccessGroups.add(new CaseAccessGroup(
-                CCD_ALL_CASES_ACCESS,
-                accessType.getCaseAccessGroupIdTemplate()
-                    .replace(ORG_IDENTIFIER_TEMPLATE, party.getOrganisationId())))));
+        claimants.stream()
+            .map(ListValue::getValue)
+            .map(party -> partyEntitiesMap.get(UUID.fromString(party.getId())))
+            .map(partyEntity -> forProfileAndRole(
+                partyEntity.getOrganisationProfileId(), PartyRole.CLAIMANT, partyEntity.getOrganisationId())
+            )
+            .forEach(caseAccessGroupId ->
+                         caseAccessGroups.add(new CaseAccessGroup(CCD_ALL_CASES_ACCESS, caseAccessGroupId)));
+
+        defendants.stream()
+            .map(ListValue::getValue)
+            .map(party -> partyEntitiesMap.get(UUID.fromString(party.getId())))
+            .map(partyEntity ->
+                partyEntity.getPartyLegalRepresentativeOrganisationList()
+                    .stream()
+                    .filter(legalRepOrg -> YesOrNo.YES == legalRepOrg.getActive())
+                    .findFirst())
+            .filter(Optional::isPresent)
+            .map(Optional::get)
+            .map(ClaimPartyLegalRepresentativeOrganisationEntity::getLegalRepresentativeOrganisation)
+            .map(legalRepOrg -> forProfileAndRole(
+                legalRepOrg.getOrganisationProfileId(), PartyRole.DEFENDANT, legalRepOrg.getOrganisationId())
+            )
+            .forEach(caseAccessGroupId ->
+                         caseAccessGroups.add(new CaseAccessGroup(CCD_ALL_CASES_ACCESS, caseAccessGroupId)));
+
+
+
 
         return caseAccessGroups.stream()
             .map(CaseAccessGroup::getCaseAccessGroupId)
@@ -57,53 +86,5 @@ public final class CaseAccessGroupsUtil {
             .id(UUID.nameUUIDFromBytes(groupId.getBytes(StandardCharsets.UTF_8)).toString())
             .value(new CaseAccessGroup(CCD_ALL_CASES_ACCESS, groupId))
             .build();
-    }
-
-    private static Optional<PartyRole> derivedRole(PartyEntity party) {
-        if (party.getOrganisationId() == null) {
-            return Optional.empty();
-        }
-        if (isClaimantCreatedWithTheCase(party)) {
-            return Optional.of(PartyRole.CLAIMANT).filter(DERIVED_ROLES::contains);
-        }
-        return party.getClaimParties().stream()
-            .map(ClaimPartyEntity::getRole)
-            .filter(DERIVED_ROLES::contains)
-            .findFirst();
-    }
-
-    /** No claim link until submit, so an organisation-bearing party without one is that claimant. */
-    private static boolean isClaimantCreatedWithTheCase(PartyEntity party) {
-        return party.getClaimParties().isEmpty();
-    }
-
-    private static String organisationProfileId(PartyEntity party) {
-        List<String> organisationProfileIds = party.getOrganisationProfileIds();
-        if (organisationProfileIds == null || organisationProfileIds.isEmpty()) {
-            throw new IllegalArgumentException(
-                "Organisation profile ids are required to derive case access groups for party " + party.getId());
-        }
-
-        List<String> candidates = organisationProfileIds.stream()
-            .filter(CaseAccessGroupsUtil::identifiesAnAccessType)
-            .distinct()
-            .toList();
-
-        if (candidates.isEmpty()) {
-            throw new IllegalArgumentException(
-                "No valid organisation profile id found for organisation " + party.getOrganisationId());
-        }
-        if (candidates.size() > 1) {
-            throw new IllegalArgumentException(
-                "Organisation " + party.getOrganisationId() + " carries more than one profile " + candidates
-                    + "; cannot determine which access type applies");
-        }
-
-        return candidates.getFirst();
-    }
-
-    /** Every organisation also carries the generic profile, which maps to no access type. */
-    private static boolean identifiesAnAccessType(String organisationProfileId) {
-        return !ORGANISATION_PROFILE.equals(organisationProfileId);
     }
 }

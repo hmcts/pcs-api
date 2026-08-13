@@ -79,6 +79,27 @@ public class OrganisationService {
     }
 
     /**
+     * Retrieves the organisation identifier for the current user.
+     *
+     * @return The organisation identifier, or null if it cannot be resolved
+     */
+    public String getOrgProfileIdForCurrentUser() {
+        try {
+            UUID userId = resolveUserId();
+
+            if (userId == null) {
+                return null;
+            }
+            return organisationDetailsService.getOrganisationDetails(userId.toString()).getOrgProfileId();
+
+        } catch (OrganisationDetailsException | SecurityContextException ex) {
+            log.error("Error retrieving organisation profile ID from rd-professional API. Error: {}",
+                ex.getMessage(), ex);
+            return null;
+        }
+    }
+
+    /**
      * Retrieves the organisation address for the current user.
      * Gets the user ID from security context and fetches the organisation address
      * from the rd-professional API using PRD admin token and S2S token.
@@ -124,5 +145,4 @@ public class OrganisationService {
             && isBlank(organisationAddress.getPostTown())
             && isBlank(organisationAddress.getPostCode()));
     }
-
 }

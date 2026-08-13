@@ -18,7 +18,7 @@ class CaseAccessGroupsUtilTest {
 
     @Test
     void shouldDeriveSolicitorGroupIdForSolicitorProfileParty() {
-        Set<PartyEntity> parties = Set.of(party("J1XJ9VJ", List.of("SOLICITOR_PROFILE", "ORGANISATION_PROFILE")));
+        Set<PartyEntity> parties = Set.of(party("J1XJ9VJ", "SOLICITOR_PROFILE"));
 
         List<ListValue<CaseAccessGroup>> groups = CaseAccessGroupsUtil.deriveCaseAccessGroups(parties);
 
@@ -31,7 +31,7 @@ class CaseAccessGroupsUtilTest {
 
     @Test
     void shouldDeriveProfOrgGroupIdForLocalAuthorityParty() {
-        Set<PartyEntity> parties = Set.of(party("WK8GIHE", List.of("LOCALAUTH_PROFILE", "ORGANISATION_PROFILE")));
+        Set<PartyEntity> parties = Set.of(party("WK8GIHE", "LOCALAUTH_PROFILE"));
 
         List<ListValue<CaseAccessGroup>> groups = CaseAccessGroupsUtil.deriveCaseAccessGroups(parties);
 
@@ -49,7 +49,7 @@ class CaseAccessGroupsUtilTest {
     void shouldSkipPartiesWithoutAnOrganisation() {
         Set<PartyEntity> parties = Set.of(
             party(null, null),
-            party("J1XJ9VJ", List.of("SOLICITOR_PROFILE")));
+            party("J1XJ9VJ", "SOLICITOR_PROFILE"));
 
         List<ListValue<CaseAccessGroup>> groups = CaseAccessGroupsUtil.deriveCaseAccessGroups(parties);
 
@@ -67,7 +67,7 @@ class CaseAccessGroupsUtilTest {
 
     @Test
     void shouldWrapGroupsAsCollectionItemsWithIds() {
-        Set<PartyEntity> parties = Set.of(party("ORG1", List.of("SOLICITOR_PROFILE")));
+        Set<PartyEntity> parties = Set.of(party("ORG1", "SOLICITOR_PROFILE"));
 
         List<ListValue<CaseAccessGroup>> groups = CaseAccessGroupsUtil.deriveCaseAccessGroups(parties);
 
@@ -76,10 +76,10 @@ class CaseAccessGroupsUtilTest {
         assertThat(groups.getFirst().getValue()).isNotNull();
     }
 
-    private PartyEntity party(String organisationId, List<String> organisationProfileIds) {
+    private PartyEntity party(String organisationId, String organisationProfileId) {
         return PartyEntity.builder()
             .organisationId(organisationId)
-            .organisationProfileIds(organisationProfileIds)
+            .organisationProfileId(organisationProfileId)
             .build();
     }
 
@@ -88,10 +88,10 @@ class CaseAccessGroupsUtilTest {
         // Given
         PartyEntity first = new PartyEntity();
         first.setOrganisationId("ORG-A");
-        first.setOrganisationProfileIds(List.of("SOLICITOR_PROFILE"));
+        first.setOrganisationProfileId("SOLICITOR_PROFILE");
         PartyEntity second = new PartyEntity();
         second.setOrganisationId("ORG-B");
-        second.setOrganisationProfileIds(List.of("LOCALAUTH_PROFILE"));
+        second.setOrganisationProfileId("LOCALAUTH_PROFILE");
 
         // When
         List<ListValue<CaseAccessGroup>> firstRead =
@@ -128,7 +128,7 @@ class CaseAccessGroupsUtilTest {
     void shouldRejectAnOrganisationCarryingMoreThanOneProfile() {
         PartyEntity party = new PartyEntity();
         party.setOrganisationId("ORG-A");
-        party.setOrganisationProfileIds(List.of("SOLICITOR_PROFILE", "LOCALAUTH_PROFILE", "ORGANISATION_PROFILE"));
+        party.setOrganisationProfileId("SOLICITOR_PROFILE");
 
         assertThatThrownBy(() -> CaseAccessGroupsUtil.deriveCaseAccessGroups(Set.of(party)))
             .isInstanceOf(IllegalArgumentException.class)

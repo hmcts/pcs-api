@@ -131,15 +131,11 @@ public class PcsNoticeOfChange implements CCDConfig<PCSCase, State, UserRole> {
         PcsCaseEntity pcsCase = loadCase(request.caseId());
         PartyEntity matchedParty = matchingDefendants(pcsCase, request).getFirst();
         UUID currentUserId = currentUserId(context);
-        OrganisationDetailsResponse organisationDetails = organisationDetailsService.getOrganisationDetails(
-            currentUserId.toString());
+        OrganisationDetailsResponse organisationDetails =
+            organisationDetailsService.getOrganisationDetails(currentUserId.toString());
 
-        NocAccessChangePlan accessChangePlan = planAccessChanges(
-            pcsCase,
-            matchedParty,
-            context.userId(),
-            organisationDetails
-        );
+        NocAccessChangePlan accessChangePlan =
+            planAccessChanges(pcsCase, matchedParty, currentUserId.toString(), organisationDetails);
 
         scheduleAccessChanges(accessChangePlan);
 
