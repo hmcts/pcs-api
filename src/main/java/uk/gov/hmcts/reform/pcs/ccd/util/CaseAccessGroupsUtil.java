@@ -1,8 +1,8 @@
 package uk.gov.hmcts.reform.pcs.ccd.util;
 
-import uk.gov.hmcts.ccd.sdk.type.CaseAccessGroup;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.GroupAccessType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.CaseAccessGroup;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;

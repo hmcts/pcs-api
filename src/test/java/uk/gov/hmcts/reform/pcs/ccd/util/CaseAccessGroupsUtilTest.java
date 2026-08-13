@@ -1,7 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.util;
 
 import org.junit.jupiter.api.Test;
-import uk.gov.hmcts.ccd.sdk.type.CaseAccessGroup;
+import uk.gov.hmcts.reform.pcs.ccd.domain.CaseAccessGroup;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.GroupAccessType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
