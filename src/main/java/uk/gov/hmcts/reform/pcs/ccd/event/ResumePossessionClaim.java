@@ -85,6 +85,8 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
                 .name("Make a claim")
                 .showCondition(ShowConditions.NEVER_SHOW)
                 .grant(Permission.CRUD, UserRole.GA_CLAIMANT_SOLICITOR)
+                // The organisations that are the claimant themselves - local authority and the
+                // "other" profiles - hold this capacity rather than claimant-solicitor
                 .grant(Permission.CRUD, UserRole.CLAIMANT)
                 // The organisation's capacity covers the draft; CREATOR is the fallback for a
                 // case that derives no CaseAccessGroups.

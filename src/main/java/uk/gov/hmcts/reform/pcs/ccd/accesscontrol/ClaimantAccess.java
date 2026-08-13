@@ -22,6 +22,8 @@ public class ClaimantAccess implements HasAccessControl {
     public SetMultimap<HasRole, Permission> getGrants() {
         SetMultimap<HasRole, Permission> grants = HashMultimap.create();
         grants.putAll(GA_CLAIMANT_SOLICITOR, Permission.CRU);
+        // The organisations that are the claimant themselves - local authority and the "other"
+        // profiles - hold this capacity rather than claimant-solicitor
         grants.putAll(CLAIMANT, Permission.CRU);
         grants.putAll(ORGANISATION_CASE_ACCESS_ADMINISTRATOR, Permission.CRU);
         return grants;
