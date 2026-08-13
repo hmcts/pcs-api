@@ -42,7 +42,7 @@ public final class CaseAccessGroupsUtil {
             .map(CaseAccessGroup::getCaseAccessGroupId)
             .distinct()
             .sorted()
-            .map(CaseAccessGroupsUtil::asStableListValue)
+            .map(CaseAccessGroupsUtil::asIdentifiedGroupItem)
             .toList();
     }
 
@@ -51,7 +51,7 @@ public final class CaseAccessGroupsUtil {
      * from the group id rather than generating one keeps it the same on every read, and these are
      * rebuilt on each read rather than stored.
      */
-    private static ListValue<CaseAccessGroup> asStableListValue(String groupId) {
+    private static ListValue<CaseAccessGroup> asIdentifiedGroupItem(String groupId) {
         return ListValue.<CaseAccessGroup>builder()
             .id(UUID.nameUUIDFromBytes(groupId.getBytes(StandardCharsets.UTF_8)).toString())
             .value(new CaseAccessGroup(CCD_ALL_CASES_ACCESS, groupId))
