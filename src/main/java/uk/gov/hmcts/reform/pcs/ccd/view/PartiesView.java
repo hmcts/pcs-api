@@ -14,7 +14,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyLegalRepresentativeEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyLegalRepresentativeOrganisationEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeOrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
@@ -22,6 +23,7 @@ import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Objects;
 import java.util.UUID;
 
 @Component
@@ -125,23 +127,28 @@ public class PartiesView {
     }
 
     private LegalRepresentative buildLegalRepresentative(PartyEntity partyEntity) {
-        List<ClaimPartyLegalRepresentativeEntity> claimPartyLegalRepresentativeEntities =
-            partyEntity.getClaimPartyLegalRepresentativeList();
+        if (partyEntity == null || partyEntity.getPartyLegalRepresentativeOrganisationList() == null) {
+            return null;
+        }
 
-        return claimPartyLegalRepresentativeEntities.stream()
-                .filter(legalRepEntity -> legalRepEntity.getActive() == YesOrNo.YES)
-                .map(ClaimPartyLegalRepresentativeEntity::getLegalRepresentative)
-                .map(legalRepEntity -> LegalRepresentative.builder()
-                    .firstName(legalRepEntity.getFirstName())
-                    .lastName(legalRepEntity.getLastName())
-                    .telephoneNumber(legalRepEntity.getPhone())
-                    .emailAddress(legalRepEntity.getEmail())
-                    .organisationName(legalRepEntity.getOrganisationName())
-                    .address(convertAddress(legalRepEntity.getAddress()))
-                    .build()
-                )
+        return partyEntity.getPartyLegalRepresentativeOrganisationList().stream()
+            .filter(legalRep -> legalRep != null && legalRep.getActive() == YesOrNo.YES)
+            .map(ClaimPartyLegalRepresentativeOrganisationEntity::getLegalRepresentativeOrganisation)
+            .filter(Objects::nonNull)
+            .map(this::toLegalRepresentative)
             .findFirst()
             .orElse(null);
+    }
+
+    private LegalRepresentative toLegalRepresentative(LegalRepresentativeOrganisationEntity orgEntity) {
+        var contact = orgEntity.getLegalRepresentativeOrganisationContactDetails();
+
+        return LegalRepresentative.builder()
+            .organisationName(orgEntity.getOrganisationName())
+            .telephoneNumber(contact != null ? contact.getPhoneNumber() : null)
+            .emailAddress(contact != null ? contact.getEmailAddress() : null)
+            .address(contact != null ? convertAddress(contact.getAddress()) : null)
+            .build();
     }
 
     private AddressUK convertAddress(AddressEntity address) {

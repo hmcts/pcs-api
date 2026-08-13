@@ -12,7 +12,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.LegalRepForDefendantAccessValidator;
-import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -54,23 +53,19 @@ class SelectedPartyRetrieverTest {
     @Mock
     private LegalRepForDefendantAccessValidator legalRepForDefendantAccessValidator;
 
-    @Mock
-    private SecurityContextService securityContextService;
-
     @Test
     void getSelectedPartyId_WithSingleDefendantAndCaseReference_ReturnsPartyId() {
         // given
-        UUID userId = UUID.randomUUID();
+        String orgId = UUID.randomUUID().toString();
         UUID partyId = UUID.randomUUID();
         long caseRef = 1L;
         when(pcsCaseService.loadCase(caseRef)).thenReturn(pcsCaseEntity);
-        when(securityContextService.getCurrentUserId()).thenReturn(userId);
-        when(legalRepForDefendantAccessValidator.validateAndGetDefendants(pcsCaseEntity, userId))
+        when(legalRepForDefendantAccessValidator.validateAndGetDefendants(pcsCaseEntity, orgId))
             .thenReturn(List.of(partyEntity));
         when(partyEntity.getId()).thenReturn(partyId);
 
         // when
-        Optional<UUID> result = selectedPartyRetriever.getSelectedPartyId(caseRef);
+        Optional<UUID> result = selectedPartyRetriever.getSelectedPartyId(caseRef, orgId);
 
         // then
         assertTrue(result.isPresent());
@@ -81,18 +76,17 @@ class SelectedPartyRetrieverTest {
     @Test
     void getSelectedPartyId_WithMultipleDefendantsAndCaseReference_ReturnClientContextSelectedPartyId() {
         // given
-        UUID userId = UUID.randomUUID();
+        String orgId = UUID.randomUUID().toString();
         UUID partyId = UUID.randomUUID();
         long caseRef = 1L;
         when(pcsCaseService.loadCase(caseRef)).thenReturn(pcsCaseEntity);
-        when(securityContextService.getCurrentUserId()).thenReturn(userId);
-        when(legalRepForDefendantAccessValidator.validateAndGetDefendants(pcsCaseEntity, userId))
+        when(legalRepForDefendantAccessValidator.validateAndGetDefendants(pcsCaseEntity, orgId))
             .thenReturn(List.of(partyEntity, partyEntity2));
         when(clientContextRetriever.getClientContext()).thenReturn(clientContext);
         when(clientContext.getSelectedPartyId()).thenReturn(partyId.toString());
 
         // when
-        Optional<UUID> result = selectedPartyRetriever.getSelectedPartyId(caseRef);
+        Optional<UUID> result = selectedPartyRetriever.getSelectedPartyId(caseRef, orgId);
 
         // then
         assertTrue(result.isPresent());
