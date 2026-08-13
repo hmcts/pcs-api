@@ -86,6 +86,60 @@ class CaseFileDocumentDeduplicationServiceTest {
     }
 
     @Test
+    void shouldRemoveGenAppDocumentsFromAllDocumentsWhenTheyHaveDifferentIdsButSameUrls() {
+        // Given
+        Document submissionDocument = Document.builder()
+            .filename("General Application GA1 - Defendant 1.pdf")
+            .url("http://dm-store/documents/submission")
+            .binaryUrl("http://dm-store/documents/submission/binary")
+            .build();
+        Document supportingDocument = Document.builder()
+            .filename("genApps GA1 - Defendant 1.docx")
+            .url("http://dm-store/documents/supporting")
+            .binaryUrl("http://dm-store/documents/supporting/binary")
+            .build();
+
+        ListValue<Document> duplicateSubmissionDocument = ListValue.<Document>builder()
+            .id("duplicate-submission-document-id")
+            .value(submissionDocument)
+            .build();
+        ListValue<Document> duplicateSupportingDocument = ListValue.<Document>builder()
+            .id("duplicate-supporting-document-id")
+            .value(supportingDocument)
+            .build();
+        ListValue<Document> sameFilenameDifferentDocument = documentListValue(
+            "other-supporting-document-id",
+            "genApps GA1 - Defendant 1.docx"
+        );
+
+        PCSCase pcsCase = PCSCase.builder()
+            .allDocuments(List.of(
+                duplicateSubmissionDocument,
+                duplicateSupportingDocument,
+                sameFilenameDifferentDocument
+            ))
+            .genApps(List.of(ListValue.<GeneralApplication>builder()
+                                .value(GeneralApplication.builder()
+                                           .submissionDocument(DocumentWithId.builder()
+                                                                   .id("submission-document-id")
+                                                                   .document(submissionDocument)
+                                                                   .build())
+                                           .supportingDocuments(List.of(ListValue.<Document>builder()
+                                                                           .id("supporting-document-id")
+                                                                           .value(supportingDocument)
+                                                                           .build()))
+                                           .build())
+                                .build()))
+            .build();
+
+        // When
+        underTest.removeDocumentsAlreadyPresentInOtherCaseFields(pcsCase);
+
+        // Then
+        assertThat(pcsCase.getAllDocuments()).containsExactly(sameFilenameDifferentDocument);
+    }
+
+    @Test
     void shouldRemoveDocumentsThatAppearInSubmittedCaseDetailsFields() {
         // Given
         ListValue<Document> noticeDocument = documentListValue("notice-document-id", "notice.pdf");

@@ -21,6 +21,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.wales.WalesDocuments;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Stream;
 
 @Service
 public class CaseFileDocumentDeduplicationService {
@@ -32,160 +33,200 @@ public class CaseFileDocumentDeduplicationService {
             return;
         }
 
-        Set<String> documentIdsInOtherFields = findDocumentIdsOutsideAllDocuments(pcsCase);
+        Set<String> documentReferencesInOtherFields = findDocumentReferencesOutsideAllDocuments(pcsCase);
 
         pcsCase.setAllDocuments(allDocuments.stream()
-                                    .filter(document -> !documentIdsInOtherFields.contains(document.getId()))
+                                    .filter(document -> documentReferences(document)
+                                        .noneMatch(documentReferencesInOtherFields::contains))
                                     .toList());
     }
 
-    private Set<String> findDocumentIdsOutsideAllDocuments(PCSCase pcsCase) {
-        Set<String> documentIds = new HashSet<>();
+    private Set<String> findDocumentReferencesOutsideAllDocuments(PCSCase pcsCase) {
+        Set<String> documentReferences = new HashSet<>();
 
-        addDocumentIdsFromRentArrears(pcsCase.getRentArrears(), documentIds);
-        addDocumentIdsFromNoticeServedDetails(pcsCase.getNoticeServedDetails(), documentIds);
-        addDocumentIdsFromTenancyLicenceDetails(pcsCase.getTenancyLicenceDetails(), documentIds);
-        addDocumentIdsFromRequiredDocumentsWales(pcsCase.getRequiredDocumentsWales(), documentIds);
-        addDocumentIdsFromOccupationLicenceDetailsWales(pcsCase.getOccupationLicenceDetailsWales(), documentIds);
-        addDocumentIdsFromCaseDetailsTab(pcsCase.getCaseDetailsTab(), documentIds);
-        addDocumentIdsFromGenApps(pcsCase.getGenApps(), documentIds);
+        addDocumentReferencesFromRentArrears(pcsCase.getRentArrears(), documentReferences);
+        addDocumentReferencesFromNoticeServedDetails(pcsCase.getNoticeServedDetails(), documentReferences);
+        addDocumentReferencesFromTenancyLicenceDetails(pcsCase.getTenancyLicenceDetails(), documentReferences);
+        addDocumentReferencesFromRequiredDocumentsWales(pcsCase.getRequiredDocumentsWales(), documentReferences);
+        addDocumentReferencesFromOccupationLicenceDetailsWales(
+            pcsCase.getOccupationLicenceDetailsWales(),
+            documentReferences
+        );
+        addDocumentReferencesFromCaseDetailsTab(pcsCase.getCaseDetailsTab(), documentReferences);
+        addDocumentReferencesFromGenApps(pcsCase.getGenApps(), documentReferences);
 
-        return documentIds;
+        return documentReferences;
     }
 
-    private void addDocumentIdsFromRentArrears(RentArrearsSection rentArrears, Set<String> documentIds) {
+    private void addDocumentReferencesFromRentArrears(RentArrearsSection rentArrears, Set<String> documentReferences) {
         if (rentArrears != null) {
-            addDocumentIds(rentArrears.getStatementDocuments(), documentIds);
+            addDocumentReferences(rentArrears.getStatementDocuments(), documentReferences);
         }
     }
 
-    private void addDocumentIdsFromNoticeServedDetails(
+    private void addDocumentReferencesFromNoticeServedDetails(
         NoticeServedDetails noticeServedDetails,
-        Set<String> documentIds
+        Set<String> documentReferences
     ) {
         if (noticeServedDetails != null) {
-            addDocumentIds(noticeServedDetails.getDocuments(), documentIds);
+            addDocumentReferences(noticeServedDetails.getDocuments(), documentReferences);
         }
     }
 
-    private void addDocumentIdsFromTenancyLicenceDetails(
+    private void addDocumentReferencesFromTenancyLicenceDetails(
         TenancyLicenceDetails tenancyLicenceDetails,
-        Set<String> documentIds
+        Set<String> documentReferences
     ) {
         if (tenancyLicenceDetails != null) {
-            addDocumentIds(tenancyLicenceDetails.getTenancyLicenceDocuments(), documentIds);
+            addDocumentReferences(tenancyLicenceDetails.getTenancyLicenceDocuments(), documentReferences);
         }
     }
 
-    private void addDocumentIdsFromRequiredDocumentsWales(WalesDocuments requiredDocumentsWales,
-                                                          Set<String> documentIds) {
+    private void addDocumentReferencesFromRequiredDocumentsWales(WalesDocuments requiredDocumentsWales,
+                                                                Set<String> documentReferences) {
         if (requiredDocumentsWales != null) {
-            addDocumentIds(requiredDocumentsWales.getEnergyPerformance(), documentIds);
-            addDocumentIds(requiredDocumentsWales.getGasSafetyReport(), documentIds);
-            addDocumentIds(requiredDocumentsWales.getElectricalInstallation(), documentIds);
+            addDocumentReferences(requiredDocumentsWales.getEnergyPerformance(), documentReferences);
+            addDocumentReferences(requiredDocumentsWales.getGasSafetyReport(), documentReferences);
+            addDocumentReferences(requiredDocumentsWales.getElectricalInstallation(), documentReferences);
         }
     }
 
-    private void addDocumentIdsFromOccupationLicenceDetailsWales(
+    private void addDocumentReferencesFromOccupationLicenceDetailsWales(
         OccupationLicenceDetailsWales occupationLicenceDetailsWales,
-        Set<String> documentIds
+        Set<String> documentReferences
     ) {
         if (occupationLicenceDetailsWales != null) {
-            addDocumentIds(occupationLicenceDetailsWales.getLicenceDocuments(), documentIds);
+            addDocumentReferences(occupationLicenceDetailsWales.getLicenceDocuments(), documentReferences);
         }
     }
 
-    private void addDocumentIdsFromCaseDetailsTab(CaseDetailsTab caseDetailsTab, Set<String> documentIds) {
+    private void addDocumentReferencesFromCaseDetailsTab(CaseDetailsTab caseDetailsTab,
+                                                         Set<String> documentReferences) {
         if (caseDetailsTab == null) {
             return;
         }
 
-        addDocumentIdsFromRentArrearsTabDetails(caseDetailsTab.getRentArrearsDetails(), documentIds);
-        addDocumentIdsFromNoticeTabDetails(caseDetailsTab.getNoticeDetails(), documentIds);
-        addDocumentIdsFromTenancyLicenceTabDetails(caseDetailsTab.getTenancyLicenceDetails(), documentIds);
-        addDocumentIdsFromRequiredDocumentsTabDetails(caseDetailsTab.getRequiredDocumentsDetails(), documentIds);
-        addDocumentIdsFromOccupationContractOrLicenceTabDetails(
+        addDocumentReferencesFromRentArrearsTabDetails(caseDetailsTab.getRentArrearsDetails(), documentReferences);
+        addDocumentReferencesFromNoticeTabDetails(caseDetailsTab.getNoticeDetails(), documentReferences);
+        addDocumentReferencesFromTenancyLicenceTabDetails(
+            caseDetailsTab.getTenancyLicenceDetails(),
+            documentReferences
+        );
+        addDocumentReferencesFromRequiredDocumentsTabDetails(
+            caseDetailsTab.getRequiredDocumentsDetails(),
+            documentReferences
+        );
+        addDocumentReferencesFromOccupationContractOrLicenceTabDetails(
             caseDetailsTab.getOccupationContractLicenceDetails(),
-            documentIds
+            documentReferences
         );
     }
 
-    private void addDocumentIdsFromRentArrearsTabDetails(RentArrearsTabDetails rentArrearsDetails,
-                                                         Set<String> documentIds) {
+    private void addDocumentReferencesFromRentArrearsTabDetails(RentArrearsTabDetails rentArrearsDetails,
+                                                               Set<String> documentReferences) {
         if (rentArrearsDetails != null) {
-            addDocumentIds(rentArrearsDetails.getRentStatement(), documentIds);
+            addDocumentReferences(rentArrearsDetails.getRentStatement(), documentReferences);
         }
     }
 
-    private void addDocumentIdsFromNoticeTabDetails(NoticeTabDetails noticeDetails, Set<String> documentIds) {
+    private void addDocumentReferencesFromNoticeTabDetails(NoticeTabDetails noticeDetails,
+                                                          Set<String> documentReferences) {
         if (noticeDetails != null) {
-            addDocumentIds(noticeDetails.getNoticeDocuments(), documentIds);
+            addDocumentReferences(noticeDetails.getNoticeDocuments(), documentReferences);
         }
     }
 
-    private void addDocumentIdsFromTenancyLicenceTabDetails(TenancyLicenceTabDetails tenancyLicenceDetails,
-                                                            Set<String> documentIds) {
+    private void addDocumentReferencesFromTenancyLicenceTabDetails(TenancyLicenceTabDetails tenancyLicenceDetails,
+                                                                  Set<String> documentReferences) {
         if (tenancyLicenceDetails != null) {
-            addDocumentIds(tenancyLicenceDetails.getTenancyLicenceDocuments(), documentIds);
+            addDocumentReferences(tenancyLicenceDetails.getTenancyLicenceDocuments(), documentReferences);
         }
     }
 
-    private void addDocumentIdsFromRequiredDocumentsTabDetails(RequiredDocumentsTabDetails requiredDocumentsDetails,
-                                                               Set<String> documentIds) {
+    private void addDocumentReferencesFromRequiredDocumentsTabDetails(
+        RequiredDocumentsTabDetails requiredDocumentsDetails,
+        Set<String> documentReferences
+    ) {
         if (requiredDocumentsDetails != null) {
-            addDocumentIds(requiredDocumentsDetails.getEnergyPerformanceCertificates(), documentIds);
-            addDocumentIds(requiredDocumentsDetails.getGasSafetyReports(), documentIds);
-            addDocumentIds(requiredDocumentsDetails.getElectricalInstallationReports(), documentIds);
+            addDocumentReferences(requiredDocumentsDetails.getEnergyPerformanceCertificates(), documentReferences);
+            addDocumentReferences(requiredDocumentsDetails.getGasSafetyReports(), documentReferences);
+            addDocumentReferences(requiredDocumentsDetails.getElectricalInstallationReports(), documentReferences);
         }
     }
 
-    private void addDocumentIdsFromOccupationContractOrLicenceTabDetails(
+    private void addDocumentReferencesFromOccupationContractOrLicenceTabDetails(
         OccupationContractOrLicenceTabDetails occupationContractLicenceDetails,
-        Set<String> documentIds
+        Set<String> documentReferences
     ) {
         if (occupationContractLicenceDetails != null) {
-            addDocumentIds(occupationContractLicenceDetails.getDocuments(), documentIds);
+            addDocumentReferences(occupationContractLicenceDetails.getDocuments(), documentReferences);
         }
     }
 
-    private void addDocumentIdsFromGenApps(List<ListValue<GeneralApplication>> genApps, Set<String> documentIds) {
+    private void addDocumentReferencesFromGenApps(List<ListValue<GeneralApplication>> genApps,
+                                                 Set<String> documentReferences) {
         if (genApps == null) {
             return;
         }
 
         genApps.stream()
             .map(ListValue::getValue)
-            .forEach(genApp -> addDocumentIdsFromGenApp(genApp, documentIds));
+            .forEach(genApp -> addDocumentReferencesFromGenApp(genApp, documentReferences));
     }
 
-    private void addDocumentIdsFromGenApp(GeneralApplication genApp, Set<String> documentIds) {
+    private void addDocumentReferencesFromGenApp(GeneralApplication genApp, Set<String> documentReferences) {
         if (genApp == null) {
             return;
         }
 
-        addDocumentIdFromDocumentWithId(genApp.getSubmissionDocument(), documentIds);
-        addDocumentIds(genApp.getSupportingDocuments(), documentIds);
+        addDocumentReferenceFromDocumentWithId(genApp.getSubmissionDocument(), documentReferences);
+        addDocumentReferences(genApp.getSupportingDocuments(), documentReferences);
     }
 
-    private void addDocumentIdFromDocumentWithId(DocumentWithId document, Set<String> documentIds) {
+    private void addDocumentReferenceFromDocumentWithId(DocumentWithId document, Set<String> documentReferences) {
         if (document != null) {
-            addDocumentId(document.getId(), documentIds);
+            addDocumentReference(document.getId(), documentReferences);
+            addDocumentReferences(document.getDocument(), documentReferences);
         }
     }
 
-    private void addDocumentIds(List<ListValue<Document>> documents, Set<String> documentIds) {
+    private void addDocumentReferences(List<ListValue<Document>> documents, Set<String> documentReferences) {
         if (documents == null) {
             return;
         }
 
         documents.stream()
-            .map(ListValue::getId)
-            .forEach(documentId -> addDocumentId(documentId, documentIds));
+            .forEach(document -> documentReferences(document)
+                .forEach(reference -> addDocumentReference(reference, documentReferences)));
     }
 
-    private void addDocumentId(String documentId, Set<String> documentIds) {
-        if (documentId != null) {
-            documentIds.add(documentId);
+    private void addDocumentReferences(Document document, Set<String> documentReferences) {
+        documentReferences(document)
+            .forEach(reference -> addDocumentReference(reference, documentReferences));
+    }
+
+    private Stream<String> documentReferences(ListValue<Document> document) {
+        if (document == null) {
+            return Stream.empty();
+        }
+
+        return Stream.concat(
+            Stream.of(document.getId()),
+            documentReferences(document.getValue())
+        );
+    }
+
+    private Stream<String> documentReferences(Document document) {
+        if (document == null) {
+            return Stream.empty();
+        }
+
+        return Stream.of(document.getUrl(), document.getBinaryUrl());
+    }
+
+    private void addDocumentReference(String documentReference, Set<String> documentReferences) {
+        if (documentReference != null) {
+            documentReferences.add(documentReference);
         }
     }
 }
