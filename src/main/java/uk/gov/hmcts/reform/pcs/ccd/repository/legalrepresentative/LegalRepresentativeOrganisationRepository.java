@@ -49,4 +49,8 @@ public interface LegalRepresentativeOrganisationRepository extends JpaRepository
         @Param("caseReference") long caseReference
     );
 
+    Optional<LegalRepresentativeOrganisationEntity> findByOrganisationId(
+        @Param("organisationId") String organisationId);
+
+
 }

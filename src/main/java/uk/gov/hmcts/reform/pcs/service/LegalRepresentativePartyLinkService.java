@@ -14,6 +14,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativ
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
+import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.LegalRepresentativeOrganisationContactDetailsRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.LegalRepresentativeOrganisationRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseRoleAssignmentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
@@ -34,6 +35,7 @@ public class LegalRepresentativePartyLinkService {
 
     private final PcsCaseService pcsCaseService;
     private final LegalRepresentativeOrganisationRepository legalRepresentativeOrganisationRepository;
+    private final LegalRepresentativeOrganisationContactDetailsRepository legalRepOrganisationContactDetailsRepository;
     private final OrganisationDetailsService organisationDetailsService;
     private final AddressMapper addressMapper;
     private final CaseRoleAssignmentService caseRoleAssignmentService;
@@ -56,7 +58,7 @@ public class LegalRepresentativePartyLinkService {
         unlinkExistingRepresentation(UUID.fromString(partyId));
 
         Optional<LegalRepresentativeOrganisationEntity> legalRepresentativeOrganisationEntity =
-            findExistingRepresentativeOrganisation(organisationId, caseReference);
+            findExistingRepresentativeOrganisation(organisationId);
 
         LegalRepresentativeOrganisationEntity legalRepresentativeOrganisation;
 
@@ -65,6 +67,21 @@ public class LegalRepresentativePartyLinkService {
             legalRepresentativeOrganisation = legalRepresentativeOrganisationEntity.get();
 
             backfillOrganisationMetadata(legalRepresentativeOrganisation, organisationDetails);
+
+            Optional<LegalRepresentativeOrganisationContactDetailsEntity> existingContactDetails =
+                legalRepOrganisationContactDetailsRepository
+                    .findByOrganisationIdAndCaseReference(organisationId, caseReference);
+
+            if (existingContactDetails.isEmpty()) {
+                LegalRepresentativeOrganisationContactDetailsEntity legalRepresentativeOrganisationContactDetails =
+                    buildLegalRepresentativeOrganisationContactDetails(caseEntity, legalRepresentativeOrganisation,
+                                                                       organisationDetails);
+
+                legalRepresentativeOrganisation
+                    .addLegalRepresentativeOrganisationContactDetails(legalRepresentativeOrganisationContactDetails);
+
+            }
+
         } else {
             legalRepresentativeOrganisation = createNewLegalRepresentative(
                 organisationId,
@@ -102,15 +119,10 @@ public class LegalRepresentativePartyLinkService {
             .build();
 
         LegalRepresentativeOrganisationContactDetailsEntity legalRepresentativeOrganisationContactDetails =
-            LegalRepresentativeOrganisationContactDetailsEntity.builder()
-                .pcsCase(pcsCase)
-                .legalRepresentativeOrganisation(legalRepresentativeOrganisation)
-                .address(addressMapper.toAddressEntityAndNormalise(
-                    organisationDetailsService.getOrganisationAddress(orgDetails)))
-                .build();
+            buildLegalRepresentativeOrganisationContactDetails(pcsCase, legalRepresentativeOrganisation, orgDetails);
 
         legalRepresentativeOrganisation
-            .setLegalRepresentativeOrganisationContactDetails(legalRepresentativeOrganisationContactDetails);
+            .addLegalRepresentativeOrganisationContactDetails(legalRepresentativeOrganisationContactDetails);
 
         return legalRepresentativeOrganisation;
     }
@@ -123,10 +135,11 @@ public class LegalRepresentativePartyLinkService {
     }
 
     private Optional<LegalRepresentativeOrganisationEntity> findExistingRepresentativeOrganisation(
-        String organisationId, long caseReference) {
-        return legalRepresentativeOrganisationRepository.findByOrganisationIdAndCaseReference(organisationId,
-                                                                                              caseReference);
+        String organisationId) {
+        return legalRepresentativeOrganisationRepository.findByOrganisationId(organisationId);
     }
+
+
 
     private void backfillOrganisationMetadata(LegalRepresentativeOrganisationEntity legalRepresentativeOrganisation,
                                               OrganisationDetailsResponse organisationDetails) {
@@ -173,6 +186,20 @@ public class LegalRepresentativePartyLinkService {
                                                                     partyLegalRepOrg) {
         partyLegalRepOrg.setActive(YesOrNo.NO);
         partyLegalRepOrg.setEndDate(Instant.now());
+    }
+
+    private LegalRepresentativeOrganisationContactDetailsEntity buildLegalRepresentativeOrganisationContactDetails(
+        PcsCaseEntity pcsCase,
+        LegalRepresentativeOrganisationEntity legalRepresentativeOrganisation,
+        OrganisationDetailsResponse orgDetails) {
+
+        return
+            LegalRepresentativeOrganisationContactDetailsEntity.builder()
+                .pcsCase(pcsCase)
+                .legalRepresentativeOrganisation(legalRepresentativeOrganisation)
+                .address(addressMapper.toAddressEntityAndNormalise(
+                    organisationDetailsService.getOrganisationAddress(orgDetails)))
+                .build();
     }
 
 }

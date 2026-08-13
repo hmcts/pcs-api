@@ -10,8 +10,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.LegalRepresentativeDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeOrganisationContactDetailsEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeOrganisationEntity;
-import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.LegalRepresentativeOrganisationRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.LegalRepresentativeOrganisationContactDetailsRepository;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
@@ -25,22 +24,23 @@ import static uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter.BR_DELIMITER;
 @AllArgsConstructor
 public class LegalRepresentativePageService {
 
-    private final LegalRepresentativeOrganisationRepository legalRepresentativeOrganisationRepository;
+    private final LegalRepresentativeOrganisationContactDetailsRepository
+        legalRepresentativeOrganisationContactDetailsRepository;
     private final AddressMapper addressMapper;
     private final SecurityContextService securityContextService;
     private final AddressFormatter addressFormatter;
 
     @Transactional
     public void save(long caseReference, LegalRepresentativeDetails legalRepresentativeDetails) {
-        Optional<LegalRepresentativeOrganisationEntity> legalRepresentativeOrganisation =
-            legalRepresentativeOrganisationRepository
-                .findByOrganisationIdAndCaseReference(legalRepresentativeDetails.getOrganisationId(), caseReference);
+        Optional<LegalRepresentativeOrganisationContactDetailsEntity> contactDetails =
+            legalRepresentativeOrganisationContactDetailsRepository.findByOrganisationIdAndCaseReference(
+                legalRepresentativeDetails.getOrganisationId(),
+            caseReference
+        );
 
-        LegalRepresentativeOrganisationEntity legalRepresentativeOrganisationEntity = legalRepresentativeOrganisation
-                .orElseThrow(() -> new IllegalStateException("Cannot find LegalRepresentativeOrganisation"));
-
-        LegalRepresentativeOrganisationContactDetailsEntity organisationContactDetails =
-            legalRepresentativeOrganisationEntity.getLegalRepresentativeOrganisationContactDetails();
+        LegalRepresentativeOrganisationContactDetailsEntity organisationContactDetails = contactDetails
+                .orElseThrow(() -> new IllegalStateException("Cannot find "
+                                                                 + "LegalRepresentativeOrganisationContactDetails"));
 
         if (legalRepresentativeDetails.getDifferentPostalAddress() != null
             && legalRepresentativeDetails.getDifferentPostalAddress().equals(VerticalYesNo.YES)) {
@@ -65,22 +65,22 @@ public class LegalRepresentativePageService {
             organisationContactDetails.setEmailAddress(legalRepresentativeDetails.getEmailAddress());
         }
 
-        organisationContactDetails.setConfirmedContactDetails(YesOrNo.YES);
+        organisationContactDetails.setContactDetailsCorrectConfirmation(YesOrNo.YES);
 
-        legalRepresentativeOrganisationRepository.save(legalRepresentativeOrganisationEntity);
+        legalRepresentativeOrganisationContactDetailsRepository.save(organisationContactDetails);
     }
 
     public LegalRepresentativeDetails retrieveLegalRepresentativeDetails(String organisationId,
                                                                          long caseReference,
                                                                          LegalRepresentativeDetails details) {
-        Optional<LegalRepresentativeOrganisationEntity> legalRepOrganisation = legalRepresentativeOrganisationRepository
-            .findByOrganisationIdAndCaseReference(organisationId, caseReference);
+        Optional<LegalRepresentativeOrganisationContactDetailsEntity> contactDetails =
+            legalRepresentativeOrganisationContactDetailsRepository.findByOrganisationIdAndCaseReference(
+            organisationId,
+            caseReference
+        );
 
-        LegalRepresentativeOrganisationEntity legalRepresentativeOrganisation = legalRepOrganisation
-            .orElseThrow(() -> new IllegalStateException("Cannot find LegalRepresentativeOrganisation"));
-
-        LegalRepresentativeOrganisationContactDetailsEntity organisationContactDetails =
-            legalRepresentativeOrganisation.getLegalRepresentativeOrganisationContactDetails();
+        LegalRepresentativeOrganisationContactDetailsEntity organisationContactDetails = contactDetails
+            .orElseThrow(() -> new IllegalStateException("Cannot find LegalRepresentativeOrganisationContactDetails"));
 
 
         if (details == null) {

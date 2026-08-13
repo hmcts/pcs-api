@@ -8,6 +8,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class LegalRepresentativeOrganisationEntityTest {
 
@@ -76,26 +77,26 @@ class LegalRepresentativeOrganisationEntityTest {
     }
 
     @Test
-    void setLegalRepresentativeOrganisationContactDetails_WithContactDetails_SetsReference() {
+    void addLegalRepresentativeOrganisationContactDetails_WithContactDetails_SetsReference() {
         // given
         LegalRepresentativeOrganisationContactDetailsEntity contactDetails =
             new LegalRepresentativeOrganisationContactDetailsEntity();
 
         // when
-        underTest.setLegalRepresentativeOrganisationContactDetails(contactDetails);
+        underTest.addLegalRepresentativeOrganisationContactDetails(contactDetails);
 
         // then
         assertThat(contactDetails.getLegalRepresentativeOrganisation()).isEqualTo(underTest);
-        assertThat(underTest.getLegalRepresentativeOrganisationContactDetails()).isEqualTo(contactDetails);
+        assertThat(underTest.getLegalRepresentativeOrganisationContactDetails().getFirst()).isEqualTo(contactDetails);
     }
 
     @Test
-    void setLegalRepresentativeOrganisationContactDetails_WithNullContactDetails_DoesNotSetReference() {
+    void addLegalRepresentativeOrganisationContactDetails_WithNullContactDetails_DoesNotSetReference() {
         // when
-        underTest.setLegalRepresentativeOrganisationContactDetails(null);
+        underTest.addLegalRepresentativeOrganisationContactDetails(null);
 
         // then
-        assertThat(underTest.getLegalRepresentativeOrganisationContactDetails()).isNull();
+        assertTrue(underTest.getLegalRepresentativeOrganisationContactDetails().isEmpty());
     }
 
 }
