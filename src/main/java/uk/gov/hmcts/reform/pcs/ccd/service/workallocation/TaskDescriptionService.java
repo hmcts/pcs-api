@@ -4,6 +4,8 @@ import io.pebbletemplates.pebble.PebbleEngine;
 import io.pebbletemplates.pebble.template.PebbleTemplate;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import uk.gov.hmcts.ccd.sdk.type.FlagDetail;
+import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
@@ -45,6 +47,21 @@ public class TaskDescriptionService {
         );
 
         String templateName = "gen-app-review-additional-docs";
+        return renderTemplate(templateName, context);
+    }
+
+    public String createReviewCaseFlagDescription(long caseReference, List<ListValue<FlagDetail>> flagDetails) {
+        List<String> flags = flagDetails.stream()
+            .map(ListValue::getValue)
+            .map(FlagDetail::getName)
+            .toList();
+
+        Map<String, Object> context = Map.of(
+            "caseReference", caseReference,
+            "flags", flags
+        );
+
+        String templateName = "review-case-flag";
         return renderTemplate(templateName, context);
     }
 

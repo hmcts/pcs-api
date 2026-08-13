@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.pcs.ccd.service;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -11,6 +10,8 @@ import uk.gov.hmcts.ccd.sdk.type.FlagVisibility;
 import uk.gov.hmcts.ccd.sdk.type.Flags;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.camunda.CamundaService;
+import uk.gov.hmcts.reform.pcs.camunda.TaskType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseFlagEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -19,6 +20,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.BaseCaseFlag;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.FlagRefDataEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.FlagRefDataRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TaskDescriptionService;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -30,9 +32,11 @@ import java.util.Optional;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
-//import static org.assertj.core.api.Assertions.assertE;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
@@ -42,13 +46,16 @@ class CaseFlagServiceTest {
     @Mock
     private FlagRefDataRepository flagRefDataRepository;
 
+    @Mock
+    private TaskDescriptionService taskDescriptionService;
+
+    @Mock
+    private CamundaService camundaService;
+
     @InjectMocks
     private CaseFlagService underTest;
 
-    @BeforeEach
-    void setUp() {
-        underTest = new CaseFlagService(flagRefDataRepository);
-    }
+    private static final long CASE_REFERENCE = 1234L;
 
     @Test
     void shouldMergeNewCaseFlags() {
@@ -167,13 +174,18 @@ class CaseFlagServiceTest {
             .details(createFlagDetailsWithoutIds("RA0033", "Sign language interpreter"))
             .build();
 
+        when(taskDescriptionService.createReviewCaseFlagDescription(eq(CASE_REFERENCE), any()))
+            .thenReturn("description");
+
         // When
-        underTest.saveReasonableAdjustmentFlags(partyEntity, incomingFlags);
+        underTest.saveReasonableAdjustmentFlags(partyEntity, incomingFlags, CASE_REFERENCE);
 
         // Then
         assertThat(partyEntity.getDefendantFlags())
             .extracting(flag -> flag.getFlagRefData().getFlagCode())
             .containsExactlyInAnyOrder("PF0015", "RA0033");
+
+        verify(camundaService).createTask(CASE_REFERENCE, TaskType.REVIEW_CASE_FLAG, "description");
     }
 
     @Test
@@ -191,13 +203,18 @@ class CaseFlagServiceTest {
         details.addAll(createFlagDetailsWithoutIds("RA0033", "Sign language interpreter"));
         details.addAll(createFlagDetailsWithoutIds("CF0002", "Complex case"));
 
+        when(taskDescriptionService.createReviewCaseFlagDescription(eq(CASE_REFERENCE), any()))
+            .thenReturn("description");
+
         // When
-        underTest.saveReasonableAdjustmentFlags(partyEntity, Flags.builder().details(details).build());
+        underTest.saveReasonableAdjustmentFlags(partyEntity, Flags.builder().details(details).build(), CASE_REFERENCE);
 
         // Then
         assertThat(partyEntity.getDefendantFlags())
             .extracting(flag -> flag.getFlagRefData().getFlagCode())
             .containsExactlyInAnyOrder("PF0015", "RA0033");
+
+        verify(camundaService).createTask(CASE_REFERENCE, TaskType.REVIEW_CASE_FLAG, "description");
     }
 
     @Test
@@ -216,7 +233,7 @@ class CaseFlagServiceTest {
             .build();
 
         // When
-        underTest.saveReasonableAdjustmentFlags(partyEntity, incomingFlags);
+        underTest.saveReasonableAdjustmentFlags(partyEntity, incomingFlags, CASE_REFERENCE);
 
         // Then
         assertThat(partyEntity.getDefendantFlags())
@@ -224,6 +241,8 @@ class CaseFlagServiceTest {
             .containsExactly("RA0012");
         // The non reasonable adjustment flag is dropped before any reference data is touched
         verifyNoInteractions(flagRefDataRepository);
+        verifyNoInteractions(taskDescriptionService);
+        verifyNoInteractions(camundaService);
     }
 
     @Test
@@ -256,8 +275,11 @@ class CaseFlagServiceTest {
                                  .build()))
             .build();
 
+        when(taskDescriptionService.createReviewCaseFlagDescription(eq(CASE_REFERENCE), any()))
+            .thenReturn("description");
+
         // When
-        underTest.saveReasonableAdjustmentFlags(partyEntity, incomingFlags);
+        underTest.saveReasonableAdjustmentFlags(partyEntity, incomingFlags, CASE_REFERENCE);
 
         // Then the flag is stored against the party, but the shared reference data is untouched
         assertThat(partyEntity.getDefendantFlags()).hasSize(1);
@@ -267,6 +289,8 @@ class CaseFlagServiceTest {
         assertThat(existingRefData.getHearingRelevant()).isTrue();
         assertThat(existingRefData.getAvailableExternally()).isTrue();
         assertThat(existingRefData.getVisibility()).isEqualTo(FlagVisibility.INTERNAL.getValue());
+
+        verify(camundaService).createTask(CASE_REFERENCE, TaskType.REVIEW_CASE_FLAG, "description");
     }
 
     @Test
@@ -278,13 +302,18 @@ class CaseFlagServiceTest {
             .details(createFlagDetailsWithoutIds("RA0099", "Newly published adjustment"))
             .build();
 
+        when(taskDescriptionService.createReviewCaseFlagDescription(eq(CASE_REFERENCE), any()))
+            .thenReturn("description");
+
         // When
-        underTest.saveReasonableAdjustmentFlags(partyEntity, incomingFlags);
+        underTest.saveReasonableAdjustmentFlags(partyEntity, incomingFlags, CASE_REFERENCE);
 
         // Then
         FlagRefDataEntity createdRefData = partyEntity.getDefendantFlags().getFirst().getFlagRefData();
         assertThat(createdRefData.getFlagCode()).isEqualTo("RA0099");
         assertThat(createdRefData.getFlagName()).isEqualTo("Newly published adjustment");
+
+        verify(camundaService).createTask(CASE_REFERENCE, TaskType.REVIEW_CASE_FLAG, "description");
     }
 
     @Test
@@ -320,12 +349,17 @@ class CaseFlagServiceTest {
             .details(createFlagDetailsWithoutIds("RA0012", "Braille documents"))
             .build();
 
+        when(taskDescriptionService.createReviewCaseFlagDescription(eq(CASE_REFERENCE), any()))
+            .thenReturn("description");
+
         // When
-        underTest.saveReasonableAdjustmentFlags(partyEntity, incomingFlags);
+        underTest.saveReasonableAdjustmentFlags(partyEntity, incomingFlags, CASE_REFERENCE);
 
         // Then
         assertThat(partyEntity.getDefendantFlags().getFirst().getPaths())
             .isEqualTo(":Party_:Reasonable adjustment");
+
+        verify(camundaService).createTask(CASE_REFERENCE, TaskType.REVIEW_CASE_FLAG, "description");
     }
 
     @Test
@@ -340,14 +374,18 @@ class CaseFlagServiceTest {
             .build();
 
         // When
-        underTest.saveReasonableAdjustmentFlags(partyEntity, null);
-        underTest.saveReasonableAdjustmentFlags(partyEntity, Flags.builder().details(new ArrayList<>()).build());
+        underTest.saveReasonableAdjustmentFlags(partyEntity, null, CASE_REFERENCE);
+        underTest.saveReasonableAdjustmentFlags(
+            partyEntity, Flags.builder().details(new ArrayList<>()).build(), CASE_REFERENCE
+        );
 
         // Then
         assertThat(partyEntity.getDefendantFlags()).hasSize(1);
         assertThat(partyEntity.getDefendantFlags().getFirst().getFlagComment()).isEqualTo("Braille documents");
         // The method returns before doing anything else - no reference data is looked up or written
         verifyNoInteractions(flagRefDataRepository);
+        verifyNoInteractions(taskDescriptionService);
+        verifyNoInteractions(camundaService);
     }
 
     private List<ListValue<FlagDetail>> createFlagDetailsWithoutIds(String flagCode, String name) {
