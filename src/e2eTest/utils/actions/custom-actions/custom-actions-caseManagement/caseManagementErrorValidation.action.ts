@@ -274,6 +274,10 @@ export class ErrorValidationAction implements IAction {
         label: cancelHearing.enterReasonForCancellationLabel,
         button: cancelHearing.continueButton
 
+      });
+    }
+  }
+
   private async errorValidationUploadGenAppsFile(validationReq: string) {
     if (validationReq === 'YES') {
       await performAction('inputErrorValidation', {
@@ -283,5 +287,4 @@ export class ErrorValidationAction implements IAction {
       });
     }
   }
-
 }

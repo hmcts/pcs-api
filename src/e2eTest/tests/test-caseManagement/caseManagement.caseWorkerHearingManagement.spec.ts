@@ -17,21 +17,24 @@ import {
 
 test.use({ storageState: undefined })
 
-test.beforeEach(async ({ page, context }) => {
+test.beforeEach(async ({ page, context },testInfo ) => {
   await context.clearCookies();
   initializeExecutor(page);
   initializeCMExecutor(page);
   allPartyDetails.length = 0;
   await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
   await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayloadCaseFileView });
+  await performAction('getAddressInfo', { data: createCaseApiData.createCasePayload });
   console.log(`Case created with case number: ${process.env.CASE_NUMBER}`);
   await performAction('updatePaymentAPI');
   await performAction('getCaseAPI', 'Link Solicitor');
-  await performAction('manageHearingAPI', {
-    data: manageHearingApiData.AddHearingPayload,
-    email: user.hearingCenterAdmin.email,
-    password: user.hearingCenterAdmin.password
-  });
+  if (testInfo.title.includes('Edit a hearing') || testInfo.title.includes('Cancel a hearing')){
+    await performAction('manageHearingAPI', {
+      data: manageHearingApiData.AddHearingPayload,
+      email: user.hearingCenterAdmin.email,
+      password: user.hearingCenterAdmin.password
+    });
+  }
   console.log(`Case has been associated with hearing`);
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
   await dismissCookieBanner(page, 'additional');
