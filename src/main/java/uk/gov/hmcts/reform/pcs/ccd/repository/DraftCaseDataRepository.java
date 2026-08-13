@@ -12,27 +12,27 @@ public interface DraftCaseDataRepository extends JpaRepository<DraftCaseDataEnti
     /*
      * The user-keyed lookups must exclude both other shapes. Without AndPartyIdIsNull a user holding
      * a plain and a party draft on one case and event matches two rows and Spring Data throws on the
-     * Optional; without AndOwnerPartyIdIsNull the same happens once a journey moves to party
-     * ownership, because owner rows still carry idamUserId as the record of who last wrote them.
+     * Optional; without AndOrganisationIdIsNull the same happens once a journey moves to organisation
+     * ownership, because owned rows still carry idamUserId as the record of who last wrote them.
      */
 
-    Optional<DraftCaseDataEntity> findByCaseReferenceAndEventIdAndIdamUserIdAndPartyIdIsNullAndOwnerPartyIdIsNull(
+    Optional<DraftCaseDataEntity> findByCaseReferenceAndEventIdAndIdamUserIdAndPartyIdIsNullAndOrganisationIdIsNull(
         long caseReference, EventId eventId, UUID idamUserId);
 
-    boolean existsByCaseReferenceAndEventIdAndIdamUserIdAndPartyIdIsNullAndOwnerPartyIdIsNull(
+    boolean existsByCaseReferenceAndEventIdAndIdamUserIdAndPartyIdIsNullAndOrganisationIdIsNull(
         long caseReference, EventId eventId, UUID idamUserId);
 
-    void deleteByCaseReferenceAndEventIdAndIdamUserIdAndPartyIdIsNullAndOwnerPartyIdIsNull(
+    void deleteByCaseReferenceAndEventIdAndIdamUserIdAndPartyIdIsNullAndOrganisationIdIsNull(
         long caseReference, EventId eventId, UUID idamUserId);
 
-    Optional<DraftCaseDataEntity> findByCaseReferenceAndEventIdAndOwnerPartyId(
-        long caseReference, EventId eventId, UUID ownerPartyId);
+    Optional<DraftCaseDataEntity> findByCaseReferenceAndEventIdAndOrganisationId(
+        long caseReference, EventId eventId, String organisationId);
 
-    boolean existsByCaseReferenceAndEventIdAndOwnerPartyId(
-        long caseReference, EventId eventId, UUID ownerPartyId);
+    boolean existsByCaseReferenceAndEventIdAndOrganisationId(
+        long caseReference, EventId eventId, String organisationId);
 
-    void deleteByCaseReferenceAndEventIdAndOwnerPartyId(
-        long caseReference, EventId eventId, UUID ownerPartyId);
+    void deleteByCaseReferenceAndEventIdAndOrganisationId(
+        long caseReference, EventId eventId, String organisationId);
 
     void deleteByCaseReferenceAndEventIdAndIdamUserIdAndPartyId(
         long caseReference, EventId eventId, UUID idamUserId, UUID partyId);
@@ -41,6 +41,6 @@ public interface DraftCaseDataRepository extends JpaRepository<DraftCaseDataEnti
         long caseReference, EventId eventId, UUID idamUserId, UUID partyId);
 
     boolean existsByCaseReferenceAndEventIdAndIdamUserIdAndPartyId(
-        long caseReference, EventId eventId, UUID idamUserId, UUID partId);
+        long caseReference, EventId eventId, UUID idamUserId, UUID partyId);
 
 }

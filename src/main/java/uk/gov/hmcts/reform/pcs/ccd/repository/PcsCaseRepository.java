@@ -17,13 +17,14 @@ public interface PcsCaseRepository extends JpaRepository<PcsCaseEntity, UUID> {
     Optional<PcsCaseEntity> findByCaseReference(long caseReference);
 
     /**
-     * The organisation-owned parties on a case. The "no claim link" arm covers the draft phase, where
-     * the claimant has an organisation but no claim yet. It is role-blind, so a second
-     * organisation-bearing party would match too - callers assert the single result rather than
-     * silently picking one.
+     * The organisations owning a case through its claimant. The "no claim link" arm covers the draft
+     * phase, where the claimant has an organisation but no claim yet. Distinct, so two claimant
+     * parties from one organisation give one owner rather than an ambiguity; callers assert the
+     * single result rather than silently picking one, which leaves only genuinely different
+     * organisations as an error.
      */
     @Query("""
-        select party.id from PcsCaseEntity pcsCase
+        select distinct party.organisationId from PcsCaseEntity pcsCase
         join pcsCase.parties party
         where pcsCase.caseReference = :caseReference
           and party.organisationId is not null
@@ -31,7 +32,7 @@ public interface PcsCaseRepository extends JpaRepository<PcsCaseEntity, UUID> {
                or exists (select claimParty from ClaimPartyEntity claimParty
                           where claimParty.party = party and claimParty.role = :claimantRole))
         """)
-    List<UUID> findOrganisationOwnedPartyIds(@Param("caseReference") long caseReference,
-                                             @Param("claimantRole") PartyRole claimantRole);
+    List<String> findOwningOrganisationIds(@Param("caseReference") long caseReference,
+                                           @Param("claimantRole") PartyRole claimantRole);
 
 }

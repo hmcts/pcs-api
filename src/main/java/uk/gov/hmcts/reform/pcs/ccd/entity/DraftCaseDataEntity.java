@@ -42,10 +42,11 @@ public class DraftCaseDataEntity {
     private UUID partyId;
 
     /**
-     * The party that owns this draft, when it is owned by an organisation rather than an individual.
+     * The organisation that owns this draft, when it is owned by one rather than by an individual.
      * When set it, not {@link #idamUserId}, identifies the draft; {@code idamUserId} then records only
-     * who last wrote it.
+     * who last wrote it. Matches the organisation the case's CaseAccessGroups are derived from, so a
+     * draft is reachable by exactly the people the case is.
      */
-    private UUID ownerPartyId;
+    private String organisationId;
 
 }

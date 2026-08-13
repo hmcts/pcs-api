@@ -111,7 +111,7 @@ public class DraftCaseDataService {
      * Throws rather than falling back to the user key: keying on the user would bring back the
      * per-user split with no symptom but "my colleague cannot see my answers".
      */
-    private Optional<UUID> ownerPartyId(long caseReference, EventId eventId) {
+    private Optional<String> ownerOrganisationId(long caseReference, EventId eventId) {
         DraftOwnership ownership = OWNERSHIP.get(eventId);
 
         if (ownership == DraftOwnership.NO_DRAFTS) {
@@ -123,41 +123,41 @@ public class DraftCaseDataService {
             return Optional.empty();
         }
 
-        List<UUID> ownerPartyIds = pcsCaseRepository.findOrganisationOwnedPartyIds(caseReference, PartyRole.CLAIMANT);
+        List<String> organisationIds = pcsCaseRepository.findOwningOrganisationIds(caseReference, PartyRole.CLAIMANT);
 
-        if (ownerPartyIds.isEmpty()) {
+        if (organisationIds.isEmpty()) {
             throw new IllegalStateException(
                 "Case " + caseReference + " has no organisation-owned claimant party to own its draft");
         }
-        if (ownerPartyIds.size() > 1) {
+        if (organisationIds.size() > 1) {
             throw new IllegalStateException(
-                "Case " + caseReference + " has " + ownerPartyIds.size() + " organisation-owned parties; "
+                "Case " + caseReference + " is owned by " + organisationIds.size() + " organisations; "
                     + "cannot determine which owns the draft");
         }
 
-        return Optional.of(ownerPartyIds.getFirst());
+        return Optional.of(organisationIds.getFirst());
     }
 
     private Optional<DraftCaseDataEntity> findDraft(long caseReference, EventId eventId, UUID userId,
-                                                    Optional<UUID> ownerPartyId) {
-        return ownerPartyId
-            .map(partyId -> draftCaseDataRepository
-                .findByCaseReferenceAndEventIdAndOwnerPartyId(caseReference, eventId, partyId))
+                                                    Optional<String> ownerOrganisationId) {
+        return ownerOrganisationId
+            .map(organisationId -> draftCaseDataRepository
+                .findByCaseReferenceAndEventIdAndOrganisationId(caseReference, eventId, organisationId))
             .orElseGet(() -> draftCaseDataRepository
-                .findByCaseReferenceAndEventIdAndIdamUserIdAndPartyIdIsNullAndOwnerPartyIdIsNull(
+                .findByCaseReferenceAndEventIdAndIdamUserIdAndPartyIdIsNullAndOrganisationIdIsNull(
                     caseReference, eventId, userId));
     }
 
     public Optional<PCSCase> getUnsubmittedCaseData(long caseReference, EventId eventId) {
         UUID userId = getCurrentUserId();
-        Optional<UUID> ownerPartyId = ownerPartyId(caseReference, eventId);
+        Optional<String> ownerOrganisationId = ownerOrganisationId(caseReference, eventId);
 
         return getUnsubmittedCaseDataInternal(
             caseReference,
             eventId,
             userId,
             null,
-            () -> findDraft(caseReference, eventId, userId, ownerPartyId)
+            () -> findDraft(caseReference, eventId, userId, ownerOrganisationId)
         );
     }
 
@@ -183,18 +183,18 @@ public class DraftCaseDataService {
 
     public boolean hasUnsubmittedCaseData(long caseReference, EventId eventId) {
         UUID userId = getCurrentUserId();
-        Optional<UUID> ownerPartyId = ownerPartyId(caseReference, eventId);
+        Optional<String> ownerOrganisationId = ownerOrganisationId(caseReference, eventId);
 
         return hasUnsubmittedCaseDataInternal(
             caseReference,
             eventId,
             userId,
             null,
-            () -> ownerPartyId
-                .map(partyId -> draftCaseDataRepository
-                    .existsByCaseReferenceAndEventIdAndOwnerPartyId(caseReference, eventId, partyId))
+            () -> ownerOrganisationId
+                .map(organisationId -> draftCaseDataRepository
+                    .existsByCaseReferenceAndEventIdAndOrganisationId(caseReference, eventId, organisationId))
                 .orElseGet(() -> draftCaseDataRepository
-                    .existsByCaseReferenceAndEventIdAndIdamUserIdAndPartyIdIsNullAndOwnerPartyIdIsNull(
+                    .existsByCaseReferenceAndEventIdAndIdamUserIdAndPartyIdIsNullAndOrganisationIdIsNull(
                         caseReference, eventId, userId))
         );
     }
@@ -240,7 +240,7 @@ public class DraftCaseDataService {
                                              EventId eventId) {
 
         UUID userId = getCurrentUserId();
-        Optional<UUID> ownerPartyId = ownerPartyId(caseReference, eventId);
+        Optional<String> ownerOrganisationId = ownerOrganisationId(caseReference, eventId);
 
         saveUnsubmittedEventDataInternal(
             caseReference,
@@ -248,7 +248,7 @@ public class DraftCaseDataService {
             eventId,
             userId,
             null,
-            () -> findDraft(caseReference, eventId, userId, ownerPartyId)
+            () -> findDraft(caseReference, eventId, userId, ownerOrganisationId)
         );
     }
 
@@ -365,15 +365,15 @@ public class DraftCaseDataService {
 
     public void patchUnsubmittedCaseData(long caseReference, EventId eventId, String patchEventDataJson) {
         UUID userId = getCurrentUserId();
-        Optional<UUID> ownerPartyId = ownerPartyId(caseReference, eventId);
+        Optional<String> ownerOrganisationId = ownerOrganisationId(caseReference, eventId);
         patchInternal(
             caseReference,
             eventId,
             patchEventDataJson,
             userId,
-            () -> findDraft(caseReference, eventId, userId, ownerPartyId),
+            () -> findDraft(caseReference, eventId, userId, ownerOrganisationId),
             () -> createNewDraft(
-                caseReference, eventId, userId, patchEventDataJson, ownerPartyId
+                caseReference, eventId, userId, patchEventDataJson, ownerOrganisationId
             )
         );
     }
@@ -390,18 +390,18 @@ public class DraftCaseDataService {
     @Transactional
     public void deleteUnsubmittedCaseData(long caseReference, EventId eventId) {
         UUID userId = getCurrentUserId();
-        Optional<UUID> ownerPartyId = ownerPartyId(caseReference, eventId);
+        Optional<String> ownerOrganisationId = ownerOrganisationId(caseReference, eventId);
 
         deleteUnsubmittedCaseDataInternal(
             caseReference,
             eventId,
             userId,
             null,
-            () -> ownerPartyId.ifPresentOrElse(
-                partyId -> draftCaseDataRepository
-                    .deleteByCaseReferenceAndEventIdAndOwnerPartyId(caseReference, eventId, partyId),
+            () -> ownerOrganisationId.ifPresentOrElse(
+                organisationId -> draftCaseDataRepository
+                    .deleteByCaseReferenceAndEventIdAndOrganisationId(caseReference, eventId, organisationId),
                 () -> draftCaseDataRepository
-                    .deleteByCaseReferenceAndEventIdAndIdamUserIdAndPartyIdIsNullAndOwnerPartyIdIsNull(
+                    .deleteByCaseReferenceAndEventIdAndIdamUserIdAndPartyIdIsNullAndOrganisationIdIsNull(
                         caseReference, eventId, userId))
         );
     }
@@ -461,13 +461,13 @@ public class DraftCaseDataService {
     }
 
     /**
-     * The owning party identifies the draft when present; idamUserId is still written either way, so
-     * a shared draft records who last touched it.
+     * The owning organisation identifies the draft when present; idamUserId is still written either
+     * way, so a shared draft records who last touched it.
      */
     private DraftCaseDataEntity createNewDraft(long caseReference, EventId eventId, UUID userId, String caseData,
-                                               Optional<UUID> ownerPartyId) {
+                                               Optional<String> ownerOrganisationId) {
         DraftCaseDataEntity newDraft = createNewDraft(caseReference, eventId, userId, caseData);
-        ownerPartyId.ifPresent(newDraft::setOwnerPartyId);
+        ownerOrganisationId.ifPresent(newDraft::setOrganisationId);
         return newDraft;
     }
 
