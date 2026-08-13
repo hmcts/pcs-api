@@ -301,10 +301,17 @@ export class CaseFlagAction implements IAction {
   }
 
   private async handleJudgeBookingPage(page: Page): Promise<void> {
+    const pageHeader = page.locator('h1,h1.govuk-heading-xl, h1.govuk-heading-l, h1.govuk-panel__title').filter({ visible: true }).first();
+    const currentHeader = (await pageHeader.textContent().catch(() => '') ?? '').trim();
+
+    if (currentHeader === caseList.mainHeader) {
+      return;
+    }
+
     await performValidation('mainHeader', workAccess.mainHeader);
     await expect(page.getByRole('radio', { name: workAccess.viewTasksAndCasesOption, exact: true })).toBeVisible();
     await page.getByRole('radio', { name: workAccess.viewTasksAndCasesOption, exact: true }).check();
     await page.getByRole('button', { name: workAccess.continueButton, exact: true }).click();
-    //await performValidation('mainHeader', caseList.mainHeader);
+    await performValidation('mainHeader', caseList.mainHeader);
   }
 }
