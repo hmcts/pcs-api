@@ -487,14 +487,14 @@ public class TestingSupportController {
     }
 
     private record FeePaymentInfo(
-        UUID id,
+        Integer id,
         String serviceRequestReference,
         java.time.LocalDateTime requestDate,
         BigDecimal amount,
         PaymentStatus paymentStatus
     ) {
     }
-  
+
     @Operation(
         summary = "Set a party email address and contact preference"
     )
