@@ -27,8 +27,6 @@ export class DocumentsAction implements IAction {
       ['uploadAdditionalDocumentsInfo', () => this.uploadAdditionalDocumentsInfo()],
       ['navigateToSummaryPage', () => this.navigateToSummaryPage(page)],
       ['uploadFiles', () => this.uploadFiles(page, fieldName as actionRecord)],
-
-
       [
         'verifyDocumentRelatesToApplication',
         () => this.verifyDocumentRelatesToApplication(page, fieldName as actionRecord),
