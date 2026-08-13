@@ -299,14 +299,6 @@ export class ErrorValidationAction implements IAction {
         labelMulti :addHearing.minutesTextLabel,
         button: addHearing.continueButton
       });
-      // await performAction('inputErrorValidation', {
-      //   validationType: addHearing.errorValidationType.one,
-      //   inputArray: addHearing.errorValidationField.errorTextField,
-      //   header: addHearing.eventCouldNotBeCreatedErrorMessageHeader,
-      //   label: addHearing.whichCategoriesHiddenTextLabel,
-      //   button: addHearing.continueButton
-      // });
-
     }
   }
   private async errorValidationUploadGenAppsFile(validationReq: string) {
