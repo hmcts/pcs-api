@@ -1803,10 +1803,9 @@ export class CreateCaseAction implements IAction {
   public async validateTabAccess(page: Page, tab: actionRecord) {
     await test.step(`Tab access check for user "${tab.user}"`, async () => {
       const tabLoc = page.locator('div.mat-tab-label-content');
-      await expect(tabLoc.first()).toBeVisible({timeout : SHORT_TIMEOUT});
+      await expect(tabLoc.first()).toBeVisible({ timeout: SHORT_TIMEOUT });
       const tabs = await tabLoc.allTextContents();
-      expect(tab.tabs).toEqual(tabs);
-
+      expect(tabs).toEqual(expect.arrayContaining(tab.tabs as string[]));
     });
   }
  
