@@ -345,14 +345,122 @@ class RespondPossessionClaimSubmitServiceTest {
             .fileName("counterclaim-evidence.pdf")
             .counterClaim(savedCounterClaim)
             .build();
+        DocumentEntity removedCounterClaimDocument = DocumentEntity.builder()
+            .counterClaim(savedCounterClaim)
+            .removed(true)
+            .build();
         when(documentService.createCounterClaimUploadedDocuments(
             counterClaimDocumentUploads, savedCounterClaim, pcsCaseEntity, partyEntity))
-            .thenReturn(List.of(counterClaimDocument));
+            .thenReturn(List.of(counterClaimDocument, removedCounterClaimDocument));
 
         String expectedDescription =
             "Defendant 1 has uploaded the following documents: response-evidence.pdf, counterclaim-evidence.pdf";
         when(taskDescriptionService.createTranslateDefendantDocumentDescription(
             CASE_REFERENCE, mainClaim, partyEntity, List.of(responseDocument, counterClaimDocument)))
+            .thenReturn(expectedDescription);
+
+        underTest.persistFinalSubmit(CASE_REFERENCE, possessionClaimResponse, partyEntity, journeyType);
+
+        verify(camundaService).createTask(
+            CASE_REFERENCE, TaskType.TRANSLATE_DEFENDANT_SUBMITTED_DOCUMENT, expectedDescription);
+    }
+
+    @Test
+    void shouldCreateTranslateTaskWhenLanguageIsEnglishAndWelsh() {
+        JourneyType journeyType = JourneyType.CITIZEN;
+
+        ClaimEntity mainClaim = ClaimEntity.builder().id(UUID.randomUUID()).build();
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
+            .caseReference(CASE_REFERENCE)
+            .claims(List.of(mainClaim))
+            .build();
+        PartyEntity partyEntity = PartyEntity.builder().id(UUID.randomUUID()).pcsCase(pcsCaseEntity).build();
+
+        DefendantResponseEntity savedResponse = DefendantResponseEntity.builder()
+            .id(1)
+            .languageUsed(LanguageUsed.ENGLISH_AND_WELSH)
+            .build();
+        DefendantResponseEntity otherResponse = DefendantResponseEntity.builder().id(2).build();
+
+        DocumentEntity activeDocument = DocumentEntity.builder()
+            .fileName("evidence.pdf")
+            .defendantResponse(savedResponse)
+            .build();
+        DocumentEntity removedDocument = DocumentEntity.builder()
+            .defendantResponse(savedResponse)
+            .removed(true)
+            .build();
+        DocumentEntity unrelatedResponseDocument = DocumentEntity.builder()
+            .defendantResponse(otherResponse)
+            .build();
+        DocumentEntity noResponseDocument = DocumentEntity.builder().build();
+        pcsCaseEntity.setDocuments(
+            List.of(activeDocument, removedDocument, unrelatedResponseDocument, noResponseDocument));
+
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .defendantResponses(DefendantResponses.builder().build())
+            .build();
+
+        when(defendantResponseService.saveDefendantResponse(
+            CASE_REFERENCE, possessionClaimResponse, partyEntity, journeyType))
+            .thenReturn(savedResponse);
+        when(counterClaimService.saveCounterClaim(CASE_REFERENCE, null, partyEntity)).thenReturn(Optional.empty());
+
+        String expectedDescription = "Defendant 1 has uploaded the following documents: evidence.pdf";
+        when(taskDescriptionService.createTranslateDefendantDocumentDescription(
+            CASE_REFERENCE, mainClaim, partyEntity, List.of(activeDocument)))
+            .thenReturn(expectedDescription);
+
+        underTest.persistFinalSubmit(CASE_REFERENCE, possessionClaimResponse, partyEntity, journeyType);
+
+        verify(camundaService).createTask(
+            CASE_REFERENCE, TaskType.TRANSLATE_DEFENDANT_SUBMITTED_DOCUMENT, expectedDescription);
+    }
+
+    @Test
+    void shouldExcludeCounterClaimDocumentsWhenPaymentRequired() {
+        JourneyType journeyType = JourneyType.CITIZEN;
+
+        ClaimEntity mainClaim = ClaimEntity.builder().id(UUID.randomUUID()).build();
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
+            .caseReference(CASE_REFERENCE)
+            .claims(List.of(mainClaim))
+            .build();
+        PartyEntity partyEntity = PartyEntity.builder().id(UUID.randomUUID()).pcsCase(pcsCaseEntity).build();
+
+        DefendantResponseEntity savedResponse = DefendantResponseEntity.builder()
+            .id(1)
+            .languageUsed(LanguageUsed.WELSH)
+            .build();
+        DocumentEntity responseDocument = DocumentEntity.builder()
+            .fileName("response-evidence.pdf")
+            .defendantResponse(savedResponse)
+            .build();
+        pcsCaseEntity.setDocuments(List.of(responseDocument));
+
+        CounterClaim counterClaim = CounterClaim.builder().claimType(CounterClaimType.SOMETHING_ELSE).build();
+        DefendantResponses defendantResponses = DefendantResponses.builder().counterClaim(counterClaim).build();
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .defendantResponses(defendantResponses)
+            .build();
+
+        CounterClaimEntity savedCounterClaim = CounterClaimEntity.builder()
+            .id(UUID.randomUUID())
+            .party(partyEntity)
+            .pcsCase(pcsCaseEntity)
+            .status(CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED)
+            .build();
+
+        when(defendantResponseService.saveDefendantResponse(
+            CASE_REFERENCE, possessionClaimResponse, partyEntity, journeyType))
+            .thenReturn(savedResponse);
+        when(counterClaimService.saveCounterClaim(CASE_REFERENCE, counterClaim, partyEntity))
+            .thenReturn(Optional.of(savedCounterClaim));
+        when(counterClaimFeeCalculator.isPaymentRequired(counterClaim)).thenReturn(true);
+
+        String expectedDescription = "Defendant 1 has uploaded the following documents: response-evidence.pdf";
+        when(taskDescriptionService.createTranslateDefendantDocumentDescription(
+            CASE_REFERENCE, mainClaim, partyEntity, List.of(responseDocument)))
             .thenReturn(expectedDescription);
 
         underTest.persistFinalSubmit(CASE_REFERENCE, possessionClaimResponse, partyEntity, journeyType);
