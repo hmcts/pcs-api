@@ -15,7 +15,7 @@ import java.util.function.Consumer;
  * you have two options, and they work independently of each other:</p>
  *
  * <ul>
- *   <li><b>Set the {@code SHOW_FULL_MESSAGES=true} env var</b> — the global,
+ *   <li><b>Set the {@code SHOW_FULL_LOGS=true} env var</b> — the global,
  *       all-or-nothing switch. Everything gets un-redacted, everywhere: what the exception
  *       object itself returns from {@code getMessage()}, {@code getCause()} and
  *       {@code getStackTrace()}, plus every stack trace that ends up in the logs.
@@ -28,7 +28,7 @@ import java.util.function.Consumer;
  *       logger its caller is using, so it can't.</li>
  * </ul>
  *
- * <p>In effect: {@code SHOW_FULL_MESSAGES} flips everything (object and logs);
+ * <p>In effect: {@code SHOW_FULL_LOGS} flips everything (object and logs);
  * per-logger DEBUG only affects what that logger writes out.</p>
  *
  * <p>NOTE: Consider {@link uk.gov.hmcts.reform.pcs.exception.RedactingThrowableConverter} also when looking to see
@@ -37,7 +37,7 @@ import java.util.function.Consumer;
 public class RedactionGate {
 
     static final String REDACTED = "REDACTED";
-    private static final boolean SHOW_FULL_MESSAGES = showFullMessages(System.getenv("SHOW_FULL_MESSAGES"));
+    private static final boolean SHOW_FULL_LOGS = showFullMessages(System.getenv("SHOW_FULL_LOGS"));
     private static volatile Boolean overrideForTesting; // Not for prod code
 
     private RedactionGate() {
@@ -49,7 +49,7 @@ public class RedactionGate {
     }
 
     public static String message(ErrorCode code, RedactionContext redactionContext) {
-        if (showFullExceptions()) {
+        if (showFullLogs()) {
             if (redactionContext != null) {
                 if (StringUtils.isNotEmpty(redactionContext.asDebugString())) {
                     return redactionContext.asDebugString();
@@ -61,25 +61,25 @@ public class RedactionGate {
     }
 
     public static Throwable cause(Throwable debugCause) {
-        return showFullExceptions() ? debugCause : null;
+        return showFullLogs() ? debugCause : null;
     }
 
     public static StackTraceElement[] stackTrace(StackTraceElement[] stackTrace) {
-        return showFullExceptions() ? stackTrace : new StackTraceElement[0];
+        return showFullLogs() ? stackTrace : new StackTraceElement[0];
     }
 
-    public static boolean showFullExceptions() {
+    public static boolean showFullLogs() {
         Boolean override = overrideForTesting;
-        return override != null ? override : SHOW_FULL_MESSAGES;
+        return override != null ? override : SHOW_FULL_LOGS;
     }
 
     /**
      * Logger-aware variant used by the Logback converters. Un-redacts when either the global
-     * {@code SHOW_FULL_MESSAGES} switch is on, or the specific logger for this event has
+     * {@code SHOW_FULL_LOGS} switch is on, or the specific logger for this event has
      * DEBUG enabled (see {@link LoggerGate}).
      */
-    public static boolean showFullExceptions(Context context, ILoggingEvent event) {
-        return showFullExceptions() || isDebugEnabled(context, event);
+    public static boolean showFullLogs(Context context, ILoggingEvent event) {
+        return showFullLogs() || isDebugEnabled(context, event);
     }
 
     public static void printStackTrace(Throwable throwable, PrintStream stream, Consumer<PrintStream> fullPrinter) {
@@ -92,7 +92,7 @@ public class RedactionGate {
 
     private static <T> void printStackTrace(Throwable throwable, T destination, Consumer<T> fullPrinter,
                                             Consumer<Object> println) {
-        if (!showFullExceptions()) {
+        if (!showFullLogs()) {
             println.accept(throwable);
             return;
         }

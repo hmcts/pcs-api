@@ -58,20 +58,20 @@ public class RedactionGateTest {
     }
 
     @Test
-    void parseShowFullExceptions_true() {
+    void parseShowFullLogs_true() {
         assertThat(RedactionGate.showFullMessages("true")).isTrue();
         assertThat(RedactionGate.showFullMessages("TRUE")).isTrue();
     }
 
     @Test
-    void parseShowFullExceptions_false() {
+    void parseShowFullLogs_false() {
         assertThat(RedactionGate.showFullMessages("false")).isFalse();
         assertThat(RedactionGate.showFullMessages(null)).isFalse();
         assertThat(RedactionGate.showFullMessages("yes")).isFalse();
     }
 
     @Test
-    void printStackTrace_printStream_whenShowFullExceptionsFalse_printsThrowableOnly() {
+    void printStackTrace_printStream_whenShowFullLogsFalse_printsThrowableOnly() {
         // Given
         RedactionGate.setShowFullMessagesForTesting(false);
         RuntimeException throwable = new RuntimeException("xyz");
@@ -114,7 +114,7 @@ public class RedactionGateTest {
     }
 
     @Test
-    void printStackTrace_printWriter_whenShowFullExceptionsFalse_printsThrowableOnly() {
+    void printStackTrace_printWriter_whenShowFullLogsFalse_printsThrowableOnly() {
         // Given
         RedactionGate.setShowFullMessagesForTesting(false);
         RuntimeException throwable = new RuntimeException("xyz");

@@ -9,7 +9,7 @@ import static ch.qos.logback.core.CoreConstants.EMPTY_STRING;
 import static ch.qos.logback.core.CoreConstants.LINE_SEPARATOR;
 import static uk.gov.hmcts.reform.pcs.exception.RedactionGate.REDACTED;
 import static uk.gov.hmcts.reform.pcs.exception.RedactionGate.isDebugEnabled;
-import static uk.gov.hmcts.reform.pcs.exception.RedactionGate.showFullExceptions;
+import static uk.gov.hmcts.reform.pcs.exception.RedactionGate.showFullLogs;
 
 public final class RedactingThrowableConverter extends ThrowableProxyConverter {
 
@@ -19,7 +19,7 @@ public final class RedactingThrowableConverter extends ThrowableProxyConverter {
         if (proxy == null) {
             return EMPTY_STRING;
         }
-        if (showFullExceptions() || isDebugEnabled(getContext(), event)) {
+        if (RedactionGate.showFullLogs() || isDebugEnabled(getContext(), event)) {
             return super.convert(event);
         }
         if (proxy instanceof ThrowableProxy throwableProxy) {

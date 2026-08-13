@@ -29,7 +29,7 @@ public class IdamAuthenticator {
             throw new InvalidAuthTokenException(AUTH_BLANK);
         }
         if (!authorisation.startsWith(BEARER_PREFIX) || authorisation.length() <= 7) {
-            log.warn("Malformed Bearer token: '{}'", authorisation);
+            log.warn("Malformed Bearer token.  Length: '{}'", authorisation.length());
             throw new InvalidAuthTokenException(AUTH_MALFORMED);
         }
         try {

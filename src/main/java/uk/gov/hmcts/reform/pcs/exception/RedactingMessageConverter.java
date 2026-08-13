@@ -8,13 +8,13 @@ import java.util.Arrays;
 
 import static uk.gov.hmcts.reform.pcs.exception.RedactionGate.REDACTED;
 import static uk.gov.hmcts.reform.pcs.exception.RedactionGate.isDebugEnabled;
-import static uk.gov.hmcts.reform.pcs.exception.RedactionGate.showFullExceptions;
+import static uk.gov.hmcts.reform.pcs.exception.RedactionGate.showFullLogs;
 
 public final class RedactingMessageConverter extends ClassicConverter {
 
     @Override
     public String convert(ILoggingEvent event) {
-        if (showFullExceptions() || isDebugEnabled(getContext(), event)) {
+        if (showFullLogs() || isDebugEnabled(getContext(), event)) {
             return event.getFormattedMessage();
         }
         Object[] arguments = event.getArgumentArray();
