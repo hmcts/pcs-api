@@ -12,6 +12,8 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyContactD
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyOrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.DefendantPartyExtractor;
+import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.util.List;
 import java.util.Optional;
@@ -45,12 +47,17 @@ public class LegalRepresentativeSummaryService {
         """;
 
     private final DefendantPartyExtractor defendantPartyExtractor;
+    private final FeatureToggleService featureToggleService;
 
     @Value("${frontend.url}")
     private String frontendUrl;
 
     public void handleLegalRepresentativeSummary(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity, State state,
                                                  String organisationId) {
+        if (isFeatureDisabled()) {
+            pcsCase.setSummaryLegalRepresentativeMarkdown(StringUtils.EMPTY);
+            return;
+        }
 
         Optional<ClaimPartyOrganisationEntity> partyLink =
             isActivelyLinkedToAnyDefendant(pcsCaseEntity, organisationId);
@@ -100,6 +107,11 @@ public class LegalRepresentativeSummaryService {
 
     private boolean displaySummaryLegalRepresentativeMarkdown(boolean isPartyLink, State state) {
         return isPartyLink && state == State.CASE_ISSUED;
+    }
+
+    private boolean isFeatureDisabled() {
+        return !featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_2)
+            || !featureToggleService.isEnabled(FeatureFlag.CUI_RESPOND_TO_CLAIM_LR);
     }
 
 
