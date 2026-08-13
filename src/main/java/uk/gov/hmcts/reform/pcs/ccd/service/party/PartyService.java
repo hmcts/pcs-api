@@ -23,7 +23,6 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 
-import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -44,14 +43,14 @@ public class PartyService {
 
     public void createAllParties(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity, ClaimEntity claimEntity,
                                  String organisationIdForCurrentUser) {
-        List<String> orgProfileIds = organisationService.getOrgProfileIdsForCurrentUser();
+        String orgProfileId = organisationService.getOrgProfileIdForCurrentUser();
         PartyEntity claimant = findInitialisedClaimant(pcsCaseEntity)
             .orElseGet(() -> {
                 PartyEntity created = new PartyEntity();
                 pcsCaseEntity.addParty(created);
                 return created;
             });
-        populateClaimant(claimant, pcsCase, organisationIdForCurrentUser, orgProfileIds);
+        populateClaimant(claimant, pcsCase, organisationIdForCurrentUser, orgProfileId);
         claimEntity.addParty(claimant, PartyRole.CLAIMANT);
 
         List<PartyEntity> defendants = createDefendants(pcsCase);
@@ -158,15 +157,15 @@ public class PartyService {
      * is revoked at submit nobody can open it.
      */
     public void initialiseClaimant(PcsCaseEntity pcsCaseEntity, String organisationId,
-                                   List<String> organisationProfileIds) {
+                                   String organisationProfileId) {
         Objects.requireNonNull(organisationId, "Organisation must be provided to create a case");
-        if (CollectionUtils.isEmpty(organisationProfileIds)) {
+        if (StringUtils.isBlank(organisationProfileId)) {
             throw new IllegalArgumentException(
-                "Organisation profile IDs must be provided to create a case for organisation " + organisationId);
+                "Organisation profile ID must be provided to create a case for organisation " + organisationId);
         }
         PartyEntity claimantParty = new PartyEntity();
         claimantParty.setOrganisationId(organisationId);
-        claimantParty.setOrganisationProfileIds(organisationProfileIds);
+        claimantParty.setOrganisationProfileId(organisationProfileId);
         pcsCaseEntity.addParty(claimantParty);
     }
 
@@ -184,23 +183,23 @@ public class PartyService {
      * revokes CREATOR, leaving a case nobody can open.
      */
     private void setClaimantOrganisation(PartyEntity claimantParty, String organisationId,
-                                         List<String> orgProfileIds) {
+                                         String orgProfileId) {
         if (organisationId != null) {
             claimantParty.setOrganisationId(organisationId);
         }
-        if (!CollectionUtils.isEmpty(orgProfileIds)) {
-            claimantParty.setOrganisationProfileIds(orgProfileIds);
+        if (StringUtils.isNotBlank(orgProfileId)) {
+            claimantParty.setOrganisationProfileId(orgProfileId);
         }
     }
 
     private void populateClaimant(PartyEntity claimantParty, PCSCase pcsCase,
-                                  String organisationIdForCurrentUser, List<String> orgProfileIds) {
+                                  String organisationIdForCurrentUser, String orgProfileId) {
 
         ClaimantInformation claimantInformation = pcsCase.getClaimantInformation();
         Objects.requireNonNull(claimantInformation, "Claimant must be provided");
 
         setClaimantOrgName(claimantInformation, claimantParty);
-        setClaimantOrganisation(claimantParty, organisationIdForCurrentUser, orgProfileIds);
+        setClaimantOrganisation(claimantParty, organisationIdForCurrentUser, orgProfileId);
 
         ClaimantContactPreferences claimantContactPreferences = pcsCase.getClaimantContactPreferences();
         AddressUK contactAddress = resolveContactAddress(claimantContactPreferences);

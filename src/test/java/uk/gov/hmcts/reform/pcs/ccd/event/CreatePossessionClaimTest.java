@@ -15,7 +15,6 @@ import uk.gov.hmcts.reform.pcs.ccd.util.FeeApplier;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 
-import java.util.List;
 
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -24,7 +23,7 @@ import static org.mockito.Mockito.when;
 class CreatePossessionClaimTest extends BaseEventTest {
 
     private static final String ORG_ID = "QKLHPMU";
-    private static final List<String> ORG_PROFILE_IDS = List.of("SOLICITOR_PROFILE");
+    private static final String ORG_PROFILE_ID = "SOLICITOR_PROFILE";
 
     @Mock
     private PcsCaseService pcsCaseService;
@@ -59,13 +58,13 @@ class CreatePossessionClaimTest extends BaseEventTest {
             .build();
 
         when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(ORG_ID);
-        when(organisationService.getOrgProfileIdsForCurrentUser()).thenReturn(ORG_PROFILE_IDS);
+        when(organisationService.getOrgProfileIdForCurrentUser()).thenReturn(ORG_PROFILE_ID);
 
         // When
         callSubmitHandler(caseData);
 
         // Then the organisation is carried into the case, so CaseAccessGroups derive on the draft
         verify(pcsCaseService).createCase(TEST_CASE_REFERENCE, propertyAddress,
-                                          LegislativeCountry.ENGLAND, ORG_ID, ORG_PROFILE_IDS);
+                                          LegislativeCountry.ENGLAND, ORG_ID, ORG_PROFILE_ID);
     }
 }

@@ -34,7 +34,7 @@ public final class CaseAccessGroupsUtil {
         List<CaseAccessGroup> caseAccessGroups = new ArrayList<>();
 
         parties.forEach(party -> derivedRole(party)
-            .flatMap(role -> GroupAccessType.caseAccessGroupIdTemplateFor(organisationProfileId(party), role))
+            .flatMap(role -> GroupAccessType.caseAccessGroupIdTemplateFor(party.getOrganisationProfileId(), role))
             .ifPresent(template -> caseAccessGroups.add(new CaseAccessGroup(
                 CCD_ALL_CASES_ACCESS,
                 template.replace(ORG_IDENTIFIER_TEMPLATE, party.getOrganisationId())))));
@@ -76,33 +76,5 @@ public final class CaseAccessGroupsUtil {
         return party.getClaimParties().isEmpty();
     }
 
-    private static String organisationProfileId(PartyEntity party) {
-        List<String> organisationProfileIds = party.getOrganisationProfileIds();
-        if (organisationProfileIds == null || organisationProfileIds.isEmpty()) {
-            throw new IllegalArgumentException(
-                "Organisation profile ids are required to derive case access groups for party " + party.getId());
-        }
 
-        List<String> candidates = organisationProfileIds.stream()
-            .filter(CaseAccessGroupsUtil::identifiesAnAccessType)
-            .distinct()
-            .toList();
-
-        if (candidates.isEmpty()) {
-            throw new IllegalArgumentException(
-                "No valid organisation profile id found for organisation " + party.getOrganisationId());
-        }
-        if (candidates.size() > 1) {
-            throw new IllegalArgumentException(
-                "Organisation " + party.getOrganisationId() + " carries more than one profile " + candidates
-                    + "; cannot determine which access type applies");
-        }
-
-        return candidates.getFirst();
-    }
-
-    /** Every organisation also carries the generic profile, which maps to no access type. */
-    private static boolean identifiesAnAccessType(String organisationProfileId) {
-        return !ORGANISATION_PROFILE.equals(organisationProfileId);
-    }
 }

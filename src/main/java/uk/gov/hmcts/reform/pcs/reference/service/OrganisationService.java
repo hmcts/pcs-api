@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.pcs.reference.service;
 
-import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -81,13 +80,13 @@ public class OrganisationService {
     }
 
     /**
-     * Retrieves the organisation identifier and organisation profile for the current user in a
-     * single rd-professional call. The profile is the one PRM keys the group access catalogue on;
-     * every organisation also carries the generic ORGANISATION_PROFILE, which is skipped.
+     * The organisation profile PRM keys the group access catalogue on. Every organisation also
+     * carries the generic ORGANISATION_PROFILE alongside its real one, so skipping that leaves the
+     * single profile that identifies an access type.
      *
-     * @return The organisation summary, or null if it cannot be resolved
+     * @return The organisation profile, or null if it cannot be resolved
      */
-    public List<String> getOrgProfileIdsForCurrentUser() {
+    public String getOrgProfileIdForCurrentUser() {
         try {
             UUID userId = resolveUserId();
 
@@ -98,7 +97,8 @@ public class OrganisationService {
             OrganisationDetailsResponse details = organisationDetailsService.getOrganisationDetails(userId.toString());
             return details.getOrganisationProfileIds() == null ? null
                 : details.getOrganisationProfileIds().stream()
-                    .filter(profile -> !GENERIC_ORGANISATION_PROFILE.equals(profile)).toList();
+                    .filter(profile -> !GENERIC_ORGANISATION_PROFILE.equals(profile))
+                    .findFirst().orElse(null);
 
         } catch (OrganisationDetailsException | SecurityContextException ex) {
             log.error("Error retrieving organisation summary from rd-professional API. Error: {}",

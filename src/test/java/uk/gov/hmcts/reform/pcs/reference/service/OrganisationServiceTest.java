@@ -71,9 +71,9 @@ class OrganisationServiceTest {
                             .organisationProfileIds(List.of("ORGANISATION_PROFILE", "LOCALAUTH_PROFILE"))
                             .build());
 
-        List<String> result = organisationService.getOrgProfileIdsForCurrentUser();
+        String result = organisationService.getOrgProfileIdForCurrentUser();
 
-        assertThat(result).containsExactly("LOCALAUTH_PROFILE");
+        assertThat(result).isEqualTo("LOCALAUTH_PROFILE");
     }
 
     @Test
@@ -85,7 +85,7 @@ class OrganisationServiceTest {
                             .organisationIdentifier(ORGANISATION_IDENTIFIER)
                             .build());
 
-        List<String> result = organisationService.getOrgProfileIdsForCurrentUser();
+        String result = organisationService.getOrgProfileIdForCurrentUser();
 
         assertThat(result).isNull();
     }

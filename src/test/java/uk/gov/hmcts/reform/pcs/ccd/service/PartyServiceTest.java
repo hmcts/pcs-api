@@ -481,10 +481,10 @@ class PartyServiceTest {
             // Given
             PartyEntity initialisedClaimant = new PartyEntity();
             initialisedClaimant.setOrganisationId(ORG_ID);
-            initialisedClaimant.setOrganisationProfileIds(List.of("SOLICITOR_PROFILE"));
+            initialisedClaimant.setOrganisationProfileId("SOLICITOR_PROFILE");
             pcsCaseEntity.addParty(initialisedClaimant);
 
-            when(organisationService.getOrgProfileIdsForCurrentUser()).thenReturn(null);
+            when(organisationService.getOrgProfileIdForCurrentUser()).thenReturn(null);
             when(pcsCase.getClaimantInformation()).thenReturn(ClaimantInformation.builder()
                 .claimantName("Claimant name")
                 .isClaimantNameCorrect(VerticalYesNo.YES)
@@ -499,7 +499,7 @@ class PartyServiceTest {
 
             // Then
             assertThat(initialisedClaimant.getOrganisationId()).isEqualTo(ORG_ID);
-            assertThat(initialisedClaimant.getOrganisationProfileIds()).containsExactly("SOLICITOR_PROFILE");
+            assertThat(initialisedClaimant.getOrganisationProfileId()).isEqualTo("SOLICITOR_PROFILE");
         }
 
         @Test
@@ -1457,11 +1457,11 @@ class PartyServiceTest {
         void shouldAddClaimantCarryingOnlyTheOrganisation() {
             PcsCaseEntity caseEntity = new PcsCaseEntity();
 
-            underTest.initialiseClaimant(caseEntity, ORG_ID, List.of("SOLICITOR_PROFILE"));
+            underTest.initialiseClaimant(caseEntity, ORG_ID, "SOLICITOR_PROFILE");
 
             assertThat(caseEntity.getParties()).singleElement().satisfies(party -> {
                 assertThat(party.getOrganisationId()).isEqualTo(ORG_ID);
-                assertThat(party.getOrganisationProfileIds()).containsExactly("SOLICITOR_PROFILE");
+                assertThat(party.getOrganisationProfileId()).isEqualTo("SOLICITOR_PROFILE");
                 assertThat(party.getFirstName()).isNull();
                 assertThat(party.getClaimParties()).isEmpty();
             });
@@ -1472,7 +1472,7 @@ class PartyServiceTest {
             PcsCaseEntity caseEntity = new PcsCaseEntity();
 
             assertThatThrownBy(() ->
-                underTest.initialiseClaimant(caseEntity, null, List.of("SOLICITOR_PROFILE")))
+                underTest.initialiseClaimant(caseEntity, null, "SOLICITOR_PROFILE"))
                 .isInstanceOf(NullPointerException.class)
                 .hasMessageContaining("Organisation must be provided");
 
@@ -1480,12 +1480,12 @@ class PartyServiceTest {
         }
 
         @Test
-        void shouldRejectCaseCreationWithoutOrganisationProfileIds() {
+        void shouldRejectCaseCreationWithoutOrganisationProfileId() {
             PcsCaseEntity caseEntity = new PcsCaseEntity();
 
-            assertThatThrownBy(() -> underTest.initialiseClaimant(caseEntity, ORG_ID, List.of()))
+            assertThatThrownBy(() -> underTest.initialiseClaimant(caseEntity, ORG_ID, null))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("Organisation profile IDs must be provided");
+                .hasMessageContaining("Organisation profile ID must be provided");
 
             assertThat(caseEntity.getParties()).isEmpty();
         }

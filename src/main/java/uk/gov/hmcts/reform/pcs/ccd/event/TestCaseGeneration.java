@@ -109,7 +109,7 @@ public class TestCaseGeneration implements CCDConfig<PCSCase, State, UserRole> {
             caseReference, loadedCase.getPropertyAddress(),
             loadedCase.getLegislativeCountry(),
             organisationService.getOrganisationIdForCurrentUser(),
-            organisationService.getOrgProfileIdsForCurrentUser());
+            organisationService.getOrgProfileIdForCurrentUser());
 
         resumePossessionClaim.submitClaim(caseReference, loadedCase);
     }

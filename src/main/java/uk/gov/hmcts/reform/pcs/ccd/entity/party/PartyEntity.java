@@ -75,7 +75,7 @@ public class PartyEntity {
     private String orgName;
 
     private String organisationId;
-    private List<String> organisationProfileIds;
+    private String organisationProfileId;
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)

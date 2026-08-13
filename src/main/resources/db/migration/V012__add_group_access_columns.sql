@@ -2,7 +2,7 @@
 
 -- The profile decides which access type an organisation gets, so it decides the capacity the case
 -- is stamped with.
-ALTER TABLE public.party ADD COLUMN organisation_profile_ids varchar(255)[];
+ALTER TABLE public.party ADD COLUMN organisation_profile_id varchar(255);
 
 -- A draft on a claim belongs to the organisation that owns the case rather than the person typing
 -- it. When null the draft stays keyed on the user, which is how the defendant response journey keeps
