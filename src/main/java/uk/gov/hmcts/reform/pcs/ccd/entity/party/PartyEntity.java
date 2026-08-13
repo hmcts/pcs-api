@@ -125,4 +125,9 @@ public class PartyEntity {
     @Fetch(FetchMode.SUBSELECT)
     private List<CasePartyFlagEntity> defendantFlags = new ArrayList<>();
 
+    /** Only the claimant is ever given an organisation, so carrying one is what makes a party the claimant. */
+    public boolean hasOrganisation() {
+        return organisationId != null;
+    }
+
 }

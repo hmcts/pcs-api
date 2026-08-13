@@ -171,10 +171,10 @@ public class PartyService {
         pcsCaseEntity.addParty(claimantParty);
     }
 
-    /** An organisation with no claim link is the party the case was created with, not a new one. */
+    /** The claimant gets no claim link until submit, so one without it is the stub to complete. */
     private Optional<PartyEntity> findInitialisedClaimant(PcsCaseEntity pcsCaseEntity) {
         return pcsCaseEntity.getParties().stream()
-            .filter(party -> party.getOrganisationId() != null)
+            .filter(PartyEntity::hasOrganisation)
             .filter(party -> party.getClaimParties().isEmpty())
             .findFirst();
     }

@@ -58,7 +58,7 @@ public final class CaseAccessGroupsUtil {
     }
 
     private static Optional<PartyRole> derivedRole(PartyEntity party) {
-        if (party.getOrganisationId() == null) {
+        if (!party.hasOrganisation()) {
             return Optional.empty();
         }
         if (isClaimantCreatedWithTheCase(party)) {
@@ -70,7 +70,7 @@ public final class CaseAccessGroupsUtil {
             .findFirst();
     }
 
-    /** No claim link until submit, so an organisation-bearing party without one is that claimant. */
+    /** initialiseClaimant is the only thing that makes a party before a claim exists to hold its role. */
     private static boolean isClaimantCreatedWithTheCase(PartyEntity party) {
         return party.getClaimParties().isEmpty();
     }
