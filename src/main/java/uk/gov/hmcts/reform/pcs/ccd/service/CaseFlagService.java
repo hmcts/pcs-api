@@ -33,7 +33,6 @@ import java.util.stream.Collectors;
 
 import static uk.gov.hmcts.reform.pcs.ccd.util.FlagVisibilityConverter.toFlagVisibility;
 
-
 @Service
 @AllArgsConstructor
 public class CaseFlagService {

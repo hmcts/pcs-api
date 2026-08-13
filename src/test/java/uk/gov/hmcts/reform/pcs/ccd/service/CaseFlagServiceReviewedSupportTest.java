@@ -4,7 +4,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.FlagDetail;
 import uk.gov.hmcts.ccd.sdk.type.FlagVisibility;
@@ -13,8 +12,6 @@ import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PartySupport;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CasePartyFlagEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.repository.FlagRefDataRepository;
-import uk.gov.hmcts.reform.pcs.ccd.service.party.PartySupportOwnershipResolver;
 import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
 
 import java.time.LocalDateTime;
@@ -28,12 +25,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @ExtendWith(MockitoExtension.class)
 class CaseFlagServiceReviewedSupportTest {
-
-    @Mock
-    private FlagRefDataRepository flagRefDataRepository;
-
-    @Mock
-    private PartySupportOwnershipResolver partySupportOwnershipResolver;
 
     @InjectMocks
     private CaseFlagService underTest;
@@ -120,10 +111,79 @@ class CaseFlagServiceReviewedSupportTest {
     void shouldRejectSupportForAPartyNotOnTheCase() {
         List<ListValue<PartySupport>> reviewed =
             reviewedSupport(requestedFlag.getId(), "Active", "Approved", null);
-        reviewed.get(0).setId(UUID.randomUUID().toString());
+        reviewed.getFirst().setId(UUID.randomUUID().toString());
 
         assertThatThrownBy(() -> underTest.applyReviewedSupportFlags(reviewed, Set.of(partyEntity)))
             .isInstanceOf(CaseAccessException.class);
+    }
+
+    @Test
+    void shouldIgnoreEntryWhenReviewedValueIsNull() {
+        // Given
+        List<ListValue<PartySupport>> reviewed = List.of(
+            ListValue.<PartySupport>builder().id(partyEntity.getId().toString()).value(null).build()
+        );
+
+        // When
+        underTest.applyReviewedSupportFlags(reviewed, Set.of(partyEntity));
+
+        // Then
+        assertThat(requestedFlag.getDefaultStatus()).isEqualTo("Requested");
+        assertThat(requestedFlag.getFlagUpdateComment()).isNull();
+        assertThat(activeFlag.getDefaultStatus()).isEqualTo("Active");
+    }
+
+    @Test
+    void shouldIgnoreEntryWhenSupportFlagsAreNull() {
+        // Given
+        List<ListValue<PartySupport>> reviewed = List.of(
+            ListValue.<PartySupport>builder().id(partyEntity.getId().toString())
+                .value(PartySupport.builder().supportFlags(null).build()).build()
+        );
+
+        // When
+        underTest.applyReviewedSupportFlags(reviewed, Set.of(partyEntity));
+
+        // Then
+        assertThat(requestedFlag.getDefaultStatus()).isEqualTo("Requested");
+        assertThat(requestedFlag.getFlagUpdateComment()).isNull();
+        assertThat(activeFlag.getDefaultStatus()).isEqualTo("Active");
+    }
+
+    @Test
+    void shouldIgnoreEntryWhenFlagDetailsAreNull() {
+        // Given
+        List<ListValue<PartySupport>> reviewed = List.of(
+            ListValue.<PartySupport>builder().id(partyEntity.getId().toString())
+                .value(PartySupport.builder().supportFlags(Flags.builder().details(null).build()).build())
+                .build()
+        );
+
+        // When
+        underTest.applyReviewedSupportFlags(reviewed, Set.of(partyEntity));
+
+        // Then
+        assertThat(requestedFlag.getDefaultStatus()).isEqualTo("Requested");
+        assertThat(requestedFlag.getFlagUpdateComment()).isNull();
+        assertThat(activeFlag.getDefaultStatus()).isEqualTo("Active");
+    }
+
+    @Test
+    void shouldIgnoreEntryWhenFlagDetailsAreEmpty() {
+        // Given
+        List<ListValue<PartySupport>> reviewed = List.of(
+            ListValue.<PartySupport>builder().id(partyEntity.getId().toString())
+                .value(PartySupport.builder().supportFlags(Flags.builder().details(List.of()).build()).build())
+                .build()
+        );
+
+        // When
+        underTest.applyReviewedSupportFlags(reviewed, Set.of(partyEntity));
+
+        // Then
+        assertThat(requestedFlag.getDefaultStatus()).isEqualTo("Requested");
+        assertThat(requestedFlag.getFlagUpdateComment()).isNull();
+        assertThat(activeFlag.getDefaultStatus()).isEqualTo("Active");
     }
 
     private List<ListValue<PartySupport>> reviewedSupport(UUID flagId, String status, String reason,

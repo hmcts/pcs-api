@@ -75,7 +75,7 @@ class ReviewSupportRequestTest extends BaseEventTest {
 
         // Then
         assertThat(result.getSupportReviewFlags()).hasSize(1);
-        assertThat(result.getSupportReviewFlags().get(0).getValue().getSupportFlags().getDetails())
+        assertThat(result.getSupportReviewFlags().getFirst().getValue().getSupportFlags().getDetails())
             .extracting(detail -> detail.getValue().getStatus())
             .containsExactly("Requested");
     }

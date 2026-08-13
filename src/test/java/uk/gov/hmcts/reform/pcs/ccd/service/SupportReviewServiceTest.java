@@ -36,7 +36,7 @@ class SupportReviewServiceTest {
         List<ListValue<PartySupport>> result = underTest.buildRequestedSupport(pcsCase);
 
         assertThat(result).hasSize(1);
-        assertThat(result.get(0).getValue().getSupportFlags().getDetails())
+        assertThat(result.getFirst().getValue().getSupportFlags().getDetails())
             .extracting(detail -> detail.getValue().getName())
             .containsExactly("Sign Language Interpreter");
     }
@@ -61,8 +61,8 @@ class SupportReviewServiceTest {
 
         List<ListValue<PartySupport>> result = underTest.buildRequestedSupport(pcsCase);
 
-        assertThat(result.get(0).getId()).isEqualTo(PARTY_ID);
-        Flags supportFlags = result.get(0).getValue().getSupportFlags();
+        assertThat(result.getFirst().getId()).isEqualTo(PARTY_ID);
+        Flags supportFlags = result.getFirst().getValue().getSupportFlags();
         assertThat(supportFlags.getPartyName()).isEqualTo("Test Party");
         assertThat(supportFlags.getRoleOnCase()).isEqualTo("Defendant");
     }
@@ -86,6 +86,35 @@ class SupportReviewServiceTest {
     @Test
     void shouldReturnEmptyWhenThereAreNoParties() {
         assertThat(underTest.buildRequestedSupport(PCSCase.builder().build())).isEmpty();
+    }
+
+    @Test
+    void shouldSkipNullPartyEntry() {
+        PCSCase pcsCase = PCSCase.builder().allDefendants(
+            List.of(ListValue.<Party>builder().id(PARTY_ID).value(null).build()))
+            .build();
+
+        assertThat(underTest.buildRequestedSupport(pcsCase)).isEmpty();
+    }
+
+    @Test
+    void shouldSkipNullPartyEntryWhenWithMultipleParties() {
+        // Given
+        Party party = Party.builder().id(PARTY_ID).defendantFlags(Flags.builder()
+            .details(List.of(flag("Requested", "Internal only flag"))).build()).build();
+        Party withExternalFlags = Party.builder().id(UUID.randomUUID().toString())
+            .partyFlagsExternal(Flags.builder().partyName("Test Party").roleOnCase("Defendant")
+                                    .details(List.of(flag("REQUESTED", "Lip speaker"))).build()).build();
+
+        PCSCase pcsCase = PCSCase.builder().allDefendants(
+                List.of(ListValue.<Party>builder().id(PARTY_ID).value(null).value(party)
+                            .value(withExternalFlags).build())).build();
+
+        // When
+        List<ListValue<PartySupport>> listValues = underTest.buildRequestedSupport(pcsCase);
+
+        // Then
+        assertThat(listValues).hasSize(1);
     }
 
     private PCSCase caseWithExternalFlags(List<ListValue<FlagDetail>> details) {

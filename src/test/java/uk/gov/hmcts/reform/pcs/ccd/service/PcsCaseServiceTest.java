@@ -630,6 +630,30 @@ class PcsCaseServiceTest {
         assertThat(exception.getMessage()).isEqualTo("PCSCase cannot be null");
     }
 
+    @Test
+    void shouldThrowExceptionOnPatchReviewedSupportFlagsWithNullCaseData() {
+        // Given ... When
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+                                                          () -> underTest.patchReviewedSupportFlags(
+                                                              CASE_REFERENCE, null));
+
+        // Then
+        assertThat(exception.getMessage()).isEqualTo("PCSCase cannot be null");
+    }
+
+    @Test
+    void shouldHandleNoFlagsWhenCallingPatchReviewedSupportFlags() {
+        // Given
+        stubFindCase();
+        PCSCase pcsCase = PCSCase.builder().build();
+
+        // When
+        underTest.patchReviewedSupportFlags(CASE_REFERENCE, pcsCase);
+
+        // Then
+        verify(caseFlagService, never()).applyReviewedSupportFlags(any(), any());
+    }
+
     private PcsCaseEntity stubFindCase() {
         PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
         when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
