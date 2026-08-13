@@ -63,7 +63,7 @@ public final class CaseAccessGroupsUtil {
             return Optional.empty();
         }
         if (isClaimantCreatedWithTheCase(party)) {
-            return Optional.of(PartyRole.CLAIMANT).filter(DERIVED_ROLES::contains);
+            return Optional.of(PartyRole.CLAIMANT);
         }
         return party.getClaimParties().stream()
             .map(ClaimPartyEntity::getRole)
