@@ -47,8 +47,9 @@ public final class CaseAccessGroupsUtil {
     }
 
     /**
-     * Recomputed on every read over a HashSet of parties, so the id comes from the group rather than
-     * being random - otherwise an unchanged case differs read to read.
+     * The data store skips collection items that have no id, so every group needs one. Deriving it
+     * from the group id rather than generating one keeps it the same on every read, and these are
+     * rebuilt on each read rather than stored.
      */
     private static ListValue<CaseAccessGroup> asStableListValue(String groupId) {
         return ListValue.<CaseAccessGroup>builder()
