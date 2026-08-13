@@ -6,7 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.DynamicList;
 import uk.gov.hmcts.ccd.sdk.type.DynamicListElement;
-import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.PartyLegalRepresentativeOrganisationEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyLegalRepresentativeOrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.LegalRepresentativeOrganisationRepository;
 
@@ -35,9 +35,9 @@ public class LegalRepresentativeService {
             .map(
                 legalRepresentativeOrganisationEntity -> {
                     List<PartyEntity> partyEntities = legalRepresentativeOrganisationEntity
-                        .getPartyLegalRepresentativeOrganisationList()
+                        .getClaimPartyLegalRepresentativeOrganisationList()
                         .stream()
-                        .map(PartyLegalRepresentativeOrganisationEntity::getParty)
+                        .map(ClaimPartyLegalRepresentativeOrganisationEntity::getParty)
                         .toList();
                     return createPartyNamesDynamicList(partyEntities);
                 }

@@ -16,7 +16,7 @@ public interface LegalRepresentativeOrganisationRepository extends JpaRepository
     @Query("""
         SELECT lro
         FROM LegalRepresentativeOrganisationEntity lro
-        JOIN lro.partyLegalRepresentativeOrganisationList plro
+        JOIN lro.claimPartyLegalRepresentativeOrganisationList plro
         JOIN plro.party p
         WHERE p.id = :partyId
         AND plro.active = 'YES'
@@ -41,7 +41,7 @@ public interface LegalRepresentativeOrganisationRepository extends JpaRepository
     @Query("""
         SELECT COUNT(lro) > 0
         FROM LegalRepresentativeOrganisationEntity lro
-        JOIN lro.partyLegalRepresentativeOrganisationList plro
+        JOIN lro.claimPartyLegalRepresentativeOrganisationList plro
         JOIN plro.party p
         WHERE lro.organisationId = :organisationId
         AND p.id = :partyId
@@ -53,12 +53,14 @@ public interface LegalRepresentativeOrganisationRepository extends JpaRepository
     @Query("""
         SELECT lro
         FROM LegalRepresentativeOrganisationEntity lro
-        JOIN lro.pcsCase pcsCase
+        JOIN lro.legalRepresentativeOrganisationContactDetails contact
+        JOIN contact.pcsCase pcsCase
         WHERE pcsCase.caseReference = :caseReference
         AND lro.organisationId = :organisationId
         """)
     Optional<LegalRepresentativeOrganisationEntity> findByOrganisationIdAndCaseReference(
-        @Param("organisationId") String organisationId, @Param("caseReference") long caseReference);
-
+        @Param("organisationId") String organisationId,
+        @Param("caseReference") long caseReference
+    );
 
 }

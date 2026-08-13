@@ -108,7 +108,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
     public PCSCase getCase(CaseViewRequest<State> request) {
         long caseReference = request.caseRef();
         State state = request.state();
-        SubmittedCase submittedCase = getSubmittedCase(caseReference);
+        SubmittedCase submittedCase = getSubmittedCase(caseReference, state);
         PCSCase pcsCase = submittedCase.pcsCase();
         boolean hasUnsubmittedCaseData = caseHasUnsubmittedData(caseReference, state);
 
@@ -156,7 +156,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         return false;
     }
 
-    private SubmittedCase getSubmittedCase(long caseReference) {
+    private SubmittedCase getSubmittedCase(long caseReference, State state) {
         PcsCaseEntity pcsCaseEntity = loadCaseData(caseReference);
 
         PCSCase pcsCase = PCSCase.builder()
@@ -193,7 +193,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         defendantResponseView.setCaseFields(pcsCase, pcsCaseEntity);
         featureFlagView.setCaseFields(pcsCase);
         legalRepresentativeSummaryService.handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity,
-                                                                           organisationIdForCurrentUser);
+                                                                           organisationIdForCurrentUser, state);
 
         return new SubmittedCase(pcsCase, pcsCaseEntity);
     }

@@ -23,8 +23,8 @@ public enum EventId {
     claimIssuePayment,
     changeCaseState,
     enterGenApp,
-    legalRepresentativeContactDetails,
     caseworkerUploadDocuments,
     removeDocument,
-    legalRepDocumentUpload
+    legalRepDocumentUpload,
+    legalRepresentativeContactDetails
 }

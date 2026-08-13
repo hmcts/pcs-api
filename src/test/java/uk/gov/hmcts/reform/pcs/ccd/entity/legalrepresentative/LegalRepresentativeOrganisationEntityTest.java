@@ -32,10 +32,10 @@ class LegalRepresentativeOrganisationEntityTest {
         underTest.addParty(party);
 
         // verify
-        assertThat(underTest.getPartyLegalRepresentativeOrganisationList().size()).isEqualTo(1);
+        assertThat(underTest.getClaimPartyLegalRepresentativeOrganisationList().size()).isEqualTo(1);
 
-        PartyLegalRepresentativeOrganisationEntity partyLegalRepresentativeOrganisation =
-            underTest.getPartyLegalRepresentativeOrganisationList().getFirst();
+        ClaimPartyLegalRepresentativeOrganisationEntity partyLegalRepresentativeOrganisation =
+            underTest.getClaimPartyLegalRepresentativeOrganisationList().getFirst();
 
         assertThat(partyLegalRepresentativeOrganisation.getParty().getId()).isEqualTo(partyId);
         assertThat(partyLegalRepresentativeOrganisation.getActive()).isEqualTo(YesOrNo.YES);
@@ -60,20 +60,43 @@ class LegalRepresentativeOrganisationEntityTest {
         underTest.addParty(party2);
 
         // verify
-        assertThat(underTest.getPartyLegalRepresentativeOrganisationList().size()).isEqualTo(2);
+        assertThat(underTest.getClaimPartyLegalRepresentativeOrganisationList().size()).isEqualTo(2);
 
-        PartyLegalRepresentativeOrganisationEntity partyLegalRepresentativeOrganisation =
-            underTest.getPartyLegalRepresentativeOrganisationList().getFirst();
+        ClaimPartyLegalRepresentativeOrganisationEntity partyLegalRepresentativeOrganisation =
+            underTest.getClaimPartyLegalRepresentativeOrganisationList().getFirst();
 
         assertThat(partyLegalRepresentativeOrganisation.getParty().getId()).isEqualTo(partyId);
 
 
-        PartyLegalRepresentativeOrganisationEntity partyLegalRepresentativeOrganisation2 =
-            underTest.getPartyLegalRepresentativeOrganisationList().get(1);
+        ClaimPartyLegalRepresentativeOrganisationEntity partyLegalRepresentativeOrganisation2 =
+            underTest.getClaimPartyLegalRepresentativeOrganisationList().get(1);
 
         assertThat(partyLegalRepresentativeOrganisation2.getParty().getId()).isEqualTo(partyId2);
         assertThat(partyLegalRepresentativeOrganisation2.getLegalRepresentativeOrganisation()).isEqualTo(underTest);
         assertThat(partyLegalRepresentativeOrganisation2.getActive()).isEqualTo(YesOrNo.YES);
+    }
+
+    @Test
+    void setLegalRepresentativeOrganisationContactDetails_WithContactDetails_SetsReference() {
+        // given
+        LegalRepresentativeOrganisationContactDetailsEntity contactDetails =
+            new LegalRepresentativeOrganisationContactDetailsEntity();
+
+        // when
+        underTest.setLegalRepresentativeOrganisationContactDetails(contactDetails);
+
+        // then
+        assertThat(contactDetails.getLegalRepresentativeOrganisation()).isEqualTo(underTest);
+        assertThat(underTest.getLegalRepresentativeOrganisationContactDetails()).isEqualTo(contactDetails);
+    }
+
+    @Test
+    void setLegalRepresentativeOrganisationContactDetails_WithNullContactDetails_DoesNotSetReference() {
+        // when
+        underTest.setLegalRepresentativeOrganisationContactDetails(null);
+
+        // then
+        assertThat(underTest.getLegalRepresentativeOrganisationContactDetails()).isNull();
     }
 
 }
