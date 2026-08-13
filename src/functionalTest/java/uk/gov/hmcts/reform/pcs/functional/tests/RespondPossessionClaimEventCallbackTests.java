@@ -2,7 +2,6 @@ package uk.gov.hmcts.reform.pcs.functional.tests;
 
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.List;
 import java.util.Map;
 import net.serenitybdd.annotations.Steps;
 import net.serenitybdd.annotations.Title;
@@ -122,7 +121,7 @@ public class RespondPossessionClaimEventCallbackTests extends BaseApi {
             )
         );
         String validateClaimRequestBody = PayloadLoader.load(
-            "/payloads/resumePossessionClaim-validateEventCallbackRequest.json",
+            "/payloads/repondPossessionClaim-validateEventCallbackRequest.json",
             Map.of("caseReference",caseReference)
         );
         apiSteps.validateEventData(

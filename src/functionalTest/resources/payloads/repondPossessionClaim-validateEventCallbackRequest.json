@@ -13,11 +13,12 @@
   "case_reference": "${caseReference}",
   "event_data": {
       "propertyAddress": {
-        "AddressLine1": "1",
-        "AddressLine2": "Exton Gardens",
-        "AddressLine3": "70 Knyveton Road",
-        "PostTown": "Bournemouth",
-        "PostCode": "BH1 3BP",
+        "AddressLine1": "1 Second Avenue",
+        "AddressLine2": "",
+        "AddressLine3": "",
+        "PostTown": "London",
+        "County": "Greater London",
+        "PostCode": "W3 7RX",
         "Country": "United Kingdom"
       },
       "legislativeCountry": "England",
