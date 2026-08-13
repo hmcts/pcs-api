@@ -42,6 +42,9 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEnt
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DocumentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
+import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocument;
+import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocumentType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.wales.LegalRepDocumentTypeWales;
 import uk.gov.hmcts.reform.pcs.exception.ClaimNotFoundException;
 
 import java.time.LocalDateTime;
@@ -1356,6 +1359,28 @@ class DocumentServiceTest {
     void shouldReturnDefaultCategoryIdForNullDocumentType() {
         assertThat(underTest.categoryIdForDocumentType(null))
             .isEqualTo(CaseFileCategory.UNCATEGORISED_DOCUMENTS.getId());
+    }
+
+    @Test
+    void shouldResolveWalesDocumentTypeWhenWalesTypePresent() {
+        LegalRepDocument doc = LegalRepDocument.builder()
+            .legalRepDocumentTypeWales(LegalRepDocumentTypeWales.OCCUPATION_LICENCE)
+            .build();
+
+        DocumentType result = underTest.resolveDocumentType(doc);
+
+        assertThat(result).isEqualTo(DocumentType.OCCUPATION_LICENCE);
+    }
+
+    @Test
+    void shouldResolveDocumentTypeWhenWalesTypeNull() {
+        LegalRepDocument doc = LegalRepDocument.builder()
+            .legalRepDocumentType(LegalRepDocumentType.TENANCY_AGREEMENT)
+            .build();
+
+        DocumentType result = underTest.resolveDocumentType(doc);
+
+        assertThat(result).isEqualTo(DocumentType.TENANCY_AGREEMENT);
     }
 
     private static Stream<Arguments> documentTypeToCategoryScenarios() {
