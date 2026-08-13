@@ -4,7 +4,7 @@ The following case flag(s) have been added to the case:
 
 <ul class="govuk-list govuk-list--bullet">
   {% for flag in flags %}
-  <li class="govuk-!-font-size-19">{{filename}}</li>
+  <li class="govuk-!-font-size-19">{{flag}}</li>
   {% endfor %}
 </ul>
 

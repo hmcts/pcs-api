@@ -18,6 +18,7 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -53,6 +54,7 @@ public class TaskDescriptionService {
     public String createReviewCaseFlagDescription(long caseReference, List<ListValue<FlagDetail>> flagDetails) {
         List<String> flags = flagDetails.stream()
             .map(ListValue::getValue)
+            .filter(TaskDescriptionService::isCaseFlagActive)
             .map(FlagDetail::getName)
             .toList();
 
@@ -76,6 +78,10 @@ public class TaskDescriptionService {
         }
 
         return writer.toString();
+    }
+
+    private static boolean isCaseFlagActive(FlagDetail flagDetail) {
+        return Objects.equals(flagDetail.getStatus(), "Active");
     }
 
 }
