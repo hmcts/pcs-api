@@ -16,10 +16,13 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativ
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeOrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.DefendantPartyExtractor;
+import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -30,6 +33,9 @@ class LegalRepresentativeSummaryServiceTest {
 
     @Mock
     private DefendantPartyExtractor defendantPartyExtractor;
+
+    @Mock
+    private FeatureToggleService featureToggleService;
 
     private static final String RESPOND_TO_CLAIM_MARKDOWN = """
         <h2 class="govuk-heading-m">What happens next</h2>
@@ -56,10 +62,13 @@ class LegalRepresentativeSummaryServiceTest {
 
     @BeforeEach
     void setUp() {
-        legalRepresentativeSummaryService = new LegalRepresentativeSummaryService(defendantPartyExtractor);
+        legalRepresentativeSummaryService = new LegalRepresentativeSummaryService(defendantPartyExtractor,
+                                                                                 featureToggleService);
         ReflectionTestUtils.setField(legalRepresentativeSummaryService, "frontendUrl",
                                      "testUrl");
 
+        lenient().when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_2)).thenReturn(true);
+        lenient().when(featureToggleService.isEnabled(FeatureFlag.CUI_RESPOND_TO_CLAIM_LR)).thenReturn(true);
     }
 
     @Test
@@ -219,6 +228,38 @@ class LegalRepresentativeSummaryServiceTest {
 
         // when
         legalRepresentativeSummaryService.handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity, organisationId,
+                                                                           State.CASE_ISSUED);
+
+        // then
+        assertThat(pcsCase.getSummaryLegalRepresentativeMarkdown()).isEmpty();
+    }
+
+    @Test
+    void handleLegalRepresentativeSummary_WithCuiRespondToClaimLrDisabled_ReturnsEmptyMarkDown() {
+        // given
+        when(featureToggleService.isEnabled(FeatureFlag.CUI_RESPOND_TO_CLAIM_LR)).thenReturn(false);
+
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().build();
+        PCSCase pcsCase = PCSCase.builder().build();
+
+        // when
+        legalRepresentativeSummaryService.handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity, "org",
+                                                                           State.CASE_ISSUED);
+
+        // then
+        assertThat(pcsCase.getSummaryLegalRepresentativeMarkdown()).isEmpty();
+    }
+
+    @Test
+    void handleLegalRepresentativeSummary_WithRelease1dot2Disabled_ReturnsEmptyMarkDown() {
+        // given
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_2)).thenReturn(false);
+
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().build();
+        PCSCase pcsCase = PCSCase.builder().build();
+
+        // when
+        legalRepresentativeSummaryService.handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity, "org",
                                                                            State.CASE_ISSUED);
 
         // then
