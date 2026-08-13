@@ -1407,6 +1407,7 @@ class DocumentServiceTest {
             Arguments.of(DocumentType.INSPECTION_OR_REPORT, CaseFileCategory.EVIDENCE),
             Arguments.of(DocumentType.AMENDED_CLAIM_FORM, CaseFileCategory.STATEMENTS_OF_CASE),
             Arguments.of(DocumentType.PART_20_COUNTERCLAIM, CaseFileCategory.STATEMENTS_OF_CASE),
+            Arguments.of(DocumentType.COUNTERCLAIM, CaseFileCategory.STATEMENTS_OF_CASE),
             Arguments.of(DocumentType.CERTIFICATE_OF_SUITABILITY_AS_LF, CaseFileCategory.CORRESPONDENCE),
             Arguments.of(DocumentType.LEGAL_AID_CERTIFICATE, CaseFileCategory.CORRESPONDENCE),
             Arguments.of(DocumentType.POLICE_REPORT, null),
@@ -1420,7 +1421,8 @@ class DocumentServiceTest {
             Arguments.of(DocumentType.WITH_NOTICE_ORDER, CaseFileCategory.ORDERS_AND_NOTICE_OF_HEARINGS),
             Arguments.of(DocumentType.WITHOUT_NOTICE_ORDER, CaseFileCategory.ORDERS_AND_NOTICE_OF_HEARINGS),
             Arguments.of(DocumentType.NOTICE_OF_ALLOCATION_TO_TRACK, CaseFileCategory.ORDERS_AND_NOTICE_OF_HEARINGS),
-            Arguments.of(DocumentType.OTHER, null)
+            Arguments.of(DocumentType.OTHER, null),
+            Arguments.of(DocumentType.GENERAL_APPLICATION, CaseFileCategory.APPLICATIONS)
         );
     }
 
