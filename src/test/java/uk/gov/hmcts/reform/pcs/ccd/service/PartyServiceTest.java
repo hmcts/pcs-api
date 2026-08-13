@@ -1456,8 +1456,10 @@ class PartyServiceTest {
         @Test
         void shouldAddClaimantCarryingOnlyTheOrganisation() {
             PcsCaseEntity caseEntity = new PcsCaseEntity();
+            when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(ORG_ID);
+            when(organisationService.getOrgProfileIdForCurrentUser()).thenReturn("SOLICITOR_PROFILE");
 
-            underTest.initialiseClaimant(caseEntity, ORG_ID, "SOLICITOR_PROFILE");
+            underTest.initialiseClaimant(caseEntity);
 
             assertThat(caseEntity.getParties()).singleElement().satisfies(party -> {
                 assertThat(party.getOrganisationId()).isEqualTo(ORG_ID);
@@ -1472,7 +1474,7 @@ class PartyServiceTest {
             PcsCaseEntity caseEntity = new PcsCaseEntity();
 
             assertThatThrownBy(() ->
-                underTest.initialiseClaimant(caseEntity, null, "SOLICITOR_PROFILE"))
+                underTest.initialiseClaimant(caseEntity))
                 .isInstanceOf(NullPointerException.class)
                 .hasMessageContaining("Organisation must be provided");
 
@@ -1482,8 +1484,10 @@ class PartyServiceTest {
         @Test
         void shouldRejectCaseCreationWithoutOrganisationProfileId() {
             PcsCaseEntity caseEntity = new PcsCaseEntity();
+            when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(ORG_ID);
+            when(organisationService.getOrgProfileIdForCurrentUser()).thenReturn(null);
 
-            assertThatThrownBy(() -> underTest.initialiseClaimant(caseEntity, ORG_ID, null))
+            assertThatThrownBy(() -> underTest.initialiseClaimant(caseEntity))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("Organisation profile ID must be provided");
 

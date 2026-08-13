@@ -13,22 +13,15 @@ import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.PropertyNotEligibl
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.util.FeeApplier;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
-import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 
 
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class CreatePossessionClaimTest extends BaseEventTest {
 
-    private static final String ORG_ID = "QKLHPMU";
-    private static final String ORG_PROFILE_ID = "SOLICITOR_PROFILE";
-
     @Mock
     private PcsCaseService pcsCaseService;
-    @Mock
-    private OrganisationService organisationService;
     @Mock
     private FeeApplier feeApplier;
     @Mock
@@ -41,7 +34,7 @@ class CreatePossessionClaimTest extends BaseEventTest {
     @BeforeEach
     void setUp() {
         CreatePossessionClaim underTest = new CreatePossessionClaim(
-            pcsCaseService, organisationService, feeApplier, enterPropertyAddress,
+            pcsCaseService, feeApplier, enterPropertyAddress,
             crossBorderPostcodeSelection, propertyNotEligible
         );
 
@@ -49,7 +42,7 @@ class CreatePossessionClaimTest extends BaseEventTest {
     }
 
     @Test
-    void shouldCreateCaseWithTheCreatorsOrganisation() {
+    void shouldCreateCaseFromTheAddressAndCountryEntered() {
         // Given
         AddressUK propertyAddress = AddressUK.builder().addressLine1("1 Test Street").build();
         PCSCase caseData = PCSCase.builder()
@@ -57,14 +50,11 @@ class CreatePossessionClaimTest extends BaseEventTest {
             .legislativeCountry(LegislativeCountry.ENGLAND)
             .build();
 
-        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(ORG_ID);
-        when(organisationService.getOrgProfileIdForCurrentUser()).thenReturn(ORG_PROFILE_ID);
-
         // When
         callSubmitHandler(caseData);
 
-        // Then the organisation is carried into the case, so CaseAccessGroups derive on the draft
+        // Then
         verify(pcsCaseService).createCase(TEST_CASE_REFERENCE, propertyAddress,
-                                          LegislativeCountry.ENGLAND, ORG_ID, ORG_PROFILE_ID);
+                                          LegislativeCountry.ENGLAND);
     }
 }

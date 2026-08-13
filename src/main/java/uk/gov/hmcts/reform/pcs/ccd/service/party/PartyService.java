@@ -156,8 +156,10 @@ public class PartyService {
      * Both organisation values are required: without them the case derives no group, and once CREATOR
      * is revoked at submit nobody can open it.
      */
-    public void initialiseClaimant(PcsCaseEntity pcsCaseEntity, String organisationId,
-                                   String organisationProfileId) {
+    public void initialiseClaimant(PcsCaseEntity pcsCaseEntity) {
+        String organisationId = organisationService.getOrganisationIdForCurrentUser();
+        String organisationProfileId = organisationService.getOrgProfileIdForCurrentUser();
+
         Objects.requireNonNull(organisationId, "Organisation must be provided to create a case");
         if (StringUtils.isBlank(organisationProfileId)) {
             throw new IllegalArgumentException(
