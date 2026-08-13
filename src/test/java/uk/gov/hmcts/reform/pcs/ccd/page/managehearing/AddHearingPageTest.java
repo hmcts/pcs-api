@@ -10,8 +10,10 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.Hearing;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
+import uk.gov.hmcts.reform.pcs.ccd.service.IntegerValidationService;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -26,6 +28,9 @@ public class AddHearingPageTest extends BasePageTest {
     @Mock
     private TextAreaValidationService textAreaValidationService;
 
+    @Mock
+    private IntegerValidationService integerValidationService;
+
     @BeforeEach
     void setUp() {
         lenient().doAnswer(invocation -> {
@@ -36,17 +41,19 @@ public class AddHearingPageTest extends BasePageTest {
                 .errors(errors.isEmpty() ? null : errors)
                 .build();
         }).when(textAreaValidationService).createValidationResponse(any(), any());
-        setPageUnderTest(new AddHearingPage(textAreaValidationService));
+        setPageUnderTest(new AddHearingPage(textAreaValidationService, integerValidationService));
     }
 
     @Test
-    void shouldValidateNotesAndAdditionalInformation() {
+    void shouldValidateHearingInputs() {
         // Given
         String notes = "notes";
         String additionalInformation = "additional information";
         Hearing hearing = Hearing.builder()
             .notes(notes)
             .additionalInformation(additionalInformation)
+            .durationHours(1f)
+            .durationMinutes(30f)
             .build();
 
         PCSCase caseData = PCSCase.builder()
@@ -67,5 +74,29 @@ public class AddHearingPageTest extends BasePageTest {
                 && f.fieldLabel.equals("Enter any additional information")
                 && f.maxCharacters == 500)
         );
+        verify(integerValidationService).validateFloatIsInteger(1f, "Hours", new ArrayList<>());
+        verify(integerValidationService).validateFloatIsInteger(30f, "Minutes", new ArrayList<>());
+    }
+
+    @Test
+    void shouldReturnErrorIfDurationIsZero() {
+        // Given
+        Hearing hearing = Hearing.builder()
+            .durationHours(0f)
+            .durationMinutes(0f)
+            .build();
+
+        PCSCase caseData = PCSCase.builder()
+            .hearing(hearing)
+            .build();
+
+        // When
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+        // Then
+        List<String> errors = response.getErrors();
+        assertThat(errors).hasSize(1);
+        assertThat(errors.getFirst())
+            .isEqualTo("At least one of Days, Hours or Minutes must be larger than zero");
     }
 }

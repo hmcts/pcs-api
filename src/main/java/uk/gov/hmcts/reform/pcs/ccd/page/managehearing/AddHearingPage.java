@@ -14,12 +14,15 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.Hearing;
 import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.HearingType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.ManageHearingOption;
 import uk.gov.hmcts.reform.pcs.ccd.page.CcdPage;
+import uk.gov.hmcts.reform.pcs.ccd.service.IntegerValidationService;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
 import java.util.List;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.fieldEquals;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.hearing.Hearing.HOUR_LABEL;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.hearing.Hearing.MINUTE_LABEL;
 
 @AllArgsConstructor
 @Component
@@ -31,6 +34,8 @@ public class AddHearingPage implements CcdPageConfiguration, CcdPage {
     );
 
     private final TextAreaValidationService textAreaValidationService;
+    private final IntegerValidationService integerValidationService;
+    private static final String ZERO_DURATION_ERROR = "At least one of Days, Hours or Minutes must be larger than zero";
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -91,6 +96,19 @@ public class AddHearingPage implements CcdPageConfiguration, CcdPage {
                     TextAreaValidationService.MEDIUM_TEXT_LIMIT
                 )
         );
+
+        Float durationHours = hearing.getDurationHours();
+        Float durationMinutes = hearing.getDurationMinutes();
+
+        if (durationHours == 0 && durationMinutes == 0) {
+            validationErrors.add(ZERO_DURATION_ERROR);
+        } else {
+            integerValidationService
+                .validateFloatIsInteger(hearing.getDurationHours(), HOUR_LABEL, validationErrors);
+            integerValidationService
+                .validateFloatIsInteger(hearing.getDurationMinutes(), MINUTE_LABEL, validationErrors);
+        }
+
         return textAreaValidationService.createValidationResponse(caseData, validationErrors);
     }
 }

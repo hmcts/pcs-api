@@ -26,6 +26,10 @@ public class Hearing {
     @CCD(ignore = true)
     public static final String ADDITIONAL_INFORMATION_LABEL = "Enter any additional information";
     @CCD(ignore = true)
+    public static final String HOUR_LABEL = "Hours";
+    @CCD(ignore = true)
+    public static final String MINUTE_LABEL = "Minutes";
+    @CCD(ignore = true)
     public static final String CANCELLATION_REASON_LABEL = "Enter reason for cancellation";
 
     private Integer hearingId;
@@ -53,16 +57,18 @@ public class Hearing {
     private LocalDateTime date;
 
     @CCD(
-        label = "Hour",
+        label = HOUR_LABEL,
+        min = 0,
         max = 23
     )
-    private Integer durationHours;
+    private Float durationHours;
 
     @CCD(
-        label = "Minute",
+        label = MINUTE_LABEL,
+        min = 0,
         max = 59
     )
-    private Integer durationMinutes;
+    private Float durationMinutes;
 
     @CCD(
         label = NOTES_LABEL,

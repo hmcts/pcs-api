@@ -2,23 +2,28 @@ import { Page } from '@playwright/test';
 import { performAction } from '@utils/controller-caseManagement';
 import { IAction, actionData, actionRecord } from '@utils/interfaces/action.interface';
 import {
-  cancelHearing,
-  changeCaseState, enterGenappApplication, enterGenAppapplicationFee,
-  enterGenAppConsentAndNotice, enterGenAppHearingDate, manageHearing, selectDocument
+  addReviewDates, cancelHearing, changeCaseState, enterGenappApplication, enterGenAppapplicationFee,
+  enterGenAppConsentAndNotice, enterGenAppHearingDate, manageHearing, selectDocument, uploadADocument,
+  enterGenAppUploadGeneralApplication
 } from '@data/page-data-figma/page-data-caseManagement-figma';
 import { allPartyDetails } from './caseManagement.action';
+import { CaseManagementCommonUtils } from './caseManagementUtils.action';
+import { defendantUserDetails } from '../createCaseAPI.action';
 
 export class ErrorValidationAction implements IAction {
   async execute(page: Page, action: string, errorFlag: string | actionRecord, roles?: actionData): Promise<void> {
     const actionsMap = new Map<string, () => Promise<void>>([
       ['errorValidationSelectDocumentPage', () => this.errorValidationSelectDocumentPage(errorFlag as string)],
+      ['errorValidationAddReviewDatesPage', () => this.errorValidationAddReviewDatesPage(errorFlag as string)],
       ['errorValidationChangeCaseStatePage', () => this.errorValidationChangeCaseStatePage(errorFlag as string)],
       ['errorValidationEnterGeneralAppPage', () => this.errorValidationEnterGeneralAppPage(errorFlag as string)],
       ['errorValidationHearingDatePage', () => this.errorValidationHearingDatePage(errorFlag as string)],
       ['errorValidationApplicationFeePage', () => this.errorValidationApplicationFeePage(errorFlag as string)],
+      ['errorValidationUploadADocumentPage', () => this.errorValidationUploadADocumentPage(errorFlag as string)],
       ['errorValidationApplicationConsentAndNotice', () => this.errorValidationApplicationConsentAndNotice(errorFlag as string)],
       ['errorValidationManageHearing', () => this.errorValidationManageHearing(errorFlag as string)],
       ['errorValidationCancelHearing', () => this.errorValidationCancelHearing(errorFlag as string)],
+      ['errorValidationUploadGenAppsFile', () => this.errorValidationUploadGenAppsFile(errorFlag as string)],
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -31,19 +36,62 @@ export class ErrorValidationAction implements IAction {
         validationType: selectDocument.errorValidationType.four,
         inputArray: selectDocument.errorValidationField.errorDropDown,
         dropQn: selectDocument.whichFolderQuestion,
-        option: selectDocument.docFolderHiddenOption,
+        option: (selectDocument.docFolderHiddenOption)[0],
         button: selectDocument.continueButton
       });
       await performAction('inputErrorValidation', {
         validationType: selectDocument.errorValidationType.two,
         inputArray: selectDocument.errorValidationField.errorRadioOption,
         question: selectDocument.documentToAmendHiddenQuestion,
-        option: selectDocument.typeOfDocumentHiddenRadioOption,
+        option: (selectDocument.typeOfDocumentHiddenRadioOption)[0],
         button: selectDocument.continueButton
       });
     }
   }
 
+  private async errorValidationAddReviewDatesPage(validationReq: string) {
+    if (validationReq === 'YES') {
+      await performAction('inputErrorValidation',{
+        validationType: addReviewDates.errorValidationType.five,
+        inputArray: addReviewDates.errorValidationField.errorDateField,
+        question: addReviewDates.dateOfReviewHiddenLabel,
+        header1: addReviewDates.thereIsProbErrorMessageHeader,
+        label1: addReviewDates.dayHiddenTextLabel,
+        label2: addReviewDates.monthHiddenTextLabel,
+        label3: addReviewDates.yearHiddenTextLabel,
+        button: addReviewDates.continueButton
+      });
+
+      await performAction('inputErrorValidation',{
+        validationType: addReviewDates.errorValidationType.two,
+        inputArray: addReviewDates.errorValidationField.errorRadioOption,
+        question: addReviewDates.reasonHiddenLabel,
+        option: addReviewDates.unlessOrderHiddenRadioOption,
+        button: addReviewDates.continueButton
+      });
+
+      await performAction('inputErrorValidation', {
+        validationType: addReviewDates.errorValidationType.one,
+        inputArray: addReviewDates.errorValidationField.errorTextField,
+        header: addReviewDates.eventCouldNotBeCreatedErrorMessageHeader,
+        label: addReviewDates.descriptionHiddenTextLabel,
+        button: addReviewDates.continueButton
+      });
+
+      await performAction('inputErrorValidation', {
+        validationType: addReviewDates.errorValidationType.six,
+        inputArray: addReviewDates.errorValidationField.errorDateRadioOption,
+        header: addReviewDates.eventCouldNotBeCreatedErrorMessageHeader,
+        label1: addReviewDates.dayHiddenTextLabel,
+        label2: addReviewDates.monthHiddenTextLabel,
+        label3: addReviewDates.yearHiddenTextLabel,
+        label: addReviewDates.descriptionHiddenTextLabel,
+        question: addReviewDates.reasonHiddenLabel,
+        option: addReviewDates.OtherHiddenRadioOption,
+        button: addReviewDates.continueButton
+      });
+    }
+  }
   private async errorValidationChangeCaseStatePage(validationReq: string) {
     if (validationReq === 'YES') {
       await performAction('inputErrorValidation', {
@@ -144,6 +192,49 @@ export class ErrorValidationAction implements IAction {
     }
   }
 
+  private async errorValidationUploadADocumentPage(validationReq: string) {
+    let appType = CaseManagementCommonUtils.getGenApplicationType(defendantUserDetails.length)[0];
+    if (validationReq === 'YES') {
+      await performAction('inputErrorValidation', {
+        validationType: uploadADocument.errorValidationType.eight,
+        inputArray: uploadADocument.errorValidationField.errorUploadADocument,
+        button: uploadADocument.continueButton
+      });
+      await performAction('inputErrorValidation', {
+        validationType: uploadADocument.errorValidationType.two,
+        inputArray: uploadADocument.errorValidationField.errorRadioOption1,
+        question: uploadADocument.whichAppOrCounterClaimThisRelateToQuestion,
+        option: uploadADocument.notRelatedToAppRadioOption,
+        button: uploadADocument.continueButton
+      });
+      await performAction('inputErrorValidation', {
+        validationType: uploadADocument.errorValidationType.four,
+        inputArray: uploadADocument.errorValidationField.errorDropDown,
+        dropQn: uploadADocument.whichTypeOfDocHiddenQuestion,
+        option: uploadADocument.whichTypeHiddenOption,
+        button: uploadADocument.continueButton
+      });
+      await performAction('inputErrorValidation', {
+        validationType: uploadADocument.errorValidationType.five,
+        inputArray: uploadADocument.errorValidationField.errorDateField,
+        header: enterGenappApplication.eventCouldNotBeCreatedErrorMessageHeader,
+        header1: uploadADocument.thereIsProbErrorMessageHeader,
+        question: uploadADocument.addIssueDateTextLabel,
+        label1: enterGenappApplication.dayTextLabel,
+        label2: enterGenappApplication.monthTextLabel,
+        label3: enterGenappApplication.yearTextLabel,
+        button: enterGenappApplication.continueButton
+      });
+      await performAction('inputErrorValidation', {
+        validationType: uploadADocument.errorValidationType.two,
+        inputArray: uploadADocument.errorValidationField.errorRadioOption2,
+        question: uploadADocument.partyDocRelatedToQuestion,
+        option: appType,
+        button: uploadADocument.continueButton
+      });
+    }
+  }
+
   private async errorValidationApplicationConsentAndNotice(validationReq: string) {
     if (validationReq === 'YES') {
       await performAction('inputErrorValidation', {
@@ -160,7 +251,6 @@ export class ErrorValidationAction implements IAction {
         option: enterGenAppConsentAndNotice.noHiddenRadioOption,
         button: enterGenAppConsentAndNotice.continueButton
       });
-
     }
   }
   private async errorValidationManageHearing(validationReq: string) {
@@ -184,6 +274,12 @@ export class ErrorValidationAction implements IAction {
         label: cancelHearing.enterReasonForCancellationLabel,
         button: cancelHearing.continueButton
 
+  private async errorValidationUploadGenAppsFile(validationReq: string) {
+    if (validationReq === 'YES') {
+      await performAction('inputErrorValidation', {
+        validationType: enterGenAppUploadGeneralApplication.errorValidationType.eight,
+        inputArray: enterGenAppUploadGeneralApplication.errorValidationField.errorUploadADocument,
+        button: enterGenAppUploadGeneralApplication.continueButton
       });
     }
   }
