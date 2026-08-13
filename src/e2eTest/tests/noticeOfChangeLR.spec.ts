@@ -99,20 +99,20 @@ test.describe('Make an Application - LR - e2e Journey @nightly', async () => {
   });
 
   test('Notice of change - Content Validation - LR @noticeOfChange' , async ({ page }) => {
-    await performValidation('text', { elementType: 'heading', text: noc.mainHeader });
+    await performValidation('mainHeader', noc.mainHeader );
     await performValidation('text', { elementType: 'paragraph', text: noc.youCanUseThisNoticeParagraph });
     await performValidation('text', { elementType: 'listItem', text: noc.aClientActingInPersonListItem });
     await performValidation('text', { elementType: 'listItem', text: noc.aLegalRepresentativeListItem });
     await performValidation('text', { elementType: 'hintText', text: noc.thisIsHintText });
     await performAction('noticeOfChange', { caseRefNo: caseInfo.id } );
-    await page.waitForTimeout(5000);
+    await page.waitForTimeout(10000);
 
-    await performValidation('text', { elementType: 'heading', text: clientDetails.mainHeader });
+    await performValidation('mainHeader', clientDetails.mainHeader);
     await performValidation('text', { elementType: 'paragraph', text: clientDetails.youMustEnterParagraph });
     await performAction('clientDetails', { firstName: 'Peter' , lastName: 'Parker' });
-    await page.waitForTimeout(5000);
+    await page.waitForTimeout(10000);
 
-    await performValidation('text', { elementType: 'heading', text: checkAndSubmit.mainHeader });
+    await performValidation('mainHeader', checkAndSubmit.mainHeader );
     await performValidation('text', { elementType: 'paragraph', text: checkAndSubmit.afterYouSubmitParagraph });
     await performValidation('text', { elementType: 'tableElement', text: checkAndSubmit.requestTableElement });
     await performValidation('text', { elementType: 'tableElement', text: checkAndSubmit.caseNumberTableElement });
