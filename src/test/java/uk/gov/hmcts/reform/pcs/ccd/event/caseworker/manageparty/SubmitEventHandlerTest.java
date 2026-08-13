@@ -127,8 +127,8 @@ class SubmitEventHandlerTest {
 
     private static Stream<Arguments> updateConfirmationPageScenarios() {
         return Stream.of(
-            Arguments.of(PartyType.CLAIMANT, "Claimant"),
-            Arguments.of(PartyType.DEFENDANT, "Defendant")
+            Arguments.of(PartyType.CLAIMANT, "Claimant's"),
+            Arguments.of(PartyType.DEFENDANT, "Defendant's")
         );
     }
 

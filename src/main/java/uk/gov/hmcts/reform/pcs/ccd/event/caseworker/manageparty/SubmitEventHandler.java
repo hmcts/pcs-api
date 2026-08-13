@@ -82,9 +82,9 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
         UpdatePartyDetails updatePartyDetails = pcsCase.getUpdatePartyDetails();
 
         String partyDescription = switch (updatePartyDetails.getPartyType()) {
-            case CLAIMANT -> "Claimant";
-            case DEFENDANT -> "Defendant";
-            case LITIGATION_FRIEND -> "Litigation friend";
+            case CLAIMANT -> "Claimant's";
+            case DEFENDANT -> "Defendant's";
+            case LITIGATION_FRIEND -> "Litigation friend's";
         };
 
         return buildConfirmationMarkdown(
@@ -102,7 +102,7 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
         return """
             ---
             <div class="govuk-panel govuk-panel--confirmation govuk-!-padding-top-3 govuk-!-padding-bottom-3">
-            <span class="govuk-panel__title govuk-!-font-size-36">%s added</span><br>
+            <span class="govuk-panel__title govuk-!-font-size-36">%s</span><br>
             <span class="govuk-panel__body govuk-!-font-size-24">Case number: %s</span><br>
             <span class="govuk-panel__body govuk-!-font-size-24">%s</span><br>
             <span class="govuk-panel__body govuk-!-font-size-24">%s</span>
