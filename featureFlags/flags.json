@@ -4,6 +4,8 @@
     "caseworker-events-enabled": true,
     "cui-respond-to-claim-lr-enabled": true,
     "release-1.2-enabled": true,
-    "wales-make-a-claim-enabled": true
+    "release-1.3-enabled": true,
+    "wales-make-a-claim-enabled": true,
+    "caseworker-wa-enabled": false
   }
 }
