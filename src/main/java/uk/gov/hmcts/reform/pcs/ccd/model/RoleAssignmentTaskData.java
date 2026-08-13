@@ -11,5 +11,10 @@ public class RoleAssignmentTaskData {
 
     private final String caseReference;
     private final String userId;
+    private final RoleAssignmentAction action;
+
+    public enum RoleAssignmentAction {
+        REVOKE_CREATOR
+    }
 
 }

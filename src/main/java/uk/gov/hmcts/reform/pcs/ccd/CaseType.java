@@ -31,8 +31,13 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
     private static final String JURISDICTION_DESCRIPTION = "Civil Possession Jurisdiction";
     static final AccessProfile[] PARTY_VISIBLE_TAB_ROLES = {
         AccessProfile.CITIZEN,
+        // Fallback for a creator whose case derives no CaseAccessGroups; the organisation's
+        // capacities cover every other case, including drafts.
+        AccessProfile.CREATOR,
         AccessProfile.DEFENDANT,
         AccessProfile.PCS_SOLICITOR,
+        AccessProfile.GA_CLAIMANT,
+        AccessProfile.GA_CLAIMANT_SOLICITOR,
         AccessProfile.JUDGE,
         AccessProfile.FEE_PAID_JUDGE,
         AccessProfile.CIRCUIT_JUDGE,
@@ -106,6 +111,9 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
         builder.caseType(getCaseType(), getCaseTypeName(), CASE_TYPE_DESCRIPTION);
         builder.jurisdiction(JURISDICTION_ID, JURISDICTION_NAME, JURISDICTION_DESCRIPTION);
         builder.hmctsServiceId(hmctsServiceId);
+        // A group-less case is reachable only through the creator's case role, so it must pass
+        // case-type authorisation by itself - bracketed roles are otherwise skipped
+        builder.grantCaseTypeAccessToCaseRoles(AccessProfile.CREATOR);
 
         builder.searchInputFields()
             .caseReferenceField();
@@ -117,6 +125,7 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
 
         builder.searchResultFields()
             .caseReferenceField();
+
 
         buildCaseListView(builder);
 
@@ -172,6 +181,7 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
 
         configureCaseFileCategories(builder);
     }
+
 
     private void configureCaseFileCategories(ConfigBuilder<PCSCase, State, AccessProfile> builder) {
         for (CaseFileCategory category : CaseFileCategory.values()) {

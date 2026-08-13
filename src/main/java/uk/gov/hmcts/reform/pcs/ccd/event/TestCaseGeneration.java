@@ -20,6 +20,7 @@ import uk.gov.hmcts.reform.pcs.ccd.event.enforcetheorder.EnforceTheOrder;
 import uk.gov.hmcts.reform.pcs.ccd.page.testcasesupport.TestCaseSelectionPage;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.ccd.testcasesupport.TestCaseSupportException;
 import uk.gov.hmcts.reform.pcs.ccd.testcasesupport.TestCaseSupportHelper;
 
@@ -51,6 +52,7 @@ public class TestCaseGeneration implements CCDConfig<PCSCase, State, UserRole> {
 
     private final DraftCaseDataService draftCaseDataService;
     private final PcsCaseService pcsCaseService;
+    private final OrganisationService organisationService;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -69,6 +71,10 @@ public class TestCaseGeneration implements CCDConfig<PCSCase, State, UserRole> {
                 .initialState(AWAITING_SUBMISSION_TO_HMCTS)
                 .showSummary()
                 .name(EVENT_NAME)
+                // Same claimant capacities as createPossessionClaim, which this mirrors.
+                .grant(Permission.CRUD, UserRole.GA_CLAIMANT_SOLICITOR)
+                .grant(Permission.CRUD, UserRole.CLAIMANT)
+                // Temporary: keeps the tool usable on AAT until the group access flags are on.
                 .grant(Permission.CRUD, UserRole.PCS_SOLICITOR)
                 .grantHistoryOnly(JUDICIAL_HISTORY_ROLES);
         new PageBuilder(eventBuilder).add(new TestCaseSelectionPage());
@@ -101,7 +107,9 @@ public class TestCaseGeneration implements CCDConfig<PCSCase, State, UserRole> {
         loadedCase.setFeeAmount(TEST_FEE_AMOUNT);
         pcsCaseService.createCase(
             caseReference, loadedCase.getPropertyAddress(),
-            loadedCase.getLegislativeCountry());
+            loadedCase.getLegislativeCountry(),
+            organisationService.getOrganisationIdForCurrentUser(),
+            organisationService.getOrgProfileIdsForCurrentUser());
 
         resumePossessionClaim.submitClaim(caseReference, loadedCase);
     }

@@ -19,6 +19,9 @@ public class OrganisationDetailsResponse {
     @JsonProperty("organisationIdentifier")
     private String organisationIdentifier;
 
+    @JsonProperty("organisationProfileIds")
+    private List<String> organisationProfileIds;
+
     @JsonProperty("contactInformation")
     private List<ContactInformation> contactInformation;
 

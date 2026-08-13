@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.pcs.ccd.event;
 
-import com.github.kagkarlsson.scheduler.SchedulerClient;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -14,20 +13,16 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.model.RoleAssignmentTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.CrossBorderPostcodeSelection;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.EnterPropertyAddress;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.PostcodeNotAssignedToCourt;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.PropertyNotEligible;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.StartTheService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
-import uk.gov.hmcts.reform.pcs.ccd.task.CaseRoleAssignmentTaskComponent;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.ccd.util.FeeApplier;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
-import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
-import java.time.Instant;
-import java.util.UUID;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.createPossessionClaim;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
@@ -39,12 +34,11 @@ import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUD
 public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole> {
 
     private final PcsCaseService pcsCaseService;
+    private final OrganisationService organisationService;
     private final FeeApplier feeApplier;
     private final EnterPropertyAddress enterPropertyAddress;
     private final CrossBorderPostcodeSelection crossBorderPostcodeSelection;
     private final PropertyNotEligible propertyNotEligible;
-    private final SchedulerClient schedulerClient;
-    private final SecurityContextService securityContextService;
 
 
     @Override
@@ -55,7 +49,13 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
                 .initialState(State.AWAITING_SUBMISSION_TO_HMCTS)
                 .showSummary()
                 .name("Make a claim")
+                // Create only: a case carries no CaseAccessGroups until it holds a claimant party,
+                // so the group access roles cannot reach the event that creates one.
                 .grant(Permission.CRUD, UserRole.PCS_SOLICITOR)
+                .grant(Permission.CRUD, UserRole.GA_CLAIMANT_SOLICITOR)
+                // The organisations that are the claimant themselves - local authority and the
+                // "other" profiles - hold this capacity rather than claimant-solicitor
+                .grant(Permission.CRUD, UserRole.CLAIMANT)
                 .grantHistoryOnly(JUDICIAL_HISTORY_ROLES);
 
         new PageBuilder(eventBuilder)
@@ -86,27 +86,12 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
         long caseReference = eventPayload.caseReference();
         PCSCase caseData = eventPayload.caseData();
 
-        pcsCaseService.createCase(caseReference, caseData.getPropertyAddress(), caseData.getLegislativeCountry());
-
-        String userId = securityContextService.getCurrentUserDetails().getUid();
-        scheduleRoleAssignment(caseReference, userId);
+        pcsCaseService.createCase(caseReference, caseData.getPropertyAddress(),
+                                  caseData.getLegislativeCountry(),
+                                  organisationService.getOrganisationIdForCurrentUser(),
+                                  organisationService.getOrgProfileIdsForCurrentUser());
 
         return SubmitResponse.defaultResponse();
     }
 
-    private void scheduleRoleAssignment(long caseReference, String userId) {
-        String taskId = UUID.randomUUID().toString();
-
-        RoleAssignmentTaskData taskData = RoleAssignmentTaskData.builder()
-            .caseReference(String.valueOf(caseReference))
-            .userId(userId)
-            .build();
-
-        schedulerClient.scheduleIfNotExists(
-            CaseRoleAssignmentTaskComponent.ROLE_ASSIGNMENT_TASK_DESCRIPTOR
-                .instance(taskId)
-                .data(taskData)
-                .scheduledTo(Instant.now())
-        );
-    }
 }

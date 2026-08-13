@@ -49,11 +49,13 @@ public class CaseRoleAssignmentTaskComponent {
                 RoleAssignmentTaskData taskData = taskInstance.getData();
                 long caseReference = Long.parseLong(taskData.getCaseReference());
                 String userId = taskData.getUserId();
-                log.debug("Assigning claimant solicitor role and revoking creator role for case: {}", caseReference);
+                log.debug("Executing {} for case: {}", taskData.getAction(), caseReference);
 
                 try {
-                    caseRoleAssignmentService.assignRasRole(caseReference, userId, UserRole.CLAIMANT_SOLICITOR);
-                    caseRoleAssignmentService.revokeRasRole(caseReference, userId, UserRole.CREATOR);
+                    switch (taskData.getAction()) {
+                        case REVOKE_CREATOR ->
+                            caseRoleAssignmentService.revokeRasRole(caseReference, userId, UserRole.CREATOR);
+                    }
                     return new CompletionHandler.OnCompleteRemove<>();
 
                 } catch (Exception e) {

@@ -18,6 +18,8 @@ import java.util.UUID;
 @AllArgsConstructor
 public class OrganisationService {
 
+    private static final String GENERIC_ORGANISATION_PROFILE = "ORGANISATION_PROFILE";
+
     private final SecurityContextService securityContextService;
     private final CachingOrganisationDetailsService cachingOrganisationDetailsService;
 

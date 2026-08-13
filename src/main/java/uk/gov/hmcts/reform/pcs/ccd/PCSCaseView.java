@@ -9,6 +9,8 @@ import uk.gov.hmcts.ccd.sdk.CaseViewRequest;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.AccessProfile;
+import uk.gov.hmcts.reform.pcs.ccd.domain.GroupAccessFields;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
@@ -21,6 +23,7 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseTitleService;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.legalrepresentative.LegalRepresentativeSummaryService;
+import uk.gov.hmcts.reform.pcs.ccd.util.CaseAccessGroupsUtil;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
 import uk.gov.hmcts.reform.pcs.ccd.view.AlternativesToPossessionView;
 import uk.gov.hmcts.reform.pcs.ccd.view.AsbProhibitedConductView;
@@ -127,12 +130,22 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
 
         caseFieldsView.setCaseFields(pcsCase);
 
+        applyCaseAccessGroups(pcsCase, submittedCase.pcsCaseEntity());
+
         // Only the canonical PCS case type is indexed into the shared global_search index.
         if (!CaseType.isSuffixedCaseType()) {
             pcsCase.setSearchCriteria(searchCriteriaIndexer.buildSearchCriteria(pcsCase));
         }
 
         return pcsCase;
+    }
+
+    private void applyCaseAccessGroups(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
+        // Set unconditionally: an omitted field reads as "no opinion" to anything holding a copy,
+        // so a case that stops deriving groups could keep the ones it had.
+        pcsCase.setGroupAccessFields(GroupAccessFields.<AccessProfile>builder()
+            .caseAccessGroups(CaseAccessGroupsUtil.deriveCaseAccessGroups(pcsCaseEntity.getParties()))
+            .build());
     }
 
     private boolean caseHasUnsubmittedData(long caseReference, State state) {
