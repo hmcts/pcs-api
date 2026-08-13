@@ -17,6 +17,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeOrganisationContactDetailsEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeOrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyLegalRepresentativeOrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
@@ -172,10 +173,13 @@ class PartiesViewTest {
         AddressEntity addressEntity = AddressEntity.builder().build();
         LegalRepresentativeOrganisationEntity legalRepresentativeOrganisationEntity =
             LegalRepresentativeOrganisationEntity.builder()
-            .phoneNumber("phone")
-            .emailAddress("email@test.com")
+                .legalRepresentativeOrganisationContactDetails(LegalRepresentativeOrganisationContactDetailsEntity
+                                                                   .builder()
+                                                                   .phoneNumber("phone")
+                                                                   .emailAddress("email@test.com")
+                                                                   .address(addressEntity)
+                                                                   .build())
             .organisationName("org name")
-            .address(addressEntity)
             .build();
         ClaimPartyLegalRepresentativeOrganisationEntity claimPartyLegalRepresentativeOrganisationEntity =
             ClaimPartyLegalRepresentativeOrganisationEntity.builder()
@@ -210,10 +214,13 @@ class PartiesViewTest {
         AddressEntity addressEntity = AddressEntity.builder().build();
         LegalRepresentativeOrganisationEntity legalRepresentativeOrganisationEntity =
             LegalRepresentativeOrganisationEntity.builder()
-            .phoneNumber("phone")
-            .emailAddress("email@test.com")
-            .organisationName("org name")
-            .address(addressEntity)
+                .legalRepresentativeOrganisationContactDetails(LegalRepresentativeOrganisationContactDetailsEntity
+                                                                   .builder()
+                                                                   .phoneNumber("phone")
+                                                                   .emailAddress("email@test.com")
+                                                                   .address(addressEntity)
+                                                                   .build())
+                .organisationName("org name")
             .build();
         ClaimPartyLegalRepresentativeOrganisationEntity claimPartyLegalRepresentativeOrganisationEntity =
             ClaimPartyLegalRepresentativeOrganisationEntity.builder()
@@ -242,10 +249,13 @@ class PartiesViewTest {
         AddressEntity addressEntity1 = AddressEntity.builder().build();
         LegalRepresentativeOrganisationEntity legalRepresentativeOrganisationEntity =
             LegalRepresentativeOrganisationEntity.builder()
-            .phoneNumber("phone")
-            .emailAddress("email@test.com")
+                .legalRepresentativeOrganisationContactDetails(LegalRepresentativeOrganisationContactDetailsEntity
+                                                                   .builder()
+                                                                   .phoneNumber("phone")
+                                                                   .emailAddress("email@test.com")
+                                                                   .address(addressEntity1)
+                                                                   .build())
             .organisationName("org name")
-            .address(addressEntity1)
             .build();
         ClaimPartyLegalRepresentativeOrganisationEntity claimPartyLegalRepresentativeOrganisationEntity =
             ClaimPartyLegalRepresentativeOrganisationEntity.builder()
@@ -256,10 +266,13 @@ class PartiesViewTest {
         AddressEntity addressEntity2 = AddressEntity.builder().build();
         LegalRepresentativeOrganisationEntity legalRepresentativeOrganisationEntity2 =
             LegalRepresentativeOrganisationEntity.builder()
-            .phoneNumber("phone2")
-            .emailAddress("email2@test.com")
+                .legalRepresentativeOrganisationContactDetails(LegalRepresentativeOrganisationContactDetailsEntity
+                                                                   .builder()
+                                                                   .phoneNumber("phone2")
+                                                                   .emailAddress("email2@test.com")
+                                                                   .address(addressEntity2)
+                                                                   .build())
             .organisationName("org name2")
-            .address(addressEntity2)
             .build();
         ClaimPartyLegalRepresentativeOrganisationEntity claimPartyLegalRepresentativeOrganisationEntity2 =
             ClaimPartyLegalRepresentativeOrganisationEntity.builder()
@@ -311,6 +324,37 @@ class PartiesViewTest {
         Party defendantParty = pcsCase.getAllDefendants().getFirst().getValue();
         assertThat(defendantParty.getEmailAddress()).isEqualTo("bob@example.com");
         assertThat(defendantParty.getPhoneNumber()).isEqualTo("07700000002");
+    }
+
+    @Test
+    void shouldMapOrganisationPolicyRoleForDefendants() {
+        when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
+        when(userInfo.getRoles()).thenReturn(List.of("caseworker-pcs"));
+
+        PartyEntity claimant = buildParty(UUID.randomUUID(), "Alice", "A", null, null, null);
+        PartyEntity defendant1 = buildParty(UUID.randomUUID(), "Bob", "B", null, null, null);
+        PartyEntity defendant2 = buildParty(UUID.randomUUID(), "Carol", "C", null, null, null);
+        PartyEntity underlessee1 = buildParty(UUID.randomUUID(), "Dave", "D", null, null, null);
+        PartyEntity underlessee2 = buildParty(UUID.randomUUID(), "Eve", "E", null, null, null);
+
+        when(claimEntity.getClaimParties()).thenReturn(List.of(
+            buildClaimPartyEntity(claimant, PartyRole.CLAIMANT),
+            buildClaimPartyEntity(defendant1, PartyRole.DEFENDANT),
+            buildClaimPartyEntity(defendant2, PartyRole.DEFENDANT),
+            buildClaimPartyEntity(underlessee1, PartyRole.UNDERLESSEE_OR_MORTGAGEE),
+            buildClaimPartyEntity(underlessee2, PartyRole.UNDERLESSEE_OR_MORTGAGEE)
+        ));
+
+        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+
+        assertThat(pcsCase.getAllDefendants()).hasSize(2);
+        assertThat(pcsCase.getAllDefendants())
+            .extracting(lv -> lv.getValue().getOrganisationPolicy().getOrgPolicyCaseAssignedRole())
+            .containsExactly(UserRole.DEFENDANT_SOLICITOR, UserRole.DEFENDANT_SOLICITOR);
+
+        assertThat(pcsCase.getAllClaimants())
+            .extracting(lv -> lv.getValue().getOrganisationPolicy())
+            .containsOnlyNulls();
     }
 
     private void stubCitizenUser(UUID userId) {

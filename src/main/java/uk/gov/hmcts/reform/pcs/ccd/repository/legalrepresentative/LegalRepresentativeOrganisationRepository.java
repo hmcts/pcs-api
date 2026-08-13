@@ -38,19 +38,17 @@ public interface LegalRepresentativeOrganisationRepository extends JpaRepository
     boolean isRepresentativeOrganisationLinkedToPartyAndActive(@Param("organisationId") String organisationId,
                                                                @Param("partyId") UUID partyId);
 
-    // org no longer hangs directly off pcsCase — go via the party link instead
-    // (bit unsure if this is the "proper" way, but it finds the org for the case)
     @Query("""
         SELECT lro
         FROM LegalRepresentativeOrganisationEntity lro
-        JOIN lro.claimPartyLegalRepresentativeOrganisationList plro
-        JOIN plro.party p
-        JOIN p.pcsCase pcsCase
+        JOIN lro.legalRepresentativeOrganisationContactDetails contact
+        JOIN contact.pcsCase pcsCase
         WHERE pcsCase.caseReference = :caseReference
         AND lro.organisationId = :organisationId
         """)
     Optional<LegalRepresentativeOrganisationEntity> findByOrganisationIdAndCaseReference(
-        @Param("organisationId") String organisationId, @Param("caseReference") long caseReference);
-
+        @Param("organisationId") String organisationId,
+        @Param("caseReference") long caseReference
+    );
 
 }

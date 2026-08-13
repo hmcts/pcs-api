@@ -34,8 +34,8 @@ public class LegalRepresentativeContactDetails implements CCDConfig<PCSCase, Sta
         Event.EventBuilder<PCSCase, UserRole, State> eventBuilder =
             configBuilder
                 .decentralisedEvent(legalRepresentativeContactDetails.name(), this::submit, this::start)
-                .forAllStates()
-                .name("Amend representative's details")
+                .forState(State.CASE_ISSUED)
+                .name("Amend representative’s details")
                 .grant(Permission.CRUD, UserRole.DEFENDANT_SOLICITOR);
 
         new PageBuilder(eventBuilder)
@@ -73,8 +73,8 @@ public class LegalRepresentativeContactDetails implements CCDConfig<PCSCase, Sta
         return """
             ---
             <div class="govuk-panel govuk-panel--confirmation govuk-!-padding-top-3 govuk-!-padding-bottom-3">
-            <span class="govuk-panel__title govuk-!-font-size-36">You have updated a defendant's
-                    legal representative's information</span>
+            <span class="govuk-panel__title govuk-!-font-size-36">You have updated a defendant’s
+                    legal representative’s information</span>
             </div>
             """;
     }
