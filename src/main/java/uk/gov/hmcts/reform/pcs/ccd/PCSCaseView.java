@@ -124,7 +124,10 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
 
         caseFieldsView.setCaseFields(pcsCase);
 
-        applyCaseAccessGroups(pcsCase, submittedCase.pcsCaseEntity());
+        // Set unconditionally: an omitted field reads as "no opinion" to anything holding a copy,
+        // so a case that stops deriving groups could keep the ones it had.
+        pcsCase.setCaseAccessGroups(
+            CaseAccessGroupsUtil.deriveCaseAccessGroups(submittedCase.pcsCaseEntity().getParties()));
 
         // Only the canonical PCS case type is indexed into the shared global_search index.
         if (!CaseType.isSuffixedCaseType()) {
@@ -132,12 +135,6 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         }
 
         return pcsCase;
-    }
-
-    private void applyCaseAccessGroups(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
-        // Set unconditionally: an omitted field reads as "no opinion" to anything holding a copy,
-        // so a case that stops deriving groups could keep the ones it had.
-        pcsCase.setCaseAccessGroups(CaseAccessGroupsUtil.deriveCaseAccessGroups(pcsCaseEntity.getParties()));
     }
 
     private boolean caseHasUnsubmittedData(long caseReference, State state) {
