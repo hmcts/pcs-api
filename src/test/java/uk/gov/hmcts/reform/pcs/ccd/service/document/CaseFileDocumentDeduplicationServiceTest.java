@@ -61,7 +61,7 @@ class CaseFileDocumentDeduplicationServiceTest {
     }
 
     @Test
-    void shouldKeepGenAppDocumentsInAllDocumentsWhenTheyOnlyAppearInGenApps() {
+    void shouldRemoveGenAppDocumentsFromAllDocumentsWhenTheyAppearInGenApps() {
         // Given
         ListValue<Document> submissionDocument = documentListValue("submission-document-id", "general-application.pdf");
         ListValue<Document> supportingDocument = documentListValue("supporting-document-id", "genApps.docx");
@@ -82,7 +82,7 @@ class CaseFileDocumentDeduplicationServiceTest {
         underTest.removeDocumentsAlreadyPresentInOtherCaseFields(pcsCase);
 
         // Then
-        assertThat(pcsCase.getAllDocuments()).containsExactly(submissionDocument, supportingDocument, otherDocument);
+        assertThat(pcsCase.getAllDocuments()).containsExactly(otherDocument);
     }
 
     @Test

@@ -3,10 +3,12 @@ package uk.gov.hmcts.reform.pcs.ccd.service.document;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentWithId;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServedDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsSection;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GeneralApplication;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.CaseDetailsTab;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.NoticeTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.RequiredDocumentsTabDetails;
@@ -46,6 +48,7 @@ public class CaseFileDocumentDeduplicationService {
         addDocumentIdsFromRequiredDocumentsWales(pcsCase.getRequiredDocumentsWales(), documentIds);
         addDocumentIdsFromOccupationLicenceDetailsWales(pcsCase.getOccupationLicenceDetailsWales(), documentIds);
         addDocumentIdsFromCaseDetailsTab(pcsCase.getCaseDetailsTab(), documentIds);
+        addDocumentIdsFromGenApps(pcsCase.getGenApps(), documentIds);
 
         return documentIds;
     }
@@ -142,6 +145,31 @@ public class CaseFileDocumentDeduplicationService {
     ) {
         if (occupationContractLicenceDetails != null) {
             addDocumentIds(occupationContractLicenceDetails.getDocuments(), documentIds);
+        }
+    }
+
+    private void addDocumentIdsFromGenApps(List<ListValue<GeneralApplication>> genApps, Set<String> documentIds) {
+        if (genApps == null) {
+            return;
+        }
+
+        genApps.stream()
+            .map(ListValue::getValue)
+            .forEach(genApp -> addDocumentIdsFromGenApp(genApp, documentIds));
+    }
+
+    private void addDocumentIdsFromGenApp(GeneralApplication genApp, Set<String> documentIds) {
+        if (genApp == null) {
+            return;
+        }
+
+        addDocumentIdFromDocumentWithId(genApp.getSubmissionDocument(), documentIds);
+        addDocumentIds(genApp.getSupportingDocuments(), documentIds);
+    }
+
+    private void addDocumentIdFromDocumentWithId(DocumentWithId document, Set<String> documentIds) {
+        if (document != null) {
+            addDocumentId(document.getId(), documentIds);
         }
     }
 
