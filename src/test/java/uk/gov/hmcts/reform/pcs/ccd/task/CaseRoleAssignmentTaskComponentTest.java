@@ -64,13 +64,12 @@ class CaseRoleAssignmentTaskComponentTest {
     }
 
     @Test
-    @DisplayName("Should revoke creator role when the task action is REVOKE_CREATOR")
+    @DisplayName("Should revoke the creator role on execution")
     void shouldExecuteTaskAndCallCaseRoleAssignmentService() {
         // Given
         RoleAssignmentTaskData data = RoleAssignmentTaskData.builder()
             .caseReference("1234")
             .userId("user-abc")
-            .action(RoleAssignmentTaskData.RoleAssignmentAction.REVOKE_CREATOR)
             .build();
 
         when(taskInstance.getData()).thenReturn(data);
@@ -91,7 +90,6 @@ class CaseRoleAssignmentTaskComponentTest {
         RoleAssignmentTaskData data = RoleAssignmentTaskData.builder()
             .caseReference("1234")
             .userId("user-abc")
-            .action(RoleAssignmentTaskData.RoleAssignmentAction.REVOKE_CREATOR)
             .build();
 
         when(taskInstance.getData()).thenReturn(data);
