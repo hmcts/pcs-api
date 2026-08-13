@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.service;
 
 import lombok.AllArgsConstructor;
+import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.Flags;
@@ -74,24 +75,29 @@ public class CaseFlagService {
             PartyEntity partyEntity = resolveSupportParty(incomingSupportValue.getId(), existingPartiesMap);
 
             if (ownPartyOnly && !partySupportOwnershipResolver.isOwnedByUser(partyEntity, authenticatedUserId)) {
-                if (changesExistingSupport(incomingSupportFlags, partyEntity)) {
+                Map<String, CasePartyFlagEntity> existingExternalFlags = getExistingExternalFlags(partyEntity);
+                if (changesExistingSupport(incomingSupportFlags, partyEntity, existingExternalFlags)) {
                     throw new CaseAccessException("User cannot change support for this party on this case");
                 }
-                continue;
+                if (!existingExternalFlags.isEmpty()) {
+                    continue;
+                }
             }
 
             mergePartyFlagCollections(null, incomingSupportFlags, partyEntity);
         }
     }
 
-    private boolean changesExistingSupport(Flags incomingSupportFlags, PartyEntity partyEntity) {
-        Map<String, CasePartyFlagEntity> existingExternalFlags = partyEntity.getDefendantFlags().stream()
-            .filter(existingFlag -> FlagVisibility.EXTERNAL == toFlagVisibility(existingFlag.getVisibility()))
-            .collect(Collectors.toMap(existingFlag -> existingFlag.getId().toString(), Function.identity()));
+    private boolean changesExistingSupport(Flags incomingSupportFlags, PartyEntity partyEntity,
+                                           Map<String, CasePartyFlagEntity> existingExternalFlags) {
 
         List<ListValue<FlagDetail>> incomingDetails = hasNoFlagDetails(incomingSupportFlags)
             ? List.of()
             : incomingSupportFlags.getDetails();
+
+        if (existingExternalFlags.isEmpty()) {
+            return false;
+        }
 
         if (incomingDetails.size() != existingExternalFlags.size()) {
             return true;
@@ -101,6 +107,12 @@ public class CaseFlagService {
             CasePartyFlagEntity existingFlag = existingExternalFlags.get(incomingDetail.getId());
             return existingFlag == null || differs(incomingDetail.getValue(), existingFlag);
         });
+    }
+
+    private static @NonNull Map<String, CasePartyFlagEntity> getExistingExternalFlags(PartyEntity partyEntity) {
+        return partyEntity.getDefendantFlags().stream()
+            .filter(existingFlag -> FlagVisibility.EXTERNAL == toFlagVisibility(existingFlag.getVisibility()))
+            .collect(Collectors.toMap(existingFlag -> existingFlag.getId().toString(), Function.identity()));
     }
 
     private boolean differs(FlagDetail incomingFlagDetail, CasePartyFlagEntity existingFlag) {

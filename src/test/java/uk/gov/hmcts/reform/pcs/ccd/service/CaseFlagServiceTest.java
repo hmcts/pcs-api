@@ -651,37 +651,11 @@ class CaseFlagServiceTest {
     }
 
     @Test
-    void shouldRejectRequestSupportCreatedAgainstTheOtherSide() {
-        // Given
-        UUID otherPartyId = UUID.randomUUID();
-        PartyEntity otherParty = PartyEntity.builder()
-            .id(otherPartyId)
-            .defendantFlags(new ArrayList<>())
-            .build();
-
-        when(partySupportOwnershipResolver.isOwnedByUser(otherParty, USER_ID)).thenReturn(false);
-
-        List<ListValue<PartySupport>> incoming =
-            List.of(createPartySupportListValue(otherPartyId.toString(), supportRequest()));
-        Set<PartyEntity> existingParties = Set.of(otherParty);
-
-        // When
-        Throwable throwable = catchThrowable(
-            () -> underTest.mergePartySupportFlags(incoming, existingParties, USER_ID, true));
-
-        // Then
-        assertThat(throwable)
-            .isInstanceOf(CaseAccessException.class)
-            .hasMessage("User cannot change support for this party on this case");
-        assertThat(otherParty.getDefendantFlags()).isEmpty();
-    }
-
-    @Test
-    void shouldRejectManageSupportForAnotherPartysSupport() {
+    void shouldRejectManageSupportForAnotherPartysSupportHasExistingFlags() {
         UUID partyId = UUID.randomUUID();
         PartyEntity otherSideParty = PartyEntity.builder()
             .id(partyId)
-            .defendantFlags(new ArrayList<>())
+            .defendantFlags(new ArrayList<>(List.of(existingExternalFlag())))
             .build();
 
         when(partySupportOwnershipResolver.isOwnedByUser(otherSideParty, USER_ID)).thenReturn(false);
@@ -696,7 +670,7 @@ class CaseFlagServiceTest {
         assertThat(throwable)
             .isInstanceOf(CaseAccessException.class)
             .hasMessage("User cannot change support for this party on this case");
-        assertThat(otherSideParty.getDefendantFlags()).isEmpty();
+        assertThat(otherSideParty.getDefendantFlags()).isNotEmpty();
         verifyNoInteractions(flagRefDataRepository);
     }
 
@@ -709,6 +683,25 @@ class CaseFlagServiceTest {
             .build();
 
         when(partySupportOwnershipResolver.isOwnedByUser(ownParty, USER_ID)).thenReturn(true);
+
+        underTest.mergePartySupportFlags(
+            List.of(createPartySupportListValue(partyId.toString(), supportRequest())),
+            Set.of(ownParty), USER_ID, true);
+
+        assertThat(ownParty.getDefendantFlags())
+            .extracting(BaseCaseFlag::getFlagComment, BaseCaseFlag::getVisibility)
+            .containsExactly(tuple("New support request", "External"));
+    }
+
+    @Test
+    void shouldAllowMergePartySupportFlagsWhenWithNoExistingFlagsWhenNotOwnParty() {
+        UUID partyId = UUID.randomUUID();
+        PartyEntity ownParty = PartyEntity.builder()
+            .id(partyId)
+            .defendantFlags(new ArrayList<>())
+            .build();
+
+        when(partySupportOwnershipResolver.isOwnedByUser(ownParty, USER_ID)).thenReturn(false);
 
         underTest.mergePartySupportFlags(
             List.of(createPartySupportListValue(partyId.toString(), supportRequest())),
