@@ -245,12 +245,83 @@ class GenAppsViewTest {
 
     }
 
+    @Test
+    void shouldNotDuplicateSubmissionDocumentOrSupportingDocumentsInGenAppSupportingDocuments() {
+        // Given
+        LocalDateTime genAppSubmittedDate = LocalDateTime.parse("2026-05-02T15:00:00");
+        GenAppEntity genAppEntity = createGenAppEntity(UUID.randomUUID(), genAppSubmittedDate);
+        when(pcsCaseEntity.getGenApps()).thenReturn(Set.of(genAppEntity));
+
+        DocumentEntity submissionDocument = mock(DocumentEntity.class);
+        stubDocumentReferences(
+            submissionDocument,
+            UUID.randomUUID(),
+            "http://dm-store/documents/submission",
+            "http://dm-store/documents/submission/binary"
+        );
+
+        DocumentEntity duplicateSubmissionDocument = mock(DocumentEntity.class);
+        stubDocumentReferences(
+            duplicateSubmissionDocument,
+            UUID.randomUUID(),
+            "http://dm-store/documents/submission",
+            "http://dm-store/documents/submission/binary"
+        );
+
+        DocumentEntity supportingDocument = mock(DocumentEntity.class);
+        UUID supportingDocumentId = UUID.randomUUID();
+        stubDocumentReferences(
+            supportingDocument,
+            supportingDocumentId,
+            "http://dm-store/documents/supporting",
+            "http://dm-store/documents/supporting/binary"
+        );
+
+        DocumentEntity duplicateSupportingDocument = mock(DocumentEntity.class);
+        stubDocumentReferences(
+            duplicateSupportingDocument,
+            UUID.randomUUID(),
+            "http://dm-store/documents/supporting",
+            "http://dm-store/documents/supporting/binary"
+        );
+
+        Document expectedSupportingDocument = mock(Document.class);
+        when(modelMapper.map(submissionDocument, Document.class)).thenReturn(mock(Document.class));
+        when(modelMapper.map(supportingDocument, Document.class)).thenReturn(expectedSupportingDocument);
+
+        genAppEntity.setSubmissionDocument(submissionDocument);
+        genAppEntity.setDocuments(List.of(
+            duplicateSubmissionDocument,
+            supportingDocument,
+            duplicateSupportingDocument
+        ));
+
+        // When
+        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+
+        // Then
+        List<ListValue<Document>> actualSupportingDocuments = pcsCase.getGenApps()
+            .getFirst()
+            .getValue()
+            .getSupportingDocuments();
+
+        assertThat(actualSupportingDocuments).hasSize(1);
+        assertThat(actualSupportingDocuments.getFirst().getId()).isEqualTo(supportingDocumentId.toString());
+        assertThat(actualSupportingDocuments.getFirst().getValue()).isEqualTo(expectedSupportingDocument);
+    }
+
     private Document stubDocument(DocumentEntity documentEntity, UUID pcsDocumentId) {
         when(documentEntity.getId()).thenReturn(pcsDocumentId);
 
         Document document = mock(Document.class);
         when(modelMapper.map(documentEntity, Document.class)).thenReturn(document);
         return document;
+    }
+
+    private void stubDocumentReferences(DocumentEntity documentEntity, UUID id, String url, String binaryUrl) {
+        when(documentEntity.getId()).thenReturn(id);
+        when(documentEntity.getUrl()).thenReturn(url);
+        when(documentEntity.getBinaryUrl()).thenReturn(binaryUrl);
     }
 
     private static PartyEntity createPartyEntityWithIdamId(UUID currentUserIdamId) {
