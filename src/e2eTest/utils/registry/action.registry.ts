@@ -23,7 +23,6 @@ import {CaseLinking } from '@utils/actions/custom-actions/commonComponent/caseLi
 import { LinkSolicitorAPIAction } from '@utils/actions/custom-actions/linkSolicitorAPI.action';
 import {DocumentsAction} from "@utils/actions/custom-actions";
 
-
 export class ActionRegistry {
   private static actions: Map<string, IAction> = new Map<string, IAction>([
     ['clickButton', new ClickButtonAction()],
@@ -34,6 +33,7 @@ export class ActionRegistry {
     ['inputText', new InputTextAction()],
     ['inputDate', new InputDateAction()],
     ['check', new CheckAction()],
+    ['uncheck', new CheckAction()],
     ['select', new SelectAction()],
     ['expandSummary', new ExpandSummaryAction()],
     ['createUserAndLogin', new LoginAction()],
@@ -165,6 +165,12 @@ export class ActionRegistry {
     ['requestRefund', new FeeAndPayAction()],
     ['approveRefund', new FeeAndPayAction()],
     ['rejectRefund', new FeeAndPayAction()],
+    ['noticeOfChange', new CreateCaseAction()],
+    ['clientDetails', new CreateCaseAction()],
+    ['checkAndSubmit', new CreateCaseAction()],
+    ['verifyChangeLink', new CreateCaseAction()],
+    ['validateErrorPage', new CreateCaseAction()],
+    ['noticeOfChangeSuccessful', new CreateCaseAction()],
     ['navigateToSummaryPage', new DocumentsAction()],
     ['uploadAdditionalDocumentsInfo', new DocumentsAction()],
     ['verifyDocumentRelatesToApplication', new DocumentsAction()],
