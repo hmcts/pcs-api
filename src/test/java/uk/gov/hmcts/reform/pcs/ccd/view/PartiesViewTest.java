@@ -130,11 +130,16 @@ class PartiesViewTest {
         when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
         when(userInfo.getRoles()).thenReturn(List.of("caseworker-pcs"));
 
-        PartyEntity claimant = buildParty(UUID.randomUUID(), "Alice", "A", null, null, null);
-        PartyEntity defendant1 = buildParty(UUID.randomUUID(), "Bob", "B", null, null, null);
-        PartyEntity defendant2 = buildParty(UUID.randomUUID(), "Carol", "C", null, null, null);
-        PartyEntity underlessee1 = buildParty(UUID.randomUUID(), "Dave", "D", null, null, null);
-        PartyEntity underlessee2 = buildParty(UUID.randomUUID(), "Eve", "E", null, null, null);
+        PartyEntity claimant =
+            buildParty(UUID.randomUUID(), "Alice", "A", null, null, null);
+        PartyEntity defendant1 =
+            buildParty(UUID.randomUUID(), "Bob", "B", null, null, null);
+        PartyEntity defendant2 =
+            buildParty(UUID.randomUUID(), "Carol", "C", null, null, null);
+        PartyEntity underlessee1 =
+            buildParty(UUID.randomUUID(), "Dave", "D", null, null, null);
+        PartyEntity underlessee2 =
+            buildParty(UUID.randomUUID(), "Eve", "E", null, null, null);
 
         when(claimEntity.getClaimParties()).thenReturn(List.of(
             buildClaimPartyEntity(claimant, PartyRole.CLAIMANT),
@@ -186,8 +191,10 @@ class PartiesViewTest {
                 .legalRepresentativeOrganisation(legalRepresentativeOrganisationEntity)
                 .active(YesOrNo.YES)
                 .build();
-        PartyEntity defendant = buildParty(UUID.randomUUID(), "Bob", "B", null, null, null);
-        defendant.setPartyLegalRepresentativeOrganisationList(List.of(claimPartyLegalRepresentativeOrganisationEntity));
+        PartyEntity defendant =
+            buildParty(UUID.randomUUID(), "Bob", "B", null, null, null);
+        defendant
+            .setClaimPartyLegalRepresentativeOrganisationList(List.of(claimPartyLegalRepresentativeOrganisationEntity));
         when(claimEntity.getClaimParties()).thenReturn(List.of(
             buildClaimPartyEntity(defendant, PartyRole.DEFENDANT)
         ));
@@ -227,8 +234,10 @@ class PartiesViewTest {
                 .legalRepresentativeOrganisation(legalRepresentativeOrganisationEntity)
                 .active(YesOrNo.NO)
                 .build();
-        PartyEntity defendant = buildParty(UUID.randomUUID(), "Bob", "B", null, null, null);
-        defendant.setPartyLegalRepresentativeOrganisationList(List.of(claimPartyLegalRepresentativeOrganisationEntity));
+        PartyEntity defendant =
+            buildParty(UUID.randomUUID(), "Bob", "B", null, null, null);
+        defendant
+            .setClaimPartyLegalRepresentativeOrganisationList(List.of(claimPartyLegalRepresentativeOrganisationEntity));
         when(claimEntity.getClaimParties()).thenReturn(List.of(
             buildClaimPartyEntity(defendant, PartyRole.DEFENDANT)
         ));
@@ -281,7 +290,7 @@ class PartiesViewTest {
                 .build();
 
         PartyEntity defendant = buildParty(UUID.randomUUID(), "Bob", "B", null, null, null);
-        defendant.setPartyLegalRepresentativeOrganisationList(
+        defendant.setClaimPartyLegalRepresentativeOrganisationList(
             List.of(claimPartyLegalRepresentativeOrganisationEntity, claimPartyLegalRepresentativeOrganisationEntity2)
         );
         when(claimEntity.getClaimParties()).thenReturn(List.of(
@@ -307,8 +316,10 @@ class PartiesViewTest {
         when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
         when(userInfo.getRoles()).thenReturn(List.of("caseworker-pcs"));
 
-        PartyEntity claimant = buildParty(UUID.randomUUID(), "Alice", "A", null, "alice@example.com", "07700000001");
-        PartyEntity defendant = buildParty(UUID.randomUUID(), "Bob", "B", null, "bob@example.com", "07700000002");
+        PartyEntity claimant =
+            buildParty(UUID.randomUUID(), "Alice", "A", null, "alice@example.com", "07700000001");
+        PartyEntity defendant =
+            buildParty(UUID.randomUUID(), "Bob", "B", null, "bob@example.com", "07700000002");
 
         when(claimEntity.getClaimParties()).thenReturn(List.of(
             buildClaimPartyEntity(claimant, PartyRole.CLAIMANT),
@@ -331,11 +342,16 @@ class PartiesViewTest {
         when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
         when(userInfo.getRoles()).thenReturn(List.of("caseworker-pcs"));
 
-        PartyEntity claimant = buildParty(UUID.randomUUID(), "Alice", "A", null, null, null);
-        PartyEntity defendant1 = buildParty(UUID.randomUUID(), "Bob", "B", null, null, null);
-        PartyEntity defendant2 = buildParty(UUID.randomUUID(), "Carol", "C", null, null, null);
-        PartyEntity underlessee1 = buildParty(UUID.randomUUID(), "Dave", "D", null, null, null);
-        PartyEntity underlessee2 = buildParty(UUID.randomUUID(), "Eve", "E", null, null, null);
+        PartyEntity claimant =
+            buildParty(UUID.randomUUID(), "Alice", "A", null, null, null);
+        PartyEntity defendant1 =
+            buildParty(UUID.randomUUID(), "Bob", "B", null, null, null);
+        PartyEntity defendant2 =
+            buildParty(UUID.randomUUID(), "Carol", "C", null, null, null);
+        PartyEntity underlessee1 =
+            buildParty(UUID.randomUUID(), "Dave", "D", null, null, null);
+        PartyEntity underlessee2 =
+            buildParty(UUID.randomUUID(), "Eve", "E", null, null, null);
 
         when(claimEntity.getClaimParties()).thenReturn(List.of(
             buildClaimPartyEntity(claimant, PartyRole.CLAIMANT),

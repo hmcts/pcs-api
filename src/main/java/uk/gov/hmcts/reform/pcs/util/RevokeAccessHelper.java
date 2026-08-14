@@ -45,9 +45,9 @@ public class RevokeAccessHelper {
         );
 
         partyLegalRepOrgRepository
-            .findByPartyIdAndLegalRepresentativeOrganisationIdAndActive(
+            .findByPartyIdAndLegalRepresentativeOrganisation_OrganisationIdAndActive(
                 defendantParty.getId(),
-                legalRepresentativeOrganisation.getId(),
+                legalRepresentativeOrganisation.getOrganisationId(),
                 YesOrNo.YES
             ).ifPresent(partyLegalRepOrg -> {
                 invalidatePartyLegalRepresentativeOrganisation(partyLegalRepOrg);

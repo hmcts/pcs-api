@@ -27,7 +27,7 @@ public interface LegalRepresentativeOrganisationRepository extends JpaRepository
     @Query("""
         SELECT lro
         FROM LegalRepresentativeOrganisationEntity lro
-        JOIN lro.partyLegalRepresentativeOrganisationList plro
+        JOIN lro.claimPartyLegalRepresentativeOrganisationList plro
         JOIN plro.party p
         JOIN p.pcsCase pcsCase
         WHERE p.id = :partyId

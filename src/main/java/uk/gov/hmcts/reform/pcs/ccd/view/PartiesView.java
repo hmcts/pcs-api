@@ -98,6 +98,7 @@ public class PartiesView {
 
     private Party toParty(PartyEntity entity) {
         return Party.builder()
+            .id(entity.getId().toString())
             .firstName(entity.getFirstName())
             .lastName(entity.getLastName())
             .orgName(entity.getOrgName())
@@ -115,6 +116,7 @@ public class PartiesView {
 
     private Party toPartialParty(PartyEntity entity) {
         return Party.builder()
+            .id(entity.getId().toString())
             .firstName(entity.getFirstName())
             .lastName(entity.getLastName())
             .orgName(entity.getOrgName())
@@ -127,11 +129,11 @@ public class PartiesView {
     }
 
     private LegalRepresentative buildLegalRepresentative(PartyEntity partyEntity) {
-        if (partyEntity == null || partyEntity.getPartyLegalRepresentativeOrganisationList() == null) {
+        if (partyEntity == null || partyEntity.getClaimPartyLegalRepresentativeOrganisationList() == null) {
             return null;
         }
 
-        return partyEntity.getPartyLegalRepresentativeOrganisationList().stream()
+        return partyEntity.getClaimPartyLegalRepresentativeOrganisationList().stream()
             .filter(legalRep -> legalRep != null && legalRep.getActive() == YesOrNo.YES)
             .map(ClaimPartyLegalRepresentativeOrganisationEntity::getLegalRepresentativeOrganisation)
             .filter(Objects::nonNull)

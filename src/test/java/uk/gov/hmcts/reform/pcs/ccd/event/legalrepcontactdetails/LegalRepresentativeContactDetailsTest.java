@@ -75,7 +75,6 @@ class LegalRepresentativeContactDetailsTest extends BaseEventTest {
         // then
         verify(legalRepresentativePageService).save(TEST_CASE_REFERENCE, legalRepresentativeDetails);
         assertThat(submitResponse.getConfirmationBody())
-            .contains("legal representative's information");
+            .contains("legal representative’s information");
     }
-
 }

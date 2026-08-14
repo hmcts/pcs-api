@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.util;
 
+import static java.util.Objects.requireNonNullElse;
 import static java.util.function.Function.identity;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.GroupAccessType.forProfileAndRole;
 
@@ -16,6 +17,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -27,7 +29,6 @@ import java.util.UUID;
 public final class CaseAccessGroupsUtil {
 
     public static final String CCD_ALL_CASES_ACCESS = "CCD:all-cases-access";
-    public static final String ORGANISATION_PROFILE = "ORGANISATION_PROFILE";
 
 
     private CaseAccessGroupsUtil() {
@@ -40,20 +41,22 @@ public final class CaseAccessGroupsUtil {
         Map<UUID, PartyEntity> partyEntitiesMap = partyEntities.stream()
             .collect(Collectors.toMap(PartyEntity::getId, identity()));
 
-        claimants.stream()
-            .map(ListValue::getValue)
-            .map(party -> partyEntitiesMap.get(UUID.fromString(party.getId())))
+        requireNonNullElse(claimants, List.<ListValue<Party>>of())
+            .stream()
+            .map(ListValue::getId)
+            .map(partyId -> partyEntitiesMap.get(UUID.fromString(partyId)))
+            .filter(Objects::nonNull)
             .map(partyEntity -> forProfileAndRole(
                 partyEntity.getOrganisationProfileId(), PartyRole.CLAIMANT, partyEntity.getOrganisationId())
             )
             .forEach(caseAccessGroupId ->
                          caseAccessGroups.add(new CaseAccessGroup(CCD_ALL_CASES_ACCESS, caseAccessGroupId)));
 
-        defendants.stream()
+        requireNonNullElse(defendants, List.<ListValue<Party>>of()).stream()
             .map(ListValue::getValue)
             .map(party -> partyEntitiesMap.get(UUID.fromString(party.getId())))
             .map(partyEntity ->
-                partyEntity.getPartyLegalRepresentativeOrganisationList()
+                partyEntity.getClaimPartyLegalRepresentativeOrganisationList()
                     .stream()
                     .filter(legalRepOrg -> YesOrNo.YES == legalRepOrg.getActive())
                     .findFirst())

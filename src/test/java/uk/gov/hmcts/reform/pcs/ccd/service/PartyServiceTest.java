@@ -47,6 +47,7 @@ import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mock.Strictness.LENIENT;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -454,6 +455,13 @@ class PartyServiceTest {
         @BeforeEach
         void setUp() {
             stubPlaceholderDefendant();
+            stubPartySave();
+        }
+
+        /** The service returns the persisted claimant, so the save has to echo its argument back. */
+        private void stubPartySave() {
+            lenient().when(partyRepository.save(any(PartyEntity.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
         }
 
         private void stubPlaceholderDefendant() {
@@ -1473,19 +1481,19 @@ class PartyServiceTest {
 
             assertThatThrownBy(() ->
                 underTest.initialiseClaimant(caseEntity, null, "SOLICITOR_PROFILE"))
-                .isInstanceOf(NullPointerException.class)
+                .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("Organisation must be provided");
 
             assertThat(caseEntity.getParties()).isEmpty();
         }
 
         @Test
-        void shouldRejectCaseCreationWithoutOrganisationProfileIds() {
+        void shouldRejectCaseCreationWithoutAnOrganisationProfileId() {
             PcsCaseEntity caseEntity = new PcsCaseEntity();
 
-            assertThatThrownBy(() -> underTest.initialiseClaimant(caseEntity, ORG_ID, ""))
+            assertThatThrownBy(() -> underTest.initialiseClaimant(caseEntity, ORG_ID, null))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("Organisation profile IDs must be provided");
+                .hasMessageContaining("Organisation profile ID must be provided");
 
             assertThat(caseEntity.getParties()).isEmpty();
         }

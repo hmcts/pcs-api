@@ -32,7 +32,7 @@ public class LegalRepForDefendantAccessValidator {
     ) {
         List<PartyEntity> linkedDefendants =  defendants
             .stream()
-            .filter(party -> party.getPartyLegalRepresentativeOrganisationList()
+            .filter(party -> party.getClaimPartyLegalRepresentativeOrganisationList()
                 .stream()
                 .anyMatch(partyLegalRepresentativeOrganisation ->
                               partyLegalRepresentativeOrganisation.getActive().equals(YesOrNo.YES)

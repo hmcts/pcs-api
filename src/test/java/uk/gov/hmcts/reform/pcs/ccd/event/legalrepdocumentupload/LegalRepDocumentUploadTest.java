@@ -15,7 +15,7 @@ import uk.gov.hmcts.reform.pcs.ccd.event.BaseEventTest;
 import uk.gov.hmcts.reform.pcs.ccd.page.legalrepdocumentupload.LegalRepDocumentUploadConfigurer;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
-import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType;
@@ -40,9 +40,6 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
 
     @Mock
     private GenAppVisibilityService genAppVisibilityService;
-
-    @Mock
-    private SecurityContextService securityContextService;
 
     @InjectMocks
     private LegalRepDocumentUpload legalRepDocumentUpload;

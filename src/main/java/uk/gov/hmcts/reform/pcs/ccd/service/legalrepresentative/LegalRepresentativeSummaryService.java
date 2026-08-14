@@ -80,7 +80,7 @@ public class LegalRepresentativeSummaryService {
                                                                                                      String orgId) {
         List<PartyEntity> defendants = defendantPartyExtractor.summaryScreenSafeExtractDefendants(pcsCaseEntity);
         return defendants.stream()
-            .flatMap(partyEntity -> partyEntity.getPartyLegalRepresentativeOrganisationList().stream())
+            .flatMap(partyEntity -> partyEntity.getClaimPartyLegalRepresentativeOrganisationList().stream())
             .filter(claimPartyLegalRepresentative ->
                         claimPartyLegalRepresentative.getLegalRepresentativeOrganisation()
                             .getOrganisationId().equals(

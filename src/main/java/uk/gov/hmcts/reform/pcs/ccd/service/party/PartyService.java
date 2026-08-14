@@ -31,6 +31,7 @@ import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 
 import static java.util.Objects.nonNull;
 import static java.util.Objects.requireNonNull;
+import static java.util.Objects.requireNonNullElseGet;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 @Service
@@ -157,8 +158,12 @@ public class PartyService {
      */
     public void initialiseClaimant(PcsCaseEntity pcsCaseEntity, String organisationId,
                                    String organisationProfileId) {
-        requireNonNull(organisationId, "Organisation must be provided to create a case");
-        requireNonNull(organisationProfileId, "Organisation profile ID must be provided to create a case");
+        requireNonNullElseGet(organisationId, () -> {
+            throw new IllegalArgumentException("Organisation must be provided to create a case");
+        });
+        requireNonNullElseGet(organisationProfileId, () -> {
+            throw new IllegalArgumentException("Organisation profile ID must be provided to create a case");
+        });
         PartyEntity claimantParty = new PartyEntity();
         claimantParty.setOrganisationId(organisationId);
         claimantParty.setOrganisationProfileId(organisationProfileId);

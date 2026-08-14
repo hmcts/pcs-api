@@ -1,8 +1,6 @@
 package uk.gov.hmcts.reform.pcs.service;
 
 
-import static java.lang.Integer.parseInt;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -142,12 +140,12 @@ public class LegalRepresentativePartyLinkService {
 
     private void unlinkExistingRepresentation(UUID partyId, String organisationId) {
         claimPartyLegalRepOrgRepository
-            .findByPartyIdAndLegalRepresentativeOrganisationIdAndActive(partyId, parseInt(organisationId), YesOrNo.YES)
+            .findByPartyIdAndLegalRepresentativeOrganisation_OrganisationIdAndActive(
+                partyId, organisationId, YesOrNo.YES)
             .ifPresent(partyLegalRepOrg -> {
                 invalidatePartyLegalRepOrg(partyLegalRepOrg);
                 claimPartyLegalRepOrgRepository.save(partyLegalRepOrg);
             });
-
     }
 
     private void invalidatePartyLegalRepOrg(ClaimPartyLegalRepresentativeOrganisationEntity partyLegalRepOrg) {
