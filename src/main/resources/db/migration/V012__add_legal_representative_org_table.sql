@@ -2,7 +2,9 @@ create table legal_representative_organisation (
   id integer NOT NULL GENERATED ALWAYS AS IDENTITY,
   organisation_id VARCHAR(64) NOT NULL,
   organisation_profile_id VARCHAR(64) NOT NULL,
-  organisation_name VARCHAR(120)
+  organisation_name VARCHAR(120),
+  created_date TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+  last_modified_date TIMESTAMP WITHOUT TIME ZONE
 );
 
 create table claim_party_legal_representative_org (
@@ -22,7 +24,7 @@ create table legal_rep_org_contact_details (
   phone_number VARCHAR(40),
   contact_reference VARCHAR(80),
   address_id INTEGER,
-  confirmed_contact_details YES_NO
+  contact_details_correct_confirmation YES_NO
 );
 
 ALTER TABLE ONLY public.legal_representative_organisation
