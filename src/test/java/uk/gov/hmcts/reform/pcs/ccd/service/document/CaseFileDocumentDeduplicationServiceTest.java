@@ -154,7 +154,7 @@ class CaseFileDocumentDeduplicationServiceTest {
         ListValue<Document> genAppSupportingDocument = ListValue.<Document>builder()
             .id("gen-app-supporting-document-id")
             .value(Document.builder()
-                       .filename("genApps GA1 - Defendant 1.docx")
+                       .filename(" GENAPPS GA1 - DEFENDANT 1.DOCX ")
                        .build())
             .build();
 

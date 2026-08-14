@@ -310,6 +310,49 @@ class GenAppsViewTest {
         assertThat(actualSupportingDocuments.getFirst().getValue()).isEqualTo(expectedSupportingDocument);
     }
 
+    @Test
+    void shouldNotDuplicateSupportingDocumentsWithSameFilenameInGenAppSupportingDocuments() {
+        // Given
+        LocalDateTime genAppSubmittedDate = LocalDateTime.parse("2026-05-02T15:00:00");
+        GenAppEntity genAppEntity = createGenAppEntity(UUID.randomUUID(), genAppSubmittedDate);
+        when(pcsCaseEntity.getGenApps()).thenReturn(Set.of(genAppEntity));
+
+        DocumentEntity supportingDocument = mock(DocumentEntity.class);
+        UUID supportingDocumentId = UUID.randomUUID();
+        stubDocumentReferences(
+            supportingDocument,
+            supportingDocumentId,
+            "http://dm-store/documents/supporting",
+            "http://dm-store/documents/supporting/binary"
+        );
+        when(supportingDocument.getFileName()).thenReturn("genApps GA1 - Defendant 1.docx");
+
+        DocumentEntity duplicateSupportingDocument = mock(DocumentEntity.class);
+        stubDocumentReferences(
+            duplicateSupportingDocument,
+            UUID.randomUUID(),
+            "http://dm-store/documents/duplicate-supporting",
+            "http://dm-store/documents/duplicate-supporting/binary"
+        );
+        when(duplicateSupportingDocument.getFileName()).thenReturn(" GENAPPS GA1 - DEFENDANT 1.DOCX ");
+
+        genAppEntity.setDocuments(List.of(supportingDocument, duplicateSupportingDocument));
+
+        // When
+        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+
+        // Then
+        List<ListValue<Document>> actualSupportingDocuments = pcsCase.getGenApps()
+            .getFirst()
+            .getValue()
+            .getSupportingDocuments();
+
+        assertThat(actualSupportingDocuments).hasSize(1);
+        assertThat(actualSupportingDocuments.getFirst().getId()).isEqualTo(supportingDocumentId.toString());
+        assertThat(actualSupportingDocuments.getFirst().getValue().getFilename())
+            .isEqualTo("genApps GA1 - Defendant 1.docx");
+    }
+
     private Document stubDocument(DocumentEntity documentEntity, UUID pcsDocumentId) {
         when(documentEntity.getId()).thenReturn(pcsDocumentId);
 

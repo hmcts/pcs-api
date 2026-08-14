@@ -20,6 +20,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.wales.WalesDocuments;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -268,7 +269,12 @@ public class CaseFileDocumentDeduplicationService {
             return Stream.empty();
         }
 
-        return Stream.of(FILENAME_REFERENCE_PREFIX + document.getFilename());
+        String filename = document.getFilename().trim();
+        if (filename.isEmpty()) {
+            return Stream.empty();
+        }
+
+        return Stream.of(FILENAME_REFERENCE_PREFIX + filename.toLowerCase(Locale.ROOT));
     }
 
     private void addDocumentReference(String documentReference, Set<String> documentReferences) {
