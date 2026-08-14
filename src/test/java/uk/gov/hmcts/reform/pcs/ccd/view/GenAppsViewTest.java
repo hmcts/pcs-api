@@ -287,6 +287,8 @@ class GenAppsViewTest {
         GenAppDocument expectedSupportingDocument = GenAppDocument.builder()
             .id(supportingDocumentId.toString())
             .filename("supporting.docx")
+            .url("http://dm-store/documents/supporting")
+            .binaryUrl("http://dm-store/documents/supporting/binary")
             .build();
         when(supportingDocument.getFileName()).thenReturn(expectedSupportingDocument.getFilename());
 

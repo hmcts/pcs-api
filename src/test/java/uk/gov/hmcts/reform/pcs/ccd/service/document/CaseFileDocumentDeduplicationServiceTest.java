@@ -123,6 +123,8 @@ class CaseFileDocumentDeduplicationServiceTest {
                                            .submissionDocument(GenAppDocument.builder()
                                                                    .id("submission-document-id")
                                                                    .filename(submissionDocument.getFilename())
+                                                                   .url(submissionDocument.getUrl())
+                                                                   .binaryUrl(submissionDocument.getBinaryUrl())
                                                                    .build())
                                            .supportingDocuments(List.of(ListValue.<GenAppDocument>builder()
                                                                            .id("supporting-document-id")
@@ -131,6 +133,11 @@ class CaseFileDocumentDeduplicationServiceTest {
                                                                                       .filename(
                                                                                           supportingDocument
                                                                                               .getFilename()
+                                                                                      )
+                                                                                      .url(supportingDocument.getUrl())
+                                                                                      .binaryUrl(
+                                                                                          supportingDocument
+                                                                                              .getBinaryUrl()
                                                                                       )
                                                                                       .build())
                                                                            .build()))
@@ -301,6 +308,8 @@ class CaseFileDocumentDeduplicationServiceTest {
             .value(GenAppDocument.builder()
                        .id(document.getId())
                        .filename(document.getValue().getFilename())
+                       .url(document.getValue().getUrl())
+                       .binaryUrl(document.getValue().getBinaryUrl())
                        .build())
             .build();
     }
