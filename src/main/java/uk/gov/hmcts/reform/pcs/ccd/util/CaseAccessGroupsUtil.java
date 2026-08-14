@@ -62,7 +62,7 @@ public final class CaseAccessGroupsUtil {
         if (!party.hasOrganisation()) {
             return Optional.empty();
         }
-        if (isClaimantCreatedWithTheCase(party)) {
+        if (claimPartiesNotCreatedYet(party)) {
             return Optional.of(PartyRole.CLAIMANT);
         }
         return party.getClaimParties().stream()
@@ -71,8 +71,12 @@ public final class CaseAccessGroupsUtil {
             .findFirst();
     }
 
-    /** createClaimantStub is the only thing that makes a party before a claim exists to hold its role. */
-    private static boolean isClaimantCreatedWithTheCase(PartyEntity party) {
+    /**
+     * Claim parties are only created when the claim is submitted, so before that there is no role to
+     * read. createClaimantStub is the only thing that makes a party that early, so one without claim
+     * parties is the claimant the case was created for.
+     */
+    private static boolean claimPartiesNotCreatedYet(PartyEntity party) {
         return party.getClaimParties().isEmpty();
     }
 
