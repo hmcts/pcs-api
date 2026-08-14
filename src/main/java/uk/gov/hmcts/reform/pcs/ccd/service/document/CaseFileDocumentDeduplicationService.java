@@ -26,6 +26,8 @@ import java.util.stream.Stream;
 @Service
 public class CaseFileDocumentDeduplicationService {
 
+    private static final String FILENAME_REFERENCE_PREFIX = "filename:";
+
     public void removeDocumentsAlreadyPresentInOtherCaseFields(PCSCase pcsCase) {
         List<ListValue<Document>> allDocuments = pcsCase.getAllDocuments();
 
@@ -36,7 +38,7 @@ public class CaseFileDocumentDeduplicationService {
         Set<String> documentReferencesInOtherFields = findDocumentReferencesOutsideAllDocuments(pcsCase);
 
         pcsCase.setAllDocuments(allDocuments.stream()
-                                    .filter(document -> documentReferences(document)
+                                    .filter(document -> allDocumentReferences(document)
                                         .noneMatch(documentReferencesInOtherFields::contains))
                                     .toList());
     }
@@ -179,15 +181,30 @@ public class CaseFileDocumentDeduplicationService {
             return;
         }
 
-        addDocumentReferenceFromDocumentWithId(genApp.getSubmissionDocument(), documentReferences);
-        addDocumentReferences(genApp.getSupportingDocuments(), documentReferences);
+        addGenAppDocumentReferenceFromDocumentWithId(genApp.getSubmissionDocument(), documentReferences);
+        addGenAppDocumentReferences(genApp.getSupportingDocuments(), documentReferences);
     }
 
-    private void addDocumentReferenceFromDocumentWithId(DocumentWithId document, Set<String> documentReferences) {
+    private void addGenAppDocumentReferenceFromDocumentWithId(DocumentWithId document,
+                                                             Set<String> documentReferences) {
         if (document != null) {
             addDocumentReference(document.getId(), documentReferences);
             addDocumentReferences(document.getDocument(), documentReferences);
+            addFilenameReference(document.getDocument(), documentReferences);
         }
+    }
+
+    private void addGenAppDocumentReferences(List<ListValue<Document>> documents, Set<String> documentReferences) {
+        if (documents == null) {
+            return;
+        }
+
+        documents.stream()
+            .forEach(document -> {
+                documentReferences(document)
+                    .forEach(reference -> addDocumentReference(reference, documentReferences));
+                addFilenameReference(document, documentReferences);
+            });
     }
 
     private void addDocumentReferences(List<ListValue<Document>> documents, Set<String> documentReferences) {
@@ -222,6 +239,36 @@ public class CaseFileDocumentDeduplicationService {
         }
 
         return Stream.of(document.getUrl(), document.getBinaryUrl());
+    }
+
+    private Stream<String> allDocumentReferences(ListValue<Document> document) {
+        if (document == null) {
+            return Stream.empty();
+        }
+
+        return Stream.concat(
+            documentReferences(document),
+            filenameReference(document.getValue())
+        );
+    }
+
+    private void addFilenameReference(ListValue<Document> document, Set<String> documentReferences) {
+        if (document != null) {
+            addFilenameReference(document.getValue(), documentReferences);
+        }
+    }
+
+    private void addFilenameReference(Document document, Set<String> documentReferences) {
+        filenameReference(document)
+            .forEach(reference -> addDocumentReference(reference, documentReferences));
+    }
+
+    private Stream<String> filenameReference(Document document) {
+        if (document == null || document.getFilename() == null) {
+            return Stream.empty();
+        }
+
+        return Stream.of(FILENAME_REFERENCE_PREFIX + document.getFilename());
     }
 
     private void addDocumentReference(String documentReference, Set<String> documentReferences) {

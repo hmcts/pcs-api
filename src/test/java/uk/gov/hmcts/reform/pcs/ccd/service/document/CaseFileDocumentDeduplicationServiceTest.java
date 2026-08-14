@@ -109,7 +109,7 @@ class CaseFileDocumentDeduplicationServiceTest {
             .build();
         ListValue<Document> sameFilenameDifferentDocument = documentListValue(
             "other-supporting-document-id",
-            "genApps GA1 - Defendant 1.docx"
+            "other-genApps.docx"
         );
 
         PCSCase pcsCase = PCSCase.builder()
@@ -137,6 +137,41 @@ class CaseFileDocumentDeduplicationServiceTest {
 
         // Then
         assertThat(pcsCase.getAllDocuments()).containsExactly(sameFilenameDifferentDocument);
+    }
+
+    @Test
+    void shouldRemoveGenAppDocumentFromAllDocumentsWhenOnlyGenAppFilenameMatches() {
+        // Given
+        ListValue<Document> allDocumentsSupportingDocument = ListValue.<Document>builder()
+            .id("all-documents-supporting-document-id")
+            .value(Document.builder()
+                       .filename("genApps GA1 - Defendant 1.docx")
+                       .url("http://dm-store/documents/supporting")
+                       .binaryUrl("http://dm-store/documents/supporting/binary")
+                       .build())
+            .build();
+        ListValue<Document> otherDocument = documentListValue("other-document-id", "other.pdf");
+        ListValue<Document> genAppSupportingDocument = ListValue.<Document>builder()
+            .id("gen-app-supporting-document-id")
+            .value(Document.builder()
+                       .filename("genApps GA1 - Defendant 1.docx")
+                       .build())
+            .build();
+
+        PCSCase pcsCase = PCSCase.builder()
+            .allDocuments(List.of(allDocumentsSupportingDocument, otherDocument))
+            .genApps(List.of(ListValue.<GeneralApplication>builder()
+                                .value(GeneralApplication.builder()
+                                           .supportingDocuments(List.of(genAppSupportingDocument))
+                                           .build())
+                                .build()))
+            .build();
+
+        // When
+        underTest.removeDocumentsAlreadyPresentInOtherCaseFields(pcsCase);
+
+        // Then
+        assertThat(pcsCase.getAllDocuments()).containsExactly(otherDocument);
     }
 
     @Test
