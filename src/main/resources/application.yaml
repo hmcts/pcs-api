@@ -350,3 +350,6 @@ ccd:
   decentralised-runtime:
     noc:
       enabled: true
+
+frontend:
+  url: ${PCS_FRONTEND_URL:http://localhost:3209}
