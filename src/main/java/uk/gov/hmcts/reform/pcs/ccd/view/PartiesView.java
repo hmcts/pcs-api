@@ -98,7 +98,6 @@ public class PartiesView {
 
     private Party toParty(PartyEntity entity) {
         return Party.builder()
-            .id(entity.getId().toString())
             .firstName(entity.getFirstName())
             .lastName(entity.getLastName())
             .orgName(entity.getOrgName())
@@ -116,7 +115,6 @@ public class PartiesView {
 
     private Party toPartialParty(PartyEntity entity) {
         return Party.builder()
-            .id(entity.getId().toString())
             .firstName(entity.getFirstName())
             .lastName(entity.getLastName())
             .orgName(entity.getOrgName())
