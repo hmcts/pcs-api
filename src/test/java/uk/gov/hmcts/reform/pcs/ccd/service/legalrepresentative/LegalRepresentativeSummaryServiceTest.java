@@ -193,11 +193,10 @@ class LegalRepresentativeSummaryServiceTest {
         LegalRepresentativeOrganisationEntity legalRepresentativeOrg =
             LegalRepresentativeOrganisationEntity.builder()
                 .organisationId(organisationId)
-                .hasAmendedContactDetails(YesOrNo.YES)
                 .build();
         List<PartyEntity> parties = List.of(PartyEntity.builder()
                                                 .partyLegalRepresentativeOrganisationList(List.of(
-                                                    PartyLegalRepresentativeOrganisationEntity.builder()
+                                                    ClaimPartyLegalRepresentativeOrganisationEntity.builder()
                                                         .active(YesOrNo.YES)
                                                         .legalRepresentativeOrganisation(legalRepresentativeOrg)
                                                         .build()))
