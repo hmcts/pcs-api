@@ -2,6 +2,7 @@ export * from '@data/page-data-figma/claimantType.page.data';
 export * from '@data/page-data-figma/claimType.page.data';
 export * from '@data/page-data-figma/claimantInformation.page.data';
 export * from '@data/page-data-figma/contactPreferences.page.data';
+export * from '@data/page-data-figma/contactDetailsLR.page.data';
 export * from '@data/page-data-figma/defendantDetails.page.data';
 export * from '@data/page-data-figma/tenancyLicenceDetails.page.data';
 export * from '@data/page-data-figma/groundsForPossession.page.data';

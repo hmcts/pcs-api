@@ -22,6 +22,7 @@ import {CaseFlagAction } from '@utils/actions/custom-actions/commonComponent/cas
 import {CaseLinking } from '@utils/actions/custom-actions/commonComponent/caseLinking.action';
 import { LinkSolicitorAPIAction } from '@utils/actions/custom-actions/linkSolicitorAPI.action';
 import {DocumentsAction} from "@utils/actions/custom-actions";
+import { RespondToAClaimAction } from '@utils/actions/custom-actions/custom-actions-respondToAClaimLR/respondToAClaim.action';
 
 
 export class ActionRegistry {
@@ -134,6 +135,7 @@ export class ActionRegistry {
     ['validateCaseFileViewIndividualFolder', new CreateCaseAction()],
     ['validateCaseListTable', new CreateCaseAction()],
     ['validateTabAccess', new CreateCaseAction()],
+    ['selectRespondToClaimContactPreferences', new RespondToAClaimAction()],
     ['selectPaymentTypePBA', new FeeAndPayAction()],
     ['selectPaymentByCard', new FeeAndPayAction()],
     ['enterPaymentDetails', new FeeAndPayAction()],

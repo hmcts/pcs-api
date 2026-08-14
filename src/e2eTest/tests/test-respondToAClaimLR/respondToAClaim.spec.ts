@@ -8,7 +8,8 @@ import { VERY_LONG_TIMEOUT } from '../../playwright.config';
 import { caseSummary, home } from '@data/page-data';
 import { caseInfo } from '@utils/actions/custom-actions';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
-import { startTheService } from '@data/page-data-figma';
+import {contactDetailsLR} from '@data/page-data-figma';
+import {startNow} from "@data/page-data-figma/page-data-legalRepresentative/startNow.page.data";
 test.beforeEach(async ({ page, context }) => {
   await context.clearCookies();
   initializeExecutor(page);
@@ -18,6 +19,7 @@ test.beforeEach(async ({ page, context }) => {
   }
   await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
   await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayload });
+  await performAction('updatePaymentAPI');
   await performAction('getCaseAPI', 'Link Solicitor');
 
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
@@ -43,9 +45,32 @@ test.afterEach(async () => {
 });
 
 test.describe('XUI - Respond to a claim - e2e Journey @nightly', () => {
-  test('Trigger respond event', async () => {
+  test('Trigger respond event @regression', async () => {
+    await performAction('select', caseSummary.nextStepEventList, 'Amend representative\'s details');
+    await performAction('clickButton', caseSummary.go);
+    await performAction('selectRespondToClaimContactPreferences', {
+      representativeReference: contactDetailsLR.defendantLegalRepresentativeReferenceTextInput,
+      notifications: contactDetailsLR.yesRadioOption,
+      correspondenceAddress: contactDetailsLR.noRadioOption,
+      phoneNumber: contactDetailsLR.noRadioOption
+    });
+    await performAction('clickButton', 'Close and Return to case details');
     await performAction('select', caseSummary.nextStepEventList, 'Respond to claim');
     await performAction('clickButton', caseSummary.go);
-    await performValidation('mainHeader', startTheService.mainHeader);
+    await performValidation('mainHeader', startNow.mainHeader);
+  });
+
+  test('Update LR Details @regression', async () => {
+    await performAction('select', caseSummary.nextStepEventList, 'Amend representative\'s details');
+    await performAction('clickButton', caseSummary.go);
+    await performAction('selectRespondToClaimContactPreferences', {
+      representativeReference: contactDetailsLR.defendantLegalRepresentativeReferenceTextInput,
+      notifications: contactDetailsLR.yesRadioOption,
+      correspondenceAddress: contactDetailsLR.yesRadioOption,
+      phoneNumber: contactDetailsLR.yesRadioOption
+    });
+    await performAction('clickButton', 'Close and Return to case details');
+    performValidation('mainHeader', home.caseParties);
+    await performValidation('bannerAlert', 'Case #.* has been updated with event: Amend representative\'s details');
   });
 });
