@@ -11,7 +11,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.LegalRepresentativeOrganisationRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.OrganisationRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.DashboardContext;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
@@ -33,10 +33,10 @@ class ApplicationsTaskGroupEvaluatorTest {
 
     private final SecurityContextService securityContextService = mock(SecurityContextService.class);
     private final OrganisationService organisationService = mock(OrganisationService.class);
-    private final LegalRepresentativeOrganisationRepository legalRepresentativeOrganisationRepository =
-        mock(LegalRepresentativeOrganisationRepository.class);
+    private final OrganisationRepository organisationRepository =
+        mock(OrganisationRepository.class);
     private final GenAppVisibilityService genAppVisibilityService =
-        new GenAppVisibilityService(legalRepresentativeOrganisationRepository);
+        new GenAppVisibilityService(organisationRepository);
     private final ApplicationsTaskGroupEvaluator underTest =
         new ApplicationsTaskGroupEvaluator(organisationService, genAppVisibilityService);
 

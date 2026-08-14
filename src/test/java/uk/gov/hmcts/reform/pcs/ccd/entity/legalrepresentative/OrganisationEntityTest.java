@@ -10,13 +10,13 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class LegalRepresentativeOrganisationEntityTest {
+class OrganisationEntityTest {
 
-    private LegalRepresentativeOrganisationEntity underTest;
+    private OrganisationEntity underTest;
 
     @BeforeEach
     void setUp() {
-        underTest = new LegalRepresentativeOrganisationEntity();
+        underTest = new OrganisationEntity();
     }
 
     @Test
@@ -33,10 +33,10 @@ class LegalRepresentativeOrganisationEntityTest {
         underTest.addParty(party);
 
         // verify
-        assertThat(underTest.getClaimPartyLegalRepresentativeOrganisationList().size()).isEqualTo(1);
+        assertThat(underTest.getClaimPartyOrganisationList().size()).isEqualTo(1);
 
-        ClaimPartyLegalRepresentativeOrganisationEntity partyLegalRepresentativeOrganisation =
-            underTest.getClaimPartyLegalRepresentativeOrganisationList().getFirst();
+        ClaimPartyOrganisationEntity partyLegalRepresentativeOrganisation =
+            underTest.getClaimPartyOrganisationList().getFirst();
 
         assertThat(partyLegalRepresentativeOrganisation.getParty().getId()).isEqualTo(partyId);
     }
@@ -60,43 +60,43 @@ class LegalRepresentativeOrganisationEntityTest {
         underTest.addParty(party2);
 
         // verify
-        assertThat(underTest.getClaimPartyLegalRepresentativeOrganisationList().size()).isEqualTo(2);
+        assertThat(underTest.getClaimPartyOrganisationList().size()).isEqualTo(2);
 
-        ClaimPartyLegalRepresentativeOrganisationEntity partyLegalRepresentativeOrganisation =
-            underTest.getClaimPartyLegalRepresentativeOrganisationList().getFirst();
+        ClaimPartyOrganisationEntity partyLegalRepresentativeOrganisation =
+            underTest.getClaimPartyOrganisationList().getFirst();
 
         assertThat(partyLegalRepresentativeOrganisation.getParty().getId()).isEqualTo(partyId);
 
 
-        ClaimPartyLegalRepresentativeOrganisationEntity partyLegalRepresentativeOrganisation2 =
-            underTest.getClaimPartyLegalRepresentativeOrganisationList().get(1);
+        ClaimPartyOrganisationEntity partyLegalRepresentativeOrganisation2 =
+            underTest.getClaimPartyOrganisationList().get(1);
 
         assertThat(partyLegalRepresentativeOrganisation2.getParty().getId()).isEqualTo(partyId2);
-        assertThat(partyLegalRepresentativeOrganisation2.getLegalRepresentativeOrganisation()).isEqualTo(underTest);
+        assertThat(partyLegalRepresentativeOrganisation2.getOrganisation()).isEqualTo(underTest);
         assertThat(partyLegalRepresentativeOrganisation2.getActive()).isEqualTo(YesOrNo.YES);
     }
 
     @Test
     void addLegalRepresentativeOrganisationContactDetails_WithContactDetails_SetsReference() {
         // given
-        LegalRepresentativeOrganisationContactDetailsEntity contactDetails =
-            new LegalRepresentativeOrganisationContactDetailsEntity();
+        ClaimPartyContactDetailsEntity contactDetails =
+            new ClaimPartyContactDetailsEntity();
 
         // when
-        underTest.addLegalRepresentativeOrganisationContactDetails(contactDetails);
+        underTest.addClaimPartyContactDetails(contactDetails);
 
         // then
-        assertThat(contactDetails.getLegalRepresentativeOrganisation()).isEqualTo(underTest);
-        assertThat(underTest.getLegalRepresentativeOrganisationContactDetails().getFirst()).isEqualTo(contactDetails);
+        assertThat(contactDetails.getOrganisation()).isEqualTo(underTest);
+        assertThat(underTest.getClaimPartyContactDetails().getFirst()).isEqualTo(contactDetails);
     }
 
     @Test
     void addLegalRepresentativeOrganisationContactDetails_WithNullContactDetails_DoesNotSetReference() {
         // when
-        underTest.addLegalRepresentativeOrganisationContactDetails(null);
+        underTest.addClaimPartyContactDetails(null);
 
         // then
-        assertTrue(underTest.getLegalRepresentativeOrganisationContactDetails().isEmpty());
+        assertTrue(underTest.getClaimPartyContactDetails().isEmpty());
     }
 
 }

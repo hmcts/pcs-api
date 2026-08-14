@@ -6,9 +6,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.DynamicList;
 import uk.gov.hmcts.ccd.sdk.type.DynamicListElement;
-import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyLegalRepresentativeOrganisationEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyOrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.LegalRepresentativeOrganisationRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.OrganisationRepository;
 
 import java.util.List;
 import java.util.Optional;
@@ -18,7 +18,7 @@ import java.util.Optional;
 @Slf4j
 public class LegalRepresentativeService {
 
-    private final LegalRepresentativeOrganisationRepository legalRepresentativeOrganisationRepository;
+    private final OrganisationRepository organisationRepository;
 
     /**
      * Gets a {@link uk.gov.hmcts.ccd.sdk.type.DynamicList} with the entity IDs
@@ -30,14 +30,14 @@ public class LegalRepresentativeService {
      *     correspond to a known legal rep in the PCS database
      */
     public Optional<DynamicList> getRepresentedPartiesDynamicList(String legalRepOrgId, long caseReference) {
-        return legalRepresentativeOrganisationRepository.findByOrganisationIdAndCaseReference(legalRepOrgId,
+        return organisationRepository.findByOrganisationIdAndCaseReference(legalRepOrgId,
                                                                                               caseReference)
             .map(
                 legalRepresentativeOrganisationEntity -> {
                     List<PartyEntity> partyEntities = legalRepresentativeOrganisationEntity
-                        .getClaimPartyLegalRepresentativeOrganisationList()
+                        .getClaimPartyOrganisationList()
                         .stream()
-                        .map(ClaimPartyLegalRepresentativeOrganisationEntity::getParty)
+                        .map(ClaimPartyOrganisationEntity::getParty)
                         .toList();
                     return createPartyNamesDynamicList(partyEntities);
                 }
