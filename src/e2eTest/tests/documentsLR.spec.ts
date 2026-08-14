@@ -14,6 +14,8 @@ import {makeAnApplicationApiData} from "@data/api-data";
 import {initializeCMExecutor} from "@utils/controller-caseManagement";
 import {getCaseTypeId} from "@utils/common/caseType.utils";
 import {VERY_LONG_TIMEOUT} from "../playwright.config";
+import {CYA} from "@data/page-data-figma/page-data-legalRepresentative/CYA.page.data";
+
 
 
 test.use({ storageState: undefined })
@@ -79,6 +81,11 @@ test.describe('Legal Representative - Upload Documents- e2e Journey @nightly', a
       count: defendantUserDetails.length,
     });
     await performValidation('mainHeader', uploadYourDocuments.mainHeader);
+    await performAction('uploadFiles', {
+      documents: [
+        {type: uploadYourDocuments.rentStatementDropDownInput, fileName: 'rentStatement.pdf', description: uploadYourDocuments.rentStatementDropDownInput},
+      ]
+    });
   });
 
   test('Upload documents when GenApps submitted - With Out Notice  @smoke @regression', async ({page}) => {
@@ -92,7 +99,12 @@ test.describe('Legal Representative - Upload Documents- e2e Journey @nightly', a
       count: defendantUserDetails.length,
     });
     await performValidation('mainHeader', uploadYourDocuments.mainHeader);
-    await performAction('clickLink', uploadYourDocuments.signOutLink);
+    await performAction('uploadFiles', {
+      documents: [
+        {type: uploadYourDocuments.witnessStatementDropDownInput, fileName: 'witnessStatement.pdf', description: uploadYourDocuments.witnessStatementDropDownInput},
+      ]
+    });
+    await performAction('clickLink', CYA.signOutLink);
     await page.context().clearCookies();
     await page.evaluate(() => {
       localStorage.clear();
@@ -121,5 +133,18 @@ test.describe('Legal Representative - Upload Documents- e2e Journey @nightly', a
     await performAction('clickButton', caseSummary.go);
     await performAction('uploadAdditionalDocumentsInfo');
     await performValidation('mainHeader', uploadYourDocuments.mainHeader);
+    await performAction('uploadFiles', {
+      documents: [
+        {type: uploadYourDocuments.witnessStatementDropDownInput, fileName: 'witnessStatement.pdf', description: uploadYourDocuments.witnessStatementDropDownInput},
+        {type: uploadYourDocuments.rentStatementDropDownInput, fileName: 'rentStatement.pdf', description: uploadYourDocuments.rentStatementDropDownInput},
+        {type: uploadYourDocuments.tenancyAgreementDropDownInput, fileName: 'tenancy.pdf', description: uploadYourDocuments.tenancyAgreementDropDownInput},
+        {type: uploadYourDocuments.correspondenceFromClaimantDropDownInput, fileName: 'correspondenceFromClaimant.pdf', description: uploadYourDocuments.correspondenceFromClaimantDropDownInput},
+        {type: uploadYourDocuments.correspondenceFromDefendantDropDownInput, fileName: 'correspondenceFromDefendant.pdf', description: uploadYourDocuments.correspondenceFromDefendantDropDownInput},
+        {type: uploadYourDocuments.photographicEvidenceDropDownInput, fileName: 'photographicEvidence.pdf', description: uploadYourDocuments.photographicEvidenceDropDownInput},
+        {type: uploadYourDocuments.certificateOfSuitabilityDropDownInput, fileName: 'certificateOfSuitability.pdf', description: uploadYourDocuments.certificateOfSuitabilityDropDownInput},
+        {type: uploadYourDocuments.legalAidCertificateDropDownInput, fileName: 'legalAidCertificate.pdf', description: uploadYourDocuments.legalAidCertificateDropDownInput},
+        {type: uploadYourDocuments.otherDocumentDropDownInput, fileName: 'otherDocument.pdf', description: uploadYourDocuments.otherDocumentDropDownInput},
+      ]
+    });
   });
 });
