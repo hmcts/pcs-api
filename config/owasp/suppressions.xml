@@ -26,12 +26,8 @@
     <notes><![CDATA[angus-activation-2.0.3.jar]]></notes>
     <cve>CVE-2025-7962</cve>
   </suppress>
-  <suppress until="2026-08-18">
-    <notes><![CDATA[tomcat-embed-websocket-11.0.24.jar/tomcat-embed-websocket-11.0.24.jar]]></notes>
-    <cve>CVE-2026-66299</cve>
-  </suppress>
   <!--End of false positives section -->
-   <suppress until="2026-08-18">
+   <suppress>
       <notes><![CDATA[
       HDPI-8150: CVE-2026-66299 against embedded Tomcat 11.0.24. No fixed
       Tomcat release published yet; suppression is temporary and MUST be
