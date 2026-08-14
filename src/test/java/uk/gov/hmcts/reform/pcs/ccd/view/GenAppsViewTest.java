@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.modelmapper.ModelMapper;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentWithId;
@@ -36,8 +35,6 @@ class GenAppsViewTest {
     private static final UUID CURRENT_USER_IDAM_ID = UUID.randomUUID();
 
     @Mock
-    private ModelMapper modelMapper;
-    @Mock
     private SecurityContextService securityContextService;
     @Mock
     private GenAppVisibilityService genAppVisibilityService;
@@ -56,7 +53,7 @@ class GenAppsViewTest {
 
         pcsCase = PCSCase.builder().build();
 
-        underTest = new GenAppsView(modelMapper, securityContextService, genAppVisibilityService);
+        underTest = new GenAppsView(securityContextService, genAppVisibilityService);
     }
 
     @Test
@@ -285,9 +282,12 @@ class GenAppsViewTest {
             "http://dm-store/documents/supporting/binary"
         );
 
-        Document expectedSupportingDocument = mock(Document.class);
-        when(modelMapper.map(submissionDocument, Document.class)).thenReturn(mock(Document.class));
-        when(modelMapper.map(supportingDocument, Document.class)).thenReturn(expectedSupportingDocument);
+        Document expectedSupportingDocument = Document.builder()
+            .filename("supporting.docx")
+            .url("http://dm-store/documents/supporting")
+            .binaryUrl("http://dm-store/documents/supporting/binary")
+            .build();
+        when(supportingDocument.getFileName()).thenReturn(expectedSupportingDocument.getFilename());
 
         genAppEntity.setSubmissionDocument(submissionDocument);
         genAppEntity.setDocuments(List.of(
@@ -313,9 +313,7 @@ class GenAppsViewTest {
     private Document stubDocument(DocumentEntity documentEntity, UUID pcsDocumentId) {
         when(documentEntity.getId()).thenReturn(pcsDocumentId);
 
-        Document document = mock(Document.class);
-        when(modelMapper.map(documentEntity, Document.class)).thenReturn(document);
-        return document;
+        return Document.builder().build();
     }
 
     private void stubDocumentReferences(DocumentEntity documentEntity, UUID id, String url, String binaryUrl) {

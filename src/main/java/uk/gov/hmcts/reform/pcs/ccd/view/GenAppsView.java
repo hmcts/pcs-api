@@ -1,7 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.view;
 
 import lombok.AllArgsConstructor;
-import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
@@ -15,6 +14,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
+import java.time.ZoneOffset;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
@@ -29,7 +29,6 @@ import java.util.stream.Stream;
 @AllArgsConstructor
 public class GenAppsView {
 
-    private final ModelMapper modelMapper;
     private final SecurityContextService securityContextService;
     private final GenAppVisibilityService genAppVisibilityService;
 
@@ -80,7 +79,7 @@ public class GenAppsView {
         return Optional.ofNullable(genAppEntity.getSubmissionDocument())
             .map(documentEntity -> DocumentWithId.builder()
                 .id(documentEntity.getId().toString())
-                .document(modelMapper.map(documentEntity, Document.class))
+                .document(mapDocument(documentEntity))
                 .build()
             )
             .orElse(null);
@@ -93,13 +92,26 @@ public class GenAppsView {
         return genAppEntity.getDocuments().stream()
             .filter(documentEntity -> isNewDocument(documentEntity, seenDocumentReferences))
             .map(documentEntity -> {
-                Document document = modelMapper.map(documentEntity, Document.class);
+                Document document = mapDocument(documentEntity);
                 return ListValue.<Document>builder()
                     .id(documentEntity.getId().toString())
                     .value(document)
                     .build();
             })
             .toList();
+    }
+
+    private Document mapDocument(DocumentEntity documentEntity) {
+        return Document.builder()
+            .filename(documentEntity.getFileName())
+            .url(documentEntity.getUrl())
+            .binaryUrl(documentEntity.getBinaryUrl())
+            .categoryId(documentEntity.getCategoryId())
+            .uploadTimestamp(documentEntity.getSubmittedDate() == null
+                                 ? null
+                                 : documentEntity.getSubmittedDate()
+                .atZone(ZoneOffset.UTC).toLocalDateTime())
+            .build();
     }
 
     private boolean isNewDocument(DocumentEntity documentEntity, Set<String> seenDocumentReferences) {
