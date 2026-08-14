@@ -6,7 +6,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.LegalRepresentativeOrganisationRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.OrganisationRepository;
 
 import java.util.Collection;
 import java.util.Comparator;
@@ -17,7 +17,7 @@ import java.util.Objects;
 @AllArgsConstructor
 public class GenAppVisibilityService {
 
-    private final LegalRepresentativeOrganisationRepository legalRepresentativeOrganisationRepository;
+    private final OrganisationRepository organisationRepository;
 
     public boolean isGenAppVisibleToUser(GenAppEntity genAppEntity, String organisationId) {
         if (genAppEntity == null) {
@@ -41,8 +41,8 @@ public class GenAppVisibilityService {
             return true;
         }
 
-        return legalRepresentativeOrganisationRepository
-            .isRepresentativeOrganisationLinkedToPartyAndActive(organisationId, applicantParty.getId());
+        return organisationRepository
+            .isOrganisationLinkedToPartyAndActive(organisationId, applicantParty.getId());
     }
 
     public List<GenAppEntity> getVisibleGenAppsToUser(Collection<GenAppEntity> genApps, String organisationId) {

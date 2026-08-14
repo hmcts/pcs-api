@@ -11,9 +11,9 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyLegalRepresentativeOrganisationEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeOrganisationContactDetailsEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeOrganisationEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyOrganisationEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyContactDetailsEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.OrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.DefendantPartyExtractor;
 
@@ -70,12 +70,12 @@ class LegalRepresentativeSummaryServiceTest {
         PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
             .caseReference(caseRef)
             .build();
-        LegalRepresentativeOrganisationEntity legalRepresentativeOrganisation =
-            LegalRepresentativeOrganisationEntity.builder()
+        OrganisationEntity organisation =
+            OrganisationEntity.builder()
             .organisationId(organisationId)
-                .legalRepresentativeOrganisationContactDetails(
+                .claimPartyContactDetails(
                     List.of(
-                        LegalRepresentativeOrganisationContactDetailsEntity
+                        ClaimPartyContactDetailsEntity
                             .builder()
                             .pcsCase(pcsCaseEntity)
                             .contactDetailsCorrectConfirmation(YesOrNo.NO)
@@ -83,10 +83,10 @@ class LegalRepresentativeSummaryServiceTest {
                     ))
             .build();
         List<PartyEntity> parties = List.of(PartyEntity.builder()
-                                            .partyLegalRepresentativeOrganisationList(List.of(
-                                                ClaimPartyLegalRepresentativeOrganisationEntity.builder()
+                                            .claimPartyOrganisationList(List.of(
+                                                ClaimPartyOrganisationEntity.builder()
                                                     .active(YesOrNo.YES)
-                                                    .legalRepresentativeOrganisation(legalRepresentativeOrganisation)
+                                                    .organisation(organisation)
                                                     .build()))
                                             .build());
 
@@ -111,12 +111,12 @@ class LegalRepresentativeSummaryServiceTest {
             .caseReference(caseRef)
             .build();
 
-        LegalRepresentativeOrganisationEntity legalRepresentativeOrganisation =
-            LegalRepresentativeOrganisationEntity.builder()
+        OrganisationEntity organisation =
+            OrganisationEntity.builder()
                 .organisationId(organisationId)
-                .legalRepresentativeOrganisationContactDetails(
+                .claimPartyContactDetails(
                     List.of(
-                        LegalRepresentativeOrganisationContactDetailsEntity
+                        ClaimPartyContactDetailsEntity
                             .builder()
                             .pcsCase(pcsCaseEntity)
                             .contactDetailsCorrectConfirmation(YesOrNo.YES)
@@ -124,10 +124,10 @@ class LegalRepresentativeSummaryServiceTest {
                     ))
                 .build();
         List<PartyEntity> parties = List.of(PartyEntity.builder()
-                                              .partyLegalRepresentativeOrganisationList(List.of(
-                                                  ClaimPartyLegalRepresentativeOrganisationEntity.builder()
+                                              .claimPartyOrganisationList(List.of(
+                                                  ClaimPartyOrganisationEntity.builder()
                                                       .active(YesOrNo.YES)
-                                                      .legalRepresentativeOrganisation(legalRepresentativeOrganisation)
+                                                      .organisation(organisation)
                                                       .build()))
                                               .build());
 
@@ -153,12 +153,12 @@ class LegalRepresentativeSummaryServiceTest {
             .caseReference(caseRef)
             .build();
 
-        LegalRepresentativeOrganisationEntity legalRepresentativeOrg =
-            LegalRepresentativeOrganisationEntity.builder()
+        OrganisationEntity legalRepresentativeOrg =
+            OrganisationEntity.builder()
                 .organisationId(organisationId)
-                .legalRepresentativeOrganisationContactDetails(
+                .claimPartyContactDetails(
                     List.of(
-                        LegalRepresentativeOrganisationContactDetailsEntity
+                        ClaimPartyContactDetailsEntity
                             .builder()
                             .pcsCase(pcsCaseEntity)
                             .contactDetailsCorrectConfirmation(YesOrNo.YES)
@@ -166,10 +166,10 @@ class LegalRepresentativeSummaryServiceTest {
                     ))
                 .build();
         List<PartyEntity> parties = List.of(PartyEntity.builder()
-                                                .partyLegalRepresentativeOrganisationList(List.of(
-                                                    ClaimPartyLegalRepresentativeOrganisationEntity.builder()
+                                                .claimPartyOrganisationList(List.of(
+                                                    ClaimPartyOrganisationEntity.builder()
                                                         .active(YesOrNo.YES)
-                                                        .legalRepresentativeOrganisation(legalRepresentativeOrg)
+                                                        .organisation(legalRepresentativeOrg)
                                                         .build()))
                                                 .build());
 
@@ -221,15 +221,15 @@ class LegalRepresentativeSummaryServiceTest {
     void handleLegalRepresentativeSummary_WithLinkedAndNotActive_ReturnsEmptyMarkDown() {
         // given
         String organisationId = "org";
-        LegalRepresentativeOrganisationEntity legalRepresentativeOrganisation =
-            LegalRepresentativeOrganisationEntity.builder()
+        OrganisationEntity organisation =
+            OrganisationEntity.builder()
             .organisationId(organisationId)
             .build();
         List<PartyEntity> parties = List.of(PartyEntity.builder()
-                                              .partyLegalRepresentativeOrganisationList(List.of(
-                                                  ClaimPartyLegalRepresentativeOrganisationEntity.builder()
+                                              .claimPartyOrganisationList(List.of(
+                                                  ClaimPartyOrganisationEntity.builder()
                                                       .active(YesOrNo.NO)
-                                                      .legalRepresentativeOrganisation(legalRepresentativeOrganisation)
+                                                      .organisation(organisation)
                                                       .build()))
                                               .build());
 
@@ -251,15 +251,15 @@ class LegalRepresentativeSummaryServiceTest {
     void handleLegalRepresentativeSummary_WithNotLinkedAndActive_ReturnsEmptyMarkDown() {
         // given
         String organisationId = "org";
-        LegalRepresentativeOrganisationEntity legalRepresentativeOrganisation =
-            LegalRepresentativeOrganisationEntity.builder()
+        OrganisationEntity organisation =
+            OrganisationEntity.builder()
             .organisationId(organisationId + "1")
             .build();
         List<PartyEntity> parties = List.of(PartyEntity.builder()
-                                              .partyLegalRepresentativeOrganisationList(List.of(
-                                                  ClaimPartyLegalRepresentativeOrganisationEntity.builder()
+                                              .claimPartyOrganisationList(List.of(
+                                                  ClaimPartyOrganisationEntity.builder()
                                                       .active(YesOrNo.YES)
-                                                      .legalRepresentativeOrganisation(legalRepresentativeOrganisation)
+                                                      .organisation(organisation)
                                                       .build()))
                                               .build());
 
@@ -282,15 +282,15 @@ class LegalRepresentativeSummaryServiceTest {
     void handleLegalRepresentativeSummary_WithNotLinkedAndNotActive_ReturnsEmptyMarkDown() {
         // given
         String organisationId = "org";
-        LegalRepresentativeOrganisationEntity legalRepresentativeOrganisation =
-            LegalRepresentativeOrganisationEntity.builder()
+        OrganisationEntity organisation =
+            OrganisationEntity.builder()
             .organisationId(organisationId)
             .build();
         List<PartyEntity> parties = List.of(PartyEntity.builder()
-                                              .partyLegalRepresentativeOrganisationList(List.of(
-                                                  ClaimPartyLegalRepresentativeOrganisationEntity.builder()
+                                              .claimPartyOrganisationList(List.of(
+                                                  ClaimPartyOrganisationEntity.builder()
                                                       .active(YesOrNo.NO)
-                                                      .legalRepresentativeOrganisation(legalRepresentativeOrganisation)
+                                                      .organisation(organisation)
                                                       .build()))
                                               .build());
 

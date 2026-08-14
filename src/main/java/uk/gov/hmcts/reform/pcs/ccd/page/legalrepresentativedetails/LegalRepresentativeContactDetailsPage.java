@@ -12,7 +12,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.LegalRepresentativeDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
-import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.service.AddressValidator;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 import uk.gov.hmcts.reform.pcs.ccd.util.StringUtils;
@@ -130,9 +129,7 @@ public class LegalRepresentativeContactDetailsPage implements CcdPageConfigurati
                     """)
                 .optional(LegalRepresentativeDetails::getProvideContactPhoneNumber)
                 .mandatory(LegalRepresentativeDetails::getContactPhoneNumber,
-                           "provideContactPhoneNumber=\"YES\"")
-            .done()
-            .label("legalRepresentativeDetails-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
+                           "provideContactPhoneNumber=\"YES\"");
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
