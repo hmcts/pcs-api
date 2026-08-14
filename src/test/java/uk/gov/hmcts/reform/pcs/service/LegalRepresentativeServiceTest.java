@@ -9,7 +9,7 @@ import uk.gov.hmcts.ccd.sdk.type.DynamicList;
 import uk.gov.hmcts.ccd.sdk.type.DynamicListElement;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeOrganisationEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.PartyLegalRepresentativeOrganisationEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyLegalRepresentativeOrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.LegalRepresentativeOrganisationRepository;
 
@@ -62,12 +62,12 @@ class LegalRepresentativeServiceTest {
             .firstName("Richard")
             .lastName("Represented")
             .build();
-        PartyLegalRepresentativeOrganisationEntity casePartyLegalRepOrgEntity =
-            PartyLegalRepresentativeOrganisationEntity.builder()
+        ClaimPartyLegalRepresentativeOrganisationEntity casePartyLegalRepOrgEntity =
+            ClaimPartyLegalRepresentativeOrganisationEntity.builder()
                 .party(casePartyEntity)
                 .build();
         LegalRepresentativeOrganisationEntity legalRepEntity = LegalRepresentativeOrganisationEntity.builder()
-            .partyLegalRepresentativeOrganisationList(List.of(casePartyLegalRepOrgEntity))
+            .claimPartyLegalRepresentativeOrganisationList(List.of(casePartyLegalRepOrgEntity))
             .build();
 
         when(legalRepresentativeOrganisationRepository.findByOrganisationIdAndCaseReference(orgId, CASE_REFERENCE))
