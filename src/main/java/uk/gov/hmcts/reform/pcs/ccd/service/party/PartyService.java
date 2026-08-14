@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.pcs.ccd.service.party;
 
 import io.micrometer.common.util.StringUtils;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
@@ -36,6 +37,7 @@ import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 @Service
 @AllArgsConstructor
+@Slf4j
 public class PartyService {
 
     private final PartyRepository partyRepository;
@@ -149,7 +151,7 @@ public class PartyService {
     }
 
     /**
-     * The claimant party a case is created with, so CaseAccessGroups derive during the draft phase.
+     * The claimant party a shell case is created with, so CaseAccessGroups derive during the draft phase.
      * Both organisation values are required: without them the case derives no group, and group
      * access is the only way in, so nobody could open it.
      */
@@ -216,9 +218,15 @@ public class PartyService {
                                          String orgProfileId) {
         if (organisationId != null) {
             claimantParty.setOrganisationId(organisationId);
+        } else {
+            log.warn("No organisation ID returned for the current user, keeping the one stored at case "
+                         + "creation for party {}", claimantParty.getId());
         }
         if (StringUtils.isNotBlank(orgProfileId)) {
             claimantParty.setOrganisationProfileId(orgProfileId);
+        } else {
+            log.warn("No organisation profile ID returned for the current user, keeping the one stored "
+                         + "at case creation for party {}", claimantParty.getId());
         }
     }
 
