@@ -456,7 +456,7 @@ export class CaseManagementAction implements IAction {
       text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
     });
     await performAction('clickRadioButton', {
-      question: partyData.questionq,
+      question: partyData.question1,
       option: partyData.option1
     });
 
