@@ -91,7 +91,8 @@ public class CaseFlagService {
                     // throw new CaseAccessException("User cannot change support for this party on this case");
                 }
                 if (!existingExternalFlags.isEmpty()) {
-                    continue;
+                    log.info("existingExternalFlags.size() = {}", existingExternalFlags.size());
+                    //continue;
                 }
             }
 

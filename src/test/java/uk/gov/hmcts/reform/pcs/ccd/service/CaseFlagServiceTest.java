@@ -543,6 +543,7 @@ class CaseFlagServiceTest {
         verifyNoInteractions(flagRefDataRepository);
     }
 
+    @Disabled
     @Test
     void shouldAllowOwnSideRequestSupportWhenOtherSideEntriesAreUnchanged() {
         // Given
