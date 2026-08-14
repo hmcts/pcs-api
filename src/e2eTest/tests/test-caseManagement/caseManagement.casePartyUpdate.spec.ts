@@ -35,7 +35,7 @@ test.beforeEach(async ({ page, context }) => {
         defendant.name
       ),
     });
-  };
+  }
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
   await dismissCookieBanner(page, 'additional');
   await performAction('login', user.hearingCenterAdmin);
@@ -51,7 +51,7 @@ test.afterEach(async () => {
 
 });
 
-test.describe('Case management - Case Worker Manage Parties @nightly', async () => {
+test.describe('Case management - Case Party Management @nightly', async () => {
   test('Case management - Case Worker update party- Defendants details @CM @regression', async () => {
     let date = CaseManagementCommonUtils.getRandomDate(updatePartyDetails.dateTypeHiddenUserInput);
     await performAction('selectAnEvent', { eventType: caseSummary.manageParties });
