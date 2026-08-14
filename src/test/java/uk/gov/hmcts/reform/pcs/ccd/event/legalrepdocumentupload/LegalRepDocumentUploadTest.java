@@ -15,7 +15,6 @@ import uk.gov.hmcts.reform.pcs.ccd.event.BaseEventTest;
 import uk.gov.hmcts.reform.pcs.ccd.page.legalrepdocumentupload.LegalRepDocumentUploadConfigurer;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
-import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType;
@@ -23,6 +22,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -40,6 +40,9 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
 
     @Mock
     private GenAppVisibilityService genAppVisibilityService;
+
+    @Mock
+    private OrganisationService organisationService;
 
     @InjectMocks
     private LegalRepDocumentUpload legalRepDocumentUpload;
