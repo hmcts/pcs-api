@@ -168,14 +168,13 @@ public class PartyService {
         PartyEntity claimantParty = new PartyEntity();
         claimantParty.setOrganisationId(organisationId);
         claimantParty.setOrganisationProfileId(organisationProfileId);
+        claimantParty.setClaimCreator(true);
         pcsCaseEntity.addParty(claimantParty);
     }
 
-    /** The claimant gets no claim link until submit, so one without it is the stub to complete. */
     private Optional<PartyEntity> findClaimantStub(PcsCaseEntity pcsCaseEntity) {
         return pcsCaseEntity.getParties().stream()
-            .filter(PartyEntity::hasOrganisation)
-            .filter(party -> party.getClaimParties().isEmpty())
+            .filter(PartyEntity::isClaimCreator)
             .findFirst();
     }
 

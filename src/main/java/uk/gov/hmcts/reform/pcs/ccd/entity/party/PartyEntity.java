@@ -77,6 +77,9 @@ public class PartyEntity {
     private String organisationId;
     private String organisationProfileId;
 
+    /** The claimant the case was created for, marked at creation as there is no claim role to read yet. */
+    private boolean claimCreator;
+
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private VerticalYesNo nameKnown;
@@ -124,10 +127,5 @@ public class PartyEntity {
     @Builder.Default
     @Fetch(FetchMode.SUBSELECT)
     private List<CasePartyFlagEntity> defendantFlags = new ArrayList<>();
-
-    /** Only the claimant is ever given an organisation, so carrying one is what makes a party the claimant. */
-    public boolean hasOrganisation() {
-        return organisationId != null;
-    }
 
 }

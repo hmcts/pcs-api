@@ -59,25 +59,16 @@ public final class CaseAccessGroupsUtil {
     }
 
     private static Optional<PartyRole> derivedRole(PartyEntity party) {
-        if (!party.hasOrganisation()) {
+        if (party.getOrganisationId() == null) {
             return Optional.empty();
         }
-        if (claimPartiesNotCreatedYet(party)) {
+        if (party.isClaimCreator()) {
             return Optional.of(PartyRole.CLAIMANT);
         }
         return party.getClaimParties().stream()
             .map(ClaimPartyEntity::getRole)
             .filter(DERIVED_ROLES::contains)
             .findFirst();
-    }
-
-    /**
-     * Claim parties are only created when the claim is submitted, so before that there is no role to
-     * read. createClaimantStub is the only thing that makes a party that early, so one without claim
-     * parties is the claimant the case was created for.
-     */
-    private static boolean claimPartiesNotCreatedYet(PartyEntity party) {
-        return party.getClaimParties().isEmpty();
     }
 
 

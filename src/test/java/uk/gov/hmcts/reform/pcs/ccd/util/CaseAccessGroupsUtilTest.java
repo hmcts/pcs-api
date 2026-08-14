@@ -47,13 +47,20 @@ class CaseAccessGroupsUtilTest {
     @Test
     void shouldSkipPartiesWithoutAnOrganisation() {
         Set<PartyEntity> parties = Set.of(
-            party(null, null),
+            party(null, null, false),
             party("J1XJ9VJ", "SOLICITOR_PROFILE"));
 
         List<ListValue<CaseAccessGroup>> groups = CaseAccessGroupsUtil.deriveCaseAccessGroups(parties);
 
         assertThat(groups).hasSize(1);
         assertThat(groups.getFirst().getValue().getCaseAccessGroupId()).endsWith(":J1XJ9VJ");
+    }
+
+    @Test
+    void shouldDeriveNothingForAnOrganisationPartyThatDidNotCreateTheClaim() {
+        Set<PartyEntity> parties = Set.of(party("J1XJ9VJ", "SOLICITOR_PROFILE", false));
+
+        assertThat(CaseAccessGroupsUtil.deriveCaseAccessGroups(parties)).isEmpty();
     }
 
     @Test
@@ -75,9 +82,14 @@ class CaseAccessGroupsUtilTest {
     }
 
     private PartyEntity party(String organisationId, String organisationProfileId) {
+        return party(organisationId, organisationProfileId, true);
+    }
+
+    private PartyEntity party(String organisationId, String organisationProfileId, boolean claimCreator) {
         return PartyEntity.builder()
             .organisationId(organisationId)
             .organisationProfileId(organisationProfileId)
+            .claimCreator(claimCreator)
             .build();
     }
 
@@ -87,9 +99,11 @@ class CaseAccessGroupsUtilTest {
         PartyEntity first = new PartyEntity();
         first.setOrganisationId("ORG-A");
         first.setOrganisationProfileId("SOLICITOR_PROFILE");
+        first.setClaimCreator(true);
         PartyEntity second = new PartyEntity();
         second.setOrganisationId("ORG-B");
         second.setOrganisationProfileId("LOCALAUTH_PROFILE");
+        second.setClaimCreator(true);
 
         // When
         List<ListValue<CaseAccessGroup>> firstRead =

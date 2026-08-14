@@ -35,6 +35,7 @@ import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -482,7 +483,8 @@ class PartyServiceTest {
             PartyEntity initialisedClaimant = new PartyEntity();
             initialisedClaimant.setOrganisationId(ORG_ID);
             initialisedClaimant.setOrganisationProfileId("SOLICITOR_PROFILE");
-            pcsCaseEntity.addParty(initialisedClaimant);
+            initialisedClaimant.setClaimCreator(true);
+            when(pcsCaseEntity.getParties()).thenReturn(Set.of(initialisedClaimant));
 
             when(organisationService.getOrgProfileIdForCurrentUser()).thenReturn(null);
             when(pcsCase.getClaimantInformation()).thenReturn(ClaimantInformation.builder()
@@ -500,6 +502,32 @@ class PartyServiceTest {
             // Then
             assertThat(initialisedClaimant.getOrganisationId()).isEqualTo(ORG_ID);
             assertThat(initialisedClaimant.getOrganisationProfileId()).isEqualTo("SOLICITOR_PROFILE");
+        }
+
+        @Test
+        void shouldCompleteTheClaimantStubRatherThanCreateASecondClaimant() {
+            // Given
+            PartyEntity stub = new PartyEntity();
+            stub.setOrganisationId(ORG_ID);
+            stub.setOrganisationProfileId("SOLICITOR_PROFILE");
+            stub.setClaimCreator(true);
+            when(pcsCaseEntity.getParties()).thenReturn(Set.of(stub));
+
+            when(pcsCase.getClaimantInformation()).thenReturn(ClaimantInformation.builder()
+                .claimantName("Claimant name")
+                .isClaimantNameCorrect(VerticalYesNo.YES)
+                .build());
+            when(pcsCase.getClaimantContactPreferences()).thenReturn(ClaimantContactPreferences.builder()
+                .claimantContactEmail("test@test.com")
+                .claimantProvidePhoneNumber(VerticalYesNo.NO)
+                .build());
+
+            // When
+            underTest.createAllParties(pcsCase, pcsCaseEntity, claimEntity, ORG_ID);
+
+            // Then
+            verify(partyRepository).save(partyEntityCaptor.capture());
+            assertThat(partyEntityCaptor.getValue()).isSameAs(stub);
         }
 
         @Test
