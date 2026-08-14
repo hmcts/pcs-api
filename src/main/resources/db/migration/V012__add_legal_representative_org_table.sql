@@ -22,7 +22,7 @@ create table legal_rep_org_contact_details (
   phone_number VARCHAR(40),
   contact_reference VARCHAR(80),
   address_id INTEGER,
-  confirmed_contact_details YES_NO
+  contact_details_correct_confirmation YES_NO
 );
 
 ALTER TABLE ONLY public.legal_representative_organisation

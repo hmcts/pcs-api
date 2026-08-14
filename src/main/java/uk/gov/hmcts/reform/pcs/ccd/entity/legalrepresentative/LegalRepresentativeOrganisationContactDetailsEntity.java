@@ -59,6 +59,6 @@ public class LegalRepresentativeOrganisationContactDetailsEntity {
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private YesOrNo confirmedContactDetails;
+    private YesOrNo contactDetailsCorrectConfirmation;
 
 }

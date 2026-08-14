@@ -6,7 +6,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -42,8 +41,11 @@ public class LegalRepresentativeOrganisationEntity {
 
     private String organisationProfileId;
 
-    @OneToOne(mappedBy = "legalRepresentativeOrganisation", cascade = ALL)
-    private LegalRepresentativeOrganisationContactDetailsEntity legalRepresentativeOrganisationContactDetails;
+    @OneToMany(mappedBy = "legalRepresentativeOrganisation", fetch = LAZY, cascade = ALL)
+    @Builder.Default
+    @JsonManagedReference
+    private List<LegalRepresentativeOrganisationContactDetailsEntity> legalRepresentativeOrganisationContactDetails =
+        new ArrayList<>();
 
     @OneToMany(fetch = LAZY, cascade = ALL, mappedBy = "legalRepresentativeOrganisation")
     @Builder.Default
@@ -68,10 +70,11 @@ public class LegalRepresentativeOrganisationEntity {
         party.getPartyLegalRepresentativeOrganisationList().add(claimPartyLegalRepresentativeOrganisationEntity);
     }
 
-    public void setLegalRepresentativeOrganisationContactDetails(
+    public void addLegalRepresentativeOrganisationContactDetails(
         LegalRepresentativeOrganisationContactDetailsEntity contactDetails) {
-        this.legalRepresentativeOrganisationContactDetails = contactDetails;
+
         if (contactDetails != null) {
+            this.legalRepresentativeOrganisationContactDetails.add(contactDetails);
             contactDetails.setLegalRepresentativeOrganisation(this);
         }
     }
