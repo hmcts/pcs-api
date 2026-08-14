@@ -49,8 +49,10 @@ export SOME_VAR=value
 ./gradlew bootWithCCD
 ```
 
-Only export the variables you need. Loading an entire `.env` into the `bootWithCCD` process can break local
-cftlib if it includes values such as `SERVER_PORT` that conflict with the managed local stack.
+**Only export the variables you intend to override.** A local `.env` can be a handy place to
+keep candidate values, but pcs-api will not read that file. If you export every variable
+from it into the shell (or IDE run config) before `bootWithCCD`, values such as
+`SERVER_PORT` can conflict with the managed local stack.
 
 By default, this runs with local instance of IDAM and
 S2S services. However sometimes it may be required to run
