@@ -16,7 +16,8 @@ CREATE UNIQUE INDEX draft_case_data_organisation_key
     ON draft.draft_case_data (case_reference, event_id, organisation_id)
     WHERE organisation_id IS NOT NULL;
 
--- Claim parties only exist after submit, so before that the claimant has to be marked explicitly.
+-- Identifies the claimant during the draft phase, which is when group access has to start working.
+-- Claim parties only exist once the claim is submitted, so until then there is no role to read.
 ALTER TABLE public.party ADD COLUMN claim_creator boolean NOT NULL DEFAULT false;
 
 -- Until now only the claimant was given an organisation, so that is what seeds the flag.
