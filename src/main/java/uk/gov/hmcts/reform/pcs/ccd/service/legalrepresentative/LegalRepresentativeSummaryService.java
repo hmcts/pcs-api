@@ -8,7 +8,7 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.PartyLegalRepresentativeOrganisationEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyLegalRepresentativeOrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.DefendantPartyExtractor;
 
@@ -50,20 +50,26 @@ public class LegalRepresentativeSummaryService {
 
     public void handleLegalRepresentativeSummary(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity,
                                                  String organisationIdForCurrentUser, State state) {
-        Optional<PartyLegalRepresentativeOrganisationEntity> partyLink =
+        Optional<ClaimPartyLegalRepresentativeOrganisationEntity> partyLink =
             isActivelyLinkedToAnyDefendant(pcsCaseEntity, organisationIdForCurrentUser);
 
-        if (partyLink.isPresent() && state == State.CASE_ISSUED) {
-            setLegalRepresentativeFields(pcsCase, partyLink.get());
+        if (displaySummaryLegalRepresentativeMarkdown(partyLink.isPresent(), state)) {
+            setLegalRepresentativeFields(pcsCase, partyLink.get(), pcsCaseEntity.getCaseReference());
         } else {
             pcsCase.setSummaryLegalRepresentativeMarkdown(StringUtils.EMPTY);
         }
     }
 
     private void setLegalRepresentativeFields(PCSCase pcsCase,
-                                                             PartyLegalRepresentativeOrganisationEntity
-                                                                 partyLink) {
-        YesOrNo hasAmendedContactDetails = partyLink.getLegalRepresentativeOrganisation().getHasAmendedContactDetails();
+                                                             ClaimPartyLegalRepresentativeOrganisationEntity
+                                                                 partyLink,
+                                              long caseReference) {
+        YesOrNo hasAmendedContactDetails = partyLink.getLegalRepresentativeOrganisation()
+            .getLegalRepresentativeOrganisationContactDetails()
+            .stream().filter(contactDetails -> contactDetails.getPcsCase().getCaseReference().equals(caseReference))
+            .findFirst().get().getContactDetailsCorrectConfirmation();
+
+
         if (YesOrNo.YES.equals(hasAmendedContactDetails)) {
             pcsCase.setLegalRepUpdatedDetails(YesOrNo.YES);
             pcsCase.setSummaryLegalRepresentativeMarkdown(RESPOND_TO_CLAIM_MARKDOWN.formatted(frontendUrl));
@@ -73,9 +79,9 @@ public class LegalRepresentativeSummaryService {
         }
     }
 
-    private Optional<PartyLegalRepresentativeOrganisationEntity> isActivelyLinkedToAnyDefendant(PcsCaseEntity
+    private Optional<ClaimPartyLegalRepresentativeOrganisationEntity> isActivelyLinkedToAnyDefendant(PcsCaseEntity
                                                                                                     pcsCaseEntity,
-                                                                                                String orgId) {
+                                                                                                     String orgId) {
         List<PartyEntity> defendants = defendantPartyExtractor.summaryScreenSafeExtractDefendants(pcsCaseEntity);
         return defendants.stream()
             .flatMap(partyEntity -> partyEntity.getPartyLegalRepresentativeOrganisationList().stream())
@@ -85,6 +91,10 @@ public class LegalRepresentativeSummaryService {
                                 orgId)
                             && claimPartyLegalRepresentative.getActive().equals(YesOrNo.YES))
             .findFirst();
+    }
+
+    private boolean displaySummaryLegalRepresentativeMarkdown(boolean isPartyLink, State state) {
+        return isPartyLink && state == State.CASE_ISSUED;
     }
 
 

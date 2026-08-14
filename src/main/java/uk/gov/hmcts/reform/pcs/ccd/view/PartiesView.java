@@ -5,6 +5,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.ccd.sdk.type.OrganisationPolicy;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.LegalRepresentative;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
@@ -13,13 +14,18 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.PartyLegalRepresentativeOrganisationEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyLegalRepresentativeOrganisationEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeOrganisationContactDetailsEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeOrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
+import java.util.Objects;
 import java.util.UUID;
 
 @Component
@@ -44,6 +50,26 @@ public class PartiesView {
         pcsCase.setAllDefendants(mapPartiesByRole(claimParties, PartyRole.DEFENDANT, isCitizen, currentUserId));
         pcsCase.setAllUnderlesseeOrMortgagees(mapPartiesByRole(claimParties, PartyRole.UNDERLESSEE_OR_MORTGAGEE,
                                                                isCitizen, currentUserId));
+
+        Optional.ofNullable(pcsCase.getAllDefendants())
+            .ifPresent(defendants -> defendants
+                .forEach(def -> initialiseOrgPolicy(def.getValue())));
+    }
+
+    private void initialiseOrgPolicy(Party party) {
+        party.setOrganisationPolicy(
+            Optional.ofNullable(party.getOrganisationPolicy())
+                .orElseGet(OrganisationPolicy::new)
+        );
+
+        setDefaultOrgPolicyFields(party.getOrganisationPolicy());
+    }
+
+    private void setDefaultOrgPolicyFields(OrganisationPolicy<UserRole> organisationPolicy) {
+        organisationPolicy.setOrgPolicyCaseAssignedRole(
+            Optional.ofNullable(organisationPolicy.getOrgPolicyCaseAssignedRole())
+                .orElse(UserRole.DEFENDANT_SOLICITOR)
+        );
     }
 
     private List<ListValue<Party>> mapPartiesByRole(List<ClaimPartyEntity> claimParties, PartyRole role,
@@ -103,21 +129,40 @@ public class PartiesView {
     }
 
     private LegalRepresentative buildLegalRepresentative(PartyEntity partyEntity) {
-        List<PartyLegalRepresentativeOrganisationEntity> claimPartyLegalRepresentativeEntities =
-            partyEntity.getPartyLegalRepresentativeOrganisationList();
+        if (partyEntity == null || partyEntity.getPartyLegalRepresentativeOrganisationList() == null) {
+            return null;
+        }
 
-        return claimPartyLegalRepresentativeEntities.stream()
-                .filter(legalRepEntity -> legalRepEntity.getActive() == YesOrNo.YES)
-                .map(PartyLegalRepresentativeOrganisationEntity::getLegalRepresentativeOrganisation)
-                .map(legalRepEntity -> LegalRepresentative.builder()
-                    .telephoneNumber(legalRepEntity.getPhone())
-                    .emailAddress(legalRepEntity.getEmail())
-                    .organisationName(legalRepEntity.getOrganisationName())
-                    .address(convertAddress(legalRepEntity.getAddress()))
-                    .build()
-                )
+        Long caseReference = partyEntity.getPcsCase().getCaseReference();
+
+        return partyEntity.getPartyLegalRepresentativeOrganisationList().stream()
+            .filter(legalRep -> legalRep != null && legalRep.getActive() == YesOrNo.YES)
+            .map(ClaimPartyLegalRepresentativeOrganisationEntity::getLegalRepresentativeOrganisation)
+            .filter(Objects::nonNull)
+            .map(lro -> toLegalRepresentative(lro, caseReference))
             .findFirst()
             .orElse(null);
+    }
+
+    private LegalRepresentative toLegalRepresentative(LegalRepresentativeOrganisationEntity orgEntity, Long caseRef) {
+        Optional<LegalRepresentativeOrganisationContactDetailsEntity> contactDetails =
+            Optional.ofNullable(orgEntity.getLegalRepresentativeOrganisationContactDetails())
+                .orElseGet(Collections::emptyList)
+                .stream()
+                .filter(contactDetail -> contactDetail != null
+                    && contactDetail.getPcsCase() != null
+                    && Objects.equals(contactDetail.getPcsCase().getCaseReference(), caseRef))
+                .findFirst();
+
+        return LegalRepresentative.builder()
+            .organisationName(orgEntity.getOrganisationName())
+            .telephoneNumber(contactDetails.map(LegalRepresentativeOrganisationContactDetailsEntity::getPhoneNumber)
+                                 .orElse(null))
+            .emailAddress(contactDetails.map(LegalRepresentativeOrganisationContactDetailsEntity::getEmailAddress)
+                              .orElse(null))
+            .address(contactDetails.map(cd -> convertAddress(cd.getAddress()))
+                         .orElse(null))
+            .build();
     }
 
     private AddressUK convertAddress(AddressEntity address) {

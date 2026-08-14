@@ -24,6 +24,7 @@
     <notes><![CDATA[kotlin-stdlib-1.9.25/kotlin-stdlib-jdk7-1.9.25/kotlin-stdlib-jdk8-1.9.25 ]]></notes>
     <cve>CVE-2020-29582</cve>
     <cve>CVE-2026-53914</cve>
+    <cve>CVE-2026-64607</cve>
   </suppress>
   <suppress until="2026-08-15">
     <notes><![CDATA[angus-activation-2.0.3.jar]]></notes>
