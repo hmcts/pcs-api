@@ -24,6 +24,33 @@ public enum TaskType {
             have been reviewed and any required action has been completed.
             """
     ),
+    REVIEW_ADJOURN_GEN_APP(
+        "ReviewAdjournGenApp",
+        "Review adjourn gen app",
+        """
+            Review the general application to adjourn the hearing, decide what action is needed, and take the
+            appropriate action. Only mark the task as complete once the application has been reviewed and any
+            required action has been completed.
+            """
+    ),
+    REVIEW_SET_ASIDE_GEN_APP(
+        "ReviewAdjournGenApp",
+        "Review set aside gen app",
+        """
+            Review the general application to set aside, decide what action is needed, and take the appropriate
+            action. Only mark the task as complete once the application has been reviewed and any required action
+            has been completed.
+            """
+    ),
+    REVIEW_GEN_APP(
+        "ReviewGenApp",
+            "Review gen app",
+            """
+            Review the general application, decide what action is needed, and take the appropriate action.
+            Only mark the task as complete once the application has been reviewed and any required action
+            has been completed.
+            """
+    ),
     TRANSLATE_CLAIMANT_SUBMITTED_DOCUMENT(
         "TranslateClaimantSubmittedDocument",
         "Translate Claimant Submitted Document",
