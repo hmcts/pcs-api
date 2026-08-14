@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.service;
 
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
@@ -37,6 +38,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.util.FlagVisibilityConverter.toFlagVis
 
 @Service
 @AllArgsConstructor
+@Slf4j
 public class CaseFlagService {
 
     private FlagRefDataRepository flagRefDataRepository;
@@ -74,8 +76,14 @@ public class CaseFlagService {
 
             PartyEntity partyEntity = resolveSupportParty(incomingSupportValue.getId(), existingPartiesMap);
 
-            if (ownPartyOnly && !partySupportOwnershipResolver.isOwnedByUser(partyEntity, authenticatedUserId)) {
+            boolean ownedByUser = partySupportOwnershipResolver.isOwnedByUser(partyEntity, authenticatedUserId);
+
+            log.info("ownedByUser: {}", ownedByUser);
+
+            if (ownPartyOnly && !ownedByUser) {
                 Map<String, CasePartyFlagEntity> existingExternalFlags = getExistingExternalFlags(partyEntity);
+                log.info("TVR: Existing Flag amount: {}", existingExternalFlags.size());
+                log.info("TVR: IncomingSupportFlags: {}", incomingPartySupport.size());
                 if (changesExistingSupport(incomingSupportFlags, partyEntity, existingExternalFlags)) {
                     throw new CaseAccessException("User cannot change support for this party on this case");
                 }
@@ -95,6 +103,8 @@ public class CaseFlagService {
             ? List.of()
             : incomingSupportFlags.getDetails();
 
+        log.info("TVR: incomingDetails = {}", incomingDetails.size());
+
         if (existingExternalFlags.isEmpty()) {
             return false;
         }
@@ -103,10 +113,14 @@ public class CaseFlagService {
             return true;
         }
 
-        return incomingDetails.stream().anyMatch(incomingDetail -> {
+        boolean anyMatch = incomingDetails.stream().anyMatch(incomingDetail -> {
             CasePartyFlagEntity existingFlag = existingExternalFlags.get(incomingDetail.getId());
             return existingFlag == null || differs(incomingDetail.getValue(), existingFlag);
         });
+
+        log.info("TVR: anyMatch = {}", anyMatch);
+
+        return anyMatch;
     }
 
     private static @NonNull Map<String, CasePartyFlagEntity> getExistingExternalFlags(PartyEntity partyEntity) {
