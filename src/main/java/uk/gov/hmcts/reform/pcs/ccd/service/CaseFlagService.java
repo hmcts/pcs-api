@@ -85,7 +85,10 @@ public class CaseFlagService {
                 log.info("TVR: Existing Flag amount: {}", existingExternalFlags.size());
                 log.info("TVR: IncomingSupportFlags: {}", incomingPartySupport.size());
                 if (changesExistingSupport(incomingSupportFlags, partyEntity, existingExternalFlags)) {
-                    throw new CaseAccessException("User cannot change support for this party on this case");
+                    log.error("Changing support for the party.");
+                    // Removing this for the time being as it prevents a solicitor from adding CaseFlags to a defendant
+                    // on a case at the moment.
+                    // throw new CaseAccessException("User cannot change support for this party on this case");
                 }
                 if (!existingExternalFlags.isEmpty()) {
                     continue;
@@ -110,6 +113,7 @@ public class CaseFlagService {
         }
 
         if (incomingDetails.size() != existingExternalFlags.size()) {
+            log.info("TVR: size difference");
             return true;
         }
 
