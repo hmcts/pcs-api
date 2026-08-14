@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.ccd.sdk.type.CaseAccessGroup;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.GroupAccessType;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 
@@ -61,6 +62,30 @@ class CaseAccessGroupsUtilTest {
         Set<PartyEntity> parties = Set.of(party("J1XJ9VJ", "SOLICITOR_PROFILE", false));
 
         assertThat(CaseAccessGroupsUtil.deriveCaseAccessGroups(parties)).isEmpty();
+    }
+
+    @Test
+    void shouldKeepDerivingOnceTheClaimIsSubmittedAndTheClaimantHasARole() {
+        PartyEntity claimant = party("J1XJ9VJ", "SOLICITOR_PROFILE");
+        claimant.getClaimParties().add(claimPartyOf(claimant, PartyRole.CLAIMANT));
+
+        assertThat(CaseAccessGroupsUtil.deriveCaseAccessGroups(Set.of(claimant)))
+            .extracting(lv -> lv.getValue().getCaseAccessGroupId())
+            .containsExactly("PCS:PCS:solicitor-org-claimant-access:claimant-solicitor:J1XJ9VJ");
+    }
+
+    @Test
+    void shouldDeriveFromTheClaimRoleWhenTheCreatorFlagWasNeverSet() {
+        PartyEntity claimant = party("J1XJ9VJ", "SOLICITOR_PROFILE", false);
+        claimant.getClaimParties().add(claimPartyOf(claimant, PartyRole.CLAIMANT));
+
+        assertThat(CaseAccessGroupsUtil.deriveCaseAccessGroups(Set.of(claimant)))
+            .extracting(lv -> lv.getValue().getCaseAccessGroupId())
+            .containsExactly("PCS:PCS:solicitor-org-claimant-access:claimant-solicitor:J1XJ9VJ");
+    }
+
+    private ClaimPartyEntity claimPartyOf(PartyEntity party, PartyRole role) {
+        return ClaimPartyEntity.builder().party(party).role(role).build();
     }
 
     @Test
