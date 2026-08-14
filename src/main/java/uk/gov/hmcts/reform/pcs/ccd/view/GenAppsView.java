@@ -88,7 +88,7 @@ public class GenAppsView {
             .orElse(null);
     }
 
-    private List<ListValue<Document>> createSupportingDocumentList(GenAppEntity genAppEntity) {
+    private List<ListValue<DocumentWithId>> createSupportingDocumentList(GenAppEntity genAppEntity) {
         Set<String> seenDocumentReferences = new HashSet<>();
         addDocumentReferences(genAppEntity.getSubmissionDocument(), seenDocumentReferences);
 
@@ -96,9 +96,14 @@ public class GenAppsView {
             .filter(documentEntity -> isNewDocument(documentEntity, seenDocumentReferences))
             .map(documentEntity -> {
                 Document document = mapDocument(documentEntity);
-                return ListValue.<Document>builder()
+                DocumentWithId documentWithId = DocumentWithId.builder()
                     .id(documentEntity.getId().toString())
-                    .value(document)
+                    .document(document)
+                    .build();
+
+                return ListValue.<DocumentWithId>builder()
+                    .id(documentEntity.getId().toString())
+                    .value(documentWithId)
                     .build();
             })
             .toList();

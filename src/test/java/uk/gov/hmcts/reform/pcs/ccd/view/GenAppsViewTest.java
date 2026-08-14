@@ -231,14 +231,17 @@ class GenAppsViewTest {
 
         assertThat(genApps).hasSize(1);
 
-        List<ListValue<Document>> actualSupportingDocuments = genApps.getFirst().getValue().getSupportingDocuments();
+        List<ListValue<DocumentWithId>> actualSupportingDocuments =
+            genApps.getFirst().getValue().getSupportingDocuments();
 
         assertThat(actualSupportingDocuments).hasSize(2);
         assertThat(actualSupportingDocuments.get(0).getId()).isEqualTo(pcsDocumentId1.toString());
-        assertThat(actualSupportingDocuments.get(0).getValue()).isEqualTo(expectedSupportingDocument1);
+        assertThat(actualSupportingDocuments.get(0).getValue().getId()).isEqualTo(pcsDocumentId1.toString());
+        assertThat(actualSupportingDocuments.get(0).getValue().getDocument()).isEqualTo(expectedSupportingDocument1);
 
         assertThat(actualSupportingDocuments.get(1).getId()).isEqualTo(pcsDocumentId2.toString());
-        assertThat(actualSupportingDocuments.get(1).getValue()).isEqualTo(expectedSupportingDocument2);
+        assertThat(actualSupportingDocuments.get(1).getValue().getId()).isEqualTo(pcsDocumentId2.toString());
+        assertThat(actualSupportingDocuments.get(1).getValue().getDocument()).isEqualTo(expectedSupportingDocument2);
 
     }
 
@@ -300,14 +303,15 @@ class GenAppsViewTest {
         underTest.setCaseFields(pcsCase, pcsCaseEntity);
 
         // Then
-        List<ListValue<Document>> actualSupportingDocuments = pcsCase.getGenApps()
+        List<ListValue<DocumentWithId>> actualSupportingDocuments = pcsCase.getGenApps()
             .getFirst()
             .getValue()
             .getSupportingDocuments();
 
         assertThat(actualSupportingDocuments).hasSize(1);
         assertThat(actualSupportingDocuments.getFirst().getId()).isEqualTo(supportingDocumentId.toString());
-        assertThat(actualSupportingDocuments.getFirst().getValue()).isEqualTo(expectedSupportingDocument);
+        assertThat(actualSupportingDocuments.getFirst().getValue().getId()).isEqualTo(supportingDocumentId.toString());
+        assertThat(actualSupportingDocuments.getFirst().getValue().getDocument()).isEqualTo(expectedSupportingDocument);
     }
 
     @Test
@@ -342,14 +346,15 @@ class GenAppsViewTest {
         underTest.setCaseFields(pcsCase, pcsCaseEntity);
 
         // Then
-        List<ListValue<Document>> actualSupportingDocuments = pcsCase.getGenApps()
+        List<ListValue<DocumentWithId>> actualSupportingDocuments = pcsCase.getGenApps()
             .getFirst()
             .getValue()
             .getSupportingDocuments();
 
         assertThat(actualSupportingDocuments).hasSize(1);
         assertThat(actualSupportingDocuments.getFirst().getId()).isEqualTo(supportingDocumentId.toString());
-        assertThat(actualSupportingDocuments.getFirst().getValue().getFilename())
+        assertThat(actualSupportingDocuments.getFirst().getValue().getId()).isEqualTo(supportingDocumentId.toString());
+        assertThat(actualSupportingDocuments.getFirst().getValue().getDocument().getFilename())
             .isEqualTo("genApps GA1 - Defendant 1.docx");
     }
 

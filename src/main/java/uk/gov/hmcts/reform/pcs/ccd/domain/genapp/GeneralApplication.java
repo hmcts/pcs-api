@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentWithId;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
@@ -28,7 +27,7 @@ public class GeneralApplication {
 
     private DocumentWithId submissionDocument;
 
-    private List<ListValue<Document>> supportingDocuments;
+    private List<ListValue<DocumentWithId>> supportingDocuments;
 
     private Integer rank;
 

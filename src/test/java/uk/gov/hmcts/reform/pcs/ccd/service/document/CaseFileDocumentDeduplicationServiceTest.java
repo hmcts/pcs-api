@@ -61,7 +61,7 @@ class CaseFileDocumentDeduplicationServiceTest {
     }
 
     @Test
-    void shouldRemoveGenAppDocumentsFromAllDocumentsWhenTheyAppearInGenApps() {
+    void shouldKeepGenAppDocumentsInAllDocumentsWhenTheyAppearInGenApps() {
         // Given
         ListValue<Document> submissionDocument = documentListValue("submission-document-id", "general-application.pdf");
         ListValue<Document> supportingDocument = documentListValue("supporting-document-id", "genApps.docx");
@@ -73,7 +73,7 @@ class CaseFileDocumentDeduplicationServiceTest {
                                            .submissionDocument(DocumentWithId.builder()
                                                                    .id(submissionDocument.getId())
                                                                    .build())
-                                           .supportingDocuments(List.of(supportingDocument))
+                                           .supportingDocuments(List.of(documentWithIdListValue(supportingDocument)))
                                            .build())
                                 .build()))
             .build();
@@ -82,11 +82,11 @@ class CaseFileDocumentDeduplicationServiceTest {
         underTest.removeDocumentsAlreadyPresentInOtherCaseFields(pcsCase);
 
         // Then
-        assertThat(pcsCase.getAllDocuments()).containsExactly(otherDocument);
+        assertThat(pcsCase.getAllDocuments()).containsExactly(submissionDocument, supportingDocument, otherDocument);
     }
 
     @Test
-    void shouldRemoveGenAppDocumentsFromAllDocumentsWhenTheyHaveDifferentIdsButSameUrls() {
+    void shouldKeepGenAppDocumentsInAllDocumentsWhenTheyHaveDifferentIdsButSameUrls() {
         // Given
         Document submissionDocument = Document.builder()
             .filename("General Application GA1 - Defendant 1.pdf")
@@ -124,9 +124,12 @@ class CaseFileDocumentDeduplicationServiceTest {
                                                                    .id("submission-document-id")
                                                                    .document(submissionDocument)
                                                                    .build())
-                                           .supportingDocuments(List.of(ListValue.<Document>builder()
+                                           .supportingDocuments(List.of(ListValue.<DocumentWithId>builder()
                                                                            .id("supporting-document-id")
-                                                                           .value(supportingDocument)
+                                                                           .value(DocumentWithId.builder()
+                                                                                      .id("supporting-document-id")
+                                                                                      .document(supportingDocument)
+                                                                                      .build())
                                                                            .build()))
                                            .build())
                                 .build()))
@@ -136,11 +139,15 @@ class CaseFileDocumentDeduplicationServiceTest {
         underTest.removeDocumentsAlreadyPresentInOtherCaseFields(pcsCase);
 
         // Then
-        assertThat(pcsCase.getAllDocuments()).containsExactly(sameFilenameDifferentDocument);
+        assertThat(pcsCase.getAllDocuments()).containsExactly(
+            duplicateSubmissionDocument,
+            duplicateSupportingDocument,
+            sameFilenameDifferentDocument
+        );
     }
 
     @Test
-    void shouldRemoveGenAppDocumentFromAllDocumentsWhenOnlyGenAppFilenameMatches() {
+    void shouldKeepGenAppDocumentInAllDocumentsWhenOnlyGenAppFilenameMatches() {
         // Given
         ListValue<Document> allDocumentsSupportingDocument = ListValue.<Document>builder()
             .id("all-documents-supporting-document-id")
@@ -151,10 +158,13 @@ class CaseFileDocumentDeduplicationServiceTest {
                        .build())
             .build();
         ListValue<Document> otherDocument = documentListValue("other-document-id", "other.pdf");
-        ListValue<Document> genAppSupportingDocument = ListValue.<Document>builder()
+        ListValue<DocumentWithId> genAppSupportingDocument = ListValue.<DocumentWithId>builder()
             .id("gen-app-supporting-document-id")
-            .value(Document.builder()
-                       .filename(" GENAPPS GA1 - DEFENDANT 1.DOCX ")
+            .value(DocumentWithId.builder()
+                       .id("gen-app-supporting-document-id")
+                       .document(Document.builder()
+                                     .filename(" GENAPPS GA1 - DEFENDANT 1.DOCX ")
+                                     .build())
                        .build())
             .build();
 
@@ -171,7 +181,7 @@ class CaseFileDocumentDeduplicationServiceTest {
         underTest.removeDocumentsAlreadyPresentInOtherCaseFields(pcsCase);
 
         // Then
-        assertThat(pcsCase.getAllDocuments()).containsExactly(otherDocument);
+        assertThat(pcsCase.getAllDocuments()).containsExactly(allDocumentsSupportingDocument, otherDocument);
     }
 
     @Test
@@ -280,6 +290,16 @@ class CaseFileDocumentDeduplicationServiceTest {
             .id(id)
             .value(Document.builder()
                        .filename(filename)
+                       .build())
+            .build();
+    }
+
+    private static ListValue<DocumentWithId> documentWithIdListValue(ListValue<Document> document) {
+        return ListValue.<DocumentWithId>builder()
+            .id(document.getId())
+            .value(DocumentWithId.builder()
+                       .id(document.getId())
+                       .document(document.getValue())
                        .build())
             .build();
     }

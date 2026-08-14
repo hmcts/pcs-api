@@ -3,12 +3,10 @@ package uk.gov.hmcts.reform.pcs.ccd.service.document;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
-import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentWithId;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServedDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsSection;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
-import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GeneralApplication;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.CaseDetailsTab;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.NoticeTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.RequiredDocumentsTabDetails;
@@ -20,14 +18,11 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.wales.WalesDocuments;
 
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Set;
 import java.util.stream.Stream;
 
 @Service
 public class CaseFileDocumentDeduplicationService {
-
-    private static final String FILENAME_REFERENCE_PREFIX = "filename:";
 
     public void removeDocumentsAlreadyPresentInOtherCaseFields(PCSCase pcsCase) {
         List<ListValue<Document>> allDocuments = pcsCase.getAllDocuments();
@@ -56,8 +51,6 @@ public class CaseFileDocumentDeduplicationService {
             documentReferences
         );
         addDocumentReferencesFromCaseDetailsTab(pcsCase.getCaseDetailsTab(), documentReferences);
-        addDocumentReferencesFromGenApps(pcsCase.getGenApps(), documentReferences);
-
         return documentReferences;
     }
 
@@ -166,48 +159,6 @@ public class CaseFileDocumentDeduplicationService {
         }
     }
 
-    private void addDocumentReferencesFromGenApps(List<ListValue<GeneralApplication>> genApps,
-                                                 Set<String> documentReferences) {
-        if (genApps == null) {
-            return;
-        }
-
-        genApps.stream()
-            .map(ListValue::getValue)
-            .forEach(genApp -> addDocumentReferencesFromGenApp(genApp, documentReferences));
-    }
-
-    private void addDocumentReferencesFromGenApp(GeneralApplication genApp, Set<String> documentReferences) {
-        if (genApp == null) {
-            return;
-        }
-
-        addGenAppDocumentReferenceFromDocumentWithId(genApp.getSubmissionDocument(), documentReferences);
-        addGenAppDocumentReferences(genApp.getSupportingDocuments(), documentReferences);
-    }
-
-    private void addGenAppDocumentReferenceFromDocumentWithId(DocumentWithId document,
-                                                             Set<String> documentReferences) {
-        if (document != null) {
-            addDocumentReference(document.getId(), documentReferences);
-            addDocumentReferences(document.getDocument(), documentReferences);
-            addFilenameReference(document.getDocument(), documentReferences);
-        }
-    }
-
-    private void addGenAppDocumentReferences(List<ListValue<Document>> documents, Set<String> documentReferences) {
-        if (documents == null) {
-            return;
-        }
-
-        documents.stream()
-            .forEach(document -> {
-                documentReferences(document)
-                    .forEach(reference -> addDocumentReference(reference, documentReferences));
-                addFilenameReference(document, documentReferences);
-            });
-    }
-
     private void addDocumentReferences(List<ListValue<Document>> documents, Set<String> documentReferences) {
         if (documents == null) {
             return;
@@ -247,34 +198,7 @@ public class CaseFileDocumentDeduplicationService {
             return Stream.empty();
         }
 
-        return Stream.concat(
-            documentReferences(document),
-            filenameReference(document.getValue())
-        );
-    }
-
-    private void addFilenameReference(ListValue<Document> document, Set<String> documentReferences) {
-        if (document != null) {
-            addFilenameReference(document.getValue(), documentReferences);
-        }
-    }
-
-    private void addFilenameReference(Document document, Set<String> documentReferences) {
-        filenameReference(document)
-            .forEach(reference -> addDocumentReference(reference, documentReferences));
-    }
-
-    private Stream<String> filenameReference(Document document) {
-        if (document == null || document.getFilename() == null) {
-            return Stream.empty();
-        }
-
-        String filename = document.getFilename().trim();
-        if (filename.isEmpty()) {
-            return Stream.empty();
-        }
-
-        return Stream.of(FILENAME_REFERENCE_PREFIX + filename.toLowerCase(Locale.ROOT));
+        return documentReferences(document);
     }
 
     private void addDocumentReference(String documentReference, Set<String> documentReferences) {
