@@ -16,6 +16,7 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -52,6 +53,10 @@ public class LegalRepresentativeOrganisationEntity {
     @JsonManagedReference
     private List<ClaimPartyLegalRepresentativeOrganisationEntity> claimPartyLegalRepresentativeOrganisationList =
         new ArrayList<>();
+
+    private LocalDateTime createdDate;
+
+    private LocalDateTime lastModifiedDate;
 
     public void addParty(PartyEntity party) {
         if (this.claimPartyLegalRepresentativeOrganisationList.stream().anyMatch(e ->

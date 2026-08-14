@@ -2,7 +2,9 @@ create table legal_representative_organisation (
   id integer NOT NULL GENERATED ALWAYS AS IDENTITY,
   organisation_id VARCHAR(64) NOT NULL,
   organisation_profile_id VARCHAR(64) NOT NULL,
-  organisation_name VARCHAR(120)
+  organisation_name VARCHAR(120),
+  created_date TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+  last_modified_date TIMESTAMP WITHOUT TIME ZONE
 );
 
 create table claim_party_legal_representative_org (
