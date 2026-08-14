@@ -151,9 +151,10 @@ public class PartyService {
     }
 
     /**
-     * The claimant party a shell case is created with, so CaseAccessGroups derive during the draft phase.
-     * Both organisation values are required: without them the case derives no group, and group
-     * access is the only way in, so nobody could open it.
+     * The claimant party a shell case is created with, marked as the claim creator so CaseAccessGroups
+     * derive during the draft phase, before there is a claim role to read. Both organisation values are
+     * required: without them the case derives no group, and group access is the only way in, so nobody
+     * could open it.
      */
     public void createClaimantStub(PcsCaseEntity pcsCaseEntity) {
         OrganisationDetailsResponse organisationDetails = organisationService.getOrganisationDetailsForCurrentUser();
