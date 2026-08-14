@@ -88,7 +88,7 @@ public class TaskDescriptionService {
             .map(ListValue::getValue)
             .filter(TaskDescriptionService::isCaseFlagActive)
             .map(FlagDetail::getName)
-            .map((name) -> name.replace("&#39;", "’"))
+            .map((name) -> name.replace("’", "\\u2019"))
             .toList();
 
         Map<String, Object> context = Map.of(
