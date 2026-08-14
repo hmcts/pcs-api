@@ -7,10 +7,6 @@
     <cve>CVE-2026-54428</cve>
   </suppress>
   <suppress until="2026-08-18">
-    <notes><![CDATA[file name: httpclient5-5.5.2.jar]]></notes>
-    <cve>CVE-2026-64607</cve>
-  </suppress>
-  <suppress until="2026-08-18">
     <notes><![CDATA[jackson-databind-3.1.1.jar]]></notes>
     <cve>CVE-2026-54512</cve>
     <cve>CVE-2026-54513</cve>
@@ -25,30 +21,6 @@
     <cve>CVE-2020-29582</cve>
     <cve>CVE-2026-53914</cve>
     <cve>CVE-2026-64607</cve>
-  </suppress>
-  <suppress until="2026-08-18">
-    <notes><![CDATA[elasticsearch-java-9.4.2.jar/elasticsearch-rest5-client-9.4.2.jar]]></notes>
-    <cve>CVE-2026-56148</cve>
-    <cve>CVE-2026-56149</cve>
-    <cve>CVE-2026-63144</cve>
-    <cve>CVE-2026-63263</cve>
-  </suppress>
-  <suppress until="2026-08-18">
-    <notes><![CDATA[elasticsearch-rest-client-8.18.8.jar]]></notes>
-    <cve>CVE-2025-37731</cve>
-    <cve>CVE-2025-68384</cve>
-    <cve>CVE-2025-68390</cve>
-    <cve>CVE-2026-56144</cve>
-    <cve>CVE-2026-56145</cve>
-    <cve>CVE-2026-63136</cve>
-    <cve>CVE-2026-63140</cve>
-  </suppress>
-  <suppress until="2026-08-23">
-    <notes><![CDATA[elasticsearch-rest-client-8.18.8.jar]]></notes>
-    <cve>CVE-2026-56144</cve>
-    <cve>CVE-2026-56145</cve>
-    <cve>CVE-2026-63136</cve>
-    <cve>CVE-2026-63140</cve>
   </suppress>
   <suppress until="2026-08-18">
     <notes><![CDATA[angus-activation-2.0.3.jar]]></notes>
@@ -67,14 +39,5 @@
       ]]></notes>
       <packageUrl regex="true">^pkg:maven/org\.apache\.tomcat\.embed/tomcat\-embed\-.*$</packageUrl>
       <cve>CVE-2026-66299</cve>
-   </suppress>
-   <suppress until="2026-08-25">
-      <notes><![CDATA[
-      CVE-2026-64607 against httpclient5 5.5.2 (transitive via Spring/Feign).
-      No fixed httpclient5 release available yet; temporary suppression,
-      remove when the dependency resolves to the fixed version.
-      ]]></notes>
-      <packageUrl regex="true">^pkg:maven/org\.apache\.httpcomponents\.client5/httpclient5@.*$</packageUrl>
-      <cve>CVE-2026-64607</cve>
    </suppress>
 </suppressions>
