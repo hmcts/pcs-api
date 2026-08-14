@@ -6,7 +6,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -17,6 +16,7 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -42,14 +42,21 @@ public class LegalRepresentativeOrganisationEntity {
 
     private String organisationProfileId;
 
-    @OneToOne(mappedBy = "legalRepresentativeOrganisation", cascade = ALL)
-    private LegalRepresentativeOrganisationContactDetailsEntity legalRepresentativeOrganisationContactDetails;
+    @OneToMany(mappedBy = "legalRepresentativeOrganisation", fetch = LAZY, cascade = ALL)
+    @Builder.Default
+    @JsonManagedReference
+    private List<LegalRepresentativeOrganisationContactDetailsEntity> legalRepresentativeOrganisationContactDetails =
+        new ArrayList<>();
 
     @OneToMany(fetch = LAZY, cascade = ALL, mappedBy = "legalRepresentativeOrganisation")
     @Builder.Default
     @JsonManagedReference
     private List<ClaimPartyLegalRepresentativeOrganisationEntity> claimPartyLegalRepresentativeOrganisationList =
         new ArrayList<>();
+
+    private LocalDateTime createdDate;
+
+    private LocalDateTime lastModifiedDate;
 
     public void addParty(PartyEntity party) {
         if (this.claimPartyLegalRepresentativeOrganisationList.stream().anyMatch(e ->
@@ -68,10 +75,11 @@ public class LegalRepresentativeOrganisationEntity {
         party.getPartyLegalRepresentativeOrganisationList().add(claimPartyLegalRepresentativeOrganisationEntity);
     }
 
-    public void setLegalRepresentativeOrganisationContactDetails(
+    public void addLegalRepresentativeOrganisationContactDetails(
         LegalRepresentativeOrganisationContactDetailsEntity contactDetails) {
-        this.legalRepresentativeOrganisationContactDetails = contactDetails;
+
         if (contactDetails != null) {
+            this.legalRepresentativeOrganisationContactDetails.add(contactDetails);
             contactDetails.setLegalRepresentativeOrganisation(this);
         }
     }

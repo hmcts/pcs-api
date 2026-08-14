@@ -1,0 +1,36 @@
+services:
+  camunda-local:
+    platform: linux/amd64
+    image: hmctssandbox.azurecr.io/camunda-local:latest
+    container_name: camunda-local
+    ports:
+      - "8097:8097"
+  wa-workflow-api:
+    platform: linux/amd64
+    image: hmctsprod.azurecr.io/wa/workflow-api:latest
+    container_name: wa-workflow-api
+    ports:
+      - "8099:8099"
+    environment:
+      CAMUNDA_URL: "http://host.docker.internal:8097/engine-rest"
+      S2S_URL: "http://host.docker.internal:8489"
+      POSTGRES_HOST: "host.docker.internal"
+      POSTGRES_PORT: 6432
+  wa-task-monitor:
+    platform: linux/amd64
+    image: hmctsprod.azurecr.io/wa/task-monitor:latest
+    container_name: wa-task-monitor
+    ports:
+      - "8077:8077"
+    environment:
+      OPEN_ID_IDAM_URL: "http://host.docker.internal:5062"
+      IDAM_URL: "http://host.docker.internal:5062"
+      CAMUNDA_URL: "http://host.docker.internal:8097/engine-rest"
+      CCD_URL: "http://host.docker.internal:4452"
+      S2S_URL: "http://host.docker.internal:8489"
+      WA_TASK_MANAGEMENT_API_URL: "http://host.docker.internal:8087"
+      WA_SYSTEM_USERNAME: "wa-system-user@localhost@hmcts.net"
+      WA_S2S_AUTHORIZED_SERVICES: "wa_task_monitor,wa_task_management_api,pcs_api"
+      POSTGRES_HOST: "host.docker.internal"
+      POSTGRES_PORT: 6432
+      POSTGRES_USERNAME: "postgres"
