@@ -338,7 +338,9 @@ sonarqube {
       "**/model/**," +
       "**/uk/gov/hmcts/reform/pcs/testingsupport/**/*.java"
     property "sonar.cpd.exclusions", "**/uk/gov/hmcts/reform/pcs/ccd/domain/enforcetheorder/warrant/StatementOfTruthDetails.java," +
-      "**/uk/gov/hmcts/reform/pcs/ccd/domain/genapp/*.java,"
+      "**/uk/gov/hmcts/reform/pcs/ccd/domain/genapp/*.java," +
+      "**/uk/gov/hmcts/reform/pcs/ccd/domain/documentamend/DocumentAmendDetails.java," +
+      "**/uk/gov/hmcts/reform/pcs/ccd/domain/documentremoval/DocumentRemovalDetails.java,"
   }
 }
 
@@ -432,7 +434,7 @@ dependencies {
   implementation group: 'com.github.kagkarlsson', name: 'db-scheduler-spring-boot-starter', version: '16.12.0'
   implementation group: 'org.apache.tomcat.embed', name: 'tomcat-embed-core', version: tomcatEmbedVersion
   implementation group: 'org.apache.tomcat.embed', name: 'tomcat-embed-websocket', version: tomcatEmbedVersion
-  implementation group: 'com.github.ben-manes.caffeine', name: 'caffeine', version: '3.2.3'
+  implementation group: 'com.github.ben-manes.caffeine', name: 'caffeine', version: '3.2.4'
   annotationProcessor group: 'org.projectlombok', name: 'lombok', version: lombokVersion
 
   testImplementation group: 'io.rest-assured', name: 'rest-assured', version: '6.0.1'
