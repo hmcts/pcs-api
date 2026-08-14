@@ -15,7 +15,12 @@ import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.reform.pcs.ccd.service.casedeletion.CaseDeletionService;
 import uk.gov.hmcts.reform.pcs.ccd.service.casedeletion.CcdCaseDataDeletionService;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
+import uk.gov.hmcts.reform.pcs.exception.CcdCaseDataDeletionException;
+import uk.gov.hmcts.reform.pcs.exception.CcdCaseDeletionEventException;
 import uk.gov.hmcts.reform.pcs.exception.CcdCaseNotFoundException;
+import uk.gov.hmcts.reform.pcs.exception.DocumentDeletionException;
+import uk.gov.hmcts.reform.pcs.exception.DraftDataDeletionException;
+import uk.gov.hmcts.reform.pcs.exception.PcsCaseDeletionException;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -114,9 +119,8 @@ public class CaseDeletionScheduledTask {
         } catch (CcdCaseNotFoundException e) {
             log.error("Case not found in main ccd datastore. Will proceed to delete in decentralised ccd schema");
         } catch (FeignException e) {
-            log.error("Error occurred while performing case deletion tasks for case: {}. Error: {}",
-                    caseRef, e.getMessage());
-            throw e;
+            log.error("Error occurred while performing case deletion tasks for case: {}", caseRef, e);
+            throw new CcdCaseDeletionEventException(caseRef);
         }
         try {
             cleanupDiscardedDraftCases(caseRef);
@@ -126,8 +130,20 @@ public class CaseDeletionScheduledTask {
     }
 
     private void cleanupDiscardedDraftCases(long caseRef) {
-        caseDeletionService.deleteDocuments(caseRef);
-        caseDeletionService.deleteCase(caseRef);
+        try {
+            caseDeletionService.deleteDocuments(caseRef);
+            caseDeletionService.deletePcsCase(caseRef);
+            caseDeletionService.deleteCcdCase(caseRef);
+            caseDeletionService.deleteDraftData(caseRef);
+        } catch (DocumentDeletionException e) {
+            log.error("Error occurred while deleting documents from cdam for reference: {}", caseRef, e);
+        } catch (PcsCaseDeletionException e) {
+            log.error("Error occurred while deleting PcsCase data for reference: {}", caseRef, e);
+        } catch (CcdCaseDataDeletionException e) {
+            log.error("Error occurred while deleting CCD case data for reference: {}", caseRef, e);
+        } catch (DraftDataDeletionException e) {
+            log.error("Error occurred while deleting draft data for case reference: {}", caseRef, e);
+        }
     }
 
     private Runnable wrapWithMdc(Runnable task) {

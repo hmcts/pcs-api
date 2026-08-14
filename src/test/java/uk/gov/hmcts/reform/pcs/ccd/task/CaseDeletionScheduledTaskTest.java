@@ -12,7 +12,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.service.casedeletion.CaseDeletionService;
 import uk.gov.hmcts.reform.pcs.ccd.service.casedeletion.CcdCaseDataDeletionService;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
+import uk.gov.hmcts.reform.pcs.exception.CcdCaseDataDeletionException;
 import uk.gov.hmcts.reform.pcs.exception.CcdCaseNotFoundException;
+import uk.gov.hmcts.reform.pcs.exception.DocumentDeletionException;
+import uk.gov.hmcts.reform.pcs.exception.DraftDataDeletionException;
+import uk.gov.hmcts.reform.pcs.exception.PcsCaseDeletionException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,7 +40,6 @@ class CaseDeletionScheduledTaskTest {
 
     private final Long case1 = 1L;
     private final Long case2 = 2L;
-    private final Long case3 = 3L;
 
     @Mock
     private CcdCaseDataDeletionService ccdCaseDataDeletionService;
@@ -75,11 +78,15 @@ class CaseDeletionScheduledTaskTest {
             verify(ccdCaseDataDeletionService).markCaseForDeletion(case1);
             verify(ccdCaseDataDeletionService).confirmCaseDisposal(case1);
             verify(caseDeletionService).deleteDocuments(case1);
-            verify(caseDeletionService).deleteCase(case1);
+            verify(caseDeletionService).deleteCcdCase(case1);
+            verify(caseDeletionService).deleteDraftData(case1);
+            verify(caseDeletionService).deletePcsCase(case1);
             verify(ccdCaseDataDeletionService).markCaseForDeletion(case2);
             verify(ccdCaseDataDeletionService).confirmCaseDisposal(case2);
             verify(caseDeletionService).deleteDocuments(case2);
-            verify(caseDeletionService).deleteCase(case2);
+            verify(caseDeletionService).deleteCcdCase(case2);
+            verify(caseDeletionService).deleteDraftData(case2);
+            verify(caseDeletionService).deletePcsCase(case2);
         }
 
         @Test
@@ -102,8 +109,6 @@ class CaseDeletionScheduledTaskTest {
             // Given
             List<Long> caseRefs = new ArrayList<>();
             caseRefs.add(case1);
-            caseRefs.add(case2);
-            caseRefs.add(case3);
             when(ccdCaseDataDeletionService.findExpiredDraftCases(discardAfterDays))
                     .thenReturn(caseRefs);
 
@@ -114,10 +119,12 @@ class CaseDeletionScheduledTaskTest {
             assertDoesNotThrow(() -> underTest.runSweep());
 
             // Then
-            verify(ccdCaseDataDeletionService, times(3)).markCaseForDeletion(anyLong());
-            verify(ccdCaseDataDeletionService, times(2)).confirmCaseDisposal(anyLong());
-            verify(caseDeletionService, times(3)).deleteDocuments(anyLong());
-            verify(caseDeletionService, times(3)).deleteCase(anyLong());
+            verify(ccdCaseDataDeletionService).markCaseForDeletion(case1);
+            verify(ccdCaseDataDeletionService, never()).confirmCaseDisposal(case1);
+            verify(caseDeletionService).deleteDocuments(case1);
+            verify(caseDeletionService).deleteCcdCase(case1);
+            verify(caseDeletionService).deleteDraftData(case1);
+            verify(caseDeletionService).deletePcsCase(case1);
         }
 
         @Test
@@ -126,21 +133,22 @@ class CaseDeletionScheduledTaskTest {
             List<Long> caseRefs = new ArrayList<>();
             caseRefs.add(case1);
             caseRefs.add(case2);
-            caseRefs.add(case3);
             when(ccdCaseDataDeletionService.findExpiredDraftCases(discardAfterDays))
                     .thenReturn(caseRefs);
 
             doThrow(new CaseNotFoundException(case1))
-                    .when(caseDeletionService).deleteCase(case1);
+                    .when(caseDeletionService).deletePcsCase(case1);
 
             // When
             assertDoesNotThrow(() -> underTest.runSweep());
 
             // Then
-            verify(ccdCaseDataDeletionService, times(3)).markCaseForDeletion(anyLong());
-            verify(ccdCaseDataDeletionService, times(3)).confirmCaseDisposal(anyLong());
-            verify(caseDeletionService, times(3)).deleteDocuments(anyLong());
-            verify(caseDeletionService, times(3)).deleteCase(anyLong());
+            verify(ccdCaseDataDeletionService, times(2)).markCaseForDeletion(anyLong());
+            verify(ccdCaseDataDeletionService, times(2)).confirmCaseDisposal(anyLong());
+            verify(caseDeletionService, times(2)).deleteDocuments(anyLong());
+            verify(caseDeletionService, times(1)).deleteCcdCase(anyLong());
+            verify(caseDeletionService, times(1)).deleteDraftData(anyLong());
+            verify(caseDeletionService, times(2)).deletePcsCase(anyLong());
         }
 
         @Test
@@ -167,7 +175,9 @@ class CaseDeletionScheduledTaskTest {
             verify(ccdCaseDataDeletionService).markCaseForDeletion(case1);
             verify(ccdCaseDataDeletionService, never()).confirmCaseDisposal(case1);
             verify(caseDeletionService).deleteDocuments(case1);
-            verify(caseDeletionService).deleteCase(case1);
+            verify(caseDeletionService).deleteCcdCase(case1);
+            verify(caseDeletionService).deleteDraftData(case1);
+            verify(caseDeletionService).deletePcsCase(case1);
         }
 
         @Test
@@ -188,7 +198,9 @@ class CaseDeletionScheduledTaskTest {
             verify(ccdCaseDataDeletionService).markCaseForDeletion(case1);
             verify(ccdCaseDataDeletionService, never()).confirmCaseDisposal(case1);
             verify(caseDeletionService, never()).deleteDocuments(case1);
-            verify(caseDeletionService, never()).deleteCase(case1);
+            verify(caseDeletionService, never()).deleteCcdCase(case1);
+            verify(caseDeletionService, never()).deleteDraftData(case1);
+            verify(caseDeletionService, never()).deletePcsCase(case1);
         }
     }
 
@@ -206,9 +218,13 @@ class CaseDeletionScheduledTaskTest {
             // Then
             verify(ccdCaseDataDeletionService).findExpiredDraftCasesInDraftDiscardedState();
             verify(caseDeletionService).deleteDocuments(case1);
-            verify(caseDeletionService).deleteCase(case1);
+            verify(caseDeletionService).deleteCcdCase(case1);
+            verify(caseDeletionService).deleteDraftData(case1);
+            verify(caseDeletionService).deletePcsCase(case1);
             verify(caseDeletionService).deleteDocuments(case2);
-            verify(caseDeletionService).deleteCase(case2);
+            verify(caseDeletionService).deleteCcdCase(case2);
+            verify(caseDeletionService).deleteDraftData(case2);
+            verify(caseDeletionService).deletePcsCase(case2);
         }
 
         @Test
@@ -226,23 +242,96 @@ class CaseDeletionScheduledTaskTest {
         }
 
         @Test
-        void shouldContinueProcessingWhenIndividualDeletionThrowsException() {
+        void shouldContinueProcessingWhenExceptionThrownWhileDeletingDocuments() {
             // Given
-            List<Long> caseRefs = List.of(111L, 222L, 333L);
+            List<Long> caseRefs = List.of(case1, case2);
             when(ccdCaseDataDeletionService.findExpiredDraftCasesInDraftDiscardedState())
                     .thenReturn(caseRefs);
 
-            doThrow(new RuntimeException("Database down"))
-                    .when(caseDeletionService).deleteCase(111L);
+            doThrow(new DocumentDeletionException(case1))
+                    .when(caseDeletionService).deleteDocuments(case1);
+
+            // When
+            underTest.runSweep();
+
+            // Then
+            verify(caseDeletionService).deleteDocuments(case1);
+            verify(caseDeletionService).deleteDocuments(case2);
+            verify(caseDeletionService).deletePcsCase(case2);
+            verify(caseDeletionService).deleteCcdCase(case2);
+            verify(caseDeletionService).deleteDraftData(case2);
+        }
+
+        @Test
+        void shouldContinueProcessingWhenExceptionThrownDeletingPcsCase() {
+            // Given
+            List<Long> caseRefs = List.of(case1, case2);
+            when(ccdCaseDataDeletionService.findExpiredDraftCasesInDraftDiscardedState())
+                    .thenReturn(caseRefs);
+
+            doThrow(new PcsCaseDeletionException(case1))
+                    .when(caseDeletionService).deletePcsCase(case1);
 
             // When
             assertDoesNotThrow(() -> underTest.runSweep());
 
             // Then
-            verify(caseDeletionService, times(3)).deleteCase(anyLong());
-            verify(caseDeletionService).deleteCase(111L);
-            verify(caseDeletionService).deleteCase(222L);
-            verify(caseDeletionService).deleteCase(333L);
+            verify(caseDeletionService).deleteDocuments(case1);
+            verify(caseDeletionService).deletePcsCase(case1);
+            verify(caseDeletionService, never()).deleteCcdCase(case1);
+            verify(caseDeletionService, never()).deleteDraftData(case1);
+            verify(caseDeletionService).deleteDocuments(case2);
+            verify(caseDeletionService).deletePcsCase(case2);
+            verify(caseDeletionService).deleteCcdCase(case2);
+            verify(caseDeletionService).deleteDraftData(case2);
+        }
+
+        @Test
+        void shouldContinueProcessingWhenExceptionThrownDeletingCcdCase() {
+            // Given
+            List<Long> caseRefs = List.of(case1, case2);
+            when(ccdCaseDataDeletionService.findExpiredDraftCasesInDraftDiscardedState())
+                    .thenReturn(caseRefs);
+
+            doThrow(new CcdCaseDataDeletionException(case1))
+                    .when(caseDeletionService).deleteCcdCase(case1);
+
+            // When
+            assertDoesNotThrow(() -> underTest.runSweep());
+
+            // Then
+            verify(caseDeletionService).deleteDocuments(case1);
+            verify(caseDeletionService).deletePcsCase(case1);
+            verify(caseDeletionService).deleteCcdCase(case1);
+            verify(caseDeletionService, never()).deleteDraftData(case1);
+            verify(caseDeletionService).deleteDocuments(case2);
+            verify(caseDeletionService).deletePcsCase(case2);
+            verify(caseDeletionService).deleteCcdCase(case2);
+            verify(caseDeletionService).deleteDraftData(case2);
+        }
+
+        @Test
+        void shouldContinueProcessingWhenExceptionThrownDeletingDraftData() {
+            // Given
+            List<Long> caseRefs = List.of(case1, case2);
+            when(ccdCaseDataDeletionService.findExpiredDraftCasesInDraftDiscardedState())
+                    .thenReturn(caseRefs);
+
+            doThrow(new DraftDataDeletionException(case1))
+                    .when(caseDeletionService).deleteDraftData(case1);
+
+            // When
+            assertDoesNotThrow(() -> underTest.runSweep());
+
+            // Then
+            verify(caseDeletionService).deleteDocuments(case1);
+            verify(caseDeletionService).deletePcsCase(case1);
+            verify(caseDeletionService).deleteCcdCase(case1);
+            verify(caseDeletionService).deleteDraftData(case1);
+            verify(caseDeletionService).deleteDocuments(case2);
+            verify(caseDeletionService).deletePcsCase(case2);
+            verify(caseDeletionService).deleteCcdCase(case2);
+            verify(caseDeletionService).deleteDraftData(case2);
         }
     }
 }

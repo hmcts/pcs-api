@@ -6,6 +6,7 @@ import feign.FeignException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
@@ -47,6 +48,7 @@ public class CcdCaseDataDeletionService {
         return ccdCaseRepository.findExpiredDraftCasesInDraftDiscardedState();
     }
 
+    @Transactional
     public void deleteCcdCaseData(long caseReference) {
         ccdCaseRepository.deleteCcdCaseData(caseReference);
         log.debug("Deleted case data for case reference: {}", caseReference);

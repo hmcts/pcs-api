@@ -8,6 +8,10 @@ import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.exception.CcdCaseDataDeletionException;
+import uk.gov.hmcts.reform.pcs.exception.DocumentDeletionException;
+import uk.gov.hmcts.reform.pcs.exception.DraftDataDeletionException;
+import uk.gov.hmcts.reform.pcs.exception.PcsCaseDeletionException;
 
 import java.util.List;
 
@@ -25,17 +29,48 @@ public class CaseDeletionService {
     private final DraftCaseDataService draftCaseDataService;
     private final PcsCaseService pcsCaseService;
 
+    @Transactional
     public void deleteDocuments(long caseReference) {
         List<DocumentEntity> documents = pcsCaseService.getDocuments(caseReference);
         if (!CollectionUtils.isEmpty(documents)) {
-            pcsCaseService.deleteDocuments(documents, caseReference);
+            deleteDocumentsFromCdam(documents, caseReference);
         }
     }
 
-    @Transactional(timeout = 15)
-    public void deleteCase(long caseReference) {
-        ccdCaseDataDeletionService.deleteCcdCaseData(caseReference);
-        draftCaseDataService.deleteUnsubmittedCaseDataBySystemUser(caseReference, resumePossessionClaim);
-        pcsCaseService.deleteCase(caseReference);
+    private void deleteDocumentsFromCdam(List<DocumentEntity> documents, long caseReference) {
+        if (!CollectionUtils.isEmpty(documents)) {
+            try {
+                pcsCaseService.deleteDocumentsFromCdam(documents, caseReference);
+            } catch (Exception e) {
+                throw new DocumentDeletionException(caseReference);
+            }
+        }
+    }
+
+    @Transactional
+    public void deleteCcdCase(long caseReference) {
+        try {
+            ccdCaseDataDeletionService.deleteCcdCaseData(caseReference);
+        } catch (Exception e) {
+            throw new CcdCaseDataDeletionException(caseReference);
+        }
+    }
+
+    @Transactional
+    public void deleteDraftData(long caseReference) {
+        try {
+            draftCaseDataService.deleteUnsubmittedCaseDataBySystemUser(caseReference, resumePossessionClaim);
+        } catch (Exception e) {
+            throw new DraftDataDeletionException(caseReference);
+        }
+    }
+
+    @Transactional
+    public void deletePcsCase(long caseReference) {
+        try {
+            pcsCaseService.deleteCase(caseReference);
+        } catch (Exception e) {
+            throw new PcsCaseDeletionException(caseReference);
+        }
     }
 }

@@ -111,7 +111,7 @@ public class PcsCaseService {
         return loadCase(caseReference).getDocuments();
     }
 
-    public void deleteDocuments(List<DocumentEntity> documents, long caseReference) {
+    public void deleteDocumentsFromCdam(List<DocumentEntity> documents, long caseReference) {
         documents
             .stream()
             .map(DocumentEntity::getUrl)

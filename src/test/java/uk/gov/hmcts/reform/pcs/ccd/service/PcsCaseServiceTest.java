@@ -523,6 +523,20 @@ class PcsCaseServiceTest {
     }
 
     @Test
+    void shouldDeleteCaseIfFound() {
+        // Given
+        PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
+        when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
+
+        // When
+        underTest.deleteCase(CASE_REFERENCE);
+
+        // Then
+        verify(pcsCaseRepository).delete(pcsCaseEntity);
+
+    }
+
+    @Test
     void shouldHandleDeleteCaseIfCaseNotFound() {
         // Given
         when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.empty());
@@ -575,7 +589,7 @@ class PcsCaseServiceTest {
                 DocumentEntity.builder().url("url2").build());
 
         // When
-        underTest.deleteDocuments(documents, CASE_REFERENCE);
+        underTest.deleteDocumentsFromCdam(documents, CASE_REFERENCE);
 
         // Then
         verify(documentImportService).deleteDocument("url1");
