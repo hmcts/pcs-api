@@ -2,11 +2,10 @@ package uk.gov.hmcts.reform.pcs.ccd.view;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
-import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
-import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentWithId;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
+import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GeneralApplication;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
@@ -78,39 +77,30 @@ public class GenAppsView {
             .orElse(null);
     }
 
-    private DocumentWithId getSubmissionDocument(GenAppEntity genAppEntity) {
+    private GenAppDocument getSubmissionDocument(GenAppEntity genAppEntity) {
         return Optional.ofNullable(genAppEntity.getSubmissionDocument())
-            .map(documentEntity -> DocumentWithId.builder()
-                .id(documentEntity.getId().toString())
-                .document(mapDocument(documentEntity))
-                .build()
-            )
+            .map(this::mapDocument)
             .orElse(null);
     }
 
-    private List<ListValue<DocumentWithId>> createSupportingDocumentList(GenAppEntity genAppEntity) {
+    private List<ListValue<GenAppDocument>> createSupportingDocumentList(GenAppEntity genAppEntity) {
         Set<String> seenDocumentReferences = new HashSet<>();
         addDocumentReferences(genAppEntity.getSubmissionDocument(), seenDocumentReferences);
 
         return genAppEntity.getDocuments().stream()
             .filter(documentEntity -> isNewDocument(documentEntity, seenDocumentReferences))
             .map(documentEntity -> {
-                Document document = mapDocument(documentEntity);
-                DocumentWithId documentWithId = DocumentWithId.builder()
+                return ListValue.<GenAppDocument>builder()
                     .id(documentEntity.getId().toString())
-                    .document(document)
-                    .build();
-
-                return ListValue.<DocumentWithId>builder()
-                    .id(documentEntity.getId().toString())
-                    .value(documentWithId)
+                    .value(mapDocument(documentEntity))
                     .build();
             })
             .toList();
     }
 
-    private Document mapDocument(DocumentEntity documentEntity) {
-        return Document.builder()
+    private GenAppDocument mapDocument(DocumentEntity documentEntity) {
+        return GenAppDocument.builder()
+            .id(documentEntity.getId().toString())
             .filename(documentEntity.getFileName())
             .url(documentEntity.getUrl())
             .binaryUrl(documentEntity.getBinaryUrl())

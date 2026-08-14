@@ -3,11 +3,11 @@ package uk.gov.hmcts.reform.pcs.ccd.service.document;
 import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
-import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentWithId;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServedDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsSection;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GeneralApplication;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.CaseDetailsTab;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.NoticeTabDetails;
@@ -70,10 +70,10 @@ class CaseFileDocumentDeduplicationServiceTest {
             .allDocuments(List.of(submissionDocument, supportingDocument, otherDocument))
             .genApps(List.of(ListValue.<GeneralApplication>builder()
                                 .value(GeneralApplication.builder()
-                                           .submissionDocument(DocumentWithId.builder()
+                                           .submissionDocument(GenAppDocument.builder()
                                                                    .id(submissionDocument.getId())
                                                                    .build())
-                                           .supportingDocuments(List.of(documentWithIdListValue(supportingDocument)))
+                                           .supportingDocuments(List.of(genAppDocumentListValue(supportingDocument)))
                                            .build())
                                 .build()))
             .build();
@@ -120,15 +120,25 @@ class CaseFileDocumentDeduplicationServiceTest {
             ))
             .genApps(List.of(ListValue.<GeneralApplication>builder()
                                 .value(GeneralApplication.builder()
-                                           .submissionDocument(DocumentWithId.builder()
+                                           .submissionDocument(GenAppDocument.builder()
                                                                    .id("submission-document-id")
-                                                                   .document(submissionDocument)
+                                                                   .filename(submissionDocument.getFilename())
+                                                                   .url(submissionDocument.getUrl())
+                                                                   .binaryUrl(submissionDocument.getBinaryUrl())
                                                                    .build())
-                                           .supportingDocuments(List.of(ListValue.<DocumentWithId>builder()
+                                           .supportingDocuments(List.of(ListValue.<GenAppDocument>builder()
                                                                            .id("supporting-document-id")
-                                                                           .value(DocumentWithId.builder()
+                                                                           .value(GenAppDocument.builder()
                                                                                       .id("supporting-document-id")
-                                                                                      .document(supportingDocument)
+                                                                                      .filename(
+                                                                                          supportingDocument
+                                                                                              .getFilename()
+                                                                                      )
+                                                                                      .url(supportingDocument.getUrl())
+                                                                                      .binaryUrl(
+                                                                                          supportingDocument
+                                                                                              .getBinaryUrl()
+                                                                                      )
                                                                                       .build())
                                                                            .build()))
                                            .build())
@@ -158,13 +168,11 @@ class CaseFileDocumentDeduplicationServiceTest {
                        .build())
             .build();
         ListValue<Document> otherDocument = documentListValue("other-document-id", "other.pdf");
-        ListValue<DocumentWithId> genAppSupportingDocument = ListValue.<DocumentWithId>builder()
+        ListValue<GenAppDocument> genAppSupportingDocument = ListValue.<GenAppDocument>builder()
             .id("gen-app-supporting-document-id")
-            .value(DocumentWithId.builder()
+            .value(GenAppDocument.builder()
                        .id("gen-app-supporting-document-id")
-                       .document(Document.builder()
-                                     .filename(" GENAPPS GA1 - DEFENDANT 1.DOCX ")
-                                     .build())
+                       .filename(" GENAPPS GA1 - DEFENDANT 1.DOCX ")
                        .build())
             .build();
 
@@ -294,12 +302,14 @@ class CaseFileDocumentDeduplicationServiceTest {
             .build();
     }
 
-    private static ListValue<DocumentWithId> documentWithIdListValue(ListValue<Document> document) {
-        return ListValue.<DocumentWithId>builder()
+    private static ListValue<GenAppDocument> genAppDocumentListValue(ListValue<Document> document) {
+        return ListValue.<GenAppDocument>builder()
             .id(document.getId())
-            .value(DocumentWithId.builder()
+            .value(GenAppDocument.builder()
                        .id(document.getId())
-                       .document(document.getValue())
+                       .filename(document.getValue().getFilename())
+                       .url(document.getValue().getUrl())
+                       .binaryUrl(document.getValue().getBinaryUrl())
                        .build())
             .build();
     }

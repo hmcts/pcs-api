@@ -5,11 +5,10 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
-import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentWithId;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
+import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GeneralApplication;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
@@ -188,7 +187,7 @@ class GenAppsViewTest {
         DocumentEntity submissionDocumentEntity = mock(DocumentEntity.class);
         genAppEntity1.setSubmissionDocument(submissionDocumentEntity);
 
-        final Document expectedSubmissionDocument = stubDocument(submissionDocumentEntity, pcsDocumentId);
+        final GenAppDocument expectedSubmissionDocument = stubDocument(submissionDocumentEntity, pcsDocumentId);
 
         when(pcsCaseEntity.getGenApps()).thenReturn(Set.of(genAppEntity1));
 
@@ -200,10 +199,10 @@ class GenAppsViewTest {
 
         assertThat(genApps).hasSize(1);
 
-        DocumentWithId actualSubmissionDocument = genApps.getFirst().getValue().getSubmissionDocument();
+        GenAppDocument actualSubmissionDocument = genApps.getFirst().getValue().getSubmissionDocument();
 
         assertThat(actualSubmissionDocument.getId()).isEqualTo(pcsDocumentId.toString());
-        assertThat(actualSubmissionDocument.getDocument()).isEqualTo(expectedSubmissionDocument);
+        assertThat(actualSubmissionDocument).isEqualTo(expectedSubmissionDocument);
     }
 
     @Test
@@ -218,8 +217,8 @@ class GenAppsViewTest {
         DocumentEntity documentEntity1 = mock(DocumentEntity.class);
         DocumentEntity documentEntity2 = mock(DocumentEntity.class);
 
-        final Document expectedSupportingDocument1 = stubDocument(documentEntity1, pcsDocumentId1);
-        final Document expectedSupportingDocument2 = stubDocument(documentEntity2, pcsDocumentId2);
+        final GenAppDocument expectedSupportingDocument1 = stubDocument(documentEntity1, pcsDocumentId1);
+        final GenAppDocument expectedSupportingDocument2 = stubDocument(documentEntity2, pcsDocumentId2);
 
         genAppEntity.setDocuments(List.of(documentEntity1, documentEntity2));
 
@@ -231,17 +230,17 @@ class GenAppsViewTest {
 
         assertThat(genApps).hasSize(1);
 
-        List<ListValue<DocumentWithId>> actualSupportingDocuments =
+        List<ListValue<GenAppDocument>> actualSupportingDocuments =
             genApps.getFirst().getValue().getSupportingDocuments();
 
         assertThat(actualSupportingDocuments).hasSize(2);
         assertThat(actualSupportingDocuments.get(0).getId()).isEqualTo(pcsDocumentId1.toString());
         assertThat(actualSupportingDocuments.get(0).getValue().getId()).isEqualTo(pcsDocumentId1.toString());
-        assertThat(actualSupportingDocuments.get(0).getValue().getDocument()).isEqualTo(expectedSupportingDocument1);
+        assertThat(actualSupportingDocuments.get(0).getValue()).isEqualTo(expectedSupportingDocument1);
 
         assertThat(actualSupportingDocuments.get(1).getId()).isEqualTo(pcsDocumentId2.toString());
         assertThat(actualSupportingDocuments.get(1).getValue().getId()).isEqualTo(pcsDocumentId2.toString());
-        assertThat(actualSupportingDocuments.get(1).getValue().getDocument()).isEqualTo(expectedSupportingDocument2);
+        assertThat(actualSupportingDocuments.get(1).getValue()).isEqualTo(expectedSupportingDocument2);
 
     }
 
@@ -285,7 +284,8 @@ class GenAppsViewTest {
             "http://dm-store/documents/supporting/binary"
         );
 
-        Document expectedSupportingDocument = Document.builder()
+        GenAppDocument expectedSupportingDocument = GenAppDocument.builder()
+            .id(supportingDocumentId.toString())
             .filename("supporting.docx")
             .url("http://dm-store/documents/supporting")
             .binaryUrl("http://dm-store/documents/supporting/binary")
@@ -303,7 +303,7 @@ class GenAppsViewTest {
         underTest.setCaseFields(pcsCase, pcsCaseEntity);
 
         // Then
-        List<ListValue<DocumentWithId>> actualSupportingDocuments = pcsCase.getGenApps()
+        List<ListValue<GenAppDocument>> actualSupportingDocuments = pcsCase.getGenApps()
             .getFirst()
             .getValue()
             .getSupportingDocuments();
@@ -311,7 +311,7 @@ class GenAppsViewTest {
         assertThat(actualSupportingDocuments).hasSize(1);
         assertThat(actualSupportingDocuments.getFirst().getId()).isEqualTo(supportingDocumentId.toString());
         assertThat(actualSupportingDocuments.getFirst().getValue().getId()).isEqualTo(supportingDocumentId.toString());
-        assertThat(actualSupportingDocuments.getFirst().getValue().getDocument()).isEqualTo(expectedSupportingDocument);
+        assertThat(actualSupportingDocuments.getFirst().getValue()).isEqualTo(expectedSupportingDocument);
     }
 
     @Test
@@ -346,7 +346,7 @@ class GenAppsViewTest {
         underTest.setCaseFields(pcsCase, pcsCaseEntity);
 
         // Then
-        List<ListValue<DocumentWithId>> actualSupportingDocuments = pcsCase.getGenApps()
+        List<ListValue<GenAppDocument>> actualSupportingDocuments = pcsCase.getGenApps()
             .getFirst()
             .getValue()
             .getSupportingDocuments();
@@ -354,14 +354,16 @@ class GenAppsViewTest {
         assertThat(actualSupportingDocuments).hasSize(1);
         assertThat(actualSupportingDocuments.getFirst().getId()).isEqualTo(supportingDocumentId.toString());
         assertThat(actualSupportingDocuments.getFirst().getValue().getId()).isEqualTo(supportingDocumentId.toString());
-        assertThat(actualSupportingDocuments.getFirst().getValue().getDocument().getFilename())
+        assertThat(actualSupportingDocuments.getFirst().getValue().getFilename())
             .isEqualTo("genApps GA1 - Defendant 1.docx");
     }
 
-    private Document stubDocument(DocumentEntity documentEntity, UUID pcsDocumentId) {
+    private GenAppDocument stubDocument(DocumentEntity documentEntity, UUID pcsDocumentId) {
         when(documentEntity.getId()).thenReturn(pcsDocumentId);
 
-        return Document.builder().build();
+        return GenAppDocument.builder()
+            .id(pcsDocumentId.toString())
+            .build();
     }
 
     private void stubDocumentReferences(DocumentEntity documentEntity, UUID id, String url, String binaryUrl) {

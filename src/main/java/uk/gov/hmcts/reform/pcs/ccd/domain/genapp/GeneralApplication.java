@@ -5,7 +5,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
-import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentWithId;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 
 import java.time.LocalDateTime;
@@ -25,9 +24,9 @@ public class GeneralApplication {
 
     private GenAppState state;
 
-    private DocumentWithId submissionDocument;
+    private GenAppDocument submissionDocument;
 
-    private List<ListValue<DocumentWithId>> supportingDocuments;
+    private List<ListValue<GenAppDocument>> supportingDocuments;
 
     private Integer rank;
 
