@@ -260,17 +260,7 @@ class TaskDescriptionServiceTest {
         @Test
         void shouldRenderTaskDescription() throws IOException {
             // Given
-            List<ListValue<FlagDetail>> flagDetails = List.of(
-                ListValue.<FlagDetail>builder()
-                    .value(FlagDetail.builder().name("Flag 1").status("Active").build())
-                    .build(),
-                ListValue.<FlagDetail>builder()
-                    .value(FlagDetail.builder().name("Flag 2").status("Active").build())
-                    .build(),
-                ListValue.<FlagDetail>builder()
-                    .value(FlagDetail.builder().name("Flag 3").status("Requested").build())
-                    .build()
-            );
+            List<String> flags = List.of("Flag 1", "Flag 2");
 
             String expectedRenderedContent = "some rendered content";
             PebbleTemplate pebbleTemplate = stubPebbleTemplate(
@@ -282,7 +272,7 @@ class TaskDescriptionServiceTest {
             String description = underTest
                 .createReviewCaseFlagDescription(
                     CASE_REFERENCE,
-                    flagDetails
+                    flags
                 );
 
             // Then
@@ -292,7 +282,7 @@ class TaskDescriptionServiceTest {
             Map<String, Object> contextMap = contextMapCaptor.getValue();
             assertThat(contextMap)
                 .containsEntry("caseReference", CASE_REFERENCE)
-                .containsEntry("flags", List.of("Flag 1", "Flag 2"));
+                .containsEntry("flags", flags);
         }
 
         @Test

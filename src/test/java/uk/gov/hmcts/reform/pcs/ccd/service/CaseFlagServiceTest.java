@@ -275,9 +275,6 @@ class CaseFlagServiceTest {
                                  .build()))
             .build();
 
-        when(taskDescriptionService.createReviewCaseFlagDescription(eq(CASE_REFERENCE), any()))
-            .thenReturn("description");
-
         // When
         underTest.saveReasonableAdjustmentFlags(partyEntity, incomingFlags, CASE_REFERENCE);
 
@@ -290,7 +287,8 @@ class CaseFlagServiceTest {
         assertThat(existingRefData.getAvailableExternally()).isTrue();
         assertThat(existingRefData.getVisibility()).isEqualTo(FlagVisibility.INTERNAL.getValue());
 
-        verify(camundaService).createTask(CASE_REFERENCE, TaskType.REVIEW_CASE_FLAG, "description");
+        verifyNoInteractions(taskDescriptionService);
+        verifyNoInteractions(camundaService);
     }
 
     @Test

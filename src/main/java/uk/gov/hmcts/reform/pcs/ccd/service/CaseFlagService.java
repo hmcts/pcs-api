@@ -23,6 +23,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseFlagsView;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.Map;
@@ -77,9 +78,17 @@ public class CaseFlagService {
             return;
         }
 
-        String taskDescription = taskDescriptionService
-            .createReviewCaseFlagDescription(caseReference, reasonableAdjustmentDetails);
-        camundaService.createTask(caseReference, TaskType.REVIEW_CASE_FLAG, taskDescription);
+        List<String> activeFlags = reasonableAdjustmentDetails.stream()
+            .map(ListValue::getValue)
+            .filter(CaseFlagService::isCaseFlagActive)
+            .map(FlagDetail::getName)
+            .toList();
+
+        if (!CollectionUtils.isEmpty(activeFlags)) {
+            String taskDescription = taskDescriptionService
+                .createReviewCaseFlagDescription(caseReference, activeFlags);
+            camundaService.createTask(caseReference, TaskType.REVIEW_CASE_FLAG, taskDescription);
+        }
 
         Flags reasonableAdjustmentFlags = Flags.builder()
             .visibility(incomingFlags.getVisibility())
@@ -211,6 +220,10 @@ public class CaseFlagService {
 
             flagEntity.setPaths(paths);
         }
+    }
+
+    private static boolean isCaseFlagActive(FlagDetail flagDetail) {
+        return Objects.equals(flagDetail.getStatus(), "Active");
     }
 
     /**

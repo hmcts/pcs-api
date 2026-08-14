@@ -1,6 +1,6 @@
 ### Review Case Flag
 
-The following case flag(s) have been added to the case:
+The following case flags have been added to the case:
 
 <ul class="govuk-list govuk-list--bullet">
   {% for flag in flags %}

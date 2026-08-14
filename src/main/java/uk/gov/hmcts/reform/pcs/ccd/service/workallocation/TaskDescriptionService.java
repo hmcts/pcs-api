@@ -83,14 +83,7 @@ public class TaskDescriptionService {
         return renderTemplate(templateName, context);
     }
 
-    public String createReviewCaseFlagDescription(long caseReference, List<ListValue<FlagDetail>> flagDetails) {
-        List<String> flags = flagDetails.stream()
-            .map(ListValue::getValue)
-            .filter(TaskDescriptionService::isCaseFlagActive)
-            .map(FlagDetail::getName)
-            .map((name) -> name.replace("’", "\\u2019"))
-            .toList();
-
+    public String createReviewCaseFlagDescription(long caseReference, List<String> flags) {
         Map<String, Object> context = Map.of(
             "caseReference", caseReference,
             "flags", flags
@@ -110,7 +103,9 @@ public class TaskDescriptionService {
             throw new TemplateRenderingException("Failed to render template", e);
         }
 
-        return writer.toString();
+        return writer.toString()
+            .replace("(", "&#40;")
+            .replace(")", "&#41;");
     }
 
     private String getPartyLabel(PartyEntity partyEntity, long caseReference) {
@@ -118,10 +113,6 @@ public class TaskDescriptionService {
                 .orElseThrow(() -> new ClaimNotFoundException(caseReference));
 
         return partyService.getPartyLabel(mainClaim, partyEntity.getId());
-    }
-
-    private static boolean isCaseFlagActive(FlagDetail flagDetail) {
-        return Objects.equals(flagDetail.getStatus(), "Active");
     }
 
 }
