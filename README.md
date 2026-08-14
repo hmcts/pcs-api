@@ -1,5 +1,5 @@
 # pcs-api
- 
+
 ## Building and deploying the application
 
 ### Building the application
@@ -115,6 +115,53 @@ az login
 ```
 - az acr login -n hmctsprod
 ```
+
+### Enabling work allocation for local Dev
+
+To enable work allocation for local dev, run:
+
+```
+docker compose -f docker-compose-wa.yml up -d
+```
+
+You may need to authenticate to the `hmctssandbox` and `hmctsprod` ACR repos first:
+
+```
+az acr login -n hmctssandbox
+az acr login -n hmctsprod
+```
+
+This will start a local Camunda instance, wa-workflow-api and wa-task-monitor.
+
+IMPORTANT: The Camunda container only uses an in-memory H2 DB for simplicity, so after (re-)starting
+it, it is necessary to upload the DMNs again:
+
+```
+cd /bin/wa
+./local-import-dmn-diagrams.sh
+```
+
+To trigger the task
+monitor to check for and configure any unconfigured Camunda tasks, make this request in your Rest
+client or with curl:
+
+```
+POST http://localhost:8077/monitor/tasks/jobs
+Headers:
+  ServiceAuthorization:Bearer {{s2s token for 'pcs_api'}}
+
+Payload:
+
+{
+    "job_details": {
+        "name": "INITIATION"
+    }
+}
+```
+
+Note that there seems to be a delay of a couple of seconds before a freshly submitted Camunda task
+is detected by the task monitor, so you may need to trigger the poll a second time if no Camunda tasks were picked
+up and configured as WA tasks.
 
 ### Running the tests
 

@@ -392,6 +392,7 @@ dependencies {
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-security', version: springFrameworkBootVersion
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-oauth2-client', version: springFrameworkBootVersion
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-data-jpa', version: springFrameworkBootVersion
+  implementation group: 'org.springframework.boot', name: 'spring-boot-starter-cache', version: springFrameworkBootVersion
   implementation group: 'com.launchdarkly', name: 'launchdarkly-java-server-sdk', version: '7.15.0'
 
   runtimeOnly group: 'org.flywaydb', name: 'flyway-database-postgresql', version: flywayVersion
@@ -433,6 +434,7 @@ dependencies {
   implementation group: 'com.github.kagkarlsson', name: 'db-scheduler-spring-boot-starter', version: '16.12.0'
   implementation group: 'org.apache.tomcat.embed', name: 'tomcat-embed-core', version: tomcatEmbedVersion
   implementation group: 'org.apache.tomcat.embed', name: 'tomcat-embed-websocket', version: tomcatEmbedVersion
+  implementation group: 'com.github.ben-manes.caffeine', name: 'caffeine', version: '3.2.4'
   annotationProcessor group: 'org.projectlombok', name: 'lombok', version: lombokVersion
 
   testImplementation group: 'io.rest-assured', name: 'rest-assured', version: '6.0.1'
@@ -567,7 +569,7 @@ tasks.withType(CftlibExec).configureEach {
   environment 'ENABLE_TESTING_SUPPORT', 'true'
   environment 'IDAM_CLIENT_SECRET', 'dummy-secret-for-local'
   environment 'CASE_DOCUMENT_S2S_AUTHORISED_SERVICES', 'ccd_case_document_am_api,ccd_gw,xui_webapp,ccd_data,pcs_frontend,pcs_api'
-  environment 'DATA_STORE_S2S_AUTHORISED_SERVICES', 'ccd_data,ccd_gw,pcs_frontend,pcs_api,wa_task_management_api'
+  environment 'DATA_STORE_S2S_AUTHORISED_SERVICES', 'ccd_data,ccd_gw,pcs_frontend,pcs_api,wa_task_management_api,aac_manage_case_assignment'
   environment 'CCD_S2S-AUTHORISED_SERVICES_CASE_USER_ROLES', 'aac_manage_case_assignment,pcs_api'
 
   // ExUI config overrides
@@ -588,6 +590,7 @@ tasks.withType(CftlibExec).configureEach {
   // Point XUI's location reference data (orgServices - needed before the case-linking
   // reasons are fetched) at the local wiremock stub
   environment 'SERVICES_LOCATION_REF_API_URL', 'http://host.docker.internal:8083'
+  environment 'RSE_LIB_XUI_ENV_DECENTRALISED_CASE_TYPE_CONFIG', '{"PCS":{"webUrl":"http://localhost:3209","nocBaseUrl":"http://host.docker.internal:3206"}}'
 
   // wa-task-management-api overrides
   environment 'IDAM_SECURITY_ALLOWED_ISSUER_0', 'http://localhost:5062/o'

@@ -8,6 +8,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class LegalRepresentativeOrganisationEntityTest {
 
@@ -73,6 +74,29 @@ class LegalRepresentativeOrganisationEntityTest {
         assertThat(partyLegalRepresentativeOrganisation2.getParty().getId()).isEqualTo(partyId2);
         assertThat(partyLegalRepresentativeOrganisation2.getLegalRepresentativeOrganisation()).isEqualTo(underTest);
         assertThat(partyLegalRepresentativeOrganisation2.getActive()).isEqualTo(YesOrNo.YES);
+    }
+
+    @Test
+    void addLegalRepresentativeOrganisationContactDetails_WithContactDetails_SetsReference() {
+        // given
+        LegalRepresentativeOrganisationContactDetailsEntity contactDetails =
+            new LegalRepresentativeOrganisationContactDetailsEntity();
+
+        // when
+        underTest.addLegalRepresentativeOrganisationContactDetails(contactDetails);
+
+        // then
+        assertThat(contactDetails.getLegalRepresentativeOrganisation()).isEqualTo(underTest);
+        assertThat(underTest.getLegalRepresentativeOrganisationContactDetails().getFirst()).isEqualTo(contactDetails);
+    }
+
+    @Test
+    void addLegalRepresentativeOrganisationContactDetails_WithNullContactDetails_DoesNotSetReference() {
+        // when
+        underTest.addLegalRepresentativeOrganisationContactDetails(null);
+
+        // then
+        assertTrue(underTest.getLegalRepresentativeOrganisationContactDetails().isEmpty());
     }
 
 }
