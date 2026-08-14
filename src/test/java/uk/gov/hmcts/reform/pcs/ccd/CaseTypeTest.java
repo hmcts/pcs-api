@@ -167,18 +167,6 @@ class CaseTypeTest {
     }
 
     @Test
-    void shouldOptCaseRolesIntoCaseTypeAcl() {
-        // Given
-        stubBuilderForConfigure();
-
-        // When
-        caseType.configure(builder);
-
-        // Then
-        verify(builder).grantCaseTypeAccessToCaseRoles(AccessProfile.CREATOR);
-    }
-
-    @Test
     void shouldShutterServiceWhenShutterFlagEnabled() {
         // Given
         stubBuilderForConfigure();

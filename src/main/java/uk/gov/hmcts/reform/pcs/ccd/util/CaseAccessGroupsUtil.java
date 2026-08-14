@@ -53,8 +53,8 @@ public final class CaseAccessGroupsUtil {
                          caseAccessGroups.add(new CaseAccessGroup(CCD_ALL_CASES_ACCESS, caseAccessGroupId)));
 
         requireNonNullElse(defendants, List.<ListValue<Party>>of()).stream()
-            .map(ListValue::getValue)
-            .map(party -> partyEntitiesMap.get(UUID.fromString(party.getId())))
+            .map(ListValue::getId)
+            .map(partyId -> partyEntitiesMap.get(UUID.fromString(partyId)))
             .map(partyEntity ->
                 partyEntity.getClaimPartyLegalRepresentativeOrganisationList()
                     .stream()
