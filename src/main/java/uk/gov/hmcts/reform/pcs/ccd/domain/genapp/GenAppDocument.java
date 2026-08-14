@@ -5,8 +5,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
-
 @Builder
 @Data
 @NoArgsConstructor
@@ -16,12 +14,4 @@ public class GenAppDocument {
     private String id;
 
     private String filename;
-
-    private String url;
-
-    private String binaryUrl;
-
-    private String categoryId;
-
-    private LocalDateTime uploadTimestamp;
 }

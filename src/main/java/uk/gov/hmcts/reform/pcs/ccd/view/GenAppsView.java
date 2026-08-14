@@ -13,7 +13,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
-import java.time.ZoneOffset;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
@@ -102,13 +101,6 @@ public class GenAppsView {
         return GenAppDocument.builder()
             .id(documentEntity.getId().toString())
             .filename(documentEntity.getFileName())
-            .url(documentEntity.getUrl())
-            .binaryUrl(documentEntity.getBinaryUrl())
-            .categoryId(documentEntity.getCategoryId())
-            .uploadTimestamp(documentEntity.getSubmittedDate() == null
-                                 ? null
-                                 : documentEntity.getSubmittedDate()
-                .atZone(ZoneOffset.UTC).toLocalDateTime())
             .build();
     }
 
