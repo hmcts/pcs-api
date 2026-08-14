@@ -98,6 +98,8 @@ class SubmitEventHandlerTest {
     @Mock
     private SchedulerClient schedulerClient;
     @Mock
+    private GenAppWaTaskService genAppWaTaskService;
+    @Mock
     private ObjectMapper objectMapper;
     @Mock
     private OrganisationService organisationService;
@@ -113,9 +115,8 @@ class SubmitEventHandlerTest {
         underTest = new SubmitEventHandler(pcsCaseService, partyService, securityContextService, genAppService,
                                            genAppRepository, genAppDocumentGenerator, genAppFeeCalculator,
                                            legalRepresentativeOrganisationRepository, confirmationScreenFactory,
-                                           paymentService, schedulerClient, notificationService, objectMapper,
-                                           organisationService
-        );
+                                           paymentService, schedulerClient, notificationService,
+                                           genAppWaTaskService, objectMapper, organisationService);
     }
 
     @Nested
@@ -211,8 +212,10 @@ class SubmitEventHandlerTest {
                 assertThat(feesAndPayTaskData.getResponsiblePartyName()).isEqualTo(CURRENT_USER_FULL_NAME);
                 assertThat(feesAndPayTaskData.getPaymentCallbackHandlerType()).isEqualTo(GEN_APP_ISSUE);
                 assertThat(feesAndPayTaskData.getRelatedEntityId()).isEqualTo(expectedGenAppEntityId);
+                verify(genAppWaTaskService, never()).createReviewGenAppTask(TEST_CASE_REFERENCE, genAppEntity);
             } else {
                 verifyNoInteractions(schedulerClient);
+                verify(genAppWaTaskService).createReviewGenAppTask(TEST_CASE_REFERENCE, genAppEntity);
             }
         }
 
@@ -332,6 +335,7 @@ class SubmitEventHandlerTest {
             verify(genAppService)
                 .createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty, GEN_APP_ISSUED);
             verify(notificationService).sendGenAppReceivedEmail(genAppEntity);
+            verify(genAppWaTaskService).createReviewGenAppTask(TEST_CASE_REFERENCE, genAppEntity);
         }
 
         @Test
