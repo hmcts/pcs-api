@@ -20,3 +20,11 @@ export * from './enterGenAppUploadRelatedEvidence.page.data';
 export * from './enterGenAppPreferApplicationToJudge.page.data';
 export * from './genAppsCheckYourAnswers.page.data';
 export * from './enterGenAppConfirmation.page.data';
+export * from './manageParties.page.data';
+export * from './updatePartyDetails.page.data';
+export * from './checkYourAnswersUpdatePartyDetails.page.data';
+export * from './confirmPartyDetailsUpdated.page.data';
+
+
+
+

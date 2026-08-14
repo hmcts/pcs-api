@@ -18,4 +18,8 @@ export default {
   'enterGenAppreferApplicationToJudge': 'enterGenAppPreferApplicationToJudge',
   'enterGenApp/submit': 'genAppsCheckYourAnswers',
   'enterGenApp/confirm': 'enterGenAppConfirmation',
+  'managePartiesmanagePartyOptions': 'manageParties',
+  'managePartiesupdatePartyDetails': 'updatePartyDetails',
+  'manageParties/submit': 'checkYourAnswersUpdatePartyDetails',
+  'manageParties/confirm': 'confirmPartyDetailsUpdated',
 };
