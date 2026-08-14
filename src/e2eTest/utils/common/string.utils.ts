@@ -126,6 +126,16 @@ export function formatDateTimeBST(dataTime: string): string {
     .replace(' pm', 'PM');
 }
 
+export const getFormattedDate = (date = new Date()): string =>
+  new Intl.DateTimeFormat('en-GB', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  })
+    .format(date)
+    .replace(',', '');
+
 /* Formats a numeric case number by inserting a hyphen after every 4 digits.
 Example: "1781518470935861" -> "1781-5184-7093-5861"
 */

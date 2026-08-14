@@ -14,3 +14,13 @@ src/e2eTest @hmcts/possession-claim-service-qa-admins @hmcts/possession-claim-se
 
 src/functionalTest @hmcts/possession-claim-dev-assurance @hmcts/possession-claim-service-admins
 src/contractTest @hmcts/possession-claim-dev-assurance @hmcts/possession-claim-service-admins
+
+# Infrastructure paths: prod-affecting terraform and pipeline config require
+# review from the DevOps owners before merge (HDPI-8146 near-miss, 5 Aug:
+# a self-merged terraform change produced a forces-replacement plan against
+# the production database server; caught by pipeline failure, not process).
+/infrastructure/  @hmcts/possession-claim-service-admins
+/charts/          @hmcts/possession-claim-service-admins
+Jenkinsfile_CNP   @hmcts/possession-claim-service-admins
+Jenkinsfile_nightly @hmcts/possession-claim-service-admins
+/config/owasp/    @hmcts/possession-claim-service-admins

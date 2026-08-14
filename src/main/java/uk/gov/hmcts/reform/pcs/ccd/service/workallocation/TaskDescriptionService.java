@@ -9,12 +9,16 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
+import uk.gov.hmcts.reform.pcs.exception.ClaimNotFoundException;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.exception.TemplateRenderingException;
 
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -26,6 +30,35 @@ public class TaskDescriptionService {
 
     private final PartyService partyService;
     private final PebbleEngine pebbleEngine;
+    private final ClaimRepository claimRepository;
+
+    public String createReviewGenAppDescription(long caseReference,
+                                                GenAppEntity genAppEntity) {
+
+        String partyLabel = getPartyLabel(genAppEntity.getParty(), caseReference);
+
+        List<String> additionalDocumentFilenames = genAppEntity.getDocuments().stream()
+            .map(DocumentEntity::getFileName)
+            .toList();
+
+        List<String> filenames = new ArrayList<>();
+        filenames.add(genAppEntity.getSubmissionDocument().getFileName());
+        filenames.addAll(additionalDocumentFilenames);
+
+        Map<String, Object> context = Map.of(
+            "caseReference", caseReference,
+            "partyLabel", partyLabel,
+            "filenames", filenames
+        );
+
+        String templateName = switch (genAppEntity.getType()) {
+            case ADJOURN -> "review-adjourn-gen-app";
+            case SET_ASIDE -> "review-set-aside-gen-app";
+            case SOMETHING_ELSE -> "review-gen-app";
+        };
+
+        return renderTemplate(templateName, context);
+    }
 
     public String createGenAppAdditionalDocumentsDescription(long caseReference,
                                                              ClaimEntity mainClaim,
@@ -49,6 +82,22 @@ public class TaskDescriptionService {
 
         String templateName = "claim-review-additional-docs";
         return createDocumentDescription(caseReference, mainClaim, partyEntity, documentEntities, templateName, null);
+    }
+
+    public String createTranslateClaimantDocumentDescription(long caseReference,
+                                                             List<DocumentEntity> documentEntities) {
+
+        List<String> filenames = documentEntities.stream()
+            .map(DocumentEntity::getFileName)
+            .toList();
+
+        Map<String, Object> context = Map.of(
+            "caseReference", caseReference,
+            "filenames", filenames
+        );
+
+        String templateName = "translate-claimant-submitted-document";
+        return renderTemplate(templateName, context);
     }
 
     private String createDocumentDescription(long caseReference,
@@ -89,6 +138,13 @@ public class TaskDescriptionService {
         }
 
         return writer.toString();
+    }
+
+    private String getPartyLabel(PartyEntity partyEntity, long caseReference) {
+        ClaimEntity mainClaim = claimRepository.findClaimByCaseReference(caseReference)
+                .orElseThrow(() -> new ClaimNotFoundException(caseReference));
+
+        return partyService.getPartyLabel(mainClaim, partyEntity.getId());
     }
 
 }
