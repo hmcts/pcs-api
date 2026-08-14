@@ -45,11 +45,8 @@ public class PartyService {
     public void createAllParties(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity, ClaimEntity claimEntity,
                                  String organisationIdForCurrentUser) {
         String orgProfileId = organisationService.getOrgProfileIdForCurrentUser();
-        PartyEntity claimant = findInitialisedClaimant(pcsCaseEntity)
-            .orElseGet(() -> {
-                PartyEntity created = new PartyEntity();
-                return populateClaimant(created, pcsCase, organisationIdForCurrentUser, orgProfileId);
-            });
+        PartyEntity claimant = findInitialisedClaimant(pcsCaseEntity).orElseGet(PartyEntity::new);
+        populateClaimant(claimant, pcsCase, organisationIdForCurrentUser, orgProfileId);
         pcsCaseEntity.addParty(claimant);
         claimEntity.addParty(claimant, PartyRole.CLAIMANT);
 
