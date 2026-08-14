@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeOrganisationContactDetailsEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeOrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
@@ -571,7 +572,8 @@ public class NotificationService {
         }
 
         var contactDetails = legalRepresentativeOrganisationEntity.getLegalRepresentativeOrganisationContactDetails();
-        String emailAddress = contactDetails != null ? contactDetails.getEmailAddress() : null;
+        String emailAddress = contactDetails != null ? contactDetails.stream().findFirst().map(
+            LegalRepresentativeOrganisationContactDetailsEntity::getEmailAddress).orElse(null) : null;
 
         return new LegalRepresentativeNotificationRecipient(
             emailAddress,
