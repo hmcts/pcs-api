@@ -62,6 +62,8 @@ public enum GroupAccessType implements CCDAccessGroup {
     private static final String ASSIGN_HINT =
         "Assign to Users to enable access to all cases associated with this organisation";
 
+    private static final Map<Key, GroupAccessType> BY_PROFILE_AND_ROLE = buildIndex();
+
     /** Null for duty-advisor access, which is requested per case rather than stamped on one. */
     private final PartyRole partyRole;
     private final String organisationProfileId;
@@ -113,8 +115,6 @@ public enum GroupAccessType implements CCDAccessGroup {
         this.caseAssignedRoleField = caseAssignedRoleField;
     }
 
-    private static final Map<Key, GroupAccessType> BY_PROFILE_AND_ROLE = buildIndex();
-
     private record Key(String organisationProfileId, PartyRole partyRole) { }
 
     private static Map<Key, GroupAccessType> buildIndex() {
@@ -133,10 +133,10 @@ public enum GroupAccessType implements CCDAccessGroup {
      * constants are declared in.
      */
     public static Optional<String> caseAccessGroupIdTemplateFor(String organisationProfileId, PartyRole partyRole) {
-        return partyRole == null
-            ? Optional.empty()
-            : Optional.ofNullable(BY_PROFILE_AND_ROLE.get(new Key(organisationProfileId, partyRole)))
-                .map(GroupAccessType::getCaseAccessGroupIdTemplate);
+        return Optional.ofNullable(partyRole)
+            .map(role -> new Key(organisationProfileId, role))
+            .map(BY_PROFILE_AND_ROLE::get)
+            .map(GroupAccessType::getCaseAccessGroupIdTemplate);
     }
 
     /**
