@@ -2,27 +2,34 @@ package uk.gov.hmcts.reform.pcs.ccd.service;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
-import uk.gov.hmcts.ccd.sdk.type.ListValue;
-import uk.gov.hmcts.ccd.sdk.type.Flags;
 import uk.gov.hmcts.ccd.sdk.type.FlagDetail;
-import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.ccd.sdk.type.FlagVisibility;
-import uk.gov.hmcts.reform.pcs.ccd.entity.CaseFlagEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.CasePartyFlagEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.FlagRefDataEntity;
+import uk.gov.hmcts.ccd.sdk.type.Flags;
+import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.reform.pcs.camunda.CamundaService;
+import uk.gov.hmcts.reform.pcs.camunda.TaskType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.entity.BaseCaseFlag;
-import uk.gov.hmcts.reform.pcs.ccd.repository.FlagRefDataRepository;
-import uk.gov.hmcts.reform.pcs.ccd.util.YesOrNoConverter;
+import uk.gov.hmcts.reform.pcs.ccd.entity.CaseFlagEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.CasePartyFlagEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.FlagRefDataEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
+import uk.gov.hmcts.reform.pcs.ccd.repository.FlagRefDataRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
+import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TaskDescriptionService;
+import uk.gov.hmcts.reform.pcs.ccd.util.YesOrNoConverter;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseFlagsView;
 
-import java.util.List;
-import java.util.Set;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.UUID;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -32,7 +39,13 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class CaseFlagService {
 
+    private static final String WELSH_COMMUNICATIONS_FLAG_CODE = "PF0026";
+    private static final String ACTIVE_STATUS = "Active";
+
     private FlagRefDataRepository flagRefDataRepository;
+    private CamundaService camundaService;
+    private TaskDescriptionService taskDescriptionService;
+    private PartyService partyService;
 
     public List<CaseFlagEntity> mergeCaseFlags(Flags incomingCaseFlags, PcsCaseEntity pcsCaseEntity) {
 
@@ -54,13 +67,55 @@ public class CaseFlagService {
 
             if (incomingParty.getDefendantFlags() != null
                 && !incomingParty.getDefendantFlags().getDetails().isEmpty()) {
+                boolean welshCommsAlreadyActive = hasActiveWelshCommunicationsFlag(partyEntity.getDefendantFlags());
+
                 List<CasePartyFlagEntity> mergedCasePartyFlags = mergeFlagDetails(
                     incomingParty.getDefendantFlags(), null, partyEntity, CasePartyFlagEntity::new);
 
                 partyEntity.getDefendantFlags().clear();
                 partyEntity.getDefendantFlags().addAll(mergedCasePartyFlags);
+
+                // Only fire when the flag just became active, to avoid triggering duplicate tasks for the party
+                if (!welshCommsAlreadyActive && hasActiveWelshCommunicationsFlag(mergedCasePartyFlags)) {
+                    createTranslateDefendantDocumentTask(partyEntity);
+                }
             }
         }
+    }
+
+    private void createTranslateDefendantDocumentTask(PartyEntity flaggingParty) {
+        PcsCaseEntity pcsCaseEntity = flaggingParty.getPcsCase();
+        long caseReference = pcsCaseEntity.getCaseReference();
+        ClaimEntity mainClaim = pcsCaseEntity.getClaims().getFirst();
+
+        for (PartyEntity party : pcsCaseEntity.getParties()) {
+            boolean isOtherDefendant = !party.getId().equals(flaggingParty.getId())
+                && partyService.getPartyRole(party) == PartyRole.DEFENDANT;
+
+            if (isOtherDefendant) {
+                List<DocumentEntity> documents = pcsCaseEntity.getDocuments().stream()
+                    .filter(document -> !document.isRemoved())
+                    .filter(document -> isDefendantDocument(document, party))
+                    .toList();
+
+                if (!documents.isEmpty()) {
+                    String description = taskDescriptionService.createTranslateDefendantDocumentDescription(
+                        caseReference, mainClaim, party, documents);
+
+                    camundaService.createTask(
+                        caseReference, TaskType.TRANSLATE_DEFENDANT_SUBMITTED_DOCUMENT, description);
+                }
+            }
+        }
+    }
+
+    private boolean isDefendantDocument(DocumentEntity document, PartyEntity partyEntity) {
+        // GenApp documents only carry the owning party via the linked GenApp
+        PartyEntity documentParty = document.getGeneralApplication() != null
+            ? document.getGeneralApplication().getParty()
+            : document.getParty();
+
+        return documentParty != null && documentParty.getId().equals(partyEntity.getId());
     }
 
     private <T extends BaseCaseFlag> List<T>  mergeFlagDetails(Flags incomingCaseFlags, PcsCaseEntity pcsCaseEntity,
@@ -135,6 +190,16 @@ public class CaseFlagService {
 
             flagEntity.setPaths(paths);
         }
+    }
+
+    private boolean hasActiveWelshCommunicationsFlag(List<CasePartyFlagEntity> flags) {
+        return flags.stream().anyMatch(this::isWelshCommunicationsPreference);
+    }
+
+    private boolean isWelshCommunicationsPreference(BaseCaseFlag flagEntity) {
+        return flagEntity.getFlagRefData() != null
+            && WELSH_COMMUNICATIONS_FLAG_CODE.equals(flagEntity.getFlagRefData().getFlagCode())
+            && ACTIVE_STATUS.equals(flagEntity.getDefaultStatus());
     }
 }
 
