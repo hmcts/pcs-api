@@ -18,6 +18,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.camunda.CamundaService;
+import uk.gov.hmcts.reform.pcs.camunda.TaskType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
@@ -38,10 +40,13 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.StatementOfTruthEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DocumentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.GenAppRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentNameService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
+import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
+import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TaskDescriptionService;
 import uk.gov.hmcts.reform.pcs.exception.GenAppException;
 import uk.gov.hmcts.reform.pcs.exception.GenAppNotFoundException;
 
@@ -69,6 +74,7 @@ import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState.GEN_APP_ISSUED;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState.PENDING_GEN_APP_ISSUED;
@@ -95,6 +101,12 @@ class GenAppServiceTest {
     private ClaimEntity mainClaim;
     @Mock
     private PartyEntity applicantParty;
+    @Mock
+    private PartyService partyService;
+    @Mock
+    private CamundaService camundaService;
+    @Mock
+    private TaskDescriptionService taskDescriptionService;
     @Captor
     private ArgumentCaptor<GenAppEntity> genAppEntityCaptor;
     @Captor
@@ -110,7 +122,8 @@ class GenAppServiceTest {
         when(pcsCaseEntity.getClaims()).thenReturn(List.of(mainClaim));
 
         underTest = new GenAppService(genAppRepository, documentService, documentNameService,
-                                      documentRepository, utcClock
+                                      documentRepository, partyService, camundaService, taskDescriptionService,
+                                      utcClock
         );
     }
 
@@ -1102,6 +1115,99 @@ class GenAppServiceTest {
             GenAppEntity genAppEntity = getSavedGenAppEntity();
             assertThat(genAppEntity.getDocuments()).isEmpty();
             verify(documentRepository, never()).saveAll(anyList());
+        }
+
+    }
+
+    @Nested
+    @DisplayName("Create translate defendant document task if required")
+    class CreateTranslateDefendantDocumentTaskTests {
+
+        @Test
+        void shouldCreateTaskWhenDefendantWelshDocumentsExist() {
+            // Given
+            PartyEntity party = PartyEntity.builder().id(UUID.randomUUID()).build();
+            ClaimEntity mainClaimEntity = ClaimEntity.builder().id(UUID.randomUUID()).build();
+            PcsCaseEntity genAppPcsCase = PcsCaseEntity.builder()
+                .caseReference(1234567890123456L)
+                .claims(List.of(mainClaimEntity))
+                .build();
+
+            DocumentEntity activeDocument = DocumentEntity.builder().fileName("evidence.pdf").build();
+            DocumentEntity removedDocument = DocumentEntity.builder().removed(true).build();
+
+            GenAppEntity genAppEntity = GenAppEntity.builder()
+                .party(party)
+                .pcsCase(genAppPcsCase)
+                .languageUsed(LanguageUsed.WELSH)
+                .documents(List.of(activeDocument, removedDocument))
+                .build();
+
+            when(partyService.getPartyRole(party)).thenReturn(PartyRole.DEFENDANT);
+
+            String expectedDescription = "Defendant 1 has uploaded the following documents: evidence.pdf";
+            when(taskDescriptionService.createTranslateDefendantDocumentDescription(
+                1234567890123456L, mainClaimEntity, party, List.of(activeDocument)))
+                .thenReturn(expectedDescription);
+
+            // When
+            underTest.createTranslateDefendantDocumentTask(genAppEntity);
+
+            // Then
+            verify(camundaService).createTask(
+                1234567890123456L, TaskType.TRANSLATE_DEFENDANT_SUBMITTED_DOCUMENT, expectedDescription);
+        }
+
+        @Test
+        void shouldNotCreateTaskWhenApplicantIsNotDefendant() {
+            // Given
+            PartyEntity party = PartyEntity.builder().id(UUID.randomUUID()).build();
+            GenAppEntity genAppEntity = GenAppEntity.builder().party(party).build();
+
+            when(partyService.getPartyRole(party)).thenReturn(PartyRole.CLAIMANT);
+
+            // When
+            underTest.createTranslateDefendantDocumentTask(genAppEntity);
+
+            // Then
+            verifyNoInteractions(camundaService, taskDescriptionService);
+        }
+
+        @Test
+        void shouldNotCreateTaskWhenLanguageIsEnglish() {
+            // Given
+            PartyEntity party = PartyEntity.builder().id(UUID.randomUUID()).build();
+            GenAppEntity genAppEntity = GenAppEntity.builder()
+                .party(party)
+                .languageUsed(LanguageUsed.ENGLISH)
+                .build();
+
+            when(partyService.getPartyRole(party)).thenReturn(PartyRole.DEFENDANT);
+
+            // When
+            underTest.createTranslateDefendantDocumentTask(genAppEntity);
+
+            // Then
+            verifyNoInteractions(camundaService, taskDescriptionService);
+        }
+
+        @Test
+        void shouldNotCreateTaskWhenNoDocumentsExist() {
+            // Given
+            PartyEntity party = PartyEntity.builder().id(UUID.randomUUID()).build();
+            GenAppEntity genAppEntity = GenAppEntity.builder()
+                .party(party)
+                .languageUsed(LanguageUsed.ENGLISH_AND_WELSH)
+                .documents(List.of())
+                .build();
+
+            when(partyService.getPartyRole(party)).thenReturn(PartyRole.DEFENDANT);
+
+            // When
+            underTest.createTranslateDefendantDocumentTask(genAppEntity);
+
+            // Then
+            verifyNoInteractions(camundaService, taskDescriptionService);
         }
 
     }
