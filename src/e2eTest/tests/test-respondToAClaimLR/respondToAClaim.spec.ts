@@ -46,7 +46,7 @@ test.afterEach(async () => {
 
 test.describe('XUI - Respond to a claim - e2e Journey @nightly', () => {
   test('Trigger respond event @regression', async () => {
-    await performAction('select', caseSummary.nextStepEventList, 'Amend representative\'s details');
+    await performAction('select', caseSummary.nextStepEventList, caseSummary.amendRepresentativeDetails);
     await performAction('clickButton', caseSummary.go);
     await performAction('selectRespondToClaimContactPreferences', {
       representativeReference: contactDetailsLR.defendantLegalRepresentativeReferenceTextInput,
@@ -61,7 +61,7 @@ test.describe('XUI - Respond to a claim - e2e Journey @nightly', () => {
   });
 
   test('Update LR Details @regression', async () => {
-    await performAction('select', caseSummary.nextStepEventList, 'Amend representative\'s details');
+    await performAction('select', caseSummary.nextStepEventList, caseSummary.amendRepresentativeDetails);
     await performAction('clickButton', caseSummary.go);
     await performAction('selectRespondToClaimContactPreferences', {
       representativeReference: contactDetailsLR.defendantLegalRepresentativeReferenceTextInput,
@@ -70,7 +70,7 @@ test.describe('XUI - Respond to a claim - e2e Journey @nightly', () => {
       phoneNumber: contactDetailsLR.yesRadioOption
     });
     await performAction('clickButton', 'Close and Return to case details');
-    performValidation('mainHeader', home.caseParties);
-    await performValidation('bannerAlert', 'Case #.* has been updated with event: Amend representative\'s details');
+    await performValidation('mainHeader', home.caseParties);
+    await performValidation('bannerAlert', `Case #.* has been updated with event: ${caseSummary.amendRepresentativeDetails}`);
   });
 });
