@@ -327,7 +327,7 @@ class DefendantResponseReadMapperTest {
 
         final PartyEntity claimantParty = PartyEntity.builder()
             .id(claimantPartyId)
-            .orgName("Possession Claims Solicitor Org")
+            .orgName("PCS_Solicitor_Org_Testing")
             .build();
 
         final PartyEntity coDefendantParty = PartyEntity.builder()
@@ -367,7 +367,7 @@ class DefendantResponseReadMapperTest {
         assertThat(mappedCounterClaim.getCounterClaimAgainst().get(0).getId())
             .isEqualTo(claimantPartyId.toString());
         assertThat(mappedCounterClaim.getCounterClaimAgainst().get(0).getValue().getOrgName())
-            .isEqualTo("Possession Claims Solicitor Org");
+            .isEqualTo("PCS_Solicitor_Org_Testing");
         assertThat(mappedCounterClaim.getCounterClaimAgainst().get(1).getId())
             .isEqualTo(coDefendantPartyId.toString());
         assertThat(mappedCounterClaim.getCounterClaimAgainst().get(1).getValue().getFirstName())

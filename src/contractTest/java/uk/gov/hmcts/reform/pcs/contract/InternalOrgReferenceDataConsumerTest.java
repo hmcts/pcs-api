@@ -71,12 +71,12 @@ public class InternalOrgReferenceDataConsumerTest {
         OrganisationDetailsResponse response =
             rdProfessionalApi.getOrganisationDetails(USER_ID, SERVICE_AUTH_TOKEN, AUTHORIZATION_TOKEN);
 
-        assertThat(response.getName()).isEqualTo("Possession Claims Solicitor Org");
+        assertThat(response.getName()).isEqualTo("PCS_Solicitor_Org_Testing");
     }
 
     static PactDslJsonBody buildOrganisationResponseDsl() {
         return (PactDslJsonBody) new PactDslJsonBody()
-            .stringType("name", "Possession Claims Solicitor Org")
+            .stringType("name", "PCS_Solicitor_Org_Testing")
             .stringType("organisationIdentifier", "E71FH4Q")
             .stringType("dateReceived", "2025-09-11T13:46:54.42977")
             .stringType("dateApproved", "2025-09-11T13:56:40.778072")
