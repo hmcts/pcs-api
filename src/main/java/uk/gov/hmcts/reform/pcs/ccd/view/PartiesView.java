@@ -127,11 +127,11 @@ public class PartiesView {
     }
 
     private LegalRepresentative buildLegalRepresentative(PartyEntity partyEntity) {
-        if (partyEntity == null || partyEntity.getPartyLegalRepresentativeOrganisationList() == null) {
+        if (partyEntity == null || partyEntity.getClaimPartyLegalRepresentativeOrganisationList() == null) {
             return null;
         }
 
-        return partyEntity.getPartyLegalRepresentativeOrganisationList().stream()
+        return partyEntity.getClaimPartyLegalRepresentativeOrganisationList().stream()
             .filter(legalRep -> legalRep != null && legalRep.getActive() == YesOrNo.YES)
             .map(ClaimPartyLegalRepresentativeOrganisationEntity::getLegalRepresentativeOrganisation)
             .filter(Objects::nonNull)

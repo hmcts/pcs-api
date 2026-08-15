@@ -115,7 +115,7 @@ public class PartyEntity {
     @OneToMany(fetch = LAZY, mappedBy = "party")
     @Builder.Default
     @JsonManagedReference
-    private List<ClaimPartyLegalRepresentativeOrganisationEntity> partyLegalRepresentativeOrganisationList
+    private List<ClaimPartyLegalRepresentativeOrganisationEntity> claimPartyLegalRepresentativeOrganisationList
         = new ArrayList<>();
 
     @OneToMany(mappedBy = "party",

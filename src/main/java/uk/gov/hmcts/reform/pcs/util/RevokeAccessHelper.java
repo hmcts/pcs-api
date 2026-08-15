@@ -15,7 +15,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DraftCaseDataRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyAccessCodeRepository;
-import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.PartyLegalRepresentativeOrganisationRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseRoleAssignmentService;
 import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 

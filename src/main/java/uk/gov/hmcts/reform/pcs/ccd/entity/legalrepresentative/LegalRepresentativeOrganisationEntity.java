@@ -65,7 +65,7 @@ public class LegalRepresentativeOrganisationEntity {
             .active(YesOrNo.YES)
             .build();
         claimPartyLegalRepresentativeOrganisationList.add(claimPartyLegalRepresentativeOrganisationEntity);
-        party.getPartyLegalRepresentativeOrganisationList().add(claimPartyLegalRepresentativeOrganisationEntity);
+        party.getClaimPartyLegalRepresentativeOrganisationList().add(claimPartyLegalRepresentativeOrganisationEntity);
     }
 
     public void setLegalRepresentativeOrganisationContactDetails(
