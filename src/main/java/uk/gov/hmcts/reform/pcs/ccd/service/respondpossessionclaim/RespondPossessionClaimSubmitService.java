@@ -8,6 +8,7 @@ import uk.gov.hmcts.reform.pcs.camunda.CamundaService;
 import uk.gov.hmcts.reform.pcs.camunda.TaskType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaim;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
@@ -21,7 +22,6 @@ import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TaskDescriptionService;
 import uk.gov.hmcts.reform.pcs.model.JourneyType;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -57,21 +57,22 @@ public class RespondPossessionClaimSubmitService {
         Optional<CounterClaimEntity> savedCounterClaim =
             counterClaimService.saveCounterClaim(caseReference, counterClaim, defendantParty);
 
-        List<DocumentEntity> counterClaimDocuments = savedCounterClaim
-            .map(counterClaimEntity -> documentService.createCounterClaimUploadedDocuments(
-                defendantResponses.getCounterClaimDocuments(),
-                counterClaimEntity,
-                counterClaimEntity.getPcsCase(),
-                counterClaimEntity.getParty()
-            ))
-            .orElse(List.of());
+        savedCounterClaim.ifPresent(counterClaimEntity -> documentService.createCounterClaimUploadedDocuments(
+            defendantResponses.getCounterClaimDocuments(),
+            counterClaimEntity,
+            counterClaimEntity.getPcsCase(),
+            counterClaimEntity.getParty()
+        ));
+
+        createTranslateDefendantDocumentTask(caseReference, savedResponse, defendantParty);
 
         CounterClaimEntity counterClaimEntity = savedCounterClaim.orElse(null);
         boolean paymentRequired = counterClaimEntity != null
             && counterClaimFeeCalculator.isPaymentRequired(counterClaim);
 
-        createTranslateDefendantDocumentTask(caseReference, savedResponse, counterClaimDocuments,
-                                             paymentRequired, defendantParty);
+        if (counterClaimEntity != null && !paymentRequired) {
+            counterClaimEntity.setStatus(CounterClaimState.AWAITING_CASEWORKER_REVIEW);
+        }
 
         if (JourneyType.LEGAL_REPRESENTATIVE.equals(journeyType)) {
             draftCaseDataService.deleteUnsubmittedCaseData(
@@ -94,8 +95,6 @@ public class RespondPossessionClaimSubmitService {
 
     private void createTranslateDefendantDocumentTask(long caseReference,
                                                       DefendantResponseEntity savedResponse,
-                                                      List<DocumentEntity> counterClaimDocuments,
-                                                      boolean counterClaimPaymentRequired,
                                                       PartyEntity defendantParty) {
 
         LanguageUsed languageUsed = savedResponse.getLanguageUsed();
@@ -104,18 +103,10 @@ public class RespondPossessionClaimSubmitService {
         }
 
         PcsCaseEntity pcsCaseEntity = defendantParty.getPcsCase();
-        List<DocumentEntity> documents = new ArrayList<>(pcsCaseEntity.getDocuments().stream()
+        List<DocumentEntity> documents = pcsCaseEntity.getDocuments().stream()
             .filter(document -> !document.isRemoved())
             .filter(document -> isDefendantResponseDocument(document, savedResponse))
-            .toList());
-
-        // Counterclaim documents are only translatable once the counterclaim fee (if any) has been paid;
-        // when payment is still pending they're picked up later via CounterClaimPaymentCallbackHandler
-        if (!counterClaimPaymentRequired) {
-            counterClaimDocuments.stream()
-                .filter(document -> !document.isRemoved())
-                .forEach(documents::add);
-        }
+            .toList();
 
         if (documents.isEmpty()) {
             return;

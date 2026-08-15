@@ -84,11 +84,18 @@ public class CounterClaimPaymentCallbackHandler implements PaymentCallbackStrate
                 return;
             }
 
-            counterClaimEntity.setStatus(CounterClaimState.COUNTER_CLAIM_ISSUED);
-            counterClaimEntity.setClaimIssuedDate(LocalDateTime.now(utcClock));
-            scheduleCounterClaimIssuedNotification(counterClaimEntity, feePaymentEntity);
+            List<DocumentEntity> documentsRequiringTranslation =
+                getDocumentsRequiringTranslation(counterClaimEntity);
             counterClaimFormScheduler.scheduleCounterClaimFormGeneration(counterClaimId);
-            createTranslateDefendantDocumentTask(counterClaimEntity);
+
+            if (!documentsRequiringTranslation.isEmpty()) {
+                counterClaimEntity.setStatus(CounterClaimState.AWAITING_CASEWORKER_REVIEW);
+                createTranslateDefendantDocumentTask(counterClaimEntity, documentsRequiringTranslation);
+            } else {
+                counterClaimEntity.setStatus(CounterClaimState.COUNTER_CLAIM_ISSUED);
+                counterClaimEntity.setClaimIssuedDate(LocalDateTime.now(utcClock));
+                scheduleCounterClaimIssuedNotification(counterClaimEntity, feePaymentEntity);
+            }
             return;
         }
 
@@ -125,34 +132,33 @@ public class CounterClaimPaymentCallbackHandler implements PaymentCallbackStrate
         );
     }
 
-    private void createTranslateDefendantDocumentTask(CounterClaimEntity counterClaimEntity) {
+    private List<DocumentEntity> getDocumentsRequiringTranslation(CounterClaimEntity counterClaimEntity) {
         DefendantResponseEntity defendantResponse = counterClaimEntity.findAssociatedDefendantResponse()
             .orElse(null);
 
         if (defendantResponse == null) {
-            return;
+            return List.of();
         }
-
-        PartyEntity party = counterClaimEntity.getParty();
-        PcsCaseEntity pcsCaseEntity = counterClaimEntity.getPcsCase();
 
         LanguageUsed languageUsed = defendantResponse.getLanguageUsed();
         if (languageUsed != LanguageUsed.WELSH && languageUsed != LanguageUsed.ENGLISH_AND_WELSH) {
-            return;
+            return List.of();
         }
 
-        List<DocumentEntity> documents = pcsCaseEntity.getDocuments().stream()
+        return counterClaimEntity.getPcsCase().getDocuments().stream()
             .filter(document -> !document.isRemoved()
                 && document.getCounterClaim() != null
                 && document.getCounterClaim().getId().equals(counterClaimEntity.getId()))
             .toList();
+    }
 
-        if (documents.isEmpty()) {
-            return;
-        }
-
+    private void createTranslateDefendantDocumentTask(CounterClaimEntity counterClaimEntity,
+                                                      List<DocumentEntity> documents) {
+        PartyEntity party = counterClaimEntity.getParty();
+        PcsCaseEntity pcsCaseEntity = counterClaimEntity.getPcsCase();
         ClaimEntity mainClaim = pcsCaseEntity.getClaims().getFirst();
         long caseReference = pcsCaseEntity.getCaseReference();
+
         String description = taskDescriptionService.createTranslateDefendantDocumentDescription(
             caseReference, mainClaim, party, documents);
 

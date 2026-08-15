@@ -9,6 +9,7 @@ import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.camunda.CamundaService;
 import uk.gov.hmcts.reform.pcs.camunda.TaskType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState;
 import uk.gov.hmcts.reform.pcs.ccd.entity.BaseCaseFlag;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseFlagEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CasePartyFlagEntity;
@@ -18,6 +19,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.FlagRefDataEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.FlagRefDataRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TaskDescriptionService;
@@ -110,12 +112,23 @@ public class CaseFlagService {
     }
 
     private boolean isDefendantDocument(DocumentEntity document, PartyEntity partyEntity) {
-        // GenApp documents only carry the owning party via the linked GenApp
-        PartyEntity documentParty = document.getGeneralApplication() != null
-            ? document.getGeneralApplication().getParty()
-            : document.getParty();
+        CounterClaimEntity counterClaim = document.getCounterClaim();
+        if (counterClaim != null && counterClaim.getStatus() != CounterClaimState.COUNTER_CLAIM_ISSUED) {
+            return false;
+        }
 
+        PartyEntity documentParty = resolveOwningParty(document);
         return documentParty != null && documentParty.getId().equals(partyEntity.getId());
+    }
+
+    private PartyEntity resolveOwningParty(DocumentEntity document) {
+        if (document.getCounterClaim() != null) {
+            return document.getCounterClaim().getParty();
+        }
+        if (document.getGeneralApplication() != null) {
+            return document.getGeneralApplication().getParty();
+        }
+        return document.getParty();
     }
 
     private <T extends BaseCaseFlag> List<T>  mergeFlagDetails(Flags incomingCaseFlags, PcsCaseEntity pcsCaseEntity,

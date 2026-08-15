@@ -189,7 +189,7 @@ class RespondPossessionClaimSubmitServiceTest {
     }
 
     @Test
-    void shouldNotIssueCounterClaimWhenHelpWithFeesApplies() {
+    void shouldMoveCounterClaimToAwaitingCaseworkerReviewWhenHelpWithFeesApplies() {
         JourneyType journeyType = JourneyType.CITIZEN;
 
         CounterClaim counterClaim = CounterClaim.builder()
@@ -217,7 +217,7 @@ class RespondPossessionClaimSubmitServiceTest {
         verify(counterClaimService, never()).issueCounterClaim(any());
         assertThat(result.counterClaimEntity()).isEqualTo(savedCounterClaim);
         assertThat(result.counterClaimEntity().getStatus())
-            .isEqualTo(CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED);
+            .isEqualTo(CounterClaimState.AWAITING_CASEWORKER_REVIEW);
         assertThat(result.paymentRequired()).isFalse();
     }
 
@@ -289,7 +289,7 @@ class RespondPossessionClaimSubmitServiceTest {
     }
 
     @Test
-    void shouldCreateTranslateTaskWithCounterClaimAndResponseDocuments() {
+    void shouldExcludeCounterClaimDocumentsWhenPaymentNotRequired() {
         JourneyType journeyType = JourneyType.CITIZEN;
 
         ClaimEntity mainClaim = ClaimEntity.builder().id(UUID.randomUUID()).build();
@@ -341,26 +341,15 @@ class RespondPossessionClaimSubmitServiceTest {
             .thenReturn(Optional.of(savedCounterClaim));
         when(counterClaimFeeCalculator.isPaymentRequired(counterClaim)).thenReturn(false);
 
-        DocumentEntity counterClaimDocument = DocumentEntity.builder()
-            .fileName("counterclaim-evidence.pdf")
-            .counterClaim(savedCounterClaim)
-            .build();
-        DocumentEntity removedCounterClaimDocument = DocumentEntity.builder()
-            .counterClaim(savedCounterClaim)
-            .removed(true)
-            .build();
-        when(documentService.createCounterClaimUploadedDocuments(
-            counterClaimDocumentUploads, savedCounterClaim, pcsCaseEntity, partyEntity))
-            .thenReturn(List.of(counterClaimDocument, removedCounterClaimDocument));
-
-        String expectedDescription =
-            "Defendant 1 has uploaded the following documents: response-evidence.pdf, counterclaim-evidence.pdf";
+        String expectedDescription = "Defendant 1 has uploaded the following documents: response-evidence.pdf";
         when(taskDescriptionService.createTranslateDefendantDocumentDescription(
-            CASE_REFERENCE, mainClaim, partyEntity, List.of(responseDocument, counterClaimDocument)))
+            CASE_REFERENCE, mainClaim, partyEntity, List.of(responseDocument)))
             .thenReturn(expectedDescription);
 
         underTest.persistFinalSubmit(CASE_REFERENCE, possessionClaimResponse, partyEntity, journeyType);
 
+        verify(documentService).createCounterClaimUploadedDocuments(
+            counterClaimDocumentUploads, savedCounterClaim, pcsCaseEntity, partyEntity);
         verify(camundaService).createTask(
             CASE_REFERENCE, TaskType.TRANSLATE_DEFENDANT_SUBMITTED_DOCUMENT, expectedDescription);
     }

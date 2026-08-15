@@ -14,6 +14,7 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.camunda.CamundaService;
 import uk.gov.hmcts.reform.pcs.camunda.TaskType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseFlagEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
@@ -283,7 +284,9 @@ class CaseFlagServiceTest {
             .removed(true)
             .build();
 
-        GenAppEntity otherDefendant1GenApp = GenAppEntity.builder().party(otherDefendant1).build();
+        GenAppEntity otherDefendant1GenApp = GenAppEntity.builder()
+            .party(otherDefendant1)
+            .build();
         DocumentEntity otherDefendant1GenAppDocument = DocumentEntity.builder()
             .fileName("defendant1-genapp.pdf")
             .generalApplication(otherDefendant1GenApp)
@@ -291,11 +294,22 @@ class CaseFlagServiceTest {
 
         CounterClaimEntity otherDefendant2CounterClaim = CounterClaimEntity.builder()
             .party(otherDefendant2)
+            .status(CounterClaimState.COUNTER_CLAIM_ISSUED)
             .build();
         DocumentEntity otherDefendant2Document = DocumentEntity.builder()
             .fileName("defendant2-counterclaim.pdf")
             .party(otherDefendant2)
             .counterClaim(otherDefendant2CounterClaim)
+            .build();
+
+        CounterClaimEntity otherDefendant2PendingCounterClaim = CounterClaimEntity.builder()
+            .party(otherDefendant2)
+            .status(CounterClaimState.AWAITING_CASEWORKER_REVIEW)
+            .build();
+        DocumentEntity otherDefendant2PendingDocument = DocumentEntity.builder()
+            .fileName("defendant2-pending-counterclaim.pdf")
+            .party(otherDefendant2)
+            .counterClaim(otherDefendant2PendingCounterClaim)
             .build();
 
         DocumentEntity claimantDocument = DocumentEntity.builder()
@@ -305,7 +319,7 @@ class CaseFlagServiceTest {
 
         pcsCaseEntity.setDocuments(
             List.of(otherDefendant1Document, otherDefendant1RemovedDocument, otherDefendant1GenAppDocument,
-                otherDefendant2Document, claimantDocument));
+                otherDefendant2Document, otherDefendant2PendingDocument, claimantDocument));
 
         when(partyService.getPartyRole(otherDefendant1)).thenReturn(PartyRole.DEFENDANT);
         when(partyService.getPartyRole(otherDefendant2)).thenReturn(PartyRole.DEFENDANT);

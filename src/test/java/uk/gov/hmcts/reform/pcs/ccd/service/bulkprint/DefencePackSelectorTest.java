@@ -14,6 +14,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.ClaimActivityStatus;
 import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.ClaimActivityType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.PackDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.PackDocumentRef;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimActivityLogEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
@@ -21,6 +22,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimActivityLogRepository;
 
@@ -132,6 +134,26 @@ class DefencePackSelectorTest {
     }
 
     @Test
+    @DisplayName("Excludes a counter-claim that has not been issued yet")
+    void shouldExcludeCounterClaimNotYetIssued() {
+        when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of());
+
+        DocumentEntity pendingCounterClaim = DocumentEntity.builder()
+            .id(UUID.randomUUID())
+            .type(DocumentType.COUNTERCLAIM)
+            .party(defendant)
+            .counterClaim(CounterClaimEntity.builder().status(CounterClaimState.AWAITING_CASEWORKER_REVIEW).build())
+            .build();
+
+        List<DefencePackCandidate> result = underTest.findDefencePackCandidates(
+            caseWith(List.of(defenceForm, pendingCounterClaim), claimant, defendant));
+
+        assertThat(result).hasSize(2);
+        assertThat(candidateFor(result, defendant).documents()).containsExactly(defenceForm);
+        assertThat(candidateFor(result, claimant).documents()).containsExactly(defenceForm);
+    }
+
+    @Test
     @DisplayName("Returns nothing when every document has already been sent to every recipient")
     void shouldReturnNothingWhenAllSent() {
         when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of(
@@ -187,7 +209,11 @@ class DefencePackSelectorTest {
 
     private DocumentEntity counterClaim(PartyEntity owner) {
         return DocumentEntity.builder()
-            .id(UUID.randomUUID()).type(DocumentType.COUNTERCLAIM).party(owner).build();
+            .id(UUID.randomUUID())
+            .type(DocumentType.COUNTERCLAIM)
+            .party(owner)
+            .counterClaim(CounterClaimEntity.builder().status(CounterClaimState.COUNTER_CLAIM_ISSUED).build())
+            .build();
     }
 
     private PartyEntity party() {

@@ -272,8 +272,11 @@ class CounterClaimPaymentCallbackHandlerTest {
 
         underTest.handle(callback, feePaymentEntity);
 
+        assertThat(counterClaimEntity.getStatus()).isEqualTo(CounterClaimState.AWAITING_CASEWORKER_REVIEW);
         verify(camundaService).createTask(
             1234567890123456L, TaskType.TRANSLATE_DEFENDANT_SUBMITTED_DOCUMENT, expectedDescription);
+        verify(counterClaimFormScheduler).scheduleCounterClaimFormGeneration(counterClaimId);
+        verifyNoInteractions(schedulerClient);
     }
 
     @Test
