@@ -75,7 +75,7 @@ class GenAppPaymentCallbackHandlerTest {
         // Then
         verify(genAppDocumentGenerator).createSubmissionDocument(CASE_REFERENCE, genAppEntity);
         verify(notificationService).sendGenAppReceivedEmail(genAppEntity);
-        verify(genAppService).createTranslateDefendantDocumentTask(genAppEntity);
+        verify(genAppService).triggerTranslationTaskForGenApp(genAppEntity);
     }
 
     @Test

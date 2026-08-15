@@ -4,14 +4,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import uk.gov.hmcts.reform.pcs.camunda.CamundaService;
-import uk.gov.hmcts.reform.pcs.camunda.TaskType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaim;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
-import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
@@ -19,7 +16,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEnt
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
-import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TaskDescriptionService;
+import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TranslationWAService;
 import uk.gov.hmcts.reform.pcs.model.JourneyType;
 
 import java.util.List;
@@ -38,8 +35,7 @@ public class RespondPossessionClaimSubmitService {
     private final CounterClaimFeeCalculator counterClaimFeeCalculator;
     private final DocumentService documentService;
     private final DraftCaseDataService draftCaseDataService;
-    private final CamundaService camundaService;
-    private final TaskDescriptionService taskDescriptionService;
+    private final TranslationWAService translationWAService;
 
     @Transactional
     public RespondPossessionClaimSubmitPersistenceResult persistFinalSubmit(
@@ -64,7 +60,7 @@ public class RespondPossessionClaimSubmitService {
             counterClaimEntity.getParty()
         ));
 
-        createTranslateDefendantDocumentTask(caseReference, savedResponse, defendantParty);
+        triggerTranslationTaskForResponse(savedResponse, defendantParty);
 
         CounterClaimEntity counterClaimEntity = savedCounterClaim.orElse(null);
         boolean paymentRequired = counterClaimEntity != null
@@ -93,9 +89,8 @@ public class RespondPossessionClaimSubmitService {
         );
     }
 
-    private void createTranslateDefendantDocumentTask(long caseReference,
-                                                      DefendantResponseEntity savedResponse,
-                                                      PartyEntity defendantParty) {
+    private void triggerTranslationTaskForResponse(DefendantResponseEntity savedResponse,
+                                                    PartyEntity defendantParty) {
 
         LanguageUsed languageUsed = savedResponse.getLanguageUsed();
         if (languageUsed != LanguageUsed.WELSH && languageUsed != LanguageUsed.ENGLISH_AND_WELSH) {
@@ -108,15 +103,7 @@ public class RespondPossessionClaimSubmitService {
             .filter(document -> isDefendantResponseDocument(document, savedResponse))
             .toList();
 
-        if (documents.isEmpty()) {
-            return;
-        }
-
-        ClaimEntity mainClaim = pcsCaseEntity.getClaims().getFirst();
-        String description = taskDescriptionService.createTranslateDefendantDocumentDescription(
-            caseReference, mainClaim, defendantParty, documents);
-
-        camundaService.createTask(caseReference, TaskType.TRANSLATE_DEFENDANT_SUBMITTED_DOCUMENT, description);
+        translationWAService.createTranslateDefendantDocumentTask(pcsCaseEntity, defendantParty, documents);
     }
 
     private static boolean isDefendantResponseDocument(DocumentEntity document,

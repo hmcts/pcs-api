@@ -11,41 +11,40 @@ import uk.gov.hmcts.ccd.sdk.type.FlagVisibility;
 import uk.gov.hmcts.ccd.sdk.type.Flags;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.pcs.camunda.CamundaService;
-import uk.gov.hmcts.reform.pcs.camunda.TaskType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState;
+import uk.gov.hmcts.reform.pcs.ccd.entity.BaseCaseFlag;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseFlagEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.CasePartyFlagEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.FlagRefDataEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.CasePartyFlagEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.BaseCaseFlag;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.FlagRefDataEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.FlagRefDataRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
-import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TaskDescriptionService;
+import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TranslationWAService;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-//import static org.assertj.core.api.Assertions.assertE;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
+
+//import static org.assertj.core.api.Assertions.assertE;
 
 @ExtendWith(MockitoExtension.class)
 class CaseFlagServiceTest {
@@ -53,9 +52,7 @@ class CaseFlagServiceTest {
     @Mock
     private FlagRefDataRepository flagRefDataRepository;
     @Mock
-    private CamundaService camundaService;
-    @Mock
-    private TaskDescriptionService taskDescriptionService;
+    private TranslationWAService translationWAService;
     @Mock
     private PartyService partyService;
 
@@ -64,7 +61,8 @@ class CaseFlagServiceTest {
 
     @BeforeEach
     void setUp() {
-        underTest = new CaseFlagService(flagRefDataRepository, camundaService, taskDescriptionService, partyService);
+        underTest = new CaseFlagService(
+            flagRefDataRepository, translationWAService, partyService);
     }
 
     @Test
@@ -333,25 +331,14 @@ class CaseFlagServiceTest {
         Party incomingParty = Party.builder().defendantFlags(incomingFlags).build();
         List<ListValue<Party>> parties = List.of(createPartyListValue(flaggingPartyId.toString(), incomingParty));
 
-        String expectedDescription1 =
-            "Defendant 2 has uploaded the following documents: defendant1-response.pdf, defendant1-genapp.pdf";
-        when(taskDescriptionService.createTranslateDefendantDocumentDescription(
-            1234L, mainClaim, otherDefendant1, List.of(otherDefendant1Document, otherDefendant1GenAppDocument)))
-            .thenReturn(expectedDescription1);
-
-        String expectedDescription2 = "Defendant 3 has uploaded the following documents: defendant2-counterclaim.pdf";
-        when(taskDescriptionService.createTranslateDefendantDocumentDescription(
-            1234L, mainClaim, otherDefendant2, List.of(otherDefendant2Document)))
-            .thenReturn(expectedDescription2);
-
         // When
         underTest.mergePartyFlags(parties, pcsCaseEntity.getParties());
 
         // Then
-        verify(camundaService).createTask(
-            1234L, TaskType.TRANSLATE_DEFENDANT_SUBMITTED_DOCUMENT, expectedDescription1);
-        verify(camundaService).createTask(
-            1234L, TaskType.TRANSLATE_DEFENDANT_SUBMITTED_DOCUMENT, expectedDescription2);
+        verify(translationWAService).createTranslateDefendantDocumentTask(
+            pcsCaseEntity, otherDefendant1, List.of(otherDefendant1Document, otherDefendant1GenAppDocument));
+        verify(translationWAService).createTranslateDefendantDocumentTask(
+            pcsCaseEntity, otherDefendant2, List.of(otherDefendant2Document));
     }
 
     @Test
@@ -386,7 +373,7 @@ class CaseFlagServiceTest {
         underTest.mergePartyFlags(parties, pcsCaseEntity.getParties());
 
         // Then
-        verifyNoInteractions(camundaService, taskDescriptionService);
+        verifyNoInteractions(translationWAService);
     }
 
     @Test
@@ -419,7 +406,7 @@ class CaseFlagServiceTest {
         underTest.mergePartyFlags(parties, pcsCaseEntity.getParties());
 
         // Then
-        verifyNoInteractions(camundaService, taskDescriptionService);
+        verify(translationWAService).createTranslateDefendantDocumentTask(pcsCaseEntity, otherDefendant, List.of());
     }
 
     @Test
@@ -443,7 +430,7 @@ class CaseFlagServiceTest {
         underTest.mergePartyFlags(parties, pcsCaseEntity.getParties());
 
         // Then
-        verifyNoInteractions(camundaService, taskDescriptionService);
+        verifyNoInteractions(translationWAService);
     }
 
     private PcsCaseEntity createPcsCaseEntity(UUID id) {

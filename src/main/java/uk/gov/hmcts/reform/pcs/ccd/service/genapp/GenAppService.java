@@ -5,8 +5,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
-import uk.gov.hmcts.reform.pcs.camunda.CamundaService;
-import uk.gov.hmcts.reform.pcs.camunda.TaskType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
@@ -30,7 +28,7 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.GenAppRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentNameService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
-import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TaskDescriptionService;
+import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TranslationWAService;
 import uk.gov.hmcts.reform.pcs.exception.GenAppException;
 import uk.gov.hmcts.reform.pcs.exception.GenAppNotFoundException;
 
@@ -51,8 +49,7 @@ public class GenAppService {
     private final DocumentNameService documentNameService;
     private final DocumentRepository documentRepository;
     private final PartyService partyService;
-    private final CamundaService camundaService;
-    private final TaskDescriptionService taskDescriptionService;
+    private final TranslationWAService translationWAService;
     private final Clock utcClock;
 
     public GenAppService(GenAppRepository genAppRepository,
@@ -60,8 +57,7 @@ public class GenAppService {
                          DocumentNameService documentNameService,
                          DocumentRepository documentRepository,
                          PartyService partyService,
-                         CamundaService camundaService,
-                         TaskDescriptionService taskDescriptionService,
+                         TranslationWAService translationWAService,
                          @Qualifier("utcClock") Clock utcClock) {
 
         this.genAppRepository = genAppRepository;
@@ -69,8 +65,7 @@ public class GenAppService {
         this.documentNameService = documentNameService;
         this.documentRepository = documentRepository;
         this.partyService = partyService;
-        this.camundaService = camundaService;
-        this.taskDescriptionService = taskDescriptionService;
+        this.translationWAService = translationWAService;
         this.utcClock = utcClock;
     }
 
@@ -200,7 +195,7 @@ public class GenAppService {
             .orElseThrow(() -> new GenAppNotFoundException("No gen app found with ID " + genAppId));
     }
 
-    public void createTranslateDefendantDocumentTask(GenAppEntity genAppEntity) {
+    public void triggerTranslationTaskForGenApp(GenAppEntity genAppEntity) {
         PartyEntity party = genAppEntity.getParty();
         if (partyService.getPartyRole(party) != PartyRole.DEFENDANT) {
             return;
@@ -215,17 +210,8 @@ public class GenAppService {
             .filter(document -> !document.isRemoved())
             .toList();
 
-        if (documents.isEmpty()) {
-            return;
-        }
-
         PcsCaseEntity pcsCaseEntity = genAppEntity.getPcsCase();
-        long caseReference = pcsCaseEntity.getCaseReference();
-        ClaimEntity mainClaim = pcsCaseEntity.getClaims().getFirst();
-        String description = taskDescriptionService.createTranslateDefendantDocumentDescription(
-            caseReference, mainClaim, party, documents);
-
-        camundaService.createTask(caseReference, TaskType.TRANSLATE_DEFENDANT_SUBMITTED_DOCUMENT, description);
+        translationWAService.createTranslateDefendantDocumentTask(pcsCaseEntity, party, documents);
     }
 
     private DocumentEntity createSubmissionDocumentEntity(Document document,

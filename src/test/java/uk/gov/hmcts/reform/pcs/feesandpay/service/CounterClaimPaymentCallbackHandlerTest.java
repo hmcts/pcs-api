@@ -14,8 +14,6 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.gov.hmcts.reform.pcs.camunda.CamundaService;
-import uk.gov.hmcts.reform.pcs.camunda.TaskType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
@@ -28,7 +26,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantRespon
 import uk.gov.hmcts.reform.pcs.ccd.model.CounterClaimStatusChangeTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.repository.CounterClaimRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.counterclaimform.CounterClaimFormScheduler;
-import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TaskDescriptionService;
+import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TranslationWAService;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.Payment;
@@ -66,9 +64,7 @@ class CounterClaimPaymentCallbackHandlerTest {
     @Mock
     private CounterClaimFormScheduler counterClaimFormScheduler;
     @Mock
-    private CamundaService camundaService;
-    @Mock
-    private TaskDescriptionService taskDescriptionService;
+    private TranslationWAService translationWAService;
     @Mock
     private ObjectMapper objectMapper;
     @Captor
@@ -84,7 +80,7 @@ class CounterClaimPaymentCallbackHandlerTest {
     void setUp() {
         underTest = new CounterClaimPaymentCallbackHandler(counterClaimRepository,
                                                            schedulerClient, counterClaimFormScheduler,
-                                                           camundaService, taskDescriptionService,
+                                                           translationWAService,
                                                            objectMapper, FIXED_UTC_CLOCK);
     }
 
@@ -257,12 +253,6 @@ class CounterClaimPaymentCallbackHandlerTest {
         when(counterClaimRepository.findById(counterClaimId)).thenReturn(Optional.of(counterClaimEntity));
         when(objectMapper.readValue(anyString(), eq(FeesAndPayTaskData.class))).thenReturn(taskData);
 
-        String expectedDescription =
-            "Defendant 1 has uploaded the following documents: counterclaim-evidence.pdf";
-        when(taskDescriptionService.createTranslateDefendantDocumentDescription(
-            1234567890123456L, mainClaim, party, List.of(activeDocument)))
-            .thenReturn(expectedDescription);
-
         FeePaymentEntity feePaymentEntity = FeePaymentEntity.builder()
             .paymentStatus(PaymentStatus.PAID)
             .taskData("task-data")
@@ -273,8 +263,8 @@ class CounterClaimPaymentCallbackHandlerTest {
         underTest.handle(callback, feePaymentEntity);
 
         assertThat(counterClaimEntity.getStatus()).isEqualTo(CounterClaimState.AWAITING_CASEWORKER_REVIEW);
-        verify(camundaService).createTask(
-            1234567890123456L, TaskType.TRANSLATE_DEFENDANT_SUBMITTED_DOCUMENT, expectedDescription);
+        verify(translationWAService).createTranslateDefendantDocumentTask(
+            pcsCaseEntity, party, List.of(activeDocument));
         verify(counterClaimFormScheduler).scheduleCounterClaimFormGeneration(counterClaimId);
         verifyNoInteractions(schedulerClient);
     }
@@ -315,7 +305,7 @@ class CounterClaimPaymentCallbackHandlerTest {
 
         underTest.handle(callback, feePaymentEntity);
 
-        verifyNoInteractions(camundaService, taskDescriptionService);
+        verifyNoInteractions(translationWAService);
     }
 
     @Test
@@ -354,7 +344,7 @@ class CounterClaimPaymentCallbackHandlerTest {
 
         underTest.handle(callback, feePaymentEntity);
 
-        verifyNoInteractions(camundaService, taskDescriptionService);
+        verifyNoInteractions(translationWAService);
     }
 
     @Test

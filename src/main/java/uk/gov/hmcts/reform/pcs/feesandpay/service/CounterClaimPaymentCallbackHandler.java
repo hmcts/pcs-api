@@ -5,21 +5,16 @@ import com.github.kagkarlsson.scheduler.SchedulerClient;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
-import uk.gov.hmcts.reform.pcs.camunda.CamundaService;
-import uk.gov.hmcts.reform.pcs.camunda.TaskType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState;
-import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.model.CounterClaimStatusChangeTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.repository.CounterClaimRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.counterclaimform.CounterClaimFormScheduler;
-import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TaskDescriptionService;
+import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TranslationWAService;
 import uk.gov.hmcts.reform.pcs.ccd.task.CounterClaimIssuedNotificationTaskComponent;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
@@ -39,23 +34,21 @@ public class CounterClaimPaymentCallbackHandler implements PaymentCallbackStrate
     private final CounterClaimRepository counterClaimRepository;
     private final SchedulerClient schedulerClient;
     private final CounterClaimFormScheduler counterClaimFormScheduler;
-    private final CamundaService camundaService;
-    private final TaskDescriptionService taskDescriptionService;
+    private final TranslationWAService translationWAService;
     private final ObjectMapper objectMapper;
     private final Clock utcClock;
 
     public CounterClaimPaymentCallbackHandler(CounterClaimRepository counterClaimRepository,
                                               SchedulerClient schedulerClient,
                                               CounterClaimFormScheduler counterClaimFormScheduler,
-                                              CamundaService camundaService,
-                                              TaskDescriptionService taskDescriptionService,
+                                              TranslationWAService
+                                                  translationWAService,
                                               ObjectMapper objectMapper,
                                               @Qualifier("utcClock") Clock utcClock) {
         this.counterClaimRepository = counterClaimRepository;
         this.schedulerClient = schedulerClient;
         this.counterClaimFormScheduler = counterClaimFormScheduler;
-        this.camundaService = camundaService;
-        this.taskDescriptionService = taskDescriptionService;
+        this.translationWAService = translationWAService;
         this.objectMapper = objectMapper;
         this.utcClock = utcClock;
     }
@@ -90,7 +83,8 @@ public class CounterClaimPaymentCallbackHandler implements PaymentCallbackStrate
 
             if (!documentsRequiringTranslation.isEmpty()) {
                 counterClaimEntity.setStatus(CounterClaimState.AWAITING_CASEWORKER_REVIEW);
-                createTranslateDefendantDocumentTask(counterClaimEntity, documentsRequiringTranslation);
+                translationWAService.createTranslateDefendantDocumentTask(
+                    counterClaimEntity.getPcsCase(), counterClaimEntity.getParty(), documentsRequiringTranslation);
             } else {
                 counterClaimEntity.setStatus(CounterClaimState.COUNTER_CLAIM_ISSUED);
                 counterClaimEntity.setClaimIssuedDate(LocalDateTime.now(utcClock));
@@ -150,18 +144,5 @@ public class CounterClaimPaymentCallbackHandler implements PaymentCallbackStrate
                 && document.getCounterClaim() != null
                 && document.getCounterClaim().getId().equals(counterClaimEntity.getId()))
             .toList();
-    }
-
-    private void createTranslateDefendantDocumentTask(CounterClaimEntity counterClaimEntity,
-                                                      List<DocumentEntity> documents) {
-        PartyEntity party = counterClaimEntity.getParty();
-        PcsCaseEntity pcsCaseEntity = counterClaimEntity.getPcsCase();
-        ClaimEntity mainClaim = pcsCaseEntity.getClaims().getFirst();
-        long caseReference = pcsCaseEntity.getCaseReference();
-
-        String description = taskDescriptionService.createTranslateDefendantDocumentDescription(
-            caseReference, mainClaim, party, documents);
-
-        camundaService.createTask(caseReference, TaskType.TRANSLATE_DEFENDANT_SUBMITTED_DOCUMENT, description);
     }
 }
