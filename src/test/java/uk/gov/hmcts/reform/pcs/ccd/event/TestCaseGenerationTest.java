@@ -28,6 +28,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.event.enforcetheorder.EnforceTheOrder;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.ccd.testcasesupport.TestCaseSupportException;
 import uk.gov.hmcts.reform.pcs.ccd.testcasesupport.TestCaseSupportHelper;
 import uk.gov.hmcts.reform.pcs.ccd.testcasesupport.TestSupportEnvironment;
@@ -74,6 +75,8 @@ class TestCaseGenerationTest {
     @Mock
     private PcsCaseService pcsCaseService;
     @Mock
+    private OrganisationService organisationService;
+    @Mock
     private ResumePossessionClaim resumePossessionClaim;
     @Mock
     private EnforceTheOrder enforceTheOrder;
@@ -111,7 +114,7 @@ class TestCaseGenerationTest {
         verify(typeBuilder).initialState(AWAITING_SUBMISSION_TO_HMCTS);
         verify(eventBuilder).showSummary();
         verify(eventBuilder).name(EVENT_NAME);
-        verify(eventBuilder).grant(Permission.CRUD, UserRole.PCS_SOLICITOR);
+        verify(eventBuilder).grant(Permission.CRUD, UserRole.GA_CLAIMANT_SOLICITOR);
     }
 
     @Test
@@ -196,7 +199,7 @@ class TestCaseGenerationTest {
 
         // Then
         InOrder inOrder = inOrder(pcsCaseService, resumePossessionClaim);
-        inOrder.verify(pcsCaseService).createCase(caseReference, address, country);
+        inOrder.verify(pcsCaseService).createCase(eq(caseReference), eq(address), eq(country));
         inOrder.verify(resumePossessionClaim).submitClaim(caseReference, loadedCase);
     }
 
