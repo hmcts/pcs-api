@@ -17,6 +17,7 @@ import java.time.LocalDateTime;
 public class RelatedApplicationOption {
 
     private String genAppId;
+    private String counterClaimId;
     private DocumentUploadCategory category;
     private LocalDateTime submittedDate;
 }
