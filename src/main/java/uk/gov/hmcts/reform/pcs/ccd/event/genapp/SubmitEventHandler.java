@@ -59,6 +59,7 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
     private final PaymentService paymentService;
     private final SchedulerClient schedulerClient;
     private final NotificationService notificationService;
+    private final GenAppWaTaskService genAppWaTaskService;
     private final ObjectMapper objectMapper;
 
     @Override
@@ -104,6 +105,7 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
 
         if (!paymentRequired) {
             genAppDocumentGenerator.createSubmissionDocument(caseReference, genAppEntity);
+            genAppWaTaskService.createReviewGenAppTask(caseReference, genAppEntity);
         } else {
             schedulePaymentServiceRequest(genAppEntity, caseReference, feeDetails);
         }
@@ -118,10 +120,9 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
                                                   GenAppState initialState,
                                                   FeeDetails feeDetails) {
         if (!paymentRequired) {
-            genAppDocumentGenerator
-                .createSubmissionDocument(caseReference, genAppEntity);
-
+            genAppDocumentGenerator.createSubmissionDocument(caseReference, genAppEntity);
             notificationService.sendGenAppReceivedEmail(genAppEntity);
+            genAppWaTaskService.createReviewGenAppTask(caseReference, genAppEntity);
 
             MakeAnApplicationResponse response = MakeAnApplicationResponse.builder()
                 .state(initialState)

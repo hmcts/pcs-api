@@ -6,11 +6,14 @@ import uk.gov.hmcts.ccd.sdk.type.FlagDetail;
 import uk.gov.hmcts.ccd.sdk.type.FlagVisibility;
 import uk.gov.hmcts.ccd.sdk.type.Flags;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.reform.pcs.camunda.CamundaService;
+import uk.gov.hmcts.reform.pcs.camunda.TaskType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState;
 import uk.gov.hmcts.reform.pcs.ccd.entity.BaseCaseFlag;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseFlagEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CasePartyFlagEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.FlagRefDataEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -19,6 +22,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.FlagRefDataRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
+import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TaskDescriptionService;
 import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TranslationWAService;
 import uk.gov.hmcts.reform.pcs.ccd.util.YesOrNoConverter;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseFlagsView;
@@ -42,6 +46,8 @@ public class CaseFlagService {
     private static final String ACTIVE_STATUS = "Active";
 
     private FlagRefDataRepository flagRefDataRepository;
+    private CamundaService camundaService;
+    private TaskDescriptionService taskDescriptionService;
     private TranslationWAService translationWAService;
     private PartyService partyService;
 
@@ -73,9 +79,25 @@ public class CaseFlagService {
                 partyEntity.getDefendantFlags().clear();
                 partyEntity.getDefendantFlags().addAll(mergedCasePartyFlags);
 
-                // Only fire when the flag just became active, to avoid triggering duplicate tasks for the party
+                // Only fire when the flag just became active, to avoid triggering duplicate tasks for the given party
                 if (!welshCommsAlreadyActive && hasActiveWelshCommunicationsFlag(mergedCasePartyFlags)) {
+
                     triggerDefendantDocumentTranslationTask(partyEntity);
+
+                    long caseReference = partyEntity.getPcsCase().getCaseReference();
+                    ClaimEntity mainClaim = partyEntity.getPcsCase().getClaims().getFirst();
+                    List<DocumentEntity> documents = partyEntity.getPcsCase().getDocuments().stream()
+                        .filter(document -> !document.isRemoved()
+                            && document.getClaim() != null
+                            && document.getClaim().getId().equals(mainClaim.getId()))
+                        .toList();
+
+                    if (!documents.isEmpty()) {
+                        String description = taskDescriptionService.createTranslateClaimantDocumentDescription(
+                            caseReference, documents);
+                        camundaService.createTask(
+                            caseReference, TaskType.TRANSLATE_CLAIMANT_SUBMITTED_DOCUMENT, description);
+                    }
                 }
             }
         }

@@ -9,6 +9,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
+import uk.gov.hmcts.reform.pcs.ccd.event.genapp.GenAppWaTaskService;
 import uk.gov.hmcts.reform.pcs.ccd.repository.GenAppRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppDocumentGenerator;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppService;
@@ -42,14 +43,16 @@ class GenAppPaymentCallbackHandlerTest {
     @Mock
     private NotificationService notificationService;
     @Mock
+    private GenAppWaTaskService genAppWaTaskService;
+    @Mock
     private GenAppService genAppService;
 
     private GenAppPaymentCallbackHandler underTest;
 
     @BeforeEach
     void setUp() {
-        underTest = new GenAppPaymentCallbackHandler(
-            genAppRepository, genAppDocumentGenerator, notificationService, genAppService);
+        underTest = new GenAppPaymentCallbackHandler(genAppRepository, genAppDocumentGenerator,
+                                                     notificationService, genAppWaTaskService,genAppService);
     }
 
     @Test
@@ -75,6 +78,7 @@ class GenAppPaymentCallbackHandlerTest {
         // Then
         verify(genAppDocumentGenerator).createSubmissionDocument(CASE_REFERENCE, genAppEntity);
         verify(notificationService).sendGenAppReceivedEmail(genAppEntity);
+        verify(genAppWaTaskService).createReviewGenAppTask(CASE_REFERENCE, genAppEntity);
         verify(genAppService).triggerTranslationTaskForGenApp(genAppEntity);
     }
 
