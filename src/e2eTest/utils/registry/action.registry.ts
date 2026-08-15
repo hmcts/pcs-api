@@ -174,6 +174,7 @@ export class ActionRegistry {
     ['navigateToSummaryPage', new DocumentsAction()],
     ['uploadAdditionalDocumentsInfo', new DocumentsAction()],
     ['verifyDocumentRelatesToApplication', new DocumentsAction()],
+    ['uploadFiles', new DocumentsAction()],
   ]);
 
   static getAction(actionName: string): IAction {
