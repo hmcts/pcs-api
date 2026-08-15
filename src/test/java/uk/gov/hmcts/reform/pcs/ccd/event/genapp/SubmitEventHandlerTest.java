@@ -116,7 +116,7 @@ class SubmitEventHandlerTest {
                                            genAppRepository, genAppDocumentGenerator, genAppFeeCalculator,
                                            legalRepresentativeOrganisationRepository, confirmationScreenFactory,
                                            paymentService, schedulerClient, notificationService,
-                                           genAppWaTaskService, objectMapper,organisationService);
+                                           genAppWaTaskService, objectMapper, organisationService);
     }
 
     @Nested

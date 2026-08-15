@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.pcs.util;
 
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -8,8 +7,8 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyLegalRepresentativeOrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeOrganisationEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.PartyLegalRepresentativeOrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
@@ -29,7 +28,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class RevokeAccessHelper {
 
-    private final PartyLegalRepresentativeOrganisationRepository partyLegalRepresentativeOrganisationRepository;
+    private final ClaimPartyLegalRepresentativeOrganisationEntity partyLegalRepresentativeOrganisationRepository;
     private final DraftCaseDataRepository draftCaseDataRepository;
     private final CaseRoleAssignmentService caseRoleAssignmentService;
     private final PartyAccessCodeRepository partyAccessCodeRepository;
