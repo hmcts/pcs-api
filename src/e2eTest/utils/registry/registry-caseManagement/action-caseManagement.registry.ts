@@ -48,6 +48,7 @@ export class ActionCMRegistry {
     ['selectDynamicAppAndPartyDocRelatedTo', new CaseManagementAction()],
     ['uploadADocument', new CaseManagementAction()],
     ['confirmUpload', new CaseManagementAction()],
+    ['confirmAmend', new CaseManagementAction()],
     ['enterApplicationConsentAndNotice', new CaseManagementAction()],
     ['verifyReferToJudge', new CaseManagementAction()],
     ['verifyGenAppConfirm', new CaseManagementAction()],
