@@ -6,7 +6,6 @@ import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyLegalRepresentativeOrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeOrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
@@ -14,7 +13,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DraftCaseDataRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyAccessCodeRepository;
-import uk.gov.hmcts.reform.pcs.ccd.service.CaseRoleAssignmentService;
+import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.ClaimPartyLegalRepresentativeOrganisationRepository;
 import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 
 import java.time.Instant;
@@ -28,9 +27,8 @@ import java.util.stream.Collectors;
 @Slf4j
 public class RevokeAccessHelper {
 
-    private final ClaimPartyLegalRepresentativeOrganisationEntity partyLegalRepresentativeOrganisationRepository;
+    private final ClaimPartyLegalRepresentativeOrganisationRepository partyLegalRepOrgRepository;
     private final DraftCaseDataRepository draftCaseDataRepository;
-    private final CaseRoleAssignmentService caseRoleAssignmentService;
     private final PartyAccessCodeRepository partyAccessCodeRepository;
 
     /**

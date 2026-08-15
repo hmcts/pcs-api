@@ -10,7 +10,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyLegalRepresentativeOrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeOrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
@@ -18,7 +17,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DraftCaseDataRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyAccessCodeRepository;
-import uk.gov.hmcts.reform.pcs.ccd.service.CaseRoleAssignmentService;
+import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.ClaimPartyLegalRepresentativeOrganisationRepository;
 import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 
 import java.time.Instant;
@@ -41,7 +40,7 @@ class RevokeAccessHelperTest {
     private RevokeAccessHelper revokeAccessHelper;
 
     @Mock
-    private ClaimPartyLegalRepresentativeOrganisationEntity partyLegalRepresentativeOrganisationRepository;
+    private ClaimPartyLegalRepresentativeOrganisationRepository partyLegalRepOrgRepository;
 
     @Mock
     private DraftCaseDataRepository draftCaseDataRepository;
@@ -53,7 +52,7 @@ class RevokeAccessHelperTest {
     private PartyAccessCodeRepository partyAccessCodeRepository;
 
     @Captor
-    private ArgumentCaptor<List<ClaimPartyLegalRepresentativeOrganisationEntity>> saveAllCaptor;
+    private ArgumentCaptor<ClaimPartyLegalRepresentativeOrganisationEntity> saveCaptor;
 
     @Test
     void revokeOrganisationAccessToRespondToClaim_WithOtherDefendants_DoNotRevokeRasRolesInvalidateAndEntities() {
