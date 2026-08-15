@@ -6,7 +6,7 @@ export const users = [{
 },
 {
   user: 'Claimant Solicitor',
-  email: 'pcs-solicitor-user01@test.com',
+  email: 'pcs.solicitor.org1@hmcts.net',
   password: process.env.IDAM_PCS_USER_PASSWORD,
   tabAccess: ['Case Parties', 'Case Details', 'Case File View', 'Summary', 'Service Request']
 },
