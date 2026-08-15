@@ -29,8 +29,8 @@ import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.PaymentService;
-import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
 import uk.gov.hmcts.reform.pcs.idam.UserInfo;
+import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
@@ -60,6 +60,7 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
     private final PaymentService paymentService;
     private final SchedulerClient schedulerClient;
     private final NotificationService notificationService;
+    private final GenAppWaTaskService genAppWaTaskService;
     private final ObjectMapper objectMapper;
     private final OrganisationService organisationService;
 
@@ -102,6 +103,7 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
 
         if (!paymentRequired) {
             genAppDocumentGenerator.createSubmissionDocument(caseReference, genAppEntity);
+            genAppWaTaskService.createReviewGenAppTask(caseReference, genAppEntity);
         } else {
             schedulePaymentServiceRequest(genAppEntity, caseReference, feeDetails);
         }
@@ -116,10 +118,9 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
                                                   GenAppState initialState,
                                                   FeeDetails feeDetails) {
         if (!paymentRequired) {
-            genAppDocumentGenerator
-                .createSubmissionDocument(caseReference, genAppEntity);
-
+            genAppDocumentGenerator.createSubmissionDocument(caseReference, genAppEntity);
             notificationService.sendGenAppReceivedEmail(genAppEntity);
+            genAppWaTaskService.createReviewGenAppTask(caseReference, genAppEntity);
 
             MakeAnApplicationResponse response = MakeAnApplicationResponse.builder()
                 .state(initialState)
