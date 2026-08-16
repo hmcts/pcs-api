@@ -43,7 +43,6 @@ public class ClaimIssuePayment implements CCDConfig<PCSCase, State, UserRole> {
             .name("Payment Confirmation")
             .showCondition(ShowConditions.NEVER_SHOW)
             .grant(Permission.CRU, UserRole.SYSTEM_USER)
-            .grant(Permission.R, UserRole.PCS_SOLICITOR)
             .grant(Permission.R, UserRole.CLAIMANT)
             .grant(Permission.R, UserRole.GA_CLAIMANT_SOLICITOR)
             .grant(Permission.R, UserRole.CITIZEN)

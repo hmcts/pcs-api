@@ -53,13 +53,13 @@ class CaseRoleAssignmentServiceTest {
             .thenReturn(mock(CaseAssignmentUserRolesResponse.class));
 
         // WHEN
-        caseRoleAssignmentService.assignRasRole(CASE_REFERENCE, USER_ID, UserRole.CLAIMANT_SOLICITOR);
+        caseRoleAssignmentService.assignRasRole(CASE_REFERENCE, USER_ID, UserRole.DEFENDANT);
 
         // THEN
         CaseAssignmentUserRoleWithOrganisation assignment = requestCaptor.getValue()
             .getCaseAssignmentUserRolesWithOrganisation().getFirst();
 
-        assertThat(assignment.getCaseRole()).isEqualTo(UserRole.CLAIMANT_SOLICITOR.getRole());
+        assertThat(assignment.getCaseRole()).isEqualTo(UserRole.DEFENDANT.getRole());
     }
 
     @Test
@@ -71,7 +71,7 @@ class CaseRoleAssignmentServiceTest {
             .thenReturn(mock(CaseAssignmentUserRolesResponse.class));
 
         // WHEN
-        caseRoleAssignmentService.assignRasRole(CASE_REFERENCE, USER_ID, UserRole.CLAIMANT_SOLICITOR);
+        caseRoleAssignmentService.assignRasRole(CASE_REFERENCE, USER_ID, UserRole.DEFENDANT);
 
         // THEN
         CaseAssignmentUserRoleWithOrganisation assignment = requestCaptor.getValue()
@@ -92,7 +92,7 @@ class CaseRoleAssignmentServiceTest {
 
         // WHEN
         CaseAssignmentUserRolesResponse result =
-            caseRoleAssignmentService.assignRasRole(CASE_REFERENCE, USER_ID, UserRole.CLAIMANT_SOLICITOR);
+            caseRoleAssignmentService.assignRasRole(CASE_REFERENCE, USER_ID, UserRole.DEFENDANT);
 
         // THEN
         assertThat(result).isEqualTo(expectedResponse);
@@ -107,7 +107,7 @@ class CaseRoleAssignmentServiceTest {
             .thenReturn(mock(CaseAssignmentUserRolesResponse.class));
 
         // WHEN
-        caseRoleAssignmentService.assignRasRole(CASE_REFERENCE, USER_ID, UserRole.CLAIMANT_SOLICITOR);
+        caseRoleAssignmentService.assignRasRole(CASE_REFERENCE, USER_ID, UserRole.DEFENDANT);
 
         // THEN
         verify(caseAssignmentApi).addCaseUserRoles(eq(USER_TOKEN), eq(S2S_TOKEN), requestCaptor.capture());

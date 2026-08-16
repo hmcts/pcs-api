@@ -8,7 +8,6 @@ import uk.gov.hmcts.ccd.sdk.api.Permission;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CIRCUIT_JUDGE;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CITIZEN;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CLAIMANT;
-import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CLAIMANT_SOLICITOR;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CREATOR;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CTSC_ADMIN;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.DEFENDANT;
@@ -18,7 +17,6 @@ import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.GA_CLAIMANT_SOL
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.HEARING_CENTRE_ADMIN;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.JUDGE;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.LEADERSHIP_JUDGE;
-import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.PCS_SOLICITOR;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.WLU_ADMIN;
 
 final class AccessGrants {
@@ -27,7 +25,6 @@ final class AccessGrants {
         CITIZEN,
         CREATOR,
         DEFENDANT,
-        PCS_SOLICITOR,
         CLAIMANT,
         GA_CLAIMANT_SOLICITOR,
         JUDGE,
@@ -62,10 +59,9 @@ final class AccessGrants {
 
     static SetMultimap<HasRole, Permission> documentAccess() {
         SetMultimap<HasRole, Permission> grants = HashMultimap.create();
-        grants.putAll(PCS_SOLICITOR, Permission.CR);
         grants.putAll(CITIZEN, Permission.CR);
         grants.putAll(DEFENDANT, Permission.CR);
-        grants.putAll(CLAIMANT_SOLICITOR, Permission.CR);
+        grants.putAll(GA_CLAIMANT_SOLICITOR, Permission.CR);
         grants.putAll(DEFENDANT_SOLICITOR, Permission.CR);
         addReadAccess(grants, INTERNAL_READ_ROLES);
         return grants;
