@@ -11,7 +11,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.feeandpay.FeePaymentRepository;
-import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TaskDescriptionService;
+import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TranslationWAService;
 import uk.gov.hmcts.reform.pcs.exception.FeePaymentNotFoundException;
 
 import java.util.List;
@@ -24,7 +24,7 @@ public class FeePaymentNotificationService {
     private final NotificationService notificationService;
     private final FeePaymentRepository feePaymentRepository;
     private final CamundaService camundaService;
-    private final TaskDescriptionService taskDescriptionService;
+    private final TranslationWAService translationWAService;
 
     @Transactional
     public void sendClaimantPaidCaseIssuedNotification(Integer feePaymentId) {
@@ -37,26 +37,21 @@ public class FeePaymentNotificationService {
         notificationService.sendClaimantClaimIssuedEmailNotification(claimEntity);
 
         PcsCaseEntity pcsCaseEntity = claimEntity.getPcsCase();
+        long caseReference = pcsCaseEntity.getCaseReference();
 
         switch (claimEntity.getLanguageUsed()) {
-            case ENGLISH -> camundaService.createTask(
-                pcsCaseEntity.getCaseReference(), TaskType.NEW_CLAIM_CREATE_NEW_HEARING);
-            case WELSH, ENGLISH_AND_WELSH -> createTranslateClaimantDocumentTask(
-                pcsCaseEntity.getCaseReference(), claimEntity);
+            case ENGLISH -> camundaService.createTask(caseReference, TaskType.NEW_CLAIM_CREATE_NEW_HEARING);
+            case WELSH, ENGLISH_AND_WELSH -> createTranslationTaskForClaim(caseReference, claimEntity);
         }
     }
 
-    private void createTranslateClaimantDocumentTask(long caseReference, ClaimEntity claimEntity) {
+    private void createTranslationTaskForClaim(long caseReference, ClaimEntity claimEntity) {
         List<DocumentEntity> documents = claimEntity.getPcsCase().getDocuments().stream()
             .filter(document -> !document.isRemoved()
                 && document.getClaim() != null
                 && document.getClaim().getId().equals(claimEntity.getId()))
             .toList();
 
-        if (!documents.isEmpty()) {
-            String description = taskDescriptionService.createTranslateClaimantDocumentDescription(
-                caseReference, documents);
-            camundaService.createTask(caseReference, TaskType.TRANSLATE_CLAIMANT_SUBMITTED_DOCUMENT, description);
-        }
+        translationWAService.createTranslateClaimantSubmittedDocumentTask(caseReference, documents);
     }
 }

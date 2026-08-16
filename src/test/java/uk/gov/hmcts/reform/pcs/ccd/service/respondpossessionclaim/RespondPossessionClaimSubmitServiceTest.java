@@ -326,7 +326,7 @@ class RespondPossessionClaimSubmitServiceTest {
 
         underTest.persistFinalSubmit(CASE_REFERENCE, possessionClaimResponse, partyEntity, journeyType);
 
-        verify(translationWAService).createTranslateDefendantDocumentTask(
+        verify(translationWAService).createTranslateDefendantSubmittedDocumentTask(
             pcsCaseEntity, partyEntity, List.of(activeDocument));
     }
 
@@ -372,7 +372,7 @@ class RespondPossessionClaimSubmitServiceTest {
 
         underTest.persistFinalSubmit(CASE_REFERENCE, possessionClaimResponse, partyEntity, journeyType);
 
-        verify(translationWAService).createTranslateDefendantDocumentTask(
+        verify(translationWAService).createTranslateDefendantSubmittedDocumentTask(
             pcsCaseEntity, partyEntity, List.of(responseDocument));
     }
 
@@ -403,7 +403,8 @@ class RespondPossessionClaimSubmitServiceTest {
 
         underTest.persistFinalSubmit(CASE_REFERENCE, possessionClaimResponse, partyEntity, journeyType);
 
-        verify(translationWAService).createTranslateDefendantDocumentTask(pcsCaseEntity, partyEntity, List.of());
+        verify(translationWAService)
+            .createTranslateDefendantSubmittedDocumentTask(pcsCaseEntity, partyEntity, List.of());
     }
 
 }

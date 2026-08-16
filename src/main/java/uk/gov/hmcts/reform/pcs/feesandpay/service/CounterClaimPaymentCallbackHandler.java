@@ -83,7 +83,7 @@ public class CounterClaimPaymentCallbackHandler implements PaymentCallbackStrate
 
             if (!documentsRequiringTranslation.isEmpty()) {
                 counterClaimEntity.setStatus(CounterClaimState.AWAITING_CASEWORKER_REVIEW);
-                translationWAService.createTranslateDefendantDocumentTask(
+                translationWAService.createTranslateDefendantSubmittedDocumentTask(
                     counterClaimEntity.getPcsCase(), counterClaimEntity.getParty(), documentsRequiringTranslation);
             } else {
                 counterClaimEntity.setStatus(CounterClaimState.COUNTER_CLAIM_ISSUED);

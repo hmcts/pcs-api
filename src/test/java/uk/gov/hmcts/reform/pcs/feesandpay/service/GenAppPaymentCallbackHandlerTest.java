@@ -12,7 +12,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.genapp.GenAppWaTaskService;
 import uk.gov.hmcts.reform.pcs.ccd.repository.GenAppRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppDocumentGenerator;
-import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppService;
 import uk.gov.hmcts.reform.pcs.exception.GenAppNotFoundException;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatusCallback;
@@ -44,15 +43,13 @@ class GenAppPaymentCallbackHandlerTest {
     private NotificationService notificationService;
     @Mock
     private GenAppWaTaskService genAppWaTaskService;
-    @Mock
-    private GenAppService genAppService;
 
     private GenAppPaymentCallbackHandler underTest;
 
     @BeforeEach
     void setUp() {
         underTest = new GenAppPaymentCallbackHandler(genAppRepository, genAppDocumentGenerator,
-                                                     notificationService, genAppWaTaskService,genAppService);
+                                                     notificationService, genAppWaTaskService);
     }
 
     @Test
@@ -79,7 +76,7 @@ class GenAppPaymentCallbackHandlerTest {
         verify(genAppDocumentGenerator).createSubmissionDocument(CASE_REFERENCE, genAppEntity);
         verify(notificationService).sendGenAppReceivedEmail(genAppEntity);
         verify(genAppWaTaskService).createReviewGenAppTask(CASE_REFERENCE, genAppEntity);
-        verify(genAppService).triggerTranslationTaskForGenApp(genAppEntity);
+        verify(genAppWaTaskService).createTranslationTaskForGenApp(genAppEntity);
     }
 
     @Test
@@ -101,7 +98,7 @@ class GenAppPaymentCallbackHandlerTest {
 
         // Then
         verify(genAppDocumentGenerator, never()).createSubmissionDocument(CASE_REFERENCE, genAppEntity);
-        verifyNoInteractions(notificationService, genAppService);
+        verifyNoInteractions(notificationService, genAppWaTaskService);
     }
 
     @Test

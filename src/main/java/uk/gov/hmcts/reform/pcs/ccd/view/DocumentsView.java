@@ -5,7 +5,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
-import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState;
@@ -71,19 +70,10 @@ public class DocumentsView {
 
         CounterClaimEntity counterClaim = documentEntity.getCounterClaim();
         if (counterClaim != null) {
-            CounterClaimState status = counterClaim.getStatus();
-            if (status == CounterClaimState.COUNTER_CLAIM_ISSUED) {
-                return true;
-            }
-            return status == CounterClaimState.AWAITING_CASEWORKER_REVIEW && isCaseworker();
+            return counterClaim.getStatus() == CounterClaimState.COUNTER_CLAIM_ISSUED;
         }
 
         return true;
-    }
-
-    private boolean isCaseworker() {
-        return securityContextService.getCurrentUserDetails().getRoles()
-            .contains(UserRole.PCS_CASE_WORKER.getRole());
     }
 
     private boolean isExcludedFromCaseFile(DocumentEntity documentEntity) {

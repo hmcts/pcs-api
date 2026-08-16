@@ -33,7 +33,7 @@ class TranslationWAServiceTest {
     private TranslationWAService underTest;
 
     @Test
-    void shouldBuildDescriptionAndCreateCamundaTask() {
+    void shouldCreateTranslateDefendantSubmittedDocumentTask() {
         ClaimEntity mainClaim = ClaimEntity.builder().id(UUID.randomUUID()).build();
         PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
             .caseReference(CASE_REFERENCE)
@@ -47,35 +47,39 @@ class TranslationWAServiceTest {
             CASE_REFERENCE, mainClaim, party, documents))
             .thenReturn(expectedDescription);
 
-        underTest.createTranslateDefendantDocumentTask(pcsCaseEntity, party, documents);
+        underTest.createTranslateDefendantSubmittedDocumentTask(pcsCaseEntity, party, documents);
 
         verify(camundaService).createTask(
             CASE_REFERENCE, TaskType.TRANSLATE_DEFENDANT_SUBMITTED_DOCUMENT, expectedDescription);
     }
 
     @Test
-    void shouldUseFirstClaimAsMainClaimWhenBuildingDescription() {
-        ClaimEntity firstClaim = ClaimEntity.builder().id(UUID.randomUUID()).build();
-        ClaimEntity secondClaim = ClaimEntity.builder().id(UUID.randomUUID()).build();
-        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
-            .caseReference(CASE_REFERENCE)
-            .claims(List.of(firstClaim, secondClaim))
-            .build();
-        PartyEntity party = PartyEntity.builder().id(UUID.randomUUID()).build();
-        List<DocumentEntity> documents = List.of(DocumentEntity.builder().fileName("evidence.pdf").build());
-
-        underTest.createTranslateDefendantDocumentTask(pcsCaseEntity, party, documents);
-
-        verify(taskDescriptionService).createTranslateDefendantDocumentDescription(
-            CASE_REFERENCE, firstClaim, party, documents);
-    }
-
-    @Test
-    void shouldNotCreateTaskWhenDocumentsEmpty() {
+    void shouldNotCreateDefendantTaskWhenDocumentsEmpty() {
         PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().caseReference(CASE_REFERENCE).build();
         PartyEntity party = PartyEntity.builder().id(UUID.randomUUID()).build();
 
-        underTest.createTranslateDefendantDocumentTask(pcsCaseEntity, party, List.of());
+        underTest.createTranslateDefendantSubmittedDocumentTask(pcsCaseEntity, party, List.of());
+
+        verifyNoInteractions(camundaService, taskDescriptionService);
+    }
+
+    @Test
+    void shouldCreateTranslateClaimantSubmittedDocumentTask() {
+        List<DocumentEntity> documents = List.of(DocumentEntity.builder().fileName("claim-form.pdf").build());
+
+        String expectedDescription = "Claimant 1 has uploaded the following documents: claim-form.pdf";
+        when(taskDescriptionService.createTranslateClaimantDocumentDescription(CASE_REFERENCE, documents))
+            .thenReturn(expectedDescription);
+
+        underTest.createTranslateClaimantSubmittedDocumentTask(CASE_REFERENCE, documents);
+
+        verify(camundaService).createTask(
+            CASE_REFERENCE, TaskType.TRANSLATE_CLAIMANT_SUBMITTED_DOCUMENT, expectedDescription);
+    }
+
+    @Test
+    void shouldNotCreateClaimantTaskWhenDocumentsEmpty() {
+        underTest.createTranslateClaimantSubmittedDocumentTask(CASE_REFERENCE, List.of());
 
         verifyNoInteractions(camundaService, taskDescriptionService);
     }

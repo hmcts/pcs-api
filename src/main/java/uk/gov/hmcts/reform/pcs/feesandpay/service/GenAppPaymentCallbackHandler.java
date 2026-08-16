@@ -9,7 +9,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.genapp.GenAppWaTaskService;
 import uk.gov.hmcts.reform.pcs.ccd.repository.GenAppRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppDocumentGenerator;
-import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppService;
 import uk.gov.hmcts.reform.pcs.exception.GenAppNotFoundException;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatusCallback;
@@ -26,7 +25,6 @@ public class GenAppPaymentCallbackHandler implements PaymentCallbackStrategy {
     private final GenAppDocumentGenerator genAppDocumentGenerator;
     private final NotificationService notificationService;
     private final GenAppWaTaskService genAppWaTaskService;
-    private final GenAppService genAppService;
 
     @Override
     public void handle(PaymentStatusCallback paymentStatusCallback, FeePaymentEntity feePaymentEntity) {
@@ -43,7 +41,7 @@ public class GenAppPaymentCallbackHandler implements PaymentCallbackStrategy {
                 genAppDocumentGenerator.createSubmissionDocument(caseReference, genAppEntity);
                 notificationService.sendGenAppReceivedEmail(genAppEntity);
                 genAppWaTaskService.createReviewGenAppTask(caseReference, genAppEntity);
-                genAppService.triggerTranslationTaskForGenApp(genAppEntity);
+                genAppWaTaskService.createTranslationTaskForGenApp(genAppEntity);
             } else {
                 log.warn("Gen app {} state {} not valid for this callback", genAppId, genAppEntity.getState());
             }

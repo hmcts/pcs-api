@@ -18,7 +18,7 @@ public class TranslationWAService {
     private final CamundaService camundaService;
     private final TaskDescriptionService taskDescriptionService;
 
-    public void createTranslateDefendantDocumentTask(PcsCaseEntity pcsCaseEntity, PartyEntity party,
+    public void createTranslateDefendantSubmittedDocumentTask(PcsCaseEntity pcsCaseEntity, PartyEntity party,
                                                       List<DocumentEntity> documents) {
         if (documents.isEmpty()) {
             return;
@@ -31,5 +31,16 @@ public class TranslationWAService {
             caseReference, mainClaim, party, documents);
 
         camundaService.createTask(caseReference, TaskType.TRANSLATE_DEFENDANT_SUBMITTED_DOCUMENT, description);
+    }
+
+    public void createTranslateClaimantSubmittedDocumentTask(long caseReference, List<DocumentEntity> documents) {
+        if (documents.isEmpty()) {
+            return;
+        }
+
+        String description = taskDescriptionService.createTranslateClaimantDocumentDescription(
+            caseReference, documents);
+
+        camundaService.createTask(caseReference, TaskType.TRANSLATE_CLAIMANT_SUBMITTED_DOCUMENT, description);
     }
 }

@@ -263,7 +263,7 @@ class CounterClaimPaymentCallbackHandlerTest {
         underTest.handle(callback, feePaymentEntity);
 
         assertThat(counterClaimEntity.getStatus()).isEqualTo(CounterClaimState.AWAITING_CASEWORKER_REVIEW);
-        verify(translationWAService).createTranslateDefendantDocumentTask(
+        verify(translationWAService).createTranslateDefendantSubmittedDocumentTask(
             pcsCaseEntity, party, List.of(activeDocument));
         verify(counterClaimFormScheduler).scheduleCounterClaimFormGeneration(counterClaimId);
         verifyNoInteractions(schedulerClient);

@@ -60,7 +60,7 @@ public class RespondPossessionClaimSubmitService {
             counterClaimEntity.getParty()
         ));
 
-        triggerTranslationTaskForResponse(savedResponse, defendantParty);
+        createTranslationTaskForResponse(savedResponse, defendantParty);
 
         CounterClaimEntity counterClaimEntity = savedCounterClaim.orElse(null);
         boolean paymentRequired = counterClaimEntity != null
@@ -89,8 +89,8 @@ public class RespondPossessionClaimSubmitService {
         );
     }
 
-    private void triggerTranslationTaskForResponse(DefendantResponseEntity savedResponse,
-                                                    PartyEntity defendantParty) {
+    private void createTranslationTaskForResponse(DefendantResponseEntity savedResponse,
+                                                  PartyEntity defendantParty) {
 
         LanguageUsed languageUsed = savedResponse.getLanguageUsed();
         if (languageUsed != LanguageUsed.WELSH && languageUsed != LanguageUsed.ENGLISH_AND_WELSH) {
@@ -103,7 +103,7 @@ public class RespondPossessionClaimSubmitService {
             .filter(document -> isDefendantResponseDocument(document, savedResponse))
             .toList();
 
-        translationWAService.createTranslateDefendantDocumentTask(pcsCaseEntity, defendantParty, documents);
+        translationWAService.createTranslateDefendantSubmittedDocumentTask(pcsCaseEntity, defendantParty, documents);
     }
 
     private static boolean isDefendantResponseDocument(DocumentEntity document,

@@ -7,7 +7,6 @@ import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
-import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.UploadedDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
@@ -22,13 +21,10 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.HelpWithFeesEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.StatementOfTruthEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DocumentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.GenAppRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentNameService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
-import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
-import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TranslationWAService;
 import uk.gov.hmcts.reform.pcs.exception.GenAppException;
 import uk.gov.hmcts.reform.pcs.exception.GenAppNotFoundException;
 
@@ -48,24 +44,18 @@ public class GenAppService {
     private final DocumentService documentService;
     private final DocumentNameService documentNameService;
     private final DocumentRepository documentRepository;
-    private final PartyService partyService;
-    private final TranslationWAService translationWAService;
     private final Clock utcClock;
 
     public GenAppService(GenAppRepository genAppRepository,
                          DocumentService documentService,
                          DocumentNameService documentNameService,
                          DocumentRepository documentRepository,
-                         PartyService partyService,
-                         TranslationWAService translationWAService,
                          @Qualifier("utcClock") Clock utcClock) {
 
         this.genAppRepository = genAppRepository;
         this.documentService = documentService;
         this.documentNameService = documentNameService;
         this.documentRepository = documentRepository;
-        this.partyService = partyService;
-        this.translationWAService = translationWAService;
         this.utcClock = utcClock;
     }
 
@@ -193,25 +183,6 @@ public class GenAppService {
     public GenAppEntity loadGenApp(UUID genAppId) {
         return genAppRepository.findById(genAppId)
             .orElseThrow(() -> new GenAppNotFoundException("No gen app found with ID " + genAppId));
-    }
-
-    public void triggerTranslationTaskForGenApp(GenAppEntity genAppEntity) {
-        PartyEntity party = genAppEntity.getParty();
-        if (partyService.getPartyRole(party) != PartyRole.DEFENDANT) {
-            return;
-        }
-
-        LanguageUsed languageUsed = genAppEntity.getLanguageUsed();
-        if (languageUsed != LanguageUsed.WELSH && languageUsed != LanguageUsed.ENGLISH_AND_WELSH) {
-            return;
-        }
-
-        List<DocumentEntity> documents = genAppEntity.getDocuments().stream()
-            .filter(document -> !document.isRemoved())
-            .toList();
-
-        PcsCaseEntity pcsCaseEntity = genAppEntity.getPcsCase();
-        translationWAService.createTranslateDefendantDocumentTask(pcsCaseEntity, party, documents);
     }
 
     private DocumentEntity createSubmissionDocumentEntity(Document document,

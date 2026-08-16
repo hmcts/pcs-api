@@ -10,7 +10,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
-import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState;
@@ -19,7 +18,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
-import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.time.Instant;
@@ -178,83 +176,6 @@ class DocumentsViewTest {
 
     @Test
     void shouldHideCounterClaimDocumentWhenStateIsNotIssued() {
-        // Given
-        when(securityContextService.getCurrentUserId()).thenReturn(CURRENT_USER_ID);
-
-        CounterClaimEntity counterClaim = mock(CounterClaimEntity.class);
-        when(counterClaim.getStatus()).thenReturn(CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED);
-
-        DocumentEntity documentEntity = DocumentEntity.builder()
-            .id(UUID.randomUUID())
-            .url("url1")
-            .counterClaim(counterClaim)
-            .build();
-
-        when(pcsCaseEntity.getDocuments()).thenReturn(List.of(documentEntity));
-
-        // When
-        underTest.setCaseFields(pcsCase, pcsCaseEntity);
-
-        // Then
-        assertThat(pcsCase.getAllDocuments()).isEmpty();
-    }
-
-    @Test
-    void shouldShowCounterClaimDocumentWhenAwaitingCaseworkerReviewAndUserIsCaseworker() {
-        // Given
-        when(securityContextService.getCurrentUserId()).thenReturn(CURRENT_USER_ID);
-
-        UserInfo userInfo = mock(UserInfo.class);
-        when(userInfo.getRoles()).thenReturn(List.of(UserRole.PCS_CASE_WORKER.getRole()));
-        when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
-
-        CounterClaimEntity counterClaim = mock(CounterClaimEntity.class);
-        when(counterClaim.getStatus()).thenReturn(CounterClaimState.AWAITING_CASEWORKER_REVIEW);
-
-        DocumentEntity documentEntity = DocumentEntity.builder()
-            .id(UUID.randomUUID())
-            .url("url1")
-            .counterClaim(counterClaim)
-            .build();
-
-        when(pcsCaseEntity.getDocuments()).thenReturn(List.of(documentEntity));
-
-        // When
-        underTest.setCaseFields(pcsCase, pcsCaseEntity);
-
-        // Then
-        assertThat(pcsCase.getAllDocuments()).hasSize(1);
-    }
-
-    @Test
-    void shouldHideCounterClaimDocumentWhenAwaitingCaseworkerReviewAndUserIsNotCaseworker() {
-        // Given
-        when(securityContextService.getCurrentUserId()).thenReturn(CURRENT_USER_ID);
-
-        UserInfo userInfo = mock(UserInfo.class);
-        when(userInfo.getRoles()).thenReturn(List.of(UserRole.CITIZEN.getRole()));
-        when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
-
-        CounterClaimEntity counterClaim = mock(CounterClaimEntity.class);
-        when(counterClaim.getStatus()).thenReturn(CounterClaimState.AWAITING_CASEWORKER_REVIEW);
-
-        DocumentEntity documentEntity = DocumentEntity.builder()
-            .id(UUID.randomUUID())
-            .url("url1")
-            .counterClaim(counterClaim)
-            .build();
-
-        when(pcsCaseEntity.getDocuments()).thenReturn(List.of(documentEntity));
-
-        // When
-        underTest.setCaseFields(pcsCase, pcsCaseEntity);
-
-        // Then
-        assertThat(pcsCase.getAllDocuments()).isEmpty();
-    }
-
-    @Test
-    void shouldHideCounterClaimDocumentFromCaseworkerWhenPending() {
         // Given
         when(securityContextService.getCurrentUserId()).thenReturn(CURRENT_USER_ID);
 

@@ -6,8 +6,6 @@ import uk.gov.hmcts.ccd.sdk.type.FlagDetail;
 import uk.gov.hmcts.ccd.sdk.type.FlagVisibility;
 import uk.gov.hmcts.ccd.sdk.type.Flags;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
-import uk.gov.hmcts.reform.pcs.camunda.CamundaService;
-import uk.gov.hmcts.reform.pcs.camunda.TaskType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState;
 import uk.gov.hmcts.reform.pcs.ccd.entity.BaseCaseFlag;
@@ -22,7 +20,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.FlagRefDataRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
-import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TaskDescriptionService;
 import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TranslationWAService;
 import uk.gov.hmcts.reform.pcs.ccd.util.YesOrNoConverter;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseFlagsView;
@@ -46,8 +43,6 @@ public class CaseFlagService {
     private static final String ACTIVE_STATUS = "Active";
 
     private FlagRefDataRepository flagRefDataRepository;
-    private CamundaService camundaService;
-    private TaskDescriptionService taskDescriptionService;
     private TranslationWAService translationWAService;
     private PartyService partyService;
 
@@ -81,64 +76,11 @@ public class CaseFlagService {
 
                 // Only fire when the flag just became active, to avoid triggering duplicate tasks for the given party
                 if (!welshCommsAlreadyActive && hasActiveWelshCommunicationsFlag(mergedCasePartyFlags)) {
-
                     triggerDefendantDocumentTranslationTask(partyEntity);
-
-                    long caseReference = partyEntity.getPcsCase().getCaseReference();
-                    ClaimEntity mainClaim = partyEntity.getPcsCase().getClaims().getFirst();
-                    List<DocumentEntity> documents = partyEntity.getPcsCase().getDocuments().stream()
-                        .filter(document -> !document.isRemoved()
-                            && document.getClaim() != null
-                            && document.getClaim().getId().equals(mainClaim.getId()))
-                        .toList();
-
-                    if (!documents.isEmpty()) {
-                        String description = taskDescriptionService.createTranslateClaimantDocumentDescription(
-                            caseReference, documents);
-                        camundaService.createTask(
-                            caseReference, TaskType.TRANSLATE_CLAIMANT_SUBMITTED_DOCUMENT, description);
-                    }
+                    triggerClaimantDocumentTranslationTask(partyEntity);
                 }
             }
         }
-    }
-
-    private void triggerDefendantDocumentTranslationTask(PartyEntity flaggingParty) {
-        PcsCaseEntity pcsCaseEntity = flaggingParty.getPcsCase();
-
-        for (PartyEntity party : pcsCaseEntity.getParties()) {
-            boolean isOtherDefendant = !party.getId().equals(flaggingParty.getId())
-                && partyService.getPartyRole(party) == PartyRole.DEFENDANT;
-
-            if (isOtherDefendant) {
-                List<DocumentEntity> documents = pcsCaseEntity.getDocuments().stream()
-                    .filter(document -> !document.isRemoved())
-                    .filter(document -> isDefendantDocument(document, party))
-                    .toList();
-
-                translationWAService.createTranslateDefendantDocumentTask(pcsCaseEntity, party, documents);
-            }
-        }
-    }
-
-    private boolean isDefendantDocument(DocumentEntity document, PartyEntity partyEntity) {
-        CounterClaimEntity counterClaim = document.getCounterClaim();
-        if (counterClaim != null && counterClaim.getStatus() != CounterClaimState.COUNTER_CLAIM_ISSUED) {
-            return false;
-        }
-
-        PartyEntity documentParty = resolveOwningParty(document);
-        return documentParty != null && documentParty.getId().equals(partyEntity.getId());
-    }
-
-    private PartyEntity resolveOwningParty(DocumentEntity document) {
-        if (document.getCounterClaim() != null) {
-            return document.getCounterClaim().getParty();
-        }
-        if (document.getGeneralApplication() != null) {
-            return document.getGeneralApplication().getParty();
-        }
-        return document.getParty();
     }
 
     private <T extends BaseCaseFlag> List<T>  mergeFlagDetails(Flags incomingCaseFlags, PcsCaseEntity pcsCaseEntity,
@@ -213,6 +155,58 @@ public class CaseFlagService {
 
             flagEntity.setPaths(paths);
         }
+    }
+
+    private void triggerClaimantDocumentTranslationTask(PartyEntity flaggingParty) {
+        PcsCaseEntity pcsCaseEntity = flaggingParty.getPcsCase();
+        long caseReference = pcsCaseEntity.getCaseReference();
+        ClaimEntity mainClaim = pcsCaseEntity.getClaims().getFirst();
+
+        List<DocumentEntity> documents = pcsCaseEntity.getDocuments().stream()
+            .filter(document -> !document.isRemoved()
+                && document.getClaim() != null
+                && document.getClaim().getId().equals(mainClaim.getId()))
+            .toList();
+
+        translationWAService.createTranslateClaimantSubmittedDocumentTask(caseReference, documents);
+    }
+
+    private void triggerDefendantDocumentTranslationTask(PartyEntity flaggingParty) {
+        PcsCaseEntity pcsCaseEntity = flaggingParty.getPcsCase();
+
+        for (PartyEntity party : pcsCaseEntity.getParties()) {
+            boolean isOtherDefendant = !party.getId().equals(flaggingParty.getId())
+                && partyService.getPartyRole(party) == PartyRole.DEFENDANT;
+
+            if (isOtherDefendant) {
+                List<DocumentEntity> documents = pcsCaseEntity.getDocuments().stream()
+                    .filter(document -> !document.isRemoved())
+                    .filter(document -> isDefendantDocument(document, party))
+                    .toList();
+
+                translationWAService.createTranslateDefendantSubmittedDocumentTask(pcsCaseEntity, party, documents);
+            }
+        }
+    }
+
+    private boolean isDefendantDocument(DocumentEntity document, PartyEntity partyEntity) {
+        CounterClaimEntity counterClaim = document.getCounterClaim();
+        if (counterClaim != null && counterClaim.getStatus() != CounterClaimState.COUNTER_CLAIM_ISSUED) {
+            return false;
+        }
+
+        PartyEntity documentParty = resolveOwningParty(document);
+        return documentParty != null && documentParty.getId().equals(partyEntity.getId());
+    }
+
+    private PartyEntity resolveOwningParty(DocumentEntity document) {
+        if (document.getCounterClaim() != null) {
+            return document.getCounterClaim().getParty();
+        }
+        if (document.getGeneralApplication() != null) {
+            return document.getGeneralApplication().getParty();
+        }
+        return document.getParty();
     }
 
     private boolean hasActiveWelshCommunicationsFlag(List<CasePartyFlagEntity> flags) {

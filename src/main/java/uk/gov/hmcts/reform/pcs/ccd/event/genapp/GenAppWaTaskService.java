@@ -4,8 +4,17 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.pcs.camunda.CamundaService;
 import uk.gov.hmcts.reform.pcs.camunda.TaskType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
+import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
+import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TaskDescriptionService;
+import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TranslationWAService;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -13,6 +22,8 @@ public class GenAppWaTaskService {
 
     private final TaskDescriptionService taskDescriptionService;
     private final CamundaService camundaService;
+    private final PartyService partyService;
+    private final TranslationWAService translationWAService;
 
     public void createReviewGenAppTask(long caseReference, GenAppEntity genAppEntity) {
         String description = taskDescriptionService
@@ -25,6 +36,25 @@ public class GenAppWaTaskService {
         };
 
         camundaService.createTask(caseReference, taskType, description);
+    }
+
+    public void createTranslationTaskForGenApp(GenAppEntity genAppEntity) {
+        PartyEntity party = genAppEntity.getParty();
+        if (partyService.getPartyRole(party) != PartyRole.DEFENDANT) {
+            return;
+        }
+
+        LanguageUsed languageUsed = genAppEntity.getLanguageUsed();
+        if (languageUsed != LanguageUsed.WELSH && languageUsed != LanguageUsed.ENGLISH_AND_WELSH) {
+            return;
+        }
+
+        List<DocumentEntity> documents = genAppEntity.getDocuments().stream()
+            .filter(document -> !document.isRemoved())
+            .toList();
+
+        PcsCaseEntity pcsCaseEntity = genAppEntity.getPcsCase();
+        translationWAService.createTranslateDefendantSubmittedDocumentTask(pcsCaseEntity, party, documents);
     }
 
 }
