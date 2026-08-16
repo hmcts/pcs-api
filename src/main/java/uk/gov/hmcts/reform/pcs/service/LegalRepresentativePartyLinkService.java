@@ -1,6 +1,8 @@
 package uk.gov.hmcts.reform.pcs.service;
 
 
+import static java.util.UUID.fromString;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -45,21 +47,18 @@ public class LegalRepresentativePartyLinkService {
             throw new LegalRepresentativeAlreadyLinkedToPartyException(
                 "Legal Representative or organisation already linked to Party [" + partyId + "]");
         }
-        PcsCaseEntity caseEntity = pcsCaseService.loadCase(caseReference);
 
-        PartyEntity defendantPartyEntity = getDefendantPartyEntity(caseEntity, partyId);
-
-        unlinkExistingRepresentation(UUID.fromString(partyId), organisationId);
-
-        Optional<LegalRepresentativeOrganisationEntity> legalRepresentativeOrganisationEntity =
-            findExistingRepresentativeOrganisation(organisationId, caseReference);
+        unlinkExistingRepresentation(fromString(partyId));
 
         LegalRepresentativeOrganisationEntity legalRepresentativeOrganisation;
 
-        if (legalRepresentativeOrganisationEntity.isPresent()) {
+        var existingOrganisation =
+            legalRepOrgRepository.findByOrganisationIdAndCaseReference(organisationId, caseReference);
 
-            legalRepresentativeOrganisation = legalRepresentativeOrganisationEntity.get();
+        PcsCaseEntity caseEntity = pcsCaseService.loadCase(caseReference);
 
+        if (existingOrganisation.isPresent()) {
+            legalRepresentativeOrganisation = existingOrganisation.get();
             backfillOrganisationMetadata(legalRepresentativeOrganisation, organisationDetails);
         } else {
             legalRepresentativeOrganisation = createNewLegalRepresentative(
@@ -67,9 +66,7 @@ public class LegalRepresentativePartyLinkService {
                 organisationDetails,
                 caseEntity);
         }
-
-        legalRepresentativeOrganisation.addParty(defendantPartyEntity);
-
+        legalRepresentativeOrganisation.addParty(getDefendantPartyEntity(caseEntity, partyId));
         legalRepOrgRepository.save(legalRepresentativeOrganisation);
     }
 
@@ -100,16 +97,15 @@ public class LegalRepresentativePartyLinkService {
     }
 
     private boolean isAlreadyLinkedToParty(String partyId, String organisationId) {
-        UUID targetPartyId = UUID.fromString(partyId);
+        UUID targetPartyId = fromString(partyId);
 
         return legalRepOrgRepository
             .isRepresentativeOrganisationLinkedToPartyAndActive(organisationId, targetPartyId);
     }
 
-    private Optional<LegalRepresentativeOrganisationEntity> findExistingRepresentativeOrganisation(
+    private Optional<LegalRepresentativeOrganisationEntity> retrieveOrganisationIfExists(
         String organisationId, long caseReference) {
-        return legalRepOrgRepository.findByOrganisationIdAndCaseReference(organisationId,
-                                                                          caseReference);
+        return legalRepOrgRepository.findByOrganisationIdAndCaseReference(organisationId, caseReference);
     }
 
     private void backfillOrganisationMetadata(LegalRepresentativeOrganisationEntity legalRepresentativeOrganisation,
@@ -130,7 +126,7 @@ public class LegalRepresentativePartyLinkService {
             .getClaimParties().stream()
             .filter(claimParty -> claimParty.getRole() == PartyRole.DEFENDANT)
             .map(ClaimPartyEntity::getParty)
-            .filter(partyEntity -> partyEntity.getId().equals(UUID.fromString(partyId)))
+            .filter(partyEntity -> partyEntity.getId().equals(fromString(partyId)))
             .findFirst()
             .orElseThrow(() -> {
                 log.error("Unable to find Party [{}]", partyId);
@@ -138,10 +134,9 @@ public class LegalRepresentativePartyLinkService {
             });
     }
 
-    private void unlinkExistingRepresentation(UUID partyId, String organisationId) {
+    private void unlinkExistingRepresentation(UUID partyId) {
         claimPartyLegalRepOrgRepository
-            .findByPartyIdAndLegalRepresentativeOrganisation_OrganisationIdAndActive(
-                partyId, organisationId, YesOrNo.YES)
+            .findByPartyIdAndActive(partyId, YesOrNo.YES)
             .ifPresent(partyLegalRepOrg -> {
                 invalidatePartyLegalRepOrg(partyLegalRepOrg);
                 claimPartyLegalRepOrgRepository.save(partyLegalRepOrg);

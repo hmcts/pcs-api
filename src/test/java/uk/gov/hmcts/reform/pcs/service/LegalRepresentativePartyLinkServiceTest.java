@@ -171,8 +171,8 @@ class LegalRepresentativePartyLinkServiceTest {
         when(legalRepresentativeOrganisationRepository
                  .findByOrganisationIdAndCaseReference(organisationId, caseReference)).thenReturn(Optional.empty());
         when(claimPartyLegalRepOrgRepository
-                 .findByPartyIdAndLegalRepresentativeOrganisation_OrganisationIdAndActive(
-                     partyId, organisationId, YesOrNo.YES)).thenReturn(Optional.of(existingLink));
+                 .findByPartyIdAndActive(
+                     partyId, YesOrNo.YES)).thenReturn(Optional.of(existingLink));
 
         // when
         legalRepresentativePartyLinkService.linkLegalRepresentativeToParty(
@@ -515,8 +515,8 @@ class LegalRepresentativePartyLinkServiceTest {
         when(pcsCaseService.loadCase(caseReference)).thenReturn(pcsCaseEntity);
         when(addressMapper.toAddressEntityAndNormalise(addressUK)).thenReturn(addressEntity);
         when(claimPartyLegalRepOrgRepository
-                 .findByPartyIdAndLegalRepresentativeOrganisation_OrganisationIdAndActive(
-                     partyId, organisationId, YesOrNo.YES))
+                 .findByPartyIdAndActive(
+                     partyId, YesOrNo.YES))
             .thenReturn(Optional.of(claimPartyLegalRepresentativeEntity));
 
         // when

@@ -12,6 +12,9 @@ import java.util.UUID;
 public interface ClaimPartyLegalRepresentativeOrganisationRepository
     extends JpaRepository<ClaimPartyLegalRepresentativeOrganisationEntity, Integer> {
 
+    Optional<ClaimPartyLegalRepresentativeOrganisationEntity>
+        findByPartyIdAndActive(UUID partyId, YesOrNo active);
+
     /**
      * Matched on the organisation's PRD identifier rather than its generated primary key, as callers
      * hold the identifier from the organisation details response before any entity has been resolved.
