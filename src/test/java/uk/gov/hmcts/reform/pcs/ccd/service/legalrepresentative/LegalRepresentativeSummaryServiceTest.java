@@ -190,15 +190,15 @@ class LegalRepresentativeSummaryServiceTest {
     void handleLegalRepresentativeSummary_WithNonCaseLinkedState_ReturnsEmptyRespondMarkDown() {
         // given
         String organisationId = "org";
-        LegalRepresentativeOrganisationEntity legalRepresentativeOrg =
-            LegalRepresentativeOrganisationEntity.builder()
+        OrganisationEntity organisation =
+            OrganisationEntity.builder()
                 .organisationId(organisationId)
                 .build();
         List<PartyEntity> parties = List.of(PartyEntity.builder()
-                                                .partyLegalRepresentativeOrganisationList(List.of(
-                                                    ClaimPartyLegalRepresentativeOrganisationEntity.builder()
+                                                .claimPartyOrganisationList(List.of(
+                                                    ClaimPartyOrganisationEntity.builder()
                                                         .active(YesOrNo.YES)
-                                                        .legalRepresentativeOrganisation(legalRepresentativeOrg)
+                                                        .organisation(organisation)
                                                         .build()))
                                                 .build());
 
