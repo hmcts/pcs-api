@@ -8,10 +8,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.DynamicList;
 import uk.gov.hmcts.ccd.sdk.type.DynamicListElement;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeOrganisationEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyLegalRepresentativeOrganisationEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.OrganisationEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyOrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.LegalRepresentativeOrganisationRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.OrganisationRepository;
 
 import java.util.List;
 import java.util.Optional;
@@ -26,20 +26,20 @@ class LegalRepresentativeServiceTest {
     private static final long CASE_REFERENCE = 1234L;
 
     @Mock
-    private LegalRepresentativeOrganisationRepository legalRepresentativeOrganisationRepository;
+    private OrganisationRepository organisationRepository;
 
     private LegalRepresentativeService underTest;
 
     @BeforeEach
     void setUp() {
-        underTest = new LegalRepresentativeService(legalRepresentativeOrganisationRepository);
+        underTest = new LegalRepresentativeService(organisationRepository);
     }
 
     @Test
     void shouldReturnOptionalEmptyWhenIdamIdIsNotLegalRep() {
         // Given
         String orgId = "org";
-        when(legalRepresentativeOrganisationRepository.findByOrganisationIdAndCaseReference(orgId, CASE_REFERENCE))
+        when(organisationRepository.findByOrganisationIdAndCaseReference(orgId, CASE_REFERENCE))
             .thenReturn(Optional.empty());
 
         // When
@@ -62,15 +62,15 @@ class LegalRepresentativeServiceTest {
             .firstName("Richard")
             .lastName("Represented")
             .build();
-        ClaimPartyLegalRepresentativeOrganisationEntity casePartyLegalRepOrgEntity =
-            ClaimPartyLegalRepresentativeOrganisationEntity.builder()
+        ClaimPartyOrganisationEntity casePartyLegalRepOrgEntity =
+            ClaimPartyOrganisationEntity.builder()
                 .party(casePartyEntity)
                 .build();
-        LegalRepresentativeOrganisationEntity legalRepEntity = LegalRepresentativeOrganisationEntity.builder()
-            .claimPartyLegalRepresentativeOrganisationList(List.of(casePartyLegalRepOrgEntity))
+        OrganisationEntity legalRepEntity = OrganisationEntity.builder()
+            .claimPartyOrganisationList(List.of(casePartyLegalRepOrgEntity))
             .build();
 
-        when(legalRepresentativeOrganisationRepository.findByOrganisationIdAndCaseReference(orgId, CASE_REFERENCE))
+        when(organisationRepository.findByOrganisationIdAndCaseReference(orgId, CASE_REFERENCE))
             .thenReturn(Optional.of(legalRepEntity));
 
         // When
