@@ -49,4 +49,13 @@
       <packageUrl regex="true">^pkg:maven/org\.apache\.tomcat\.embed/tomcat\-embed\-.*$</packageUrl>
       <cve>CVE-2026-66299</cve>
    </suppress>
+    <suppress>
+        <notes><![CDATA[
+        HDPI-8270: CVE-2026-64607 in httpclient5 (transitive). No fixed release available at
+        suppression time; scoped to the client5 artefact only. Remove when httpclient5 (or the
+        managing BOM) ships a fixed version; the bump is tracked on HDPI-8270.
+        ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.apache\.httpcomponents\.client5/httpclient5@.*$</packageUrl>
+        <cve>CVE-2026-64607</cve>
+    </suppress>
 </suppressions>
