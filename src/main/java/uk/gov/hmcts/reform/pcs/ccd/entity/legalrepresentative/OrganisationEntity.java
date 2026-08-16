@@ -24,13 +24,13 @@ import static jakarta.persistence.CascadeType.ALL;
 import static jakarta.persistence.FetchType.LAZY;
 
 @Entity
-@Table(name = "legal_representative_organisation")
+@Table(name = "organisation")
 @Setter
 @Getter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class LegalRepresentativeOrganisationEntity {
+public class OrganisationEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -42,45 +42,42 @@ public class LegalRepresentativeOrganisationEntity {
 
     private String organisationProfileId;
 
-    @OneToMany(mappedBy = "legalRepresentativeOrganisation", fetch = LAZY, cascade = ALL)
+    @OneToMany(mappedBy = "organisation", fetch = LAZY, cascade = ALL)
     @Builder.Default
     @JsonManagedReference
-    private List<LegalRepresentativeOrganisationContactDetailsEntity> legalRepresentativeOrganisationContactDetails =
-        new ArrayList<>();
+    private List<ClaimPartyContactDetailsEntity> claimPartyContactDetails = new ArrayList<>();
 
-    @OneToMany(fetch = LAZY, cascade = ALL, mappedBy = "legalRepresentativeOrganisation")
+    @OneToMany(fetch = LAZY, cascade = ALL, mappedBy = "organisation")
     @Builder.Default
     @JsonManagedReference
-    private List<ClaimPartyLegalRepresentativeOrganisationEntity> claimPartyLegalRepresentativeOrganisationList =
-        new ArrayList<>();
+    private List<ClaimPartyOrganisationEntity> claimPartyOrganisationList = new ArrayList<>();
 
     private LocalDateTime createdDate;
 
     private LocalDateTime lastModifiedDate;
 
     public void addParty(PartyEntity party) {
-        if (this.claimPartyLegalRepresentativeOrganisationList.stream().anyMatch(e ->
+        if (this.claimPartyOrganisationList.stream().anyMatch(e ->
                                                                          e.getParty().getId().equals(party.getId()))) {
             return;
         }
 
-        ClaimPartyLegalRepresentativeOrganisationEntity claimPartyLegalRepresentativeOrganisationEntity =
-            ClaimPartyLegalRepresentativeOrganisationEntity.builder()
-            .legalRepresentativeOrganisation(this)
+        ClaimPartyOrganisationEntity claimPartyOrganisationEntity =
+            ClaimPartyOrganisationEntity.builder()
+            .organisation(this)
             .party(party)
             .startDate(Instant.now())
             .active(YesOrNo.YES)
             .build();
-        claimPartyLegalRepresentativeOrganisationList.add(claimPartyLegalRepresentativeOrganisationEntity);
-        party.getPartyLegalRepresentativeOrganisationList().add(claimPartyLegalRepresentativeOrganisationEntity);
+        claimPartyOrganisationList.add(claimPartyOrganisationEntity);
+        party.getClaimPartyOrganisationList().add(claimPartyOrganisationEntity);
     }
 
-    public void addLegalRepresentativeOrganisationContactDetails(
-        LegalRepresentativeOrganisationContactDetailsEntity contactDetails) {
+    public void addClaimPartyContactDetails(ClaimPartyContactDetailsEntity contactDetails) {
 
         if (contactDetails != null) {
-            this.legalRepresentativeOrganisationContactDetails.add(contactDetails);
-            contactDetails.setLegalRepresentativeOrganisation(this);
+            this.claimPartyContactDetails.add(contactDetails);
+            contactDetails.setOrganisation(this);
         }
     }
 

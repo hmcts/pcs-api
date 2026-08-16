@@ -80,6 +80,22 @@ public class TaskDescriptionService {
         return renderTemplate(templateName, context);
     }
 
+    public String createTranslateClaimantDocumentDescription(long caseReference,
+                                                              List<DocumentEntity> documentEntities) {
+
+        List<String> filenames = documentEntities.stream()
+            .map(DocumentEntity::getFileName)
+            .toList();
+
+        Map<String, Object> context = Map.of(
+            "caseReference", caseReference,
+            "filenames", filenames
+        );
+
+        String templateName = "translate-claimant-submitted-document";
+        return renderTemplate(templateName, context);
+    }
+
     private String renderTemplate(String templateName, Map<String, Object> context) {
         PebbleTemplate compiledTemplate = pebbleEngine.getTemplate("workallocation/" + templateName);
         Writer writer = new StringWriter();
