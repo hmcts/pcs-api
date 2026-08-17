@@ -59,6 +59,15 @@ public enum TaskType {
             document to the court. Only mark the task as complete once the translation has been completed.
             """
     ),
+    REVIEW_ADDITIONAL_DOCS_CLAIM(
+        "ReviewAdditionalDocumentsClaim",
+        "Review additional documents - claim",
+        """
+            Review the additional documents submitted on the claim, check whether any further case action is required,
+            and take the appropriate action. Only mark the task as complete once the documents have been reviewed
+            and any required action has been completed.
+            """
+    ),
     TRANSLATE_DEFENDANT_SUBMITTED_DOCUMENT(
         "TranslateDefendantSubmittedDocument",
         "Translate defendant submitted document",
