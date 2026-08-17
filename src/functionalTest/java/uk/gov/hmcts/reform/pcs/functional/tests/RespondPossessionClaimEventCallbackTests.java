@@ -26,7 +26,7 @@ import uk.gov.hmcts.reform.pcs.functional.testutils.PcsIdamTokenClient;
 import uk.gov.hmcts.reform.pcs.functional.testutils.CaseRoleCleanUp;
 
 @Slf4j
-@Tag("Functional1")
+@Tag("Functional")
 @EnabledIfEnvironmentVariable(named = "CCD_ENABLED", matches = "true")
 @DisabledIfEnvironmentVariable(named = "SHUTTER_SERVICE", matches = "true")
 @ExtendWith(SerenityJUnit5Extension.class)
