@@ -45,6 +45,9 @@ public class Party {
 
     private VerticalYesNo phoneNumberProvided;
 
+    @CCD(searchable = false)
+    private String pcqId;
+
     private LocalDate dateOfBirth;
 
     private LegalRepresentative legalRepresentative;

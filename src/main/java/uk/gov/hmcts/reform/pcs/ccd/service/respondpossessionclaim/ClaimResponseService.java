@@ -41,11 +41,24 @@ public class ClaimResponseService {
         saveContactPreferences(defendantParty, dataFromDraftTable.getDefendantResponses());
         updatePartyContactDetails(defendantParty, dataFromDraftTable.getDefendantContactDetails(), dataFromDraftTable
             .getDefendantResponses());
+        updatePcqId(defendantParty, dataFromDraftTable.getDefendantContactDetails());
 
         if (dataFromDraftTable.getDefendantResponses() != null
             && dataFromDraftTable.getDefendantResponses().getDateOfBirth() != null) {
             defendantParty.setDateOfBirth(dataFromDraftTable.getDefendantResponses().getDateOfBirth());
             log.debug("Updated date of birth from defendantResponses for party ID: {}", defendantParty.getId());
+        }
+    }
+
+    /**
+     * Stores the PCQ ID captured during the defendant's response journey.
+     * Only set when supplied, so an existing ID is never cleared by a response that omits it.
+     */
+    private void updatePcqId(PartyEntity party, DefendantContactDetails defendantContactDetails) {
+        String pcqId = defendantContactDetails.getParty().getPcqId();
+
+        if (StringUtils.isNotBlank(pcqId)) {
+            party.setPcqId(pcqId);
         }
     }
 
