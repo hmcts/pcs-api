@@ -197,8 +197,8 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
     void shouldReturnNullForLatestGenAppDateWhenGenAppsIsNull() {
         when(pcsCaseService.loadCase(TEST_CASE_REFERENCE))
             .thenReturn(PcsCaseEntity.builder()
-                .genApps(null)
-                .build());
+                            .genApps(null)
+                            .build());
 
         PCSCase result = callStartHandler(PCSCase.builder().build());
 
@@ -249,8 +249,8 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
 
         LegalRepDocumentUploadDetails legalRepDocumentUploadDetails = LegalRepDocumentUploadDetails.builder()
             .validCategories(DynamicStringList.builder()
-                .value(DynamicStringListElement.builder().code(selectedId.toString()).build())
-                .build())
+                                 .value(DynamicStringListElement.builder().code(selectedId.toString()).build())
+                                 .build())
             .build();
 
         List<LegalRepDocument> legalRepDocList = List.of(legalRepDocument);
