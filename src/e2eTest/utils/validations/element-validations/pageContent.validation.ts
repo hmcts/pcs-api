@@ -192,7 +192,7 @@ export class PageContentValidation implements IValidation {
         mappingPath = path.join(__dirname, '../../../data/page-data-figma/page-data-caseManagement-figma/urlToFileMappingCM.ts');
       }
       else if(page.url().includes("legalRepresentative")) {
-          mappingPath = path.join(__dirname, '../../../data/page-data-figma/page-data-legalRepresentative-figma/urlToFileMappingLegalRepresentative.ts');
+        mappingPath = path.join(__dirname, '../../../data/page-data-figma/page-data-legalRepresentative-figma/urlToFileMappingLegalRepresentative.ts');
       }
       else{
         mappingPath = path.join(__dirname, '../../../data/page-data-figma/urlToFileMapping.ts');
