@@ -56,7 +56,7 @@ public class CaseNoteView {
     private ListValue<CaseReviewDate> toListValue(CaseReviewDateEntity reviewDateEntity, int index) {
         CaseReviewDate reviewDate = CaseReviewDate.builder()
             .createdBy(reviewDateEntity.getCreatedBy())
-            .createdOn(reviewDateEntity.getCreatedOnUk())
+            .createdOn(reviewDateEntity.getCreatedOn())
             .date(reviewDateEntity.getDate())
             .reason(reviewDateEntity.getReason())
             .description(reviewDateEntity.getDescription())

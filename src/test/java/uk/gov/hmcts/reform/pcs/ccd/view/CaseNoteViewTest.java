@@ -122,14 +122,14 @@ class CaseNoteViewTest {
     void shouldMapReviewDateEntitiesToCaseReviewDatesWithNewestFirst() {
         CaseReviewDateEntity olderReviewDate = CaseReviewDateEntity.builder()
             .createdBy("Older Worker")
-            .createdOn(WINTER_INSTANT)
+            .createdOn(LocalDateTime.of(2026, 1, 15, 12, 0))
             .date(LocalDate.of(2026, 8, 20))
             .reason(ReviewReason.GENERAL_ORDER)
             .description("older review")
             .build();
         CaseReviewDateEntity newerReviewDate = CaseReviewDateEntity.builder()
             .createdBy("Newer Worker")
-            .createdOn(SUMMER_INSTANT)
+            .createdOn(LocalDateTime.of(2026, 4, 22, 22, 0))
             .date(LocalDate.of(2026, 9, 15))
             .reason(ReviewReason.OTHER)
             .description("newer review")
@@ -147,7 +147,7 @@ class CaseNoteViewTest {
         assertThat(reviewDates.getFirst().getId()).isEqualTo("Review date 1");
         assertThat(reviewDates.getFirst().getValue().getCreatedBy()).isEqualTo("Newer Worker");
         assertThat(reviewDates.getFirst().getValue().getCreatedOn())
-            .isEqualTo(LocalDateTime.ofInstant(SUMMER_INSTANT, UK_ZONE_ID));
+            .isEqualTo(LocalDateTime.of(2026, 4, 22, 22, 0));
         assertThat(reviewDates.getFirst().getValue().getDate()).isEqualTo(newerReviewDate.getDate());
         assertThat(reviewDates.getFirst().getValue().getReason()).isEqualTo(ReviewReason.OTHER);
         assertThat(reviewDates.getFirst().getValue().getDescription()).isEqualTo("newer review");

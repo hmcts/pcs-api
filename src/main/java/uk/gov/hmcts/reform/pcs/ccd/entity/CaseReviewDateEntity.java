@@ -18,12 +18,10 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ReviewReason;
 
-import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import static jakarta.persistence.FetchType.LAZY;
-import static uk.gov.hmcts.reform.pcs.config.ClockConfiguration.UK_ZONE_ID;
 
 @Entity
 @Table(name = "case_review_date")
@@ -46,7 +44,7 @@ public class CaseReviewDateEntity {
     private String createdBy;
 
     @Column(updatable = false)
-    private Instant createdOn;
+    private LocalDateTime createdOn;
 
     private LocalDate date;
 
@@ -54,11 +52,4 @@ public class CaseReviewDateEntity {
     private ReviewReason reason;
 
     private String description;
-
-    public LocalDateTime getCreatedOnUk() {
-        if (createdOn == null) {
-            return null;
-        }
-        return LocalDateTime.ofInstant(createdOn, UK_ZONE_ID);
-    }
 }
