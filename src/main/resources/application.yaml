@@ -337,6 +337,15 @@ core_case_data:
 caseApi:
   url: ${CASE_API_URL:http://localhost:3206}
 
+camunda:
+  url: ${CAMUNDA_BASE_URL:http://camunda-local-bpm/engine-rest}
+  request:
+    max-retries: ${CAMUNDA_REQUEST_TASK_MAX_RETRIES:3}
+    backoff-delay-duration: ${CAMUNDA_REQUEST_TASK_BACKOFF_DURATION:20m}
+
+bankHoliday:
+  url: https://www.gov.uk/bank-holidays
+
 shutter:
   service: ${SHUTTER_SERVICE:false}
 
@@ -344,3 +353,6 @@ ccd:
   decentralised-runtime:
     noc:
       enabled: true
+
+frontend:
+  url: ${PCS_FRONTEND_URL:http://localhost:3209}

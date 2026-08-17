@@ -15,7 +15,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeOrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
@@ -370,11 +370,13 @@ class NotificationPersonalisationFactoryTest {
             stubClaimantParty();
             stubDefendantParty();
 
-            LegalRepresentativeEntity legalRepresentative = LegalRepresentativeEntity.builder()
-                .organisationName("Test Solicitors LLP")
-                .build();
+            LegalRepresentativeOrganisationEntity legalRepresentativeOrganisation =
+                LegalRepresentativeOrganisationEntity.builder()
+                    .organisationName("Test Solicitors LLP")
+                    .build();
 
-            assertThat(factory.noticeOfChangeNoLongerRepresenting(legalRepresentative, pcsCaseEntity).toMap())
+            assertThat(factory.noticeOfChangeNoLongerRepresenting(
+                legalRepresentativeOrganisation, pcsCaseEntity).toMap())
                 .containsEntry("organisationName", "Test Solicitors LLP")
                 .containsEntry("caseNumber", "1234-5678-90")
                 .containsEntry("claimantName", "JANE SMITH")
@@ -387,9 +389,11 @@ class NotificationPersonalisationFactoryTest {
             stubClaimantParty();
             stubDefendantParty();
 
-            LegalRepresentativeEntity legalRepresentative = LegalRepresentativeEntity.builder().build();
+            LegalRepresentativeOrganisationEntity legalRepresentativeOrganisation =
+                LegalRepresentativeOrganisationEntity.builder().build();
 
-            assertThat(factory.noticeOfChangeNoLongerRepresenting(legalRepresentative, pcsCaseEntity).toMap())
+            assertThat(factory.noticeOfChangeNoLongerRepresenting(
+                legalRepresentativeOrganisation, pcsCaseEntity).toMap())
                 .containsEntry("organisationName", "");
         }
     }
@@ -404,12 +408,13 @@ class NotificationPersonalisationFactoryTest {
             stubClaimantParty();
             stubDefendantParty();
 
-            LegalRepresentativeEntity legalRepresentative = LegalRepresentativeEntity.builder()
-                .organisationName("Test Solicitors LLP")
-                .build();
+            LegalRepresentativeOrganisationEntity legalRepresentativeOrganisation =
+                LegalRepresentativeOrganisationEntity.builder()
+                    .organisationName("Test Solicitors LLP")
+                    .build();
 
             assertThat(factory.noticeOfChangeCompleteLegalRep(
-                legalRepresentative, createRepresentedDefendant("Sam", "Jones")).toMap())
+                legalRepresentativeOrganisation, createRepresentedDefendant("Sam", "Jones")).toMap())
                 .containsEntry("organisationName", "Test Solicitors LLP")
                 .containsEntry("partyName", "SAM JONES")
                 .containsEntry("caseNumber", "1234-5678-90")

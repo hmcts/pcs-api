@@ -11,7 +11,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeOrganisationContactDetailsEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeOrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
@@ -168,7 +169,7 @@ public class NotificationService {
     }
 
     public EmailNotificationResponse sendNoticeOfChangeNoLongerRepresentingEmailNotification(
-        LegalRepresentativeEntity outgoingRepresentative,
+        LegalRepresentativeOrganisationEntity outgoingRepresentative,
         PartyEntity representedDefendant
     ) {
         PcsCaseEntity pcsCase = representedDefendant.getPcsCase();
@@ -182,15 +183,15 @@ public class NotificationService {
     }
 
     public EmailNotificationResponse sendNoticeOfChangeCompleteLegalRepEmailNotification(
-        LegalRepresentativeEntity legalRepresentative,
+        LegalRepresentativeOrganisationEntity legalRepresentativeOrganisation,
         PartyEntity representedDefendant
     ) {
         return sendEmail(
-            legalRepresentativeRecipient(legalRepresentative, representedDefendant),
+            legalRepresentativeRecipient(legalRepresentativeOrganisation, representedDefendant),
             EmailTemplate.NOTICE_OF_CHANGE_COMPLETE_LEGAL_REP,
             NotificationClaimType.NOTICE_OF_CHANGE,
             notificationPersonalisationFactory.noticeOfChangeCompleteLegalRep(
-                legalRepresentative, representedDefendant)
+                legalRepresentativeOrganisation, representedDefendant)
         );
     }
 
@@ -504,12 +505,16 @@ public class NotificationService {
         );
     }
 
-    private NotificationRecipient legalRepresentativeRecipient(LegalRepresentativeEntity legalRepresentative,
-                                                               PartyEntity representedDefendant) {
+    private NotificationRecipient legalRepresentativeRecipient(
+        LegalRepresentativeOrganisationEntity legalRepresentativeOrganisation,
+        PartyEntity representedDefendant
+    ) {
         PcsCaseEntity pcsCase = representedDefendant.getPcsCase();
+        LegalRepresentativeOrganisationContactDetailsEntity contactDetails =
+            legalRepresentativeOrganisation.getLegalRepresentativeOrganisationContactDetails();
 
         return new NotificationRecipient(
-            legalRepresentative.getEmail(),
+            contactDetails != null ? contactDetails.getEmailAddress() : null,
             representedDefendant,
             pcsCase,
             pcsCase.getClaims().getFirst(),

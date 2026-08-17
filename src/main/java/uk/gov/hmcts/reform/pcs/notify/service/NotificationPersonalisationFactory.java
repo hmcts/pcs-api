@@ -10,7 +10,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeOrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
@@ -89,10 +89,10 @@ public class NotificationPersonalisationFactory {
     }
 
     public NoticeOfChangeNoLongerRepresentingPersonalisation noticeOfChangeNoLongerRepresenting(
-        LegalRepresentativeEntity legalRepresentative,
+        LegalRepresentativeOrganisationEntity legalRepresentativeOrganisation,
         PcsCaseEntity pcsCaseEntity
     ) {
-        String organisationName = legalRepresentative.getOrganisationName();
+        String organisationName = legalRepresentativeOrganisation.getOrganisationName();
 
         return NoticeOfChangeNoLongerRepresentingPersonalisation.builder()
             .base(buildPersonalisation("", "", pcsCaseEntity))
@@ -101,10 +101,10 @@ public class NotificationPersonalisationFactory {
     }
 
     public NoticeOfChangeCompleteLegalRepPersonalisation noticeOfChangeCompleteLegalRep(
-        LegalRepresentativeEntity legalRepresentative,
+        LegalRepresentativeOrganisationEntity legalRepresentativeOrganisation,
         PartyEntity representedDefendant
     ) {
-        String organisationName = legalRepresentative.getOrganisationName();
+        String organisationName = legalRepresentativeOrganisation.getOrganisationName();
 
         return NoticeOfChangeCompleteLegalRepPersonalisation.builder()
             .base(buildPersonalisation("", "", representedDefendant.getPcsCase()))

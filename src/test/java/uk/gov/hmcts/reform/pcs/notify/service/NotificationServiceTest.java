@@ -21,7 +21,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeOrganisationContactDetailsEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeOrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ContactPreferencesEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
@@ -951,12 +952,18 @@ class NotificationServiceTest {
                 .build();
         }
 
-        private LegalRepresentativeEntity legalRepresentative(String email) {
-            return LegalRepresentativeEntity.builder()
-                .id(UUID.randomUUID())
-                .organisationName("Test Solicitors LLP")
-                .email(email)
-                .build();
+        private LegalRepresentativeOrganisationEntity legalRepresentative(String email) {
+            LegalRepresentativeOrganisationEntity legalRepresentativeOrganisation =
+                LegalRepresentativeOrganisationEntity.builder()
+                    .organisationName("Test Solicitors LLP")
+                    .build();
+
+            legalRepresentativeOrganisation.setLegalRepresentativeOrganisationContactDetails(
+                LegalRepresentativeOrganisationContactDetailsEntity.builder()
+                    .emailAddress(email)
+                    .build());
+
+            return legalRepresentativeOrganisation;
         }
 
         private void allowEmailTo(PartyEntity party, PartyRole role) {
