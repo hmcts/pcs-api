@@ -9,8 +9,8 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LegalRepresentativeDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeOrganisationContactDetailsEntity;
-import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.LegalRepresentativeOrganisationContactDetailsRepository;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyContactDetailsEntity;
+import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.ClaimPartyContactDetailsRepository;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
@@ -24,21 +24,21 @@ import static uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter.BR_DELIMITER;
 @AllArgsConstructor
 public class LegalRepresentativePageService {
 
-    private final LegalRepresentativeOrganisationContactDetailsRepository
-        legalRepresentativeOrganisationContactDetailsRepository;
+    private final ClaimPartyContactDetailsRepository
+        claimPartyContactDetailsRepository;
     private final AddressMapper addressMapper;
     private final SecurityContextService securityContextService;
     private final AddressFormatter addressFormatter;
 
     @Transactional
     public void save(long caseReference, LegalRepresentativeDetails legalRepresentativeDetails) {
-        Optional<LegalRepresentativeOrganisationContactDetailsEntity> contactDetails =
-            legalRepresentativeOrganisationContactDetailsRepository.findByOrganisationIdAndCaseReference(
+        Optional<ClaimPartyContactDetailsEntity> contactDetails =
+            claimPartyContactDetailsRepository.findByOrganisationIdAndCaseReference(
                 legalRepresentativeDetails.getOrganisationId(),
             caseReference
         );
 
-        LegalRepresentativeOrganisationContactDetailsEntity organisationContactDetails = contactDetails
+        ClaimPartyContactDetailsEntity organisationContactDetails = contactDetails
                 .orElseThrow(() -> new IllegalStateException("Cannot find "
                                                                  + "LegalRepresentativeOrganisationContactDetails"));
 
@@ -60,26 +60,24 @@ public class LegalRepresentativePageService {
                 .setContactReference(legalRepresentativeDetails.getReference());
         }
 
-        if (legalRepresentativeDetails.getUseEmailAddress() != null
-            && legalRepresentativeDetails.getUseEmailAddress().equals(VerticalYesNo.NO)) {
-            organisationContactDetails.setEmailAddress(legalRepresentativeDetails.getEmailAddress());
-        }
+        updateEmail(legalRepresentativeDetails.getUseEmailAddress(), organisationContactDetails,
+                    legalRepresentativeDetails.getEmailAddress(), legalRepresentativeDetails.getOriginalEmailAddress());
 
         organisationContactDetails.setContactDetailsCorrectConfirmation(YesOrNo.YES);
 
-        legalRepresentativeOrganisationContactDetailsRepository.save(organisationContactDetails);
+        claimPartyContactDetailsRepository.save(organisationContactDetails);
     }
 
     public LegalRepresentativeDetails retrieveLegalRepresentativeDetails(String organisationId,
                                                                          long caseReference,
                                                                          LegalRepresentativeDetails details) {
-        Optional<LegalRepresentativeOrganisationContactDetailsEntity> contactDetails =
-            legalRepresentativeOrganisationContactDetailsRepository.findByOrganisationIdAndCaseReference(
+        Optional<ClaimPartyContactDetailsEntity> contactDetails =
+            claimPartyContactDetailsRepository.findByOrganisationIdAndCaseReference(
             organisationId,
             caseReference
         );
 
-        LegalRepresentativeOrganisationContactDetailsEntity organisationContactDetails = contactDetails
+        ClaimPartyContactDetailsEntity organisationContactDetails = contactDetails
             .orElseThrow(() -> new IllegalStateException("Cannot find LegalRepresentativeOrganisationContactDetails"));
 
 
@@ -124,5 +122,15 @@ public class LegalRepresentativePageService {
     private AddressUK mapAddressEntityToAddressUk(AddressEntity address) {
         return address != null
             ? addressMapper.toAddressUK(address) : null;
+    }
+
+    private void updateEmail(VerticalYesNo useEmail, ClaimPartyContactDetailsEntity contactDetails,
+                             String newEmail, String originalEmail) {
+        if (useEmail == null || contactDetails == null) {
+            return;
+        }
+
+        String targetEmail = (useEmail == VerticalYesNo.NO) ? newEmail : originalEmail;
+        contactDetails.setEmailAddress(targetEmail);
     }
 }

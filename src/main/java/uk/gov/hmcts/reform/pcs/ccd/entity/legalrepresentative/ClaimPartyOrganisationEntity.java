@@ -25,13 +25,13 @@ import java.time.Instant;
 import static jakarta.persistence.FetchType.LAZY;
 
 @Entity
-@Table(name = "claim_party_legal_representative_org")
+@Table(name = "claim_party_organisation")
 @Setter
 @Getter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ClaimPartyLegalRepresentativeOrganisationEntity {
+public class ClaimPartyOrganisationEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -43,9 +43,9 @@ public class ClaimPartyLegalRepresentativeOrganisationEntity {
     private PartyEntity party;
 
     @ManyToOne(fetch = LAZY)
-    @JoinColumn(name = "legal_representative_organisation_id", nullable = false)
+    @JoinColumn(name = "organisation_id", nullable = false)
     @JsonBackReference
-    private LegalRepresentativeOrganisationEntity legalRepresentativeOrganisation;
+    private OrganisationEntity organisation;
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
