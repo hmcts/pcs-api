@@ -35,7 +35,6 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
         // capacities cover every other case, including drafts.
         AccessProfile.CREATOR,
         AccessProfile.DEFENDANT,
-        AccessProfile.PCS_SOLICITOR,
         AccessProfile.GA_CLAIMANT,
         AccessProfile.GA_CLAIMANT_SOLICITOR,
         AccessProfile.JUDGE,
@@ -182,7 +181,7 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
 
     private void configureCaseFileCategories(ConfigBuilder<PCSCase, State, AccessProfile> builder) {
         for (CaseFileCategory category : CaseFileCategory.values()) {
-            builder.categories(AccessProfile.PCS_SOLICITOR)
+            builder.categories(AccessProfile.GA_CLAIMANT_SOLICITOR)
                 .categoryID(category.getId())
                 .categoryLabel(category.getLabel())
                 .displayOrder(category.getDisplayOrder())
