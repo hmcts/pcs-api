@@ -5,9 +5,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
-import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.exception.CcdCaseDataDeletionException;
 import uk.gov.hmcts.reform.pcs.exception.DocumentDeletionException;
 import uk.gov.hmcts.reform.pcs.exception.DraftDataDeletionException;
@@ -29,18 +29,23 @@ public class CaseDeletionService {
     private final DraftCaseDataService draftCaseDataService;
     private final PcsCaseService pcsCaseService;
 
-    @Transactional
     public void deleteDocuments(long caseReference) {
-        List<DocumentEntity> documents = pcsCaseService.getDocuments(caseReference);
-        if (!CollectionUtils.isEmpty(documents)) {
-            deleteDocumentsFromCdam(documents, caseReference);
+        try {
+            List<String> documents = pcsCaseService.getDocumentUrls(caseReference);
+            if (!CollectionUtils.isEmpty(documents)) {
+                deleteDocumentsFromCdam(documents, caseReference);
+            }
+        } catch (CaseNotFoundException e) {
+            log.error("Case not found with reference: {} when deleting documents", caseReference, e);
+        } catch (Exception e) {
+            throw new DocumentDeletionException(caseReference);
         }
     }
 
-    private void deleteDocumentsFromCdam(List<DocumentEntity> documents, long caseReference) {
-        if (!CollectionUtils.isEmpty(documents)) {
+    private void deleteDocumentsFromCdam(List<String> documentUrls, long caseReference) {
+        if (!CollectionUtils.isEmpty(documentUrls)) {
             try {
-                pcsCaseService.deleteDocumentsFromCdam(documents, caseReference);
+                pcsCaseService.deleteDocumentsFromCdam(documentUrls, caseReference);
             } catch (Exception e) {
                 throw new DocumentDeletionException(caseReference);
             }
@@ -48,29 +53,38 @@ public class CaseDeletionService {
     }
 
     @Transactional
-    public void deleteCcdCase(long caseReference) {
+    public void deleteCaseData(long caseReference) {
+        deletePcsCase(caseReference);
+        deleteDraftData(caseReference);
+        deleteCcdCase(caseReference);
+    }
+
+    public void deletePcsCase(long caseReference) {
         try {
-            ccdCaseDataDeletionService.deleteCcdCaseData(caseReference);
+            pcsCaseService.deleteCase(caseReference);
+        } catch (CaseNotFoundException e) {
+            log.error("Case not found with reference: {} when deleting PcsCase", caseReference, e);
         } catch (Exception e) {
-            throw new CcdCaseDataDeletionException(caseReference);
+            log.error("Unexpected Error occurred while deleting PcsCase with reference: {}", caseReference, e);
+            throw new PcsCaseDeletionException(caseReference);
         }
     }
 
-    @Transactional
     public void deleteDraftData(long caseReference) {
         try {
             draftCaseDataService.deleteUnsubmittedCaseDataBySystemUser(caseReference, resumePossessionClaim);
         } catch (Exception e) {
+            log.error("Unexpected Error occurred while deleting DraftData with reference: {}", caseReference, e);
             throw new DraftDataDeletionException(caseReference);
         }
     }
 
-    @Transactional
-    public void deletePcsCase(long caseReference) {
+    public void deleteCcdCase(long caseReference) {
         try {
-            pcsCaseService.deleteCase(caseReference);
+            ccdCaseDataDeletionService.deleteCcdCaseData(caseReference);
         } catch (Exception e) {
-            throw new PcsCaseDeletionException(caseReference);
+            log.error("Unexpected Error occurred while deleting CcdCase with reference: {}", caseReference, e);
+            throw new CcdCaseDataDeletionException(caseReference);
         }
     }
 }

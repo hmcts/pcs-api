@@ -89,9 +89,8 @@ public class CcdCaseDataDeletionService {
             String message = e.getMessage();
             if (message.contains("Case ID is not valid") || message.contains("No case found for reference")) {
                 throw new CcdCaseNotFoundException(caseRef);
-            } else {
-                throw e;
             }
+            throw e;
         }
     }
 

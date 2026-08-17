@@ -5,9 +5,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.casedeletion.CaseDeletionService;
 import uk.gov.hmcts.reform.pcs.ccd.service.casedeletion.CcdCaseDataDeletionService;
+import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.exception.CcdCaseDataDeletionException;
 import uk.gov.hmcts.reform.pcs.exception.DocumentDeletionException;
 import uk.gov.hmcts.reform.pcs.exception.DraftDataDeletionException;
@@ -15,6 +15,7 @@ import uk.gov.hmcts.reform.pcs.exception.PcsCaseDeletionException;
 
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.eq;
@@ -42,41 +43,64 @@ class CaseDeletionServiceTest {
     @Test
     void shouldDeleteDocumentsIfAvailable() {
         // Given
-        List<DocumentEntity> documents = List.of(new DocumentEntity(), new DocumentEntity());
-        when(pcsCaseService.getDocuments(caseRef)).thenReturn(documents);
+        List<String> documentUrls = List.of("ur1", "url2");
+        when(pcsCaseService.getDocumentUrls(caseRef)).thenReturn(documentUrls);
 
         // When
         underTest.deleteDocuments(caseRef);
 
         // Then
-        verify(pcsCaseService).deleteDocumentsFromCdam(documents, caseRef);
+        verify(pcsCaseService).deleteDocumentsFromCdam(documentUrls, caseRef);
     }
 
     @Test
     void shouldNotDeleteDocumentsIfNone() {
         // Given
-        List<DocumentEntity> documents = List.of();
-        when(pcsCaseService.getDocuments(caseRef)).thenReturn(documents);
+        List<String> documentUrls = List.of();
+        when(pcsCaseService.getDocumentUrls(caseRef)).thenReturn(documentUrls);
 
         // When
         underTest.deleteDocuments(caseRef);
 
         // Then
-        verify(pcsCaseService).getDocuments(caseRef);
-        verify(pcsCaseService, never()).deleteDocumentsFromCdam(documents, caseRef);
+        verify(pcsCaseService).getDocumentUrls(caseRef);
+        verify(pcsCaseService, never()).deleteDocumentsFromCdam(documentUrls, caseRef);
     }
 
     @Test
-    void shouldHandleExceptionWhenDeletingDocumentsFromCdam() {
+    void shouldHandleExternalExceptionWhenDeletingDocumentsFromCdam() {
         // Given
-        List<DocumentEntity> documents = List.of(new DocumentEntity(), new DocumentEntity());
-        when(pcsCaseService.getDocuments(caseRef)).thenReturn(documents);
+        List<String> documentUrls = List.of("ur1", "url2");
+        when(pcsCaseService.getDocumentUrls(caseRef)).thenReturn(documentUrls);
         doThrow(RuntimeException.class)
                 .when(pcsCaseService).deleteDocumentsFromCdam(anyList(), eq(caseRef));
 
         // When & Then
         assertThrows(DocumentDeletionException.class, () -> underTest.deleteDocuments(caseRef));
         verify(pcsCaseService).deleteDocumentsFromCdam(anyList(), eq(caseRef));
+    }
+
+    @Test
+    void shouldHandleCaseNotFoundExceptionWhenDeletingDocumentsFromCdam() {
+        // Given
+        doThrow(CaseNotFoundException.class)
+                .when(pcsCaseService).getDocumentUrls(caseRef);
+
+        // When & Then
+        assertDoesNotThrow(() -> underTest.deleteDocuments(caseRef));
+        verify(pcsCaseService, never()).deleteDocumentsFromCdam(anyList(), eq(caseRef));
+    }
+
+    @Test
+    void shouldDeleteCaseDataInATransaction() {
+        // Given & When
+        underTest.deleteCaseData(caseRef);
+
+        // Then
+        verify(pcsCaseService).deleteCase(caseRef);
+        verify(draftCaseDataService).deleteUnsubmittedCaseDataBySystemUser(caseRef, resumePossessionClaim);
+        verify(ccdCaseDataDeletionService).deleteCcdCaseData(caseRef);
+
     }
 
     @Test
@@ -89,6 +113,21 @@ class CaseDeletionServiceTest {
     }
 
     @Test
+    void shouldHandleCaseNotFoundExceptionWhenDeletingPcsCase() {
+        // Given
+        doThrow(CaseNotFoundException.class)
+                .when(pcsCaseService).deleteCase(caseRef);
+
+        // When
+        underTest.deleteCaseData(caseRef);
+
+        // Then
+        verify(pcsCaseService).deleteCase(caseRef);
+        verify(draftCaseDataService).deleteUnsubmittedCaseDataBySystemUser(caseRef, resumePossessionClaim);
+        verify(ccdCaseDataDeletionService).deleteCcdCaseData(caseRef);
+    }
+
+    @Test
     void shouldHandleExceptionWhenDeletingPcsCaseData() {
         // Given
         doThrow(RuntimeException.class)
@@ -97,26 +136,6 @@ class CaseDeletionServiceTest {
         // When & Then
         assertThrows(PcsCaseDeletionException.class, () -> underTest.deletePcsCase(caseRef));
         verify(pcsCaseService).deleteCase(caseRef);
-    }
-
-    @Test
-    void shouldDeleteCcdCaseSuccessfully() {
-        // Given & When
-        underTest.deleteCcdCase(caseRef);
-
-        // Then
-        verify(ccdCaseDataDeletionService).deleteCcdCaseData(caseRef);
-    }
-
-    @Test
-    void shouldHandleExceptionWhenDeletingCcdCaseData() {
-        // Given
-        doThrow(RuntimeException.class)
-                .when(ccdCaseDataDeletionService).deleteCcdCaseData(caseRef);
-
-        // When & Then
-        assertThrows(CcdCaseDataDeletionException.class, () -> underTest.deleteCcdCase(caseRef));
-        verify(ccdCaseDataDeletionService).deleteCcdCaseData(caseRef);
     }
 
     @Test
@@ -137,5 +156,25 @@ class CaseDeletionServiceTest {
         // When & Then
         assertThrows(DraftDataDeletionException.class, () -> underTest.deleteDraftData(caseRef));
         verify(draftCaseDataService).deleteUnsubmittedCaseDataBySystemUser(caseRef, resumePossessionClaim);
+    }
+
+    @Test
+    void shouldDeleteCcdCaseSuccessfully() {
+        // Given & When
+        underTest.deleteCcdCase(caseRef);
+
+        // Then
+        verify(ccdCaseDataDeletionService).deleteCcdCaseData(caseRef);
+    }
+
+    @Test
+    void shouldHandleExceptionWhenDeletingCcdCaseData() {
+        // Given
+        doThrow(RuntimeException.class)
+                .when(ccdCaseDataDeletionService).deleteCcdCaseData(caseRef);
+
+        // When & Then
+        assertThrows(CcdCaseDataDeletionException.class, () -> underTest.deleteCcdCase(caseRef));
+        verify(ccdCaseDataDeletionService).deleteCcdCaseData(caseRef);
     }
 }

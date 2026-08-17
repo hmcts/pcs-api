@@ -107,15 +107,16 @@ public class PcsCaseService {
     }
 
     @Transactional
-    public List<DocumentEntity> getDocuments(long caseReference) {
-        return loadCase(caseReference).getDocuments();
+    public List<String> getDocumentUrls(long caseReference) {
+        List<DocumentEntity> documents = loadCase(caseReference).getDocuments();
+        if (!CollectionUtils.isEmpty(documents)) {
+            return documents.stream().map(DocumentEntity::getUrl).toList();
+        }
+        return List.of();
     }
 
-    public void deleteDocumentsFromCdam(List<DocumentEntity> documents, long caseReference) {
-        documents
-            .stream()
-            .map(DocumentEntity::getUrl)
-            .forEach(documentImportService::deleteDocument);
+    public void deleteDocumentsFromCdam(List<String> documents, long caseReference) {
+        documents.forEach(documentImportService::deleteDocument);
         log.debug("Deleted documents for case with reference: {}", caseReference);
     }
 

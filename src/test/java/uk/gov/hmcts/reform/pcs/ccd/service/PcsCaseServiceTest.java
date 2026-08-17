@@ -555,17 +555,32 @@ class PcsCaseServiceTest {
         // Given
         List<DocumentEntity> documents = List.of(DocumentEntity.builder().url("url1").build(),
                 DocumentEntity.builder().url("url2").build());
+        List<String> expectedDocs = List.of("url1","url2");
         PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().documents(documents).build();
-
 
         when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE))
                 .thenReturn(Optional.ofNullable(pcsCaseEntity));
 
         // When
-        List<DocumentEntity> docs = underTest.getDocuments(CASE_REFERENCE);
+        List<String> docs = underTest.getDocumentUrls(CASE_REFERENCE);
 
         // Then
-        assertThat(documents).isEqualTo(docs);
+        assertThat(docs).isEqualTo(expectedDocs);
+    }
+
+    @Test
+    void shouldReturnEmptyListIfNoDocumentsFound() {
+        // Given
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().documents(List.of()).build();
+
+        when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE))
+                .thenReturn(Optional.ofNullable(pcsCaseEntity));
+
+        // When
+        List<String> docs = underTest.getDocumentUrls(CASE_REFERENCE);
+
+        // Then
+        assertThat(docs).isEmpty();
     }
 
     @Test
@@ -574,7 +589,7 @@ class PcsCaseServiceTest {
         when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.empty());
 
         // When
-        Throwable throwable = catchThrowable(() -> underTest.getDocuments(CASE_REFERENCE));
+        Throwable throwable = catchThrowable(() -> underTest.getDocumentUrls(CASE_REFERENCE));
 
         // Then
         assertThat(throwable)
@@ -585,8 +600,7 @@ class PcsCaseServiceTest {
     @Test
     void shouldDeleteDocuments() {
         // Given
-        List<DocumentEntity> documents = List.of(DocumentEntity.builder().url("url1").build(),
-                DocumentEntity.builder().url("url2").build());
+        List<String> documents = List.of("url1", "url2");
 
         // When
         underTest.deleteDocumentsFromCdam(documents, CASE_REFERENCE);
