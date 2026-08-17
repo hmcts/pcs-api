@@ -72,6 +72,7 @@ public class PossessionClaimResponseMapper {
             .address(contactAddress)
             .phoneNumber(matchedDefendant.getPhoneNumber())
             .phoneNumberProvided(matchedDefendant.getPhoneNumberProvided())
+            .textMessageNumber(matchedDefendant.getTextMessageNumber())
             .dateOfBirth(matchedDefendant.getDateOfBirth())
             .build();
 
@@ -94,6 +95,7 @@ public class PossessionClaimResponseMapper {
             .addressSameAsProperty(partyEntity.getAddressSameAsProperty())
             .phoneNumber(partyEntity.getPhoneNumber())
             .phoneNumberProvided(partyEntity.getPhoneNumberProvided())
+            .textMessageNumber(partyEntity.getTextMessageNumber())
             .dateOfBirth(partyEntity.getDateOfBirth())
             .build();
     }

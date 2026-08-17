@@ -97,6 +97,7 @@ public class DefendantResponseReadMapper {
             .emailAddress(party.getEmailAddress())
             .phoneNumber(party.getPhoneNumber())
             .phoneNumberProvided(party.getPhoneNumberProvided())
+            .textMessageNumber(party.getTextMessageNumber())
             .dateOfBirth(party.getDateOfBirth())
             .address(resolveAddress(party, pcsCase))
             .build();
