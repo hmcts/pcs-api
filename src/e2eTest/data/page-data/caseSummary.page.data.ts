@@ -22,4 +22,5 @@ export const caseSummary = {
   changeCaseState: 'Change case state',
   enterAGenApp: 'Enter a general application',
   manageParties: 'Manage parties',
+  manageHearing: 'Manage hearing'
 }
