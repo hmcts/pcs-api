@@ -2,10 +2,11 @@ package uk.gov.hmcts.reform.pcs.ccd.view;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
+import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentWithId;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
-import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GeneralApplication;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
@@ -76,20 +77,23 @@ public class GenAppsView {
             .orElse(null);
     }
 
-    private GenAppDocument getSubmissionDocument(GenAppEntity genAppEntity) {
+    private DocumentWithId getSubmissionDocument(GenAppEntity genAppEntity) {
         return Optional.ofNullable(genAppEntity.getSubmissionDocument())
-            .map(this::mapDocument)
+            .map(documentEntity -> DocumentWithId.builder()
+                .id(documentEntity.getId().toString())
+                .document(mapDocument(documentEntity))
+                .build())
             .orElse(null);
     }
 
-    private List<ListValue<GenAppDocument>> createSupportingDocumentList(GenAppEntity genAppEntity) {
+    private List<ListValue<Document>> createSupportingDocumentList(GenAppEntity genAppEntity) {
         Set<String> seenDocumentReferences = new HashSet<>();
         addDocumentReferences(genAppEntity.getSubmissionDocument(), seenDocumentReferences);
 
         return genAppEntity.getDocuments().stream()
             .filter(documentEntity -> isNewDocument(documentEntity, seenDocumentReferences))
             .map(documentEntity -> {
-                return ListValue.<GenAppDocument>builder()
+                return ListValue.<Document>builder()
                     .id(documentEntity.getId().toString())
                     .value(mapDocument(documentEntity))
                     .build();
@@ -97,10 +101,12 @@ public class GenAppsView {
             .toList();
     }
 
-    private GenAppDocument mapDocument(DocumentEntity documentEntity) {
-        return GenAppDocument.builder()
-            .id(documentEntity.getId().toString())
+    private Document mapDocument(DocumentEntity documentEntity) {
+        return Document.builder()
             .filename(documentEntity.getFileName())
+            .url(documentEntity.getUrl())
+            .binaryUrl(documentEntity.getBinaryUrl())
+            .categoryId(documentEntity.getCategoryId())
             .build();
     }
 

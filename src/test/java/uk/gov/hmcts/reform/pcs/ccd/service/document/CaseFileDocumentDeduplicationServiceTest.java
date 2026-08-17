@@ -3,11 +3,11 @@ package uk.gov.hmcts.reform.pcs.ccd.service.document;
 import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentWithId;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServedDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsSection;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
-import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GeneralApplication;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.CaseDetailsTab;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.NoticeTabDetails;
@@ -70,7 +70,7 @@ class CaseFileDocumentDeduplicationServiceTest {
             .allDocuments(List.of(submissionDocument, supportingDocument, otherDocument))
             .genApps(List.of(ListValue.<GeneralApplication>builder()
                                 .value(GeneralApplication.builder()
-                                           .submissionDocument(GenAppDocument.builder()
+                                           .submissionDocument(DocumentWithId.builder()
                                                                    .id(submissionDocument.getId())
                                                                    .build())
                                            .supportingDocuments(List.of(genAppDocumentListValue(supportingDocument)))
@@ -120,14 +120,17 @@ class CaseFileDocumentDeduplicationServiceTest {
             ))
             .genApps(List.of(ListValue.<GeneralApplication>builder()
                                 .value(GeneralApplication.builder()
-                                           .submissionDocument(GenAppDocument.builder()
+                                           .submissionDocument(DocumentWithId.builder()
                                                                    .id("submission-document-id")
-                                                                   .filename(submissionDocument.getFilename())
+                                                                   .document(Document.builder()
+                                                                                 .filename(
+                                                                                     submissionDocument.getFilename()
+                                                                                 )
+                                                                                 .build())
                                                                    .build())
-                                           .supportingDocuments(List.of(ListValue.<GenAppDocument>builder()
+                                           .supportingDocuments(List.of(ListValue.<Document>builder()
                                                                            .id("supporting-document-id")
-                                                                           .value(GenAppDocument.builder()
-                                                                                      .id("supporting-document-id")
+                                                                           .value(Document.builder()
                                                                                       .filename(
                                                                                           supportingDocument
                                                                                               .getFilename()
@@ -161,10 +164,9 @@ class CaseFileDocumentDeduplicationServiceTest {
                        .build())
             .build();
         ListValue<Document> otherDocument = documentListValue("other-document-id", "other.pdf");
-        ListValue<GenAppDocument> genAppSupportingDocument = ListValue.<GenAppDocument>builder()
+        ListValue<Document> genAppSupportingDocument = ListValue.<Document>builder()
             .id("gen-app-supporting-document-id")
-            .value(GenAppDocument.builder()
-                       .id("gen-app-supporting-document-id")
+            .value(Document.builder()
                        .filename(" GENAPPS GA1 - DEFENDANT 1.DOCX ")
                        .build())
             .build();
@@ -295,11 +297,10 @@ class CaseFileDocumentDeduplicationServiceTest {
             .build();
     }
 
-    private static ListValue<GenAppDocument> genAppDocumentListValue(ListValue<Document> document) {
-        return ListValue.<GenAppDocument>builder()
+    private static ListValue<Document> genAppDocumentListValue(ListValue<Document> document) {
+        return ListValue.<Document>builder()
             .id(document.getId())
-            .value(GenAppDocument.builder()
-                       .id(document.getId())
+            .value(Document.builder()
                        .filename(document.getValue().getFilename())
                        .build())
             .build();
