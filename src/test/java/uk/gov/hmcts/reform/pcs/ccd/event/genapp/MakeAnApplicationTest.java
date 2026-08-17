@@ -35,7 +35,8 @@ class MakeAnApplicationTest extends BaseEventTest {
     @BeforeEach
     void setUp() {
         when(featureToggleService.isEnabled(RELEASE_1_DOT_3)).thenReturn(true);
-        MakeAnApplication underTest = new MakeAnApplication(startEventHandler, submitEventHandler, featureToggleService);
+        MakeAnApplication underTest = new MakeAnApplication(
+            startEventHandler, submitEventHandler, featureToggleService);
 
         setEventUnderTest(underTest);
     }
