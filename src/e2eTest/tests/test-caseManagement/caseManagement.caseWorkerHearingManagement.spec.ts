@@ -19,7 +19,7 @@ import {
 
 test.use({ storageState: undefined })
 
-test.beforeEach(async ({ page, context }) => {
+test.beforeEach(async ({ page, context },testInfo ) => {
   await context.clearCookies();
   initializeExecutor(page);
   initializeCMExecutor(page);
@@ -58,7 +58,6 @@ test.describe('Case management - Case Worker Manage Hearing @nightly', async () 
     let date = CaseManagementCommonUtils.getRandomDate(editHearing.dateTypeUserInput,'dateTime');
     await performAction('selectAnEvent', {eventType: caseSummary.manageHearing});
     await performValidation('mainHeader', manageHearing.mainHeader);
-    await performAction('errorValidationManageHearing', manageHearing.errorValidation);
     await performAction('selectManageHearing', {
       question: manageHearing.doYouWantToAddQuestion,
       option: manageHearing.editAHearingRadioOption,
@@ -125,6 +124,7 @@ test.describe('Case management - Case Worker Manage Hearing @nightly', async () 
     let typeOfHearing = addHearing.typeOfHearingOption[1]
     await performAction('selectAnEvent', {eventType: caseSummary.manageHearing});
     await performValidation('mainHeader', addHearing.mainHeader);
+    await performAction('errorValidationEnterAddAHearingPage', addHearing.errorValidation);
     await performAction('addAHearing', {
       hearingQuestion: addHearing.typeOfHearingQuestion, option: typeOfHearing,
       wordingQuestion: addHearing.wordingForHearingNoticeTextLabel, option1: addHearing.wordingForHearingHiddenOption,

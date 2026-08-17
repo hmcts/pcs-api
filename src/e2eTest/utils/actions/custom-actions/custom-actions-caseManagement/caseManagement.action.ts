@@ -21,9 +21,7 @@ import {
   selectDocument,
   confirmEditHearing, confirmAmend, confirmUpload,
   uploadADocument,
-  enterGenAppConfirmation,
   addHearing,
-  manageHearing,
   confirmHearing
 } from '@data/page-data-figma/page-data-caseManagement-figma';
 import { caseInfo } from '../createCaseAPI.action';
@@ -334,6 +332,7 @@ export class CaseManagementAction implements IAction {
     await performAction('reTryOnCallBackError', manageHearing.continueButton, manageHearingOption.nextPage as string);
   }
 
+
   private async editHearing(editHearingData: actionRecord) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid});
     await performValidation('text', {
@@ -442,19 +441,6 @@ export class CaseManagementAction implements IAction {
     await performValidation('text', { elementType: 'inlineText', text: `${submitPayLoad.claimantName} vs ${await this.getDefendantClaimDetails(submitPayLoad)}` });
     await performValidation('mainHeader', confirmUpload.mainHeader);
     await performAction('clickButton', confirmUpload.closeAndReturnToCaseOverviewButton);
-  }
-
-  private async selectManageHearing(manageHearingOption: actionRecord) {
-    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
-    await performValidation('text', {
-      elementType: 'paragraph',
-      text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
-    });
-    await performAction('clickRadioButton', {
-      question: manageHearingOption.question,
-      option: manageHearingOption.option,
-    });
-    await performAction('reTryOnCallBackError', manageHearing.continueButton, manageHearingOption.nextPage as string);
   }
 
   private async addAHearing(addAHearing: actionRecord) {
@@ -688,28 +674,6 @@ export class CaseManagementAction implements IAction {
               await performAction('inputText', validationArr.label, item.input);
             }
 
-            await expect(async () => {
-              await performAction('clickButton', validationArr.button);
-              //await performValidation('errorMessage', { header: !validationArr?.header ? validationArr.header = 'The event could not be created' : validationArr.header, message: item.errMessage });
-              if (item.errMessage1) {
-                await performValidation('inputError', validationArr.labelMulti, item.errMessage1);
-              } else {
-                await performValidation('inputError', validationArr.label, item.errMessage);
-              }
-            }).toPass({
-              timeout: VERY_LONG_TIMEOUT,
-            });
-            break;*/
-
-          case 'moneyField':
-            if (item.index && validationArr.labelMulti) {
-              await performAction('inputText', { textLabel: validationArr.label, index: item.index }, item.input);
-              await performAction('inputText', { textLabel: validationArr.labelMulti, index: item.index }, item.input1);
-            } else if (item.index) {
-              await performAction('inputText', { textLabel: validationArr.label, index: item.index }, item.input);
-            } else {
-              await performAction('inputText', validationArr.label, item.input);
-            }
             await expect(async () => {
               await performAction('clickButton', validationArr.button);
               //await performValidation('errorMessage', { header: !validationArr?.header ? validationArr.header = 'The event could not be created' : validationArr.header, message: item.errMessage });
