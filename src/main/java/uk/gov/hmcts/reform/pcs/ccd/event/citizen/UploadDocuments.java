@@ -27,6 +27,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -45,12 +46,13 @@ public class UploadDocuments implements CCDConfig<PCSCase, State, UserRole> {
     private final SecurityContextService securityContextService;
     private final DocumentService documentService;
     private final GenAppVisibilityService genAppVisibilityService;
+    private final FeatureToggleService featureToggleService;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         configBuilder
             .decentralisedEvent(uploadDocuments.name(), this::submit, this::start)
-            .forStates(EventStates.uploadDocuments())
+            .forStates(EventStates.uploadDocuments(featureToggleService))
             .name("Upload additional documents")
             .showCondition(ShowConditions.NEVER_SHOW)
             .grant(Permission.CRU, UserRole.DEFENDANT);

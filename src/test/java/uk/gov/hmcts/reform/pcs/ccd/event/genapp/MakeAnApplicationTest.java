@@ -12,10 +12,13 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.event.BaseEventTest;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventStates;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.RELEASE_1_DOT_3;
 
 @ExtendWith(MockitoExtension.class)
 class MakeAnApplicationTest extends BaseEventTest {
@@ -24,12 +27,15 @@ class MakeAnApplicationTest extends BaseEventTest {
     private StartEventHandler startEventHandler;
     @Mock
     private SubmitEventHandler submitEventHandler;
+    @Mock
+    private FeatureToggleService featureToggleService;
     @Captor
     private ArgumentCaptor<EventPayload<PCSCase, State>> eventPayloadCaptor;
 
     @BeforeEach
     void setUp() {
-        MakeAnApplication underTest = new MakeAnApplication(startEventHandler, submitEventHandler);
+        when(featureToggleService.isEnabled(RELEASE_1_DOT_3)).thenReturn(true);
+        MakeAnApplication underTest = new MakeAnApplication(startEventHandler, submitEventHandler, featureToggleService);
 
         setEventUnderTest(underTest);
     }
@@ -37,6 +43,14 @@ class MakeAnApplicationTest extends BaseEventTest {
     @Test
     void shouldBeConfiguredForEventStates() {
         assertConfiguredForStates(EventStates.makeAnApplication());
+    }
+
+    @Test
+    void shouldBeConfiguredForAllStatesWhenRelease1dot3FeatureFlagDisabled() {
+        when(featureToggleService.isEnabled(RELEASE_1_DOT_3)).thenReturn(false);
+        setEventUnderTest(new MakeAnApplication(startEventHandler, submitEventHandler, featureToggleService));
+
+        assertConfiguredForAllStates();
     }
 
     @Test

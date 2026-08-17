@@ -11,6 +11,7 @@ import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.UploadedDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.documentupload.DocumentUploadCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.documentupload.DocumentUploadDetails;
@@ -25,6 +26,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -41,6 +43,7 @@ import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.RELEASE_1_DOT_3;
 
 @ExtendWith(MockitoExtension.class)
 class UploadDocumentsTest extends BaseEventTest {
@@ -55,12 +58,15 @@ class UploadDocumentsTest extends BaseEventTest {
     private DocumentService documentService;
     @Mock
     private GenAppVisibilityService genAppVisibilityService;
+    @Mock
+    private FeatureToggleService featureToggleService;
 
     @BeforeEach
     void setUp() {
         UploadDocuments underTest = new UploadDocuments(pcsCaseService, partyService,
                                                         securityContextService, documentService,
-                                                        genAppVisibilityService);
+                                                        genAppVisibilityService, featureToggleService);
+        when(featureToggleService.isEnabled(RELEASE_1_DOT_3)).thenReturn(true);
         setEventUnderTest(underTest);
 
         // Default: visibility service is identity (returns input unchanged). Individual tests
@@ -75,6 +81,16 @@ class UploadDocumentsTest extends BaseEventTest {
     @Test
     void shouldBeConfiguredForEventStates() {
         assertConfiguredForStates(EventStates.uploadDocuments());
+    }
+
+    @Test
+    void shouldBeConfiguredForPreRelease1dot3EventStatesWhenFeatureFlagDisabled() {
+        when(featureToggleService.isEnabled(RELEASE_1_DOT_3)).thenReturn(false);
+        setEventUnderTest(new UploadDocuments(pcsCaseService, partyService,
+                                              securityContextService, documentService,
+                                              genAppVisibilityService, featureToggleService));
+
+        assertConfiguredForStates(State.CASE_ISSUED);
     }
 
     @Test

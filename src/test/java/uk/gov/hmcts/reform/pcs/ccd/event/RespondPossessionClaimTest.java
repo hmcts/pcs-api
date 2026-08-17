@@ -65,6 +65,7 @@ import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.PaymentService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 import uk.gov.hmcts.reform.pcs.model.JourneyType;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -83,6 +84,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.respondPossessionClaim;
+import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.RELEASE_1_DOT_3;
 
 @ExtendWith(MockitoExtension.class)
 class RespondPossessionClaimTest extends BaseEventTest {
@@ -152,13 +154,18 @@ class RespondPossessionClaimTest extends BaseEventTest {
     private TenancyLicenceView tenancyLicenceView;
     @Mock
     private RentArrearsView rentArrearsView;
+    @Mock
+    private FeatureToggleService featureToggleService;
+
+    private StartEventHandler startEventHandler;
+    private SubmitEventHandler submitEventHandler;
 
     @BeforeEach
     void setUp() {
 
         // Create handlers with real dependencies
 
-        StartEventHandler startEventHandler = new StartEventHandler(
+        startEventHandler = new StartEventHandler(
             securityContextService,
             List.of(new CitizenStartEventStrategy(pcsCaseService,
                                                   securityContextService,
@@ -201,7 +208,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
             objectMapper
         );
 
-        SubmitEventHandler submitEventHandler = new SubmitEventHandler(
+        submitEventHandler = new SubmitEventHandler(
             List.of(
                 new CitizenSubmissionEventStrategy(
                     draftCaseDataService,
@@ -224,10 +231,12 @@ class RespondPossessionClaimTest extends BaseEventTest {
             securityContextService
         );
 
+        when(featureToggleService.isEnabled(RELEASE_1_DOT_3)).thenReturn(true);
         setEventUnderTest(new RespondPossessionClaim(
             startEventHandler,
             submitEventHandler,
-            respondToPossessionDraftSavePage
+            respondToPossessionDraftSavePage,
+            featureToggleService
         ));
 
         // Mock existing draft with claimantProvided for save operations
@@ -237,6 +246,19 @@ class RespondPossessionClaimTest extends BaseEventTest {
     @Test
     void shouldBeConfiguredForEventStates() {
         assertConfiguredForStates(EventStates.respondPossessionClaim());
+    }
+
+    @Test
+    void shouldBeConfiguredForAllStatesWhenRelease1dot3FeatureFlagDisabled() {
+        when(featureToggleService.isEnabled(RELEASE_1_DOT_3)).thenReturn(false);
+        setEventUnderTest(new RespondPossessionClaim(
+            startEventHandler,
+            submitEventHandler,
+            respondToPossessionDraftSavePage,
+            featureToggleService
+        ));
+
+        assertConfiguredForAllStates();
     }
 
     @Test

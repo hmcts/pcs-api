@@ -28,9 +28,11 @@ import uk.gov.hmcts.reform.pcs.ccd.page.makeanapplication.StatementOfTruth;
 import uk.gov.hmcts.reform.pcs.ccd.page.makeanapplication.UploadSupportingDocuments;
 import uk.gov.hmcts.reform.pcs.ccd.page.makeanapplication.WhatOrderWanted;
 import uk.gov.hmcts.reform.pcs.ccd.page.makeanapplication.WhichLanguage;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.makeAnApplication;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
+import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.RELEASE_1_DOT_3;
 
 @Slf4j
 @Component
@@ -38,18 +40,26 @@ public class MakeAnApplication implements CCDConfig<PCSCase, State, UserRole> {
 
     private final StartEventHandler startEventHandler;
     private final SubmitEventHandler submitEventHandler;
+    private final FeatureToggleService featureToggleService;
 
     public MakeAnApplication(@Qualifier("genAppStartEventHandler") StartEventHandler startEventHandler,
-                             @Qualifier("genAppSubmitEventHandler") SubmitEventHandler submitEventHandler) {
+                             @Qualifier("genAppSubmitEventHandler") SubmitEventHandler submitEventHandler,
+                             FeatureToggleService featureToggleService) {
         this.startEventHandler = startEventHandler;
         this.submitEventHandler = submitEventHandler;
+        this.featureToggleService = featureToggleService;
     }
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
-        EventBuilder<PCSCase, UserRole, State> eventBuilder = configBuilder
-            .decentralisedEvent(makeAnApplication.name(), submitEventHandler, startEventHandler)
-            .forStates(EventStates.makeAnApplication())
+        var eventTypeBuilder = configBuilder
+            .decentralisedEvent(makeAnApplication.name(), submitEventHandler, startEventHandler);
+
+        EventBuilder<PCSCase, UserRole, State> eventBuilder = featureToggleService.isEnabled(RELEASE_1_DOT_3)
+            ? eventTypeBuilder.forStates(EventStates.makeAnApplication())
+            : eventTypeBuilder.forAllStates();
+
+        eventBuilder = eventBuilder
             .name("Make an application")
             .grant(Permission.CRUD, UserRole.DEFENDANT)
             .grant(Permission.CRUD, UserRole.DEFENDANT_SOLICITOR)

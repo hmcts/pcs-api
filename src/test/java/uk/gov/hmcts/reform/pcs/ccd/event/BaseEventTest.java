@@ -46,6 +46,10 @@ public abstract class BaseEventTest {
             .containsExactlyInAnyOrder(expectedStates);
     }
 
+    protected void assertConfiguredForAllStates() {
+        assertThat(getConfiguredEvent().getPreState()).isEmpty();
+    }
+
     protected void assertConfiguredAsNeverShow() {
         assertThat(getConfiguredEvent().getShowCondition())
             .isEqualTo(ShowConditions.NEVER_SHOW);
