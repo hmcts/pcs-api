@@ -129,8 +129,8 @@ class ResumePossessionClaimTest extends BaseEventTest {
     }
 
     @Test
-    void shouldBeConfiguredAsNeverShow() {
-        assertConfiguredAsNeverShow();
+    void shouldBeConfiguredAsNeverShowBehindMergedEventFeatureFlags() {
+        assertConfiguredAsNeverShowBehindMergedEventFeatureFlags();
     }
 
     @Nested

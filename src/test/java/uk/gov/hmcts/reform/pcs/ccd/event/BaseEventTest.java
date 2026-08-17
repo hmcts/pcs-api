@@ -58,6 +58,12 @@ public abstract class BaseEventTest {
             .isEqualTo(ShowConditions.NEVER_SHOW);
     }
 
+    protected void assertConfiguredAsNeverShowBehindMergedEventFeatureFlags() {
+        assertThat(getConfiguredEvent().getShowCondition())
+            .isEqualTo(ShowConditions.and(ShowConditions.NEVER_SHOW,
+                                          ShowConditions.featureFlagsEnabled(RELEASE_1_DOT_3, CASEWORKER_EVENTS)));
+    }
+
     private ResolvedCCDConfig<PCSCase, State, UserRole> buildEventConfig(
         CCDConfig<PCSCase, State, UserRole> eventConfig) {
 
