@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
+import uk.gov.hmcts.reform.pcs.ccd.event.genapp.GenAppWaTaskService;
 import uk.gov.hmcts.reform.pcs.ccd.repository.GenAppRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppDocumentGenerator;
 import uk.gov.hmcts.reform.pcs.exception.GenAppNotFoundException;
@@ -23,6 +24,7 @@ public class GenAppPaymentCallbackHandler implements PaymentCallbackStrategy {
     private final GenAppRepository genAppRepository;
     private final GenAppDocumentGenerator genAppDocumentGenerator;
     private final NotificationService notificationService;
+    private final GenAppWaTaskService genAppWaTaskService;
 
     @Override
     public void handle(PaymentStatusCallback paymentStatusCallback, FeePaymentEntity feePaymentEntity) {
@@ -38,6 +40,7 @@ public class GenAppPaymentCallbackHandler implements PaymentCallbackStrategy {
                 long caseReference = genAppEntity.getPcsCase().getCaseReference();
                 genAppDocumentGenerator.createSubmissionDocument(caseReference, genAppEntity);
                 notificationService.sendGenAppReceivedEmail(genAppEntity);
+                genAppWaTaskService.createReviewGenAppTask(caseReference, genAppEntity);
             } else {
                 log.warn("Gen app {} state {} not valid for this callback", genAppId, genAppEntity.getState());
             }

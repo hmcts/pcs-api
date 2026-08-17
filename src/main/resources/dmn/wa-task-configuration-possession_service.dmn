@@ -1,9 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<definitions xmlns="https://www.omg.org/spec/DMN/20191111/MODEL/" xmlns:dmndi="https://www.omg.org/spec/DMN/20191111/DMNDI/" xmlns:dc="http://www.omg.org/spec/DMN/20180521/DC/" xmlns:biodi="http://bpmn.io/schema/dmn/biodi/2.0" xmlns:camunda="http://camunda.org/schema/1.0/dmn" id="wa-configuration-definition" name="DRD" namespace="http://camunda.org/schema/1.0/dmn" exporter="Camunda Modeler" exporterVersion="5.48.0">
+<definitions xmlns="https://www.omg.org/spec/DMN/20191111/MODEL/" xmlns:dmndi="https://www.omg.org/spec/DMN/20191111/DMNDI/" xmlns:dc="http://www.omg.org/spec/DMN/20180521/DC/" xmlns:biodi="http://bpmn.io/schema/dmn/biodi/2.0" xmlns:camunda="http://camunda.org/schema/1.0/dmn" id="wa-configuration-definition" name="DRD" namespace="http://camunda.org/schema/1.0/dmn" exporter="Camunda Modeler" exporterVersion="5.49.0">
   <decision id="wa-task-configuration-pcs-pcs" name="Task configuration DMN" camunda:historyTimeToLive="P90D">
     <decisionTable id="DecisionTable_14cx079" hitPolicy="RULE ORDER">
       <input id="InputClause_1gxyo7f" label="CCD Case Data" camunda:inputVariable="caseData">
         <inputExpression id="LiteralExpression_0mra7c4" typeRef="string">
+          <text></text>
+        </inputExpression>
+      </input>
+      <input id="InputClause_0bhmuw0" label="Request Task Attributes" camunda:inputVariable="taskAttributes">
+        <inputExpression id="LiteralExpression_101k7mc" typeRef="string">
           <text></text>
         </inputExpression>
       </input>
@@ -24,6 +29,9 @@
         <inputEntry id="UnaryTests_0ttdvnk">
           <text></text>
         </inputEntry>
+        <inputEntry id="UnaryTests_0yvd5dc">
+          <text></text>
+        </inputEntry>
         <inputEntry id="UnaryTests_17qnsjg">
           <text></text>
         </inputEntry>
@@ -39,6 +47,9 @@
       </rule>
       <rule id="DecisionRule_1mjcc04">
         <inputEntry id="UnaryTests_18cwczt">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_17un4zl">
           <text></text>
         </inputEntry>
         <inputEntry id="UnaryTests_0dkk0gm">
@@ -58,6 +69,9 @@
         <inputEntry id="UnaryTests_0w5bx9l">
           <text></text>
         </inputEntry>
+        <inputEntry id="UnaryTests_06uzyk1">
+          <text></text>
+        </inputEntry>
         <inputEntry id="UnaryTests_1otkpft">
           <text></text>
         </inputEntry>
@@ -74,6 +88,9 @@
       <rule id="DecisionRule_1vtk3id">
         <description>Location Id</description>
         <inputEntry id="UnaryTests_1rnxkwz">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0n0ke36">
           <text></text>
         </inputEntry>
         <inputEntry id="UnaryTests_001vqzf">
@@ -96,6 +113,9 @@ Short name</description>
         <inputEntry id="UnaryTests_1cjvmpi">
           <text></text>
         </inputEntry>
+        <inputEntry id="UnaryTests_04vnc07">
+          <text></text>
+        </inputEntry>
         <inputEntry id="UnaryTests_0o3zrg4">
           <text></text>
         </inputEntry>
@@ -111,6 +131,9 @@ Short name</description>
       </rule>
       <rule id="DecisionRule_1qfkcqn">
         <inputEntry id="UnaryTests_1fzed1e">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1d0m7vp">
           <text></text>
         </inputEntry>
         <inputEntry id="UnaryTests_1o9uf1g">
@@ -130,6 +153,9 @@ Short name</description>
         <inputEntry id="UnaryTests_1xk9ami">
           <text></text>
         </inputEntry>
+        <inputEntry id="UnaryTests_1q6yk4l">
+          <text></text>
+        </inputEntry>
         <inputEntry id="UnaryTests_12wstqg">
           <text>"ReviewGenApp"</text>
         </inputEntry>
@@ -145,6 +171,9 @@ Short name</description>
       </rule>
       <rule id="DecisionRule_0izexy4">
         <inputEntry id="UnaryTests_1xbxnca">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1izr49b">
           <text></text>
         </inputEntry>
         <inputEntry id="UnaryTests_1flv9uv">
@@ -164,6 +193,9 @@ Short name</description>
         <inputEntry id="UnaryTests_1b3ow3o">
           <text></text>
         </inputEntry>
+        <inputEntry id="UnaryTests_1odhfif">
+          <text></text>
+        </inputEntry>
         <inputEntry id="UnaryTests_13vua6m">
           <text>"ReviewCaseFlagRequest","ReviewCaseFlag"</text>
         </inputEntry>
@@ -179,6 +211,9 @@ Short name</description>
       </rule>
       <rule id="DecisionRule_0bqwz76">
         <inputEntry id="UnaryTests_0f1nsg3">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_04e61w1">
           <text></text>
         </inputEntry>
         <inputEntry id="UnaryTests_1v5p69a">
@@ -198,6 +233,9 @@ Short name</description>
         <inputEntry id="UnaryTests_0qmpytb">
           <text></text>
         </inputEntry>
+        <inputEntry id="UnaryTests_03e1cbw">
+          <text></text>
+        </inputEntry>
         <inputEntry id="UnaryTests_0l3ndya">
           <text>"ReviewFailedPayment"</text>
         </inputEntry>
@@ -213,6 +251,9 @@ Short name</description>
       </rule>
       <rule id="DecisionRule_1s5d9ng">
         <inputEntry id="UnaryTests_0mmnbzp">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_166bhsd">
           <text></text>
         </inputEntry>
         <inputEntry id="UnaryTests_1alk1rv">
@@ -232,6 +273,9 @@ Short name</description>
         <inputEntry id="UnaryTests_0hlew7o">
           <text></text>
         </inputEntry>
+        <inputEntry id="UnaryTests_1p408jl">
+          <text></text>
+        </inputEntry>
         <inputEntry id="UnaryTests_0ge5t9c">
           <text></text>
         </inputEntry>
@@ -247,6 +291,9 @@ Short name</description>
       </rule>
       <rule id="DecisionRule_0kxxk0n">
         <inputEntry id="UnaryTests_05o7w1h">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1civ04c">
           <text></text>
         </inputEntry>
         <inputEntry id="UnaryTests_1vvu32e">
@@ -266,6 +313,9 @@ Short name</description>
         <inputEntry id="UnaryTests_19jcyb6">
           <text></text>
         </inputEntry>
+        <inputEntry id="UnaryTests_0n5oc3c">
+          <text></text>
+        </inputEntry>
         <inputEntry id="UnaryTests_1vwwa1a">
           <text></text>
         </inputEntry>
@@ -281,6 +331,9 @@ Short name</description>
       </rule>
       <rule id="DecisionRule_1uuyxon">
         <inputEntry id="UnaryTests_0jhl5zg">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1n65ren">
           <text></text>
         </inputEntry>
         <inputEntry id="UnaryTests_0t4gfyx">
@@ -300,6 +353,9 @@ Short name</description>
         <inputEntry id="UnaryTests_1xw5yja">
           <text></text>
         </inputEntry>
+        <inputEntry id="UnaryTests_1ei2ntn">
+          <text></text>
+        </inputEntry>
         <inputEntry id="UnaryTests_0v6pdjr">
           <text>"NewClaimCreateNewHearing","ReviewCaseFlagRequest","ReviewCaseFlag"</text>
         </inputEntry>
@@ -315,6 +371,9 @@ Short name</description>
       </rule>
       <rule id="DecisionRule_1ebp5ca">
         <inputEntry id="UnaryTests_0k25j2x">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_13nwrzw">
           <text></text>
         </inputEntry>
         <inputEntry id="UnaryTests_03jgyv1">
@@ -334,6 +393,9 @@ Short name</description>
         <inputEntry id="UnaryTests_1fg88uo">
           <text></text>
         </inputEntry>
+        <inputEntry id="UnaryTests_0ym3s45">
+          <text></text>
+        </inputEntry>
         <inputEntry id="UnaryTests_0bzlp46">
           <text>"ReviewFailedPayment"</text>
         </inputEntry>
@@ -351,6 +413,9 @@ Short name</description>
         <inputEntry id="UnaryTests_01uali5">
           <text></text>
         </inputEntry>
+        <inputEntry id="UnaryTests_0mk5per">
+          <text></text>
+        </inputEntry>
         <inputEntry id="UnaryTests_055g5ba">
           <text></text>
         </inputEntry>
@@ -364,263 +429,31 @@ Short name</description>
           <text>true</text>
         </outputEntry>
       </rule>
-      <rule id="DecisionRule_16g0sse">
-        <inputEntry id="UnaryTests_0v89wdl">
-          <text></text>
-        </inputEntry>
-        <inputEntry id="UnaryTests_0wj09pe">
-          <text>"NewClaimCreateNewHearing"</text>
-        </inputEntry>
-        <outputEntry id="LiteralExpression_1x0pkte">
-          <text>"description"</text>
-        </outputEntry>
-        <outputEntry id="LiteralExpression_0c8oyby">
-          <text>"List the case on List Assist, create and serve the Notice of Hearing on all parties, and upload a copy of the notice to the digital case file. Only mark the task as complete once all of these steps have been completed."</text>
-        </outputEntry>
-        <outputEntry id="LiteralExpression_1i8mkjf">
-          <text></text>
-        </outputEntry>
-      </rule>
-      <rule id="DecisionRule_163bftv">
-        <inputEntry id="UnaryTests_0jad3xs">
-          <text></text>
-        </inputEntry>
-        <inputEntry id="UnaryTests_1cuepcw">
-          <text>"ReviewDefendantResponseAndCounterclaim"</text>
-        </inputEntry>
-        <outputEntry id="LiteralExpression_0em2bsa">
-          <text>"description"</text>
-        </outputEntry>
-        <outputEntry id="LiteralExpression_1nzw62x">
-          <text>"Review the defendant’s response and counterclaim, check whether any further case action is required, and take the appropriate action before closing the task. Only mark the task as complete once the review is finished and any required action has been completed."</text>
-        </outputEntry>
-        <outputEntry id="LiteralExpression_07pv3yt">
-          <text>true</text>
-        </outputEntry>
-      </rule>
-      <rule id="DecisionRule_1fbubru">
-        <inputEntry id="UnaryTests_0mub3at">
-          <text></text>
-        </inputEntry>
-        <inputEntry id="UnaryTests_1ffvejm">
-          <text>"ReviewAdjournGenApp"</text>
-        </inputEntry>
-        <outputEntry id="LiteralExpression_0b8f0gh">
-          <text>"description"</text>
-        </outputEntry>
-        <outputEntry id="LiteralExpression_0mulsbp">
-          <text>"Review the general application to adjourn the hearing, decide what action is needed, and take the appropriate action. Only mark the task as complete once the application has been reviewed and any required action has been completed."</text>
-        </outputEntry>
-        <outputEntry id="LiteralExpression_0smzs7n">
-          <text>true</text>
-        </outputEntry>
-      </rule>
-      <rule id="DecisionRule_06lzwv2">
-        <inputEntry id="UnaryTests_1mcz2gy">
-          <text></text>
-        </inputEntry>
-        <inputEntry id="UnaryTests_0a3bnkb">
-          <text>"ReviewSetAsideGenApp"</text>
-        </inputEntry>
-        <outputEntry id="LiteralExpression_1whdf9l">
-          <text>"description"</text>
-        </outputEntry>
-        <outputEntry id="LiteralExpression_0n1yxlg">
-          <text>"Review the general application to set aside, decide what action is needed, and take the appropriate action. Only mark the task as complete once the application has been reviewed and any required action has been completed."</text>
-        </outputEntry>
-        <outputEntry id="LiteralExpression_1cvv017">
-          <text>true</text>
-        </outputEntry>
-      </rule>
-      <rule id="DecisionRule_1gx11py">
-        <inputEntry id="UnaryTests_0z5vue6">
-          <text></text>
-        </inputEntry>
-        <inputEntry id="UnaryTests_0mva7m0">
-          <text>"ReviewGenApp"</text>
-        </inputEntry>
-        <outputEntry id="LiteralExpression_1c2prjo">
-          <text>"description"</text>
-        </outputEntry>
-        <outputEntry id="LiteralExpression_1dfdlvv">
-          <text>"Review the general application, decide what action is needed, and take the appropriate action. Only mark the task as complete once the application has been reviewed and any required action has been completed."</text>
-        </outputEntry>
-        <outputEntry id="LiteralExpression_1777gea">
-          <text>true</text>
-        </outputEntry>
-      </rule>
-      <rule id="DecisionRule_0kcx6ed">
-        <inputEntry id="UnaryTests_1smjk9i">
-          <text></text>
-        </inputEntry>
-        <inputEntry id="UnaryTests_1xpgnb1">
-          <text>"ReviewAdditionalDocumentsClaim"</text>
-        </inputEntry>
-        <outputEntry id="LiteralExpression_0hmuiug">
-          <text>"description"</text>
-        </outputEntry>
-        <outputEntry id="LiteralExpression_0mcxu2i">
-          <text>Review the additional documents submitted on the claim, check whether any further case action is required, and take the appropriate action. Only mark the task as complete once the documents have been reviewed and any required action has been completed.</text>
-        </outputEntry>
-        <outputEntry id="LiteralExpression_14akn1n">
-          <text>true</text>
-        </outputEntry>
-      </rule>
       <rule id="DecisionRule_0zpw840">
         <inputEntry id="UnaryTests_0i9u3p3">
           <text></text>
         </inputEntry>
+        <inputEntry id="UnaryTests_0285j9w">
+          <text></text>
+        </inputEntry>
         <inputEntry id="UnaryTests_1kieu3i">
-          <text>"ReviewAdditionalDocumentsGenApp"</text>
+          <text>-</text>
         </inputEntry>
         <outputEntry id="LiteralExpression_1u9r7ki">
           <text>"description"</text>
         </outputEntry>
         <outputEntry id="LiteralExpression_0r3qzf3">
-          <text>"Review the additional documents submitted for the general application, check whether any further case action is required, and take the appropriate action. Only mark the task as complete once the documents have been reviewed and any required action has been completed."</text>
+          <text>taskAttributes.taskDescription</text>
         </outputEntry>
         <outputEntry id="LiteralExpression_0yjve17">
           <text>true</text>
         </outputEntry>
       </rule>
-      <rule id="DecisionRule_0c5clfj">
-        <inputEntry id="UnaryTests_0hj6rya">
-          <text></text>
-        </inputEntry>
-        <inputEntry id="UnaryTests_1meuqwl">
-          <text>"ReviewAdditionalDocumentsCounterclaim"</text>
-        </inputEntry>
-        <outputEntry id="LiteralExpression_14fp0l8">
-          <text>"description"</text>
-        </outputEntry>
-        <outputEntry id="LiteralExpression_08d4eii">
-          <text>"Review the additional documents submitted for the counterclaim, check whether any further case action is required, and take the appropriate action. Only mark the task as complete once the documents have been reviewed and any required action has been completed."</text>
-        </outputEntry>
-        <outputEntry id="LiteralExpression_0cbvgxl">
-          <text>true</text>
-        </outputEntry>
-      </rule>
-      <rule id="DecisionRule_1w1u0qk">
-        <inputEntry id="UnaryTests_06gpfzb">
-          <text></text>
-        </inputEntry>
-        <inputEntry id="UnaryTests_1dkwkcw">
-          <text>"ReviewCaseFlagRequest"</text>
-        </inputEntry>
-        <outputEntry id="LiteralExpression_0w7ri5z">
-          <text>"description"</text>
-        </outputEntry>
-        <outputEntry id="LiteralExpression_1tfrrr2">
-          <text>"Review the case flag request, decide whether it should be approved or rejected, and record the decision. The task will close when the approval or rejection event is completed."</text>
-        </outputEntry>
-        <outputEntry id="LiteralExpression_1nneo2x">
-          <text>true</text>
-        </outputEntry>
-      </rule>
-      <rule id="DecisionRule_0xpuwm0">
-        <inputEntry id="UnaryTests_082u1k7">
-          <text></text>
-        </inputEntry>
-        <inputEntry id="UnaryTests_05tn0k2">
-          <text>"ReviewCaseFlag"</text>
-        </inputEntry>
-        <outputEntry id="LiteralExpression_0xzbtrr">
-          <text>"description"</text>
-        </outputEntry>
-        <outputEntry id="LiteralExpression_0e3rlfp">
-          <text>"Review the case flags on the case flags tab, check whether any action is required, and take the appropriate action. Only mark the task as complete once the case flags have been reviewed and any required action has been completed."</text>
-        </outputEntry>
-        <outputEntry id="LiteralExpression_1td2ttz">
-          <text>true</text>
-        </outputEntry>
-      </rule>
-      <rule id="DecisionRule_0kqn35l">
-        <inputEntry id="UnaryTests_1407ezt">
-          <text></text>
-        </inputEntry>
-        <inputEntry id="UnaryTests_1c1ppbv">
-          <text>"ReviewFailedPayment"</text>
-        </inputEntry>
-        <outputEntry id="LiteralExpression_0vwfaqi">
-          <text>"description"</text>
-        </outputEntry>
-        <outputEntry id="LiteralExpression_0iv9xrr">
-          <text>"Review the failed payment on the service request screen, check whether the payment issue has been resolved or whether further action is required, and take the appropriate action. Only mark the task as complete once the payment issue has been reviewed and any required action has been completed."</text>
-        </outputEntry>
-        <outputEntry id="LiteralExpression_1gcz22e">
-          <text>true</text>
-        </outputEntry>
-      </rule>
-      <rule id="DecisionRule_1kkgc2h">
-        <inputEntry id="UnaryTests_0z3ahgo">
-          <text></text>
-        </inputEntry>
-        <inputEntry id="UnaryTests_08i5wgn">
-          <text>"ReviewDateDue"</text>
-        </inputEntry>
-        <outputEntry id="LiteralExpression_0olypon">
-          <text>"description"</text>
-        </outputEntry>
-        <outputEntry id="LiteralExpression_1z12nyx">
-          <text>"Review the case note about the date due, check whether any follow-up action is required, and take the appropriate action. Only mark the task as complete once the date due has been reviewed and any required action has been completed."</text>
-        </outputEntry>
-        <outputEntry id="LiteralExpression_08zs40v">
-          <text>true</text>
-        </outputEntry>
-      </rule>
-      <rule id="DecisionRule_19iwyvw">
-        <inputEntry id="UnaryTests_0bny76q">
-          <text></text>
-        </inputEntry>
-        <inputEntry id="UnaryTests_11j26v1">
-          <text>"TranslateDefendantSubmittedDocument"</text>
-        </inputEntry>
-        <outputEntry id="LiteralExpression_1b1dwgo">
-          <text>"description"</text>
-        </outputEntry>
-        <outputEntry id="LiteralExpression_00q3dwz">
-          <text>"Review the defendant submitted document and arrange translation where required. Upload or record the translated document on the case file and take any further action needed. Only mark the task as complete once the translation has been completed and any required action has been taken."</text>
-        </outputEntry>
-        <outputEntry id="LiteralExpression_1025zq3">
-          <text>true</text>
-        </outputEntry>
-      </rule>
-      <rule id="DecisionRule_0043dfs">
-        <inputEntry id="UnaryTests_0gx3wyd">
-          <text></text>
-        </inputEntry>
-        <inputEntry id="UnaryTests_1t9ix6v">
-          <text>"TranslateClaimantSubmittedDocument"</text>
-        </inputEntry>
-        <outputEntry id="LiteralExpression_19vfho4">
-          <text>"description"</text>
-        </outputEntry>
-        <outputEntry id="LiteralExpression_0s86vc9">
-          <text>"Review the claimant submitted document and arrange translation. Email the translated document to the court. Only mark the task as complete once the translation has been completed."</text>
-        </outputEntry>
-        <outputEntry id="LiteralExpression_1xibxd8">
-          <text>true</text>
-        </outputEntry>
-      </rule>
-      <rule id="DecisionRule_040w30w">
-        <inputEntry id="UnaryTests_0qni5az">
-          <text></text>
-        </inputEntry>
-        <inputEntry id="UnaryTests_06ubpzc">
-          <text>"TranslateCaseworkerUploadedDocument"</text>
-        </inputEntry>
-        <outputEntry id="LiteralExpression_01hf0ce">
-          <text>"description"</text>
-        </outputEntry>
-        <outputEntry id="LiteralExpression_0lh3pjt">
-          <text>"Review the caseworker uploaded document and arrange translation. Email the translated document to the court. Only mark the task as complete once the translation has been completed."</text>
-        </outputEntry>
-        <outputEntry id="LiteralExpression_06wwhml">
-          <text>true</text>
-        </outputEntry>
-      </rule>
       <rule id="DecisionRule_10dqqpv">
         <inputEntry id="UnaryTests_0lnp6g2">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1pt71xb">
           <text></text>
         </inputEntry>
         <inputEntry id="UnaryTests_0me6dcy">
@@ -640,6 +473,9 @@ Short name</description>
         <inputEntry id="UnaryTests_1anslbv">
           <text></text>
         </inputEntry>
+        <inputEntry id="UnaryTests_0fep1ko">
+          <text></text>
+        </inputEntry>
         <inputEntry id="UnaryTests_1tvak6q">
           <text>"NewClaimCreateNewHearing", "Review DefendantResponseAndCounterclaim", "ReviewAdditionalDocumentsClaim", "ReviewAdditionalDocumentsGenApp", "ReviewAdditionalDocumentsCounterclaim", "ReviewCaseFlagRequest", "ReviewCaseFlag", "ReviewFailedPayment", "ReviewDateDue", "TranslateDefendantSubmittedDocument", "TranslateClaimantSubmittedDocument", "TranslateCaseworkerUploadedDocument"</text>
         </inputEntry>
@@ -655,6 +491,9 @@ Short name</description>
       </rule>
       <rule id="DecisionRule_10i40qf">
         <inputEntry id="UnaryTests_1i23a4y">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0b2a1rk">
           <text></text>
         </inputEntry>
         <inputEntry id="UnaryTests_0lwc3lv">
@@ -674,6 +513,9 @@ Short name</description>
         <inputEntry id="UnaryTests_0mn0gpa">
           <text></text>
         </inputEntry>
+        <inputEntry id="UnaryTests_1jvkqso">
+          <text></text>
+        </inputEntry>
         <inputEntry id="UnaryTests_0jyv65c">
           <text></text>
         </inputEntry>
@@ -689,6 +531,9 @@ Short name</description>
       </rule>
       <rule id="DecisionRule_0nk33fy">
         <inputEntry id="UnaryTests_0ok8nis">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0hd3fv9">
           <text></text>
         </inputEntry>
         <inputEntry id="UnaryTests_0wc90n1">

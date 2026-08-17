@@ -20,4 +20,6 @@ public class CamundaRequestTaskData {
 
     private final TaskType taskType;
 
+    private final String taskDescription;
+
 }
