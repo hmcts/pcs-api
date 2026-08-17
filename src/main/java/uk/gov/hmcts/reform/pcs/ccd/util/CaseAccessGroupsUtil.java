@@ -38,6 +38,7 @@ public final class CaseAccessGroupsUtil {
                                                                           List<ListValue<Party>> defendants,
                                                                           Set<PartyEntity> partyEntities) {
         List<CaseAccessGroup> caseAccessGroups = new ArrayList<>();
+
         Map<UUID, PartyEntity> partyEntitiesMap = partyEntities.stream()
             .collect(Collectors.toMap(PartyEntity::getId, identity()));
 
@@ -64,13 +65,9 @@ public final class CaseAccessGroupsUtil {
             .map(Optional::get)
             .map(ClaimPartyLegalRepresentativeOrganisationEntity::getLegalRepresentativeOrganisation)
             .map(legalRepOrg -> forProfileAndRole(
-                legalRepOrg.getOrganisationProfileId(), PartyRole.DEFENDANT, legalRepOrg.getOrganisationId())
-            )
+                legalRepOrg.getOrganisationProfileId(), PartyRole.DEFENDANT, legalRepOrg.getOrganisationId()))
             .forEach(caseAccessGroupId ->
                          caseAccessGroups.add(new CaseAccessGroup(CCD_ALL_CASES_ACCESS, caseAccessGroupId)));
-
-
-
 
         return caseAccessGroups.stream()
             .map(CaseAccessGroup::getCaseAccessGroupId)

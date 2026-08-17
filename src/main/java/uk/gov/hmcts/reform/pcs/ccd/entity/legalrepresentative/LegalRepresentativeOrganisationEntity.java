@@ -13,6 +13,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 
@@ -22,7 +23,9 @@ import java.util.List;
 
 import static jakarta.persistence.CascadeType.ALL;
 import static jakarta.persistence.FetchType.LAZY;
+import static uk.gov.hmcts.ccd.sdk.type.YesOrNo.NO;
 
+@Slf4j
 @Entity
 @Table(name = "legal_representative_organisation")
 @Setter
@@ -52,20 +55,28 @@ public class LegalRepresentativeOrganisationEntity {
         new ArrayList<>();
 
     public void addParty(PartyEntity party) {
-        if (this.claimPartyLegalRepresentativeOrganisationList.stream().anyMatch(e ->
-                                                                         e.getParty().getId().equals(party.getId()))) {
-            return;
-        }
+        this.claimPartyLegalRepresentativeOrganisationList.stream()
+            .filter(e -> e.getParty().getId().equals(party.getId()))
+            .findFirst()
+            .ifPresentOrElse(claimPartyLegalRepOrgEntity -> {
+                if (NO.equals(claimPartyLegalRepOrgEntity.getActive())) {
+                    claimPartyLegalRepOrgEntity.setActive(YesOrNo.YES);
+                    claimPartyLegalRepOrgEntity.setStartDate(Instant.now());
+                } else {
+                    log.warn("Party [{}] is already linked to Legal Representative Organisation [{}] and is active.",
+                             party.getId(), this.getId());
+                }
 
-        ClaimPartyLegalRepresentativeOrganisationEntity claimPartyLegalRepresentativeOrganisationEntity =
-            ClaimPartyLegalRepresentativeOrganisationEntity.builder()
-            .legalRepresentativeOrganisation(this)
-            .party(party)
-            .startDate(Instant.now())
-            .active(YesOrNo.YES)
-            .build();
-        claimPartyLegalRepresentativeOrganisationList.add(claimPartyLegalRepresentativeOrganisationEntity);
-        party.getClaimPartyLegalRepresentativeOrganisationList().add(claimPartyLegalRepresentativeOrganisationEntity);
+            }, () -> {
+                var claimPartyLegalRepOrgEntity = ClaimPartyLegalRepresentativeOrganisationEntity.builder()
+                    .legalRepresentativeOrganisation(this)
+                    .party(party)
+                    .startDate(Instant.now())
+                    .active(YesOrNo.YES)
+                    .build();
+                claimPartyLegalRepresentativeOrganisationList.add(claimPartyLegalRepOrgEntity);
+                party.getClaimPartyLegalRepresentativeOrganisationList().add(claimPartyLegalRepOrgEntity);
+            });
     }
 
     public void setLegalRepresentativeOrganisationContactDetails(

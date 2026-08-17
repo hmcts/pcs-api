@@ -80,7 +80,7 @@ class CaseRoleAssignmentTaskComponentTest {
         CompletionHandler<RoleAssignmentTaskData> result = task.execute(taskInstance, executionContext);
 
         // Then
-        verify(caseRoleAssignmentService).revokeRasRole(1234L, "user-abc", UserRole.CREATOR);
+        verify(caseRoleAssignmentService).revokeCaseRole(1234L, "user-abc", UserRole.CREATOR);
         assertThat(result).isInstanceOf(CompletionHandler.OnCompleteRemove.class);
     }
 
@@ -97,7 +97,7 @@ class CaseRoleAssignmentTaskComponentTest {
         when(taskInstance.getData()).thenReturn(data);
         when(executionContext.getExecution()).thenReturn(execution);
         doThrow(mock(RuntimeException.class)).when(caseRoleAssignmentService)
-            .revokeRasRole(1234L, "user-abc", UserRole.CREATOR);
+            .revokeCaseRole(1234L, "user-abc", UserRole.CREATOR);
 
         CustomTask<RoleAssignmentTaskData> task = caseRoleAssignmentTaskComponent.roleAssignmentTask();
 

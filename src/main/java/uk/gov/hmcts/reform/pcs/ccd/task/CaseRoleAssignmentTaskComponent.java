@@ -54,7 +54,7 @@ public class CaseRoleAssignmentTaskComponent {
                 try {
                     switch (taskData.getAction()) {
                         case REVOKE_CREATOR ->
-                            caseRoleAssignmentService.revokeRasRole(caseReference, userId, UserRole.CREATOR);
+                            caseRoleAssignmentService.revokeCaseRole(caseReference, userId, UserRole.CREATOR);
                     }
                     return new CompletionHandler.OnCompleteRemove<>();
 
