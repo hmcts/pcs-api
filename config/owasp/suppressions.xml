@@ -43,15 +43,6 @@
   </suppress>
   <suppress until="2026-09-15">
     <notes><![CDATA[
-    HDPI-8270: temporary. Waiting on httpclient5 5.6.3+ to arrive transitively.
-    Remove once the resolved version is past the affected range in the
-    packageUrl above.
-    ]]></notes>
-    <packageUrl regex="true">^pkg:maven/org\.apache\.httpcomponents\.client5/httpclient5@5\.([0-5](\..*)?|6(\.[0-2])?)$</packageUrl>
-    <cve>CVE-2026-64607</cve>
-  </suppress>
-  <suppress until="2026-09-15">
-    <notes><![CDATA[
     HDPI-8150: temporary. CVE-2026-53914 against kotlin-stdlib; no fixed release
     published upstream yet. Remove when a patched kotlin-stdlib is available.
     ]]></notes>
