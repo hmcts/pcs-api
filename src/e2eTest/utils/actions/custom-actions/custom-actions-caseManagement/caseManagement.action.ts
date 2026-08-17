@@ -21,17 +21,15 @@ import {
   enterGenAppPreferApplicationToJudge,
   selectDocument,
   uploadADocument,
-  enterGenAppConfirmation, manageParties, confirmPartyDetailsUpdated
   enterGenAppConfirmation,
   partyDetails,
-  checkYourAnswersManageParties,
   manageParty,
-  confirmManageParties
+  confirmManageParties,
+  updatePartyDetails
 } from '@data/page-data-figma/page-data-caseManagement-figma';
 import { caseInfo } from '../createCaseAPI.action';
 import { CaseManagementCommonUtils } from './caseManagementUtils.action';
 import path from 'path';
-import {updatePartyDetails} from "@data/page-data-figma/page-data-caseManagement-figma/updatePartyDetails.page.data";
 import { compareMaps } from '@utils/common/compareMaps.util';
 export let addressInfo: { buildingStreet: string; addressLine2: string; townCity: string; country: string; engOrWalPostcode: string; };
 
@@ -66,7 +64,7 @@ export class CaseManagementAction implements IAction {
       ['verifyGenAppConfirm', () => this.verifyGenAppConfirm()],
       ['updatePartyDetails', () => this.updatePartyDetails(page, fieldName as actionRecord)],
       ['selectParty', () => this.selectParty(fieldName as actionRecord)],
-      ['confirmPartyDetailsUpdated', () => this.confirmPartyDetailsUpdated(fieldName as actionRecord)]
+      ['confirmPartyDetailsUpdated', () => this.confirmPartyDetailsUpdated(fieldName as actionRecord)],
       ['selectManageParty', () => this.selectManageParty(fieldName as actionRecord)],
       ['addNewPartyAddress', () => this.addNewPartyAddress(page, fieldName as actionRecord)],
       ['addNewParty', () => this.addNewParty(fieldName as actionRecord)],
@@ -469,15 +467,14 @@ export class CaseManagementAction implements IAction {
       option: partyData.option1
     });
 
-    if (partyData.option1 === manageParties.updatePartyRadioOption) {
+    if (partyData.option1 === manageParty.updatePartyRadioOption) {
       await performAction('clickRadioButton', {
         question: partyData.question2,
         option: partyData.option2
       });
     }
-    await performAction('reTryOnCallBackError', manageParties.continueButton, partyData.nextPage as string);
+    await performAction('reTryOnCallBackError', manageParty.continueButton, partyData.nextPage as string);
   }
-
 
   private async updatePartyDetails(page: Page, updatePartyData: actionRecord): Promise<void> {
     const addLoc = page.locator('button').filter({hasText: 'Find address'})
@@ -494,8 +491,23 @@ export class CaseManagementAction implements IAction {
     await performAction('inputText', updatePartyData.enterUKPostcodeTextLabel, updatePartyData.postcode);
     for (let i = 0; i < count; i++) {
       const button = addLoc.nth(i);
-  private async selectManageParty(manageParties: actionRecord) {
+      if (await button.isVisible()) {
+        await button.click();
+        break;
+      }
+    }
+    await performAction('select', updatePartyData.addressSelectLabel, updatePartyData.addressIndex as number);
+    await performAction('inputText', updatePartyDetails.buildingAndStreetHiddenTextLabel, addressInfo.buildingStreet);
+    await performAction('inputText', updatePartyDetails.addressLine2HiddenTextLabel, addressInfo.addressLine2);
+    await performAction('inputText', updatePartyDetails.townOrCityHiddenTextLabel, addressInfo.townCity);
+    await performAction('inputText', updatePartyDetails.countryHiddenTextLabel, addressInfo.country);
+    await performAction('inputText', updatePartyDetails.postcodeHiddenTextLabel, addressInfo.engOrWalPostcode);
+    await performAction('inputText', updatePartyDetails.emailHiddenTextLabel, updatePartyDetails.emailAddressTextInput);
+    await performAction('inputText', updatePartyDetails.phoneNumberHiddenTextLabel, updatePartyDetails.phoneNumberTextInput);
+    await performAction('reTryOnCallBackError', updatePartyDetails.continueButton, updatePartyData.nextPage as string);
+  }
 
+  private async selectManageParty(manageParties: actionRecord) {
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
     await performAction('clickRadioButton', {
@@ -507,7 +519,6 @@ export class CaseManagementAction implements IAction {
       option: manageParties.option1,
     });
     await performAction('reTryOnCallBackError', manageParty.continueButton, manageParties.nextPage as string);
-
   }
 
   private async addNewParty(partyDetail: actionRecord) {
@@ -531,27 +542,11 @@ export class CaseManagementAction implements IAction {
     await performAction('inputText', partyAddress.enterUKPostcodeTextLabel, partyAddress.postcode);
     for (let i = 0; i < count; i++) {
       const button = addLoc.nth(i);
-
       if (await button.isVisible()) {
         await button.click();
         break;
       }
     }
-    await performAction('select', updatePartyData.addressSelectLabel, updatePartyData.addressIndex as number);
-    await performAction('inputText', updatePartyDetails.buildingAndStreetHiddenTextLabel, addressInfo.buildingStreet);
-    await performAction('inputText', updatePartyDetails.addressLine2HiddenTextLabel, addressInfo.addressLine2);
-    await performAction('inputText', updatePartyDetails.townOrCityHiddenTextLabel, addressInfo.townCity);
-    await performAction('inputText', updatePartyDetails.countryHiddenTextLabel, addressInfo.country);
-    await performAction('inputText', updatePartyDetails.postcodeHiddenTextLabel, addressInfo.engOrWalPostcode);
-    await performAction('inputText', updatePartyDetails.emailHiddenTextLabel, updatePartyDetails.emailAddressTextInput);
-    await performAction('inputText', updatePartyDetails.phoneNumberHiddenTextLabel, updatePartyDetails.phoneNumberTextInput);
-    await performAction('reTryOnCallBackError', uploadADocument.continueButton, updatePartyData.nextPage as string);
-  }
-
-  private async confirmPartyDetailsUpdated(confirmParty: actionRecord): Promise<void> {
-    let submitPayLoad = confirmParty.submitPayload as Record<string, any>;
-    const newUser = `${confirmParty.userType}`
-    await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid});
     await performAction('select', partyAddress.addressSelectLabel, partyAddress.addressIndex as number);
     await performAction('inputText', partyDetails.buildingAndStreetHiddenTextLabel, addressInfo.buildingStreet);
     await performAction('inputText', partyDetails.addressLine2HiddenTextLabel, addressInfo.addressLine2);
@@ -563,15 +558,14 @@ export class CaseManagementAction implements IAction {
     await performAction('reTryOnCallBackError', partyDetails.continueButton, partyAddress.nextPage as string);
   }
 
-  private async confirmAddParty(confirmAdd: actionRecord): Promise<void> {
-    let submitPayLoad = confirmAdd.submitPayload as Record<string, any>;
-    const newUser = `${confirmAdd.userType} ${confirmAdd.name}`
-    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
+  private async confirmPartyDetailsUpdated(confirmParty: actionRecord): Promise<void> {
+    let submitPayLoad = confirmParty.submitPayload as Record<string, any>;
+    const newUser = `${confirmParty.userType}`
+    await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid});
     await performValidation('text', {
       elementType: 'paragraph',
       text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
     });
-    await performValidation('text', {elementType: 'inlineText', text: 'Case number: ' + caseInfo.fid});
     await performValidation('text', { elementType: 'inlineText', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', {
       elementType: 'inlineText',
@@ -582,17 +576,28 @@ export class CaseManagementAction implements IAction {
       elementType: 'inlineText',
       text: `${submitPayLoad.claimantName} vs ${await this.getDefendantClaimDetails(submitPayLoad)}`
     });
-    await performValidation('mainHeader', confirmPartyDetailsUpdated.mainHeader);
-    await performAction('clickButton', confirmPartyDetailsUpdated.closeAndReturnToCaseDetailsButton);
+    await performValidation('mainHeader', confirmManageParties.mainHeader);
+    await performAction('clickButton', confirmManageParties.closeAndReturnToCaseOverviewButton);
   }
 
-
+  private async confirmAddParty(confirmAdd: actionRecord): Promise<void> {
+    let submitPayLoad = confirmAdd.submitPayload as Record<string, any>;
+    const newUser = `${confirmAdd.userType} ${confirmAdd.name}`
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
+    await performValidation('text', {
+      elementType: 'paragraph',
+      text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
+    });
+    await performValidation('text', { elementType: 'inlineText', text: 'Case number: ' + caseInfo.fid });
+    await performValidation('text', {
+      elementType: 'inlineText',
+      text: `${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
+    });
     await performValidation('text', { elementType: 'inlineText', text: `${newUser} added` });
     await performValidation('text', { elementType: 'inlineText', text: `${submitPayLoad.claimantName} vs ${await this.getDefendantClaimDetails(submitPayLoad)}` });
     await performValidation('mainHeader', confirmManageParties.mainHeader);
     await performAction('clickButton', confirmManageParties.closeAndReturnToCaseOverviewButton);
   }
-
 
 
   private async inputErrorValidation(page: Page, validationArr: actionRecord) {
@@ -756,7 +761,7 @@ export class CaseManagementAction implements IAction {
         expect(await this.getTableDataValue(page, `Defendant’s first name`, 'last')).toEqual(`${defendantsDetails.firstName}`);
         expect(await this.getTableDataValue(page, `Defendant’s last name`, 'last')).toEqual(`${defendantsDetails.lastName}`);
         break;
-      
+
       case 'Litigation friend-Service address':
         defendant.set(`Building and Street`, addressInfo.buildingStreet);
         defendant.set(`Address Line 2`, addressInfo.addressLine2);
@@ -799,7 +804,7 @@ export class CaseManagementAction implements IAction {
 
   private async validateClaimantDetails(page: Page, claimantDetails: actionRecord) {
 
-    const claimant = new Map<string, string>();  
+    const claimant = new Map<string, string>();
 
     claimant.set(`Name`, claimantDetails.orgName as string);
     claimant.set(`Email address`, claimantDetails.email as string);

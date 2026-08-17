@@ -6,8 +6,7 @@ import { PageContentValidation } from '@utils/validations/element-validations/pa
 import { caseSummary, home, user } from '@data/page-data';
 import { dismissCookieBanner } from '@config/cookie-banner';
 import { initializeCMExecutor, performAction } from '@utils/controller-caseManagement';
-import { addParty, checkYourAnswersManageParties, manageParty, partyDetails, selectDocument, uploadADocument,checkYourAnswersUpdatePartyDetails,
-  manageParties,
+import { addParty, checkYourAnswersManageParties, manageParty, partyDetails,
   updatePartyDetails } from '@data/page-data-figma/page-data-caseManagement-figma';
 import { CaseManagementCommonUtils } from '@utils/actions/custom-actions/custom-actions-caseManagement/caseManagementUtils.action';
 import { addressInfo, allPartyDetails } from '@utils/actions/custom-actions/custom-actions-caseManagement/caseManagement.action';
@@ -56,13 +55,14 @@ test.afterEach(async () => {
 test.describe('Case management - Case Party Management @nightly', async () => {
   test('Case management - Case Worker update party- Defendants details @CM @regression', async () => {
     let date = CaseManagementCommonUtils.getRandomDate(updatePartyDetails.dateTypeHiddenUserInput);
-    await performAction('selectAnEvent', { eventType: caseSummary.manageParties });
-    await performValidation('mainHeader', manageParties.mainHeader);
-    await performAction('selectParty',{
-      question1: manageParties.whatChangeYouWantMakeQuestion,
-      option1: manageParties.updatePartyRadioOption,
-      question2: manageParties.whichPartyContactInformationHiddenQuestion,
-      option2:manageParties.defendant1HiddenRadioOption,
+    let party= allPartyDetails[1];
+    await performAction('selectAnEvent', {eventType: caseSummary.manageParties});
+    await performValidation('mainHeader', manageParty.mainHeader);
+    await performAction('selectParty', {
+      question1: manageParty.whatChangeQuestion,
+      option1: manageParty.updatePartyRadioOption,
+      question2: manageParty.whichPartyContactInformationHiddenQuestion,
+      option2: party,
       nextPage: updatePartyDetails.mainHeader
     });
     await performAction('updatePartyDetails', {
@@ -73,167 +73,184 @@ test.describe('Case management - Case Party Management @nightly', async () => {
       button: updatePartyDetails.findAddressButton,
       addressSelectLabel: updatePartyDetails.addressSelectHiddenLabel,
       addressIndex: updatePartyDetails.defendantAddressIndex,
-      nextPage: checkYourAnswersUpdatePartyDetails.mainHeader
+      nextPage: checkYourAnswersManageParties.mainHeader
     });
-    await performAction('clickButton', checkYourAnswersUpdatePartyDetails.submitButton);
-    await performAction('confirmPartyDetailsUpdated', { userType: `Defendant's details`, submitPayload: submitCaseApiData.submitCasePayloadCaseFileView });
+    await performAction('clickButton', checkYourAnswersManageParties.submitButton);
+    await performAction('confirmPartyDetailsUpdated', {
+      userType: `Defendant's details`,
+      submitPayload: submitCaseApiData.submitCasePayloadCaseFileView
+    });
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage parties');
   });
 
   test('Case management - Case Worker update party - Claimant details @CM @regression', async () => {
     let date = CaseManagementCommonUtils.getRandomDate(updatePartyDetails.dateTypeHiddenUserInput);
-    await performAction('selectAnEvent', { eventType: caseSummary.manageParties });
-    await performValidation('mainHeader', manageParties.mainHeader);
-    await performAction('selectParty',{
-      question1: manageParties.whatChangeYouWantMakeQuestion,
-      option1: manageParties.updatePartyRadioOption,
-      question2: manageParties.whichPartyContactInformationHiddenQuestion,
-      option2:manageParties.ClaimantHiddenRadioOption,
+    let submitPayLoad = submitCaseApiData.submitCasePayloadCaseFileView as Record<string, any>;
+    await performAction('selectAnEvent', {eventType: caseSummary.manageParties});
+    await performValidation('mainHeader', manageParty.mainHeader);
+    await performAction('selectParty', {
+      question1: manageParty.whatChangeQuestion,
+      option1: manageParty.updatePartyRadioOption,
+      question2: manageParty.whichPartyContactInformationHiddenQuestion,
+      option2: submitPayLoad.claimantName,
       nextPage: updatePartyDetails.mainHeader
     });
     await performAction('updatePartyDetails', {
-      DOBLabel: updatePartyDetails.dateOfBirthHiddenLabel,
-      date: date,
       enterUKPostcodeTextLabel: updatePartyDetails.enterUKPostcodeTextLabel,
       postcode: updatePartyDetails.englandPostCodeTextInput,
       button: updatePartyDetails.findAddressButton,
       addressSelectLabel: updatePartyDetails.addressSelectHiddenLabel,
       addressIndex: updatePartyDetails.claimantAddressIndex,
-      nextPage: checkYourAnswersUpdatePartyDetails.mainHeader
+      nextPage: checkYourAnswersManageParties.mainHeader
     });
-    await performAction('clickButton', checkYourAnswersUpdatePartyDetails.submitButton);
-    await performAction('confirmPartyDetailsUpdated', { userType: `Claimant's details`, submitPayload: submitCaseApiData.submitCasePayloadCaseFileView });
+    await performAction('clickButton', checkYourAnswersManageParties.submitButton);
+    await performAction('confirmPartyDetailsUpdated', {
+      userType: `Claimant's details`,
+      submitPayload: submitCaseApiData.submitCasePayloadCaseFileView
+    });
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage parties');
   });
-});
-test.describe('Case management - Case Party Management e2e Journey @nightly', async () => {
+
   test('Case management - Add a Party to the Case - Defendant @CM @regression', async () => {
-    let date = CaseManagementCommonUtils.getRandomDate(partyDetails.dateTypeHiddenUserInput);
-    let firstName = partyDetails.firstNames[Math.floor(Math.random() * partyDetails.firstNames.length)];
-    let lastName = partyDetails.lastNames[Math.floor(Math.random() * partyDetails.lastNames.length)];
-    await performAction('selectAnEvent', { eventType: caseSummary.manageParties });
-    await performValidation('mainHeader', manageParty.mainHeader);
-    await performAction('selectManageParty', {
-      partyToChangeQn: manageParty.whatChangeQuestion,
-      option: manageParty.addPartyRadioOption,
-      whichPartyQn: manageParty.typeOfPartyHiddenQuestion,
-      option1: manageParty.defendantHiddenRadioOption,
-      nextPage: partyDetails.mainHeader,
+      let date = CaseManagementCommonUtils.getRandomDate(partyDetails.dateTypeHiddenUserInput);
+      let firstName = partyDetails.firstNames[Math.floor(Math.random() * partyDetails.firstNames.length)];
+      let lastName = partyDetails.lastNames[Math.floor(Math.random() * partyDetails.lastNames.length)];
+      await performAction('selectAnEvent', {eventType: caseSummary.manageParties});
+      await performValidation('mainHeader', manageParty.mainHeader);
+      await performAction('selectManageParty', {
+        partyToChangeQn: manageParty.whatChangeQuestion,
+        option: manageParty.addPartyRadioOption,
+        whichPartyQn: manageParty.typeOfPartyHiddenQuestion,
+        option1: manageParty.defendantHiddenRadioOption,
+        nextPage: partyDetails.mainHeader,
+      });
+      await performAction('addNewParty', {
+        label1: partyDetails.firstNameTextLabel,
+        input1: firstName,
+        label2: partyDetails.lastNameTextLabel,
+        input2: lastName,
+        dateLabel: partyDetails.addDOBHiddenTextLabel,
+        date: date,
+      });
+      await performAction('addNewPartyAddress', {
+        enterUKPostcodeTextLabel: partyDetails.enterUKPostcodeTextLabel,
+        postcode: addressInfo.engOrWalPostcode,
+        findAddressButton: partyDetails.findAddressButton,
+        addressSelectLabel: partyDetails.addressSelectHiddenLabel,
+        addressIndex: partyDetails.addressIndex,
+        nextPage: checkYourAnswersManageParties.mainHeader
+      });
+      await performAction('clickButton', checkYourAnswersManageParties.submitButton);
+      await performAction('confirmAddParty', {
+        userType: `Defendant`,
+        name: `${firstName} ${lastName}`,
+        submitPayload: submitCaseApiData.submitCasePayloadCaseFileView
+      });
+      await performValidation('mainHeader', home.caseParties);
+      await performAction('validateDefendantDetails', {
+        firstName: firstName,
+        lastName: lastName,
+        mainTable: 'Additional defendant 3',
+        subTable: 'Service address'
+      });
     });
-    await performAction('addNewParty', {
-      label1: partyDetails.firstNameTextLabel,
-      input1: firstName,
-      label2: partyDetails.lastNameTextLabel,
-      input2: lastName,
-      dateLabel: partyDetails.addDOBHiddenTextLabel,
-      date: date,
-    });
-    await performAction('addNewPartyAddress', {
-      enterUKPostcodeTextLabel: partyDetails.enterUKPostcodeTextLabel,
-      postcode: addressInfo.engOrWalPostcode,
-      findAddressButton: partyDetails.findAddressButton,
-      addressSelectLabel: partyDetails.addressSelectHiddenLabel,
-      addressIndex: partyDetails.addressIndex,
-      nextPage: checkYourAnswersManageParties.mainHeader
-    });
-    await performAction('clickButton', checkYourAnswersManageParties.submitButton);
-    await performAction('confirmAddParty', { userType: `Defendant`, name: `${firstName} ${lastName}`, submitPayload: submitCaseApiData.submitCasePayloadCaseFileView });
-    await performValidation('mainHeader', home.caseParties);
-    await performAction('validateDefendantDetails', {
-      firstName: firstName,
-      lastName: lastName,
-      mainTable: 'Additional defendant 3',
-      subTable: 'Service address'
-    });
-  });
 
   test('Case management - Add a Party to the Case - Claimant @CM @regression', async () => {
-    let date = CaseManagementCommonUtils.getRandomDate(partyDetails.dateTypeHiddenUserInput);
-    let firstName = partyDetails.firstNames[Math.floor(Math.random() * partyDetails.firstNames.length)];
-    let lastName = partyDetails.lastNames[Math.floor(Math.random() * partyDetails.lastNames.length)];
-    let orgName = partyDetails.orgNames[Math.floor(Math.random() * partyDetails.orgNames.length)];
-    await performAction('selectAnEvent', { eventType: caseSummary.manageParties });
-    await performValidation('mainHeader', manageParty.mainHeader);
-    await performAction('selectManageParty', {
-      partyToChangeQn: manageParty.whatChangeQuestion,
-      option: manageParty.addPartyRadioOption,
-      whichPartyQn: manageParty.typeOfPartyHiddenQuestion,
-      option1: manageParty.claimantHiddenRadioOption,
-      nextPage: partyDetails.mainHeader,
+      let date = CaseManagementCommonUtils.getRandomDate(partyDetails.dateTypeHiddenUserInput);
+      let firstName = partyDetails.firstNames[Math.floor(Math.random() * partyDetails.firstNames.length)];
+      let lastName = partyDetails.lastNames[Math.floor(Math.random() * partyDetails.lastNames.length)];
+      let orgName = partyDetails.orgNames[Math.floor(Math.random() * partyDetails.orgNames.length)];
+      await performAction('selectAnEvent', {eventType: caseSummary.manageParties});
+      await performValidation('mainHeader', manageParty.mainHeader);
+      await performAction('selectManageParty', {
+        partyToChangeQn: manageParty.whatChangeQuestion,
+        option: manageParty.addPartyRadioOption,
+        whichPartyQn: manageParty.typeOfPartyHiddenQuestion,
+        option1: manageParty.claimantHiddenRadioOption,
+        nextPage: partyDetails.mainHeader,
+      });
+      await performAction('addNewParty', {
+        orgLabel: partyDetails.orgNameHiddenTextLabel,
+        orgInput: orgName,
+        label1: partyDetails.firstNameTextLabel,
+        input1: firstName,
+        label2: partyDetails.lastNameTextLabel,
+        input2: lastName,
+        dateLabel: partyDetails.addDOBHiddenTextLabel,
+        date: date,
+      });
+      await performAction('addNewPartyAddress', {
+        enterUKPostcodeTextLabel: partyDetails.enterUKPostcodeTextLabel,
+        postcode: addressInfo.engOrWalPostcode,
+        findAddressButton: partyDetails.findAddressButton,
+        addressSelectLabel: partyDetails.addressSelectHiddenLabel,
+        addressIndex: partyDetails.addressIndex,
+        nextPage: checkYourAnswersManageParties.mainHeader
+      });
+      await performAction('clickButton', checkYourAnswersManageParties.submitButton);
+      await performAction('confirmAddParty', {
+        userType: `Claimant`,
+        name: `${firstName} ${lastName}`,
+        submitPayload: submitCaseApiData.submitCasePayloadCaseFileView
+      });
+      await performValidation('mainHeader', home.caseParties);
+      await performAction('validateClaimantDetails', {
+        orgName: orgName,
+        email: partyDetails.emailHiddenTextInput,
+        phone: partyDetails.phoneHiddenTextInput,
+        table: 'Additional claimant 1'
+      });
     });
-    await performAction('addNewParty', {
-      orgLabel: partyDetails.orgNameHiddenTextLabel,
-      orgInput: orgName,
-      label1: partyDetails.firstNameTextLabel,
-      input1: firstName,
-      label2: partyDetails.lastNameTextLabel,
-      input2: lastName,
-      dateLabel: partyDetails.addDOBHiddenTextLabel,
-      date: date,
-    });
-    await performAction('addNewPartyAddress', {
-      enterUKPostcodeTextLabel: partyDetails.enterUKPostcodeTextLabel,
-      postcode: addressInfo.engOrWalPostcode,
-      findAddressButton: partyDetails.findAddressButton,
-      addressSelectLabel: partyDetails.addressSelectHiddenLabel,
-      addressIndex: partyDetails.addressIndex,
-      nextPage: checkYourAnswersManageParties.mainHeader
-    });
-    await performAction('clickButton', checkYourAnswersManageParties.submitButton);
-    await performAction('confirmAddParty', { userType: `Claimant`, name: `${firstName} ${lastName}`, submitPayload: submitCaseApiData.submitCasePayloadCaseFileView });
-    await performValidation('mainHeader', home.caseParties);
-    await performAction('validateClaimantDetails', {
-      orgName: orgName,
-      email: partyDetails.emailHiddenTextInput,
-      phone: partyDetails.phoneHiddenTextInput,
-      table: 'Additional claimant 1'
+
+  test('Case management - Add a Party to the Case - Litigation friend @CM @regression', async () => {
+      let date = CaseManagementCommonUtils.getRandomDate(partyDetails.dateTypeHiddenUserInput);
+      let firstName = partyDetails.firstNames[Math.floor(Math.random() * partyDetails.firstNames.length)];
+      let lastName = partyDetails.lastNames[Math.floor(Math.random() * partyDetails.lastNames.length)];
+      let orgName = partyDetails.orgNames[Math.floor(Math.random() * partyDetails.orgNames.length)];
+      let party = allPartyDetails[1];
+      await performAction('selectAnEvent', {eventType: caseSummary.manageParties});
+      await performValidation('mainHeader', manageParty.mainHeader);
+      await performAction('selectManageParty', {
+        partyToChangeQn: manageParty.whatChangeQuestion,
+        option: manageParty.addPartyRadioOption,
+        whichPartyQn: manageParty.typeOfPartyHiddenQuestion,
+        option1: manageParty.litigationFriendHiddenRadioOption,
+        nextPage: addParty.mainHeader,
+      });
+      await performAction('clickRadioButton', {question: addParty.litigationFriendQuestion, option: party});
+      await performAction('reTryOnCallBackError', addParty.continueButton, partyDetails.mainHeader as string);
+      await performAction('addNewParty', {
+        orgLabel: partyDetails.orgNameHiddenTextLabel,
+        orgInput: orgName,
+        label1: partyDetails.firstNameTextLabel,
+        input1: firstName,
+        label2: partyDetails.lastNameTextLabel,
+        input2: lastName,
+        dateLabel: partyDetails.addDOBHiddenTextLabel,
+        date: date,
+      });
+      await performAction('addNewPartyAddress', {
+        enterUKPostcodeTextLabel: partyDetails.enterUKPostcodeTextLabel,
+        postcode: addressInfo.engOrWalPostcode,
+        findAddressButton: partyDetails.findAddressButton,
+        addressSelectLabel: partyDetails.addressSelectHiddenLabel,
+        addressIndex: partyDetails.addressIndex,
+        nextPage: checkYourAnswersManageParties.mainHeader
+      });
+      await performAction('clickButton', checkYourAnswersManageParties.submitButton);
+      await performAction('confirmAddParty', {
+        userType: `Litigation friend`,
+        name: `${firstName} ${lastName}`,
+        submitPayload: submitCaseApiData.submitCasePayloadCaseFileView
+      });
+      await performValidation('mainHeader', home.caseParties);
+      await performAction('validateDefendantDetails', {
+        firstName: firstName,
+        lastName: lastName,
+        actingFor: party,
+        mainTable: 'Litigation friend',
+        subTable: 'Service address'
+      });
     });
   });
 
-  test('Case management - Add a Party to the Case - Litigation friend @CM @regression', async () => {
-    let date = CaseManagementCommonUtils.getRandomDate(partyDetails.dateTypeHiddenUserInput);
-    let firstName = partyDetails.firstNames[Math.floor(Math.random() * partyDetails.firstNames.length)];
-    let lastName = partyDetails.lastNames[Math.floor(Math.random() * partyDetails.lastNames.length)];
-    let orgName = partyDetails.orgNames[Math.floor(Math.random() * partyDetails.orgNames.length)];
-    let party = allPartyDetails[1];
-    await performAction('selectAnEvent', { eventType: caseSummary.manageParties });
-    await performValidation('mainHeader', manageParty.mainHeader);
-    await performAction('selectManageParty', {
-      partyToChangeQn: manageParty.whatChangeQuestion,
-      option: manageParty.addPartyRadioOption,
-      whichPartyQn: manageParty.typeOfPartyHiddenQuestion,
-      option1: manageParty.litigationFriendHiddenRadioOption,
-      nextPage: addParty.mainHeader,
-    });
-    await performAction('clickRadioButton', { question: addParty.litigationFriendQuestion, option: party });
-    await performAction('reTryOnCallBackError', addParty.continueButton, partyDetails.mainHeader as string);
-    await performAction('addNewParty', {
-      orgLabel: partyDetails.orgNameHiddenTextLabel,
-      orgInput: orgName,
-      label1: partyDetails.firstNameTextLabel,
-      input1: firstName,
-      label2: partyDetails.lastNameTextLabel,
-      input2: lastName,
-      dateLabel: partyDetails.addDOBHiddenTextLabel,
-      date: date,
-    });
-    await performAction('addNewPartyAddress', {
-      enterUKPostcodeTextLabel: partyDetails.enterUKPostcodeTextLabel,
-      postcode: addressInfo.engOrWalPostcode,
-      findAddressButton: partyDetails.findAddressButton,
-      addressSelectLabel: partyDetails.addressSelectHiddenLabel,
-      addressIndex: partyDetails.addressIndex,
-      nextPage: checkYourAnswersManageParties.mainHeader
-    });
-    await performAction('clickButton', checkYourAnswersManageParties.submitButton);
-    await performAction('confirmAddParty', { userType: `Litigation friend`, name: `${firstName} ${lastName}`, submitPayload: submitCaseApiData.submitCasePayloadCaseFileView });
-    await performValidation('mainHeader', home.caseParties);
-    await performAction('validateDefendantDetails', {
-      firstName: firstName,
-      lastName: lastName,
-      actingFor: party,
-      mainTable: 'Litigation friend',
-      subTable: 'Service address'
-    });
-  });
-});

@@ -1,6 +1,7 @@
 export const manageParty = {
   mainHeader: `Update, add or remove`,
   whatChangeQuestion: `What change do you want to make?`,
+  youMustHaveJudicialHintText: `You must have judicial approval to add or remove a party`,
   updatePartyRadioOption: `Update party details`,
   addPartyRadioOption: `Add a party`,
   removePartyRadioOption: `Remove a party`,
@@ -9,6 +10,7 @@ export const manageParty = {
   claimantHiddenRadioOption: `Claimant`,
   defendantHiddenRadioOption: `Defendant`,
   litigationFriendHiddenRadioOption: `Litigation friend`,
+  whichPartyContactInformationHiddenQuestion: `Which party's contact information needs to be updated?`,
   continueButton: `Continue`,
   previousButton: `Previous`,
   cancelLink: `Cancel`,
