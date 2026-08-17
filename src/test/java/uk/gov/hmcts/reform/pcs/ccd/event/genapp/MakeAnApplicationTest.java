@@ -40,11 +40,6 @@ class MakeAnApplicationTest extends BaseEventTest {
     }
 
     @Test
-    void shouldBeConfiguredWithMergedEventFeatureFlags() {
-        assertConfiguredWithMergedEventFeatureFlags();
-    }
-
-    @Test
     void shouldCallStartEventHandler() {
         // Given
         PCSCase caseData = mock(PCSCase.class);

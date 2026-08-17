@@ -7,7 +7,6 @@ import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
 import uk.gov.hmcts.ccd.sdk.api.DecentralisedConfigBuilder;
 import uk.gov.hmcts.ccd.sdk.api.Event.EventBuilder;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
-import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -32,8 +31,6 @@ import uk.gov.hmcts.reform.pcs.ccd.page.makeanapplication.WhichLanguage;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.makeAnApplication;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
-import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.CASEWORKER_EVENTS;
-import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.RELEASE_1_DOT_3;
 
 @Slf4j
 @Component
@@ -54,7 +51,6 @@ public class MakeAnApplication implements CCDConfig<PCSCase, State, UserRole> {
             .decentralisedEvent(makeAnApplication.name(), submitEventHandler, startEventHandler)
             .forStates(EventStates.makeAnApplication())
             .name("Make an application")
-            .showCondition(ShowConditions.featureFlagsEnabled(RELEASE_1_DOT_3, CASEWORKER_EVENTS))
             .grant(Permission.CRUD, UserRole.DEFENDANT)
             .grant(Permission.CRUD, UserRole.DEFENDANT_SOLICITOR)
             .grantHistoryOnly(JUDICIAL_HISTORY_ROLES)

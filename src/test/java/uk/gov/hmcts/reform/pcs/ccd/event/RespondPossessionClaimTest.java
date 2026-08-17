@@ -240,8 +240,8 @@ class RespondPossessionClaimTest extends BaseEventTest {
     }
 
     @Test
-    void shouldBeConfiguredAsNeverShowBehindMergedEventFeatureFlags() {
-        assertConfiguredAsNeverShowBehindMergedEventFeatureFlags();
+    void shouldBeConfiguredAsNeverShow() {
+        assertConfiguredAsNeverShow();
     }
 
     private void setupDefaultExistingDraft() {

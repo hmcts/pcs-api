@@ -36,11 +36,6 @@ class ManageFlagsTest extends BaseEventTest {
     }
 
     @Test
-    void shouldBeConfiguredWithMergedEventFeatureFlags() {
-        assertConfiguredWithMergedEventFeatureFlags();
-    }
-
-    @Test
     void shouldCreateFlagsInSubmitCallback() {
         // Given
         List<ListValue<FlagDetail>> flagDetails = createFlagDetails();

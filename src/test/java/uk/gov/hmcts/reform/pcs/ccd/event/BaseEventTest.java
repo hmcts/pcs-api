@@ -18,8 +18,6 @@ import java.util.Collection;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.CASEWORKER_EVENTS;
-import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.RELEASE_1_DOT_3;
 
 public abstract class BaseEventTest {
 
@@ -48,20 +46,9 @@ public abstract class BaseEventTest {
             .containsExactlyInAnyOrder(expectedStates);
     }
 
-    protected void assertConfiguredWithMergedEventFeatureFlags() {
-        assertThat(getConfiguredEvent().getShowCondition())
-            .isEqualTo(ShowConditions.featureFlagsEnabled(RELEASE_1_DOT_3, CASEWORKER_EVENTS));
-    }
-
     protected void assertConfiguredAsNeverShow() {
         assertThat(getConfiguredEvent().getShowCondition())
             .isEqualTo(ShowConditions.NEVER_SHOW);
-    }
-
-    protected void assertConfiguredAsNeverShowBehindMergedEventFeatureFlags() {
-        assertThat(getConfiguredEvent().getShowCondition())
-            .isEqualTo(ShowConditions.and(ShowConditions.NEVER_SHOW,
-                                          ShowConditions.featureFlagsEnabled(RELEASE_1_DOT_3, CASEWORKER_EVENTS)));
     }
 
     private ResolvedCCDConfig<PCSCase, State, UserRole> buildEventConfig(
